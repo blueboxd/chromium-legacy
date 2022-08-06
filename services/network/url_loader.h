@@ -79,6 +79,19 @@ class ScopedThrottlingToken;
 struct OriginPolicy;
 class URLLoaderFactory;
 
+// When a request matches a pervasive payload url and checksum a value from this
+// enum will be logged to the "Network.CacheTransparency.CacheNotUsed"
+// histogram. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused. This is exposed in the
+// header file for use in tests.
+enum class CacheTransparencyCacheNotUsedReason {
+  kTryingSingleKeyedCache = 0,
+  kIncompatibleRequestType = 1,
+  kIncompatibleRequestLoadFlags = 2,
+  kIncompatibleRequestHeaders = 3,
+  kMaxValue = kIncompatibleRequestHeaders,
+};
+
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
       public net::URLRequest::Delegate,
@@ -608,13 +621,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // CookieAccessObserver implementation from the URLLoaderContext aka
   // URLLoaderFactory).
   const mojo::Remote<mojom::CookieAccessObserver> cookie_observer_remote_;
-  mojom::CookieAccessObserver* const cookie_observer_ = nullptr;
+  const raw_ptr<mojom::CookieAccessObserver> cookie_observer_ = nullptr;
   const mojo::Remote<mojom::URLLoaderNetworkServiceObserver>
       url_loader_network_observer_remote_;
-  mojom::URLLoaderNetworkServiceObserver* const url_loader_network_observer_ =
-      nullptr;
+  const raw_ptr<mojom::URLLoaderNetworkServiceObserver>
+      url_loader_network_observer_ = nullptr;
   const mojo::Remote<mojom::DevToolsObserver> devtools_observer_remote_;
-  mojom::DevToolsObserver* const devtools_observer_ = nullptr;
+  const raw_ptr<mojom::DevToolsObserver> devtools_observer_ = nullptr;
 
   // Indicates |url_request_| is fetch upload request and that has streaming
   // body.

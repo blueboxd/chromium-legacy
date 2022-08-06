@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Startup.Android.Cold.FirstNavigationCommitOccurredPreForeground"
-    units="Boolean" expires_after="2022-11-06">
+    enum="Boolean" expires_after="2022-11-06">
   <owner>blundell@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -79,7 +79,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstPaintOccurredPreForeground"
-    units="Boolean" expires_after="2022-11-06">
+    enum="Boolean" expires_after="2022-11-06">
   <owner>blundell@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -90,7 +90,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstSafeBrowsingResponseTime.Tabbed"
-    units="ms" expires_after="2022-09-25">
+    units="ms" expires_after="2022-11-27">
   <owner>pasko@chromium.org</owner>
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -102,7 +102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2022-09-25">
+    units="ms" expires_after="2022-11-27">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2022-09-25">
+    units="ms" expires_after="2022-11-27">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -221,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.FeedsLoadingPlaceholderShown.Instant"
-    units="ms" expires_after="2022-09-11">
+    units="ms" expires_after="2022-11-13">
   <owner>hanxi@chromium.org</owner>
   <owner>spdonghao@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -318,7 +318,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Startup.Android.StartSurfaceShownAtStartup" units="Boolean"
+<histogram name="Startup.Android.StartSurfaceShownAtStartup" enum="Boolean"
     expires_after="2022-10-07">
   <owner>hanxi@chromium.org</owner>
   <owner>spdonghao@chromium.org</owner>
@@ -327,43 +327,6 @@ chromium-metrics-reviews@google.com.
     Records whether the Start surface homepage is showing at a cold startup when
     the Start surface is enabled. This histogram is recorded in a deferred
     startup task after Chrome is launched.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.StartupTabPreloader.LoadDecisionReason"
-    enum="StartupTabPreloaderLoadDecisionCause" expires_after="2022-11-06">
-  <owner>blundell@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Android: Gives the reason for StartupTabPreloader's decision of whether to
-    load a tab at startup. As reasons for not doing a startup tab preload are
-    not necessarily orthogonal, gives highest-priority reason (see computation
-    of metric in the codebase). Recorded when a profile is created, assuming a
-    StartupTabPreloader has been constructed for intents with a url and either
-    regular Chrome or a Custom Tab will be loaded.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.StartupTabPreloader.TabLoaded" units="Boolean"
-    expires_after="2022-11-06">
-  <owner>skyostil@chromium.org</owner>
-  <summary>
-    Android: Whether or not creation of a profile lead to the
-    StartupTabPreloader speculatively created a tab. Recorded when a profile is
-    created, assuming a StartupTabPreloader has been constructed for intents
-    with a url and either regular Chrome or a Custom Tab will be loaded.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.StartupTabPreloader.TabTaken" units="Boolean"
-    expires_after="2022-11-06">
-  <owner>skyostil@chromium.org</owner>
-  <summary>
-    Android: Whether or not a tab speculatively created by the
-    StartupTabPreloader was subsequently adopted by ChromeTabCreator. Recorded
-    when a tab is loaded, assuming a StartupTabPreloader has been constructed
-    for intents with a url for either regular Chrome or a Custom Tab will be
-    loaded. Warning: this histogram was expired from 2020-11-08 through M95.
   </summary>
 </histogram>
 
@@ -638,7 +601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.ConsecutiveLoadsWithoutLaunch" units="count"
-    expires_after="2022-09-30">
+    expires_after="2022-12-04">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -801,7 +764,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2022-09-18">
+    enum="MobileSessionStartAction" expires_after="2022-11-20">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -881,11 +844,22 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.PreMainMessageLoopRunImplLongTime" units="ms"
-    expires_after="2022-09-18">
+    expires_after="2022-11-20">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
     ChromeBrowserMainParts::PreMainMessageLoopRunImpl.
+  </summary>
+</histogram>
+
+<histogram name="Startup.ShowDefaultPromoFromApps"
+    enum="MobileSessionCallerApp" expires_after="2023-05-23">
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The external application requesting showing the default browser settings.
+    Logged when the command is received from the external application. Histogram
+    only for iOS.
   </summary>
 </histogram>
 
@@ -898,7 +872,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.StartupTaskRunner.AsyncTaskQueueTime" units="ms"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>blundell@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -925,7 +899,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToDidFinishLaunchingCall"
-    units="ms" expires_after="2022-09-30">
+    units="ms" expires_after="2022-12-04">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -936,7 +910,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToLoad" units="ms"
-    expires_after="2022-09-30">
+    expires_after="2022-12-04">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -946,7 +920,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToMainCall" units="ms"
-    expires_after="2022-09-30">
+    expires_after="2022-12-04">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -956,7 +930,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToSceneConnection" units="ms"
-    expires_after="2022-09-30">
+    expires_after="2022-12-04">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

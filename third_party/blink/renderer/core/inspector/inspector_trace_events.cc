@@ -380,7 +380,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoIsHtml)
     DEFINE_STRING_MAPPING(PseudoListBox)
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
-    DEFINE_STRING_MAPPING(PseudoPopupOpen)
+    DEFINE_STRING_MAPPING(PseudoTopLayer)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
@@ -392,7 +392,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoSpellingError)
     DEFINE_STRING_MAPPING(PseudoGrammarError)
     DEFINE_STRING_MAPPING(PseudoHas)
-    DEFINE_STRING_MAPPING(PseudoRelativeLeftmost)
+    DEFINE_STRING_MAPPING(PseudoRelativeAnchor)
     DEFINE_STRING_MAPPING(PseudoPageTransition)
     DEFINE_STRING_MAPPING(PseudoPageTransitionContainer);
     DEFINE_STRING_MAPPING(PseudoPageTransitionImageWrapper);
@@ -916,7 +916,7 @@ void inspector_receive_response_event::Data(perfetto::TracedValue context,
   dict.Add("requestId", request_id);
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
   dict.Add("statusCode", response.HttpStatusCode());
-  dict.Add("mimeType", response.MimeType().GetString().IsolatedCopy());
+  dict.Add("mimeType", response.MimeType().GetString());
   dict.Add("encodedDataLength", response.EncodedDataLength());
   dict.Add("fromCache", response.WasCached());
   dict.Add("fromServiceWorker", response.WasFetchedViaServiceWorker());

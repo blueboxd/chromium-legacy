@@ -914,7 +914,7 @@ external/wpt/mediacapture-fromelement/HTMLCanvasElement-getImageData-noframe.htm
 external/wpt/mediacapture-image/MediaStreamTrack-getCapabilities-fast.html [ Pass ]
 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-in-service-worker.https.html [ Pass ]
 external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html [ Pass ]
-external/wpt/mediacapture-region/MediaDevices-produceCropId.https.html [ Pass ]
+external/wpt/mediacapture-region/CropTarget-fromElement.https.html [ Pass ]
 external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Pass ]
 external/wpt/mediacapture-streams/crashtests/enumerateDevices-after-discard-1.https.html [ Pass ]
 external/wpt/mediasession/setmicrophoneactive.html [ Pass ]
@@ -969,7 +969,6 @@ external/wpt/quirks/historical/vertical-align-in-quirks.html [ Pass ]
 external/wpt/quirks/text-decoration-doesnt-propagate-into-tables/standards.html [ Pass ]
 external/wpt/quirks/unitless-length/excluded-properties-001.html [ Pass ]
 external/wpt/reporting/same-origin-report-credentials.https.sub.html [ Pass ]
-external/wpt/requestidlecallback/basic.html [ Pass ]
 external/wpt/sanitizer-api/element-set-sanitized-html.https.tentative.html [ Pass ]
 external/wpt/scheduler/post-task-with-signal-from-detached-iframe.html [ Pass ]
 external/wpt/scroll-animations/css/progress-based-animation-timeline.html [ Pass ]
@@ -1313,6 +1312,7 @@ virtual/text-antialias/whitespace/nowrap-clear-float.html [ Pass ]
 virtual/text-antialias/whitespace/pre-newline-box-test.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-cell-expansion-003.html [ Pass ]
 virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass ]
+virtual/threaded/external/wpt/requestidlecallback/basic.html [ Pass ]
 
 # Layout tests significatly differ from non scale baseline
 crbug.com/1105168 fast/sub-pixel/sub-pixel-accumulates-to-layers.html [ Failure ]
@@ -1377,6 +1377,7 @@ crbug.com/1295281 virtual/document-transition/wpt_internal/document-transition/o
 crbug.com/1311421 virtual/document-transition/wpt_internal/document-transition/content-with-clip-max-texture-size.html [ Failure ]
 crbug.com/1295281 virtual/document-transition/wpt_internal/document-transition/old-content-object-fit-fill.html [ Failure ]
 crbug.com/1295281 virtual/document-transition/wpt_internal/document-transition/new-content-object-fit-fill.html [ Failure ]
+crbug.com/1329180 virtual/document-transition/wpt_internal/document-transition/new-and-old-sizes-match.html [ Failure ]
 
 crbug.com/1314903 external/wpt/css/css-sizing/contain-intrinsic-size/animation/contain-intrinsic-size-interpolation.html [ Failure ]
 
@@ -1829,4 +1830,6 @@ crbug.com/1196414 compositing/gestures/gesture-tapHighlight-imagemap.html [ Fail
 
 crbug.com/1310040 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Failure Pass ]
 
-crbug.com/1318592 external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Pass ]
+crbug.com/1318592 external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Failure Pass ]
+
+crbug.com/1324618 external/wpt/css/css-images/object-view-box-fit-fill* [ Pass ]

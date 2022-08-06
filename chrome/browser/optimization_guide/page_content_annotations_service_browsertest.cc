@@ -13,6 +13,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_database.h"
@@ -36,6 +37,12 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#endif
 
 namespace optimization_guide {
 
@@ -123,6 +130,65 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceDisabledBrowserTest,
                          browser()->profile()));
 }
 
+class PageContentAnnotationsServiceKioskModeBrowserTest
+    : public InProcessBrowserTest {
+ public:
+  PageContentAnnotationsServiceKioskModeBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kOptimizationHints, features::kPageContentAnnotations},
+        /*disabled_features=*/{});
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(::switches::kKioskMode);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceKioskModeBrowserTest,
+                       DisabledInKioskMode) {
+  EXPECT_EQ(nullptr, PageContentAnnotationsServiceFactory::GetForProfile(
+                         browser()->profile()));
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class PageContentAnnotationsServiceEphemeralProfileBrowserTest
+    : public MixinBasedInProcessBrowserTest {
+ public:
+  PageContentAnnotationsServiceEphemeralProfileBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kOptimizationHints, features::kPageContentAnnotations},
+        /*disabled_features=*/{});
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    std::unique_ptr<ash::ScopedDevicePolicyUpdate> device_policy_update =
+        device_state_.RequestDevicePolicyUpdate();
+    device_policy_update->policy_payload()
+        ->mutable_ephemeral_users_enabled()
+        ->set_ephemeral_users_enabled(true);
+  }
+
+ protected:
+  ash::DeviceStateMixin device_state_{
+      &mixin_host_,
+      ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceEphemeralProfileBrowserTest,
+                       EphemeralProfileDoesNotInstantiateService) {
+  EXPECT_EQ(nullptr, PageContentAnnotationsServiceFactory::GetForProfile(
+                         browser()->profile()));
+}
+#endif
+
 class PageContentAnnotationsServiceValidationBrowserTest
     : public InProcessBrowserTest {
  public:
@@ -208,14 +274,8 @@ class PageContentAnnotationsServicePageTopicsBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1307251): Failing on Win 7 and also on Mac 11.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_E2EWithGoldenTestData DISABLED_E2EWithGoldenTestData
-#else
-#define MAYBE_E2EWithGoldenTestData E2EWithGoldenTestData
-#endif
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServicePageTopicsBrowserTest,
-                       MAYBE_E2EWithGoldenTestData) {
+                       E2EWithGoldenTestData) {
   PageContentAnnotationsService* service =
       PageContentAnnotationsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(service);
@@ -223,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServicePageTopicsBrowserTest,
 
   std::vector<BatchAnnotationResult> results;
   base::RunLoop run_loop;
-  service->BatchAnnotatePageTopics(
+  service->BatchAnnotate(
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<BatchAnnotationResult>* out_results,
@@ -236,12 +296,13 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServicePageTopicsBrowserTest,
           "youtube.com",
           "chrome.com",
           "music.youtube.com",
-      });
+      },
+      AnnotationType::kPageTopics);
   run_loop.Run();
 
   ASSERT_EQ(results.size(), 3U);
 
-  EXPECT_EQ(results[0].input(), "youtube com");
+  EXPECT_EQ(results[0].input(), "youtube.com");
   EXPECT_EQ(results[0].type(), AnnotationType::kPageTopics);
   ASSERT_TRUE(results[0].topics());
   EXPECT_THAT(*results[0].topics(),
@@ -250,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServicePageTopicsBrowserTest,
                   CrossPlatformMatcher(WeightedIdentifier(43, 0.915914)),
               }));
 
-  EXPECT_EQ(results[1].input(), "chrome com");
+  EXPECT_EQ(results[1].input(), "chrome.com");
   EXPECT_EQ(results[1].type(), AnnotationType::kPageTopics);
   ASSERT_TRUE(results[1].topics());
   EXPECT_THAT(*results[1].topics(),
@@ -260,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServicePageTopicsBrowserTest,
                   CrossPlatformMatcher(WeightedIdentifier(148, 0.881723)),
               }));
 
-  EXPECT_EQ(results[2].input(), "music youtube com");
+  EXPECT_EQ(results[2].input(), "music.youtube.com");
   EXPECT_EQ(results[2].type(), AnnotationType::kPageTopics);
   ASSERT_TRUE(results[2].topics());
   EXPECT_THAT(*results[2].topics(),
@@ -463,19 +524,21 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
       PageContentAnnotationsServiceFactory::GetForProfile(browser()->profile());
 
   base::RunLoop run_loop;
-  service->BatchAnnotatePageTopics(
+  service->BatchAnnotate(
       base::BindOnce(
           [](base::RunLoop* run_loop,
              const std::vector<BatchAnnotationResult>& results) {
             ASSERT_EQ(results.size(), 1U);
-            EXPECT_EQ(results[0].input(), "chromium org");
+            EXPECT_EQ(results[0].input(), "www.chromium.org");
             EXPECT_EQ(results[0].type(), AnnotationType::kPageTopics);
-            // Intentionally does not test model execution, since that is well
-            // covered in the unittests for PageContentAnnotationsModelManager.
+            // Intentionally does not test the output of model inference, since
+            // that is well covered in the unittests for
+            // PageContentAnnotationsModelManager.
             run_loop->Quit();
           },
           &run_loop),
-      std::vector<std::string>{"www.chromium.org"});
+      std::vector<std::string>{"www.chromium.org"},
+      AnnotationType::kPageTopics);
 
   run_loop.Run();
 }
@@ -534,14 +597,15 @@ class PageContentAnnotationsServiceRemotePageEntitiesBrowserTest
     : public PageContentAnnotationsServiceBrowserTest {
  public:
   PageContentAnnotationsServiceRemotePageEntitiesBrowserTest() {
+    // Make sure remote page metadata works without page content annotations
+    // enabled.
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kOptimizationHints, {}},
-         {features::kPageContentAnnotations,
+         {features::kRemotePageMetadata,
           {
-              {"write_to_history_service", "true"},
-              {"fetch_remote_page_entities", "true"},
+              {"persist_page_entities", "true"},
           }}},
-        /*disabled_features=*/{});
+        /*disabled_features=*/{{features::kPageContentAnnotations}});
     set_load_model_on_startup(false);
   }
   ~PageContentAnnotationsServiceRemotePageEntitiesBrowserTest() override =
@@ -590,6 +654,62 @@ IN_PROC_BROWSER_TEST_F(
       got_content_annotations->model_annotations.entities,
       UnorderedElementsAre(
           history::VisitContentModelAnnotations::Category("entity1", 50)));
+}
+
+class PageContentAnnotationsServiceRemoteMetadataBrowserTest
+    : public PageContentAnnotationsServiceBrowserTest {
+ public:
+  PageContentAnnotationsServiceRemoteMetadataBrowserTest() {
+    // Make sure remote page metadata works without page content annotations
+    // enabled.
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kOptimizationHints, {}},
+         {features::kRemotePageMetadata,
+          {
+              {"persist_page_metadata", "true"},
+          }}},
+        /*disabled_features=*/{{features::kPageContentAnnotations}});
+    set_load_model_on_startup(false);
+  }
+  ~PageContentAnnotationsServiceRemoteMetadataBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
+                       StoresMetadataFromRemoteService) {
+  base::HistogramTester histogram_tester;
+
+  GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
+
+  proto::PageEntitiesMetadata page_entities_metadata;
+  page_entities_metadata.set_alternative_title("alternative title");
+  OptimizationMetadata metadata;
+  metadata.SetAnyMetadataForTesting(page_entities_metadata);
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->AddHintForTesting(url, proto::PAGE_ENTITIES, metadata);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PageContentAnnotationsService."
+      "ContentAnnotationsStorageStatus",
+      1);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PageContentAnnotationsService."
+      "ContentAnnotationsStorageStatus",
+      PageContentAnnotationsStorageStatus::kSuccess, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PageContentAnnotationsService."
+      "ContentAnnotationsStorageStatus.RemoteMetadata",
+      PageContentAnnotationsStorageStatus::kSuccess, 1);
+
+  absl::optional<history::VisitContentAnnotations> got_content_annotations =
+      GetContentAnnotationsForURL(url);
+  ASSERT_TRUE(got_content_annotations.has_value());
+  EXPECT_EQ(got_content_annotations->alternative_title, "alternative title");
 }
 
 class PageContentAnnotationsServiceNoHistoryTest

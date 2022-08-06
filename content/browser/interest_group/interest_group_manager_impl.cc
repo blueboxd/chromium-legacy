@@ -34,7 +34,9 @@ namespace {
 constexpr int kMaxActiveReportRequests = 5;
 // The maximum number of report URLs that can be stored in `report_requests_`
 // queue.
-constexpr int kMaxReportQueueLength = 100;
+constexpr int kMaxReportQueueLength = 1000;
+// The maximum amount of time allowed to fetch report requests in the queue.
+constexpr base::TimeDelta kMaxReportingRoundDuration = base::Minutes(10);
 // The time interval to wait before sending the next report after sending one.
 constexpr base::TimeDelta kReportingInterval = base::Milliseconds(50);
 
@@ -92,16 +94,22 @@ InterestGroupManagerImpl::ReportRequest::~ReportRequest() = default;
 InterestGroupManagerImpl::InterestGroupManagerImpl(
     const base::FilePath& path,
     bool in_memory,
+    ProcessMode process_mode,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : impl_(base::ThreadPool::CreateSequencedTaskRunner(
                 {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                  base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
             in_memory ? base::FilePath() : path),
-      auction_process_manager_(std::make_unique<AuctionProcessManager>()),
+      auction_process_manager_(
+          base::WrapUnique(process_mode == ProcessMode::kDedicated
+                               ? static_cast<AuctionProcessManager*>(
+                                     new DedicatedAuctionProcessManager())
+                               : new InRendererAuctionProcessManager())),
       update_manager_(this, std::move(url_loader_factory)),
       max_active_report_requests_(kMaxActiveReportRequests),
       max_report_queue_length_(kMaxReportQueueLength),
-      reporting_interval_(kReportingInterval) {}
+      reporting_interval_(kReportingInterval),
+      max_reporting_round_duration_(kMaxReportingRoundDuration) {}
 
 InterestGroupManagerImpl::~InterestGroupManagerImpl() = default;
 
@@ -116,6 +124,7 @@ void InterestGroupManagerImpl::CheckPermissionsAndJoinInterestGroup(
     const GURL& joining_url,
     const url::Origin& frame_origin,
     const net::NetworkIsolationKey& network_isolation_key,
+    bool report_result_only,
     network::mojom::URLLoaderFactory& url_loader_factory,
     blink::mojom::AdAuctionService::JoinInterestGroupCallback callback) {
   url::Origin interest_group_owner = group.owner;
@@ -125,7 +134,7 @@ void InterestGroupManagerImpl::CheckPermissionsAndJoinInterestGroup(
       base::BindOnce(
           &InterestGroupManagerImpl::OnJoinInterestGroupPermissionsChecked,
           base::Unretained(this), std::move(group), joining_url,
-          std::move(callback)));
+          report_result_only, std::move(callback)));
 }
 
 void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
@@ -133,6 +142,7 @@ void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
     const std::string& name,
     const url::Origin& frame_origin,
     const net::NetworkIsolationKey& network_isolation_key,
+    bool report_result_only,
     network::mojom::URLLoaderFactory& url_loader_factory,
     blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback) {
   permissions_checker_.CheckPermissions(
@@ -140,7 +150,8 @@ void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
       network_isolation_key, url_loader_factory,
       base::BindOnce(
           &InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked,
-          base::Unretained(this), owner, name, std::move(callback)));
+          base::Unretained(this), owner, name, report_result_only,
+          std::move(callback)));
 }
 
 void InterestGroupManagerImpl::JoinInterestGroup(blink::InterestGroup group,
@@ -241,6 +252,7 @@ void InterestGroupManagerImpl::GetLastMaintenanceTimeForTesting(
 void InterestGroupManagerImpl::OnJoinInterestGroupPermissionsChecked(
     blink::InterestGroup group,
     const GURL& joining_url,
+    bool report_result_only,
     blink::mojom::AdAuctionService::JoinInterestGroupCallback callback,
     bool can_join) {
   // Invoke callback before calling JoinInterestGroup(), which posts a task to
@@ -251,13 +263,14 @@ void InterestGroupManagerImpl::OnJoinInterestGroupPermissionsChecked(
   // invoking the callback may potentially leak whether the user was previously
   // in the InterestGroup through timing differences.
   std::move(callback).Run(/*failed_well_known_check=*/!can_join);
-  if (can_join)
+  if (!report_result_only && can_join)
     JoinInterestGroup(std::move(group), joining_url);
 }
 
 void InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked(
     const url::Origin& owner,
     const std::string& name,
+    bool report_result_only,
     blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback,
     bool can_leave) {
   // Invoke callback before calling LeaveInterestGroup(), which posts a task to
@@ -268,7 +281,7 @@ void InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked(
   // invoking the callback may potentially leak whether the user was previously
   // in the InterestGroup through timing differences.
   std::move(callback).Run(/*failed_well_known_check=*/!can_leave);
-  if (can_leave)
+  if (!report_result_only && can_leave)
     LeaveInterestGroup(owner, name);
 }
 
@@ -353,7 +366,17 @@ void InterestGroupManagerImpl::EnqueueReports(
     SendReports();
 }
 
+void InterestGroupManagerImpl::ClearPermissionsCache() {
+  permissions_checker_.ClearCache();
+}
+
 void InterestGroupManagerImpl::SendReports() {
+  if (reporting_started_ == base::TimeTicks::Min()) {
+    // It appears we're staring a new reporting round; mark the time we started
+    // the round.
+    reporting_started_ = base::TimeTicks::Now();
+  }
+
   while (!report_requests_.empty() &&
          num_active_ < max_active_report_requests_) {
     num_active_++;
@@ -362,8 +385,22 @@ void InterestGroupManagerImpl::SendReports() {
 }
 
 void InterestGroupManagerImpl::TrySendingOneReport() {
+  if (base::TimeTicks::Now() - reporting_started_ >
+      max_reporting_round_duration_) {
+    // We've been reporting for too long; delete all pending reports in the
+    // queue.
+    // TODO(qingxinwu): maybe add UMA metrics to learn how often this happens.
+    report_requests_.clear();
+    reporting_started_ = base::TimeTicks::Min();
+  }
+
   if (report_requests_.empty()) {
+    DCHECK_GT(num_active_, 0);
     num_active_--;
+    if (num_active_ == 0) {
+      // This reporting round is finished, there's no more work to do.
+      reporting_started_ = base::TimeTicks::Min();
+    }
     return;
   }
 
@@ -407,19 +444,32 @@ void InterestGroupManagerImpl::OnOneReportSent(
   num_active_--;
 }
 
+void InterestGroupManagerImpl::set_max_active_report_requests_for_testing(
+    int max_active_report_requests) {
+  max_active_report_requests_ = max_active_report_requests;
+}
+
+void InterestGroupManagerImpl::SetInterestGroupPriority(
+    const url::Origin& owner,
+    const std::string& name,
+    double priority) {
+  impl_.AsyncCall(&InterestGroupStorage::SetInterestGroupPriority)
+      .WithArgs(owner, name, priority);
+}
+
 void InterestGroupManagerImpl::set_max_report_queue_length_for_testing(
     int max_queue_length) {
   max_report_queue_length_ = max_queue_length;
 }
 
+void InterestGroupManagerImpl::set_max_reporting_round_duration_for_testing(
+    base::TimeDelta max_reporting_round_duration) {
+  max_reporting_round_duration_ = max_reporting_round_duration;
+}
+
 void InterestGroupManagerImpl::set_reporting_interval_for_testing(
     base::TimeDelta interval) {
   reporting_interval_ = interval;
-}
-
-void InterestGroupManagerImpl::set_max_active_report_requests_for_testing(
-    int max_active_report_requests) {
-  max_active_report_requests_ = max_active_report_requests;
 }
 
 }  // namespace content

@@ -22,7 +22,9 @@ WebAppIconDownloader::WebAppIconDownloader(
     WebAppIconDownloaderCallback callback)
     : content::WebContentsObserver(web_contents),
       extra_favicon_urls_(std::move(extra_favicon_urls)),
-      callback_(std::move(callback)) {}
+      callback_(std::move(callback)) {
+  DCHECK(web_contents);
+}
 
 WebAppIconDownloader::~WebAppIconDownloader() = default;
 
@@ -35,6 +37,7 @@ void WebAppIconDownloader::FailAllIfAnyFail() {
 }
 
 void WebAppIconDownloader::Start() {
+  CHECK(!web_contents()->IsBeingDestroyed());
   // Favicons are supported only in HTTP or HTTPS WebContents.
   const GURL& url = web_contents()->GetLastCommittedURL();
   if (!url.is_empty() && !url.inner_url() && !url.SchemeIsHTTPOrHTTPS())
@@ -75,6 +78,9 @@ WebAppIconDownloader::GetFaviconURLsFromWebContents() {
 
 void WebAppIconDownloader::FetchIcons(
     const std::vector<blink::mojom::FaviconURLPtr>& favicon_urls) {
+  if (!web_contents())
+    return;
+
   std::vector<GURL> urls;
   for (const auto& favicon_url : favicon_urls) {
     if (favicon_url->icon_type != blink::mojom::FaviconIconType::kInvalid)
@@ -145,6 +151,12 @@ void WebAppIconDownloader::DidUpdateFaviconURL(
   FetchIcons(candidates);
 }
 
+void WebAppIconDownloader::WebContentsDestroyed() {
+  Observe(nullptr);
+  CancelDownloads(IconsDownloadedResult::kPrimaryPageChanged,
+                  DownloadedIconsHttpResults{});
+}
+
 void WebAppIconDownloader::CompleteCallback() {
   DCHECK(callback_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -161,6 +173,7 @@ void WebAppIconDownloader::CancelDownloads(
   in_progress_requests_.clear();
   icons_map_.clear();
   icons_http_results_.clear();
+  need_favicon_urls_ = false;
 
   if (callback_) {
     std::move(callback_).Run(result, IconsMap{}, std::move(icons_http_results));

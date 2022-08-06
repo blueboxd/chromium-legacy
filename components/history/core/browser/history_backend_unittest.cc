@@ -105,10 +105,8 @@ void SimulateNotificationURLVisited(HistoryServiceObserver* observer,
     rows.push_back(*row3);
 
   base::Time visit_time;
-  RedirectList redirects;
   for (const URLRow& row : rows) {
-    observer->OnURLVisited(nullptr, ui::PAGE_TRANSITION_LINK, row, redirects,
-                           visit_time);
+    observer->OnURLVisited(nullptr, ui::PAGE_TRANSITION_LINK, row, visit_time);
   }
 }
 
@@ -148,7 +146,6 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                              const GURL& icon_url) override;
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
-                        const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& changed_urls) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
@@ -253,10 +250,9 @@ class HistoryBackendTestBase : public testing::Test {
 
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
-                        const RedirectList& redirects,
                         base::Time visit_time) {
     // Send the notifications directly to the in-memory database.
-    mem_backend_->OnURLVisited(nullptr, transition, row, redirects, visit_time);
+    mem_backend_->OnURLVisited(nullptr, transition, row, visit_time);
     url_visited_notifications_.push_back(std::make_pair(transition, row));
   }
 
@@ -347,9 +343,8 @@ void HistoryBackendTestDelegate::NotifyFaviconsChanged(
 
 void HistoryBackendTestDelegate::NotifyURLVisited(ui::PageTransition transition,
                                                   const URLRow& row,
-                                                  const RedirectList& redirects,
                                                   base::Time visit_time) {
-  test_->NotifyURLVisited(transition, row, redirects, visit_time);
+  test_->NotifyURLVisited(transition, row, visit_time);
 }
 
 void HistoryBackendTestDelegate::NotifyURLsModified(
@@ -2030,6 +2025,66 @@ TEST_F(HistoryBackendTest, AddSearchMetadata) {
       visit_id, &got_content_annotations));
 }
 
+TEST_F(HistoryBackendTest, AddPageMetadata) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://pagewithvisit.com");
+  ContextID context_id = reinterpret_cast<ContextID>(1);
+  int nav_entry_id = 1;
+
+  HistoryAddPageArgs request(url, base::Time::Now(), context_id, nav_entry_id,
+                             GURL(), RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                             false, SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request);
+
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  VisitID visit_id = visits[0].visit_id;
+
+  backend_->AddPageMetadataForVisit(visit_id, "alternative title");
+
+  VisitContentAnnotations got_content_annotations;
+  ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            got_content_annotations.annotation_flags);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
+  ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
+  EXPECT_EQ(
+      -1, got_content_annotations.model_annotations.page_topics_model_version);
+  ASSERT_TRUE(got_content_annotations.model_annotations.entities.empty());
+  ASSERT_TRUE(got_content_annotations.related_searches.empty());
+  ASSERT_TRUE(got_content_annotations.search_normalized_url.is_empty());
+  ASSERT_TRUE(got_content_annotations.search_terms.empty());
+  EXPECT_EQ(got_content_annotations.alternative_title, "alternative title");
+
+  QueryOptions options;
+  options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  QueryResults results = backend_->QueryHistory(/*text_query=*/{}, options);
+
+  ASSERT_EQ(results.size(), 1u);
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            results[0].content_annotations().annotation_flags);
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            got_content_annotations.annotation_flags);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
+  ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
+  EXPECT_EQ(
+      -1, got_content_annotations.model_annotations.page_topics_model_version);
+  ASSERT_TRUE(got_content_annotations.model_annotations.entities.empty());
+  ASSERT_TRUE(got_content_annotations.related_searches.empty());
+  EXPECT_EQ(got_content_annotations.alternative_title, "alternative title");
+
+  // Now, delete the URL. Content Annotations should be deleted.
+  backend_->DeleteURL(url);
+  ASSERT_FALSE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+}
+
 TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
   ASSERT_TRUE(backend_.get());
 
@@ -2808,6 +2863,51 @@ TEST_F(HistoryBackendTest, UpdateVisitDuration) {
   ASSERT_TRUE(backend_->RemoveVisits(visits1));
 }
 
+TEST_F(HistoryBackendTest, UpdateVisitDurationForReferrer) {
+  const ContextID context_id = reinterpret_cast<ContextID>(0x1);
+  base::Time start_ts = base::Time::Now() - base::Days(1);
+  base::Time end_ts = start_ts + base::Seconds(2);
+
+  // Add two visits, the first referring to the second. Adding the second visit
+  // should populate the visit_duration for the first one.
+
+  GURL referrer_url("https://referrer.url");
+  GURL second_url("https://other.url");
+
+  HistoryAddPageArgs referrer_args(referrer_url, start_ts, context_id,
+                                   /*nav_entry_id=*/0, GURL(), RedirectList(),
+                                   ui::PAGE_TRANSITION_TYPED, false,
+                                   SOURCE_BROWSED,
+                                   /*did_replace_entry=*/false,
+                                   /*consider_for_ntp_most_visited=*/false,
+                                   /*floc_allowed=*/false);
+  backend_->AddPage(referrer_args);
+
+  // So far, the visit duration should be empty.
+  URLRow row;
+  URLID referrer_url_id = backend_->db()->GetRowForURL(referrer_url, &row);
+  VisitVector visits;
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(referrer_url_id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  ASSERT_EQ(0, visits[0].visit_duration.ToInternalValue());
+
+  HistoryAddPageArgs second_args(second_url, end_ts, context_id,
+                                 /*nav_entry_id=*/0, referrer_url,
+                                 RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                                 false, SOURCE_BROWSED,
+                                 /*did_replace_entry=*/false,
+                                 /*consider_for_ntp_most_visited=*/false,
+                                 /*floc_allowed=*/false);
+  backend_->AddPage(second_args);
+
+  // Adding the second visit should have populated the visit duration for the
+  // first one.
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(referrer_url_id, &visits));
+  base::TimeDelta expected_duration = end_ts - start_ts;
+  EXPECT_EQ(expected_duration.ToInternalValue(),
+            visits[0].visit_duration.ToInternalValue());
+}
+
 // Test for migration of adding visit_duration column.
 TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   ASSERT_TRUE(backend_.get());
@@ -3080,10 +3180,16 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
 // Tests that calling DatabaseErrorCallback doesn't cause crash. (Regression
 // test for https://crbug.com/796138)
 TEST_F(HistoryBackendTest, DatabaseError) {
+  base::HistogramTester histogram_tester;
+
   backend_->SetTypedURLSyncBridgeForTest(nullptr);
-  backend_->DatabaseErrorCallback(SQLITE_CORRUPT, nullptr);
+  backend_->DatabaseErrorCallback(SQLITE_CANTOPEN, nullptr);
   // Run loop to let any posted callbacks run before TearDown().
   base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "History.DatabaseSqliteError",
+      static_cast<int>(sql::SqliteLoggedResultCode::kCantOpen), 1);
 }
 
 // Tests that calling DatabaseErrorCallback results in killing the database and
@@ -3208,6 +3314,53 @@ TEST_F(HistoryBackendTest, RedirectScoring) {
   EXPECT_EQ(0, url_row.typed_count());
   ASSERT_TRUE(backend_->GetURL(GURL("https://foo8.com:9876"), &url_row));
   EXPECT_EQ(1, url_row.typed_count());
+}
+
+TEST_F(HistoryBackendTest, RedirectWithQualifiers) {
+  // Create a redirect chain with 3 entries, with a page transition that
+  // includes a qualifier.
+  const ui::PageTransition page_transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  const char* redirects[] = {"https://foo.com/page1.html",
+                             "https://foo.com/page2.html",
+                             "https://foo.com/page3.html", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirects, 0, page_transition,
+                                        base::Time::Now());
+
+  URLRow url1;
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo.com/page1.html"), &url1));
+  URLRow url2;
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo.com/page2.html"), &url2));
+  URLRow url3;
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo.com/page3.html"), &url3));
+
+  // Grab the resulting visits.
+  VisitVector visits1;
+  backend_->GetVisitsForURL(url1.id(), &visits1);
+  ASSERT_EQ(visits1.size(), 1u);
+  VisitVector visits2;
+  backend_->GetVisitsForURL(url2.id(), &visits2);
+  ASSERT_EQ(visits2.size(), 1u);
+  VisitVector visits3;
+  backend_->GetVisitsForURL(url3.id(), &visits3);
+  ASSERT_EQ(visits3.size(), 1u);
+
+  // The page transition, including the qualifier, should have been preserved
+  // across all the visits. Additionally, the appropriate redirect qualifiers
+  // should have been set.
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      visits1[0].transition,
+      ui::PageTransitionFromInt(page_transition |
+                                ui::PAGE_TRANSITION_CHAIN_START)));
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      visits2[0].transition,
+      ui::PageTransitionFromInt(page_transition |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT)));
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      visits3[0].transition,
+      ui::PageTransitionFromInt(page_transition |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT |
+                                ui::PAGE_TRANSITION_CHAIN_END)));
 }
 
 // Tests that a typed navigation will accrue the typed count even when a client

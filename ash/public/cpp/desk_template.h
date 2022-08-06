@@ -60,7 +60,7 @@ class ASH_PUBLIC_EXPORT DeskTemplate {
   // A special value to use as an icon identifier for an incognito window.
   static constexpr char kIncognitoWindowIdentifier[] = "incognito_window";
 
-  base::GUID uuid() const { return uuid_; }
+  const base::GUID& uuid() const { return uuid_; }
   DeskTemplateSource source() const { return source_; }
   base::Time created_time() const { return created_time_; }
 
@@ -113,8 +113,11 @@ class ASH_PUBLIC_EXPORT DeskTemplate {
   // Sets `desk_index` as the desk to launch on for all windows in the template.
   void SetDeskIndex(int desk_index);
 
-  // Returns `this` in string format. Used for debugging and in feedback logs.
+  // Returns `this` in string format. Used for feedback logs.
   std::string ToString() const;
+
+  // Returns `this` in string format. Used for debugging.
+  std::string ToDebugString() const;
 
  private:
   const base::GUID uuid_;  // We utilize the string based base::GUID to uniquely

@@ -224,6 +224,13 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
             sourceUrls, destinationUrl, callback);
       });
 
+  apiFunctions.setHandleRequest(
+      'getFilesRestrictedByDlp', function(entries, callback) {
+        var sourceUrls = entries.map(getEntryURL);
+        fileManagerPrivateInternal.getFilesRestrictedByDlp(
+            sourceUrls, callback);
+      });
+
   apiFunctions.setHandleRequest('startCopy', function(
         entry, parentEntry, newName, callback) {
     var url = getEntryURL(entry);
@@ -253,9 +260,9 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('getRecentFiles', function(
-        restriction, file_type, callback) {
-    fileManagerPrivateInternal.getRecentFiles(restriction, file_type, function(
-          entryDescriptions) {
+        restriction, file_type, invalidate_cache, callback) {
+    fileManagerPrivateInternal.getRecentFiles(restriction, file_type,
+          invalidate_cache, function(entryDescriptions) {
       callback(entryDescriptions.map(function(description) {
         return GetExternalFileEntry(description);
       }));
@@ -367,14 +374,19 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
             urls, added, callback);
       });
 
-  apiFunctions.setHandleRequest('startIOTask', function(type, entries, params) {
-    const urls = entries.map(entry => getEntryURL(entry));
-    let newParams = {};
-    if (params.destinationFolder) {
-      newParams.destinationFolderUrl = getEntryURL(params.destinationFolder);
-    }
-    fileManagerPrivateInternal.startIOTask(type, urls, newParams);
-  });
+  apiFunctions.setHandleRequest(
+      'startIOTask', function(type, entries, params, callback) {
+        const urls = entries.map(entry => getEntryURL(entry));
+        let newParams = {};
+        if (params.destinationFolder) {
+          newParams.destinationFolderUrl =
+              getEntryURL(params.destinationFolder);
+        }
+        if (params.password) {
+          newParams.password = params.password;
+        }
+        fileManagerPrivateInternal.startIOTask(type, urls, newParams, callback);
+      });
 });
 
 bindingUtil.registerEventArgumentMassager(

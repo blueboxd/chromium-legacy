@@ -16,6 +16,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ash/components/network/onc/onc_translation_tables.h"
+#include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
@@ -35,9 +37,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
@@ -398,9 +398,11 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
 
       const DeviceState* cellular_device =
           network_state_handler->GetDeviceState(network->device_path());
-      cellular->sim_locked = cellular_device &&
-                             IsSimPrimary(network->iccid(), cellular_device) &&
-                             cellular_device->IsSimLocked();
+      bool sim_is_primary =
+          cellular_device && IsSimPrimary(network->iccid(), cellular_device);
+      cellular->sim_lock_enabled =
+          sim_is_primary && cellular_device->sim_lock_enabled();
+      cellular->sim_locked = sim_is_primary && cellular_device->IsSimLocked();
       result->type_state =
           mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;

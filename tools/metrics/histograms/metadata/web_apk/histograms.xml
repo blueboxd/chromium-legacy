@@ -71,7 +71,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayInstallResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2022-09-25">
+    enum="WebApkGooglePlayInstallResult" expires_after="2022-11-27">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -109,7 +109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.InstallResult" enum="WebApkInstallResult"
-    expires_after="2022-08-28">
+    expires_after="2022-11-13">
   <owner>eirage@chromium.org</owner>
   <owner>hartmanng@chromium.org</owner>
   <owner>
@@ -153,7 +153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Launch.NetworkError" enum="NetErrorCodes"
-    expires_after="2022-06-01">
+    expires_after="2023-06-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -177,8 +177,24 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Notification.Permission.Status"
-    enum="BooleanWebApkNotificationPermission" expires_after="2022-10-04">
+    enum="BooleanWebApkNotificationPermission" expires_after="2022-12-04">
+  <obsolete>
+    Replaced by WebApk.Notification.Permission.Status2 in June 20220.
+  </obsolete>
   <owner>hartmanng@chromium.org</owner>
+  <owner>
+    src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
+  </owner>
+  <summary>
+    When a WebAPK receives a notification, log whether it has permission to
+    display that notification.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Notification.Permission.Status2" enum="ContentSetting"
+    expires_after="2022-12-04">
+  <owner>hartmanng@chromium.org</owner>
+  <owner>mvanouwerkerk@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
   </owner>
@@ -250,7 +266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Startup.Cold.ShellLaunchToSplashscreenVisible"
-    units="ms" expires_after="2022-10-02">
+    units="ms" expires_after="2022-12-04">
   <owner>mheikal@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -339,7 +355,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.WebappRegistry.NumberOfOrigins" units="count"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>eirage@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS

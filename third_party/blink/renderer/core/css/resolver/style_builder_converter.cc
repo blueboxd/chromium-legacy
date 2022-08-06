@@ -27,8 +27,10 @@
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
@@ -41,17 +43,20 @@
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_system_font_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
 #include "third_party/blink/renderer/core/css/css_ratio_value.h"
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
@@ -60,8 +65,10 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -430,21 +437,8 @@ float MathScriptScaleFactor(StyleResolverState& state) {
 static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
                              const CSSPrimitiveValue& primitive_value,
                              const FontDescription::Size& parent_size) {
-  if (primitive_value.IsLength()) {
-    float result = primitive_value.ComputeLength<float>(conversion_data);
-    float font_size_zoom = conversion_data.FontSizeZoom();
-    // TODO(crbug.com/408777): Only accounting for numeric literal value here
-    // will leave calc() without zoom correction.
-    if (primitive_value.IsNumericLiteralValue() && font_size_zoom != 1) {
-      CSSPrimitiveValue::UnitType type =
-          To<CSSNumericLiteralValue>(&primitive_value)->GetType();
-      if (type == CSSPrimitiveValue::UnitType::kChs ||
-          type == CSSPrimitiveValue::UnitType::kExs) {
-        return result / font_size_zoom;
-      }
-    }
-    return result;
-  }
+  if (primitive_value.IsLength())
+    return primitive_value.ComputeLength<float>(conversion_data);
   if (primitive_value.IsCalculated()) {
     return To<CSSMathFunctionValue>(primitive_value)
         .ToCalcValue(conversion_data)
@@ -1404,6 +1398,16 @@ float StyleBuilderConverter::ConvertAlpha(StyleResolverState& state,
   return ClampTo<float>(ConvertNumberOrPercentage(state, value), 0, 1);
 }
 
+AtomicString StyleBuilderConverter::ConvertNoneOrCustomIdent(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
+    return g_null_atom;
+  }
+  return To<CSSCustomIdentValue>(value).Value();
+}
+
 StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
     StyleResolverState&,
     const CSSValue& value) {
@@ -2026,8 +2030,10 @@ scoped_refptr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
 scoped_refptr<BasicShape> StyleBuilderConverter::ConvertObjectViewBox(
     StyleResolverState& state,
     const CSSValue& value) {
-  return value.IsBasicShapeInsetValue() ? BasicShapeForValue(state, value)
-                                        : nullptr;
+  if (!value.IsBasicShapeInsetValue() && !value.IsBasicShapeRectValue() &&
+      !value.IsBasicShapeXYWHValue())
+    return nullptr;
+  return BasicShapeForValue(state, value);
 }
 
 static const CSSValue& ComputeRegisteredPropertyValue(
@@ -2071,7 +2077,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
         primitive_value->IsCalculatedPercentageWithLength()) {
       // Instead of the actual zoom, use 1 to avoid potential rounding errors
       Length length = primitive_value->ConvertToLength(
-          css_to_length_conversion_data.CopyWithAdjustedZoom(1));
+          css_to_length_conversion_data.Unzoomed());
       return *CSSPrimitiveValue::CreateFromLength(length, 1);
     }
 
@@ -2286,7 +2292,6 @@ ScrollbarGutter StyleBuilderConverter::ConvertScrollbarGutter(
 Vector<AtomicString> StyleBuilderConverter::ConvertContainerName(
     StyleResolverState& state,
     const CSSValue& value) {
-  HashSet<AtomicString> seen;
   Vector<AtomicString> names;
 
   if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
@@ -2294,12 +2299,8 @@ Vector<AtomicString> StyleBuilderConverter::ConvertContainerName(
     return names;
   }
 
-  for (const auto& item : To<CSSValueList>(value)) {
-    const AtomicString& value = To<CSSCustomIdentValue>(item.Get())->Value();
-    if (!seen.insert(value).is_new_entry)
-      continue;
-    names.push_back(value);
-  }
+  for (const auto& item : To<CSSValueList>(value))
+    names.push_back(To<CSSCustomIdentValue>(item.Get())->Value());
 
   return names;
 }
@@ -2490,6 +2491,53 @@ scoped_refptr<ToggleTriggerList> StyleBuilderConverter::ConvertToggleTrigger(
     result->Append(ToggleTrigger(name, mode, value));
   }
   return result;
+}
+
+absl::optional<StyleOverflowClipMargin>
+StyleBuilderConverter::ConvertOverflowClipMargin(StyleResolverState& state,
+                                                 const CSSValue& value) {
+  const auto& css_value_list = To<CSSValueList>(value);
+  DCHECK(css_value_list.length() == 1u || css_value_list.length() == 2u);
+
+  const CSSIdentifierValue* reference_box_value = nullptr;
+  const CSSPrimitiveValue* length_value = nullptr;
+
+  if (css_value_list.Item(0).IsIdentifierValue()) {
+    reference_box_value = &To<CSSIdentifierValue>(css_value_list.Item(0));
+  } else {
+    DCHECK(css_value_list.Item(0).IsPrimitiveValue());
+    length_value = &To<CSSPrimitiveValue>(css_value_list.Item(0));
+  }
+
+  if (css_value_list.length() > 1) {
+    const auto& value = css_value_list.Item(1);
+    DCHECK(value.IsPrimitiveValue());
+    DCHECK(!length_value);
+    length_value = &To<CSSPrimitiveValue>(value);
+  }
+
+  auto reference_box = StyleOverflowClipMargin::ReferenceBox::kPaddingBox;
+  if (reference_box_value) {
+    switch (reference_box_value->GetValueID()) {
+      case CSSValueID::kBorderBox:
+        reference_box = StyleOverflowClipMargin::ReferenceBox::kBorderBox;
+        break;
+      case CSSValueID::kContentBox:
+        reference_box = StyleOverflowClipMargin::ReferenceBox::kContentBox;
+        break;
+      case CSSValueID::kPaddingBox:
+        reference_box = StyleOverflowClipMargin::ReferenceBox::kPaddingBox;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  LayoutUnit margin;
+  if (length_value) {
+    margin = StyleBuilderConverter::ConvertLayoutUnit(state, *length_value);
+  }
+  return StyleOverflowClipMargin(reference_box, margin);
 }
 
 }  // namespace blink

@@ -104,23 +104,6 @@ public class ContextualSearchUma {
         int NUM_ENTRIES = 4;
     }
 
-    // Constants used to log UMA "enum" histograms for Quick Answers.
-    @IntDef({QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_SEEN,
-            QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_NOT_SEEN,
-            QuickAnswerSeen.ACTIVATED_NOT_AN_ANSWER_SEEN,
-            QuickAnswerSeen.ACTIVATED_NOT_AN_ANSWER_NOT_SEEN, QuickAnswerSeen.NOT_ACTIVATED_SEEN,
-            QuickAnswerSeen.NOT_ACTIVATED_NOT_SEEN})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface QuickAnswerSeen {
-        int ACTIVATED_WAS_AN_ANSWER_SEEN = 0;
-        int ACTIVATED_WAS_AN_ANSWER_NOT_SEEN = 1;
-        int ACTIVATED_NOT_AN_ANSWER_SEEN = 2;
-        int ACTIVATED_NOT_AN_ANSWER_NOT_SEEN = 3;
-        int NOT_ACTIVATED_SEEN = 4;
-        int NOT_ACTIVATED_NOT_SEEN = 5;
-        int NUM_ENTRIES = 6;
-    }
-
     // Constants for quick action intent resolution histogram.
     @IntDef({QuickActionResolve.FAILED, QuickActionResolve.SINGLE, QuickActionResolve.MULTIPLE})
     @Retention(RetentionPolicy.SOURCE)
@@ -234,42 +217,12 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Records the total count of times the promo panel has *ever* been opened.  This should only
-     * be called when the user is still undecided.
-     * @param count The total historic count of times the panel has ever been opened for the
-     *        current user.
-     */
-    public static void logPromoOpenCount(int count) {
-        RecordHistogram.recordCount1MHistogram("Search.ContextualSearchPromoOpenCount", count);
-    }
-
-    /**
      * Records the total count of times the revised promo card has *ever* been opened. This should
      * only be called when the user is still undecided.
      * @param count The total historic count of times the revised promo card ever been shown.
      */
     public static void logRevisedPromoOpenCount(int count) {
         RecordHistogram.recordCount1MHistogram("Search.ContextualSearchPromoOpenCount2", count);
-    }
-
-    /**
-     * Logs the number of taps that have been counted since the user last opened the panel, for
-     * undecided users.
-     * @param tapsSinceOpen The number of taps to log.
-     */
-    public static void logTapsSinceOpenForUndecided(int tapsSinceOpen) {
-        RecordHistogram.recordCount1MHistogram(
-                "Search.ContextualSearchTapsSinceOpenUndecided", tapsSinceOpen);
-    }
-
-    /**
-     * Logs the number of taps that have been counted since the user last opened the panel, for
-     * decided users.
-     * @param tapsSinceOpen The number of taps to log.
-     */
-    public static void logTapsSinceOpenForDecided(int tapsSinceOpen) {
-        RecordHistogram.recordCount1MHistogram(
-                "Search.ContextualSearchTapsSinceOpenDecided", tapsSinceOpen);
     }
 
     /**
@@ -508,15 +461,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Log whether the UX was suppressed due to the selection length.
-     * @param wasSuppressed Whether showing the UX was suppressed due to selection length.
-     */
-    public static void logSelectionLengthSuppression(boolean wasSuppressed) {
-        RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearchSelectionLengthSuppression", wasSuppressed);
-    }
-
-    /**
      * Logs whether results were seen and whether any tap suppression heuristics were satisfied.
      * @param wasSearchContentViewSeen If the panel was opened.
      * @param wasAnySuppressionHeuristicSatisfied Whether any of the implemented suppression
@@ -580,15 +524,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Log whether the UX was suppressed by a recent scroll.
-     * @param wasSuppressed Whether showing the UX was suppressed by a recent scroll.
-     */
-    public static void logRecentScrollSuppression(boolean wasSuppressed) {
-        RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearchRecentScrollSuppression", wasSuppressed);
-    }
-
-    /**
      * Logs the duration between the panel being triggered due to a tap and the panel being
      * dismissed due to a scroll.
      * @param durationSincePanelTriggerMs The amount of time between the panel getting triggered and
@@ -604,22 +539,6 @@ public class ContextualSearchUma {
             RecordHistogram.recordCustomCountHistogram(
                     histogram, (int) durationSincePanelTriggerMs, 1, 2000, 200);
         }
-    }
-
-    /**
-     * Logs whether a Quick Answer caption was activated, and whether it was an answer (as opposed
-     * to just being informative), and whether the panel was opened anyway.
-     * Logged only for Tap events.
-     * @param didActivate If the Quick Answer caption was shown.
-     * @param didAnswer If the caption was considered an answer (reducing the need to open the
-     *        panel).
-     * @param wasSearchContentViewSeen If the panel was opened.
-     */
-    static void logQuickAnswerSeen(
-            boolean wasSearchContentViewSeen, boolean didActivate, boolean didAnswer) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchQuickAnswerSeen",
-                getQuickAnswerSeenValue(didActivate, didAnswer, wasSearchContentViewSeen),
-                QuickAnswerSeen.NUM_ENTRIES);
     }
 
     /**
@@ -749,17 +668,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs a duration since the outcomes (and associated timestamp) were saved in persistent
-     * storage.
-     * @param durationMs The duration to log, in milliseconds.
-     */
-    public static void logOutcomesTimestamp(long durationMs) {
-        int durationInDays = (int) (durationMs / DateUtils.DAY_IN_MILLIS);
-        RecordHistogram.recordCount100Histogram(
-                "Search.ContextualSearch.OutcomesDuration", durationInDays);
-    }
-
-    /**
      * Logs whether Contextual Cards data was shown. Should be logged on tap if Contextual
      * Cards integration is enabled.
      * @param shown Whether Contextual Cards data was shown in the Bar.
@@ -842,68 +750,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs results-seen when we have a useful Ranker prediction inference.
-     * @param wasPanelSeen Whether the panel was seen.
-     * @param predictionKind An integer reflecting the Ranker prediction, e.g. that this is a good
-     *        time to suppress triggering because the likelihood of opening the panel is relatively
-     *        low.
-     */
-    public static void logRankerInference(
-            boolean wasPanelSeen, @AssistRankerPrediction int predictionKind) {
-        if (predictionKind == AssistRankerPrediction.SHOW) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Search.ContextualSearch.Ranker.NotSuppressed.ResultsSeen",
-                    wasPanelSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
-        } else if (predictionKind == AssistRankerPrediction.SUPPRESS) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Search.ContextualSearch.Ranker.WouldSuppress.ResultsSeen",
-                    wasPanelSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
-        }
-    }
-
-    /**
-     * Logs Ranker's prediction of whether or not to suppress.
-     * @param predictionKind An integer reflecting the Ranker prediction, e.g. that this is a good
-     *        time to suppress triggering because the likelihood of opening the panel is relatively
-     *        low.
-     */
-    public static void logRankerPrediction(@AssistRankerPrediction int predictionKind) {
-        // For now we just log whether or not suppression is predicted.
-        RecordHistogram.recordBooleanHistogram("Search.ContextualSearch.Ranker.Suppressed",
-                predictionKind == AssistRankerPrediction.SUPPRESS);
-    }
-
-    /** Logs that Ranker recorded a set of features for training or inference. */
-    public static void logRecordedFeaturesToRanker() {
-        logRecordedToRanker(false);
-    }
-
-    /** Logs that Ranker recorded a set of outcomes for training or inference. */
-    public static void logRecordedOutcomesToRanker() {
-        logRecordedToRanker(true);
-    }
-
-    /**
-     * Logs that Ranker recorded some data for training or inference.
-     * @param areOutcomes Whether the data are outcomes.
-     */
-    private static void logRecordedToRanker(boolean areOutcomes) {
-        RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearch.Ranker.Recorded", areOutcomes);
-    }
-
-    /**
-     * Logs that features or outcomes are available to record to Ranker.
-     * This data can be used to correlate with #logRecordedToRanker to validate that everything that
-     * should be recorded is actually being recorded.
-     * @param areOutcomes Whether the features available are outcomes.
-     */
-    static void logRankerFeaturesAvailable(boolean areOutcomes) {
-        RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearch.Ranker.FeaturesAvailable", areOutcomes);
-    }
-
-    /**
      * Logs the previous enabled-state of this user before the feature was turned full-on for
      * Unified Consent (when integration is enabled).
      * @param wasPreviouslyUndecided Whether the user was previously undecided.
@@ -955,32 +801,6 @@ public class ContextualSearchUma {
             return ContextualSearchPreference.DISABLED;
         }
         return ContextualSearchPreference.ENABLED;
-    }
-
-    /**
-     * Gets the encode value for quick answers seen.
-     * @param didActivate Whether the quick answer was shown.
-     * @param didAnswer Whether the caption was a full answer, not just a hint.
-     * @param wasSeen Whether the search panel was opened.
-     * @return The encoded value.
-     */
-    private static @QuickAnswerSeen int getQuickAnswerSeenValue(
-            boolean didActivate, boolean didAnswer, boolean wasSeen) {
-        if (wasSeen) {
-            if (didActivate) {
-                return didAnswer ? QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_SEEN
-                                 : QuickAnswerSeen.ACTIVATED_NOT_AN_ANSWER_SEEN;
-            } else {
-                return QuickAnswerSeen.NOT_ACTIVATED_SEEN;
-            }
-        } else {
-            if (didActivate) {
-                return didAnswer ? QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_NOT_SEEN
-                                 : QuickAnswerSeen.ACTIVATED_NOT_AN_ANSWER_NOT_SEEN;
-            } else {
-                return QuickAnswerSeen.NOT_ACTIVATED_NOT_SEEN;
-            }
-        }
     }
 
     /**

@@ -6,12 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -28,7 +28,7 @@ Profile* SystemWebAppIntegrationTest::profile() {
 }
 
 void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
-    web_app::SystemAppType app_type,
+    ash::SystemWebAppType app_type,
     const GURL& url,
     const std::string& title) {
   WaitForTestSystemAppInstall();
@@ -72,7 +72,7 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
 }
 
 content::WebContents* SystemWebAppIntegrationTest::LaunchAppWithFile(
-    web_app::SystemAppType type,
+    ash::SystemWebAppType type,
     const base::FilePath& file_path) {
   apps::AppLaunchParams params = LaunchParamsForApp(type);
   params.launch_files.push_back(file_path);
@@ -80,7 +80,7 @@ content::WebContents* SystemWebAppIntegrationTest::LaunchAppWithFile(
 }
 
 void SystemWebAppIntegrationTest::LaunchAppWithFileWithoutWaiting(
-    web_app::SystemAppType type,
+    ash::SystemWebAppType type,
     const base::FilePath& file_path) {
   apps::AppLaunchParams params = LaunchParamsForApp(type);
   params.launch_files.push_back(file_path);

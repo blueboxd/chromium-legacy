@@ -32,10 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.FeatureList;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterProvider;
-import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.Batch;
@@ -83,11 +80,9 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -108,17 +103,6 @@ import java.util.Set;
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @Batch(Batch.PER_CLASS)
 public class ContextualSearchManagerTest extends ContextualSearchInstrumentationBase {
-    /** Parameter provider for enabling/disabling triggering-related Features. */
-    public static class FeatureParamProvider implements ParameterProvider {
-        @Override
-        public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
-                    new ParameterSet()
-                            .value(EnabledFeature.TRANSLATIONS)
-                            .name("enableTranslations"));
-        }
-    }
-
     // DOM element IDs in our test page based on what functions they trigger.
     // TODO(donnd): add more, and also the associated Search Term, or build a similar mapping.
     /**
@@ -167,31 +151,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     //============================================================================================
     // Test Cases
     //============================================================================================
-
-    /**
-     * Tests Ranker logging for a simple trigger that resolves.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @DisabledTest(message = "https://crbug.com/1291065")
-    // TODO(donnd): remove with Ranker support.
-    public void testResolvingSearchRankerLogging() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        simulateResolveSearch("intelligence");
-        assertLoadedLowPriorityUrl();
-
-        assertLoggedAllExpectedFeaturesToRanker();
-        Assert.assertEquals(
-                true, loggedToRanker(ContextualSearchInteractionRecorder.Feature.IS_LONG_WORD));
-        // The panel must be closed for outcomes to be logged.
-        // Close the panel by clicking far away in order to make sure the outcomes get logged by
-        // the hideContextualSearchUi call to writeRankerLoggerOutcomesAndReset.
-        clickWordNode("states-far");
-        waitForPanelToClose();
-        assertLoggedAllExpectedOutcomesToRanker();
-    }
 
     /**
      * Tests swiping the overlay open, after an initial trigger that activates the peeking card.
@@ -284,7 +243,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         }
 
         // Once the bar opens, we make a new request at normal priority.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         waitForNormalPriorityUrlLoaded();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
@@ -413,89 +372,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         mPolicy.overrideDecidedStateForTesting(true);
 
         simulateResolvableSearchAndAssertResolveAndPreload("states", true);
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Promo open count - watches if the promo has never been opened.
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Tests the promo open counter for users that have not opted-in to privacy.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    // Only useful for disabling Tap triggering.
-    @DisabledTest(message = "crbug.com/965706")
-    public void testPromoOpenCountForUndecided() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        mPolicy.overrideDecidedStateForTesting(false);
-
-        // A simple click / resolve / prefetch sequence without open should not change the counter.
-        clickToTriggerPrefetch();
-        Assert.assertEquals(0, mPolicy.getPromoOpenCount());
-
-        // An open should count.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(1, mPolicy.getPromoOpenCount());
-
-        // Another open should count.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(2, mPolicy.getPromoOpenCount());
-
-        // Once the user has decided, we should stop counting.
-        mPolicy.overrideDecidedStateForTesting(true);
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(2, mPolicy.getPromoOpenCount());
-    }
-
-    /**
-     * Tests the promo open counter for users that have already opted-in to privacy.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    public void testPromoOpenCountForDecided() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        mPolicy.overrideDecidedStateForTesting(true);
-
-        // An open should not count for decided users.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(0, mPolicy.getPromoOpenCount());
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Tap count - number of taps between opens.
-    // --------------------------------------------------------------------------------------------
-    /**
-     * Tests the counter for the number of taps between opens.
-     */
-    @Test
-    @DisabledTest(message = "crbug.com/800334")
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    public void testTapCount() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        Assert.assertEquals(0, mPolicy.getTapCount());
-
-        // A simple Tap should change the counter.
-        clickToTriggerPrefetch();
-        Assert.assertEquals(1, mPolicy.getTapCount());
-
-        // Another Tap should increase the counter.
-        clickToTriggerPrefetch();
-        Assert.assertEquals(2, mPolicy.getTapCount());
-
-        // An open should reset the counter.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(0, mPolicy.getTapCount());
     }
 
     /**
@@ -644,45 +520,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     }
 
     /**
-     * Tests that a non-resolve search does trigger translation.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "http://crbug.com/1296677")
-    public void testNonResolveTranslates(@EnabledFeature int enabledFeature) throws Exception {
-        // A non-resolving gesture on any word should trigger a forced translation.
-        simulateNonResolveSearch("search");
-        // Make sure we did try to trigger translate.
-        Assert.assertTrue(mManager.getRequest().isTranslationForced());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    public void testSerpTranslationDisabledWhenPartialTranslationEnabled(
-            @EnabledFeature int enabledFeature) throws Exception {
-        // Resolving a German word should trigger translation.
-        simulateResolveSearch("german");
-        // Simulate a JavaScript translate message from the SERP to the manager
-        TestThreadUtils.runOnUiThreadBlocking(() -> mManager.onSetCaption("caption", true));
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS)) {
-            Assert.assertFalse(
-                    "The SERP Translation caption should not show when Partial Translations "
-                            + "is enabled!",
-                    mPanel.getSearchBarControl().getCaptionVisible());
-        } else {
-            Assert.assertTrue(
-                    "The SERP Translation caption should show without Partial Translations "
-                            + "enabled!",
-                    mPanel.getSearchBarControl().getCaptionVisible());
-        }
-    }
-
-    /**
      * Tests the Translate Caption on a resolve gesture.
      * This test is disabled because it relies on the network and a live search result,
      * which would be flaky for bots.
@@ -750,7 +587,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         simulateResolveSearch("search");
 
         // Expand the panel and assert that it ends up in the right place.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         final ContextualSearchPanel panel =
                 (ContextualSearchPanel) mManager.getContextualSearchPanel();
         Assert.assertEquals(
@@ -767,7 +604,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisableIf.Device(type = {UiDisableIf.PHONE}) // Flaking on phones crbug.com/765796
+    // Previously flaky on phones: https://crbug.com/765796
     public void testPanelDismissedOnToggleFullscreen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and assert that the panel peeks.
@@ -893,7 +730,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1315417")
+    // Previously disabled: https://crbug.com/1315417
     public void testQuickActionIntent(@EnabledFeature int enabledFeature) throws Exception {
         // Add a new filter to the activity monitor that matches the intent that should be fired.
         IntentFilter quickActionFilter = new IntentFilter(Intent.ACTION_VIEW);
@@ -937,7 +774,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1075895")
-    @DisabledTest(message = "Flaky https://crbug.com/1127796")
+    // Previously disabled: https://crbug.com/1127796
     public void testQuickActionUrl(@EnabledFeature int enabledFeature) throws Exception {
         final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
 
@@ -971,7 +808,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                                 null /* relatedSearchesInContent */,
                                 false /* showDefaultSearchInContent */));
 
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
     }
 
     /**
@@ -982,7 +819,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "http://crbug.com/1296677")
+    // Previously disabled: http://crbug.com/1296677
     public void testDictionaryDefinitions(@EnabledFeature int enabledFeature) throws Exception {
         runDictionaryCardTest(CardTag.CT_DEFINITION);
     }
@@ -1231,34 +1068,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> activity2.getCurrentTabModel().closeAllTabs());
         ApplicationTestUtils.finishActivity(activity2);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    // TODO(donnd): Investigate support for logging user interactions for Long-press.
-    public void testLoggedEventId() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-        mFakeServer.reset();
-        simulateResolveSearch("intelligence-logged-event-id");
-        tapPeekingBarToExpandAndAssert();
-        closePanel();
-        // Now the event and outcome should be in local storage.
-        simulateResolveSearch("search");
-        // Check that we sent the logged event ID and outcome with the request.
-        Assert.assertEquals(ContextualSearchFakeServer.LOGGED_EVENT_ID,
-                mManager.getContext().getPreviousEventId());
-        Assert.assertEquals(1, mManager.getContext().getPreviousUserInteractions());
-        closePanel();
-        // Now that we've sent them to the server, the local storage should be clear.
-        simulateResolveSearch("search");
-        Assert.assertEquals(0, mManager.getContext().getPreviousEventId());
-        Assert.assertEquals(0, mManager.getContext().getPreviousUserInteractions());
-        closePanel();
-        // Make sure a duration was recorded in bucket 0 (due to 0 days duration running this test).
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "Search.ContextualSearch.OutcomesDuration", 0));
     }
 
     // --------------------------------------------------------------------------------------------

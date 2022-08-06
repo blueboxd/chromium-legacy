@@ -476,7 +476,7 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   }
 
   // If we're a top level window, bring the window to the front.
-  if (frame->IsMainFrame() && allow_focus) {
+  if (frame->IsOutermostMainFrame() && allow_focus) {
     frame->FocusPage(incumbent_window->GetFrame());
   } else if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     // We are depending on user activation twice since IsFocusAllowed() will
@@ -524,6 +524,7 @@ void DOMWindow::InstallCoopAccessMonitor(
   CoopAccessMonitor monitor;
 
   DCHECK(accessing_frame->IsMainFrame());
+  DCHECK(!accessing_frame->IsInFencedFrameTree());
   monitor.report_type = coop_reporter_params->report_type;
   monitor.accessing_main_frame = accessing_frame->GetLocalFrameToken();
   monitor.endpoint_defined = coop_reporter_params->endpoint_defined;

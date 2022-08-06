@@ -59,7 +59,8 @@ namespace autofill {
 
 class AddressNormalizer;
 class AutofillAblationStudy;
-struct AutofillOfferData;
+class AutofillDriver;
+class AutofillOfferData;
 class AutofillProfile;
 class AutocompleteHistoryManager;
 class AutofillOfferManager;
@@ -72,6 +73,7 @@ class FormDataImporter;
 class FormStructure;
 class LogManager;
 class MigratableCreditCard;
+class MerchantPromoCodeManager;
 class OtpUnmaskDelegate;
 enum class OtpUnmaskResult;
 class PersonalDataManager;
@@ -316,8 +318,12 @@ class AutofillClient : public RiskDataLoader {
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
-  // Gets the AutocompleteHistoryManager instance associate with the client.
+  // Gets the AutocompleteHistoryManager instance associated with the client.
   virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
+
+  // Gets the MerchantPromoCodeManager instance associated with the
+  // client (can be null for unsupported platforms).
+  virtual base::WeakPtr<MerchantPromoCodeManager> GetMerchantPromoCodeManager();
 
   // Creates and returns a SingleFieldFormFillRouter using the
   // AutocompleteHistoryManager instance associated with the client.
@@ -654,7 +660,7 @@ class AutofillClient : public RiskDataLoader {
   // Pass the form structures to the password manager to choose correct username
   // and to the password generation manager to detect account creation forms.
   virtual void PropagateAutofillPredictions(
-      content::RenderFrameHost* rfh,
+      AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) = 0;
 
   // Inform the client that the field has been filled.

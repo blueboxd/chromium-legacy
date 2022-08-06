@@ -1012,12 +1012,11 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
     // needs to update paint properties to account for the correct
     // scrollbounds.
     if (LocalFrameView* frame_view = GetLayoutBox()->GetFrameView()) {
-      if (this == frame_view->LayoutViewport()) {
-        GetLayoutBox()
-            ->GetFrame()
-            ->GetPage()
-            ->GetVisualViewport()
-            .SetNeedsPaintPropertyUpdate();
+      VisualViewport& visual_viewport =
+          GetLayoutBox()->GetFrame()->GetPage()->GetVisualViewport();
+      if (this == frame_view->LayoutViewport() &&
+          visual_viewport.IsActiveViewport()) {
+        visual_viewport.SetNeedsPaintPropertyUpdate();
       }
     }
 
@@ -3113,9 +3112,9 @@ gfx::Size PaintLayerScrollableArea::PixelSnappedBorderBoxSize() const {
 gfx::Rect PaintLayerScrollableArea::ScrollingBackgroundVisualRect(
     const PhysicalOffset& paint_offset) const {
   const auto* box = GetLayoutBox();
-  auto overflow_clip_rect =
-      ToPixelSnappedRect(box->OverflowClipRect(paint_offset));
-  auto scroll_size = PixelSnappedContentsSize(paint_offset);
+  auto clip_rect = box->OverflowClipRect(paint_offset);
+  auto overflow_clip_rect = ToPixelSnappedRect(clip_rect);
+  auto scroll_size = PixelSnappedContentsSize(clip_rect.offset);
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size.SetToMax(overflow_clip_rect.size());
   gfx::Rect result(overflow_clip_rect.origin(), scroll_size);

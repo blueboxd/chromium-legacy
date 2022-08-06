@@ -166,6 +166,15 @@ struct MEDIA_EXPORT XTargetDurationTag {
   types::DecimalInteger duration;
 };
 
+// Represents the contents of the #EXT-PART-INF tag.
+struct MEDIA_EXPORT XPartInfTag {
+  static constexpr auto kName = MediaPlaylistTagName::kXPartInf;
+  static ParseStatus::Or<XPartInfTag> Parse(TagItem);
+
+  // This value indicates the target duration for partial media segments.
+  types::DecimalFloatingPoint target_duration;
+};
+
 // Represents the contents of the #EXT-X-MEDIA-SEQUENCE tag.
 struct MEDIA_EXPORT XMediaSequenceTag {
   static constexpr auto kName = MediaPlaylistTagName::kXMediaSequence;
@@ -176,6 +185,36 @@ struct MEDIA_EXPORT XMediaSequenceTag {
   // playlist across reloads, but not for synchronizing media segments between
   // playlists.
   types::DecimalInteger number;
+};
+
+// Represents the contents of the #EXT-X-DISCONTINUITY-SEQUENCE tag.
+struct MEDIA_EXPORT XDiscontinuitySequenceTag {
+  static constexpr auto kName = MediaPlaylistTagName::kXDiscontinuitySequence;
+  static ParseStatus::Or<XDiscontinuitySequenceTag> Parse(TagItem);
+
+  // Indicates the discontinuity sequence number to assign to the first media
+  // segment in this playlist. These numbers are useful for synchronizing
+  // between variant stream timelines.
+  types::DecimalInteger number;
+};
+
+// Represents the contents of the #EXT-X-BYTERANGE tag.
+struct MEDIA_EXPORT XByteRangeTag {
+  static constexpr auto kName = MediaPlaylistTagName::kXByteRange;
+  static ParseStatus::Or<XByteRangeTag> Parse(TagItem);
+
+  types::ByteRangeExpression range;
+};
+
+// Represents the contents of the #EXT-X-BITRATE tag.
+struct MEDIA_EXPORT XBitrateTag {
+  static constexpr auto kName = MediaPlaylistTagName::kXBitrate;
+  static ParseStatus::Or<XBitrateTag> Parse(TagItem);
+
+  // The approximate bitrate of the following media segments, (except those that
+  // have the EXT-X-BYTERANGE tag) expressed in kilobits per second. The value
+  // must be within +-10% of the actual segment bitrate.
+  types::DecimalInteger bitrate;
 };
 
 }  // namespace media::hls

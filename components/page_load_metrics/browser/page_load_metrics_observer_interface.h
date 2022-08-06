@@ -18,7 +18,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
 #include "third_party/blink/public/common/use_counter/use_counter_feature.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 #include "url/gurl.h"
@@ -47,7 +46,7 @@ enum class StorageType {
 // load.
 struct ExtraRequestCompleteInfo {
   ExtraRequestCompleteInfo(
-      const url::Origin& origin_of_final_url,
+      const url::SchemeHostPort& final_url,
       const net::IPEndPoint& remote_endpoint,
       int frame_tree_node_id,
       bool was_cached,
@@ -61,12 +60,12 @@ struct ExtraRequestCompleteInfo {
 
   ~ExtraRequestCompleteInfo();
 
-  // The origin of the final URL for the request (final = after redirects).
+  // The scheme/host/port of the final URL for the request
+  // (final = after redirects).
   //
   // The full URL is not available, because in some cases the path and query
   // may be sanitized away - see https://crbug.com/973885.
-  // TODO(crbug.com/973885): use url::SchemeHostPort if applicable.
-  const url::Origin origin_of_final_url;
+  const url::SchemeHostPort final_url;
 
   // The host (IP address) and port for the request.
   const net::IPEndPoint remote_endpoint;
@@ -137,7 +136,8 @@ class PageLoadMetricsObserverInterface {
   // directly delivered to the observers need FORWARD_OBSERVING. See
   // PageLoadMetricsForwardObserver to know which events need the observer layer
   // forwarding. Eventually, we may treat all forwarding at the PageLoadTracker
-  // layer to deprecate the FORWARD_OBSERVING for simplicity.
+  // layer to deprecate the FORWARD_OBSERVING for simplicity. FORWARD_OBSERVING
+  // is available only for OnFencedFramesStart().
   enum ObservePolicy {
     CONTINUE_OBSERVING,
     STOP_OBSERVING,

@@ -21,13 +21,13 @@
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/onc/onc_certificate_pattern.h"
 #include "chromeos/components/onc/variable_expander.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/certificate_helper.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/onc/onc_certificate_pattern.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
@@ -460,11 +460,8 @@ void LogError(const std::string& service_path,
               const std::string& dbus_error_name,
               const std::string& dbus_error_message) {
   network_handler::ShillErrorCallbackFunction(
-      "ClientCertResolver.SetProperties failed",
-      service_path,
-      network_handler::ErrorCallback(),
-      dbus_error_name,
-      dbus_error_message);
+      "ClientCertResolver.SetProperties failed", service_path,
+      network_handler::ErrorCallback(), dbus_error_name, dbus_error_message);
 }
 
 bool ClientCertificatesLoaded() {
@@ -488,8 +485,6 @@ ClientCertResolver::ClientCertResolver()
 
 ClientCertResolver::~ClientCertResolver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (network_state_handler_)
-    network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (NetworkCertLoader::IsInitialized())
     NetworkCertLoader::Get()->RemoveObserver(this);
   if (managed_network_config_handler_)
@@ -502,7 +497,7 @@ void ClientCertResolver::Init(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_state_handler);
   network_state_handler_ = network_state_handler;
-  network_state_handler_->AddObserver(this, FROM_HERE);
+  network_state_handler_observer_.Observe(network_state_handler_);
 
   DCHECK(managed_network_config_handler);
   managed_network_config_handler_ = managed_network_config_handler;
@@ -557,7 +552,8 @@ bool ClientCertResolver::ResolveClientCertificateSync(
 
   if (cert_it == client_cert_and_issuers.end()) {
     VLOG(1) << "Couldn't find a matching client cert";
-    client_cert::SetEmptyShillProperties(client_cert_type, shill_properties);
+    client_cert::SetEmptyShillProperties(client_cert_type,
+                                         shill_properties->GetDict());
     return false;
   }
 
@@ -570,8 +566,8 @@ bool ClientCertResolver::ResolveClientCertificateSync(
     // the worst case the user can remove the problematic cert.
     return false;
   }
-  client_cert::SetShillProperties(
-      client_cert_type, slot_id, pkcs11_id, shill_properties);
+  client_cert::SetShillProperties(client_cert_type, slot_id, pkcs11_id,
+                                  shill_properties->GetDict());
   return true;
 }
 
@@ -602,11 +598,8 @@ void ClientCertResolver::NetworkListChanged() {
 
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(
-      NetworkTypePattern::Default(),
-      true /* configured_only */,
-      false /* visible_only */,
-      0 /* no limit */,
-      &networks);
+      NetworkTypePattern::Default(), true /* configured_only */,
+      false /* visible_only */, 0 /* no limit */, &networks);
 
   NetworkStateHandler::NetworkStateList networks_to_check;
   for (const NetworkState* network : networks) {
@@ -647,11 +640,8 @@ void ClientCertResolver::OnCertificatesLoaded() {
   // Compare all networks with all certificates.
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(
-      NetworkTypePattern::Default(),
-      true /* configured_only */,
-      false /* visible_only */,
-      0 /* no limit */,
-      &networks);
+      NetworkTypePattern::Default(), true /* configured_only */,
+      false /* visible_only */, 0 /* no limit */, &networks);
   ResolveNetworks(networks);
 }
 
@@ -721,7 +711,7 @@ void ClientCertResolver::ResolveNetworks(
 
     VLOG(2) << "Inspecting network " << network->path();
     client_cert::ClientCertConfig cert_config;
-    OncToClientCertConfig(onc_source, *policy, &cert_config);
+    OncToClientCertConfig(onc_source, policy->GetDict(), &cert_config);
 
     // Skip networks that don't have a ClientCertPattern or ClientCertRef.
     if (!ShouldResolveCert(cert_config))
@@ -765,11 +755,9 @@ void ClientCertResolver::ResolveNetworks(
 void ClientCertResolver::ResolvePendingNetworks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NetworkStateHandler::NetworkStateList networks;
-  network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
-                                               true /* configured_only */,
-                                               false /* visible_only */,
-                                               0 /* no limit */,
-                                               &networks);
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(), true /* configured_only */,
+      false /* visible_only */, 0 /* no limit */, &networks);
 
   NetworkStateHandler::NetworkStateList networks_to_resolve;
   for (const NetworkState* network : networks) {
@@ -817,7 +805,7 @@ void ClientCertResolver::ConfigureCertificates(
       const MatchingCert& matching_cert = match.matching_cert.value();
       client_cert::SetShillProperties(
           match.cert_config_type, matching_cert.key_slot_id,
-          matching_cert.pkcs11_id, &shill_properties);
+          matching_cert.pkcs11_id, shill_properties.GetDict());
       resolved_networks_info.push_back(GetNetworkIdWithGuid(network_state) +
                                        ":match,identity='" +
                                        matching_cert.identity + "'");
@@ -829,7 +817,7 @@ void ClientCertResolver::ConfigureCertificates(
       resolved_networks_info.push_back(GetNetworkIdWithGuid(network_state) +
                                        ":no_match");
       client_cert::SetEmptyShillProperties(match.cert_config_type,
-                                           &shill_properties);
+                                           shill_properties.GetDict());
     }
     ShillServiceClient::Get()->SetProperties(
         dbus::ObjectPath(match.service_path), shill_properties,

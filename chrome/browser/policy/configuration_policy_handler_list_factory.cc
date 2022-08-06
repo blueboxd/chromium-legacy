@@ -30,9 +30,9 @@
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/homepage_location_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
-#include "chrome/browser/policy/network_prediction_policy_handler.h"
 #include "chrome/browser/policy/webhid_device_policy_handler.h"
 #include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
+#include "chrome/browser/prefetch/pref_names.h"
 #include "chrome/browser/profiles/force_safe_search_policy_handler.h"
 #include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
@@ -157,6 +157,8 @@
 #include "chrome/browser/ash/policy/handlers/lacros_availability_policy_handler.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
+#include "chrome/browser/policy/os_color_mode_policy_handler.h"
+#include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/account_manager_core/pref_names.h"
 #include "components/drive/drive_pref_names.h"  // nogncheck crbug.com/1125897
@@ -220,6 +222,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPopupsBlockedForUrls,
     prefs::kManagedPopupsBlockedForUrls,
     base::Value::Type::LIST },
+  { key::kNetworkPredictionOptions, prefetch::prefs::kNetworkPredictionOptions,
+    base::Value::Type::INTEGER },
 #if BUILDFLAG(ENABLE_PRINTING)
   { key::kPrintingEnabled,
     prefs::kPrintingEnabled,
@@ -310,7 +314,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAutoOpenAllowedForURLs,
     prefs::kDownloadAllowedURLsForOpenByPolicy,
     base::Value::Type::LIST },
-    { key::kAutoplayAllowed,
+  { key::kAutoplayAllowed,
     prefs::kAutoplayAllowed,
     base::Value::Type::BOOLEAN },
   { key::kAutoplayAllowlist,
@@ -742,9 +746,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kCloudPrintSubmitEnabled,
-    prefs::kCloudPrintSubmitEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kShowAppsShortcutInBookmarkBar,
     bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
     base::Value::Type::BOOLEAN },
@@ -874,9 +875,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebUsbBlockedForUrls,
     prefs::kManagedWebUsbBlockedForUrls,
     base::Value::Type::LIST },
-  { key::kTabFreezingEnabled,
-    prefs::kTabFreezingEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kCoalesceH2ConnectionsWithClientCertificatesForHosts,
     prefs::kH2ClientCertCoalescingHosts,
     base::Value::Type::LIST },
@@ -923,10 +921,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     chromeos::prefs::kEmojiSuggestionEnterpriseAllowed,
     base::Value::Type::BOOLEAN },
   { key::kExternalStorageDisabled,
-    prefs::kExternalStorageDisabled,
+    disks::prefs::kExternalStorageDisabled,
     base::Value::Type::BOOLEAN },
   { key::kExternalStorageReadOnly,
-    prefs::kExternalStorageReadOnly,
+    disks::prefs::kExternalStorageReadOnly,
     base::Value::Type::BOOLEAN },
   { key::kAudioOutputAllowed,
     chromeos::prefs::kAudioOutputAllowed,
@@ -1162,9 +1160,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kArcAppInstallEventLoggingEnabled,
     prefs::kArcAppInstallEventLoggingEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kEnableSyncConsent,
-    prefs::kEnableSyncConsent,
-    base::Value::Type::BOOLEAN },
   { key::kNetworkFileSharesAllowed,
     prefs::kNetworkFileSharesAllowed,
     base::Value::Type::BOOLEAN },
@@ -1378,9 +1373,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceI18nShortcutsEnabled,
     ash::prefs::kDeviceI18nShortcutsEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kRestrictedManagedGuestSessionExtensionCleanupExemptList,
-    prefs::kRestrictedManagedGuestSessionExtensionCleanupExemptList,
-    base::Value::Type::LIST },
   { key::kArcAppToWebAppSharingEnabled,
     apps::webapk_prefs::kGeneratedWebApksEnabled,
     base::Value::Type::BOOLEAN},
@@ -1434,6 +1426,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kRendererCodeIntegrityEnabled,
     prefs::kRendererCodeIntegrityEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kRendererAppContainerEnabled,
+    prefs::kRendererAppContainerEnabled,
     base::Value::Type::BOOLEAN },
   { key::kBrowserLegacyExtensionPointsBlocked,
     prefs::kBlockBrowserLegacyExtensionPoints,
@@ -1554,6 +1549,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kInsightsExtensionEnabled,
     prefs::kInsightsExtensionEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kEnableSyncConsent,
+    prefs::kEnableSyncConsent,
+    base::Value::Type::BOOLEAN },
+  { key::kRestrictedManagedGuestSessionExtensionCleanupExemptList,
+    prefs::kRestrictedManagedGuestSessionExtensionCleanupExemptList,
+    base::Value::Type::LIST },
 #endif // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS)
@@ -1584,9 +1585,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,
     base::Value::Type::LIST },
-  { key::kU2fSecurityKeyApiEnabled,
-    extensions::pref_names::kU2fSecurityKeyApiEnabled,
-    base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1930,7 +1928,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
   handlers->AddHandler(std::make_unique<FileSelectionDialogsPolicyHandler>());
   handlers->AddHandler(std::make_unique<JavascriptPolicyHandler>());
-  handlers->AddHandler(std::make_unique<NetworkPredictionPolicyHandler>());
   handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
       key::kWindowOcclusionEnabled,
       policy::policy_prefs::kNativeWindowOcclusionEnabled,
@@ -2235,6 +2232,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<BooleanDisablingPolicyHandler>(
       key::kSystemTerminalSshAllowed,
       crostini::prefs::kTerminalSshAllowedByPolicy));
+  handlers->AddHandler(std::make_unique<OsColorModePolicyHandler>());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // On most platforms, there is a legacy policy

@@ -41,6 +41,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -727,7 +729,7 @@ class TabListMediator {
         // Right now we need to update layout only if there is a price welcome message card in tab
         // switcher.
         if (mMode == TabListMode.GRID && mUiType != UiType.SELECTABLE
-                && PriceTrackingUtilities.isPriceTrackingEnabled()) {
+                && PriceTrackingFeatures.isPriceTrackingEnabled()) {
             mListObserver = new ListObserver<Void>() {
                 @Override
                 public void onItemRangeInserted(ListObservable source, int index, int count) {
@@ -1078,7 +1080,7 @@ class TabListMediator {
      * Hide the blue border for selected tab for the Tab-to-Grid resizing stage.
      * The selected border should re-appear in the final fading-in stage.
      */
-    void prepareOverview() {
+    void prepareTabSwitcherView() {
         if (!TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
                 || !mTabModelSelector.isTabStateInitialized()) {
             return;
@@ -1928,7 +1930,7 @@ class TabListMediator {
     @VisibleForTesting
     void recordPriceAnnotationsEnabledMetrics() {
         if (mMode != TabListMode.GRID || !mActionsOnAllRelatedTabs
-                || !PriceTrackingUtilities.isPriceTrackingEligible()) {
+                || !PriceTrackingFeatures.isPriceTrackingEligible()) {
             return;
         }
         SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
@@ -1937,8 +1939,7 @@ class TabListMediator {
                                 ChromePreferenceKeys
                                         .PRICE_TRACKING_ANNOTATIONS_ENABLED_METRICS_TIMESTAMP,
                                 -1)
-                >= PriceTrackingUtilities
-                           .getAnnotationsEnabledMetricsWindowDurationMilliSeconds()) {
+                >= PriceTrackingFeatures.getAnnotationsEnabledMetricsWindowDurationMilliSeconds()) {
             RecordHistogram.recordBooleanHistogram("Commerce.PriceDrop.AnnotationsEnabled",
                     PriceTrackingUtilities.isTrackPricesOnTabsEnabled());
             preferencesManager.writeLong(

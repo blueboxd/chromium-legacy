@@ -209,7 +209,7 @@ void GrammarManager::OnSurroundingTextChanged(const std::u16string& text,
   }
 
   absl::optional<ui::GrammarFragment> grammar_fragment_opt =
-      input_context->GetGrammarFragment(gfx::Range(cursor_pos));
+      input_context->GetGrammarFragmentAtCursor();
 
   if (grammar_fragment_opt) {
     if (current_fragment_ != grammar_fragment_opt.value()) {
@@ -260,10 +260,7 @@ void GrammarManager::OnGrammarCheckDone(
       corrected_results.emplace_back(
           gfx::Range(fragment.range.start() + sentence.original_range.start(),
                      fragment.range.end() + sentence.original_range.start()),
-          fragment.suggestion,
-          base::UTF16ToUTF8(current_text_.substr(
-              fragment.range.start() + sentence.original_range.start(),
-              fragment.range.length())));
+          fragment.suggestion);
     }
   }
 

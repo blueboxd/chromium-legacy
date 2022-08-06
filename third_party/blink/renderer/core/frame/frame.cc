@@ -357,9 +357,8 @@ void Frame::RenderFallbackContentWithResourceTiming(
 }
 
 bool Frame::IsInFencedFrameTree() const {
-  if (IsDetached())
-    return false;
-  auto ff_impl = GetPage()->FencedFramesImplementationType();
+  DCHECK(!IsDetached());
+  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
   if (!ff_impl)
     return false;
 
@@ -374,11 +373,28 @@ bool Frame::IsInFencedFrameTree() const {
   }
 }
 
+bool Frame::IsFencedFrameRoot() const {
+  DCHECK(!IsDetached());
+  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
+  if (!ff_impl)
+    return false;
+
+  switch (ff_impl.value()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return IsInFencedFrameTree() && IsMainFrame();
+    case blink::features::FencedFramesImplementationType::kShadowDOM:
+      return IsInFencedFrameTree() &&
+             this == &Tree().Top(FrameTreeBoundary::kFenced);
+    default:
+      return false;
+  }
+}
+
 absl::optional<mojom::blink::FencedFrameMode> Frame::GetFencedFrameMode()
     const {
   DCHECK(!IsDetached());
 
-  auto ff_impl = GetPage()->FencedFramesImplementationType();
+  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
   if (!ff_impl)
     return absl::nullopt;
 
@@ -399,7 +415,7 @@ absl::optional<mojom::blink::FencedFrameMode> Frame::GetFencedFrameMode()
 }
 
 bool Frame::IsInShadowDOMOpaqueAdsFencedFrameTree() const {
-  auto ff_impl = GetPage()->FencedFramesImplementationType();
+  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
   if (!ff_impl)
     return false;
 
@@ -417,7 +433,7 @@ bool Frame::IsInShadowDOMOpaqueAdsFencedFrameTree() const {
 }
 
 bool Frame::IsInMPArchOpaqueAdsFencedFrameTree() const {
-  auto ff_impl = GetPage()->FencedFramesImplementationType();
+  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
   if (!ff_impl)
     return false;
 
@@ -722,7 +738,7 @@ bool Frame::FocusCrossesFencedBoundary() {
 }
 
 bool Frame::ShouldAllowScriptFocus() {
-  auto ff_impl = GetPage()->FencedFramesImplementationType();
+  const auto& ff_impl = GetPage()->FencedFramesImplementationType();
   if (!ff_impl)
     return true;
 

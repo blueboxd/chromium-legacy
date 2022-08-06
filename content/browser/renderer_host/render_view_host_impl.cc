@@ -283,7 +283,8 @@ bool RenderViewHostImpl::HasNonBackForwardCachedInstancesForProcess(
 
 RenderViewHostImpl::RenderViewHostImpl(
     FrameTree* frame_tree,
-    SiteInstance* instance,
+    SiteInstanceGroup* group,
+    const StoragePartitionConfig& storage_partition_config,
     std::unique_ptr<RenderWidgetHostImpl> widget,
     RenderViewHostDelegate* delegate,
     int32_t routing_id,
@@ -293,18 +294,21 @@ RenderViewHostImpl::RenderViewHostImpl(
     scoped_refptr<BrowsingContextState> main_browsing_context_state)
     : render_widget_host_(std::move(widget)),
       delegate_(delegate),
-      render_view_host_map_id_(frame_tree->GetRenderViewHostMapId(
-          static_cast<SiteInstanceImpl*>(instance)->group())),
-      storage_partition_config_(instance->GetStoragePartitionConfig()),
+      render_view_host_map_id_(frame_tree->GetRenderViewHostMapId(group)),
+      storage_partition_config_(storage_partition_config),
       routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id),
       frame_tree_(frame_tree),
-      main_browsing_context_state_(std::move(main_browsing_context_state)) {
+      main_browsing_context_state_(
+          main_browsing_context_state
+              ? absl::make_optional(main_browsing_context_state->GetSafeRef())
+              : absl::nullopt) {
   TRACE_EVENT("navigation", "RenderViewHostImpl::RenderViewHostImpl",
               ChromeTrackEvent::kRenderViewHost, *this);
   TRACE_EVENT_BEGIN("navigation", "RenderViewHost",
                     perfetto::Track::FromPointer(this),
                     "render_view_host_when_created", this);
+
   DCHECK(delegate_);
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
 

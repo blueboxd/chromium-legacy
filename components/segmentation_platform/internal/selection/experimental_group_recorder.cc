@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/strcat.h"
-#include "components/segmentation_platform/internal/database/metadata_utils.h"
+#include "components/segmentation_platform/internal/metadata/metadata_utils.h"
 #include "components/segmentation_platform/internal/metric_filter_utils.h"
 #include "components/segmentation_platform/internal/selection/segment_result_provider.h"
 #include "components/segmentation_platform/public/config.h"
@@ -20,15 +20,18 @@ ExperimentalGroupRecorder::ExperimentalGroupRecorder(
     SegmentResultProvider* result_provider,
     FieldTrialRegister* field_trial_register,
     const std::string& segmentation_key,
-    optimization_guide::proto::OptimizationTarget selected_segment)
+    proto::SegmentId selected_segment)
     : field_trial_register_(field_trial_register),
       segmentation_key_(segmentation_key),
       segment_id_(selected_segment) {
-  result_provider->GetSegmentResult(
-      segment_id_,
-      base::StrCat({segmentation_key, kSubsegmentDiscreteMappingSuffix}),
-      base::BindOnce(&ExperimentalGroupRecorder::OnGetSegment,
-                     weak_ptr_factory_.GetWeakPtr()));
+  SegmentResultProvider::GetResultOptions options;
+  options.segmentation_key =
+      base::StrCat({segmentation_key, kSubsegmentDiscreteMappingSuffix});
+  options.segment_id = selected_segment;
+  options.callback = base::BindOnce(&ExperimentalGroupRecorder::OnGetSegment,
+                                    weak_ptr_factory_.GetWeakPtr());
+  options.ignore_db_scores = false;
+  result_provider->GetSegmentResult(std::move(options));
 }
 
 ExperimentalGroupRecorder::~ExperimentalGroupRecorder() = default;

@@ -13,8 +13,10 @@
 
 namespace qt {
 
+class QtNativeTheme;
+
 // Interface to QT desktop features.
-class QtUi : public views::LinuxUI {
+class QtUi : public views::LinuxUI, QtInterface::Delegate {
  public:
   QtUi();
 
@@ -53,29 +55,12 @@ class QtUi : public views::LinuxUI {
   SkColor GetInactiveSelectionBgColor() const override;
   SkColor GetInactiveSelectionFgColor() const override;
   base::TimeDelta GetCursorBlinkInterval() const override;
-  ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
-  ui::NativeTheme* GetNativeTheme(bool use_system_theme) const override;
-  void SetUseSystemThemeCallback(UseSystemThemeCallback callback) override;
-  bool GetDefaultUsesSystemTheme() const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size,
                                    float scale) const override;
-  std::unique_ptr<views::Border> CreateNativeBorder(
-      views::LabelButton* owning_button,
-      std::unique_ptr<views::LabelButtonBorder> border) override;
-  void AddWindowButtonOrderObserver(
-      views::WindowButtonOrderObserver* observer) override;
-  void RemoveWindowButtonOrderObserver(
-      views::WindowButtonOrderObserver* observer) override;
   WindowFrameAction GetWindowFrameAction(
       WindowFrameActionSource source) override;
-  void NotifyWindowManagerStartupComplete() override;
-  void UpdateDeviceScaleFactor() override;
   float GetDeviceScaleFactor() const override;
-  void AddDeviceScaleFactorObserver(
-      views::DeviceScaleFactorObserver* observer) override;
-  void RemoveDeviceScaleFactorObserver(
-      views::DeviceScaleFactorObserver* observer) override;
   bool PreferDarkTheme() const override;
   bool AnimationsEnabled() const override;
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
@@ -85,17 +70,34 @@ class QtUi : public views::LinuxUI {
   int GetCursorThemeSize() override;
   std::vector<std::string> GetAvailableSystemThemeNamesForTest() const override;
   void SetSystemThemeByNameForTest(const std::string& theme_name) override;
+  ui::NativeTheme* GetNativeTheme() const override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
                   std::vector<ui::TextEditCommandAuraLinux>* commands) override;
 
+  // QtInterface::Delegate:
+  void FontChanged() override;
+
  private:
+  void AddNativeColorMixer(ui::ColorProvider* provider,
+                           const ui::ColorProviderManager::Key& key);
+
   // QT modifies argc and argv, and they must be kept alive while
   // `shim_` is alive.
   CmdLineArgs cmd_line_;
 
+  // Cached default font settings.
+  std::string font_family_;
+  int font_size_pixels_ = 0;
+  int font_size_points_ = 0;
+  gfx::Font::FontStyle font_style_ = gfx::Font::NORMAL;
+  gfx::Font::Weight font_weight_;
+  gfx::FontRenderParams font_params_;
+
   std::unique_ptr<QtInterface> shim_;
+
+  std::unique_ptr<QtNativeTheme> native_theme_;
 };
 
 // This should be the only symbol exported from this component.

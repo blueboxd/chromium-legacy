@@ -913,7 +913,11 @@ void CompositorFrameReporter::ReportEventLatencyMetrics() const {
     const base::TimeTicks generated_timestamp =
         event_metrics->GetDispatchStageTimestamp(
             EventMetrics::DispatchStage::kGenerated);
-    DCHECK_LT(generated_timestamp, total_latency_stage.end_time);
+    // Generally, we expect that the event timestamp is strictly smaller than
+    // the end timestamp of the last stage (i.e. total latency is positive);
+    // however, at least in tests, it is possible that the timestamps are the
+    // same and total latency is zero.
+    DCHECK_LE(generated_timestamp, total_latency_stage.end_time);
     const base::TimeDelta total_latency =
         total_latency_stage.end_time - generated_timestamp;
 

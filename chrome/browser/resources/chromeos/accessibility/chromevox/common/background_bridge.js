@@ -9,9 +9,10 @@
 
 goog.provide('BackgroundBridge');
 
-goog.require('BridgeAction');
+goog.require('BridgeActions');
+goog.require('BridgeConstants');
 goog.require('BridgeHelper');
-goog.require('BridgeTarget');
+goog.require('BridgeTargets');
 
 BackgroundBridge.BrailleBackground = {
   /**
@@ -21,7 +22,8 @@ BackgroundBridge.BrailleBackground = {
    */
   async backTranslate(cells) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.BACK_TRANSLATE, cells);
+        BridgeConstants.BrailleBackground.TARGET,
+        BridgeConstants.BrailleBackground.Action.BACK_TRANSLATE, cells);
   },
 
   /**
@@ -30,7 +32,8 @@ BackgroundBridge.BrailleBackground = {
    */
   async refreshBrailleTable(brailleTable) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.REFRESH_BRAILLE_TABLE,
+        BridgeConstants.BrailleBackground.TARGET,
+        BridgeConstants.BrailleBackground.Action.REFRESH_BRAILLE_TABLE,
         brailleTable);
   },
 };
@@ -42,8 +45,8 @@ BackgroundBridge.BrailleCommandHandler = {
    */
   async setEnabled(enabled) {
     return BridgeHelper.sendMessage(
-        Bridgetarget.BRAILLE_COMMAND_HANDLER, BridgeAction.SET_ENABLED,
-        enabled);
+        BridgeConstants.BrailleCommandHandler.TARGET,
+        BridgeConstants.BrailleCommandHandler.Action.SET_ENABLED, enabled);
   },
 };
 
@@ -53,7 +56,9 @@ BackgroundBridge.ChromeVoxBackground = {
    * @return {!Promise<string>}
    */
   async getCurrentVoice() {
-    return BridgeHelper.sendMessage('ChromeVoxBackground', 'getCurrentVoice');
+    return BridgeHelper.sendMessage(
+        BridgeConstants.ChromeVoxBackground.TARGET,
+        BridgeConstants.ChromeVoxBackground.Action.GET_CURRENT_VOICE);
   },
 };
 
@@ -65,7 +70,8 @@ BackgroundBridge.ChromeVoxPrefs = {
    */
   async getPrefs() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.CHROMEVOX_PREFS, BridgeAction.GET_PREFS);
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        BridgeConstants.ChromeVoxPrefs.Action.GET_PREFS);
   },
 
   /**
@@ -76,8 +82,8 @@ BackgroundBridge.ChromeVoxPrefs = {
    */
   async setLoggingPrefs(key, value) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.CHROMEVOX_PREFS, BridgeAction.SET_LOGGING_PREFS,
-        {key, value});
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        BridgeConstants.ChromeVoxPrefs.Action.SET_LOGGING_PREFS, {key, value});
   },
 
   /**
@@ -88,7 +94,8 @@ BackgroundBridge.ChromeVoxPrefs = {
    */
   async setPref(key, value) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.CHROMEVOX_PREFS, BridgeAction.SET_PREF, {key, value});
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        Bridgeconstants.ChromeVoxPrefs.Action.SET_PREF, {key, value});
   },
 };
 
@@ -96,7 +103,8 @@ BackgroundBridge.ChromeVoxState = {
   /** @return {!Promise} */
   async clearCurrentRange() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.CHROMEVOX_STATE, BridgeAction.CLEAR_CURRENT_RANGE);
+        BridgeConstants.ChromeVoxState.TARGET,
+        BridgeConstants.ChromeVoxState.Action.CLEAR_CURRENT_RANGE);
   },
 
   /**
@@ -108,7 +116,8 @@ BackgroundBridge.ChromeVoxState = {
    */
   async updatePunctuationEcho(punctuationEcho) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.CHROMEVOX_STATE, BridgeAction.UPDATE_PUNCTUATION_ECHO,
+        BridgeConstants.ChromeVoxState.TARGET,
+        BridgeConstants.ChromeVoxState.Action.UPDATE_PUNCTUATION_ECHO,
         punctuationEcho);
   },
 };
@@ -121,7 +130,8 @@ BackgroundBridge.CommandHandler = {
    */
   async onCommand(command) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.COMMAND_HANDLER, BridgeAction.ON_COMMAND, command);
+        BridgeConstants.CommandHandler.TARGET,
+        BridgeConstants.CommandHandler.Action.ON_COMMAND, command);
   },
 };
 
@@ -132,7 +142,8 @@ BackgroundBridge.EventSourceState = {
    */
   async get() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.EVENT_SOURCE_STATE, BridgeAction.GET);
+        BridgeConstants.EventSourceState.TARGET,
+        BridgeConstants.EventSourceState.Action.GET);
   },
 };
 
@@ -143,7 +154,8 @@ BackgroundBridge.GestureCommandHandler = {
    */
   async setEnabled(enabled) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.GESTURE_COMMAND_HANDLER, BridgeAction.SET_ENABLED);
+        BridgeConstants.GestureCommandHandler.TARGET,
+        BridgeConstants.GestureCommandHandler.Action.SET_ENABLED);
   },
 };
 
@@ -155,8 +167,8 @@ BackgroundBridge.EventStreamLogger = {
    */
   async notifyEventStreamFilterChanged(name, enabled) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.EVENT_STREAM_LOGGER,
-        BridgeAction.NOTIFY_EVENT_STREAM_FILTER_CHANGED, {name, enabled});
+        BridgeTargets.EVENT_STREAM_LOGGER,
+        BridgeActions.NOTIFY_EVENT_STREAM_FILTER_CHANGED, {name, enabled});
   },
 };
 
@@ -167,7 +179,8 @@ BackgroundBridge.LogStore = {
    */
   async clearLog() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.LOG_STORE, BridgeAction.CLEAR_LOG);
+        BridgeConstants.LogStore.TARGET,
+        BridgeConstants.LogStore.Action.CLEAR_LOG);
   },
 
   /**
@@ -177,16 +190,22 @@ BackgroundBridge.LogStore = {
    */
   async getLogs() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.LOG_STORE, BridgeAction.GET_LOGS);
+        BridgeTargets.LOG_STORE, BridgeActions.GET_LOGS);
   },
 };
 
 BackgroundBridge.PanelBackground = {
+  /** @return {!Promise} */
+  async clearSavedNode() {
+    return BridgeHelper.sendMessage(
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.CLEAR_SAVED_NODE);
+  },
+
   /** @param {string=} opt_activatedMenuTitle */
   async createAllNodeMenuBackgrounds(opt_activatedMenuTitle) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.CREATE_ALL_NODE_MENU_BACKGROUNDS, opt_activatedMenuTitle);
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.CREATE_ALL_NODE_MENU_BACKGROUNDS, opt_activatedMenuTitle);
   },
 
   /**
@@ -196,7 +215,7 @@ BackgroundBridge.PanelBackground = {
    */
   async createNewISearch() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.CREATE_NEW_I_SEARCH);
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.CREATE_NEW_I_SEARCH);
   },
 
   /**
@@ -205,7 +224,7 @@ BackgroundBridge.PanelBackground = {
    */
   async destroyISearch() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.DESTROY_I_SEARCH);
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.DESTROY_I_SEARCH);
   },
 
   /**
@@ -215,7 +234,7 @@ BackgroundBridge.PanelBackground = {
    */
   async focusTab(windowId, tabId) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.FOCUS_TAB,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.FOCUS_TAB,
         {windowId, tabId});
   },
 
@@ -227,14 +246,14 @@ BackgroundBridge.PanelBackground = {
    */
   async getActionsForCurrentNode() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.GET_ACTIONS_FOR_CURRENT_NODE);
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.GET_ACTIONS_FOR_CURRENT_NODE);
   },
 
   /** @return {!Promise<!Array<!PanelTabMenuItemData>>} */
   async getTabMenuData() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.GET_TAB_MENU_DATA);
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.GET_TAB_MENU_DATA);
   },
 
   /**
@@ -245,7 +264,7 @@ BackgroundBridge.PanelBackground = {
    */
   async incrementalSearch(searchStr, dir, opt_nextObject) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.INCREMENTAL_SEARCH,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.INCREMENTAL_SEARCH,
         {searchStr, dir, opt_nextObject});
   },
 
@@ -255,7 +274,7 @@ BackgroundBridge.PanelBackground = {
    */
   async nodeMenuCallback(callbackNodeIndex) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.NODE_MENU_CALLBACK,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.NODE_MENU_CALLBACK,
         callbackNodeIndex);
   },
 
@@ -265,8 +284,8 @@ BackgroundBridge.PanelBackground = {
    */
   async performCustomActionOnCurrentNode(actionId) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE, actionId);
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE, actionId);
   },
 
   /**
@@ -275,8 +294,14 @@ BackgroundBridge.PanelBackground = {
    */
   async performStandardActionOnCurrentNode(action) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE, action);
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE, action);
+  },
+
+  /** @return {!Promise} */
+  async saveCurrentNode() {
+    return BridgeHelper.sendMessage(
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.SAVE_CURRENT_NODE);
   },
 
   /**
@@ -285,7 +310,8 @@ BackgroundBridge.PanelBackground = {
    */
   async setRangeToISearchNode() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.SET_RANGE_TO_I_SEARCH_NODE);
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.SET_RANGE_TO_I_SEARCH_NODE);
   },
 
   /**
@@ -293,7 +319,7 @@ BackgroundBridge.PanelBackground = {
    */
   async waitForPanelCollapse() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.WAIT_FOR_PANEL_COLLAPSE);
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.WAIT_FOR_PANEL_COLLAPSE);
   },
 };
 
@@ -310,7 +336,7 @@ BackgroundBridge.UserActionMonitor = {
    */
   async create(actions) {
     return BridgeHelper.sendMessage(
-        BridgeTarget.USER_ACTION_MONITOR, BridgeAction.CREATE, actions);
+        BridgeTargets.USER_ACTION_MONITOR, BridgeActions.CREATE, actions);
   },
 
   /**
@@ -319,6 +345,6 @@ BackgroundBridge.UserActionMonitor = {
    */
   async destroy() {
     return BridgeHelper.sendMessage(
-        BridgeTarget.USER_ACTION_MONITOR, BridgeAction.DESTROY);
+        BridgeTargets.USER_ACTION_MONITOR, BridgeActions.DESTROY);
   },
 };

@@ -21,9 +21,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/ash/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/mojo_system_info_dispatcher.h"
@@ -38,6 +35,9 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
@@ -63,9 +63,9 @@
 namespace ash {
 namespace {
 
-CertificateProviderService* GetLoginScreenCertProviderService() {
+chromeos::CertificateProviderService* GetLoginScreenCertProviderService() {
   DCHECK(ProfileHelper::IsSigninProfileInitialized());
-  return CertificateProviderServiceFactory::GetForBrowserContext(
+  return chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
       ProfileHelper::GetSigninProfile());
 }
 
@@ -184,14 +184,12 @@ void LoginDisplayHostMojo::OnDialogDestroyed(
 }
 
 void LoginDisplayHostMojo::SetUserCount(int user_count) {
-  const bool was_zero_users = (user_count_ == 0);
-  user_count_ = user_count;
-  if (GetOobeUI())
-    GetOobeUI()->SetLoginUserCount(user_count_);
+  const bool was_zero_users = !has_user_pods_;
+  has_user_pods_ = user_count > 0;
 
   // Hide Gaia dialog in case empty list of users switched to a non-empty one.
   // And if the dialog shows login screen.
-  if (was_zero_users && user_count_ != 0 && dialog_ && dialog_->IsVisible() &&
+  if (was_zero_users && has_user_pods_ && dialog_ && dialog_->IsVisible() &&
       (!wizard_controller_->is_initialized() ||
        (wizard_controller_->current_screen() &&
         WizardController::IsSigninScreen(
@@ -413,7 +411,7 @@ void LoginDisplayHostMojo::HideOobeDialog(bool saml_video_timeout) {
   // TODO(crbug.com/1283052): simplify the logic here.
 
   const bool no_users =
-      !login_display_->IsSigninInProgress() && user_count_ == 0;
+      !login_display_->IsSigninInProgress() && !has_user_pods_;
   if (no_users && !saml_video_timeout) {
     return;
   }
@@ -450,7 +448,7 @@ void LoginDisplayHostMojo::RequestSystemInfoUpdate() {
 }
 
 bool LoginDisplayHostMojo::HasUserPods() {
-  return user_count_ > 0;
+  return has_user_pods_;
 }
 
 void LoginDisplayHostMojo::VerifyOwnerForKiosk(base::OnceClosure on_success) {
@@ -690,10 +688,6 @@ void LoginDisplayHostMojo::EnsureOobeDialogLoaded() {
   dialog_ = new OobeUIDialogDelegate(weak_factory_.GetWeakPtr());
   dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(
       login_display_.get());
-
-  // It may happen that LoginDisplayHostMojo::SetUserCount was called before
-  // the dialog_ was created. Set number of users once again here.
-  SetUserCount(user_count_);
 
   views::View* web_dialog_view = dialog_->GetWebDialogView();
   scoped_observation_.Observe(web_dialog_view);

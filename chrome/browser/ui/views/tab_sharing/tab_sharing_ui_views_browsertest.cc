@@ -49,7 +49,7 @@ content::WebContents* GetWebContents(Browser* browser, int tab) {
 }
 
 content::GlobalRenderFrameHostId GetGlobalId(Browser* browser, int tab) {
-  auto* const main_frame = GetWebContents(browser, tab)->GetMainFrame();
+  auto* const main_frame = GetWebContents(browser, tab)->GetPrimaryMainFrame();
   return main_frame ? main_frame->GetGlobalId()
                     : content::GlobalRenderFrameHostId();
 }
@@ -93,7 +93,7 @@ bool SecondaryButtonIsEnabled(Browser* browser, int tab) {
 
 std::u16string GetExpectedSwitchToMessage(Browser* browser, int tab) {
   content::RenderFrameHost* const rfh =
-      GetWebContents(browser, tab)->GetMainFrame();
+      GetWebContents(browser, tab)->GetPrimaryMainFrame();
   return l10n_util::GetStringFUTF16(
       IDS_TAB_SHARING_INFOBAR_SWITCH_TO_BUTTON,
       url_formatter::FormatOriginForSecurityDisplay(
@@ -103,7 +103,7 @@ std::u16string GetExpectedSwitchToMessage(Browser* browser, int tab) {
 
 content::DesktopMediaID GetDesktopMediaID(Browser* browser, int tab) {
   content::RenderFrameHost* main_frame =
-      GetWebContents(browser, tab)->GetMainFrame();
+      GetWebContents(browser, tab)->GetPrimaryMainFrame();
   return content::DesktopMediaID(
       content::DesktopMediaID::TYPE_WEB_CONTENTS,
       content::DesktopMediaID::kNullId,
@@ -194,7 +194,7 @@ class TabSharingUIViewsBrowserTest
            (capturing_tab == kNullTabIndex && captured_tab == kNullTabIndex));
 
 #if BUILDFLAG(IS_CHROMEOS)
-    // TODO(https://crbug.com/1030925): Fix contents border on ChromeOS.
+    // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
     has_border = false;
 #endif
     views::Widget* contents_border = GetContentsBorder(browser);
@@ -453,30 +453,6 @@ IN_PROC_BROWSER_TEST_P(TabSharingUIViewsBrowserTest, CloseTab) {
            /*captured_tab=*/kNullTabIndex, /*infobar_count=*/0);
 }
 
-// TODO(https://crbug.com/1030925): Fix contents border on ChromeOS.
-#if !BUILDFLAG(IS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(TabSharingUIViewsBrowserTest,
-                       BorderWidgetShouldCloseWhenBrowserCloses) {
-  Browser* new_browser = CreateBrowser(browser()->profile());
-  AddTabs(new_browser, 2);
-  ASSERT_EQ(new_browser->tab_strip_model()->count(), 3);
-  CreateUniqueFaviconFor(new_browser->tab_strip_model()->GetWebContentsAt(0));
-  CreateUiAndStartSharing(new_browser, /*capturing_tab=*/0, /*captured_tab=*/1);
-
-  // Share a different tab.
-  // When switching tabs, a new UI is created, and the old one destroyed.
-  ActivateTab(new_browser, 2);
-  CreateUiAndStartSharing(new_browser, /*capturing_tab=*/0, /*captured_tab=*/2);
-
-  // Test that the UI has been updated.
-  VerifyUi(new_browser, /*capturing_tab=*/0, /*captured_tab=*/2);
-
-  auto contents_border_weakptr = GetContentsBorder(new_browser)->GetWeakPtr();
-  CloseBrowserSynchronously(new_browser);
-  EXPECT_FALSE(contents_border_weakptr);
-}
-#endif  // !BUILDFLAG(IS_CHROMEOS)
-
 IN_PROC_BROWSER_TEST_P(TabSharingUIViewsBrowserTest,
                        CloseTabInIncognitoBrowser) {
   AddTabs(browser(), 2);
@@ -525,7 +501,7 @@ IN_PROC_BROWSER_TEST_P(TabSharingUIViewsBrowserTest, KillTab) {
   // Kill a tab different than the shared one.
   content::WebContents* web_contents = GetWebContents(browser(), 0);
   content::RenderProcessHost* process =
-      web_contents->GetMainFrame()->GetProcess();
+      web_contents->GetPrimaryMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   process->Shutdown(content::RESULT_CODE_KILLED);
@@ -548,7 +524,7 @@ IN_PROC_BROWSER_TEST_P(TabSharingUIViewsBrowserTest, KillSharedTab) {
   // Kill the shared tab.
   content::WebContents* shared_tab_web_contents = GetWebContents(browser(), 1);
   content::RenderProcessHost* shared_tab_process =
-      shared_tab_web_contents->GetMainFrame()->GetProcess();
+      shared_tab_web_contents->GetPrimaryMainFrame()->GetProcess();
   content::RenderProcessHostWatcher shared_tab_crash_observer(
       shared_tab_process,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
@@ -694,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(MultipleTabSharingUIViewsBrowserTest, VerifyUi) {
 
   views::Widget* contents_border = GetContentsBorder(browser());
 #if BUILDFLAG(IS_CHROMEOS)
-  // TODO(https://crbug.com/1030925): Fix contents border on ChromeOS.
+  // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
   EXPECT_EQ(nullptr, contents_border);
 #else
   // The capturing tab, which is not itself being captured, does not have

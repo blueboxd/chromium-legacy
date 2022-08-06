@@ -44,8 +44,20 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
 
   SidePanelRegistry* GetGlobalSidePanelRegistry();
 
+  // Prevent content swapping delays from happening for testing.
+  // This should be called before the side panel is first shown.
+  void SetNoDelaysForTesting();
+
+  SidePanelEntry* GetCurrentSidePanelEntryForTesting() {
+    return current_entry_.get();
+  }
+
  private:
   friend class SidePanelCoordinatorTest;
+  FRIEND_TEST_ALL_PREFIXES(UserNoteUICoordinatorTest,
+                           ShowEmptyUserNoteSidePanel);
+  FRIEND_TEST_ALL_PREFIXES(UserNoteUICoordinatorTest,
+                           PopulateUserNoteSidePanel);
 
   views::View* GetContentView();
   SidePanelEntry* GetEntryForId(SidePanelEntry::Id entry_id);
@@ -54,8 +66,12 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   void InitializeSidePanel();
 
   // Removes existing SidePanelEntry contents from the side panel if any exist
-  // and populates the side panel with the provided SidePanelEntry.
-  void PopulateSidePanel(SidePanelEntry* entry);
+  // and populates the side panel with the provided SidePanelEntry and
+  // |content_view| if provided, otherwise get the content_view from the
+  // provided SidePanelEntry.
+  void PopulateSidePanel(
+      SidePanelEntry* entry,
+      absl::optional<std::unique_ptr<views::View>> content_view);
 
   // Clear cached views for registry entries for global and contextual
   // registries.
@@ -64,6 +80,9 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // Returns the last active entry or the reading list entry if no last active
   // entry exists.
   absl::optional<SidePanelEntry::Id> GetLastActiveEntryId() const;
+
+  // Returns the currently selected id in the combobox, if one is shown.
+  absl::optional<SidePanelEntry::Id> GetSelectedId() const;
 
   SidePanelRegistry* GetActiveContextualRegistry() const;
 
@@ -81,9 +100,23 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
+  // When true, prevent loading delays when switching between side panel
+  // entries.
+  bool no_delays_for_testing_ = false;
+
   const raw_ptr<BrowserView> browser_view_;
   raw_ptr<SidePanelRegistry> global_registry_;
   absl::optional<SidePanelEntry::Id> last_active_global_entry_id_;
+
+  // current_entry_ tracks the entry that currently has its view hosted by the
+  // side panel. It is necessary as current_entry_ may belong to a contextual
+  // registry that is swapped out (during a tab switch for e.g.). In such
+  // situations we may still need a reference to the entry corresponding to the
+  // hosted view so we can cache and clean up appropriately before switching in
+  // the new entry.
+  // Use a weak pointer so that current side panel entry can be reset
+  // automatically if the entry is destroyed.
+  base::WeakPtr<SidePanelEntry> current_entry_;
 
   // Used to update SidePanelEntry options in the header_combobox_ based on
   // their availability in the observed side panel registries.

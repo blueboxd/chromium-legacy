@@ -70,7 +70,7 @@ void FakePasswordStoreBackend::GetAllLoginsForAccountAsync(
 }
 
 void FakePasswordStoreBackend::FillMatchingLoginsAsync(
-    LoginsOrErrorReply callback,
+    LoginsReply callback,
     bool include_psl,
     const std::vector<PasswordFormDigest>& forms) {
   base::SequencedTaskRunnerHandle::Get()->PostTaskAndReplyWithResult(
@@ -82,7 +82,7 @@ void FakePasswordStoreBackend::FillMatchingLoginsAsync(
 
 void FakePasswordStoreBackend::AddLoginAsync(
     const PasswordForm& form,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FakePasswordStoreBackend::AddLoginInternal,
@@ -92,7 +92,7 @@ void FakePasswordStoreBackend::AddLoginAsync(
 
 void FakePasswordStoreBackend::UpdateLoginAsync(
     const PasswordForm& form,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FakePasswordStoreBackend::UpdateLoginInternal,
@@ -102,7 +102,7 @@ void FakePasswordStoreBackend::UpdateLoginAsync(
 
 void FakePasswordStoreBackend::RemoveLoginAsync(
     const PasswordForm& form,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FakePasswordStoreBackend::RemoveLoginInternal,
@@ -115,14 +115,14 @@ void FakePasswordStoreBackend::RemoveLoginsByURLAndTimeAsync(
     base::Time delete_begin,
     base::Time delete_end,
     base::OnceCallback<void(bool)> sync_completion,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   NOTIMPLEMENTED();
 }
 
 void FakePasswordStoreBackend::RemoveLoginsCreatedBetweenAsync(
     base::Time delete_begin,
     base::Time delete_end,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   NOTIMPLEMENTED();
 }
 

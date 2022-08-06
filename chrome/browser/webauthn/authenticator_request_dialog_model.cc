@@ -501,6 +501,12 @@ void AuthenticatorRequestDialogModel::SetRequestCallback(
   request_callback_ = request_callback;
 }
 
+void AuthenticatorRequestDialogModel::SetAccountPreselectedCallback(
+    content::AuthenticatorRequestClientDelegate::AccountPreselectedCallback
+        callback) {
+  account_preselected_callback_ = callback;
+}
+
 void AuthenticatorRequestDialogModel::SetBluetoothAdapterPowerOnCallback(
     base::RepeatingClosure bluetooth_adapter_power_on_callback) {
   bluetooth_adapter_power_on_callback_ = bluetooth_adapter_power_on_callback;
@@ -561,18 +567,6 @@ void AuthenticatorRequestDialogModel::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
     base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
         callback) {
-  if (preselected_account_) {
-    for (auto& response : responses) {
-      if (response.user_entity == preselected_account_) {
-        std::move(callback).Run(std::move(response));
-        return;
-      }
-    }
-    // The user selected an account that was not part of the responses. This
-    // shouldn't really happen, cancel the request.
-    Cancel();
-    return;
-  }
   ephemeral_state_.responses_ = std::move(responses);
   ephemeral_state_.creds_ = {};
   for (const auto& response : ephemeral_state_.responses_) {
@@ -601,9 +595,13 @@ void AuthenticatorRequestDialogModel::OnAccountPreselected(
     const std::vector<uint8_t>& id) {
   for (const auto& cred : creds()) {
     if (cred.user.id == id) {
-      preselected_account_ = std::move(cred.user);
+      account_preselected_callback_.Run(cred.cred_id);
       ephemeral_state_.creds_.clear();
-      HideDialogAndDispatchToPlatformAuthenticator();
+      if (transport_availability()->has_win_native_api_authenticator) {
+        HideDialogAndDispatchToNativeWindowsApi();
+      } else {
+        HideDialogAndDispatchToPlatformAuthenticator();
+      }
       return;
     }
   }
@@ -768,11 +766,6 @@ std::vector<std::string> AuthenticatorRequestDialogModel::paired_phone_names()
 void AuthenticatorRequestDialogModel::ReplaceCredListForTesting(
     std::vector<device::DiscoverableCredentialMetadata> creds) {
   ephemeral_state_.creds_ = std::move(creds);
-}
-
-absl::optional<device::PublicKeyCredentialUserEntity>
-AuthenticatorRequestDialogModel::GetPreselectedAccountForTesting() {
-  return preselected_account_;
 }
 
 base::WeakPtr<AuthenticatorRequestDialogModel>
@@ -1021,6 +1014,18 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
   }
 
   if (include_add_phone_option) {
+    // If there's no other priority mechanism, no phones, and nothing on the
+    // platform authenticator, jump directly to showing a QR code.
+    const bool is_priority =
+        std::none_of(mechanisms_.begin(), mechanisms_.end(),
+                     [](const Mechanism& m) { return m.priority; }) &&
+        paired_phone_names().empty() && is_get_assertion &&
+        transport_availability_.has_empty_allow_list &&
+        transport_availability_.has_platform_authenticator_credential !=
+            device::FidoRequestHandlerBase::RecognizedCredential::
+                kHasRecognizedCredential &&
+        base::FeatureList::IsEnabled(device::kWebAuthPasskeysUI);
+
     const std::u16string label =
         l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
     mechanisms_.emplace_back(
@@ -1028,7 +1033,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
         base::BindRepeating(
             &AuthenticatorRequestDialogModel::StartGuidedFlowForAddPhone,
             base::Unretained(this), mechanisms_.size()),
-        /* is_priority= */ false);
+        is_priority);
   }
 
   for (const auto transport : transports_to_list_if_active) {

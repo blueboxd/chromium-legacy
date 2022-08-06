@@ -34,6 +34,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -81,10 +82,34 @@ constexpr auto kBorderInsetsForAppListBubble = gfx::Insets::TLBR(4, 4, 4, 0);
 constexpr auto kTextFieldMarginsForAppListBubble =
     gfx::Insets::TLBR(8, 0, 0, 0);
 
+// The default PlaceholderTextTypes used for productivity launcher. Randomly
+// selected when placeholder text would be shown.
+constexpr SearchBoxView::PlaceholderTextType kDefaultPlaceholders[3] = {
+    SearchBoxView::PlaceholderTextType::kShortcuts,
+    SearchBoxView::PlaceholderTextType::kTabs,
+    SearchBoxView::PlaceholderTextType::kSettings,
+};
+
+// PlaceholderTextTypes used for productivity launcher for cloud gaming devices.
+// Randomly selected when placeholder text would be shown.
+constexpr SearchBoxView::PlaceholderTextType kGamingPlaceholders[4] = {
+    SearchBoxView::PlaceholderTextType::kShortcuts,
+    SearchBoxView::PlaceholderTextType::kTabs,
+    SearchBoxView::PlaceholderTextType::kSettings,
+    SearchBoxView::PlaceholderTextType::kGames,
+};
+
 bool IsTrimmedQueryEmpty(const std::u16string& query) {
   std::u16string trimmed_query;
   base::TrimWhitespace(query, base::TrimPositions::TRIM_ALL, &trimmed_query);
   return trimmed_query.empty();
+}
+
+SearchBoxView::PlaceholderTextType SelectPlaceholderText() {
+  if (chromeos::features::IsCloudGamingDeviceEnabled()) {
+    return kGamingPlaceholders[rand() % std::size(kGamingPlaceholders)];
+  }
+  return kDefaultPlaceholders[rand() % std::size(kDefaultPlaceholders)];
 }
 
 }  // namespace
@@ -717,11 +742,7 @@ void SearchBoxView::UpdateTextColor() {
 
 void SearchBoxView::UpdatePlaceholderTextAndAccessibleName() {
   if (features::IsProductivityLauncherEnabled()) {
-    // Randomly select a placeholder text.
-    const PlaceholderTextType placeholder_type = PlaceholderTextType(
-        base::RandInt(0, static_cast<int>(PlaceholderTextType::kMaxValue)));
-
-    switch (placeholder_type) {
+    switch (SelectPlaceholderText()) {
       case PlaceholderTextType::kShortcuts:
         search_box()->SetPlaceholderText(l10n_util::GetStringFUTF16(
             IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE,
@@ -757,6 +778,18 @@ void SearchBoxView::UpdatePlaceholderTextAndAccessibleName() {
                 : IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
             l10n_util::GetStringUTF16(
                 IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS)));
+        break;
+      case PlaceholderTextType::kGames:
+        search_box()->SetPlaceholderText(l10n_util::GetStringFUTF16(
+            IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_GAMES)));
+        search_box()->SetAccessibleName(l10n_util::GetStringFUTF16(
+            is_tablet_mode_
+                ? IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_TABLET
+                : IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_GAMES)));
         break;
     }
   } else {

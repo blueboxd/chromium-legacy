@@ -74,19 +74,19 @@ void MoveToNextDay(int& column,
 CalendarDateCellView::CalendarDateCellView(
     CalendarViewController* calendar_view_controller,
     base::Time date,
+    base::TimeDelta time_difference,
     bool is_grayed_out_date,
     int row_index)
     : views::LabelButton(
           views::Button::PressedCallback(
               base::BindRepeating(&CalendarDateCellView::OnDateCellActivated,
                                   base::Unretained(this))),
-          calendar_utils::GetDayIntOfMonth(
-              date + base::Minutes(
-                         calendar_view_controller->time_difference_minutes())),
+          calendar_utils::GetDayIntOfMonth(date + time_difference),
           CONTEXT_CALENDAR_DATE),
       date_(date),
       grayed_out_(is_grayed_out_date),
       row_index_(row_index),
+      time_difference_(time_difference),
       calendar_view_controller_(calendar_view_controller) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(calendar_utils::kDateCellInsets));
@@ -111,7 +111,7 @@ void CalendarDateCellView::OnThemeChanged() {
   views::View::OnThemeChanged();
 
   // Gray-out the date that is not in the current month.
-  SetEnabledTextColors(grayed_out_ ? calendar_utils::GetSecondaryTextColor()
+  SetEnabledTextColors(grayed_out_ ? calendar_utils::GetDisabledTextColor()
                                    : calendar_utils::GetPrimaryTextColor());
 }
 
@@ -170,9 +170,7 @@ void CalendarDateCellView::OnSelectedDateUpdated() {
     }
     // Sets accessible label. E.g. Calendar, week of July 16th 2021, [selected
     // date] is currently selected.
-    base::Time local_date =
-        date_ +
-        base::Minutes(calendar_view_controller_->time_difference_minutes());
+    base::Time local_date = date_ + time_difference_;
     base::Time::Exploded date_exploded =
         calendar_utils::GetExplodedUTC(local_date);
     base::Time first_day_of_week =
@@ -180,7 +178,7 @@ void CalendarDateCellView::OnSelectedDateUpdated() {
 
     SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION,
-        calendar_utils::GetMonthDayYear(first_day_of_week),
+        calendar_utils::GetMonthDayYearWeek(first_day_of_week),
         calendar_utils::GetDayOfMonth(date_)));
   }
 }
@@ -205,7 +203,7 @@ void CalendarDateCellView::DisableFocus() {
 }
 
 void CalendarDateCellView::SetTooltipAndAccessibleName() {
-  std::u16string formatted_date = calendar_utils::GetMonthDayYear(date_);
+  std::u16string formatted_date = calendar_utils::GetMonthDayYearWeek(date_);
   if (!calendar_utils::IsActiveUser()) {
     tool_tip_ = formatted_date;
   } else {
@@ -324,22 +322,18 @@ CalendarMonthView::CalendarMonthView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   calendar_utils::SetUpWeekColumns(layout);
-  calendar_view_controller_->MaybeUpdateTimeDifference(first_day_of_month);
+  base::TimeDelta const time_difference =
+      calendar_utils::GetTimeDifference(first_day_of_month);
 
   // Using the time difference to get the local `base::Time`, which is used to
   // generate the exploded.
-  base::Time first_day_of_month_local =
-      first_day_of_month +
-      base::Minutes(calendar_view_controller_->time_difference_minutes());
+  base::Time first_day_of_month_local = first_day_of_month + time_difference;
   base::Time::Exploded first_day_of_month_exploded =
       calendar_utils::GetExplodedUTC(first_day_of_month_local);
   // Find the first day of the week.
   base::Time current_date =
       calendar_utils::GetFirstDayOfWeekLocalMidnight(first_day_of_month);
-  base::Time current_date_local =
-      current_date +
-      base::Minutes(calendar_view_controller_->time_difference_minutes());
-
+  base::Time current_date_local = current_date + time_difference;
   base::Time::Exploded current_date_exploded =
       calendar_utils::GetExplodedUTC(current_date_local);
 
@@ -397,12 +391,12 @@ CalendarMonthView::CalendarMonthView(
 
   // Adds the first several days from the next month if the last day is not the
   // end day of this week. The end date of the last row should be 6 day's away
-  // from the first day of this week. Adds 5 more hours just to cover the case
-  // 25 hours in a day due to daylight saving.
+  // from the first day of this week. Adds `kDurationForAdjustingDST` hours to
+  // cover the case 25 hours in a day due to daylight saving.
   base::Time end_of_the_last_row_local =
       calendar_utils::GetFirstDayOfWeekLocalMidnight(current_date) +
-      base::Days(6) + base::Hours(5) +
-      base::Minutes(calendar_view_controller_->time_difference_minutes());
+      base::Days(6) + calendar_utils::kDurationForAdjustingDST +
+      time_difference;
   base::Time::Exploded end_of_row_exploded =
       calendar_utils::GetExplodedUTC(end_of_the_last_row_local);
 
@@ -423,7 +417,7 @@ CalendarMonthView::~CalendarMonthView() {
 }
 
 void CalendarMonthView::FetchEvents(const base::Time& month) {
-  calendar_model_->FetchEvents({month});
+  calendar_model_->FetchEvents(month);
 }
 
 void CalendarMonthView::OnEventsFetched(
@@ -444,6 +438,7 @@ CalendarDateCellView* CalendarMonthView::AddDateCellToLayout(
     layout_manager->AddRows(1, views::TableLayout::kFixedSize);
   return AddChildView(std::make_unique<CalendarDateCellView>(
       calendar_view_controller_, current_date,
+      calendar_utils::GetTimeDifference(current_date),
       /*is_grayed_out_date=*/!is_in_current_month, /*row_index=*/row_index));
 }
 

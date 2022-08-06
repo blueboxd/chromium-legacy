@@ -524,9 +524,10 @@ void PrintViewManagerBase::ScriptedPrintReply(
 void PrintViewManagerBase::UpdatePrintingEnabled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The Unretained() is safe because ForEachRenderFrameHost() is synchronous.
-  web_contents()->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
-      &PrintViewManagerBase::SendPrintingEnabled, base::Unretained(this),
-      printing_enabled_.GetValue()));
+  web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+      base::BindRepeating(&PrintViewManagerBase::SendPrintingEnabled,
+                          base::Unretained(this),
+                          printing_enabled_.GetValue()));
 }
 
 void PrintViewManagerBase::NavigationStopped() {
@@ -870,7 +871,8 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   }
 
   // We can't print if there is no renderer.
-  if (!web_contents() || !web_contents()->GetMainFrame()->IsRenderFrameLive()) {
+  if (!web_contents() ||
+      !web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive()) {
     return false;
   }
 
@@ -879,7 +881,7 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   // pages in an hurry if a print_job_ is still pending. No need to wait for it
   // to actually spool the pages, only to have the renderer generate them. Run
   // a message loop until we get our signal that the print job is satisfied.
-  // |quit_inner_loop_| will be called as soon as
+  // `quit_inner_loop_` will be called as soon as
   // print_job_->document()->IsComplete() is true in DidPrintDocument(). The
   // check is done in ShouldQuitFromInnerMessageLoop().
   // BLOCKS until all the pages are received. (Need to enable recursive task)
@@ -910,14 +912,14 @@ bool PrintViewManagerBase::CreateNewPrintJob(
   DCHECK(!quit_inner_loop_);
   DCHECK(query);
 
-  // Disconnect the current |print_job_|.
+  // Disconnect the current `print_job_`.
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
   DisconnectFromCurrentPrintJob();
   if (!weak_this)
     return false;
 
   // We can't print if there is no renderer.
-  if (!web_contents()->GetMainFrame()->IsRenderFrameLive()) {
+  if (!web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive()) {
     return false;
   }
 

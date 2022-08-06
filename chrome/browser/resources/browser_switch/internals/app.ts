@@ -8,8 +8,9 @@ import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement,} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement,} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './app.html.js';
 import {BrowserSwitchInternalsProxy, BrowserSwitchInternalsProxyImpl, Decision, RuleSet, RuleSetList, RulesetSources, TimestampPair,} from './browser_switch_internals_proxy.js';
 
 const BrowserSwitchInternalsAppElementBase = I18nMixin(PolymerElement);
@@ -21,7 +22,7 @@ class BrowserSwitchInternalsAppElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -149,31 +150,30 @@ class BrowserSwitchInternalsAppElement extends
     let reason = '';
     if (decision.matching_rule) {
       if (decision.matching_rule.startsWith('!')) {
-        reason += `Reason: The inverted rule ${
-            JSON.stringify(decision.matching_rule)} was found in `;
+        reason += this.i18n(
+                      'openBrowserInvertRuleReason',
+                      JSON.stringify(decision.matching_rule)) +
+            '\n';
       } else {
-        reason +=
-            `Reason: ${JSON.stringify(decision.matching_rule)} was found in `;
+        const list = decision.reason === 'sitelist' ?
+            this.i18n('forceOpenTitle') :
+            this.i18n('ignoreTitle');
+        reason += this.i18n(
+                      'openBrowserRuleReason',
+                      JSON.stringify(decision.matching_rule), list) +
+            '\n';
       }
     }
     // if undefined - add nothing to the output
 
     switch (decision.reason) {
       case 'globally_disabled':
-        reason += 'Reason: The BrowserSwitcherEnabled policy is false.\n';
-        break;
+        throw new Error('BrowserSwitcherEnabled policy is set as false!');
       case 'protocol':
-        reason +=
-            'Reason: LBS only supports http://, https://, and file:// URLs.\n';
-        break;
-      case 'sitelist':
-        reason += 'the "Force open in" list.\n';
-        break;
-      case 'greylist':
-        reason += 'the "Ignore" list.\n';
+        reason += this.i18n('openBrowserProtocolReason') + '\n';
         break;
       case 'default':
-        reason += `Reason: LBS stays in ${browserName} by default.\n`;
+        reason += this.i18n('openBrowserDefaultReason', browserName) + '\n';
         break;
     }
 

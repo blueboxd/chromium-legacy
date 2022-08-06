@@ -19,7 +19,7 @@
 
 namespace ipcz {
 
-class Node;
+class Message;
 
 // Encapsulates shared ownership of a transport endpoint created by an ipcz
 // driver. The driver calls into this object to notify ipcz of incoming messages
@@ -29,18 +29,10 @@ class DriverTransport
     : public APIObjectImpl<DriverTransport, APIObject::kTransport> {
  public:
   using Pair = std::pair<Ref<DriverTransport>, Ref<DriverTransport>>;
-  using Data = absl::Span<const uint8_t>;
 
-  // A view into a transport message. Does not own the underlying data or
-  // handles.
-  struct Message {
-    explicit Message(Data data);
-    Message(Data data, absl::Span<const IpczDriverHandle> handles);
-    Message(const Message&);
-    Message& operator=(const Message&);
-    ~Message();
-
-    Data data;
+  // A view into the unowned raw contents of an incoming transport message.
+  struct RawMessage {
+    absl::Span<const uint8_t> data;
     absl::Span<const IpczDriverHandle> handles;
   };
 
@@ -51,7 +43,8 @@ class DriverTransport
 
     // Accepts a raw message from the transport. Note that this is called
     // without *any* validation of the size or content of `message`.
-    virtual IpczResult OnTransportMessage(const Message& message) = 0;
+    virtual bool OnTransportMessage(const RawMessage& message,
+                                    const DriverTransport& transport) = 0;
 
     // Indicates that some unrecoverable error has occurred with the transport.
     virtual void OnTransportError() = 0;
@@ -94,25 +87,14 @@ class DriverTransport
   // reactivated.
   IpczResult Deactivate();
 
-  // Asks the driver to submit the data and driver objects in `message` for
-  // transmission from this transport endpoint to the opposite endpoint.
-  IpczResult TransmitMessage(const Message& message);
-
-  // Templated helper for transmitting macro-generated ipcz messages. This
-  // performs any necessary in-place serialization of driver objects before
-  // transmitting.
-  template <typename T>
-  IpczResult Transmit(T& message) {
-    if (!message.Serialize(*this)) {
-      return IPCZ_RESULT_INVALID_ARGUMENT;
-    }
-    return TransmitMessage(
-        Message(message.data_view(), message.transmissible_driver_handles()));
-  }
+  // Helper for transmitting macro-generated ipcz messages. This performs any
+  // necessary in-place serialization of driver objects before transmitting,
+  // hence it takes a mutable reference to `message`.
+  IpczResult Transmit(Message& message);
 
   // Invoked by the driver any time this transport receives data and driver
   // handles to be passed back into ipcz.
-  IpczResult Notify(const Message& message);
+  bool Notify(const RawMessage& message);
   void NotifyError();
 
   // APIObject:

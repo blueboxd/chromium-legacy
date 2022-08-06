@@ -29,9 +29,7 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     uint32_t frames_to_process,
     float sample_rate)
     : AudioDestinationHandler(node),
-      frames_processed_(0),
       frames_to_process_(frames_to_process),
-      is_rendering_started_(false),
       number_of_channels_(number_of_channels),
       sample_rate_(sample_rate),
       main_thread_task_runner_(Context()->GetExecutionContext()->GetTaskRunner(
@@ -109,7 +107,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
   }
 
   // Rendering is already started, which implicitly means we resume the
-  // rendering by calling |doOfflineRendering| on the render thread.
+  // rendering by calling `DoOfflineRendering()` on the render thread.
   PostCrossThreadTask(
       *render_thread_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&OfflineAudioDestinationHandler::DoOfflineRendering,
@@ -233,8 +231,8 @@ void OfflineAudioDestinationHandler::NotifyComplete() {
 
   render_thread_.reset();
 
-  // If the execution context has been destroyed, there's no where to
-  // send the notification, so just return.
+  // If the execution context has been destroyed, there's nowhere to send the
+  // notification, so just return.
   if (IsExecutionContextDestroyed()) {
     return;
   }

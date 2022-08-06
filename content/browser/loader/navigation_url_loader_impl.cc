@@ -38,6 +38,7 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
+#include "content/browser/speculation_rules/prefetch/prefetch_url_loader_interceptor.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -474,6 +475,14 @@ void NavigationURLLoaderImpl::CreateInterceptors(
         std::move(accept_langs)));
   }
 
+  // Set up an interceptor for prefetch.
+  std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
+      content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
+          frame_tree_node_id_);
+  if (prefetch_interceptor) {
+    interceptors_.push_back(std::move(prefetch_interceptor));
+  }
+
   // See if embedders want to add interceptors.
   std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
       browser_interceptors =
@@ -790,14 +799,9 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   if (head_->mime_type == "application/pdf" || head_->mime_type == "text/pdf")
     early_hints_manager_.reset();
 
-  if (response_body)
-    OnStartLoadingResponseBody(std::move(response_body));
-}
+  if (!response_body)
+    return;
 
-void NavigationURLLoaderImpl::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle response_body) {
-  LogQueueTimeHistogram("Navigation.QueueTime.OnStartLoadingResponseBody",
-                        resource_request_->is_outermost_main_frame);
   response_body_ = std::move(response_body);
   received_response_ = true;
 

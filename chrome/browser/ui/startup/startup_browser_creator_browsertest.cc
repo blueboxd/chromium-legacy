@@ -53,6 +53,7 @@
 #include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
+#include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -246,14 +247,6 @@ bool HasInfoBar(infobars::ContentInfoBarManager* infobar_manager,
   return false;
 }
 
-void WaitForLoadStopForBrowser(Browser* browser) {
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  for (int i = 0; i < tab_strip_model->count(); ++i) {
-    content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
-    EXPECT_TRUE(content::WaitForLoadStop(contents));
-  }
-}
-
 struct StartupBrowserCreatorFlagTypeValue {
   std::string flag;
   infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier;
@@ -293,44 +286,6 @@ AllBrowsersClosedWaiter::~AllBrowsersClosedWaiter() {
 
 void AllBrowsersClosedWaiter::OnBrowserRemoved(Browser* browser) {
   if (chrome::GetTotalBrowserCount() == 0)
-    std::move(quit_closure_).Run();
-}
-
-// This class waits for a specified number of sessions to be restored.
-class SessionsRestoredWaiter {
- public:
-  explicit SessionsRestoredWaiter(base::OnceClosure quit_closure,
-                                  int num_session_restores_expected);
-  SessionsRestoredWaiter(const SessionsRestoredWaiter&) = delete;
-  SessionsRestoredWaiter& operator=(const SessionsRestoredWaiter&) = delete;
-  ~SessionsRestoredWaiter();
-
- private:
-  // Callback for session restore notifications.
-  void OnSessionRestoreDone(Profile* profile, int num_tabs_restored);
-
-  // For automatically unsubscribing from callback-based notifications.
-  base::CallbackListSubscription callback_subscription_;
-  base::OnceClosure quit_closure_;
-  int num_session_restores_expected_;
-  int num_sessions_restored_ = 0;
-};
-
-SessionsRestoredWaiter::SessionsRestoredWaiter(
-    base::OnceClosure quit_closure,
-    int num_session_restores_expected)
-    : quit_closure_(std::move(quit_closure)),
-      num_session_restores_expected_(num_session_restores_expected) {
-  callback_subscription_ = SessionRestore::RegisterOnSessionRestoredCallback(
-      base::BindRepeating(&SessionsRestoredWaiter::OnSessionRestoreDone,
-                          base::Unretained(this)));
-}
-
-SessionsRestoredWaiter::~SessionsRestoredWaiter() = default;
-
-void SessionsRestoredWaiter::OnSessionRestoreDone(Profile* profile,
-                                                  int num_tabs_restored) {
-  if (++num_sessions_restored_ == num_session_restores_expected_)
     std::move(quit_closure_).Run();
 }
 
@@ -702,16 +657,14 @@ class StartupBrowserCreatorChromeAppShortcutTest
     }
   }
 
-  void ExpectBlockLaunch(
-      const std::string& force_installed_app_id = std::string()) {
+  void ExpectBlockLaunch(const std::string& app_id, bool force_install_dialog) {
     ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
     auto waiter = views::NamedWidgetShownWaiter(
         views::test::AnyWidgetTestPasskey{},
-        force_installed_app_id.empty()
-            ? "DeprecatedAppsDialogView"
-            : "ForceInstalledDeprecatedAppsDialogView");
+        force_install_dialog ? "ForceInstalledDeprecatedAppsDialogView"
+                             : "DeprecatedAppsDialogView");
 #endif
     // Should have opened the requested homepage about:blank in 1st window.
     TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -731,10 +684,12 @@ class StartupBrowserCreatorChromeAppShortcutTest
     BUILDFLAG(IS_FUCHSIA)
 
     GURL expected_url =
-        force_installed_app_id.empty()
-            ? GURL(chrome::kChromeUIAppsWithDeprecationDialogURL)
-            : GURL(chrome::kChromeUIAppsWithForceInstalledDeprecationDialogURL +
-                   force_installed_app_id);
+        force_install_dialog
+            ? GURL(chrome::kChromeUIAppsWithForceInstalledDeprecationDialogURL +
+                   app_id)
+            : GURL(chrome::kChromeUIAppsWithDeprecationDialogURL + app_id);
+    EXPECT_EQ(expected_url,
+              other_tab_strip->GetWebContentsAt(0)->GetVisibleURL());
     EXPECT_EQ(expected_url,
               other_tab_strip->GetWebContentsAt(0)->GetVisibleURL());
 
@@ -807,7 +762,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
                                         expected_title);
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   } else {
-    ExpectBlockLaunch();
+    ExpectBlockLaunch(extension_app->id(), /*force_install_dialog=*/false);
   }
 }
 
@@ -843,7 +798,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
               std::string::npos)
         << new_browser->app_name();
   } else {
-    ExpectBlockLaunch();
+    ExpectBlockLaunch(extension_app->id(), /*force_install_dialog=*/false);
   }
 }
 
@@ -889,7 +844,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
                                         expected_title);
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   } else {
-    ExpectBlockLaunch();
+    ExpectBlockLaunch(extension_app->id(), /*force_install_dialog=*/false);
   }
 }
 
@@ -943,7 +898,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
                                         expected_title);
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   } else {
-    ExpectBlockLaunch(extension_app->id());
+    ExpectBlockLaunch(extension_app->id(), /*force_install_dialog=*/true);
   }
 }
 
@@ -1067,6 +1022,107 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kWasRestarted));
   EXPECT_FALSE(StartupBrowserCreator::WasRestarted());
 }
+
+#if !BUILDFLAG(IS_CHROMEOS)
+// If startup pref is set as LAST_AND_URLS, startup urls should be opened in a
+// new browser window separated from the last-session-restored browser. This
+// test does not apply to ChromeOS. Ash-chrome and lacros-chrome handle startup
+// URLs in a different way.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupPrefSetAsLastAndURLs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Create a new profile.
+  base::FilePath dest_path =
+      profile_manager->user_data_dir().Append(FILE_PATH_LITERAL("New Profile"));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  Profile* profile = profile_manager->GetProfile(dest_path);
+  ASSERT_TRUE(profile);
+
+  DisableWelcomePages({profile});
+
+  const GURL t1_url = embedded_test_server()->GetURL("/title1.html");
+  const GURL t2_url = embedded_test_server()->GetURL("/title2.html");
+  const GURL t3_url = embedded_test_server()->GetURL("/title3.html");
+
+  // Set the profiles to open both urls and last visited pages.
+  SessionStartupPref startup_pref(SessionStartupPref::LAST_AND_URLS);
+  std::vector<GURL> urls_to_open;
+  urls_to_open.push_back(t1_url);
+  urls_to_open.push_back(t2_url);
+  startup_pref.urls = urls_to_open;
+  SessionStartupPref::SetStartupPref(profile, startup_pref);
+
+  // Open |t3_url| in a tab.
+  Browser* new_browser = Browser::Create(
+      Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
+  TabStripModel* tab_strip_model = new_browser->tab_strip_model();
+  ui_test_utils::NavigateToURLWithDisposition(
+      new_browser, t3_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, tab_strip_model->count());
+  EXPECT_EQ(t3_url,
+            tab_strip_model->GetWebContentsAt(0)->GetLastCommittedURL());
+
+  // Close the browser without deleting |profile|.
+  ScopedProfileKeepAlive profile_keep_alive(
+      profile, ProfileKeepAliveOrigin::kBrowserWindow);
+  CloseBrowserSynchronously(new_browser);
+
+  // Close the main browser.
+  CloseBrowserAsynchronously(browser());
+
+  // Do a simple non-process-startup browser launch.
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
+
+  StartupBrowserCreator browser_creator;
+  std::vector<Profile*> last_opened_profiles;
+  last_opened_profiles.push_back(browser()->profile());
+  last_opened_profiles.push_back(profile);
+
+  base::RunLoop run_loop;
+  browser_creator.Start(
+      dummy, profile_manager->user_data_dir(),
+      {browser()->profile(), StartupProfileMode::kBrowserWindow},
+      last_opened_profiles);
+  testing::SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 1);
+  run_loop.Run();
+
+  const auto wait_for_load_stop_for_browser = [](Browser* browser) {
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    for (int i = 0; i < tab_strip_model->count(); ++i) {
+      content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
+      EXPECT_TRUE(content::WaitForLoadStop(contents));
+    }
+  };
+
+  // |profile| restored the last open pages and opened the urls in an active new
+  // window.
+  ASSERT_EQ(2u, chrome::GetBrowserCount(profile));
+  Browser* pref_urls_opened_browser =
+      chrome::FindLastActiveWithProfile(profile);
+  ASSERT_TRUE(pref_urls_opened_browser);
+  Browser* last_session_opened_browser =
+      FindOneOtherBrowserForProfile(profile, pref_urls_opened_browser);
+  ASSERT_TRUE(last_session_opened_browser);
+  // Check the last-session-restored browser.
+  EXPECT_NO_FATAL_FAILURE(
+      wait_for_load_stop_for_browser(last_session_opened_browser));
+  tab_strip_model = last_session_opened_browser->tab_strip_model();
+  ASSERT_EQ(1, tab_strip_model->count());
+  EXPECT_EQ(t3_url, tab_strip_model->GetWebContentsAt(0)->GetVisibleURL());
+  // Check the pref-urls-opened browser.
+  EXPECT_NO_FATAL_FAILURE(
+      wait_for_load_stop_for_browser(pref_urls_opened_browser));
+  tab_strip_model = pref_urls_opened_browser->tab_strip_model();
+  EXPECT_EQ(2, tab_strip_model->GetTabCount());
+  EXPECT_EQ(t1_url, tab_strip_model->GetWebContentsAt(0)->GetVisibleURL());
+  EXPECT_EQ(t2_url, tab_strip_model->GetWebContentsAt(1)->GetVisibleURL());
+  EXPECT_EQ(0, tab_strip_model->active_index());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
@@ -1252,7 +1308,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   last_opened_profiles.push_back(profile2);
 
   base::RunLoop run_loop;
-  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 2);
+  testing::SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 2);
   browser_creator.Start(dummy, profile_manager->user_data_dir(),
                         {profile1, StartupProfileMode::kBrowserWindow},
                         last_opened_profiles);
@@ -1355,7 +1411,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   base::RunLoop run_loop;
   // Only profile_last should get its session restored.
-  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 1);
+  testing::SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 1);
   browser_creator.Start(dummy, profile_manager->user_data_dir(),
                         {profile_home1, StartupProfileMode::kBrowserWindow},
                         last_opened_profiles);
@@ -1394,94 +1450,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // profile_home2 was not launched since it would've only opened the home page.
   ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2));
-}
-
-// If startup pref is set as LAST_AND_URLS, startup urls should be opened in a
-// new browser window separated from the last-session-restored browser.
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupPrefSetAsLastAndURLs) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // Create a new profile.
-  base::FilePath dest_path =
-      profile_manager->user_data_dir().Append(FILE_PATH_LITERAL("New Profile"));
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  Profile* profile = profile_manager->GetProfile(dest_path);
-  ASSERT_TRUE(profile);
-
-  DisableWelcomePages({profile});
-
-  const GURL t1_url = embedded_test_server()->GetURL("/title1.html");
-  const GURL t2_url = embedded_test_server()->GetURL("/title2.html");
-  const GURL t3_url = embedded_test_server()->GetURL("/title3.html");
-
-  // Set the profiles to open both urls and last visited pages.
-  SessionStartupPref startup_pref(SessionStartupPref::LAST_AND_URLS);
-  std::vector<GURL> urls_to_open;
-  urls_to_open.push_back(t1_url);
-  urls_to_open.push_back(t2_url);
-  startup_pref.urls = urls_to_open;
-  SessionStartupPref::SetStartupPref(profile, startup_pref);
-
-  // Open |t3_url| in a tab.
-  Browser* new_browser = Browser::Create(
-      Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
-  TabStripModel* tab_strip_model = new_browser->tab_strip_model();
-  ui_test_utils::NavigateToURLWithDisposition(
-      new_browser, t3_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  ASSERT_EQ(1, tab_strip_model->count());
-  EXPECT_EQ(t3_url,
-            tab_strip_model->GetWebContentsAt(0)->GetLastCommittedURL());
-
-  // Close the browser without deleting |profile|.
-  ScopedProfileKeepAlive profile_keep_alive(
-      profile, ProfileKeepAliveOrigin::kBrowserWindow);
-  CloseBrowserSynchronously(new_browser);
-
-  // Close the main browser.
-  CloseBrowserAsynchronously(browser());
-
-  // Do a simple non-process-startup browser launch.
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-
-  StartupBrowserCreator browser_creator;
-  std::vector<Profile*> last_opened_profiles;
-  last_opened_profiles.push_back(browser()->profile());
-  last_opened_profiles.push_back(profile);
-
-  base::RunLoop run_loop;
-  browser_creator.Start(
-      dummy, profile_manager->user_data_dir(),
-      {browser()->profile(), StartupProfileMode::kBrowserWindow},
-      last_opened_profiles);
-  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 1);
-  run_loop.Run();
-
-  // |profile| restored the last open pages and opened the urls in an active new
-  // window.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(profile));
-  Browser* pref_urls_opened_browser =
-      chrome::FindLastActiveWithProfile(profile);
-  ASSERT_TRUE(pref_urls_opened_browser);
-  Browser* last_session_opened_browser =
-      FindOneOtherBrowserForProfile(profile, pref_urls_opened_browser);
-  ASSERT_TRUE(last_session_opened_browser);
-  // Check the last-session-restored browser.
-  EXPECT_NO_FATAL_FAILURE(
-      WaitForLoadStopForBrowser(last_session_opened_browser));
-  tab_strip_model = last_session_opened_browser->tab_strip_model();
-  ASSERT_EQ(1, tab_strip_model->count());
-  EXPECT_EQ(t3_url, tab_strip_model->GetWebContentsAt(0)->GetVisibleURL());
-  // Check the pref-urls-opened browser.
-  EXPECT_NO_FATAL_FAILURE(WaitForLoadStopForBrowser(pref_urls_opened_browser));
-  tab_strip_model = pref_urls_opened_browser->tab_strip_model();
-  EXPECT_EQ(2, tab_strip_model->GetTabCount());
-  EXPECT_EQ(t1_url, tab_strip_model->GetWebContentsAt(0)->GetVisibleURL());
-  EXPECT_EQ(t2_url, tab_strip_model->GetWebContentsAt(1)->GetVisibleURL());
-  EXPECT_EQ(0, tab_strip_model->active_index());
 }
 
 // This tests that opening multiple profiles with session restore enabled,
@@ -1576,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   base::CommandLine empty(base::CommandLine::NO_PROGRAM);
   base::RunLoop run_loop;
-  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 2);
+  testing::SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 2);
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       empty, {}, {dest_path1, StartupProfileMode::kBrowserWindow});
@@ -4010,8 +3978,7 @@ class StartupBrowserCreatorPickerInfobarTest
   void OpenProfileFromPicker(const base::FilePath& profile_path,
                              bool open_settings) {
     base::ListValue args;
-    args.Append(
-        base::Value::ToUniquePtrValue(base::FilePathToValue(profile_path)));
+    args.GetList().Append(base::FilePathToValue(profile_path));
     profile_picker_handler()->HandleLaunchSelectedProfile(open_settings, &args);
   }
 

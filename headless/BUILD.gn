@@ -48,7 +48,6 @@ group("headless_lib") {
 repack("resource_pack_data") {
   sources = [
     "$root_gen_dir/components/components_resources.pak",
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
@@ -62,7 +61,6 @@ repack("resource_pack_data") {
     "//components/resources:components_resources",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
-    "//content/app/resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources_100_percent",
@@ -239,24 +237,6 @@ action("gen_devtools_client_api") {
     "--output_dir",
     rebase_path(target_gen_dir, root_build_dir) + "/public",
   ]
-}
-
-if (headless_fontconfig_utils && !is_fuchsia) {
-  static_library("headless_fontconfig_utils") {
-    sources = [
-      "public/headless_export.h",
-      "public/util/fontconfig.cc",
-      "public/util/fontconfig.h",
-    ]
-
-    deps = [
-      "//base",
-      "//build/config/freetype",
-      "//third_party/fontconfig",
-    ]
-
-    configs += [ ":inside_headless_component" ]
-  }
 }
 
 inspector_protocol_generate("protocol_sources") {
@@ -626,10 +606,6 @@ component("headless_non_renderer") {
     deps += [ "//device/bluetooth" ]
   }
 
-  if (headless_fontconfig_utils && !is_fuchsia) {
-    deps += [ ":headless_fontconfig_utils" ]
-  }
-
   configs += [ ":inside_headless_component" ]
   configs += [ ":headless_defines_config" ]
 }
@@ -834,15 +810,16 @@ test("headless_browsertests") {
   data_deps = []
 
   if (is_fuchsia) {
-    use_cfv2 = false
+    use_cfv1 = false
+
+    # TODO(https://crbug.com/1185811): Investigate removing the requirement for
+    # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
     additional_manifest_fragments = [
-      "//build/config/fuchsia/test/font_capabilities.test-cmx",
-
-      # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-
-      "//build/config/fuchsia/test/network_capabilities.test-cmx",
-      "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+      "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/network.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 

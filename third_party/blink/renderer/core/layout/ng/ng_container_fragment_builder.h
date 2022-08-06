@@ -351,7 +351,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     has_descendant_that_depends_on_percentage_block_size_ = b;
   }
 
-  const NGConstraintSpace* ConstraintSpace() const { return space_; }
+  const NGConstraintSpace& ConstraintSpace() const { return space_; }
 
   const NGLayoutResult* Abort(NGLayoutResult::EStatus);
 
@@ -366,7 +366,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,
-                             const NGConstraintSpace* space,
+                             const NGConstraintSpace& space,
                              WritingDirectionMode writing_direction)
       : NGFragmentBuilder(std::move(style), writing_direction),
         node_(node),
@@ -394,7 +394,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
           nullptr) const;
 
   NGLayoutInputNode node_;
-  const NGConstraintSpace* space_;
+  const NGConstraintSpace& space_;
 
   LayoutUnit bfc_line_offset_;
   absl::optional<LayoutUnit> bfc_block_offset_;

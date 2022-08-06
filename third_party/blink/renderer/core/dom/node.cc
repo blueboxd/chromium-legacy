@@ -183,8 +183,7 @@ struct SameSizeAsNode : EventTarget {
   Member<NodeData> member_;
   // Increasing size of Member increases size of Node.
   static_assert(kBlinkMemberGCHasDebugChecks ||
-                    ::WTF::internal::SizesEqual<sizeof(Member<NodeData>),
-                                                sizeof(void*)>::value,
+                    sizeof(Member<NodeData>) <= sizeof(void*),
                 "Member<NodeData> should stay small");
 };
 
@@ -1684,6 +1683,17 @@ bool Node::CanStartSelection() const {
   }
   ContainerNode* parent = FlatTreeTraversal::Parent(*this);
   return parent ? parent->CanStartSelection() : true;
+}
+
+bool Node::IsRichlyEditableForAccessibility() const {
+#if DCHECK_IS_ON()  // Required in order to get Lifecycle().ToString()
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kStyleClean)
+      << "Unclean document style at lifecycle state "
+      << GetDocument().Lifecycle().ToString();
+#endif  // DCHECK_IS_ON()
+
+  return HasRichlyEditableStyle(*this);
 }
 
 void Node::NotifyPriorityScrollAnchorStatusChanged() {

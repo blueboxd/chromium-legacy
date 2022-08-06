@@ -93,8 +93,7 @@ class LauncherNudgeControllerTest : public AshTestBase {
  public:
   LauncherNudgeControllerTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kShelfLauncherNudge, features::kProductivityLauncher}, {});
+    scoped_feature_list_.InitWithFeatures({features::kShelfLauncherNudge}, {});
   }
   LauncherNudgeControllerTest(const LauncherNudgeControllerTest&) = delete;
   LauncherNudgeControllerTest& operator=(const LauncherNudgeControllerTest&) =

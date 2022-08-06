@@ -157,6 +157,8 @@ component("cpp") {
     "ime_info.cc",
     "ime_info.h",
     "in_session_auth_dialog_client.h",
+    "in_session_auth_dialog_controller.h",
+    "in_session_auth_token_provider.h",
     "keyboard/arc/arc_input_method_bounds_tracker.cc",
     "keyboard/arc/arc_input_method_bounds_tracker.h",
     "keyboard/keyboard_config.h",
@@ -224,6 +226,7 @@ component("cpp") {
     "pagination/pagination_model.cc",
     "pagination/pagination_model.h",
     "pagination/pagination_model_observer.h",
+    "personalization_app/enterprise_policy_delegate.h",
     "personalization_app/user_display_info.cc",
     "personalization_app/user_display_info.h",
     "power_utils.cc",
@@ -251,6 +254,7 @@ component("cpp") {
     "rounded_image_view.h",
     "scale_utility.cc",
     "scale_utility.h",
+    "schedule_enums.h",
     "scoped_clipboard_history_pause.h",
     "scoped_guest_button_blocker.h",
     "scoped_singleton_resetter_for_test.h",
@@ -397,11 +401,12 @@ component("cpp") {
 
   public_deps = [
     "//ash/components/arc/mojom:notifications",
-    "//ash/components/security_token_pin",
+    "//ash/components/login/auth",
     "//ash/public/mojom",
     "//ash/services/cellular_setup/public/mojom",
     "//ash/webui/personalization_app/proto",
     "//base",
+    "//chromeos/components/security_token_pin",
     "//chromeos/crosapi/mojom",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/bluetooth_config/public/mojom",
@@ -457,6 +462,8 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/mock_in_session_auth_token_provider.cc",
+    "test/mock_in_session_auth_token_provider.h",
     "test/mock_projector_controller.cc",
     "test/mock_projector_controller.h",
     "test/test_app_list_color_provider.cc",

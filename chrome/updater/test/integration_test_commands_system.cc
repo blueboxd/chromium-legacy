@@ -41,10 +41,10 @@ namespace test {
 
 namespace {
 
-std::string StringFromDictStorage(const base::Value::DictStorage& values) {
-  std::string values_string;
-  EXPECT_TRUE(base::JSONWriter::Write(base::Value(values), &values_string));
-  return values_string;
+std::string StringFromValue(const base::Value& value) {
+  std::string value_string;
+  EXPECT_TRUE(base::JSONWriter::Write(value, &value_string));
+  return value_string;
 }
 
 }  // namespace
@@ -80,9 +80,9 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("enter_test_mode", {Param("url", url.spec())});
   }
 
-  void SetGroupPolicies(const base::Value::DictStorage& values) const override {
+  void SetGroupPolicies(const base::Value::Dict& values) const override {
     RunCommand("set_group_policies",
-               {Param("values", StringFromDictStorage(values))});
+               {Param("values", StringFromValue(base::Value(values.Clone())))});
   }
 
   void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
@@ -206,6 +206,19 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("expect_legacy_process_launcher_succeeds");
   }
 
+  void ExpectLegacyAppCommandWebSucceeds(
+      const std::string& app_id,
+      const std::string& command_id,
+      const base::Value::List& parameters,
+      int expected_exit_code) const override {
+    RunCommand(
+        "expect_legacy_app_command_web_succeeds",
+        {Param("app_id", app_id), Param("command_id", command_id),
+         Param("parameters", StringFromValue(base::Value(parameters.Clone()))),
+         Param("expected_exit_code",
+               base::NumberToString(expected_exit_code))});
+  }
+
   void RunUninstallCmdLine() const override {
     RunCommand("run_uninstall_cmd_line");
   }
@@ -269,6 +282,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void UninstallApp(const std::string& app_id) const override {
     RunCommand("uninstall_app", {Param("app_id", app_id)});
   }
+
+  void RunOfflineInstall() override { RunCommand("run_offline_install"); }
 
  private:
   ~IntegrationTestCommandsSystem() override = default;

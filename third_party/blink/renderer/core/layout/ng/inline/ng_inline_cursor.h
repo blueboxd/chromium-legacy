@@ -7,6 +7,7 @@
 
 #include <unicode/ubidi.h>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -405,6 +406,9 @@ class CORE_EXPORT NGInlineCursor {
   // function doesn't copy root. Note: The current position in |cursor|
   // should be part of |this| cursor.
   void MoveTo(const NGInlineCursor& cursor);
+
+  // Move to the parent box or line box.
+  void MoveToParent();
 
   // Move to containing line box. It is error if the current position is line.
   void MoveToContainingLine();

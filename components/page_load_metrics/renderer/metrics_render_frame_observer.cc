@@ -510,10 +510,15 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
   }
   if (perf.FirstInputDelay().has_value()) {
     timing->interactive_timing->first_input_delay = *perf.FirstInputDelay();
+    monotonic_timing.first_input_delay = perf.FirstInputDelay();
   }
   if (perf.FirstInputTimestamp().has_value()) {
     timing->interactive_timing->first_input_timestamp =
         ClampDelta((*perf.FirstInputTimestamp()).InSecondsF(), start);
+  }
+  if (perf.FirstInputTimestampAsMonotonicTime()) {
+    monotonic_timing.first_input_timestamp =
+        perf.FirstInputTimestampAsMonotonicTime();
   }
   if (perf.LongestInputDelay().has_value()) {
     timing->interactive_timing->longest_input_delay = *perf.LongestInputDelay();
@@ -604,7 +609,7 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
             ? base::TimeDelta()
             : ClampDelta(perf.LargestImagePaint(), start);
     timing->paint_timing->largest_contentful_paint->type =
-        perf.LargestContentfulPaintType();
+        LargestContentfulPaintTypeToUKMFlags(perf.LargestContentfulPaintType());
     timing->paint_timing->largest_contentful_paint->image_bpp =
         perf.LargestContentfulPaintImageBPP();
   }
@@ -630,7 +635,7 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
             ? base::TimeDelta()
             : ClampDelta(perf.ExperimentalLargestImagePaint(), start);
     timing->paint_timing->experimental_largest_contentful_paint->type =
-        perf.LargestContentfulPaintType();
+        LargestContentfulPaintTypeToUKMFlags(perf.LargestContentfulPaintType());
   }
   if (perf.ExperimentalLargestTextPaintSize() > 0) {
     // ExperimentalLargestTextPaint and ExperimentalLargestTextPaintSize should

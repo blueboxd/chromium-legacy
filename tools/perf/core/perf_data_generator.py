@@ -655,33 +655,6 @@ BUILDERS = {
         },
         'perf_trigger': False,
     },
-    'win32-builder-perf': {
-        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
-        'tests': [{
-            'name': 'chrome_sizes',
-            'isolate': 'chrome_sizes',
-            'type': TEST_TYPES.GENERIC,
-            'resultdb': {
-                'has_native_resultdb_integration': True,
-            },
-        }],
-        'dimension': {
-            'cpu': 'x86',
-            'os': 'Windows',
-            'pool': 'chrome.tests',
-        },
-        'perf_trigger':
-        False,
-    },
-    'win32-builder-perf-pgo': {
-        'additional_compile_targets': ['chromium_builder_perf'],
-        'dimension': {
-            'cpu': 'x86',
-            'os': 'Windows',
-            'pool': 'chrome.tests',
-        },
-        'perf_trigger': False,
-    },
     'win64-builder-perf': {
         'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
         'tests': [{
@@ -1106,7 +1079,7 @@ BUILDERS = {
             'gpu':
             '8086:1626',
             'os':
-            'Mac-12.3',
+            'Mac-10.12.6',
             'pool':
             'chrome.tests.perf',
             'synthetic_product_name':

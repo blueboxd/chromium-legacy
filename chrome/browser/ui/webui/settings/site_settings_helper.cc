@@ -170,6 +170,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::AUTO_DARK_WEB_CONTENT, nullptr},
     {ContentSettingsType::REQUEST_DESKTOP_SITE, nullptr},
     {ContentSettingsType::GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS, nullptr},
+    {ContentSettingsType::NOTIFICATION_INTERACTIONS, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -663,9 +664,8 @@ void GetExceptionsForContentType(
       continue;
     }
 
-    if (auto_blocker
-            ->GetEmbargoResult(GURL(setting.primary_pattern.ToString()), type)
-            .content_setting == CONTENT_SETTING_BLOCK) {
+    if (auto_blocker->IsEmbargoed(GURL(setting.primary_pattern.ToString()),
+                                  type)) {
       origins_under_embargo.insert(setting.primary_pattern);
       all_patterns_settings[std::make_pair(
           setting.primary_pattern, setting.source)][setting.secondary_pattern] =
@@ -770,7 +770,7 @@ ContentSetting GetContentSettingForOrigin(
 
   // Retrieve the content setting.
   permissions::PermissionResult result(
-      CONTENT_SETTING_DEFAULT,
+      content_settings::ValueToContentSetting(value),
       permissions::PermissionStatusSource::UNSPECIFIED);
   if (permissions::PermissionDecisionAutoBlocker::IsEnabledForContentSetting(
           content_type)) {
@@ -782,11 +782,11 @@ ContentSetting GetContentSettingForOrigin(
       permissions::PermissionDecisionAutoBlocker* auto_blocker =
           permissions::PermissionsClient::Get()
               ->GetPermissionDecisionAutoBlocker(profile);
-      result = auto_blocker->GetEmbargoResult(origin, content_type);
+      absl::optional<permissions::PermissionResult> embargo_result =
+          auto_blocker->GetEmbargoResult(origin, content_type);
+      if (embargo_result)
+        result = *embargo_result;
     }
-  } else {
-    DCHECK_EQ(base::Value::Type::INTEGER, value.type());
-    result.content_setting = content_settings::ValueToContentSetting(value);
   }
 
   // Retrieve the source of the content setting.

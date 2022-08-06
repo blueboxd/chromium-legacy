@@ -814,8 +814,9 @@ TEST_P(AssistantPageClamshellTest,
   EXPECT_HAS_FOCUS(input_text_field());
 }
 
+// TODO(b/234164113): Test is flaky.
 TEST_P(AssistantPageClamshellTest,
-       ShouldFocusMicWhenSubmittingSuggestionChipInVoiceMode) {
+       DISABLED_ShouldFocusMicWhenSubmittingSuggestionChipInVoiceMode) {
   ShowAssistantUi();
   ash::SuggestionChipView* suggestion_chip =
       CreateAndGetSuggestionChip("<suggestion chip query>");
@@ -921,7 +922,11 @@ TEST_P(AssistantPageClamshellTest, ShouldHavePopulatedSuggestionChips) {
 }
 
 TEST_F(AssistantPageNonBubbleTest, Theme) {
-  ASSERT_FALSE(features::IsDarkLightModeEnabled());
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kNotificationsRefresh,
+                             chromeos::features::kDarkLightMode});
 
   ShowAssistantUi();
 

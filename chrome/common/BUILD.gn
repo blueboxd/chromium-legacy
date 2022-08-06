@@ -42,7 +42,6 @@ buildflag_header("buildflags") {
     "ENABLE_CLICK_TO_CALL=$enable_click_to_call",
     "ENABLE_DOWNGRADE_PROCESSING=$enable_downgrade_processing",
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
-    "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
@@ -108,6 +107,10 @@ group("common") {
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("common_lib") {
+  visibility = [
+    ":*",
+    "//chrome/common/win:eventlog_messages",
+  ]
   sources = [
     "all_messages.h",
     "child_process_host_flags.h",
@@ -269,8 +272,6 @@ static_library("common_lib") {
 
   if (enable_extensions) {
     sources += [
-      "extensions/api/commands/commands_handler.cc",
-      "extensions/api/commands/commands_handler.h",
       "extensions/api/file_browser_handlers/file_browser_handler.cc",
       "extensions/api/file_browser_handlers/file_browser_handler.h",
       "extensions/api/notifications/notification_style.cc",
@@ -358,11 +359,17 @@ static_library("common_lib") {
     public_deps += [ ":app_mode_app_support" ]
   }
 
-  if (is_chromeos_ash) {
+  if (is_chromeos) {
     assert(enable_extensions)
     sources += [
       "extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.cc",
       "extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h",
+    ]
+    deps += [ "//chrome/common/chromeos/extensions" ]
+  }
+  if (is_chromeos_ash) {
+    assert(enable_extensions)
+    sources += [
       "extensions/api/input_ime/input_components_handler.cc",
       "extensions/api/input_ime/input_components_handler.h",
     ]

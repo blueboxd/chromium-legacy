@@ -6,6 +6,7 @@
  * @fileoverview Handles logic for the ChromeVox panel that requires state from
  * the background context.
  */
+import {ChromeVoxState, ChromeVoxStateObserver} from '/chromevox/background/chromevox_state.js';
 import {ISearch} from '/chromevox/background/panel/i_search.js';
 import {ISearchHandler} from '/chromevox/background/panel/i_search_handler.js';
 import {PanelNodeMenuBackground} from '/chromevox/background/panel/panel_node_menu_background.js';
@@ -20,7 +21,7 @@ export class PanelBackground {
     /** @private {ISearch} */
     this.iSearch_;
     /** @private {AutomationNode} */
-    this.nodeForActions_;
+    this.savedNode_;
   }
 
   static init() {
@@ -36,55 +37,65 @@ export class PanelBackground {
     PanelBackground.stateObserver_ = new PanelStateObserver();
 
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.CREATE_ALL_NODE_MENU_BACKGROUNDS,
-        (opt_activateMenuTitle) =>
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.CLEAR_SAVED_NODE,
+        () => PanelBackground.instance.clearSavedNode_());
+    BridgeHelper.registerHandler(
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.CREATE_ALL_NODE_MENU_BACKGROUNDS,
+        opt_activateMenuTitle =>
             PanelBackground.instance.createAllNodeMenuBackgrounds_(
                 opt_activateMenuTitle));
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.CREATE_NEW_I_SEARCH,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.CREATE_NEW_I_SEARCH,
         () => PanelBackground.instance.createNewISearch_());
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.DESTROY_I_SEARCH,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.DESTROY_I_SEARCH,
         () => PanelBackground.instance.destroyISearch_());
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.FOCUS_TAB,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.FOCUS_TAB,
         ({windowId, tabId}) =>
             PanelTabMenuBackground.focusTab(windowId, tabId));
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.GET_ACTIONS_FOR_CURRENT_NODE,
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.GET_ACTIONS_FOR_CURRENT_NODE,
         () => PanelBackground.instance.getActionsForCurrentNode_());
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.GET_TAB_MENU_DATA,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.GET_TAB_MENU_DATA,
         () => PanelTabMenuBackground.getTabMenuData());
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.INCREMENTAL_SEARCH,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.INCREMENTAL_SEARCH,
         ({searchStr, dir, opt_nextObject}) =>
             PanelBackground.instance.incrementalSearch_(
                 searchStr, dir, opt_nextObject));
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.NODE_MENU_CALLBACK,
-        (callbackNodeIndex) =>
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.NODE_MENU_CALLBACK,
+        callbackNodeIndex =>
             PanelNodeMenuBackground.focusNodeCallback(callbackNodeIndex));
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE,
-        (actionId) =>
-            PanelBackground.instance.performCustomActionOnCurrentNode_(
-                actionId));
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE,
+        actionId => PanelBackground.instance.performCustomActionOnCurrentNode_(
+            actionId));
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND,
-        BridgeAction.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE,
-        (action) =>
-            PanelBackground.instance.performStandardActionOnCurrentNode_(
-                action));
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE,
+        action => PanelBackground.instance.performStandardActionOnCurrentNode_(
+            action));
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.SET_RANGE_TO_I_SEARCH_NODE,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.SAVE_CURRENT_NODE,
+        () => PanelBackground.instance.saveCurrentNode_());
+    BridgeHelper.registerHandler(
+        BridgeTargets.PANEL_BACKGROUND,
+        BridgeActions.SET_RANGE_TO_I_SEARCH_NODE,
         () => PanelBackground.instance.setRangeToISearchNode_());
     BridgeHelper.registerHandler(
-        BridgeTarget.PANEL_BACKGROUND, BridgeAction.WAIT_FOR_PANEL_COLLAPSE,
+        BridgeTargets.PANEL_BACKGROUND, BridgeActions.WAIT_FOR_PANEL_COLLAPSE,
         () => PanelBackground.instance.waitForPanelCollapse_());
+  }
+
+  /** @private */
+  clearSavedNode_() {
+    this.savedNode_ = null;
   }
 
   /**
@@ -93,11 +104,10 @@ export class PanelBackground {
    * @private
    */
   createAllNodeMenuBackgrounds_(opt_activateMenuTitleId) {
-    const node = ChromeVoxState.instance.currentRange.start.node;
     for (const data of ALL_NODE_MENU_DATA) {
       const isActivatedMenu = opt_activateMenuTitleId === data.titleId;
       const menuBackground =
-          new PanelNodeMenuBackground(data, node, isActivatedMenu);
+          new PanelNodeMenuBackground(data, this.savedNode_, isActivatedMenu);
       menuBackground.populate();
     }
   }
@@ -111,7 +121,7 @@ export class PanelBackground {
     if (this.iSearch_) {
       this.iSearch_.clear();
     }
-    this.iSearch_ = new ISearch(ChromeVoxState.instance.currentRange.start);
+    this.iSearch_ = new ISearch(this.savedNode_);
     this.iSearch_.handler = this;
   }
 
@@ -132,19 +142,18 @@ export class PanelBackground {
    * @private
    */
   getActionsForCurrentNode_() {
-    this.nodeForActions_ = ChromeVoxState.instance.currentRange.start;
     const result = {
       standardActions: [],
       customActions: [],
     };
-    if (!this.nodeForActions_) {
+    if (!this.savedNode_) {
       return result;
     }
-    if (this.nodeForActions_.standardActions) {
-      result.standardActions = this.nodeForActions_.standardActions;
+    if (this.savedNode_.standardActions) {
+      result.standardActions = this.savedNode_.standardActions;
     }
-    if (this.nodeForActions_.customActions) {
-      result.customActions = this.nodeForActions_.customActions;
+    if (this.savedNode_.customActions) {
+      result.customActions = this.savedNode_.customActions;
     }
     return result;
   }
@@ -170,8 +179,8 @@ export class PanelBackground {
    * @private
    */
   performCustomActionOnCurrentNode_(actionId) {
-    if (this.nodeForActions_) {
-      this.nodeForActions_.performCustomAction(actionId);
+    if (this.savedNode_) {
+      this.savedNode_.performCustomAction(actionId);
     }
   }
 
@@ -180,8 +189,8 @@ export class PanelBackground {
    * @private
    */
   performStandardActionOnCurrentNode_(action) {
-    if (this.nodeForActions_) {
-      this.nodeForActions_.performStandardAction(action);
+    if (this.savedNode_) {
+      this.savedNode_.performStandardAction(action);
     }
   }
 
@@ -239,6 +248,11 @@ export class PanelBackground {
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
   }
 
+  /** @private */
+  saveCurrentNode_() {
+    this.savedNode_ = ChromeVoxState.instance.currentRange.start.node;
+  }
+
   /**
    * Listens for focus events, and returns once the target is not the panel.
    * @private
@@ -247,7 +261,7 @@ export class PanelBackground {
     return new Promise(async resolve => {
       const desktop = await new Promise(chrome.automation.getDesktop);
       // Watch for a focus event outside the panel.
-      const onFocus = (event) => {
+      const onFocus = event => {
         if (event.target.docUrl.contains('chromevox/panel')) {
           return;
         }

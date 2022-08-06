@@ -1353,7 +1353,7 @@ if (enable_java_templates) {
       _package_name = "org.chromium.test"
     }
 
-    _resource_arsc_output = "${target_gen_dir}/${target_name}.ap_"
+    _resource_arsc_output = "${target_out_dir}/${target_name}.ap_"
     _compile_resources_target = "${target_name}__compile_resources"
     compile_resources(_compile_resources_target) {
       forward_variables_from(invoker, [ "android_manifest" ])
@@ -2194,7 +2194,7 @@ if (enable_java_templates) {
   #     with this file as the base.
   template("android_apk_or_module") {
     forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
-    assert(defined(invoker.android_manifest))
+    _template_name = target_name
     _base_path = "$target_out_dir/$target_name/$target_name"
     _build_config = "$target_gen_dir/$target_name.build_config.json"
     _build_config_target = "$target_name$build_config_target_suffix"
@@ -2207,8 +2207,6 @@ if (enable_java_templates) {
     if (defined(invoker.target_sdk_version)) {
       _target_sdk_version = invoker.target_sdk_version
     }
-
-    _template_name = target_name
 
     _is_bundle_module =
         defined(invoker.is_bundle_module) && invoker.is_bundle_module
@@ -3141,16 +3139,6 @@ if (enable_java_templates) {
         }
       }
 
-      _keystore_path = android_keystore_path
-      _keystore_name = android_keystore_name
-      _keystore_password = android_keystore_password
-
-      if (defined(invoker.keystore_path)) {
-        _keystore_path = invoker.keystore_path
-        _keystore_name = invoker.keystore_name
-        _keystore_password = invoker.keystore_password
-      }
-
       if (_incremental_apk) {
         _incremental_compiled_resources_path = "${_base_path}_incremental.ap_"
         _incremental_compile_resources_target_name =
@@ -3193,6 +3181,9 @@ if (enable_java_templates) {
                                [
                                  "expected_libs_and_assets",
                                  "expected_libs_and_assets_base",
+                                 "keystore_name",
+                                 "keystore_path",
+                                 "keystore_password",
                                  "native_lib_placeholders",
                                  "secondary_abi_loadable_modules",
                                  "secondary_native_lib_placeholders",
@@ -3208,9 +3199,6 @@ if (enable_java_templates) {
         }
 
         build_config = _build_config
-        keystore_name = _keystore_name
-        keystore_path = _keystore_path
-        keystore_password = _keystore_password
         min_sdk_version = _min_sdk_version
         uncompress_shared_libraries = _uncompress_shared_libraries
 
@@ -3998,7 +3986,6 @@ if (enable_java_templates) {
 
       if (!defined(use_default_launcher) || use_default_launcher) {
         deps += [
-          "//build/android:build_java",
           "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
           "//testing/android/native_test:native_test_java",
         ]
@@ -4840,7 +4827,7 @@ if (enable_java_templates) {
               "//build/android/bytecode:trace_event_adder"
           _rewritten_jar_target_name = "${target_name}__trace_event_rewritten"
           _rewriter_path = root_build_dir + "/bin/helper/trace_event_adder"
-          _stamp = "${target_gen_dir}/${target_name}.trace_event_rewrite.stamp"
+          _stamp = "${target_out_dir}/${target_name}.trace_event_rewrite.stamp"
           action_with_pydeps(_rewritten_jar_target_name) {
             script = "//build/android/gyp/trace_event_bytecode_rewriter.py"
             inputs = [
@@ -4920,7 +4907,7 @@ if (enable_java_templates) {
       # the internal module name inside the final bundle, in other words,
       # this file *must* be named ${_module.name}.zip
       _create_module_target = "${_target_name}__${_module.name}__create"
-      _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
+      _module_zip_path = "$target_out_dir/$target_name/${_module.name}.zip"
       create_android_app_bundle_module(_create_module_target) {
         forward_variables_from(invoker,
                                [

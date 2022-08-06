@@ -8,7 +8,7 @@
 // build time. Try not to raise this limit unless absolutely necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
 #ifndef NACL_TC_REV
-#pragma clang max_tokens_here 400000
+#pragma clang max_tokens_here 460000
 #endif
 
 #include <algorithm>
@@ -25,6 +25,7 @@
 #include "base/cxx17_backports.h"
 #include "base/cxx20_to_address.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -1467,6 +1468,30 @@ bool operator>=(const Value& lhs, const Value& rhs) {
   return !(lhs < rhs);
 }
 
+bool operator==(const Value& lhs, bool rhs) {
+  return lhs.is_bool() && lhs.GetBool() == rhs;
+}
+
+bool operator==(const Value& lhs, int rhs) {
+  return lhs.is_int() && lhs.GetInt() == rhs;
+}
+
+bool operator==(const Value& lhs, double rhs) {
+  return lhs.is_double() && lhs.GetDouble() == rhs;
+}
+
+bool operator==(const Value& lhs, StringPiece rhs) {
+  return lhs.is_string() && lhs.GetString() == rhs;
+}
+
+bool operator==(const Value& lhs, const Value::Dict& rhs) {
+  return lhs.is_dict() && lhs.GetDict() == rhs;
+}
+
+bool operator==(const Value& lhs, const Value::List& rhs) {
+  return lhs.is_list() && lhs.GetList() == rhs;
+}
+
 bool Value::Equals(const Value* other) const {
   DCHECK(other);
   return *this == *other;
@@ -1550,13 +1575,6 @@ DictionaryValue::DictionaryValue(const LegacyDictStorage& storage)
 
 DictionaryValue::DictionaryValue(LegacyDictStorage&& storage) noexcept
     : Value(std::move(storage)) {}
-
-bool DictionaryValue::HasKey(StringPiece key) const {
-  DCHECK(IsStringUTF8AllowingNoncharacters(key));
-  auto current_entry = dict().find(key);
-  DCHECK((current_entry == dict().end()) || current_entry->second);
-  return current_entry != dict().end();
-}
 
 Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
   DCHECK(IsStringUTF8AllowingNoncharacters(path));
@@ -1816,10 +1834,6 @@ bool ListValue::GetDictionary(size_t index,
 bool ListValue::GetDictionary(size_t index, DictionaryValue** out_value) {
   return as_const(*this).GetDictionary(
       index, const_cast<const DictionaryValue**>(out_value));
-}
-
-void ListValue::Append(std::unique_ptr<Value> in_value) {
-  list().push_back(std::move(*in_value));
 }
 
 void ListValue::Append(base::Value::Dict in_dict) {

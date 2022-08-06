@@ -85,7 +85,7 @@
   },
   "certificateProvider": [{
     "channel": "stable",
-    "platforms": ["chromeos"],
+    "platforms": ["chromeos", "lacros"],
     "extension_types": ["extension", "platform_app"]
   }, {
     // https://crbug.com/1194693
@@ -371,11 +371,11 @@
   "fileSystemProvider": [{
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
-    "platforms": ["chromeos"]
+    "platforms": ["chromeos", "lacros"]
   }, {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app"],
-    "platforms": ["chromeos"],
+    "platforms": ["chromeos", "lacros"],
     "allowlist": [
       "0EA6B717932AD64C469C1CCB6911457733295907",  // http://crbug.com/673004
       "58B0C2968C335964D5433E89CA4D86628A0E3D4B"   // http://crbug.com/673004
@@ -393,6 +393,22 @@
     "channel": "stable",
     "extension_types": [
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  // Used by gnubbyd in ash and lacros.  Stores small amounts of data in ash
+  // prefs which is shared by ash and lacros versions of the extension.
+  // TODO(b/231890240): Once Terminal SWA runs in lacros rather than ash, we can
+  // migrate gnubbyd back to using chrome.storage.local and remove this private
+  // API.
+  "sharedStoragePrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos", "lacros"],
+    "allowlist": [
+      "6F9E349A0561C78A0D3F41496FE521C5151C7F71", // gnubbyd app stable
+      "C06709A259378015404ED20F75C7D08547E0F10B", // gnubbyd app dev
+      "57A1B95957F9EDB159FA9278BF87FE70DF62BED8", // ske stable
+      "05E9C7F02C6E55E1DE334A1B1EFD2D9A68F10E34"  // ske dev
     ]
   },
   "history": {
@@ -633,9 +649,7 @@
   },
   {
     "channel": "dev",
-    "extension_types": ["extension"],
-    "platforms": ["chromeos", "lacros"],
-    "session_types": ["kiosk"]
+    "extension_types": ["extension"]
   }],
   "notifications": [{
     // The chrome.notifications functionality listed in notifications.idl is
@@ -991,8 +1005,7 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "hosted_app"],
     "allowlist": [
-      "B44D08FD98F1523ED5837D78D0A606EA9D6206E5",  // Web Store
-      "2653F6F6C39BC6EEBD36A09AFB92A19782FF7EB4"   // Enterprise Web Store
+      "B44D08FD98F1523ED5837D78D0A606EA9D6206E5"  // Web Store
     ]
   },
   "wmDesksPrivate": {

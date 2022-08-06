@@ -53,6 +53,7 @@ class CORE_EXPORT RuleFeatureSet {
   RuleFeatureSet(const RuleFeatureSet&) = delete;
   RuleFeatureSet& operator=(const RuleFeatureSet&) = delete;
   ~RuleFeatureSet();
+  void Trace(Visitor*) const;
 
   bool operator==(const RuleFeatureSet&) const;
   bool operator!=(const RuleFeatureSet& o) const { return !(*this == o); }
@@ -63,7 +64,8 @@ class CORE_EXPORT RuleFeatureSet {
 
   enum SelectorPreMatch { kSelectorNeverMatches, kSelectorMayMatch };
 
-  SelectorPreMatch CollectFeaturesFromRuleData(const RuleData*);
+  SelectorPreMatch CollectFeaturesFromRuleData(const RuleData*,
+                                               const StyleScope*);
 
   // Methods for accessing the data in this object.
   bool UsesFirstLineRules() const { return metadata_.uses_first_line_rules; }
@@ -152,7 +154,7 @@ class CORE_EXPORT RuleFeatureSet {
       const QualifiedName& attribute_name) const;
   bool NeedsHasInvalidationForId(const AtomicString& id) const;
   bool NeedsHasInvalidationForTagName(const AtomicString& tag_name) const;
-  bool NeedsHasInvalidationForElement(Element&) const;
+  bool NeedsHasInvalidationForInsertedOrRemovedElement(Element&) const;
   bool NeedsHasInvalidationForPseudoClass(
       CSSSelector::PseudoType pseudo_type) const;
 
@@ -168,8 +170,8 @@ class CORE_EXPORT RuleFeatureSet {
   inline bool NeedsHasInvalidationForPseudoStateChange() const {
     return !pseudos_in_has_argument_.IsEmpty();
   }
-  inline bool NeedsHasInvalidation() const {
-    return universal_in_has_argument_ ||
+  inline bool NeedsHasInvalidationForInsertionOrRemoval() const {
+    return not_pseudo_in_has_argument_ || universal_in_has_argument_ ||
            !tag_names_in_has_argument_.IsEmpty() ||
            NeedsHasInvalidationForClassChange() ||
            NeedsHasInvalidationForAttributeChange() ||
@@ -268,7 +270,7 @@ class CORE_EXPORT RuleFeatureSet {
   DescendantInvalidationSet& EnsureTypeRuleInvalidationSet();
   DescendantInvalidationSet& EnsurePartInvalidationSet();
 
-  void UpdateInvalidationSets(const RuleData*);
+  void UpdateInvalidationSets(const RuleData*, const StyleScope*);
 
   struct InvalidationSetFeatures {
     DISALLOW_NEW();
@@ -321,6 +323,33 @@ class CORE_EXPORT RuleFeatureSet {
     Vector<AtomicString> tag_names;
     Vector<AtomicString> emitted_tag_names;
     unsigned max_direct_adjacent_selectors = 0;
+
+    // descendant_features_depth is used while adding features for logical
+    // combinations inside :has() pseudo class to determine whether the current
+    // compound selector is in subject position or not.
+    //
+    // This field stores the number of child and descendant combinators
+    // previously evaluated for updating features from combinator. Unlike
+    // max_direct_adjacent_selectors field that indicates the max limit,
+    // this field simply stores the number of child and descendant combinators.
+    //
+    // This field is used only for the logical combinations inside :has(), but
+    // we need to count all the combinators in the entire selector so that we
+    // can correctly determine whether a compound is in the subject position
+    // or not.
+    // (e.g. For '.a:has(:is(.b ~ .c))) .d', the descendant_features_depth for
+    //  compound '.b' is not 0 but 1 since the descendant combinator was
+    //  evaludated for updating features when moving from '.d' to '.a:has(...)')
+    //
+    // How to determine whether a compound is in subject position or not:
+    // 1. If descendant_feature.descendant_features_depth > 0, then the compound
+    //    is not in subject position.
+    // 2. If descendant_feature.descendant_features_depth == 0,
+    //   2.1. If sibling_features != nullptr, then the compound is not in
+    //        subject position.
+    //   2.2. Otherwise, the compound is in subject position.
+    unsigned descendant_features_depth = 0;
+
     InvalidationFlags invalidation_flags;
     bool content_pseudo_crossing = false;
     bool has_nth_pseudo = false;
@@ -357,6 +386,70 @@ class CORE_EXPORT RuleFeatureSet {
    private:
     InvalidationSetFeatures* features_;
     unsigned original_value_ = 0;
+  };
+
+  // While adding features to the invalidation sets for the complex selectors
+  // in :is() inside :has(), we need to differentiate whether the :has() is in
+  // subject position or not if there is no sibling_features.
+  //
+  // - case 1) .a:has(:is(.b ~ .c))     : Add features as if we have .b ~ .a
+  // - case 2) .a:has(:is(.b ~ .c)) .d  : add features as if we have .b ~ .a .d
+  //
+  // For .b in case 1, we need to use descendant_features as sibling_features.
+  // But for .b in case 2, we need to extract sibling features from the compound
+  // selector containing the :has() pseudo class.
+  //
+  // By maintaining a descendant depth information to descendant_features
+  // object, we can determine whether the current compound is in subject
+  // position or not. The descendant features depth will be increased when
+  // RuleFeatureSet meets descendant or child combinator while adding features.
+  //
+  // Example)
+  // - .a:has(:is(.b ~ .c))         : At .b, the descendant_features_depth is 0
+  // - .a:has(:is(.b ~ .c)) .d      : At .b, the descendant_features_depth is 1
+  // - .a:has(:is(.b ~ .c)) .d ~ .e : At .b, the descendant_features_depth is 1
+  // - .a:has(:is(.b ~ .c)) .d > .e : At .b, the descendant_features_depth is 2
+  //
+  // To keep the correct depth in the descendant_features object for each level
+  // of nested logical combinations, this class is used.
+  class AutoRestoreDescendantFeaturesDepth {
+    STACK_ALLOCATED();
+
+   public:
+    explicit AutoRestoreDescendantFeaturesDepth(
+        InvalidationSetFeatures* features)
+        : features_(features),
+          original_value_(features ? features->descendant_features_depth : 0) {}
+    ~AutoRestoreDescendantFeaturesDepth() {
+      if (features_)
+        features_->descendant_features_depth = original_value_;
+    }
+
+   private:
+    InvalidationSetFeatures* features_;
+    unsigned original_value_ = 0;
+  };
+
+  // For .a :has(:is(.b .c)).d, the invalidation set for .b is marked as whole-
+  // subtree-invalid because :has() is in subject position and evaluated before
+  // .b. But the invalidation set for .a can have descendant class .d. In this
+  // case, the descendant_features for the same compound selector can have two
+  // different state of WholeSubtreeInvalid flag. To keep the correct flag,
+  // this class is used.
+  class AutoRestoreWholeSubtreeInvalid {
+    STACK_ALLOCATED();
+
+   public:
+    explicit AutoRestoreWholeSubtreeInvalid(InvalidationSetFeatures& features)
+        : features_(features),
+          original_value_(features.invalidation_flags.WholeSubtreeInvalid()) {}
+    ~AutoRestoreWholeSubtreeInvalid() {
+      features_.invalidation_flags.SetWholeSubtreeInvalid(original_value_);
+    }
+
+   private:
+    InvalidationSetFeatures& features_;
+    bool original_value_;
   };
 
   // For :is(:host(.a), .b) .c, the invalidation set for .a should be marked
@@ -435,16 +528,18 @@ class CORE_EXPORT RuleFeatureSet {
   const CSSSelector* ExtractInvalidationSetFeaturesFromCompound(
       const CSSSelector&,
       InvalidationSetFeatures&,
-      PositionType);
+      PositionType,
+      bool for_logical_combination_in_has);
   void ExtractInvalidationSetFeaturesFromSelectorList(const CSSSelector&,
                                                       InvalidationSetFeatures&,
                                                       PositionType);
   void UpdateFeaturesFromCombinator(
-      const CSSSelector&,
+      CSSSelector::RelationType,
       const CSSSelector* last_compound_selector_in_adjacent_chain,
       InvalidationSetFeatures& last_compound_in_adjacent_chain_features,
       InvalidationSetFeatures*& sibling_features,
-      InvalidationSetFeatures& descendant_features);
+      InvalidationSetFeatures& descendant_features,
+      bool for_logical_combination_in_has);
   void UpdateFeaturesFromStyleScope(
       const StyleScope&,
       InvalidationSetFeatures& descendant_features);
@@ -460,7 +555,8 @@ class CORE_EXPORT RuleFeatureSet {
       InvalidationSetFeatures* sibling_features,
       InvalidationSetFeatures& descendant_features);
   void AddFeaturesToInvalidationSetsForSimpleSelector(
-      const CSSSelector&,
+      const CSSSelector& simple_selector,
+      const CSSSelector& compound,
       InvalidationSetFeatures* sibling_features,
       InvalidationSetFeatures& descendant_features);
   void AddFeaturesToInvalidationSetsForSelectorList(
@@ -473,11 +569,91 @@ class CORE_EXPORT RuleFeatureSet {
   void AddFeaturesToUniversalSiblingInvalidationSet(
       const InvalidationSetFeatures& sibling_features,
       const InvalidationSetFeatures& descendant_features);
+  void AddValuesInComplexSelectorInsideIsWhereNot(const CSSSelectorList*);
   bool AddValueOfSimpleSelectorInHasArgument(
       const CSSSelector& has_pseudo_class);
 
   void UpdateRuleSetInvalidation(const InvalidationSetFeatures&);
   void CollectValuesInHasArgument(const CSSSelector& has_pseudo_class);
+
+  // The logical combinations like ':is()', ':where()' and ':not()' can cause
+  // a compound selector in ':has()' to match an element outside of the ':has()'
+  // argument checking scope. (:has() anchor element, its ancestors, its
+  // previous siblings or its ancestor previous siblings)
+  // To support invalidation for a mutation on the elements, we can add features
+  // in invalidation sets only for the complex selectors in :is() inside :has()
+  // as if we have another rule with simple selector. (Add features as if the
+  // non-subject part of the logical combination argument is prepended to
+  // the compound containing :has())
+  //
+  // Example 1) '.a:has(:is(.b .c)) {}'
+  //   - For class 'b' change, invalidate descendant '.a' ('.b .a {}')
+  //
+  // Example 2) '.a:has(~ :is(.b ~ .c)) {}'
+  //   - For class 'b' change, invalidate sibling '.a' ('.b ~ .a {}')
+  //
+  // Example 3) '.a:has(~ :is(.b ~ .c)) .d {}'
+  //   - For class 'b' change, invalidate descendant '.d' of sibling '.a'.
+  //     ('.b ~ .a .d {}')
+  //
+  // Example 4) '.a:has(:is(.b ~ .c .d)) {}'
+  //   - For class 'b' change, invalidate descendant '.a' of sibling '.c'.
+  //     ('.b ~ .c .a {}')
+  //   - TODO(blee@igalia.com) For class 'b' change, we need to invalidate
+  //     sibling '.a' also. ('.b ~ .a {}')
+  void AddFeaturesToInvalidationSetsForHasPseudoClass(
+      const CSSSelector& has_pseudo_class,
+      const CSSSelector* compound_containing_has,
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
+
+  // AddFeaturesToInvalidationSetsForLogicalCombinationInHas() is invoked for
+  // each logical combination inside :has(). Same as the usual feature adding
+  // logic, sibling features and descendant features extracted from the
+  // previous compounds are passed though 'sibling_features' and
+  // 'descendant_features' arguments.
+  //
+  // The rightmost compound of a non-nested logical combinations is always
+  // in the :has() argument checking scope.
+  // - '.c' in '.a:has(:is(.b .c) .d)' is always a descendant of :has() anchor
+  //   element.
+  //
+  // But the rightmost compound of a nested logical combinations can be or
+  // cannot be in the :has() argument checking scope.
+  // - '.c' in '.a:has(:is(:is(.b .c) .d))' can be a :has() anchor element or
+  //   its ancestor.
+  // - '.d' in '.a:has(:is(.b :is(.c .d)))' is always a descendant of :has()
+  //   anchor element.
+  //
+  // To differentiate between the two cases, this method has a bool argument
+  // 'needs_skip_rightmost_compound'.
+  // The argument is always true when the method is called for the non-nested
+  // logical combinations in AddFeaturesToInvalidationSetsForHasPseudoClass().
+  // After the rightmost compound is skipped, the value is changed to false
+  // for the rest compounds.
+  void AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
+      const CSSSelector& logical_combination,
+      const CSSSelector* compound_containing_has,
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features,
+      bool needs_skip_rightmost_compound);
+
+  void UpdateFeaturesFromCombinatorForLogicalCombinationInHas(
+      CSSSelector::RelationType combinator,
+      const CSSSelector* last_compound_selector_in_adjacent_chain,
+      InvalidationSetFeatures& last_compound_in_adjacent_chain_features,
+      InvalidationSetFeatures*& sibling_features,
+      InvalidationSetFeatures& descendant_features);
+  const CSSSelector* SkipAddingAndGetLastInCompoundForLogicalCombinationInHas(
+      const CSSSelector* compound_in_logical_combination,
+      const CSSSelector* compound_containing_has,
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
+  const CSSSelector* AddFeaturesAndGetLastInCompoundForLogicalCombinationInHas(
+      const CSSSelector* compound_in_logical_combination,
+      const CSSSelector* compound_containing_has,
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
 
   static InvalidationSet& EnsureMutableInvalidationSet(
       scoped_refptr<InvalidationSet>&,
@@ -523,6 +699,9 @@ class CORE_EXPORT RuleFeatureSet {
   ValuesInHasArgument ids_in_has_argument_;
   ValuesInHasArgument tag_names_in_has_argument_;
   bool universal_in_has_argument_{false};
+  // We always need to invalidate on insertion/removal when we have :not()
+  // inside :has().
+  bool not_pseudo_in_has_argument_{false};
   PseudosInHasArgument pseudos_in_has_argument_;
 
   // If true, the RuleFeatureSet is alive and can be used.

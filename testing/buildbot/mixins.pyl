@@ -443,7 +443,8 @@
     '$mixin_append': {
       'args': [
         '--code-coverage',
-        '--code-coverage-dir=${ISOLATED_OUTDIR}'
+        '--code-coverage-dir=${ISOLATED_OUTDIR}',
+        '--test-launcher-jobs=2'
       ],
     },
   },
@@ -581,13 +582,25 @@
       },
     },
   },
-  'ios_runtime_cache_15_4': {
+  'ios_runtime_cache_15_5': {
     '$mixin_append': {
       'swarming': {
         'named_caches': [
           {
-            'name': 'runtime_ios_15_4',
-            'path': 'Runtime-ios-15.4',
+            'name': 'runtime_ios_15_5',
+            'path': 'Runtime-ios-15.5',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_16_0': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_16_0',
+            'path': 'Runtime-ios-16.0',
           },
         ],
       },
@@ -659,8 +672,8 @@
     'swarming': {
       'dimensions': {
         'gpu': '1002:7340',
-        'os': 'Ubuntu',
-        'pool': 'chromium.tests.gpu.experimental',
+        'os': 'Ubuntu-18.04.6',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -739,22 +752,6 @@
     'args': [
       'mac-release/sizes',
     ],
-  },
-  'mac_10.11': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-10.11',
-      },
-    },
-  },
-  'mac_10.12': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-10.12.6',
-      },
-    },
   },
   'mac_10.13': {
     'swarming': {
@@ -863,7 +860,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-11.5.2|Mac-12.4',
+        'os': 'Mac-11.5.2',
         'display_attached': '1',
       },
     },
@@ -873,7 +870,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '1002:679e',
-        'os': 'Mac-10.12.6',
+        'os': 'Mac-12.4',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -1177,7 +1174,7 @@
       ],
       'linux_args': [
         '--no-xvfb',
-        '--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan',
+        '--additional-driver-flag=--enable-features=Vulkan',
       ],
     },
     'merge': {
@@ -1338,13 +1335,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '13e113'
+        '13f17a'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_13e113',
+          'name': 'xcode_ios_13f17a',
           'path': 'Xcode.app',
         },
       ],
@@ -1362,6 +1359,23 @@
       'named_caches': [
         {
           'name': 'xcode_ios_13c100',
+          'path': 'Xcode.app',
+        },
+      ],
+    },
+  },
+  # Default Xcode 14 beta 1.
+  'xcode_14_beta': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '14a5228q'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_14a5228q',
           'path': 'Xcode.app',
         },
       ],

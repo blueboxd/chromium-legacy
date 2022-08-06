@@ -94,10 +94,12 @@ void AndroidAutofillManager::OnAskForValuesToFillImpl(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
-    bool autoselect_first_suggestion) {
+    bool autoselect_first_suggestion,
+    TouchToFillEligible touch_to_fill_eligible) {
   if (auto* provider = GetAutofillProvider()) {
     provider->OnAskForValuesToFill(this, query_id, form, field, bounding_box,
-                                   autoselect_first_suggestion);
+                                   autoselect_first_suggestion,
+                                   touch_to_fill_eligible);
   }
 }
 
@@ -146,8 +148,12 @@ void AndroidAutofillManager::OnHidePopup() {
 void AndroidAutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
 }
 
+void AndroidAutofillManager::JavaScriptChangedAutofilledValue(
+    const FormData& form,
+    const FormFieldData& field,
+    const std::u16string& old_value) {}
+
 void AndroidAutofillManager::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
   has_server_prediction_ = true;
   if (auto* provider = GetAutofillProvider())

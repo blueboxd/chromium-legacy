@@ -149,7 +149,7 @@
 #include "chrome/browser/ash/account_manager/child_account_type_changed_user_data.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -166,8 +166,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
-#include "chrome/browser/ui/startup/first_run_lacros.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chrome/browser/ui/startup/lacros_first_run_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
@@ -696,6 +696,10 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles() {
             << "Guest profiles shouldn't have been saved as active profiles";
         CHECK(!profile->IsOffTheRecord())
             << "OTR profiles shouldn't have been saved as active profiles";
+        // TODO(rsult): If this DCHECK is never hit, turn it into a CHECK.
+        DCHECK((!profile->IsSystemProfile()))
+            << "System profile shouldn't have been saved as active profiles.";
+
         to_return.push_back(profile);
       }
     }
@@ -712,8 +716,20 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
     if (!user)  // Can be null in unit tests.
       return nullptr;
 
-    // Note: The ProfileHelper will take care of guest profiles.
-    return ash::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+    if (user->is_profile_created()) {
+      // Note: The ProfileHelper will take care of guest profiles.
+      return ash::ProfileHelper::Get()->GetProfileByUser(user);
+    }
+
+    LOG(ERROR) << "ProfileManager::GetPrimaryUserProfile is called when "
+                  "|user| is created but |user|'s profile is not yet created. "
+                  "It probably means that something is wrong with a calling "
+                  "code. Please report in http://crbug.com/361528 if you see "
+                  "this message.";
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    if (profile && manager->IsLoggedInAsGuest())
+      profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+    return profile;
   }
 #endif
 
@@ -739,7 +755,7 @@ Profile* ProfileManager::GetActiveUserProfile() {
     // yet created we load the profile using the profile directly.
     // TODO: This should be cleaned up with the new profile manager.
     if (user && user->is_profile_created())
-      return ash::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+      return ash::ProfileHelper::Get()->GetProfileByUser(user);
   }
 #endif
   Profile* profile = profile_manager->GetActiveUserOrOffTheRecordProfile();
@@ -1043,6 +1059,7 @@ base::FilePath ProfileManager::GetGuestProfilePath() {
   return guest_path.Append(chrome::kGuestProfileDir);
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // static
 base::FilePath ProfileManager::GetSystemProfilePath() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1052,6 +1069,7 @@ base::FilePath ProfileManager::GetSystemProfilePath() {
   base::FilePath system_path = profile_manager->user_data_dir();
   return system_path.Append(chrome::kSystemProfileDir);
 }
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
@@ -1352,10 +1370,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  DCHECK(chromeos::LacrosService::Get());
-  const bool user_is_child =
-      chromeos::LacrosService::Get()->init_params()->session_type ==
-      crosapi::mojom::SessionType::kChildSession;
+  const bool user_is_child = chromeos::BrowserInitParams::Get()->session_type ==
+                             crosapi::mojom::SessionType::kChildSession;
   UpdateSupervisedUserPref(profile, user_is_child);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -1644,15 +1660,6 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
     browsing_data_lifetime_manager->ClearBrowsingDataForOnExitPolicy(
         /*keep_browser_alive=*/false);
   }
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Check if we should turn Sync on from the background and skip the FRE.
-  if (ShouldOpenPrimaryProfileFirstRun(profile)) {
-    // If we don't manage to set it, we will just have to defer silent or visual
-    // handling of the FRE to when the user attempts to open a browser UI.
-    TryMarkFirstRunAlreadyFinished(profile);
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -2369,6 +2376,10 @@ void ProfileManager::SaveActiveProfiles() {
         << "Guest profiles shouldn't be saved as active profiles";
     CHECK(!(*it)->IsOffTheRecord())
         << "OTR profiles shouldn't be saved as active profiles";
+    // TODO(rsult): If this DCHECK is never hit, turn it into a CHECK and remove
+    // the test on `chrome::kSystemProfileDir` below.
+    DCHECK((!(*it)->IsSystemProfile()))
+        << "System profile shouldn't be saved as active profile";
     base::FilePath profile_path = (*it)->GetBaseName();
     // Some profiles might become ephemeral after they are created.
     // Don't persist the System Profile as one of the last actives, it should

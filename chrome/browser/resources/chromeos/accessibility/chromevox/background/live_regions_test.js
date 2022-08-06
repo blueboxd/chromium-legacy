@@ -13,9 +13,12 @@ GEN_INCLUDE([
 ChromeVoxLiveRegionsTest = class extends ChromeVoxNextE2ETest {
   async setUpDeferred() {
     await super.setUpDeferred();
+    await importModule(
+        'ChromeVoxState', '/chromevox/background/chromevox_state.js');
+    await importModule('LiveRegions', '/chromevox/background/live_regions.js');
+    await importModule('Output', '/chromevox/background/output/output.js');
 
     window.TreeChangeType = chrome.automation.TreeChangeType;
-    await importModule('LiveRegions', '/chromevox/background/live_regions.js');
   }
 
   /**
@@ -190,7 +193,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'FocusThenLiveRegion', async function() {
   mockFeedback.call(this.simulateUserInteraction.bind(this))
       .call(go.doDefault.bind(go))
       .expectSpeech('Focus')
-      .expectSpeech((candidate) => {
+      .expectSpeech(candidate => {
         return candidate.text === 'Live' &&
             (candidate.queueMode === QueueMode.CATEGORY_FLUSH ||
              candidate.queueMode === QueueMode.QUEUE);

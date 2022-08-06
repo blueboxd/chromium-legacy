@@ -10,6 +10,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -29,6 +31,8 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -130,17 +134,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // Use commandline args to enable the Discover feed for this test case.
   // Disabled elsewhere to account for possible flakiness.
   AppLaunchConfiguration config;
-  // TODO(crbug.com/1265565):Once kSingleNtp is launched, investigate further as
-  // to why this test is failing.
-  if ([self isRunningTest:@selector
-            (testNewSearchFromNewTabMenuAfterTogglingFeed)]) {
-    config.features_disabled.push_back(kSingleNtp);
-  }
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
   config.features_enabled.push_back(kDiscoverFeedInNtp);
   config.features_enabled.push_back(kSingleCellContentSuggestions);
   config.features_enabled.push_back(kContentSuggestionsHeaderMigration);
+  config.features_enabled.push_back(
+      kContentSuggestionsUIViewControllerMigration);
   return config;
 }
 
@@ -159,7 +159,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 - (void)tearDown {
-  [NewTabPageAppInterface disableSuggestions];
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                                 error:nil];
   [NewTabPageAppInterface resetSearchEngineTo:self.defaultSearchEngine];
@@ -604,7 +603,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 // Tests that tapping the fake omnibox moves the collection.
-- (void)testTapFakeOmniboxScroll {
+// TODO(crbug.com/1326523): enable once fixed on ios15-sdk-sim
+- (void)DISABLED_testTapFakeOmniboxScroll {
   // Disable the test on iOS 15.3 due to build failure.
   // TODO(crbug.com/1306515): enable the test with fix.
   if (@available(iOS 15.3, *)) {
@@ -629,8 +629,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                  @"The collection has not moved.");
 
   // Unfocus the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_tapAtPoint(CGPointMake(0, offsetAfterTap.y + 100))];
+  [self unfocusFakeBox];
 
   // Check the fake omnibox is displayed again at the same position.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
@@ -643,7 +642,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that tapping the fake omnibox then unfocusing it moves the collection
 // back to where it was.
-- (void)testTapFakeOmniboxScrollScrolled {
+// TODO(crbug.com/1326523): enable once fixed on ios15-sdk-sim
+- (void)DISABLED_testTapFakeOmniboxScrollScrolled {
   // Disable the test on iOS 15.3 due to build failure.
   // TODO(crbug.com/1306515): enable the test with fix.
   if (@available(iOS 15.3, *)) {
@@ -663,9 +663,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [self focusFakebox];
 
   // Unfocus the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_tapAtPoint(
-                        CGPointMake(0, collectionView.contentOffset.y + 100))];
+  [self unfocusFakeBox];
 
   // Check the fake omnibox is displayed again at the same position.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
@@ -944,7 +942,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 #pragma mark - New Tab menu tests
 
 // Tests the "new search" menu item from the new tab menu.
-// TODO(crbug.com/1280323): Fails on iOS device and ios15-beta-simulator.
+// TODO(crbug.com/1280323): Re-enable after removing didLoadPageWithSuccess: to
+// update NTP scroll state.
 - (void)DISABLED_testNewSearchFromNewTabMenu {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"New Search is only available in phone layout.");
@@ -975,7 +974,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests the "new search" menu item from the new tab menu after disabling the
 // feed.
-- (void)testNewSearchFromNewTabMenuAfterTogglingFeed {
+// TODO(crbug.com/1280323): Re-enable after removing didLoadPageWithSuccess: to
+// update NTP scroll state.
+- (void)DISABLED_testNewSearchFromNewTabMenuAfterTogglingFeed {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"New Search is only available in phone layout.");
   }
@@ -1009,14 +1010,18 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the scroll position is maintained when switching from the Discover
 // feed to the Following feed without fully scrolling into the feed.
-- (void)testScrollPositionMaintainedWhenSwitchingFeedAboveFeed {
+// TODO(crbug.com/1330667): Re-enable when fixed.
+- (void)DISABLED_testScrollPositionMaintainedWhenSwitchingFeedAboveFeed {
   if (![ChromeEarlGrey isWebChannelsEnabled]) {
     EARL_GREY_TEST_SKIPPED(@"Only applicable with Web Channels enabled.");
   }
 
+  // Sign in to enable Following.
+  [self signInThroughSettingsMenu];
+
   // Scrolls down a bit, not fully into the feed.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
+      performAction:grey_scrollInDirection(kGREYDirectionDown, 50)];
 
   // Saves the content offset and switches to the Following feed.
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
@@ -1029,6 +1034,73 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   collectionView = [NewTabPageAppInterface collectionView];
   GREYAssertEqual(yOffsetBeforeSwitchingFeed, collectionView.contentOffset.y,
                   @"Content offset is not the same after switching feeds.");
+}
+
+// Tests that the regular feed header is visible when signed out, and is swapped
+// for the Following feed header after signing in.
+// TODO(crbug.com/1330667): Re-enable when fixed.
+- (void)DISABLED_testFollowingFeedHeaderIsVisibleWhenSignedIn {
+  if (![ChromeEarlGrey isWebChannelsEnabled]) {
+    EARL_GREY_TEST_SKIPPED(@"Only applicable with Web Channels enabled.");
+  }
+
+  // Check that regular feed header is visible when signed out, and not
+  // Following header.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kNTPFeedHeaderSegmentedControlIdentifier)]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Sign in to enable Following feed.
+  [self signInThroughSettingsMenu];
+
+  // Check that Following header is now visible, and not regular feed header.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kNTPFeedHeaderSegmentedControlIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+}
+
+// Tests that feed ablation successfully hides the feed from the NTP and the
+// toggle from the Chrome settings.
+- (void)testFeedAblationHidesFeed {
+  // Ensures that feed header is visible before enabling ablation.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Opens settings menu and ensures that Discover setting is present.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                           kSettingsArticleSuggestionsCellId)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
+      onElementWithMatcher:grey_allOf(
+                               grey_accessibilityID(kSettingsTableViewId),
+                               grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
+
+  // Relaunch the app with ablation enabled.
+  AppLaunchConfiguration config = [self appConfigurationForTestCase];
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.features_enabled.push_back(kEnableFeedAblation);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Ensures that feed header is not visible with ablation enabled.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Opens settings menu and ensures that Discover setting is not present.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                           kSettingsArticleSuggestionsCellId)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
+      onElementWithMatcher:grey_allOf(
+                               grey_accessibilityID(kSettingsTableViewId),
+                               grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_nil()];
 }
 
 #pragma mark - Helpers
@@ -1057,6 +1129,20 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
+}
+
+// Unfocus the omnibox.
+- (void)unfocusFakeBox {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    [ChromeEarlGrey simulatePhysicalKeyboardEvent:UIKeyInputEscape flags:0];
+  } else {
+    id<GREYMatcher> cancelButton =
+        grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier);
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(cancelButton,
+                                            grey_sufficientlyVisible(), nil)]
+        performAction:grey_tap()];
+  }
 }
 
 - (void)testNTPInitialPositionAndContent:(UICollectionView*)collectionView {
@@ -1152,6 +1238,19 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   GREYAssertFalse(feed_visible, @"Expect feed to be hidden!");
 }
 
+// Opens the settings menu, signs in using a fake identity, and closes the menu.
+- (void)signInThroughSettingsMenu {
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
+  [SigninEarlGreyUI tapSigninConfirmationDialog];
+  [ChromeEarlGrey waitForMatcher:chrome_test_util::SettingsAccountButton()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
 #pragma mark - Matchers
 
 // Returns the segment of the feed header with a given title.
@@ -1204,6 +1303,13 @@ id<GREYMatcher> FeedHeaderSegmentFollowing() {
       std::string(kIOSOmniboxUpdatedPopupUIVariationName) + "/" + _variant);
 
   return config;
+}
+
+// Variants set the |--enable-features| flag manually, preventing us from being
+// able to add more features without overriding the initial ones. We therefore
+// skip this test for the variants since it relies on enabling a feature.
+- (void)testFeedAblationHidesFeed {
+  EARL_GREY_TEST_SKIPPED(@"Skipped for variants.");
 }
 
 @end

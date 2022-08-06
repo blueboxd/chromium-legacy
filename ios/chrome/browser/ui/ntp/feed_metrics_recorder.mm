@@ -172,6 +172,12 @@ const char
 const char kDiscoverFeedUserActionManagementTappedUnfollowTryAgainOnSnackbar[] =
     "ContentSuggestions.Feed.Management.TappedUnfollowTryAgainOnSnackbar";
 
+// User action names for first follow surface.
+const char kFirstFollowGoToFeedButtonTapped[] =
+    "ContentSuggestions.Follow.FirstFollow.GoToFeedButtonTapped";
+const char kFirstFollowGotItButtonTapped[] =
+    "ContentSuggestions.Follow.FirstFollow.GotItButtonTapped";
+
 // User action name for engaging with feed.
 const char kDiscoverFeedUserActionEngaged[] = "ContentSuggestions.Feed.Engaged";
 
@@ -795,6 +801,23 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
       kDiscoverFeedUserActionManagementTappedUnfollowTryAgainOnSnackbar));
 }
 
+- (void)recordFirstFollowShown {
+  [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
+                                                  kFirstFollowSheetShown];
+}
+
+- (void)recordFirstFollowTappedGoToFeed {
+  [self recordDiscoverFeedUserActionHistogram:
+            FeedUserActionType::kFirstFollowSheetTappedGoToFeed];
+  base::RecordAction(base::UserMetricsAction(kFirstFollowGoToFeedButtonTapped));
+}
+
+- (void)recordFirstFollowTappedGotIt {
+  [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
+                                                  kFirstFollowSheetTappedGotIt];
+  base::RecordAction(base::UserMetricsAction(kFirstFollowGotItButtonTapped));
+}
+
 #pragma mark - Private
 
 // Returns the UserSettingsOnStart value based on the user settings.
@@ -936,8 +959,9 @@ constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
     self.engagedReportedFollowing = YES;
 
     // Log follow count when engaging with Following feed.
-    [self recordFollowCount:[self.followDelegate followedPublisherCount]
-               forLogReason:FollowCountLogReasonEngaged];
+    // TODO(crbug.com/1322640): |followDelegate| is nil when navigating to an
+    // article, since NTPCoordinator is stopped first. When this is fixed, we
+    // should call |recordFollowCount| here.
   }
 
   // TODO(crbug.com/1322640): Separate user action for Following feed

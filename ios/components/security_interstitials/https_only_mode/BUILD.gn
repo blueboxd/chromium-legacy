@@ -14,6 +14,7 @@ source_set("https_only_mode") {
     "https_only_mode_error.h",
     "https_only_mode_error.mm",
     "https_upgrade_service.h",
+    "https_upgrade_service.mm",
   ]
   deps = [
     ":feature",
@@ -36,12 +37,24 @@ source_set("feature") {
   deps = [ "//base" ]
 }
 
+source_set("test_util") {
+  sources = [
+    "https_upgrade_test_util.cc",
+    "https_upgrade_test_util.h",
+  ]
+  deps = [
+    ":https_only_mode",
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "https_only_mode_blocking_page_unittest.mm" ]
   deps = [
     ":https_only_mode",
+    ":test_util",
     "//base/test:test_support",
     "//components/security_interstitials/core",
     "//ios/web/public",

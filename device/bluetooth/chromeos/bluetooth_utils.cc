@@ -17,7 +17,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "device/base/features.h"
-#include "device/bluetooth/floss/floss_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -26,7 +25,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace device {
@@ -79,8 +78,7 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::LacrosService::Get()
-          ->init_params()
+  if (chromeos::BrowserInitParams::Get()
           ->is_unfiltered_bluetooth_device_enabled) {
     return devices;
   }
@@ -181,20 +179,13 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
 }
 
 bool IsUnsupportedDevice(const device::BluetoothDevice* device) {
-  // With Floss, device list filtering is still unstable. We disable filtering
-  // first so that Floss testing of other features can be unblocked.
-  // TODO(b/202335393): Enable device filtering once it's stable with Floss.
-  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled))
-    return false;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::switches::IsUnfilteredBluetoothDevicesEnabled())
     return false;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::LacrosService::Get()
-          ->init_params()
+  if (chromeos::BrowserInitParams::Get()
           ->is_unfiltered_bluetooth_device_enabled) {
     return false;
   }

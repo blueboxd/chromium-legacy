@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -43,9 +44,7 @@ struct ExternallyManagedAppManagerImpl::TaskAndCallback {
 
 ExternallyManagedAppManagerImpl::ExternallyManagedAppManagerImpl(
     Profile* profile)
-    : profile_(profile),
-      externally_installed_app_prefs_(profile->GetPrefs()),
-      url_loader_(std::make_unique<WebAppUrlLoader>()) {}
+    : profile_(profile), url_loader_(std::make_unique<WebAppUrlLoader>()) {}
 
 ExternallyManagedAppManagerImpl::~ExternallyManagedAppManagerImpl() = default;
 
@@ -100,6 +99,7 @@ void ExternallyManagedAppManagerImpl::Shutdown() {
   pending_registrations_.clear();
   current_registration_.reset();
   pending_installs_.clear();
+  url_loader_.reset();
   // `current_install_` keeps a pointer to `web_contents_` so destroy it before
   // releasing the WebContents.
   current_install_.reset();
@@ -172,11 +172,14 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
       return;
     }
 
-    absl::optional<AppId> app_id = externally_installed_app_prefs_.LookupAppId(
-        install_options.install_url);
+    // This app id isn't guaranteed to be installed,
+    // it's only guaranteed to have been installed in the past.
+    absl::optional<AppId> app_id =
+        ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+            .LookupAppId(install_options.install_url);
 
-    // If the URL is not in ExternallyInstalledWebAppPrefs, then no external
-    // source has installed it.
+    // If the URL is not in ExternallyInstalledWebAppPrefs,
+    // then no external source has installed it.
     if (!app_id.has_value()) {
       StartInstallationTask(std::move(front));
       return;
@@ -196,9 +199,9 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
       // If the app is already installed, only reinstall it if the app is a
       // placeholder app and the client asked for it to be reinstalled.
       if (install_options.reinstall_placeholder &&
-          externally_installed_app_prefs_
-              .LookupPlaceholderAppId(install_options.install_url)
-              .has_value()) {
+          registrar()->IsPlaceholderApp(app_id.value(),
+                                        ConvertExternalInstallSourceToSource(
+                                            install_options.install_source))) {
         StartInstallationTask(std::move(front));
         return;
       }
@@ -221,18 +224,6 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
                ExternallyManagedAppManager::InstallResult(
                    webapps::InstallResultCode::kSuccessAlreadyInstalled,
                    app_id));
-      continue;
-    }
-
-    // The app is not installed, but it might have been previously uninstalled
-    // by the user. If that's the case, don't install it again unless
-    // |override_previous_user_uninstall| is true.
-    if (finalizer()->WasPreinstalledWebAppUninstalled(app_id.value()) &&
-        !install_options.override_previous_user_uninstall) {
-      std::move(front->callback)
-          .Run(install_options.install_url,
-               ExternallyManagedAppManager::InstallResult(
-                   webapps::InstallResultCode::kPreviouslyUninstalled, app_id));
       continue;
     }
 

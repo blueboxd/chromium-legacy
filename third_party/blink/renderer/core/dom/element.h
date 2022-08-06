@@ -25,6 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/types/pass_key.h"
@@ -159,11 +160,11 @@ enum class NamedItemType {
 
 enum class PopupValueType {
   kNone,
-  kPopup,
+  kAuto,
   kHint,
   kAsync,
 };
-constexpr const char* kPopupTypeValuePopup = "popup";
+constexpr const char* kPopupTypeValueAuto = "auto";
 constexpr const char* kPopupTypeValueHint = "hint";
 constexpr const char* kPopupTypeValueAsync = "async";
 
@@ -172,6 +173,11 @@ enum class PopupTriggerAction {
   kToggle,
   kShow,
   kHide,
+};
+
+enum class HidePopupFocusBehavior {
+  kNone,
+  kFocusPreviousElement,
 };
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
@@ -553,6 +559,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool popupOpen() const;
   void showPopup(ExceptionState& exception_state);
   void hidePopup(ExceptionState& exception_state);
+  void hidePopupInternal(HidePopupFocusBehavior focus_behavior);
   static const Element* NearestOpenAncestralPopup(Node* start_node);
   static void HandlePopupLightDismiss(const Event& event);
   void InvokePopup(Element* invoker);
@@ -1104,6 +1111,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetAncestorsOrSiblingsAffectedByFocusInHas();
   bool AncestorsOrSiblingsAffectedByFocusVisibleInHas() const;
   void SetAncestorsOrSiblingsAffectedByFocusVisibleInHas();
+  bool AffectedByLogicalCombinationsInHas() const;
+  void SetAffectedByLogicalCombinationsInHas();
 
   void SaveIntrinsicSize(ResizeObserverSize* size);
   const ResizeObserverSize* LastIntrinsicSize() const;
@@ -1128,6 +1137,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   FocusgroupFlags GetFocusgroupFlags() const;
 
   bool isVisible(IsVisibleOptions* options) const;
+
+  bool IsDocumentElement() const;
+
+  // Not all Elements are presently supported by the Region Capture feature.
+  // Those that are override and this method and return true.
+  // TODO(crbug.com/1332641): Remove this after adding support for all subtypes.
+  virtual bool IsSupportedByRegionCapture() const { return false; }
+
+  bool IsReplacedElementRespectingCSSOverflow() const;
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -1380,6 +1398,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void UpdateName(const AtomicString& old_name, const AtomicString& new_name);
 
   void UpdateFocusgroup(const AtomicString& input);
+  void UpdateFocusgroupInShadowRootIfNeeded();
 
   void ClientQuads(Vector<gfx::QuadF>& quads) const;
 
@@ -1531,6 +1550,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void PseudoStateChanged(CSSSelector::PseudoType pseudo,
                           AffectedByPseudoStateChange&&);
+
+  // Highlight pseudos inherit all properties from the corresponding highlight
+  // in the parent, but virtually all existing content uses universal rules
+  // like *::selection. To improve runtime and keep copy-on-write inheritance,
+  // avoid recalc if neither parent nor child matched any non-universal rules.
+  bool CanSkipRecalcForHighlightPseudos(const ComputedStyle& new_style) const;
 
   Member<ElementData> element_data_;
 };

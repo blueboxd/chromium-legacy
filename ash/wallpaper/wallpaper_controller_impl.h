@@ -46,8 +46,6 @@
 #include "ui/native_theme/native_theme_observer.h"
 #include "url/gurl.h"
 
-class PrefRegistrySimple;
-
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
@@ -59,6 +57,7 @@ struct ColorProfile;
 namespace ash {
 
 class WallpaperColorCalculator;
+class WallpaperPrefManager;
 class WallpaperResizer;
 class WallpaperWindowStateManager;
 
@@ -98,36 +97,19 @@ class ASH_EXPORT WallpaperControllerImpl
   static const char kLargeWallpaperSubDir[];
   static const char kOriginalWallpaperSubDir[];
 
-  // Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
-  static const char kNewWallpaperAssetIdNodeName[];
-  static const char kNewWallpaperCollectionIdNodeName[];
-  static const char kNewWallpaperDateNodeName[];
-  static const char kNewWallpaperLayoutNodeName[];
-  static const char kNewWallpaperLocationNodeName[];
-  static const char kNewWallpaperTypeNodeName[];
-  static const char kNewWallpaperUnitIdNodeName[];
-  static const char kNewWallpaperVariantListNodeName[];
-
-  // Names of nodes for the online wallpaper variant dictionary.
-  static const char kOnlineWallpaperTypeNodeName[];
-  static const char kOnlineWallpaperUrlNodeName[];
-
   static std::unique_ptr<WallpaperControllerImpl> Create(
       PrefService* local_state);
 
   // Prefer to use to obtain an new instance unless injecting non-production
   // members i.e. in tests.
   explicit WallpaperControllerImpl(
-      PrefService* local_state,
+      std::unique_ptr<WallpaperPrefManager> pref_manager,
       std::unique_ptr<OnlineWallpaperVariantInfoFetcher> fetcher);
 
   WallpaperControllerImpl(const WallpaperControllerImpl&) = delete;
   WallpaperControllerImpl& operator=(const WallpaperControllerImpl&) = delete;
 
   ~WallpaperControllerImpl() override;
-
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who
@@ -190,10 +172,6 @@ class ASH_EXPORT WallpaperControllerImpl
                           WallpaperInfo info,
                           bool preview_mode,
                           bool always_on_top);
-
-  // Returns whether a wallpaper policy is enforced for |account_id| (not
-  // including device policy).
-  bool IsPolicyControlled(const AccountId& account_id) const;
 
   // Update the blurred state of the current wallpaper for lock screen. Applies
   // blur if |blur| is true and blur is allowed by the controller, otherwise any
@@ -270,6 +248,13 @@ class ASH_EXPORT WallpaperControllerImpl
                                 SetWallpaperCallback callback) override;
   std::string GetGooglePhotosDailyRefreshAlbumId(
       const AccountId& account_id) const override;
+  bool SetDailyGooglePhotosWallpaperIdCache(
+      const AccountId& account_id,
+      const DailyGooglePhotosIdCache& ids) override;
+  bool GetDailyGooglePhotosWallpaperIdCache(
+      const AccountId& account_id,
+      DailyGooglePhotosIdCache& ids_out) const override;
+
   void SetDefaultWallpaper(const AccountId& account_id,
                            bool show_wallpaper,
                            SetWallpaperCallback callback) override;
@@ -308,6 +293,8 @@ class ASH_EXPORT WallpaperControllerImpl
   const std::vector<SkColor>& GetWallpaperColors() override;
   bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
+  bool IsWallpaperControlledByPolicy(
+      const AccountId& account_id) const override;
   WallpaperInfo GetActiveUserWallpaperInfo() const override;
   bool ShouldShowWallpaperSetting() override;
   void SetDailyRefreshCollectionId(const AccountId& account_id,
@@ -411,9 +398,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns the wallpaper container id for unlocked and locked states.
   int GetWallpaperContainerId(bool locked);
 
-  // Removes |account_id|'s wallpaper info and color cache if it exists.
-  void RemoveUserWallpaperInfo(const AccountId& account_id);
-
   // Implementation of |RemoveUserWallpaper|, which deletes |account_id|'s
   // custom wallpapers and directories.
   void RemoveUserWallpaperImpl(const AccountId& account_id);
@@ -480,7 +464,7 @@ class ASH_EXPORT WallpaperControllerImpl
   // Used as the callback of fetching the data for a Google Photos photo from
   // the unique id.
   void OnGooglePhotosPhotoFetched(
-      const GooglePhotosWallpaperParams& params,
+      GooglePhotosWallpaperParams params,
       SetWallpaperCallback callback,
       ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
       bool success);
@@ -492,11 +476,13 @@ class ASH_EXPORT WallpaperControllerImpl
       ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
       bool success);
 
-  void OnDailyGooglePhotosWallpaperDownloaded(const AccountId& account_id,
-                                              const std::string& photo_id,
-                                              const std::string& album_id,
-                                              RefreshWallpaperCallback callback,
-                                              const gfx::ImageSkia& image);
+  void OnDailyGooglePhotosWallpaperDownloaded(
+      const AccountId& account_id,
+      const std::string& photo_id,
+      const std::string& album_id,
+      absl::optional<std::string> dedup_key,
+      RefreshWallpaperCallback callback,
+      const gfx::ImageSkia& image);
 
   void GetGooglePhotosWallpaperFromCacheOrDownload(
       const GooglePhotosWallpaperParams& params,
@@ -512,7 +498,7 @@ class ASH_EXPORT WallpaperControllerImpl
                                       const gfx::ImageSkia& image);
 
   // Used as the callback of downloading wallpapers of type
-  // `WallpaperType::kGooglePhotos`. Shows the wallpaper immediately if
+  // `WallpaperType::kOnceGooglePhotos`. Shows the wallpaper immediately if
   // `params.account_id` is the active user.
   void OnGooglePhotosWallpaperDownloaded(
       const GooglePhotosWallpaperParams& params,
@@ -665,14 +651,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // This is used when we want to change wallpaper dimming.
   void RepaintWallpaper();
 
-  bool SetLocalWallpaperInfo(const AccountId& account_id,
-                             const WallpaperInfo& info);
-  bool GetLocalWallpaperInfo(const AccountId& account_id,
-                             WallpaperInfo* info) const;
-  bool SetSyncedWallpaperInfo(const AccountId& account_id,
-                              const WallpaperInfo& info);
-  bool GetSyncedWallpaperInfo(const AccountId& account_id,
-                              WallpaperInfo* info) const;
   void HandleWallpaperInfoSyncedIn(const AccountId& account_id,
                                    WallpaperInfo info);
   void OnAttemptSetOnlineWallpaper(const OnlineWallpaperParams& params,
@@ -770,6 +748,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   std::unique_ptr<WallpaperResizer> current_wallpaper_;
 
+  // Manages interactions with relevant preferences.
+  std::unique_ptr<WallpaperPrefManager> pref_manager_;
+
   // Asynchronous task to extract colors from the wallpaper.
   std::unique_ptr<WallpaperColorCalculator> color_calculator_;
 
@@ -786,10 +767,6 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;
-
-  // The wallpaper info for ephemeral users, which is not stored to local state.
-  // See |UserInfo::is_ephemeral| for details.
-  std::map<AccountId, WallpaperInfo> ephemeral_users_wallpaper_info_;
 
   // Account id of the current user.
   AccountId current_user_;
@@ -868,11 +845,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // 'set wallpaper' request. (e.g. when a custom wallpaper decoding fails, a
   // default wallpaper decoding is initiated.)
   std::vector<base::FilePath> decode_requests_for_testing_;
-
-  // PrefService provided by Shell when constructing this.
-  // Valid for the lifetime of ash::Shell which owns WallpaperControllerImpl.
-  // May be null in tests.
-  PrefService* local_state_ = nullptr;
 
   base::WallClockTimer update_wallpaper_timer_;
 

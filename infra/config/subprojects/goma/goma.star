@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "builder", "builders", "cpu", "defaults", "goma", "os", "xcode")
+load("//lib/builders.star", "builder", "cpu", "defaults", "goma", "os", "xcode")
 load("//lib/structs.star", "structs")
 
 luci.bucket(
@@ -32,7 +32,6 @@ defaults.executable.set("recipe:chromium")
 defaults.execution_timeout.set(3 * time.hour)
 defaults.os.set(os.LINUX_DEFAULT)
 defaults.pool.set("luci.chromium.ci")
-defaults.free_space.set(builders.free_space.standard)
 defaults.service_account.set(
     "goma-release-testing@chops-service-accounts.iam.gserviceaccount.com",
 )
@@ -120,7 +119,7 @@ fyi_goma_rbe_canary_builder(
     ),
     cores = None,
     goma_jobs = goma.jobs.J80,
-    os = os.MAC_11,
+    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
 )
 
@@ -166,7 +165,7 @@ fyi_goma_rbe_canary_builder(
         ),
     ),
     cores = None,
-    os = os.MAC_11,
+    os = os.MAC_DEFAULT,
     xcode = xcode.x13main,
 )
 
@@ -498,7 +497,7 @@ fyi_goma_rbe_latest_client_builder(
         ),
     ),
     cores = None,
-    os = os.MAC_11,
+    os = os.MAC_DEFAULT,
     xcode = xcode.x13main,
 )
 
@@ -662,7 +661,7 @@ def goma_mac_builder(
 goma_mac_builder(
     name = "Chromium iOS Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
-    os = os.MAC_11,
+    os = os.MAC_DEFAULT,
     xcode = xcode.x13main,
 )
 

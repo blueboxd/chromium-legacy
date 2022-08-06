@@ -1233,7 +1233,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     switch (static_cast<ax::mojom::DescriptionFrom>(desc_from)) {
       case ax::mojom::DescriptionFrom::kAriaDescription:
         // Descriptions are exposed via each platform's usual description field.
-        // Also, only aria-description is exposed via tha "description" object
+        // Also, only aria-description is exposed via the "description" object
         // attribute, in order to match Firefox.
         AddAttributeToList(ax::mojom::StringAttribute::kDescription,
                            "description", attributes);
@@ -1243,7 +1243,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         from = "button-label";
         break;
       case ax::mojom::DescriptionFrom::kRelatedElement:
-        // Both @title an aria-describedby=tooltip get "tooltip".
+        // aria-describedby=tooltip is mapped to "tooltip".
         from = IsDescribedByTooltip() ? "tooltip" : "aria-describedby";
         break;
       case ax::mojom::DescriptionFrom::kRubyAnnotation:
@@ -1259,7 +1259,11 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         from = "table-caption";
         break;
       case ax::mojom::DescriptionFrom::kTitle:
-        // Both @title an aria-describedby=tooltip get "tooltip".
+      case ax::mojom::DescriptionFrom::kPopupElement:
+        // The following types of markup are mapped to "tooltip":
+        // * The title attribute.
+        // * A related popup=hint related via togglepopup/showpopup/hidepopup.
+        // * A tooltip related via aria-describedby (see kRelatedElement above).
         from = "tooltip";
         break;
       case ax::mojom::DescriptionFrom::kNone:
@@ -1887,27 +1891,25 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
 
 int AXPlatformNodeBase::GetSelectionAnchor(const AXTree::Selection* selection) {
   DCHECK(selection);
-  int32_t anchor_id = selection->anchor_object_id;
+  AXNodeID anchor_id = selection->anchor_object_id;
   AXPlatformNodeBase* anchor_object =
       static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(anchor_id));
-
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = int{selection->anchor_offset};
-  return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
+  return GetHypertextOffsetFromEndpoint(anchor_object,
+                                        selection->anchor_offset);
 }
 
 int AXPlatformNodeBase::GetSelectionFocus(const AXTree::Selection* selection) {
   DCHECK(selection);
-  int32_t focus_id = selection->focus_object_id;
+  AXNodeID focus_id = selection->focus_object_id;
   AXPlatformNodeBase* focus_object =
       static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_object)
     return -1;
 
-  int focus_offset = int{selection->focus_offset};
-  return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
+  return GetHypertextOffsetFromEndpoint(focus_object, selection->focus_offset);
 }
 
 void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
@@ -2130,17 +2132,17 @@ int AXPlatformNodeBase::FindTextBoundary(
   const AXPosition position = delegate_->CreateTextPositionAt(offset, affinity);
   // On Windows and Linux ATK, searching for a text boundary should always stop
   // at the boundary of the current object.
-  auto boundary_behavior = AXBoundaryBehavior::kStopAtAnchorBoundary;
+  AXMovementOptions options{AXBoundaryBehavior::kStopAtAnchorBoundary,
+                            AXBoundaryDetection::kDontCheckInitialPosition};
   // On Windows and Linux ATK, it is standard text navigation behavior to stop
   // if we are searching in the backwards direction and the current position is
   // already at the required text boundary.
   if (direction == ax::mojom::MoveDirection::kBackward) {
-    boundary_behavior =
-        AXBoundaryBehavior::kStopAtAnchorBoundaryOrIfAlreadyAtBoundary;
+    options.boundary_detection = AXBoundaryDetection::kCheckInitialPosition;
   }
 
-  const AXPosition boundary_position = position->CreatePositionAtTextBoundary(
-      boundary, direction, boundary_behavior);
+  const AXPosition boundary_position =
+      position->CreatePositionAtTextBoundary(boundary, direction, options);
   if (boundary_position->IsNullPosition())
     return -1;
   DCHECK_GE(boundary_position->text_offset(), 0);

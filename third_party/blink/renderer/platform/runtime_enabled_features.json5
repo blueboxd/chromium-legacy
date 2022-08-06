@@ -182,6 +182,8 @@
     },
     {
       name: "AnonymousIframe",
+      origin_trial_allows_third_party: true,
+      origin_trial_feature_name: "AnonymousIframe",
       status: "test",
     },
     {
@@ -397,6 +399,16 @@
       status: "experimental",
     },
     {
+      name: "CoepReflection",
+      status: "test",
+
+      // If a feature is implied by one supporting an origin trial, it must also
+      // support origin trial.
+      implied_by: ["AnonymousIframe"],
+      origin_trial_allows_third_party: true,
+      origin_trial_feature_name: "CoepReflection",
+    },
+    {
       name: "CompositeBGColorAnimation",
       status: "experimental",
     },
@@ -468,10 +480,6 @@
       name: "CorsRFC1918",
     },
     {
-      name: "CrossOriginIsolation",
-      status: "stable",
-    },
-    {
       name: "CrossOriginOpenerPolicyReporting",
       origin_trial_feature_name: "CrossOriginOpenerPolicyReporting",
       origin_trial_allows_third_party: true,
@@ -484,6 +492,12 @@
     {
       name: "CSSAccentColor",
       status: "stable",
+    },
+    {
+      // Allows positioning a positioned element relative to another one.
+      // https://tabatkins.github.io/specs/css-anchor-position/
+      name: "CSSAnchorPositioning",
+      status: "test",
     },
     {
       // Whether <image> values are allowed as counter style <symbol>
@@ -499,11 +513,6 @@
       // https://drafts.csswg.org/css-counter-styles/#counter-style-speak-as
       name: "CSSAtRuleCounterStyleSpeakAsDescriptor",
       status: "test",
-    },
-    {
-      // https://github.com/DevSDK/calc-infinity-and-NaN/blob/master/explainer.md
-      name: "CSSCalcInfinityAndNaN",
-      status: "stable",
     },
     {
       // Support CSS Values Level 4 calc simplification and serialization
@@ -606,7 +615,7 @@
     },
     {
       name: "CSSIndependentTransformProperties",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSLayoutAPI",
@@ -649,6 +658,7 @@
       //
       // https://drafts.csswg.org/mediaqueries-4/#mq-syntax
       name: "CSSMediaQueries4",
+      status: "stable",
     },
     {
       name: "CSSMixBlendModePlusLighter",
@@ -717,7 +727,7 @@
     {
       // https://drafts.csswg.org/css-cascade-6/#scoped-styles
       name: "CSSScope",
-      status: "test",
+      status: "experimental",
     },
     // Scrollbar styling.
     // https://drafts.csswg.org/css-scrollbars/
@@ -1088,6 +1098,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
+      status: "experimental",
     },
     {
       name: "Fledge",
@@ -1097,6 +1108,7 @@
     {
       name: "Focusgroup",
       status: "experimental",
+      origin_trial_feature_name: "Focusgroup",
     },
     {
       name: "FocuslessSpatialNavigation",
@@ -1133,11 +1145,6 @@
       // This is used in tests to perform memory measurement without
       // waiting for GC.
       name:"ForceEagerMeasureMemory",
-    },
-    {
-      // For simulating Android's overlay fullscreen video in web tests on
-      // Linux.
-      name: "ForceOverlayFullscreenVideo",
     },
     {
       // https://github.com/flackr/reduce-motion/blob/main/explainer.md
@@ -1317,6 +1324,10 @@
       status: "stable",
     },
     {
+      // crbug.com/989916
+      name: "LayoutNGForeignObject",
+    },
+    {
       // Block fragmentation support in the grid layout algorithm.
       // https://drafts.csswg.org/css-grid-1/#pagination
       name: "LayoutNGGridFragmentation",
@@ -1370,6 +1381,10 @@
     {
       name: "MachineLearningModelLoader",
       status: "experimental",
+    },
+    {
+      name: "MachineLearningNeuralNetwork",
+      status: "test",
     },
     {
       name: "ManagedConfiguration",
@@ -1610,7 +1625,7 @@
       // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the
       // feature is in stable with no issues.
       name: "OffsetParentNewSpecBehavior",
-      status: "stable"
+      status: "experimental"
     },
     {
       name: "OnDeviceChange",
@@ -1882,6 +1897,9 @@
     },
     {
       name: "Prerender2",
+      status: {"Android": "stable"},
+      // TODO(https://crbug.com/1319296): Remove the origin trial infra for
+      // Prerender2.
       origin_trial_feature_name: "Prerender2",
       origin_trial_os: ["android"],
     },
@@ -1891,7 +1909,7 @@
     // document.onprerenderingchange, and activationStart will be exported.
     {
       name: "Prerender2RelatedFeatures",
-      implied_by: [ "Prerender2"],
+      implied_by: ["Prerender2"],
       // This is not going into origin trial, "origin_trial_feature_name" is
       // required for using the "implied_by" behaviour.
       origin_trial_feature_name: "Prerender2RelatedFeatures__DONOTUSE",
@@ -1972,11 +1990,6 @@
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
     },
-    {
-      name: "RtcAudioJitterBufferRtxHandling",
-      origin_trial_feature_name: "RtcAudioJitterBufferRtxHandling",
-      status: "experimental",
-    },
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
@@ -2034,6 +2047,12 @@
       name: "SanitizerAPI",
       status: "experimental",
     },
+    {
+      name: "SanitizerAPIv0",
+      status: "experimental",
+      implied_by: ["SanitizerAPI"],
+    },
+
     // WebSpeech API with both speech recognition and synthesis functionality
     // is not fully enabled on all platforms.
     {
@@ -2100,6 +2119,11 @@
       name: "SecurePaymentConfirmationDebug",
     },
     {
+      name: "SecurePaymentConfirmationOptOut",
+      origin_trial_feature_name: "SecurePaymentConfirmationOptOut",
+      origin_trial_allows_third_party: true
+    },
+    {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "stable",
     },
@@ -2147,7 +2171,8 @@
     },
     {
       name: "SharedStorageAPI",
-      status: "test",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "SharedWorker",
@@ -2177,6 +2202,14 @@
     {
       name: "SkipTouchEventFilter",
       settable_from_internals: true,
+    },
+    {
+      name: "SoftNavigationHeuristics",
+      status: "test",
+    },
+    {
+      name: "SoftNavigationHeuristicsLogging",
+      status: "experimental",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
@@ -2237,6 +2270,10 @@
       status: "stable"
     },
     {
+      name: "SynthesizedKeyboardEventsForAccessibilityActions",
+      status: "experimental",
+    },
+    {
       name: "SystemWakeLock",
       status: "experimental",
     },
@@ -2253,6 +2290,10 @@
     {
       name: "TestFeatureImplied",
       implied_by: ["TestFeature"],
+    },
+    {
+      // crbug.com/1008951
+      name: "TextDecoratingBox",
     },
     {
       name: "TextDetector",
@@ -2287,6 +2328,11 @@
       name: "TopicsAPI",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
+    },
+    // https://crbug.com/1314739
+    {
+      name: "TouchActionEffectiveAtPointerDown",
+      status: "experimental",
     },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without
@@ -2383,10 +2429,6 @@
     },
     {
       name: "UserAgentClientHint",
-      status: "stable",
-    },
-    {
-      name: "UserAgentClientHintFullVersionList",
       status: "stable",
     },
     {
@@ -2532,11 +2574,6 @@
       status: "stable",
     },
     {
-      name: "WebAssemblyDynamicTiering",
-      origin_trial_feature_name: "WebAssemblyDynamicTiering",
-      status: "test",
-    },
-    {
       name: "WebAssemblyExceptions",
       origin_trial_feature_name: "WebAssemblyExceptions",
       status: "test",
@@ -2595,8 +2632,8 @@
       origin_trial_feature_name: "WebCodecs"
     },
     {
-      name: "WebCryptoCurve25519",
-      status: "experimental",
+      name: "WebGLColorManagement",
+      status: "stable",
     },
     {
       name: "WebGLDeveloperExtensions",
@@ -2762,6 +2799,11 @@
     {
       name: "WindowPlacement",
       status: "stable",
+    },
+    // Exposes user-friendly screen labels, determined by the platform, to sites
+    // with window-placement permission.
+    {
+      name: "WindowPlacementEnhancedScreenLabels",
     },
     // Allows sites to request fullscreen when the set of screens change.
     {

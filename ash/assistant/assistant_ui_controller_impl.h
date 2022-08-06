@@ -60,11 +60,13 @@ class ASH_EXPORT AssistantUiControllerImpl
   const AssistantUiModel* GetModel() const override;
   int GetNumberOfSessionsWhereOnboardingShown() const override;
   bool HasShownOnboarding() const override;
+  void SetKeyboardTraversalMode(bool keyboard_traversal_mode) override;
   void ShowUi(AssistantEntryPoint entry_point) override;
   void ToggleUi(absl::optional<AssistantEntryPoint> entry_point,
                 absl::optional<AssistantExitPoint> exit_point) override;
   absl::optional<base::ScopedClosureRunner> CloseUi(
       AssistantExitPoint exit_point) override;
+  void SetAppListBubbleWidth(int width) override;
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;

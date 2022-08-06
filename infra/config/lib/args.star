@@ -96,8 +96,6 @@ def defaults(extends = None, **vars):
                 return listify(value)
             return listify(default, value)
 
-        fail("unknown merge value: {}".format(merge))
-
     def get_value_from_kwargs(name, kwargs, merge = None):
         return get_value(name, kwargs.get(name, DEFAULT), merge = merge)
 

@@ -31,6 +31,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace blink {
+struct AuctionConfig;
+}
+
 namespace content {
 
 class InterestGroupManagerImpl;
@@ -198,7 +202,7 @@ class CONTENT_EXPORT AuctionRunner {
   static std::unique_ptr<AuctionRunner> CreateAndStart(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
-      blink::mojom::AuctionAdConfigPtr auction_config,
+      const blink::AuctionConfig& auction_config,
       network::mojom::ClientSecurityStatePtr client_security_state,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       RunAuctionCallback callback);
@@ -393,7 +397,7 @@ class CONTENT_EXPORT AuctionRunner {
     // destroyed. `config` is typically owned by the AuctionRunner's
     // `owned_auction_config_` field. `parent` should be the parent Auction if
     // this is a component auction, and null, otherwise.
-    Auction(blink::mojom::AuctionAdConfig* config,
+    Auction(const blink::AuctionConfig* config,
             const Auction* parent,
             AuctionWorkletManager* auction_worklet_manager,
             InterestGroupManagerImpl* interest_group_manager,
@@ -582,6 +586,8 @@ class CONTENT_EXPORT AuctionRunner {
         bool has_bidding_signals_data_version,
         const absl::optional<GURL>& debug_loss_report_url,
         const absl::optional<GURL>& debug_win_report_url,
+        double set_priority,
+        bool has_set_priority,
         const std::vector<std::string>& errors);
 
     // True if all bid results and the seller script load are complete.
@@ -732,7 +738,7 @@ class CONTENT_EXPORT AuctionRunner {
     const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
 
     // Configuration of this auction.
-    raw_ptr<const blink::mojom::AuctionAdConfig> config_;
+    raw_ptr<const blink::AuctionConfig> config_;
     // If this is a component auction, the parent Auction. Null, otherwise.
     const raw_ptr<const Auction> parent_;
 
@@ -815,10 +821,17 @@ class CONTENT_EXPORT AuctionRunner {
     // updated after a successful auction, barring rate-limiting.
     std::vector<url::Origin> post_auction_update_owners_;
 
+    // A list of all interest groups that need to have their priority adjusted.
+    // The new rates will be committed after a successful auction.
+    std::vector<std::pair<InterestGroupKey, double>>
+        post_auction_priority_updates_;
+
     // The highest scoring bid so far. Null if no bid has been accepted yet.
     std::unique_ptr<ScoredBid> top_bid_;
     // Number of bidders with the same score as `top_bidder`.
     size_t num_top_bids_ = 0;
+    // Number of bidders with the same score as `second_highest_score_`.
+    size_t num_second_highest_bids_ = 0;
 
     // The numeric value of the bid that got the second highest score. When
     // there's a tie for second highest score, just take the most recent one (
@@ -869,7 +882,7 @@ class CONTENT_EXPORT AuctionRunner {
   AuctionRunner(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
-      blink::mojom::AuctionAdConfigPtr auction_config,
+      const blink::AuctionConfig& auction_config,
       network::mojom::ClientSecurityStatePtr client_security_state,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       RunAuctionCallback callback);
@@ -910,7 +923,7 @@ class CONTENT_EXPORT AuctionRunner {
   IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback_;
 
   // Configuration.
-  blink::mojom::AuctionAdConfigPtr owned_auction_config_;
+  blink::AuctionConfig owned_auction_config_;
   RunAuctionCallback callback_;
 
   Auction auction_;

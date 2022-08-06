@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.OverviewModeObserver;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherViewObserver;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * Mediator for handling {@link TasksSurface}-related logic.
  */
-class TasksSurfaceMediator implements OverviewModeObserver {
+class TasksSurfaceMediator implements TabSwitcherViewObserver {
     @Nullable
     private OmniboxStub mOmniboxStub;
     private final IncognitoCookieControlsManager mIncognitoCookieControlsManager;

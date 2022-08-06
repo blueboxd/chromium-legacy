@@ -10,13 +10,11 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/strings/stringprintf.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/time/time.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/strings/stringprintf.h"
-#include "base/threading/platform_thread.h"
-#include "base/time/time.h"
 #include "base/timer/lap_timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,22 +28,11 @@
 
 namespace partition_alloc::internal {
 
-namespace base {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::base::BindOnce;
-using ::base::OnceCallback;
-using ::base::StringPrintf;
-using ::base::Unretained;
-
-}  // namespace base
-
 namespace {
 
 // Change kTimeLimit to something higher if you need more time to capture a
 // trace.
-constexpr base::TimeDelta kTimeLimit = base::Seconds(2);
+constexpr ::base::TimeDelta kTimeLimit = ::base::Seconds(2);
 constexpr int kWarmupRuns = 10000;
 constexpr int kTimeCheckInterval = 100000;
 constexpr size_t kAllocSize = 40;
@@ -142,21 +129,22 @@ class PartitionAllocatorWithThreadCache : public Allocator {
   void Free(void* data) override { ThreadSafePartitionRoot::FreeNoHooks(data); }
 };
 
-class TestLoopThread : public base::PlatformThread::Delegate {
+class TestLoopThread : public base::PlatformThreadForTesting::Delegate {
  public:
-  explicit TestLoopThread(base::OnceCallback<float()> test_fn)
-      : test_fn_(std::move(test_fn)) {
-    PA_CHECK(base::PlatformThread::Create(0, this, &thread_handle_));
+  TestLoopThread(float (*test_fn)(Allocator*), Allocator* allocator)
+      : test_fn_(test_fn), allocator_(allocator) {
+    PA_CHECK(base::PlatformThreadForTesting::Create(0, this, &thread_handle_));
   }
 
   float Run() {
-    base::PlatformThread::Join(thread_handle_);
+    base::PlatformThreadForTesting::Join(thread_handle_);
     return laps_per_second_;
   }
 
-  void ThreadMain() override { laps_per_second_ = std::move(test_fn_).Run(); }
+  void ThreadMain() override { laps_per_second_ = test_fn_(allocator_); }
 
-  base::OnceCallback<float()> test_fn_;
+  float (*test_fn_)(Allocator*) = nullptr;
+  Allocator* allocator_ = nullptr;
   base::PlatformThreadHandle thread_handle_;
   std::atomic<float> laps_per_second_;
 };
@@ -197,7 +185,7 @@ float SingleBucket(Allocator* allocator) {
   do {
     auto* next = reinterpret_cast<MemoryAllocationPerfNode*>(
         allocator->Alloc(kAllocSize));
-    CHECK_NE(next, nullptr);
+    PA_CHECK(next != nullptr);
     cur->SetNext(next);
     cur = next;
     timer.NextLap();
@@ -228,7 +216,7 @@ float SingleBucketWithFree(Allocator* allocator) {
   base::LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
   do {
     void* cur = allocator->Alloc(kAllocSize);
-    CHECK_NE(cur, nullptr);
+    PA_CHECK(cur != nullptr);
     allocator->Free(cur);
     timer.NextLap();
   } while (!timer.HasTimeLimitExpired());
@@ -250,7 +238,7 @@ float MultiBucket(Allocator* allocator) {
       size_t size = kMultiBucketMinimumSize + (i * kMultiBucketIncrement);
       auto* next =
           reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(size));
-      CHECK_NE(next, nullptr);
+      PA_CHECK(next != nullptr);
       cur->SetNext(next);
       cur = next;
       allocated_memory += size;
@@ -282,7 +270,7 @@ float MultiBucketWithFree(Allocator* allocator) {
   for (int i = 0; i < kMultiBucketRounds; i++) {
     void* cur =
         allocator->Alloc(kMultiBucketMinimumSize + (i * kMultiBucketIncrement));
-    CHECK_NE(cur, nullptr);
+    PA_CHECK(cur != nullptr);
     elems.push_back(cur);
   }
 
@@ -291,7 +279,7 @@ float MultiBucketWithFree(Allocator* allocator) {
     for (int i = 0; i < kMultiBucketRounds; i++) {
       void* cur = allocator->Alloc(kMultiBucketMinimumSize +
                                    (i * kMultiBucketIncrement));
-      CHECK_NE(cur, nullptr);
+      PA_CHECK(cur != nullptr);
       allocator->Free(cur);
     }
     timer.NextLap();
@@ -310,7 +298,7 @@ float DirectMapped(Allocator* allocator) {
   base::LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
   do {
     void* cur = allocator->Alloc(kSize);
-    CHECK_NE(cur, nullptr);
+    PA_CHECK(cur != nullptr);
     allocator->Free(cur);
     timer.NextLap();
   } while (!timer.HasTimeLimitExpired());
@@ -350,14 +338,13 @@ void RunTest(int thread_count,
 
   std::unique_ptr<TestLoopThread> noisy_neighbor_thread = nullptr;
   if (noisy_neighbor_fn) {
-    noisy_neighbor_thread = std::make_unique<TestLoopThread>(
-        base::BindOnce(noisy_neighbor_fn, base::Unretained(alloc.get())));
+    noisy_neighbor_thread =
+        std::make_unique<TestLoopThread>(noisy_neighbor_fn, alloc.get());
   }
 
   std::vector<std::unique_ptr<TestLoopThread>> threads;
   for (int i = 0; i < thread_count; ++i) {
-    threads.push_back(std::make_unique<TestLoopThread>(
-        base::BindOnce(test_fn, base::Unretained(alloc.get()))));
+    threads.push_back(std::make_unique<TestLoopThread>(test_fn, alloc.get()));
   }
 
   uint64_t total_laps_per_second = 0;
@@ -384,9 +371,9 @@ void RunTest(int thread_count,
       break;
   }
 
-  std::string name =
-      base::StringPrintf("%s%s_%s_%d", kMetricPrefixMemoryAllocation,
-                         story_base_name, alloc_type_str, thread_count);
+  std::string name = base::TruncatingStringPrintf(
+      "%s%s_%s_%d", kMetricPrefixMemoryAllocation, story_base_name,
+      alloc_type_str, thread_count);
 
   DisplayResults(name + "_total", total_laps_per_second);
   DisplayResults(name + "_worst", min_laps_per_second);

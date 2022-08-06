@@ -123,7 +123,6 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentSupplier;
@@ -381,9 +380,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Nullable
     private BottomContainer mBottomContainer;
 
-    @Nullable
-    private StartupTabPreloader mStartupTabPreloader;
-
     private LaunchCauseMetrics mLaunchCauseMetrics;
 
     private GSAAccountChangeListener mGSAAccountChangeListener;
@@ -530,7 +526,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 /* statusBarColorProvider= */ this, getIntentRequestTracker(),
                 mTabReparentingControllerSupplier,
                 /*ephemeralTabCoordinatorSupplier=*/new ObservableSupplierImpl<>(),
-                false);
+                false, mBackPressManager);
         // clang-format on
     }
 
@@ -649,10 +645,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     getWindowAndroid().getApplicationBottomInsetProvider(),
                     mManualFillingComponentSupplier.get().getBottomInsetSupplier());
 
-            ShareDelegate shareDelegate = new ShareDelegateImpl(
-                    mRootUiCoordinator.getBottomSheetController(), getLifecycleDispatcher(),
-                    getActivityTabProvider(), getTabModelSelectorSupplier(),
-                    new ShareDelegateImpl.ShareSheetDelegate(), isCustomTab());
+            ShareDelegate shareDelegate =
+                    new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
+                            getLifecycleDispatcher(), getActivityTabProvider(),
+                            getTabModelSelectorSupplier(), mTabModelProfileSupplier,
+                            new ShareDelegateImpl.ShareSheetDelegate(), isCustomTab());
             mShareDelegateSupplier.set(shareDelegate);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
@@ -839,19 +836,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@link StartupTabPreloader} associated with this ChromeActivity. If there isn't
-     *         one it creates it.
-     */
-    protected StartupTabPreloader getStartupTabPreloader() {
-        if (mStartupTabPreloader == null) {
-            mStartupTabPreloader = new StartupTabPreloader(this::getIntent,
-                    getLifecycleDispatcher(), getWindowAndroid(), this, mIntentHandler,
-                    getActivityTabStartupMetricsTracker());
-        }
-        return mStartupTabPreloader;
-    }
-
-    /**
      * @return The {@link TabModelOrchestrator} owned by this {@link ChromeActivity}.
      */
     protected abstract TabModelOrchestrator createTabModelOrchestrator();
@@ -907,7 +891,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegateImpl(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), null, null, mBookmarkBridgeSupplier);
+                getWindow().getDecorView(), null, null, mBookmarkBridgeSupplier,
+                /*incognitoReauthControllerOneshotSupplier=*/null);
     }
 
     /**
@@ -2311,31 +2296,49 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mNativeInitialized) RecordUserAction.record("SystemBack");
 
         if (!BackPressManager.isEnabled()) {
-            // TODO(crbug.com/1279941): should this stop propagating the event?
-            TextBubble.dismissBubbles();
+            if (TextBubble.getCountSupplier().get() != null
+                    && TextBubble.getCountSupplier().get() > 0) {
+                // TODO(crbug.com/1279941): should this stop propagating the event?
+                TextBubble.dismissBubbles();
+                BackPressManager.record(Type.TEXT_BUBBLE);
+            }
 
-            if (VrModuleProvider.getDelegate().onBackPressed()) return;
+            if (VrModuleProvider.getDelegate().onBackPressed()) {
+                BackPressManager.record(Type.VR_DELEGATE);
+                return;
+            };
 
             ArDelegate arDelegate = ArDelegateProvider.getDelegate();
-            if (arDelegate != null && arDelegate.onBackPressed()) return;
+            if (arDelegate != null && arDelegate.onBackPressed()) {
+                BackPressManager.record(Type.AR_DELEGATE);
+                return;
+            };
 
             if (mCompositorViewHolderSupplier.hasValue()) {
                 LayoutManagerImpl layoutManager =
                         mCompositorViewHolderSupplier.get().getLayoutManager();
-                if (layoutManager != null && layoutManager.onBackPressed()) return;
+                if (layoutManager != null && layoutManager.onBackPressed()) {
+                    BackPressManager.record(Type.LAYOUT_MANAGER);
+                    return;
+                };
             }
 
             SelectionPopupController controller = getSelectionPopupController();
             if (controller != null && controller.isSelectActionBarShowing()) {
                 controller.clearSelection();
+                BackPressManager.record(Type.SELECTION_POPUP);
                 return;
             }
-        }
 
-        if (!BackPressManager.isEnabled()) {
-            if (getManualFillingComponent().onBackPressed()) return;
+            if (getManualFillingComponent().onBackPressed()) {
+                BackPressManager.record(Type.MANUAL_FILLING);
+                return;
+            }
 
-            if (exitFullscreenIfShowing()) return;
+            if (exitFullscreenIfShowing()) {
+                BackPressManager.record(Type.FULLSCREEN);
+                return;
+            }
         }
 
         handleBackPressed();

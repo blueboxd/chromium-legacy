@@ -69,7 +69,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
   [self configureLabels];
   self.view.accessibilityIdentifier =
       first_run::kFirstRunWelcomeScreenAccessibilityIdentifier;
-  self.bannerImage = [UIImage imageNamed:@"welcome_screen_banner"];
+  self.bannerName = @"welcome_screen_banner";
   self.isTallBanner = YES;
   self.scrollToEndMandatory = YES;
   self.readMoreString =
@@ -150,9 +150,12 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-
   UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
                                   self.titleLabel);
+  [self.delegate logScrollButtonVisible:!self.didReachBottom
+                 withUMACheckboxVisible:
+                     fre_field_trial::GetNewMobileIdentityConsistencyFRE() ==
+                     NewMobileIdentityConsistencyFRE::kOld];
 }
 
 #pragma mark - Accessors

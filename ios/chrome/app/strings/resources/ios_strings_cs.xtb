@@ -18,7 +18,6 @@ Váš vyhledávač je <ph name="DSE_NAME" />. Prostudujte si pokyny vyhledávač
 <translation id="1066060668811609597">Správa synchronizace</translation>
 <translation id="1076421457278169141">Kód byl naskenován</translation>
 <translation id="1084365883616172403">Příspěvek na Facebook byl odeslán.</translation>
-<translation id="1086486568852410168">Vyhledat pomocí Google Lens</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Přijmout a pokračovat</translation>
 <translation id="110724200315609752">Přepnout na otevřené okno</translation>
@@ -241,6 +240,7 @@ Weby pomocí souborů cookie nemohou sledovat vaši aktivitu prohlížení mezi 
 <translation id="2982481275546140226">Vymazat data</translation>
 <translation id="298306318844797842">Přidat platební metodu...</translation>
 <translation id="2989805286512600854">Otevřít v nové kartě</translation>
+<translation id="3020183492814296499">Zkratky</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3039722182465315531">Nepřihlašovat se</translation>
 <translation id="3076846064362030967">Z účtu Google odhlášeni nebudete. <ph name="BEGIN_LINK" />Další typy aktivity<ph name="END_LINK" /> se mohou ukládat do vašeho účtu Google, když jste přihlášeni. Můžete je kdykoli smazat.
@@ -249,6 +249,7 @@ Weby pomocí souborů cookie nemohou sledovat vaši aktivitu prohlížení mezi 
 Prostudujte si pokyny vyhledávače pro smazání historie vyhledávání (pokud je k dispozici).</translation>
 <translation id="3080525922482950719">Stránky si můžete uložit a přečíst si je později nebo v režimu offline</translation>
 <translation id="3081338492074632642">Zkontrolujte, zda se ukládané heslo shoduje s heslem pro web <ph name="WEBSITE" />.</translation>
+<translation id="3103603146121354983">Automatické vyplňování hesel</translation>
 <translation id="3112556859945124369">Označit…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Co lze synchronizovat<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Blokovat vše</translation>
@@ -512,6 +513,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5416022985862681400">Posledních 7 dnů</translation>
 <translation id="543338862236136125">Upravit heslo</translation>
 <translation id="5433691172869980887">Uživatelské jméno bylo zkopírováno</translation>
+<translation id="5439599923922718668">Často navštěvované</translation>
 <translation id="54401264925851789">Informace o zabezpečení stránky</translation>
 <translation id="5443952882982198570">Platební karty</translation>
 <translation id="5457226814769348910">Otevřít offline verzi</translation>
@@ -526,7 +528,6 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5551897871312988470">Nabízet překlad</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5580834567471114021">Přidat do seznamu četby na později?</translation>
-<translation id="5592679540098330836">Zapnout synchronizaci pro: <ph name="NAME" /></translation>
 <translation id="560322036295180549">Vypnuto vaší organizací</translation>
 <translation id="5614553682702429503">Uložit heslo?</translation>
 <translation id="5626245204502895507">Soubor v tuto chvíli nelze stáhnout.</translation>
@@ -660,6 +661,7 @@ Weby pomocí souborů cookie nemohou sledovat vaši aktivitu prohlížení mezi 
 
 Pro každý web se pokuste použít jedinečné heslo.</translation>
 <translation id="650279896687777322">Další informace…</translation>
+<translation id="6510072653668207258">Připomenout později</translation>
 <translation id="651505212789431520">Zrušit synchronizaci? Synchronizaci můžete kdykoliv zapnout v Nastavení.</translation>
 <translation id="6524918542306337007">Anonymní režim není k dispozici</translation>
 <translation id="6530992499366869131">Upozorňovat v případě vyzrazení hesel při porušení zabezpečení</translation>
@@ -900,7 +902,6 @@ Weby pomocí souborů cookie mohou sledovat vaši aktivitu prohlížení na růz
 <translation id="8588404856427128947">Vypnuto</translation>
 <translation id="8590913940444621808">Nikdy se neptat</translation>
 <translation id="8591976964826315682">V anonymním režimu blokovat soubory cookie třetích stran</translation>
-<translation id="8592752150819985187">Automatické vyplňování hesel</translation>
 <translation id="8605219856220328675">Zavřít kartu</translation>
 <translation id="8620640915598389714">Upravit</translation>
 <translation id="8620785403235741379">Vyberte možnost</translation>

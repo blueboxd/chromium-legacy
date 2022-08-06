@@ -27,7 +27,7 @@ const char kJsFlowActionEnabledGroup[] = "Enabled";
 JsFlowAction::JsFlowAction(ActionDelegate* delegate, const ActionProto& proto)
     : Action(delegate, proto),
       js_flow_executor_(std::make_unique<JsFlowExecutorImpl>(
-          delegate->GetWebContents()->GetBrowserContext(),
+          delegate->GetWebContentsForJsExecution(),
           this)) {
   DCHECK(proto_.has_js_flow());
 }
@@ -89,6 +89,8 @@ void JsFlowAction::OnNativeActionFinished(
           << processed_action->status();
 
   current_native_action_.reset();
+
+  delegate_->MaybeSetPreviousAction(*processed_action);
 
   std::move(finished_callback)
       .Run(ClientStatus(processed_action->status(),

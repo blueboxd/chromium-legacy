@@ -4,6 +4,7 @@ include_rules = [
   "+components/printing/renderer/print_render_frame_helper.h",
   "+components/strings/grit/components_strings.h",
   "+mojo/public/cpp/bindings",
+  "+net",
   "+pdf/accessibility_structs.h",
   "+pdf/buildflags.h",
   "+pdf/mojom/pdf.mojom.h",
@@ -16,4 +17,6 @@ include_rules = [
   "+third_party/skia/include/core",
   "+ui/accessibility",
   "+ui/base",
+  "+ui/display",
+  "+v8/include",
 ]

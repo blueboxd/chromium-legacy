@@ -47,24 +47,10 @@ cr.define('cr.ui', function() {
     }
 
     /**
-     * Called when focus is returned from ash::SystemTray.
-     * @param {boolean} reverse Is focus returned in reverse order?
+     * Handle the cancel accelerator.
      */
-    static focusReturned(reverse) {
-      const screen = Oobe.getInstance().currentScreen;
-      if (screen && screen.onFocusReturned) {
-        screen.onFocusReturned(reverse);
-      }
-    }
-
-    /**
-     * Handle accelerators. These are passed from native code instead of a JS
-     * event handler in order to make sure that embedded iframes cannot swallow
-     * them.
-     * @param {string} name Accelerator name.
-     */
-    static handleAccelerator(name) {
-      Oobe.getInstance().handleAccelerator(name);
+    static handleCancel() {
+      Oobe.getInstance().handleCancel();
     }
 
     /**
@@ -74,14 +60,6 @@ cr.define('cr.ui', function() {
      */
     static showScreen(screen) {
       Oobe.getInstance().showScreen(screen);
-    }
-
-    /**
-     * Updates missing API keys message visibility.
-     * @param {boolean} show True if the message should be visible.
-     */
-    static showAPIKeysNotice(show) {
-      $('api-keys-notice-container').hidden = !show;
     }
 
     /**
@@ -101,7 +79,6 @@ cr.define('cr.ui', function() {
         document.body.classList.add('oobe-display');
       } else {
         document.body.classList.remove('oobe-display');
-        Oobe.getInstance().prepareForLoginDisplay_();
       }
     }
 
@@ -142,18 +119,10 @@ cr.define('cr.ui', function() {
     }
 
     /**
-     * Sets the number of users on the views login screen.
-     * @param {number} userCount The number of users.
-     */
-    static setLoginUserCount(userCount) {
-      Oobe.getInstance().setLoginUserCount(userCount);
-    }
-
-    /**
      * Skip to login screen for telemetry.
      */
     static skipToLoginForTesting() {
-      chrome.send('skipToLoginForTesting');
+      chrome.send('OobeTestApi.skipToLoginForTesting');
     }
 
     /**
@@ -180,7 +149,7 @@ cr.define('cr.ui', function() {
         }
       }
 
-      chrome.send('skipToLoginForTesting');
+      chrome.send('OobeTestApi.skipToLoginForTesting');
 
       if (!enterpriseEnroll) {
         chrome.send('completeLogin', [gaia_id, username, password, false]);
@@ -328,10 +297,14 @@ cr.define('cr.ui', function() {
         document.documentElement.setAttribute(attribute, localizedString);
       }
 
+      const missingApiId = 'missingAPIKeysNotice';
+      if (!loadTimeData.valueExists(missingApiId)) {
+        return;
+      }
       // Update this standalone div in the main document.
-      const notice = loadTimeData.getValue('missingAPIKeysNotice');
       const apiKeysNoticeDiv = $('api-keys-notice');
-      apiKeysNoticeDiv.textContent = notice;
+      apiKeysNoticeDiv.textContent = loadTimeData.getValue(missingApiId);
+      $('api-keys-notice-container').hidden = false;
     }
 
     /**

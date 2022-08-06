@@ -1438,9 +1438,10 @@ void CanvasResourceProvider::RasterRecordOOP(
   if (IsGpuContextLost())
     return;
   gpu::raster::RasterInterface* ri = RasterInterface();
-  SkColor background_color = GetSkImageInfo().alphaType() == kOpaque_SkAlphaType
-                                 ? SK_ColorBLACK
-                                 : SK_ColorTRANSPARENT;
+  SkColor4f background_color =
+      GetSkImageInfo().alphaType() == kOpaque_SkAlphaType
+          ? SkColors::kBlack
+          : SkColors::kTransparent;
 
   auto list = base::MakeRefCounted<cc::DisplayItemList>(
       cc::DisplayItemList::kTopLevelDisplayItemList);

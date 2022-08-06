@@ -97,7 +97,7 @@
 #include "components/policy/core/common/management/management_service.h"
 #include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/ui/startup/first_run_lacros.h"
+#include "chrome/browser/ui/startup/lacros_first_run_service.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
@@ -281,11 +281,14 @@ class TestTabDialogs : public TabDialogs {
   void ShowManagePasswordsBubble(bool user_action) override {}
   void HideManagePasswordsBubble() override {}
   void ShowDeprecatedAppsDialog(
+      const extensions::ExtensionId& optional_launched_extension_id,
       const std::set<extensions::ExtensionId>& deprecated_app_ids,
-      content::WebContents* web_contents) override {}
+      content::WebContents* web_contents,
+      base::OnceClosure launch_anyways) override {}
   void ShowForceInstalledDeprecatedAppsDialog(
       const extensions::ExtensionId& app_id,
-      content::WebContents* web_contents) override {}
+      content::WebContents* web_contents,
+      base::OnceClosure launch_anyways) override {}
 
  private:
   raw_ptr<content::WebContents> contents_;
@@ -434,11 +437,11 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     WaitForLoadStop(kNewProfileUrl);
 
     // Fake clicking the "Next"/"Sign in" button.
-    base::ListValue args;
+    base::Value::List args;
     args.Append(/*color=*/static_cast<int>(kProfileColor));
-    args.Append(/*gaiaId=*/base::Value(base::Value::Type::STRING));
+    args.Append(/*gaiaId=*/std::string());
     web_contents()->GetWebUI()->ProcessWebUIMessage(
-        kNewProfileUrl, "loadSignInProfileCreationFlow", args);
+        kNewProfileUrl, "selectAccountLacros", std::move(args));
 
     // Wait for the Ash UI to show up.
     FakeAccountManagerUI* fake_ui = GetFakeAccountManagerUI();
@@ -1844,6 +1847,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest,
   // Dummy case to set up the primary profile.
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
+  base::HistogramTester histogram_tester;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile =
       profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
@@ -1865,6 +1869,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
   WaitForPickerClosed();
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
   EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
+
+  histogram_tester.ExpectUniqueSample(
+      "Profile.LacrosPrimaryProfileFirstRunOutcome",
+      ProfileMetrics::ProfileSignedInFlowOutcome::kAbortedOnEnterpriseWelcome,
+      1);
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, QuitEarly) {
   // On the second run, the FRE is still not marked finished and we should
@@ -1882,6 +1891,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest,
   // Dummy case to set up the primary profile.
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitAtEnd) {
+  base::HistogramTester histogram_tester;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile =
       profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
@@ -1909,6 +1919,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitAtEnd) {
   // Because we quit, we should also quit chrome, but mark the FRE finished.
   EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
+  histogram_tester.ExpectUniqueSample(
+      "Profile.LacrosPrimaryProfileFirstRunOutcome",
+      ProfileMetrics::ProfileSignedInFlowOutcome::kAbortedAfterSignIn, 1);
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, QuitAtEnd) {
   // On the second run, the FRE is marked finished and we should skip it.
@@ -1925,6 +1938,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_PRE_OptIn) {
   // Dummy case to set up the primary profile.
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_OptIn) {
+  base::HistogramTester histogram_tester;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profiles::testing::CreateProfileSync(
       profile_manager, profile_manager->GetPrimaryUserProfilePath());
@@ -1953,6 +1967,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_OptIn) {
   WaitForPickerClosed();
   EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
+  histogram_tester.ExpectUniqueSample(
+      "Profile.LacrosPrimaryProfileFirstRunOutcome",
+      ProfileMetrics::ProfileSignedInFlowOutcome::kConsumerSync, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, OptIn) {

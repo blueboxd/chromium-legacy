@@ -30,8 +30,6 @@
 #include <cassert>
 #include <memory>
 
-#include "base/debug/crash_logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -255,14 +253,10 @@ void Resource::AppendData(const char* data, size_t length) {
   DCHECK(!is_revalidating_);
   DCHECK(!ErrorOccurred());
   if (options_.data_buffering_policy == kBufferData) {
-    if (data_) {
+    if (data_)
       data_->Append(data, length);
-    } else {
-      // TODO(crbug.com/1302204): Remove this once the crash is fixed.
-      SCOPED_CRASH_KEY_STRING32("Resource", "append_data_length",
-                                base::NumberToString(length));
+    else
       data_ = SharedBuffer::Create(data, length);
-    }
     SetEncodedSize(data_->size());
   }
   NotifyDataReceived(data, length);
@@ -1170,11 +1164,13 @@ bool Resource::IsLoadEventBlockingResourceType() const {
   switch (type_) {
     case ResourceType::kImage:
     case ResourceType::kCSSStyleSheet:
-    case ResourceType::kScript:
     case ResourceType::kFont:
     case ResourceType::kSVGDocument:
     case ResourceType::kXSLStyleSheet:
       return true;
+    case ResourceType::kScript:
+      // <script> elements delay the load event in core/script (e.g. in
+      // ScriptRunner) and no longer need the delaying in platform/loader side.
     case ResourceType::kRaw:
     case ResourceType::kLinkPrefetch:
     case ResourceType::kTextTrack:

@@ -5,6 +5,10 @@
 import("//build_overrides/ipcz.gni")
 import("//testing/test.gni")
 
+# ipcz will not implement a multiprocess reference driver or its supporting
+# primitives for iOS or NaCl platforms. Note that this only affects ipcz tests.
+enable_ipcz_multiprocess_test_support = !is_ios && !is_nacl
+
 shared_library("ipcz_shared") {
   output_name = "ipcz"
   sources = [
@@ -126,6 +130,8 @@ ipcz_source_set("ipcz") {
 }
 
 ipcz_source_set("reference_drivers") {
+  testonly = true
+
   public = [ "reference_drivers/single_process_reference_driver.h" ]
 
   sources = [
@@ -136,9 +142,65 @@ ipcz_source_set("reference_drivers") {
     "reference_drivers/single_process_reference_driver.cc",
   ]
 
-  ipcz_deps = [ ":util" ]
+  if (enable_ipcz_multiprocess_test_support) {
+    public += [
+      "reference_drivers/blob.h",
+      "reference_drivers/memory.h",
+      "reference_drivers/os_handle.h",
+    ]
+    sources += [
+      "reference_drivers/blob.cc",
+      "reference_drivers/memory.cc",
+    ]
+
+    if (is_android) {
+      sources += [
+        "reference_drivers/memory_android.cc",
+        "reference_drivers/os_handle_posix.cc",
+        "reference_drivers/os_handle_posix.h",
+      ]
+    } else if (is_mac) {
+      sources += [
+        "reference_drivers/memory_mac.cc",
+        "reference_drivers/os_handle_mac.cc",
+        "reference_drivers/os_handle_mac.h",
+      ]
+    } else if (is_win) {
+      sources += [
+        "reference_drivers/memory_win.cc",
+        "reference_drivers/os_handle_win.cc",
+        "reference_drivers/os_handle_win.h",
+      ]
+    } else if (is_fuchsia) {
+      sources += [
+        "reference_drivers/memory_fuchsia.cc",
+        "reference_drivers/os_handle_fuchsia.cc",
+        "reference_drivers/os_handle_fuchsia.h",
+      ]
+    } else if (is_posix) {
+      sources += [
+        "reference_drivers/memory_posix.cc",
+        "reference_drivers/os_handle_posix.cc",
+        "reference_drivers/os_handle_posix.h",
+      ]
+    }
+  }
+
+  ipcz_deps = [
+    ":impl",
+    ":util",
+  ]
   public_deps = [ ":ipcz_header" ]
   configs = [ ":ipcz_include_src_dir" ]
+
+  deps = []
+  if (is_fuchsia) {
+    public_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
+  }
+
+  if (is_android) {
+    deps += [ "//third_party/ashmem" ]
+  }
 }
 
 ipcz_source_set("util") {
@@ -162,16 +224,21 @@ ipcz_source_set("impl") {
   public = [
     "ipcz/api_object.h",
     "ipcz/block_allocator.h",
+    "ipcz/box.h",
+    "ipcz/buffer_pool.h",
     "ipcz/driver_memory.h",
     "ipcz/driver_memory_mapping.h",
     "ipcz/driver_object.h",
     "ipcz/driver_transport.h",
+    "ipcz/fragment.h",
+    "ipcz/fragment_descriptor.h",
     "ipcz/link_side.h",
     "ipcz/link_type.h",
-    "ipcz/message_internal.h",
+    "ipcz/message.h",
     "ipcz/node.h",
     "ipcz/node_connector.h",
     "ipcz/node_link.h",
+    "ipcz/node_link_memory.h",
     "ipcz/node_messages.h",
     "ipcz/parcel.h",
     "ipcz/parcel_queue.h",
@@ -186,24 +253,35 @@ ipcz_source_set("impl") {
   sources = [
     "ipcz/api_object.cc",
     "ipcz/block_allocator.cc",
+    "ipcz/block_allocator_pool.cc",
+    "ipcz/block_allocator_pool.h",
+    "ipcz/box.cc",
+    "ipcz/buffer_id.h",
+    "ipcz/buffer_pool.cc",
     "ipcz/driver_memory.cc",
     "ipcz/driver_memory_mapping.cc",
     "ipcz/driver_object.cc",
     "ipcz/driver_transport.cc",
+    "ipcz/fragment.cc",
+    "ipcz/fragment_descriptor.cc",
+    "ipcz/handle_type.h",
     "ipcz/link_side.cc",
     "ipcz/link_type.cc",
     "ipcz/local_router_link.cc",
     "ipcz/local_router_link.h",
-    "ipcz/message_internal.cc",
+    "ipcz/message.cc",
     "ipcz/message_macros/message_declaration_macros.h",
     "ipcz/message_macros/message_definition_macros.h",
-    "ipcz/message_macros/message_dispatch_macros.h",
+    "ipcz/message_macros/message_listener_declaration_macros.h",
+    "ipcz/message_macros/message_listener_definition_macros.h",
+    "ipcz/message_macros/message_listener_dispatch_macros.h",
     "ipcz/message_macros/message_params_declaration_macros.h",
     "ipcz/message_macros/message_params_declaration_macros.h",
     "ipcz/message_macros/undef_message_macros.h",
     "ipcz/node.cc",
     "ipcz/node_connector.cc",
     "ipcz/node_link.cc",
+    "ipcz/node_link_memory.cc",
     "ipcz/node_messages.cc",
     "ipcz/node_messages_generator.h",
     "ipcz/node_name.cc",
@@ -213,6 +291,8 @@ ipcz_source_set("impl") {
     "ipcz/portal.cc",
     "ipcz/remote_router_link.cc",
     "ipcz/router.cc",
+    "ipcz/router_descriptor.cc",
+    "ipcz/router_descriptor.h",
     "ipcz/router_link.h",
     "ipcz/test_messages.cc",
     "ipcz/test_messages_generator.h",
@@ -255,19 +335,22 @@ ipcz_source_set("ipcz_tests_sources") {
     "api_test.cc",
     "connect_test.cc",
     "ipcz/block_allocator_test.cc",
+    "ipcz/buffer_pool_test.cc",
     "ipcz/driver_memory_test.cc",
     "ipcz/driver_object_test.cc",
     "ipcz/driver_transport_test.cc",
-    "ipcz/message_internal_test.cc",
+    "ipcz/message_test.cc",
     "ipcz/node_connector_test.cc",
     "ipcz/node_link_test.cc",
     "ipcz/parcel_queue_test.cc",
     "ipcz/sequenced_queue_test.cc",
     "reference_drivers/single_process_reference_driver_test.cc",
+    "remote_portal_test.cc",
     "test/mock_driver.cc",
     "test/mock_driver.h",
     "test/multinode_test.cc",
     "test/multinode_test.h",
+    "test/test.h",
     "test/test_base.cc",
     "test/test_base.h",
     "test/test_transport_listener.cc",
@@ -276,6 +359,15 @@ ipcz_source_set("ipcz_tests_sources") {
     "util/ref_counted_test.cc",
     "util/stack_trace_test.cc",
   ]
+
+  if (enable_ipcz_multiprocess_test_support) {
+    sources += [
+      # Box tests rely on the Blob driver object, which itself requires
+      # multiprocess test support.
+      "box_test.cc",
+      "reference_drivers/memory_test.cc",
+    ]
+  }
 
   deps = [
     "//testing/gmock",

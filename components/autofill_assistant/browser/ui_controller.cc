@@ -78,7 +78,23 @@ bool ShouldShowFeedbackChipForReason(Metrics::DropOutReason reason) {
 
 bool ShouldReloadData(const CollectUserDataOptions& options,
                       UserDataEventType event_type) {
-  if (!options.use_gms_core_edit_dialogs) {
+  if (!options.use_alternative_edit_dialogs) {
+    return false;
+  }
+  switch (event_type) {
+    case UserDataEventType::ENTRY_CREATED:
+    case UserDataEventType::ENTRY_EDITED:
+      return true;
+    case UserDataEventType::UNKNOWN:
+    case UserDataEventType::NO_NOTIFICATION:
+    case UserDataEventType::SELECTION_CHANGED:
+      return false;
+  }
+}
+
+bool ShouldStoreTemporaryData(const CollectUserDataOptions& options,
+                              UserDataEventType event_type) {
+  if (!options.use_alternative_edit_dialogs) {
     return false;
   }
   switch (event_type) {
@@ -833,13 +849,15 @@ void UiController::HandleShippingAddressChange(
   if (collect_user_data_options_ == nullptr) {
     return;
   }
+
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      UserDataEventField::SHIPPING_EVENT, event_type);
+
   if (ShouldReloadData(*collect_user_data_options_, event_type)) {
     ReloadUserData(UserDataEventField::SHIPPING_EVENT, event_type);
     return;
   }
 
-  collect_user_data_options_->selected_user_data_changed_callback.Run(
-      SHIPPING_EVENT, event_type);
   DCHECK(!collect_user_data_options_->shipping_address_name.empty());
   SetProfile(collect_user_data_options_->shipping_address_name,
              UserDataFieldChange::SHIPPING_ADDRESS, std::move(address));
@@ -851,13 +869,16 @@ void UiController::HandleContactInfoChange(
   if (collect_user_data_options_ == nullptr) {
     return;
   }
-  if (ShouldReloadData(*collect_user_data_options_, event_type)) {
-    ReloadUserData(UserDataEventField::CONTACT_EVENT, event_type);
-    return;
-  }
 
   collect_user_data_options_->selected_user_data_changed_callback.Run(
-      CONTACT_EVENT, event_type);
+      UserDataEventField::CONTACT_EVENT, event_type);
+
+  if (ShouldStoreTemporaryData(*collect_user_data_options_, event_type)) {
+    UserData* user_data = GetUserData();
+    DCHECK(user_data);
+    user_data::UpsertContact(*profile, user_data->transient_contacts_);
+  }
+
   DCHECK(!collect_user_data_options_->contact_details_name.empty());
   SetProfile(collect_user_data_options_->contact_details_name,
              UserDataFieldChange::CONTACT_PROFILE, std::move(profile));
@@ -869,13 +890,15 @@ void UiController::HandlePhoneNumberChange(
   if (collect_user_data_options_ == nullptr) {
     return;
   }
-  if (ShouldReloadData(*collect_user_data_options_, event_type)) {
-    ReloadUserData(UserDataEventField::CONTACT_EVENT, event_type);
-    return;
-  }
 
-  // We don't notify the UserDataEvent in this case since we currently don't log
-  // metrics for the phone number.
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      UserDataEventField::PHONE_NUMBER_EVENT, event_type);
+
+  if (ShouldStoreTemporaryData(*collect_user_data_options_, event_type)) {
+    UserData* user_data = GetUserData();
+    DCHECK(user_data);
+    user_data::UpsertPhoneNumber(*profile, user_data->transient_phone_numbers_);
+  }
 
   GetUserData()->SetSelectedPhoneNumber(std::move(profile));
   execution_delegate_->NotifyUserDataChange(UserDataFieldChange::PHONE_NUMBER);
@@ -888,13 +911,15 @@ void UiController::HandleCreditCardChange(
   if (collect_user_data_options_ == nullptr) {
     return;
   }
+
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      UserDataEventField::CREDIT_CARD_EVENT, event_type);
+
   if (ShouldReloadData(*collect_user_data_options_, event_type)) {
     ReloadUserData(UserDataEventField::CREDIT_CARD_EVENT, event_type);
     return;
   }
 
-  collect_user_data_options_->selected_user_data_changed_callback.Run(
-      CREDIT_CARD_EVENT, event_type);
   DCHECK(!collect_user_data_options_->billing_address_name.empty());
   SetProfile(collect_user_data_options_->billing_address_name,
              UserDataFieldChange::BILLING_ADDRESS, std::move(billing_profile));
@@ -914,15 +939,9 @@ void UiController::SetProfile(
 
 void UiController::ReloadUserData(UserDataEventField event_field,
                                   UserDataEventType event_type) {
-  if (collect_user_data_options_ == nullptr) {
-    return;
-  }
-
-  collect_user_data_options_->selected_user_data_changed_callback.Run(
-      event_field, event_type);
-
+  DCHECK(collect_user_data_options_);
   std::move(collect_user_data_options_->reload_data_callback)
-      .Run(GetUserData());
+      .Run(event_field, GetUserData());
 }
 
 void UiController::SetTermsAndConditions(
@@ -1003,9 +1022,10 @@ void UiController::SetCollectUserDataOptions(CollectUserDataOptions* options) {
   execution_delegate_->NotifyUserDataChange(UserDataFieldChange::ALL);
 }
 
-void UiController::SetCollectUserDataUiState(bool enabled) {
+void UiController::SetCollectUserDataUiState(bool loading,
+                                             UserDataEventField event) {
   for (UiControllerObserver& observer : observers_) {
-    observer.OnCollectUserDataUiStateChanged(enabled);
+    observer.OnCollectUserDataUiStateChanged(loading, event);
   }
 }
 
@@ -1159,10 +1179,14 @@ bool UiController::SupportsExternalActions() {
 }
 
 void UiController::ExecuteExternalAction(
-    const external::Action& info,
-    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-        callback) {
+    const external::Action& external_action,
+    base::OnceCallback<void()> start_dom_checks_callback,
+    base::OnceCallback<void(const external::Result& result)>
+        end_action_callback) {
   NOTREACHED() << "Flows using default UI don't support external actions.";
 }
+
+void UiController::OnInterruptStarted() {}
+void UiController::OnInterruptFinished() {}
 
 }  // namespace autofill_assistant

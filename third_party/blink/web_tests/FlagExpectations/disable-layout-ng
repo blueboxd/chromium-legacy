@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac11 Mac12 Win Win7 Win10 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Win Win7 Win10 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -13,6 +13,14 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/preload/preload-referrer-policy.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/floats-aspect-ratio-001.html [ Failure ]
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-move-into-script-disabled-iframe.html [ Timeout ]
+crbug.com/626703 external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]
+crbug.com/626703 virtual/wasm-csp/external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-writing-modes/abs-pos-border-offset-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/abs-pos-border-offset-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/abs-pos-vlr-border-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-001a.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-002.tentative.html [ Failure ]
@@ -83,6 +91,9 @@ crbug.com/591099 editing/selection/select-line-up-down.html [ Failure ]
 ### external/wpt/css/CSS2/floats/
 crbug.com/591099 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-003.tentative.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-004.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/overhanging-float-paint-order.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/zero-width-floats-positioning.tentative.html [ Failure ]
 
@@ -472,6 +483,18 @@ crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-004.html [ Fai
 crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-005.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-006.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-007.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-008.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-009.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-010.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-011.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-012.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-013.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-014.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-015.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-016.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-017.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-018.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/grid-auto-repeat-huge-grid-019.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-track-sizing-with-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Failure ]
@@ -681,6 +704,8 @@ crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-si
 crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-006.html [ Failure ]
 crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-007.html [ Failure ]
 crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-008.html [ Failure ]
+crbug.com/591099 wpt_internal/css/css-sizing/stretch-positioned-replaced.html [ Failure ]
+crbug.com/591099 wpt_internal/css/css-sizing/stretch-positioned-non-replaced.html [ Failure ]
 
 ### external/wpt/css/css-text/boundary-shaping/
 crbug.com/591099 external/wpt/css/css-text/boundary-shaping/boundary-shaping-001.html [ Failure ]
@@ -896,6 +921,7 @@ crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [
 
 ### external/wpt/css/cssom-view/
 crbug.com/997705 external/wpt/css/cssom-view/getBoundingClientRect-empty-inline.html [ Failure ]
+crbug.com/638177 external/wpt/css/cssom-view/offsetParent-block-in-inline.html [ Failure ]
 crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-empty-inline.html [ Failure ]
 crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-leading-space-inline.html [ Failure ]
 
@@ -1458,6 +1484,8 @@ crbug.com/591099 external/wpt/appmanifest/start_url-member/start_url-member-pass
 ### external/wpt/css/css-flexbox/
 crbug.com/591099 external/wpt/css/css-flexbox/fieldset-baseline-alignment.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/percentage-size-quirks-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/negative-overflow.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/negative-overflow-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/abspos/position-absolute-014.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/abspos/position-absolute-015.html [ Failure ]
 
@@ -1521,6 +1549,11 @@ crbug.com/1176933 fast/canvas-api/canvas-formattedtext.html [ Skip ]
 crbug.com/1176933 wpt_internal/canvas/canvas-formattedtext-style.html [ Skip ]
 crbug.com/1176933 virtual/gpu/fast/canvas/canvas-formattedtext-1.html [ Skip ]
 crbug.com/1176933 virtual/gpu/fast/canvas/canvas-formattedtext-2.html [ Skip ]
+
+# DPI-independent text
+crbug.com/1327530 fast/css/text-rendering.html [ Failure ]
+crbug.com/1327530 svg/text/current-text-position-initial.html [ Failure ]
+
 
 # Failures accumulated until 2021-3-3
 crbug.com/591099 accessibility/element-role-mapping-normal.html [ Failure ]
@@ -1597,6 +1630,7 @@ crbug.com/591099 virtual/oopr-canvas2d/fast/canvas/patternfill-repeat.html [ Fai
 crbug.com/591099 wpt_internal/mediastream/mediastreamtrackprocessor-transfer-to-worker.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-contain/contain-body-t-o-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-contain/contain-body-t-o-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-013.html [ Failure ]
 
 # The no-layout-ng bot compiles without proprietary codecs.
@@ -1731,7 +1765,7 @@ crbug.com/1123630 paint/caret/multicol_inline_children.html [ Failure ]
 # Some Sanitizer API tests test behaviour for MathML, which in Chromium depends
 # on LayoutNG. We accept failures of those specific tests when LayoutNG is
 # disabled.
-crbug.com/1225606 external/wpt/sanitizer-api/sanitizer-names.https.tentative.html [ Failure Pass ]
+crbug.com/1225606 external/wpt/sanitizer-api/sanitizer-names.https.html [ Failure Pass ]
 
 # broken by https://chromium-review.googlesource.com/c/chromium/src/+/3376745
 crbug.com/1283025 external/wpt/css/css-tables/fractional-percent-width.html [ Failure ]
@@ -1742,7 +1776,10 @@ crbug.com/591099 fast/forms/text/input-appearance-scroll-size-mocked.html [ Fail
 # HighlightOverlayPainting is only implemented in ng
 crbug.com/1147859 virtual/css-highlight-overlay-painting/* [ Skip ]
 
-crbug.com/1303102 wpt_internal/css/css-images/object-view-box* [ Skip ]
+crbug.com/1303102 external/wpt/css/css-images/object-view-box* [ Skip ]
+
+crbug.com/1321217 virtual/document-transition/wpt_internal/document-transition/old-content-with-overflow.html [ Skip ]
+crbug.com/1321217 virtual/document-transition/wpt_internal/document-transition/new-content-with-overflow.html [ Skip ]
 
 # only NGHighlightPainter has the ability to paint decorations added by ::target-text
 crbug.com/1223918 wpt_internal/css/css-pseudo/target-text-001.html [ Failure ]
@@ -1765,3 +1802,13 @@ external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/row-wra
 external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/simple-case.html [ Failure ]
 external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/simple-case-with-non-focusable-cell-in-the-center.html [ Failure ]
 external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/wraps-in-both-axes.html [ Failure ]
+
+crbug.com/1047358 [ Linux ] paint/pagination/composited-paginated-outlined-box.html [ Failure ]
+
+crbug.com/829028 [ Linux ] compositing/gestures/gesture-tapHighlight-lines-and-float-in-multicol.html [ Failure ]
+
+crbug.com/591099 [ Linux ] fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
+crbug.com/591099 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ Failure ]
+crbug.com/591099 [ Linux ] editing/selection/paint-hyphen.html [ Failure Pass ]
+
+crbug.com/1012289 [ Linux ] external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]

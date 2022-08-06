@@ -51,25 +51,25 @@ class PasswordStoreProxyBackend : public PasswordStoreBackend {
   void GetAllLoginsForAccountAsync(absl::optional<std::string> account,
                                    LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
-      LoginsOrErrorReply callback,
+      LoginsReply callback,
       bool include_psl,
       const std::vector<PasswordFormDigest>& forms) override;
   void AddLoginAsync(const PasswordForm& form,
-                     PasswordChangesOrErrorReply callback) override;
+                     PasswordStoreChangeListReply callback) override;
   void UpdateLoginAsync(const PasswordForm& form,
-                        PasswordChangesOrErrorReply callback) override;
+                        PasswordStoreChangeListReply callback) override;
   void RemoveLoginAsync(const PasswordForm& form,
-                        PasswordChangesOrErrorReply callback) override;
+                        PasswordStoreChangeListReply callback) override;
   void RemoveLoginsByURLAndTimeAsync(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceCallback<void(bool)> sync_completion,
-      PasswordChangesOrErrorReply callback) override;
+      PasswordStoreChangeListReply callback) override;
   void RemoveLoginsCreatedBetweenAsync(
       base::Time delete_begin,
       base::Time delete_end,
-      PasswordChangesOrErrorReply callback) override;
+      PasswordStoreChangeListReply callback) override;
   void DisableAutoSignInForOriginsAsync(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
@@ -97,20 +97,6 @@ class PasswordStoreProxyBackend : public PasswordStoreBackend {
   // to execute login deletions on both backends, to avoid recovery of deleted
   // data.
   bool UsesAndroidBackendAsMainBackend();
-
-  // Retries to add/update login into |built_in_backend| in case of an
-  // unrecoverable error inside |android_backend|. |form| and
-  // |original_callback| are the original parameters passed to
-  // Add/UpdateLoginAsync.
-  void MaybeRetryToAddLoginOnFail(const PasswordForm& form,
-                                  PasswordChangesOrErrorReply original_callback,
-                                  bool was_using_android_backend,
-                                  PasswordChangesOrError result);
-  void MaybeRetryToUpdateLoginOnFail(
-      const PasswordForm& form,
-      PasswordChangesOrErrorReply original_callback,
-      bool was_using_android_backend,
-      const PasswordChangesOrError& result);
 
   PasswordStoreBackend* main_backend();
   PasswordStoreBackend* shadow_backend();

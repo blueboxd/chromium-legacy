@@ -1155,8 +1155,7 @@ void OverviewSession::OnDisplayAdded(const display::Display& display) {
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
-  // End the current drag if the display changes.
-  if (window_drag_controller_ && window_drag_controller_->item())
+  if (window_drag_controller_)
     ResetDraggedWindowGesture();
   auto* overview_grid =
       GetGridWithRootWindow(Shell::GetRootWindowForDisplayId(display.id()));
@@ -1319,6 +1318,14 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       const bool primary_action = !event->IsShiftDown();
       if (!highlight_controller_->MaybeCloseHighlightedView(primary_action))
         return;
+      break;
+    }
+    case ui::VKEY_Z: {
+      // Ctrl + Z undos a close all operation if the toast has not yet expired.
+      if (!is_control_down || !features::IsDesksCloseAllEnabled())
+        return;
+
+      DesksController::Get()->MaybeCancelDeskRemoval();
       break;
     }
     case ui::VKEY_RETURN: {

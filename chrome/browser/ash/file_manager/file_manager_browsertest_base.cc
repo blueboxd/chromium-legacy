@@ -25,6 +25,8 @@
 #include "ash/components/smbfs/smbfs_mounter.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "base/bind.h"
@@ -76,6 +78,8 @@
 #include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -92,8 +96,6 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -2095,10 +2097,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   // Enable System Web Apps if needed.
   if (options.media_swa || options.files_swa) {
-    auto& system_web_app_manager =
-        web_app::WebAppProvider::GetForTest(profile())
-            ->system_web_app_manager();
-    system_web_app_manager.InstallSystemAppsForTesting();
+    ash::SystemWebAppManager::GetForTest(profile())
+        ->InstallSystemAppsForTesting();
   }
 
   // For tablet mode tests, enable the Ash virtual keyboard.
@@ -2282,7 +2282,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     WebContentCapturingObserver observer(fileAppURL);
     observer.StartWatchingNewWebContents();
     web_app::LaunchSystemWebAppAsync(
-        profile(), web_app::SystemAppType::FILE_MANAGER, params);
+        profile(), ash::SystemWebAppType::FILE_MANAGER, params);
     observer.Wait();
     ASSERT_TRUE(observer.last_navigation_succeeded());
     LoadSwaTestUtils(observer.web_contents());
@@ -2408,21 +2408,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "executeScriptInChromeUntrusted") {
     for (auto* web_contents : GetAllWebContents()) {
       bool found = false;
-      web_contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
-          [](const base::DictionaryValue& value, bool& found,
-             std::string* output, content::RenderFrameHost* frame) {
-            const url::Origin origin = frame->GetLastCommittedOrigin();
-            if (origin.GetURL() ==
-                ash::file_manager::kChromeUIFileManagerUntrustedURL) {
-              const std::string* script = value.FindStringKey("data");
-              EXPECT_TRUE(script);
-              CHECK(ExecuteScriptAndExtractString(frame, *script, output));
-              found = true;
-              return content::RenderFrameHost::FrameIterationAction::kStop;
-            }
-            return content::RenderFrameHost::FrameIterationAction::kContinue;
-          },
-          std::ref(value), std::ref(found), output));
+      web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+          base::BindRepeating(
+              [](const base::DictionaryValue& value, bool& found,
+                 std::string* output, content::RenderFrameHost* frame) {
+                const url::Origin origin = frame->GetLastCommittedOrigin();
+                if (origin.GetURL() ==
+                    ash::file_manager::kChromeUIFileManagerUntrustedURL) {
+                  const std::string* script = value.FindStringKey("data");
+                  EXPECT_TRUE(script);
+                  CHECK(ExecuteScriptAndExtractString(frame, *script, output));
+                  found = true;
+                  return content::RenderFrameHost::FrameIterationAction::kStop;
+                }
+                return content::RenderFrameHost::FrameIterationAction::
+                    kContinue;
+              },
+              std::ref(value), std::ref(found), output));
       if (found)
         return;
     }
@@ -2953,8 +2955,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       if (!window->web_contents())
         break;
 
-      CHECK(window->web_contents()->GetMainFrame());
-      window->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      CHECK(window->web_contents()->GetPrimaryMainFrame());
+      window->web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
           base::UTF8ToUTF16(*script), base::NullCallback());
 
       break;
@@ -3000,6 +3002,17 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isFiltersInRecentsEnabled") {
     *output = options.enable_filters_in_recents ? "true" : "false";
+    return;
+  }
+
+  if (name == "isFiltersInRecentsEnabledV2") {
+    *output = options.enable_filters_in_recents_v2 ? "true" : "false";
+    return;
+  }
+
+  if (name == "isDarkModeEnabled") {
+    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
+    *output = ash::ColorProvider::Get()->IsDarkModeEnabled() ? "true" : "false";
     return;
   }
 
@@ -3265,7 +3278,7 @@ FileManagerBrowserTestBase::GetAllWebContents() {
         content::WebContents::FromRenderViewHost(rvh);
     if (!web_contents)
       continue;
-    if (web_contents->GetMainFrame()->GetRenderViewHost() != rvh)
+    if (web_contents->GetPrimaryMainFrame()->GetRenderViewHost() != rvh)
       continue;
     // Because a WebContents can only have one current RVH at a time, there will
     // be no duplicate WebContents here.

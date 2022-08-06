@@ -80,6 +80,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   virtual void GetRoutes(
       bool numeric,
       bool ipv6,
+      bool all_tables,
       DBusMethodCallback<std::vector<std::string> /* routes */> callback) = 0;
 
   // Gets information about network status as json.
@@ -146,7 +147,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   using KstaledRatioCallback = base::OnceCallback<void(bool)>;
 
   // Sets the kstaled ratio to the provided value, for more information
-  // see chromeos/memory/README.md.
+  // see chromeos/ash/components/memory/README.md.
   virtual void SetKstaledRatio(uint8_t val, KstaledRatioCallback) = 0;
 
   // Called once TestICMP() is complete. Takes an optional string.

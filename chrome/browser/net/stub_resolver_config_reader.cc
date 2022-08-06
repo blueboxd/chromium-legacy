@@ -44,7 +44,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/enterprise_util.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/parental_controls.h"
 #endif
@@ -229,12 +228,10 @@ bool StubResolverConfigReader::ShouldDisableDohForManaged() {
   if (android_has_owner_.value_or(false))
     return true;
 #elif BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1339062): What is the correct function to use here? (This
-  // may or may not obsolete the following TODO)
   // TODO (crbug.com/1320766): For legacy compatibility, this uses
   // IsEnterpriseDevice() which effectively equates to a domain join check.
   // Consider whether this should use IsManagedDevice() instead.
-  if (base::win::IsEnrolledToDomain())
+  if (base::IsEnterpriseDevice())
     return true;
 #endif
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)

@@ -146,13 +146,6 @@ cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
   if (display_width >= kLargeDisplayThreshold)
     actual.bytes_limit_when_visible *= 2;
 #endif
-
-  // If the feature `kScaleTileMemoryLimitFactor` is not enabled,
-  // `kScaleTileMemoryLimitFactor` will default to 1.
-  actual.bytes_limit_when_visible =
-      static_cast<size_t>(actual.bytes_limit_when_visible *
-                          features::kScaleTileMemoryLimitFactor.Get());
-
   return actual;
 }
 
@@ -455,6 +448,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     settings.scrollbar_thinning_duration =
         ui::kOverlayScrollbarThinningDuration;
     settings.scrollbar_flash_after_any_scroll_update = true;
+    settings.enable_fluent_scrollbar = ui::IsFluentScrollbarEnabled();
   }
 
   // If there's over 4GB of RAM, increase the working set size to 256MB for both

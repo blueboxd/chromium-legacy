@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/icon_button.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
@@ -33,8 +34,8 @@
 namespace ash {
 namespace {
 
-// The paddings in `close_button`.
-constexpr gfx::Insets kCloseButtonInsets{20};
+// The paddings in `close_button_container_`.
+constexpr gfx::Insets kCloseButtonContainerInsets{15};
 
 // The paddings in `CalendarEventListView`.
 constexpr auto kContentInsets = gfx::Insets::TLBR(0, 20, 20, 20);
@@ -89,8 +90,12 @@ class CalendarEmptyEventListView : public views::LabelButton {
 
     GURL finalized_url;
     bool opened_pwa = false;
+    DCHECK(controller_->selected_date().has_value());
+
+    // Open Google calendar and land on the local day/month/year.
     Shell::Get()->system_tray_model()->client()->ShowCalendarEvent(
-        absl::nullopt, opened_pwa, finalized_url);
+        absl::nullopt, controller_->selected_date_midnight(), opened_pwa,
+        finalized_url);
   }
 
  private:
@@ -108,40 +113,28 @@ CalendarEventListView::CalendarEventListView(
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  // Set up background color and blur.
+  // Set up background color.
   auto* color_provider = AshColorProvider::Get();
   SkColor background_color = color_provider->GetBaseLayerColor(
       AshColorProvider::BaseLayerType::kOpaque);
   SetBackground(views::CreateSolidBackground(background_color));
   SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
 
   views::BoxLayout* button_layout = close_button_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal));
   button_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
-  auto* close_button = close_button_container_->AddChildView(
-      std::make_unique<views::ImageButton>(views::Button::PressedCallback(
-          base::BindRepeating(&CalendarViewController::CloseEventListView,
-                              base::Unretained(calendar_view_controller)))));
-  close_button->SetImage(
-      views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon,
-                            calendar_utils::GetPrimaryTextColor()));
-  close_button->SetHasInkDropActionOnClick(true);
-  close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
-  close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  close_button->SetBorder(views::CreateEmptyBorder(kCloseButtonInsets));
-  close_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ASH_CLOSE_BUTTON_ACCESSIBLE_DESCRIPTION));
-  close_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_CLOSE_BUTTON_TOOLTIP));
-  close_button->SetFocusBehavior(FocusBehavior::ALWAYS);
-  views::FocusRing::Get(close_button)
-      ->SetColor(ColorProvider::Get()->GetControlsLayerColor(
-          ColorProvider::ControlsLayerType::kFocusRingColor));
+  close_button_container_->SetBorder(
+      views::CreateEmptyBorder(kCloseButtonContainerInsets));
+
+  auto* close_button =
+      new IconButton(views::Button::PressedCallback(base::BindRepeating(
+                         &CalendarViewController::CloseEventListView,
+                         base::Unretained(calendar_view_controller))),
+                     IconButton::Type::kSmallFloating, &views::kIcCloseIcon,
+                     IDS_ASH_CLOSE_BUTTON_ACCESSIBLE_DESCRIPTION);
+  close_button_container_->AddChildView(close_button);
 
   scroll_view_->SetAllowKeyboardScrolling(false);
   scroll_view_->SetBackgroundColor(absl::nullopt);
@@ -160,6 +153,8 @@ CalendarEventListView::CalendarEventListView(
   UpdateListItems();
 
   scoped_calendar_view_controller_observer_.Observe(calendar_view_controller_);
+  scoped_calendar_model_observer_.Observe(
+      Shell::Get()->system_tray_model()->calendar_model());
 }
 
 CalendarEventListView::~CalendarEventListView() = default;
@@ -168,11 +163,19 @@ void CalendarEventListView::OnSelectedDateUpdated() {
   UpdateListItems();
 }
 
+void CalendarEventListView::OnEventsFetched(
+    const CalendarModel::FetchingStatus status,
+    const base::Time start_time,
+    const google_apis::calendar::EventList* events) {
+  if (status == CalendarModel::kSuccess &&
+      start_time == calendar_utils::GetStartOfMonthUTC(
+                        calendar_view_controller_->selected_date_midnight())) {
+    UpdateListItems();
+  }
+}
+
 void CalendarEventListView::UpdateListItems() {
   content_view_->RemoveAllChildViews();
-
-  calendar_view_controller_->MaybeUpdateTimeDifference(
-      calendar_view_controller_->selected_date().value());
 
   std::list<google_apis::calendar::CalendarEvent> events =
       calendar_view_controller_->SelectedDateEvents();

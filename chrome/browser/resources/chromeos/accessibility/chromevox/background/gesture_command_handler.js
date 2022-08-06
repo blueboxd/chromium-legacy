@@ -5,8 +5,11 @@
 /**
  * @fileoverview Handles gesture-based commands.
  */
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
 import {GestureInterface} from '/chromevox/background/gesture_interface.js';
+import {Output} from '/chromevox/background/output/output.js';
 import {PointerHandler} from '/chromevox/background/pointer_handler.js';
+import {UserActionMonitor} from '/chromevox/background/user_action_monitor.js';
 import {GestureCommandData, GestureGranularity} from '/chromevox/common/gesture_command_data.js';
 import {EventGenerator} from '/common/event_generator.js';
 
@@ -124,7 +127,7 @@ GestureCommandHandler.init_ = function() {
   GestureCommandHandler.pointerHandler_ = new PointerHandler();
 
   GestureInterface.granularityGetter = () => GestureCommandHandler.granularity;
-  GestureInterface.granularitySetter = (granularity) =>
+  GestureInterface.granularitySetter = granularity =>
       GestureCommandHandler.granularity = granularity;
 };
 
@@ -137,5 +140,6 @@ GestureCommandHandler.granularity = GestureGranularity.LINE;
 GestureCommandHandler.init_();
 
 BridgeHelper.registerHandler(
-    BridgeTarget.GESTURE_COMMAND_HANDLER, BridgeAction.SET_ENABLED,
+    BridgeConstants.GestureCommandHandler.TARGET,
+    BridgeConstants.GestureCommandHandler.Action.SET_ENABLED,
     enabled => GestureCommandHandler.setEnabled(enabled));

@@ -62,8 +62,10 @@ void VirtualCardEnrollBubbleViews::Show(DisplayReason reason) {
 
 void VirtualCardEnrollBubbleViews::Hide() {
   CloseBubble();
-  if (controller_)
-    controller_->OnBubbleClosed(closed_reason_);
+  if (controller_) {
+    controller_->OnBubbleClosed(
+        GetPaymentsBubbleClosedReasonFromWidget(GetWidget()));
+  }
   controller_ = nullptr;
 }
 
@@ -105,15 +107,10 @@ std::u16string VirtualCardEnrollBubbleViews::GetWindowTitle() const {
 
 void VirtualCardEnrollBubbleViews::WindowClosing() {
   if (controller_) {
-    controller_->OnBubbleClosed(closed_reason_);
+    controller_->OnBubbleClosed(
+        GetPaymentsBubbleClosedReasonFromWidget(GetWidget()));
     controller_ = nullptr;
   }
-}
-
-void VirtualCardEnrollBubbleViews::OnWidgetClosing(views::Widget* widget) {
-  LocationBarBubbleDelegateView::OnWidgetDestroying(widget);
-  closed_reason_ = GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
-      widget->closed_reason());
 }
 
 void VirtualCardEnrollBubbleViews::Init() {
@@ -129,7 +126,7 @@ void VirtualCardEnrollBubbleViews::Init() {
     auto* const explanation_label =
         AddChildView(std::make_unique<views::StyledLabel>());
     explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    explanation_label->SetTextContext(CONTEXT_DIALOG_BODY_TEXT_SMALL);
+    explanation_label->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
     explanation_label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
     explanation_label->SetText(explanation);
 
@@ -175,7 +172,7 @@ void VirtualCardEnrollBubbleViews::Init() {
 
   auto* const card_identifier_label =
       description_view->AddChildView(std::make_unique<views::StyledLabel>());
-  card_identifier_label->SetTextContext(CONTEXT_DIALOG_BODY_TEXT_SMALL);
+  card_identifier_label->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
   card_identifier_label->SetDefaultTextStyle(views::style::STYLE_PRIMARY);
   card_identifier_label->SetText(card_label_text);
 

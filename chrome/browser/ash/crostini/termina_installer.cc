@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/constants/ash_features.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -19,7 +18,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chromeos/dbus/dlcservice/dlcservice.pb.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -41,8 +40,8 @@ enum class InstallSource {
 
 }  // namespace
 
-TerminaInstaller::TerminaInstaller() {}
-TerminaInstaller::~TerminaInstaller() {}
+TerminaInstaller::TerminaInstaller() = default;
+TerminaInstaller::~TerminaInstaller() = default;
 
 void TerminaInstaller::Cancel() {
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -60,43 +59,35 @@ void TerminaInstaller::Install(base::OnceCallback<void(InstallResult)> callback,
   auto remove_callback = base::BindOnce(
       [](std::unique_ptr<UninstallResult> ptr) {}, std::move(ptr));
 
-  // Remove whichever version of termina we're *not* using and install the right
-  // one.
-  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniUseDlc)) {
-    InstallDlc(
-        base::BindOnce(
-            [](base::WeakPtr<TerminaInstaller> weak_this,
-               base::OnceCallback<void(InstallResult)> callback,
-               bool is_initial_install, base::OnceClosure remove_callback,
-               UninstallResult* uninstall_result_ptr, InstallResult result) {
-              if (!weak_this)
-                return;
+  InstallDlc(
+      base::BindOnce(
+          [](base::WeakPtr<TerminaInstaller> weak_this,
+             base::OnceCallback<void(InstallResult)> callback,
+             bool is_initial_install, base::OnceClosure remove_callback,
+             UninstallResult* uninstall_result_ptr, InstallResult result) {
+            if (!weak_this)
+              return;
 
-              // Fallback logic for the transition to DLC.
-              // If we succeeded with DLC, we're good.
-              // If we're running the installer, we can show a useful error
-              // message. Otherwise, try and fall back to installing the
-              // cros-termina component.
-              if (is_initial_install || result == InstallResult::Success) {
-                // Delay removing cros-termina until here so as to avoid messing
-                // up the InstallComponent call below.
-                weak_this->RemoveComponentIfPresent(std::move(remove_callback),
-                                                    uninstall_result_ptr);
-                std::move(callback).Run(result);
-                return;
-              }
-              LOG(ERROR) << "Failed to install termina-dlc, falling back to "
-                            "cros-termina";
-              weak_this->InstallComponent(std::move(callback));
-            },
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-            is_initial_install, std::move(remove_callback),
-            uninstall_result_ptr),
-        is_initial_install);
-  } else {
-    RemoveDlcIfPresent(std::move(remove_callback), uninstall_result_ptr);
-    InstallComponent(std::move(callback));
-  }
+            // Fallback logic for the transition to DLC.
+            // If we succeeded with DLC, we're good.
+            // If we're running the installer, we can show a useful error
+            // message. Otherwise, try and fall back to installing the
+            // cros-termina component.
+            if (is_initial_install || result == InstallResult::Success) {
+              // Delay removing cros-termina until here so as to avoid messing
+              // up the InstallComponent call below.
+              weak_this->RemoveComponentIfPresent(std::move(remove_callback),
+                                                  uninstall_result_ptr);
+              std::move(callback).Run(result);
+              return;
+            }
+            LOG(ERROR) << "Failed to install termina-dlc, falling back to "
+                          "cros-termina";
+            weak_this->InstallComponent(std::move(callback));
+          },
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          is_initial_install, std::move(remove_callback), uninstall_result_ptr),
+      is_initial_install);
 }
 
 void TerminaInstaller::InstallDlc(

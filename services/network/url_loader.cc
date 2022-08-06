@@ -568,16 +568,6 @@ bool HasHeadersIncompatibleWithSingleKeyedCache(
   return false;
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class CacheTransparencyCacheNotUsedReason {
-  kTryingSingleKeyedCache = 0,
-  kIncompatibleRequestType = 1,
-  kIncompatibleRequestLoadFlags = 2,
-  kIncompatibleRequestHeaders = 3,
-  kMaxValue = kIncompatibleRequestHeaders,
-};
-
 }  // namespace
 
 URLLoader::MaybeSyncURLLoaderClient::MaybeSyncURLLoaderClient(
@@ -818,24 +808,16 @@ URLLoader::URLLoader(
     if (checksum.has_value()) {
       CacheTransparencyCacheNotUsedReason cache_not_used_reason =
           CacheTransparencyCacheNotUsedReason::kTryingSingleKeyedCache;
-      DVLOG(2) << "Found pervasive payload: " << request.url.spec();
       if (request.method != net::HttpRequestHeaders::kGetMethod) {
-        DVLOG(2) << "Not using single-keyed-cache; method is "
-                 << request.method;
         cache_not_used_reason =
             CacheTransparencyCacheNotUsedReason::kIncompatibleRequestType;
       } else if (HasFlagsIncompatibleWithSingleKeyedCache(request_load_flags)) {
-        DVLOG(2) << "Not using single-keyed-cache; flags are "
-                 << request_load_flags;
         cache_not_used_reason =
             CacheTransparencyCacheNotUsedReason::kIncompatibleRequestLoadFlags;
       } else if (HasHeadersIncompatibleWithSingleKeyedCache(request.headers)) {
-        DVLOG(2) << "Not using single-keyed-cache; headers are\n"
-                 << request.headers.ToString();
         cache_not_used_reason =
             CacheTransparencyCacheNotUsedReason::kIncompatibleRequestHeaders;
       } else {
-        DVLOG(2) << "Trying single-keyed cache";
         request_load_flags |= net::LOAD_USE_SINGLE_KEYED_CACHE;
 
         url_request_->set_expected_response_checksum(checksum.value());
@@ -2195,15 +2177,8 @@ void URLLoader::SendResponseToClient() {
   DCHECK_EQ(emitted_devtools_raw_request_, emitted_devtools_raw_response_);
   response_->emitted_extra_info = emitted_devtools_raw_request_;
 
-  if (base::FeatureList::IsEnabled(features::kCombineResponseBody)) {
-    url_loader_client_.Get()->OnReceiveResponse(response_->Clone(),
-                                                std::move(consumer_handle_));
-  } else {
-    url_loader_client_.Get()->OnReceiveResponse(
-        response_->Clone(), mojo::ScopedDataPipeConsumerHandle());
-    url_loader_client_.Get()->OnStartLoadingResponseBody(
-        std::move(consumer_handle_));
-  }
+  url_loader_client_.Get()->OnReceiveResponse(response_->Clone(),
+                                              std::move(consumer_handle_));
 }
 
 void URLLoader::CompletePendingWrite(bool success) {
@@ -2499,15 +2474,8 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb(
   }
   producer_handle.reset();
 
-  if (base::FeatureList::IsEnabled(features::kCombineResponseBody)) {
-    url_loader_client_.Get()->OnReceiveResponse(response_->Clone(),
-                                                std::move(consumer_handle));
-  } else {
-    url_loader_client_.Get()->OnReceiveResponse(
-        response_->Clone(), mojo::ScopedDataPipeConsumerHandle());
-    url_loader_client_.Get()->OnStartLoadingResponseBody(
-        std::move(consumer_handle));
-  }
+  url_loader_client_.Get()->OnReceiveResponse(response_->Clone(),
+                                              std::move(consumer_handle));
 
   // Tell the real URLLoaderClient that the response has been completed.
   if (corb_detachable_) {

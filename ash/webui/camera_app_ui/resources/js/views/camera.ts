@@ -42,6 +42,7 @@ import {
   ErrorType,
   Facing,
   ImageBlob,
+  LocalStorageKey,
   MimeType,
   Mode,
   PerfEvent,
@@ -272,6 +273,9 @@ export class Camera extends View implements CameraViewUI {
     state.addObserver(state.State.ENABLE_MULTISTREAM_RECORDING, () => {
       this.cameraManager.reconfigure();
     });
+    state.addObserver(state.State.ENABLE_PTZ_FOR_BUILTIN, () => {
+      this.cameraManager.reconfigure();
+    });
 
     this.initVideoEncoderOptions();
     await this.initScanMode();
@@ -327,11 +331,10 @@ export class Camera extends View implements CameraViewUI {
     }
 
     // Check show toast.
-    const docModeToastKey = 'isDocModeToastShown';
     if (!state.get(state.State.IS_NEW_FEATURE_TOAST_SHOWN) &&
-        !localStorage.getBool(docModeToastKey)) {
+        !localStorage.getBool(LocalStorageKey.DOC_MODE_TOAST_SHOWN)) {
       state.set(state.State.IS_NEW_FEATURE_TOAST_SHOWN, true);
-      localStorage.set(docModeToastKey, true);
+      localStorage.set(LocalStorageKey.DOC_MODE_TOAST_SHOWN, true);
       // aria-owns don't work on HTMLInputElement, show toast on parent div
       // instead.
       const scanModeBtn = dom.get('input[data-mode="scan"]', HTMLInputElement);
@@ -343,15 +346,15 @@ export class Camera extends View implements CameraViewUI {
       });
     }
 
-    const docModeDialogKey = 'isDocModeDialogShown';
-    if (!localStorage.getBool(docModeDialogKey)) {
+    if (!localStorage.getBool(LocalStorageKey.DOC_MODE_DIALOG_SHOWN)) {
       this.cameraManager.registerCameraUI({
         onUpdateConfig: () => {
-          if (localStorage.getBool(docModeDialogKey) || !state.get(Mode.SCAN) ||
-              !this.scanOptions.isDocumentModeEanbled()) {
+          if (localStorage.getBool(LocalStorageKey.DOC_MODE_DIALOG_SHOWN) ||
+              !state.get(Mode.SCAN) ||
+              !this.scanOptions.isDocumentModeEnabled()) {
             return;
           }
-          localStorage.set(docModeDialogKey, true);
+          localStorage.set(LocalStorageKey.DOC_MODE_DIALOG_SHOWN, true);
           const message = loadTimeData.getI18nMessage(
               I18nString.DOCUMENT_MODE_DIALOG_INTRO_TITLE);
           nav.open(ViewName.DOCUMENT_MODE_DIALOG, {message});
@@ -363,7 +366,7 @@ export class Camera extends View implements CameraViewUI {
     // to take document photo with space key as shortcut. See b/196907822.
     const checkRefocus = () => {
       if (!state.get(state.State.CAMERA_CONFIGURING) && state.get(Mode.SCAN) &&
-          this.scanOptions.isDocumentModeEanbled()) {
+          this.scanOptions.isDocumentModeEnabled()) {
         this.focusShutterButton();
       }
     };
@@ -440,7 +443,7 @@ export class Camera extends View implements CameraViewUI {
         // Record and keep the rotation only at the instance the user starts the
         // capture. Users may change the device orientation while taking video.
         const cameraFrameRotation = await (async () => {
-          const deviceOperator = await DeviceOperator.getInstance();
+          const deviceOperator = DeviceOperator.getInstance();
           if (deviceOperator === null) {
             return 0;
           }

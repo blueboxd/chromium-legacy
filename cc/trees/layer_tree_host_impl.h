@@ -93,7 +93,6 @@ class MemoryHistory;
 class MutatorEvents;
 class MutatorHost;
 class PageScaleAnimation;
-class PendingTreeRasterDurationHistogramTimer;
 class RasterTilePriorityQueue;
 class RasterBufferProvider;
 class RasterQueryQueue;
@@ -336,7 +335,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       const viz::BeginFrameArgs& commit_args,
       const BeginMainFrameMetrics* begin_main_frame_metrics,
       bool commit_timeout = false);
-  virtual void BeginCommit(int source_frame_number);
+  virtual void BeginCommit(int source_frame_number, uint64_t trace_id);
   virtual void FinishCommit(CommitState& commit_state,
                             const ThreadUnsafeCommitState& unsafe_state);
   virtual void CommitComplete();
@@ -547,6 +546,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   void SetNeedsRedrawForScrollbarAnimation() override;
   ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override;
   void DidChangeScrollbarVisibility() override;
+  bool IsFluentScrollbar() const override;
 
   // VideoBeginFrameSource implementation.
   void AddVideoFrameController(VideoFrameController* controller) override;
@@ -897,6 +897,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   bool IsReadyToActivate() const;
 
+  void RequestImplSideInvalidationForRerasterTiling();
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -1198,9 +1200,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   bool prefers_reduced_motion_ = false;
 
   bool may_throttle_if_undrawn_frames_ = true;
-
-  std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
-      pending_tree_raster_duration_timer_;
 
   // These completion states to be transfered to the main thread when we
   // begin main frame. The pair represents a request id and the completion (ie

@@ -38,6 +38,7 @@
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/quota_permission_context.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/speculation_host_delegate.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -75,7 +76,6 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "content/public/browser/conditional_ui_delegate_android.h"
 #include "content/public/browser/tts_environment_android.h"
 #endif
 
@@ -774,13 +774,18 @@ bool ContentBrowserClient::IsUtilityCetCompatible(
 }
 
 std::wstring ContentBrowserClient::GetAppContainerSidForSandboxType(
-    sandbox::mojom::Sandbox sandbox_type) {
+    sandbox::mojom::Sandbox sandbox_type,
+    AppContainerFlags flags) {
   // Embedders should override this method and return different SIDs for each
   // sandbox type. Note: All content level tests will run child processes in the
   // same AppContainer.
   return std::wstring(
       L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
       L"924012148-129201922");
+}
+
+bool ContentBrowserClient::IsRendererAppContainerDisabled() {
+  return false;
 }
 
 std::wstring ContentBrowserClient::GetLPACCapabilityNameForNetworkService() {
@@ -927,8 +932,8 @@ ContentBrowserClient::GetNetworkContextsParentDirectory() {
   return {};
 }
 
-base::DictionaryValue ContentBrowserClient::GetNetLogConstants() {
-  return base::DictionaryValue();
+base::Value::Dict ContentBrowserClient::GetNetLogConstants() {
+  return base::Value::Dict();
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1352,16 +1357,10 @@ base::Value::Dict ContentBrowserClient::GetFirstPartySetsOverrides() {
 mojom::AlternativeErrorPageOverrideInfoPtr
 ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     const GURL& url,
-    BrowserContext* browser_context,
+    content::RenderFrameHost* render_frame_host,
+    content::BrowserContext* browser_context,
     int32_t error_code) {
   return nullptr;
 }
-
-#if BUILDFLAG(IS_ANDROID)
-ConditionalUiDelegateAndroid* ContentBrowserClient::GetConditionalUiDelegate(
-    RenderFrameHost* host) {
-  return nullptr;
-}
-#endif
 
 }  // namespace content

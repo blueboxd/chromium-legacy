@@ -275,6 +275,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // This will never return ChildProcessHost::kInvalidUniqueID.
   virtual int GetID() const = 0;
 
+  // Returns a SafeRef to `this`. It should only be used in non-owning cases,
+  // where the caller is not expected to outlive `this`.
+  // This method is public so that it can be called from within //content, and
+  // used by MockRenderProcessHost. It isn't meant to be called outside of
+  // //content.
+  virtual base::SafeRef<RenderProcessHost> GetSafeRef() const = 0;
+
   // Returns true iff the Init() was called and the process hasn't died yet.
   //
   // Note that even if IsInitializedAndNotDead() returns true, then (for a short
@@ -473,6 +480,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    process that the shared storage worklets are going to use is determined
   //    by the concrete implementation of
   //    `SharedStorageRenderThreadWorkletDriver`.
+  //  - Auction Worklets (on Android only):
+  //    (https://github.com/WICG/turtledove/blob/main/FLEDGE.md)
+  //    Keeps the renderer alive if there are any worklets using it.
   virtual void IncrementWorkerRefCount() = 0;
   virtual void DecrementWorkerRefCount() = 0;
 
@@ -566,12 +576,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager>
           receiver) = 0;
 
-  // |render_frame_id| is the frame associated with |receiver|, or
-  // MSG_ROUTING_NONE if |receiver| is associated with a worker.
   virtual void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
-  virtual void BindBucketManagerHost(
+  virtual void BindBucketManagerHostForRenderFrame(
+      const GlobalRenderFrameHostId& render_frame_host_id,
+      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
+  virtual void BindBucketManagerHostForWorker(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
   virtual void BindRestrictedCookieManagerForServiceWorker(
@@ -600,6 +611,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void CreatePaymentManagerForOrigin(
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) = 0;
+  // |render_frame_id| is the frame associated with |receiver|, or
+  // MSG_ROUTING_NONE if |receiver| is associated with a worker.
   virtual void CreateNotificationService(
       int render_frame_id,
       const url::Origin& origin,

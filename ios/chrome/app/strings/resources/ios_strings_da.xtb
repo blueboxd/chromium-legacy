@@ -18,7 +18,6 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1066060668811609597">Administrer synkronisering</translation>
 <translation id="1076421457278169141">Koden er scannet</translation>
 <translation id="1084365883616172403">Indlæg delt på Facebook.</translation>
-<translation id="1086486568852410168">Søg med Google Lens</translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Acceptér og fortsæt</translation>
 <translation id="110724200315609752">Skift til åbent vindue</translation>
@@ -241,6 +240,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="2982481275546140226">Ryd data</translation>
 <translation id="298306318844797842">Tilføj betalingsmetode...</translation>
 <translation id="2989805286512600854">Åbn på ny fane</translation>
+<translation id="3020183492814296499">Genveje</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
 <translation id="3039722182465315531">Log ikke ind</translation>
 <translation id="3076846064362030967">Du bliver ikke logget ud af din Google-konto. <ph name="BEGIN_LINK" />Andre former for aktivitet<ph name="END_LINK" /> kan blive gemt på din Google-konto, når du er logget ind. Du kan til enhver tid slette dem.
@@ -249,6 +249,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis det er relevant.</translation>
 <translation id="3080525922482950719">Du kan gemme sider, som du vil læse senere, eller når du er offline</translation>
 <translation id="3081338492074632642">Sørg for, at den adgangskode, du gemmer, er den samme som din adgangskode til <ph name="WEBSITE" /></translation>
+<translation id="3103603146121354983">Adgangskoder via Autofyld</translation>
 <translation id="3112556859945124369">Markér…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Se, hvad du kan synkronisere<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Bloker alle</translation>
@@ -512,6 +513,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5416022985862681400">De seneste syv dage</translation>
 <translation id="543338862236136125">Rediger adgangskode</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
+<translation id="5439599923922718668">Ofte besøgt</translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
 <translation id="5457226814769348910">Åbn offlineversion</translation>
@@ -526,7 +528,6 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5551897871312988470">Tilbyd at oversætte</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5580834567471114021">Vil du føje siden til læselisten?</translation>
-<translation id="5592679540098330836">Aktivér synkronisering for <ph name="NAME" /></translation>
 <translation id="560322036295180549">Deaktiveret af din organisation</translation>
 <translation id="5614553682702429503">Vil du gemme adgangskoden?</translation>
 <translation id="5626245204502895507">Filen kunne ikke downloades på nuværende tidspunkt.</translation>
@@ -660,6 +661,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 
 Du bør bruge en unik adgangskode for hvert website.</translation>
 <translation id="650279896687777322">Få flere oplysninger...</translation>
+<translation id="6510072653668207258">Påmind mig senere</translation>
 <translation id="651505212789431520">Vil du annullere synkroniseringen? Du kan til enhver tid aktivere synkronisering i indstillingerne.</translation>
 <translation id="6524918542306337007">Inkognitotilstand er ikke tilgængelig</translation>
 <translation id="6530992499366869131">Få en underretning, hvis adgangskoder afsløres i forbindelse med et brud på datasikkerheden</translation>
@@ -900,7 +902,6 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8588404856427128947">Fra</translation>
 <translation id="8590913940444621808">Spørg aldrig</translation>
 <translation id="8591976964826315682">Bloker tredjepartscookies i inkognito</translation>
-<translation id="8592752150819985187">Adgangskoder via Autofyld</translation>
 <translation id="8605219856220328675">Luk fane.</translation>
 <translation id="8620640915598389714">Rediger</translation>
 <translation id="8620785403235741379">Vælg en mulighed</translation>

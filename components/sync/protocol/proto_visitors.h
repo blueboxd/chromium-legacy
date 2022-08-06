@@ -365,7 +365,6 @@ VISIT_PROTO_FIELDS(const sync_pb::DataTypeContext& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::DataTypeProgressMarker& proto) {
   VISIT(data_type_id);
   VISIT_BYTES(token);
-  VISIT(notification_hint);
   VISIT(get_update_triggers);
   VISIT(gc_directive);
 }
@@ -692,13 +691,26 @@ VISIT_PROTO_FIELDS(const sync_pb::WebauthnCredentialSpecifics& proto) {
   // etc.
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
-  VISIT(originator_cache_guid);
+VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics::PageTransition& proto) {
+  VISIT_ENUM(core_transition);
+  VISIT(blocked);
+  VISIT(forward_back);
+  VISIT(from_address_bar);
+  VISIT(home_page);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics::RedirectEntry& proto) {
   VISIT(originator_visit_id);
   VISIT(url);
   VISIT(title);
   VISIT(hidden);
+  VISIT_ENUM(redirect_type);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
   VISIT(visit_time_windows_epoch_micros);
+  VISIT(originator_cache_guid);
+  VISIT_REP(redirect_entries);
   VISIT(page_transition);
   VISIT(originator_referring_visit_id);
   VISIT(originator_opener_visit_id);
@@ -723,6 +735,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecifics& proto) {
   VISIT(encrypted);
   VISIT(unencrypted_metadata);
   VISIT(client_only_encrypted_data);
+  VISIT(encrypted_notes_backup);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordWithLocalData& proto) {
@@ -755,6 +768,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData& proto) {
   VISIT(date_last_used);
   VISIT(password_issues);
   VISIT(date_password_modified_windows_epoch_micros);
+  VISIT(notes);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_PasswordIssues& proto) {
@@ -768,6 +782,17 @@ VISIT_PROTO_FIELDS(
     const sync_pb::PasswordSpecificsData_PasswordIssues_PasswordIssue& proto) {
   VISIT(date_first_detection_microseconds);
   VISIT(is_muted);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_Notes& proto) {
+  VISIT_REP(note);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_Notes_Note& proto) {
+  VISIT(unique_display_name);
+  VISIT(value);
+  VISIT(date_created_windows_epoch_micros);
+  VISIT(hide_by_default);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
@@ -1289,6 +1314,7 @@ VISIT_PROTO_FIELDS(
   VISIT_REP(tabs);
   VISIT(active_tab_index);
   VISIT(show_as_app);
+  VISIT_REP(tab_groups);
 }
 
 VISIT_PROTO_FIELDS(
@@ -1329,6 +1355,15 @@ VISIT_PROTO_FIELDS(
     const sync_pb::WorkspaceDeskSpecifics::ArcApp::WindowSize& proto) {
   VISIT(width);
   VISIT(height);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::WorkspaceDeskSpecifics::BrowserAppWindow::TabGroup& proto) {
+  VISIT(first_index);
+  VISIT(last_index);
+  VISIT(title);
+  VISIT_ENUM(color);
+  VISIT(is_collapsed);
 }
 
 }  // namespace syncer

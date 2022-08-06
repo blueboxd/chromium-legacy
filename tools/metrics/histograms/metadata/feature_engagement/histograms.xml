@@ -68,6 +68,8 @@ chromium-metrics-reviews@google.com.
       summary="Chrome Home shown on cold start"/>
   <variant name="IPH_ChromeHomePullToRefresh"
       summary="Chrome Home shown after a pull-to-refresh"/>
+  <variant name="IPH_ContextualPageActions_PriceTracking"
+      summary="contextual page price tracking action in the top toolbar"/>
   <variant name="IPH_ContextualSearchInPanelHelp"
       summary="promoting longpress from within the panel"/>
   <variant name="IPH_ContextualSearchOptIn"
@@ -237,7 +239,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -366,7 +368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.SnoozeAction" enum="InProductHelpSnoozeAction"
-    expires_after="2022-10-01">
+    expires_after="2022-12-04">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -375,7 +377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.TextBubble.ShownTime" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2022-12-04">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -384,7 +386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.TextBubble.ShowSnooze" enum="BooleanShown"
-    expires_after="2022-10-01">
+    expires_after="2022-12-04">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>

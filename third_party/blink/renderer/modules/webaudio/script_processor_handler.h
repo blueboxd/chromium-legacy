@@ -75,15 +75,15 @@ class ScriptProcessorHandler final
   // Double buffering
   uint32_t DoubleBufferIndex() const { return double_buffer_index_; }
   void SwapBuffers() { double_buffer_index_ = 1 - double_buffer_index_; }
-  uint32_t double_buffer_index_;
+  uint32_t double_buffer_index_ = 0;
 
-  // Protects |shared_input_buffers| and |shared_output_buffers_|.
+  // Protects `shared_input_buffers_` and `shared_output_buffers_`.
   mutable Mutex buffer_lock_;
   WTF::Vector<std::unique_ptr<SharedAudioBuffer>> shared_input_buffers_;
   WTF::Vector<std::unique_ptr<SharedAudioBuffer>> shared_output_buffers_;
 
   uint32_t buffer_size_;
-  uint32_t buffer_read_write_index_;
+  uint32_t buffer_read_write_index_ = 0;
   uint32_t number_of_input_channels_;
   uint32_t number_of_output_channels_;
 

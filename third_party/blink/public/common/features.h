@@ -30,6 +30,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kConversionMeasurement;
 BLINK_COMMON_EXPORT extern const base::Feature kExcludeLowEntropyImagesFromLCP;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
     kMinimumEntropyForLCP;
+BLINK_COMMON_EXPORT extern const base::Feature kFixedElementsDontOverscroll;
 BLINK_COMMON_EXPORT extern const base::Feature kGMSCoreEmoji;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHolding;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHoldingCrossOrigin;
@@ -59,8 +60,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature kFencedFrames;
 BLINK_COMMON_EXPORT extern const base::Feature kUserAgentClientHint;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kUserAgentClientHintFullVersionList;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
@@ -391,6 +390,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppManifestLockScreen;
 
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppBorderless;
+
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
 
 BLINK_COMMON_EXPORT extern const base::Feature kTargetBlankImpliesNoOpener;
@@ -419,6 +420,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPI;
+BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPIv0;
 BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPINamespaces;
 BLINK_COMMON_EXPORT extern const base::Feature kManagedConfiguration;
 
@@ -508,9 +510,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClipboardCustomFormats;
 // Uses page viewport instead of frame viewport in the Largest Contentful Paint
 // heuristic where images occupying the full viewport are ignored.
 BLINK_COMMON_EXPORT extern const base::Feature kUsePageViewportInLCP;
-
-// Enable "Sec-CH-UA-Platform" client hint and request header for all requests
-BLINK_COMMON_EXPORT extern const base::Feature kUACHPlatformEnabledByDefault;
 
 // When enabled, allow dropping alpha on media streams for rendering sinks if
 // other sinks connected do not use alpha.
@@ -655,10 +654,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kNoForcedFrameUpdatesForWebTests;
 
 BLINK_COMMON_EXPORT extern const base::Feature kElementSuperRareData;
 
-BLINK_COMMON_EXPORT extern const base::Feature kScaleTileMemoryLimit;
-BLINK_COMMON_EXPORT
-extern const base::FeatureParam<double> kScaleTileMemoryLimitFactor;
-
 // If enabled, the client hints cache will be loaded on browser restarts.
 BLINK_COMMON_EXPORT extern const base::Feature kDurableClientHintsCache;
 
@@ -752,6 +747,28 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebRtcExposeNonStandardStats;
 // will be attempted accelerated with a substring set tree.
 BLINK_COMMON_EXPORT extern const base::Feature
     kSubstringSetTreeForAttributeBuckets;
+
+// Whether the pending beacon API is enabled or not.
+// https://github.com/darrenw/docs/blob/main/explainers/beacon_api.md
+BLINK_COMMON_EXPORT extern const base::Feature kPendingBeaconAPI;
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+// If enabled, font lookup tables will be prefetched on renderer startup.
+BLINK_COMMON_EXPORT extern const base::Feature kPrefetchFontLookupTables;
+#endif
+
+// If enabled, inline scripts will be stream compiled using a background HTML
+// scanner.
+BLINK_COMMON_EXPORT extern const base::Feature kPrecompileInlineScripts;
+
+// TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
+// can adjust to us not simulating click events on a focus action. It should be
+// disabled by default (and removed) before 5/17/2023.
+// See https://crbug.com/1326622 for more info.
+BLINK_COMMON_EXPORT extern const base::Feature kSimulateClickOnAXFocus;
+
+// If enabled, allows the use of WebSQL in non-secure contexts.
+BLINK_COMMON_EXPORT extern const base::Feature kWebSQLNonSecureContextAccess;
 
 }  // namespace features
 }  // namespace blink

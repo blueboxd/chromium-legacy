@@ -681,7 +681,7 @@ class LayerTreeHostImplTest : public testing::Test,
         FakeRasterSource::CreateFromRecordingSource(recording_source.get());
 
     // Create the pending tree.
-    host_impl_->BeginCommit(0);
+    host_impl_->BeginCommit(0, /*trace_id=*/1);
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
     LayerImpl* root = SetupRootLayer<FakePictureLayerImpl>(
         pending_tree, layer_size, raster_source);
@@ -3492,7 +3492,6 @@ class MissingTilesLayer : public LayerImpl {
                    AppendQuadsData* append_quads_data) override {
     append_quads_data->num_missing_tiles += 10;
     append_quads_data->checkerboarded_no_recording_content_area += 200;
-    append_quads_data->checkerboarded_needs_raster_content_area += 200;
     append_quads_data->visible_layer_area += 200;
   }
 };
@@ -6249,7 +6248,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   auto* layer = AddLayer<SolidColorLayerImpl>(host_impl_->active_tree());
   layer->SetBounds(gfx::Size(10, 10));
   layer->SetDrawsContent(true);
-  layer->SetBackgroundColor(SK_ColorRED);
+  layer->SetBackgroundColor(SkColors::kRed);
   CopyProperties(root, layer);
 
   UpdateDrawProperties(host_impl_->active_tree());
@@ -11050,7 +11049,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
 
   layer_tree_host_impl->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   // This will damage everything.
-  root->SetBackgroundColor(SK_ColorBLACK);
+  root->SetBackgroundColor(SkColors::kBlack);
   args = viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
       base::TimeTicks() + base::Milliseconds(1));
@@ -11257,13 +11256,13 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   auto* root = SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
                                                    gfx::Size(10, 10));
   root->SetDrawsContent(true);
-  root->SetBackgroundColor(SK_ColorRED);
+  root->SetBackgroundColor(SkColors::kRed);
 
   // Child layer is in the bottom right corner.
   auto* child = AddLayer<SolidColorLayerImpl>(host_impl_->active_tree());
   child->SetBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
-  child->SetBackgroundColor(SK_ColorRED);
+  child->SetBackgroundColor(SkColors::kRed);
   CopyProperties(root, child);
   child->SetOffsetToTransformParent(gfx::Vector2dF(9, 9));
 
@@ -11528,7 +11527,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage,
 
   LayerImpl* root = SetupRootLayer<SolidColorLayerImpl>(
       host_impl_->active_tree(), gfx::Size(10, 10));
-  root->SetBackgroundColor(SK_ColorRED);
+  root->SetBackgroundColor(SkColors::kRed);
   UpdateDrawProperties(host_impl_->active_tree());
 
   // RequiresHighResToDraw is set when new output surface is used.
@@ -13619,6 +13618,65 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   result = GetInputHandler().MouseMoveAt(gfx::Point(350, 28));
   EXPECT_EQ(result.scroll_delta.y(), 0u);
   GetInputHandler().MouseUp(gfx::PointF(350, 28));
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
+// Tests that no scrolls occur when thumb_len equals track_len.
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollOnLargeThumb) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  layer_tree_impl->set_painted_device_scale_factor(2.5f);
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
+      layer_tree_impl, ScrollbarOrientation::VERTICAL, false, true);
+  SetupScrollbarLayerCommon(scroll_layer, scrollbar);
+  scrollbar->SetHitTestable(true);
+
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(575);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  GetInputHandler().BindToClient(&input_handler_client);
+
+  // PointerDown on the scrollbar should populate drag_state.
+  GetInputHandler().MouseDown(gfx::PointF(350, 300),
+                              /*jump_key_modifier*/ false);
+  EXPECT_TRUE(GetInputHandler()
+                  .scrollbar_controller_for_testing()
+                  ->drag_state_.has_value());
+
+  // Moving the mouse downwards should result in no scroll.
+  InputHandlerPointerResult res =
+      GetInputHandler().MouseMoveAt(gfx::Point(350, 600));
+  EXPECT_EQ(res.scroll_delta.y(), 0);
+
+  // Moving the mouse upwards should result in no scroll.
+  res = GetInputHandler().MouseMoveAt(gfx::Point(350, 0));
+  EXPECT_EQ(res.scroll_delta.y(), 0);
+
+  // End the scroll.
+  GetInputHandler().MouseUp(gfx::PointF(350, 0));
+  EXPECT_TRUE(!GetInputHandler()
+                   .scrollbar_controller_for_testing()
+                   ->drag_state_.has_value());
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
   host_impl_->ReleaseLayerTreeFrameSink();
@@ -16116,7 +16174,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   host_impl_->WillBeginImplFrame(begin_frame_args);
 
   // Create the pending tree.
-  host_impl_->BeginCommit(0);
+  host_impl_->BeginCommit(0, /*trace_id=*/1);
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
   auto* root = SetupRootLayer<FakePictureLayerImpl>(pending_tree, layer_size,
                                                     raster_source);

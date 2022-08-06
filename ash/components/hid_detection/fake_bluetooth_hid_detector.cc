@@ -4,8 +4,7 @@
 
 #include "ash/components/hid_detection/fake_bluetooth_hid_detector.h"
 
-namespace ash {
-namespace hid_detection {
+namespace ash::hid_detection {
 
 FakeBluetoothHidDetector::FakeBluetoothHidDetector() = default;
 
@@ -14,6 +13,7 @@ FakeBluetoothHidDetector::~FakeBluetoothHidDetector() = default;
 void FakeBluetoothHidDetector::SetInputDevicesStatus(
     InputDevicesStatus input_devices_status) {
   input_devices_status_ = input_devices_status;
+  num_set_input_devices_status_calls_++;
 }
 
 const BluetoothHidDetector::BluetoothHidDetectionStatus
@@ -36,11 +36,14 @@ FakeBluetoothHidDetector::GetBluetoothHidDetectionStatus() {
                                      std::move(pairing_state)};
 }
 
-void FakeBluetoothHidDetector::SetBluetoothHidDetectionStatus(
-    absl::optional<BluetoothHidDetector::BluetoothHidMetadata> pairing_device,
-    absl::optional<BluetoothHidPairingState> pairing_state) {
+void FakeBluetoothHidDetector::SimulatePairingStarted(
+    BluetoothHidDetector::BluetoothHidMetadata pairing_device) {
   current_pairing_device_ = std::move(pairing_device);
-  current_pairing_state_ = std::move(pairing_state);
+  NotifyBluetoothHidDetectionStatusChanged();
+}
+
+void FakeBluetoothHidDetector::SimulatePairingFinished() {
+  current_pairing_device_.reset();
   NotifyBluetoothHidDetectionStatusChanged();
 }
 
@@ -54,5 +57,4 @@ void FakeBluetoothHidDetector::PerformStopBluetoothHidDetection() {
   is_bluetooth_hid_detection_active_ = false;
 }
 
-}  // namespace hid_detection
-}  // namespace ash
+}  // namespace ash::hid_detection

@@ -18,7 +18,6 @@
 <translation id="1066060668811609597">管理同步功能</translation>
 <translation id="1076421457278169141">已扫描代码</translation>
 <translation id="1084365883616172403">Facebook 信息发布已完成。</translation>
-<translation id="1086486568852410168">使用 Google 智能镜头搜索</translation>
 <translation id="1103523840287552314">一律翻译<ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">接受并继续</translation>
 <translation id="110724200315609752">切换到另一个已打开的窗口</translation>
@@ -241,6 +240,7 @@
 <translation id="2982481275546140226">清除数据</translation>
 <translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
+<translation id="3020183492814296499">快捷键</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3039722182465315531">不登录</translation>
 <translation id="3076846064362030967">您不会因此而退出自己的 Google 帐号。当您登录后，系统可能会将<ph name="BEGIN_LINK" />其他形式的活动记录<ph name="END_LINK" />保存在您的 Google 帐号中。您可以随时删除这些记录。
@@ -249,6 +249,7 @@
 请查看您所用搜索引擎的相关说明，了解如何删除您的搜索记录（若适用）。</translation>
 <translation id="3080525922482950719">您可保存网页以供日后阅读或离线阅读</translation>
 <translation id="3081338492074632642">请确保您要保存的密码与您用来登录 <ph name="WEBSITE" /> 的密码相符</translation>
+<translation id="3103603146121354983">自动填充密码</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />查看您可同步的内容<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">阻止所有 Cookie</translation>
@@ -512,6 +513,7 @@
 <translation id="5416022985862681400">过去 7 天</translation>
 <translation id="543338862236136125">修改密码</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
+<translation id="5439599923922718668">经常访问</translation>
 <translation id="54401264925851789">网页安全信息</translation>
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5457226814769348910">打开离线版</translation>
@@ -526,7 +528,6 @@
 <translation id="5551897871312988470">询问是否翻译</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5580834567471114021">添加到阅读清单以供日后阅读？</translation>
-<translation id="5592679540098330836">为<ph name="NAME" />开启同步</translation>
 <translation id="560322036295180549">已被贵组织关闭</translation>
 <translation id="5614553682702429503">要保存密码吗？</translation>
 <translation id="5626245204502895507">该文件目前无法下载。</translation>
@@ -660,6 +661,7 @@
 
 请尽量为每个网站使用独一无二的密码。</translation>
 <translation id="650279896687777322">了解详情…</translation>
+<translation id="6510072653668207258">以后再提醒我</translation>
 <translation id="651505212789431520">取消同步？您随时可在“设置”中开启同步功能。</translation>
 <translation id="6524918542306337007">无痕模式不可用</translation>
 <translation id="6530992499366869131">密码遭遇数据泄露时向您发出警告</translation>
@@ -900,7 +902,6 @@
 <translation id="8588404856427128947">已关闭</translation>
 <translation id="8590913940444621808">永不询问</translation>
 <translation id="8591976964826315682">在无痕模式下阻止第三方 Cookie</translation>
-<translation id="8592752150819985187">自动填充密码</translation>
 <translation id="8605219856220328675">关闭标签页。</translation>
 <translation id="8620640915598389714">编辑</translation>
 <translation id="8620785403235741379">选择选项</translation>

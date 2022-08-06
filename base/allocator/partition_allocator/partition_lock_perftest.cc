@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/allocator/partition_allocator/partition_lock.h"
+
 #include <vector>
 
-#include "base/allocator/partition_allocator/partition_lock.h"
-#include "base/threading/platform_thread.h"
-#include "base/time/time.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/time/time.h"
 #include "base/timer/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
@@ -16,7 +17,7 @@ namespace partition_alloc::internal {
 namespace {
 
 constexpr int kWarmupRuns = 1;
-constexpr base::TimeDelta kTimeLimit = base::Seconds(1);
+constexpr ::base::TimeDelta kTimeLimit = ::base::Seconds(1);
 constexpr int kTimeCheckInterval = 100000;
 
 constexpr char kMetricPrefixLock[] = "PartitionLock.";
@@ -32,7 +33,7 @@ perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
   return reporter;
 }
 
-class Spin : public base::PlatformThread::Delegate {
+class Spin : public base::PlatformThreadForTesting::Delegate {
  public:
   Spin(Lock* lock, uint32_t* data)
       : lock_(lock), data_(data), should_stop_(false) {}
@@ -97,7 +98,8 @@ TEST(PartitionLockPerfTest, WithCompetingThreads) {
 
   for (int i = 0; i < kThreads; i++) {
     base::PlatformThreadHandle thread_handle;
-    ASSERT_TRUE(base::PlatformThread::Create(0, &thread_main, &thread_handle));
+    ASSERT_TRUE(base::PlatformThreadForTesting::Create(0, &thread_main,
+                                                       &thread_handle));
     thread_handles.push_back(thread_handle);
   }
   // Wait for all the threads to start.
@@ -114,7 +116,7 @@ TEST(PartitionLockPerfTest, WithCompetingThreads) {
 
   thread_main.Stop();
   for (int i = 0; i < kThreads; i++) {
-    base::PlatformThread::Join(thread_handles[i]);
+    base::PlatformThreadForTesting::Join(thread_handles[i]);
   }
 
   auto reporter = SetUpReporter(kStoryWithCompetingThread);

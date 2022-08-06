@@ -268,12 +268,12 @@ bool DrmGpuDisplayManager::ShouldDisplayEventTriggerConfiguration(
 bool DrmGpuDisplayManager::ConfigureDisplays(
     const std::vector<display::DisplayConfigurationParams>& config_requests) {
   ScreenManager::ControllerConfigsList controllers_to_configure;
-
   for (const auto& config : config_requests) {
     int64_t display_id = config.id;
     DrmDisplay* display = FindDisplay(display_id);
     if (!display) {
-      LOG(ERROR) << "There is no display with ID " << display_id;
+      LOG(WARNING) << __func__ << ": there is no display with ID "
+                   << display_id;
       return false;
     }
 
@@ -287,17 +287,9 @@ bool DrmGpuDisplayManager::ConfigureDisplays(
     }
 
     scoped_refptr<DrmDevice> drm = display->drm();
-
-    VLOG(1) << "DRM configuring: device=" << drm->device_path().value()
-            << " crtc=" << display->crtc()
-            << " connector=" << display->connector()
-            << " origin=" << config.origin.ToString() << " size="
-            << (mode_ptr ? ModeSize(*(mode_ptr.get())).ToString() : "0x0")
-            << " refresh_rate=" << (mode_ptr ? mode_ptr->vrefresh : 0) << "Hz";
-
     ScreenManager::ControllerConfigParams params(
         display->display_id(), drm, display->crtc(), display->connector(),
-        config.origin, std::move(mode_ptr));
+        config.origin, std::move(mode_ptr), display->base_connector_id());
     controllers_to_configure.push_back(std::move(params));
   }
 
@@ -311,17 +303,6 @@ bool DrmGpuDisplayManager::ConfigureDisplays(
   for (const auto& controller : controllers_to_configure) {
     if (config_success) {
       FindDisplay(controller.display_id)->SetOrigin(controller.origin);
-    } else {
-      if (controller.mode) {
-        VLOG(1) << "Failed to enable device="
-                << controller.drm->device_path().value()
-                << " crtc=" << controller.crtc
-                << " connector=" << controller.connector;
-      } else {
-        VLOG(1) << "Failed to disable device="
-                << controller.drm->device_path().value()
-                << " crtc=" << controller.crtc;
-      }
     }
   }
 
@@ -334,7 +315,7 @@ bool DrmGpuDisplayManager::GetHDCPState(
     display::ContentProtectionMethod* protection_method) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
-    LOG(ERROR) << "There is no display with ID " << display_id;
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return false;
   }
 
@@ -347,7 +328,7 @@ bool DrmGpuDisplayManager::SetHDCPState(
     display::ContentProtectionMethod protection_method) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
-    LOG(ERROR) << "There is no display with ID " << display_id;
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return false;
   }
 
@@ -359,7 +340,7 @@ void DrmGpuDisplayManager::SetColorMatrix(
     const std::vector<float>& color_matrix) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
-    LOG(ERROR) << "There is no display with ID " << display_id;
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return;
   }
 
@@ -370,7 +351,7 @@ void DrmGpuDisplayManager::SetBackgroundColor(int64_t display_id,
                                               const uint64_t background_color) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
-    LOG(ERROR) << "There is no display with ID" << display_id;
+    LOG(WARNING) << __func__ << ": there is no display with ID" << display_id;
     return;
   }
 
@@ -383,7 +364,7 @@ void DrmGpuDisplayManager::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
-    LOG(ERROR) << "There is no display with ID " << display_id;
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return;
   }
   display->SetGammaCorrection(degamma_lut, gamma_lut);
@@ -392,7 +373,7 @@ void DrmGpuDisplayManager::SetGammaCorrection(
 bool DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
-    LOG(ERROR) << "There is no display with ID " << display_id;
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return false;
   }
 
@@ -407,7 +388,7 @@ void DrmGpuDisplayManager::SetColorSpace(int64_t crtc_id,
       return;
     }
   }
-  LOG(ERROR) << __func__ << " there is no display with CRTC ID " << crtc_id;
+  LOG(WARNING) << __func__ << ": there is no display with CRTC ID " << crtc_id;
 }
 
 DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) {

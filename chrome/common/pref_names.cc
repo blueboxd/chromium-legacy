@@ -488,6 +488,10 @@ const char kPrintingAPIExtensionsAllowlist[] =
 // A boolean specifying whether the insights extension is enabled. If set to
 // true, the CCaaS Chrome component extension will be installed.
 const char kInsightsExtensionEnabled[] = "insights_extension_enabled";
+
+// Boolean controlling whether showing Sync Consent during sign-in is enabled.
+// Controlled by policy.
+const char kEnableSyncConsent[] = "sync_consent.enabled";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -952,10 +956,6 @@ const char kUsageTimeLimit[] = "screen_time.limit";
 // Last state of the screen time limit.
 const char kScreenTimeLastState[] = "screen_time.last_state";
 
-// Boolean controlling whether showing Sync Consent during sign-in is enabled.
-// Controlled by policy.
-const char kEnableSyncConsent[] = "sync_consent.enabled";
-
 // Boolean pref indicating whether a user is allowed to use the Network File
 // Shares for Chrome OS feature.
 const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
@@ -1150,25 +1150,27 @@ const char kSystemProxyUserTrafficHostAndPort[] =
 const char kEduCoexistenceArcMigrationCompleted[] =
     "account_manager.edu_coexistence_arc_migration_completed";
 
-// List pref containing extension IDs that are exempt from the restricted
-// managed guest session clean-up procedure.
-const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
-    "restricted_managed_guest_session_extension_cleanup_exempt_list";
+// Dictionary pref for shared extension storage for device pin.
+const char kSharedStorage[] = "shared_storage";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
-// A pref holding the value of the policy used to disable mounting of external
-// storage for the user.
-const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
-
-// A pref holding the value of the policy used to limit mounting of external
-// storage to read-only mode for the user.
-const char kExternalStorageReadOnly[] = "hardware.external_storage_read_only";
-
 // This boolean controls whether the first window shown on first run should be
 // unconditionally maximized, overriding the heuristic that normally chooses the
 // window size.
 const char kForceMaximizeOnFirstRun[] = "ui.force_maximize_on_first_run";
+
+// Counter for reporting daily OOM kills count.
+const char kOOMKillsDailyCount[] = "oom_kills.daily_count";
+
+// Integer pref used by the metrics::DailyEvent owned by
+// memory::OOMKillsMonitor.
+const char kOOMKillsDailySample[] = "oomkills.daily_sample";
+
+// List pref containing extension IDs that are exempt from the restricted
+// managed guest session clean-up procedure.
+const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
+    "restricted_managed_guest_session_extension_cleanup_exempt_list";
 
 // Boolean user profile pref that determines whether to show a banner in browser
 // settings that links to OS settings.
@@ -2377,6 +2379,10 @@ const char kDemoModeConfig[] = "demo_mode.config";
 // A string pref holding the value of the current country for demo sessions.
 const char kDemoModeCountry[] = "demo_mode.country";
 
+// A string pref holding the value of the retailer and store id input for demo
+// sessions.
+const char kDemoModeRetailerAndStoreIdInput[] = "demo_mode.retailer_id";
+
 // A string pref holding the value of the default locale for demo sessions.
 const char kDemoModeDefaultLocale[] = "demo_mode.default_locale";
 
@@ -3095,6 +3101,12 @@ const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 // A boolean value, controlling whether Chrome renderer processes have the CIG
 // mitigation enabled.
 const char kRendererCodeIntegrityEnabled[] = "renderer_code_integrity_enabled";
+
+// A boolean value, controlling whether Chrome renderer processes should have
+// Renderer App Container enabled or not. If this pref is set to false then
+// Renderer App Container is disabled, otherwise Renderer App Container is
+// controlled by the `RendererAppContainer` feature owned by sandbox/policy.
+const char kRendererAppContainerEnabled[] = "renderer_app_container_enabled";
 
 // A boolean that controls whether the Browser process has
 // ProcessExtensionPointDisablePolicy enabled.

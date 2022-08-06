@@ -441,6 +441,7 @@ void TestingProfile::InitializeProfileType() {
     return;
   }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_system = false;
   if (IsOffTheRecord()) {
     is_system = original_profile_->IsSystemProfile();
@@ -455,6 +456,7 @@ void TestingProfile::InitializeProfileType() {
         this, profile_metrics::BrowserProfileType::kSystem);
     return;
   }
+#endif
 
   if (IsOffTheRecord()) {
     profile_metrics::SetBrowserProfileType(
@@ -877,11 +879,21 @@ policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 policy::ProfilePolicyConnector* TestingProfile::GetProfilePolicyConnector() {
+  // This matches OffTheRecordProfileImpl::GetProfilePolicyConnector()
+  // implementation.
+  if (IsOffTheRecord())
+    return original_profile_->GetProfilePolicyConnector();
+
   return profile_policy_connector_.get();
 }
 
 const policy::ProfilePolicyConnector*
 TestingProfile::GetProfilePolicyConnector() const {
+  // This matches OffTheRecordProfileImpl::GetProfilePolicyConnector()
+  // implementation.
+  if (IsOffTheRecord())
+    return original_profile_->GetProfilePolicyConnector();
+
   return profile_policy_connector_.get();
 }
 

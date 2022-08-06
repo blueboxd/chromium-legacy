@@ -74,6 +74,9 @@ public class WebViewLayoutTest {
     private static final long TIMEOUT_SECONDS = 20;
 
     private static final String MODE_REBASELINE = "rebaseline";
+    private static final String NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH =
+            "//android_webview/tools/system_webview_shell/test/data/"
+            + "webexposed/not-webview-exposed.txt";
 
     private WebViewLayoutTestActivity mTestActivity;
     private boolean mRebaseLine;
@@ -122,17 +125,26 @@ public class WebViewLayoutTest {
     @Test
     @MediumTest
     public void testNoUnexpectedInterfaces() throws Exception {
-        ensureJsTestCopied();
+        // Begin by running the web test.
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
                 + "webexposed/global-interface-listing.html", mTestActivity);
+
+        // Process all expectations files.
         String webviewExpected = readFile(PATH_WEBVIEW_PREFIX
                 + "webexposed/global-interface-listing-expected.txt");
-        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        String result = mTestActivity.getTestResult();
-
-        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
         HashMap<String, HashSet<String>> webviewExpectedInterfacesMap =
                 buildHashMap(webviewExpected);
+
+        // Wait for web test to finish running. Note we should wait for the web test to
+        // finish running after processing the expectations file. The expectations file
+        // has 8600 lines and a size of 212 KB. It is better to process the expectations
+        // file in parallel with the web test run.
+        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+        // Process web test results.
+        String result = mTestActivity.getTestResult();
+        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
+
         StringBuilder newInterfaces = new StringBuilder();
 
         // Check that each current webview interface is one of webview expected interfaces.
@@ -150,24 +162,33 @@ public class WebViewLayoutTest {
     @Test
     @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
-        ensureJsTestCopied();
+        // Begin by running the web test.
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
                 + "webexposed/global-interface-listing.html", mTestActivity);
+
+        // Process all expectations files.
         String blinkExpected = readFile(PATH_BLINK_PREFIX + "platform/generic/"
                 + "webexposed/global-interface-listing-expected.txt");
         String blinkPlatformSpecificExpected = readFile(PATH_BLINK_PREFIX
                 + "platform/generic/"
                 + "webexposed/global-interface-listing-platform-specific-expected.txt");
-        String webviewExcluded = readFile(PATH_WEBVIEW_PREFIX
-                + "webexposed/not-webview-exposed.txt");
-        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        String result = mTestActivity.getTestResult();
+        String webviewExcluded =
+                readFile(PATH_WEBVIEW_PREFIX + "webexposed/not-webview-exposed.txt");
 
+        HashMap<String, HashSet<String>> blinkInterfacesMap = buildHashMap(blinkExpected);
         HashMap<String, HashSet<String>> webviewExcludedInterfacesMap =
                 buildHashMap(webviewExcluded);
-        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
-        HashMap<String, HashSet<String>> blinkInterfacesMap = buildHashMap(blinkExpected);
         blinkInterfacesMap = buildHashMap(blinkPlatformSpecificExpected, blinkInterfacesMap);
+
+        // Wait for web test to finish running. Note we should wait for the web test to finish
+        // running after processing all expectations files. All the expectations files have
+        // a combined total of 9000 lines and combined size of 216 KB. It is better to process
+        // the expectations files in parallel with the web test run.
+        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+        // Process web test results.
+        String result = mTestActivity.getTestResult();
+        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
 
         StringBuilder unexpected = new StringBuilder();
 
@@ -201,52 +222,88 @@ public class WebViewLayoutTest {
     @Test
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
-        ensureJsTestCopied();
+        // Begin by running the web test.
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
                 + "webexposed/global-interface-listing.html", mTestActivity);
-        String blinkStableExpected = readFileWithFallbacks(BLINK_STABLE_FALLBACKS);
-        String webviewExcluded = readFile(PATH_WEBVIEW_PREFIX
-                + "webexposed/not-webview-exposed.txt");
-        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        String result = mTestActivity.getTestResult();
 
-        HashMap<String, HashSet<String>> webviewExcludedInterfacesMap =
-                buildHashMap(webviewExcluded);
-        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
+        // Process all expectations files.
+        String blinkStableExpected = readFileWithFallbacks(BLINK_STABLE_FALLBACKS);
+        String webviewExcluded =
+                readFile(PATH_WEBVIEW_PREFIX + "webexposed/not-webview-exposed.txt");
+
+        HashMap<String, HashSet<String>> webviewInterfacesMap;
         HashMap<String, HashSet<String>> blinkStableInterfacesMap =
                 buildHashMap(blinkStableExpected);
+        HashMap<String, HashSet<String>> webviewExcludedInterfacesMap =
+                buildHashMap(webviewExcluded);
         StringBuilder missing = new StringBuilder();
+
+        // Wait for web test to finish running. Note we should wait for the web test to
+        // finish running after processing all expectations files. All the expectations
+        // files have a combined total of 9000 lines and combined size of 216 KB. It is
+        // better to process the expectations files in parallel with the web test run.
+        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+        // Process web test results.
+        String result = mTestActivity.getTestResult();
+        webviewInterfacesMap = buildHashMap(result);
+
+        HashSet<String> missingInterfaces = new HashSet<>();
+        HashMap<String, HashSet<String>> missingInterfaceProperties = new HashMap<>();
 
         // Check that each stable blink interface and its properties are present in webview
         // except the excluded interfaces/properties.
         for (HashMap.Entry<String, HashSet<String>> entry : blinkStableInterfacesMap.entrySet()) {
             String interfaceS = entry.getKey();
             HashSet<String> subsetExcluded = webviewExcludedInterfacesMap.get(interfaceS);
-            if (subsetExcluded != null && subsetExcluded.isEmpty()) continue;
+
+            if (subsetExcluded != null && subsetExcluded.isEmpty()) {
+                // Interface is not exposed in WebView.
+                continue;
+            }
 
             HashSet<String> subsetBlink = entry.getValue();
             HashSet<String> subsetWebView = webviewInterfacesMap.get(interfaceS);
 
             if (subsetWebView == null) {
-                // interface is missing completely
-                missing.append(interfaceS + "\n");
+                // Interface is unexpectedly missing from WebView.
+                missingInterfaces.add(interfaceS);
                 continue;
             }
 
             for (String propertyBlink : subsetBlink) {
-                if (subsetExcluded != null && subsetExcluded.contains(propertyBlink)) continue;
+                if (subsetExcluded != null && subsetExcluded.contains(propertyBlink)) {
+                    // At least one of the properties of this interface is excluded from WebView.
+                    continue;
+                }
                 if (!subsetWebView.contains(propertyBlink)) {
-                    missing.append(interfaceS + "." + propertyBlink + "\n");
+                    // At least one of the properties of this interface is unexpectedly missing from
+                    // WebView.
+                    missingInterfaceProperties.putIfAbsent(interfaceS, new HashSet<>());
+                    missingInterfaceProperties.get(interfaceS).add(propertyBlink);
                 }
             }
         }
 
-        if (missing.length() > 0) {
-            Assert.fail("Android WebView is missing the following declared Blink interfaces: "
-                    + missing.toString()
-                    + ". Interfaces which are intentionally not exposed in WebView need to be"
-                    + " added to not-webview-exposed.txt");
+        StringBuilder errorMessage = new StringBuilder();
+        if (!missingInterfaces.isEmpty()) {
+            errorMessage.append(String.format("\nWebView does not expose the "
+                            + "Blink interfaces below. Add them to\n%s\nto suppress this error.\n",
+                    NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH));
+            missingInterfaces.forEach(
+                    (missingInterface) -> errorMessage.append("\t- " + missingInterface + "\n"));
         }
+        missingInterfaceProperties.forEach((blinkInterface, missingProperties) -> {
+            errorMessage.append(String.format(
+                    "\nAt least one of the properties of the Blink interface \"%s\" "
+                            + "is not exposed in WebView.\nAdd them to the list of properties "
+                            + "not exposed for the \"%s\" interface in\n%s\nto suppress "
+                            + "this error\n",
+                    blinkInterface, blinkInterface, NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH));
+            missingProperties.forEach(
+                    (missingProperty) -> errorMessage.append("\t- " + missingProperty + "\n"));
+        });
+        Assert.assertTrue(errorMessage.toString(), errorMessage.length() == 0);
     }
 
     @Test
@@ -326,9 +383,8 @@ public class WebViewLayoutTest {
         runTest(PATH_WEBVIEW_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected, false);
     }
 
-    private void runBlinkLayoutTest(final String fileName, final String fileNameExpected,
-            boolean noFail) throws Exception {
-        ensureJsTestCopied();
+    private void runBlinkLayoutTest(
+            final String fileName, final String fileNameExpected, boolean noFail) throws Exception {
         runTest(PATH_BLINK_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected, noFail);
     }
 
@@ -363,13 +419,6 @@ public class WebViewLayoutTest {
                 activity.loadUrl(fileUrl);
             }
         });
-    }
-
-    private static void ensureJsTestCopied() throws IOException {
-        File jsTestFile = new File(PATH_BLINK_PREFIX + "resources/js-test.js");
-        if (jsTestFile.exists()) return;
-        String original = readFile(PATH_WEBVIEW_PREFIX + "resources/js-test.js");
-        writeFile(PATH_BLINK_PREFIX + "resources/js-test.js", original, false);
     }
 
     /**
@@ -442,7 +491,7 @@ public class WebViewLayoutTest {
     }
 
     private HashMap<String, HashSet<String>> buildHashMap(String contents) {
-        HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
+        HashMap<String, HashSet<String>> interfaces = new HashMap<>();
 
         return buildHashMap(contents, interfaces);
     }
@@ -457,7 +506,7 @@ public class WebViewLayoutTest {
             if (isInterfaceOrGlobalObject(s)) {
                 subset = interfaces.get(s);
                 if (subset == null) {
-                    subset = new HashSet<String>();
+                    subset = new HashSet<>();
                     interfaces.put(s, subset);
                 }
             } else if (isInterfaceProperty(s) && subset != null) {

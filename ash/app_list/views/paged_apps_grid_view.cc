@@ -664,9 +664,12 @@ bool PagedAppsGridView::MaybeAutoScroll() {
   return false;
 }
 
-void PagedAppsGridView::SetFocusAfterEndDrag() {
+void PagedAppsGridView::SetFocusAfterEndDrag(AppListItem* drag_item) {
   // Leave focus on the dragged item. Pressing tab or an arrow key will
   // highlight that item.
+  AppListItemView* drag_view = GetItemViewAt(GetModelIndexOfItem(drag_item));
+  if (drag_view)
+    drag_view->SilentlyRequestFocus();
 }
 
 void PagedAppsGridView::RecordAppMovingTypeMetrics(AppListAppMovingType type) {
@@ -1294,7 +1297,7 @@ void PagedAppsGridView::MaybeCallOnBoundsAnimatorDone() {
   --bounds_animation_for_cardified_state_in_progress_;
   if (bounds_animation_for_cardified_state_in_progress_ == 0) {
     animation_observers_.clear();
-    OnBoundsAnimatorDone(/*animator=*/nullptr);
+    DestroyLayerItemsIfNotNeeded();
 
     // Notify container that cardified state has ended once ending animations
     // are complete.

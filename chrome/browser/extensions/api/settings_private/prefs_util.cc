@@ -63,7 +63,6 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
-#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
@@ -321,6 +320,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       [::unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::omnibox::kDocumentSuggestEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kAutofillAssistantOnDesktopEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Languages page
@@ -583,13 +584,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
           settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-
-  // Dark Mode.
-  (*s_allowlist)[ash::prefs::kColorModeThemed] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[ash::prefs::kDarkModeEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[ash::prefs::kDarkModeScheduleType] =
+  (*s_allowlist)[ash::ambient::prefs::kAmbientModeAnimationPlaybackSpeed] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Google Assistant.
@@ -1149,18 +1144,6 @@ settings_private::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
     default:
       return settings_private::SetPrefResult::PREF_TYPE_UNSUPPORTED;
   }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (pref_name == ash::prefs::kDarkModeEnabled) {
-    DCHECK(value->is_bool());
-    base::UmaHistogramBoolean("Ash.DarkTheme.Settings.IsDarkModeEnabled",
-                              value->GetBool());
-  } else if (pref_name == ash::prefs::kColorModeThemed) {
-    DCHECK(value->is_bool());
-    base::UmaHistogramBoolean("Ash.DarkTheme.Settings.IsThemed",
-                              value->GetBool());
-  }
-#endif
 
   // TODO(orenb): Process setting metrics here and in the CrOS setting method
   // too (like "ProcessUserMetric" in CoreOptionsHandler).

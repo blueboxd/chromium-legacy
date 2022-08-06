@@ -86,7 +86,8 @@ void DownloadToolbarButtonView::PaintButtonContents(gfx::Canvas* canvas) {
   int diameter = 2 * kProgressRingRadius;
   gfx::RectF ring_bounds(x, y, /*width=*/diameter, /*height=*/diameter);
 
-  if (icon_info.icon_state == download::DownloadIconState::kDeepScanning) {
+  if (icon_info.icon_state == download::DownloadIconState::kDeepScanning ||
+      !progress_info.progress_certain) {
     if (!scanning_animation_.is_animating()) {
       scanning_animation_.Reset();
       scanning_animation_.Show();
@@ -115,9 +116,7 @@ void DownloadToolbarButtonView::Show() {
 }
 
 void DownloadToolbarButtonView::Hide() {
-  if (bubble_delegate_) {
-    CloseDialog(views::Widget::ClosedReason::kUnspecified);
-  }
+  HideDetails();
   SetVisible(false);
   PreferredSizeChanged();
 }
@@ -146,6 +145,14 @@ void DownloadToolbarButtonView::ShowDetails() {
     is_primary_partial_view_ = true;
     CreateBubbleDialogDelegate(GetPrimaryView());
   }
+}
+
+void DownloadToolbarButtonView::HideDetails() {
+  CloseDialog(views::Widget::ClosedReason::kUnspecified);
+}
+
+bool DownloadToolbarButtonView::IsShowingDetails() {
+  return bubble_delegate_ != nullptr;
 }
 
 void DownloadToolbarButtonView::UpdateIcon() {
@@ -203,7 +210,8 @@ void DownloadToolbarButtonView::OpenSecurityDialog(
 
 void DownloadToolbarButtonView::CloseDialog(
     views::Widget::ClosedReason reason) {
-  bubble_delegate_->GetWidget()->CloseWithReason(reason);
+  if (bubble_delegate_)
+    bubble_delegate_->GetWidget()->CloseWithReason(reason);
 }
 
 void DownloadToolbarButtonView::ResizeDialog() {

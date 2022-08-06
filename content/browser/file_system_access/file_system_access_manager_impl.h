@@ -114,6 +114,12 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   // blink::mojom::FileSystemAccessManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
+  // Get the FileSystem with a custom bucket override. Must provide a binding
+  // context for this request.
+  void GetSandboxedFileSystem(
+      const BindingContext& binding_context,
+      const absl::optional<storage::BucketLocator>& bucket,
+      GetSandboxedFileSystemCallback callback);
   void ChooseEntries(blink::mojom::FilePickerOptionsPtr options,
                      blink::mojom::CommonFilePickerOptionsPtr common_options,
                      ChooseEntriesCallback callback) override;
@@ -172,9 +178,9 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
                         const SharedHandleState& handle_state);
   // Attempts to take a write lock on `url`. The lock is released when the
   // returned object is destroyed.
-  absl::optional<scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>>
-  TakeWriteLock(const storage::FileSystemURL& url,
-                FileSystemAccessWriteLockManager::WriteLockType lock_type);
+  scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> TakeWriteLock(
+      const storage::FileSystemURL& url,
+      FileSystemAccessWriteLockManager::WriteLockType lock_type);
 
   // Creates a new FileSystemAccessFileWriterImpl for a given target and
   // swap file URLs. Assumes the passed in URLs are valid and represent files.

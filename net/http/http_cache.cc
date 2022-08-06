@@ -127,13 +127,12 @@ void HttpCache::DefaultBackend::SetAppStatusListener(
 //-----------------------------------------------------------------------------
 
 HttpCache::ActiveEntry::ActiveEntry(disk_cache::Entry* entry, bool opened_in)
-    : disk_entry(entry), opened(opened_in) {}
+    : disk_entry(entry), opened(opened_in) {
+  DCHECK(disk_entry);
+}
 
 HttpCache::ActiveEntry::~ActiveEntry() {
-  if (disk_entry) {
-    disk_entry->Close();
-    disk_entry = nullptr;
-  }
+  disk_entry->Close();
 }
 
 bool HttpCache::ActiveEntry::HasNoTransactions() {
@@ -156,12 +155,11 @@ bool HttpCache::ActiveEntry::TransactionInReaders(
 // This structure keeps track of work items that are attempting to create or
 // open cache entries or the backend itself.
 struct HttpCache::PendingOp {
-  PendingOp()
-      : entry(nullptr), entry_opened(false), callback_will_delete(false) {}
+  PendingOp() = default;
   ~PendingOp() = default;
 
-  raw_ptr<disk_cache::Entry> entry;
-  bool entry_opened;  // rather than created.
+  raw_ptr<disk_cache::Entry> entry = nullptr;
+  bool entry_opened = false;  // rather than created.
 
   std::unique_ptr<disk_cache::Backend> backend;
   std::unique_ptr<WorkItem> writer;
@@ -169,7 +167,7 @@ struct HttpCache::PendingOp {
   // |this| without removing it from |pending_ops_|.  Note that since
   // OnPendingOpComplete() is static, it will not get cancelled when HttpCache
   // is destroyed.
-  bool callback_will_delete;
+  bool callback_will_delete = false;
   WorkItemList pending_queue;
 };
 
@@ -199,7 +197,6 @@ class HttpCache::WorkItem {
 
   // Calls back the transaction with the result of the operation.
   void NotifyTransaction(int result, ActiveEntry* entry) {
-    DCHECK(!entry || entry->disk_entry);
     if (entry_)
       *entry_ = entry;
     if (transaction_)
@@ -243,11 +240,7 @@ HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
                      std::unique_ptr<BackendFactory> backend_factory)
     : net_log_(nullptr),
       backend_factory_(std::move(backend_factory)),
-      building_backend_(false),
-      bypass_lock_for_test_(false),
-      bypass_lock_after_headers_for_test_(false),
-      fail_conditionalization_for_test_(false),
-      mode_(NORMAL),
+
       network_layer_(std::move(network_layer)),
       clock_(base::DefaultClock::GetInstance()) {
   g_init_cache = true;
@@ -745,7 +738,6 @@ HttpCache::ActiveEntry* HttpCache::ActivateEntry(disk_cache::Entry* disk_entry,
 
 void HttpCache::DeactivateEntry(ActiveEntry* entry) {
   DCHECK(!entry->doomed);
-  DCHECK(entry->disk_entry);
   DCHECK(entry->SafeToDestroy());
 
   std::string key = entry->disk_entry->GetKey();
@@ -1390,6 +1382,7 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
       // Anything after a Doom has to be restarted.
       try_restart_requests = true;
     } else if (item->IsValid()) {
+      DCHECK(pending_op->entry);
       key = pending_op->entry->GetKey();
       entry = ActivateEntry(pending_op->entry, pending_op->entry_opened);
     } else {

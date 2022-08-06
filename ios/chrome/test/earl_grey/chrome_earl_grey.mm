@@ -480,7 +480,7 @@ UIWindow* GetAnyKeyWindow() {
   auto result = [self evaluateJavaScript:kGetCookiesScript];
 
   EG_TEST_HELPER_ASSERT_TRUE(result.is_list(),
-                             @"The script response is not iteratble.");
+                             @"The script response is not iterable.");
 
   NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
   for (const auto& option : result.GetListDeprecated()) {
@@ -1239,10 +1239,6 @@ UIWindow* GetAnyKeyWindow() {
 
 - (BOOL)areMultipleWindowsSupported {
   return [ChromeEarlGreyAppInterface areMultipleWindowsSupported];
-}
-
-- (BOOL)isContextMenuInWebViewEnabled {
-  return [ChromeEarlGreyAppInterface isContextMenuInWebViewEnabled];
 }
 
 - (BOOL)isNewOverflowMenuEnabled {

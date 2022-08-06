@@ -1276,6 +1276,9 @@ class DOMMessageQueue : public NotificationObserver,
   // true.  Otherwise (if the queue is empty), returns false.
   [[nodiscard]] bool PopMessage(std::string* message);
 
+  // Returns true if there are currently any messages in the queue.
+  bool HasMessages();
+
   // Overridden NotificationObserver methods.
   void Observe(int type,
                const NotificationSource& source,
@@ -1781,7 +1784,7 @@ class TestActivationManager : public WebContentsObserver {
 
   // Set when a matching navigation reaches kBeforeChecks and cleared when the
   // navigation is deleted/finished.
-  NavigationRequest* request_ = nullptr;
+  raw_ptr<NavigationRequest> request_ = nullptr;
 
   // If the navigation is paused in the first or last CommitDeferringCondition
   // (i.e. the one installed by this manager for testing), this will be the

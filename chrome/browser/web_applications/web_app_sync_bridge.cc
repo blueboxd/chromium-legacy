@@ -18,6 +18,7 @@
 #include "base/types/pass_key.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/commands/install_from_sync_command.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -674,14 +675,10 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   }
 
   // Initiate any uninstall actions to clean up os integration, disk data, etc.
-  // This starts before the registry is updated as some of these functions
-  // require the web app data to still exist in the registry. This includes
-  // eventually notifying observers of `WebAppWillBeUninstalled` and
-  // `WebAppUninstalled`.
   if (!apps_to_delete.empty()) {
     apps_in_sync_uninstall_.insert(apps_to_delete.begin(),
                                    apps_to_delete.end());
-    command_manager_->NotifyBeforeSyncUninstalls(apps_to_delete);
+    command_manager_->NotifySyncSourceRemoved(apps_to_delete);
     install_delegate_->UninstallFromSync(
         apps_to_delete,
         base::BindRepeating(&WebAppSyncBridge::WebAppUninstalled,
@@ -691,6 +688,8 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   // Do a full follow up install for all remote entities that don’t exist
   // locally.
   if (!apps_to_install.empty()) {
+    // TODO(dmurph): Just call the InstallFromSync command.
+    // https://crbug.com/1328968
     install_delegate_->InstallWebAppsAfterSync(std::move(apps_to_install),
                                                base::DoNothing());
   }

@@ -751,6 +751,8 @@ TEST_F(LayoutNGTextCombineTest, Outline) {
           // tcy
           PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
           PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
+          PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
           // "X"
           PhysicalRect(PhysicalOffset(25, 100), PhysicalSize(100, 100)),
           PhysicalRect(PhysicalOffset(25, 100), PhysicalSize(100, 100))));
@@ -772,6 +774,8 @@ TEST_F(LayoutNGTextCombineTest, Outline) {
       ElementsAre(
           PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 200)),
           // "a"
+          PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
           PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
           PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
           // "X"

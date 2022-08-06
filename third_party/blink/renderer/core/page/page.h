@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/types/pass_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -222,7 +223,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return window_features_;
   }
 
-  absl::optional<features::FencedFramesImplementationType>
+  const absl::optional<features::FencedFramesImplementationType>&
   FencedFramesImplementationType() const {
     return fenced_frames_impl_;
   }
@@ -360,7 +361,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   void SetMediaFeatureOverride(const AtomicString& media_feature,
                                const String& value);
   const MediaFeatureOverrides* GetMediaFeatureOverrides() const {
-    return media_feature_overrides_.get();
+    return media_feature_overrides_.Get();
   }
   void ClearMediaFeatureOverrides();
 
@@ -515,7 +516,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   std::unique_ptr<PageScheduler> page_scheduler_;
 
   // Overrides for various media features, set from DevTools.
-  std::unique_ptr<MediaFeatureOverrides> media_feature_overrides_;
+  Member<MediaFeatureOverrides> media_feature_overrides_;
 
   // Emulated vision deficiency, set from DevTools.
   VisionDeficiency vision_deficiency_ = VisionDeficiency::kNoVisionDeficiency;

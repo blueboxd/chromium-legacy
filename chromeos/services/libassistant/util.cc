@@ -12,7 +12,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/util/chromium_git_revision.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/util_headers.h"
@@ -189,10 +189,13 @@ std::string CreateLibAssistantConfig(
 
   // Enables Libassistant gRPC server for V2.
   if (chromeos::assistant::features::IsLibAssistantV2Enabled()) {
+    const std::string server_addresses =
+        std::string(assistant::kLibassistantServiceAddress) + "," +
+        assistant::kHttpConnectionServiceAddress;
     Value libas_server(Type::DICTIONARY);
-    libas_server.SetKey("libas_server_address",
-                        Value(assistant::kLibassistantServiceAddress));
+    libas_server.SetKey("libas_server_address", Value(server_addresses));
     libas_server.SetKey("enable_display_service", Value(true));
+    libas_server.SetKey("enable_http_connection_service", Value(true));
     config.SetKey("libas_server", std::move(libas_server));
   }
 

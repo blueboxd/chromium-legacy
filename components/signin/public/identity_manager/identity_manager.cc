@@ -424,11 +424,13 @@ void IdentityManager::OnNetworkInitialized() {
   account_fetcher_service_->OnNetworkInitialized();
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 IdentityManager::AccountIdMigrationState
 IdentityManager::GetAccountIdMigrationState() const {
   return static_cast<IdentityManager::AccountIdMigrationState>(
       account_tracker_service_->GetMigrationState());
 }
+#endif
 
 CoreAccountId IdentityManager::PickAccountIdForAccount(
     const std::string& gaia,
@@ -448,9 +450,6 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   AccountFetcherService::RegisterPrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
   GaiaCookieManagerService::RegisterPrefs(registry);
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
-#endif
 }
 
 DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {

@@ -33,6 +33,7 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/camera_mic_tray_item_view.h"
 #include "ash/system/unified/current_locale_view.h"
+#include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
@@ -41,6 +42,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -93,6 +95,10 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
 
   AshMessagePopupCollection* message_popup_collection() {
     return message_popup_collection_.get();
+  }
+
+  NotificationGroupingController* grouping_controller() {
+    return grouping_controller_.get();
   }
 
  private:
@@ -220,8 +226,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   AddTrayItemToContainer(new PowerTrayView(shelf));
 
   auto vertical_clock_padding = std::make_unique<views::View>();
-  vertical_clock_padding->SetPreferredSize(
-      gfx::Size(0, kTrayTimeIconTopPadding));
+  vertical_clock_padding->SetPreferredSize(gfx::Size(
+      0, features::IsCalendarViewEnabled() ? 0 : kTrayTimeIconTopPadding));
   vertical_clock_padding_ =
       tray_container()->AddChildView(std::move(vertical_clock_padding));
 
@@ -399,6 +405,11 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
     bubble_->FocusEntered(reverse);
 
   return true;
+}
+
+void UnifiedSystemTray::NotifyLeavingCalendarView() {
+  for (auto& observer : observers_)
+    observer.OnLeavingCalendarView();
 }
 
 bool UnifiedSystemTray::IsQuickSettingsExplicitlyExpanded() const {
@@ -623,15 +634,16 @@ void UnifiedSystemTray::ShowBubbleInternal() {
 
   first_interaction_recorded_ = false;
 
+  // Do not set the tray as active if the date tray is already active, this
+  // happens if `ShowBubble()` is called through `OnDateTrayActionPerformed()`.
+  if (shelf()->status_area_widget()->date_tray() &&
+      shelf()->status_area_widget()->date_tray()->is_active()) {
+    return;
+  }
   SetIsActive(true);
 }
 
 void UnifiedSystemTray::HideBubbleInternal() {
-  if (IsShowingCalendarView()) {
-    for (auto& observer : observers_)
-      observer.OnLeavingCalendarView();
-  }
-
   DestroyBubbles();
   SetIsActive(false);
 }
@@ -658,6 +670,11 @@ UnifiedSystemTray::GetPopupViewForNotificationID(
 
 AshMessagePopupCollection* UnifiedSystemTray::GetMessagePopupCollection() {
   return ui_delegate_->message_popup_collection();
+}
+
+NotificationGroupingController*
+UnifiedSystemTray::GetNotificationGroupingController() {
+  return ui_delegate_->grouping_controller();
 }
 
 void UnifiedSystemTray::AddTrayItemToContainer(TrayItemView* tray_item) {

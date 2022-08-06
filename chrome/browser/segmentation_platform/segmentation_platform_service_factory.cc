@@ -87,17 +87,17 @@ KeyedService* SegmentationPlatformServiceFactory::BuildServiceInstanceFor(
   params->ukm_data_manager =
       UkmDatabaseClient::GetInstance().GetUkmDataManager();
   params->profile_prefs = profile->GetPrefs();
-  params->local_state = local_state_to_use_ == nullptr
-                            ? g_browser_process->local_state()
-                            : local_state_to_use_.get();
   params->configs = GetSegmentationPlatformConfig();
   params->field_trial_register = std::make_unique<FieldTrialRegisterImpl>();
 
   auto* service = new SegmentationPlatformServiceImpl(std::move(params));
 
-  service->SetUserData(kSegmentationPlatformProfileObserverKey,
-                       std::make_unique<SegmentationPlatformProfileObserver>(
-                           service, g_browser_process->profile_manager()));
+  // Profile manager can be null in unit tests.
+  if (g_browser_process->profile_manager()) {
+    service->SetUserData(kSegmentationPlatformProfileObserverKey,
+                         std::make_unique<SegmentationPlatformProfileObserver>(
+                             service, g_browser_process->profile_manager()));
+  }
 
   return service;
 }

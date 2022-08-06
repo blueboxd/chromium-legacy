@@ -52,7 +52,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_fetch_response_callback.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_content_index_event_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_notification_event_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_request_event_init.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -224,9 +225,11 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
   }
 #endif  // DCHECK_IS_ON()
 
+  InterfaceRegistry* interface_registry = creation_params->interface_registry;
   return MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(installed_scripts_manager),
-      std::move(cache_storage_remote), time_origin, service_worker_token);
+      std::move(cache_storage_remote), time_origin, service_worker_token,
+      interface_registry);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
@@ -236,8 +239,10 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin,
-    const ServiceWorkerToken& service_worker_token)
+    const ServiceWorkerToken& service_worker_token,
+    InterfaceRegistry* interface_registry)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin, true),
+      interface_registry_(interface_registry),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)),
       token_(service_worker_token) {
@@ -256,6 +261,8 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
       WTF::BindRepeating(&ServiceWorkerGlobalScope::OnIdleTimeout,
                          WrapWeakPersistent(this)),
       GetTaskRunner(TaskType::kInternalDefault));
+
+  CoreInitializer::GetInstance().InitServiceWorkerGlobalScope(*this);
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;

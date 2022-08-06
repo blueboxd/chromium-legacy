@@ -7,8 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/device_event_log/device_event_log.h"
 
-namespace ash {
-namespace hid_detection {
+namespace ash::hid_detection {
 namespace {
 
 using chromeos::bluetooth_config::mojom::BluetoothDevicePropertiesPtr;
@@ -110,10 +109,6 @@ BluetoothHidDetectorImpl::GetBluetoothHidDetectionStatus() {
 
 void BluetoothHidDetectorImpl::PerformStartBluetoothHidDetection(
     InputDevicesStatus input_devices_status) {
-  DCHECK(input_devices_status.pointer_is_missing ||
-         input_devices_status.keyboard_is_missing)
-      << " StartBluetoothHidDetection() called when neither pointer or "
-      << "keyboard is missing";
   DCHECK_EQ(kNotStarted, state_);
   HID_LOG(EVENT) << "Starting Bluetooth HID detection, pointer missing: "
                  << input_devices_status.pointer_is_missing
@@ -430,5 +425,4 @@ void BluetoothHidDetectorImpl::RequirePairingCode(
   NotifyBluetoothHidDetectionStatusChanged();
 }
 
-}  // namespace hid_detection
-}  // namespace ash
+}  // namespace ash::hid_detection

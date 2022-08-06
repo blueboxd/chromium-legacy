@@ -19,7 +19,6 @@
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
-#include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -177,9 +176,7 @@ void ForwardReportsToWebUI(
 AttributionInternalsHandlerImpl::AttributionInternalsHandlerImpl(
     WebUI* web_ui,
     mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver)
-    : web_ui_(web_ui),
-      manager_provider_(AttributionManagerProvider::Default()),
-      receiver_(this, std::move(receiver)) {}
+    : web_ui_(web_ui), receiver_(this, std::move(receiver)) {}
 
 AttributionInternalsHandlerImpl::~AttributionInternalsHandlerImpl() = default;
 
@@ -188,7 +185,7 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
         callback) {
   content::WebContents* contents = web_ui_->GetWebContents();
   bool attribution_reporting_enabled =
-      manager_provider_->GetManager(contents) &&
+      AttributionManager::FromWebContents(contents) &&
       GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
           contents->GetBrowserContext(),
           ContentBrowserClient::ConversionMeasurementOperation::kAny,
@@ -202,7 +199,7 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
 void AttributionInternalsHandlerImpl::GetActiveSources(
     attribution_internals::mojom::Handler::GetActiveSourcesCallback callback) {
   if (AttributionManager* manager =
-          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+          AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->GetActiveSourcesForWebUI(
         base::BindOnce(&ForwardSourcesToWebUI, std::move(callback)));
   } else {
@@ -214,9 +211,10 @@ void AttributionInternalsHandlerImpl::GetReports(
     AttributionReport::ReportType report_type,
     attribution_internals::mojom::Handler::GetReportsCallback callback) {
   if (AttributionManager* manager =
-          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+          AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->GetPendingReportsForInternalUse(
-        report_type,
+        AttributionReport::ReportTypes{report_type},
+        /*limit=*/1000,
         base::BindOnce(&ForwardReportsToWebUI, std::move(callback)));
   } else {
     std::move(callback).Run({});
@@ -227,7 +225,7 @@ void AttributionInternalsHandlerImpl::SendReports(
     const std::vector<AttributionReport::Id>& ids,
     attribution_internals::mojom::Handler::SendReportsCallback callback) {
   if (AttributionManager* manager =
-          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+          AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->SendReportsForWebUI(ids, std::move(callback));
   } else {
     std::move(callback).Run();
@@ -237,7 +235,7 @@ void AttributionInternalsHandlerImpl::SendReports(
 void AttributionInternalsHandlerImpl::ClearStorage(
     attribution_internals::mojom::Handler::ClearStorageCallback callback) {
   if (AttributionManager* manager =
-          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+          AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->ClearData(base::Time::Min(), base::Time::Max(),
                        base::NullCallback(), std::move(callback));
   } else {
@@ -249,7 +247,7 @@ void AttributionInternalsHandlerImpl::AddObserver(
     mojo::PendingRemote<attribution_internals::mojom::Observer> observer,
     attribution_internals::mojom::Handler::AddObserverCallback callback) {
   if (AttributionManager* manager =
-          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+          AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     observers_.Add(std::move(observer));
 
     if (!manager_observation_.IsObservingSource(manager))
@@ -375,6 +373,8 @@ WebUITriggerStatus GetWebUITriggerStatus(EventLevelStatus status) {
       return WebUITriggerStatus::kNoMatchingSourceFilterData;
     case EventLevelStatus::kProhibitedByBrowserPolicy:
       return WebUITriggerStatus::kProhibitedByBrowserPolicy;
+    case EventLevelStatus::kNoMatchingConfigurations:
+      return WebUITriggerStatus::kNoMatchingConfigurations;
   }
 }
 
@@ -434,6 +434,22 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
         /*not_filters=*/event_trigger.not_filters.filter_values());
   }
 
+  for (const auto& aggregatable_trigger_data :
+       trigger.aggregatable_trigger().trigger_data()) {
+    web_ui_trigger->aggregatable_triggers.emplace_back(
+        absl::in_place,
+        /*key_piece=*/HexEncodeAggregatableKey(aggregatable_trigger_data.key()),
+        /*source_keys=*/
+        std::vector<std::string>(
+            aggregatable_trigger_data.source_keys().begin(),
+            aggregatable_trigger_data.source_keys().end()),
+        /*filters=*/aggregatable_trigger_data.filters().filter_values(),
+        /*not_filters=*/
+        aggregatable_trigger_data.not_filters().filter_values());
+  }
+
+  web_ui_trigger->aggregatable_values = trigger.aggregatable_trigger().values();
+
   for (auto& observer : observers_) {
     observer->OnTriggerHandled(web_ui_trigger.Clone());
   }
@@ -455,19 +471,6 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
     for (auto& observer : observers_) {
       observer->OnReportDropped(web_ui_report.Clone());
     }
-  }
-}
-
-void AttributionInternalsHandlerImpl::SetAttributionManagerProviderForTesting(
-    std::unique_ptr<AttributionManagerProvider> manager_provider) {
-  DCHECK(manager_provider);
-
-  manager_observation_.Reset();
-  manager_provider_ = std::move(manager_provider);
-
-  if (AttributionManager* manager =
-          manager_provider_->GetManager(web_ui_->GetWebContents())) {
-    manager_observation_.Observe(manager);
   }
 }
 

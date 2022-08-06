@@ -28,7 +28,6 @@ namespace net {
 
 struct CommonConnectJobParams;
 struct NetworkTrafficAnnotationTag;
-class WebSocketTransportConnectJob;
 
 class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     : public ClientSocketPool {
@@ -67,11 +66,12 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       CompletionOnceCallback callback,
       const ProxyAuthCallback& proxy_auth_callback,
       const NetLogWithSource& net_log) override;
-  void RequestSockets(
+  int RequestSockets(
       const GroupId& group_id,
       scoped_refptr<SocketParams> params,
       const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       int num_sockets,
+      CompletionOnceCallback callback,
       const NetLogWithSource& net_log) override;
   void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
@@ -174,8 +174,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       StalledRequestMap;
 
   // Tries to hand out the socket connected by |job|. |result| must be (async)
-  // result of WebSocketTransportConnectJob::Connect(). Returns true iff it has
-  // handed out a socket.
+  // result of TransportConnectJob::Connect(). Returns true iff it has handed
+  // out a socket.
   bool TryHandOutSocket(int result, ConnectJobDelegate* connect_job_delegate);
   void OnConnectJobComplete(int result,
                             ConnectJobDelegate* connect_job_delegate);

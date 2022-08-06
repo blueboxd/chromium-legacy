@@ -840,7 +840,7 @@ TYPED_TEST(ClipboardTest, DataTest) {
   }
 #endif  // BUILDFLAG(IS_MAC)
 
-  const std::string kFormatString = "chromium/x-test-format";
+  const std::string kFormatString = "web chromium/x-test-format";
   const std::u16string kFormatString16 = u"chromium/x-test-format";
   const std::string payload = "test string";
   base::span<const uint8_t> payload_span(
@@ -873,13 +873,13 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   }
 #endif  // BUILDFLAG(IS_MAC)
 
-  const std::string kFormatString1 = "chromium/x-test-format1";
+  const std::string kFormatString1 = "web chromium/x-test-format1";
   const std::u16string kFormatString116 = u"chromium/x-test-format1";
   const std::string payload1("test string1");
   base::span<const uint8_t> payload_span1(
       reinterpret_cast<const uint8_t*>(payload1.data()), payload1.size());
 
-  const std::string kFormatString2 = "chromium/x-test-format2";
+  const std::string kFormatString2 = "web chromium/x-test-format2";
   const std::u16string kFormatString216 = u"chromium/x-test-format2";
   const std::string payload2("test string2");
   base::span<const uint8_t> payload_span2(
@@ -897,7 +897,7 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   // Check format 1.
   EXPECT_THAT(this->clipboard().ReadAvailableStandardAndCustomFormatNames(
                   ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr),
-              Contains(kFormatString116));
+              Contains(u"web chromium/x-test-format1"));
   std::string custom_format_json;
   this->clipboard().ReadData(ClipboardFormatType::WebCustomFormatMap(),
                              /* data_dst = */ nullptr, &custom_format_json);
@@ -915,7 +915,7 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   // Check format 2.
   EXPECT_THAT(this->clipboard().ReadAvailableStandardAndCustomFormatNames(
                   ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr),
-              Contains(kFormatString216));
+              Contains(u"web chromium/x-test-format2"));
   EXPECT_TRUE(custom_format_names.find(kFormatString2) !=
               custom_format_names.end());
   std::string output2;
@@ -933,13 +933,13 @@ TYPED_TEST(ClipboardTest, DataAndPortableFormatTest) {
   }
 #endif  // BUILDFLAG(IS_MAC)
 
-  const std::string kFormatString1 = "chromium/x-test-format1";
+  const std::string kFormatString1 = "web chromium/x-test-format1";
   const std::u16string kFormatString116 = u"chromium/x-test-format1";
   const std::string payload1("test string1");
   base::span<const uint8_t> payload_span1(
       reinterpret_cast<const uint8_t*>(payload1.data()), payload1.size());
 
-  const std::string kFormatString2 = "text/plain";
+  const std::string kFormatString2 = "web text/plain";
   const std::u16string kFormatString216 = u"text/plain";
   const std::string payload2("test string2");
   base::span<const uint8_t> payload_span2(
@@ -957,7 +957,7 @@ TYPED_TEST(ClipboardTest, DataAndPortableFormatTest) {
   // Check format 1.
   EXPECT_THAT(this->clipboard().ReadAvailableStandardAndCustomFormatNames(
                   ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr),
-              Contains(kFormatString116));
+              Contains(u"web chromium/x-test-format1"));
   std::string custom_format_json;
   this->clipboard().ReadData(ClipboardFormatType::WebCustomFormatMap(),
                              /* data_dst = */ nullptr, &custom_format_json);
@@ -975,7 +975,7 @@ TYPED_TEST(ClipboardTest, DataAndPortableFormatTest) {
   // Check format 2.
   EXPECT_THAT(this->clipboard().ReadAvailableStandardAndCustomFormatNames(
                   ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr),
-              Contains(kFormatString216));
+              Contains(u"web text/plain"));
   EXPECT_TRUE(custom_format_names.find(kFormatString2) !=
               custom_format_names.end());
   std::string output2;
@@ -1008,7 +1008,8 @@ TYPED_TEST(ClipboardTest, PlatformSpecificDataTest) {
     return;
 
   const std::string text = "test string";
-  const std::string kFormatString = "text/plain";
+  const std::string kFormatString = "web text/plain";
+  const std::u16string kFormatString16 = u"text/plain";
 #if BUILDFLAG(IS_WIN)
   // Windows requires an extra '\0' at the end for a raw write.
   const std::string kPlatformSpecificText = text + '\0';
@@ -1020,7 +1021,7 @@ TYPED_TEST(ClipboardTest, PlatformSpecificDataTest) {
       kPlatformSpecificText.size());
   {
     ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
-    clipboard_writer.WriteData(ASCIIToUTF16(kFormatString),
+    clipboard_writer.WriteData(kFormatString16,
                                mojo_base::BigBuffer(text_span));
   }
 

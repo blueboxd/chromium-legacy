@@ -16,14 +16,14 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/ash/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
 #include "chrome/browser/ui/ash/assistant/assistant_browser_delegate_impl.h"
@@ -100,9 +100,11 @@ class ScreenLockerUnitTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
 
     // Set up certificate provider service for the signin profile.
-    CertificateProviderServiceFactory::GetInstance()->SetTestingFactory(
-        testing_profile_manager_->CreateTestingProfile(chrome::kInitialProfile),
-        base::BindRepeating(&CreateCertificateProviderService));
+    chromeos::CertificateProviderServiceFactory::GetInstance()
+        ->SetTestingFactory(
+            testing_profile_manager_->CreateTestingProfile(
+                chrome::kInitialProfile),
+            base::BindRepeating(&CreateCertificateProviderService));
 
     user_profile_ = testing_profile_manager_->CreateTestingProfile(
         test_account_id_.GetUserEmail());

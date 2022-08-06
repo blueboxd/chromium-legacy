@@ -19,8 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterProvider;
-import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -37,13 +35,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
-
-import java.util.Arrays;
 
 /**
  * Tests system and application interaction with Contextual Search using instrumentation tests.
@@ -58,39 +53,11 @@ import java.util.Arrays;
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @Batch(Batch.PER_CLASS)
 public class ContextualSearchSystemTest extends ContextualSearchInstrumentationBase {
-    /**
-     * Parameter provider for enabling/disabling Features under development.
-     */
-    public static class FeatureParamProvider implements ParameterProvider {
-        @Override
-        public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
-                    new ParameterSet()
-                            .value(EnabledFeature.TRANSLATIONS)
-                            .name("enableTranslations"),
-                    new ParameterSet()
-                            .value(EnabledFeature.CONTEXTUAL_TRIGGERS)
-                            .name("enableContextualTriggers"),
-                    new ParameterSet()
-                            .value(EnabledFeature.CONTEXTUAL_TRIGGERS_MENU)
-                            .name("enableContextualTriggersMenu"),
-                    new ParameterSet()
-                            .value(EnabledFeature.PRIVACY_NEUTRAL)
-                            .name("enablePrivacyNeutralEngagement"),
-                    new ParameterSet()
-                            .value(EnabledFeature.PRIVACY_NEUTRAL_WITH_RELATED_SEARCHES)
-                            .name("enablePrivacyNeutralWithRelatedSearches"));
-        }
-    }
-
-    private OmniboxTestUtils mOmnibox;
-
     @Override
     @Before
     public void setUp() throws Exception {
         mTestPage = "/chrome/test/data/android/contextualsearch/simple_test.html";
         super.setUp();
-        mOmnibox = new OmniboxTestUtils(sActivityTestRule.getActivity());
     }
 
     //============================================================================================
@@ -148,30 +115,6 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
         TestThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
         // Make sure the page is fully loaded.
         ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
-    }
-
-    //============================================================================================
-    // Omnibox
-    //============================================================================================
-
-    /**
-     * Tests whether the contextual search panel hides when omnibox is clicked.
-     */
-    //@SmallTest
-    //@Feature({"ContextualSearch"})
-    @Test
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @FlakyTest(message = "Flaked in 2017.  https://crbug.com/707529")
-    public void testHidesWhenOmniboxFocused() throws Exception {
-        clickWordNode("intelligence");
-
-        Assert.assertEquals("Intelligence", mFakeServer.getSearchTermRequested());
-        fakeResponse(false, 200, "Intelligence", "display-text", "alternate-term", false);
-        assertContainsParameters("Intelligence", "alternate-term");
-        waitForPanelToPeek();
-
-        mOmnibox.requestFocus();
-        assertPanelClosedOrUndefined();
     }
 
     //============================================================================================
@@ -250,7 +193,7 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
     public void testAppMenuSuppressedWhenExpanded(@EnabledFeature int enabledFeature)
             throws Exception {
         triggerPanelPeek();
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         pressAppMenuKey();
         assertAppMenuVisibility(false);

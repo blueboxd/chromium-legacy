@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_NETWORK_MANAGED_SIM_LOCK_NOTIFIER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -13,16 +14,11 @@
 
 namespace ash {
 
-// Notifies the user to unlock the currently active PIN locked SIM.
-// TODO(b/228093904): Surface notification during the start of each newly active
-// session if SIM is locked and policy is set to true.
-// TODO(b/228093904): Surface notification if active network changes to network
-// with SIM locked and policy is set to true.
-// TODO(b/228093904): Remove notification if user successfully unlocks SIM.
-// TODO(b/228093904): Remove notification if active network changes to network
-// without SIM locked and policy is set to true.
+// Notifies the user to unlock the currently active PIN locked SIM if the
+// restrict cellular SIM lock Global Network Configuration is set to true.
 class ASH_EXPORT ManagedSimLockNotifier
-    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
+    : public SessionObserver,
+      public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   ManagedSimLockNotifier();
   ManagedSimLockNotifier(const ManagedSimLockNotifier&) = delete;
@@ -32,6 +28,9 @@ class ASH_EXPORT ManagedSimLockNotifier
  private:
   friend class ManagedSimLockNotifierTest;
 
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+
   // CrosNetworkConfigObserver:
   void OnNetworkStateListChanged() override {}
   void OnActiveNetworksChanged(
@@ -40,11 +39,14 @@ class ASH_EXPORT ManagedSimLockNotifier
   void OnNetworkStateChanged(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
       override {}
-  void OnDeviceStateListChanged() override {}
+  void OnDeviceStateListChanged() override;
   void OnVpnProvidersChanged() override {}
   void OnNetworkCertificatesChanged() override {}
   void OnPoliciesApplied(const std::string& userhash) override;
 
+  void OnGetDeviceStateList(
+      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+          devices);
   void OnCellularNetworksList(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
@@ -52,12 +54,13 @@ class ASH_EXPORT ManagedSimLockNotifier
       chromeos::network_config::mojom::GlobalPolicyPtr global_policy);
 
   void RemoveNotification();
-  void CheckGlobalNetworkConfiguarion();
+  void CheckGlobalNetworkConfiguration();
   void MaybeShowNotification();
   void ShowNotification();
 
   static const char kManagedSimLockNotificationId[];
 
+  std::string primary_iccid_ = std::string();
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>

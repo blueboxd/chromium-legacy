@@ -24,7 +24,9 @@
 #include "chrome/browser/ui/webui/management/management_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -286,6 +288,10 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
       dict.SetStringKey("proceedLabel", l10n_util::GetStringUTF8(IDS_DONE));
       break;
     case EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation:
+      title = l10n_util::GetStringUTF8(
+          profile_creation_required_by_policy_
+              ? IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE
+              : IDS_ENTERPRISE_WELCOME_PROFILE_WILL_BE_MANAGED_TITLE);
       dict.SetBoolKey("showEnterpriseBadge", false);
       subtitle = GetManagedAccountTitleWithEmail(entry, domain_name_, email_);
       enterprise_info = l10n_util::GetStringUTF8(
@@ -351,7 +357,7 @@ std::string EnterpriseProfileWelcomeHandler::GetPictureUrl() {
   return webui::GetBitmapDataUrl(
       profiles::GetSizedAvatarIcon(
           icon.value_or(GetProfileEntry()->GetAvatarIcon(avatar_icon_size)),
-          true, avatar_icon_size, avatar_icon_size)
+          avatar_icon_size, avatar_icon_size)
           .AsBitmap());
 }
 

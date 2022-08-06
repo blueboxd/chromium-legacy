@@ -94,9 +94,12 @@ namespace cssvalue {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
  public:
+  using ContainerSizes = CSSToLengthConversionData::ContainerSizes;
+
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
                                 const Document&,
                                 const ComputedStyle&,
+                                const ContainerSizes&,
                                 const gfx::SizeF&) const;
 
   void AddStop(const CSSGradientColorStop& stop) {
@@ -181,6 +184,7 @@ class CSSLinearGradientValue final : public CSSGradientValue {
                                            bool allow_visited_style) const;
 
   bool IsUsingCurrentColor() const;
+  bool IsUsingContainerRelativeUnits() const;
 
   void TraceAfterDispatch(blink::Visitor*) const;
 
@@ -281,6 +285,7 @@ class CORE_EXPORT CSSRadialGradientValue final : public CSSGradientValue {
                                            bool allow_visited_style) const;
 
   bool IsUsingCurrentColor() const;
+  bool IsUsingContainerRelativeUnits() const;
 
   void TraceAfterDispatch(blink::Visitor*) const;
 
@@ -329,6 +334,7 @@ class CSSConicGradientValue final : public CSSGradientValue {
                                           bool allow_visited_style) const;
 
   bool IsUsingCurrentColor() const;
+  bool IsUsingContainerRelativeUnits() const;
 
   void TraceAfterDispatch(blink::Visitor*) const;
 

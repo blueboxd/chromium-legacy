@@ -23,14 +23,8 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "ui/views/linux_ui/linux_ui.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 using content::BrowserThread;
@@ -127,16 +121,6 @@ void SetBrowserStartupIsComplete() {
     ScheduleTask(base::WrapUnique(queued_task));
   g_after_startup_tasks.Get().clear();
   g_after_startup_tasks.Get().shrink_to_fit();
-
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Make sure we complete the startup notification sequence, or launchers will
-  // get confused by not receiving the expected message from the main process.
-  views::LinuxUI* linux_ui = views::LinuxUI::instance();
-  if (linux_ui)
-    linux_ui->NotifyWindowManagerStartupComplete();
-#endif
 }
 
 // Observes the first visible page load and sets the startup complete
@@ -157,6 +141,11 @@ class StartupObserver
   StartupObserver() = default;
 
   void OnStartupComplete() {
+    if (!performance_manager::PerformanceManagerImpl::IsAvailable()) {
+      // Already shutting down before startup finished. Do not notify.
+      return;
+    }
+
     // This should only be called once.
     if (!startup_complete_) {
       startup_complete_ = true;
@@ -230,7 +219,7 @@ void AfterStartupTaskUtils::StartMonitoringStartup() {
 #if !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // For Lacros, there may not be a Browser created at startup.
-  if (chromeos::LacrosService::Get()->init_params()->initial_browser_action ==
+  if (chromeos::BrowserInitParams::Get()->initial_browser_action ==
       crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&SetBrowserStartupIsComplete));

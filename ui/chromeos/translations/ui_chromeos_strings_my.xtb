@@ -7,7 +7,6 @@
 <translation id="1056775291175587022">ကွန်ရက် မရှိပါ</translation>
 <translation id="1060368002126861100"><ph name="APP_NAME" /> ဖြင့် ဖိုင်များဖွင့်ရန် ၎င်းတို့ကို ဝင်းဒိုး ဖိုင်တွဲသို့ ဦးစွာရွှေ့ပါ။</translation>
 <translation id="1062407476771304334">အစားထိုးရန်</translation>
-<translation id="1119069657431255176">Bzip2 စနစ်ဖြင့် ချုံ့ထားသော tar ဖိုင်မှတ်တမ်း</translation>
 <translation id="1119447706177454957">အတွင်းပိုင်း အမှား။</translation>
 <translation id="1120073797882051782">ဟံဂူလ် Romaja</translation>
 <translation id="112387589102719461">ပရိုဂရမ်မာ Dvorak ကီးဘုတ်ဖြင့် အင်္ဂလိပ် (ယူအက်စ်)</translation>
@@ -36,6 +35,7 @@
 <translation id="1249250836236328755">သီချင်းအမျိုးအစား</translation>
 <translation id="1254593899333212300">တိုက်ရိုက် အင်တာနက် ချိတ်ဆက်မှု</translation>
 <translation id="1272293450992660632">ပင်နံပါတ် အချက်အလက်မတူညီပါ။</translation>
+<translation id="127650757582748357">BZIP2 ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="1280820357415527819">မိုဘိုင်းကွန်ရက်များကို ရှာဖွေနေပါသည်</translation>
 <translation id="1291603679744561561">ဆင်းမ် လော့ခ်ချထားသည်</translation>
 <translation id="1293556467332435079">ဖိုင်များ</translation>
@@ -121,11 +121,11 @@
 <translation id="1942765061641586207">ပုံကြည်လင်ပြတ်သားမှု</translation>
 <translation id="1972984168337863910">ဖိုင်တုံ့ပြန်မှု အကန့်များ ချဲ့ပြရန်</translation>
 <translation id="1995337122023280937">ဖိုင်တည်နေရာသို့ သွားရန်</translation>
+<translation id="1996806196681857869">Z ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="2001796770603320721">Drive တွင် စီမံပါ</translation>
 <translation id="2009067268969781306">ဒရိုက်ဗ်တစ်ခုကို ဖော်မက်ချခြင်းသည် ၎င်းပေါ်ရှိ ဒေတာများအားလုံးကို ဖျက်လိုက်ပါမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍ မရပါ။</translation>
 <translation id="2025955442973426285">တီဂရင်းညာ</translation>
 <translation id="2028997212275086731">RAR စနစ်ဖြင့် ချုံ့ထားသော ဖိုင်မှတ်တမ်း</translation>
-<translation id="2036414735548252477">LZMA ဖြင့် ချုံ့ထားသည့် tar မှတ်တမ်း</translation>
 <translation id="2037845485764049925">ရုရှား</translation>
 <translation id="2044023416777079300">မိုဒမ်ကို မှတ်ပုံတင်မထားပါ</translation>
 <translation id="2046702855113914483">ခေါက်ဆွဲ</translation>
@@ -144,7 +144,6 @@
 <translation id="2163152940313951844">အက္ခရာ မမှန်ကန်ပါ- <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">ယူအက်စ်နိုင်ငံတကာ PC ကီးဘုတ်ဖြင့် ပေါ်တူဂီ</translation>
 <translation id="2198315389084035571">ရိုးရှင်း တရုတ်</translation>
-<translation id="2208158072373999562">Zip မှတ်တမ်း</translation>
 <translation id="22085916256174561">ကိုရီးယား</translation>
 <translation id="2208919847696382164">Linux ဖြင့် ထည့်သွင်းရန်</translation>
 <translation id="2225536596944493418">အကြောင်းအရာ <ph name="NUMBER_OF_ITEMS" />ခုကို ဖျက်လိုသည်မှာ သေချာသလား။</translation>
@@ -209,8 +208,10 @@
 <translation id="2771816809568414714">ဒိန်ခဲ</translation>
 <translation id="2781645665747935084">ဘယ်လ်ဂျီယံ</translation>
 <translation id="2782104745158847185">Linux အပလီကေးရှင်းကို ထည့်ရာတွင် အမှားအယွင်းရှိနေသည်</translation>
+<translation id="2788520643285360081">7-Zip ဖိုင်</translation>
 <translation id="2803375539583399270">ပင်နံပါတ် ထည့်ပါ</translation>
 <translation id="2820957248982571256">ရှာဖွေနေသည်...</translation>
+<translation id="2822595620066756134">GZIP ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="2830077785865012357">တရုတ် ကျူရင်</translation>
 <translation id="2843806747483486897">ပုံသေကို ပြောင်းရန်...</translation>
 <translation id="2850124913210091882">အရံသိမ်းဆည်းသည်</translation>
@@ -302,6 +303,7 @@
 <translation id="357479282490346887">လီသွေနီယံ</translation>
 <translation id="3587482841069643663">အားလုံး</translation>
 <translation id="3592251141500063301"><ph name="FILE_NAME" /> ကို အော့ဖ်လိုင်းသုံးနိုင်အောင် ပြုလုပ်၍မရပါ</translation>
+<translation id="3593874215226880809">LZIP ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">ကနေဒါမွေး ပြင်သစ်</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
@@ -314,6 +316,7 @@
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> ကို ပယ်ဖျက်မည်။</translation>
 <translation id="3690128548376345212">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက် <ph name="NETWORK_INDEX" />၊<ph name="NETWORK_NAME" />၊ ဖွင့်မထားပါ၊ <ph name="CONNECTION_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />%၊ အသေးစိတ်</translation>
 <translation id="3691184985318546178">ဆင်ဟာလာ</translation>
+<translation id="3703620396751288986">ZIP ဖိုင်</translation>
 <translation id="3726463242007121105">ဤစက်ပစ္စည်း၏ ဖိုင်စနစ်ကို မထောက်ပံ့သောကြောင့် ဖွင့်၍မရပါ။</translation>
 <translation id="3727148787322499904">ဤဆက်တင်ကို ပြောင်းလဲခြင်းအားဖြင့် မျှဝေထားသည့် ကွန်ရက်အားလုံးကို အကျိုးသက်ရောက်စေပါလိမ့်မည်</translation>
 <translation id="3737576078404241332">ဆိုက်ဘားမှ ဖယ်ရှားရန်</translation>
@@ -415,6 +418,7 @@
 <translation id="4646813851450205600">Qwerty ကီးဘုတ်ဖြင့် ချက်</translation>
 <translation id="4656777537938206294">ဖိုင်များကို အော့ဖ်လိုင်းသုံးနိုင်ရန် ပြုလုပ်ခြင်း</translation>
 <translation id="4658782175094886150">နှင်းတောထဲကလူ</translation>
+<translation id="4661996069183330363">TAR ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="4669606053856530811">ဤအရာများကို '<ph name="SOURCE_NAME" />' ၏ အဖွဲ့ဝင်များနှင့် မျှဝေထားခြင်း မရှိလျင် ၎င်းတို့သည် အသုံးပြုခွင့် ဆုံးရှုံးနိုင်ပါသည်။</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">ဆွီဒင်</translation>
@@ -449,7 +453,6 @@
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ဘိုက်</translation>
 <translation id="4880214202172289027">အတိုးအကျယ် ဆလိုက်ဒါး</translation>
 <translation id="4881695831933465202">ဖွင့်</translation>
-<translation id="4886199584824489598">Bzip2 ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="4900532980794411603">Parallels Desktop အား မျှဝေရန်</translation>
 <translation id="4902546322522096650">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ <ph name="SECURITY_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />%၊ ချိတ်ဆက်ရန်</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> ကို မိတ္ထူပွားရန် အသင့်ဖြစ်ပါပြီ</translation>
@@ -618,6 +621,7 @@
 <translation id="6220423280121890987">ပန်ချာပီ</translation>
 <translation id="6224240818060029162">ဒိန်းမတ်</translation>
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> ဖော်မက်ချရန်</translation>
+<translation id="6224665423283788195">Z စံနှုန်းဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="6227235786875481728">ဒီဖိုင်ကို ဖွင့် မရနိုင်ခဲ့ပါ။</translation>
 <translation id="6241349547798190358">ဒတ်ချ် (ဘယ်လ်ဂျီယံ)</translation>
 <translation id="6267547857941397424">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="PHONE_NAME" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />%၊ ဖုန်းဘက်ထရီ <ph name="BATTERY_STATUS" />%၊ ချိတ်ဆက်ရန်</translation>
@@ -641,6 +645,7 @@
 <translation id="6423031066725912715">TCVN ကီးဘုတ်ဖြင့် ဗီယက်နမ်</translation>
 <translation id="6485131920355264772">နေရာခြားအချက်လက် ရယူခြင်း မအောင်မြင်ပါ</translation>
 <translation id="6495925982925244349">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ <ph name="SECURITY_STATUS" />၊ <ph name="CONNECTION_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />% သင့် 'ကြီးကြပ်သူ' က စီမံထားသည်၊ အသေးစိတ်များ</translation>
+<translation id="649877868557234318"><ph name="FILE_NAME" /> ကို <ph name="FOLDER_NAME" /> တွင် ထုတ်ယူနေသည်</translation>
 <translation id="6499681088828539489">မျှဝေထားသည့် ကွန်ရက်များအတွက် ပရောက်စီများကို ခွင့်မပြုရန်</translation>
 <translation id="6509122719576673235">နော်ဝေ ဂျီယန်</translation>
 <translation id="6528513914570774834">ဤစက်ပစ္စည်း၏ အခြားအသုံးပြုသူများအား ဤကွန်ရက်ကို အသုံးပြုခွင့်ပေးရန်</translation>
@@ -669,7 +674,6 @@
 <translation id="6806699711453372963">Linux မျှဝေခြင်းကို စီမံရန်</translation>
 <translation id="6806796368146926706">ဂျပန်ကီးဘုတ်ဖြင့် အက္ခရာနှင့် ကိန်းဂဏန်းများ</translation>
 <translation id="6808193438228982088">မြေခွေး</translation>
-<translation id="6820687829547641339">Gzip စနစ်ဖြင့် ချုံ့ထားသော tar ဖိုင်မှတ်တမ်း</translation>
 <translation id="6823166707458800069">ဤဖိုင်တွဲတွင်သိမ်းထားသည့် ဖိုင်အားလုံးကို အွန်လိုင်းတွင် အလိုအလျောက် အရန်သိမ်းသည်။</translation>
 <translation id="6825883775269213504">ရုရှား</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> ကို ရွေးချယ်မှုမှ ဖယ်ရှားထားသည်။</translation>
@@ -818,7 +822,6 @@
 <translation id="7925686952655276919">စင့်ခ်လုပ်ရန် အတွက် မိုဘိုင်းဒေတာကို မသုံးပါနှင့်</translation>
 <translation id="7928710562641958568">ကိရိယာကို ထုတ်ပစ်ရန်</translation>
 <translation id="7943385054491506837">US Colemak</translation>
-<translation id="7948417415021769876">7z မှတ်တမ်း</translation>
 <translation id="7953739707111622108">ဤစက်ပစ္စည်း၏ ဖိုင်စနစ်ကို မသိသောကြောင့် ဖွင့်၍မရပါ။</translation>
 <translation id="7969525169268594403">ဆလိုဗင်နီးယား</translation>
 <translation id="7972920761225148017">ပြင်သစ် (ဆွစ်ဇာလန်)</translation>
@@ -860,7 +863,6 @@
 <translation id="8297012244086013755">ဟံဂူလ် ၃ စုံ(Shift မသုံး)</translation>
 <translation id="8299269255470343364">ဂျပန်</translation>
 <translation id="8300849813060516376">OTASP မအောင်မြင်ပါ</translation>
-<translation id="8308481408797647857">XZ ဖြင့် ချုံ့ထားသည့် tar မှတ်တမ်း</translation>
 <translation id="8312871300878166382">ဖိုင်တွဲထဲသို့ ကူးထည့်ရန်</translation>
 <translation id="8329978297633540474">ရိုးရိုး စာသား</translation>
 <translation id="8335587457941836791">စင် ပေါ်မှ ထုတ်ပစ်ရန်</translation>
@@ -882,7 +884,6 @@
 <translation id="8461467696380332069">ဖိုင်ကို ညာဘက်ခလုတ်နှိပ်ပြီး စင်ပေါ်ရှိ သင့်ဖိုင်များကို အမြန်သုံးခွင့်အတွက် "စင်တွင်ပင်ထိုးရန်" ကို ရွေးပါ။</translation>
 <translation id="8461914792118322307">ပရောက်စီ</translation>
 <translation id="8463494891489624050">ဗီယက်နမ် VIQR</translation>
-<translation id="8466234950814670489">Tar စနစ်ဖြင့် ချုံ့ထားသော ဖိုင်မှတ်တမ်း</translation>
 <translation id="8475647382427415476">Google Drive က "<ph name="FILENAME" />" ကို ယခုချက်ချင်း စင့်က် မလုပ်နိုင်ခဲ့ပါ။ Google Drive သည် နောက်မှာ ထပ်စမ်းကြည့်မည်။</translation>
 <translation id="8477649328507734757">လှည့်ခြင်း</translation>
 <translation id="8484284835977497781">သင်၏ လတ်တလောဓာတ်ပုံများမှ ရွေးပါ။</translation>
@@ -934,6 +935,7 @@
 <translation id="8903931173357132290">ဘွဲ့ရပုဂ္ဂိုလ်</translation>
 <translation id="8912078710089354287">အမြီးလှုပ်နေသည့်ခွေး</translation>
 <translation id="8919081441417203123">ဒိန်းမတ်</translation>
+<translation id="8965273390142984105">LZOP ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="8965697826696209160">နေရာ လုံလုံလောက်လောက် မရှိပါ။</translation>
 <translation id="8997962250644902079">တရုတ် (ရိုးရာ) ပင်ယင်</translation>
 <translation id="9003940392834790328">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ <ph name="CONNECTION_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />%၊ သင့် 'ကြီးကြပ်သူ' က စီမံထားသည်၊ အသေးစိတ်များ</translation>
@@ -971,7 +973,6 @@
 <translation id="943972244133411984">ပြုပြင်ထားသူ</translation>
 <translation id="945522503751344254">အကြံပြုချက် ပေးပို့မည်</translation>
 <translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> မှ<ph name="TO_ENTRY_NAME" /> သို့ ထည့်သွင်းမှု အပိုင်းအခြား <ph name="ENTRY_COUNT" /> ခု ကို ရွေးထားသည်။</translation>
-<translation id="961973045258256291">Gzip ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="965477715979482472">အင်္ဂလိပ် (တောင်အာဖရိက)</translation>
 <translation id="981121421437150478">အော့ဖ်လိုင်း</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" အမည်ဖြင့် ဖိုင်ရှိပြီးဖြစ်ပါသည်။ ၎င်းကို အစားထိုးလိုပါသလား။</translation>

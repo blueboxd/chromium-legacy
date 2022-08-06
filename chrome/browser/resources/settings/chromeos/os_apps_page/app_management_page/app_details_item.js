@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '//resources/cr_components/localized_link/localized_link.js';
-import '//resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_components/localized_link/localized_link.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 
-import {AppType, InstallSource} from '//resources/cr_components/app_management/constants.js';
-import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {AppType, InstallSource} from 'chrome://resources/cr_components/app_management/constants.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 
@@ -151,9 +151,11 @@ class AppManagementAppDetailsItem extends AppManagementAppDetailsItemBase {
       case AppType.kArc:
         return this.i18n('appManagementAppDetailsTypeAndroid');
       case AppType.kChromeApp:
+      case AppType.kStandaloneBrowserChromeApp:
         return this.i18n('appManagementAppDetailsTypeChrome');
       case AppType.kWeb:
       case AppType.kExtension:
+      case AppType.kStandaloneBrowserExtension:
         return this.i18n('appManagementAppDetailsTypeWeb');
       case AppType.kBuiltIn:
       case AppType.kSystemWeb:

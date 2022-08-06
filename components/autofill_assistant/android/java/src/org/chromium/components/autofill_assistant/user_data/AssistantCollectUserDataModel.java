@@ -63,6 +63,38 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         }
     }
 
+    /** Container for configuration to build our data origin notice. */
+    public static class DataOriginNoticeConfiguration {
+        private final String mLinkText;
+        private final String mTitle;
+        private final String mText;
+        private final String mButtonText;
+
+        public DataOriginNoticeConfiguration(
+                String linkText, String title, String text, String buttonText) {
+            mLinkText = linkText;
+            mTitle = title;
+            mText = text;
+            mButtonText = buttonText;
+        }
+
+        public String getLinkText() {
+            return mLinkText;
+        }
+
+        public String getTitle() {
+            return mTitle;
+        }
+
+        public String getText() {
+            return mText;
+        }
+
+        public String getButtonText() {
+            return mButtonText;
+        }
+    }
+
     public static final WritableObjectPropertyKey<AssistantCollectUserDataDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
@@ -188,7 +220,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> ACCOUNT_EMAIL =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableBooleanPropertyKey USE_GMS_CORE_EDIT_DIALOGS =
+    public static final WritableBooleanPropertyKey USE_ALTERNATIVE_EDIT_DIALOGS =
             new WritableBooleanPropertyKey();
 
     public static final WritableObjectPropertyKey<byte[]> ADD_PAYMENT_INSTRUMENT_ACTION_TOKEN =
@@ -196,16 +228,18 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<byte[]> INITIALIZE_ADDRESS_COLLECTION_PARAMS =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<String> DATA_ORIGIN_LINK_TEXT =
-            new WritableObjectPropertyKey<>();
-    public static final WritableObjectPropertyKey<String> DATA_ORIGIN_DIALOG_TITLE =
-            new WritableObjectPropertyKey<>();
-    public static final WritableObjectPropertyKey<String> DATA_ORIGIN_DIALOG_TEXT =
-            new WritableObjectPropertyKey<>();
-    public static final WritableObjectPropertyKey<String> DATA_ORIGIN_DIALOG_BUTTON_TEXT =
-            new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<DataOriginNoticeConfiguration>
+            DATA_ORIGIN_NOTICE_CONFIGURATION = new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey ENABLE_UI_INTERACTIONS =
+            new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey MARK_CONTACTS_LOADING =
+            new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey MARK_PHONE_NUMBERS_LOADING =
+            new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey MARK_SHIPPING_ADDRESSES_LOADING =
+            new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey MARK_PAYMENT_METHODS_LOADING =
             new WritableBooleanPropertyKey();
 
     public AssistantCollectUserDataModel() {
@@ -222,10 +256,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT, INFO_SECTION_TEXT_CENTER,
                 GENERIC_USER_INTERFACE_PREPENDED, GENERIC_USER_INTERFACE_APPENDED,
                 CONTACT_SUMMARY_DESCRIPTION_OPTIONS, CONTACT_FULL_DESCRIPTION_OPTIONS,
-                SHOULD_STORE_USER_DATA_CHANGES, USE_GMS_CORE_EDIT_DIALOGS, ACCOUNT_EMAIL,
+                SHOULD_STORE_USER_DATA_CHANGES, USE_ALTERNATIVE_EDIT_DIALOGS, ACCOUNT_EMAIL,
                 ADD_PAYMENT_INSTRUMENT_ACTION_TOKEN, INITIALIZE_ADDRESS_COLLECTION_PARAMS,
-                DATA_ORIGIN_LINK_TEXT, DATA_ORIGIN_DIALOG_TITLE, DATA_ORIGIN_DIALOG_TEXT,
-                DATA_ORIGIN_DIALOG_BUTTON_TEXT, ENABLE_UI_INTERACTIONS);
+                DATA_ORIGIN_NOTICE_CONFIGURATION, ENABLE_UI_INTERACTIONS, MARK_CONTACTS_LOADING,
+                MARK_PHONE_NUMBERS_LOADING, MARK_SHIPPING_ADDRESSES_LOADING,
+                MARK_PAYMENT_METHODS_LOADING);
 
         /*
          * Set initial state for basic type properties (others are implicitly null).
@@ -250,11 +285,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(AVAILABLE_BILLING_ADDRESSES, Collections.emptyList());
         set(INFO_SECTION_TEXT, "");
         set(ACCOUNT_EMAIL, "");
-        set(DATA_ORIGIN_LINK_TEXT, "");
-        set(DATA_ORIGIN_DIALOG_TITLE, "");
-        set(DATA_ORIGIN_DIALOG_TEXT, "");
-        set(DATA_ORIGIN_DIALOG_BUTTON_TEXT, "");
         set(ENABLE_UI_INTERACTIONS, true);
+        set(MARK_CONTACTS_LOADING, false);
+        set(MARK_PHONE_NUMBERS_LOADING, false);
+        set(MARK_SHIPPING_ADDRESSES_LOADING, false);
+        set(MARK_PAYMENT_METHODS_LOADING, false);
     }
 
     @CalledByNative
@@ -398,23 +433,10 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setDataOriginLinkText(String text) {
-        set(DATA_ORIGIN_LINK_TEXT, text);
-    }
-
-    @CalledByNative
-    private void setDataOriginDialogTitle(String title) {
-        set(DATA_ORIGIN_DIALOG_TITLE, title);
-    }
-
-    @CalledByNative
-    private void setDataOriginDialogText(String text) {
-        set(DATA_ORIGIN_DIALOG_TEXT, text);
-    }
-
-    @CalledByNative
-    private void setDataOriginDialogButtonText(String text) {
-        set(DATA_ORIGIN_DIALOG_BUTTON_TEXT, text);
+    private void setDataOriginNoticeConfiguration(
+            String linkText, String title, String text, String buttonText) {
+        set(DATA_ORIGIN_NOTICE_CONFIGURATION,
+                new DataOriginNoticeConfiguration(linkText, title, text, buttonText));
     }
 
     /** Creates an empty list of login options. */
@@ -627,8 +649,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setUseGmsCoreEditDialogs(boolean useGmsCoreEditDialogs) {
-        set(USE_GMS_CORE_EDIT_DIALOGS, useGmsCoreEditDialogs);
+    private void setUseAlternativeEditDialogs(boolean useGmsCoreEditDialogs) {
+        set(USE_ALTERNATIVE_EDIT_DIALOGS, useGmsCoreEditDialogs);
     }
 
     @CalledByNative
@@ -649,5 +671,25 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setEnableUiInteractions(boolean enable) {
         set(ENABLE_UI_INTERACTIONS, enable);
+    }
+
+    @CalledByNative
+    private void setMarkContactsLoading(boolean loading) {
+        set(MARK_CONTACTS_LOADING, loading);
+    }
+
+    @CalledByNative
+    private void setMarkPhoneNumbersLoading(boolean loading) {
+        set(MARK_PHONE_NUMBERS_LOADING, loading);
+    }
+
+    @CalledByNative
+    private void setMarkShippingAddressesLoading(boolean loading) {
+        set(MARK_SHIPPING_ADDRESSES_LOADING, loading);
+    }
+
+    @CalledByNative
+    private void setMarkPaymentMethodsLoading(boolean loading) {
+        set(MARK_PAYMENT_METHODS_LOADING, loading);
     }
 }

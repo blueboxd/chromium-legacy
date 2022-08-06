@@ -494,6 +494,14 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
+  void ForceNetworkQualityEstimatorReportWifiAsSlow2G(
+      SimulateNetworkChangeCallback callback) override {
+    network::NetworkService::GetNetworkServiceForTesting()
+        ->network_quality_estimator()
+        ->ForceReportWifiAsSlow2GForTesting();
+    std::move(callback).Run();
+  }
+
   void SimulateCrash() override {
     LOG(ERROR) << "Intentionally terminating current process to simulate"
                   " NetworkService crash for testing.";
@@ -630,7 +638,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
 
   void OpenFile(const base::FilePath& path,
                 base::OnceCallback<void(bool)> callback) override {
-    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
     std::move(callback).Run(file.IsValid());
   }
 

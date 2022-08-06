@@ -34,6 +34,10 @@ namespace value_store {
 class ValueStore;
 }
 
+namespace {
+class WallpaperControllerClientImplTest;
+}
+
 // Handles chrome-side wallpaper control alongside the ash-side controller.
 class WallpaperControllerClientImpl
     : public ash::WallpaperControllerClient,
@@ -82,7 +86,6 @@ class WallpaperControllerClientImpl
   void FetchDailyGooglePhotosPhoto(
       const AccountId& account_id,
       const std::string& album_id,
-      const absl::optional<std::string>& current_photo_id,
       FetchGooglePhotosPhotoCallback callback) override;
   void FetchGooglePhotosAccessToken(
       const AccountId& account_id,
@@ -165,6 +168,7 @@ class WallpaperControllerClientImpl
   void RecordWallpaperSourceUMA(const ash::WallpaperType type);
 
  private:
+  friend class WallpaperControllerClientImplTest;
   // Initialize the controller for this client and some wallpaper directories.
   void InitController();
 
@@ -209,7 +213,7 @@ class WallpaperControllerClientImpl
           response);
 
   void OnGooglePhotosDailyAlbumFetched(
-      const absl::optional<std::string>& current_photo_id,
+      const AccountId& account_id,
       FetchGooglePhotosPhotoCallback callback,
       ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
           response);

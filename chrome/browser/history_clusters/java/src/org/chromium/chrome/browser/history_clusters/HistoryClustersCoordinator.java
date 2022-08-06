@@ -20,13 +20,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.Function;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
-import org.chromium.chrome.browser.history_clusters.HistoryClustersToolbarProperties.QueryState;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -48,6 +48,7 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
     private HistoryClustersToolbar mToolbar;
     private SelectionDelegate mSelectionDelegate;
     private SelectableListLayout mSelectableListLayout;
+    private Function<ViewGroup, ViewGroup> mToggleViewFactory;
 
     /**
      * Construct a new HistoryClustersCoordinator.
@@ -60,11 +61,16 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
      *         tab, e.g. when we're operating in a dedicated history activity.
      * @param openUrlIntentCreator Function that creates an intent that opens the given url in the
      *         correct main browsing activity.
+     * @param toggleViewFactory Function that provides a toggle view container for the given parent
+     *         ViewGroup. This toggle is used to switch between the Journeys UI and the regular
+     *         history UI and is thus controlled by our parent component.
      */
     public HistoryClustersCoordinator(@NonNull Profile profile, @NonNull Context context,
             Supplier<Intent> historyActivityIntentFactory, @Nullable Supplier<Tab> tabSupplier,
-            Function<GURL, Intent> openUrlIntentCreator) {
+            Function<GURL, Intent> openUrlIntentCreator, TemplateUrlService templateUrlService,
+            Function<ViewGroup, ViewGroup> toggleViewFactory) {
         mContext = context;
+        mToggleViewFactory = toggleViewFactory;
         mModelList = new ModelList();
         mToolbarModel = new PropertyModel.Builder(HistoryClustersToolbarProperties.ALL_KEYS)
                                 .with(HistoryClustersToolbarProperties.QUERY_STATE,
@@ -73,7 +79,7 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
         mMediator = new HistoryClustersMediator(HistoryClustersBridge.getForProfile(profile),
                 new LargeIconBridge(profile), context, context.getResources(), mModelList,
                 mToolbarModel, historyActivityIntentFactory, tabSupplier, tabSupplier == null,
-                openUrlIntentCreator);
+                openUrlIntentCreator, System::currentTimeMillis, templateUrlService);
     }
 
     public void destroy() {
@@ -83,8 +89,8 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
         }
     }
 
-    public void setQuery(String query) {
-        mMediator.startSearch(query);
+    public void setQueryState(QueryState queryState) {
+        mMediator.setQueryState(queryState);
     }
 
     /**
@@ -109,6 +115,12 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
         mAdapter = new SimpleRecyclerViewAdapter(mModelList);
         mAdapter.registerType(
                 ItemType.VISIT, this::buildVisitView, HistoryClustersViewBinder::bindVisitView);
+        mAdapter.registerType(ItemType.CLUSTER, this::buildClusterView,
+                HistoryClustersViewBinder::bindClusterView);
+        mAdapter.registerType(ItemType.RELATED_SEARCHES, this::buildRelatedSearchesView,
+                HistoryClustersViewBinder::bindRelatedSearchesView);
+        mAdapter.registerType(ItemType.TOGGLE, mToggleViewFactory::apply,
+                HistoryClustersViewBinder::bindToggleView);
 
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         mActivityContentView = (ViewGroup) layoutInflater.inflate(
@@ -121,6 +133,7 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
         recyclerView.setLayoutManager(new LinearLayoutManager(
                 recyclerView.getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.setItemAnimator(null);
+        recyclerView.addOnScrollListener(mMediator);
 
         mSelectionDelegate = new SelectionDelegate<>();
         mToolbar = (HistoryClustersToolbar) mSelectableListLayout.initializeToolbar(
@@ -140,6 +153,13 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
         mActivityViewInflated = true;
     }
 
+    private View buildClusterView(ViewGroup parent) {
+        SelectableItemView<HistoryCluster> clusterView =
+                (SelectableItemView<HistoryCluster>) LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.history_cluster, parent, false);
+        return clusterView;
+    }
+
     private View buildVisitView(ViewGroup parent) {
         SelectableItemView<ClusterVisit> itemView =
                 (SelectableItemView<ClusterVisit>) LayoutInflater.from(parent.getContext())
@@ -147,10 +167,15 @@ public class HistoryClustersCoordinator implements OnMenuItemClickListener {
         return itemView;
     }
 
+    private View buildRelatedSearchesView(ViewGroup parent) {
+        return (HistoryClustersRelatedSearchesChipLayout) LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.history_clusters_related_searches_view, parent, false);
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         if (menuItem.getItemId() == R.id.search_menu_id) {
-            mMediator.startSearch("");
+            mMediator.setQueryState(QueryState.forQuery(""));
             return true;
         }
         return false;

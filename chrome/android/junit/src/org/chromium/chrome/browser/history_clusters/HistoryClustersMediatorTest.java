@@ -6,13 +6,20 @@ package org.chromium.chrome.browser.history_clusters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.AdditionalMatchers.geq;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.view.View;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,18 +41,23 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.shadows.ShadowAppCompatResources;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** Unit tests for HistoryClustersMediator. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowAppCompatResources.class})
 public class HistoryClustersMediatorTest {
     private static final String ITEM_URL_SPEC = "https://www.wombats.com/";
 
@@ -72,13 +84,25 @@ public class HistoryClustersMediatorTest {
     private GURL mMockGurl;
     @Mock
     private Function<GURL, Intent> mUrlIntentCreator;
+    @Mock
+    private HistoryClustersMediator.Clock mClock;
+    @Mock
+    private TemplateUrlService mTemplateUrlService;
+    @Mock
+    private RecyclerView mRecyclerView;
+    @Mock
+    private LinearLayoutManager mLayoutManager;
 
     private ClusterVisit mVisit1;
     private ClusterVisit mVisit2;
     private ClusterVisit mVisit3;
+    private ClusterVisit mVisit4;
     private HistoryCluster mCluster1;
     private HistoryCluster mCluster2;
-    private HistoryClustersResult mHistoryClustersResult;
+    private HistoryCluster mCluster3;
+    private HistoryClustersResult mHistoryClustersResultWithQuery;
+    private HistoryClustersResult mHistoryClustersFollowupResultWithQuery;
+    private HistoryClustersResult mHistoryClustersResultEmptyQuery;
     private ModelList mModelList;
     private PropertyModel mToolbarModel;
     private Intent mIntent = new Intent();
@@ -92,20 +116,28 @@ public class HistoryClustersMediatorTest {
         doReturn(mResources).when(mContext).getResources();
         doReturn(ITEM_URL_SPEC).when(mMockGurl).getSpec();
         doReturn(mIntent).when(mUrlIntentCreator).apply(mMockGurl);
+        doReturn(mLayoutManager).when(mRecyclerView).getLayoutManager();
         mModelList = new ModelList();
         mToolbarModel = new PropertyModel(HistoryClustersToolbarProperties.ALL_KEYS);
         mMediator = new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
                 mModelList, mToolbarModel, mHistoryActivityIntentFactory, mTabSupplier, false,
-                mUrlIntentCreator);
+                mUrlIntentCreator, mClock, mTemplateUrlService);
         mVisit1 = new ClusterVisit(1.0F, mGurl1, "Title 1");
-        mVisit2 = new ClusterVisit(1.0F, mGurl2, "Title 1");
-        mVisit3 = new ClusterVisit(1.0F, mGurl3, "Title 1");
-        mCluster1 = new HistoryCluster(
-                Arrays.asList("foo"), Arrays.asList(mVisit1, mVisit2), "label1", new ArrayList<>());
-        mCluster2 = new HistoryCluster(
-                Arrays.asList("bar", "baz"), Arrays.asList(mVisit3), "label2", new ArrayList<>());
-        mHistoryClustersResult = new HistoryClustersResult(
-                Arrays.asList(mCluster1, mCluster2), "query", false, false);
+        mVisit2 = new ClusterVisit(1.0F, mGurl2, "Title 2");
+        mVisit3 = new ClusterVisit(1.0F, mGurl3, "Title 3");
+        mVisit4 = new ClusterVisit(1.0F, mGurl3, "Title 4");
+        mCluster1 = new HistoryCluster(Arrays.asList("foo"), Arrays.asList(mVisit1, mVisit2),
+                "label1", new ArrayList<>(), 456L, Arrays.asList("search 1", "search 2"));
+        mCluster2 = new HistoryCluster(Arrays.asList("bar", "baz"), Arrays.asList(mVisit3),
+                "label2", new ArrayList<>(), 123L, Collections.emptyList());
+        mCluster3 = new HistoryCluster(Arrays.asList("key"), Arrays.asList(mVisit4), "label3",
+                new ArrayList<>(), 789L, Collections.EMPTY_LIST);
+        mHistoryClustersResultWithQuery = new HistoryClustersResult(
+                Arrays.asList(mCluster1, mCluster2), "query", true, false);
+        mHistoryClustersFollowupResultWithQuery =
+                new HistoryClustersResult(Arrays.asList(mCluster3), "query", false, true);
+        mHistoryClustersResultEmptyQuery =
+                new HistoryClustersResult(Arrays.asList(mCluster1, mCluster2), "", false, false);
     }
 
     @Test
@@ -118,18 +150,54 @@ public class HistoryClustersMediatorTest {
         Promise<HistoryClustersResult> promise = new Promise<>();
         doReturn(promise).when(mBridge).queryClusters("query");
 
-        mMediator.query("query");
+        mMediator.startQuery("query");
         assertEquals(mModelList.size(), 0);
 
-        fulfillPromise(promise, mHistoryClustersResult);
+        fulfillPromise(promise, mHistoryClustersResultWithQuery);
 
-        assertEquals(mModelList.size(), 3);
-        ListItem item = mModelList.get(0);
-        assertEquals(item.type, ItemType.VISIT);
-        PropertyModel model = item.model;
-        assertTrue(model.getAllSetProperties().containsAll(
+        assertEquals(mModelList.size(), 6);
+        ListItem clusterItem = mModelList.get(0);
+        assertEquals(clusterItem.type, ItemType.CLUSTER);
+        PropertyModel clusterModel = clusterItem.model;
+        assertTrue(clusterModel.getAllSetProperties().containsAll(Arrays.asList(
+                HistoryClustersItemProperties.CLICK_HANDLER, HistoryClustersItemProperties.LABEL,
+                HistoryClustersItemProperties.END_BUTTON_DRAWABLE)));
+        assertEquals(shadowOf(clusterModel.get(HistoryClustersItemProperties.END_BUTTON_DRAWABLE))
+                             .getCreatedFromResId(),
+                R.drawable.ic_expand_more_black_24dp);
+
+        ListItem visitItem = mModelList.get(1);
+        assertEquals(visitItem.type, ItemType.VISIT);
+        PropertyModel visitModel = visitItem.model;
+        assertTrue(visitModel.getAllSetProperties().containsAll(
                 Arrays.asList(HistoryClustersItemProperties.CLICK_HANDLER,
                         HistoryClustersItemProperties.TITLE, HistoryClustersItemProperties.URL)));
+
+        ListItem relatedSearchesItem = mModelList.get(3);
+        assertEquals(relatedSearchesItem.type, ItemType.RELATED_SEARCHES);
+        PropertyModel relatedSearchesModel = relatedSearchesItem.model;
+        assertTrue(relatedSearchesModel.getAllSetProperties().containsAll(
+                Arrays.asList(HistoryClustersItemProperties.CHIP_CLICK_HANDLER,
+                        HistoryClustersItemProperties.RELATED_SEARCHES)));
+    }
+    @Test
+    public void testEmptyQuery() {
+        Promise<HistoryClustersResult> promise = new Promise<>();
+        doReturn(promise).when(mBridge).queryClusters("");
+
+        mMediator.startQuery("");
+        fulfillPromise(promise, mHistoryClustersResultEmptyQuery);
+
+        // Two clusters + the toggle view
+        assertEquals(mModelList.size(), mHistoryClustersResultEmptyQuery.getClusters().size() + 1);
+        ListItem item = mModelList.get(0);
+        assertEquals(item.type, ItemType.TOGGLE);
+
+        item = mModelList.get(1);
+        assertEquals(item.type, ItemType.CLUSTER);
+        PropertyModel model = item.model;
+        assertTrue(model.getAllSetProperties().containsAll(Arrays.asList(
+                HistoryClustersItemProperties.CLICK_HANDLER, HistoryClustersItemProperties.TITLE)));
     }
 
     @Test
@@ -171,8 +239,8 @@ public class HistoryClustersMediatorTest {
     }
 
     @Test
-    public void testStartSearch() {
-        mMediator.startSearch("pandas");
+    public void testSetQueryState() {
+        mMediator.setQueryState(QueryState.forQuery("pandas"));
         assertEquals(mToolbarModel.get(HistoryClustersToolbarProperties.QUERY_STATE).getQuery(),
                 "pandas");
     }
@@ -186,13 +254,92 @@ public class HistoryClustersMediatorTest {
 
     @Test
     public void testNavigateSeparateActivity() {
-        HistoryClustersMediator standaloneMediator = new HistoryClustersMediator(mBridge,
-                mLargeIconBridge, mContext, mResources, mModelList, mToolbarModel,
-                mHistoryActivityIntentFactory, mTabSupplier, true, mUrlIntentCreator);
+        HistoryClustersMediator standaloneMediator =
+                new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
+                        mModelList, mToolbarModel, mHistoryActivityIntentFactory, mTabSupplier,
+                        true, mUrlIntentCreator, mClock, mTemplateUrlService);
         standaloneMediator.navigateToItemUrl(mMockGurl);
 
         verify(mUrlIntentCreator).apply(mMockGurl);
         verify(mContext).startActivity(mIntent);
+    }
+
+    @Test
+    public void testToggleClusterVisibility() {
+        PropertyModel clusterModel = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
+        PropertyModel visitModel1 = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
+        PropertyModel visitModel2 = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
+        List<ListItem> visitItems = Arrays.asList(new ListItem(ItemType.VISIT, visitModel1),
+                new ListItem(ItemType.VISIT, visitModel2));
+
+        mMediator.hideCluster(mCluster1, clusterModel, visitItems);
+
+        assertEquals(visitModel1.get(HistoryClustersItemProperties.VISIBILITY), View.GONE);
+        assertEquals(visitModel2.get(HistoryClustersItemProperties.VISIBILITY), View.GONE);
+
+        mMediator.showCluster(mCluster1, clusterModel, visitItems);
+
+        assertEquals(visitModel1.get(HistoryClustersItemProperties.VISIBILITY), View.VISIBLE);
+        assertEquals(visitModel2.get(HistoryClustersItemProperties.VISIBILITY), View.VISIBLE);
+    }
+
+    @Test
+    public void testGetTimeString() {
+        String dayString = "1 day ago";
+        String hourString = "1 hour ago";
+        String minuteString = "1 minute ago";
+        String justNowString = "Just now";
+
+        doReturn(dayString)
+                .when(mResources)
+                .getQuantityString(eq(R.plurals.n_days_ago), geq(1), geq(1));
+        doReturn(hourString)
+                .when(mResources)
+                .getQuantityString(eq(R.plurals.n_hours_ago), geq(1), geq(1));
+        doReturn(minuteString)
+                .when(mResources)
+                .getQuantityString(eq(R.plurals.n_minutes_ago), geq(1), geq(1));
+        doReturn(justNowString).when(mResources).getString(R.string.just_now);
+
+        doReturn(TimeUnit.DAYS.toMillis(1)).when(mClock).currentTimeMillis();
+        String timeString = mMediator.getTimeString(0L);
+        assertEquals(timeString, dayString);
+
+        doReturn(TimeUnit.HOURS.toMillis(1)).when(mClock).currentTimeMillis();
+        timeString = mMediator.getTimeString(0L);
+        assertEquals(timeString, hourString);
+
+        doReturn(TimeUnit.MINUTES.toMillis(1)).when(mClock).currentTimeMillis();
+        timeString = mMediator.getTimeString(0L);
+        assertEquals(timeString, minuteString);
+
+        doReturn(TimeUnit.SECONDS.toMillis(1)).when(mClock).currentTimeMillis();
+        timeString = mMediator.getTimeString(0L);
+        assertEquals(timeString, justNowString);
+    }
+
+    @Test
+    public void testScrolling() {
+        Promise<HistoryClustersResult> promise = new Promise();
+        doReturn(promise).when(mBridge).queryClusters("query");
+        Promise<HistoryClustersResult> secondPromise = new Promise();
+        doReturn(secondPromise).when(mBridge).loadMoreClusters("query");
+        doReturn(3).when(mLayoutManager).findLastVisibleItemPosition();
+
+        mMediator.startQuery("query");
+        fulfillPromise(promise, mHistoryClustersResultWithQuery);
+
+        mMediator.onScrolled(mRecyclerView, 1, 1);
+        ShadowLooper.idleMainLooper();
+
+        verify(mBridge).loadMoreClusters("query");
+        fulfillPromise(secondPromise, mHistoryClustersFollowupResultWithQuery);
+
+        doReturn(4).when(mLayoutManager).findLastVisibleItemPosition();
+        mMediator.onScrolled(mRecyclerView, 1, 1);
+        // There should have been no further calls to loadMoreClusters since the current result
+        // specifies that it has no more data.
+        verify(mBridge).loadMoreClusters("query");
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

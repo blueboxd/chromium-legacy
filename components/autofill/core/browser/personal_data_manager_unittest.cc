@@ -576,21 +576,18 @@ class PersonalDataManagerTest : public PersonalDataManagerHelper,
   void TearDown() override { TearDownTest(); }
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class PersonalDataManagerMigrationTest : public PersonalDataManagerHelper,
                                          public testing::Test {
  public:
   PersonalDataManagerMigrationTest()
-      : PersonalDataManagerHelper(
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-            { ::switches::kAccountIdMigration }
-#endif
-        ) {
-  }
+      : PersonalDataManagerHelper({::switches::kAccountIdMigration}) {}
 
  protected:
   void SetUp() override { SetUpTest(); }
   void TearDown() override { TearDownTest(); }
 };
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
                                     public testing::Test {
@@ -4234,6 +4231,10 @@ TEST_F(PersonalDataManagerTest, UpdateCardsBillingAddressReference) {
   guids_merge_map.insert(std::pair<std::string, std::string>("B", "E"));
   guids_merge_map.insert(std::pair<std::string, std::string>("D", "E"));
 
+  // Create a credit card without a billing address id
+  CreditCard* credit_card0 =
+      new CreditCard(base::GenerateGUID(), test::kEmptyOrigin);
+
   // Create cards that use A, D, E and F as their billing address id.
   CreditCard* credit_card1 =
       new CreditCard(base::GenerateGUID(), test::kEmptyOrigin);
@@ -4249,6 +4250,8 @@ TEST_F(PersonalDataManagerTest, UpdateCardsBillingAddressReference) {
   credit_card4->set_billing_address_id("F");
 
   // Add the credit cards to the database.
+  personal_data_->local_credit_cards_.push_back(
+      std::unique_ptr<CreditCard>(credit_card0));
   personal_data_->local_credit_cards_.push_back(
       std::unique_ptr<CreditCard>(credit_card1));
   personal_data_->server_credit_cards_.push_back(
@@ -4934,11 +4937,13 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
 }
 
 // Tests that settings-inaccessible profile values are removed from every stored
-// profile.
-TEST_F(PersonalDataManagerTest, RemoveInaccessibleProfileValues) {
+// profile on startup.
+TEST_F(PersonalDataManagerTest, RemoveInaccessibleProfileValuesOnStartup) {
   base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(
-      features::kAutofillRemoveInaccessibleProfileValues);
+  feature.InitAndEnableFeatureWithParameters(
+      features::kAutofillRemoveInaccessibleProfileValues,
+      {{features::kAutofillRemoveInaccessibleProfileValuesOnStartup.name,
+        "true"}});
 
   // Add a German and a US profile.
   AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
@@ -6685,9 +6690,7 @@ TEST_F(PersonalDataManagerTest, ClearUrlsFromBrowsingHistoryInTimeRange) {
   EXPECT_TRUE(personal_data_->IsNewProfileImportBlockedForDomain(second_url));
 }
 
-// On mobile, no dedicated opt-in is required for WalletSyncTransport - the
-// user is always considered opted-in and thus this test doesn't make sense.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PersonalDataManagerMigrationTest,
        MigrateUserOptedInWalletSyncTransportIfNeeded) {
   ASSERT_EQ(
@@ -6706,7 +6709,7 @@ TEST_F(PersonalDataManagerMigrationTest,
   EXPECT_TRUE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
       prefs_.get(), sync_service_.GetAccountInfo().account_id));
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {

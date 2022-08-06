@@ -3,7 +3,20 @@
 # found in the LICENSE file.
 
 static_library("common") {
-  public = [ "signals_constants.h" ]
+  public = [
+    "signals_constants.h",
+    "system_signals_service_host.h",
+  ]
 
   sources = [ "signals_constants.cc" ]
+
+  public_deps = [ "//components/device_signals/core/common/mojom" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  if (is_win) {
+    deps = [ "//components/device_signals/core/common/win:unit_tests" ]
+  }
 }

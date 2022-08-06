@@ -352,6 +352,7 @@ enum IOTaskState {
   in_progress,
   success,
   error,
+  need_password,
   cancelled
 };
 
@@ -940,6 +941,9 @@ dictionary IOTaskParams {
   // Destination folder for tasks that require one. Not required by |delete|
   // task.
   [instanceof=DirectoryEntry] object? destinationFolder;
+
+  // Password used for unpacking encrypted archives.
+  DOMString? password;
 };
 
 // IO Task Progress status, see file_manager::io_task::ProgressStatus.
@@ -1039,9 +1043,16 @@ callback GetVolumeMetadataListCallback =
 callback GetDisallowedTransfersCallback =
     void([instanceOf=Entry] object[] disallowedEntries);
 
+// |restrictedFiles| A list of files with any Data Leak Prevention restriction.
+callback GetFilesRestrictedByDlpCallback =
+    void([instanceOf=Entry] object[] restrictedFiles);
+
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
 callback StartCopyCallback = void(long copyId);
+
+// |taskId| ID of the task that was started. Can be used to cancel ongoing task.
+callback IOTaskIdCallback = void(long taskId);
 
 // |sizeStats| Name/value pairs of size stats. Will be undefined if stats could
 // not be determined.
@@ -1301,7 +1312,7 @@ interface Functions {
 
   // Unmounts a mounted resource.
   // |volumeId| An ID of the volume.
-  static void removeMount(DOMString volumeId);
+  static void removeMount(DOMString volumeId, SimpleCallback callback);
 
   // Get the list of mounted volumes.
   // |callback|
@@ -1316,6 +1327,14 @@ interface Functions {
       [instanceOf=Entry] object[] entries,
       [instanceOf=DirectoryEntry] object destinationEntry,
       GetDisallowedTransfersCallback callback);
+
+  // Returns the list of files that have any Data Leak Prevention restriction rule set.
+  // |entries| List of the source entries to be checked.
+  // |callback| Result callback.
+  [nocompile]
+  static void getFilesRestrictedByDlp(
+      [instanceOf=Entry] object[] entries,
+      GetFilesRestrictedByDlpCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -1502,6 +1521,7 @@ interface Functions {
   [nocompile]
   static void getRecentFiles(SourceRestriction restriction,
                              RecentFileType fileType,
+                             boolean invalidateCache,
                              GetRecentFilesCallback callback);
 
   // Requests the root directory of the volume with the ID specified in
@@ -1650,7 +1670,8 @@ interface Functions {
   static void startIOTask(
       IOTaskType type,
       [instanceof=Entry] object[] entries,
-      IOTaskParams params);
+      IOTaskParams params,
+      optional IOTaskIdCallback callback);
 
   // Cancels an I/O task by id. Task ids are communicated to the Files App in
   // each I/O task's progress status.

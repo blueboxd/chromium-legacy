@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/actions/external_action.h"
+
+#include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
 
@@ -19,12 +21,30 @@ ExternalAction::~ExternalAction() = default;
 void ExternalAction::InternalProcessAction(ProcessActionCallback callback) {
   callback_ = std::move(callback);
   if (!delegate_->SupportsExternalActions()) {
+    VLOG(1) << "External action are not supported for this run.";
     EndAction(ClientStatus(INVALID_ACTION));
+    return;
+  }
+  if (!proto_.external_action().has_info()) {
+    VLOG(1) << "The ExternalAction's |info| is missing.";
+    EndAction(ClientStatus(INVALID_ACTION));
+    return;
   }
 
-  auto external_action = proto_.external_action();
+  delegate_->RequestExternalAction(
+      proto_.external_action(),
+      base::BindOnce(&ExternalAction::StartDomChecks,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ExternalAction::OnExternalActionFinished,
+                     weak_ptr_factory_.GetWeakPtr()));
 
-  SendActionInfo();
+  // Do not add any code here. External delegates may choose to end the action
+  // immediately, which could result in *this being deleted and UaF errors for
+  // code after the above call.
+}
+
+void ExternalAction::StartDomChecks() {
+  const auto& external_action = proto_.external_action();
   if (external_action.allow_interrupt()) {
     delegate_->WaitForDom(
         /* max_wait_time= */ base::TimeDelta::Max(),
@@ -34,21 +54,16 @@ void ExternalAction::InternalProcessAction(ProcessActionCallback callback) {
   }
 }
 
-void ExternalAction::SendActionInfo() {
-  delegate_->RequestExternalAction(
-      proto_.external_action(),
-      base::BindOnce(&ExternalAction::OnExternalActionFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ExternalAction::OnExternalActionFinished(
-    ExternalActionDelegate::ActionResult result) {
+void ExternalAction::OnExternalActionFinished(const external::Result& result) {
   if (!callback_) {
     return;
   }
 
-  EndAction(result.success ? ClientStatus(ACTION_APPLIED)
-                           : ClientStatus(UNKNOWN_ACTION_STATUS));
+  *processed_action_proto_->mutable_external_action_result()
+       ->mutable_result_info() = result.result_info();
+
+  EndAction(result.success() ? ClientStatus(ACTION_APPLIED)
+                             : ClientStatus(UNKNOWN_ACTION_STATUS));
 }
 
 void ExternalAction::EndAction(const ClientStatus& status) {

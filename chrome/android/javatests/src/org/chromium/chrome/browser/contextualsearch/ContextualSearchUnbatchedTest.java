@@ -195,6 +195,10 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
     @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
     public void testTapWithLanguage(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving a German word should trigger translation.
+        mFakeServer.setExpectations("german",
+                new ResolvedSearchTerm.Builder(false, 200, "Deutsche", "Deutsche")
+                        .setContextLanguage("de")
+                        .build());
         simulateResolveSearch("german");
 
         // Make sure we tried to trigger translate.
@@ -219,6 +223,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Expand the panel and assert that it ends up in the right place.
+        // TODO(crbug.com/1258165): switch to expandPanelAndAssert();
         tapPeekingBarToExpandAndAssert();
 
         // Don't select any Related Searches suggestion, and close the panel
@@ -239,7 +244,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Expand the panel and assert that it ends up in the right place.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         // Select a Related Searches suggestion.
         RelatedSearchesControl relatedSearchesControl = mPanel.getRelatedSearchesInBarControl();

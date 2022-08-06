@@ -21,6 +21,7 @@
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/chromeos/image_processor_factory.h"
+#include "media/gpu/chromeos/oop_video_decoder.h"
 #include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/media_buildflags.h"
@@ -78,7 +79,8 @@ VideoDecoderMixin::VideoDecoderMixin(
     std::unique_ptr<MediaLog> media_log,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     base::WeakPtr<VideoDecoderMixin::Client> client)
-    : decoder_task_runner_(std::move(decoder_task_runner)),
+    : media_log_(std::move(media_log)),
+      decoder_task_runner_(std::move(decoder_task_runner)),
       client_(std::move(client)) {}
 
 VideoDecoderMixin::~VideoDecoderMixin() = default;
@@ -92,17 +94,24 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
-    std::unique_ptr<MediaLog> media_log) {
+    std::unique_ptr<MediaLog> media_log,
+    mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder) {
   DCHECK(client_task_runner);
   DCHECK(frame_pool);
   DCHECK(frame_converter);
 
-  CreateDecoderFunctionCB create_decoder_function_cb =
+  CreateDecoderFunctionCB create_decoder_function_cb;
+  if (oop_video_decoder) {
+    create_decoder_function_cb =
+        base::BindOnce(&OOPVideoDecoder::Create, std::move(oop_video_decoder));
+  } else {
+    create_decoder_function_cb =
 #if BUILDFLAG(USE_VAAPI)
-      base::BindOnce(&VaapiVideoDecoder::Create);
+        base::BindOnce(&VaapiVideoDecoder::Create);
 #elif BUILDFLAG(USE_V4L2_CODEC)
-      base::BindOnce(&V4L2VideoDecoder::Create);
+        base::BindOnce(&V4L2VideoDecoder::Create);
 #endif
+  }
 
   auto* pipeline = new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
@@ -732,13 +741,8 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
 
   if (need_aux_frame_pool) {
     // Initialize the auxiliary frame pool with the input format of the image
-    // processor. Note that we pass nullptr as the GpuMemoryBufferFactory. That
-    // way, the pool will allocate buffers using minigbm directly instead of
-    // going through Ozone which means it won't create DRM/KMS framebuffers for
-    // those buffers. This is good because these buffers don't end up as
-    // overlays anyway.
-    auxiliary_frame_pool_ = std::make_unique<PlatformVideoFramePool>(
-        /*gpu_memory_buffer_factory=*/nullptr);
+    // processor.
+    auxiliary_frame_pool_ = std::make_unique<PlatformVideoFramePool>();
 
     auxiliary_frame_pool_->set_parent_task_runner(decoder_task_runner_);
     CroStatus::Or<GpuBufferLayout> status_or_layout =

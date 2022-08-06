@@ -3596,6 +3596,7 @@ Wenn diese Richtlinie konfiguriert ist, erlaubt <ph name="PRODUCT_OS_NAME" /> es
 <translation id="4960597185231686653">Boolescher Parameter, der angibt, ob für die Bildschirmtastatur die Spracheingabe aktiviert ist.</translation>
 <translation id="4970046075219007744">Webanwendungen erlauben, um Zugriff auf Dateitypen über die File Handling API zu bitten</translation>
 <translation id="4970855112942626932">Browseranmeldung deaktivieren</translation>
+<translation id="4974091268178043378">Chrome OS-Farbmodus</translation>
 <translation id="4976928720873547342">Wenn du diese Richtlinie konfigurierst, werden alle angegebenen Datentypen von der Synchronisierung ausgeschlossen. Dies gilt sowohl für die <ph name="CHROME_SYNC_NAME" /> als auch für die Synchronisierung von Roaming-Profilen. Dadurch lässt sich die Größe von Roaming-Profilen reduzieren und du kannst einschränken, welche Arten von Daten auf die <ph name="CHROME_SYNC_NAME" />-Server hochgeladen werden.
 
       Aktuell werden folgende Datentypen unterstützt: „bookmarks“, „readingList“, „preferences“, „passwords“, „autofill“, „themes“, „typedUrls“, „extensions“, „apps“, „tabs“ und „wifiConfigurations“. Bei diesen Namen muss die Groß- und Kleinschreibung beachtet werden.</translation>
@@ -4237,6 +4238,13 @@ Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutz
 
           Der Richtlinienwert wird ausschließlich angewendet, wenn die Richtlinie <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> aktiviert ist.</translation>
 <translation id="5697306356229823047">Gerätenutzer aufzeichnen</translation>
+<translation id="5698923148503075597">Ist die Richtlinie aktiviert, hat die Cloud-Richtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
+
+      Ist die Richtlinie deaktiviert oder nicht konfiguriert, hat die Plattformrichtlinie Vorrang, wenn sie mit der Cloud-Richtlinie in Konflikt steht.
+
+      Diese obligatorische Richtlinie wirkt sich auf Cloud-Richtlinien auf Computern aus.
+
+      Diese Richtlinie ist nur in <ph name="PRODUCT_NAME" /> verfügbar und hat keine Auswirkungen auf <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Wenn die Richtlinie auf „Enabled“ gesetzt ist, wird der interne PDF-Viewer in <ph name="PRODUCT_NAME" /> ausgeschaltet und PDF-Dateien werden als Download behandelt. Nutzer können sie dann mit der Standardanwendung öffnen.
 
       Ist die Richtlinie auf „Disabled“ gesetzt, werden PDF-Dateien mit dem PDF-Plug-in geöffnet, sofern es nicht von den Nutzern deaktiviert wird.
@@ -4346,6 +4354,7 @@ Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutz
 
       Nutzer können diese Einstellung nicht ändern.</translation>
 <translation id="5848438019586925019">Algorithmus für die Generierung von Schlüsselpaaren.</translation>
+<translation id="5851248808417680865">Dunkles Design verwenden</translation>
 <translation id="585270638818921943">Nutzer daran hindern, Android-Apps aus nicht vertrauenswürdigen Quellen zu verwenden</translation>
 <translation id="5853547031212075792">Nutzern erlauben, den Nur-HTTPS-Modus zu aktivieren</translation>
 <translation id="5859344336338527083">Wenn diese Richtlinie konfiguriert ist, wird festgelegt, über welche URLs Erweiterungen, Apps und Designs installiert werden dürfen. Vor <ph name="PRODUCT_NAME" />-Version 21 konnten Nutzer auf den Link zu einer CRX-Datei klicken und die Datei nach einigen Hinweisen in <ph name="PRODUCT_NAME" /> installieren. In allen nachfolgenden Versionen müssen solche Dateien zuerst heruntergeladen und dann auf die Seite "Einstellungen" in <ph name="PRODUCT_NAME" /> gezogen werden. Anhand dieser Einstellung kann bei bestimmten URLs der alte, einfachere Installationsvorgang angewendet werden.
@@ -4467,11 +4476,6 @@ Wenn der Wert für <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> bei keinem Eintr
       Wenn du diese Richtlinie konfigurierst, kann sie von Nutzern nicht geändert werden. Ist sie nicht konfiguriert, können die Nutzer festlegen, ob Kopf- und Fußzeilen angezeigt werden sollen.</translation>
 <translation id="5951418260805607969">Benachrichtigung anzeigen, wenn nur wenig Speicherplatz verfügbar ist</translation>
 <translation id="5958746038080720143">Web Proxy Auto-Discovery (WPAD)-Optimierungen aktivieren</translation>
-<translation id="5959428851851090097">Wenn die Richtlinie aktiviert ist, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
-
-      Ist die Richtlinie deaktiviert oder nicht konfiguriert, hat die Plattformrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
-
-      Diese obligatorische Richtlinie wirkt sich auf Cloudrichtlinien auf Computern aus.</translation>
 <translation id="5961137303188584693">MAC-Adresse der im Gerät verbauten NIC</translation>
 <translation id="5963752574792883406">Port 990 (Blockierung kann bis 01.02.2022 aufgehoben werden)</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
@@ -4512,6 +4516,7 @@ Wenn der Wert für <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> bei keinem Eintr
 
       Diese Richtlinie wird nur angewendet, wenn das Gerät für <ph name="PRODUCT_NAME" /> mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist.
       Für <ph name="PRODUCT_OS_NAME" /> wird diese Richtlinie immer angewendet.</translation>
+<translation id="6019162469732742754">Automatischen Modus verwenden</translation>
 <translation id="6019606564278029236">Zulassen, dass Remote-Nutzer bei der Remote-Unterstützung mit geöffneten Fenstern interagieren können</translation>
 <translation id="6022948604095165524">Aktion beim Start</translation>
 <translation id="602318745029752898">Stimmen für die Sprachausgabe bei Enhanced Network in der Funktion „Vorlesen“ zulassen</translation>
@@ -5238,6 +5243,15 @@ Ist diese Richtlinie auf „true“ gesetzt, wird WebSQL im Zusammenhang mit Dri
 <translation id="6786666051053129545">Ablauf „Voice Match mit Google Assistant“ aktivieren</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
+<translation id="6789319144568227749">Damit wird die Unterstützung für CORS-Anfrageheader ohne Platzhalter konfiguriert.
+
+      Mit der Version 97 von <ph name="PRODUCT_NAME" /> wird die Unterstützung für CORS-Anfrageheader ohne Platzhalter eingeführt. Wenn in Skripts eine ursprungsübergreifende Netzwerkanfrage per fetch() und XMLHttpRequest mit einem per Skript hinzugefügten Autorisierungsheader gestellt wird, muss der Header durch den Header „Access-Control-Allow-Headers“ in der CORS-Preflight-Antwort explizit zugelassen werden. „Explizit“ bedeutet hier, dass sich das Platzhaltersymbol „*“ nicht auf den Autorisierungsheader beziehen darf. Nähere Informationen findest du unter <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
+
+      Wenn diese Richtlinie nicht festgelegt bzw. auf „Wahr“ gesetzt wird, unterstützt <ph name="PRODUCT_NAME" /> die CORS-Anfrageheader ohne Platzhalter und verhält sich wie oben beschrieben.
+
+      Wird diese Richtlinie auf „Falsch“ gesetzt, darf sich das Platzhaltersymbol „*“ im Header „Access-Control-Allow-Headers“ in der CORS-Preflight-Antwort auf den Autorisierungsheader beziehen.
+
+      Diese Unternehmensrichtlinie ist vorübergehend. In Zukunft wird sie voraussichtlich entfernt.</translation>
 <translation id="6789422336869764846">Wenn die Richtlinie aktiviert oder nicht konfiguriert ist, wird über registrierte Geräte der Status des Entwicklermodus gemeldet, wenn das Gerät startet.
 
       Ist sie deaktiviert, melden registrierte Geräte den Status des Entwicklermodus nicht.</translation>
@@ -5487,6 +5501,7 @@ Hinweis: Nutzer können Cookies blockieren und so auf Google-Dienste zugreifen, 
 <translation id="7019805045859631636">Schnell</translation>
 <translation id="7025332601572838001">Konfiguriert die Nutzungsbedingungen während der ersten Ausführung für CCT</translation>
 <translation id="7026351325994257733">Erlauben, dass WLAN-Konfigurationen auf allen <ph name="PRODUCT_OS_NAME" />-Geräten und einem verbundenen Android-Smartphone synchronisiert werden.</translation>
+<translation id="7027057540229843762">Helles Design verwenden</translation>
 <translation id="7027785306666625591">Hiermit wird die Energieverwaltung in <ph name="PRODUCT_OS_NAME" /> konfiguriert.
 
       Mit diesen Richtlinien kannst du festlegen, wie <ph name="PRODUCT_OS_NAME" /> sich verhalten soll, wenn der Nutzer für einen bestimmten Zeitraum inaktiv ist.</translation>
@@ -6278,7 +6293,7 @@ werden abgelehnt.</translation>
           Bei Ursprüngen, die durch die hier angegebenen Muster nicht abgedeckt sind, kommt entweder der globale Standardwert der Richtlinie „<ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" />“, sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
 
           Weitere Informationen zu gültigen URL-Mustern findest du unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="7906983682927840536">Fetch-Keepalive-Dauer beim Herunterfahren</translation>
+<translation id="7906983682927840536">Keepalive-Dauer beim Herunterfahren abrufen</translation>
 <translation id="7908384265697653397">Zeitraum in Tagen, nach dem der Nutzer abgemeldet wird, wenn die Version von <ph name="PRODUCT_OS_NAME" /> niedriger ist als der angegebene <ph name="CHROMEOS_VERSION_PROPERTY_NAME" />-Wert.</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
 <translation id="791267408364877739">Sicherheitswarnungen anzeigen, wenn potenziell schädliche Befehlszeilen-Flags verwendet werden</translation>
@@ -6475,15 +6490,6 @@ Wird diese Richtlinie nicht konfiguriert, ist der Datenschutzbildschirm anfangs 
       Falls die Richtlinie deaktiviert oder nicht eingestellt wird, werden bei einer Anmeldung reguläre Profile erstellt.</translation>
 <translation id="8151299379693359769">Aktiviert eine zusätzliche Sicherheitsprüfung, basierend auf Remote-Attestierung (optional, standardmäßig auf „True“ gesetzt).</translation>
 <translation id="8151490482515839285">Berichte zur Verhinderung von Datenlecks aktivieren</translation>
-<translation id="8151949408479239790">Damit wird die Unterstützung für CORS-Anfrageheader ohne Platzhalter konfiguriert.
-
-      Mit der Version 97 von <ph name="PRODUCT_NAME" /> wird die Unterstützung für CORS-Anfrageheader ohne Platzhalter eingeführt. Wenn in Skripts eine ursprungsübergreifende Netzwerkanfrage per fetch() und XMLHttpRequest mit einem per Skript hinzugefügten Autorisierungsheader gestellt wird, muss der Header durch den Header „Access-Control-Allow-Headers“ in der CORS-Preflight-Antwort explizit zugelassen werden. „Explizit“ bedeutet hier, dass sich das Platzhaltersymbol „*“ nicht auf den Autorisierungsheader beziehen darf. Nähere Informationen findest du unter <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
-
-      Wenn diese Richtlinie nicht festgelegt bzw. auf „Wahr“ gesetzt wird, unterstützt <ph name="PRODUCT_NAME" /> die CORS-Anfrageheader ohne Platzhalter und verhält sich wie oben beschrieben.
-
-      Wird diese Richtlinie auf „Falsch“ gesetzt, darf sich das Platzhaltersymbol „*“ im Header „Access-Control-Allow-Headers“ in der CORS-Preflight-Antwort auf den Autorisierungsheader beziehen.
-
-      Diese Unternehmensrichtlinie ist vorübergehend. Nach Version 103 von <ph name="PRODUCT_NAME" /> wird sie voraussichtlich entfernt.</translation>
 <translation id="8158758865057576716">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren.</translation>
 <translation id="8158897487095710470">Wenn die Richtlinie auf "True" gesetzt ist, wird eine Lesezeichenleiste in <ph name="PRODUCT_NAME" /> angezeigt. Ist sie auf "False" gesetzt, sehen Nutzer keine Lesezeichenleiste.
 
@@ -7058,6 +7064,9 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
 
       „http://acme.de/ABC“ stimmt nur in „IESiteListMode“ überein.</translation>
 <translation id="8736538322216687231">Minimalen eingeschränkten Modus auf YouTube erzwingen</translation>
+<translation id="8744844164152340112">Dadurch wird festgelegt, welches Design zum Rendern der Benutzeroberfläche während der OOBE (Out-of-Box-Experience) und während einer Sitzung verwendet wird.
+      Dieser automatische Modus wechselt bei Sonnenauf- und untergang zwischen dem hellen und dunklen Design.
+      Diese Richtlinie sollte Nutzern empfohlen werden, damit sie das Design in den Systemeinstellungen ändern können.</translation>
 <translation id="8745669971728319820">Mit dieser Richtlinie wird festgelegt, ob Daten zu Erweiterungen und Plug-ins gesendet werden.
 
       Wenn die Richtlinie <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> deaktiviert oder nicht konfiguriert ist, wird diese Richtlinie ignoriert.

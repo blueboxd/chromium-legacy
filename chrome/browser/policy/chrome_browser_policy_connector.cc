@@ -72,7 +72,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/device_settings_lacros.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #include "components/policy/core/common/policy_loader_lacros.h"
 #endif
 
@@ -136,8 +136,7 @@ ChromeBrowserPolicyConnector::GetDeviceSettings() const {
 
 bool ChromeBrowserPolicyConnector::IsDeviceEnterpriseManaged() const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto* lacros_service = chromeos::LacrosService::Get();
-  return lacros_service->init_params()->is_device_enterprised_managed;
+  return chromeos::BrowserInitParams::Get()->is_device_enterprised_managed;
 #else
   NOTREACHED() << "This method is only defined for ChromeOS";
   return false;
@@ -259,7 +258,8 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   std::unique_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-      ManagementServiceFactory::GetForPlatform(), kRegistryChromePolicyKey));
+      ManagementServiceFactory::GetForPlatform(), kRegistryChromePolicyKey,
+      IsCommandLineSwitchSupported()));
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
 #elif BUILDFLAG(IS_MAC)

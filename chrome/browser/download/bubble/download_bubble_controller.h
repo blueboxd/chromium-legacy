@@ -49,22 +49,13 @@ class DownloadBubbleUIController
   std::vector<DownloadUIModelPtr> GetPartialView();
 
   // Get all entries that should be displayed in the UI, including downloads and
-  // offline items, but allow destruction right away. Use this only if you are
-  // certain that the objects are short lived, for example used to compute
-  // progress.
-  std::vector<std::unique_ptr<DownloadUIModel>>
-  GetAllItemsToDisplayWithoutTaskRunnerDeletion();
-
-  // Get all entries that should be displayed in the UI, including downloads and
-  // offline items, with destruction through the task sequencer. This should be
-  // the default method.
+  // offline items.
   std::vector<DownloadUIModelPtr> GetAllItemsToDisplay();
 
-  // The list is needed to populate GetAllItemsToDisplay.
+  // The list is needed by DownloadDisplayController to check a few things,
+  // for example in progress download count, last completed time, and getting
+  // progress for animation.
   virtual const OfflineItemList& GetOfflineItems();
-
-  // The list is needed to populate GetAllItemsToDisplay.
-  virtual const std::vector<download::DownloadItem*> GetDownloadItems();
 
   // This function makes sure that the offline items field is
   // populated, and then calls the given callback. After this, GetOfflineItems
@@ -88,6 +79,12 @@ class DownloadBubbleUIController
   // Notify when a new download is ready to be shown on UI, and if the window
   // this controller belongs to should show the partial view.
   void OnNewItem(download::DownloadItem* item, bool show_details);
+
+  // Returns the DownloadDisplayController. Should always return a valid
+  // controller.
+  DownloadDisplayController* display_controller_for_testing() {
+    return display_controller_;
+  }
 
   download::AllDownloadItemNotifier& get_download_notifier_for_testing() {
     return download_notifier_;

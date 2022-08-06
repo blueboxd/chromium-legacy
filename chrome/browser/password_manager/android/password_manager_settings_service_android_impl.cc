@@ -23,6 +23,7 @@
 
 using password_manager::PasswordManagerSetting;
 using password_manager::PasswordSettingsUpdaterAndroidBridge;
+using password_manager::sync_util::CannotUseUPMDueToPersistentSyncError;
 using password_manager::sync_util::IsPasswordSyncEnabled;
 
 namespace {
@@ -66,11 +67,6 @@ bool HasChosenToSyncPreferences(syncer::SyncService* sync_service) {
   return sync_service && sync_service->IsSyncFeatureEnabled() &&
          sync_service->GetUserSettings()->GetSelectedTypes().Has(
              syncer::UserSelectableType::kPreferences);
-}
-
-bool IsUnenrolledFromUPM(PrefService* pref_service) {
-  return pref_service->GetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
 }
 
 }  // namespace
@@ -134,12 +130,11 @@ bool PasswordManagerSettingsServiceAndroidImpl::IsSettingEnabled(
   const PrefService::Preference* regular_pref =
       GetRegularPrefFromSetting(pref_service_, setting);
   DCHECK(regular_pref);
-
-  if (IsUnenrolledFromUPM(pref_service_)) {
+  if (!IsPasswordSyncEnabled(sync_service_)) {
     return regular_pref->GetValue()->GetBool();
   }
 
-  if (!IsPasswordSyncEnabled(sync_service_)) {
+  if (CannotUseUPMDueToPersistentSyncError(sync_service_)) {
     return regular_pref->GetValue()->GetBool();
   }
 
@@ -160,14 +155,14 @@ bool PasswordManagerSettingsServiceAndroidImpl::IsSettingEnabled(
 void PasswordManagerSettingsServiceAndroidImpl::RequestSettingsFromBackend() {
   // Backend has settings data only if passwords are synced.
   if (bridge_ && IsPasswordSyncEnabled(sync_service_) &&
-      !IsUnenrolledFromUPM(pref_service_)) {
+      !CannotUseUPMDueToPersistentSyncError(sync_service_)) {
     FetchSettings();
   }
 }
 
 void PasswordManagerSettingsServiceAndroidImpl::TurnOffAutoSignIn() {
   if (!bridge_ || !IsPasswordSyncEnabled(sync_service_) ||
-      IsUnenrolledFromUPM(pref_service_)) {
+      CannotUseUPMDueToPersistentSyncError(sync_service_)) {
     pref_service_->SetBoolean(
         password_manager::prefs::kCredentialsEnableAutosignin, false);
     return;
@@ -218,7 +213,7 @@ void PasswordManagerSettingsServiceAndroidImpl::OnSettingValueAbsent(
     password_manager::PasswordManagerSetting setting) {
   DCHECK(bridge_);
   UpdateSettingFetchState(setting);
-  if (IsUnenrolledFromUPM(pref_service_))
+  if (CannotUseUPMDueToPersistentSyncError(sync_service_))
     return;
 
   if (!IsPasswordSyncEnabled(sync_service_))
@@ -242,7 +237,7 @@ void PasswordManagerSettingsServiceAndroidImpl::OnSettingValueAbsent(
 }
 
 void PasswordManagerSettingsServiceAndroidImpl::MigratePrefsIfNeeded() {
-  if (IsUnenrolledFromUPM(pref_service_))
+  if (CannotUseUPMDueToPersistentSyncError(sync_service_))
     return;
 
   if (pref_service_->GetBoolean(
@@ -262,24 +257,38 @@ void PasswordManagerSettingsServiceAndroidImpl::MigratePrefsIfNeeded() {
 
 void PasswordManagerSettingsServiceAndroidImpl::OnStateChanged(
     syncer::SyncService* sync) {
-  if (IsUnenrolledFromUPM(pref_service_))
+  // Settings cannot be fetched from GMS due to a persistent auth error.
+  // Return early.
+  if (CannotUseUPMDueToPersistentSyncError(sync_service_)) {
+    sync_has_persistent_error_ = true;
     return;
+  }
+
+  bool sync_setting_changed =
+      IsPasswordSyncEnabled(sync) != is_password_sync_enabled_;
+  bool sync_error_resolved =
+      sync_has_persistent_error_ &&
+      !CannotUseUPMDueToPersistentSyncError(sync_service_);
 
   // Return early if the setting didn't change and no sync errors were resolved.
-  if (IsPasswordSyncEnabled(sync) == is_password_sync_enabled_)
+  if (!sync_setting_changed && !sync_error_resolved)
     return;
 
   is_password_sync_enabled_ = IsPasswordSyncEnabled(sync);
+  sync_has_persistent_error_ = false;
 
   if (is_password_sync_enabled_)
     DumpChromePrefsIntoGMSPrefs();
 
-  // Fetch settings from the backend to align values stored in GMS Core and
-  // Chrome.
-  fetch_after_sync_status_change_in_progress_ = true;
-  for (PasswordManagerSetting setting : kAllPasswordSettings)
-    awaited_settings_.insert(setting);
-  FetchSettings();
+  if (sync_setting_changed ||
+      (sync_error_resolved && IsPasswordSyncEnabled(sync))) {
+    // Fetch settings from the backend to align values stored in GMS Core and
+    // Chrome.
+    fetch_after_sync_status_change_in_progress_ = true;
+    for (PasswordManagerSetting setting : kAllPasswordSettings)
+      awaited_settings_.insert(setting);
+    FetchSettings();
+  }
 }
 
 void PasswordManagerSettingsServiceAndroidImpl::UpdateSettingFetchState(

@@ -9285,7 +9285,7 @@
           'primary_account_signin',
         ]
       },
-      'supported_on': ['chrome_os:103-'],
+      'future_on': ['chrome_os'],
       'features': {
         # The case where a user is already signed in as a secondary account and the policy is dynamically refreshed to not allow secondary sign-ins cannot be handled right now. Hence this is not dynamic.
         'dynamic_refresh': False,
@@ -19326,7 +19326,7 @@
     },
     {
       'name': 'WifiSyncAndroidAllowed',
-      'owners': ['jonmann@chromium.org', 'cvandermerwe@google.com'],
+      'owners': ['jonmann@chromium.org', 'chromeos-cross-device-eng@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:89-'],
@@ -20010,7 +20010,9 @@
 
       Setting the policy to Disabled or leaving it unset means platform policy takes precedence if it conflicts with cloud policy.
 
-      This mandatory policy affects machine scope cloud policies.''',
+      This mandatory policy affects machine scope cloud policies.
+
+      This policy is only available on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>; it has no effect on <ph name="GOOGLE_UPDATE_NAME">Google Update</ph>.''',
     },
     {
       'name': 'CloudUserPolicyOverridesCloudMachinePolicy',
@@ -25568,6 +25570,37 @@
       Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
     },
     {
+      'name': 'RendererAppContainerEnabled',
+      'owners': ['wfh@chromium.org', 'adetaylor@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:104-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': True,
+      'example_value': False,
+      'id': 987,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the Renderer App Container sandbox',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the Renderer App Container sandbox',
+        },
+      ],
+      'caption': '''Enable Renderer App Container''',
+      'tags': ['system-security'],
+      'desc': '''Setting the policy to Enabled or leaving it unset means Renderer App Container configuration will be enabled on supported platforms.
+
+      Setting the policy to Disabled has a detrimental effect on the security and stability of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as it will weaken the sandbox that renderer processes use. Only turn off the policy if there are compatibility issues with third-party software that must run inside renderer processes.
+
+      Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
+    },
+    {
       'name': 'BrowserLegacyExtensionPointsBlocked',
       'owners': ['wfh@chromium.org', 'ssmole@microsoft.com'],
       'type': 'main',
@@ -29904,7 +29937,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'default': True,
-      'supported_on': ['chrome.*:97-103', 'chrome_os:97-103', 'android:97-103'],
+      'supported_on': ['chrome.*:97-', 'chrome_os:97-', 'android:97-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -29925,13 +29958,13 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'tags': [],
       'desc': '''Configures support of CORS non-wildcard request headers.
 
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 97 introduces support for CORS non-wildcard request headers. When scripts make a cross-origin network request via fetch() and XMLHttpRequest with a script-added Authorization header, the header must be explicitly allowed by the Access-Control-Allow-Headers header in the CORS preflight response. "Explicitly" here means that the wild card symbol "*" doesn't cover the Authorization header. See <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL">https://www.chromest atus.com/feature/5768642492891136</ph> for more detail.
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 97 introduces support for CORS non-wildcard request headers. When scripts make a cross-origin network request via fetch() and XMLHttpRequest with a script-added Authorization header, the header must be explicitly allowed by the Access-Control-Allow-Headers header in the CORS preflight response. "Explicitly" here means that the wild card symbol "*" doesn't cover the Authorization header. See <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL">https://www.chromestatus.com/feature/5768642492891136</ph> for more detail.
 
       If this policy is not set, or set to True, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will support the CORS non-wildcard request headers and behave as described above.
 
       When this policy is set to False, chrome will allow the wildcard symbol ("*") in the Access-Control-Allow-Headers header in the CORS preflight response to cover the Authorization header.
 
-      This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 103.''',
+      This Enterprise policy is temporary; it's intended to be removed in the future.''',
     },
     {
       'name': 'DeviceI18nShortcutsEnabled',
@@ -30912,6 +30945,51 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       If this policy is set to Enabled or not set, a warning dialog is shown when the user is attempting to quit.
 
       If this policy is set to Disabled, a warning dialog is not shown when the user is attempting to quit.'''
+    },
+    {
+      'name': 'OsColorMode',
+      'owners': ['jaflis@google.com', 'cros-oobe@google.com', 'chromeos-wmp@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'light',
+          'dark',
+          'auto',
+        ],
+      },
+      'items': [
+        {
+          'name': 'light',
+          'value': 'light',
+          'caption': '''Use the Light theme''',
+        },
+        {
+          'name': 'dark',
+          'value': 'dark',
+          'caption': '''Use the Dark theme''',
+        },
+        {
+          'name': 'auto',
+          'value': 'auto',
+          'caption': '''Use the Auto mode''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': 'light',
+      'default_for_enterprise_users': 'light',
+      'example_value': 'light',
+      'id': 986,
+      'caption': '''ChromeOS color mode''',
+      'tags': [],
+      'desc': '''Controls the theme used to render UI during OOBE and in session (dark/light/auto).
+      The auto mode automatically switches between dark and light themes on sunrise and sunset.
+      This policy should be recommended, giving users the possibility to change the theme in system settings.''',
     },
     {
       'name': 'InsightsExtensionEnabled',
@@ -32053,6 +32131,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 985,
+  'highest_id_currently_used': 987,
   'highest_atomic_group_id_currently_used': 43
 }

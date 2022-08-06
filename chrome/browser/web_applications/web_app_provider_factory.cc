@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,12 @@ WebAppProviderFactory* WebAppProviderFactory::GetInstance() {
   return base::Singleton<WebAppProviderFactory>::get();
 }
 
+// static
+bool WebAppProviderFactory::IsServiceCreatedForProfile(Profile* profile) {
+  return WebAppProviderFactory::GetInstance()->GetServiceForBrowserContext(
+             profile, /*create=*/false) != nullptr;
+}
+
 WebAppProviderFactory::WebAppProviderFactory()
     : BrowserContextKeyedServiceFactory(
           "WebAppProvider",
@@ -45,6 +52,14 @@ KeyedService* WebAppProviderFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   WebAppProvider* provider = new WebAppProvider(profile);
   provider->Start();
+
+  // TODO(crbug.com/1321984): Make SWAM a KeyedService and move this scheduling
+  // to that new service factory.
+  provider->on_registry_ready().Post(
+      FROM_HERE,
+      base::BindOnce(&ash::SystemWebAppManager::Start,
+                     provider->system_web_app_manager_->GetWeakPtr()));
+
   return provider;
 }
 

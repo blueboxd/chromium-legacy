@@ -473,7 +473,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     feature_list->InitializeFromCommandLine(
         "UserAgentClientHint,CriticalClientHint,"
         "AcceptCHFrame,PrefersColorSchemeClientHintHeader,"
-        "ViewportHeightClientHintHeader,UserAgentClientHintFullVersionList",
+        "ViewportHeightClientHintHeader",
         "");
     return feature_list;
   }
@@ -518,7 +518,10 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   // blocked on the webpage due to the checks done by client hints.
   void VerifyContentSettingsNotNotified() const {
     auto* pscs = content_settings::PageSpecificContentSettings::GetForFrame(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
+        browser()
+            ->tab_strip_model()
+            ->GetActiveWebContents()
+            ->GetPrimaryMainFrame());
     EXPECT_FALSE(pscs->IsContentBlocked(ContentSettingsType::COOKIES));
     EXPECT_FALSE(pscs->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   }
@@ -1197,8 +1200,7 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
         "AllowClientHintsToThirdParty,UserAgentClientHint,"
-        "PrefersColorSchemeClientHintHeader,ViewportHeightClientHintHeader,"
-        "UserAgentClientHintFullVersionList",
+        "PrefersColorSchemeClientHintHeader,ViewportHeightClientHintHeader",
         "");
     return feature_list;
   }
@@ -3049,7 +3051,7 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
         "UserAgentClientHint,PrefersColorSchemeClientHintHeader,"
-        "ViewportHeightClientHintHeader,UserAgentClientHintFullVersionList",
+        "ViewportHeightClientHintHeader",
         "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
@@ -3149,9 +3151,7 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     // Don't include PrefersColorSchemeClientHintHeader in the enabled
     // features; we will verify that PrefersColorScheme is not included.
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame,"
-        "UserAgentClientHintFullVersionList",
-        "");
+        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame", "");
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     InProcessBrowserTest::SetUp();
@@ -3564,8 +3564,7 @@ class ClientHintsBrowserTestWithEmulatedMedia
   ClientHintsBrowserTestWithEmulatedMedia()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     scoped_feature_list_.InitFromCommandLine(
-        "UserAgentClientHint,AcceptCHFrame,PrefersColorSchemeClientHintHeader,"
-        "UserAgentClientHintFullVersionList",
+        "UserAgentClientHint,AcceptCHFrame,PrefersColorSchemeClientHintHeader",
         "");
 
     https_server_.ServeFilesFromSourceDirectory(

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/stack_container.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
@@ -70,6 +71,7 @@ class VisitRow {
            bool arg_incremented_omnibox_typed_score,
            VisitID arg_opener_visit);
   ~VisitRow();
+  VisitRow(const VisitRow&);
 
   // Compares two visits based on dates, for sorting.
   bool operator<(const VisitRow& other) const {
@@ -115,6 +117,12 @@ class VisitRow {
   // whereas `referring_visit` is only populated if the Referrer is from the
   // same tab.
   VisitID opener_visit = 0;
+
+  // These are set only for synced visits originating from a different machine.
+  // `originator_cache_guid` is the originator machine's unique client ID. It's
+  // called a "cache" just to match Chrome Sync's terminology.
+  std::string originator_cache_guid;
+  VisitID originator_visit_id = 0;
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -333,10 +341,12 @@ struct VisibleVisitCountToHostResult {
 
 // MostVisitedURL --------------------------------------------------------------
 
-// Holds the per-URL information of the most visited query.
+// Holds the information for a Most Visited page.
 struct MostVisitedURL {
   MostVisitedURL();
-  MostVisitedURL(const GURL& url, const std::u16string& title);
+  MostVisitedURL(const GURL& url,
+                 const std::u16string& title,
+                 double score = 0.0);
   MostVisitedURL(const MostVisitedURL& other);
   MostVisitedURL(MostVisitedURL&& other) noexcept;
   ~MostVisitedURL();
@@ -347,8 +357,9 @@ struct MostVisitedURL {
     return url == other.url;
   }
 
-  GURL url;
-  std::u16string title;
+  GURL url;              // The URL of the page.
+  std::u16string title;  // The title of the page.
+  double score{0.0};     // The frecency score of the page.
 };
 
 // FilteredURL -----------------------------------------------------------------
@@ -871,13 +882,52 @@ struct ClusterVisit {
   bool hidden = false;
 };
 
+// Additional data for a cluster keyword.
+struct ClusterKeywordData {
+  // Types are ordered according to preferences.
+  enum ClusterKeywordType {
+    kUnknown = 0,
+    kEntityCategory = 1,
+    kEntityAlias = 2,
+    kEntity = 3,
+    kSearchTerms = 4
+  };
+
+  ClusterKeywordData();
+  explicit ClusterKeywordData(
+      const std::vector<std::string>& entity_collections);
+  ClusterKeywordData(ClusterKeywordType type,
+                     float score,
+                     const std::vector<std::string>& entity_collections);
+  ClusterKeywordData(const ClusterKeywordData&);
+  ClusterKeywordData(ClusterKeywordData&&);
+  ClusterKeywordData& operator=(const ClusterKeywordData&);
+  ClusterKeywordData& operator=(ClusterKeywordData&&);
+  ~ClusterKeywordData();
+  bool operator==(const ClusterKeywordData& data) const;
+
+  // Updates cluster keyword type if a new type is preferred over the existing
+  // type.
+  void MaybeUpdateKeywordType(ClusterKeywordType other_type);
+
+  ClusterKeywordType type;
+
+  // A floating point score describing how important this
+  // keyword is to the containing cluster.
+  float score;
+
+  // Entity collections associated with the keyword this is attached to.
+  std::vector<std::string> entity_collections;
+};
+
 // A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and
 // `should_show_on_prominent_ui_surfaces`).
 struct Cluster {
   Cluster();
   Cluster(int64_t cluster_id,
           const std::vector<ClusterVisit>& visits,
-          const std::vector<std::u16string>& keywords,
+          const base::flat_map<std::u16string, ClusterKeywordData>&
+              keyword_to_data_map,
           bool should_show_on_prominent_ui_surfaces = true,
           absl::optional<std::u16string> label = absl::nullopt);
   Cluster(const Cluster&);
@@ -886,11 +936,16 @@ struct Cluster {
   Cluster& operator=(Cluster&&);
   ~Cluster();
 
+  std::vector<std::u16string> GetKeywords() const;
+
   int64_t cluster_id = 0;
   std::vector<ClusterVisit> visits;
-  // TODO(manukh): retrieve and persist `keywords`,
+  // TODO(manukh): retrieve and persist `keyword_to_data_map`,
   // `should_show_on_prominent_ui_surfaces, and `label`.
-  std::vector<std::u16string> keywords;
+
+  // A map of keywords to additional data.
+  base::flat_map<std::u16string, ClusterKeywordData> keyword_to_data_map;
+
   // Whether the cluster should be shown prominently on UI surfaces.
   bool should_show_on_prominent_ui_surfaces = true;
 

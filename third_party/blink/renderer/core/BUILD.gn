@@ -306,6 +306,7 @@ component("core") {
   }
 
   deps = [
+    ":generate_eventhandler_names",
     ":generated_settings_macros",
     "//build:chromeos_buildflags",
     "//components/paint_preview/common",
@@ -1214,6 +1215,28 @@ target(core_generated_target_type, "core_generated") {
   }
 }
 
+# Generate a list of event handler attributes, for use by Trusted Types.
+action("generate_eventhandler_names") {
+  script = "//third_party/blink/renderer/build/scripts/run_with_pythonpath.py"
+  real_script = "trustedtypes/generate_eventhandler_names.py"
+  inputs = [
+    web_idl_database_filepath,
+    real_script,
+  ]
+  outputs = [ "$target_gen_dir/trustedtypes/event_handler_names.h" ]
+  deps = [ "//third_party/blink/renderer/bindings:web_idl_database" ]
+  args = [
+    "-I",
+    rebase_path("//third_party/blink/renderer/bindings/scripts",
+                root_build_dir),
+    rebase_path(real_script, root_build_dir),
+    "--webidl",
+    rebase_path(inputs[0], root_build_dir),
+    "--out",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 # Fuzzer for blink::TextResourceDecoder.
 fuzzer_test("text_resource_decoder_fuzzer") {
   sources = [
@@ -1453,6 +1476,7 @@ source_set("unit_tests") {
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_box_fragment_painter_test.cc",
     "paint/ng/ng_highlight_overlay_test.cc",
+    "paint/ng/ng_inline_paint_context_test.cc",
     "paint/ng/ng_text_fragment_painter_test.cc",
     "paint/nine_piece_image_grid_test.cc",
     "paint/object_paint_invalidator_test.cc",
@@ -1884,8 +1908,8 @@ fuzzer_test("attribution_source_registration_fuzzer") {
   seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_source_registration_corpus"
 }
 
-fuzzer_test("attribution_event_trigger_data_fuzzer") {
-  sources = [ "frame/attribution_event_trigger_data_fuzzer.cc" ]
+fuzzer_test("attribution_trigger_registration_fuzzer") {
+  sources = [ "frame/attribution_trigger_registration_fuzzer.cc" ]
   deps = [
     ":core",
     "//testing/libfuzzer/proto:json_proto",
@@ -1893,41 +1917,5 @@ fuzzer_test("attribution_event_trigger_data_fuzzer") {
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
     "//third_party/libprotobuf-mutator",
   ]
-  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_event_trigger_data_corpus"
-}
-
-fuzzer_test("attribution_aggregatable_source_registration_fuzzer") {
-  sources = [ "frame/attribution_aggregatable_source_registration_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_aggregatable_source_registration_corpus"
-}
-
-fuzzer_test("attribution_aggregatable_values_fuzzer") {
-  sources = [ "frame/attribution_aggregatable_values_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_aggregatable_values_corpus"
-}
-
-fuzzer_test("attribution_aggregatable_trigger_data_fuzzer") {
-  sources = [ "frame/attribution_aggregatable_trigger_data_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_aggregatable_trigger_data_corpus"
+  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_trigger_registration_corpus"
 }

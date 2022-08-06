@@ -68,8 +68,7 @@ class QuarantineMacTest : public testing::Test {
   base::scoped_nsobject<NSURL> file_url_;
 };
 
-// TODO(crbug.com/1334495): Enable this test.
-TEST_F(QuarantineMacTest, DISABLED_CheckMetadataSetCorrectly) {
+TEST_F(QuarantineMacTest, CheckMetadataSetCorrectly) {
   QuarantineFile(
       test_file_, source_url_, referrer_url_, "",
       base::BindOnce(&CheckQuarantineResult, QuarantineFileResult::OK));
@@ -77,8 +76,7 @@ TEST_F(QuarantineMacTest, DISABLED_CheckMetadataSetCorrectly) {
   EXPECT_TRUE(IsFileQuarantined(test_file_, source_url_, referrer_url_));
 }
 
-// TODO(crbug.com/1334495): Enable this test.
-TEST_F(QuarantineMacTest, DISABLED_SetMetadataMultipleTimes) {
+TEST_F(QuarantineMacTest, SetMetadataMultipleTimes) {
   GURL dummy_url("http://www.dummy.example.com");
   QuarantineFile(
       test_file_, source_url_, referrer_url_, "",
@@ -99,8 +97,7 @@ TEST_F(QuarantineMacTest, IsFileQuarantined_NoAnnotationsOnFile) {
   EXPECT_FALSE(IsFileQuarantined(test_file_, GURL(), GURL()));
 }
 
-// TODO(crbug.com/1334495): Enable this test.
-TEST_F(QuarantineMacTest, DISABLED_IsFileQuarantined_SourceUrlOnly) {
+TEST_F(QuarantineMacTest, IsFileQuarantined_SourceUrlOnly) {
   QuarantineFile(
       test_file_, source_url_, GURL(), std::string(),
       base::BindOnce(&CheckQuarantineResult, QuarantineFileResult::OK));
@@ -111,8 +108,7 @@ TEST_F(QuarantineMacTest, DISABLED_IsFileQuarantined_SourceUrlOnly) {
   EXPECT_FALSE(IsFileQuarantined(test_file_, referrer_url_, GURL()));
 }
 
-// TODO(crbug.com/1334495): Enable this test.
-TEST_F(QuarantineMacTest, DISABLED_IsFileQuarantined_FullMetadata) {
+TEST_F(QuarantineMacTest, IsFileQuarantined_FullMetadata) {
   QuarantineFile(
       test_file_, source_url_, referrer_url_, std::string(),
       base::BindOnce(&CheckQuarantineResult, QuarantineFileResult::OK));
@@ -125,8 +121,7 @@ TEST_F(QuarantineMacTest, DISABLED_IsFileQuarantined_FullMetadata) {
   EXPECT_FALSE(IsFileQuarantined(test_file_, referrer_url_, referrer_url_));
 }
 
-// TODO(crbug.com/1334495): Enable this test.
-TEST_F(QuarantineMacTest, DISABLED_IsFileQuarantined_Sanitize) {
+TEST_F(QuarantineMacTest, IsFileQuarantined_Sanitize) {
   GURL host_url{"https://user:pass@example.com/foo/bar?x#y"};
   GURL host_url_clean{"https://example.com/foo/bar?x#y"};
   GURL referrer_url{"https://user:pass@example.com/foo/index?x#y"};

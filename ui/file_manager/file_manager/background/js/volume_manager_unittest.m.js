@@ -53,13 +53,14 @@ export function setUp() {
         callback(
             chrome.fileManagerPrivate.fileSystemMap_[options.volumeId].root);
       },
-      removeMount: function(volumeId) {
+      removeMount: function(volumeId, callback) {
         const event = {
           eventType: 'unmount',
           status: 'success',
           volumeMetadata: {volumeId: volumeId}
         };
         mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent(event);
+        callback();
       },
       onDriveConnectionStatusChanged: {
         addListener: function(listener) {
@@ -295,6 +296,52 @@ export function testMountArchiveAndUnmount(callback) {
 
     await waitUntil(
         () => volumeManager.volumeInfoList.length === numberOfVolumes);
+    assertEquals(numberOfVolumes, volumeManager.volumeInfoList.length);
+  };
+
+  reportPromise(test(), callback);
+}
+
+export function testCancelMountingArchive(callback) {
+  const test = async () => {
+    // Set states of mock fileManagerPrivate APIs.
+    const mountSourcePath = '/usr/local/home/test/Downloads/foobar.zip';
+    chrome.fileManagerPrivate.mountSourcePath_ = mountSourcePath;
+    chrome.fileManagerPrivate.fileSystemMap_['archive:foobar.zip'] =
+        new MockFileSystem('archive:foobar.zip');
+
+    const volumeManager = await volumeManagerFactory.getInstance();
+
+    // Drive + Downloads + Android.
+    const numberOfVolumes = 3;
+    await waitAllVolumes(volumeManager);
+
+    setTimeout(
+        () => mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+          eventType: 'mount',
+          status: VolumeManagerCommon.VolumeError.CANCELLED,
+          volumeMetadata: {
+            volumeId: null,
+            volumeLabel: null,
+            volumeType: null,
+            isReadOnly: null,
+            sourcePath: mountSourcePath,
+            profile: null,
+            configurable: null,
+            watchable: null,
+            source: null,
+          },
+        }));
+
+    try {
+      await volumeManager.mountArchive(
+          'filesystem:chrome-extension://extensionid/external/' +
+              'Downloads-test/foobar.zip',
+          'My Password');
+    } catch (error) {
+      assertEquals(error, VolumeManagerCommon.VolumeError.CANCELLED);
+    }
+
     assertEquals(numberOfVolumes, volumeManager.volumeInfoList.length);
   };
 

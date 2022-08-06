@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -115,8 +116,7 @@ IN_PROC_BROWSER_TEST_P(StubResolverConfigReaderBrowsertest, ConfigFromPrefs) {
   // Mark as not enterprise managed.
 #if BUILDFLAG(IS_WIN)
   base::win::ScopedDomainStateForTesting scoped_domain(false);
-  // TODO(crbug.com/1339062): What is the correct function to use here?
-  EXPECT_FALSE(base::win::IsEnrolledToDomain());
+  EXPECT_FALSE(base::IsEnterpriseDevice());
 #endif
 
   std::string good_post_template = "https://foo.test/";
@@ -281,6 +281,12 @@ IN_PROC_BROWSER_TEST_P(StubResolverConfigReaderBrowsertest, ConfigFromPolicy) {
       /*force_check_parental_controls_for_automatic_mode=*/false);
   EXPECT_EQ(secure_dns_config.mode(), net::SecureDnsMode::kSecure);
   EXPECT_THAT(secure_dns_config.doh_servers().servers(), testing::IsEmpty());
+  // Deterministic regression test for flaky failures seen in
+  // https://crbug.com/1326526. This induces a DNS resolution while in secure
+  // mode with zero DoH server templates to use.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("foo.example", "/")));
 
   // Invalid mode policy
   SetSecureDnsModePolicy("invalid");

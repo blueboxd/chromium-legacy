@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -38,6 +39,7 @@
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "components/viz/service/display_embedder/skia_render_copy_results.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/service/external_semaphore.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -68,10 +70,14 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/gpu_fence_handle.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
 #if BUILDFLAG(IS_ANDROID)
 #include "components/viz/service/display_embedder/skia_output_device_vulkan_secondary_cb.h"
@@ -357,6 +363,11 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   // before deleting ImplOnGpu's other member variables.
   shared_image_factory_.reset();
   if (has_context) {
+    absl::optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (dependency_->GetGrShaderCache()) {
+      cache_use.emplace(dependency_->GetGrShaderCache(),
+                        gpu::kDisplayCompositorClientId);
+    }
     // This ensures any outstanding callbacks for promise images are
     // performed.
     gr_context()->flushAndSubmit();
@@ -393,6 +404,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     base::OnceClosure on_finished,
+    base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
     absl::optional<gfx::Rect> draw_rectangle) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -475,7 +487,24 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     end_semaphores.insert(end_semaphores.end(), end_paint_semaphores.begin(),
                           end_paint_semaphores.end());
 
+#if BUILDFLAG(ENABLE_VULKAN)
+    // Semaphores for release fences for vulkan should be created before flush.
+    if (!return_release_fence_cb.is_null() && is_using_vulkan()) {
+      const bool result = CreateAndStoreExternalSemaphoreVulkan(end_semaphores);
+      // A release fence will be created on submit as some platforms may use
+      // VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT handle types for their
+      // external semaphore. That handle type has COPY transference. Vulkan spec
+      // says that semaphore has to be signaled, or have an associated semaphore
+      // signal operation pending execution. Thus, delay importing the handle
+      // and creating the fence until commands are submitted.
+      pending_release_fence_cbs_.emplace_back(
+          result ? end_semaphores.back() : GrBackendSemaphore(),
+          std::move(return_release_fence_cb));
+    }
+#endif
+
     const bool end_semaphores_empty = end_semaphores.empty();
+
     auto result = scoped_output_device_paint_->Flush(vulkan_context_provider_,
                                                      std::move(end_semaphores),
                                                      std::move(on_finished));
@@ -485,6 +514,22 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       // TODO(penghuang): handle vulkan device lost.
       FailedSkiaFlush("output_sk_surface()->flush() failed.");
       return;
+    }
+
+    gfx::GpuFenceHandle release_fence;
+    if (!return_release_fence_cb.is_null() && is_using_gl()) {
+      DCHECK(release_fence.is_null());
+      release_fence = CreateReleaseFenceForGL();
+    }
+
+    if (!return_release_fence_cb.is_null() && is_using_dawn())
+      NOTIMPLEMENTED() << "Release fences with dawn are not supported.";
+
+    if (!return_release_fence_cb.is_null()) {
+      // Returning fences for Vulkan is delayed. See the comment above.
+      DCHECK(!is_using_vulkan());
+      PostTaskToClientThread(base::BindOnce(std::move(return_release_fence_cb),
+                                            std::move(release_fence)));
     }
   }
 }
@@ -530,7 +575,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     sk_sp<SkDeferredDisplayList> ddl,
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
-    base::OnceClosure on_finished) {
+    base::OnceClosure on_finished,
+    base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
@@ -581,6 +627,22 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     backing_representation->SetCleared();
     destroy_after_swap_.emplace_back(std::move(ddl));
 
+#if BUILDFLAG(ENABLE_VULKAN)
+    // Semaphores for release fences for vulkan should be created before flush.
+    if (!return_release_fence_cb.is_null() && is_using_vulkan()) {
+      const bool result = CreateAndStoreExternalSemaphoreVulkan(end_semaphores);
+      // A release fence will be created on submit as some platforms may use
+      // VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT handle types for their
+      // external semaphore. That handle type has COPY transference. Vulkan spec
+      // says that semaphore has to be signaled, or have an associated semaphore
+      // signal operation pending execution. Thus, delay importing the handle
+      // and creating the fence until commands are submitted.
+      pending_release_fence_cbs_.emplace_back(
+          result ? end_semaphores.back() : GrBackendSemaphore(),
+          std::move(return_release_fence_cb));
+    }
+#endif
+
     GrFlushInfo flush_info = {
         .fNumSemaphores = end_semaphores.size(),
         .fSignalSemaphores = end_semaphores.data(),
@@ -589,6 +651,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
                                           &flush_info);
     if (on_finished)
       gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
+
     auto result = surface->flush(flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
@@ -596,6 +659,24 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       FailedSkiaFlush("offscreen.surface()->flush() failed.");
       return;
     }
+
+    // If GL is used, create the release fence after flush.
+    gfx::GpuFenceHandle release_fence;
+    if (!return_release_fence_cb.is_null() && is_using_gl()) {
+      DCHECK(release_fence.is_null());
+      release_fence = CreateReleaseFenceForGL();
+    }
+
+    if (!return_release_fence_cb.is_null() && is_using_dawn())
+      NOTIMPLEMENTED() << "Release fences with dawn are not supported.";
+
+    if (!return_release_fence_cb.is_null()) {
+      // Returning fences for Vulkan is delayed. See the comment above.
+      DCHECK(!is_using_vulkan());
+      PostTaskToClientThread(base::BindOnce(std::move(return_release_fence_cb),
+                                            std::move(release_fence)));
+    }
+
     bool sync_cpu =
         gpu::ShouldVulkanSyncCpuForSkiaSubmit(vulkan_context_provider_);
     if (sync_cpu) {
@@ -849,8 +930,8 @@ bool SkiaOutputSurfaceImplOnGpu::ImportSurfacesForNV12Planes(
   for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
     const gpu::MailboxHolder& mailbox_holder = blit_request.mailbox(i);
 
-    // Should never happen, maiboxes are validated when setting blit request on
-    // a CopyOutputResult.
+    // Should never happen, mailboxes are validated when setting blit request on
+    // a CopyOutputResult and we only access `kNV12MaxPlanes` mailboxes.
     DCHECK(!mailbox_holder.mailbox.IsZero());
 
     PlaneAccessData& plane_data = plane_access_datas[i];
@@ -912,6 +993,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
              CopyOutputRequest::ResultDestination::kNativeTextures)
       << "Only CopyOutputRequests that hand out native textures support blit "
          "requests!";
+  DCHECK(!request->has_blit_request() || request->has_result_selection())
+      << "Only CopyOutputRequests that specify result selection support blit "
+         "requests!";
 
   // Overview:
   // 1. Try to create surfaces for NV12 planes (we know the needed size in
@@ -934,16 +1018,29 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
   // copied, as well as area, scaling & result_selection of the `request`.
   // This represents the size of the intermediate texture that will be then
   // blitted to the destination textures.
-  const gfx::Size destination_size = geometry.result_selection.size();
+  const gfx::Size intermediate_dst_size = geometry.result_selection.size();
 
   std::array<PlaneAccessData, CopyOutputResult::kNV12MaxPlanes>
       plane_access_datas;
 
   SkYUVAInfo yuva_info;
 
-  bool destination_surfaces_created = false;
+  bool destination_surfaces_ready = false;
   if (request->has_blit_request()) {
-    destination_surfaces_created = ImportSurfacesForNV12Planes(
+    if (request->result_selection().size() != intermediate_dst_size) {
+      DLOG(WARNING)
+          << __func__
+          << ": result selection is different than render pass output, "
+             "geometry="
+          << geometry.ToString() << ", request=" << request->ToString();
+      // Send empty result, we have a blit request that asks for a different
+      // size than what we have available - the behavior in this case is
+      // currently unspecified as we'd have to leave parts of the caller's
+      // region unpopulated.
+      return;
+    }
+
+    destination_surfaces_ready = ImportSurfacesForNV12Planes(
         request->blit_request(), plane_access_datas);
 
     // The entire destination image size is the same as the size of the luma
@@ -954,7 +1051,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
     // Check if the destination will fit in the blit target:
     const gfx::Rect blit_destination_rect(
-        request->blit_request().destination_region_offset(), destination_size);
+        request->blit_request().destination_region_offset(),
+        intermediate_dst_size);
     const gfx::Rect blit_target_image_rect(
         gfx::SkISizeToSize(plane_access_datas[0].size));
 
@@ -964,24 +1062,25 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
       return;
     }
   } else {
-    yuva_info = SkYUVAInfo(
-        gfx::SizeToSkISize(destination_size), SkYUVAInfo::PlaneConfig::kY_UV,
-        SkYUVAInfo::Subsampling::k420, kRec709_Limited_SkYUVColorSpace);
+    yuva_info = SkYUVAInfo(gfx::SizeToSkISize(intermediate_dst_size),
+                           SkYUVAInfo::PlaneConfig::kY_UV,
+                           SkYUVAInfo::Subsampling::k420,
+                           kRec709_Limited_SkYUVColorSpace);
 
-    destination_surfaces_created =
+    destination_surfaces_ready =
         CreateSurfacesForNV12Planes(yuva_info, color_space, plane_access_datas);
   }
 
-  if (!destination_surfaces_created) {
-    DVLOG(1) << "failed to create destination surfaces";
+  if (!destination_surfaces_ready) {
+    DVLOG(1) << "failed to create / import destination surfaces";
     // Send empty result.
     return;
   }
 
   // Create a destination for the scaled & clipped result:
-  auto representation = CreateSharedImageRepresentationSkia(
-      ResourceFormat::RGBA_8888, destination_size, color_space);
-  if (!representation) {
+  auto intermediate_representation = CreateSharedImageRepresentationSkia(
+      ResourceFormat::RGBA_8888, intermediate_dst_size, color_space);
+  if (!intermediate_representation) {
     DVLOG(1) << "failed to create shared image representation for the "
                 "intermediate surface";
     // Send empty result.
@@ -992,9 +1091,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
 
-  auto scoped_write = representation->BeginScopedWriteAccess(
-      /*final_msaa_count=*/1, surface_props, &begin_semaphores, &end_semaphores,
-      gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  auto intermediate_scoped_write =
+      intermediate_representation->BeginScopedWriteAccess(
+          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
+          &end_semaphores,
+          gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
 
   absl::optional<SkVector> scaling;
   if (request->is_scaled()) {
@@ -1004,21 +1105,22 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
                                  request->scale_from().y());
   }
 
-  scoped_write->surface()->wait(begin_semaphores.size(),
-                                begin_semaphores.data());
+  intermediate_scoped_write->surface()->wait(begin_semaphores.size(),
+                                             begin_semaphores.data());
 
   RenderSurface(surface, src_rect, scaling,
                 is_downscale_or_identity_in_both_dimensions,
-                scoped_write->surface());
+                intermediate_scoped_write->surface());
 
   if (request->has_blit_request()) {
-    BlendBitmapOverlays(scoped_write->surface()->getCanvas(),
+    BlendBitmapOverlays(intermediate_scoped_write->surface()->getCanvas(),
                         request->blit_request());
   }
 
-  auto source_image = scoped_write->surface()->makeImageSnapshot();
-  if (!source_image) {
-    DLOG(ERROR) << "failed to retrieve source_image.";
+  auto intermediate_image =
+      intermediate_scoped_write->surface()->makeImageSnapshot();
+  if (!intermediate_image) {
+    DLOG(ERROR) << "failed to retrieve `intermediate_image`.";
     return;
   }
 
@@ -1030,19 +1132,27 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
       plane_access_datas[1].scoped_write->surface(), nullptr, nullptr};
 
   // The region to be populated in caller's textures is derived from blit
-  // request's |destination_region_offset|, and from COR's |result_selection|.
-  // If we have a blit request, use it. Otherwise, use an
+  // request's |destination_region_offset()|, and from COR's
+  // |result_selection()|. If we have a blit request, use it. Otherwise, use an
   // empty rect (which means that entire image will be used as the target of the
   // blit - this will not result in rescaling since w/o blit request present,
-  // the image size matches the |result_selection|).
-  SkRect dst_region =
+  // the destination image size matches the |geometry.result_selection|).
+  const SkRect dst_region =
       request->has_blit_request()
           ? gfx::RectToSkRect(
                 gfx::Rect(request->blit_request().destination_region_offset(),
-                          destination_size))
+                          intermediate_dst_size))
           : SkRect::MakeEmpty();
-  skia::BlitRGBAToYUVA(source_image.get(), plane_surfaces.data(), yuva_info,
-                       dst_region);
+
+  // We should clear destination if BlitRequest asked to letterbox everything
+  // outside of intended destination region:
+  const bool clear_destination =
+      request->has_blit_request()
+          ? request->blit_request().letterboxing_behavior() ==
+                LetterboxingBehavior::kLetterbox
+          : false;
+  skia::BlitRGBAToYUVA(intermediate_image.get(), plane_surfaces.data(),
+                       yuva_info, dst_region, clear_destination);
 
   bool should_submit = false;
 
@@ -1059,12 +1169,12 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
     }
   }
 
-  representation->SetCleared();
+  intermediate_representation->SetCleared();
 
   should_submit |= !end_semaphores.empty();
 
-  if (!FlushSurface(scoped_write->surface(), end_semaphores,
-                    scoped_write->TakeEndState())) {
+  if (!FlushSurface(intermediate_scoped_write->surface(), end_semaphores,
+                    intermediate_scoped_write->TakeEndState())) {
     // TODO(penghuang): handle vulkan device lost.
     FailedSkiaFlush("CopyOutputNV12 dest_surface->flush()");
     return;
@@ -1754,6 +1864,20 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
   promise_image_access_helper_.EndAccess();
   scoped_output_device_paint_.reset();
 
+#if BUILDFLAG(ENABLE_VULKAN)
+  while (!pending_release_fence_cbs_.empty()) {
+    auto& item = pending_release_fence_cbs_.front();
+    auto release_fence = CreateReleaseFenceForVulkan(item.first);
+    if (release_fence.is_null())
+      LOG(ERROR) << "Unable to create a release fence for Vulkan.";
+    PostTaskToClientThread(
+        base::BindOnce(std::move(item.second), std::move(release_fence)));
+    pending_release_fence_cbs_.pop_front();
+  }
+#else
+  DCHECK(pending_release_fence_cbs_.empty());
+#endif
+
   if (frame) {
     if (waiting_for_full_damage_) {
       // If we're using partial swap, we need to check whether the sub-buffer
@@ -1847,17 +1971,6 @@ GpuVSyncCallback SkiaOutputSurfaceImplOnGpu::GetGpuVSyncCallback() {
 
 base::TimeDelta SkiaOutputSurfaceImplOnGpu::GetGpuBlockedTimeSinceLastSwap() {
   return dependency_->GetGpuBlockedTimeSinceLastSwap();
-}
-
-void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
-    gpu::SwapBuffersCompleteParams params,
-    gfx::GpuFenceHandle release_fence) {
-  // Handled by SkiaOutputDevice already.
-}
-
-void SkiaOutputSurfaceImplOnGpu::BufferPresented(
-    const gfx::PresentationFeedback& feedback) {
-  // Handled by SkiaOutputDevice already.
 }
 
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal(
@@ -1984,6 +2097,58 @@ void SkiaOutputSurfaceImplOnGpu::DiscardBackbuffer() {
   // until it's removed we should keep true here.
   MakeCurrent(/*need_framebuffer=*/true);
   output_device_->DiscardBackbuffer();
+}
+
+#if BUILDFLAG(ENABLE_VULKAN)
+gfx::GpuFenceHandle SkiaOutputSurfaceImplOnGpu::CreateReleaseFenceForVulkan(
+    const GrBackendSemaphore& semaphore) {
+  DCHECK(is_using_vulkan());
+
+  if (semaphore.vkSemaphore() == VK_NULL_HANDLE)
+    return {};
+
+  auto* implementation = vulkan_context_provider_->GetVulkanImplementation();
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+
+  auto handle =
+      implementation->GetSemaphoreHandle(device, semaphore.vkSemaphore());
+  if (!handle.is_valid()) {
+    vkDestroySemaphore(device, semaphore.vkSemaphore(),
+                       /*pAllocator=*/nullptr);
+    LOG(ERROR) << "Failed to create a release fence for Vulkan.";
+    return {};
+  }
+  return std::move(handle).ToGpuFenceHandle();
+}
+
+bool SkiaOutputSurfaceImplOnGpu::CreateAndStoreExternalSemaphoreVulkan(
+    std::vector<GrBackendSemaphore>& end_semaphores) {
+  DCHECK(is_using_vulkan());
+
+  auto* implementation = vulkan_context_provider_->GetVulkanImplementation();
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+
+  VkSemaphore semaphore = implementation->CreateExternalSemaphore(device);
+  if (semaphore == VK_NULL_HANDLE) {
+    LOG(ERROR)
+        << "Creation of an external semaphore for a release fence failed.";
+    return false;
+  }
+
+  end_semaphores.emplace_back();
+  end_semaphores.back().initVulkan(semaphore);
+  return true;
+}
+#endif
+
+gfx::GpuFenceHandle SkiaOutputSurfaceImplOnGpu::CreateReleaseFenceForGL() {
+  if (gl::GLFence::IsGpuFenceSupported()) {
+    auto fence = gl::GLFence::CreateForGpuFence();
+    return fence->GetGpuFence()->GetGpuFenceHandle().Clone();
+  }
+  return {};
 }
 
 }  // namespace viz

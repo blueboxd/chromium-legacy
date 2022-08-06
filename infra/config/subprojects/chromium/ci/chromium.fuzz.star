@@ -317,6 +317,9 @@ ci.builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -328,7 +331,7 @@ ci.builder(
     cores = 4,
     executable = "recipe:chromium_libfuzzer",
     execution_timeout = 4 * time.hour,
-    os = os.MAC_11,
+    os = os.MAC_12,
     xcode = xcode.x13main,
 )
 

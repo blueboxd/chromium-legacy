@@ -31,7 +31,6 @@
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/policy/enterprise_policy_test_helper.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
@@ -331,7 +330,7 @@ TEST_F(OverflowMenuMediatorTest, TestReadLaterDisabled) {
   mediator_.webStateList = browser_->GetWebStateList();
   mediator_.webContentAreaOverlayPresenter = OverlayPresenter::FromBrowser(
       browser_.get(), OverlayModality::kWebContentArea);
-  mediator_.prefService = prefs_.get();
+  mediator_.browserStatePrefs = prefs_.get();
 
   // Force creation of the model.
   [mediator_ overflowMenuModel];
@@ -436,7 +435,7 @@ TEST_F(OverflowMenuMediatorTest, TestBookmarksToolsMenuButtons) {
   bookmarks::AddIfNotBookmarked(bookmark_model_, bookmarkedURL,
                                 base::SysNSStringToUTF16(@"Test bookmark"));
   mediator_.webStateList = browser_->GetWebStateList();
-  mediator_.prefService = prefs_.get();
+  mediator_.browserStatePrefs = prefs_.get();
 
   // Force creation of the model.
   [mediator_ overflowMenuModel];
@@ -466,7 +465,7 @@ TEST_F(OverflowMenuMediatorTest, TestDisableBookmarksButton) {
   CreateMediator(/*is_incognito=*/NO);
   CreatePrefs();
   mediator_.webStateList = browser_->GetWebStateList();
-  mediator_.prefService = prefs_.get();
+  mediator_.browserStatePrefs = prefs_.get();
 
   // Force creation of the model.
   [mediator_ overflowMenuModel];

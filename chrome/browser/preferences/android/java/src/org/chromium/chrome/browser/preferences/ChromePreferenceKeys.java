@@ -165,77 +165,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String CONTENT_SUGGESTIONS_SHOWN = "content_suggestions_shown";
 
-    /** An all-time counter of Contextual Search panel opens triggered by any gesture.*/
-    public static final String CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT =
-            "contextual_search_all_time_open_count";
-    /** An all-time counter of taps that triggered the Contextual Search peeking panel. */
-    public static final String CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT =
-            "contextual_search_all_time_tap_count";
-    /**
-     * The number of times a tap gesture caused a Contextual Search Quick Answer to be shown.
-     * Cumulative, starting at M-69.
-     */
-    public static final String CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT =
-            "contextual_search_all_time_tap_quick_answer_count";
-    /**
-     * The entity-data impressions count for Contextual Search, i.e. thumbnails shown in the Bar.
-     * Cumulative, starting at M-69.
-     */
-    public static final String CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT =
-            "contextual_search_entity_impressions_count";
-    /**
-     * The entity-data opens count for Contextual Search, e.g. Panel opens following thumbnails
-     * shown in the Bar. Cumulative, starting at M-69.
-     */
-    public static final String CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT =
-            "contextual_search_entity_opens_count";
-    public static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
-            "contextual_search_last_animation_time";
-    /**
-     * An encoded set of outcomes of user interaction with Contextual Search, stored as an int.
-     */
-    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES =
-            "contextual_search_previous_interaction_encoded_outcomes";
-    /**
-     * A user interaction event ID for interaction with Contextual Search, stored as a long.
-     */
-    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID =
-            "contextual_search_previous_interaction_event_id";
-    /**
-     * A timestamp indicating when we updated the user interaction with Contextual Search, stored
-     * as a long, with resolution in days.
-     */
-    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP =
-            "contextual_search_previous_interaction_timestamp";
-    /**
-     * The number of times the Contextual Search panel was opened with the opt-in promo visible.
-     */
-    public static final String CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT =
-            "contextual_search_promo_open_count";
-    /**
-     * The Quick Actions ignored count, i.e. phone numbers available but not dialed.
-     * Cumulative, starting at M-69.
-     */
-    public static final String CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT =
-            "contextual_search_quick_actions_ignored_count";
-    /**
-     * The Quick Actions taken count for Contextual Search, i.e. phone numbers dialed and similar
-     * actions. Cumulative, starting at M-69.
-     */
-    public static final String CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT =
-            "contextual_search_quick_actions_taken_count";
-    /**
-     * The Quick Action impressions count for Contextual Search, i.e. actions presented in the Bar.
-     * Cumulative, starting at M-69.
-     */
-    public static final String CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT =
-            "contextual_search_quick_action_impressions_count";
-    /**
-     * The number of times that a tap triggered the Contextual Search panel to peek since the last
-     * time the panel was opened.  Note legacy string value without "open".
-     */
-    public static final String CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT =
-            "contextual_search_tap_count";
     /**
      * The number of times a tap gesture caused a Contextual Search Quick Answer to be shown since
      * the last time the panel was opened.  Note legacy string value without "open".
@@ -395,19 +324,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED =
             "network_service_warm_up_enabled";
-    /**
-     * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
-            "service_manager_for_background_prefetch";
-    /**
-     * Key for whether DownloadResumptionBackgroundTask should load native in service manager only
-     * mode.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION =
-            "service_manager_for_download_resumption";
     /**
      * Whether or not the start surface is enabled.
      * Default value is false.
@@ -858,12 +774,6 @@ public final class ChromePreferenceKeys {
     public static final String SIGNIN_AND_SYNC_PROMO_SHOW_COUNT =
             "enhanced_bookmark_signin_promo_show_count";
 
-    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS =
-            "signin_promo_impressions_count_bookmarks";
-    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP =
-            "Chrome.SigninPromo.NTPImpressions";
-    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
-            "signin_promo_impressions_count_settings";
     public static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
             "signin_promo_last_shown_account_names";
     public static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
@@ -1013,6 +923,7 @@ public final class ChromePreferenceKeys {
             new KeyPrefix("zero_suggest_header_group_collapsed_by_default*");
 
     public static final String BLUETOOTH_NOTIFICATION_IDS = "Chrome.Bluetooth.NotificationIds";
+    public static final String USB_NOTIFICATION_IDS = "Chrome.USB.NotificationIds";
 
     /**
      * These values are currently used as SharedPreferences keys, along with the keys in
@@ -1132,7 +1043,6 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
                 SHOW_START_SEGMENTATION_RESULT,
-                SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP,
                 SYNC_PROMO_SHOW_COUNT.pattern(),
                 SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME,
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,
@@ -1142,6 +1052,7 @@ public final class ChromePreferenceKeys {
                 TAP_FEED_CARDS_COUNT,
                 TAP_MV_TILES_COUNT,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
+                USB_NOTIFICATION_IDS,
                 VIDEO_TUTORIALS_SHARE_URL_SET,
                 WEB_FEED_INTRO_LAST_SHOWN_TIME_MS,
                 WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_TIME_MS_PREFIX.pattern(),

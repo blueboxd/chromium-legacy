@@ -154,7 +154,7 @@ class BackgroundLayerDelegate : public ui::LayerDelegate {
 
   void SetBackgroundColor(SkColor color) {
     background_color_ = color;
-    layer_->SchedulePaint(layer_->bounds());
+    layer_->SchedulePaint(layer_->PaintableRegion());
   }
 
  private:
@@ -314,13 +314,18 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   // Initializes the view.
   void Init(ui::Layer* parent_layer);
 
+  // Updates the layout and visibility of `opaque_background_`.
   void UpdateOpaqueBackground();
+
+  // Updates the color of `opaque_background_`.
+  void UpdateBackgroundColor();
 
   // views::View:
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
+  void OnThemeChanged() override;
 
   // views::AccessiblePaneView:
   View* GetDefaultFocusableChild() override;
@@ -409,11 +414,7 @@ void ShelfNavigationWidget::Delegate::Init(ui::Layer* parent_layer) {
 }
 
 void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
-  SkColor background_color = ShelfConfig::Get()->GetShelfControlButtonColor();
-  if (background_delegate_)
-    background_delegate_->SetBackgroundColor(background_color);
-  else
-    opaque_background_.SetColor(background_color);
+  UpdateBackgroundColor();
 
   // Hide background if no buttons should be shown.
   if (!IsHomeButtonShown() &&
@@ -440,6 +441,14 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
   opaque_background_.SetBounds(opaque_background_bounds);
   opaque_background_.SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
+}
+
+void ShelfNavigationWidget::Delegate::UpdateBackgroundColor() {
+  SkColor background_color = ShelfConfig::Get()->GetShelfControlButtonColor();
+  if (background_delegate_)
+    background_delegate_->SetBackgroundColor(background_color);
+  else
+    opaque_background_.SetColor(background_color);
 }
 
 bool ShelfNavigationWidget::Delegate::CanActivate() const {
@@ -471,6 +480,11 @@ void ShelfNavigationWidget::Delegate::ReorderChildLayers(
 void ShelfNavigationWidget::Delegate::OnBoundsChanged(
     const gfx::Rect& old_bounds) {
   UpdateOpaqueBackground();
+}
+
+void ShelfNavigationWidget::Delegate::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
+  UpdateBackgroundColor();
 }
 
 views::View* ShelfNavigationWidget::Delegate::GetDefaultFocusableChild() {
@@ -827,7 +841,10 @@ gfx::Rect ShelfNavigationWidget::CalculateClipRectAfterRTL() const {
 
 gfx::Size ShelfNavigationWidget::CalculateIdealSize(
     bool only_visible_area) const {
-  if (!ShelfConfig::Get()->shelf_controls_shown())
+  const bool home_button_shown = IsHomeButtonShown();
+  const bool back_button_shown =
+      IsBackButtonShown(shelf_->IsHorizontalAlignment());
+  if (!home_button_shown && !back_button_shown)
     return gfx::Size();
 
   int controls_space = 0;
@@ -839,11 +856,10 @@ gfx::Size ShelfNavigationWidget::CalculateIdealSize(
   } else {
     // Use CalculatePreferredSize here to take the launcher nudge label into
     // consider.
-    controls_space += IsHomeButtonShown()
+    controls_space += home_button_shown
                           ? GetHomeButton()->CalculatePreferredSize().width()
                           : 0;
-    controls_space +=
-        IsBackButtonShown(shelf_->IsHorizontalAlignment()) ? control_size : 0;
+    controls_space += back_button_shown ? control_size : 0;
     controls_space +=
         (CalculateButtonCount() - 1) * ShelfConfig::Get()->button_spacing();
   }

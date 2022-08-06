@@ -16,7 +16,6 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/extend.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_base.h"
@@ -80,11 +79,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
-#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
@@ -275,16 +273,20 @@ void WebAppPublisherHelper::BadgeManagerDelegate::OnAppBadgeUpdated(
 }
 #endif
 
-WebAppPublisherHelper::WebAppPublisherHelper(Profile* profile,
-                                             WebAppProvider* provider,
-                                             apps::AppType app_type,
-                                             Delegate* delegate,
-                                             bool observe_media_requests)
+WebAppPublisherHelper::WebAppPublisherHelper(
+    Profile* profile,
+    WebAppProvider* provider,
+    ash::SystemWebAppManager* swa_manager,
+    apps::AppType app_type,
+    Delegate* delegate,
+    bool observe_media_requests)
     : profile_(profile),
       provider_(provider),
+      swa_manager_(swa_manager),
       app_type_(app_type),
       delegate_(delegate) {
   DCHECK(profile_);
+  DCHECK(delegate_);
   Init(observe_media_requests);
 }
 
@@ -312,17 +314,6 @@ WebAppPublisherHelper::ConvertUninstallSourceToWebAppUninstallSource(
     case apps::mojom::UninstallSource::kUnknown:
       return webapps::WebappUninstallSource::kUnknown;
   }
-}
-
-// static
-bool WebAppPublisherHelper::Accepts(const std::string& app_id) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Crostini Terminal System App is handled by Crostini Apps.
-  return app_id != crostini::kCrostiniTerminalSystemAppId ||
-         base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH);
-#else
-  return true;
-#endif
 }
 
 void WebAppPublisherHelper::Shutdown() {
@@ -731,8 +722,8 @@ void WebAppPublisherHelper::UninstallWebApp(
                              },
                              base::Unretained(profile())),
                          origin, kClearCookies, kClearStorage, kClearCache,
-                         kAvoidClosingConnections,
-                         net::CookiePartitionKey::Todo(), base::DoNothing());
+                         kAvoidClosingConnections, absl::nullopt,
+                         base::DoNothing());
 }
 
 apps::mojom::IconKeyPtr WebAppPublisherHelper::MakeIconKey(
@@ -911,7 +902,6 @@ void WebAppPublisherHelper::LaunchAppWithIntent(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (app_id == crostini::kCrostiniTerminalSystemAppId) {
-    DCHECK(base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH));
     int64_t display_id =
         window_info ? window_info->display_id : display::kInvalidDisplayId;
     crostini::LaunchTerminalWithIntent(
@@ -964,7 +954,6 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithParams(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Terminal SWA has custom launch code and manages its own restore data.
   if (params.app_id == crostini::kCrostiniTerminalSystemAppId) {
-    DCHECK(base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH));
     crostini::LaunchTerminalHome(profile_, params.display_id);
     return nullptr;
   }
@@ -1139,18 +1128,6 @@ WebAppPublisherHelper::ConvertOsLoginModeToWebAppConstants(
   return web_app_constant_login_mode;
 }
 
-apps::RunOnOsLoginMode WebAppPublisherHelper::ConvertOsLoginMode(
-    web_app::RunOnOsLoginMode login_mode) {
-  switch (login_mode) {
-    case web_app::RunOnOsLoginMode::kWindowed:
-      return apps::RunOnOsLoginMode::kWindowed;
-    case web_app::RunOnOsLoginMode::kNotRun:
-      return apps::RunOnOsLoginMode::kNotRun;
-    case web_app::RunOnOsLoginMode::kMinimized:
-      return apps::RunOnOsLoginMode::kUnknown;
-  }
-}
-
 apps::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
     blink::mojom::DisplayMode display_mode) {
   switch (display_mode) {
@@ -1172,7 +1149,7 @@ void WebAppPublisherHelper::PublishWindowModeUpdate(
     const std::string& app_id,
     blink::mojom::DisplayMode display_mode) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return;
   }
 
@@ -1185,7 +1162,7 @@ void WebAppPublisherHelper::PublishRunOnOsLoginModeUpdate(
     const std::string& app_id,
     RunOnOsLoginMode run_on_os_login_mode) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return;
   }
 
@@ -1245,21 +1222,21 @@ bool WebAppPublisherHelper::IsShuttingDown() const {
 void WebAppPublisherHelper::OnWebAppFileHandlerApprovalStateChanged(
     const AppId& app_id) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (web_app && Accepts(app_id)) {
+  if (web_app) {
     delegate_->PublishWebApp(CreateWebApp(web_app));
   }
 }
 
 void WebAppPublisherHelper::OnWebAppInstalled(const AppId& app_id) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (web_app && Accepts(app_id)) {
+  if (web_app) {
     delegate_->PublishWebApp(CreateWebApp(web_app));
   }
 }
 
 void WebAppPublisherHelper::OnWebAppInstalledWithOsHooks(const AppId& app_id) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (web_app && Accepts(app_id)) {
+  if (web_app) {
     delegate_->PublishWebApp(CreateWebApp(web_app));
   }
 }
@@ -1268,14 +1245,14 @@ void WebAppPublisherHelper::OnWebAppManifestUpdated(
     const AppId& app_id,
     base::StringPiece old_name) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (web_app && Accepts(app_id)) {
+  if (web_app) {
     delegate_->PublishWebApp(CreateWebApp(web_app));
   }
 }
 
 void WebAppPublisherHelper::OnWebAppWillBeUninstalled(const AppId& app_id) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return;
   }
 
@@ -1304,7 +1281,7 @@ void WebAppPublisherHelper::OnWebAppLocallyInstalledStateChanged(
     const AppId& app_id,
     bool is_locally_installed) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return;
   }
 
@@ -1315,7 +1292,7 @@ void WebAppPublisherHelper::OnWebAppLastLaunchTimeChanged(
     const std::string& app_id,
     const base::Time& last_launch_time) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return;
   }
 
@@ -1341,7 +1318,7 @@ void WebAppPublisherHelper::OnWebAppRunOnOsLoginModeChanged(
 void WebAppPublisherHelper::OnWebAppDisabledStateChanged(const AppId& app_id,
                                                          bool is_disabled) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return;
   }
 
@@ -1370,7 +1347,7 @@ void WebAppPublisherHelper::OnWebAppsDisabledModeChanged() {
     // enabled app.
     if (provider_->policy_manager().IsWebAppInDisabledList(id)) {
       const WebApp* web_app = GetWebApp(id);
-      if (!web_app || !Accepts(id)) {
+      if (!web_app) {
         continue;
       }
       auto app = std::make_unique<apps::App>(app_type(), web_app->app_id());
@@ -1438,7 +1415,7 @@ void WebAppPublisherHelper::OnRequestUpdate(
   }
 
   const WebApp* web_app = GetWebApp(app_id.value());
-  if (!web_app || !Accepts(app_id.value())) {
+  if (!web_app) {
     return;
   }
 
@@ -1465,7 +1442,7 @@ void WebAppPublisherHelper::OnWebContentsDestroyed(
   }
 
   const WebApp* web_app = GetWebApp(app_id.value());
-  if (!web_app || !Accepts(app_id.value())) {
+  if (!web_app) {
     return;
   }
 
@@ -1488,8 +1465,7 @@ void WebAppPublisherHelper::OnContentSettingChanged(
   }
 
   for (const WebApp& web_app : registrar().GetApps()) {
-    if (primary_pattern.Matches(web_app.start_url()) &&
-        Accepts(web_app.app_id())) {
+    if (primary_pattern.Matches(web_app.start_url())) {
       auto app = std::make_unique<apps::App>(app_type(), web_app.app_id());
       app->permissions = CreatePermissions(&web_app);
       delegate_->PublishWebApp(std::move(app));
@@ -1516,6 +1492,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
     return;
   }
 
+  DCHECK(provider_);
   install_manager_observation_.Observe(&install_manager());
   registrar_observation_.Observe(&registrar());
   content_settings_observation_.Observe(
@@ -1633,11 +1610,10 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::App& app) {
   app.show_in_shelf = true;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  auto system_app_type =
-      provider_->system_web_app_manager().GetSystemAppTypeForAppId(app.app_id);
+  DCHECK(swa_manager_);
+  auto system_app_type = swa_manager_->GetSystemAppTypeForAppId(app.app_id);
   if (system_app_type.has_value()) {
-    auto* system_app =
-        provider_->system_web_app_manager().GetSystemApp(*system_app_type);
+    auto* system_app = swa_manager_->GetSystemApp(*system_app_type);
     DCHECK(system_app);
     app.show_in_launcher = system_app->ShouldShowInLauncher();
     app.show_in_search = system_app->ShouldShowInSearch();
@@ -1658,11 +1634,10 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::mojom::AppPtr& app) {
   app->show_in_shelf = apps::mojom::OptionalBool::kTrue;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  auto system_app_type =
-      provider_->system_web_app_manager().GetSystemAppTypeForAppId(app->app_id);
+  DCHECK(swa_manager_);
+  auto system_app_type = swa_manager_->GetSystemAppTypeForAppId(app->app_id);
   if (system_app_type.has_value()) {
-    auto* system_app =
-        provider_->system_web_app_manager().GetSystemApp(*system_app_type);
+    auto* system_app = swa_manager_->GetSystemApp(*system_app_type);
     DCHECK(system_app);
     app->show_in_launcher = system_app->ShouldShowInLauncher()
                                 ? apps::mojom::OptionalBool::kTrue
@@ -1679,7 +1654,7 @@ bool WebAppPublisherHelper::MaybeAddNotification(
     const std::string& app_id,
     const std::string& notification_id) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  if (!web_app) {
     return false;
   }
 

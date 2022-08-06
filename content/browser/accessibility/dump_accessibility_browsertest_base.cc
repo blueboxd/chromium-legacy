@@ -39,12 +39,31 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/ui_base_features.h"
 
 namespace content {
 
 namespace {
+
+bool AccessibilityTreeContainsAllChildTrees(const ui::AXNode& node) {
+  size_t num_children = node.GetChildCountCrossingTreeBoundary();
+  if (!num_children) {
+    // No children. All content is contained unless there is supposed to be
+    // a child tree for this node.
+    return !ui::IsChildTreeOwner(node.GetRole());
+  }
+
+  for (size_t i = 0; i < num_children; i++) {
+    if (!AccessibilityTreeContainsAllChildTrees(
+            *node.GetChildAtIndexCrossingTreeBoundary(i))) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 // Searches recursively and returns true if an accessibility node is found
 // that represents a fully loaded web document with the given url.
@@ -153,6 +172,13 @@ void DumpAccessibilityTestBase::RunTest(
 // WaitForAccessibiltiyClean(), Action::kRequestAccessibilityCleanNotification,
 // Event::kAccessibilityClean, etc. because this can be used multiple times
 // per test.
+// TODO(accessibility) A potential test flakiness fix would be to
+// WaitForEndOfTest on all descendant documents. This currently only
+// ensures a clean state for the root document. However, the code in
+// RenderAccessibilityImpl would not be able to perfectly check all child
+// documents because some frames are remote, aka in another process. This does
+// not appear to be necessary for our current tests. It may be necessary if we
+// end up with <portal> or <iframe> tests that have more complex content.
 void DumpAccessibilityTestBase::WaitForEndOfTest() const {
   // To make sure we've handled all accessibility events, add a sentinel by
   // calling SignalEndOfTest and waiting for a kEndOfTest event in response.
@@ -277,25 +303,26 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   }
   scenario_ = std::move(*scenario);
 
-  // Exit without running the test if we can't find an expectation file.
-  // This is used to skip certain tests on certain platforms.
-  // We have to check for this in advance in order to avoid waiting on a
-  // WAIT-FOR directive in the source file that's looking for something not
-  // supported on the current platform.
+  absl::optional<std::vector<std::string>> expected_lines;
+
+  // Get expectation lines from expectation file if any.
   base::FilePath expected_file =
       test_helper_.GetExpectationFilePath(file_path, expectations_qualifier);
-  if (expected_file.empty()) {
+  if (!expected_file.empty()) {
+    expected_lines = test_helper_.LoadExpectationFile(expected_file);
+  }
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+  else {
     LOG(INFO) << "No expectation file present, ignoring test on this "
                  "platform.";
     return;
   }
-
-  absl::optional<std::vector<std::string>> expected_lines =
-      test_helper_.LoadExpectationFile(expected_file);
+#endif
 
   // Get the test URL.
-  GURL url(embedded_test_server()->GetURL("/" + std::string(file_dir) + "/" +
-                                          file_path.BaseName().MaybeAsASCII()));
+  GURL url(embedded_test_server()->GetURL(
+      "a.test",
+      "/" + std::string(file_dir) + "/" + file_path.BaseName().MaybeAsASCII()));
   WebContentsImpl* web_contents = GetWebContents();
 
   if (enable_accessibility_after_navigating_ &&
@@ -351,8 +378,8 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   }
 
   // No expected lines indicate the test is marked to skip the expectations
-  // checks. If we reach this point, then it means no crashes during the test
-  // run and we can consider the test as succeeding.
+  // checks or it has no expectation file. If we reach this point, then it means
+  // no crashes during the test run and we can consider the test as succeeding.
   if (!expected_lines) {
     EXPECT_TRUE(true);
     return;
@@ -418,7 +445,15 @@ void DumpAccessibilityTestBase::WaitForAllFramesLoaded() {
     if (manager) {
       BrowserAccessibility* accessibility_root = manager->GetRoot();
 
-      // Check to see if all frames have loaded.
+      // Check to see if all frames have loaded. If not, we invoke
+      // WaitForEndOfTest to listen for a kEndOfTest signal which will be
+      // fired for each loaded child tree.
+      if (!AccessibilityTreeContainsAllChildTrees(
+              *accessibility_root->node())) {
+        WaitForEndOfTest();
+        continue;
+      }
+
       bool all_frames_loaded = true;
       // A test may change the url for a frame, for example by setting
       // window.location.href, so collect the current list of urls.
@@ -551,7 +586,7 @@ bool DumpAccessibilityTestBase::HasHtmlAttribute(
   if (node.GetHtmlAttribute(attr, &result))
     return result == value;
 
-  if (base::LowerCaseEqualsASCII(attr, "class"))
+  if (base::EqualsCaseInsensitiveASCII(attr, "class"))
     return node.GetStringAttribute(ax::mojom::StringAttribute::kClassName) ==
            value;
 
@@ -581,6 +616,14 @@ DumpAccessibilityTestBase::FindNodeByHTMLAttributeInSubtree(
       return result;
   }
   return nullptr;
+}
+
+void DumpAccessibilityTestBase::UseHttpsTestServer() {
+  https_test_server_ = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server_.get()->AddDefaultHandlers(GetTestDataFilePath());
+  https_test_server_.get()->SetSSLConfig(
+      net::EmbeddedTestServer::CERT_TEST_NAMES);
 }
 
 }  // namespace content

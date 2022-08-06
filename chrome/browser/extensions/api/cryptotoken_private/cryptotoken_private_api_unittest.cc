@@ -267,11 +267,11 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
         api::CryptotokenPrivateCanAppIdGetAttestationFunction>();
     function->set_has_callback(true);
 
-    base::Value::DictStorage dict;
-    dict.emplace("appId", app_id);
-    dict.emplace("tabId", tab_id_);
-    dict.emplace("frameId", -1);  // Ignored.
-    dict.emplace("origin", app_id);
+    base::Value::Dict dict;
+    dict.Set("appId", app_id);
+    dict.Set("tabId", tab_id_);
+    dict.Set("frameId", -1);  // Ignored.
+    dict.Set("origin", app_id);
     auto args = std::make_unique<base::Value>(base::Value::Type::LIST);
     args->Append(base::Value(std::move(dict)));
     auto args_list = base::ListValue::From(std::move(args));
@@ -300,11 +300,11 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
         api::CryptotokenPrivateCanMakeU2fApiRequestFunction>();
     function->set_has_callback(true);
 
-    base::Value::DictStorage dict;
-    dict.emplace("appId", origin);
-    dict.emplace("tabId", tab_id_);
-    dict.emplace("frameId", 0 /* main frame */);
-    dict.emplace("origin", origin);
+    base::Value::Dict dict;
+    dict.Set("appId", origin);
+    dict.Set("tabId", tab_id_);
+    dict.Set("frameId", 0 /* main frame */);
+    dict.Set("origin", origin);
     auto args = std::make_unique<base::Value>(base::Value::Type::LIST);
     args->Append(base::Value(std::move(dict)));
     auto args_list = base::ListValue::From(std::move(args));
@@ -392,25 +392,6 @@ TEST_F(CryptoTokenPermissionTest, FeatureFlagOverridesRequestPrompt) {
                                    permissions::PermissionRequestManager::NONE,
                                    &result));
   EXPECT_TRUE(result);
-}
-
-TEST_F(CryptoTokenPermissionTest, EnterprisePolicyOverridesRequestPrompt) {
-  // Setting the deprecation override policy should cause the prompt to be
-  // suppressed. This should be true even when the API has been
-  // default-disabled, because the policy overrides that too.
-  for (bool api_enabled : {false, true}) {
-    SCOPED_TRACE(api_enabled);
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatureState(extensions_features::kU2FSecurityKeyAPI,
-                                      api_enabled);
-    browser()->profile()->GetPrefs()->Set(
-        extensions::pref_names::kU2fSecurityKeyApiEnabled, base::Value(true));
-    bool result = false;
-    ASSERT_TRUE(CanMakeU2fApiRequest(
-        "https://test.com", permissions::PermissionRequestManager::NONE,
-        &result));
-    EXPECT_TRUE(result);
-  }
 }
 
 }  // namespace extensions

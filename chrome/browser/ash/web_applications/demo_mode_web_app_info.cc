@@ -32,10 +32,10 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForDemoModeApp() {
 }
 
 DemoModeSystemAppDelegate::DemoModeSystemAppDelegate(Profile* profile)
-    : web_app::SystemWebAppDelegate(web_app::SystemAppType::DEMO_MODE,
-                                    "DemoMode",
-                                    GURL("chrome://demo-mode-app"),
-                                    profile) {}
+    : ash::SystemWebAppDelegate(ash::SystemWebAppType::DEMO_MODE,
+                                "DemoMode",
+                                GURL("chrome://demo-mode-app"),
+                                profile) {}
 
 std::unique_ptr<WebAppInstallInfo> DemoModeSystemAppDelegate::GetWebAppInfo()
     const {

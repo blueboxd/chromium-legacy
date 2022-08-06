@@ -7,12 +7,14 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/bind.h"
 #include "components/onc/onc_constants.h"
+#include "components/session_manager/session_manager_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -21,6 +23,17 @@ namespace ash {
 namespace {
 
 const char kNotifierManagedSimLock[] = "ash.managed-simlock";
+
+chromeos::network_config::mojom::DeviceStatePropertiesPtr
+GetCellularDeviceIfExists(
+    std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>&
+        devices) {
+  for (auto& device : devices) {
+    if (device->type == chromeos::network_config::mojom::NetworkType::kCellular)
+      return std::move(device);
+  }
+  return nullptr;
+}
 
 }  // namespace
 
@@ -33,15 +46,69 @@ ManagedSimLockNotifier::ManagedSimLockNotifier() {
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
   remote_cros_network_config_->AddObserver(
       cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
-ManagedSimLockNotifier::~ManagedSimLockNotifier() {}
+ManagedSimLockNotifier::~ManagedSimLockNotifier() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
+}
+
+void ManagedSimLockNotifier::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::ACTIVE) {
+    CheckGlobalNetworkConfiguration();
+  }
+}
+
+void ManagedSimLockNotifier::OnDeviceStateListChanged() {
+  remote_cros_network_config_->GetDeviceStateList(
+      base::BindOnce(&ManagedSimLockNotifier::OnGetDeviceStateList,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ManagedSimLockNotifier::OnGetDeviceStateList(
+    std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+        devices) {
+  chromeos::network_config::mojom::DeviceStatePropertiesPtr cellular_device =
+      GetCellularDeviceIfExists(devices);
+
+  // Remove Notification and reset |primary_iccid_| if no cellular device or
+  // the cellular device is currently not enabled.
+  if (!cellular_device ||
+      cellular_device->device_state !=
+          chromeos::network_config::mojom::DeviceStateType::kEnabled) {
+    primary_iccid_.clear();
+    RemoveNotification();
+    return;
+  }
+
+  // If the SIM Lock setting is disabled, remove notification.
+  if (!cellular_device->sim_lock_status->lock_enabled) {
+    RemoveNotification();
+    return;
+  }
+
+  // If the primary SIM changes, check if the restrict SIM Lock Global Network
+  // Configuration is enabled. If it is, identify the primary cellular network,
+  // and surface the notification if the SIM lock setting is enabled.
+  for (const auto& sim_info : *cellular_device->sim_infos) {
+    if (!sim_info->is_primary)
+      continue;
+    std::string old_primary_iccid = primary_iccid_;
+    primary_iccid_ = sim_info->iccid;
+    if (primary_iccid_ != old_primary_iccid)
+      CheckGlobalNetworkConfiguration();
+
+    return;
+  }
+}
 
 void ManagedSimLockNotifier::OnPoliciesApplied(const std::string& userhash) {
-  CheckGlobalNetworkConfiguarion();
+  CheckGlobalNetworkConfiguration();
 }
 
-void ManagedSimLockNotifier::CheckGlobalNetworkConfiguarion() {
+void ManagedSimLockNotifier::CheckGlobalNetworkConfiguration() {
   remote_cros_network_config_->GetGlobalPolicy(
       base::BindOnce(&ManagedSimLockNotifier::OnGetGlobalPolicy,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -72,7 +139,7 @@ void ManagedSimLockNotifier::OnCellularNetworksList(
         networks) {
   // Check if there are any PIN locked pSIM or eSIM networks.
   for (auto& network : networks) {
-    if (network->type_state->get_cellular()->sim_locked) {
+    if (network->type_state->get_cellular()->sim_lock_enabled) {
       ShowNotification();
       return;
     }
@@ -88,6 +155,10 @@ void ManagedSimLockNotifier::ShowNotification() {
             // When clicked, open the SIM Unlock dialog in Cellular settings if
             // we can open WebUI settings, otherwise do nothing.
             if (TrayPopupUtils::CanOpenWebUISettings()) {
+              // TODO(b/228093904): Using GUID of network, take user to cellular
+              // details page with dialog open. Change dialog logic so that if
+              // the SIM is currently locked, entering the PIN will unlock the
+              // SIM and disable the PIN lock setting.
               Shell::Get()
                   ->system_tray_model()
                   ->client()
@@ -109,7 +180,8 @@ void ManagedSimLockNotifier::ShowNotification() {
           /*display_source=*/std::u16string(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
-              kNotifierManagedSimLock),
+              kNotifierManagedSimLock,
+              NotificationCatalogName::kManagedSimLock),
           message_center::RichNotificationData(), std::move(delegate),
           /*small_image=*/gfx::VectorIcon(),
           message_center::SystemNotificationWarningLevel::WARNING);

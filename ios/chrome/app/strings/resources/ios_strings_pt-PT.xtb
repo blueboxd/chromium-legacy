@@ -18,7 +18,6 @@ O seu motor de pesquisa é o <ph name="DSE_NAME" />. Se aplicável, consulte as 
 <translation id="1066060668811609597">Gerir a sincronização</translation>
 <translation id="1076421457278169141">Código digitalizado</translation>
 <translation id="1084365883616172403">Publicação no Facebook concluída.</translation>
-<translation id="1086486568852410168">Pesquisar com o Google Lens</translation>
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Aceitar e Continuar</translation>
 <translation id="110724200315609752">Mudar para a janela aberta</translation>
@@ -66,6 +65,7 @@ O seu motor de pesquisa é o <ph name="DSE_NAME" />. Se aplicável, consulte as 
 <translation id="1434356225517321998">O seu navegador é gerido. <ph name="BEGIN_LINK" />Detalhes<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Ocultar a palavra-passe</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
+<translation id="1450170672351507823">A proteção padrão está ativada. Para desfrutar de ainda mais segurança, use a proteção melhorada.</translation>
 <translation id="149095475893949513">Este Website está a tentar transferir um perfil de configuração.</translation>
 <translation id="1491277525950327607">Toque duas vezes para ativar ou desativar a definição</translation>
 <translation id="1492417797159476138">Já guardou este nome de utilizador para este site.</translation>
@@ -163,6 +163,7 @@ O seu motor de pesquisa é o <ph name="DSE_NAME" />. Se aplicável, consulte as 
 <translation id="236977714248711277">Os sites não podem utilizar cookies para melhorar a experiência de navegação, por exemplo, para manter a sua sessão iniciada ou memorizar os artigos no seu carrinho de compras.
 
 Os sites não podem utilizar cookies para ver a sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
+<translation id="2375243552872247702">Veja conteúdo para si</translation>
 <translation id="2381405137052800939">Noções básicas</translation>
 <translation id="2386793615875593361">1 selecionada</translation>
 <translation id="2421004566762153674">Bloquear cookies de terceiros</translation>
@@ -241,6 +242,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 <translation id="2982481275546140226">Limpar dados</translation>
 <translation id="298306318844797842">Adicionar método de pagamento…</translation>
 <translation id="2989805286512600854">Abrir num Novo Separador</translation>
+<translation id="3020183492814296499">Atalhos</translation>
 <translation id="3037605927509011580">Ah, bolas!!</translation>
 <translation id="3039722182465315531">Não iniciar sessão</translation>
 <translation id="3076846064362030967">A sessão na sua Conta Google não é terminada. Podem ser guardadas <ph name="BEGIN_LINK" />outras formas de atividade<ph name="END_LINK" /> na sua Conta Google quando tem sessão iniciada. Pode eliminá-las em qualquer altura.
@@ -249,6 +251,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 Se aplicável, consulte as instruções do motor de pesquisa para eliminar o histórico de pesquisas.</translation>
 <translation id="3080525922482950719">Pode guardar páginas para ler mais tarde ou offline.</translation>
 <translation id="3081338492074632642">Certifique-se de que a palavra-passe que está a guardar corresponde à sua palavra-passe para <ph name="WEBSITE" />.</translation>
+<translation id="3103603146121354983">Preencha palavras-passe automaticamente</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Veja o que pode sincronizar<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Bloquear tudo</translation>
@@ -512,6 +515,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5416022985862681400">Últimos 7 dias</translation>
 <translation id="543338862236136125">Editar palavra-passe</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
+<translation id="5439599923922718668">Visitados frequentemente</translation>
 <translation id="54401264925851789">Informações de Segurança da Página</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>
 <translation id="5457226814769348910">Abrir versão offline</translation>
@@ -526,7 +530,6 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="5551897871312988470">Propor tradução</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5580834567471114021">Pretende adicionar à Lista de leitura para ler mais tarde?</translation>
-<translation id="5592679540098330836">Ative a sincronização para <ph name="NAME" /></translation>
 <translation id="560322036295180549">Desativado pela sua entidade</translation>
 <translation id="5614553682702429503">Pretende guardar a palavra-passe?</translation>
 <translation id="5626245204502895507">De momento não é possível transferir o ficheiro.</translation>
@@ -600,6 +603,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6136914049981179737">Há segundos</translation>
 <translation id="6144589619057374135">Abrir ${url} na Navegação anónima</translation>
 <translation id="6149061208933997199">Util. palavra-passe</translation>
+<translation id="6152406514676263192">Sincronize para obter o conteúdo mais relevante com base nos seus interesses.</translation>
 <translation id="6159839020698489198">opcional</translation>
 <translation id="6177442314419606057">Pesquisar no Chrome</translation>
 <translation id="6184086493125982861">Mostrar Separadores</translation>
@@ -660,6 +664,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 
 Experimente utilizar uma palavra-passe exclusiva para cada site.</translation>
 <translation id="650279896687777322">Saber mais…</translation>
+<translation id="6510072653668207258">Lembrar-me mais tarde</translation>
 <translation id="651505212789431520">Pretende cancelar a sincronização? Pode ativar a sincronização em qualquer altura nas Definições.</translation>
 <translation id="6524918542306337007">O Modo de navegação anónima está indisponível</translation>
 <translation id="6530992499366869131">Enviar-lhe um aviso se as palavras-passe forem expostas numa violação de dados</translation>
@@ -736,6 +741,7 @@ Quando estiver na Navegação anónima, os sites não podem utilizar cookies par
 <translation id="7099761977003084116">Separadores recentes</translation>
 <translation id="7102005569666697658">A transferir… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ocultar</translation>
+<translation id="7108762695052995889">Visitar site</translation>
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmara não está disponível</translation>
 <translation id="7153999225810839758">Leitura de <ph name="TIME" /> minuto(s)</translation>
@@ -746,6 +752,7 @@ Quando estiver na Navegação anónima, os sites não podem utilizar cookies par
 <translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7192050974311852563">Iniciar registo</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
+<translation id="7207023858769244910">Sincronize para obter conteúdo com base nos seus interesses.</translation>
 <translation id="7207383424303353046">Novidade: abra automaticamente os sites no Chrome ao torná-lo a sua app de navegador predefinida. <ph name="BEGIN_LINK" />Abra as Definições<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Alcunha do cartão inválido</translation>
 <translation id="722454870747268814">Novo separador de navegação anónima</translation>
@@ -900,7 +907,6 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8588404856427128947">Desativada</translation>
 <translation id="8590913940444621808">Nunca perguntar</translation>
 <translation id="8591976964826315682">Bloquear cookies de terceiros na Navegação anónima</translation>
-<translation id="8592752150819985187">Preencha palavras-passe automaticamente</translation>
 <translation id="8605219856220328675">Fechar separador.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8620785403235741379">Selecionar opção</translation>

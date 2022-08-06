@@ -87,7 +87,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 
  private:
   base::Value GetPolicyNames();
-  base::Value GetPolicyValues();
+  base::Value::List GetPolicyValues();
 
   void AddExtensionPolicyNames(base::Value* names,
                                policy::PolicyDomain policy_domain);
@@ -133,8 +133,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void OnGotDevicePolicy(base::Value device_policy, base::Value legend_data);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-  std::string device_domain_;
 
   scoped_refptr<ui::SelectFileDialog> export_policies_select_file_dialog_;
 

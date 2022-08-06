@@ -931,7 +931,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Combine(testing::ValuesIn(kMultiScale)));
 
 // Flaky on MSAN. https://crbug.com/959924
-#if defined(MEMORY_SANITIZER)
+// Flaky on Linux Wayland and Lacros. https://crbug.com/1158437
+#if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_ScrollNestedLocalNonFastScrollableDiv \
   DISABLED_ScrollNestedLocalNonFastScrollableDiv
 #else
@@ -7302,10 +7304,6 @@ class SitePerProcessDelegatedInkBrowserTest
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessDelegatedInkBrowserTest,
                        MAYBE_MetadataAndPointGoThroughOOPIF) {
-  // Delegated ink is only supported on Skia Renderer for now.
-  if (!features::IsUsingSkiaRenderer())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

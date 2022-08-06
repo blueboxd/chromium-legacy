@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
@@ -203,8 +204,8 @@ void StandaloneBrowserApps::Launch(const std::string& app_id,
                                    apps::mojom::LaunchSource launch_source,
                                    apps::mojom::WindowInfoPtr window_info) {
   DCHECK_EQ(app_constants::kLacrosAppId, app_id);
-  crosapi::BrowserManager::Get()->NewWindow(
-      /*incognito=*/false, /*should_trigger_session_restore=*/true);
+  crosapi::BrowserManager::Get()->NewTab(
+      /*should_trigger_session_restore=*/true);
 }
 
 void StandaloneBrowserApps::GetMenuModel(const std::string& app_id,
@@ -219,7 +220,8 @@ void StandaloneBrowserApps::OpenNativeSettings(const std::string& app_id) {
   // `browser_manager` may be null in tests.
   if (!browser_manager)
     return;
-  browser_manager->SwitchToTab(GURL(chrome::kChromeUIContentSettingsURL));
+  browser_manager->SwitchToTab(GURL(chrome::kChromeUIContentSettingsURL),
+                               /*path_behavior=*/NavigateParams::RESPECT);
 }
 
 void StandaloneBrowserApps::StopApp(const std::string& app_id) {

@@ -5,15 +5,17 @@
 import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
-import '../../common/styles.js';
-import '../cros_button_style.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import '../../common/common_style.css.js';
+import '../cros_button_style.css.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
 import {isSelectionEvent} from '../../common/utils.js';
-import {BacklightColor} from '../personalization_app.mojom-webui.js';
+import {BacklightColor, BLUE_COLOR, GREEN_COLOR, INDIGO_COLOR, PURPLE_COLOR, RED_COLOR, WHITE_COLOR, YELLOW_COLOR} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
 import {setBacklightColor} from './keyboard_backlight_controller.js';
@@ -76,6 +78,9 @@ export class KeyboardBacklight extends WithPersonalizationStore {
 
       /** The selected backlight color in the system. */
       backlightColor_: Object,
+
+      /** The current wallpaper extracted color. */
+      wallpaperColor_: Object,
     };
   }
 
@@ -85,6 +90,7 @@ export class KeyboardBacklight extends WithPersonalizationStore {
   private wallpaperColorId_: string;
   private ironSelectedColor_: HTMLElement;
   private backlightColor_: BacklightColor|null;
+  private wallpaperColor_: SkColor|null;
 
   override ready() {
     super.ready();
@@ -96,18 +102,41 @@ export class KeyboardBacklight extends WithPersonalizationStore {
     KeyboardBacklightObserver.initKeyboardBacklightObserverIfNeeded();
     this.watch<KeyboardBacklight['backlightColor_']>(
         'backlightColor_', state => state.keyboardBacklight.backlightColor);
+    this.watch<KeyboardBacklight['wallpaperColor_']>(
+        'wallpaperColor_', state => state.keyboardBacklight.wallpaperColor);
     this.updateFromStore();
   }
 
   private computePresetColors_(): Record<string, ColorInfo> {
     return {
-      'whiteColor': {hexVal: '#FFFFFF', enumVal: BacklightColor.kWhite},
-      'redColor': {hexVal: '#F28B82', enumVal: BacklightColor.kRed},
-      'yellowColor': {hexVal: '#FDD663', enumVal: BacklightColor.kYellow},
-      'greenColor': {hexVal: '#81C995', enumVal: BacklightColor.kGreen},
-      'blueColor': {hexVal: '#78D9EC', enumVal: BacklightColor.kBlue},
-      'indigoColor': {hexVal: '#8AB4F8', enumVal: BacklightColor.kIndigo},
-      'purpleColor': {hexVal: '#C58AF9', enumVal: BacklightColor.kPurple},
+      'whiteColor': {
+        hexVal: `#${WHITE_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kWhite,
+      },
+      'redColor': {
+        hexVal: `#${RED_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kRed,
+      },
+      'yellowColor': {
+        hexVal: `#${YELLOW_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kYellow,
+      },
+      'greenColor': {
+        hexVal: `#${GREEN_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kGreen,
+      },
+      'blueColor': {
+        hexVal: `#${BLUE_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kBlue,
+      },
+      'indigoColor': {
+        hexVal: `#${INDIGO_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kIndigo,
+      },
+      'purpleColor': {
+        hexVal: `#${PURPLE_COLOR.toString(16)}`,
+        enumVal: BacklightColor.kPurple,
+      },
     };
   }
 
@@ -202,8 +231,6 @@ export class KeyboardBacklight extends WithPersonalizationStore {
         const hexColors =
             Object.values(colors).map(color => color.hexVal).slice(1);
         return `background-image: linear-gradient(${hexColors})`;
-      case this.wallpaperColorId_:
-        return `background-color: #8AB4F8`;
       case 'whiteColor':
         // Add the border for the white background.
         return `background-color: ${
@@ -214,8 +241,45 @@ export class KeyboardBacklight extends WithPersonalizationStore {
     }
   }
 
+  private getWallpaperColorInnerContainerStyle_(wallpaperColor: SkColor):
+      string {
+    // Show the default style when wallpaper color is loading or invalid.
+    if (!wallpaperColor || !wallpaperColor.value) {
+      return `background-color: #FFFFFF;
+          border: 1px solid var(--cros-separator-color);`;
+    }
+    // Strip the alpha value and convert to hex string.
+    const hexStr =
+        (wallpaperColor.value & 0xFFFFFF).toString(16).padStart(6, '0');
+    return `background-color: #${hexStr};`;
+  }
+
   private getPresetColorAriaLabel_(presetColorId: string): string {
     return this.i18n(presetColorId);
+  }
+
+  private getWallpaperColorContainerClass_(selectedColor: BacklightColor):
+      string {
+    return this.getColorContainerClass_(
+        this.getWallpaperColorAriaSelected_(selectedColor));
+  }
+
+  private getPresetColorContainerClass_(
+      colorId: string, colors: Record<string, ColorInfo>,
+      selectedColor: BacklightColor) {
+    return this.getColorContainerClass_(
+        this.getPresetColorAriaSelected_(colorId, colors, selectedColor));
+  }
+
+  private getRainbowColorContainerClass_(selectedColor: BacklightColor) {
+    return this.getColorContainerClass_(
+        this.getRainbowColorAriaSelected_(selectedColor));
+  }
+
+  private getColorContainerClass_(isSelected: string) {
+    const defaultClassName = 'color-container';
+    return isSelected === 'true' ? `${defaultClassName} tast-selected-color` :
+                                   defaultClassName;
   }
 
   private getWallpaperColorAriaSelected_(selectedColor: BacklightColor) {
@@ -231,7 +295,7 @@ export class KeyboardBacklight extends WithPersonalizationStore {
     return (colors[colorId].enumVal === selectedColor).toString();
   }
 
-  private getRainbowColorAriaSelected(selectedColor: BacklightColor) {
+  private getRainbowColorAriaSelected_(selectedColor: BacklightColor) {
     return (selectedColor === BacklightColor.kRainbow).toString();
   }
 }

@@ -39,6 +39,7 @@
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
+#include "ash/webui/camera_app_ui/document_scanner_installer.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -119,6 +120,7 @@
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/mojo_service_manager/connection_helper.h"
 #include "chrome/browser/ash/net/bluetooth_pref_state_observer.h"
 #include "chrome/browser/ash/net/network_health/network_health_service.h"
 #include "chrome/browser/ash/net/network_portal_detector_impl.h"
@@ -149,6 +151,7 @@
 #include "chrome/browser/ash/power/smart_charging/smart_charging_manager.h"
 #include "chrome/browser/ash/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/profiles/signin_profile_handler.h"
 #include "chrome/browser/ash/psi_memory_metrics.h"
 #include "chrome/browser/ash/quick_pair/quick_pair_browser_delegate_impl.h"
 #include "chrome/browser/ash/scheduler_configuration_manager.h"
@@ -163,7 +166,7 @@
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
@@ -195,6 +198,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
@@ -211,7 +215,6 @@
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/cros_healthd/private/cpp/data_collector.h"
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
@@ -641,6 +644,9 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
   // DBus is initialized in ChromeMainDelegate::PostEarlyInitialization().
   CHECK(DBusThreadManager::IsInitialized());
 
+  // Triggers the installation as earlier as possible.
+  ash::DocumentScannerInstaller::GetInstance()->TriggerInstall();
+
 #if !defined(USE_REAL_DBUS_CLIENTS)
   // USE_REAL_DBUS clients may be undefined even if the device is using real
   // dbus clients.
@@ -690,6 +696,18 @@ void ChromeBrowserMainPartsAsh::PostCreateMainMessageLoop() {
 
   dbus_services_ = std::make_unique<internal::DBusServices>(
       std::move(feature_list_accessor_));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshUseCrOSMojoServiceManager)) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        ::switches::kDisableMojoBroker))
+        << "Mojo broker must be disabled to use the ChromeOS mojo service "
+           "manager.";
+    // Initialize mojo service manager. Note that this depends on the
+    // |mojo_ipc_support_| in |content::BrowserMainLoop| to be created.
+    mojo_service_manager_closer_ =
+        mojo_service_manager::CreateConnectionAndPassCloser();
+  }
 
   // Need to be done after LoginState has been initialized in DBusServices().
   ::memory::MemoryKillsMonitor::Initialize();
@@ -845,6 +863,7 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
+  signin_profile_handler_ = std::make_unique<ash::SigninProfileHandler>();
 
   // If kLoginUser is passed this indicates that user has already
   // logged in and we should behave accordingly.
@@ -1137,7 +1156,8 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     network_health::NetworkHealthService::GetInstance();
 
     // Create cros_healthd data collector.
-    cros_healthd::internal::DataCollector::Initialize();
+    cros_healthd_data_collector_ =
+        std::make_unique<cros_healthd::internal::DataCollector>();
 
     // Create the service connection to CrosHealthd platform service instance.
     auto* cros_healthd = cros_healthd::ServiceConnection::GetInstance();
@@ -1156,6 +1176,10 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
           return network_health::NetworkHealthService::GetInstance()
               ->GetDiagnosticsRemoteAndBindReceiver();
         }));
+
+    // Sets up the connection of healthd data collector to cros_healthd.
+    cros_healthd->SendChromiumDataCollector(
+        cros_healthd_data_collector_->BindNewPipeAndPassRemote());
 
     if (features::IsTrafficCountersEnabled()) {
       // Initialize the TrafficCountersHandler instance.
@@ -1351,6 +1375,9 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
         std::make_unique<diagnostics::DiagnosticsBrowserDelegateImpl>());
   }
 
+  zram_detail_ = base::MakeRefCounted<memory::ZramMetrics>();
+  zram_detail_->Start();
+
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
@@ -1363,6 +1390,9 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // Do this early to keep logging from taking time during shutdown.
   if (memory_pressure_detail_ != nullptr) {
     memory_pressure_detail_->Stop();
+  }
+  if (zram_detail_ != nullptr) {
+    zram_detail_->Stop();
   }
 
   SystemProxyManager::Shutdown();
@@ -1575,6 +1605,12 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.
   g_browser_process->platform_part()->DestroyChromeUserManager();
+
+  // Shutdown mojo service manager. This should be called before the
+  // |mojo_ipc_support_| in |content::BrowserMainLoop| being reset. It is reset
+  // after calling |PostMainMessageLoopRun()| and before calling
+  // |PostDestroyThreads()|.
+  mojo_service_manager_closer_.RunAndReset();
 }
 
 void ChromeBrowserMainPartsAsh::PostDestroyThreads() {

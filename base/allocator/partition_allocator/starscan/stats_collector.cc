@@ -4,9 +4,9 @@
 
 #include "base/allocator/partition_allocator/starscan/stats_collector.h"
 
+#include "base/allocator/partition_allocator/partition_alloc_base/time/time.h"
 #include "base/allocator/partition_allocator/starscan/logging.h"
 #include "base/allocator/partition_allocator/starscan/stats_reporter.h"
-#include "base/time/time.h"
 
 namespace partition_alloc::internal {
 
@@ -52,7 +52,7 @@ void StatsCollector::ReportTracesAndHistsImpl(
       accumulated_events{};
   // First, report traces and accumulate each trace scope to report UMA hists.
   for (const auto& tid_and_events : event_map.get_underlying_map_unsafe()) {
-    const ::base::PlatformThreadId tid = tid_and_events.first;
+    const internal::base::PlatformThreadId tid = tid_and_events.first;
     const auto& events = tid_and_events.second;
     PA_DCHECK(accumulated_events.size() == events.size());
     for (size_t id = 0; id < events.size(); ++id) {

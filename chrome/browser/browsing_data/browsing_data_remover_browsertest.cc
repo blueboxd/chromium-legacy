@@ -51,6 +51,7 @@
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "media/mojo/services/webrtc_video_perf_history.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -72,6 +73,13 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chromeos/ash/components/dbus/system_proxy/system_proxy_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/startup/browser_init_params.h"
+#include "components/account_manager_core/account.h"
+#include "components/account_manager_core/account_manager_util.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
+#endif
 
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
@@ -116,6 +124,22 @@ class BrowsingDataRemoverBrowserTest
 #endif
     InitFeatureList(std::move(enabled_features));
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    crosapi::mojom::BrowserInitParamsPtr init_params =
+        crosapi::mojom::BrowserInitParams::New();
+    std::string device_account_email = "primaryaccount@gmail.com";
+    account_manager::AccountKey key(
+        signin::GetTestGaiaIdForEmail(device_account_email),
+        ::account_manager::AccountType::kGaia);
+    init_params->device_account =
+        account_manager::ToMojoAccount({key, device_account_email});
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
+    InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
+  }
+#endif
 
   void SetUpOnMainThread() override {
     BrowsingDataRemoverBrowserTestBase::SetUpOnMainThread();
@@ -514,6 +538,72 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   }
   EXPECT_TRUE(is_smooth);
   EXPECT_TRUE(is_power_efficient);
+}
+
+// Verify WebrtcVideoPerfHistory is cleared when deleting all history from
+// beginning of time.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, WebrtcVideoPerfHistory) {
+  media::WebrtcVideoPerfHistory* webrtc_video_perf_history =
+      GetBrowser()->profile()->GetWebrtcVideoPerfHistory();
+
+  // Save a video decode record. Note: we avoid using a web page to generate the
+  // stats as this takes at least 5 seconds and even then is not a guarantee
+  // depending on scheduler. Manual injection is quick and non-flaky.
+  const media::VideoCodecProfile kProfile = media::VP9PROFILE_PROFILE0;
+  const int kVideoPixels = 1920 * 1080;
+  const int kFrameRate = 30;
+
+  const int kFramesProcessed = 1000;
+  const int kKeyFramesProcessed = 11;
+  const float kP99ProcessingTimeMs = 100.0;
+
+  media::mojom::WebrtcPredictionFeatures features;
+  features.is_decode_stats = true;
+  features.profile = kProfile;
+  features.video_pixels = kVideoPixels;
+  features.hardware_accelerated = false;
+
+  media::mojom::WebrtcVideoStats video_stats;
+  video_stats.frames_processed = kFramesProcessed;
+  video_stats.key_frames_processed = kKeyFramesProcessed;
+  video_stats.p99_processing_time_ms = kP99ProcessingTimeMs;
+
+  {
+    base::RunLoop run_loop;
+    webrtc_video_perf_history->GetSaveCallback().Run(features, video_stats,
+                                                     run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Verify history exists.
+  // Expect |is_smooth| = false given that the 99th percentile processing time
+  // is 100 ms.
+  {
+    base::RunLoop run_loop;
+    webrtc_video_perf_history->GetPerfInfo(
+        media::mojom::WebrtcPredictionFeatures::New(features), kFrameRate,
+        base::BindLambdaForTesting([&](bool smooth) {
+          EXPECT_FALSE(smooth);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  // Clear history.
+  RemoveAndWait(chrome_browsing_data_remover::DATA_TYPE_HISTORY);
+
+  // Verify history no longer exists. |is_smooth| should now report true because
+  // the WebrtcVideoPerfHistory optimistically returns true when it has no data.
+  {
+    base::RunLoop run_loop;
+    webrtc_video_perf_history->GetPerfInfo(
+        media::mojom::WebrtcPredictionFeatures::New(features), kFrameRate,
+        base::BindLambdaForTesting([&](bool smooth) {
+          EXPECT_TRUE(smooth);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
 }
 
 // Verify can modify database after deleting it.

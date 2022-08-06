@@ -1820,6 +1820,7 @@
 
       如果未設定這項政策，系統會套用 <ph name="ASK_GEOLOCATION_POLICY_NAME" /> 政策，但使用者可以變更這項設定。</translation>
 <translation id="2922511125678964398">允許網頁認證入口驗證機制忽略 Proxy 設定</translation>
+<translation id="2926813071464307947">停用轉譯器應用程式容器沙箱</translation>
 <translation id="2931888116345994552">如果將這項政策設為啟用或不設定，就會允許更新 <ph name="PRODUCT_NAME" /> 中的所有元件。
 
       如果將這項政策設為停用，則會禁止更新元件。不過，部分元件不受本政策規範：只要元件更新不含可執行的程式碼，且對瀏覽器安全性至關重要，就不會遭到禁止。
@@ -2255,6 +2256,11 @@
           如果這項政策設為非空白字串，該字串就會成為「<ph name="PRODUCT_NAME" />」目的地的名稱，否則目的地名稱將會是裝置名稱。如果未設定這項政策，則目的地名稱會是裝置名稱，且裝置擁有者 (或裝置管理網域中的使用者) 可進行變更。名稱長度上限為 24 個字元。</translation>
 <translation id="3329063005964041553">封鎖這些網頁應用程式上的 File Handling API</translation>
 <translation id="3329401415394648069">允許使用 U2F Security Key API。</translation>
+<translation id="3329976499753286262">如果將這項政策設為啟用或不設定，系統會在支援的平台上啟用轉譯器應用程式容器設定。
+
+      將這項政策設為停用會對 <ph name="PRODUCT_NAME" /> 的安全性和穩定性造成危害，因為這會減弱轉譯器程序使用的沙箱機制。建議只有必須在轉譯器程序中執行的第三方軟體發生相容性問題時，才停用這項政策。
+
+      注意：如要進一步瞭解程序寬鬆檢查機制政策，請前往 https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies。</translation>
 <translation id="3339271789059866414">設定系統 Proxy 服務的可用性和系統服務的 Proxy 憑證。
       如果不設定這項政策，將無法使用系統 Proxy 服務。</translation>
 <translation id="3348799281602260763">如果啟用這項政策，WebRTC 對等互連可降級至傳輸層安全標準 (TLS)/DTLS 通訊協定的過時版本 (DTLS 1.0、TLS 1.0 和 TLS 1.1)。
@@ -3573,6 +3579,7 @@
 <translation id="4960597185231686653">布林值標記，表示螢幕小鍵盤是否能提供語音輸入功能。</translation>
 <translation id="4970046075219007744">允許網頁應用程式要求使用者授予透過 File Handling API 存取特定類型檔案的權限</translation>
 <translation id="4970855112942626932">禁止登入瀏覽器</translation>
+<translation id="4974091268178043378">Chrome OS 色彩模式</translation>
 <translation id="4976928720873547342">如果設定了這項政策，系統會將所有指定的資料類型從同步處理作業 (包含 <ph name="CHROME_SYNC_NAME" />和漫遊設定檔的同步處理作業) 中排除。這有助於縮減漫遊設定檔的大小，或限制上傳到 <ph name="CHROME_SYNC_NAME" />伺服器的資料類型。
 
       這項政策目前涵蓋的資料類型為：「bookmarks」、「readingList」、「preferences」、「passwords」、「autofill」、「themes」、「typedUrls」、「extensions」、「apps」、「tabs」、「wifiConfigurations」。這些名稱有大小寫之分。</translation>
@@ -4150,6 +4157,7 @@
 <translation id="5625771176514429288">系統會允許 Chrome 應用程式在這些平台上執行。</translation>
 <translation id="5630352020869108293">還原上次工作階段</translation>
 <translation id="5633871703004128675">啟用插入點醒目顯示無障礙功能</translation>
+<translation id="5634032995857968056">啟用轉譯器應用程式容器沙箱</translation>
 <translation id="5639454129004500060">如果設定這項政策，該政策會納入用來下載桌面範本檔案的資訊。檔案中有要為當前使用者佈建的桌面範本。
       如果未設定這項政策，桌面範本清單中就不會加入任何預先設定的桌面範本。如果 <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" /> 政策不是設為 true，則這項政策不會有任何作用。</translation>
 <translation id="5641279111657132737">這項政策已遭淘汰，請改用「<ph name="AUTH_SERVER_ALLOWLIST_POLICY_NAME" />」政策。
@@ -4211,6 +4219,13 @@
 
           這項政策的值只有在 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 政策啟用時才適用，在其他情況下一概不適用。</translation>
 <translation id="5697306356229823047">回報裝置使用者</translation>
+<translation id="5698923148503075597">如果將這項政策設為啟用，當雲端政策與平台政策發生衝突時，系統會優先採用雲端政策。
+
+      如果將這項政策設為停用或不設定，當平台政策與雲端政策發生衝突時，系統會優先採用平台政策。
+
+      這項強制政策會影響裝置範圍內的雲端政策。
+
+      這項政策僅適用於 <ph name="PRODUCT_NAME" />，對 <ph name="GOOGLE_UPDATE_NAME" /> 沒有任何影響。</translation>
 <translation id="5699770471852263667">如果將這項政策設為 Enabled，系統會停用 <ph name="PRODUCT_NAME" /> 中的內部 PDF 檢視器、將 PDF 檔案視為下載內容，並且讓使用者以預設的應用程式開啟 PDF。
 
       如果將這項政策設為 Disabled，則表示除非使用者停用 PDF 外掛程式，否則系統一律會使用 PDF 外掛程式開啟 PDF 檔案。
@@ -4308,6 +4323,7 @@
 
       使用者無法變更這項設定。</translation>
 <translation id="5848438019586925019">用於產生金鑰組的演算法。</translation>
+<translation id="5851248808417680865">使用深色主題</translation>
 <translation id="585270638818921943">禁止使用者使用來源不受信任的 Android 應用程式</translation>
 <translation id="5853547031212075792">允許使用者啟用僅限 HTTPS 模式</translation>
 <translation id="5859344336338527083">你可以透過這項政策，指定可安裝擴充功能、應用程式和主題的網址。在 <ph name="PRODUCT_NAME" /> 21 以前的版本中，使用者只要點選 *.crx 檔案的連結，<ph name="PRODUCT_NAME" /> 就會在顯示幾則警告訊息後，詢問使用者是否要安裝該檔案。在後續版本中，使用者則必須先下載這類檔案，再將檔案拖曳至 <ph name="PRODUCT_NAME" /> 設定頁面中。透過這項設定，你可以允許特定網址使用較簡易的舊式安裝流程。
@@ -4429,11 +4445,6 @@
       如果你設定這項政策，使用者將無法變更設定。如果不設定，使用者可選擇是否要顯示頁首和頁尾。</translation>
 <translation id="5951418260805607969">當磁碟空間不足時顯示通知</translation>
 <translation id="5958746038080720143">啟用「網路 Proxy 自動探索」(WPAD) 最佳化功能</translation>
-<translation id="5959428851851090097">如果將這項政策設為啟用，當雲端政策與平台政策發生衝突時，系統會優先採用雲端政策。
-
-      如果將這項政策設為停用或不設定，當平台政策與雲端政策發生衝突時，系統會優先採用平台政策。
-
-      這項強制政策會影響裝置範圍內的雲端政策。</translation>
 <translation id="5961137303188584693">裝置內建的 NIC MAC 位址</translation>
 <translation id="5963752574792883406">通訊埠 990 (2022 年 2 月 1 日前可解除封鎖)</translation>
 <translation id="5966615072639944554">允許擴充功能使用 Remote Attestation API</translation>
@@ -4474,6 +4485,7 @@
 
       如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
+<translation id="6019162469732742754">使用自動模式</translation>
 <translation id="6019606564278029236">允許遠端使用者在遠端協助工作階段中操控權限較高的視窗</translation>
 <translation id="6022948604095165524">起始動作</translation>
 <translation id="602318745029752898">允許使用隨選朗讀中的加強型網路文字轉語音功能</translation>
@@ -5193,6 +5205,15 @@
 <translation id="6786666051053129545">啟用 Google 助理 Voice Match 流程</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
+<translation id="6789319144568227749">設定 CORS 非萬用字元要求標頭的支援功能。
+
+      <ph name="PRODUCT_NAME" /> 97 版新增 CORS 非萬用字元要求標頭的支援功能。當指令碼透過 fetch() 和含有已新增指令碼 Authorization 標頭的 XMLHttpRequest 發出跨來源網路要求時，該標頭在 CORS 預檢回應中必須獲得 Access-Control-Allow-Headers 標頭的明確允許。此處的「明確」是指萬用字元符號「*」不會涵蓋 Authorization 標頭。詳情請參閱 <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />。
+
+      如果不設定這項政策或設為 True，<ph name="PRODUCT_NAME" /> 會支援 CORS 非萬用字元要求標頭，且裝置行為將如上所述。
+
+      如果不設定這項政策或設為 False，Chrome 會允許萬用字元符號「*」在 CORS 預檢回應的 Access-Control-Allow-Headers 標頭中涵蓋 Authorization 標頭。
+
+      這項 Enterprise 政策僅是暫時性措施，預計將於日後移除。</translation>
 <translation id="6789422336869764846">如果將這項政策設為啟用或不設定，已註冊的裝置會回報裝置的開發人員模式切換設定在開機時的狀態。
 
       如果將這項政策設為停用，已註冊的裝置不會回報開發人員模式切換設定的狀態。</translation>
@@ -5444,6 +5465,7 @@
 <translation id="7019805045859631636">快</translation>
 <translation id="7025332601572838001">設定第一次執行 CCT 時的《服務條款》相關行為</translation>
 <translation id="7026351325994257733">允許在搭載 <ph name="PRODUCT_OS_NAME" />的裝置和已連結的 Android 手機上，將 Wi-Fi 網路設定保持同步。</translation>
+<translation id="7027057540229843762">使用淺色主題</translation>
 <translation id="7027785306666625591">設定 <ph name="PRODUCT_OS_NAME" /> 的電源管理。
 
       這些政策可讓你設定當使用者閒置一段時間後，要讓 <ph name="PRODUCT_OS_NAME" /> 採取的動作。</translation>
@@ -6425,15 +6447,6 @@
       如果將這項政策設為停用或不予設定，登入時會導向一般設定檔。</translation>
 <translation id="8151299379693359769">根據遠端認證啟用額外的安全性檢查 (選用，預設值：True)。</translation>
 <translation id="8151490482515839285">啟用資料外洩防護回報功能</translation>
-<translation id="8151949408479239790">設定 CORS 非萬用字元要求標頭的支援功能。
-
-      <ph name="PRODUCT_NAME" /> 97 版新增 CORS 非萬用字元要求標頭的支援功能。當指令碼透過 fetch() 和含有已新增指令碼 Authorization 標頭的 XMLHttpRequest 發出跨來源網路要求時，該標頭在 CORS 預檢回應中必須獲得 Access-Control-Allow-Headers 標頭的明確允許。此處的「明確」是指萬用字元符號「*」不會涵蓋 Authorization 標頭。詳情請參閱 <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />。
-
-      如果不設定這項政策或設為 True，<ph name="PRODUCT_NAME" /> 會支援 CORS 非萬用字元要求標頭，且裝置行為將如上所述。
-
-      如果不設定這項政策或設為 False，Chrome 會允許萬用字元符號「*」在 CORS 預檢回應的 Access-Control-Allow-Headers 標頭中涵蓋 Authorization 標頭。
-
-      這項 Enterprise 政策僅是暫時性措施，預計將於 <ph name="PRODUCT_NAME" /> 第 103 版之後移除。</translation>
 <translation id="8158758865057576716">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本。</translation>
 <translation id="8158897487095710470">如果將這項政策設為 True，系統會在 <ph name="PRODUCT_NAME" /> 中顯示書籤列。如果將這項政策設為 False，使用者一律不會看到書籤列。
 
@@ -6979,6 +6992,9 @@
 
       不過，「http://notexample.com/」、「http://example.com.invalid.com/」、「http://example.comabc/」只有在「Default」模式下才會是相符的結果；「http://acme.com/ABC」則只會在「IESiteListMode」模式下才會是相符的結果。</translation>
 <translation id="8736538322216687231">強制執行低度的 YouTube 嚴格篩選模式</translation>
+<translation id="8744844164152340112">控管在 OOBE 和工作階段期間用於算繪 UI 的主題 (深色/淺色/自動)。
+      自動模式會在日出和日落時，自動在深色和淺色主題間切換。
+      建議採用這項政策，讓使用者能夠在系統設定中變更主題。</translation>
 <translation id="8745669971728319820">這項政策可控管系統是否要回報擴充功能和外掛程式資訊。
 
       如果不設定 <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 政策或設為停用，系統會忽略這項政策。
@@ -6998,6 +7014,7 @@
 <translation id="8763716376920670835">自 M101 起，WebSQL 預設為啟用，但你仍然可以透過 Chrome 旗標將其停用。
           如果將這項政策設為 False 或未設定，系統就可停用 WebSQL。
           如果將這項政策設為 True，系統將無法停用 WebSQL。</translation>
+<translation id="8766910236040529804">啟用轉譯器應用程式容器</translation>
 <translation id="8767743923206070405">如果將這項政策設為啟用，<ph name="PRODUCT_NAME" /> 的工具列上會顯示「首頁」按鈕。如果將這項政策設為停用，則不會顯示「首頁」按鈕。
 
       如果設定這項政策，使用者將無法在 <ph name="PRODUCT_NAME" /> 中進行變更。如果未設定，使用者可選擇是否要顯示「首頁」按鈕。</translation>

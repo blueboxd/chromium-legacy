@@ -9,6 +9,7 @@ import {BrailleDisplayManager} from '/chromevox/background/braille/braille_displ
 import {BrailleInputHandler} from '/chromevox/background/braille/braille_input_handler.js';
 import {BrailleKeyEventRewriter} from '/chromevox/background/braille/braille_key_event_rewriter.js';
 import {BrailleTranslatorManager} from '/chromevox/background/braille/braille_translator_manager.js';
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
 
 /** @implements {BrailleInterface} */
 export class BrailleBackground {
@@ -159,14 +160,16 @@ export class BrailleBackground {
 BrailleBackground.instance_ = null;
 
 BridgeHelper.registerHandler(
-    BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.BACK_TRANSLATE,
-    (cells) => new Promise(resolve => {
+    BridgeConstants.BrailleBackground.TARGET,
+    BridgeConstants.BrailleBackground.Action.BACK_TRANSLATE,
+    cells => new Promise(resolve => {
       BrailleBackground.instance.getTranslatorManager()
           .getDefaultTranslator()
           .backTranslate(cells, resolve);
     }));
 
 BridgeHelper.registerHandler(
-    BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.REFRESH_BRAILLE_TABLE,
-    (brailleTable) => BrailleBackground.instance.getTranslatorManager().refresh(
+    BridgeConstants.BrailleBackground.TARGET,
+    BridgeConstants.BrailleBackground.Action.REFRESH_BRAILLE_TABLE,
+    brailleTable => BrailleBackground.instance.getTranslatorManager().refresh(
         brailleTable));

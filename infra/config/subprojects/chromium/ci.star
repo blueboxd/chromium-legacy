@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "builders", "cpu")
+load("//lib/builders.star", "cpu")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -14,7 +14,6 @@ ci.defaults.set(
     build_numbers = True,
     cpu = cpu.X86_64,
     triggered_by = ["chromium-gitiles-trigger"],
-    free_space = builders.free_space.standard,
 )
 
 luci.bucket(
@@ -63,6 +62,7 @@ luci.gitiles_poller(
         "chromium.linux",
         "chromium.chromiumos",
         "chromium.android",
+        "chromium.fuchsia",
         "chromium.angle",
         "chrome",
         "chromium.memory",
@@ -127,12 +127,14 @@ consoles.console_view(
 )]
 
 exec("./ci/chromium.star")
+exec("./ci/chromium.accessibility.star")
 exec("./ci/chromium.android.star")
 exec("./ci/chromium.android.fyi.star")
 exec("./ci/chromium.angle.star")
 exec("./ci/chromium.chromiumos.star")
 exec("./ci/chromium.clang.star")
 exec("./ci/chromium.dawn.star")
+exec("./ci/chromium.fuchsia.star")
 exec("./ci/chromium.fuchsia.fyi.star")
 exec("./ci/chromium.fuzz.star")
 exec("./ci/chromium.fyi.star")

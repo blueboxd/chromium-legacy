@@ -641,7 +641,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.Ratio" units="%"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -771,7 +771,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrame.ThirdPartyCookieBlockingEnabled"
-    enum="ThirdPartyCookieBlockState" expires_after="2022-09-25">
+    enum="ThirdPartyCookieBlockState" expires_after="2022-11-27">
   <owner>dullweber@chromium.org</owner>
   <owner>feuunk@chromium.org</owner>
   <summary>
@@ -961,7 +961,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.PreresolveJobQueueingTime" units="ms"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -974,7 +974,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.PreresolveJobQueueLength" units="count"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -987,7 +987,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ProxyLookupCallbackQueueingTime"
-    units="ms" expires_after="2022-09-08">
+    units="ms" expires_after="2022-11-13">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -1000,7 +1000,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ProxyLookupLatency" units="ms"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>alexilin@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
@@ -1013,7 +1013,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ResolveHostCallbackQueueingTime"
-    units="ms" expires_after="2022-09-08">
+    units="ms" expires_after="2022-11-13">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -1026,7 +1026,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ResolveHostLatency" units="ms"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>alexilin@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
@@ -1040,7 +1040,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Prefetch.PrefetchJobQueueingTime" units="ms"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>blundell@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
@@ -1052,7 +1052,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Prefetch.PrefetchJobQueueLength" units="count"
-    expires_after="2022-09-08">
+    expires_after="2022-11-13">
   <owner>blundell@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
@@ -1064,7 +1064,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Prerender.ActivationCommitDeferTime" units="ms"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -1086,7 +1086,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <token key="Method">
     <variant name="OnReceiveRedirect"/>
     <variant name="OnReceiveResponse"/>
-    <variant name="OnStartLoadingResponseBody"/>
   </token>
   <token key="FrameType" variants="FrameTypes"/>
 </histogram>
@@ -1166,7 +1165,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess.HTTPOrHTTPS"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2022-09-11">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2022-11-13">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1224,7 +1223,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.TimeToActivatePrerender{PrerenderTriggerType}"
-    units="ms" expires_after="2022-07-01">
+    units="ms" expires_after="2022-11-27">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
@@ -1262,7 +1261,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.UrlParamFilter.ClassificationListValidationResult"
-    enum="ClassificationListValidationResult" expires_after="2022-09-18">
+    enum="ClassificationListValidationResult" expires_after="2022-11-20">
   <owner>kaklilu@chromium.org</owner>
   <owner>src/chrome/browser/url_param_filter/OWNERS</owner>
   <summary>
@@ -1362,7 +1361,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="NavigationSuggestion.Event2" enum="NavigationSuggestionEvent"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -1380,7 +1379,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.GetDomainInfoDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2022-09-11">
+    units="ms" expires_after="2022-11-13">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1396,7 +1395,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.IsLookalikeUrlDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2022-09-11">
+    units="ms" expires_after="2022-11-13">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1412,7 +1411,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.PerformChecksDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2022-09-11">
+    units="ms" expires_after="2022-11-13">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1427,7 +1426,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="NavigationSuggestion.UpdateEngagedSitesDeferTime" units="ms"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>meacer@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1438,8 +1437,20 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram
+    name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
+    enum="Boolean" expires_after="2022-07-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Records whether the search terms obtained via the search_terms_args are the
+    same as the search terms extracted from the URLs. This is recorded when
+    PrerenderManager attempts to start a new prerender.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.Experimental.PredictionStatus.DefaultSearchEngine"
-    enum="PrerenderPredictionStatus" expires_after="2022-11-06">
+    enum="PrerenderPredictionStatus" expires_after="2022-11-27">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1451,7 +1462,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DirectUrlInput"
-    enum="PrerenderPredictionStatus" expires_after="2022-11-06">
+    enum="PrerenderPredictionStatus" expires_after="2022-11-27">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1520,7 +1531,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.Search.FirstCorrectPrerenderHintReceivedToRealSearchNavigationStartedDuration"
-    units="ms" expires_after="2022-09-01">
+    units="ms" expires_after="2022-11-27">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1653,7 +1664,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
-<histogram name="Prerender.PrerenderLoadComplete" units="BooleanSuccess"
+<histogram name="Prerender.PrerenderLoadComplete" enum="BooleanSuccess"
     expires_after="2022-10-16">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>

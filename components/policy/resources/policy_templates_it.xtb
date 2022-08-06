@@ -3622,6 +3622,7 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
 <translation id="4960597185231686653">Un flag booleano che indica se la tastiera sullo schermo può offrire la funzionalità di input vocale.</translation>
 <translation id="4970046075219007744">Consenti alle app web di richiedere all'utente l'accesso ai tipi di file tramite l'API File Handling</translation>
 <translation id="4970855112942626932">Disattiva accesso al browser</translation>
+<translation id="4974091268178043378">Modalità colore di Chrome OS</translation>
 <translation id="4976928720873547342">Se questo criterio viene impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per <ph name="CHROME_SYNC_NAME" /> sia per la sincronizzazione del profilo di roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo di roaming o per limitare il tipo di dati caricati sui server di <ph name="CHROME_SYNC_NAME" />.
 
       Attualmente i tipi di dati per questo criterio sono: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Tali nomi sono sensibili alle maiuscole.</translation>
@@ -4263,6 +4264,13 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
           Il valore del criterio viene applicato solo se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> viene attivato e non è applicabile in caso contrario.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
+<translation id="5698923148503075597">Se il criterio viene impostato su Enabled, in caso di conflitto il criterio relativo al cloud prevale sul criterio relativo alla piattaforma.
+
+      Se il criterio viene impostato su Disabled o se non viene configurato, in caso di conflitto il criterio relativo alla piattaforma prevale sul criterio relativo al cloud.
+
+      Questo criterio obbligatorio interessa i criteri relativi al cloud in ambito macchina.
+
+      Questo criterio è disponibile soltanto su <ph name="PRODUCT_NAME" /> e non ha effetto su <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Se il criterio viene impostato su Attivato, il visualizzatore di PDF interno viene disattivato in <ph name="PRODUCT_NAME" />, i file PDF vengono considerati come file scaricati e gli utenti possono aprire i PDF con l'applicazione predefinita.
 
       Se il criterio viene impostato su Disattivato, i file PDF vengono aperti con il plug-in di PDF, a meno che disattivato dagli utenti.
@@ -4372,6 +4380,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
       Gli utenti non possono modificare questa impostazione.</translation>
 <translation id="5848438019586925019">L'algoritmo per la generazione di coppie di chiavi.</translation>
+<translation id="5851248808417680865">Usa il tema scuro</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
 <translation id="5853547031212075792">Consenti agli utenti di attivare la Modalità solo HTTPS</translation>
 <translation id="5859344336338527083">Impostare il criterio specifica quali URL sono autorizzati a installare estensioni, app e temi. Prima di <ph name="PRODUCT_NAME" /> 21, gli utenti potevano fare clic su un link a un file *.crx e <ph name="PRODUCT_NAME" /> avrebbe proposto di installare il file dopo alcuni avvisi. Successivamente, tali file devono essere scaricati e trascinati nella pagina delle impostazioni di <ph name="PRODUCT_NAME" />. Questa impostazione consente a URL specifici di utilizzare il precedente flusso di installazione semplificato.
@@ -4503,11 +4512,6 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
       Se il criterio viene configurato, gli utenti non possono modificarlo. In caso contrario, gli utenti possono decidere se visualizzare o meno intestazioni e piè di pagina.</translation>
 <translation id="5951418260805607969">Mostra una notifica quando lo spazio sul disco è in esaurimento</translation>
 <translation id="5958746038080720143">Attiva le ottimizzazioni WPAD (Web Proxy Auto-Discovery)</translation>
-<translation id="5959428851851090097">Se il criterio viene impostato su Attivato, in caso di conflitto il criterio relativo al cloud prevale sul criterio relativo alla piattaforma.
-
-      Se il criterio viene impostato su Disattivato o se non viene impostato, in caso di conflitto il criterio relativo alla piattaforma prevale sul criterio relativo al cloud.
-
-      Questo criterio obbligatorio interessa i criteri relativi al cloud in ambito macchina.</translation>
 <translation id="5961137303188584693">Indirizzo MAC NIC integrato del dispositivo</translation>
 <translation id="5963752574792883406">porta 990 (può essere sbloccata fino al 01/02/2022)</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
@@ -4548,6 +4552,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
       Questo criterio viene applicato soltanto se la macchina viene registrata con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
       Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="6019162469732742754">Usa la Modalità automatica</translation>
 <translation id="6019606564278029236">Attiva l'interazione degli utenti remoti con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
 <translation id="6022948604095165524">Azione all'avvio</translation>
 <translation id="602318745029752898">Consenti le voci di sintesi vocale di rete migliorate in di Seleziona per ascoltare</translation>
@@ -5281,6 +5286,15 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 <translation id="6786666051053129545">Attivare il flusso Voice Match dell'Assistente Google</translation>
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
+<translation id="6789319144568227749">Consente di configurare il supporto delle intestazioni delle richieste CORS senza caratteri jolly.
+
+      Nella versione 97 di <ph name="PRODUCT_NAME" /> è stato introdotto il supporto delle intestazioni delle richieste CORS senza caratteri jolly. Quando gli script effettuano una richiesta di rete tra origini tramite fetch() e XMLHttpRequest con un'intestazione Authorization aggiunta tramite script, l'intestazione deve essere consentita esplicitamente dall'intestazione Access-Control-Allow-Headers nella risposta preflight CORS. Con "esplicitamente" qui si intende che il simbolo di carattere jolly "*" non include l'intestazione Authorization. Per maggiori informazioni, visita la pagina <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
+
+      Se questo criterio non viene configurato o se viene impostato su True, <ph name="PRODUCT_NAME" /> supporterà le intestazioni delle richieste CORS senza caratteri jolly e si comporterà come descritto in precedenza.
+
+      Se questo criterio viene impostato su False, Chrome consentirà il simbolo di carattere jolly ("*") nell'intestazione Access-Control-Allow-Headers della risposta preflight CORS per includere l'intestazione Authorization.
+
+      Questo criterio aziendale è temporaneo ed è destinato a essere rimosso in futuro.</translation>
 <translation id="6789422336869764846">Se il criterio viene impostato su Attivato o se non viene configurato, i dispositivi registrati segnalano lo stato della modalità sviluppatore del dispositivo all'avvio.
 
       Se il criterio viene impostato su Disattivato, i dispositivi registrati non segnalano lo stato della modalità sviluppatore.</translation>
@@ -5531,6 +5545,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 <translation id="7019805045859631636">Veloce</translation>
 <translation id="7025332601572838001">Configurazione del comportamento dei TdS alla prima esecuzione di CCT</translation>
 <translation id="7026351325994257733">Consenti la sincronizzazione delle configurazioni di reti Wi-Fi tra i dispositivi <ph name="PRODUCT_OS_NAME" /> e un telefono Android collegato</translation>
+<translation id="7027057540229843762">Usa il tema chiaro</translation>
 <translation id="7027785306666625591">Configura la gestione dell'alimentazione in <ph name="PRODUCT_OS_NAME" />.
 
       Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per un determinato periodo di tempo.</translation>
@@ -6523,15 +6538,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
       Se la norma viene disattivata o non viene impostata, l'accesso rimanda a profili normali.</translation>
 <translation id="8151299379693359769">Consente di attivare un controllo sicurezza aggiuntivo in base all'attestazione da remoto (facoltativo, valore predefinito: Vero).</translation>
 <translation id="8151490482515839285">Attiva la generazione di rapporti sulla prevenzione di fughe di dati</translation>
-<translation id="8151949408479239790">Consente di configurare il supporto delle intestazioni delle richieste CORS senza caratteri jolly.
-
-      Nella versione 97 di <ph name="PRODUCT_NAME" /> è stato introdotto il supporto delle intestazioni delle richieste CORS senza caratteri jolly. Quando gli script effettuano una richiesta di rete tra origini tramite fetch() e XMLHttpRequest con un'intestazione Authorization aggiunta tramite script, l'intestazione deve essere consentita esplicitamente dall'intestazione Access-Control-Allow-Headers nella risposta preflight CORS. Con "esplicitamente" qui si intende che il simbolo di carattere jolly "*" non include l'intestazione Authorization. Per maggiori informazioni, visita la pagina <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
-
-      Se questo criterio non viene configurato o se viene impostato su Vero, <ph name="PRODUCT_NAME" /> supporterà le intestazioni delle richieste CORS senza caratteri jolly e si comporterà come descritto in precedenza.
-
-      Se questo criterio viene impostato su Falso, Chrome consentirà il simbolo di carattere jolly ("*") nell'intestazione Access-Control-Allow-Headers della risposta preflight CORS per includere l'intestazione Authorization.
-
-      Questo criterio aziendale è temporaneo ed è destinato a essere rimosso dopo la versione 103 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158758865057576716">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Se il criterio è impostato su True, una barra dei Preferiti viene visualizzata in <ph name="PRODUCT_NAME" />. Se il criterio è impostato su False, gli utenti non vedono mai la barra dei Preferiti.
 
@@ -7086,6 +7092,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       "http://acme.com/ABC" corrisponde soltanto in "IESiteListMode".</translation>
 <translation id="8736538322216687231">Imponi livello minimo della Modalità con restrizioni di YouTube</translation>
+<translation id="8744844164152340112">Consente di stabilire il tema (scuro/chiaro/automatico) usato per eseguire il rendering dell'UI durante l'OOBE e nella sessione.
+      Con la modalità automatica viene effettuato il passaggio automatico tra tema scuro e tema chiaro all'alba e al tramonto.
+      Questo criterio dovrebbe essere consigliato per dare agli utenti la possibilità di cambiare il tema nelle impostazioni di sistema.</translation>
 <translation id="8745669971728319820">Questo criterio consente di stabilire se segnalare o meno le informazioni relative a estensioni e plug-in.
 
       Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.

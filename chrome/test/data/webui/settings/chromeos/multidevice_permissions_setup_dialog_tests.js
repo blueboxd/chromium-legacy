@@ -4,6 +4,7 @@
 
 import {MultiDeviceBrowserProxyImpl, PermissionsSetupStatus, SetupFlowStatus} from 'chrome://os-settings/chromeos/os_settings.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -31,7 +32,7 @@ suite('Multidevice', () => {
    * @param {PermissionsSetupStatus} status
    */
   function simulateNotificationStatusChanged(status) {
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'settings.onNotificationAccessSetupStatusChanged', status);
     flush();
   }
@@ -40,12 +41,12 @@ suite('Multidevice', () => {
    * @param {PermissionsSetupStatus} status
    */
   function simulateAppsStatusChanged(status) {
-    cr.webUIListenerCallback('settings.onAppsAccessSetupStatusChanged', status);
+    webUIListenerCallback('settings.onAppsAccessSetupStatusChanged', status);
     flush();
   }
 
   function simulateCombinedStatusChanged(status) {
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'settings.onCombinedAccessSetupStatusChanged', status);
     flush();
   }
@@ -461,13 +462,13 @@ suite('Multidevice', () => {
       showCameraRoll: false,
       showNotifications: true,
       showAppStreaming: true,
-      combinedSetupSupported: false
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: true,
+      isChromeosScreenLockEnabled: false
     });
     flush();
 
     loadTimeData.overrideValues({isEcheAppEnabled: true});
-    loadTimeData.overrideValues({isPhoneScreenLockEnabled: true});
-    loadTimeData.overrideValues({isChromeosScreenLockEnabled: false});
     buttonContainer.querySelector('#getStartedButton').click();
 
     assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 0);
@@ -479,18 +480,93 @@ suite('Multidevice', () => {
     assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
   });
 
+  test('Test screen lock without pin number with next button', async () => {
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: true,
+      showAppStreaming: true,
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: true,
+      isChromeosScreenLockEnabled: true,
+      isScreenLockEnabled_: true,
+      flowState_: SetupFlowStatus.SET_LOCKSCREEN,
+      isPinNumberSelected_: false
+    });
+    flush();
+
+    loadTimeData.overrideValues({isEcheAppEnabled: true});
+    buttonContainer.querySelector('#getStartedButton').click();
+
+    assertFalse(permissionsSetupDialog.showSetupPinDialog_);
+    assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);
+    assertTrue(
+        isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_NOTIFICATION));
+  });
+
+  test('Test screen lock with pin number with next button', async () => {
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: true,
+      showAppStreaming: true,
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: true,
+      isChromeosScreenLockEnabled: true,
+      isScreenLockEnabled_: true,
+      flowState_: SetupFlowStatus.SET_LOCKSCREEN,
+      isPinNumberSelected_: true
+    });
+    flush();
+
+    const screenLockSubpage =
+        permissionsSetupDialog.$$('settings-multidevice-screen-lock-subpage');
+    screenLockSubpage.dispatchEvent(new CustomEvent(
+        'pin-number-selected', {detail: {isPinNumberSelected: true}}));
+    loadTimeData.overrideValues({isEcheAppEnabled: true});
+    buttonContainer.querySelector('#getStartedButton').click();
+
+    assertTrue(permissionsSetupDialog.showSetupPinDialog_);
+    assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 0);
+    assertTrue(isExpectedFlowState(SetupFlowStatus.SET_LOCKSCREEN));
+  });
+
+  test('Test screen lock with pin number done', async () => {
+    permissionsSetupDialog.setProperties({
+      showCameraRoll: false,
+      showNotifications: true,
+      showAppStreaming: true,
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: true,
+      isChromeosScreenLockEnabled: true,
+      isScreenLockEnabled_: true,
+      flowState_: SetupFlowStatus.SET_LOCKSCREEN,
+      isPinNumberSelected_: true,
+      isSetPinDone_: true,
+      isPasswordDialogShowing: true
+    });
+    flush();
+
+    loadTimeData.overrideValues({isEcheAppEnabled: true});
+    buttonContainer.querySelector('#getStartedButton').click();
+
+    assertFalse(permissionsSetupDialog.showSetupPinDialog_);
+    assertFalse(permissionsSetupDialog.isPasswordDialogShowing);
+    assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);
+    assertTrue(
+        isExpectedFlowState(SetupFlowStatus.WAIT_FOR_PHONE_NOTIFICATION));
+  });
+
   test('Test phone and ChromeOS enabled screen lock', async () => {
     permissionsSetupDialog.setProperties({
       showCameraRoll: false,
       showNotifications: true,
       showAppStreaming: true,
-      combinedSetupSupported: false
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: true,
+      isChromeosScreenLockEnabled: true
     });
     flush();
 
     loadTimeData.overrideValues({isEcheAppEnabled: true});
-    loadTimeData.overrideValues({isPhoneScreenLockEnabled: true});
-    loadTimeData.overrideValues({isChromeosScreenLockEnabled: true});
     buttonContainer.querySelector('#getStartedButton').click();
     assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);
   });
@@ -500,13 +576,13 @@ suite('Multidevice', () => {
       showCameraRoll: false,
       showNotifications: true,
       showAppStreaming: true,
-      combinedSetupSupported: false
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: false,
+      isChromeosScreenLockEnabled: true
     });
     flush();
 
     loadTimeData.overrideValues({isEcheAppEnabled: true});
-    loadTimeData.overrideValues({isPhoneScreenLockEnabled: false});
-    loadTimeData.overrideValues({isChromeosScreenLockEnabled: true});
     buttonContainer.querySelector('#getStartedButton').click();
     assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);
   });
@@ -516,13 +592,13 @@ suite('Multidevice', () => {
       showCameraRoll: false,
       showNotifications: true,
       showAppStreaming: true,
-      combinedSetupSupported: false
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: false,
+      isChromeosScreenLockEnabled: false
     });
     flush();
 
     loadTimeData.overrideValues({isEcheAppEnabled: true});
-    loadTimeData.overrideValues({isPhoneScreenLockEnabled: false});
-    loadTimeData.overrideValues({isChromeosScreenLockEnabled: false});
     buttonContainer.querySelector('#getStartedButton').click();
     assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);
   });
@@ -532,13 +608,13 @@ suite('Multidevice', () => {
       showCameraRoll: false,
       showNotifications: true,
       showAppStreaming: false,
-      combinedSetupSupported: false
+      combinedSetupSupported: false,
+      isPhoneScreenLockEnabled: true,
+      isChromeosScreenLockEnabled: false
     });
     flush();
 
     loadTimeData.overrideValues({isEcheAppEnabled: false});
-    loadTimeData.overrideValues({isPhoneScreenLockEnabled: true});
-    loadTimeData.overrideValues({isChromeosScreenLockEnabled: false});
     buttonContainer.querySelector('#getStartedButton').click();
 
     assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);
@@ -552,13 +628,13 @@ suite('Multidevice', () => {
           showCameraRoll: false,
           showNotifications: true,
           showAppStreaming: false,
-          combinedSetupSupported: false
+          combinedSetupSupported: false,
+          isPhoneScreenLockEnabled: true,
+          isChromeosScreenLockEnabled: false
         });
         flush();
 
         loadTimeData.overrideValues({isEcheAppEnabled: true});
-        loadTimeData.overrideValues({isPhoneScreenLockEnabled: true});
-        loadTimeData.overrideValues({isChromeosScreenLockEnabled: false});
         buttonContainer.querySelector('#getStartedButton').click();
 
         assertEquals(browserProxy.getCallCount('attemptNotificationSetup'), 1);

@@ -264,13 +264,15 @@
       <div id="instruction">
         <iron-icon id="instruction-icon" icon="os-settings:failure-alert">
         </iron-icon>
-        $i18n{multideviceNotificationAccessSetupInstructions}
+        $i18n{multidevicePermissionsSetupInstructions}
       </div>
     </template>
     <template is="dom-if" if="[[hasStartedSetupAttempt_]]" restamp>
       <template is="dom-if" if="[[shouldShowScreenLockInstructions_(flowState_)]]" restamp>
         <settings-multidevice-screen-lock-subpage
             is-screen-lock-enabled="{{isScreenLockEnabled_}}"
+            on-pin-number-selected="onPinNumberSelected_"
+            show-setup-pin-dialog="{{showSetupPinDialog_}}"
             is-password-dialog-showing="{{isPasswordDialogShowing}}">
         </settings-multidevice-screen-lock-subpage>
       </template>

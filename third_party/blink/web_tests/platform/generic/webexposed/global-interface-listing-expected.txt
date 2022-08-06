@@ -244,10 +244,6 @@ interface Attr : Node
     getter value
     method constructor
     setter value
-interface AttributionReporting
-    attribute @@toStringTag
-    method constructor
-    method registerSource
 interface Audio
     attribute @@toStringTag
     method constructor
@@ -830,6 +826,11 @@ interface CSSPerspective : CSSTransformComponent
     getter length
     method constructor
     setter length
+interface CSSPositionFallbackRule : CSSRule
+    attribute @@toStringTag
+    getter cssRules
+    getter name
+    method constructor
 interface CSSPositionValue : CSSStyleValue
     attribute @@toStringTag
     getter x
@@ -1003,6 +1004,9 @@ interface CSSTranslate : CSSTransformComponent
     setter x
     setter y
     setter z
+interface CSSTryRule : CSSRule
+    attribute @@toStringTag
+    method constructor
 interface CSSUnitValue : CSSNumericValue
     attribute @@toStringTag
     getter unit
@@ -1362,6 +1366,10 @@ interface CredentialsContainer
     method get
     method preventSilentAccess
     method store
+interface CropTarget
+    static method fromElement
+    attribute @@toStringTag
+    method constructor
 interface Crypto
     attribute @@toStringTag
     getter subtle
@@ -1897,6 +1905,7 @@ interface Document : Node
     getter rootElement
     getter scripts
     getter scrollingElement
+    getter softNavigations
     getter styleSheets
     getter timeline
     getter title
@@ -4154,6 +4163,7 @@ interface HTMLScriptElement : HTMLElement
     static method supports
     attribute @@toStringTag
     getter async
+    getter attributionSrc
     getter blocking
     getter charset
     getter crossOrigin
@@ -4169,6 +4179,7 @@ interface HTMLScriptElement : HTMLElement
     getter type
     method constructor
     setter async
+    setter attributionSrc
     setter blocking
     setter charset
     setter crossOrigin
@@ -5070,10 +5081,28 @@ interface ML
 interface MLContext
     attribute @@toStringTag
     method constructor
+interface MLGraphBuilder
+    attribute @@toStringTag
+    method add
+    method averagePool2d
+    method clamp
+    method constant
+    method constructor
+    method conv2d
+    method gemm
+    method input
+    method reshape
+    method softmax
 interface MLModelLoader
     attribute @@toStringTag
     method constructor
     method load
+interface MLOperand
+    attribute @@toStringTag
+    method constructor
+interface MLOperator
+    attribute @@toStringTag
+    method constructor
 interface Magnetometer : Sensor
     attribute @@toStringTag
     getter x
@@ -5318,7 +5347,6 @@ interface MediaDevices : EventTarget
     method getDisplayMediaSet
     method getSupportedConstraints
     method getUserMedia
-    method produceCropId
     method setCaptureHandleConfig
     setter ondevicechange
 interface MediaElementAudioSourceNode : AudioNode
@@ -8517,16 +8545,6 @@ interface ShadowRoot : DocumentFragment
     setter fullscreenElement
     setter innerHTML
     setter onslotchange
-interface SharedStorage
-    attribute @@toStringTag
-    getter worklet
-    method append
-    method clear
-    method constructor
-    method delete
-    method run
-    method selectURL
-    method set
 interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -11516,11 +11534,11 @@ namespace CSS
     attribute propertyNamesInGlobal
     attribute testRunner
     attribute textInputController
-    getter attributionReporting
     getter caches
     getter clientInformation
     getter closed
     getter cookieStore
+    getter crossOriginEmbedderPolicy
     getter crossOriginIsolated
     getter crypto
     getter customElements
@@ -11690,7 +11708,6 @@ namespace CSS
     getter scrollbars
     getter self
     getter sessionStorage
-    getter sharedStorage
     getter speechSynthesis
     getter status
     getter statusbar

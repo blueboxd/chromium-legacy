@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/containers/lru_cache.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/single_thread_task_runner.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_webgl_context_attributes.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/ukm_parameters.h"
 #include "third_party/blink/renderer/core/layout/content_change_type.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
@@ -947,17 +949,15 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   class ExtensionTracker : public GarbageCollected<ExtensionTracker>,
                            public NameClient {
    public:
-    ExtensionTracker(ExtensionFlags flags, const char* const* prefixes)
+    explicit ExtensionTracker(ExtensionFlags flags)
         : draft_(flags & kDraftExtension),
-          developer_(flags & kDeveloperExtension),
-          prefixes_(prefixes) {}
+          developer_(flags & kDeveloperExtension) {}
     ~ExtensionTracker() override = default;
 
     bool Draft() const { return draft_; }
     bool Developer() const { return developer_; }
 
-    const char* const* Prefixes() const;
-    bool MatchesNameWithPrefixes(const String&) const;
+    bool MatchesName(const String&) const;
 
     virtual WebGLExtension* GetExtension(WebGLRenderingContextBase*) = 0;
     virtual bool Supported(WebGLRenderingContextBase*) const = 0;
@@ -975,17 +975,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
    private:
     bool draft_;
     bool developer_;
-    const char* const* prefixes_;
   };
 
   template <typename T>
   class TypedExtensionTracker final : public ExtensionTracker {
    public:
-    TypedExtensionTracker(Member<T>& extension_field,
-                          ExtensionFlags flags,
-                          const char* const* prefixes)
-        : ExtensionTracker(flags, prefixes),
-          extension_field_(extension_field) {}
+    TypedExtensionTracker(Member<T>& extension_field, ExtensionFlags flags)
+        : ExtensionTracker(flags), extension_field_(extension_field) {}
 
     WebGLExtension* GetExtension(WebGLRenderingContextBase* context) override {
       if (!extension_) {
@@ -1032,10 +1028,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   template <typename T>
   void RegisterExtension(Member<T>& extension_ptr,
-                         ExtensionFlags flags = kApprovedExtension,
-                         const char* const* prefixes = nullptr) {
-    extensions_.push_back(MakeGarbageCollected<TypedExtensionTracker<T>>(
-        extension_ptr, flags, prefixes));
+                         ExtensionFlags flags = kApprovedExtension) {
+    extensions_.push_back(
+        MakeGarbageCollected<TypedExtensionTracker<T>>(extension_ptr, flags));
   }
 
   bool ExtensionSupportedAndAllowed(const ExtensionTracker*);

@@ -206,10 +206,20 @@ bool IsHevcProfileSupported(const VideoType& type) {
 
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(b/171813538): For Lacros, the supplemental profile cache will be
+  // asking lacros-gpu, but we will be doing decoding in ash-gpu. Until the
+  // codec detection is plumbed through to ash-gpu we can do this extra check
+  // for HEVC support.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLacrosEnablePlatformHevc)) {
+    return true;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   return GetSupplementalProfileCache()->IsProfileSupported(type.profile);
 #elif BUILDFLAG(IS_MAC)
   if (__builtin_available(macOS 11.0, *))
-    return base::FeatureList::IsEnabled(kVideoToolboxHEVCDecoding) &&
+    return base::FeatureList::IsEnabled(kPlatformHEVCDecoderSupport) &&
            (type.profile == HEVCPROFILE_MAIN ||
             type.profile == HEVCPROFILE_MAIN10 ||
             type.profile == HEVCPROFILE_MAIN_STILL_PICTURE ||
@@ -219,22 +229,13 @@ bool IsHevcProfileSupported(const VideoType& type) {
   // Technically android 5.0 mandates support for only HEVC main profile,
   // however some platforms (like chromecast) have had more profiles supported
   // so we'll see what happens if we just enable them all.
-  return base::FeatureList::IsEnabled(kMediaCodecHEVC);
+  return base::FeatureList::IsEnabled(kPlatformHEVCDecoderSupport);
 #else
   return true;
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-#elif BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
-  // Only encrypted HEVC content is supported, and normally MSE.isTypeSupported
-  // returns false for HEVC. The kEnableClearHevcForTesting flag allows it to
-  // return true to enable a wider array of test scenarios to function properly.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClearHevcForTesting)) {
-    return false;
-  }
-  return type.profile == HEVCPROFILE_MAIN || type.profile == HEVCPROFILE_MAIN10;
 #else
   return false;
-#endif
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 }
 
 bool IsVp9ProfileSupported(const VideoType& type) {

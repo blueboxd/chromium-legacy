@@ -494,98 +494,93 @@ TEST_F(UiControllerTest, UserDataChangesByOutOfLoopWrite) {
                                     UserDataFieldChange::CONTACT_PROFILE);
 }
 
-TEST_F(UiControllerTest, UserDataFormReloadFromContactChange) {
+TEST_F(UiControllerTest, UserDataFormStoreContactChange) {
   auto options = std::make_unique<FakeCollectUserDataOptions>();
-  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
-  options->reload_data_callback = reload_callback.Get();
   base::MockCallback<
       base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
       change_callback;
   options->selected_user_data_changed_callback = change_callback.Get();
-  options->use_gms_core_edit_dialogs = true;
-
-  ui_controller_->SetCollectUserDataOptions(options.get());
-
-  EXPECT_CALL(change_callback, Run(UserDataEventField::CONTACT_EVENT,
-                                   UserDataEventType::ENTRY_CREATED));
-  EXPECT_CALL(reload_callback, Run);
-  ui_controller_->HandleContactInfoChange(nullptr,
-                                          UserDataEventType::ENTRY_CREATED);
-}
-
-TEST_F(UiControllerTest, UserDataFormDoNotReloadFromContactSelectionChange) {
-  auto options = std::make_unique<FakeCollectUserDataOptions>();
   options->contact_details_name = "CONTACT";
-  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
-  options->reload_data_callback = reload_callback.Get();
-  base::MockCallback<
-      base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
-      change_callback;
-  options->selected_user_data_changed_callback = change_callback.Get();
-  options->use_gms_core_edit_dialogs = true;
-
-  ui_controller_->SetCollectUserDataOptions(options.get());
-
-  EXPECT_CALL(change_callback, Run(UserDataEventField::CONTACT_EVENT,
-                                   UserDataEventType::SELECTION_CHANGED));
-  EXPECT_CALL(reload_callback, Run).Times(0);
-  ui_controller_->HandleContactInfoChange(nullptr,
-                                          UserDataEventType::SELECTION_CHANGED);
-}
-
-TEST_F(UiControllerTest, UserDataFormReloadFromPhoneNumberChange) {
-  auto options = std::make_unique<FakeCollectUserDataOptions>();
-  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
-  options->reload_data_callback = reload_callback.Get();
-  base::MockCallback<
-      base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
-      change_callback;
-  options->selected_user_data_changed_callback = change_callback.Get();
-  options->use_gms_core_edit_dialogs = true;
+  options->use_alternative_edit_dialogs = true;
 
   ui_controller_->SetCollectUserDataOptions(options.get());
 
   EXPECT_CALL(change_callback, Run(UserDataEventField::CONTACT_EVENT,
                                    UserDataEventType::ENTRY_CREATED));
-  EXPECT_CALL(reload_callback, Run);
-  ui_controller_->HandlePhoneNumberChange(nullptr,
-                                          UserDataEventType::ENTRY_CREATED);
+  autofill::AutofillProfile profile;
+  profile.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
+                     u"johndoe@google.com");
+  ui_controller_->HandleContactInfoChange(
+      std::make_unique<autofill::AutofillProfile>(profile),
+      UserDataEventType::ENTRY_CREATED);
+
+  ASSERT_EQ(user_data_.transient_contacts_.size(), 1u);
+  EXPECT_EQ(user_data_.transient_contacts_[0]->profile->GetRawInfo(
+                autofill::ServerFieldType::EMAIL_ADDRESS),
+            u"johndoe@google.com");
+}
+
+TEST_F(UiControllerTest, UserDataFormStorePhoneNumberChange) {
+  auto options = std::make_unique<FakeCollectUserDataOptions>();
+  base::MockCallback<
+      base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
+      change_callback;
+  options->selected_user_data_changed_callback = change_callback.Get();
+  options->use_alternative_edit_dialogs = true;
+
+  ui_controller_->SetCollectUserDataOptions(options.get());
+
+  EXPECT_CALL(change_callback, Run(UserDataEventField::PHONE_NUMBER_EVENT,
+                                   UserDataEventType::ENTRY_CREATED));
+  autofill::AutofillProfile profile;
+  profile.SetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
+                     u"+41441234567");
+  ui_controller_->HandlePhoneNumberChange(
+      std::make_unique<autofill::AutofillProfile>(profile),
+      UserDataEventType::ENTRY_CREATED);
+
+  ASSERT_EQ(user_data_.transient_phone_numbers_.size(), 1u);
+  EXPECT_EQ(user_data_.transient_phone_numbers_[0]->profile->GetRawInfo(
+                autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER),
+            u"+41441234567");
 }
 
 TEST_F(UiControllerTest, UserDataFormReloadFromShippingAddressChange) {
   auto options = std::make_unique<FakeCollectUserDataOptions>();
-  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
+  base::MockCallback<base::OnceCallback<void(UserDataEventField, UserData*)>>
+      reload_callback;
   options->reload_data_callback = reload_callback.Get();
   base::MockCallback<
       base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
       change_callback;
   options->selected_user_data_changed_callback = change_callback.Get();
-  options->use_gms_core_edit_dialogs = true;
+  options->use_alternative_edit_dialogs = true;
 
   ui_controller_->SetCollectUserDataOptions(options.get());
 
   EXPECT_CALL(change_callback, Run(UserDataEventField::SHIPPING_EVENT,
                                    UserDataEventType::ENTRY_CREATED));
-  EXPECT_CALL(reload_callback, Run);
+  EXPECT_CALL(reload_callback, Run(UserDataEventField::SHIPPING_EVENT, _));
   ui_controller_->HandleShippingAddressChange(nullptr,
                                               UserDataEventType::ENTRY_CREATED);
 }
 
 TEST_F(UiControllerTest, UserDataFormReloadFromCreditCardChange) {
   auto options = std::make_unique<FakeCollectUserDataOptions>();
-  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
+  base::MockCallback<base::OnceCallback<void(UserDataEventField, UserData*)>>
+      reload_callback;
   options->reload_data_callback = reload_callback.Get();
   base::MockCallback<
       base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
       change_callback;
   options->selected_user_data_changed_callback = change_callback.Get();
-  options->use_gms_core_edit_dialogs = true;
+  options->use_alternative_edit_dialogs = true;
 
   ui_controller_->SetCollectUserDataOptions(options.get());
 
   EXPECT_CALL(change_callback, Run(UserDataEventField::CREDIT_CARD_EVENT,
                                    UserDataEventType::ENTRY_CREATED));
-  EXPECT_CALL(reload_callback, Run);
+  EXPECT_CALL(reload_callback, Run(UserDataEventField::CREDIT_CARD_EVENT, _));
   ui_controller_->HandleCreditCardChange(nullptr, nullptr,
                                          UserDataEventType::ENTRY_CREATED);
 }
@@ -1123,8 +1118,10 @@ TEST_F(UiControllerTest, OnExecuteScriptSetMessageAndClearUserActions) {
 
 TEST_F(UiControllerTest, SetCollectUserDataUiState) {
   EXPECT_CALL(mock_observer_,
-              OnCollectUserDataUiStateChanged(/* enabled= */ false));
-  ui_controller_->SetCollectUserDataUiState(false);
+              OnCollectUserDataUiStateChanged(
+                  /* loading= */ true, UserDataEventField::SHIPPING_EVENT));
+  ui_controller_->SetCollectUserDataUiState(/* loading= */ true,
+                                            UserDataEventField::SHIPPING_EVENT);
 }
 
 }  // namespace autofill_assistant

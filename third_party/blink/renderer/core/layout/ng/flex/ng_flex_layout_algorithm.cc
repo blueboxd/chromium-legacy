@@ -196,6 +196,35 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositionedItems(
 
   for (LayoutBox* oof_child : oof_children) {
     NGBlockNode child(oof_child);
+
+    // This code block just collects UMA stats.
+    if (is_column_) {
+      const ComputedStyle& child_style = oof_child->StyleRef();
+      const ComputedStyle& flexbox_style = Style();
+
+      const ItemPosition normalized_alignment =
+          FlexLayoutAlgorithm::AlignmentForChild(flexbox_style, child_style);
+      const ItemPosition default_justify_self_behavior =
+          child.IsReplaced() ? ItemPosition::kStart : ItemPosition::kStretch;
+      const ItemPosition normalized_justify =
+          FlexLayoutAlgorithm::TranslateItemPosition(
+              flexbox_style, child_style,
+              child_style.ResolvedJustifySelf(default_justify_self_behavior)
+                  .GetPosition());
+
+      const PhysicalToLogical<Length> insets_in_flexbox_writing_mode(
+          flexbox_style.GetWritingDirection(), child_style.Top(),
+          child_style.Right(), child_style.Bottom(), child_style.Left());
+      const bool are_cross_axis_insets_auto =
+          insets_in_flexbox_writing_mode.InlineStart().IsAuto() &&
+          insets_in_flexbox_writing_mode.InlineEnd().IsAuto();
+
+      if (normalized_alignment != normalized_justify &&
+          are_cross_axis_insets_auto) {
+        UseCounter::Count(Node().GetDocument(), WebFeature::kFlexboxNewAbsPos);
+      }
+    }
+
     AxisEdge main_axis_edge = MainAxisStaticPositionEdge(Style(), is_column_);
     AxisEdge cross_axis_edge =
         CrossAxisStaticPositionEdge(Style(), child.Style());
@@ -1607,7 +1636,7 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
                            physical_fragment);
 
     if (physical_fragment.BreakToken() &&
-        !To<NGBlockBreakToken>(physical_fragment.BreakToken())->IsAtBlockEnd())
+        !physical_fragment.BreakToken()->IsAtBlockEnd())
       has_inflow_child_break_inside_line[flex_line_idx] = true;
 
     // This item may have expanded due to fragmentation. Record how large the
@@ -1631,8 +1660,7 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
           previously_consumed_block_size != LayoutUnit::Max()) {
         LayoutUnit item_expansion;
         if (physical_fragment.BreakToken() &&
-            !To<NGBlockBreakToken>(physical_fragment.BreakToken())
-                 ->IsAtBlockEnd()) {
+            !physical_fragment.BreakToken()->IsAtBlockEnd()) {
           // We can't use the size of the fragment, as we don't
           // know how large the subsequent fragments will be (and how much
           // they'll expand the row).

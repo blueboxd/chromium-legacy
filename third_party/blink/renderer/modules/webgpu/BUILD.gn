@@ -16,6 +16,8 @@ blink_modules_sources("webgpu") {
     "gpu.h",
     "gpu_adapter.cc",
     "gpu_adapter.h",
+    "gpu_adapter_info.cc",
+    "gpu_adapter_info.h",
     "gpu_bind_group.cc",
     "gpu_bind_group.h",
     "gpu_bind_group_layout.cc",
@@ -42,6 +44,8 @@ blink_modules_sources("webgpu") {
     "gpu_device.h",
     "gpu_device_lost_info.cc",
     "gpu_device_lost_info.h",
+    "gpu_error.cc",
+    "gpu_error.h",
     "gpu_external_texture.cc",
     "gpu_external_texture.h",
     "gpu_map_mode.h",
@@ -89,6 +93,8 @@ blink_modules_sources("webgpu") {
   deps = [
     "//gpu/command_buffer/client:webgpu_interface",
     "//services/metrics/public/cpp:ukm_builders",
+    "//skia",
+    "//skia:skcms",
     "//third_party/blink/renderer/modules/webcodecs:webcodecs",
     "//third_party/dawn/include/dawn:headers",
   ]

@@ -92,7 +92,7 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -164,6 +164,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},
     {"fonts", IDS_SETTINGS_FONTS},
     {"learnMore", IDS_LEARN_MORE},
+    {"manage", IDS_SETTINGS_MANAGE},
     {"menu", IDS_MENU},
     {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
     {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
@@ -209,7 +210,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
           user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-      chromeos::LacrosService::Get()->init_params()->session_type ==
+      chromeos::BrowserInitParams::Get()->session_type ==
               crosapi::mojom::SessionType::kPublicSession ||
           profile->IsGuestSession());
 #else
@@ -737,7 +738,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
-    {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
     {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
     {"languagesExpandA11yLabel",
      IDS_SETTINGS_LANGUAGES_EXPAND_ACCESSIBILITY_LABEL},
@@ -857,7 +857,8 @@ bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
   if (!autofill_driver_factory)
     return false;
   autofill::ContentAutofillDriver* autofill_driver =
-      autofill_driver_factory->DriverForFrame(web_contents->GetMainFrame());
+      autofill_driver_factory->DriverForFrame(
+          web_contents->GetPrimaryMainFrame());
   if (!autofill_driver)
     return false;
   if (!autofill_driver->autofill_manager())
@@ -1032,6 +1033,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
       {"passwordNoteLabel", IDS_SETTINGS_PASSWORDS_NOTE},
+      {"passwordNoNoteAdded", IDS_SETTINGS_PASSWORDS_NO_NOTE_ADDED},
       {"passwordNoteCharacterCount",
        IDS_SETTINGS_PASSWORDS_NOTE_CHARACTER_COUNT},
       {"passwordNoteCharacterCountWarning",
@@ -1091,6 +1093,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"passwordRowMoreActionsButton", IDS_SETTINGS_PASSWORD_ROW_MORE_ACTIONS},
       {"passwordRowFederatedMoreActionsButton",
        IDS_SETTINGS_PASSWORD_ROW_FEDERATED_MORE_ACTIONS},
+      {"passwordRowPasswordDetailPageButton",
+       IDS_SETTINGS_PASSWORD_ROW_PASSWORD_DETAIL_PAGE},
       {"exportPasswordsTitle", IDS_SETTINGS_PASSWORDS_EXPORT_TITLE},
       {"exportPasswordsDescription", IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION},
       {"exportPasswords", IDS_SETTINGS_PASSWORDS_EXPORT},
@@ -1818,6 +1822,8 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_GUIDE_COMPLETION_CARD_HEADER},
       {"privacyGuideCompletionCardSubHeader",
        IDS_SETTINGS_PRIVACY_GUIDE_COMPLETION_CARD_SUB_HEADER},
+      {"privacyGuideCompletionCardSubHeaderNoLinks",
+       IDS_SETTINGS_PRIVACY_GUIDE_COMPLETION_CARD_SUB_HEADER_NO_LINKS},
       {"privacyGuideCompletionCardLeaveButton",
        IDS_SETTINGS_PRIVACY_GUIDE_COMPLETION_CARD_LEAVE_BUTTON},
       {"privacyGuideCompletionCardPrivacySandboxLabel",
@@ -2133,6 +2139,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"cookiePageBlockAllBulTwo", IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_TWO},
     {"cookiePageBlockAllBulThree", IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_THREE},
     {"cookiePageClearOnExit", IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT},
+#if !BUILDFLAG(IS_CHROMEOS)
+    {"cookiePageClearOnExitDesc", IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT_DESC},
+#endif
     {"cookiePageAllSitesLink", IDS_SETTINGS_COOKIES_ALL_SITES_LINK},
     {"cookiePageAllowExceptions", IDS_SETTINGS_COOKIES_ALLOW_EXCEPTIONS},
     {"cookiePageBlockExceptions", IDS_SETTINGS_COOKIES_BLOCK_EXCEPTIONS},

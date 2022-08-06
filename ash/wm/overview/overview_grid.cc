@@ -1924,19 +1924,20 @@ void OverviewGrid::UpdateSaveDeskButtons() {
   }
 
   // Enable/disable button and update tooltip.
-  const SavedDeskPresenter* saved_desk_presenter = SavedDeskPresenter::Get();
+  const SavedDeskPresenter* saved_desk_presenter =
+      overview_session_->saved_desk_presenter();
   SaveDeskTemplateButtonContainer* container =
       static_cast<SaveDeskTemplateButtonContainer*>(
           save_desk_button_container_widget_->GetContentsView());
   container->UpdateButtonEnableStateAndTooltip(
       SaveDeskTemplateButton::Type::kSaveAsTemplate,
-      saved_desk_presenter->GetDeskTemplateEntryCount(),
-      saved_desk_presenter->GetMaxDeskTemplateEntryCount(),
+      saved_desk_presenter->GetEntryCount(DeskTemplateType::kTemplate),
+      saved_desk_presenter->GetMaxEntryCount(DeskTemplateType::kTemplate),
       num_incognito_windows_, num_unsupported_windows_, size());
   container->UpdateButtonEnableStateAndTooltip(
       SaveDeskTemplateButton::Type::kSaveForLater,
-      saved_desk_presenter->GetSaveAndRecallDeskEntryCount(),
-      saved_desk_presenter->GetMaxSaveAndRecallDeskEntryCount(),
+      saved_desk_presenter->GetEntryCount(DeskTemplateType::kSaveAndRecall),
+      saved_desk_presenter->GetMaxEntryCount(DeskTemplateType::kSaveAndRecall),
       num_incognito_windows_, num_unsupported_windows_, size());
 
   // Set the widget position above the overview item window and default width
@@ -2464,13 +2465,13 @@ void OverviewGrid::UpdateCannotSnapWarningVisibility(bool animate) {
 }
 
 void OverviewGrid::OnSaveDeskAsTemplateButtonPressed() {
-  SavedDeskPresenter::Get()->MaybeSaveActiveDeskAsTemplate(
+  overview_session_->saved_desk_presenter()->MaybeSaveActiveDeskAsTemplate(
       DeskTemplateType::kTemplate,
       save_desk_button_container_widget_->GetNativeWindow()->GetRootWindow());
 }
 
 void OverviewGrid::OnSaveDeskForLaterButtonPressed() {
-  SavedDeskPresenter::Get()->MaybeSaveActiveDeskAsTemplate(
+  overview_session_->saved_desk_presenter()->MaybeSaveActiveDeskAsTemplate(
       DeskTemplateType::kSaveAndRecall,
       save_desk_button_container_widget_->GetNativeWindow()->GetRootWindow());
 }

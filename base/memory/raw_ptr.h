@@ -36,10 +36,11 @@
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/tagging.h"
+#include "base/check_op.h"
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_types.h"
+#include "base/win/win_handle_types.h"
 #endif
 
 namespace cc {
@@ -103,7 +104,7 @@ struct RawPtrNoOpImpl {
     return wrapped_ptr;
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
     return wrapped_ptr + delta_elems;
@@ -150,8 +151,8 @@ struct MTECheckedPtrImplPartitionAllocSupport {
     // allocated by PartitionAlloc, from normal buckets pool.
     //
     // TODO(crbug.com/1307514): Allow direct-map buckets.
-    return IsManagedByPartitionAlloc(as_uintptr) &&
-           IsManagedByNormalBuckets(as_uintptr);
+    return partition_alloc::IsManagedByPartitionAlloc(as_uintptr) &&
+           partition_alloc::internal::IsManagedByNormalBuckets(as_uintptr);
   }
 
   // Returns pointer to the tag that protects are pointed by |ptr|.
@@ -244,10 +245,10 @@ struct MTECheckedPtrImpl {
     return static_cast<To*>(wrapped_ptr);
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
-  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elem) {
-    return wrapped_ptr + delta_elem;
+  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
+    return wrapped_ptr + delta_elems;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion
@@ -294,7 +295,8 @@ struct BackupRefPtrImpl {
 
   static ALWAYS_INLINE bool IsSupportedAndNotNull(uintptr_t address) {
     // This covers the nullptr case, as address 0 is never in GigaCage.
-    bool is_in_brp_pool = IsManagedByPartitionAllocBRPPool(address);
+    bool is_in_brp_pool =
+        partition_alloc::IsManagedByPartitionAllocBRPPool(address);
 
     // There are many situations where the compiler can prove that
     // ReleaseWrappedPtr is called on a value that is always nullptr, but the
@@ -355,7 +357,8 @@ struct BackupRefPtrImpl {
     }
 #if !defined(PA_HAS_64_BITS_POINTERS)
     else {
-      AddressPoolManagerBitmap::BanSuperPageFromBRPPool(address);
+      partition_alloc::internal::AddressPoolManagerBitmap::
+          BanSuperPageFromBRPPool(address);
     }
 #endif
 
@@ -419,15 +422,15 @@ struct BackupRefPtrImpl {
     return wrapped_ptr;
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
-  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elem) {
+  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     uintptr_t address = reinterpret_cast<uintptr_t>(wrapped_ptr);
     if (IsSupportedAndNotNull(address))
-      CHECK(IsValidDelta(address, delta_elem * sizeof(T)));
+      CHECK(IsValidDelta(address, delta_elems * sizeof(T)));
 #endif
-    T* new_wrapped_ptr = WrapRawPtr(wrapped_ptr + delta_elem);
+    T* new_wrapped_ptr = WrapRawPtr(wrapped_ptr + delta_elems);
     ReleaseWrappedPtr(wrapped_ptr);
     return new_wrapped_ptr;
   }
@@ -506,7 +509,7 @@ struct AsanBackupRefPtrImpl {
     return wrapped_ptr;
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
     return wrapped_ptr + delta_elems;
@@ -1046,37 +1049,6 @@ ALWAYS_INLINE bool operator>=(const raw_ptr<U, I>& lhs,
                               const raw_ptr<V, I>& rhs) {
   return lhs.GetForComparison() >= rhs.GetForComparison();
 }
-
-// Template helpers for working with T* or raw_ptr<T>.
-template <typename T>
-struct IsPointer : std::false_type {};
-
-template <typename T>
-struct IsPointer<T*> : std::true_type {};
-
-template <typename T, typename I>
-struct IsPointer<raw_ptr<T, I>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool IsPointerV = IsPointer<T>::value;
-
-template <typename T>
-struct RemovePointer {
-  using type = T;
-};
-
-template <typename T>
-struct RemovePointer<T*> {
-  using type = T;
-};
-
-template <typename T, typename I>
-struct RemovePointer<raw_ptr<T, I>> {
-  using type = T;
-};
-
-template <typename T>
-using RemovePointerT = typename RemovePointer<T>::type;
 
 }  // namespace base
 

@@ -445,7 +445,7 @@ class CORE_EXPORT LocalFrameView final
                           bool should_scroll = true);
   FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
   void InvokeFragmentAnchor();
-  void DismissFragmentAnchor();
+  void ClearFragmentAnchor();
 
   bool ShouldSetCursor() const;
 
@@ -730,11 +730,6 @@ class CORE_EXPORT LocalFrameView final
   void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
                                          mojom::blink::ScrollIntoViewParamsPtr);
 
-  // Returns true if a scroll into view can continue to cause scrolling in the
-  // parent frame.
-  bool AllowedToPropagateScrollIntoView(
-      const mojom::blink::ScrollIntoViewParamsPtr&);
-
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
 
   cc::Layer* RootCcLayer();
@@ -792,8 +787,8 @@ class CORE_EXPORT LocalFrameView final
 
   bool HasDominantVideoElement() const;
 
-  // Gets the fullscreen overlay layer if present, or nullptr if there is none.
-  PaintLayer* GetFullScreenOverlayLayer() const;
+  // Gets the xr overlay layer if present, or nullptr if there is none.
+  PaintLayer* GetXROverlayLayer() const;
 
   void RunPaintBenchmark(int repeat_count, cc::PaintBenchmarkResult& result);
 

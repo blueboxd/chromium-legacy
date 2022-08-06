@@ -33,9 +33,11 @@
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -83,6 +85,8 @@ constexpr int kCaptureRetryLimit = 2;
 constexpr int kMaxScreencastFramesInFlight = 2;
 constexpr char kCommandIsOnlyAvailableAtTopTarget[] =
     "Command can only be executed on top-level targets";
+constexpr char kErrorNotAttached[] = "Not attached to a page";
+constexpr char kErrorInactivePage[] = "Not attached to an active page";
 
 Binary EncodeImage(const gfx::Image& image,
                    const std::string& format,
@@ -177,14 +181,29 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
   *top_controls_visible_height = *frame.metadata().top_controls_visible_height;
 }
 
+Response AssureTopLevelActiveFrame(RenderFrameHost* host) {
+  if (!host)
+    return Response::ServerError(kErrorNotAttached);
+
+  if (host->GetParentOrOuterDocument())
+    return Response::ServerError(kCommandIsOnlyAvailableAtTopTarget);
+
+  if (!host->IsActive())
+    return Response::ServerError(kErrorInactivePage);
+
+  return Response::Success();
+}
+
 template <typename ProtocolCallback>
 bool CanExecuteGlobalCommands(
     RenderFrameHost* host,
     const std::unique_ptr<ProtocolCallback>& callback) {
-  if (!host || !host->GetParent())
+  if (!host)
     return true;
-  callback->sendFailure(
-      Response::ServerError(kCommandIsOnlyAvailableAtTopTarget));
+  Response response = AssureTopLevelActiveFrame(host);
+  if (!response.IsError())
+    return true;
+  callback->sendFailure(response);
   return false;
 }
 
@@ -393,7 +412,7 @@ Response PageHandler::Disable() {
 Response PageHandler::Crash() {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (!web_contents)
-    return Response::ServerError("Not attached to a page");
+    return Response::ServerError(kErrorNotAttached);
   if (web_contents->IsCrashed())
     return Response::ServerError("The target has already crashed");
   if (host_->frame_tree_node()->navigation_request())
@@ -402,35 +421,37 @@ Response PageHandler::Crash() {
 }
 
 Response PageHandler::Close() {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::ServerError("Not attached to a page");
-  web_contents->DispatchBeforeUnload(false /* auto_cancel */);
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
+
+  host_->DispatchBeforeUnload(RenderFrameHostImpl::BeforeUnloadType::TAB_CLOSE,
+                              false);
   return Response::Success();
 }
 
 void PageHandler::Reload(Maybe<bool> bypassCache,
                          Maybe<std::string> script_to_evaluate_on_load,
                          std::unique_ptr<ReloadCallback> callback) {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents) {
-    callback->sendFailure(Response::InternalError());
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError()) {
+    callback->sendFailure(response);
     return;
   }
 
   // In the case of inspecting a GuestView (e.g. a PDF), we should reload
   // the outer web contents (embedder), since otherwise reloading the guest by
   // itself will fail.
-  if (web_contents->GetOuterWebContents())
-    web_contents = web_contents->GetOuterWebContents();
+  RenderFrameHostImpl* outermost_main_frame =
+      host_->GetOutermostMainFrameOrEmbedder();
 
   // It is important to fallback before triggering reload, so that
   // renderer could prepare beforehand.
   callback->fallThrough();
-  web_contents->GetController().Reload(bypassCache.fromMaybe(false)
-                                           ? ReloadType::BYPASSING_CACHE
-                                           : ReloadType::NORMAL,
-                                       false);
+  outermost_main_frame->frame_tree()->controller().Reload(
+      bypassCache.fromMaybe(false) ? ReloadType::BYPASSING_CACHE
+                                   : ReloadType::NORMAL,
+      false);
 }
 
 static network::mojom::ReferrerPolicy ParsePolicyFromString(
@@ -683,11 +704,11 @@ static const char* TransitionTypeName(ui::PageTransition type) {
 Response PageHandler::GetNavigationHistory(
     int* current_index,
     std::unique_ptr<NavigationEntries>* entries) {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
 
-  NavigationController& controller = web_contents->GetController();
+  NavigationController& controller = host_->frame_tree()->controller();
   *current_index = controller.GetCurrentEntryIndex();
   *entries = std::make_unique<NavigationEntries>();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
@@ -705,11 +726,11 @@ Response PageHandler::GetNavigationHistory(
 }
 
 Response PageHandler::NavigateToHistoryEntry(int entry_id) {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
 
-  NavigationController& controller = web_contents->GetController();
+  NavigationController& controller = host_->frame_tree()->controller();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
     if (controller.GetEntryAtIndex(i)->GetUniqueID() == entry_id) {
       controller.GoToIndex(i);
@@ -725,11 +746,11 @@ static bool ReturnTrue(NavigationEntry* entry) {
 }
 
 Response PageHandler::ResetNavigationHistory() {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
 
-  NavigationController& controller = web_contents->GetController();
+  NavigationController& controller = host_->frame_tree()->controller();
   controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
   return Response::Success();
 }
@@ -917,11 +938,10 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
                                       Maybe<int> max_width,
                                       Maybe<int> max_height,
                                       Maybe<int> every_nth_frame) {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
+  RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
   if (!widget_host)
     return Response::InternalError();
 
@@ -984,9 +1004,9 @@ Response PageHandler::ScreencastFrameAck(int session_id) {
 
 Response PageHandler::HandleJavaScriptDialog(bool accept,
                                              Maybe<std::string> prompt_text) {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
 
   if (pending_dialog_.is_null())
     return Response::InvalidParams("No dialog is showing");
@@ -997,6 +1017,7 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   std::move(pending_dialog_).Run(accept, prompt_override);
 
   // Clean up the dialog UI if any.
+  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (web_contents->GetDelegate()) {
     JavaScriptDialogManager* manager =
         web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
@@ -1026,18 +1047,18 @@ Response PageHandler::SetDownloadBehavior(const std::string& behavior,
       host_ ? host_->GetProcess()->GetBrowserContext() : nullptr;
   if (!browser_context)
     return Response::ServerError("Could not fetch browser context");
-  if (host_ && host_->GetParent())
-    return Response::ServerError(kCommandIsOnlyAvailableAtTopTarget);
+
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
+  if (!browser_handler_)
+    return Response::ServerError("Cannot not access browser-level commands");
   return browser_handler_->DoSetDownloadBehavior(behavior, browser_context,
                                                  std::move(download_path));
 }
 
 void PageHandler::GetAppManifest(
     std::unique_ptr<GetAppManifestCallback> callback) {
-  if (!host_) {
-    callback->sendFailure(Response::ServerError("Cannot retrieve manifest"));
-    return;
-  }
   if (!CanExecuteGlobalCommands(host_, callback))
     return;
   ManifestManagerHost::GetOrCreateForPage(host_->GetPage())
@@ -1259,17 +1280,23 @@ void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
 }
 
 Response PageHandler::StopLoading() {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
+
+  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   web_contents->Stop();
   return Response::Success();
 }
 
 Response PageHandler::SetWebLifecycleState(const std::string& state) {
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::ServerError("Not attached to a page");
+  // Inactive pages(e.g., a prerendered or back-forward cached page) should not
+  // affect the state.
+  Response response = AssureTopLevelActiveFrame(host_);
+  if (response.IsError())
+    return response;
+
+  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (state == Page::SetWebLifecycleState::StateEnum::Frozen) {
     // TODO(fmeawad): Instead of forcing a visibility change, only allow
     // freezing a page if it was already hidden.
@@ -1672,9 +1699,6 @@ DisableForRenderFrameHostReasonToProtocol(
               ContentWebBluetooth;
         case BackForwardCacheDisable::DisabledReasonId::kWebUSB:
           return Page::BackForwardCacheNotRestoredReasonEnum::ContentWebUSB;
-        case BackForwardCacheDisable::DisabledReasonId::kMediaSession:
-          return Page::BackForwardCacheNotRestoredReasonEnum::
-              ContentMediaSession;
         case BackForwardCacheDisable::DisabledReasonId::kMediaSessionService:
           return Page::BackForwardCacheNotRestoredReasonEnum::
               ContentMediaSessionService;

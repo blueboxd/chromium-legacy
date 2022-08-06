@@ -90,8 +90,14 @@ const base::Feature kIOSEnablePasswordManagerBrandingUpdate{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables (un)muting compromised passwords from bulk leak check in settings.
-const base::Feature kMuteCompromisedPasswords{
-    "MuteCompromisedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMuteCompromisedPasswords {
+  "MuteCompromisedPasswords",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables adding, displaying and modifying extra notes to stored credentials.
 const base::Feature kPasswordNotes{"PasswordNotes",
@@ -161,13 +167,8 @@ const base::Feature kSkipUndecryptablePasswords = {
 
 // Enables the addition of passwords in Chrome Settings.
 // TODO(crbug/1226008): Remove once it's launched.
-#if BUILDFLAG(IS_IOS)
 const base::Feature kSupportForAddPasswordsInSettings = {
     "SupportForAddPasswordsInSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kSupportForAddPasswordsInSettings = {
-    "SupportForAddPasswordsInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if BUILDFLAG(IS_LINUX)
 // When enabled, all undecryptable passwords are deleted from the local database

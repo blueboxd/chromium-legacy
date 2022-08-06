@@ -108,10 +108,15 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
 WaylandScreen::~WaylandScreen() = default;
 
 void WaylandScreen::OnOutputAddedOrUpdated(uint32_t output_id,
-                                           const gfx::Rect& bounds,
+                                           const gfx::Point& origin,
+                                           const gfx::Size& logical_size,
+                                           const gfx::Size& physical_size,
+                                           const gfx::Insets& insets,
                                            float scale,
-                                           int32_t transform) {
-  AddOrUpdateDisplay(output_id, bounds, scale, transform);
+                                           int32_t panel_transform,
+                                           int32_t logical_transform) {
+  AddOrUpdateDisplay(output_id, origin, logical_size, physical_size, insets,
+                     scale, panel_transform, logical_transform);
 }
 
 void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
@@ -141,22 +146,46 @@ void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
 }
 
 void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
-                                       const gfx::Rect& new_bounds,
+                                       const gfx::Point& origin,
+                                       const gfx::Size& logical_size,
+                                       const gfx::Size& physical_size,
+                                       const gfx::Insets& insets,
                                        float scale_factor,
-                                       int32_t transform) {
+                                       int32_t panel_transform,
+                                       int32_t logical_transform) {
   display::Display changed_display(output_id);
-  if (!display::Display::HasForceDeviceScaleFactor()) {
-    changed_display.SetScaleAndBounds(scale_factor, new_bounds);
-  } else {
-    changed_display.set_bounds(new_bounds);
-    changed_display.set_work_area(new_bounds);
-  }
 
-  DCHECK_GE(transform, WL_OUTPUT_TRANSFORM_NORMAL);
-  DCHECK_LE(transform, WL_OUTPUT_TRANSFORM_FLIPPED_270);
-  display::Display::Rotation rotation = WaylandTransformToRotation(transform);
+  DCHECK_GE(panel_transform, WL_OUTPUT_TRANSFORM_NORMAL);
+  DCHECK_LE(panel_transform, WL_OUTPUT_TRANSFORM_FLIPPED_270);
+  display::Display::Rotation panel_rotation =
+      WaylandTransformToRotation(panel_transform);
+  changed_display.set_panel_rotation(panel_rotation);
+
+  DCHECK_GE(logical_transform, WL_OUTPUT_TRANSFORM_NORMAL);
+  DCHECK_LE(logical_transform, WL_OUTPUT_TRANSFORM_FLIPPED_270);
+  display::Display::Rotation rotation =
+      WaylandTransformToRotation(logical_transform);
   changed_display.set_rotation(rotation);
-  changed_display.set_panel_rotation(rotation);
+
+  gfx::Size size_in_pixels(physical_size);
+  if (panel_rotation == display::Display::Rotation::ROTATE_90 ||
+      panel_rotation == display::Display::Rotation::ROTATE_270) {
+    size_in_pixels.Transpose();
+  }
+  changed_display.set_size_in_pixels(size_in_pixels);
+
+  if (!logical_size.IsEmpty()) {
+    changed_display.set_bounds(gfx::Rect(origin, logical_size));
+    changed_display.SetScale(scale_factor);
+  } else {
+    // Fallback to calculating using physical size.
+    // This can happen if xdg_output.logical_size was not sent.
+    changed_display.SetScaleAndBounds(scale_factor, gfx::Rect(size_in_pixels));
+    gfx::Rect new_bounds(changed_display.bounds());
+    new_bounds.set_origin(origin);
+    changed_display.set_bounds(new_bounds);
+  }
+  changed_display.UpdateWorkAreaFromInsets(insets);
 
   gfx::DisplayColorSpaces color_spaces;
   color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),

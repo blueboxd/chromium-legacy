@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST;
+import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG;
 import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
 import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
@@ -70,6 +71,7 @@ import org.chromium.components.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.components.autofill_assistant.user_data.AssistantChoiceList;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel;
+import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel.DataOriginNoticeConfiguration;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel.LoginChoiceModel;
 import org.chromium.components.autofill_assistant.user_data.AssistantContactField;
 import org.chromium.components.autofill_assistant.user_data.AssistantLoginChoice;
@@ -845,6 +847,149 @@ public class AutofillAssistantCollectUserDataUiTest {
                 .check(matches(not(isEnabled())));
     }
 
+    /**
+     * Test that marking the CollectUserData UI as loading behaves as expected.
+     */
+    @Test
+    @MediumTest
+    public void testLoadingState() throws Exception {
+        PersonalDataManager.AutofillProfile profileJohn = new PersonalDataManager.AutofillProfile(
+                /* guid= */ "john", "https://www.example.com", /* honorificPrefix= */ "",
+                "John Doe",
+                /* companyName= */ "", "123 Main", "California", "Los Angeles",
+                /* dependentLocality= */ "", "90210", /* sortingCode= */ "", "US", "555 123-4567",
+                "johndoe@google.com", /* languageCode= */ "");
+        PersonalDataManager.CreditCard creditCardJohn =
+                new PersonalDataManager.CreditCard(/* guid= */ "john", "https://example.com",
+                        /* isLocal= */ true, /* isCached= */ true, "John Doe", "4111111111111111",
+                        "1111", "12", "2050", "visa", R.drawable.visa_card,
+                        /* billingAddressId= */ "john", /* serverId= */ "");
+
+        AssistantCollectUserDataModel model = createCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        // Request all PR sections and fill them with data.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.CONTACT_SUMMARY_DESCRIPTION_OPTIONS,
+                    mDefaultContactSummaryOptions);
+            model.set(AssistantCollectUserDataModel.CONTACT_FULL_DESCRIPTION_OPTIONS,
+                    mDefaultContactFullOptions);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE_NUMBER_SEPARATELY, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
+            List<ContactModel> contacts = new ArrayList<>();
+            contacts.add(new ContactModel(createDummyContact(profileJohn)));
+            model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS, contacts);
+            model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, contacts.get(0));
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PHONE_NUMBERS, contacts);
+            model.set(AssistantCollectUserDataModel.SELECTED_PHONE_NUMBER, contacts.get(0));
+            List<AddressModel> addresses = new ArrayList<>();
+            addresses.add(new AddressModel(createDummyAddress(profileJohn),
+                    /* fullDescription= */ "John", /* summaryDescription= */ "John"));
+            model.set(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES, addresses);
+            model.set(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS, addresses.get(0));
+            List<PaymentInstrumentModel> instruments = new ArrayList<>();
+            instruments.add(new PaymentInstrumentModel(
+                    AssistantCollectUserDataModel.createAssistantPaymentInstrument(
+                            createDummyCreditCard(creditCardJohn),
+                            createDummyAddress(profileJohn))));
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS, instruments);
+            model.set(
+                    AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, instruments.get(0));
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+            List<AssistantLoginChoice> logins = new ArrayList<>();
+            logins.add(new AssistantLoginChoice(/* identifier= */ "john", /* label= */ "John Doe",
+                    /* sublabel= */ "", /* sublabelAccessibilityHint= */ "", /* priority= */ 0,
+                    /* infoPopup= */ null, /* editButtonContentDescription= */ ""));
+            model.set(AssistantCollectUserDataModel.AVAILABLE_LOGINS, logins);
+            model.set(AssistantCollectUserDataModel.SELECTED_LOGIN,
+                    new LoginChoiceModel(logins.get(0)));
+        });
+
+        // All sections should show the summary.
+        onView(allOf(withId(R.id.contact_summary), isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withId(R.id.contact_summary),
+                       isDescendantOfA(is(viewHolder.mPhoneNumberSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mPhoneNumberSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withId(R.id.payment_method_summary),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withId(R.id.address_summary),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+
+        // Load contacts.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantCollectUserDataModel.MARK_CONTACTS_LOADING, true));
+
+        onView(allOf(withId(R.id.contact_summary), isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+
+        // Load phone numbers.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.MARK_CONTACTS_LOADING, false);
+            model.set(AssistantCollectUserDataModel.MARK_PHONE_NUMBERS_LOADING, true);
+        });
+
+        onView(allOf(withId(R.id.contact_summary),
+                       isDescendantOfA(is(viewHolder.mPhoneNumberSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mPhoneNumberSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+
+        // Load payment methods.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.MARK_PHONE_NUMBERS_LOADING, false);
+            model.set(AssistantCollectUserDataModel.MARK_PAYMENT_METHODS_LOADING, true);
+        });
+
+        onView(allOf(withId(R.id.payment_method_summary),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+
+        // Load shipping addresses.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.MARK_PAYMENT_METHODS_LOADING, false);
+            model.set(AssistantCollectUserDataModel.MARK_SHIPPING_ADDRESSES_LOADING, true);
+        });
+
+        onView(allOf(withId(R.id.address_summary),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_SUMMARY_LOADING_SPINNER_TAG)),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+    }
+
     /** Tests custom summary options for the contact details section. */
     @Test
     @MediumTest
@@ -1046,23 +1191,23 @@ public class AutofillAssistantCollectUserDataUiTest {
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        TextView dataOriginLinkText =
-                viewHolder.mDataOriginNotice.findViewById(R.id.link_to_data_origin_dialog);
+        // Not visible initially.
+        onView(is(viewHolder.mDataOriginNotice))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
 
         // Setting a text from "backend".
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_LINK_TEXT, "About this data");
-            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_DIALOG_TITLE,
-                    "About your personal information");
-            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_DIALOG_TEXT,
-                    "This is some text describing the <link2>user's data</link2> info.");
-            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_DIALOG_BUTTON_TEXT, "Got it");
+            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_NOTICE_CONFIGURATION,
+                    new DataOriginNoticeConfiguration(/* linkText= */ "About this data",
+                            /* title= */ "About your personal information",
+                            /* text= */
+                            "This is some text describing the <link2>user's data</link2> info.",
+                            /* buttonText= */ "Got it"));
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
-        onView(is(dataOriginLinkText))
+        onView(is(withId(R.id.link_to_data_origin_dialog)))
                 .check(matches(allOf(withText("About this data"), isDisplayed())));
-
         onView(withText("About this data")).perform(click());
         onView(withText("This is some text describing the user's data info."))
                 .check(matches(isDisplayed()));

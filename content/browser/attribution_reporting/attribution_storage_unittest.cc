@@ -2185,6 +2185,13 @@ TEST_F(AttributionStorageTest, GetNextReportTime) {
   EXPECT_EQ(storage()->GetNextReportTime(report_time_c), absl::nullopt);
 }
 
+TEST_F(AttributionStorageTest, SourceEventIdSanitized) {
+  delegate()->set_source_event_id_cardinality(4);
+
+  storage()->StoreSource(SourceBuilder().SetSourceEventId(5).Build());
+  EXPECT_THAT(storage()->GetActiveSources(), ElementsAre(SourceEventIdIs(1)));
+}
+
 TEST_F(AttributionStorageTest, TriggerDataSanitized) {
   delegate()->set_trigger_data_cardinality(/*navigation=*/4, /*event=*/3);
 
@@ -2242,7 +2249,7 @@ TEST_F(AttributionStorageTest, SourceFilterData_RoundTrips) {
                   }))));
 }
 
-TEST_F(AttributionStorageTest, NoMatchingTriggerData_UsesDefaultData) {
+TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
   const auto origin = url::Origin::Create(GURL("https://r.test"));
 
   storage()->StoreSource(SourceBuilder()
@@ -2251,7 +2258,7 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_UsesDefaultData) {
                              .SetReportingOrigin(origin)
                              .Build());
 
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kNoMatchingConfigurations,
             MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
                 origin, origin,
                 /*filters=*/AttributionFilterData(),
@@ -2266,9 +2273,7 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_UsesDefaultData) {
                     /*not_filters=*/AttributionFilterData())},
                 AttributionAggregatableTrigger())));
 
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
-              ElementsAre(EventLevelDataIs(
-                  AllOf(TriggerDataIs(0), TriggerPriorityIs(0)))));
+  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(DedupKeysAre(IsEmpty())));
@@ -2407,11 +2412,13 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
                     CreateReportAggregatableStatusIs(
                         AttributionTrigger::AggregatableResult::
                             kNoMatchingSourceFilterData)));
-  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(trigger2),
-              AllOf(CreateReportEventLevelStatusIs(
-                        AttributionTrigger::EventLevelResult::kSuccess),
-                    CreateReportAggregatableStatusIs(
-                        AttributionTrigger::AggregatableResult::kSuccess)));
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(trigger2),
+      AllOf(
+          CreateReportEventLevelStatusIs(
+              AttributionTrigger::EventLevelResult::kNoMatchingConfigurations),
+          CreateReportAggregatableStatusIs(
+              AttributionTrigger::AggregatableResult::kSuccess)));
 }
 
 TEST_F(AttributionStorageTest,

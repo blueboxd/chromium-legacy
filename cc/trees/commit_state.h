@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
 #include "cc/cc_export.h"
@@ -122,6 +123,7 @@ struct CC_EXPORT CommitState {
   bool new_local_surface_id_request = false;
   bool next_commit_forces_recalculate_raster_scales = false;
   bool next_commit_forces_redraw = false;
+  uint64_t trace_id = 0;
   EventMetrics::List event_metrics;
   // Latency information for work done in ProxyMain::BeginMainFrame. The
   // unique_ptr is allocated in RequestMainFrameUpdate, and passed to Blink's
@@ -164,7 +166,7 @@ struct CC_EXPORT ThreadUnsafeCommitState {
   }
   LayerListConstIterator end() const { return LayerListConstIterator(nullptr); }
 
-  MutatorHost* mutator_host;
+  raw_ptr<MutatorHost> mutator_host;
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;
 };

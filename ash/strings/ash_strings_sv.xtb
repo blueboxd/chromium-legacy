@@ -24,6 +24,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="109942774857561566">Jag har tråkigt</translation>
 <translation id="1104084341931202936">Visa tillgänglighetsinställningar</translation>
 <translation id="1104621072296271835">Dina enheter fungerar ännu bättre tillsammans</translation>
+<translation id="1111021433905331574">Du kan byta färg på tangentbordets bakgrundsbelysning i inställningarna &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
 <translation id="1142002900084379065">Nya foton</translation>
 <translation id="1148499908455722006">Öppna dialogrutan med information om <ph name="USER_NAME" /></translation>
@@ -65,6 +66,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1275285675049378717">Laddar <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">Hitta telefonen</translation>
+<translation id="1287002645302686982">Det finns redan ett sparat skrivbord som heter <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="1289185460362160437">Prova igen på <ph name="COME_BACK_DAY_OF_WEEK" /> klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">svag signal</translation>
 <translation id="1290982764014248209">Flytta <ph name="DRAGGED_APP" /> till mappen <ph name="FOLDER_NAME" />.</translation>
@@ -94,7 +96,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1420408895951708260">Aktivera och inaktivera nattljus. <ph name="STATE_TEXT" /></translation>
 <translation id="1420732223884894666">Visa de senaste bilderna och mediefilerna från telefonen på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="1426410128494586442">Ja</translation>
-<translation id="1438357537418863713">Appstreaming har konfigurerats. När du kommer igång med det visas de appar som öppnats nyligen här.</translation>
+<translation id="1447641497144572814">Skärmsläckaren startas</translation>
 <translation id="1455242230282523554">Visa språkinställningar</translation>
 <translation id="1460620680449458626">Ljudet är av.</translation>
 <translation id="1467432559032391204">Vänster</translation>
@@ -135,6 +137,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1715293566947629045">Profilen inaktiveras. Vänta några minuter.</translation>
 <translation id="1719094688023114093">Live Caption är aktiverat.</translation>
 <translation id="1720011244392820496">Aktivera wifi-synkronisering</translation>
+<translation id="1733996486177697563">Byt mellan ljust och mörkt tema. Tryck länge på skrivbordet och välj sedan Bakgrund och stil.</translation>
 <translation id="1736898441010944794"><ph name="NAME" /> är synlig för Bluetooth-enheter.</translation>
 <translation id="174102739345480129">Märkpennan är inaktiverad.</translation>
 <translation id="1743570585616704562">Identifierades inte</translation>
@@ -195,17 +198,16 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2079504693865562705">Dölj appar på hyllan</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2083190527011054446">Hej <ph name="GIVEN_NAME" />!</translation>
+<translation id="2088116547584365419">spel</translation>
 <translation id="209965399369889474">Ingen nätverksanslutning</translation>
 <translation id="2107914222138020205">USB-C-kabeln har inte stöd för Thunderbolt. Enhetens prestanda kan försämras.</translation>
 <translation id="2108303511227308752">Kortkommandot Alt + backsteg har ändrats. Tryck på <ph name="LAUNCHER_KEY_NAME" />-tangenten + backsteg för att använda Delete-tangenten.</translation>
 <translation id="211328683600082144">AKTIVERA MIKROFONEN.</translation>
 <translation id="2123115117533398272">Chrome OS visar förslag på nytt innehåll du kan utforska. Skickar bara statistik för att förbättra kvaliteten om du har valt att dela data om användning. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Ny arbetsyta</translation>
-<translation id="2127372758936585790">Laddning med låg effekt</translation>
 <translation id="2132302418721800944">Spela in hela skärmen</translation>
 <translation id="2135456203358955318">Dockad skärmförstoring</translation>
 <translation id="2148716181193084225">Idag</translation>
-<translation id="2159930836979502091">Öppna den här fliken</translation>
 <translation id="2170530631236737939">Stäng översikten genom att svepa nedåt med tre fingrar</translation>
 <translation id="219905428774326614">Startprogram, alla appar</translation>
 <translation id="2201071101391734388">Foto <ph name="INDEX" /> av <ph name="TOTAL_COUNT" /> nya foton.</translation>
@@ -249,6 +251,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="243878895369688216">Öppnades i går</translation>
 <translation id="2441427462554639370">Inspelningen avslutades eftersom det är mycket ont om lagringsutrymme</translation>
 <translation id="24452542372838207">Utöka avisering</translation>
+<translation id="2449089818483227734">Låg batterinivå</translation>
 <translation id="2450205753526923158">Skärmbildsläge</translation>
 <translation id="2456008742792828469">Kalender, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">Bekräfta upplösningen</translation>
@@ -267,6 +270,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2586561057878260610">Tryck på Ctrl + W för att kombinera med <ph name="DESK_NAME" />. Tryck på Ctrl + Skift + W för att stänga skrivbord och fönster.</translation>
 <translation id="2595239820337756193">5 km i miles</translation>
 <translation id="2596078834055697711">Ta en skärmbild av fönstret</translation>
+<translation id="2598725286293895280">Det finns appar som inte stöds på skrivbordet</translation>
 <translation id="2607678425161541573">Onlineinloggning krävs</translation>
 <translation id="2620016719323068571">Sök efter <ph name="CATEGORY" />, filer, appar med mera …</translation>
 <translation id="2620436844016719705">System</translation>
@@ -297,7 +301,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2791421900609674576">Rekommendationer visas så att du kan fortsätta där du slutade. Du kan ta bort rekommendationer genom att trycka länge.</translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
-<translation id="2803313416453193357">Öppna mappen</translation>
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2814448776515246190">Skärmbild/skärminspelning av en del av skärmen</translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>
@@ -409,11 +412,13 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
+<translation id="3455468639467374593">Mall: <ph name="TEMPLATE_NAME" /></translation>
 <translation id="3465223694362104965">Ett annat tangentbord har anslutits till den här enheten sedan du loggade in senast. Försäkra dig om att det är ett tangentbord du litar på innan du använder det.</translation>
 <translation id="3465356146291925647">Hanteras av administratören</translation>
 <translation id="3477079411857374384">Ctrl-Skift-Mellanslag</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
+<translation id="3505066820268455558">Batteriladdning</translation>
 <translation id="3509391053705095206">Det gick inte att hitta telefonen. Kontrollera att Bluetooth har aktiverats på telefonen.</translation>
 <translation id="3510164367642747937">Markera muspekaren</translation>
 <translation id="3513798432020909783">Kontot hanteras av <ph name="MANAGER_EMAIL" /></translation>
@@ -454,6 +459,8 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="3633097874324966332">Öppna Bluetooth-inställningarna om du vill parkoppla enheten</translation>
 <translation id="3638400994746983214">Aktivera och inaktivera integritetsskärmen. <ph name="STATE_TEXT" />.</translation>
 <translation id="3649505501900178324">Uppdatering försenad</translation>
+<translation id="3659814201068740063">Ungefär <ph name="TIME_LEFT" /> kvar (<ph name="PERCENTAGE" /> %).
+Anslut enheten till en strömkälla.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Hanterad användare</translation>
 <translation id="36813544980941320">wifi-nätverk delas mellan telefonen och <ph name="DEVICE_NAME" /></translation>
 <translation id="3694122362646626770">Webbplatser</translation>
@@ -508,6 +515,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="3962859241508114581">Föregående spår</translation>
 <translation id="3969043077941541451">Av</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
+<translation id="397726367135689299">Batteriladdningen kan vara instabil.</translation>
 <translation id="3977512764614765090">Batterinivån är på <ph name="PERCENTAGE" /> % och batteriet laddas.</translation>
 <translation id="3986082989454912832">Svara</translation>
 <translation id="3995138139523574647">USB-C-enhet (bakre porten på högra sidan)</translation>
@@ -642,6 +650,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="4734965478015604180">Horisontell</translation>
 <translation id="4735498845456076464">Kortkommandot <ph name="LAUNCHER_KEY_NAME" /> + siffra har ändrats. Nu används <ph name="LAUNCHER_KEY_NAME" />-tangenten + en tangent i översta raden som funktionstangenter.</translation>
 <translation id="473775607612524610">Uppdatera</translation>
+<translation id="4740516757091333363">Vill du radera det sparade skrivbordet?</translation>
 <translation id="4752784485658729358">Högst sex sparade skrivbord tillåts. Du måste ta bort ett skrivbord innan du kan spara ett nytt.</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4774338217796918551">Prova igen i morgon klockan <ph name="COME_BACK_TIME" />.</translation>
@@ -694,7 +703,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5071064518267176975">En app vill använda mikrofonen</translation>
 <translation id="5078796286268621944">Fel pinkod</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
-<translation id="5106223312672646208">Anpassa</translation>
+<translation id="509790653408515442">När du streamar telefonens appar visas de här</translation>
 <translation id="5107522548814527560">Webb</translation>
 <translation id="5117590920725113268">Visa nästa månad</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
@@ -717,6 +726,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5245201184978705914">Det gick inte att generera transkription</translation>
 <translation id="5253783950165989294">Ansluten till enheten <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
+<translation id="5258528442992323769">Det finns inga sparade skrivbord</translation>
 <translation id="5260676007519551770">Skrivbord 4</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> begär din uppmärksamhet.</translation>
 <translation id="5283198616748585639">Lägg till en min</translation>
@@ -737,7 +747,10 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5331975486040154427">USB-C-enhet (bakre porten på vänster sida)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" /> % (höger)</translation>
 <translation id="5352250171825660495">Mörkt tema är på</translation>
+<translation id="5356963482258194581">Byt mellan ljust och mörkt tema. Högerklicka på skrivbordet och välj Bakgrund och stil.</translation>
+<translation id="5363163447017455357"><ph name="DELIMITER" /> Öppna den här fliken</translation>
 <translation id="5379115545237091094">För många försök</translation>
+<translation id="5391307769715781764">Vill du ersätta det sparade skrivbordet?</translation>
 <translation id="5393156353051693207">Tryck länge var som helst och ändra ordning på apparna</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> ovanpå <ph name="IN_PLACE_APP" />, om du släpper skapas en mapp.</translation>
 <translation id="5397578532367286026">Användning och historik för den här användaren kan granskas av den ansvarige (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
@@ -971,6 +984,7 @@ Nyligen installerad</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6801878137098616817">Redigerades nyligen</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
+<translation id="6812232930908427253">Det gick inte att spara skrivbordet. För många fönster eller flikar.</translation>
 <translation id="6818242057446442178">Bakåt ord för ord</translation>
 <translation id="6819327813400217281">Kameran har fästs i det nedre vänstra hörnet</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
@@ -1030,6 +1044,7 @@ Nyligen installerad</translation>
 <translation id="7130207228079676353">MEST TROLIGA</translation>
 <translation id="7131634465328662194">Du loggas ut automatiskt.</translation>
 <translation id="7143207342074048698">Ansluter</translation>
+<translation id="7144942256906679589">Batteristatus</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -1052,6 +1067,7 @@ Nyligen installerad</translation>
 <translation id="7348093485538360975">Skärmtangentbord</translation>
 <translation id="735745346212279324">VPN frånkopplat</translation>
 <translation id="7360036564632145207">Prestandan kan förbättras om du ändrar inställningen för dataåtkomstskydd för kringutrustning</translation>
+<translation id="736045644501761622">Ställ in bakgrund och stil</translation>
 <translation id="7371404428569700291">Spela in fönster</translation>
 <translation id="7377169924702866686">Caps Lock är på.</translation>
 <translation id="7377481913241237033">Anslut med en kod</translation>
@@ -1095,6 +1111,7 @@ Nyligen installerad</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7600875258240007829">Visa alla aviseringar</translation>
 <translation id="7607002721634913082">Pausad</translation>
+<translation id="7609951632080598826">Kalendervy: <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Kameran har återanslutits.</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Visa inställningar för Närdelning</translation>
@@ -1118,8 +1135,6 @@ Nyligen installerad</translation>
 <translation id="7720410380936703141">FÖRSÖK IGEN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 avisering}other{# aviseringar}}</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
-<translation id="7734209118399753735"><ph name="EVENT_SUMMARY" />, 
-        <ph name="TIME_RANGE" /></translation>
 <translation id="7745560842763881396">Visa appar på hyllan</translation>
 <translation id="7749443890790263709">Det högsta tillåtna antalet skrivbord har uppnåtts.</translation>
 <translation id="7749640678855296659">Mikrofonen är för närvarande inaktiverad</translation>
@@ -1173,7 +1188,6 @@ Nyligen installerad</translation>
 <translation id="8030169304546394654">Frånkopplad</translation>
 <translation id="8036504271468642248">Föregående mening</translation>
 <translation id="8042893070933512245">Öppna menyn med tillgänglighetsinställningar</translation>
-<translation id="8042925093898452104">Stäng detaljvyn</translation>
 <translation id="8044457332620420407">Tangentbordets bakgrundsbelysning är av</translation>
 <translation id="8048123526339889627">Bluetooth-inställningar</translation>
 <translation id="8051716679295756675">Det finns redan en mall som heter <ph name="DESK_TEMPLATE_NAME" /></translation>
@@ -1220,6 +1234,7 @@ Nyligen installerad</translation>
 <translation id="8345019317483336363">Fönstret <ph name="WINDOW_TITLE" /> har valts</translation>
 <translation id="8351131234907093545">Skapa anteckning</translation>
 <translation id="8364673525741149932">Aktivera/inaktivera Shelf Party. <ph name="STATE_TEXT" /></translation>
+<translation id="8369166482916924789">Sparat skrivbord: <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">Framåt tecken för tecken</translation>
 <translation id="8371991222807690464">Kringutrustningen kanske inte fungerar som vanligt i gästläget</translation>
 <translation id="8374601332003098278">Tryck på retur för att spela in en del av skärmen</translation>
@@ -1253,6 +1268,7 @@ Nyligen installerad</translation>
 <translation id="851458219935658693">Visa fönster från det aktuella skrivbordet, alternativknapp har markerats</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
 <translation id="8535393432370007982">Ångra sortering efter färg</translation>
+<translation id="8542053257095774575">Det finns inga sparade skrivbord eller mallar</translation>
 <translation id="8546059259582788728">Sorteringen har ångrats.</translation>
 <translation id="8551588720239073785">Inställningar för datum och tid</translation>
 <translation id="8553395910833293175">Detta har redan tilldelats alla skrivbord.</translation>
@@ -1285,6 +1301,7 @@ Nyligen installerad</translation>
 <translation id="8721053961083920564">Ljud på/av. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Skärmbild/skärminspelning av hela skärmen</translation>
 <translation id="8734991477317290293">Det kan försöka stjäla dina tangenttryckningar</translation>
+<translation id="8735678380411481005">Färg på bakgrundsbelysning för tangentbord</translation>
 <translation id="8735953464173050365">Visa tangentbordsinställningar. Inställt på <ph name="KEYBOARD_NAME" /></translation>
 <translation id="8755498163081687682">Verifiera din identitet: <ph name="ORIGIN_NAME" /> vill kontrollera din identitet</translation>
 <translation id="875593634123171288">Visa VPN-inställningar</translation>
@@ -1330,6 +1347,7 @@ Nyligen installerad</translation>
 <translation id="9000771174482730261">HANTERA LAGRING</translation>
 <translation id="9017320285115481645">Ange föräldraåtkomstkoden för Family Link.</translation>
 <translation id="9024331582947483881">helskärm</translation>
+<translation id="9029736946581028033">Enheten stängs snart av</translation>
 <translation id="9030319654231318877">Av till solnedgången</translation>
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9047624247355796468">Öppnar inställningarna för <ph name="NETWORK_NAME" /></translation>
@@ -1359,6 +1377,7 @@ Nyligen installerad</translation>
 <translation id="9168436347345867845">Gör det senare</translation>
 <translation id="9178475906033259337">1 resultat visas för <ph name="QUERY" /></translation>
 <translation id="9179259655489829027">Med den här funktionen kan du snabbt öppna en inloggad användare utan att behöva ange lösenordet. Använd bara den här funktionen med konton som du litar på.</translation>
+<translation id="9180906851711123156">Stäng genom att trycka på Ctrl + W</translation>
 <translation id="9183456764293710005">Helskärmsförstoring</translation>
 <translation id="9193626018745640770">Castar till en okänd mottagare</translation>
 <translation id="9194617393863864469">Logga in med en annan användare ...</translation>

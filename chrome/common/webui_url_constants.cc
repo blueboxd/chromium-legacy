@@ -33,7 +33,7 @@ const char kChromeUIAppIconURL[] = "chrome://app-icon/";
 const char kChromeUIAppLauncherPageHost[] = "apps";
 const char kChromeUIAppsURL[] = "chrome://apps/";
 const char kChromeUIAppsWithDeprecationDialogURL[] =
-    "chrome://apps?showDeletionDialog";
+    "chrome://apps?showDeletionDialog=";
 const char kChromeUIAppsWithForceInstalledDeprecationDialogURL[] =
     "chrome://apps?showForceInstallDialog=";
 const char kChromeUIAutofillInternalsHost[] = "autofill-internals";
@@ -330,6 +330,8 @@ const char kChromeUIMultiDeviceSetupHost[] = "multidevice-setup";
 const char kChromeUIMultiDeviceSetupUrl[] = "chrome://multidevice-setup";
 const char kChromeUINetworkHost[] = "network";
 const char kChromeUINetworkUrl[] = "chrome://network";
+const char kChromeUINotificationTesterHost[] = "notification-tester";
+const char kChromeUINotificationTesterURL[] = "chrome://notification-tester";
 const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
 const char kChromeUIOobeHost[] = "oobe";
@@ -419,6 +421,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
     kChromeUIMobileSetupHost,
     kChromeUIMultiDeviceSetupHost,
     kChromeUINetworkHost,
+    kChromeUINotificationTesterHost,
     kChromeUIOobeHost,
     kChromeUIOSCreditsHost,
     kChromeUIOSSettingsHost,
@@ -759,6 +762,7 @@ const size_t kNumberOfChromeInternalsPathURLs =
 const char* const kChromeDebugURLs[] = {
     blink::kChromeUIBadCastCrashURL,
     blink::kChromeUIBrowserCrashURL,
+    blink::kChromeUIBrowserDcheckURL,
     blink::kChromeUICrashURL,
     blink::kChromeUIDumpURL,
     blink::kChromeUIKillURL,

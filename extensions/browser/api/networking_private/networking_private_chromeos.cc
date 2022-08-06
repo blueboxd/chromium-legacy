@@ -12,6 +12,9 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/onc/network_onc_utils.h"
+#include "chromeos/ash/components/network/onc/onc_translator.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
@@ -24,9 +27,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/network_onc_utils.h"
-#include "chromeos/network/onc/onc_translator.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/onc/onc_constants.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -372,7 +372,7 @@ void NetworkingPrivateChromeOS::SetProperties(
   } else {
     std::string user_id_hash;
     std::string error;
-    // Do not allow changing a non-shared network from a secondary users.
+    // Do not allow changing a non-shared network from secondary users.
     if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
       std::move(failure_callback).Run(error);
       return;
@@ -680,7 +680,8 @@ void NetworkingPrivateChromeOS::SelectCellularMobileNetwork(
                      std::move(failure_callback)));
 }
 
-base::Value NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
+void NetworkingPrivateChromeOS::GetEnabledNetworkTypes(
+    EnabledNetworkTypesCallback callback) {
   chromeos::NetworkStateHandler* state_handler = GetStateHandler();
 
   base::Value network_list(base::Value::Type::LIST);
@@ -692,11 +693,12 @@ base::Value NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
   if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()))
     network_list.Append(::onc::network_type::kCellular);
 
-  return network_list;
+  std::move(callback).Run(
+      base::Value::ToUniquePtrValue(std::move(network_list)));
 }
 
-std::unique_ptr<NetworkingPrivateDelegate::DeviceStateList>
-NetworkingPrivateChromeOS::GetDeviceStateList() {
+void NetworkingPrivateChromeOS::GetDeviceStateList(
+    DeviceStateListCallback callback) {
   std::set<std::string> technologies_found;
   NetworkStateHandler::DeviceStateList devices;
   NetworkHandler::Get()->network_state_handler()->GetDeviceList(&devices);
@@ -720,20 +722,23 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
     AppendDeviceState(technology, nullptr /* device */,
                       device_state_list.get());
   }
-  return device_state_list;
+  std::move(callback).Run(std::move(device_state_list));
 }
 
-base::Value NetworkingPrivateChromeOS::GetGlobalPolicy() {
+void NetworkingPrivateChromeOS::GetGlobalPolicy(
+    GetGlobalPolicyCallback callback) {
   base::Value result(base::Value::Type::DICTIONARY);
   const base::Value* global_network_config =
       GetManagedConfigurationHandler()->GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);
+
   if (global_network_config)
     result.MergeDictionary(global_network_config);
-  return result;
+  std::move(callback).Run(base::Value::ToUniquePtrValue(std::move(result)));
 }
 
-base::Value NetworkingPrivateChromeOS::GetCertificateLists() {
+void NetworkingPrivateChromeOS::GetCertificateLists(
+    GetCertificateListsCallback callback) {
   private_api::CertificateLists result;
   const std::vector<NetworkCertificateHandler::Certificate>& server_cas =
       NetworkHandler::Get()
@@ -749,11 +754,11 @@ base::Value NetworkingPrivateChromeOS::GetCertificateLists() {
           ->client_certificates();
   for (const auto& cert : user_certs)
     result.user_certificates.push_back(GetCertDictionary(cert));
-
-  return base::Value::FromUniquePtrValue(result.ToValue());
+  std::move(callback).Run(result.ToValue());
 }
 
-bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {
+void NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type,
+                                                  BoolCallback callback) {
   NetworkTypePattern pattern =
       chromeos::onc::NetworkTypePatternFromOncType(type);
 
@@ -761,10 +766,11 @@ bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {
   GetStateHandler()->SetTechnologyEnabled(
       pattern, true, chromeos::network_handler::ErrorCallback());
 
-  return true;
+  std::move(callback).Run(true);
 }
 
-bool NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type) {
+void NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type,
+                                                   BoolCallback callback) {
   NetworkTypePattern pattern =
       chromeos::onc::NetworkTypePatternFromOncType(type);
 
@@ -772,14 +778,16 @@ bool NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type) {
   GetStateHandler()->SetTechnologyEnabled(
       pattern, false, chromeos::network_handler::ErrorCallback());
 
-  return true;
+  std::move(callback).Run(true);
 }
 
-bool NetworkingPrivateChromeOS::RequestScan(const std::string& type) {
+void NetworkingPrivateChromeOS::RequestScan(const std::string& type,
+                                            BoolCallback callback) {
   NetworkTypePattern pattern = chromeos::onc::NetworkTypePatternFromOncType(
       type.empty() ? ::onc::network_type::kAllTypes : type);
   GetStateHandler()->RequestScan(pattern);
-  return true;
+
+  std::move(callback).Run(true);
 }
 
 // Private methods

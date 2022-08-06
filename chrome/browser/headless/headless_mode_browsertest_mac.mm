@@ -7,11 +7,18 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest,
+INSTANTIATE_TEST_SUITE_P(HeadlessModeBrowserTestWithStartWindowMode,
+                         HeadlessModeBrowserTestWithStartWindowMode,
+                         testing::Values(kStartWindowNormal,
+                                         kStartWindowMaximized,
+                                         kStartWindowFullscreen));
+
+IN_PROC_BROWSER_TEST_P(HeadlessModeBrowserTestWithStartWindowMode,
                        BrowserDesktopWindowVisibility) {
   // On Mac, the Native Headless Chrome browser window exists and is
   // visible, while the underlying platform window is hidden.
@@ -20,5 +27,51 @@ IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest,
   gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
   NSWindow* ns_window = native_window.GetNativeNSWindow();
 
+  EXPECT_FALSE(ns_window.visible);
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest,
+                       ToggleFullscreenWindowVisibility) {
+  gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
+  NSWindow* ns_window = native_window.GetNativeNSWindow();
+
+  // Verify initial state.
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(browser()->window()->IsVisible());
+  EXPECT_FALSE(ns_window.visible);
+
+  // Verify fullscreen state.
+  ToggleFullscreenModeSync(browser());
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(browser()->window()->IsVisible());
+  EXPECT_FALSE(ns_window.visible);
+
+  // Verify back to normal state.
+  ToggleFullscreenModeSync(browser());
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(browser()->window()->IsVisible());
+  EXPECT_FALSE(ns_window.visible);
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest,
+                       MinimizedRestoredWindowVisibility) {
+  gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
+  NSWindow* ns_window = native_window.GetNativeNSWindow();
+
+  // Verify initial state.
+  ASSERT_FALSE(browser()->window()->IsMinimized());
+  EXPECT_TRUE(browser()->window()->IsVisible());
+  EXPECT_FALSE(ns_window.visible);
+
+  // Verify minimized state.
+  browser()->window()->Minimize();
+  ASSERT_TRUE(browser()->window()->IsMinimized());
+  EXPECT_TRUE(browser()->window()->IsVisible());
+  EXPECT_FALSE(ns_window.visible);
+
+  // Verify restored state.
+  browser()->window()->Restore();
+  ASSERT_FALSE(browser()->window()->IsMinimized());
+  EXPECT_TRUE(browser()->window()->IsVisible());
   EXPECT_FALSE(ns_window.visible);
 }

@@ -77,12 +77,13 @@ const base::Feature kCrossOriginOpenerPolicy{"CrossOriginOpenerPolicy",
 const base::Feature kCrossOriginOpenerPolicyByDefault{
     "CrossOriginOpenerPolicyByDefault", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Introduce a new COOP value, Same-Origin-Opener-Policy-Plus-Coep, which grants
-// cross-origin isolation. This used mainly for testing the process model and
-// should not be enabled in any production code.
-// See https://crbug.com/1221127.
-const base::Feature kCoopSameOriginAllowPopupsPlusCoep{
-    "CoopSameOriginAllowPopupsPlusCoep", base::FEATURE_DISABLED_BY_DEFAULT};
+// Introduce a new COOP value: restrict-properties. It restricts window
+// properties that can be accessed by other pages. This also grants
+// crossOriginIsolated if coupled with an appropriate COEP header.
+// This used solely for testing the process model and should not be enabled in
+// any production code. See https://crbug.com/1221127.
+const base::Feature kCoopRestrictProperties{"CoopRestrictProperties",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or defaults splittup up server (not proxy) entries in the
 // HttpAuthCache.
@@ -255,10 +256,6 @@ const base::Feature kCorsNonWildcardRequestHeadersSupport{
 const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Combine URLLoaderClient::OnReceiveResponse and OnStartLoadingResponseBody.
-const base::Feature kCombineResponseBody{"CombineResponseBody",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Don't wait for database write before responding to
 // RestrictedCookieManager::SetCookieFromString.
 const base::Feature kFasterSetCookie{"FasterSetCookie",
@@ -291,10 +288,13 @@ constexpr base::FeatureParam<std::string> kCacheTransparencyPervasivePayloads{
     &kPervasivePayloadsList, "pervasive-payloads", ""};
 
 // Read as much of the net::URLRequest as there is space in the Mojo data pipe.
-const base::Feature kOptimizeNetworkBuffers{"OptimizeNetworkBuffers2",
+const base::Feature kOptimizeNetworkBuffers{"OptimizeNetworkBuffers",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit{
-    &kOptimizeNetworkBuffers, "bytes_read_limit", 64 * 1024};
+// Enables support for the `Variants` response header and reduce
+// accept-language. https://github.com/Tanych/accept-language
+const base::Feature kReduceAcceptLanguage{"ReduceAcceptLanguage",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace network

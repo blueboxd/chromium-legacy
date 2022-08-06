@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/daily_metrics_helper.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -60,14 +60,6 @@ WebAppProvider::OsIntegrationManagerFactory
 
 // static
 WebAppProvider* WebAppProvider::GetDeprecated(Profile* profile) {
-  return WebAppProviderFactory::GetForProfile(profile);
-}
-
-// static
-WebAppProvider* WebAppProvider::GetForSystemWebApps(Profile* profile) {
-  if (!AreSystemWebAppsSupported())
-    return nullptr;
-
   return WebAppProviderFactory::GetForProfile(profile);
 }
 
@@ -120,9 +112,15 @@ void WebAppProvider::SetOsIntegrationManagerFactoryForTesting(
 
 WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
   DCHECK(AreWebAppsEnabled(profile_));
+
   // WebApp System must have only one instance in original profile.
   // Exclude secondary off-the-record profiles.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!profile_->IsGuestSession())
+    DCHECK(!profile_->IsOffTheRecord());
+#else
   DCHECK(!profile_->IsOffTheRecord());
+#endif
 
   CreateSubsystems(profile_);
 }
@@ -198,11 +196,6 @@ WebAppTranslationManager& WebAppProvider::translation_manager() {
   return *translation_manager_;
 }
 
-SystemWebAppManager& WebAppProvider::system_web_app_manager() {
-  CheckIsConnected();
-  return *system_web_app_manager_;
-}
-
 OsIntegrationManager& WebAppProvider::os_integration_manager() {
   CheckIsConnected();
   return *os_integration_manager_;
@@ -244,7 +237,7 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
       std::make_unique<ExternallyManagedAppManagerImpl>(profile);
   preinstalled_web_app_manager_ =
       std::make_unique<PreinstalledWebAppManager>(profile);
-  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
+  system_web_app_manager_ = std::make_unique<ash::SystemWebAppManager>(profile);
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
 
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
@@ -307,14 +300,13 @@ void WebAppProvider::ConnectSubsystems() {
       install_manager_.get(), registrar_.get(), ui_manager_.get(),
       sync_bridge_.get(), os_integration_manager_.get(), icon_manager_.get(),
       web_app_policy_manager_.get(), translation_manager_.get());
-  install_manager_->SetSubsystems(registrar_.get(),
-                                  os_integration_manager_.get(),
-                                  install_finalizer_.get());
+  install_manager_->SetSubsystems(
+      registrar_.get(), os_integration_manager_.get(), command_manager_.get(),
+      install_finalizer_.get());
   manifest_update_manager_->SetSubsystems(
       install_manager_.get(), registrar_.get(), icon_manager_.get(),
       ui_manager_.get(), install_finalizer_.get(),
-      system_web_app_manager_.get(), os_integration_manager_.get(),
-      sync_bridge_.get());
+      os_integration_manager_.get(), sync_bridge_.get());
   externally_managed_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(), install_finalizer_.get(),
       command_manager_.get(), sync_bridge_.get());
@@ -326,7 +318,6 @@ void WebAppProvider::ConnectSubsystems() {
       sync_bridge_.get(), ui_manager_.get(), web_app_policy_manager_.get());
   web_app_policy_manager_->SetSubsystems(externally_managed_app_manager_.get(),
                                          registrar_.get(), sync_bridge_.get(),
-                                         system_web_app_manager_.get(),
                                          os_integration_manager_.get());
   registrar_->SetSubsystems(web_app_policy_manager_.get(),
                             translation_manager_.get());
@@ -337,6 +328,13 @@ void WebAppProvider::ConnectSubsystems() {
 
   command_manager_->SetSubsystems(install_manager_.get());
   connected_ = true;
+
+  // TODO(crbug.com/1321984): Extract this code to SystemWebAppManager
+  // KeyedService.
+  manifest_update_manager_->SetSystemWebAppDelegateMap(
+      &system_web_app_manager_->system_app_delegates());
+  web_app_policy_manager_->SetSystemWebAppDelegateMap(
+      &system_web_app_manager_->system_app_delegates());
 }
 
 void WebAppProvider::StartSyncBridge() {
@@ -349,6 +347,7 @@ void WebAppProvider::OnSyncBridgeReady() {
 
   ExternallyInstalledWebAppPrefs::MigrateExternalPrefData(profile_->GetPrefs(),
                                                           sync_bridge_.get());
+  DoMigrateProfilePrefs(profile_);
 
   registrar_->Start();
   install_finalizer_->Start();
@@ -357,7 +356,6 @@ void WebAppProvider::OnSyncBridgeReady() {
   install_manager_->Start();
   preinstalled_web_app_manager_->Start();
   web_app_policy_manager_->Start();
-  system_web_app_manager_->Start();
   manifest_update_manager_->Start();
   os_integration_manager_->Start();
   ui_manager_->Start();
@@ -378,22 +376,11 @@ void WebAppProvider::RegisterProfilePrefs(
   ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(registry);
   PreinstalledWebAppManager::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
-  SystemWebAppManager::RegisterProfilePrefs(registry);
+  ash::SystemWebAppManager::RegisterProfilePrefs(registry);
   WebAppPrefsUtilsRegisterProfilePrefs(registry);
   IsolationPrefsUtilsRegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);
   RegisterDailyWebAppMetricsProfilePrefs(registry);
-}
-
-// static
-void WebAppProvider::MigrateProfilePrefs(Profile* profile) {
-  WebAppProvider* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
-  if (provider) {
-    provider->on_registry_ready_.Post(
-        FROM_HERE,
-        base::BindOnce(&WebAppProvider::DoMigrateProfilePrefs,
-                       provider->weak_ptr_factory_.GetWeakPtr(), profile));
-  }
 }
 
 void WebAppProvider::DoMigrateProfilePrefs(Profile* profile) {

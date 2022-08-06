@@ -10,7 +10,7 @@ import("//build/config/features.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
-import("//chromeos/assistant/assistant.gni")
+import("//chromeos/ash/components/assistant/assistant.gni")
 import("//components/viz/common/debugger/viz_debugger.gni")
 import("//content/common/features.gni")
 import("//content/public/common/zygote/features.gni")
@@ -83,7 +83,7 @@ source_set("browser") {
     "//components/payments/mojom",
     "//components/services/screen_ai/buildflags",
 
-    # TODO(698985): Remove `permissions_common`.
+    # TODO(crbug.com/1327384): Remove `permissions_common`.
     "//components/permissions:permissions_common",
     "//components/power_scheduler",
     "//components/services/filesystem:lib",
@@ -107,7 +107,6 @@ source_set("browser") {
     "//components/web_package",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
-    "//content/app/resources",
     "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/browser/attribution_reporting:mojo_bindings",
     "//content/browser/background_fetch:background_fetch_proto",
@@ -413,11 +412,10 @@ source_set("browser") {
     "attribution_reporting/attribution_internals_handler_impl.h",
     "attribution_reporting/attribution_internals_ui.cc",
     "attribution_reporting/attribution_internals_ui.h",
+    "attribution_reporting/attribution_manager.cc",
     "attribution_reporting/attribution_manager.h",
     "attribution_reporting/attribution_manager_impl.cc",
     "attribution_reporting/attribution_manager_impl.h",
-    "attribution_reporting/attribution_manager_provider.cc",
-    "attribution_reporting/attribution_manager_provider.h",
     "attribution_reporting/attribution_metrics.cc",
     "attribution_reporting/attribution_metrics.h",
     "attribution_reporting/attribution_observer.h",
@@ -1100,6 +1098,8 @@ source_set("browser") {
     "interest_group/debuggable_auction_worklet_tracker.h",
     "interest_group/interest_group_manager_impl.cc",
     "interest_group/interest_group_manager_impl.h",
+    "interest_group/interest_group_permissions_cache.cc",
+    "interest_group/interest_group_permissions_cache.h",
     "interest_group/interest_group_permissions_checker.cc",
     "interest_group/interest_group_permissions_checker.h",
     "interest_group/interest_group_storage.cc",
@@ -1345,6 +1345,7 @@ source_set("browser") {
     "payments/respond_with_callback.cc",
     "payments/respond_with_callback.h",
     "per_web_ui_browser_interface_broker.cc",
+    "performance_manager/frame_rate_throttling.cc",
     "permissions/permission_controller_impl.cc",
     "permissions/permission_controller_impl.h",
     "permissions/permission_service_context.cc",
@@ -1352,7 +1353,7 @@ source_set("browser") {
     "permissions/permission_service_impl.cc",
     "permissions/permission_service_impl.h",
 
-    # TODO(698985): Remove `permission_util.*`.
+    # TODO(crbug.com/1327384): Remove `permission_util.*`.
     "net/cross_origin_embedder_policy_reporter.cc",
     "net/cross_origin_embedder_policy_reporter.h",
     "net/cross_origin_opener_policy_reporter.cc",
@@ -1667,6 +1668,10 @@ source_set("browser") {
     "renderer_host/page_impl.h",
     "renderer_host/page_lifecycle_state_manager.cc",
     "renderer_host/page_lifecycle_state_manager.h",
+    "renderer_host/pending_beacon_host.cc",
+    "renderer_host/pending_beacon_host.h",
+    "renderer_host/pending_beacon_service.cc",
+    "renderer_host/pending_beacon_service.h",
     "renderer_host/policy_container_host.cc",
     "renderer_host/policy_container_host.h",
     "renderer_host/private_network_access_util.cc",
@@ -1906,10 +1911,14 @@ source_set("browser") {
     "sms/webotp_service.h",
     "speculation_rules/prefetch/prefetch_container.cc",
     "speculation_rules/prefetch/prefetch_container.h",
+    "speculation_rules/prefetch/prefetch_cookie_listener.cc",
+    "speculation_rules/prefetch/prefetch_cookie_listener.h",
     "speculation_rules/prefetch/prefetch_document_manager.cc",
     "speculation_rules/prefetch/prefetch_document_manager.h",
     "speculation_rules/prefetch/prefetch_features.cc",
     "speculation_rules/prefetch/prefetch_features.h",
+    "speculation_rules/prefetch/prefetch_from_string_url_loader.cc",
+    "speculation_rules/prefetch/prefetch_from_string_url_loader.h",
     "speculation_rules/prefetch/prefetch_network_context.cc",
     "speculation_rules/prefetch/prefetch_network_context.h",
     "speculation_rules/prefetch/prefetch_network_context_client.cc",
@@ -1923,6 +1932,8 @@ source_set("browser") {
     "speculation_rules/prefetch/prefetch_status.h",
     "speculation_rules/prefetch/prefetch_type.cc",
     "speculation_rules/prefetch/prefetch_type.h",
+    "speculation_rules/prefetch/prefetch_url_loader_interceptor.cc",
+    "speculation_rules/prefetch/prefetch_url_loader_interceptor.h",
     "speculation_rules/prefetch/prefetched_mainframe_response_container.cc",
     "speculation_rules/prefetch/prefetched_mainframe_response_container.h",
     "speculation_rules/speculation_host_impl.cc",
@@ -2603,6 +2614,8 @@ source_set("browser") {
       sources += [
         "media/capture/desktop_capturer_lacros.cc",
         "media/capture/desktop_capturer_lacros.h",
+        "media/capture/receiver_media_to_crosapi_adapter.cc",
+        "media/capture/receiver_media_to_crosapi_adapter.h",
         "media/capture/video_capture_device_proxy_lacros.cc",
         "media/capture/video_capture_device_proxy_lacros.h",
       ]
@@ -2733,7 +2746,7 @@ source_set("browser") {
     assert(enable_basic_printing)
     deps += [ "//printing" ]
 
-    if (is_chromeos_ash) {
+    if (is_chromeos) {
       sources += [
         "renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.cc",
         "renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.h",
@@ -3063,7 +3076,7 @@ source_set("browser") {
     deps += [
       "//ash/components/audio",
       "//ash/constants",
-      "//chromeos/assistant:buildflags",
+      "//chromeos/ash/components/assistant:buildflags",
       "//chromeos/dbus",
       "//chromeos/dbus/power",
       "//chromeos/dbus/power:power_manager_proto",
@@ -3174,6 +3187,8 @@ source_set("browser") {
       "xr/service/xr_device_service.h",
       "xr/service/xr_frame_sink_client_impl.cc",
       "xr/service/xr_frame_sink_client_impl.h",
+      "xr/service/xr_permission_results.cc",
+      "xr/service/xr_permission_results.h",
       "xr/service/xr_runtime_manager_impl.cc",
       "xr/service/xr_runtime_manager_impl.h",
       "xr/xr_utils.cc",

@@ -26,8 +26,10 @@
 #include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -38,10 +40,6 @@
 #if BUILDFLAG(IS_LINUX)
 #include "ui/ozone/public/ozone_platform.h"
 #endif  // BUILDFLAG(IS_LINUX)
-
-#if BUILDFLAG(IS_WIN)
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
-#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 const int kErrorResultCode = -1;
@@ -61,6 +59,28 @@ void HeadlessModeBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(headless::IsChromeNativeHeadless());
 }
 
+void HeadlessModeBrowserTestWithStartWindowMode::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  HeadlessModeBrowserTest::SetUpCommandLine(command_line);
+
+  switch (start_window_mode()) {
+    case kStartWindowNormal:
+      break;
+    case kStartWindowMaximized:
+      command_line->AppendSwitch(switches::kStartMaximized);
+      break;
+    case kStartWindowFullscreen:
+      command_line->AppendSwitch(switches::kStartFullscreen);
+      break;
+  }
+}
+
+void ToggleFullscreenModeSync(Browser* browser) {
+  FullscreenNotificationObserver observer(browser);
+  chrome::ToggleFullscreenMode(browser);
+  observer.Wait();
+}
+
 #if BUILDFLAG(IS_LINUX)
 IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest, OzonePlatformHeadless) {
   // On Linux, the Native Headless Chrome uses Ozone/Headless.
@@ -68,25 +88,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest, OzonePlatformHeadless) {
   EXPECT_EQ(ui::OzonePlatform::GetPlatformNameForTest(), "headless");
 }
 #endif  // BUILDFLAG(IS_LINUX)
-
-#if BUILDFLAG(IS_WIN)
-// A class to expose a protected method for testing purposes.
-class DesktopWindowTreeHostWinWrapper : public views::DesktopWindowTreeHostWin {
- public:
-  HWND GetHWND() const { return DesktopWindowTreeHostWin::GetHWND(); }
-};
-
-IN_PROC_BROWSER_TEST_F(HeadlessModeBrowserTest, BrowserDesktopWindowHidden) {
-  // On Windows, the Native Headless Chrome browser window exists and is
-  // visible, while the underlying platform window is hidden.
-  EXPECT_TRUE(browser()->window()->IsVisible());
-
-  DesktopWindowTreeHostWinWrapper* desktop_window_tree_host =
-      static_cast<DesktopWindowTreeHostWinWrapper*>(
-          browser()->window()->GetNativeWindow()->GetHost());
-  EXPECT_FALSE(::IsWindowVisible(desktop_window_tree_host->GetHWND()));
-}
-#endif  // BUILDFLAG(IS_WIN)
 
 class HeadlessModeBrowserTestWithUserDataDir : public HeadlessModeBrowserTest {
  public:

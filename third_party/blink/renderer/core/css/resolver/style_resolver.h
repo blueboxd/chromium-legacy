@@ -134,22 +134,18 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
     kUACSSRules = 1 << 1,
     kUserCSSRules = 1 << 2,
     kAuthorCSSRules = 1 << 3,
-    kEmptyCSSRules = 1 << 4,
-    kCrossOriginCSSRules = 1 << 5,
+    kCrossOriginCSSRules = 1 << 4,
     kUAAndUserCSSRules = kUACSSRules | kUserCSSRules,
-    kAllButEmptyCSSRules =
-        kUAAndUserCSSRules | kAuthorCSSRules | kCrossOriginCSSRules,
-    kAllButUACSSRules =
-        kUserCSSRules | kAuthorCSSRules | kEmptyCSSRules | kCrossOriginCSSRules,
-    kAllCSSRules = kAllButEmptyCSSRules | kEmptyCSSRules,
+    kAllButUACSSRules = kUserCSSRules | kAuthorCSSRules | kCrossOriginCSSRules,
+    kAllCSSRules = kUAAndUserCSSRules | kAuthorCSSRules | kCrossOriginCSSRules,
   };
-  RuleIndexList* CssRulesForElement(
-      Element*,
-      unsigned rules_to_include = kAllButEmptyCSSRules);
+  RuleIndexList* CssRulesForElement(Element*,
+                                    unsigned rules_to_include = kAllCSSRules);
   RuleIndexList* PseudoCSSRulesForElement(
       Element*,
       PseudoId,
-      unsigned rules_to_include = kAllButEmptyCSSRules);
+      const AtomicString& document_transition_tag,
+      unsigned rules_to_include = kAllCSSRules);
   StyleRuleList* StyleRulesForElement(Element*, unsigned rules_to_include);
   HeapHashMap<CSSPropertyName, Member<const CSSValue>> CascadedValuesForElement(
       Element*,
@@ -170,6 +166,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void UpdateMediaType();
 
   static bool CanReuseBaseComputedStyle(const StyleResolverState& state);
+
+  static bool UsesHighlightPseudoInheritance(PseudoId);
 
   static const CSSValue* ComputeValue(Element* element,
                                       const CSSPropertyName&,
@@ -233,6 +231,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void CollectPseudoRulesForElement(const Element&,
                                     ElementRuleCollector&,
                                     PseudoId,
+                                    const AtomicString& document_transition_tag,
                                     unsigned rules_to_include);
   void MatchRuleSet(ElementRuleCollector&, RuleSet*);
   void MatchUARules(const Element&, ElementRuleCollector&);

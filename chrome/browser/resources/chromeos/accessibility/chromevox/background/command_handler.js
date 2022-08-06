@@ -8,16 +8,18 @@
 import {AutoScrollHandler} from '/chromevox/background/auto_scroll_handler.js';
 import {BrailleBackground} from '/chromevox/background/braille/braille_background.js';
 import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
 import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
 import {Color} from '/chromevox/background/color.js';
 import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
+import {TypingEcho} from '/chromevox/background/editing/editable_text_base.js';
 import {GestureInterface} from '/chromevox/background/gesture_interface.js';
+import {Output} from '/chromevox/background/output/output.js';
 import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
 import {SmartStickyMode} from '/chromevox/background/smart_sticky_mode.js';
 import {AbstractTts} from '/chromevox/common/abstract_tts.js';
 import {CommandStore} from '/chromevox/common/command_store.js';
 import {CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
-import {TypingEcho} from '/chromevox/common/editable_text_base.js';
 import {GestureGranularity} from '/chromevox/common/gesture_command_data.js';
 import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
 import {EventGenerator} from '/common/event_generator.js';
@@ -36,7 +38,7 @@ export class CommandHandler extends CommandHandlerInterface {
     super();
 
     /** @private {boolean} */
-    this.isIncognito_ = !!chrome.runtime.getManifest()['incognito'];
+    this.isIncognito_ = Boolean(chrome.runtime.getManifest()['incognito']);
 
     /** @private {boolean} */
     this.languageLoggingEnabled_ = false;
@@ -70,27 +72,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
     // Check for loss of focus which results in us invalidating our current
     // range. Note this call is synchronous.
-    chrome.automation.getFocus((focusedNode) => {
-      const cur = ChromeVoxState.instance.currentRange;
-      if (cur && !cur.isValid()) {
-        ChromeVoxState.instance.setCurrentRange(
-            cursors.Range.fromNode(focusedNode));
-      }
-
-      if (!focusedNode ||
-
-          // This case detects when TalkBack (in ARC++) is enabled (which also
-          // covers when the ARC++ window is active). Clear the ChromeVox range
-          // so keys get passed through for ChromeVox commands.
-          (ChromeVoxState.instance.talkBackEnabled &&
-
-           // This additional check is not strictly necessary, but we use it to
-           // ensure we are never inadvertently losing focus. ARC++ windows set
-           // "focus" on a root view.
-           focusedNode.role === RoleType.CLIENT)) {
-        ChromeVoxState.instance.setCurrentRange(null);
-      }
-    });
+    chrome.automation.getFocus(focus => this.checkForLossOfFocus_(focus));
 
     // These commands don't require a current range.
     switch (command) {
@@ -183,7 +165,7 @@ export class CommandHandler extends CommandHandlerInterface {
         return false;
       case 'stopSpeech':
         ChromeVox.tts.stop();
-        ChromeVoxState.isReadingContinuously = false;
+        ChromeVoxState.instance.isReadingContinuously = false;
         return false;
       case 'toggleEarcons': {
         ChromeVox.earcons.enabled = !ChromeVox.earcons.enabled;
@@ -194,9 +176,10 @@ export class CommandHandler extends CommandHandlerInterface {
       }
         return false;
       case 'cycleTypingEcho': {
-        ChromeVox.typingEcho = TypingEcho.cycle(ChromeVox.typingEcho);
+        ChromeVoxState.instance.typingEcho =
+            TypingEcho.cycle(ChromeVoxState.instance.typingEcho);
         let announce = '';
-        switch (ChromeVox.typingEcho) {
+        switch (ChromeVoxState.instance.typingEcho) {
           case TypingEcho.CHARACTER:
             announce = Msgs.getMsg('character_echo');
             break;
@@ -216,7 +199,8 @@ export class CommandHandler extends CommandHandlerInterface {
         return false;
       case 'cyclePunctuationEcho':
         ChromeVox.tts.speak(
-            Msgs.getMsg(ChromeVoxState.backgroundTts.cyclePunctuationEcho()),
+            Msgs.getMsg(
+                ChromeVoxState.instance.backgroundTts.cyclePunctuationEcho()),
             QueueMode.FLUSH);
         return false;
       case 'reportIssue':
@@ -269,7 +253,7 @@ export class CommandHandler extends CommandHandlerInterface {
           // If this is the first time, show a confirmation dialog.
           chrome.accessibilityPrivate.showConfirmationDialog(
               Msgs.getMsg('toggle_screen_title'),
-              Msgs.getMsg('toggle_screen_description'), (confirmed) => {
+              Msgs.getMsg('toggle_screen_description'), confirmed => {
                 if (confirmed) {
                   sessionStorage.setItem('darkScreen', 'true');
                   localStorage['acceptToggleScreen'] = true;
@@ -291,11 +275,11 @@ export class CommandHandler extends CommandHandlerInterface {
         return false;
       case 'enableChromeVoxArcSupportForCurrentApp':
         chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp(
-            true, (response) => {});
+            true, response => {});
         break;
       case 'disableChromeVoxArcSupportForCurrentApp':
         chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp(
-            false, (response) => {
+            false, response => {
               if (response ===
                   chrome.accessibilityPrivate.SetNativeChromeVoxResponse
                       .TALKBACK_NOT_INSTALLED) {
@@ -303,9 +287,24 @@ export class CommandHandler extends CommandHandlerInterface {
                     Msgs.getMsg('announce_install_talkback')));
                 ChromeVox.tts.speak(
                     Msgs.getMsg('announce_install_talkback'), QueueMode.FLUSH);
+              } else if (
+                  response ===
+                  chrome.accessibilityPrivate.SetNativeChromeVoxResponse
+                      .NEED_DEPRECATION_CONFIRMATION) {
+                ChromeVox.braille.write(NavBraille.fromText(
+                    Msgs.getMsg('announce_talkback_deprecation')));
+                ChromeVox.tts.speak(
+                    Msgs.getMsg('announce_talkback_deprecation'),
+                    QueueMode.FLUSH);
               }
             });
         break;
+      case 'showTalkBackKeyboardShortcuts':
+        chrome.tabs.create({
+          url:
+              'https://support.google.com/accessibility/android/answer/6110948',
+        });
+        return false;
       case 'showTtsSettings':
         chrome.accessibilityPrivate.openSettingsSubpage(
             'manageAccessibility/tts');
@@ -769,9 +768,9 @@ export class CommandHandler extends CommandHandlerInterface {
         }
       } break;
       case 'readFromHere':
-        ChromeVoxState.isReadingContinuously = true;
+        ChromeVoxState.instance.isReadingContinuously = true;
         const continueReading = function() {
-          if (!ChromeVoxState.isReadingContinuously ||
+          if (!ChromeVoxState.instance.isReadingContinuously ||
               !ChromeVoxState.instance.currentRange) {
             return;
           }
@@ -783,7 +782,7 @@ export class CommandHandler extends CommandHandlerInterface {
           // Stop if we've wrapped back to the document.
           const maybeDoc = newRange.start.node;
           if (AutomationPredicate.root(maybeDoc)) {
-            ChromeVoxState.isReadingContinuously = false;
+            ChromeVoxState.instance.isReadingContinuously = false;
             return;
           }
 
@@ -870,7 +869,7 @@ export class CommandHandler extends CommandHandlerInterface {
           // Search for a root window with a title.
           while (target) {
             const isNamedWindow =
-                !!target.name && target.role === RoleType.WINDOW;
+                Boolean(target.name) && target.role === RoleType.WINDOW;
             const isRootView = target.className === 'RootView';
             if (isNamedWindow && !firstWindow) {
               firstWindow = target;
@@ -1504,26 +1503,54 @@ export class CommandHandler extends CommandHandlerInterface {
   }
 
   /**
+   * @param {AutomationNode} focusedNode
+   * @private
+   */
+  checkForLossOfFocus_(focusedNode) {
+    const cur = ChromeVoxState.instance.currentRange;
+    if (cur && !cur.isValid()) {
+      ChromeVoxState.instance.setCurrentRange(
+          cursors.Range.fromNode(focusedNode));
+    }
+
+    if (!focusedNode) {
+      ChromeVoxState.instance.setCurrentRange(null);
+      return;
+    }
+
+    // This case detects when TalkBack (in ARC++) is enabled (which also
+    // covers when the ARC++ window is active). Clear the ChromeVox range
+    // so keys get passed through for ChromeVox commands.
+    if (ChromeVoxState.instance.talkBackEnabled &&
+        // This additional check is not strictly necessary, but we use it to
+        // ensure we are never inadvertently losing focus. ARC++ windows set
+        // "focus" on a root view.
+        focusedNode.role === RoleType.CLIENT) {
+      ChromeVoxState.instance.setCurrentRange(null);
+    }
+  }
+
+  /**
    * Performs global initialization.
    */
   init() {
-    ChromeVoxKbHandler.commandHandler = (command) => this.onCommand(command);
+    ChromeVoxKbHandler.commandHandler = command => this.onCommand(command);
 
     chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-language-detection', (enabled) => {
+        'enable-experimental-accessibility-language-detection', enabled => {
           if (enabled) {
             this.languageLoggingEnabled_ = true;
           }
         });
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-language-detection-dynamic',
-        (enabled) => {
+        enabled => {
           if (enabled) {
             this.languageLoggingEnabled_ = true;
           }
         });
 
-    chrome.chromeosInfoPrivate.get(['sessionType'], (result) => {
+    chrome.chromeosInfoPrivate.get(['sessionType'], result => {
       /** @type {boolean} */
       this.isKioskSession_ = result['sessionType'] ===
           chrome.chromeosInfoPrivate.SessionType.KIOSK;
@@ -1534,5 +1561,6 @@ export class CommandHandler extends CommandHandlerInterface {
 CommandHandlerInterface.instance = new CommandHandler();
 
 BridgeHelper.registerHandler(
-    BridgeTarget.COMMAND_HANDLER, BridgeAction.ON_COMMAND,
-    (command) => CommandHandlerInterface.instance.onCommand(command));
+    BridgeConstants.CommandHandler.TARGET,
+    BridgeConstants.CommandHandler.Action.ON_COMMAND,
+    command => CommandHandlerInterface.instance.onCommand(command));

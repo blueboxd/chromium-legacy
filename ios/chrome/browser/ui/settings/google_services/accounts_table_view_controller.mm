@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
@@ -60,6 +61,9 @@ using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
 namespace {
+
+// The size of the symbol image.
+NSInteger kSymbolAddAccountPointSize = 20;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierAccounts = kSectionIdentifierEnumZero,
@@ -366,8 +370,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
   item.accessibilityIdentifier = kSettingsAccountsTableViewAddAccountCellId;
-  item.image = [[UIImage imageNamed:@"settings_accounts_add_account"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  item.image =
+      UseSymbols()
+          ? CustomSymbolWithPointSize(kPlusCircleFillSymbol,
+                                      kSymbolAddAccountPointSize)
+          : [[UIImage imageNamed:@"settings_accounts_add_account"]
+                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   return item;
 }
 
@@ -523,11 +531,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // Handles the manage Google account action from
-// |self.removeOrMyGoogleChooserAlertCoordinator|. Action sheet created in
-// |showAccountDetails:itemView:|
+// `self.removeOrMyGoogleChooserAlertCoordinator`. Action sheet created in
+// `showAccountDetails:itemView:`
 - (void)handleManageGoogleAccountWithIdentity:(ChromeIdentity*)identity {
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
-  // |self.removeOrMyGoogleChooserAlertCoordinator| should not be stopped, since
+  // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been confirmed.
   self.removeOrMyGoogleChooserAlertCoordinator = nil;
   self.dismissAccountDetailsViewControllerBlock =
@@ -538,11 +546,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // Handles the secondary account remove action from
-// |self.removeOrMyGoogleChooserAlertCoordinator|. Action sheet created in
-// |showAccountDetails:itemView:|
+// `self.removeOrMyGoogleChooserAlertCoordinator`. Action sheet created in
+// `showAccountDetails:itemView:`
 - (void)handleRemoveSecondaryAccountWithIdentity:(ChromeIdentity*)identity {
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
-  // |self.removeOrMyGoogleChooserAlertCoordinator| should not be stopped, since
+  // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been confirmed.
   self.removeOrMyGoogleChooserAlertCoordinator = nil;
   DCHECK(!self.removeAccountCoordinator);
@@ -610,7 +618,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (!_browser)
     return;
 
-  // |self.removeOrMyGoogleChooserAlertCoordinator| should not be stopped, since
+  // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been confirmed.
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
   self.removeOrMyGoogleChooserAlertCoordinator = nil;
@@ -623,7 +631,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     authService->SignOut(
         signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, forceClearData, ^{
           // Metrics logging must occur before dismissing the currently
-          // presented view controller from |handleSignoutDidFinish|.
+          // presented view controller from `handleSignoutDidFinish`.
           [weakSelf logSignoutMetricsWithForceClearData:forceClearData];
           [weakSelf allowUserInteraction];
           [weakSelf handleAuthenticationOperationDidFinish];
@@ -648,15 +656,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-// Handles the cancel action for |self.removeOrMyGoogleChooserAlertCoordinator|.
+// Handles the cancel action for `self.removeOrMyGoogleChooserAlertCoordinator`.
 - (void)handleAlertCoordinatorCancel {
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
-  // |self.removeOrMyGoogleChooserAlertCoordinator| should not be stopped, since
+  // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been cancelled.
   self.removeOrMyGoogleChooserAlertCoordinator = nil;
 }
 
-// Sets |_authenticationOperationInProgress| to NO and pops this accounts
+// Sets `_authenticationOperationInProgress` to NO and pops this accounts
 // table view controller if the user is signed out.
 - (void)handleAuthenticationOperationDidFinish {
   DCHECK(_authenticationOperationInProgress);
@@ -692,18 +700,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
     DCHECK(!self.removeAccountCoordinator);
     DCHECK(!self.signoutCoordinator);
     // TODO(crbug.com/1221066): Need to add a completion block in
-    // |dismissAccountDetailsViewControllerBlock| callback, to trigger
-    // |popAccountsTableViewController()|.
-    // Once we have a completion block, we can set |animated| to YES.
+    // `dismissAccountDetailsViewControllerBlock` callback, to trigger
+    // `popAccountsTableViewController()|.
+    // Once we have a completion block, we can set `animated` to YES.
     self.dismissAccountDetailsViewControllerBlock(/*animated=*/NO);
     self.dismissAccountDetailsViewControllerBlock = nil;
     popAccountsTableViewController();
   } else if (self.removeOrMyGoogleChooserAlertCoordinator ||
              self.removeAccountCoordinator || self.signoutCoordinator) {
     DCHECK(self.presentedViewController);
-    // If |self| is presenting a view controller (like
-    // |self.removeOrMyGoogleChooserAlertCoordinator|,
-    // |self.removeAccountCoordinator|, it has to be dismissed before |self| can
+    // If `self` is presenting a view controller (like
+    // `self.removeOrMyGoogleChooserAlertCoordinator`,
+    // `self.removeAccountCoordinator`, it has to be dismissed before `self` can
     // be poped from the navigation controller.
     // This issue can be easily reproduced with EG tests, but not with Chrome
     // app itself.
@@ -722,7 +730,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            }];
   } else {
     DCHECK(!self.presentedViewController);
-    // Pops |self|.
+    // Pops `self`.
     popAccountsTableViewController();
   }
 }

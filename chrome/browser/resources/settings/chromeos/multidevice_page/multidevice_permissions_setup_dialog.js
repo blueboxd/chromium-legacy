@@ -12,6 +12,7 @@ import './multidevice_screen_lock_subpage.js';
 import '../os_icons.js';
 import '../../settings_shared_css.js';
 
+import {assert} from '//resources/js/assert.m.js';
 import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
@@ -147,6 +148,26 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * Get the value of settings.OnEnableScreenLockChanged from
+     * multidevice_page.js because multidevice_permissions_setup_dialog.js
+     * doesn't always popup to receive event from FireWebUIListener.
+     */
+    isChromeosScreenLockEnabled: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Get the value of settings.OnScreenLockStatusChanged from
+     * multidevice_page.js because multidevice_permissions_setup_dialog.js
+     * doesn't always popup to receive event from FireWebUIListener.
+     */
+    isPhoneScreenLockEnabled: {
+      type: Boolean,
+      value: false,
+    },
+
     /** Whether this dialog should show Camera Roll info */
     showCameraRoll: {
       type: Boolean,
@@ -179,6 +200,24 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /** @private */
+    isPinNumberSelected_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    isSetPinDone_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showSetupPinDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Whether the combined setup for Notifications and Camera Roll is supported
      * on the connected phone.
@@ -187,6 +226,10 @@ Polymer({
       type: Boolean,
       value: false,
     },
+  },
+
+  listeners: {
+    'set-pin-done': 'onSetPinDone_',
   },
 
   /** @private {?MultiDeviceBrowserProxy} */
@@ -348,6 +391,14 @@ Polymer({
         if (!this.isScreenLockEnabled_) {
           return;
         }
+        if (this.isPinNumberSelected_ && !this.isSetPinDone_) {
+          // When users select pin number and click next button, popup set pin
+          // dialog.
+          this.showSetupPinDialog_ = true;
+          this.propagatePinNumberSelected_(true);
+          return;
+        }
+        this.propagatePinNumberSelected_(false);
         this.isPasswordDialogShowing = false;
         break;
     }
@@ -395,6 +446,31 @@ Polymer({
     this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
         this.setupScreen_, PhoneHubPermissionsSetupAction.LEARN_MORE);
     window.open(this.i18n('multidevicePhoneHubPermissionsLearnMoreURL'));
+  },
+
+  /** @private */
+  onPinNumberSelected_(e) {
+    e.stopPropagation();
+    assert(typeof e.detail.isPinNumberSelected === 'boolean');
+    this.isPinNumberSelected_ = e.detail.isPinNumberSelected;
+  },
+
+  /** @private */
+  onSetPinDone_() {
+    // Once users confirm pin number, take them to the 'finish setup on the
+    // phone' step directly.
+    this.isSetPinDone_ = true;
+    this.nextPage_();
+  },
+
+  /** @private */
+  propagatePinNumberSelected_(selected) {
+    const pinNumberEvent = new CustomEvent('pin-number-selected', {
+      bubbles: true,
+      composed: true,
+      detail: {isPinNumberSelected: selected}
+    });
+    this.dispatchEvent(pinNumberEvent);
   },
 
   /** @private */
@@ -488,7 +564,7 @@ Polymer({
         return this.i18n('multidevicePermissionsSetupOperationsInstructions');
       case Status.CONNECTION_REQUESTED:
       case Status.CONNECTING:
-        return this.i18n('multideviceNotificationAccessSetupInstructions');
+        return this.i18n('multidevicePermissionsSetupInstructions');
       default:
         return '';
     }
@@ -546,8 +622,7 @@ Polymer({
    */
   isScreenLockRequired_() {
     return loadTimeData.getBoolean('isEcheAppEnabled') &&
-        loadTimeData.getBoolean('isPhoneScreenLockEnabled') &&
-        !loadTimeData.getBoolean('isChromeosScreenLockEnabled') &&
+        this.isPhoneScreenLockEnabled && !this.isChromeosScreenLockEnabled &&
         this.showAppStreaming;
   },
 });

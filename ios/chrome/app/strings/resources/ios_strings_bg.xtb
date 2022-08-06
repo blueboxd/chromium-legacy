@@ -18,7 +18,6 @@
 <translation id="1066060668811609597">Управление на синхронизирането</translation>
 <translation id="1076421457278169141">Кодът бе сканиран</translation>
 <translation id="1084365883616172403">Публикацията във Facebook е завършена.</translation>
-<translation id="1086486568852410168">Търсене с Google Обектив</translation>
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Приемам и напред</translation>
 <translation id="110724200315609752">Превключване към отворения прозорец</translation>
@@ -66,6 +65,7 @@
 <translation id="1434356225517321998">Браузърът ви е управляван. <ph name="BEGIN_LINK" />Подробности<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Скриване на паролата</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> елемента</translation>
+<translation id="1450170672351507823">Режимът за стандартна защита е включен. За още по-голяма сигурност използвайте подобрената защита.</translation>
 <translation id="149095475893949513">Този уебсайт се опитва да изтегли конфигурационен профил.</translation>
 <translation id="1491277525950327607">Докоснете двукратно за превключване на настройката</translation>
 <translation id="1492417797159476138">Вече запазихте това потребителско име за този сайт</translation>
@@ -241,6 +241,7 @@
 <translation id="2982481275546140226">Изчистване на данните</translation>
 <translation id="298306318844797842">Добавяне на начин на плащане…</translation>
 <translation id="2989805286512600854">Отваряне в нов раздел</translation>
+<translation id="3020183492814296499">Клавишни комбинации</translation>
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3039722182465315531">Без влизане в профила</translation>
 <translation id="3076846064362030967">Няма да излезете от профила си в Google. Възможно е <ph name="BEGIN_LINK" />други видове активност<ph name="END_LINK" /> да се запазват в профила ви в Google, когато сте влезли в него. Можете да изтриете съответните данни по всяко време.
@@ -249,6 +250,7 @@
 Вижте инструкциите на търсещата си машина относно изтриването на историята на търсенията ви (ако е приложимо).</translation>
 <translation id="3080525922482950719">Можете да запазвате страници за четене по-късно или офлайн</translation>
 <translation id="3081338492074632642">Уверете се, че запазваната парола съвпада с тази за <ph name="WEBSITE" /></translation>
+<translation id="3103603146121354983">Автоматично попълване на пароли</translation>
 <translation id="3112556859945124369">Означаване…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Вижте какво можете да синхронизирате<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Блокиране на всички</translation>
@@ -512,6 +514,7 @@
 <translation id="5416022985862681400">Последните 7 дни</translation>
 <translation id="543338862236136125">Редактиране на паролата</translation>
 <translation id="5433691172869980887">Потребителското име е копирано</translation>
+<translation id="5439599923922718668">Често посещавани</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
 <translation id="5443952882982198570">Кредитни карти</translation>
 <translation id="5457226814769348910">Отваряне на офлайн версията</translation>
@@ -526,7 +529,6 @@
 <translation id="5551897871312988470">Предложения за превод</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5580834567471114021">Да се добави ли към списъка за четене по-късно?</translation>
-<translation id="5592679540098330836">Включване на синхронизирането за <ph name="NAME" /></translation>
 <translation id="560322036295180549">Изключено от организацията ви</translation>
 <translation id="5614553682702429503">Да се запази ли паролата?</translation>
 <translation id="5626245204502895507">Понастоящем файлът не можа да бъде изтеглен.</translation>
@@ -660,6 +662,7 @@
 
 Опитайте да използвате уникална парола за всеки сайт.</translation>
 <translation id="650279896687777322">Научете повече...</translation>
+<translation id="6510072653668207258">Напомняне по-късно</translation>
 <translation id="651505212789431520">Да се анулира ли синхронизирането? Можете да го включите по всяко време в „Настройки“.</translation>
 <translation id="6524918542306337007">Режимът „инкогнито“ не е налице</translation>
 <translation id="6530992499366869131">Предупреждение за разкрити пароли при нарушение на сигурността на данните</translation>
@@ -900,7 +903,6 @@
 <translation id="8588404856427128947">Изключено</translation>
 <translation id="8590913940444621808">Без запитване</translation>
 <translation id="8591976964826315682">Блокиране на „бисквитките“ на трети страни в режим „инкогнито“</translation>
-<translation id="8592752150819985187">Автоматично попълване на пароли</translation>
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8620785403235741379">Изберете опция</translation>

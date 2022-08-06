@@ -99,13 +99,15 @@ class NetworkingPrivateServiceClient
                                    const std::string& network_id,
                                    VoidCallback success_callback,
                                    FailureCallback failure_callback) override;
-  base::Value GetEnabledNetworkTypes() override;
-  std::unique_ptr<DeviceStateList> GetDeviceStateList() override;
-  base::Value GetGlobalPolicy() override;
-  base::Value GetCertificateLists() override;
-  bool EnableNetworkType(const std::string& type) override;
-  bool DisableNetworkType(const std::string& type) override;
-  bool RequestScan(const std::string& type) override;
+  void GetEnabledNetworkTypes(EnabledNetworkTypesCallback callback) override;
+  void GetDeviceStateList(DeviceStateListCallback callback) override;
+  void GetGlobalPolicy(GetGlobalPolicyCallback callback) override;
+  void GetCertificateLists(GetCertificateListsCallback callback) override;
+  void EnableNetworkType(const std::string& type,
+                         BoolCallback callback) override;
+  void DisableNetworkType(const std::string& type,
+                          BoolCallback callback) override;
+  void RequestScan(const std::string& type, BoolCallback callback) override;
   void AddObserver(NetworkingPrivateDelegateObserver* observer) override;
   void RemoveObserver(NetworkingPrivateDelegateObserver* observer) override;
 
@@ -138,11 +140,11 @@ class NetworkingPrivateServiceClient
   // Callback wrappers.
   void AfterGetProperties(PropertiesCallback callback,
                           const std::string& network_guid,
-                          std::unique_ptr<base::DictionaryValue> properties,
+                          std::unique_ptr<base::Value::Dict> properties,
                           const std::string* error);
   void AfterGetState(ServiceCallbacksID callback_id,
                      const std::string& network_guid,
-                     std::unique_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::Value::Dict> properties,
                      const std::string* error);
   void AfterSetProperties(ServiceCallbacksID callback_id,
                           const std::string* error);
@@ -150,7 +152,7 @@ class NetworkingPrivateServiceClient
                           const std::string* network_guid,
                           const std::string* error);
   void AfterGetVisibleNetworks(ServiceCallbacksID callback_id,
-                               std::unique_ptr<base::ListValue> networks);
+                               std::unique_ptr<base::Value::List> networks);
   void AfterStartConnect(ServiceCallbacksID callback_id,
                          const std::string* error);
   void AfterStartDisconnect(ServiceCallbacksID callback_id,

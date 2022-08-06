@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_bar.h"
 #include <algorithm>
 
+#include "base/bind.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -70,22 +71,26 @@ void SavedTabGroupBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void SavedTabGroupBar::SavedTabGroupAdded(const SavedTabGroup& group,
                                           int index) {
   AddTabGroupButton(group, index);
+  PreferredSizeChanged();
 }
 
 void SavedTabGroupBar::SavedTabGroupRemoved(int index) {
   RemoveTabGroupButton(index);
+  PreferredSizeChanged();
 }
 
 void SavedTabGroupBar::SavedTabGroupUpdated(const SavedTabGroup& group,
                                             int index) {
   RemoveTabGroupButton(index);
   AddTabGroupButton(group, index);
+  PreferredSizeChanged();
 }
 
 void SavedTabGroupBar::SavedTabGroupMoved(const SavedTabGroup& group,
                                           int old_index,
                                           int new_index) {
   ReorderChildView(children().at(old_index), new_index);
+  PreferredSizeChanged();
 }
 
 // TODO dpenning: Support the state of the SavedTabGroup open in a tab strip
@@ -102,7 +107,9 @@ void SavedTabGroupBar::AddTabGroupButton(const SavedTabGroup& group,
   // for the button.
   AddChildViewAt(
       std::make_unique<SavedTabGroupButton>(
-          group, page_navigator(),
+          group,
+          base::BindRepeating(&SavedTabGroupBar::page_navigator,
+                              base::Unretained(this)),
           base::BindRepeating(&SavedTabGroupBar::OnTabGroupButtonPressed,
                               base::Unretained(this), group.group_id),
           /*is_group_in_tabstrip*/ false, animations_enabled_),

@@ -180,8 +180,8 @@ CrostiniInstaller::~CrostiniInstaller() {
 
 void CrostiniInstaller::Shutdown() {
   if (restart_id_ != CrostiniManager::kUninitializedRestartId) {
-    CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
-        restart_id_, base::DoNothing());
+    CrostiniManager::GetForProfile(profile_)->CancelRestartCrostini(
+        restart_id_);
     restart_id_ = CrostiniManager::kUninitializedRestartId;
   }
 }
@@ -213,6 +213,7 @@ void CrostiniInstaller::Install(CrostiniManager::RestartOptions options,
   }
 
   restart_options_ = std::move(options);
+  restart_options_.restart_source = RestartSource::kInstaller;
   progress_callback_ = std::move(progress_callback);
   result_callback_ = std::move(result_callback);
 
@@ -275,7 +276,7 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
   // Abort the long-running flow, and RestartObserver methods will not be called
   // again until next installation.
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
-  crostini_manager->AbortRestartCrostini(restart_id_, base::DoNothing());
+  crostini_manager->CancelRestartCrostini(restart_id_);
   restart_id_ = CrostiniManager::kUninitializedRestartId;
   RecordSetupResult(InstallStateToCancelledSetupResult(installing_state_));
 
@@ -445,12 +446,6 @@ void CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed(
 }
 
 void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {
-  if (result == CrostiniResult::CONTAINER_CONFIGURATION_FAILED) {
-    LOG(ERROR) << "Container start failed due to failed configuration";
-    NOTREACHED();
-    return;
-  }
-
   DCHECK(installing_state_ == InstallerState::kStartContainer ||
          installing_state_ == InstallerState::kConfigureContainer);
 
@@ -613,7 +608,8 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
   restart_id_ = CrostiniManager::kUninitializedRestartId;
 
   if (result != CrostiniResult::SUCCESS) {
-    if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED) {
+    if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED &&
+        result != CrostiniResult::RESTART_REQUEST_CANCELLED) {
       DCHECK_EQ(state_, State::INSTALLING);
       LOG(ERROR) << "Failed to restart Crostini with error code: "
                  << static_cast<int>(result);

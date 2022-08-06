@@ -57,12 +57,12 @@ class AnalysisServiceSettings {
 
   // Map from an ID representing a specific matched pattern to its settings.
   using PatternSettings =
-      std::map<url_matcher::URLMatcherConditionSet::ID, URLPatternSettings>;
+      std::map<base::MatcherStringPattern::ID, URLPatternSettings>;
 
   // Accessors for the pattern setting maps.
   static absl::optional<URLPatternSettings> GetPatternSettings(
       const PatternSettings& patterns,
-      url_matcher::URLMatcherConditionSet::ID match);
+      base::MatcherStringPattern::ID match);
 
   // Returns true if the settings were initialized correctly. If this returns
   // false, then GetAnalysisSettings will always return absl::nullopt.
@@ -72,18 +72,17 @@ class AnalysisServiceSettings {
   // |disabled_patterns_settings_| from a policy value.
   void AddUrlPatternSettings(const base::Value& url_settings_value,
                              bool enabled,
-                             url_matcher::URLMatcherConditionSet::ID* id);
+                             base::MatcherStringPattern::ID* id);
 
   // Return tags found in |enabled_patterns_settings| corresponding to the
   // matches while excluding the ones in |disable_patterns_settings|.
   std::set<std::string> GetTags(
-      const std::set<url_matcher::URLMatcherConditionSet::ID>& matches) const;
+      const std::set<base::MatcherStringPattern::ID>& matches) const;
 
   // The service provider matching the name given in a Connector policy. nullptr
   // implies that a corresponding service provider doesn't exist and that these
   // settings are not valid.
-  raw_ptr<const ServiceProviderConfig::ServiceProvider> service_provider_ =
-      nullptr;
+  raw_ptr<const AnalysisConfig> analysis_config_ = nullptr;
 
   // The URL matcher created from the patterns set in the analysis policy. The
   // condition set IDs returned after matching against a URL can be used to

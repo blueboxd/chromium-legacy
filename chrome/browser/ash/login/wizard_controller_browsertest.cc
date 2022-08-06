@@ -89,8 +89,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_install_attributes_client.h"
@@ -554,7 +554,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     device_disabled_screen_view_ =
         std::make_unique<MockDeviceDisabledScreenView>();
     MockScreen(std::make_unique<DeviceDisabledScreen>(
-        device_disabled_screen_view_.get()));
+        device_disabled_screen_view_->AsWeakPtr()));
     EXPECT_CALL(*device_disabled_screen_view_, Show(_, _, _)).Times(0);
 
     mock_network_screen_view_ = std::make_unique<MockNetworkScreenView>();
@@ -1185,10 +1185,7 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
     // call in `SetUpInProcessBrowserTestFixture`. See https://crbug.com/847422.
     // TODO(pmarko): Find a way for FakeShillManagerClient to be initialized
     // automatically (https://crbug.com/847422).
-    DBusThreadManager::Get()
-        ->GetShillManagerClient()
-        ->GetTestInterface()
-        ->SetupDefaultEnvironment();
+    ShillManagerClient::Get()->GetTestInterface()->SetupDefaultEnvironment();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -3228,6 +3225,13 @@ IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
 class WizardControllerThemeSelectionDefaultSettingsTest
     : public WizardControllerTest {
  public:
+  WizardControllerThemeSelectionDefaultSettingsTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kEnableOobeThemeSelection,
+                               chromeos::features::kDarkLightMode});
+  }
+
  protected:
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
@@ -3253,7 +3257,10 @@ class WizardControllerThemeSelectionEnabledTest
     : public WizardControllerThemeSelectionDefaultSettingsTest {
  public:
   WizardControllerThemeSelectionEnabledTest() {
-    feature_list_.InitAndEnableFeature(features::kEnableOobeThemeSelection);
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kEnableOobeThemeSelection,
+                              chromeos::features::kDarkLightMode},
+        /*disabled_features=*/{});
   }
 
   base::test::ScopedFeatureList feature_list_;

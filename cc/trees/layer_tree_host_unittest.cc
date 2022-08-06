@@ -110,10 +110,6 @@ using testing::StrictMock;
 
 namespace cc {
 namespace {
-const char kUserInteraction[] = "Compositor.UserInteraction";
-const char kCheckerboardArea[] = "CheckerboardedContentArea";
-const char kCheckerboardAreaRatio[] = "CheckerboardedContentAreaRatio";
-const char kMissingTiles[] = "NumMissingTiles";
 
 bool LayerSubtreeHasCopyRequest(Layer* layer) {
   const LayerTreeHost* host = layer->layer_tree_host();
@@ -8507,7 +8503,7 @@ class LayerTreeHostTestDiscardAckAfterRelease : public LayerTreeHostTest {
         // LayerTreeFrameSink was not released. We must receive the ack.
         EXPECT_TRUE(received_ack_);
         // Cause damage so that we draw and swap.
-        layer_tree_host()->root_layer()->SetBackgroundColor(SK_ColorGREEN);
+        layer_tree_host()->root_layer()->SetBackgroundColor(SkColors::kGreen);
         break;
       case 2:
         // LayerTreeFrameSink was released. The ack must be discarded.
@@ -8754,74 +8750,6 @@ class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageDecodingHints);
-
-class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestCheckerboardUkm() : url_(GURL("https://example.com")),
-                                       ukm_source_id_(123) {}
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-    layer_tree_host()->SetSourceURL(ukm_source_id_, url_);
-  }
-
-  void SetupTree() override {
-    gfx::Size layer_size(100, 100);
-    content_layer_client_.set_bounds(layer_size);
-    content_layer_client_.set_fill_with_nonsolid_color(true);
-    layer_tree_host()->SetRootLayer(
-        FakePictureLayer::Create(&content_layer_client_));
-    layer_tree_host()->root_layer()->SetBounds(layer_size);
-    LayerTreeTest::SetupTree();
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    if (impl->active_tree()->source_frame_number() != 0)
-      return;
-
-    // We have an active tree. Start a pinch gesture so we start recording
-    // stats.
-    impl->GetInputHandler().PinchGestureBegin(
-        gfx::Point(100, 100), ui::ScrollInputType::kTouchscreen);
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    if (!impl->GetInputHandler().pinch_gesture_active())
-      return;
-
-    // We just drew a frame, stats for it should have been recorded. End the
-    // gesture so they are flushed to the recorder.
-    impl->GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
-
-    // RenewTreePriority will run when the smoothness expiration timer fires.
-    // Synthetically do it here so the UkmManager is notified.
-    impl->RenewTreePriorityForTesting();
-
-    auto* recorder = static_cast<ukm::TestUkmRecorder*>(
-        impl->ukm_manager()->recorder_for_testing());
-    // Tie the source id to the URL. In production, this is already done in
-    // Document, and the source id is passed down to cc.
-    recorder->UpdateSourceURL(ukm_source_id_, url_);
-
-    const auto& entries = recorder->GetEntriesByName(kUserInteraction);
-    EXPECT_EQ(1u, entries.size());
-    for (const auto* entry : entries) {
-      recorder->ExpectEntrySourceHasUrl(entry, url_);
-      recorder->ExpectEntryMetric(entry, kCheckerboardArea, 0);
-      recorder->ExpectEntryMetric(entry, kMissingTiles, 0);
-      recorder->ExpectEntryMetric(entry, kCheckerboardAreaRatio, 0);
-    }
-
-    EndTest();
-  }
-
- private:
-  const GURL url_;
-  const ukm::SourceId ukm_source_id_;
-  FakeContentLayerClient content_layer_client_;
-};
-
-// Only multi-thread mode needs to record UKMs.
-MULTI_THREAD_TEST_F(LayerTreeHostTestCheckerboardUkm);
 
 class DontUpdateLayersWithEmptyBounds : public LayerTreeTest {
  protected:
@@ -10095,7 +10023,7 @@ class LayerTreeHostTestOccludedTileReleased
   void AddLayerThatObscuresPictureLayer() {
     auto covering_layer = SolidColorLayer::Create();
     covering_layer->SetBounds(gfx::Size(100, 100));
-    covering_layer->SetBackgroundColor(SK_ColorRED);
+    covering_layer->SetBackgroundColor(SkColors::kRed);
     covering_layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(covering_layer);
     added_obscuring_layer_ = true;
@@ -10174,11 +10102,6 @@ class LayerTreeHostTestDelayRecreateTiling
                                            transform);
         node->has_potential_animation = true;
         break;
-      case 3:
-        // animation finished
-        node->has_potential_animation = false;
-        transform_tree.set_needs_update(true);
-        break;
     }
   }
 
@@ -10241,17 +10164,165 @@ class LayerTreeHostTestDelayRecreateTiling
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        // translation is changed in frame2, but recreating tiling should not
-        // happen because ReadyToActivate is true
-        ASSERT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
-        ASSERT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0));
-        PostSetNeedsCommitToMainThread();
+        if (should_delay_recreating_tiling_) {
+          // translation is changed in frame2, but recreating tiling should not
+          // happen because ReadyToActivate is true
+          ASSERT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
+          ASSERT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0));
+          should_delay_recreating_tiling_ = false;
+        } else {
+          // Invalidating implside will trigger recreating tiling without next
+          // commit
+          ASSERT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
+          ASSERT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0.8f));
+          EndTest();
+        }
         break;
       case 3:
-        // in next commit, the new tiling with new translation is generated
-        ASSERT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
-        ASSERT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0.8f));
-        EndTest();
+        NOTREACHED() << "We shouldn't see another commit in this test";
+        break;
+    }
+  }
+
+ protected:
+  FakeContentLayerClient client_;
+  // to access layer information in main and impl
+  int layer_id_;
+  // to access layer information in main's WillCommit()
+  scoped_refptr<FakePictureLayer> layer_on_main_;
+  bool should_delay_recreating_tiling_ = true;
+};
+MULTI_THREAD_TEST_F(LayerTreeHostTestDelayRecreateTiling);
+
+// This test validate that recreating tiling is delayed by veto conditions and
+// the delayed tiling is created again when the veto conditions are reset.
+class LayerTreeHostTestInvalidateImplSideForRerasterTiling
+    : public LayerTreeHostTestWithHelper {
+ public:
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(&client_);
+    root_layer->SetBounds(gfx::Size(150, 150));
+    root_layer->SetIsDrawable(true);
+
+    layer_on_main_ =
+        CreateAndAddFakePictureLayer(gfx::Size(30, 30), root_layer.get());
+
+    // initial transform to force transform node
+    gfx::Transform transform;
+    transform.Scale(2.0f, 1.0f);
+    layer_on_main_->SetTransform(transform);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+
+    LayerTreeHostTest::SetupTree();
+    client_.set_bounds(root_layer->bounds());
+
+    layer_id_ = layer_on_main_->id();
+  }
+
+  void WillCommit(const CommitState&) override {
+    TransformTree& transform_tree =
+        layer_tree_host()->property_trees()->transform_tree_mutable();
+    TransformNode* node =
+        transform_tree.Node(layer_on_main_->transform_tree_index());
+
+    gfx::Transform transform;
+    transform.Scale(2.0f, 1.0f);
+    transform.Translate(0.0f, 0.8f);
+
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        // in frame1, translation changed and animation start
+        transform_tree.OnTransformAnimated(layer_on_main_->element_id(),
+                                           transform);
+        node->has_potential_animation = true;
+        break;
+    }
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void ClearAnimationForLayer(LayerTreeImpl* tree_impl,
+                              FakePictureLayerImpl* layer_impl) {
+    if (!tree_impl)
+      return;
+
+    TransformTree& transform_tree =
+        tree_impl->property_trees()->transform_tree_mutable();
+    TransformNode* node =
+        transform_tree.Node(layer_impl->transform_tree_index());
+
+    node->has_potential_animation = false;
+    transform_tree.set_needs_update(true);
+    tree_impl->set_needs_update_draw_properties();
+  }
+
+  TransformNode* TransformNodeForLayer(LayerTreeImpl* tree_impl,
+                                       FakePictureLayerImpl* layer_impl) {
+    TransformTree& transform_tree =
+        tree_impl->property_trees()->transform_tree_mutable();
+    TransformNode* node =
+        transform_tree.Node(layer_impl->transform_tree_index());
+    return node;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() == 2) {
+      FakePictureLayerImpl* target_layer = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(layer_id_));
+      gfx::AxisTransform2d tiling_transform =
+          target_layer->HighResTiling()->raster_transform();
+      TransformNode* node =
+          TransformNodeForLayer(host_impl->active_tree(), target_layer);
+      if (node->has_potential_animation) {
+        // in frame 2, active tree still have old tiling because animation is
+        // still active.
+        EXPECT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
+        EXPECT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0));
+
+        // now clear animation and trigger a new draw to check if invalidation
+        // implside will be requested for rerastering tiling.
+        ClearAnimationForLayer(host_impl->active_tree(), target_layer);
+        ClearAnimationForLayer(host_impl->recycle_tree(), target_layer);
+        host_impl->SetNeedsRedraw();
+      }
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    FakePictureLayerImpl* target_layer = static_cast<FakePictureLayerImpl*>(
+        host_impl->active_tree()->LayerById(layer_id_));
+    gfx::AxisTransform2d tiling_transform =
+        target_layer->HighResTiling()->raster_transform();
+    TransformNode* node =
+        TransformNodeForLayer(host_impl->active_tree(), target_layer);
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        if (node->has_potential_animation) {
+          // translation is changed in frame2, but recreating tiling should not
+          // happen because animation is still active.
+          EXPECT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
+          EXPECT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0));
+
+          // trigger draw to check if invalidating implside is not triggered
+          // if animation is still active.
+          host_impl->SetNeedsRedraw();
+        } else {
+          // check if invalidation implside was requested successfully.
+          // new tiling should be created.
+          EXPECT_EQ(tiling_transform.scale(), gfx::Vector2dF(2.0f, 1.0f));
+          EXPECT_EQ(tiling_transform.translation(), gfx::Vector2dF(0, 0.8f));
+          EndTest();
+        }
+        break;
     }
   }
 
@@ -10262,7 +10333,6 @@ class LayerTreeHostTestDelayRecreateTiling
   // to access layer information in main's WillCommit()
   scoped_refptr<FakePictureLayer> layer_on_main_;
 };
-MULTI_THREAD_TEST_F(LayerTreeHostTestDelayRecreateTiling);
-
+MULTI_THREAD_TEST_F(LayerTreeHostTestInvalidateImplSideForRerasterTiling);
 }  // namespace
 }  // namespace cc

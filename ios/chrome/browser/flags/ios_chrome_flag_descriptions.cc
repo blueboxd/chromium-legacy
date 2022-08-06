@@ -67,6 +67,12 @@ const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";
 
+const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[] =
+    "Remove card expiration date from the Autofill card suggestions";
+const char kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[] =
+    "When enabled, card expiration date will no longer be displayed in a card "
+    "suggestion";
+
 const char kAutofillSaveCardDismissOnNavigationName[] =
     "Save Card Dismiss on Navigation";
 const char kAutofillSaveCardDismissOnNavigationDescription[] =
@@ -108,7 +114,9 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
 extern const char kBubbleRichIPHName[] = "Bubble rich IPH";
 extern const char kBubbleRichIPHDescription[] =
     "When enabled, displays a rich description (ex: title, image, etc..) of "
-    "the feature presented in the bubble view.";
+    "the feature presented in the bubble. Also enables password suggestion "
+    "highlight IPH. When enabled with no option, uses the default bubble "
+    "style.";
 
 extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
@@ -120,6 +128,12 @@ const char kContentSuggestionsHeaderMigrationName[] =
 const char kContentSuggestionsHeaderMigrationDescription[] =
     "When enabled, the Content Suggestions header will be logically moved to "
     "the Discover feed ScrollView";
+
+const char kContentSuggestionsUIModuleRefreshName[] =
+    "Content Suggestions UI Module Refresh";
+const char kContentSuggestionsUIModuleRefreshDescription[] =
+    "When enabled, the Content Suggestions will be redesigned to be contained "
+    "into distinct modules.";
 
 const char kContentSuggestionsUIViewControllerMigrationName[] =
     "Content Suggestions UIViewController migration";
@@ -144,6 +158,12 @@ const char kDefaultBrowserFullscreenPromoExperimentName[] =
 const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
     "When enabled, will show a modified default browser fullscreen modal promo "
     "UI.";
+
+const char kDefaultBrowserIntentsShowSettingsName[] =
+    "Default Browser Intents show settings";
+const char kDefaultBrowserIntentsShowSettingsDescription[] =
+    "When enabled, external apps can trigger the settings screen showing "
+    "default browser tutorial.";
 
 const char kAddSettingForDefaultPageModeName[] = "Let user choose default mode";
 const char kAddSettingForDefaultPageModeDescription[] =
@@ -172,11 +192,11 @@ const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
 
-const char kDisplaySyncErrorsRefactorName[] =
-    "Enable Display Sync Errors refactored code";
-const char kDisplaySyncErrorsRefactorDescription[] =
-    "When enabled, displaying sync errors logic is provided by a Browser Agent "
-    "not BVC.";
+const char kEnableDiscoverFeedTopSyncPromoName[] =
+    "Enable the sync promo on top of the feed.";
+const char kEnableDiscoverFeedTopSyncPromoDescription[] =
+    "When enabled, a sync promotion will be presented to eligible users on top "
+    "of the feed cards.";
 
 const char kDownloadCalendarName[] = "Download Calendar";
 const char kDownloadCalendarDescription[] =
@@ -216,11 +236,11 @@ const char kEnableDiscoverFeedStaticResourceServingDescription[] =
     "When enabled the discover feed will optimize the request of resources "
     "coming from the server.";
 
-const char kEnableFREDefaultBrowserScreenTestingName[] =
-    "Enable FRE default browser screen testing";
-const char kEnableFREDefaultBrowserScreenTestingDescription[] =
-    "This test display the FRE default browser screen and other default "
-    "browser promo depending on experiment.";
+const char kEnableFREDefaultBrowserPromoScreenName[] =
+    "Enable FRE default browser screen";
+const char kEnableFREDefaultBrowserPromoScreenDescription[] =
+    "Display the FRE default browser screen and other default browser promo "
+    "depending on experiment.";
 
 const char kEnableFaviconForPasswordsName[] =
     "Enable favicons for the Password Manager and for the Credential Provider "
@@ -240,7 +260,7 @@ const char kEnableFREUIModuleIOSDescription[] =
 
 const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
-    "Enable the Fullscreen API for web content (iOS 15.4+).";
+    "Enable the Fullscreen API for web content (iOS 16.0+).";
 
 const char kEnableLongMessageDurationName[] = "Enable long message duration";
 const char kEnableLongMessageDurationDescription[] =
@@ -275,6 +295,11 @@ const char kEnableWebChannelsDescription[] =
 const char kEnhancedProtectionName[] = "Enable Enhanced Safe Browsing";
 const char kEnhancedProtectionDescription[] =
     "Allows users to opt-in to Enhanced Safe Browsing";
+
+const char kEnhancedProtectionPhase2Name[] =
+    "Enable Enhanced Safe Browsing Phase 2";
+const char kEnhancedProtectionPhase2Description[] =
+    "Enable additional improvements related to Enhanced Safe Browsing";
 
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
@@ -322,6 +347,11 @@ const char kInProductHelpDemoModeDescription[] =
     "start. Enabled causes all in-product help promotions to occur. Enabling "
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
+
+const char kIOS3PIntentsInIncognitoName[] = "Third-party intents in Incognito";
+const char kIOS3PIntentsInIncognitoDescription[] =
+    "When enabled, an additional setting lets the user open links from other "
+    "apps in Incognito.";
 
 const char kIOSEnablePasswordManagerBrandingUpdateName[] =
     "Enable new Google Password Manager branding";
@@ -622,12 +652,6 @@ const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
     "When enabled, the entry points to history UI from Incognito mode will be "
     "removed.";
 
-const char kUpgradeCenterRefactorName[] =
-    "Enable Upgrade Center refactored code";
-const char kUpgradeCenterRefactorDescription[] =
-    "When enabled, upgrade сenter logic is provided by a Browser Agent "
-    "not BVC.";
-
 const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";
 const char kUseLensToSearchForImageDescription[] =
@@ -641,14 +665,9 @@ const char kUseLoadSimulatedRequestForOfflinePageDescription[] =
     "When enabled, the offline pages uses the iOS 15 "
     "loadSimulatedRequest:responseHTMLString: API";
 
-const char kUseSFSymbolsSamplesName[] = "Replace Image by SFSymbols";
-const char kUseSFSymbolsSamplesDescription[] =
-    "When enabled, some images (toolbar...) are replaced by SFSymbols";
-
-const char kUseUIKitPopupMenuName[] = "Replace popup menus by native ones";
-const char kUseUIKitPopupMenuDescription[] =
-    "When enabled, the popup menus displayed for example when long pressing on "
-    "a toolbar button are replaced by native ones (UIKit).";
+const char kUseSFSymbolsName[] = "Replace Image by SFSymbols";
+const char kUseSFSymbolsDescription[] =
+    "When enabled, images are replaced by SFSymbols";
 
 const char kWaitThresholdMillisecondsForCapabilitiesApiName[] =
     "Maximum wait time (in seconds) for a response from the Account "
@@ -671,18 +690,9 @@ const char kWebPageAlternativeTextZoomName[] =
 const char kWebPageAlternativeTextZoomDescription[] =
     "When enabled, switches the method used to zoom web pages.";
 
-const char kWebViewNativeContextMenuPhase2Name[] =
-    "Context Menu with non-live preview";
-const char kWebViewNativeContextMenuPhase2Description[] =
-    "When enabled, the context menu displayed when long pressing on a link or "
-    "an image has a non-live preview.";
-
-const char kWebViewNativeContextMenuPhase2ScreenshotName[] =
-    "Screenshot preview animation for Context Menu";
-
-const char kWebViewNativeContextMenuPhase2ScreenshotDescription[] =
-    "When enabled with phase2, uses a screenshot as transition animation to "
-    "the context menu.";
+const char kWebPageTextZoomIPadName[] = "Enable text zoom on iPad";
+const char kWebPageTextZoomIPadDescription[] =
+    "When enabled, text zoom works again on iPad";
 
 // Please insert your name/description above in alphabetical order.
 

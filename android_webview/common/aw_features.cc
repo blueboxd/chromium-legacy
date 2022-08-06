@@ -14,7 +14,7 @@ namespace features {
 // Enables package name logging for the most popular WebView embedders that are
 // on a dynamically generated allowlist.
 const base::Feature kWebViewAppsPackageNamesAllowlist{
-    "WebViewAppsPackageNamesAllowlist", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebViewAppsPackageNamesAllowlist", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Maximum time to throttle querying the app package names allowlist from the
 // component updater service, used when there is a valid cached allowlist
@@ -36,8 +36,8 @@ const base::FeatureParam<base::TimeDelta>
 const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the SafeBrowsingApiHandler which uses the connectionless GMS APIs. This
-// Feature is checked and used in downstream internal code.
+// Use the SafeBrowsingApiHandlerBridge which uses the connectionless GMS APIs.
+// This Feature is checked and used in downstream internal code.
 const base::Feature kWebViewConnectionlessSafeBrowsing{
     "WebViewConnectionlessSafeBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
 

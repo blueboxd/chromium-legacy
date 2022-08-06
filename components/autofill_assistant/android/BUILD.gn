@@ -49,6 +49,7 @@ android_library("java") {
     "//third_party/androidx:androidx_gridlayout_gridlayout_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_runtime_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
+    "//third_party/androidx:androidx_swiperefreshlayout_swiperefreshlayout_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
@@ -150,6 +151,7 @@ android_library("java") {
     "java/src/org/chromium/components/autofill_assistant/user_data/AssistantDataOriginNotice.java",
     "java/src/org/chromium/components/autofill_assistant/user_data/AssistantDateTime.java",
     "java/src/org/chromium/components/autofill_assistant/user_data/AssistantInfoSection.java",
+    "java/src/org/chromium/components/autofill_assistant/user_data/AssistantLoadingSpinner.java",
     "java/src/org/chromium/components/autofill_assistant/user_data/AssistantLoginChoice.java",
     "java/src/org/chromium/components/autofill_assistant/user_data/AssistantLoginSection.java",
     "java/src/org/chromium/components/autofill_assistant/user_data/AssistantPaymentMethodSection.java",
@@ -177,7 +179,6 @@ android_library("public_java") {
     ":public_dependencies_java",
     "//base:base_java",
     "//base:jni_java",
-    "//build/android:build_java",
     "//components/browser_ui/bottomsheet/android:java",
     "//components/favicon/android:java",
     "//components/image_fetcher:java",
@@ -193,7 +194,6 @@ android_library("public_java") {
 
   sources = [
     "public/java/src/org/chromium/components/autofill_assistant/AssistantAddressEditorGms.java",
-    "public/java/src/org/chromium/components/autofill_assistant/AssistantContactEditorAccount.java",
     "public/java/src/org/chromium/components/autofill_assistant/AssistantFeatures.java",
     "public/java/src/org/chromium/components/autofill_assistant/AssistantModuleInstallUi.java",
     "public/java/src/org/chromium/components/autofill_assistant/AssistantOnboardingHelper.java",
@@ -360,7 +360,6 @@ android_library("autofill_assistant_public_impl_java") {
   deps = [
     ":animated_poodle_resources",
     "//base:base_java",
-    "//build/android:build_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//ui/android:ui_java",
   ]
@@ -423,6 +422,7 @@ android_resources("java_resources") {
     "internal/java/res/layout/autofill_assistant_form_selection_input.xml",
     "internal/java/res/layout/autofill_assistant_header.xml",
     "internal/java/res/layout/autofill_assistant_info_box.xml",
+    "internal/java/res/layout/autofill_assistant_loading_spinner.xml",
     "internal/java/res/layout/autofill_assistant_login.xml",
     "internal/java/res/layout/autofill_assistant_onboarding_no_button.xml",
     "internal/java/res/layout/autofill_assistant_onboarding_terms.xml",

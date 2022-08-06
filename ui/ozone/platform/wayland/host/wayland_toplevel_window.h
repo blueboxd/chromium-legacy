@@ -70,8 +70,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   bool CanSetDecorationInsets() const override;
   void SetOpaqueRegion(const std::vector<gfx::Rect>* region_px) override;
   void SetInputRegion(const gfx::Rect* region_px) override;
+  void NotifyStartupComplete(const std::string& startup_id) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
-  void SetBounds(const gfx::Rect& bounds) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
 
   // Sets the window's origin.
   void SetOrigin(const gfx::Point& origin);
@@ -138,8 +139,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   // Calls UpdateWindowShape, set_input_region and set_opaque_region for this
   // toplevel window.
   void UpdateWindowMask() override;
-  // Update the window shape using the window mask of PlatformWindowDelegate.
-  void UpdateWindowShape();
 
   // WmMoveLoopHandler:
   bool RunMoveLoop(const gfx::Vector2d& drag_offset) override;
@@ -287,8 +286,11 @@ class WaylandToplevelWindow : public WaylandWindow,
   // See https://crbug.com/1223005
   bool set_geometry_on_next_frame_ = false;
 
+  // Information used by the compositor to restore the window state upon
+  // creation.
   int32_t restore_session_id_ = 0;
-  int32_t restore_window_id_ = 0;
+  absl::optional<int32_t> restore_window_id_ = 0;
+  absl::optional<std::string> restore_window_id_source_;
 
   // Current modal status.
   bool system_modal_ = false;

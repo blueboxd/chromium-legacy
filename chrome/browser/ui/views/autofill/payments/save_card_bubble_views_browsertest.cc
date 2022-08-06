@@ -90,14 +90,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 #include "url/url_constants.h"
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/services/multidevice_setup/public/cpp/prefs.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #endif
 
@@ -136,7 +133,7 @@ namespace autofill {
 
 class SaveCardBubbleViewsFullFormBrowserTest
     : public SyncTest,
-      public AutofillManager::ObserverForTest,
+      public AutofillManager::Observer,
       public CreditCardSaveManager::ObserverForTest,
       public SaveCardBubbleControllerImpl::ObserverForTest {
  protected:
@@ -179,9 +176,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
     ASSERT_TRUE(SetupClients());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // Install the Settings App.
-    web_app::WebAppProvider::GetForTest(GetProfile(0))
-        ->system_web_app_manager()
-        .InstallSystemAppsForTesting();
+    ash::SystemWebAppManager::GetForTest(GetProfile(0))
+        ->InstallSystemAppsForTesting();
 #endif
 
     // It's important to use the blank tab here and not some arbitrary page.
@@ -196,7 +192,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
     ContentAutofillDriver::GetForRenderFrameHost(
-        GetActiveWebContents()->GetMainFrame())
+        GetActiveWebContents()->GetPrimaryMainFrame())
         ->autofill_manager()
         ->client()
         ->GetPaymentsClient()
@@ -207,21 +203,22 @@ class SaveCardBubbleViewsFullFormBrowserTest
     WaitForPersonalDataManagerToBeLoaded(GetProfile(0));
 
     // Set up this class as the ObserverForTest implementation.
-    credit_card_save_manager_ = ContentAutofillDriver::GetForRenderFrameHost(
-                                    GetActiveWebContents()->GetMainFrame())
-                                    ->autofill_manager()
-                                    ->client()
-                                    ->GetFormDataImporter()
-                                    ->credit_card_save_manager_.get();
+    credit_card_save_manager_ =
+        ContentAutofillDriver::GetForRenderFrameHost(
+            GetActiveWebContents()->GetPrimaryMainFrame())
+            ->autofill_manager()
+            ->client()
+            ->GetFormDataImporter()
+            ->credit_card_save_manager_.get();
     credit_card_save_manager_->SetEventObserverForTesting(this);
     AddEventObserverToController();
 
     // Set up this class as the ObserverForTest implementation.
     AutofillManager* autofill_manager =
         ContentAutofillDriver::GetForRenderFrameHost(
-            GetActiveWebContents()->GetMainFrame())
+            GetActiveWebContents()->GetPrimaryMainFrame())
             ->autofill_manager();
-    autofill_manager->SetEventObserverForTesting(this);
+    autofill_manager->AddObserver(this);
 
     // Set up the fake geolocation data.
     geolocation_overrider_ =
@@ -229,7 +226,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
             kFakeGeolocationLatitude, kFakeGeolocationLongitude);
   }
 
-  // AutofillManager::ObserverForTest:
+  // AutofillManager::Observer
   void OnFormParsed() override {
     if (event_waiter_)
       event_waiter_->OnEvent(DialogEvent::DYNAMIC_FORM_PARSED);

@@ -29,6 +29,8 @@ import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -44,6 +46,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator.SystemUiScrimDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -97,6 +100,7 @@ public class TabSwitcherCoordinator
     // startedHiding() aren't always called for CAROUSEL tab switcher, thus we can't get its
     // visibility directly.
     private static boolean sIsGridTabSwitcherShowing;
+    private final Activity mActivity;
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
@@ -108,6 +112,9 @@ public class TabSwitcherCoordinator
     private final @TabListCoordinator.TabListMode int mMode;
     private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
     private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
+    private final Supplier<DynamicResourceLoader> mDynamicResourceLoaderSupplier;
+    private final SnackbarManager mSnackbarManager;
+    private final ModalDialogManager mModalDialogManager;
 
     private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private TabGroupManualSelectionMode mTabGroupManualSelectionMode;
@@ -121,6 +128,7 @@ public class TabSwitcherCoordinator
     private SharedPreferencesManager.Observer mPriceAnnotationsPrefObserver;
     private final ViewGroup mCoordinatorView;
     private final ViewGroup mRootView;
+    private TabContentManager mTabContentManager;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -175,7 +183,11 @@ public class TabSwitcherCoordinator
             @NonNull ViewGroup container, @NonNull Supplier<ShareDelegate> shareDelegateSupplier,
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             @NonNull ScrimCoordinator scrimCoordinator, @TabListMode int mode,
-            @NonNull ViewGroup rootView) {
+            @NonNull ViewGroup rootView,
+            @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
+            @NonNull SnackbarManager snackbarManager,
+            @NonNull ModalDialogManager modalDialogManager) {
+        mActivity = activity;
         mMode = mode;
         mTabModelSelector = tabModelSelector;
         mContainer = container;
@@ -183,26 +195,18 @@ public class TabSwitcherCoordinator
         mTabCreatorManager = tabCreatorManager;
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
         mRootView = rootView;
+        mTabContentManager = tabContentManager;
+        mDynamicResourceLoaderSupplier = dynamicResourceLoaderSupplier;
+        mSnackbarManager = snackbarManager;
+        mModalDialogManager = modalDialogManager;
 
-        mTabSwitcherCustomViewManager =
-                new TabSwitcherCustomViewManager(new TabSwitcherCustomViewManager.Delegate() {
-                    @Override
-                    public void addCustomView(@NonNull View customView) {
-                        // TODO(crbug.com/1227656): Show this custom view in the tab switcher
-                        // content area.
-                    }
-
-                    @Override
-                    public void removeCustomView(@NonNull View customView) {
-                        // TODO(crbug.com/1227656): Release this custom view from the tab switcher
-                        // content area and show the previously showed contents.
-                    }
-                });
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mMediator = new TabSwitcherMediator(activity, this, containerViewModel, tabModelSelector,
                 browserControls, container, tabContentManager, this, this,
                 multiWindowModeStateDispatcher, mode);
+
+        mTabSwitcherCustomViewManager = new TabSwitcherCustomViewManager(mMediator);
 
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(activity, tabContentManager, tabModelSelector);
@@ -221,7 +225,7 @@ public class TabSwitcherCoordinator
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
-        mMediator.addOverviewModeObserver(new OverviewModeObserver() {
+        mMediator.addTabSwitcherViewObserver(new TabSwitcherViewObserver() {
             @Override
             public void startedShowing() {
                 if (mMode == TabListMode.GRID) sIsGridTabSwitcherShowing = true;
@@ -241,7 +245,7 @@ public class TabSwitcherCoordinator
 
         if (TabUiFeatureUtilities.isLaunchPolishEnabled()
                 && TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(activity)) {
-            mMediator.addOverviewModeObserver(new OverviewModeObserver() {
+            mMediator.addTabSwitcherViewObserver(new TabSwitcherViewObserver() {
                 @Override
                 public void startedShowing() {}
 
@@ -284,10 +288,12 @@ public class TabSwitcherCoordinator
                 });
 
         if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(activity)) {
+            ScrimCoordinator gridDialogScrimCoordinator =
+                    shouldUseNewScrim() ? createScrimCoordinator() : scrimCoordinator;
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(activity, tabModelSelector,
                     tabContentManager, tabCreatorManager, mCoordinatorView, this, mMediator,
                     this::getTabGridDialogAnimationSourceView, shareDelegateSupplier,
-                    scrimCoordinator, rootView);
+                    gridDialogScrimCoordinator, rootView);
             mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;
@@ -306,12 +312,12 @@ public class TabSwitcherCoordinator
                         NewTabTileViewBinder::bind);
             }
 
-            if (PriceTrackingUtilities.isPriceTrackingEnabled()) {
+            if (PriceTrackingFeatures.isPriceTrackingEnabled()) {
                 mTabListCoordinator.registerItemType(TabProperties.UiType.LARGE_MESSAGE,
                         new LayoutViewBuilder(R.layout.large_message_card_item),
                         LargeMessageCardViewBinder::bind);
 
-                if (PriceTrackingUtilities.getPriceTrackingEnabled()) {
+                if (PriceTrackingFeatures.getPriceTrackingEnabled()) {
                     mPriceAnnotationsPrefObserver = key -> {
                         if (PriceTrackingUtilities.TRACK_PRICES_ON_TABS.equals(key)
                                 && !mTabModelSelector.isIncognitoSelected()
@@ -341,23 +347,44 @@ public class TabSwitcherCoordinator
         mLifecycleDispatcher.register(this);
     }
 
+    /**
+     * Tablet Tab Switcher polish uses a scrim to show/hide tab switcher.
+     * Create a new scrim via a new scrim coordinator for tab group dialog.
+     * @return if tab switcher polish is enabled on tablets.
+     */
+    private boolean shouldUseNewScrim() {
+        return TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(mRootView.getContext());
+    }
+
+    private ScrimCoordinator createScrimCoordinator() {
+        ViewGroup coordinator = mActivity.findViewById(org.chromium.chrome.R.id.coordinator);
+        SystemUiScrimDelegate delegate = new SystemUiScrimDelegate() {
+            @Override
+            public void setStatusBarScrimFraction(float scrimFraction) {}
+
+            @Override
+            public void setNavigationBarScrimFraction(float scrimFraction) {}
+        };
+        return new ScrimCoordinator(mActivity, delegate, coordinator,
+                coordinator.getContext().getColor(
+                        org.chromium.chrome.R.color.omnibox_focused_fading_background_color));
+    }
+
     @VisibleForTesting
     public static boolean hasAppendedMessagesForTesting() {
         return sAppendedMessagesForTesting;
     }
 
     @Override
-    public void initWithNative(Context context, TabContentManager tabContentManager,
-            DynamicResourceLoader dynamicResourceLoader, SnackbarManager snackbarManager,
-            ModalDialogManager modalDialogManager) {
+    public void initWithNative() {
         if (mIsInitialized) return;
 
-        setUpTabGroupManualSelectionMode(context, tabContentManager);
+        setUpTabGroupManualSelectionMode(mActivity, mTabContentManager, mSnackbarManager);
 
-        mTabListCoordinator.initWithNative(dynamicResourceLoader);
+        mTabListCoordinator.initWithNative(mDynamicResourceLoaderSupplier.get());
         if (mTabGridDialogCoordinator != null) {
-            mTabGridDialogCoordinator.initWithNative(context, mTabModelSelector, tabContentManager,
-                    mTabListCoordinator.getTabGroupTitleEditor());
+            mTabGridDialogCoordinator.initWithNative(mActivity, mTabModelSelector,
+                    mTabContentManager, mTabListCoordinator.getTabGroupTitleEditor());
         }
 
         mMultiThumbnailCardProvider.initWithNative();
@@ -365,9 +392,9 @@ public class TabSwitcherCoordinator
         if (mMode == TabListCoordinator.TabListMode.GRID) {
             if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
                 mTabSuggestionsOrchestrator = new TabSuggestionsOrchestrator(
-                        context, mTabModelSelector, mLifecycleDispatcher);
+                        mActivity, mTabModelSelector, mLifecycleDispatcher);
                 TabSuggestionMessageService tabSuggestionMessageService =
-                        new TabSuggestionMessageService(context, mTabModelSelector,
+                        new TabSuggestionMessageService(mActivity, mTabModelSelector,
                                 mTabSelectionEditorCoordinator.getController());
                 mTabSuggestionsOrchestrator.addObserver(tabSuggestionMessageService);
                 mMessageCardProviderCoordinator.subscribeMessageService(
@@ -379,10 +406,10 @@ public class TabSwitcherCoordinator
                         new NewTabTileCoordinator(mTabModelSelector, mTabCreatorManager);
             }
 
-            if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(context)
+            if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mActivity)
                     && !TabSwitcherCoordinator.isShowingTabsInMRUOrder(mMode)) {
                 mTabGridIphDialogCoordinator =
-                        new TabGridIphDialogCoordinator(context, mContainer, modalDialogManager);
+                        new TabGridIphDialogCoordinator(mActivity, mContainer, mModalDialogManager);
                 IphMessageService iphMessageService =
                         new IphMessageService(mTabGridIphDialogCoordinator);
                 mMessageCardProviderCoordinator.subscribeMessageService(iphMessageService);
@@ -390,13 +417,13 @@ public class TabSwitcherCoordinator
         }
 
         // TODO(crbug.com/1222762): Only call setUpPriceTracking in GRID TabSwitcher.
-        setUpPriceTracking(context, modalDialogManager);
+        setUpPriceTracking(mActivity, mModalDialogManager);
 
         mIsInitialized = true;
     }
 
     private void setUpTabGroupManualSelectionMode(
-            Context context, TabContentManager tabContentManager) {
+            Context context, TabContentManager tabContentManager, SnackbarManager snackbarManager) {
         // For tab switcher in carousel mode, the selection editor should still follow grid style.
         int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
                 ? TabListCoordinator.TabListMode.GRID
@@ -404,7 +431,7 @@ public class TabSwitcherCoordinator
         mTabSelectionEditorCoordinator =
                 new TabSelectionEditorCoordinator(context, mCoordinatorView, mTabModelSelector,
                         tabContentManager, selectionEditorMode, mRootView);
-        mMediator.initWithNative(mTabSelectionEditorCoordinator.getController());
+        mMediator.initWithNative(mTabSelectionEditorCoordinator.getController(), snackbarManager);
 
         mTabGroupManualSelectionMode = new TabGroupManualSelectionMode(
                 context.getString(R.string.tab_selection_editor_group),
@@ -416,7 +443,7 @@ public class TabSwitcherCoordinator
     }
 
     private void setUpPriceTracking(Context context, ModalDialogManager modalDialogManager) {
-        if (PriceTrackingUtilities.isPriceTrackingEnabled()) {
+        if (PriceTrackingFeatures.isPriceTrackingEnabled()) {
             PriceDropNotificationManager notificationManager = new PriceDropNotificationManager();
             mPriceTrackingDialogCoordinator = new PriceTrackingDialogCoordinator(context,
                     modalDialogManager, this, mTabModelSelector, notificationManager, mMode);
@@ -483,9 +510,9 @@ public class TabSwitcherCoordinator
     }
 
     @Override
-    public boolean prepareOverview() {
-        boolean quick = mMediator.prepareOverview();
-        mTabListCoordinator.prepareOverview();
+    public boolean prepareTabSwitcherView() {
+        boolean quick = mMediator.prepareTabSwitcherView();
+        mTabListCoordinator.prepareTabSwitcherView();
         return quick;
     }
 

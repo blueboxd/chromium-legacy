@@ -158,8 +158,7 @@ AttributionDataHostManagerImpl::~AttributionDataHostManagerImpl() = default;
 void AttributionDataHostManagerImpl::RegisterDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     url::Origin context_origin) {
-  if (!network::IsOriginPotentiallyTrustworthy(context_origin))
-    return;
+  DCHECK(network::IsOriginPotentiallyTrustworthy(context_origin));
 
   receivers_.Add(this, std::move(data_host),
                  FrozenContext{.context_origin = std::move(context_origin),
@@ -286,7 +285,7 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 
   absl::optional<AttributionAggregatableSource> aggregatable_source =
       AttributionAggregatableSource::FromKeys(
-          std::move(data->aggregatable_source->keys));
+          std::move(data->aggregation_keys));
   if (!aggregatable_source.has_value()) {
     RecordSourceDataHandleStatus(DataHandleStatus::kInvalidData);
     mojo::ReportBadMessage("AttributionDataHost: Invalid aggregatable source.");
@@ -359,7 +358,7 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
   std::vector<AttributionTrigger::EventTriggerData> event_triggers;
   event_triggers.reserve(data->event_triggers.size());
 
-  for (const auto& event_trigger : data->event_triggers) {
+  for (auto& event_trigger : data->event_triggers) {
     absl::optional<AttributionFilterData> filters =
         AttributionFilterData::FromTriggerFilterValues(
             std::move(event_trigger->filters->filter_values));

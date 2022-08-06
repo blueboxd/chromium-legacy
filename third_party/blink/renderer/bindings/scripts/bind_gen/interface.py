@@ -1653,12 +1653,9 @@ def make_v8_set_return_value(cg_context):
         return T("bindings::V8SetReturnValue(${info}, ${return_value});")
 
     return_type = cg_context.return_type
-    if return_type.is_typedef:
-        if return_type.identifier in ("EventHandler",
-                                      "OnBeforeUnloadEventHandler",
-                                      "OnErrorEventHandler"):
-            return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
-                     "${isolate}, ${blink_receiver});")
+    if return_type.is_event_handler:
+        return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
+                 "${isolate}, ${blink_receiver});")
 
     # [CheckSecurity=ReturnValue]
     #
@@ -1887,17 +1884,13 @@ def make_attribute_set_callback_def(cg_context, function_name):
     #   Web IDL.
     # 2. Leverage the nature of [LegacyTreatNonObjectAsNull] (ES to IDL
     #   conversion never fails).
-    if (cg_context.attribute.idl_type.is_typedef
-            and (cg_context.attribute.idl_type.identifier in (
-                "EventHandler", "OnBeforeUnloadEventHandler",
-                "OnErrorEventHandler"))):
-        body.extend([
+    if cg_context.attribute.idl_type.is_event_handler:
+        body.append(
             TextNode("""\
 EventListener* event_handler = JSEventHandler::CreateOrNull(
     ${v8_property_value},
     JSEventHandler::HandlerType::k${attribute.idl_type.identifier});\
-"""),
-        ])
+"""))
         code_generator_info = cg_context.attribute.code_generator_info
         func_name = name_style.api_func("set", cg_context.attribute.identifier)
         if code_generator_info.defined_in_partial:
@@ -5288,7 +5281,12 @@ def make_property_entries_and_callback_defs(cg_context, attribute_entries,
 
     class_like = cg_context.class_like
     interface = cg_context.interface
-    global_names = class_like.extended_attributes.values_of("Global")
+    # This function produces the property installation code and we'd like to
+    # expose IDL constructs with [Exposed] not only on [Global] but also on
+    # [TargetOfExposed].
+    global_names = (
+        class_like.extended_attributes.values_of("Global") +
+        class_like.extended_attributes.values_of("TargetOfExposed"))
 
     callback_def_nodes = ListNode()
 
@@ -8010,7 +8008,13 @@ def generate_interfaces(task_queue):
     web_idl_database = package_initializer().web_idl_database()
 
     for interface in web_idl_database.interfaces:
-        task_queue.post_task(generate_interface, interface.identifier)
+        # Use the number of attributes + constants + operations as a very rough
+        # heuristic for workload. This is by no means close-to-accurate, but is
+        # better than nothing.
+        task_queue.post_task_with_workload(
+            len(interface.attributes) + len(interface.constants) +
+            len(interface.operations), generate_interface,
+            interface.identifier)
 
     task_queue.post_task(generate_install_properties_per_feature,
                          "InstallPropertiesPerFeature",

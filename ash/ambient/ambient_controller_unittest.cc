@@ -17,16 +17,20 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
+#include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_status.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/buildflag.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -1177,6 +1181,84 @@ TEST_F(AmbientControllerTest,
   FastForwardTiny();
   EXPECT_FALSE(GetContainerView());
   EXPECT_TRUE(GetCachedFiles().empty());
+}
+
+TEST_P(AmbientControllerTestForAnyTheme, MetricsEngagementTime) {
+  base::HistogramTester histogram_tester;
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  LockScreen();
+
+  FastForwardToLockScreenTimeout();
+  FastForwardTiny();
+  ASSERT_TRUE(ambient_controller()->IsShown());
+
+  task_environment()->FastForwardBy(base::Minutes(1));
+
+  UnlockScreen();
+  ASSERT_FALSE(ambient_controller()->IsShown());
+
+  histogram_tester.ExpectTimeBucketCount(
+      "Ash.AmbientMode.EngagementTime.ClamshellMode", base::Minutes(1), 1);
+  histogram_tester.ExpectTimeBucketCount(
+      base::StrCat({"Ash.AmbientMode.EngagementTime.", ToString(GetParam())}),
+      base::Minutes(1), 1);
+
+  // Now do the same sequence in tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  LockScreen();
+
+  FastForwardToLockScreenTimeout();
+  FastForwardTiny();
+  ASSERT_TRUE(ambient_controller()->IsShown());
+
+  task_environment()->FastForwardBy(base::Minutes(1));
+
+  UnlockScreen();
+  ASSERT_FALSE(ambient_controller()->IsShown());
+
+  histogram_tester.ExpectTimeBucketCount(
+      "Ash.AmbientMode.EngagementTime.TabletMode", base::Minutes(1), 1);
+  histogram_tester.ExpectTimeBucketCount(
+      base::StrCat({"Ash.AmbientMode.EngagementTime.", ToString(GetParam())}),
+      base::Minutes(1), 2);
+}
+
+TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTime) {
+  base::HistogramTester histogram_tester;
+  LockScreen();
+  FastForwardToLockScreenTimeout();
+  FastForwardTiny();
+  ASSERT_TRUE(ambient_controller()->IsShown());
+
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({"Ash.AmbientMode.StartupTime.", ToString(GetParam())}), 1);
+
+  UnlockScreen();
+  ASSERT_FALSE(ambient_controller()->IsShown());
+
+  LockScreen();
+  FastForwardToLockScreenTimeout();
+  FastForwardTiny();
+  ASSERT_TRUE(ambient_controller()->IsShown());
+
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({"Ash.AmbientMode.StartupTime.", ToString(GetParam())}), 2);
+}
+
+TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTimeFailedToStart) {
+  // Simulate IMAX outage that doesn't return any photos.
+  backend_controller()->SetFetchScreenUpdateInfoResponseSize(0);
+
+  base::HistogramTester histogram_tester;
+  LockScreen();
+  FastForwardToLockScreenTimeout();
+  task_environment()->FastForwardBy(base::Minutes(1));
+  ASSERT_TRUE(GetContainerViews().empty());
+
+  UnlockScreen();
+  histogram_tester.ExpectUniqueTimeSample(
+      base::StrCat({"Ash.AmbientMode.StartupTime.", ToString(GetParam())}),
+      base::Minutes(1), 1);
 }
 
 }  // namespace ash

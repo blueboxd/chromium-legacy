@@ -406,7 +406,8 @@ void SequenceManagerImpl::SetTimeDomain(TimeDomain* time_domain) {
 
 void SequenceManagerImpl::ResetTimeDomain() {
   controller_->SetTickClock(main_thread_only().default_clock);
-  clock_.store(main_thread_only().default_clock, std::memory_order_release);
+  clock_.store(main_thread_only().default_clock.get(),
+               std::memory_order_release);
   main_thread_only().time_domain = nullptr;
 }
 
@@ -569,8 +570,10 @@ const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
 }  // namespace
 
 absl::optional<SequenceManagerImpl::SelectedTask>
-SequenceManagerImpl::SelectNextTask(SelectTaskOption option) {
-  absl::optional<SelectedTask> selected_task = SelectNextTaskImpl(option);
+SequenceManagerImpl::SelectNextTask(LazyNow& lazy_now,
+                                    SelectTaskOption option) {
+  absl::optional<SelectedTask> selected_task =
+      SelectNextTaskImpl(lazy_now, option);
   if (!selected_task)
     return selected_task;
 
@@ -642,7 +645,8 @@ void SequenceManagerImpl::LogTaskDebugInfo(
 #endif  // DCHECK_IS_ON() && !BUILDFLAG(IS_NACL)
 
 absl::optional<SequenceManagerImpl::SelectedTask>
-SequenceManagerImpl::SelectNextTaskImpl(SelectTaskOption option) {
+SequenceManagerImpl::SelectNextTaskImpl(LazyNow& lazy_now,
+                                        SelectTaskOption option) {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
@@ -650,7 +654,6 @@ SequenceManagerImpl::SelectNextTaskImpl(SelectTaskOption option) {
                "SequenceManagerImpl::SelectNextTask");
 
   ReloadEmptyWorkQueues();
-  LazyNow lazy_now(main_thread_clock());
   MoveReadyDelayedTasksToWorkQueues(&lazy_now);
 
   // If we sampled now, check if it's time to reclaim memory next time we go
@@ -725,8 +728,7 @@ bool SequenceManagerImpl::ShouldRunTaskOfPriority(
   return priority <= *main_thread_only().pending_native_work.begin();
 }
 
-void SequenceManagerImpl::DidRunTask() {
-  LazyNow lazy_now(main_thread_clock());
+void SequenceManagerImpl::DidRunTask(LazyNow& lazy_now) {
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
 

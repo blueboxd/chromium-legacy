@@ -85,6 +85,10 @@
 #include "base/allocator/allocator_shim.h"
 #endif
 
+#if DCHECK_IS_ON()
+#include "ui/display/screen_base.h"
+#endif
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -125,7 +129,15 @@ IOSChromeMainParts::IOSChromeMainParts(
   net::URLRequest::SetDefaultCookiePolicyToBlock();
 }
 
-IOSChromeMainParts::~IOSChromeMainParts() {}
+IOSChromeMainParts::~IOSChromeMainParts() {
+#if DCHECK_IS_ON()
+  // The screen object is never deleted on IOS. Make sure that all display
+  // observers are removed at the end.
+  display::ScreenBase* screen =
+      static_cast<display::ScreenBase*>(display::Screen::GetScreen());
+  DCHECK(!screen->HasDisplayObservers());
+#endif
+}
 
 void IOSChromeMainParts::PreEarlyInitialization() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -302,7 +314,8 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   // immediately after starting metrics recording.
   IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "CrashpadIOS",
-      crash_reporter::IsCrashpadRunning() ? "Enabled" : "Disabled");
+      crash_reporter::IsCrashpadRunning() ? "Enabled" : "Disabled",
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 
   // Because the CleanExitBeacon flag takes 2 restarts to take effect, register
   // a synthetic field trial when the user defaults beacon is set. Called
@@ -310,7 +323,8 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "UseUserDefaultsForExitedCleanlyBeacon",
       metrics::CleanExitBeacon::ShouldUseUserDefaultsBeacon() ? "Enabled"
-                                                              : "Disabled");
+                                                              : "Disabled",
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 
 #if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be

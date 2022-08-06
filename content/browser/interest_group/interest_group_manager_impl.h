@@ -49,12 +49,18 @@ class InterestGroupStorage;
 // as it performs blocking file IO when backed by on-disk storage.
 class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
  public:
+  // Controls how auction worklets will be run. kDedicated will use
+  // fully-isolated utility processes solely for worklet. kInRenderer will
+  // re-use regular renderers following the normal site isolation policy.
+  enum class ProcessMode { kDedicated, kInRenderer };
+
   // Creates an interest group manager using the provided directory path for
   // persistent storage. If `in_memory` is true the path is ignored and only
   // in-memory storage is used.
   explicit InterestGroupManagerImpl(
       const base::FilePath& path,
       bool in_memory,
+      ProcessMode process_mode,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~InterestGroupManagerImpl() override;
   InterestGroupManagerImpl(const InterestGroupManagerImpl& other) = delete;
@@ -79,10 +85,20 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
 
   // Checks if `frame_origin` can join the specified InterestGroup, performing
   // .well-known fetches if needed. If joining is allowed, then joins the
-  // interest group. `network_isolation_key` must be the NetworkIsolationKey
-  // associated with `url_loader_factory`. `url_loader_factory` is the factory
-  // for renderer frame where navigator.joinInterestGroup() was invoked, and
-  // will be used for the .well-known fetch if one is needed.
+  // interest group.
+  //
+  // `network_isolation_key` must be the NetworkIsolationKey associated with
+  // `url_loader_factory`.
+  //
+  // `url_loader_factory` is the factory for renderer frame where
+  // navigator.joinInterestGroup() was invoked, and will be used for the
+  // .well-known fetch if one is needed.
+  //
+  // `report_result_only`, if true, results in calling `callback` with the
+  // result of the permissions check, but not actually joining the interest
+  // group, regardless of success or failure. This is used to avoid leaking
+  // fingerprinting information if the join operation is disallowed by the
+  // browser configuration (e.g., 3P cookie blocking).
   //
   // See JoinInterestGroup() for more details on how the join operation is
   // performed.
@@ -91,6 +107,7 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const GURL& joining_url,
       const url::Origin& frame_origin,
       const net::NetworkIsolationKey& network_isolation_key,
+      bool report_result_only,
       network::mojom::URLLoaderFactory& url_loader_factory,
       blink::mojom::AdAuctionService::JoinInterestGroupCallback callback);
 
@@ -101,6 +118,7 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const std::string& name,
       const url::Origin& frame_origin,
       const net::NetworkIsolationKey& network_isolation_key,
+      bool report_result_only,
       network::mojom::URLLoaderFactory& url_loader_factory,
       blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback);
 
@@ -168,6 +186,14 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  // Update the interest group priority.
+  void SetInterestGroupPriority(const url::Origin& owner,
+                                const std::string& name,
+                                double priority);
+
+  // Clears the InterestGroupPermissionsChecker's cache of the results of
+  // .well-known fetches.
+  void ClearPermissionsCache();
 
   AuctionProcessManager& auction_process_manager() {
     return *auction_process_manager_;
@@ -189,18 +215,30 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
     auction_process_manager_ = std::move(auction_process_manager);
   }
 
+  // For testing *only*; changes the maximum number of active report requests
+  // at a time.
+  void set_max_active_report_requests_for_testing(
+      int max_active_report_requests);
+
   // For testing *only*; changes the maximum number of report requests that can
   // be stored in `report_requests_` queue.
   void set_max_report_queue_length_for_testing(int max_queue_length);
+
+  // For testing *only*; changes `max_reporting_round_duration_`.
+  void set_max_reporting_round_duration_for_testing(
+      base::TimeDelta max_reporting_round_duration);
 
   // For testing *only*; changes the time interval to wait before sending the
   // next report after sending one.
   void set_reporting_interval_for_testing(base::TimeDelta interval);
 
-  // For testing *only*; changes the maximum number of active report requests
-  // at a time.
-  void set_max_active_report_requests_for_testing(
-      int max_active_report_requests);
+  size_t report_queue_length_for_testing() const {
+    return report_requests_.size();
+  }
+
+  InterestGroupPermissionsChecker& permissions_checker_for_testing() {
+    return permissions_checker_;
+  }
 
  private:
   // InterestGroupUpdateManager calls private members to write updates to the
@@ -227,11 +265,13 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   void OnJoinInterestGroupPermissionsChecked(
       blink::InterestGroup group,
       const GURL& joining_url,
+      bool report_result_only,
       blink::mojom::AdAuctionService::JoinInterestGroupCallback callback,
       bool can_join);
   void OnLeaveInterestGroupPermissionsChecked(
       const url::Origin& owner,
       const std::string& name,
+      bool report_result_only,
       blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback,
       bool can_leave);
 
@@ -335,6 +375,17 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   //
   // Should *only* be changed by tests.
   base::TimeDelta reporting_interval_;
+
+  // The maximum amount of time that the reporting process can run before the
+  // report queue is cleared due to taking too long.
+  //
+  // Should *only* be changed by tests.
+  base::TimeDelta max_reporting_round_duration_;
+
+  // The last time we started sending reports from the `report_requests_` queue;
+  // used to clear pending report requests in the queue if reporting takes too
+  // long.
+  base::TimeTicks reporting_started_ = base::TimeTicks::Min();
 
   base::WeakPtrFactory<InterestGroupManagerImpl> weak_factory_{this};
 };

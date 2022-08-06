@@ -262,8 +262,6 @@ void AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(
 
 void AvatarToolbarButton::ButtonPressed() {
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       /*is_source_accelerator=*/false);
 }
 
@@ -324,7 +322,7 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
     case State::kSyncPaused:
     case State::kNormal:
       return ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(
-          delegate_->GetProfileAvatarImage(gaia_account_image, icon_size), true,
+          delegate_->GetProfileAvatarImage(gaia_account_image, icon_size),
           icon_size, icon_size, profiles::SHAPE_CIRCLE));
   }
   NOTREACHED();

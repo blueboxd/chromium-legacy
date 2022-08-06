@@ -609,21 +609,6 @@
       <message name="IDS_ACCESSIBILITY_TOOLBAR_VIEW_SITE_INFO" desc="Spoken by screen readers to explain that clicking on the status icon will show more site information when clicked. The string is read in the context of the 'Double tap to...' Android screen reader accessibility prompt e.g. 'Double tap to view site information'.">
         View site information
       </message>
-      <message name="IDS_PAGE_ZOOM_TITLE" desc="Title of the preference that allows the user to update the accessibility page zoom feature that applies to the web contents." translateable="false">
-        Zoom
-      </message>
-      <message name="IDS_PAGE_ZOOM_SUMMARY" desc="Summary of the preference that allows the user to update the accessibility page zoom feature that applies to the web contents." translateable="false">
-        Use this setting to increase/decrease the zoom for the page.
-      </message>
-      <message name="IDS_PAGE_ZOOM_DECREASE_ZOOM_BUTTON_TEXT" desc="Accessibility label for button to allow user to decrease page zoom" translateable="false">
-        Decrease zoom
-      </message>
-      <message name="IDS_PAGE_ZOOM_INCREASE_ZOOM_BUTTON_TEXT" desc="Accessibility label for button to allow user to increase page zoom" translateable="false">
-        Increase zoom
-      </message>
-      <message name="IDS_PAGE_ZOOM_FACTOR" desc="Text description of the current page zoom factor set by the user" translateable="false">
-        <ph name="ZOOM_FACTOR">%1$d<ex>100</ex></ph> %%
-      </message>
 
       <!-- Media Capture and Streams -->
       <message name="IDS_MEDIA_CAPTURE_NOTIFICATION_APP_NAME_SEPARATOR" desc="A separator between the app name and notification message.">
@@ -677,6 +662,17 @@
         Tap to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://googlechrome.github.io/samples/web-bluetooth/device-info.html</ex></ph>
       </message>
       <message name="IDS_BLUETOOTH_NOTIFICATION_CONTENT_TEXT_INCOGNITO" desc="The notification will display this text for the user to return to the Incognito tab which has created the notification.">
+        Tap to return to the site
+      </message>
+
+      <!-- USB -->
+      <message name="IDS_CONNECTED_TO_USB_DEVICE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when a website is connected to a USB device.">
+        Connected to a USB device
+      </message>
+      <message name="IDS_USB_NOTIFICATION_CONTENT_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
+        Tap to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://webusb.github.io/arduino/demos/console/</ex></ph>
+      </message>
+      <message name="IDS_USB_NOTIFICATION_CONTENT_TEXT_INCOGNITO" desc="The notification will display this text for the user to return to the Incognito tab which has created the notification.">
         Tap to return to the site
       </message>
 
@@ -899,6 +895,41 @@
       </message>
       <message name="IDS_ACCESSIBILITY_CAPTIONS_TITLE" desc="Title of the preference that allows the user to update caption settings.">
         Captions
+      </message>
+
+      <!-- Page Zoom -->
+      <message name="IDS_PAGE_ZOOM_TITLE" desc="Title of the preference that allows the user to update the accessibility page zoom feature that applies to the web contents." translateable="false">
+        Zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_SUMMARY" desc="Summary of the preference that allows the user to update the accessibility page zoom feature that applies to the web contents." translateable="false">
+        Make the default text and images on sites smaller or larger
+      </message>
+      <message name="IDS_PAGE_ZOOM_DECREASE_ZOOM_BUTTON_TEXT" desc="Accessibility label for button to allow user to decrease page zoom" translateable="false">
+        Decrease zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_INCREASE_ZOOM_BUTTON_TEXT" desc="Accessibility label for button to allow user to increase page zoom" translateable="false">
+        Increase zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_FACTOR" desc="Text description of the current page zoom factor set by the user" translateable="false">
+        <ph name="ZOOM_FACTOR">%1$d<ex>100</ex></ph> %%
+      </message>
+      <message name="IDS_PAGE_ZOOM_ALWAYS_SHOW_PREFERENCE_TITLE" desc="Title of the preference that allows the user to always show the menu item for zoom" translateable="false">
+        Show zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_ALWAYS_SHOW_PREFERENCE_SUMMARY" desc="Summary of the preference that allows the user to always show the menu item for zoom." translateable="false">
+        Zoom in or out on a page from the main menu
+      </message>
+      <message name="IDS_PAGE_ZOOM_PREVIEW_TITLE" desc="Label of the section of sample text shown to the user to preview zoom level." translateable="false">
+        Preview
+      </message>
+      <message name="IDS_PAGE_ZOOM_PREVIEW_TEXT_TITLE" desc="Sample text displayed to user in settings to see/test a desired zoom level." translateable="false">
+        The Wonderful Wizard of Oz
+      </message>
+      <message name="IDS_PAGE_ZOOM_PREVIEW_TEXT_SUMMARY" desc="Sample text displayed to user in settings to see/test a desired zoom level." translateable="false">
+        Chapter 11: The Wonderful Emerald City of Oz
+      </message>
+      <message name="IDS_PAGE_ZOOM_PREVIEW_TEXT_ITEM" desc="Sample text displayed to user in settings to see/test a desired zoom level." translateable="false">
+        Even with eyes protected by the green spectacles Dorothy and her friends were at first dazzled by the
       </message>
     </messages>
   </release>

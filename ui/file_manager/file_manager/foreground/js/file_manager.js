@@ -29,6 +29,7 @@ import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {BackgroundWindow} from '../../externs/background_window.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
+import {getStore} from '../../state/store.js';
 
 import {ActionsController} from './actions_controller.js';
 import {AndroidAppListModel} from './android_app_list_model.js';
@@ -706,7 +707,7 @@ export class FileManager extends EventTarget {
 
     this.scanController_ = new ScanController(
         this.directoryModel_, this.ui_.listContainer, this.spinnerController_,
-        this.commandHandler_, this.selectionHandler_);
+        this.selectionHandler_);
     this.sortMenuController_ = new SortMenuController(
         this.ui_.sortButton, this.ui_.sortButtonToggleRipple,
         assert(this.directoryModel_.getFileList()));
@@ -939,6 +940,11 @@ export class FileManager extends EventTarget {
     this.initAdditionalUI_();
     await this.initSettingsPromise_;
     const fileSystemUIPromise = this.initFileSystemUI_();
+    // Initialize the Store for the whole app.
+    if (util.isFilesAppExperimental()) {
+      const store = getStore();
+      store.init({});
+    }
     this.initUIFocus_();
     metrics.recordInterval('Load.InitUI');
     return fileSystemUIPromise;
@@ -1013,6 +1019,9 @@ export class FileManager extends EventTarget {
     }
     this.fileOperationManager_ =
         this.fileBrowserBackground_.fileOperationManager;
+    if (window.isSWA) {
+      this.fileOperationManager_.setFileManager(this);
+    }
     this.mediaImportHandler_ = this.fileBrowserBackground_.mediaImportHandler;
     this.mediaScanner_ = this.fileBrowserBackground_.mediaScanner;
     this.historyLoader_ = this.fileBrowserBackground_.historyLoader;
@@ -1302,15 +1311,18 @@ export class FileManager extends EventTarget {
    * @private
    */
   async initDirectoryTree_() {
-    const directoryTree = /** @type {DirectoryTree} */
-        (this.dialogDom_.querySelector('#directory-tree'));
+    this.navigationUma_ = new NavigationUma(assert(this.volumeManager_));
+
     const fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
-    this.navigationUma_ = new NavigationUma(assert(this.volumeManager_));
+
+    const directoryTree = /** @type {DirectoryTree} */
+        (this.dialogDom_.querySelector('#directory-tree'));
     DirectoryTree.decorate(
         directoryTree, assert(this.directoryModel_),
         assert(this.volumeManager_), assert(this.metadataModel_),
         assert(this.fileOperationManager_), fakeEntriesVisible);
+
     directoryTree.dataModel = new NavigationListModel(
         assert(this.volumeManager_), assert(this.folderShortcutsModel_),
         fakeEntriesVisible &&
@@ -1322,6 +1334,20 @@ export class FileManager extends EventTarget {
         assert(this.directoryModel_), assert(this.androidAppListModel_));
 
     this.ui_.initDirectoryTree(directoryTree);
+
+    // If 'media-store-files-only' volume filter is enabled, then Android ARC
+    // SelectFile opened files app to pick files from volumes that are indexed
+    // by the Android MediaStore. Never add Drive, Crostini, GuestOS, to the
+    // directory tree in that case: their volume content is not indexed by the
+    // Android MediaStore, and being indexed there is needed for this Android
+    // ARC SelectFile MediaStore filter mode to work: crbug.com/1333385
+    if (this.volumeManager_.getMediaStoreFilesOnlyFilterEnabled()) {
+      return;
+    }
+
+    // Drive add/removes itself from directory tree in onPreferencesChanged_.
+    // Setup a prefs change listener then call onPreferencesChanged_() to add
+    // Drive to the directory tree if Drive is enabled by prefs.
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(() => {
       this.onPreferencesChanged_();
     });
@@ -1351,8 +1377,8 @@ export class FileManager extends EventTarget {
   }
 
   /**
-   * Listens for the enable/disable events in order to show/hide
-   * the 'Linux files' root.
+   * Listens for the enable and disable events in order to add or remove the
+   * directory tree 'Linux files' root item.
    *
    * @param {chrome.fileManagerPrivate.CrostiniEvent} event
    * @return {!Promise<void>}
@@ -1718,9 +1744,9 @@ export class FileManager extends EventTarget {
   }
 
   /**
-   * Refreshes Drive prefs when they change. If Drive has been enabled or
-   * disabled, add or remove, respectively, the fake Drive item, creating it if
-   * necessary.
+   * Add or remove fake Drive item from the directory tree when Drive prefs
+   * change. If Drive has been enabled by prefs, add the fake Drive item.
+   * Remove the fake Drive item if Drive has been disabled.
    */
   onPreferencesChanged_() {
     chrome.fileManagerPrivate.getPreferences(

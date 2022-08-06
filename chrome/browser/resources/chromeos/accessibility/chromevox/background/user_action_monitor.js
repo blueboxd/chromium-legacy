@@ -5,15 +5,8 @@
 /**
  * @fileoverview Monitors user actions.
  */
-
-goog.provide('UserActionMonitor');
-
-goog.require('CommandHandlerInterface');
-goog.require('KeyCode');
-goog.require('KeySequence');
-goog.require('Output');
-goog.require('PanelCommand');
-goog.require('PanelCommandType');
+import {Output} from '/chromevox/background/output/output.js';
+import {KeySequence} from '/chromevox/common/key_sequence.js';
 
 /**
  * The types of actions we want to monitor.
@@ -33,7 +26,7 @@ const ActionType = {
  * various handlers to intercept user actions before they are processed by the
  * rest of ChromeVox.
  */
-UserActionMonitor = class {
+export class UserActionMonitor {
   /**
    * @param {!Array<UserActionMonitor.ActionInfo>} actionInfos A queue of
    *     expected actions.
@@ -185,7 +178,7 @@ UserActionMonitor = class {
   static destroy() {
     UserActionMonitor.instance = null;
   }
-};
+}
 
 /**
  * The key sequence used to close ChromeVox.
@@ -357,9 +350,9 @@ UserActionMonitor.Action = class {
 UserActionMonitor.instance;
 
 BridgeHelper.registerHandler(
-    BridgeTarget.USER_ACTION_MONITOR, BridgeAction.CREATE,
-    (actions) =>
+    BridgeTargets.USER_ACTION_MONITOR, BridgeActions.CREATE,
+    actions =>
         new Promise(resolve => UserActionMonitor.create(actions, resolve)));
 BridgeHelper.registerHandler(
-    BridgeTarget.USER_ACTION_MONITOR, BridgeAction.DESTROY,
+    BridgeTargets.USER_ACTION_MONITOR, BridgeActions.DESTROY,
     () => UserActionMonitor.destroy());

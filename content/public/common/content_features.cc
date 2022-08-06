@@ -167,6 +167,12 @@ const base::Feature kBlockInsecurePrivateNetworkRequestsForNavigations{
     base::FEATURE_DISABLED_BY_DEFAULT,
 };
 
+// Broker file operations on disk cache in the Network Service.
+// This is no-op if the network service is hosted in the browser process.
+const base::Feature kBrokerFileOperationsOnDiskCacheInNetworkService{
+    "BrokerFileOperationsOnDiskCacheInNetworkService",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use ThreadPriority::DISPLAY for browser UI and IO threads.
 const base::Feature kBrowserUseDisplayThreadPriority {
   "BrowserUseDisplayThreadPriority",
@@ -795,8 +801,8 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
 const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable the basic-card payment method from the PaymentRequest API. This flag
-// will be used to deprecate basic-card eventually: crbug.com/1209835.
+// Enable the basic-card payment method from the PaymentRequest API. This has
+// been disabled since M100 and is soon to be removed: crbug.com/1209835.
 const base::Feature kPaymentRequestBasicCard{"PaymentRequestBasicCard",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -931,7 +937,7 @@ const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",
 
 // Enables subresource loading with Web Bundles.
 const base::Feature kSubresourceWebBundles{"SubresourceWebBundles",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disallows window.{alert, prompt, confirm} if triggered inside a subframe that
 // is not same origin with the main frame.
@@ -1038,6 +1044,12 @@ const base::Feature kWebAssemblyCodeProtectionPku{
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&
         // defined(ARCH_CPU_X86_64)
 
+// Enable WebAssembly stack switching.
+#if defined(ARCH_CPU_X86_64)
+const base::Feature kEnableExperimentalWebAssemblyStackSwitching{
+    "WebAssemblyExperimentalStackSwitching", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(ARCH_CPU_X86_64)
+
 // Enable WebAssembly dynamic tiering (only tier up hot functions).
 const base::Feature kWebAssemblyDynamicTiering{
     "WebAssemblyDynamicTiering", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1089,11 +1101,6 @@ const base::Feature kWebBluetooth{"WebBluetooth",
 // and WebBluetoothGetDevices blink features are also enabled.
 const base::Feature kWebBluetoothNewPermissionsBackend{
     "WebBluetoothNewPermissionsBackend", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether Web Bluetooth will automatically start the bonding process,
-// to allow access to characteristics requiring a secure connection.
-const base::Feature kWebBluetoothBondOnDemand{"WebBluetoothBondOnDemand",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether Web Bundles (Bundled HTTP Exchanges) is enabled.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
@@ -1161,11 +1168,6 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
     "BackgroundMediaRendererHasModerateBinding",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Takes advantage of specifying which big.LITTLE cores to schedule different
-// threads on.
-const base::Feature kBigLittleScheduling{"BigLittleScheduling",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Coalesce independent begin frame by ignoring begin frame that is out of date.
 const base::Feature kCoalesceIndependentBeginFrame{
     "CoalesceIndependentBeginFrame", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1197,19 +1199,6 @@ const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
 // using the kEnableExperimentalWebPlatformFeatures flag.
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kBigLittleSchedulingBrowserMainBiggerParam[] =
-    "BigLittleSchedulingBrowserMainBiggerParam";
-const char kBigLittleSchedulingBrowserMainBigParam[] =
-    "BigLittleSchedulingBrowserMainBigParam";
-const char kBigLittleSchedulingBrowserIOBigParam[] =
-    "BigLittleSchedulingBrowserIOBigParam";
-const char kBigLittleSchedulingRenderMainBigParam[] =
-    "BigLittleSchedulingRenderMainBigParam";
-const char kBigLittleSchedulingNetworkMainBigParam[] =
-    "BigLittleSchedulingNetworkMainBigParam";
-const char kBigLittleSchedulingGpuMainBigParam[] =
-    "BigLittleSchedulingGpuMainBigParam";
 
 // When the context menu is triggered, the browser allows motion in a small
 // region around the initial touch location menu to allow for finger jittering.

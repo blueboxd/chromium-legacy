@@ -453,10 +453,6 @@ bool NGFragmentItem::HasSelfPaintingLayer() const {
   return false;
 }
 
-NGFragmentItem::BoxItem::BoxItem(const BoxItem& other)
-    : box_fragment(other.box_fragment->PostLayout()),
-      descendants_count(other.descendants_count) {}
-
 NGFragmentItem::BoxItem::BoxItem(const NGPhysicalBoxFragment* box_fragment,
                                  wtf_size_t descendants_count)
     : box_fragment(box_fragment), descendants_count(descendants_count) {}
@@ -484,6 +480,13 @@ void NGFragmentItem::LayoutObjectWillBeMoved() const {
   // before clearing this IFC. This happens e.g., when split inlines moves
   // inline children into a child anonymous block.
   const_cast<NGFragmentItem*>(this)->layout_object_ = nullptr;
+}
+
+const PhysicalOffset NGFragmentItem::ContentOffsetInContainerFragment() const {
+  PhysicalOffset offset = OffsetInContainerFragment();
+  if (const NGPhysicalBoxFragment* box = BoxFragment())
+    offset += box->ContentOffset();
+  return offset;
 }
 
 inline const LayoutBox* NGFragmentItem::InkOverflowOwnerBox() const {
@@ -1101,6 +1104,11 @@ unsigned NGFragmentItem::TextOffsetForPoint(
                                  : size.inline_size - point_in_line_direction;
   DCHECK_EQ(1u, TextLength());
   return inline_offset <= size.inline_size / 2 ? StartOffset() : EndOffset();
+}
+
+bool NGFragmentItem::IsTextDecorationBoundary() const {
+  const LayoutObject* object = GetLayoutObject();
+  return object->IsTextDecorationBoundary(StyleVariant());
 }
 
 void NGFragmentItem::Trace(Visitor* visitor) const {

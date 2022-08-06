@@ -124,7 +124,6 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
           base::BindRepeating(&Job::OnIOComplete, base::Unretained(this))),
       connection_(new ClientSocketHandle),
       session_(session),
-      next_state_(STATE_NONE),
       destination_(std::move(destination)),
       origin_url_(origin_url),
       is_websocket_(is_websocket),
@@ -147,15 +146,7 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
           (ShouldForceQuic(session, destination_, proxy_info, using_ssl_))),
       quic_version_(quic_version),
       expect_spdy_(alternative_protocol == kProtoHTTP2 && !using_quic_),
-      using_spdy_(false),
-      should_reconsider_proxy_(false),
       quic_request_(session_->quic_stream_factory()),
-      expect_on_quic_host_resolution_(false),
-      using_existing_quic_session_(false),
-      establishing_tunnel_(false),
-      was_alpn_negotiated_(false),
-      negotiated_protocol_(kProtoUnknown),
-      num_streams_(0),
       pushed_stream_id_(kNoPushedStreamFound),
       spdy_session_key_(
           using_quic_ ? SpdySessionKey()
@@ -164,12 +155,12 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                                           request_info_.privacy_mode,
                                           request_info_.socket_tag,
                                           request_info_.network_isolation_key,
-                                          request_info_.secure_dns_policy)),
-      stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
-      init_connection_already_resumed_(false) {
+                                          request_info_.secure_dns_policy)) {
   // Websocket `destination` schemes should be converted to HTTP(S).
-  DCHECK(base::LowerCaseEqualsASCII(destination_.scheme(), url::kHttpScheme) ||
-         base::LowerCaseEqualsASCII(destination_.scheme(), url::kHttpsScheme));
+  DCHECK(base::EqualsCaseInsensitiveASCII(destination_.scheme(),
+                                          url::kHttpScheme) ||
+         base::EqualsCaseInsensitiveASCII(destination_.scheme(),
+                                          url::kHttpsScheme));
 
   // This class is specific to a single `ProxyServer`, so `proxy_info_` must be
   // non-empty. Entries beyond the first are ignored. It should simply take a
@@ -362,7 +353,8 @@ bool HttpStreamFactory::Job::ShouldForceQuic(
           base::Contains(quic_params->origins_to_force_quic_on,
                          HostPortPair::FromSchemeHostPort(destination))) &&
          proxy_info.is_direct() &&
-         base::LowerCaseEqualsASCII(destination.scheme(), url::kHttpsScheme);
+         base::EqualsCaseInsensitiveASCII(destination.scheme(),
+                                          url::kHttpsScheme);
 }
 
 // static
@@ -825,11 +817,18 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     DCHECK(!is_websocket_);
     DCHECK(request_info_.socket_tag == SocketTag());
 
+    // The lifeime of the preconnect tasks is not controlled by |connection_|.
+    // It may outlives |this|. So we can't use |io_callback_| which holds
+    // base::Unretained(this).
+    auto callback =
+        base::BindOnce(&Job::OnIOComplete, ptr_factory_.GetWeakPtr());
+
     return PreconnectSocketsForHttpRequest(
         destination_, request_info_.load_flags, priority_, session_,
         proxy_info_, server_ssl_config_, proxy_ssl_config_,
         request_info_.privacy_mode, request_info_.network_isolation_key,
-        request_info_.secure_dns_policy, net_log_, num_streams_);
+        request_info_.secure_dns_policy, net_log_, num_streams_,
+        std::move(callback));
   }
 
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =

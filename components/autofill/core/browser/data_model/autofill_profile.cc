@@ -49,7 +49,6 @@
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::ASCIIToUTF16;
@@ -379,7 +378,8 @@ bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
       return country == "US" && !IsValidZip(data);
 
     case PHONE_HOME_WHOLE_NUMBER:
-      return !i18n::PhoneObject(data, country).IsValidNumber();
+      return !i18n::PhoneObject(data, country, /*infer_country_code=*/false)
+                  .IsValidNumber();
 
     case EMAIL_ADDRESS:
       return !IsValidEmailAddress(data);
@@ -856,13 +856,13 @@ std::u16string AutofillProfile::ConstructInferredLabel(
   AutofillProfile trimmed_profile(guid(), origin());
   trimmed_profile.SetInfo(region_code_type, profile_region_code, app_locale);
   trimmed_profile.set_language_code(language_code());
+  AutofillCountry country(address_region_code);
 
   std::vector<ServerFieldType> remaining_fields;
   for (size_t i = 0; i < included_fields_size && num_fields_to_use > 0; ++i) {
     ::i18n::addressinput::AddressField address_field;
     if (!i18n::FieldForType(included_fields[i], &address_field) ||
-        !::i18n::addressinput::IsFieldUsed(address_field,
-                                           address_region_code) ||
+        !country.IsAddressFieldSettingAccessible(address_field) ||
         address_field == ::i18n::addressinput::COUNTRY) {
       remaining_fields.push_back(included_fields[i]);
       continue;
@@ -1189,16 +1189,16 @@ bool AutofillProfile::HasStructuredData() {
 ServerFieldTypeSet AutofillProfile::FindInaccessibleProfileValues(
     const std::string& country_code) const {
   ServerFieldTypeSet inaccessible_fields;
+  AutofillCountry country(country_code);
   // Consider only AddressFields which are invisible in the settings for some
   // countries.
   for (const AddressField& field_type :
        {AddressField::ADMIN_AREA, AddressField::LOCALITY,
         AddressField::DEPENDENT_LOCALITY, AddressField::POSTAL_CODE,
         AddressField::SORTING_CODE}) {
-    ServerFieldType server_field_type =
-        AddressFieldToServerFieldType(field_type);
-    if (!GetRawInfo(server_field_type).empty() &&
-        !::i18n::addressinput::IsFieldUsed(field_type, country_code)) {
+    ServerFieldType server_field_type = i18n::TypeForField(field_type);
+    if (HasRawInfo(server_field_type) &&
+        !country.IsAddressFieldSettingAccessible(field_type)) {
       inaccessible_fields.insert(server_field_type);
     }
   }

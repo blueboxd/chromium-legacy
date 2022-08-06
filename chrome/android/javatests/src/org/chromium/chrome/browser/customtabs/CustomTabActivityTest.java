@@ -48,6 +48,7 @@ import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.ContentFrameLayout;
 import androidx.browser.customtabs.CustomTabsCallback;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsService;
@@ -123,6 +124,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
+import org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.prefs.PrefService;
@@ -862,10 +864,8 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS,
-            ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP})
-    public void
-    testNavigationHistogramsRecorded() throws Exception {
+    @EnableFeatures({ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS})
+    public void testNavigationHistogramsRecorded() throws Exception {
         String startHistogramPrefix = "CustomTabs.IntentToFirstNavigationStartTime";
         String commitHistogramPrefix = "CustomTabs.IntentToFirstCommitNavigationTime3";
         assertSuffixedHistogramTotalCount(0, startHistogramPrefix);
@@ -1677,8 +1677,22 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         WindowManager.LayoutParams attributes = getActivity().getWindow().getAttributes();
-        assertNotEquals("The height shouldn't be match_parent",
-                WindowManager.LayoutParams.MATCH_PARENT, attributes.height);
+        assertNotEquals("The window should have non-zero y offset", 0, attributes.y);
+
+        // Verify the hierarchy of the enclosing layouts that PCCT relies on for its operation.
+        CallbackHelper eventHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            getActivity().getCompositorViewHolderSupplier().addObserver(cvh -> {
+                if (cvh == null) return;
+                assertTrue(
+                        "CoordinatorLayoutForPointer should be the parent of CompositorViewHolder",
+                        cvh.getParent() instanceof CoordinatorLayoutForPointer);
+                assertTrue("ContentFrameLayout should be the parent of CoodinatorLayoutForPointer",
+                        cvh.getParent().getParent() instanceof ContentFrameLayout);
+                eventHelper.notifyCalled();
+            });
+        });
+        eventHelper.waitForCallback(0);
     }
 
     private void verifyHistoryAfterHiddenTab(boolean speculationWasAHit) throws Exception {

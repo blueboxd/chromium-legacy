@@ -15,6 +15,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -167,7 +168,7 @@ class CableLinkingEventHandler : public ProfileObserver {
   }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 };
 
 absl::optional<
@@ -591,13 +592,17 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
 void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
     base::RepeatingClosure start_over_callback,
+    AccountPreselectedCallback account_preselected_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback) {
   request_callback_ = request_callback;
   cancel_callback_ = std::move(cancel_callback);
   start_over_callback_ = std::move(start_over_callback);
+  account_preselected_callback_ = std::move(account_preselected_callback);
 
   weak_dialog_model_->SetRequestCallback(request_callback);
+  weak_dialog_model_->SetAccountPreselectedCallback(
+      account_preselected_callback_);
   weak_dialog_model_->SetBluetoothAdapterPowerOnCallback(
       bluetooth_adapter_power_on_callback);
 }
@@ -668,9 +673,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     }
   }
 
-  // TODO(crbug.com/1052397): Revisit the macro expression once build flag
-  // switch of lacros-chrome is complete.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_LINUX)
+  // No caBLEv1 on Linux. It tends to crash bluez.
   if (std::any_of(pairings_from_extension.begin(),
                   pairings_from_extension.end(),
                   [](const device::CableDiscoveryData& v) -> bool {
@@ -853,11 +857,6 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   weak_dialog_model_->AddObserver(this);
   weak_dialog_model_->StartFlow(std::move(data), is_conditional_,
                                 last_used_native_api);
-
-  Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser) {
-    browser->window()->UpdatePageActionIcon(PageActionIconType::kWebAuthn);
-  }
 
   ShowAuthenticatorRequestDialog(web_contents,
                                  std::move(transient_dialog_model_holder_));

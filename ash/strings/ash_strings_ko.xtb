@@ -24,6 +24,7 @@
 <translation id="109942774857561566">나 심심해</translation>
 <translation id="1104084341931202936">접근성 설정 표시</translation>
 <translation id="1104621072296271835">기기가 연결되면 더욱 원활하게 작동합니다</translation>
+<translation id="1111021433905331574">설정 &gt; <ph name="APP_TITLE" />에서 키보드 백라이트 색상을 변경할 수 있습니다.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1142002900084379065">최근 사진</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> 정보 대화상자 열기</translation>
@@ -65,6 +66,7 @@
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> 전원 공급 중</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />(<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">휴대전화 찾기</translation>
+<translation id="1287002645302686982">이름이 <ph name="DESK_TEMPLATE_NAME" />인 저장된 데스크가 이미 있습니다.</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> <ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="1290331692326790741">신호 약함</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> 앱을 <ph name="FOLDER_NAME" /> 폴더로 이동합니다.</translation>
@@ -94,7 +96,7 @@
 <translation id="1420408895951708260">야간 조명을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1420732223884894666"><ph name="DEVICE_TYPE" />에서 휴대전화의 최근 사진 및 미디어를 봅니다.</translation>
 <translation id="1426410128494586442">예</translation>
-<translation id="1438357537418863713">앱 스트리밍이 설정되었습니다. 앱 스트리밍을 시작하면 최근에 실행한 앱이 여기 표시됩니다.</translation>
+<translation id="1447641497144572814">화면 보호기 시작</translation>
 <translation id="1455242230282523554">언어 설정 표시</translation>
 <translation id="1460620680449458626">음소거되어 있습니다.</translation>
 <translation id="1467432559032391204">왼쪽</translation>
@@ -135,6 +137,7 @@
 <translation id="1715293566947629045">프로필을 사용 중지하는 중입니다. 몇 분 정도 기다려 주세요.</translation>
 <translation id="1719094688023114093">실시간 자막이 켜져 있습니다.</translation>
 <translation id="1720011244392820496">Wi-Fi 동기화 사용 설정</translation>
+<translation id="1733996486177697563">밝은 테마와 어두운 테마 간에 전환합니다. 바탕화면을 길게 터치한 후 배경화면/스타일을 선택하세요.</translation>
 <translation id="1736898441010944794">블루투스 기기에 "<ph name="NAME" />"이(가) 표시됩니다.</translation>
 <translation id="174102739345480129">마커가 꺼졌습니다.</translation>
 <translation id="1743570585616704562">인식할 수 없음</translation>
@@ -195,17 +198,16 @@
 <translation id="2079504693865562705">실행기에서 앱 숨기기</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="2083190527011054446">편안한 밤 보내세요, <ph name="GIVEN_NAME" />님</translation>
+<translation id="2088116547584365419">게임</translation>
 <translation id="209965399369889474">네트워크에 연결되어 있지 않음</translation>
 <translation id="2107914222138020205">사용 중인 USB-C 케이블은 Thunderbolt를 지원하지 않습니다. 기기 성능이 제한될 수 있습니다.</translation>
 <translation id="2108303511227308752">Alt + Backspace 단축키가 변경되었습니다. Delete 키를 사용하려면 <ph name="LAUNCHER_KEY_NAME" /> 키 + backspace 키를 누르세요.</translation>
 <translation id="211328683600082144">마이크 켜기</translation>
 <translation id="2123115117533398272">ChromeOS에서 탐색할 새 추천 콘텐츠를 표시합니다. 사용 데이터를 공유하기로 선택한 경우에만 추천 기능 개선을 위해 통계를 전송합니다. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">새 데스크</translation>
-<translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="2132302418721800944">화면 전체 녹화</translation>
 <translation id="2135456203358955318">고정 돋보기</translation>
 <translation id="2148716181193084225">오늘</translation>
-<translation id="2159930836979502091">이 탭으로 이동</translation>
 <translation id="2170530631236737939">최근 사용을 종료하려면 세 손가락을 사용해 아래로 스와이프하세요.</translation>
 <translation id="219905428774326614">런처, 모든 앱</translation>
 <translation id="2201071101391734388">최근 사진 총 <ph name="TOTAL_COUNT" />개 중 <ph name="INDEX" />번째입니다.</translation>
@@ -249,6 +251,7 @@
 <translation id="243878895369688216">어제 열림</translation>
 <translation id="2441427462554639370">저장공간이 매우 부족하여 녹화가 종료되었습니다.</translation>
 <translation id="24452542372838207">알림 펼치기</translation>
+<translation id="2449089818483227734">배터리 부족</translation>
 <translation id="2450205753526923158">스크린샷 모드</translation>
 <translation id="2456008742792828469">캘린더, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">해상도 확인</translation>
@@ -267,6 +270,7 @@
 <translation id="2586561057878260610">Ctrl + W 키를 눌러 <ph name="DESK_NAME" />과(와) 결합하세요. Ctrl + Shift + W 키를 눌러 데스크와 창을 닫으세요.</translation>
 <translation id="2595239820337756193">5km를 마일로 변환</translation>
 <translation id="2596078834055697711">창 스크린샷 찍기</translation>
+<translation id="2598725286293895280">데스크에 지원되지 않는 앱 있음</translation>
 <translation id="2607678425161541573">온라인 로그인 필요</translation>
 <translation id="2620016719323068571"><ph name="CATEGORY" />, 파일, 앱 등 검색</translation>
 <translation id="2620436844016719705">시스템</translation>
@@ -297,7 +301,6 @@
 <translation id="2791421900609674576">이전에 중단한 부분부터 계속할 수 있도록 추천 항목이 표시됩니다. 추천 항목을 삭제하려면 길게 터치하세요.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
-<translation id="2803313416453193357">폴더 열기</translation>
 <translation id="2805756323405976993">앱</translation>
 <translation id="2814448776515246190">부분 캡처</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
@@ -409,11 +412,13 @@
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
 <translation id="3445925074670675829">USB-C 기기</translation>
+<translation id="3455468639467374593">템플릿, <ph name="TEMPLATE_NAME" /></translation>
 <translation id="3465223694362104965">마지막으로 로그인한 이후로 다른 키보드가 이 기기에 연결되었습니다. 사용하기 전에 이 키보드를 신뢰하는지 확인하세요.</translation>
 <translation id="3465356146291925647">관리자가 관리함</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
+<translation id="3505066820268455558">배터리 충전 중</translation>
 <translation id="3509391053705095206">휴대전화를 찾을 수 없습니다. 휴대전화에서 블루투스가 켜져 있는지 확인하세요.</translation>
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
 <translation id="3513798432020909783">계정 관리자: <ph name="MANAGER_EMAIL" /></translation>
@@ -454,6 +459,8 @@
 <translation id="3633097874324966332">기기를 페어링하려면 블루투스 설정을 여세요.</translation>
 <translation id="3638400994746983214">개인정보 보호 화면을 켜거나 끕니다. <ph name="STATE_TEXT" />.</translation>
 <translation id="3649505501900178324">업데이트 지연됨</translation>
+<translation id="3659814201068740063">약 <ph name="TIME_LEFT" /> 남았습니다(<ph name="PERCENTAGE" />%).
+기기를 전원에 연결하세요.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> 관리 사용자</translation>
 <translation id="36813544980941320">Wi-Fi 네트워크가 휴대전화와 <ph name="DEVICE_NAME" /> 간에 공유됩니다.</translation>
 <translation id="3694122362646626770">웹사이트</translation>
@@ -508,6 +515,7 @@
 <translation id="3962859241508114581">이전 트랙</translation>
 <translation id="3969043077941541451">사용 안함</translation>
 <translation id="397105322502079400">계산 중...</translation>
+<translation id="397726367135689299">배터리 충전 상태가 불안정한 것 같습니다.</translation>
 <translation id="3977512764614765090">배터리가 <ph name="PERCENTAGE" />%이며 현재 충전 중입니다.</translation>
 <translation id="3986082989454912832">답변</translation>
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
@@ -642,6 +650,7 @@
 <translation id="4734965478015604180">가로</translation>
 <translation id="4735498845456076464"><ph name="LAUNCHER_KEY_NAME" /> + 숫자 단축키가 변경되었습니다. 기능 키를 사용하려면 <ph name="LAUNCHER_KEY_NAME" /> 키 + 맨 윗줄의 키를 누르세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
+<translation id="4740516757091333363">저장된 데스크를 삭제하시겠습니까?</translation>
 <translation id="4752784485658729358">데스크는 6개까지만 저장할 수 있습니다. 새 데스크를 저장하려면 이전 데스크를 삭제하세요.</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="4774338217796918551">내일 <ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
@@ -694,7 +703,7 @@
 <translation id="5071064518267176975">앱에서 마이크를 사용하려고 함</translation>
 <translation id="5078796286268621944">잘못된 PIN</translation>
 <translation id="5083553833479578423">더 많은 어시스턴트 기능을 사용해 보세요.</translation>
-<translation id="5106223312672646208">맞춤설정</translation>
+<translation id="509790653408515442">휴대전화의 앱을 스트리밍하면 여기 표시됩니다.</translation>
 <translation id="5107522548814527560">웹</translation>
 <translation id="5117590920725113268">다음 달 표시</translation>
 <translation id="5136175204352732067">다른 키보드 연결됨</translation>
@@ -717,6 +726,7 @@
 <translation id="523505283826916779">접근성 설정</translation>
 <translation id="5245201184978705914">스크립트를 생성할 수 없음</translation>
 <translation id="5253783950165989294">이름이 <ph name="DEVICE_NAME" />인 기기에 연결됨(배터리 <ph name="BATTERY_PERCENTAGE" />%)</translation>
+<translation id="5258528442992323769">저장된 데스크 없음</translation>
 <translation id="5260676007519551770">데스크 4</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> 알림이 있습니다.</translation>
 <translation id="5283198616748585639">1분 추가</translation>
@@ -737,7 +747,10 @@
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />%(오른쪽)</translation>
 <translation id="5352250171825660495">어두운 테마가 켜져 있습니다.</translation>
+<translation id="5356963482258194581">밝은 테마와 어두운 테마 간에 전환합니다. 바탕화면을 마우스 오른쪽 버튼으로 클릭하고 배경화면/스타일을 선택하세요.</translation>
+<translation id="5363163447017455357"><ph name="DELIMITER" /> 이 탭으로 이동</translation>
 <translation id="5379115545237091094">시도 횟수가 너무 많음</translation>
+<translation id="5391307769715781764">저장된 데스크를 대체하시겠습니까?</translation>
 <translation id="5393156353051693207">앱을 재정렬하려면 아무 곳이나 길게 터치합니다</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />을(를) <ph name="IN_PLACE_APP" /> 위로 드래그해서 놓으면 폴더가 만들어집니다.</translation>
 <translation id="5397578532367286026">관리자(<ph name="MANAGER_EMAIL" />)는 chrome.com에서 해당 사용자의 사용 및 방문 기록을 검토할 수 있습니다.</translation>
@@ -971,6 +984,7 @@
 <translation id="6790428901817661496">재생</translation>
 <translation id="6801878137098616817">최근에 수정됨</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
+<translation id="6812232930908427253">데스크를 저장할 수 없습니다. 창 또는 탭이 너무 많습니다.</translation>
 <translation id="6818242057446442178">한 단어 뒤로 이동</translation>
 <translation id="6819327813400217281">카메라 미리보기가 왼쪽 하단으로 맞춰졌습니다</translation>
 <translation id="6820676911989879663">잠시 쉬어 가세요.</translation>
@@ -1030,6 +1044,7 @@
 <translation id="7130207228079676353">사용할 만한 앱</translation>
 <translation id="7131634465328662194">자동으로 로그아웃됩니다.</translation>
 <translation id="7143207342074048698">연결 중</translation>
+<translation id="7144942256906679589">배터리 상태</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7180611975245234373">새로고침</translation>
@@ -1052,6 +1067,7 @@
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7360036564632145207">주변기기 데이터 액세스 보호 설정을 변경하면 성능을 최적화할 수 있습니다.</translation>
+<translation id="736045644501761622">배경화면 및 스타일 설정</translation>
 <translation id="7371404428569700291">창 녹화</translation>
 <translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
 <translation id="7377481913241237033">코드를 사용한 연결</translation>
@@ -1095,6 +1111,7 @@
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7600875258240007829">모든 알림 보기</translation>
 <translation id="7607002721634913082">일시중지됨</translation>
+<translation id="7609951632080598826">캘린더 보기, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">카메라가 다시 연결되었습니다.</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
 <translation id="7633755430369750696">Nearby Share 설정 표시</translation>
@@ -1118,8 +1135,6 @@
 <translation id="7720410380936703141">다시 시도</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{알림 1개}other{알림 #개}}</translation>
 <translation id="7724603315864178912">잘라내기</translation>
-<translation id="7734209118399753735"><ph name="EVENT_SUMMARY" />, 
-        <ph name="TIME_RANGE" /></translation>
 <translation id="7745560842763881396">실행기에 앱 표시</translation>
 <translation id="7749443890790263709">최대 데스크 개수에 도달했습니다.</translation>
 <translation id="7749640678855296659">현재 마이크가 꺼져 있습니다.</translation>
@@ -1173,7 +1188,6 @@
 <translation id="8030169304546394654">연결 끊김</translation>
 <translation id="8036504271468642248">이전 문장</translation>
 <translation id="8042893070933512245">접근성 설정 메뉴 열기</translation>
-<translation id="8042925093898452104">세부정보 닫기</translation>
 <translation id="8044457332620420407">키보드 백라이트 꺼짐</translation>
 <translation id="8048123526339889627">블루투스 설정</translation>
 <translation id="8051716679295756675">이름이 <ph name="DESK_TEMPLATE_NAME" />인 템플릿이 이미 있습니다.</translation>
@@ -1220,6 +1234,7 @@
 <translation id="8345019317483336363"><ph name="WINDOW_TITLE" /> 창 선택됨</translation>
 <translation id="8351131234907093545">메모 만들기</translation>
 <translation id="8364673525741149932">Shelf Party를 전환합니다. <ph name="STATE_TEXT" /></translation>
+<translation id="8369166482916924789">저장된 데스크, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">한 글자 앞으로 이동</translation>
 <translation id="8371991222807690464">게스트 모드에서 주변기기 성능이 제한될 수 있습니다.</translation>
 <translation id="8374601332003098278">화면의 일부만 녹화하려면 Enter를 누르세요</translation>
@@ -1253,6 +1268,7 @@
 <translation id="851458219935658693">현재 데스크의 창 표시, 라디오 버튼 선택됨</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8535393432370007982">색상별 정렬 순서 실행취소</translation>
+<translation id="8542053257095774575">저장된 데스크 또는 템플릿 없음</translation>
 <translation id="8546059259582788728">정렬이 실행취소됨</translation>
 <translation id="8551588720239073785">날짜 및 시간 설정</translation>
 <translation id="8553395910833293175">이미 모든 데스크에 할당되어 있습니다.</translation>
@@ -1285,6 +1301,7 @@
 <translation id="8721053961083920564">볼륨 변경. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">전체 화면 캡처</translation>
 <translation id="8734991477317290293">키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
+<translation id="8735678380411481005">키보드 백라이트 색상</translation>
 <translation id="8735953464173050365">키보드 설정을 표시합니다. <ph name="KEYBOARD_NAME" />이(가) 선택되었습니다.</translation>
 <translation id="8755498163081687682">본인 확인: <ph name="ORIGIN_NAME" />에서 본인 확인을 요청합니다</translation>
 <translation id="875593634123171288">VPN 설정 표시</translation>
@@ -1330,6 +1347,7 @@
 <translation id="9000771174482730261">저장용량 관리</translation>
 <translation id="9017320285115481645">Family Link 부모 액세스 코드를 입력하세요.</translation>
 <translation id="9024331582947483881">전체화면</translation>
+<translation id="9029736946581028033">기기가 곧 꺼짐</translation>
 <translation id="9030319654231318877">일몰까지 끄기</translation>
 <translation id="9034924485347205037">Linux 파일</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> 설정 열기</translation>
@@ -1359,6 +1377,7 @@
 <translation id="9168436347345867845">나중에</translation>
 <translation id="9178475906033259337"><ph name="QUERY" /> 검색결과 1개 표시 중</translation>
 <translation id="9179259655489829027">이 기능을 사용하면 로그인한 모든 사용자에게 비밀번호 없이 액세스할 수 있습니다. 이 기능은 신뢰할 수 있는 계정에만 사용하시기 바랍니다.</translation>
+<translation id="9180906851711123156">닫으려면 Ctrl + W를 누릅니다</translation>
 <translation id="9183456764293710005">전체 화면 돋보기</translation>
 <translation id="9193626018745640770">알 수 없는 수신기에 전송 중</translation>
 <translation id="9194617393863864469">다른 사용자 추가...</translation>

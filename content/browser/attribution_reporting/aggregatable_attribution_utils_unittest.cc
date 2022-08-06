@@ -11,10 +11,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
+#include "base/values.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
@@ -32,6 +36,8 @@ using FilterValues = base::flat_map<std::string, std::vector<std::string>>;
 }  // namespace
 
 TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
+  base::HistogramTester histograms;
+
   auto source = AttributionAggregatableSource::FromKeys(
       {{"key1", 345}, {"key2", 5}, {"key3", 123}});
   ASSERT_TRUE(source.has_value());
@@ -97,6 +103,13 @@ TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
       ElementsAre(
           AggregatableHistogramContribution(/*key=*/1369, /*value=*/32768u),
           AggregatableHistogramContribution(/*key=*/2693, /*value=*/1664u)));
+
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.FilteredTriggerDataPercentage", 50, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.DroppedKeysPercentage", 33, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.NumContributionsPerReport", 2, 1);
 }
 
 TEST(AggregatableAttributionUtilsTest, HexEncodeAggregatableKey) {
@@ -118,6 +131,69 @@ TEST(AggregatableAttributionUtilsTest, HexEncodeAggregatableKey) {
   for (const auto& test_case : kTestCases) {
     EXPECT_EQ(HexEncodeAggregatableKey(test_case.input), test_case.output)
         << test_case.input;
+  }
+}
+
+TEST(AggregatableAttributionUtilsTest,
+     NoTriggerData_FilteredPercentageNotRecorded) {
+  base::HistogramTester histograms;
+
+  auto source = AttributionAggregatableSource::FromKeys({{"key1", 345}});
+  ASSERT_TRUE(source.has_value());
+
+  auto trigger_mojo = blink::mojom::AttributionAggregatableTrigger::New();
+  trigger_mojo->values = {{"key2", 32768}};
+
+  absl::optional<AttributionAggregatableTrigger> trigger =
+      AttributionAggregatableTrigger::FromMojo(std::move(trigger_mojo));
+  ASSERT_TRUE(trigger.has_value());
+
+  std::vector<AggregatableHistogramContribution> contributions =
+      CreateAggregatableHistogram(AttributionFilterData(), *source, *trigger);
+
+  histograms.ExpectTotalCount(
+      "Conversions.AggregatableReport.FilteredTriggerDataPercentage", 0);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.DroppedKeysPercentage", 100, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.NumContributionsPerReport", 0, 1);
+}
+
+TEST(AggregatableAttributionUtilsTest, RoundsSourceRegistrationTime) {
+  const struct {
+    std::string description;
+    int64_t source_time;
+    std::string expected_serialized_time;
+  } kTestCases[] = {
+      {"14288 * 86400000", 1234483200000, "1234483200"},
+      {"14288 * 86400000 + 1", 1234483200001, "1234483200"},
+      {"14288.5 * 86400000 - 1", 1234526399999, "1234483200"},
+      {"14288.5 * 86400000", 1234526400000, "1234483200"},
+      {"14288.5 * 86400000 + 1", 1234526400001, "1234483200"},
+      {"14289 * 86400000 -1", 1234569599999, "1234483200"},
+      {"14289 * 86400000", 1234569600000, "1234569600"},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::Time source_time = base::Time::FromJavaTime(test_case.source_time);
+    AttributionReport report =
+        ReportBuilder(
+            AttributionInfoBuilder(SourceBuilder(source_time).BuildStored())
+                .Build())
+            .SetAggregatableHistogramContributions(
+                {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
+            .BuildAggregatableAttribution();
+
+    absl::optional<AggregatableReportRequest> request =
+        CreateAggregatableReportRequest(report);
+    ASSERT_TRUE(request.has_value());
+    const base::Value::Dict& additional_fields =
+        request->shared_info().additional_fields;
+    const std::string* actual_serialized_time =
+        additional_fields.FindString("source_registration_time");
+    ASSERT_TRUE(actual_serialized_time);
+    EXPECT_EQ(*actual_serialized_time, test_case.expected_serialized_time)
+        << test_case.description;
   }
 }
 

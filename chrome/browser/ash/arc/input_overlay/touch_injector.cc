@@ -13,6 +13,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action_move.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action_tap.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
@@ -174,11 +175,11 @@ void TouchInjector::UnRegisterEventRewriter() {
   observation_.Reset();
 }
 
-void TouchInjector::OnBindingChange(Action* target_action,
-                                    std::unique_ptr<InputElement> input_element,
-                                    DisplayMode mode) {
+void TouchInjector::OnBindingChange(
+    Action* target_action,
+    std::unique_ptr<InputElement> input_element) {
   if (display_overlay_controller_)
-    display_overlay_controller_->RemoveEditErrorMsg();
+    display_overlay_controller_->RemoveEditMessage();
   Action* overlapped_action = nullptr;
   for (auto& action : actions_) {
     if (action.get() == target_action)
@@ -194,7 +195,7 @@ void TouchInjector::OnBindingChange(Action* target_action,
   if (overlapped_action)
     overlapped_action->Unbind(*input_element);
 
-  target_action->PrepareToBind(std::move(input_element), mode);
+  target_action->PrepareToBind(std::move(input_element));
 }
 
 void TouchInjector::OnApplyPendingBinding() {
@@ -204,6 +205,8 @@ void TouchInjector::OnApplyPendingBinding() {
 
 void TouchInjector::OnBindingSave() {
   OnApplyPendingBinding();
+  if (display_overlay_controller_)
+    display_overlay_controller_->SetDisplayMode(DisplayMode::kView);
   OnSaveProtoFile();
 }
 
@@ -234,13 +237,26 @@ void TouchInjector::OnProtoDataAvailable(AppDataProto& proto) {
     auto input_element =
         InputElement::ConvertFromProto(action_proto.input_element());
     DCHECK(input_element);
-    OnBindingChange(action, std::move(input_element), DisplayMode::kView);
+    OnBindingChange(action, std::move(input_element));
   }
   OnApplyPendingBinding();
 }
 
 void TouchInjector::OnInputMenuViewRemoved() {
   OnSaveProtoFile();
+  const auto* package_name = GetPackageName();
+  // Record UMA stats upon |InputMenuView| close because it needs to ignore the
+  // unfinalized menu state change.
+  if (touch_injector_enable_ != touch_injector_enable_uma_) {
+    touch_injector_enable_uma_ = touch_injector_enable_;
+    RecordInputOverlayFeatureState(*package_name, touch_injector_enable_uma_);
+  }
+
+  if (input_mapping_visible_ != input_mapping_visible_uma_) {
+    input_mapping_visible_uma_ = input_mapping_visible_;
+    RecordInputOverlayMappingHintState(*package_name,
+                                       input_mapping_visible_uma_);
+  }
 }
 
 void TouchInjector::DispatchTouchCancelEvent() {
@@ -487,7 +503,9 @@ std::unique_ptr<ui::TouchEvent> TouchInjector::RewriteOriginalTouch(
   auto it = rewritten_touch_infos_.find(original_id);
 
   if (it == rewritten_touch_infos_.end()) {
-    DCHECK(touch_event->type() == ui::ET_TOUCH_PRESSED);
+    // When touching on the window to regain the focus, the first
+    // |ui::ET_TOUCH_PRESSED| will not be received and then it may send
+    // |ui::ET_TOUCH_MOVED| event to the window. So no need to add DCHECK here.
     if (touch_event->type() != ui::ET_TOUCH_PRESSED)
       return nullptr;
   } else {
@@ -572,6 +590,14 @@ void TouchInjector::LoadMenuStateFromProto(AppDataProto& proto) {
 
   if (display_overlay_controller_)
     display_overlay_controller_->OnApplyMenuState();
+}
+
+void TouchInjector::RecordMenuStateOnLaunch() {
+  touch_injector_enable_uma_ = touch_injector_enable_;
+  input_mapping_visible_uma_ = input_mapping_visible_;
+  const auto* package_name = GetPackageName();
+  RecordInputOverlayFeatureState(*package_name, touch_injector_enable_uma_);
+  RecordInputOverlayMappingHintState(*package_name, input_mapping_visible_uma_);
 }
 
 int TouchInjector::GetRewrittenTouchIdForTesting(ui::PointerId original_id) {

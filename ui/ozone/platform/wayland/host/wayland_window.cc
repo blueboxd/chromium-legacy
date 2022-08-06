@@ -37,7 +37,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_frame_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
-#include "ui/ozone/platform/wayland/host/wayland_pointer.h"
+#include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.h"
@@ -134,7 +134,7 @@ void WaylandWindow::UpdateWindowScale(bool update_bounds) {
 
   // We need to keep DIP size of the window the same whenever the scale changes.
   if (update_bounds)
-    SetBoundsDip(gfx::ScaleToRoundedRect(bounds_px_, 1.0 / old_scale));
+    UpdateBoundsInDIP(gfx::ScaleToEnclosedRect(bounds_px_, 1.0 / old_scale));
 
   // Propagate update to the child windows
   if (child_window_)
@@ -289,7 +289,7 @@ void WaylandWindow::PrepareForShutdown() {
     OnDragSessionClose(DragOperation::kNone);
 }
 
-void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
+void WaylandWindow::SetBoundsInPixels(const gfx::Rect& bounds_px) {
   gfx::Rect adjusted_bounds_px = AdjustBoundsToConstraintsPx(bounds_px);
   if (bounds_px_ == adjusted_bounds_px)
     return;
@@ -300,16 +300,16 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
   delegate_->OnBoundsChanged(bounds_px_);
 }
 
-gfx::Rect WaylandWindow::GetBounds() const {
+gfx::Rect WaylandWindow::GetBoundsInPixels() const {
   return bounds_px_;
+}
+
+void WaylandWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  SetBoundsInPixels(delegate_->ConvertRectToPixels(bounds));
 }
 
 gfx::Rect WaylandWindow::GetBoundsInDIP() const {
   return delegate_->ConvertRectToDIP(bounds_px_);
-}
-
-void WaylandWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
-  SetBounds(delegate_->ConvertRectToPixels(bounds));
 }
 
 void WaylandWindow::OnSurfaceConfigureEvent() {
@@ -392,11 +392,11 @@ void WaylandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
 void WaylandWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
-  restored_size_in_dip_ = bounds.size();
+  restored_size_dip_ = bounds.size();
 }
 
 gfx::Rect WaylandWindow::GetRestoredBoundsInDIP() const {
-  return gfx::Rect(restored_size_in_dip_);
+  return gfx::Rect(restored_size_dip_);
 }
 
 bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
@@ -457,11 +457,7 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
         connection_->wayland_window_manager()->located_events_grabber();
     auto* root_parent_window = GetRootParentWindow();
 
-    // Wayland sends locations in DIP so they need to be translated to
-    // physical pixels.
-    UpdateCursorPositionFromEvent(Event::Clone(*event));
-    event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
-        event->AsLocatedEvent()->location_f(), window_scale(), window_scale()));
+    UpdateCursorPositionFromEvent(event);
 
     // We must reroute the events to the event grabber iff these windows belong
     // to the same root parent window. For example, there are 2 top level
@@ -473,13 +469,22 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
     // and continuing rerouting all the events may result in events sent to the
     // grabber even though the mouse is over another root window.
     //
-    if (event_grabber &&
-        root_parent_window == event_grabber->GetRootParentWindow()) {
+    bool send_to_grabber =
+        event_grabber &&
+        root_parent_window == event_grabber->GetRootParentWindow();
+    if (send_to_grabber) {
       ConvertEventLocationToTargetWindowLocation(
-          event_grabber->GetBounds().origin(), GetBounds().origin(),
+          event_grabber->GetBoundsInDIP().origin(), GetBoundsInDIP().origin(),
           event->AsLocatedEvent());
-      return event_grabber->DispatchEventToDelegate(native_event);
     }
+
+    // Wayland sends locations in DIP so they need to be translated to
+    // physical pixels.
+    event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
+        event->AsLocatedEvent()->location_f(), window_scale(), window_scale()));
+
+    if (send_to_grabber)
+      return event_grabber->DispatchEventToDelegate(native_event);
   }
 
   // Dispatch all keyboard events to the root window.
@@ -583,11 +588,11 @@ void WaylandWindow::OnDragSessionClose(DragOperation operation) {
   std::move(drag_loop_quit_closure_).Run();
 }
 
-void WaylandWindow::SetBoundsDip(const gfx::Rect& bounds_dip) {
+void WaylandWindow::UpdateBoundsInDIP(const gfx::Rect& bounds_dip) {
   // This method is used to update the content size by calling WindowWindow's
   // SetBounds, instead of WaylandToplevelWindow's override, which sends a
   // request to the compositor.
-  WaylandWindow::SetBounds(gfx::ScaleToRoundedRect(bounds_dip, window_scale()));
+  WaylandWindow::SetBoundsInPixels(delegate_->ConvertRectToPixels(bounds_dip));
 }
 
 bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
@@ -646,6 +651,8 @@ WaylandWindow* WaylandWindow::GetRootParentWindow() {
 }
 
 void WaylandWindow::OnEnteredOutput() {
+  delegate()->OnMovedToAnotherDisplay();
+
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
@@ -661,13 +668,12 @@ void WaylandWindow::OnLeftOutput() {
   // event.
   if (AsWaylandPopup())
     return;
-
-  UpdateWindowScale(true);
+  // Do not update the window scale where. It'll be updated when entring a new
+  // output.
 }
 
-void WaylandWindow::UpdateCursorPositionFromEvent(
-    std::unique_ptr<Event> event) {
-  DCHECK(event->IsLocatedEvent());
+void WaylandWindow::UpdateCursorPositionFromEvent(const Event* orig_event) {
+  DCHECK(orig_event->IsLocatedEvent());
 
   // This is a tricky part. Initially, Wayland sends events to surfaces the
   // events are targeted for. But, in order to fulfill Chromium's assumptions
@@ -682,45 +688,25 @@ void WaylandWindow::UpdateCursorPositionFromEvent(
   // to use it as the target. Thus, the location of the |event| is always
   // converted using the top-level window's bounds as the target excluding
   // cases, when the mouse/touch is over a top-level window.
+  auto* cursor_position = connection_->wayland_cursor_position();
+  if (!cursor_position)
+    return;
+  const LocatedEvent* located_event = orig_event->AsLocatedEvent();
+  std::unique_ptr<Event> event;
+
   auto* toplevel_window = GetRootParentWindow();
   if (toplevel_window != this) {
+    event = Event::Clone(*orig_event);
     ConvertEventLocationToTargetWindowLocation(
-        toplevel_window->GetBounds().origin(), GetBounds().origin(),
+        toplevel_window->GetBoundsInDIP().origin(), GetBoundsInDIP().origin(),
         event->AsLocatedEvent());
+
+    located_event = event->AsLocatedEvent();
   }
-  auto* cursor_position = connection_->wayland_cursor_position();
-  if (cursor_position) {
-    cursor_position->OnCursorPositionChanged(
-        event->AsLocatedEvent()->location() +
-        toplevel_window->GetBoundsInDIP().origin().OffsetFromOrigin());
-  }
-}
 
-gfx::PointF WaylandWindow::TranslateLocationToRootWindow(
-    const gfx::PointF& location) {
-  auto* root_window = GetRootParentWindow();
-  DCHECK(root_window);
-  if (root_window == this)
-    return location;
-
-  gfx::Vector2d offset =
-      GetBounds().origin() - root_window->GetBounds().origin();
-  return location + gfx::Vector2dF(offset);
-}
-
-gfx::PointF WaylandWindow::ToRootWindowPixel(const gfx::PointF& location_dp) {
-  // Wayland sends coordinates in "surface-local" coordinates. In the common
-  // case, this is in DP. However, when we use surface pixel coordinates, the
-  // location is in relative pixels (so it shouldn't be scaled). Surface pixel
-  // coordinates are used to support fractional scaling in Lacros. Wayland
-  // scaling isn't used because Wayland only supports integer scaling.
-  // See crbug.com/1294417.
-  gfx::PointF location_px = TranslateLocationToRootWindow(location_dp);
-  if (!connection_->surface_submission_in_pixel_coordinates())
-    location_px.Scale(window_scale());
-
-  auto* root_window = GetRootParentWindow();
-  return location_px + root_window->GetBounds().origin().OffsetFromOrigin();
+  cursor_position->OnCursorPositionChanged(
+      located_event->location() +
+      toplevel_window->GetBoundsInDIP().origin().OffsetFromOrigin());
 }
 
 WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
@@ -953,8 +939,8 @@ void WaylandWindow::ProcessPendingBoundsDip(uint32_t serial) {
     SetWindowGeometry(bounds_in_dip);
     AckConfigure(serial);
     root_surface()->Commit();
-  } else if (gfx::ScaleToRoundedRect(pending_bounds_dip_, window_scale()) ==
-                 GetBounds() &&
+  } else if (delegate()->ConvertRectToPixels(pending_bounds_dip_) ==
+                 GetBoundsInPixels() &&
              pending_configures_.empty()) {
     // If |pending_bounds_dip_| matches GetBounds(), and |pending_configures_|
     // is empty, implying that the window is already rendering at
@@ -1020,11 +1006,38 @@ gfx::Rect WaylandWindow::AdjustBoundsToConstraintsPx(
   return adjusted_bounds_px;
 }
 
+gfx::Rect WaylandWindow::AdjustBoundsToConstraintsDIP(
+    const gfx::Rect& bounds_dip) {
+  gfx::Rect adjusted_bounds_dip = bounds_dip;
+  if (const auto min_size_dip = delegate_->GetMinimumSizeForWindow()) {
+    if (min_size_dip->width() > 0 &&
+        adjusted_bounds_dip.width() < min_size_dip->width()) {
+      adjusted_bounds_dip.set_width(min_size_dip->width());
+    }
+    if (min_size_dip->height() > 0 &&
+        adjusted_bounds_dip.height() < min_size_dip->height()) {
+      adjusted_bounds_dip.set_height(min_size_dip->height());
+    }
+  }
+  if (const auto max_size_dip = delegate_->GetMaximumSizeForWindow()) {
+    if (max_size_dip->width() > 0 &&
+        adjusted_bounds_dip.width() > max_size_dip->width()) {
+      adjusted_bounds_dip.set_width(max_size_dip->width());
+    }
+    if (max_size_dip->height() > 0 &&
+        adjusted_bounds_dip.height() > max_size_dip->height()) {
+      adjusted_bounds_dip.set_height(max_size_dip->height());
+    }
+  }
+  return adjusted_bounds_dip;
+}
+
 bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px,
                                             float scale_factor) {
   // TODO(crbug.com/1307501): Optimize this to be less expensive. Maybe
   // precompute in pixels for configure events. pending_configures_ can have 10s
   // of elements in it for several frames under some conditions.
+  // The `pending_configures_` should store px size instead of dip.
   auto result = std::find_if(
       pending_configures_.begin(), pending_configures_.end(),
       [this, &size_px, &scale_factor](auto& configure) {
@@ -1032,7 +1045,8 @@ bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px,
         // WaylandTopLevelWindow, we also need to adjust it for bounds to see if
         // we match.
         return AdjustBoundsToConstraintsPx(
-                   gfx::ScaleToRoundedRect(configure.bounds_dip, scale_factor))
+                   gfx::ScaleToEnclosingRect(configure.bounds_dip,
+                                             scale_factor))
                        .size() == size_px &&
                configure.set;
       });
@@ -1052,7 +1066,11 @@ void WaylandWindow::ApplyPendingBounds() {
   DCHECK(!pending_configures_.empty());
   for (auto& configure : pending_configures_)
     configure.set = true;
-  SetBoundsDip(pending_configures_.back().bounds_dip);
+  UpdateBoundsInDIP(pending_configures_.back().bounds_dip);
+}
+
+bool WaylandWindow::HasPendingConfigures() const {
+  return !pending_configures_.empty();
 }
 
 }  // namespace ui

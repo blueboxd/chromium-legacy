@@ -274,7 +274,8 @@ void FederatedAuthRequestImpl::RequestIdToken(
   nonce_ = nonce;
   prefer_auto_sign_in_ = prefer_auto_sign_in && IsFedCmAutoSigninEnabled();
   start_time_ = base::TimeTicks::Now();
-  delay_timer_.Reset();
+  if (!ShouldCompleteRequestImmediatelyOnError())
+    delay_timer_.Reset();
 
   if (!GetApiPermissionContext()) {
     CompleteRequest(FederatedAuthRequestResult::kError, "",
@@ -362,7 +363,8 @@ void FederatedAuthRequestImpl::Revoke(
   provider_ = provider;
   client_id_ = client_id;
   hint_ = hint;
-  delay_timer_.Reset();
+  if (!ShouldCompleteRequestImmediatelyOnError())
+    delay_timer_.Reset();
   revoke_callback_ = std::move(callback);
 
   if (!GetApiPermissionContext()) {
@@ -786,7 +788,8 @@ void FederatedAuthRequestImpl::OnManifestReady(
     network_manager_->SendAccountsRequest(
         endpoints_.accounts, client_id_,
         base::BindOnce(&FederatedAuthRequestImpl::OnAccountsResponseReceived,
-                       weak_ptr_factory_.GetWeakPtr(), idp_metadata));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(idp_metadata)));
   }
 }
 
@@ -891,7 +894,7 @@ void FederatedAuthRequestImpl::CompleteRevokeRequest(
   manifest_list_checked_ = false;
   idp_metadata_.reset();
 
-  if (should_call_callback)
+  if (should_call_callback || ShouldCompleteRequestImmediatelyOnError())
     std::move(revoke_callback_).Run(status);
 }
 
@@ -905,7 +908,7 @@ void FederatedAuthRequestImpl::OnClientMetadataResponseReceived(
   network_manager_->SendAccountsRequest(
       endpoints_.accounts, client_id_,
       base::BindOnce(&FederatedAuthRequestImpl::OnAccountsResponseReceived,
-                     weak_ptr_factory_.GetWeakPtr(), idp_metadata));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(idp_metadata)));
 }
 
 void FederatedAuthRequestImpl::OnAccountsResponseReceived(
@@ -1002,6 +1005,21 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
 void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
                                                  bool is_sign_in,
                                                  bool should_embargo) {
+  // Check if the user has disabled the FedCM API after the FedCM UI is
+  // displayed. This ensures that requests are not wrongfully sent to IDPs when
+  // settings are changed while an existing FedCM UI is displayed. Ideally, we
+  // should enforce this check before all requests but users typically won't
+  // have time to disable the FedCM API in other types of requests.
+  if (GetApiPermissionContext()->GetApiPermissionStatus(origin_) !=
+      FederatedApiPermissionStatus::GRANTED) {
+    RecordRequestIdTokenStatus(IdTokenStatus::kDisabledInSettings,
+                               render_frame_host_->GetPageUkmSourceId());
+
+    CompleteRequest(FederatedAuthRequestResult::kErrorDisabledInSettings, "",
+                    /*should_call_callback=*/false);
+    return;
+  }
+
   // This could happen if user didn't select any accounts.
   if (account_id.empty()) {
     base::TimeTicks dismiss_dialog_time = base::TimeTicks::Now();
@@ -1201,7 +1219,7 @@ void FederatedAuthRequestImpl::CompleteRequest(
 
   CleanUp();
 
-  if (should_call_callback) {
+  if (should_call_callback || ShouldCompleteRequestImmediatelyOnError()) {
     errors_logged_to_console_ = false;
 
     RequestIdTokenStatus status =
@@ -1243,6 +1261,11 @@ void FederatedAuthRequestImpl::AddConsoleErrorMessage(
   std::string message = GetConsoleErrorMessage(result);
   render_frame_host_->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kError, message);
+}
+
+bool FederatedAuthRequestImpl::ShouldCompleteRequestImmediatelyOnError() {
+  return GetApiPermissionContext() &&
+         GetApiPermissionContext()->ShouldCompleteRequestImmediatelyOnError();
 }
 
 void FederatedAuthRequestImpl::CompleteLogoutRequest(

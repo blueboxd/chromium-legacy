@@ -42,7 +42,7 @@ enable_unix_sockets = is_posix && !is_ios
 # x86/x64 cast_shell builds run on regular trybots and can use python runtime
 # and remote test server. ARM cast_shell builds don't have python runtime.
 is_arm_cast_shell_build =
-    is_castos && (current_cpu == "arm" || current_cpu == "arm64")
+    is_chromecast && (current_cpu == "arm" || current_cpu == "arm64")
 
 # Python works only on Linux, MacOS and Windows so exclude the others,
 # chromecast, android, fuchsia, ios.
@@ -821,6 +821,8 @@ component("net") {
     "quic/quic_session_key.h",
     "quic/quic_stream_factory.cc",
     "quic/quic_stream_factory.h",
+    "quic/set_quic_flag.cc",
+    "quic/set_quic_flag.h",
     "quic/web_transport_client.cc",
     "quic/web_transport_client.h",
     "quic/web_transport_error.cc",
@@ -893,6 +895,8 @@ component("net") {
     "socket/transport_client_socket_pool.h",
     "socket/transport_connect_job.cc",
     "socket/transport_connect_job.h",
+    "socket/transport_connect_sub_job.cc",
+    "socket/transport_connect_sub_job.h",
     "socket/udp_client_socket.cc",
     "socket/udp_client_socket.h",
     "socket/udp_net_log_parameters.cc",
@@ -906,10 +910,6 @@ component("net") {
     "socket/websocket_endpoint_lock_manager.h",
     "socket/websocket_transport_client_socket_pool.cc",
     "socket/websocket_transport_client_socket_pool.h",
-    "socket/websocket_transport_connect_job.cc",
-    "socket/websocket_transport_connect_job.h",
-    "socket/websocket_transport_connect_sub_job.cc",
-    "socket/websocket_transport_connect_sub_job.h",
     "spdy/alps_decoder.cc",
     "spdy/alps_decoder.h",
     "spdy/bidirectional_stream_spdy_impl.cc",
@@ -1174,8 +1174,6 @@ component("net") {
     sources += [
       "cert/cert_verify_proc_ios.cc",
       "cert/cert_verify_proc_ios.h",
-      "cert/x509_util_ios.cc",
-      "cert/x509_util_ios.h",
       "disk_cache/blockfile/file_ios.cc",
       "proxy_resolution/proxy_config_service_ios.cc",
       "proxy_resolution/proxy_config_service_ios.h",
@@ -1238,8 +1236,8 @@ component("net") {
       "base/platform_mime_util_mac.mm",
       "base/proxy_string_util_mac.cc",
       "cert/test_root_certs_mac.cc",
-      "cert/x509_util_ios_and_mac.cc",
-      "cert/x509_util_ios_and_mac.h",
+      "cert/x509_util_apple.cc",
+      "cert/x509_util_apple.h",
       "proxy_resolution/proxy_resolver_mac.cc",
       "proxy_resolution/proxy_resolver_mac.h",
     ]
@@ -1417,7 +1415,7 @@ component("net") {
       "third_party/nss/ssl/cmpcert.cc",
       "third_party/nss/ssl/cmpcert.h",
     ]
-    if (!is_castos) {
+    if (!is_chromecast) {
       sources += [
         "ssl/client_cert_store_nss.cc",
         "ssl/client_cert_store_nss.h",
@@ -2086,6 +2084,10 @@ static_library("test_support") {
     "disk_cache/disk_cache_test_base.h",
     "disk_cache/disk_cache_test_util.cc",
     "disk_cache/disk_cache_test_util.h",
+    "disk_cache/mock/mock_backend_impl.cc",
+    "disk_cache/mock/mock_backend_impl.h",
+    "disk_cache/mock/mock_entry_impl.cc",
+    "disk_cache/mock/mock_entry_impl.h",
     "filter/filter_source_stream_test_util.cc",
     "filter/filter_source_stream_test_util.h",
     "filter/mock_source_stream.cc",
@@ -2590,10 +2592,6 @@ source_set("simple_quic_tools") {
   sources = [
     "tools/quic/quic_client_message_loop_network_helper.cc",
     "tools/quic/quic_client_message_loop_network_helper.h",
-    "tools/quic/quic_http_proxy_backend.cc",
-    "tools/quic/quic_http_proxy_backend.h",
-    "tools/quic/quic_http_proxy_backend_stream.cc",
-    "tools/quic/quic_http_proxy_backend_stream.h",
     "tools/quic/quic_simple_client.cc",
     "tools/quic/quic_simple_client.h",
     "tools/quic/quic_simple_server.cc",
@@ -4261,6 +4259,7 @@ test("net_unittests") {
     "quic/quic_stream_factory_test.cc",
     "quic/quic_test_packet_maker.cc",
     "quic/quic_test_packet_maker.h",
+    "quic/set_quic_flag_test.cc",
     "quic/test_quic_crypto_client_config_handle.cc",
     "quic/test_quic_crypto_client_config_handle.h",
     "socket/client_socket_pool_base_unittest.cc",
@@ -4387,10 +4386,13 @@ test("net_unittests") {
     sources += [
       "cert/cert_verify_proc_mac_unittest.cc",
       "cert/internal/trust_store_mac_unittest.cc",
-      "cert/x509_util_ios_and_mac_unittest.cc",
       "ssl/client_cert_store_mac_unittest.cc",
       "ssl/ssl_platform_key_mac_unittest.cc",
     ]
+  }
+
+  if (is_apple) {
+    sources += [ "cert/x509_util_apple_unittest.cc" ]
   }
 
   if (is_win) {
@@ -4518,12 +4520,7 @@ test("net_unittests") {
   }
 
   if (is_linux || is_chromeos) {
-    sources += [
-      "quic/platform/impl/quic_flags_test.cc",
-      "tools/quic/quic_http_proxy_backend_stream_test.cc",
-      "tools/quic/quic_http_proxy_backend_test.cc",
-      "tools/quic/quic_simple_server_test.cc",
-    ]
+    sources += [ "tools/quic/quic_simple_server_test.cc" ]
   }
 
   if (is_apple) {
@@ -4568,7 +4565,7 @@ test("net_unittests") {
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
     ]
-    if (!is_castos) {
+    if (!is_chromecast) {
       sources += [
         "ssl/client_cert_store_nss_unittest.cc",
         "ssl/ssl_platform_key_nss_unittest.cc",
@@ -4652,7 +4649,6 @@ test("net_unittests") {
       "url_request/url_fetcher_impl_unittest.cc",
       "url_request/url_request_context_builder_unittest.cc",
     ]
-    sources += [ "cert/x509_util_ios_and_mac_unittest.cc" ]
 
     bundle_deps = [ ":net_unittests_bundle_data" ]
   }

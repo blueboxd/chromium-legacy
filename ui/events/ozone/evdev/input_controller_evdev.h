@@ -61,6 +61,9 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void GetAutoRepeatRate(base::TimeDelta* delay,
                          base::TimeDelta* interval) override;
   void SetCurrentLayoutByName(const std::string& layout_name) override;
+  void SetKeyboardKeyBitsMapping(
+      base::flat_map<int, std::vector<uint64_t>> key_bits_mapping) override;
+  std::vector<uint64_t> GetKeyboardKeyBits(int id) override;
   void SetTouchEventLoggingEnabled(bool enabled) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTouchpadScrollSensitivity(int value) override;
@@ -81,6 +84,9 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void SetPointingStickSensitivity(int value) override;
   void SetPointingStickPrimaryButtonRight(bool right) override;
   void SetPointingStickAcceleration(bool enabled) override;
+  void SetGamepadKeyBitsMapping(
+      base::flat_map<int, std::vector<uint64_t>> key_bits_mapping) override;
+  std::vector<uint64_t> GetGamepadKeyBits(int id) override;
   void SetTouchpadAcceleration(bool enabled) override;
   void SetTouchpadScrollAcceleration(bool enabled) override;
   void SetTapToClickPaused(bool state) override;
@@ -146,11 +152,17 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   // Keyboard state.
   KeyboardEvdev* const keyboard_;
 
+  // Keyboard keybits.
+  base::flat_map<int, std::vector<uint64_t>> keyboard_key_bits_mapping_;
+
   // Mouse button map.
   MouseButtonMapEvdev* const mouse_button_map_;
 
   // Pointing stick button map.
   MouseButtonMapEvdev* const pointing_stick_button_map_;
+
+  // Gamepad keybits.
+  base::flat_map<int, std::vector<uint64_t>> gamepad_key_bits_mapping_;
 
   // Device presence.
   bool has_mouse_ = false;

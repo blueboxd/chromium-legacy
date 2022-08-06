@@ -141,8 +141,6 @@ class ContentAutofillDriver : public AutofillDriver,
   bool RendererIsAvailable() override;
   webauthn::InternalAuthenticator* GetOrCreateCreditCardInternalAuthenticator()
       override;
-  void PropagateAutofillPredictions(
-      const std::vector<FormStructure*>& forms) override;
   void HandleParsedForms(const std::vector<const FormData*>& forms) override;
   void PopupHidden() override;
   net::IsolationInfo IsolationInfo() override;
@@ -223,11 +221,12 @@ class ContentAutofillDriver : public AutofillDriver,
   void SelectControlDidChange(const FormData& form,
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box) override;
-  void AskForValuesToFill(int32_t id,
+  void AskForValuesToFill(int32_t query_id,
                           const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,
-                          bool autoselect_first_suggestion) override;
+                          bool autoselect_first_suggestion,
+                          TouchToFillEligible touch_to_fill_eligible) override;
   void HidePopup() override;
   void FocusNoLongerOnForm(bool had_interacted_form) override;
   void FocusOnFormField(const FormData& form,
@@ -238,6 +237,10 @@ class ContentAutofillDriver : public AutofillDriver,
   void DidPreviewAutofillFormData() override;
   void DidEndTextFieldEditing() override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
+  void JavaScriptChangedAutofilledValue(
+      const FormData& form,
+      const FormFieldData& field,
+      const std::u16string& old_value) override;
 
   // Implementations of the mojom::AutofillDriver functions called by the
   // renderer. These functions are called by ContentAutofillRouter.
@@ -257,11 +260,12 @@ class ContentAutofillDriver : public AutofillDriver,
   void SelectControlDidChangeImpl(const FormData& form,
                                   const FormFieldData& field,
                                   const gfx::RectF& bounding_box);
-  void AskForValuesToFillImpl(int32_t id,
+  void AskForValuesToFillImpl(int32_t query_id,
                               const FormData& form,
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box,
-                              bool autoselect_first_suggestion);
+                              bool autoselect_first_suggestion,
+                              TouchToFillEligible touch_to_fill_eligible);
   void HidePopupImpl();
   void FocusNoLongerOnFormImpl(bool had_interacted_form);
   void FocusOnFormFieldImpl(const FormData& form,
@@ -272,6 +276,9 @@ class ContentAutofillDriver : public AutofillDriver,
   void DidPreviewAutofillFormDataImpl();
   void DidEndTextFieldEditingImpl();
   void SelectFieldOptionsDidChangeImpl(const FormData& form);
+  void JavaScriptChangedAutofilledValueImpl(const FormData& form,
+                                            const FormFieldData& field,
+                                            const std::u16string& old_value);
 
   // Triggers filling of |fill_data| into |raw_form| and |raw_field|. This event
   // is called only by Autofill Assistant on the browser side and provides the

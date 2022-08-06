@@ -41,9 +41,11 @@
 namespace ash {
 namespace {
 
-const test::UIPath webview_ui_path = {"recommend-apps-old", "appView"};
-const test::UIPath install_button = {"recommend-apps-old", "installButton"};
-const test::UIPath skip_button = {"recommend-apps-old", "skipButton"};
+constexpr char kRecommendAppsId[] = "recommend-apps";
+
+const test::UIPath webview_ui_path = {kRecommendAppsId, "appView"};
+const test::UIPath install_button = {kRecommendAppsId, "installButton"};
+const test::UIPath skip_button = {kRecommendAppsId, "skipButton"};
 
 struct FakeAppInfo {
  public:
@@ -150,17 +152,17 @@ class RecommendAppsScreenTest : public OobeBaseTest {
   void ExpectLoadingStep() {
     // Wait for loading screen.
     test::OobeJS()
-        .CreateVisibilityWaiter(true, {"recommend-apps-old", "loadingDialog"})
+        .CreateVisibilityWaiter(true, {kRecommendAppsId, "loadingDialog"})
         ->Wait();
 
-    test::OobeJS().ExpectHiddenPath({"recommend-apps-old", "appsDialog"});
+    test::OobeJS().ExpectHiddenPath({kRecommendAppsId, "appsDialog"});
   }
 
   void ExpectAppSelectionStep() {
     test::OobeJS()
-        .CreateVisibilityWaiter(true, {"recommend-apps-old", "appsDialog"})
+        .CreateVisibilityWaiter(true, {kRecommendAppsId, "appsDialog"})
         ->Wait();
-    test::OobeJS().ExpectHiddenPath({"recommend-apps-old", "loadingDialog"});
+    test::OobeJS().ExpectHiddenPath({kRecommendAppsId, "loadingDialog"});
   }
 
   bool WaitForAppListSize(const std::string& webview_path, int app_count) {
@@ -464,7 +466,8 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
 }
 
-IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest,
+                       InstallWithNoAppsSelectedDisabled) {
   LoginDisplayHost::default_host()
       ->GetWizardContext()
       ->defer_oobe_flow_finished_for_tests = true;
@@ -486,21 +489,11 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
 
   ASSERT_TRUE(WaitForAppListSize(webview_path, test_apps.size()));
 
-  // The install button is expected to be disabled at this point. Send empty app
-  // list directly to test handler behavior when install is triggered with no
-  // apps selected.
-  test::OobeJS().Evaluate("chrome.send('recommendAppsInstall', [[]]);");
-
-  WaitForScreenExit();
-  EXPECT_EQ(RecommendAppsScreen::Result::SKIPPED, screen_result_.value());
-
-  EXPECT_EQ(0, recommend_apps_fetcher_->retries());
-
-  const base::Value* fast_reinstall_packages =
-      ProfileManager::GetActiveUserProfile()->GetPrefs()->Get(
-          arc::prefs::kArcFastAppReinstallPackages);
-  ASSERT_TRUE(fast_reinstall_packages);
-  EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
+  // The install button is expected to be disabled at this point. Check that
+  // on install button click does nothing.
+  test::OobeJS().ExpectDisabledPath(install_button);
+  test::OobeJS().TapOnPath(install_button);
+  ASSERT_FALSE(screen_result_.has_value());
 }
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {

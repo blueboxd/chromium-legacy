@@ -68,6 +68,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
@@ -96,6 +97,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/util/display_util.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -113,7 +115,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 
@@ -162,23 +164,6 @@ void SetUpFileDeletionVerifier(base::RunLoop* loop) {
             EXPECT_FALSE(base::PathExists(path));
             loop->Quit();
           }));
-}
-
-std::unique_ptr<aura::Window> CreateTransientModalChildWindow(
-    aura::Window* transient_parent,
-    const gfx::Rect& bounds) {
-  auto child =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_POPUP);
-  child->Init(ui::LAYER_NOT_DRAWN);
-  child->SetBounds(bounds);
-  wm::AddTransientChild(transient_parent, child.get());
-  aura::client::ParentWindowWithContext(
-      child.get(), transient_parent->GetRootWindow(), bounds);
-  child->Show();
-
-  child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  wm::SetModalParent(child.get(), transient_parent);
-  return child;
 }
 
 void LeaveTabletMode() {
@@ -341,17 +326,22 @@ class CaptureModeTest : public AshTestBase {
   }
 
   // Select a region by pressing and dragging the mouse.
-  void SelectRegion(const gfx::Rect& region, bool release_mouse = true) {
+  void SelectRegion(const gfx::Rect& region_in_screen,
+                    bool release_mouse = true) {
     auto* controller = CaptureModeController::Get();
     ASSERT_TRUE(controller->IsActive());
     ASSERT_EQ(CaptureModeSource::kRegion, controller->source());
     auto* event_generator = GetEventGenerator();
-    event_generator->set_current_screen_location(region.origin());
+    event_generator->set_current_screen_location(region_in_screen.origin());
     event_generator->PressLeftButton();
-    event_generator->MoveMouseTo(region.bottom_right());
+    event_generator->MoveMouseTo(region_in_screen.bottom_right());
     if (release_mouse)
       event_generator->ReleaseLeftButton();
-    EXPECT_EQ(region, controller->user_capture_region());
+    auto capture_region_in_root = region_in_screen;
+    wm::ConvertRectFromScreen(
+        controller->capture_mode_session()->current_root(),
+        &capture_region_in_root);
+    EXPECT_EQ(capture_region_in_root, controller->user_capture_region());
   }
 
   void WaitForSessionToEnd() {
@@ -410,29 +400,35 @@ class CaptureModeTest : public AshTestBase {
                     ->settings_button(),
                 GetEventGenerator());
   }
+
+  std::unique_ptr<aura::Window> CreateTransientModalChildWindow(
+      gfx::Rect child_window_bounds,
+      aura::Window* transient_parent) {
+    auto child = CreateTestWindow(child_window_bounds);
+    wm::AddTransientChild(transient_parent, child.get());
+    child->Show();
+
+    child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+    wm::SetModalParent(child.get(), transient_parent);
+    return child;
+  }
 };
 
-class CaptureSessionWidgetObserver : public views::WidgetObserver {
+class CaptureSessionWidgetClosed {
  public:
-  explicit CaptureSessionWidgetObserver(views::Widget* widget) {
+  explicit CaptureSessionWidgetClosed(views::Widget* widget) {
     DCHECK(widget);
-    observer_.Observe(widget);
+    widget_ = widget->GetWeakPtr();
   }
-  CaptureSessionWidgetObserver(const CaptureSessionWidgetObserver&) = delete;
-  CaptureSessionWidgetObserver& operator=(const CaptureSessionWidgetObserver&) =
+  CaptureSessionWidgetClosed(const CaptureSessionWidgetClosed&) = delete;
+  CaptureSessionWidgetClosed& operator=(const CaptureSessionWidgetClosed&) =
       delete;
-  ~CaptureSessionWidgetObserver() override = default;
+  ~CaptureSessionWidgetClosed() = default;
 
-  bool GetWidgetDestroyed() const { return !observer_.IsObserving(); }
-
-  // views::WidgetObserver
-  void OnWidgetClosing(views::Widget* widget) override {
-    DCHECK(observer_.IsObservingSource(widget));
-    observer_.Reset();
-  }
+  bool GetWidgetClosed() const { return !widget_ || widget_->IsClosed(); }
 
  private:
-  base::ScopedObservation<views::Widget, views::WidgetObserver> observer_{this};
+  base::WeakPtr<views::Widget> widget_;
 };
 
 class CaptureNotificationWaiter : public message_center::MessageCenterObserver {
@@ -529,13 +525,13 @@ TEST_F(CaptureModeTest, CheckWidgetClosed) {
   controller->Start(CaptureModeEntryType::kQuickSettings);
   EXPECT_TRUE(controller->IsActive());
   EXPECT_TRUE(GetCaptureModeBarWidget());
-  CaptureSessionWidgetObserver observer(GetCaptureModeBarWidget());
-  EXPECT_FALSE(observer.GetWidgetDestroyed());
+  CaptureSessionWidgetClosed observer(GetCaptureModeBarWidget());
+  EXPECT_FALSE(observer.GetWidgetClosed());
   controller->Stop();
   EXPECT_FALSE(controller->IsActive());
   EXPECT_FALSE(controller->capture_mode_session());
   // The Widget should have been destroyed by now.
-  EXPECT_TRUE(observer.GetWidgetDestroyed());
+  EXPECT_TRUE(observer.GetWidgetClosed());
 }
 
 TEST_F(CaptureModeTest, StartWithMostRecentTypeAndSource) {
@@ -1238,88 +1234,121 @@ TEST_F(CaptureModeTest, MultiDisplayTouch) {
 }
 
 TEST_F(CaptureModeTest, RegionCursorStates) {
+  UpdateDisplay("800x700,801+0-800x700");
   using ui::mojom::CursorType;
 
   auto* cursor_manager = Shell::Get()->cursor_manager();
-  CursorType original_cursor_type = cursor_manager->GetCursor().type();
-  EXPECT_FALSE(cursor_manager->IsCursorLocked());
-  EXPECT_EQ(CursorType::kPointer, original_cursor_type);
-
   auto* event_generator = GetEventGenerator();
+
+  struct {
+    std::string scoped_trace;
+    gfx::Rect display_rect;
+    gfx::Point point;
+    gfx::Rect capture_region;
+  } kRegionTestCases[] = {
+      {"primary_display", gfx::Rect(0, 0, 800, 700), gfx::Point(250, 250),
+       gfx::Rect(200, 200, 200, 200)},
+      {"external_display", gfx::Rect(801, 0, 800, 700), gfx::Point(1050, 250),
+       gfx::Rect(1000, 200, 200, 200)},
+  };
+
+  for (auto test_case : kRegionTestCases) {
+    SCOPED_TRACE(test_case.scoped_trace);
+    MoveMouseToAndUpdateCursorDisplay(test_case.point, event_generator);
+    const CursorType original_cursor_type = cursor_manager->GetCursor().type();
+    EXPECT_FALSE(cursor_manager->IsCursorLocked());
+    auto* controller = StartImageRegionCapture();
+    EXPECT_TRUE(test_case.display_rect.Contains(
+        GetCaptureModeBarView()->GetBoundsInScreen()));
+    auto outside_point = test_case.capture_region.origin();
+    outside_point.Offset(-10, -10);
+    // Clear the previous region if any.
+    event_generator->MoveMouseTo(outside_point);
+    event_generator->ClickLeftButton();
+    EXPECT_TRUE(cursor_manager->IsCursorVisible());
+    EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
+    EXPECT_TRUE(cursor_manager->IsCursorLocked());
+
+    // Makes sure that the cursor is updated when the user releases the region
+    // select and is still hovering in the same location.
+    SelectRegion(test_case.capture_region);
+    EXPECT_EQ(CursorType::kSouthEastResize, cursor_manager->GetCursor().type());
+
+    // Verify that all of the `FineTunePosition` locations have the correct
+    // cursor when hovered over both in primary display and external display.
+    event_generator->MoveMouseTo(test_case.capture_region.origin());
+    EXPECT_EQ(CursorType::kNorthWestResize, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.top_center());
+    EXPECT_EQ(CursorType::kNorthSouthResize,
+              cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.top_right());
+    EXPECT_EQ(CursorType::kNorthEastResize, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.right_center());
+    EXPECT_EQ(CursorType::kEastWestResize, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.bottom_right());
+    EXPECT_EQ(CursorType::kSouthEastResize, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.bottom_center());
+    EXPECT_EQ(CursorType::kNorthSouthResize,
+              cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.bottom_left());
+    EXPECT_EQ(CursorType::kSouthWestResize, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.left_center());
+    EXPECT_EQ(CursorType::kEastWestResize, cursor_manager->GetCursor().type());
+
+    // Tests that within the bounds of the selected region, the cursor is a hand
+    // when hovering over the capture button, otherwise it is a
+    // multi-directional move cursor.
+    event_generator->MoveMouseTo(test_case.point);
+    EXPECT_EQ(CursorType::kMove, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(test_case.capture_region.CenterPoint());
+    EXPECT_EQ(CursorType::kHand, cursor_manager->GetCursor().type());
+
+    // Tests that the cursor changes to a cell type when hovering over the
+    // unselected region.
+    event_generator->MoveMouseTo(outside_point);
+    EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
+
+    // Check that cursor is unlocked when changing sources, and that the cursor
+    // changes to a pointer when hovering over the capture mode bar.
+    event_generator->MoveMouseTo(
+        GetRegionToggleButton()->GetBoundsInScreen().CenterPoint());
+    EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(
+        GetWindowToggleButton()->GetBoundsInScreen().CenterPoint());
+    EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
+    event_generator->ClickLeftButton();
+    ASSERT_EQ(CaptureModeSource::kWindow, controller->source());
+
+    // The event on the capture bar to change capture source will still keep the
+    // cursor locked.
+    EXPECT_TRUE(cursor_manager->IsCursorLocked());
+    EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
+
+    // Tests that on changing back to region capture mode, the cursor becomes
+    // locked, and is still a pointer type over the bar, whilst a cell cursor
+    // otherwise (not over the selected region).
+    event_generator->MoveMouseTo(
+        GetRegionToggleButton()->GetBoundsInScreen().CenterPoint());
+    event_generator->ClickLeftButton();
+    EXPECT_TRUE(cursor_manager->IsCursorLocked());
+    EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
+
+    // Tests that clicking on the button again doesn't change the cursor.
+    event_generator->ClickLeftButton();
+    EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
+    event_generator->MoveMouseTo(outside_point);
+    EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
+
+    // Tests that when exiting capture mode that the cursor is restored to its
+    // original state.
+    controller->Stop();
+    EXPECT_FALSE(controller->IsActive());
+    EXPECT_FALSE(cursor_manager->IsCursorLocked());
+    EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+  }
+
+  // Tests the cursor state in tablet mode.
   auto* controller = StartImageRegionCapture();
-  EXPECT_TRUE(cursor_manager->IsCursorLocked());
-  event_generator->MoveMouseTo(gfx::Point(175, 175));
-  EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
-
-  const gfx::Rect target_region(gfx::Rect(200, 200, 200, 200));
-  SelectRegion(target_region);
-
-  // Makes sure that the cursor is updated when the user releases the region
-  // select and is still hovering in the same location.
-  EXPECT_EQ(CursorType::kSouthEastResize, cursor_manager->GetCursor().type());
-
-  // Verify that all of the |FineTunePosition| locations have the correct cursor
-  // when hovered over.
-  event_generator->MoveMouseTo(target_region.origin());
-  EXPECT_EQ(CursorType::kNorthWestResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.top_center());
-  EXPECT_EQ(CursorType::kNorthSouthResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.top_right());
-  EXPECT_EQ(CursorType::kNorthEastResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.right_center());
-  EXPECT_EQ(CursorType::kEastWestResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.bottom_right());
-  EXPECT_EQ(CursorType::kSouthEastResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.bottom_center());
-  EXPECT_EQ(CursorType::kNorthSouthResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.bottom_left());
-  EXPECT_EQ(CursorType::kSouthWestResize, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.left_center());
-  EXPECT_EQ(CursorType::kEastWestResize, cursor_manager->GetCursor().type());
-
-  // Tests that within the bounds of the selected region, the cursor is a hand
-  // when hovering over the capture button, otherwise it is a multi-directional
-  // move cursor.
-  event_generator->MoveMouseTo(gfx::Point(250, 250));
-  EXPECT_EQ(CursorType::kMove, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(target_region.CenterPoint());
-  EXPECT_EQ(CursorType::kHand, cursor_manager->GetCursor().type());
-
-  // Tests that the cursor changes to a cell type when hovering over the
-  // unselected region.
-  event_generator->MoveMouseTo(gfx::Point(50, 50));
-  EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
-
-  // Check that cursor is unlocked when changing sources, and that the cursor
-  // changes to a pointer when hovering over the capture mode bar.
-  event_generator->MoveMouseTo(
-      GetRegionToggleButton()->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(
-      GetWindowToggleButton()->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
-  event_generator->ClickLeftButton();
-  ASSERT_EQ(CaptureModeSource::kWindow, controller->source());
-  // The event on the capture bar to change capture source will still keep the
-  // cursor locked.
-  EXPECT_TRUE(cursor_manager->IsCursorLocked());
-  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
-
-  // Tests that on changing back to region capture mode, the cursor becomes
-  // locked, and is still a pointer type over the bar, whilst a cell cursor
-  // otherwise (not over the selected region).
-  event_generator->MoveMouseTo(
-      GetRegionToggleButton()->GetBoundsInScreen().CenterPoint());
-  original_cursor_type = cursor_manager->GetCursor().type();
-  event_generator->ClickLeftButton();
-  EXPECT_TRUE(cursor_manager->IsCursorLocked());
-  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
-  // Tests that clicking on the button again doesn't change the cursor.
-  event_generator->ClickLeftButton();
-  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
-  event_generator->MoveMouseTo(gfx::Point(50, 50));
-  EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
 
   // Enter tablet mode, the cursor should be hidden.
   SwitchToTabletMode();
@@ -1335,13 +1364,7 @@ TEST_F(CaptureModeTest, RegionCursorStates) {
   LeaveTabletMode();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
-
-  // Tests that when exiting capture mode that the cursor is restored to its
-  // original state.
   controller->Stop();
-  EXPECT_FALSE(controller->IsActive());
-  EXPECT_FALSE(cursor_manager->IsCursorLocked());
-  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
 }
 
 TEST_F(CaptureModeTest, FullscreenCursorStates) {
@@ -1441,11 +1464,11 @@ TEST_F(CaptureModeTest, WindowCursorStates) {
   CaptureModeSessionTestApi test_api(controller->capture_mode_session());
   EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
 
-  // If the mouse is not above the window, use the original mouse cursor.
+  // If the mouse is not above the window, use a pointer.
   event_generator->MoveMouseTo(gfx::Point(300, 300));
-  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
 
   // Use pointer mouse if the event is on the capture bar.
   ClickOnView(GetVideoToggleButton(), event_generator);
@@ -1463,9 +1486,9 @@ TEST_F(CaptureModeTest, WindowCursorStates) {
 
   // If the mouse is not above the window, use the original mouse cursor.
   event_generator->MoveMouseTo(gfx::Point(300, 300));
-  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
 
   // Move above the window again, the cursor should change back to the video
   // record icon.
@@ -1529,11 +1552,11 @@ TEST_F(CaptureModeTest, WindowDestruction) {
   EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
 
   // Destroy the window while hovering. There is no window underneath, so it
-  // should revert back to the original cursor.
+  // should revert back to a pointer.
   window2.reset();
-  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
 
   // Destroy the window while mouse is in a pressed state. Cursor should revert
   // back to the original cursor.
@@ -2152,6 +2175,58 @@ TEST_F(CaptureModeTest, RotateDisplayWhileRecording) {
   EXPECT_EQ(gfx::Size(100, 200), test_delegate->GetCurrentVideoSize());
 }
 
+// Regression test for https://crbug.com/1331095.
+TEST_F(CaptureModeTest, CornerRegionWithScreenRotation) {
+  UpdateDisplay("800x600");
+
+  // Pick a region at the bottom right corner of the landscape screen, so that
+  // when the screen is rotated to portrait, the unadjusted region becomes
+  // outside the new portrait bounds.
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kRegion, CaptureModeType::kVideo);
+  SelectRegion(gfx::Rect(700, 400, 100, 200));
+  StartVideoRecordingImmediately();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+
+  CaptureModeTestApi test_api;
+  test_api.FlushRecordingServiceForTesting();
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+
+  EXPECT_EQ(gfx::Size(100, 200), test_delegate->GetCurrentVideoSize());
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  auto* recording_watcher = controller->video_recording_watcher_for_testing();
+  gfx::Rect effective_region_bounds =
+      recording_watcher->GetEffectivePartialRegionBounds();
+  EXPECT_FALSE(effective_region_bounds.IsEmpty());
+  EXPECT_TRUE(root_window->bounds().Contains(effective_region_bounds));
+
+  // Verifies that the bounds of the visible rect of the frame is within the
+  // bounds of the root window.
+  auto verify_video_frame = [&](const media::VideoFrame& frame,
+                                const gfx::Rect& content_rect) {
+    EXPECT_TRUE(root_window->bounds().Contains(frame.visible_rect()));
+  };
+
+  test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+      base::BindLambdaForTesting(verify_video_frame));
+
+  // Rotate by 90 degree, the adjusted region bounds should not be empty and
+  // should remain within the bounds of the new portrait root window bounds.
+  Shell::Get()->display_manager()->SetDisplayRotation(
+      WindowTreeHostManager::GetPrimaryDisplayId(), display::Display::ROTATE_90,
+      display::Display::RotationSource::USER);
+  test_api.FlushRecordingServiceForTesting();
+  EXPECT_EQ(gfx::Size(100, 200), test_delegate->GetCurrentVideoSize());
+
+  effective_region_bounds =
+      recording_watcher->GetEffectivePartialRegionBounds();
+  EXPECT_FALSE(effective_region_bounds.IsEmpty());
+  EXPECT_TRUE(root_window->bounds().Contains(effective_region_bounds));
+  test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+      base::BindLambdaForTesting(verify_video_frame));
+}
+
 // Tests that the video frames delivered to the service for recorded windows are
 // valid (i.e. they have the correct size, and suffer from no letterboxing, even
 // when the window gets resized).
@@ -2252,42 +2327,6 @@ TEST_F(CaptureModeTest, VerifyWindowRecordingVideoFrames) {
   EXPECT_FALSE(controller->is_recording_in_progress());
 }
 
-// Tests that minimized windows are ignored while tabbing through in kWindow
-// capture source type.
-// TODO(crbug.com/1318231) : Add tests cases for occluded windows when the
-// algorithm is ready.
-TEST_F(CaptureModeTest, IgnoreUnselectableWindowsWhileTabbingInKWindow) {
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(10, 10, 500, 600)));
-  // Create `window2` to be minized.
-  std::unique_ptr<aura::Window> window2(
-      CreateTestWindow(gfx::Rect(0, 0, 50, 90)));
-  WindowState::Get(window2.get())->Minimize();
-  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
-
-  auto* controller =
-      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
-  CaptureModeSession* capture_mode_session = controller->capture_mode_session();
-
-  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
-  CaptureModeSessionTestApi test_api(capture_mode_session);
-
-  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
-
-  auto* event_generator = GetEventGenerator();
-
-  // Tab six times, `window1` should be focused.
-  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
-  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
-
-  // Tab once, the `settings` button should be focused. The minimized `window2`
-  // will be ignored during the tabbing process.
-  SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
-}
-
 // Tests that the focus should be on the `Settings` button after closing the
 // settings menu.
 TEST_F(CaptureModeTest, ReturnFocusToSettingsButtonAfterSettingsMenuIsClosed) {
@@ -2330,6 +2369,182 @@ TEST_F(CaptureModeTest, ReturnFocusToSettingsButtonAfterSettingsMenuIsClosed) {
   EXPECT_FALSE(test_api.GetCaptureModeSettingsView());
   EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
   EXPECT_TRUE(test_api.GetCaptureModeBarView()->settings_button()->has_focus());
+}
+
+// Tests that minimized window(s) will be ignored whereas four corners occluded
+// but overall partially occluded window will be focusable while tabbing through
+// in `kWindow` mode.
+TEST_F(CaptureModeTest, IgnoreMinimizeWindowsInKWindow) {
+  // Layout of three windows: four corners of `window3` are occluded by
+  // `window1` and `window2`.
+  //
+  //   +------+
+  //   |      |       +-----------+
+  //   |  1   |-------|           |
+  //   |      |   3   |     2     |
+  //   |      |       |           |
+  //   |      |       |           |
+  //   |      |-------|           |
+  //   |      |       +-----------+
+  //   +------+
+  std::unique_ptr<aura::Window> window3 =
+      CreateTestWindow(gfx::Rect(100, 45, 150, 200));
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(150, 50, 150, 250));
+  std::unique_ptr<aura::Window> window1 =
+      CreateTestWindow(gfx::Rect(20, 30, 100, 300));
+  std::unique_ptr<aura::Window> window4(
+      CreateTestWindow(gfx::Rect(0, 0, 50, 90)));
+  WindowState::Get(window4.get())->Minimize();
+
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  CaptureModeSession* capture_mode_session = controller->capture_mode_session();
+  CaptureModeSessionTestApi test_api(capture_mode_session);
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  auto* event_generator = GetEventGenerator();
+
+  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  // Tab six times, `window1` should be focused. Tab another time, `window2`
+  // should be focused. Tab again, `window3` will be focused.
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
+
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window3.get(), capture_mode_session->GetSelectedWindow());
+
+  // Tab once, the `settings` button should be focused. The minimized `window4`
+  // will be ignored during the tabbing process.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  controller->Stop();
+}
+
+// Tests that partially occluded window(s) will be focusable even when four
+// edges are occluded by other windows while tabbing through in `kWindow` mode.
+TEST_F(CaptureModeTest, PartiallyOccludedWindowIsFocusableInKWindow) {
+  // Layout of five windows: four edges of `window3` is occluded by `window1`,
+  // `window2`, `window4` and `window5` respectively, but the middle part is not
+  // occluded.
+  //        +-----------+
+  //        |           |
+  //   +----|     4     |
+  //   |    |           |---------+
+  //   |    |           |         |
+  //   |    +-|-------|-+         |
+  //   |  1   |   3   |     2     |
+  //   |      |       |           |
+  //   |    +-|-------|--+        |
+  //   |    |            |--------+
+  //   +----|     5      |
+  //        |            |
+  //        +------------+
+  std::unique_ptr<aura::Window> window3 =
+      CreateTestWindow(gfx::Rect(100, 45, 150, 200));
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(150, 50, 150, 250));
+  std::unique_ptr<aura::Window> window1 =
+      CreateTestWindow(gfx::Rect(20, 30, 100, 300));
+  std::unique_ptr<aura::Window> window4 =
+      CreateTestWindow(gfx::Rect(50, 5, 150, 55));
+  std::unique_ptr<aura::Window> window5 =
+      CreateTestWindow(gfx::Rect(60, 225, 210, 45));
+
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  CaptureModeSession* capture_mode_session = controller->capture_mode_session();
+  CaptureModeSessionTestApi test_api(capture_mode_session);
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  auto* event_generator = GetEventGenerator();
+
+  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  // Tab six times, `window5` should be focused. Then `window4`, `window1`,
+  // `window2` and `window3` will be focused after each tab.
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(window5.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window4.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window3.get(), capture_mode_session->GetSelectedWindow());
+
+  // Tab once, the `settings` button should be focused.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  controller->Stop();
+}
+
+// Tests that fully occluded window(s) will be ignored while tabbing in
+// `kWindow`.
+TEST_F(CaptureModeTest, IgnoreFullyOccludedWindowWhileTabbingInKWindow) {
+  // Layout of six windows: `window3` is fully occluded by `window1`, `window2`,
+  // `window4`, `window5` and `window6`.
+  //        +-----------+
+  //        |           |
+  //   +----|     4     |
+  //   | 1  |           |---------+
+  //   |  +-----------------+     |
+  //   |  |                 |     |
+  //   |  |       6         |  2  |
+  //   |  |                 |     |
+  //   |  +-----------------+     |
+  //   |    |            |--------+
+  //   +----|     5      |
+  //        |            |
+  //        +------------+
+  std::unique_ptr<aura::Window> window3 =
+      CreateTestWindow(gfx::Rect(100, 45, 150, 200));
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(150, 50, 150, 250));
+  std::unique_ptr<aura::Window> window1 =
+      CreateTestWindow(gfx::Rect(20, 30, 100, 300));
+  std::unique_ptr<aura::Window> window4 =
+      CreateTestWindow(gfx::Rect(50, 5, 150, 55));
+  std::unique_ptr<aura::Window> window5 =
+      CreateTestWindow(gfx::Rect(60, 225, 210, 45));
+  std::unique_ptr<aura::Window> window6 =
+      CreateTestWindow(gfx::Rect(30, 55, 175, 185));
+
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  CaptureModeSession* capture_mode_session = controller->capture_mode_session();
+  CaptureModeSessionTestApi test_api(capture_mode_session);
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  auto* event_generator = GetEventGenerator();
+
+  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  // Tab six times, `window6` should be focused. Then `window5`, `window4`,
+  // `window1` and `window2` will be focused after each tab.
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(window6.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window5.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window4.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
+
+  // Tab once, the `settings` button should be focused. The fully occluded
+  // `window3` will be ignored during the tabbing process.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
 }
 
 class CaptureModeSaveFileTest
@@ -3502,7 +3717,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationTabThroughWindowsOnMultipleDisplays) {
   std::unique_ptr<aura::Window> window1(
       CreateTestWindow(gfx::Rect(0, 0, 200, 200)));
   auto window1_transient = CreateTransientModalChildWindow(
-      window1.get(), gfx::Rect(20, 30, 200, 150));
+      gfx::Rect(20, 30, 200, 150), window1.get());
   std::unique_ptr<aura::Window> window2(
       CreateTestWindow(gfx::Rect(900, 0, 200, 200)));
 
@@ -3820,6 +4035,26 @@ TEST_F(CaptureModeTest, ClipboardWrite) {
   EXPECT_NE(before_sequence_number, after_sequence_number);
 }
 
+// Tests the reverse tabbing behavior of the keyboard navigation.
+TEST_F(CaptureModeTest, ReverseTabbingTest) {
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  auto* event_generator = GetEventGenerator();
+  for (CaptureModeSource source :
+       {CaptureModeSource::kFullscreen, CaptureModeSource::kRegion,
+        CaptureModeSource::kWindow}) {
+    auto* controller = StartCaptureSession(source, CaptureModeType::kImage);
+    CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+    // Nothing is focused initially.
+    EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+    EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+    // Reverse tabbing once and the focus should be on the close button.
+    SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
+    EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+    EXPECT_TRUE(GetCloseButton()->has_focus());
+    controller->Stop();
+  }
+}
+
 // A test class that uses a mock time task environment.
 class CaptureModeMockTimeTest : public CaptureModeTest {
  public:
@@ -3936,22 +4171,49 @@ TEST_F(CaptureModeTest, CaptureBarOpacity) {
   event_generator->ReleaseLeftButton();
 
   // The region overlaps the capture bar, so we set the opacity of the bar to
-  // 0.1f.
-  EXPECT_EQ(0.1f, capture_bar_layer->GetTargetOpacity());
+  // the overlapped opacity.
+  EXPECT_EQ(capture_mode::kCaptureUiOverlapOpacity,
+            capture_bar_layer->GetTargetOpacity());
 
   // When there is overlap, the toolbar turns opaque on mouseover.
   event_generator->MoveMouseTo(
       GetCaptureModeBarView()->GetBoundsInScreen().CenterPoint());
   EXPECT_EQ(1.f, capture_bar_layer->GetTargetOpacity());
 
-  // Capture bar drops back to 0.1 opacity when the mouse is no longer hovering.
+  // Capture bar drops back to the overlapped opacity when the mouse is no
+  // longer hovering.
   event_generator->MoveMouseTo(
       GetCaptureModeBarView()->GetBoundsInScreen().top_center() +
       gfx::Vector2d(0, -50));
-  EXPECT_EQ(0.1f, capture_bar_layer->GetTargetOpacity());
+  EXPECT_EQ(capture_mode::kCaptureUiOverlapOpacity,
+            capture_bar_layer->GetTargetOpacity());
 
   // Check that the opacity is reset when we select another region.
   SelectRegion(target_region);
+  EXPECT_EQ(1.f, capture_bar_layer->GetTargetOpacity());
+}
+
+TEST_F(CaptureModeTest, CaptureBarOpacityOnHoveringOnCaptureLabel) {
+  UpdateDisplay("800x700");
+
+  auto* event_generator = GetEventGenerator();
+  auto* controller = StartImageRegionCapture();
+  EXPECT_TRUE(controller->IsActive());
+  ui::Layer* capture_bar_layer = GetCaptureModeBarWidget()->GetLayer();
+
+  // Set the capture region to make it overlap with the capture bar. And then
+  // move the mouse to the outside of the capture bar, verify it has the
+  // overlapped opacity.
+  const gfx::Rect capture_region(200, 500, 130, 130);
+  SelectRegion(capture_region);
+  event_generator->MoveMouseTo({10, 10});
+  EXPECT_EQ(capture_mode::kCaptureUiOverlapOpacity,
+            capture_bar_layer->GetTargetOpacity());
+
+  // Move mouse on top of the capture label, verify the bar becomes fully
+  // opaque.
+  event_generator->MoveMouseTo(
+      GetCaptureModeLabelWidget()->GetWindowBoundsInScreen().CenterPoint());
   EXPECT_EQ(1.f, capture_bar_layer->GetTargetOpacity());
 }
 
@@ -4184,7 +4446,8 @@ TEST_F(CaptureModeTest, CaptureBarAndSettingsMenuVisibilityDrawingRegion) {
   // capture bar will always be visible no matter if the mouse is hovered on it
   // or not.
   event_generator->MoveMouseTo(target_region.origin());
-  EXPECT_EQ(0.1f, capture_bar_layer->GetTargetOpacity());
+  EXPECT_EQ(capture_mode::kCaptureUiOverlapOpacity,
+            capture_bar_layer->GetTargetOpacity());
   // Move mouse on top of the capture bar, verify that capture bar becomes
   // visible.
   event_generator->MoveMouseTo(
@@ -4210,10 +4473,11 @@ TEST_F(CaptureModeTest, CaptureBarAndSettingsMenuVisibilityDrawingRegion) {
   EXPECT_EQ(1.f, settings_menu->layer()->GetTargetOpacity());
 
   // Close settings menu, and move mouse to the outside of the capture bar,
-  // verify capture bar has the overlapped opacity 0.1f.
+  // verify capture bar has the overlapped opacity.
   ClickOnView(GetSettingsButton(), event_generator);
   event_generator->MoveMouseTo(target_region.origin());
-  EXPECT_EQ(0.1f, capture_bar_layer->GetTargetOpacity());
+  EXPECT_EQ(capture_mode::kCaptureUiOverlapOpacity,
+            capture_bar_layer->GetTargetOpacity());
 }
 
 TEST_F(CaptureModeTest, CaptureFolderSetting) {

@@ -105,7 +105,7 @@ id<GREYMatcher> RecentlyClosedTabsSectionHeader() {
                     grey_sufficientlyVisible(), nil);
 }
 
-// Identifer for cell at given |index| in the tab grid.
+// Identifer for cell at given `index` in the tab grid.
 NSString* IdentifierForCellAtIndex(unsigned int index) {
   return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
 }
@@ -159,14 +159,14 @@ id<GREYMatcher> VisibleSearchScrim() {
                     grey_sufficientlyVisible(), nil);
 }
 
-// Returns a matcher for the search bar text field containing |searchText|.
+// Returns a matcher for the search bar text field containing `searchText`.
 id<GREYMatcher> SearchBarWithSearchText(NSString* searchText) {
   return grey_accessibilityID([kTabGridSearchTextFieldIdentifierPrefix
       stringByAppendingString:searchText]);
 }
 
 // Returns a matcher for the search results header with title set with
-// |title_id|.
+// `title_id`.
 id<GREYMatcher> SearchSectionHeaderWithTitleID(int title_id) {
   id<GREYMatcher> title_matcher =
       grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(title_id)),
@@ -188,7 +188,7 @@ id<GREYMatcher> SearchSuggestedActionsSectionHeader() {
 }
 
 // Returns a matcher for the search results open tabs section header with
-// |count| set in the value label .
+// `count` set in the value label .
 id<GREYMatcher> SearchOpenTabsHeaderWithValue(size_t count) {
   NSString* count_str = [NSString stringWithFormat:@"%" PRIuS, count];
   NSString* value = l10n_util::GetNSStringF(
@@ -230,7 +230,7 @@ id<GREYMatcher> SearchHistorySuggestedAction() {
       grey_sufficientlyVisible(), nil);
 }
 
-// Returns a matcher for the "Search history (|matches_count| Found)" suggested
+// Returns a matcher for the "Search history (`matches_count` Found)" suggested
 // action on the regular tab grid.
 id<GREYMatcher> SearchHistorySuggestedActionWithMatches(size_t matches_count) {
   NSString* count_str = [NSString stringWithFormat:@"%" PRIuS, matches_count];
@@ -241,7 +241,7 @@ id<GREYMatcher> SearchHistorySuggestedActionWithMatches(size_t matches_count) {
                     grey_sufficientlyVisible(), nil);
 }
 
-// Returns a matcher for the "Search history (|matches_count| Found)" suggested
+// Returns a matcher for the "Search history (`matches_count` Found)" suggested
 // action on the recent tabs page.
 id<GREYMatcher> RecentTabsSearchHistorySuggestedActionWithMatches(
     size_t matches_count) {
@@ -258,7 +258,7 @@ id<GREYMatcher> SearchSuggestedActionsSection() {
 }
 
 // Returns a matcher for the search suggested actions section with the history
-// item matches count set to |matches_count|.
+// item matches count set to `matches_count`.
 id<GREYMatcher> SearchSuggestedActionsSectionWithHistoryMatchesCount(
     size_t matches_count) {
   return grey_allOf(
@@ -275,7 +275,7 @@ id<GREYMatcher> SelectTabsContextMenuItem() {
 #pragma mark - TestResponseProvider
 
 // A ResponseProvider that provides html responses of the requested URL for
-// requests to |kSearchEngineHost|.
+// requests to `kSearchEngineHost`.
 class EchoURLDefaultSearchEngineResponseProvider
     : public web::DataResponseProvider {
  public:
@@ -758,8 +758,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
 // Tests that dragging a tab grid incognito item to the edge opens a new window
 // and that the tab is properly transferred, incuding navigation stack.
-// TODO(crbug.com/1320251): Test fails.
-- (void)DISABLED_testIncognitoDragAndDropAtEdgeToCreateNewWindow {
+- (void)testIncognitoDragAndDropAtEdgeToCreateNewWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -809,8 +808,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging tab grid item between windows.
-// TODO(crbug.com/1320251): Test fails.
-- (void)DISABLED_testDragAndDropBetweenWindows {
+- (void)testDragAndDropBetweenWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -892,8 +890,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging incognito tab grid item between windows.
-// TODO(crbug.com/1320251): Test fails.
-- (void)DISABLED_testDragAndDropIncognitoBetweenWindows {
+// TODO(crbug.com/1325246): Re-enable this test.
+- (void)FLAKY_testDragAndDropIncognitoBetweenWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -966,8 +964,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging tab grid item as URL between windows.
-// TODO(crbug.com/1320251): Test fails.
-- (void)DISABLED_testDragAndDropURLBetweenWindows {
+- (void)testDragAndDropURLBetweenWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -1028,8 +1025,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging tab grid incognito item as URL to a main windows.
-// TODO(crbug.com/1320251): Fails on device.
-- (void)DISABLED_testDragAndDropIncognitoURLInMainWindow {
+- (void)testDragAndDropIncognitoURLInMainWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -1093,17 +1089,9 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging tab grid main item as URL to an incognito windows.
-// TODO(crbug.com/1320251): Fails on device.
-- (void)DISABLED_testDragAndDropMainURLInIncognitoWindow {
+- (void)testDragAndDropMainURLInIncognitoWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
-
-// TODO(crbug.com/1184267): Test is flaky on iPad devices.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"This test is flaky on iPad devices.");
-  }
-#endif
 
   // Setup first window with one incognito tab 1.
   [ChromeEarlGrey closeAllNormalTabs];
@@ -2243,7 +2231,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Ensure the loaded page is a default search engine page for |searchQuery|.
+  // Ensure the loaded page is a default search engine page for `searchQuery`.
   [ChromeEarlGrey waitForWebStateContainingText:kSearchEngineHost];
   [ChromeEarlGrey waitForWebStateContainingText:searchQuery];
 
@@ -2285,7 +2273,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Ensure the loaded page is a default search engine page for |searchQuery|.
+  // Ensure the loaded page is a default search engine page for `searchQuery`.
   [ChromeEarlGrey waitForWebStateContainingText:kSearchEngineHost];
   [ChromeEarlGrey waitForWebStateContainingText:searchQuery];
 
@@ -2388,7 +2376,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [[EarlGrey selectElementWithMatcher:RecentlyClosedTabWithTitle(kTitle2)]
       assertWithMatcher:grey_notNil()];
 
-  // Enter search mode and search for |kTitle2|.
+  // Enter search mode and search for `kTitle2|.
   [[EarlGrey selectElementWithMatcher:TabGridSearchTabsButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:TabGridSearchBar()]
@@ -2534,7 +2522,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Long press on the recent tab entry or the tab item in the tab grid with
-// |title|.
+// `title`.
 - (void)longPressTabWithTitle:(NSString*)title {
   // The test page may be there multiple times.
   [[[EarlGrey
@@ -2623,9 +2611,9 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
              @"Snackbar did not disappear.");
 }
 
-// Verifies that the tab grid has exactly |expectedCount| tabs.
+// Verifies that the tab grid has exactly `expectedCount` tabs.
 - (void)verifyVisibleTabsCount:(NSUInteger)expectedCount {
-  // Verify that the cell # |expectedCount| exist.
+  // Verify that the cell # `expectedCount` exist.
   if (expectedCount == 0) {
     [[EarlGrey selectElementWithMatcher:TabGridCell()]
         assertWithMatcher:grey_nil()];
@@ -2640,8 +2628,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
                                           nil)] assertWithMatcher:grey_nil()];
 }
 
-// Returns an interaction that scrolls down on the view matched by |viewMatcher|
-// to search for the given |matcher|.
+// Returns an interaction that scrolls down on the view matched by `viewMatcher`
+// to search for the given `matcher`.
 - (id<GREYInteraction>)scrollDownViewMatcher:(id<GREYMatcher>)viewMatcher
                              toSelectMatcher:(id<GREYMatcher>)matcher {
   return [[EarlGrey selectElementWithMatcher:matcher]
@@ -2652,8 +2640,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
       onElementWithMatcher:viewMatcher];
 }
 
-// Returns an interaction that scrolls up on the view matched by |viewMatcher|
-// to search for the given |matcher|.
+// Returns an interaction that scrolls up on the view matched by `viewMatcher`
+// to search for the given `matcher`.
 - (id<GREYInteraction>)scrollUpViewMatcher:(id<GREYMatcher>)viewMatcher
                            toSelectMatcher:(id<GREYMatcher>)matcher {
   return [[EarlGrey selectElementWithMatcher:matcher]

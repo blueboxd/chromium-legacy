@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
-#include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -246,6 +245,15 @@ uint64_t ConfigurableStorageDelegate::SanitizeTriggerData(
   }
 }
 
+uint64_t ConfigurableStorageDelegate::SanitizeSourceEventId(
+    uint64_t source_event_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!source_event_id_cardinality_)
+    return source_event_id;
+
+  return source_event_id % *source_event_id_cardinality_;
+}
+
 void ConfigurableStorageDelegate::set_max_attributions_per_source(int max) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   max_attributions_per_source_ = max;
@@ -345,9 +353,12 @@ void ConfigurableStorageDelegate::set_trigger_data_cardinality(
   event_trigger_data_cardinality_ = event;
 }
 
-AttributionManager* TestManagerProvider::GetManager(
-    WebContents* web_contents) const {
-  return manager_;
+void ConfigurableStorageDelegate::set_source_event_id_cardinality(
+    uint64_t cardinality) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GT(cardinality, 0u);
+
+  source_event_id_cardinality_ = cardinality;
 }
 
 MockAttributionManager::MockAttributionManager() = default;
@@ -733,22 +744,6 @@ AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
           contributions_, aggregatable_attribution_report_id_, report_time_));
 }
 
-AggregatableSourceMojoBuilder::AggregatableSourceMojoBuilder() = default;
-
-AggregatableSourceMojoBuilder::~AggregatableSourceMojoBuilder() = default;
-
-AggregatableSourceMojoBuilder& AggregatableSourceMojoBuilder::AddKey(
-    std::string key_id,
-    absl::uint128 key) {
-  aggregatable_source_.keys.emplace(std::move(key_id), key);
-  return *this;
-}
-
-blink::mojom::AttributionAggregatableSourcePtr
-AggregatableSourceMojoBuilder::Build() const {
-  return aggregatable_source_.Clone();
-}
-
 bool operator==(const AttributionTrigger::EventTriggerData& a,
                 const AttributionTrigger::EventTriggerData& b) {
   const auto tie = [](const AttributionTrigger::EventTriggerData& t) {
@@ -761,7 +756,7 @@ bool operator==(const AttributionTrigger::EventTriggerData& a,
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   const auto tie = [](const AttributionTrigger& t) {
     return std::make_tuple(t.destination_origin(), t.reporting_origin(),
-                           t.debug_key(), t.event_triggers(),
+                           t.filters(), t.debug_key(), t.event_triggers(),
                            t.aggregatable_trigger());
   };
   return tie(a) == tie(b);
@@ -935,6 +930,9 @@ std::ostream& operator<<(std::ostream& out,
     case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
       out << "prohibitedByBrowserPolicy";
       break;
+    case AttributionTrigger::EventLevelResult::kNoMatchingConfigurations:
+      out << "noMatchingConfigurations";
+      break;
   }
   return out;
 }
@@ -1046,7 +1044,8 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion) {
   out << "{destination_origin=" << conversion.destination_origin()
-      << ",reporting_origin=" << conversion.reporting_origin() << ",debug_key="
+      << ",reporting_origin=" << conversion.reporting_origin()
+      << ",filters=" << conversion.filters() << ",debug_key="
       << (conversion.debug_key() ? base::NumberToString(*conversion.debug_key())
                                  : "null")
       << "event_triggers=[";
@@ -1364,17 +1363,15 @@ AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
 }
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(
-    AttributionManagerImpl* manager,
-    base::Time max_report_time) {
+    AttributionManager* manager) {
   base::RunLoop run_loop;
   std::vector<AttributionReport> attribution_reports;
-  manager->attribution_storage_
-      .AsyncCall(&AttributionStorage::GetAttributionReports)
-      .WithArgs(max_report_time, /*limit=*/-1,
-                AttributionReport::ReportTypes{
-                    AttributionReport::ReportType::kEventLevel,
-                    AttributionReport::ReportType::kAggregatableAttribution})
-      .Then(base::BindOnce(base::BindLambdaForTesting(
+  manager->GetPendingReportsForInternalUse(
+      AttributionReport::ReportTypes{
+          AttributionReport::ReportType::kEventLevel,
+          AttributionReport::ReportType::kAggregatableAttribution},
+      /*limit=*/-1,
+      base::BindOnce(base::BindLambdaForTesting(
           [&](std::vector<AttributionReport> reports) {
             attribution_reports = std::move(reports);
             run_loop.Quit();

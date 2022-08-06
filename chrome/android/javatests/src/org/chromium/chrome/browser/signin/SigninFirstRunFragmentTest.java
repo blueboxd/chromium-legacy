@@ -45,8 +45,10 @@ import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,6 +61,9 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.OneshotSupplierImpl;
+import org.chromium.base.test.metrics.HistogramTestRule;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -67,20 +72,23 @@ import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo.OwnedState;
+import org.chromium.chrome.browser.enterprise.util.FakeEnterpriseInfo;
 import org.chromium.chrome.browser.firstrun.FirstRunPageDelegate;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunUtilsJni;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.firstrun.PolicyLoadListener;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.SigninFirstRunFragment.LoadPoint;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
 import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial.VariationsGroup;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninChecker;
 import org.chromium.chrome.browser.signin.services.SigninManager;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
@@ -90,11 +98,14 @@ import org.chromium.components.policy.PolicyService;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.ViewUtils;
 
 /** Tests for the class {@link SigninFirstRunFragment}. */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SigninFirstRunFragmentTest {
     private static final String TEST_EMAIL1 = "test.account1@gmail.com";
@@ -125,14 +136,14 @@ public class SigninFirstRunFragmentTest {
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
+    public HistogramTestRule mHistogramTestRule = new HistogramTestRule();
+
+    @Rule
     public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     @Rule
     public final ChromeTabbedActivityTestRule mChromeActivityTestRule =
             new ChromeTabbedActivityTestRule();
-
-    @Mock
-    public EnterpriseInfo mEnterpriseInfoMock;
     @Mock
     private ExternalAuthUtils mExternalAuthUtilsMock;
     @Mock
@@ -156,19 +167,32 @@ public class SigninFirstRunFragmentTest {
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mCallbackCaptor;
 
+    private FakeEnterpriseInfo mFakeEnterpriseInfo = new FakeEnterpriseInfo();
     private CustomSigninFirstRunFragment mFragment;
+
+    @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
+    public void setupNightMode(boolean nightModeEnabled) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeNightModeTestUtils.setUpNightModeForChromeActivity(nightModeEnabled);
+        });
+    }
+
+    @BeforeClass
+    public static void setUpBeforeActivityLaunched() {
+        ChromeNightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
+        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
+        // TODO(https://crbug.com/1211884): Revise after HistogramTestRule is revised to not require
+        // native loading.
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
+    }
 
     @Before
     public void setUp() {
         when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(true);
         ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
-        EnterpriseInfo.setInstanceForTest(mEnterpriseInfoMock);
-        doAnswer(AdditionalAnswers.answerVoid(
-                         (Callback<OwnedState> callback)
-                                 -> callback.onResult(new OwnedState(
-                                         /*isDeviceOwned=*/false, /*isProfileOwned=*/false))))
-                .when(mEnterpriseInfoMock)
-                .getDeviceEnterpriseInfo(any());
+        EnterpriseInfo.setInstanceForTest(mFakeEnterpriseInfo);
+        mFakeEnterpriseInfo.initialize(new OwnedState(
+                /*isDeviceOwned=*/false, /*isProfileOwned=*/false));
         FirstRunUtils.setDisableDelayOnExitFreForTest(true);
         FirstRunUtilsJni.TEST_HOOKS.setInstanceForTesting(mFirstRunUtils);
         SigninCheckerProvider.setForTests(mSigninCheckerMock);
@@ -189,6 +213,11 @@ public class SigninFirstRunFragmentTest {
     public void tearDown() {
         FirstRunUtils.setDisableDelayOnExitFreForTest(false);
         EnterpriseInfo.setInstanceForTest(null);
+    }
+
+    @AfterClass
+    public static void tearDownAfterActivityDestroyed() {
+        ChromeNightModeTestUtils.tearDownNightModeAfterChromeActivityDestroyed();
     }
 
     @Test
@@ -594,6 +623,7 @@ public class SigninFirstRunFragmentTest {
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         onView(withId(R.id.fre_signin_progress_spinner)).check(matches(isDisplayed()));
+        onView(withText(R.string.fre_signing_in)).check(matches(isDisplayed()));
         onView(withText(R.string.fre_welcome)).check(matches(isDisplayed()));
         onView(withId(R.id.subtitle)).check(matches(not(isDisplayed())));
         onView(withText(TEST_EMAIL1)).check(matches(not(isDisplayed())));
@@ -616,6 +646,20 @@ public class SigninFirstRunFragmentTest {
         onView(withId(R.id.signin_fre_footer)).perform(clickOnTosLink());
 
         verify(mFirstRunPageDelegateMock).showInfoPage(R.string.google_terms_of_service_url);
+    }
+
+    @Test
+    @MediumTest
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testFragmentWhenClickingOnTosLinkInDarkMode(boolean nightModeEnabled) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
+        launchActivityWithFragment();
+
+        onView(withId(R.id.signin_fre_footer)).perform(clickOnTosLink());
+
+        verify(mFirstRunPageDelegateMock)
+                .showInfoPage(nightModeEnabled ? R.string.google_terms_of_service_dark_mode_url
+                                               : R.string.google_terms_of_service_url);
     }
 
     @Test
@@ -770,6 +814,11 @@ public class SigninFirstRunFragmentTest {
             }
         });
 
+        Assert.assertEquals("Policy loading should be the slowest", 1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "MobileFre.SlowestLoadPoint", LoadPoint.POLICY_LOAD));
+        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
+                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
     }
 
@@ -782,6 +831,12 @@ public class SigninFirstRunFragmentTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
 
+        Assert.assertEquals("Native initialization should be the slowest", 1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
+        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
+                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
     }
 
@@ -802,6 +857,12 @@ public class SigninFirstRunFragmentTest {
                 callback.onResult(false);
             }
         });
+
+        Assert.assertEquals("Child status loading should be the slowest", 1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "MobileFre.SlowestLoadPoint", LoadPoint.CHILD_STATUS_LOAD));
+        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
+                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
     }
 
@@ -811,15 +872,25 @@ public class SigninFirstRunFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
         launchActivityWithFragment();
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
+        verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
+        Assert.assertEquals("Native initialization should be the slowest", 1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
 
         // Changing the activity orientation will create SigninFirstRunCoordinator again and call
         // SigninFirstRunFragment.notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded()
         ActivityTestUtils.rotateActivityToOrientation(
                 mChromeActivityTestRule.getActivity(), Configuration.ORIENTATION_LANDSCAPE);
 
-        // The histogram should not be recorded again. The call count should be the same as before
-        // as mockito does not reset invocation counts between consecutive verify calls.
+        // These histograms should not be recorded again. The call count should be the same as
+        // before as mockito does not reset invocation counts between consecutive verify calls.
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
+        verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
+        Assert.assertEquals("Native initialization should be the slowest", 1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
+        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
+                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
     }
 
     @Test
@@ -834,12 +905,8 @@ public class SigninFirstRunFragmentTest {
                 .when(mFirstRunPageDelegateMock)
                 .exitFirstRun();
         when(mFirstRunPageDelegateMock.isLaunchedFromCct()).thenReturn(true);
-        doAnswer(AdditionalAnswers.answerVoid(
-                         (Callback<OwnedState> callback)
-                                 -> callback.onResult(new OwnedState(
-                                         /*isDeviceOwned=*/true, /*isProfileOwned=*/false))))
-                .when(mEnterpriseInfoMock)
-                .getDeviceEnterpriseInfo(any());
+        mFakeEnterpriseInfo.initialize(new OwnedState(
+                /*isDeviceOwned=*/true, /*isProfileOwned=*/false));
         doAnswer(AdditionalAnswers.answerVoid(
                          (Callback<Boolean> callback) -> callback.onResult(true)))
                 .when(mPolicyLoadListenerMock)

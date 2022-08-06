@@ -160,10 +160,60 @@ public abstract class Observable<T> {
     public Observable<T> debug(Consumer<String> logger) {
         return make(observer -> {
             logger.accept("subscribe");
-            return Scopes.combine(() -> logger.accept("unsubscribe"), subscribe(data -> {
+            Scope subscription = subscribe(data -> {
                 logger.accept(new StringBuilder("open ").append(data).toString());
-                return () -> logger.accept(new StringBuilder("close ").append(data).toString());
-            })::close);
+                Scope scope = observer.open(data);
+                Scope debugClose =
+                        () -> logger.accept(new StringBuilder("close ").append(data).toString());
+                return Scopes.combine(scope, debugClose);
+            })::close;
+            Scope debugUnsubscribe = () -> logger.accept("unsubscribe");
+            return Scopes.combine(subscription, debugUnsubscribe);
         });
+    }
+
+    /**
+     * An abstraction over posting a delayed task. Implementations should run the posted Runnable
+     * after a certain amount of time has elapsed, preferably on the same thread that posted the
+     * Runnable.
+     */
+    public interface Scheduler {
+        void postDelayed(Runnable runnable, long delay);
+    }
+
+    /**
+     * Return an Observable that activates a given amount of time (in milliseconds) after it is
+     * subscribed to.
+     *
+     * Note that the alarm countdown starts when subscribed, not when the Observable is constructed.
+     * Therefore, if there are multiple observers, each will have its own timer.
+     *
+     * If you use an alarm as the argument to an `.and()` operator, for example, a unique timer will
+     * start for each activation of the left-hand side of the `.and()` call.
+     *
+     * The Scheduler is responsible for executing a Runnable after the given delay has elapsed,
+     * preferably on the same thread that invoked its postDelayed() method, unless the observers of
+     * this Observable are thread-safe.
+     */
+    public static Observable<?> alarm(Scheduler scheduler, long ms) {
+        return make(observer -> {
+            Controller<Unit> activation = new Controller<>();
+            scheduler.postDelayed(() -> activation.set(Unit.unit()), ms);
+            return activation.subscribe(observer);
+        });
+    }
+
+    /**
+     * An Observable that delays any activations by the given amount of time.
+     *
+     * If the activation is revoked before the given amount of time elapses, the activation is
+     * effectively "canceled" from the perspective of observers.
+     *
+     * The Scheduler is responsible for executing a Runnable after the given delay has elapsed,
+     * preferably on the same thread that invoked its postDelayed() method, unless the observers of
+     * this Observable are thread-safe.
+     */
+    public final Observable<T> delay(Scheduler scheduler, long ms) {
+        return flatMap(t -> alarm(scheduler, ms).map(x -> t));
     }
 }

@@ -1226,8 +1226,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
              box_->PhysicalFragments()) {
           PlaceChildrenInFlowThread(flow_thread, constraint_space,
                                     multicol_fragment, incoming_break_token);
-          incoming_break_token =
-              To<NGBlockBreakToken>(multicol_fragment.BreakToken());
+          incoming_break_token = multicol_fragment.BreakToken();
         }
       }
     } else {
@@ -1515,8 +1514,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     }
 
     flow_thread_offset += logical_size.block_size;
-    previous_column_break_token =
-        To<NGBlockBreakToken>(child_fragment.BreakToken());
+    previous_column_break_token = child_fragment.BreakToken();
   }
 
   if (!physical_fragment.BreakToken())
@@ -1811,7 +1809,7 @@ const NGLayoutResult* NGBlockNode::RunLegacyLayout(
                                  box_->PaddingBefore(), box_->PaddingAfter()};
 
     // TODO(kojii): Implement use_first_line_style.
-    NGBoxFragmentBuilder builder(*this, box_->Style(), &constraint_space,
+    NGBoxFragmentBuilder builder(*this, box_->Style(), constraint_space,
                                  {writing_mode, box_->StyleRef().Direction()});
     builder.SetIsNewFormattingContext(
         constraint_space.IsNewFormattingContext());

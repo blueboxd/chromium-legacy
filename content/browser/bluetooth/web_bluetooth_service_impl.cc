@@ -57,6 +57,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
 namespace content {
 
@@ -597,17 +598,16 @@ WebBluetoothServiceImpl::GetBluetoothAllowed() {
   // frames are disallowed.
   DCHECK(!render_frame_host()->IsNestedWithinFencedFrame());
 
+  // Check if Web Bluetooth is allowed by Permissions Policy.
+  if (!render_frame_host()->IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::kBluetooth)) {
+    return blink::mojom::WebBluetoothResult::PERMISSIONS_POLICY_VIOLATION;
+  }
+
   const url::Origin& requesting_origin = origin();
   const url::Origin& embedding_origin =
       render_frame_host()->GetMainFrame()->GetLastCommittedOrigin();
 
-  // TODO(crbug.com/518042): Enforce correctly-delegated permissions instead of
-  // matching origins. When relaxing this, take care to handle non-sandboxed
-  // unique origins.
-  if (!embedding_origin.IsSameOriginWith(requesting_origin)) {
-    return blink::mojom::WebBluetoothResult::
-        REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME;
-  }
   // IsSameOriginWith() no longer excludes opaque origins.
   // TODO(https://crbug.com/994454): Exclude opaque origins explicitly.
 
@@ -2072,8 +2072,7 @@ void WebBluetoothServiceImpl::OnCharacteristicReadValue(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
-    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-        base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
       BluetoothDevice* device = GetCachedDevice(
           GetCharacteristicDeviceID(characteristic_instance_id));
       if (device && !device->IsPaired()) {
@@ -2111,8 +2110,7 @@ void WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-      base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
     BluetoothDevice* device =
         GetCachedDevice(GetCharacteristicDeviceID(characteristic_instance_id));
     if (device && !device->IsPaired()) {
@@ -2172,8 +2170,7 @@ void WebBluetoothServiceImpl::OnStartNotifySessionFailed(
   }
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED && client &&
-      base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED && client) {
     BluetoothDevice* device =
         GetCachedDevice(GetCharacteristicDeviceID(characteristic_instance_id));
     if (device && !device->IsPaired()) {
@@ -2222,8 +2219,7 @@ void WebBluetoothServiceImpl::OnDescriptorReadValue(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
-    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-        base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
       BluetoothDevice* device =
           GetCachedDevice(GetDescriptorDeviceId(descriptor_instance_id));
       if (device && !device->IsPaired()) {
@@ -2258,8 +2254,7 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-      base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
     BluetoothDevice* device =
         GetCachedDevice(GetDescriptorDeviceId(descriptor_instance_id));
     if (device && !device->IsPaired()) {
@@ -2437,10 +2432,14 @@ void WebBluetoothServiceImpl::TerminateRendererAndDeleteThis(
 }
 
 BluetoothAllowedDevices& WebBluetoothServiceImpl::allowed_devices() {
+  // We should use the embedding origin so that permission delegation using
+  // Permissions Policy works correctly.
+  const url::Origin& embedding_origin =
+      render_frame_host()->GetMainFrame()->GetLastCommittedOrigin();
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       web_contents()->GetBrowserContext()->GetDefaultStoragePartition());
   return partition->GetBluetoothAllowedDevicesMap()->GetOrCreateAllowedDevices(
-      origin());
+      embedding_origin);
 }
 
 void WebBluetoothServiceImpl::StoreAllowedScanOptions(

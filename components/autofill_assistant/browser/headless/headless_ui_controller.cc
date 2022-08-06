@@ -13,13 +13,28 @@ HeadlessUiController::HeadlessUiController(
 bool HeadlessUiController::SupportsExternalActions() {
   return action_extension_delegate_ != nullptr;
 }
+
 void HeadlessUiController::ExecuteExternalAction(
-    const external::Action& info,
-    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-        callback) {
+    const external::Action& external_action,
+    base::OnceCallback<void()> start_dom_checks_callback,
+    base::OnceCallback<void(const external::Result& result)>
+        end_action_callback) {
   DCHECK(action_extension_delegate_);
 
-  action_extension_delegate_->OnActionRequested(info, std::move(callback));
+  action_extension_delegate_->OnActionRequested(
+      external_action, std::move(start_dom_checks_callback),
+      std::move(end_action_callback));
+}
+
+void HeadlessUiController::OnInterruptStarted() {
+  if (action_extension_delegate_) {
+    action_extension_delegate_->OnInterruptStarted();
+  }
+}
+void HeadlessUiController::OnInterruptFinished() {
+  if (action_extension_delegate_) {
+    action_extension_delegate_->OnInterruptFinished();
+  }
 }
 
 // TODO(b/201964911): fail execution instead of just logging a warning if a
@@ -136,7 +151,9 @@ void HeadlessUiController::SetCollectUserDataOptions(
     CollectUserDataOptions* options) {
   VLOG(2) << "Unexpected UI method called: " << __func__;
 }
-void HeadlessUiController::SetCollectUserDataUiState(bool enabled) {
+void HeadlessUiController::SetCollectUserDataUiState(
+    bool loading,
+    UserDataEventField event_field) {
   VLOG(2) << "Unexpected UI method called: " << __func__;
 }
 void HeadlessUiController::SetLastSuccessfulUserDataOptions(

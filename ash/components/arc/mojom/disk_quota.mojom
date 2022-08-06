@@ -6,6 +6,10 @@
 
 module arc.mojom;
 
+struct DiskSpace {
+  uint64 space_in_bytes;
+};
+
 // Next Method ID: 6
 interface DiskQuotaHost {
   // Whether cryptohome supports quota-based stats.
@@ -27,11 +31,8 @@ interface DiskQuotaHost {
   [MinVersion=1] SetProjectId@4(uint32 project_id, string android_file_path) =>
       (bool success);
 
-  // Request host to expand the disk image for /data. Returns -1 for failure.
-  // ARC is supposed to call this when there is not enough free disk space for
-  // /data.
-  [MinVersion=2] RequestDataDiskExpansion@5(int64 total_space, int64 free_space)
-       => (int64 new_disk_size);
+  // Get free disk space in the stateful partition.
+  [MinVersion=2] GetFreeDiskSpace@5() => (DiskSpace? free_space);
 };
 
 // Next Method ID: 1

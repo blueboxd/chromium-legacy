@@ -75,11 +75,14 @@ bool IsUserTypeAllowed(const User* user) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_WEB_KIOSK_APP:
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+    // Note: Lacros will not be enabled for Guest users unless LacrosSupport
+    // flag is passed in --enable-features. See https://crbug.com/1294051#c25.
+    case user_manager::USER_TYPE_GUEST:
       return true;
     case user_manager::USER_TYPE_CHILD:
       return base::FeatureList::IsEnabled(kLacrosForSupervisedUsers);
-    case user_manager::USER_TYPE_GUEST:
     case user_manager::USER_TYPE_KIOSK_APP:
+      return base::FeatureList::IsEnabled(features::kChromeKioskEnableLacros);
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
     case user_manager::NUM_USER_TYPES:
@@ -228,11 +231,6 @@ Channel GetStatefulLacrosChannel() {
              ? kStabilitySwitchToChannelMap.at(*stability_switch_value)
              : chrome::GetChannel();
 }
-
-static_assert(
-    crosapi::mojom::Crosapi::Version_ == 73,
-    "if you add a new crosapi, please add it to kInterfaceVersionEntries");
-
 }  // namespace
 
 // NOTE: If you change the lacros component names, you must also update
@@ -505,8 +503,9 @@ bool IsLacrosPrimaryBrowser() {
     return false;
 
   // Lacros-chrome will always be the primary browser if Lacros is enabled in
-  // web Kiosk session.
-  if (user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp())
+  // Kiosk session.
+  if (user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp() ||
+      user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
     return true;
 
   if (!IsLacrosPrimaryBrowserAllowed())
@@ -598,6 +597,12 @@ bool IsLacrosChromeAppsEnabled() {
 bool IsLacrosEnabledInWebKioskSession() {
   return user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp() &&
          base::FeatureList::IsEnabled(features::kWebKioskEnableLacros) &&
+         IsLacrosEnabled();
+}
+
+bool IsLacrosEnabledInChromeKioskSession() {
+  return user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
+         base::FeatureList::IsEnabled(features::kChromeKioskEnableLacros) &&
          IsLacrosEnabled();
 }
 
@@ -879,6 +884,12 @@ bool WasGotoFilesClicked(PrefService* local_state,
                          const std::string& user_id_hash) {
   const base::Value* list = local_state->GetList(kGotoFilesPref);
   return base::Contains(list->GetList(), base::Value(user_id_hash));
+}
+
+bool ShouldEnforceAshExtensionKeepList() {
+  return IsLacrosPrimaryBrowser() &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kEnforceAshExtensionKeeplist);
 }
 
 }  // namespace browser_util

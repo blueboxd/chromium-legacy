@@ -260,6 +260,11 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   [self.feedMetricsRecorder recordHeaderMenuLearnMoreTapped];
 }
 
+- (void)handleVisitSiteFromFollowManagementList:(const GURL&)url {
+  // TODO(crbug.com/1331102): Add metrics.
+  [self openMenuItemWebPage:url];
+}
+
 #pragma mark - Properties.
 
 - (void)setWebState:(web::WebState*)webState {
@@ -283,6 +288,9 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 
 #pragma mark - CRWWebStateObserver
 
+// Remove this once NTPCoordinator is started upon creation so
+// setContentOffsetForWebState: can be called when the NTPCoordinator's WebState
+// changes.
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
   [self setContentOffsetForWebState:webState];

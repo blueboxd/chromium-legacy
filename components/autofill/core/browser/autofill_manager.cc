@@ -161,6 +161,9 @@ void AutofillManager::OnFormSubmitted(const FormData& form,
                                       mojom::SubmissionSource source) {
   if (IsValidFormData(form))
     OnFormSubmittedImpl(form, known_success, source);
+
+  for (Observer& observer : observers_)
+    observer.OnFormSubmitted();
 }
 
 void AutofillManager::OnFormsSeen(
@@ -276,6 +279,10 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
     return;
 
   OnTextFieldDidChangeImpl(form, field, bounding_box, timestamp);
+
+  for (Observer& observer : observers_) {
+    observer.OnTextFieldDidChange();
+  }
 }
 
 void AutofillManager::OnTextFieldDidScroll(const FormData& form,
@@ -285,6 +292,9 @@ void AutofillManager::OnTextFieldDidScroll(const FormData& form,
     return;
 
   OnTextFieldDidScrollImpl(form, field, bounding_box);
+
+  for (Observer& observer : observers_)
+    observer.OnTextFieldDidScroll();
 }
 
 void AutofillManager::OnSelectControlDidChange(const FormData& form,
@@ -294,18 +304,23 @@ void AutofillManager::OnSelectControlDidChange(const FormData& form,
     return;
 
   OnSelectControlDidChangeImpl(form, field, bounding_box);
+
+  for (Observer& observer : observers_)
+    observer.OnSelectControlDidChange();
 }
 
-void AutofillManager::OnAskForValuesToFill(int query_id,
-                                           const FormData& form,
-                                           const FormFieldData& field,
-                                           const gfx::RectF& bounding_box,
-                                           bool autoselect_first_suggestion) {
+void AutofillManager::OnAskForValuesToFill(
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box,
+    bool autoselect_first_suggestion,
+    TouchToFillEligible touch_to_fill_eligible) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
   OnAskForValuesToFillImpl(query_id, form, field, bounding_box,
-                           autoselect_first_suggestion);
+                           autoselect_first_suggestion, touch_to_fill_eligible);
 }
 
 void AutofillManager::OnFocusOnFormField(const FormData& form,
@@ -325,7 +340,6 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   // Maybe find an existing FormStructure that corresponds to |form|.
   FormStructure* cached_form = FindCachedFormByRendererId(form.global_id());
   if (cached_form) {
-    DCHECK(cached_form);
     if (!CachedFormNeedsUpdate(form, *cached_form)) {
       // There is no data to return if there are no auto-fillable fields.
       if (!cached_form->autofill_count())
@@ -409,8 +423,9 @@ FormStructure* AutofillManager::ParseForm(const FormData& form,
     form_structure->RetrieveFromCache(*cached_form,
                                       /*should_keep_cached_value=*/true,
                                       /*only_server_and_autofill_state=*/true);
-    if (observer_for_testing_)
-      observer_for_testing_->OnFormParsed();
+
+    for (Observer& observer : observers_)
+      observer.OnFormParsed();
 
     if (form_structure.get()->value_from_dynamic_change_form())
       value_from_dynamic_change_form_ = true;
@@ -491,7 +506,7 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
-  driver()->PropagateAutofillPredictions(queried_forms);
+  PropagateAutofillPredictions(queried_forms);
 }
 
 void AutofillManager::OnServerRequestError(

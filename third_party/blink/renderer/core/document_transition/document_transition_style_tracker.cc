@@ -17,11 +17,13 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -83,11 +85,6 @@ absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
   int bottom_offset = reference_bounding_rect.bottom() - target_rect.bottom();
   int left_offset = target_rect.x() - reference_bounding_rect.x();
 
-  DCHECK_GE(top_offset, 0);
-  DCHECK_GE(right_offset, 0);
-  DCHECK_GE(bottom_offset, 0);
-  DCHECK_GE(left_offset, 0);
-
   return String::Format("inset(%dpx %dpx %dpx %dpx)", top_offset, right_offset,
                         bottom_offset, left_offset);
 }
@@ -95,6 +92,14 @@ absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
 // TODO(vmpstr): This could be optimized by caching values for individual layout
 // boxes. However, it's unclear when the cache should be cleared.
 PhysicalRect ComputeVisualOverflowRect(LayoutBox* box) {
+  if (auto clip_path_bounds = ClipPathClipper::LocalClipPathBoundingBox(*box)) {
+    // TODO(crbug.com/1326514): This is just the bounds of the clip-path, as
+    // opposed to the intersection between the clip-path and the border box
+    // bounds. This seems suboptimal, but that's the rect that we use further
+    // down the pipeline to generate the texture.
+    return PhysicalRect::EnclosingRect(*clip_path_bounds);
+  }
+
   PhysicalRect result;
   for (auto* child = box->Layer()->FirstChild(); child;
        child = child->NextSibling()) {
@@ -103,6 +108,9 @@ PhysicalRect ComputeVisualOverflowRect(LayoutBox* box) {
     child_box->MapToVisualRectInAncestorSpace(box, overflow_rect);
     result.Unite(overflow_rect);
   }
+  // Clip self painting descendant overflow by the overflow clip rect, then add
+  // in the visual overflow from the own painting layer.
+  result.Intersect(box->OverflowClipRect(PhysicalOffset()));
   result.Unite(box->PhysicalVisualOverflowRectIncludingFilters());
   return result;
 }
@@ -639,12 +647,15 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
     if (auto* box = DynamicTo<LayoutBox>(layout_object))
       visual_overflow_rect_in_layout_space = ComputeVisualOverflowRect(box);
 
+    WritingMode writing_mode = layout_object->StyleRef().GetWritingMode();
+
     if (viewport_matrix == element_data->viewport_matrix &&
         border_box_size_in_css_space ==
             element_data->border_box_size_in_css_space &&
         device_pixel_ratio == element_data->device_pixel_ratio &&
         visual_overflow_rect_in_layout_space ==
-            element_data->visual_overflow_rect_in_layout_space) {
+            element_data->visual_overflow_rect_in_layout_space &&
+        writing_mode == element_data->container_writing_mode) {
       continue;
     }
 
@@ -653,6 +664,7 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
     element_data->device_pixel_ratio = device_pixel_ratio;
     element_data->visual_overflow_rect_in_layout_space =
         visual_overflow_rect_in_layout_space;
+    element_data->container_writing_mode = writing_mode;
 
     PseudoId live_content_element = HasLiveNewContent()
                                         ? kPseudoIdPageTransitionIncomingImage
@@ -864,6 +876,9 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
         element_data->cached_border_box_size_in_css_space.Width().ToInt(),
         element_data->cached_border_box_size_in_css_space.Height().ToInt()));
 
+    std::ostringstream writing_mode_stream;
+    writing_mode_stream << element_data->container_writing_mode;
+
     // ::page-transition-container styles using computed properties for each
     // element.
     builder.AppendFormat(
@@ -872,6 +887,7 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
           width: %dpx;
           height: %dpx;
           transform: %s;
+          writing-mode: %s;
         }
         )CSS",
         document_transition_tag.c_str(), border_box_in_css_space.width(),
@@ -880,7 +896,8 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
             element_data->viewport_matrix, 1, false)
             ->CssText()
             .Utf8()
-            .c_str());
+            .c_str(),
+        writing_mode_stream.str().c_str());
 
     float device_pixel_ratio = document_->DevicePixelRatio();
     absl::optional<String> incoming_inset = ComputeInsetDifference(

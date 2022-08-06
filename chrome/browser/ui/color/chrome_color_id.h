@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COLOR_CHROME_COLOR_ID_H_
 #define CHROME_BROWSER_UI_COLOR_CHROME_COLOR_ID_H_
 
+#include "chrome/browser/themes/theme_properties.h"
 #include "ui/color/color_id.h"
 
 // TODO(pkasting): Add the rest of the colors.
@@ -116,6 +117,9 @@
   E(kColorInfoBarContentAreaSeparator, \
     ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR) \
   E_CPONLY(kColorInfoBarForeground) \
+  /* Intent Picker colors. */ \
+  E_CPONLY(kColorIntentPickerItemBackgroundHovered) \
+  E_CPONLY(kColorIntentPickerItemBackgroundSelected) \
   /* Location bar colors. */ \
   E(kColorLocationBarBorder, ThemeProperties::COLOR_LOCATION_BAR_BORDER) \
   E(kColorLocationBarBorderOpaque, \
@@ -256,6 +260,7 @@
   E_CPONLY(kColorScreenshotCapturedImageBackground) \
   E_CPONLY(kColorScreenshotCapturedImageBorder) \
   /* Side panel colors. */ \
+  E_CPONLY(kColorSidePanelBackground) \
   E(kColorSidePanelContentAreaSeparator, \
     ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR) \
   /* Status bubble colors. */ \

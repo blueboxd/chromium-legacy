@@ -24,7 +24,11 @@ namespace features {
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothPhoneFilter;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kCloudGamingDevice;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDarkLightMode;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kDisableOfficeEditingComponentApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDisableQuickAnswersV2Translation;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -37,6 +41,7 @@ extern const base::Feature kQuickAnswersForMoreLocales;
 // Keep alphabetized.
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDarkLightModeEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsCloudGamingDeviceEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersV2TranslationDisabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsQuickAnswersV2SettingsSubToggleEnabled();

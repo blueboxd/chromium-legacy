@@ -110,12 +110,6 @@ cast_test_group("cast_tests") {
     "//ui/base:ui_base_unittests",
   ]
 
-  if (enable_chromecast_extensions && media_use_ffmpeg) {
-    tests += [
-      "//chromecast/browser/accessibility/flutter:cast_accessibility_unittests",
-    ]
-  }
-
   if (!is_cast_audio_only) {
     tests += [ "//gpu:gpu_unittests" ]
 
@@ -562,7 +556,6 @@ repack("cast_shell_pak") {
   sources = [
     "$root_gen_dir/chromecast/app/shell_resources.pak",
     "$root_gen_dir/components/cast/named_message_port_connector/named_message_port_connector_resources.pak",
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -584,7 +577,6 @@ repack("cast_shell_pak") {
     "//components/cast/named_message_port_connector:resources",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
-    "//content/app/resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
@@ -666,7 +658,6 @@ buildflag_header("chromecast_buildflags") {
     "ENABLE_VIDEO_CAPTURE_SERVICE=$enable_video_capture_service",
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
     "IS_CAST_DESKTOP_BUILD=$is_cast_desktop_build",
-    "IS_SINGLE_VOLUME=$is_single_volume",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
     "ENABLE_CHROMIUM_RUNTIME_CAST_RENDERER=$enable_chromium_runtime_cast_renderer",

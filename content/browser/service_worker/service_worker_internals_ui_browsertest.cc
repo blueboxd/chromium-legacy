@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -519,7 +520,7 @@ class ServiceWorkerInternalsUIBrowserTest : public ContentBrowserTest {
  private:
   base::test::ScopedFeatureList feature_list_;
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
-  Shell* active_shell_ = shell();
+  raw_ptr<Shell> active_shell_ = shell();
 };
 
 // Tests
@@ -575,7 +576,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerInternalsUIBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerInternalsUIBrowserTest,
-                       StopStartSWReflectedOnInternalUI) {
+                       // TODO(crbug.com/1324856): Re-enable this test
+                       DISABLED_StopStartSWReflectedOnInternalUI) {
   Shell* sw_internal_ui_window = CreateNewWindow();
   NavigateToServiceWorkerInternalUI();
 

@@ -25,7 +25,6 @@ extern const base::Feature kCacheOneGoogleBar;
 extern const base::Feature kCwsScrimRemoval;
 extern const base::Feature kDismissPromos;
 extern const base::Feature kIframeOneGoogleBar;
-extern const base::Feature kNtpRepeatableQueries;
 extern const base::Feature kOneGoogleBarModalOverlays;
 extern const base::Feature kRealboxMatchOmniboxTheme;
 extern const base::Feature kRealboxMatchSearchboxTheme;

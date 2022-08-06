@@ -376,7 +376,7 @@ class UserSessionManager
   friend class test::UserSessionManagerTestApi;
   friend struct base::DefaultSingletonTraits<UserSessionManager>;
 
-  typedef std::set<std::string> SigninSessionRestoreStateSet;
+  using SigninSessionRestoreStateSet = std::set<AccountId>;
 
   void SetNetworkConnectionTracker(
       network::NetworkConnectionTracker* network_connection_tracker);
@@ -451,9 +451,6 @@ class UserSessionManager
   // Launch browser or proceed to alternative login flow. Should be called after
   // profile is ready.
   void InitializeBrowser(Profile* profile);
-
-  // Starts out-of-box flow with the specified screen.
-  void ActivateWizard(OobeScreenId screen);
 
   // Launches the Help App depending on flags / prefs / user.
   void MaybeLaunchHelpApp(Profile* profile) const;

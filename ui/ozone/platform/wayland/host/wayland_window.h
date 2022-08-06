@@ -176,10 +176,10 @@ class WaylandWindow : public PlatformWindow,
   void Close() override;
   bool IsVisible() const override;
   void PrepareForShutdown() override;
-  void SetBounds(const gfx::Rect& bounds) override;
-  gfx::Rect GetBoundsInDIP() const override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInPixels() const override;
   void SetBoundsInDIP(const gfx::Rect& bounds) override;
-  gfx::Rect GetBounds() const override;
+  gfx::Rect GetBoundsInDIP() const override;
   void SetTitle(const std::u16string& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
@@ -325,8 +325,9 @@ class WaylandWindow : public PlatformWindow,
   const WaylandConnection* connection() const { return connection_; }
   PlatformWindowDelegate* delegate() { return delegate_; }
 
-  // [Deprecatd] Sets bounds in dip. This will be replaced with SetBoundsInDIP.
-  void SetBoundsDip(const gfx::Rect& bounds_dip);
+  // Update the bounds of the window in DIP. Unlike SetBoundInDIP, it will not
+  // send a request to the compositor even if the screen coordinate is enabled.
+  void UpdateBoundsInDIP(const gfx::Rect& bounds_dip);
 
   void set_ui_scale(float ui_scale) { ui_scale_ = ui_scale; }
 
@@ -336,9 +337,14 @@ class WaylandWindow : public PlatformWindow,
   // Processes the pending bounds in dip.
   void ProcessPendingBoundsDip(uint32_t serial);
 
-  // If the given |bounds_px| violate size constraints set for this window,
-  // fixes them so they wouldn't.
+  // [Deprecated]
+  // If the given |bounds_px| violates size constraints set for this window,
+  // fixes them so they don't.
   gfx::Rect AdjustBoundsToConstraintsPx(const gfx::Rect& bounds_px);
+
+  // If the given |bounds_dip| violates size constraints set for this window,
+  // fixes them so they don't.
+  gfx::Rect AdjustBoundsToConstraintsDIP(const gfx::Rect& bounds_dip);
 
   // Processes the size information form visual size update and returns true if
   // any pending configure is fulfilled.
@@ -347,31 +353,14 @@ class WaylandWindow : public PlatformWindow,
   // Applies pending bounds.
   virtual void ApplyPendingBounds();
 
-  // These bounds attributes below have suffixes that indicate units used.
-  // Wayland operates in DIP but the platform operates in physical pixels so
-  // our WaylandWindow is the link that has to translate the units. See also
-  // comments in the implementation.
-  //
-  // Bounds that will be applied when the window state is finalized. The window
-  // may get several configuration events that update the pending bounds, and
-  // only upon finalizing the state is the latest value stored as the current
-  // bounds via |ApplyPendingBounds|. Measured in DIP because updated in the
-  // handler that receives DIP from Wayland.
-  gfx::Rect pending_bounds_dip_;
+  bool HasPendingConfigures() const;
 
-  // The size of the platform window before it went maximized or fullscreen in
-  // dip.
-  gfx::Size restored_size_in_dip_;
+  gfx::Rect pending_bounds_dip() const { return pending_bounds_dip_; }
+  void set_pending_bounds_dip(const gfx::Rect rect) {
+    pending_bounds_dip_ = rect;
+  }
 
-  // Pending xdg-shell configures, once this window is drawn to |bounds_dip|,
-  // ack_configure with |serial| will be sent to the Wayland compositor.
-  struct PendingConfigure {
-    gfx::Rect bounds_dip;
-    uint32_t serial;
-    // True if this configure has been passed to the compositor for rendering.
-    bool set = false;
-  };
-  base::circular_deque<PendingConfigure> pending_configures_;
+  const gfx::Size& restored_size_dip() const { return restored_size_dip_; }
 
  private:
   friend class WaylandBufferManagerViewportTest;
@@ -384,17 +373,7 @@ class WaylandWindow : public PlatformWindow,
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
 
-  void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
-
-  // Adjusts the |location| to account for the offset of a popup window. If this
-  // is the root window, the location is unchanged.
-  gfx::PointF TranslateLocationToRootWindow(const gfx::PointF& location);
-
-  // Returns |location| in the local coordinate space, Window local pixels.
-  // |location| is assumed to be in Wayland coordinate which are DP unless
-  // surface_submission_in_pixel_coordinates is active. Also adjusts for popup
-  // offset if necessary.
-  gfx::PointF ToRootWindowPixel(const gfx::PointF& location);
+  void UpdateCursorPositionFromEvent(const Event* event);
 
   uint32_t DispatchEventToDelegate(const PlatformEvent& native_event);
 
@@ -494,6 +473,32 @@ class WaylandWindow : public PlatformWindow,
   // any frame updates. This flag causes root_surface_->ApplyPendingBounds() to
   // be invoked during UpdateVisualSize() in unit tests.
   bool apply_pending_state_on_update_visual_size_ = false;
+
+  // These bounds attributes below have suffixes that indicate units used.
+  // Wayland operates in DIP but the platform operates in physical pixels so
+  // our WaylandWindow is the link that has to translate the units. See also
+  // comments in the implementation.
+  //
+  // Bounds that will be applied when the window state is finalized. The window
+  // may get several configuration events that update the pending bounds, and
+  // only upon finalizing the state is the latest value stored as the current
+  // bounds via |ApplyPendingBounds|. Measured in DIP because updated in the
+  // handler that receives DIP from Wayland.
+  gfx::Rect pending_bounds_dip_;
+
+  // The size of the platform window before it went maximized or fullscreen in
+  // dip.
+  gfx::Size restored_size_dip_;
+
+  // Pending xdg-shell configures. Once this window is drawn to |bounds_dip|,
+  // ack_configure request with |serial| will be sent to the Wayland compositor.
+  struct PendingConfigure {
+    gfx::Rect bounds_dip;
+    uint32_t serial;
+    // True if this configure has been passed to the compositor for rendering.
+    bool set = false;
+  };
+  base::circular_deque<PendingConfigure> pending_configures_;
 
   // AcceleratedWidget for this window. This will be unique even over time.
   gfx::AcceleratedWidget accelerated_widget_;

@@ -223,9 +223,7 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
               apps::mojom::LaunchSource::kFromTest));
   DCHECK(web_contents);
 
-  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
-  DCHECK(tab_helper);
-  EXPECT_EQ(app_id, tab_helper->GetAppId());
+  EXPECT_EQ(app_id, *WebAppTabHelper::GetAppId(web_contents));
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   EXPECT_EQ(browser, chrome::FindLastActive());
@@ -233,10 +231,11 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
   return browser;
 }
 
-ExternalInstallOptions CreateInstallOptions(const GURL& url) {
-  ExternalInstallOptions install_options(
-      url, UserDisplayMode::kStandalone,
-      ExternalInstallSource::kInternalDefault);
+ExternalInstallOptions CreateInstallOptions(
+    const GURL& url,
+    const ExternalInstallSource& source) {
+  ExternalInstallOptions install_options(url, UserDisplayMode::kStandalone,
+                                         source);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

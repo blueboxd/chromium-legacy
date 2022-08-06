@@ -1570,7 +1570,8 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
 
 static bool IsSVGObjectWithWidthAndHeight(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsSVGChild());
-  return layout_object.IsSVGImage() || layout_object.IsSVGForeignObject() ||
+  return layout_object.IsSVGImage() ||
+         layout_object.IsSVGForeignObjectIncludingNG() ||
          (layout_object.IsSVGShape() &&
           IsA<SVGRectElement>(layout_object.GetNode()));
 }
@@ -2159,10 +2160,10 @@ CSSValue* ComputedStyleUtils::ResolvedTransform(
   gfx::RectF reference_box = ReferenceBoxForTransform(*layout_object);
 
   TransformationMatrix transform;
-  style.ApplyTransform(transform, reference_box,
-                       ComputedStyle::kExcludeTransformOrigin,
-                       ComputedStyle::kExcludeMotionPath,
-                       ComputedStyle::kExcludeIndependentTransformProperties);
+  style.ApplyTransform(
+      transform, reference_box, ComputedStyle::kIncludeTransformOperations,
+      ComputedStyle::kExcludeTransformOrigin, ComputedStyle::kExcludeMotionPath,
+      ComputedStyle::kExcludeIndependentTransformProperties);
 
   // FIXME: Need to print out individual functions
   // (https://bugs.webkit.org/show_bug.cgi?id=23924)
@@ -3077,7 +3078,7 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
   switch (style_value->GetType()) {
     case CSSStyleValue::StyleValueType::kKeywordType:
       return std::make_unique<CrossThreadKeywordValue>(
-          To<CSSKeywordValue>(style_value)->value().IsolatedCopy());
+          To<CSSKeywordValue>(style_value)->value());
     case CSSStyleValue::StyleValueType::kUnitType:
       return std::make_unique<CrossThreadUnitValue>(
           To<CSSUnitValue>(style_value)->value(),
@@ -3087,11 +3088,10 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
           To<CSSUnsupportedColor>(style_value)->Value());
     case CSSStyleValue::StyleValueType::kUnparsedType:
       return std::make_unique<CrossThreadUnparsedValue>(
-          To<CSSUnparsedValue>(style_value)->ToString().IsolatedCopy());
+          To<CSSUnparsedValue>(style_value)->ToString());
     default:
-      // Make an isolated copy to ensure that it is safe to pass cross thread.
       return std::make_unique<CrossThreadUnsupportedValue>(
-          style_value->toString().IsolatedCopy());
+          style_value->toString());
   }
 }
 

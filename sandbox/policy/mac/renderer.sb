@@ -39,13 +39,10 @@
 
 (allow-cvms-blobs)
 
-(if (not (defined? 'vnode-type))
-  (allow file-write-data (path "/dev/null"))  
-;else
-  (allow file-write-data
-    (require-all
-      (path "/dev/null")
-      (vnode-type CHARACTER-DEVICE))))
+(allow file-write-data
+  (require-all
+    (path "/dev/null")
+    (vnode-type CHARACTER-DEVICE)))
 
 ; Needed for Fonts.
 (allow-font-access)

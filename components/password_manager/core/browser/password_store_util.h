@@ -13,20 +13,19 @@
 
 namespace password_manager {
 
-// Aggregates a vector of PasswordChangesOrError into a single
-// PasswordChangesOrError. Does not check for duplicate values.
-// Will return first occurred error if any.
-PasswordChanges JoinPasswordStoreChanges(
-    const std::vector<PasswordChangesOrError>& changes);
+// Aggregates a vector of PasswordStoreChangeLists into a single
+// PasswordStoreChangeList. Does not check for duplicate values.
+absl::optional<PasswordStoreChangeList> JoinPasswordStoreChanges(
+    std::vector<absl::optional<PasswordStoreChangeList>> changes);
 
 // Returns logins if |result| holds them, or an empty list if |result|
 // holds an error.
 LoginsResult GetLoginsOrEmptyListOnFailure(LoginsResultOrError result);
 
-// Returns password changes if |result| holds them, empty changelist if the
-// |result| holds an error and absl::nullopt if the result is absl::nullopt.
-PasswordChanges GetPasswordChangesOrEmptyListOnFailure(
-    PasswordChangesOrError result);
+// Helper function allowing to bind base::OnceClosure to
+// PasswordStoreChangeListReply.
+PasswordStoreChangeListReply IgnoreChangeListAndRunCallback(
+    base::OnceClosure callback);
 
 }  // namespace password_manager
 

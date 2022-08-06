@@ -36,7 +36,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -175,7 +174,7 @@ class CrostiniManager : public KeyedService,
   // Observer class for the Crostini restart flow.
   class RestartObserver {
    public:
-    virtual ~RestartObserver() {}
+    virtual ~RestartObserver() = default;
     virtual void OnStageStarted(mojom::InstallerState stage) {}
     virtual void OnComponentLoaded(CrostiniResult result) {}
     virtual void OnDiskImageCreated(bool success,
@@ -190,15 +189,17 @@ class CrostiniManager : public KeyedService,
   };
 
   struct RestartOptions {
+    RestartSource restart_source = RestartSource::kOther;
     bool start_vm_only = false;
     bool stop_after_lxd_available = false;
     // Paths to share with VM on startup.
     std::vector<base::FilePath> share_paths;
-    // These four options only affect new containers.
+    // These five options only affect new containers.
     absl::optional<std::string> container_username;
     absl::optional<int64_t> disk_size_bytes;
     absl::optional<std::string> image_server_url;
     absl::optional<std::string> image_alias;
+    absl::optional<base::FilePath> ansible_playbook;
 
     RestartOptions();
     ~RestartOptions();
@@ -226,8 +227,7 @@ class CrostiniManager : public KeyedService,
   // enabled.
   void MaybeUpdateCrostini();
 
-  // Installs termina using either component updater or the DLC service
-  // depending on the value of chromeos::features::kCrostiniUseDlc
+  // Installs termina using the DLC service.
   void InstallTermina(CrostiniResultCallback callback, bool is_initial_install);
 
   // Try to cancel a previous InstallTermina call. This is done on a best-effort
@@ -449,8 +449,8 @@ class CrostiniManager : public KeyedService,
 
   // Runs all the steps required to restart the given crostini vm and container.
   // The optional |observer| tracks progress. If provided, it must be alive
-  // until the restart completes (i.e. when |callback| is called) or the restart
-  // is aborted via |AbortRestartCrostini|.
+  // until the restart completes (i.e. when |callback| is called) or the request
+  // is cancelled via |CancelRestartCrostini|.
   RestartId RestartCrostini(ContainerId container_id,
                             CrostiniResultCallback callback,
                             RestartObserver* observer = nullptr);
@@ -460,10 +460,11 @@ class CrostiniManager : public KeyedService,
                                        CrostiniResultCallback callback,
                                        RestartObserver* observer = nullptr);
 
-  // Aborts a restart. A "next" restarter with the same ContainerId will run, if
-  // there is one. |callback| will be called once the restart has finished
-  // aborting
-  void AbortRestartCrostini(RestartId restart_id, base::OnceClosure callback);
+  // Cancel a restart request. The associated result callback will be fired
+  // immediately and the observer will be removed. If there were multiple
+  // restart requests for the same container id, the restart may actually keep
+  // going.
+  void CancelRestartCrostini(RestartId restart_id);
 
   // Returns true if the Restart corresponding to |restart_id| is not yet
   // complete.
@@ -680,7 +681,7 @@ class CrostiniManager : public KeyedService,
       ListVmDisksCallback callback,
       absl::optional<vm_tools::concierge::ListVmDisksResponse> response);
 
-  // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
+  // Callback for ConciergeClient::StartVm. Called after the Concierge
   // service method finishes.  Updates running containers list then calls the
   // |callback| if the container has already been started, otherwise passes the
   // callback to OnStartTremplin.
@@ -814,9 +815,6 @@ class CrostiniManager : public KeyedService,
       GetContainerSshKeysCallback callback,
       absl::optional<vm_tools::concierge::ContainerSshKeysResponse> response);
 
-  // Callback for AnsibleManagementService::ConfigureDefaultContainer
-  void OnDefaultContainerConfigured(bool success);
-
   // Helper for CrostiniManager::MaybeUpdateCrostini. Makes blocking calls to
   // check for /dev/kvm.
   static void CheckPaths();
@@ -825,7 +823,12 @@ class CrostiniManager : public KeyedService,
   // checking component registration code may block.
   void MaybeUpdateCrostiniAfterChecks();
 
-  void FinishRestart(CrostiniRestarter* restarter, CrostiniResult result);
+  // Called by CrostiniRestarter once it's done with a specific restart request.
+  void RemoveRestartId(RestartId restart_id);
+  // Called by CrostiniRestarter once it's finished. |closure| encapsulates any
+  // outstanding callbacks passed to RestartCrostini*().
+  void RestartCompleted(CrostiniRestarter* restarter,
+                        base::OnceClosure closure);
 
   // Callback for CrostiniManager::RemoveCrostini.
   void OnRemoveCrostini(CrostiniResult result);
@@ -905,14 +908,12 @@ class CrostiniManager : public KeyedService,
   base::ObserverList<ash::VmShutdownObserver> vm_shutdown_observers_;
   base::ObserverList<ash::VmStartingObserver> vm_starting_observers_;
 
-  // Only one restarter flow is actually running for a given container, other
-  // restarters will just have their callback called when the running restarter
-  // completes.
-  std::multimap<ContainerId, CrostiniManager::RestartId>
+  // RestartIds present in |restarters_by_id_| will always have a restarter in
+  // |restarters_by_container_| for the corresponding ContainerId.
+  std::map<CrostiniManager::RestartId, ContainerId> restarters_by_id_;
+  std::map<ContainerId, std::unique_ptr<CrostiniRestarter>>
       restarters_by_container_;
-
-  std::map<CrostiniManager::RestartId, std::unique_ptr<CrostiniRestarter>>
-      restarters_by_id_;
+  static RestartId next_restart_id_;
 
   base::ObserverList<CrostiniDialogStatusObserver>
       crostini_dialog_status_observers_;

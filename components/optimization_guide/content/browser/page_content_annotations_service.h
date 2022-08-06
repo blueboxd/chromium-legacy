@@ -30,6 +30,7 @@
 #include "components/optimization_guide/core/model_info.h"
 #include "components/optimization_guide/core/page_content_annotations_common.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
+#include "components/optimization_guide/proto/page_entities_metadata.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -51,7 +52,6 @@ class LocalPageEntitiesMetadataProvider;
 class OptimizationGuideModelProvider;
 class PageContentAnnotationsModelManager;
 class PageContentAnnotationsServiceBrowserTest;
-class PageContentAnnotationsServiceTest;
 class PageContentAnnotationsValidator;
 class PageContentAnnotationsWebContentsObserver;
 
@@ -85,13 +85,15 @@ struct SearchMetadata {
 // The type of page content annotations stored in the history database.
 enum class PageContentAnnotationsType {
   kUnknown = 0,
-  // Results from executing the models on page content or received from the
-  // remote Optimization Guide service.
+  // Results from executing the models on page content or annotations received
+  // from the remote Optimization Guide service.
   kModelAnnotations = 1,
   // Related searches for the Google Search Results page.
   kRelatedSearches = 2,
   // Metadata for "search-like" pages.
   kSearchMetadata = 3,
+  // Metadata received from the remote Optimization Guide service.
+  kRemoteMetdata = 4,
 };
 
 // A KeyedService that annotates page content.
@@ -118,11 +120,6 @@ class PageContentAnnotationsService : public KeyedService,
                      const std::vector<std::string>& inputs,
                      AnnotationType annotation_type);
 
-  // Calls |BatchAnnotate| with pre-processing the hosts into tokens, all
-  // specific to PageTopics.
-  void BatchAnnotatePageTopics(BatchAnnotationCallback callback,
-                               const std::vector<std::string>& inputs);
-
   // Requests that the given model for |type| be loaded in the background and
   // then runs |callback| with true when the model is ready to execute. If the
   // model is ready now, the callback is run immediately. If the model file will
@@ -145,9 +142,6 @@ class PageContentAnnotationsService : public KeyedService,
   void OverridePageContentAnnotatorForTesting(PageContentAnnotator* annotator);
 
  private:
-  friend class PageContentAnnotationsServiceTest;
-  static std::string StringInputForPageTopicsHost(const std::string& host);
-
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   // Callback invoked when a single |visit| has been annotated.
   void OnPageContentAnnotated(
@@ -234,6 +228,13 @@ class PageContentAnnotationsService : public KeyedService,
       const HistoryVisit& visit,
       const std::vector<history::VisitContentModelAnnotations::Category>&
           entities);
+
+  // Persist |page_metadata| for |visit| in |history_service_|.
+  //
+  // Virtualized for testing.
+  virtual void PersistRemotePageMetadata(
+      const HistoryVisit& visit,
+      const proto::PageEntitiesMetadata& page_metadata);
 
   using PersistAnnotationsCallback = base::OnceCallback<void(history::VisitID)>;
   // Queries |history_service| for all the visits to the visited URL of |visit|.

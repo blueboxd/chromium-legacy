@@ -9,9 +9,10 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_manager_impl.h"
 #include "ash/webui/eche_app_ui/apps_access_manager_impl.h"
+#include "ash/webui/eche_app_ui/eche_alert_generator.h"
+#include "ash/webui/eche_app_ui/eche_connection_scheduler_impl.h"
 #include "ash/webui/eche_app_ui/eche_connector_impl.h"
 #include "ash/webui/eche_app_ui/eche_message_receiver_impl.h"
-#include "ash/webui/eche_app_ui/eche_notification_generator.h"
 #include "ash/webui/eche_app_ui/eche_presence_manager.h"
 #include "ash/webui/eche_app_ui/eche_signaler.h"
 #include "ash/webui/eche_app_ui/eche_stream_status_change_handler.h"
@@ -70,9 +71,13 @@ EcheAppManager::EcheAppManager(
               phone_hub_manager,
               feature_status_provider_.get(),
               launch_app_helper_.get())),
+      connection_scheduler_(std::make_unique<EcheConnectionSchedulerImpl>(
+          connection_manager_.get(),
+          feature_status_provider_.get())),
       eche_connector_(
           std::make_unique<EcheConnectorImpl>(feature_status_provider_.get(),
-                                              connection_manager_.get())),
+                                              connection_manager_.get(),
+                                              connection_scheduler_.get())),
       signaler_(std::make_unique<EcheSignaler>(eche_connector_.get(),
                                                connection_manager_.get())),
       message_receiver_(
@@ -89,9 +94,10 @@ EcheAppManager::EcheAppManager(
           std::make_unique<EcheRecentAppClickHandler>(
               phone_hub_manager,
               feature_status_provider_.get(),
-              launch_app_helper_.get())),
-      notification_generator_(std::make_unique<EcheNotificationGenerator>(
-          launch_app_helper_.get())),
+              launch_app_helper_.get(),
+              stream_status_change_handler_.get())),
+      alert_generator_(
+          std::make_unique<EcheAlertGenerator>(launch_app_helper_.get())),
       apps_access_manager_(std::make_unique<AppsAccessManagerImpl>(
           eche_connector_.get(),
           message_receiver_.get(),
@@ -127,7 +133,7 @@ void EcheAppManager::BindUidGeneratorInterface(
 
 void EcheAppManager::BindNotificationGeneratorInterface(
     mojo::PendingReceiver<mojom::NotificationGenerator> receiver) {
-  notification_generator_->Bind(std::move(receiver));
+  alert_generator_->Bind(std::move(receiver));
 }
 
 void EcheAppManager::BindDisplayStreamHandlerInterface(
@@ -153,13 +159,14 @@ void EcheAppManager::Shutdown() {
   system_info_provider_.reset();
   eche_tray_stream_status_observer_.reset();
   apps_access_manager_.reset();
-  notification_generator_.reset();
+  alert_generator_.reset();
   eche_recent_app_click_handler_.reset();
   uid_.reset();
   eche_presence_manager_.reset();
   message_receiver_.reset();
   signaler_.reset();
   eche_connector_.reset();
+  connection_scheduler_.reset();
   eche_notification_click_handler_.reset();
   stream_status_change_handler_.reset();
   launch_app_helper_.reset();

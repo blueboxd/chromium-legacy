@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/personalization_entry_point.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -19,12 +20,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -67,17 +69,18 @@ PersonalizationResult::~PersonalizationResult() = default;
 void PersonalizationResult::Open(int event_flags) {
   ::web_app::SystemAppLaunchParams launch_params;
   launch_params.url = GURL(id());
+  // Record entry point to Personalization Hub through Launcher search.
+  ash::personalization_app::LogPersonalizationEntryPoint(
+      ash::PersonalizationEntryPoint::kLauncherSearch);
   web_app::LaunchSystemWebAppAsync(
-      profile_, web_app::SystemAppType::PERSONALIZATION, launch_params);
+      profile_, ash::SystemWebAppType::PERSONALIZATION, launch_params);
 }
 
 PersonalizationProvider::PersonalizationProvider(Profile* profile)
     : profile_(profile) {
-  DCHECK(profile_);
-
-  if (!ash::features::IsPersonalizationHubEnabled()) {
-    return;
-  }
+  DCHECK(ash::features::IsPersonalizationHubEnabled());
+  DCHECK(profile_ && profile_->IsRegularProfile())
+      << "Regular profile required for personalization search";
 
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
   Observe(&app_service_proxy_->AppRegistryCache());
@@ -94,13 +97,11 @@ PersonalizationProvider::PersonalizationProvider(Profile* profile)
 PersonalizationProvider::~PersonalizationProvider() = default;
 
 void PersonalizationProvider::Start(const std::u16string& query) {
+  DCHECK(search_handler_) << "Search handler required to run query";
+
   ClearResultsSilently();
 
   if (query.size() < kMinQueryLength) {
-    return;
-  }
-
-  if (!search_handler_) {
     return;
   }
 

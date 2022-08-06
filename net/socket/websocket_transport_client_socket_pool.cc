@@ -24,7 +24,6 @@
 #include "net/socket/connect_job.h"
 #include "net/socket/connect_job_factory.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
-#include "net/socket/websocket_transport_connect_job.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -129,13 +128,15 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   return result;
 }
 
-void WebSocketTransportClientSocketPool::RequestSockets(
+int WebSocketTransportClientSocketPool::RequestSockets(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
     const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     int num_sockets,
+    CompletionOnceCallback callback,
     const NetLogWithSource& net_log) {
   NOTIMPLEMENTED();
+  return OK;
 }
 
 void WebSocketTransportClientSocketPool::SetPriority(const GroupId& group_id,
@@ -239,15 +240,16 @@ LoadState WebSocketTransportClientSocketPool::GetLoadState(
 base::Value WebSocketTransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type) const {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("name", name);
-  dict.SetStringKey("type", type);
-  dict.SetIntKey("handed_out_socket_count", handed_out_socket_count_);
-  dict.SetIntKey("connecting_socket_count", pending_connects_.size());
-  dict.SetIntKey("idle_socket_count", 0);
-  dict.SetIntKey("max_socket_count", max_sockets_);
-  dict.SetIntKey("max_sockets_per_group", max_sockets_);
-  return dict;
+  base::Value::Dict dict;
+  dict.Set("name", name);
+  dict.Set("type", type);
+  dict.Set("handed_out_socket_count", handed_out_socket_count_);
+  dict.Set("connecting_socket_count",
+           static_cast<int>(pending_connects_.size()));
+  dict.Set("idle_socket_count", 0);
+  dict.Set("max_socket_count", max_sockets_);
+  dict.Set("max_sockets_per_group", max_sockets_);
+  return base::Value(std::move(dict));
 }
 
 bool WebSocketTransportClientSocketPool::IsStalled() const {

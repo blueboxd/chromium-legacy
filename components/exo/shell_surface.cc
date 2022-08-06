@@ -402,11 +402,6 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
       return;
     }
 
-    if (needs_layout_on_show_) {
-      needs_layout_on_show_ = false;
-      return;
-    }
-
     // If size changed then give the client a chance to produce new contents
     // before origin on screen is changed. Retain the old origin by reverting
     // the origin delta until the next configure is acknowledged.
@@ -607,9 +602,12 @@ void ShellSurface::Configure(bool ends_drag) {
           GetClientBoundsInScreen(widget_), window_state->GetStateType(),
           IsResizing(), widget_->IsActive(), origin_offset);
     } else {
-      serial = configure_callback_.Run(gfx::Rect(),
-                                       chromeos::WindowStateType::kNormal,
-                                       false, false, origin_offset);
+      gfx::Rect bounds;
+      if (initial_bounds_)
+        bounds.set_origin(initial_bounds_->origin());
+      serial =
+          configure_callback_.Run(bounds, chromeos::WindowStateType::kNormal,
+                                  false, false, origin_offset);
     }
   }
 

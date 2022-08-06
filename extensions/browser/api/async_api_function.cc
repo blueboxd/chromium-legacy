@@ -96,10 +96,18 @@ void AsyncApiFunction::RespondOnUIThread() {
 void AsyncApiFunction::SendResponse(bool success) {
   ResponseValue response;
   if (success) {
-    response = ArgumentList(std::move(results_));
+    std::vector<base::Value> arguments;
+    if (results_) {
+      std::unique_ptr<base::ListValue> results = std::move(results_);
+      arguments = std::move(*results).TakeListDeprecated();
+    }
+    response = ArgumentList(std::move(arguments));
+  } else if (results_) {
+    std::unique_ptr<base::ListValue> results = std::move(results_);
+    response =
+        ErrorWithArguments(std::move(*results).TakeListDeprecated(), error_);
   } else {
-    response = results_ ? ErrorWithArguments(std::move(results_), error_)
-                        : Error(error_);
+    response = Error(error_);
   }
   ExtensionFunction::Respond(std::move(response));
 }

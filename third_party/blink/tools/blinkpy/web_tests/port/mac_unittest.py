@@ -34,9 +34,9 @@ from blinkpy.web_tests.port import port_testcase
 
 class MacPortTest(port_testcase.PortTestCase):
     os_name = 'mac'
-    os_version = 'mac10.12'
+    os_version = 'mac11'
     port_name = 'mac'
-    full_port_name = 'mac-mac10.12'
+    full_port_name = 'mac-mac11'
     port_maker = mac.MacPort
 
     def assert_name(self, port_name, os_version_string, expected,
@@ -52,7 +52,7 @@ class MacPortTest(port_testcase.PortTestCase):
     def test_get_platform_tags(self):
         port = self.make_port()
         self.assertEqual(port.get_platform_tags(),
-                         {'mac', 'mac10.12', 'x86', 'release'})
+                         {'mac', 'mac11', 'x86', 'release'})
 
     def test_versions(self):
         # Workarounds where we need to bump up the version.

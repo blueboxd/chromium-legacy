@@ -5,8 +5,7 @@
 #include "ash/components/hid_detection/bluetooth_hid_detector.h"
 #include "ash/constants/ash_features.h"
 
-namespace ash {
-namespace hid_detection {
+namespace ash::hid_detection {
 
 BluetoothHidPairingState::BluetoothHidPairingState(const std::string& code,
                                                    uint8_t num_keys_entered)
@@ -76,7 +75,10 @@ BluetoothHidDetector::BluetoothHidDetector() {
   DCHECK(ash::features::IsOobeHidDetectionRevampEnabled());
 }
 
-BluetoothHidDetector::~BluetoothHidDetector() = default;
+BluetoothHidDetector::~BluetoothHidDetector() {
+  DCHECK(!delegate_) << " Bluetooth HID detection must be stopped before "
+                     << "BluetoothHidDetector is destroyed.";
+}
 
 void BluetoothHidDetector::StartBluetoothHidDetection(
     Delegate* delegate,
@@ -96,5 +98,4 @@ void BluetoothHidDetector::NotifyBluetoothHidDetectionStatusChanged() {
   delegate_->OnBluetoothHidStatusChanged();
 }
 
-}  // namespace hid_detection
-}  // namespace ash
+}  // namespace ash::hid_detection

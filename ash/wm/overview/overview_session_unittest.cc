@@ -779,7 +779,8 @@ TEST_P(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
 }
 
 // Tests entering overview mode with two windows and selecting one.
-TEST_P(OverviewSessionTest, FullscreenWindow) {
+// TODO(crbug.com/1323145): Flaky.
+TEST_P(OverviewSessionTest, DISABLED_FullscreenWindow) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -816,7 +817,8 @@ TEST_P(OverviewSessionTest, FullscreenWindow) {
 }
 
 // Tests entering overview mode with maximized window.
-TEST_P(OverviewSessionTest, MaximizedWindow) {
+// TODO(crbug.com/1325386): Flaky.
+TEST_P(OverviewSessionTest, DISABLED_MaximizedWindow) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -3695,31 +3697,6 @@ TEST_F(TabletModeOverviewSessionTest, HorizontalScrollingOnOverviewItem) {
 
   GenerateScrollSequence(topleft_window_center, gfx::Point(-500, 50));
   EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
-}
-
-// Tests that dragging a fullscreened window to snap in overview does not result
-// in a u-a-f. Regression test for crbug.com/1330042.
-TEST_F(TabletModeOverviewSessionTest, SnappingFullscreenWindow) {
-  UpdateDisplay("800x600");
-
-  auto window = CreateAppWindow(gfx::Rect(300, 300));
-
-  const WMEvent fullscreen_event(WM_EVENT_FULLSCREEN);
-  WindowState::Get(window.get())->OnWMEvent(&fullscreen_event);
-  EXPECT_TRUE(WindowState::Get(window.get())->IsFullscreen());
-
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  OverviewItem* item = GetOverviewItemForWindow(window.get());
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_screen_location(
-      gfx::ToRoundedPoint(item->target_bounds().CenterPoint()));
-  generator->PressLeftButton();
-  generator->MoveMouseTo(gfx::Point(10, 300));
-  generator->ReleaseLeftButton();
-
-  EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 }
 
 // A unique test class for testing flings in overview as those rely on observing

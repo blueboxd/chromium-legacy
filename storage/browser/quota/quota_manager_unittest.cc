@@ -28,6 +28,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -94,6 +95,11 @@ struct ClientBucketData {
   std::string name;
   StorageType type;
   int64_t usage;
+};
+
+struct UsageWithBreakdown {
+  int64_t usage;
+  blink::mojom::UsageBreakdownPtr breakdown;
 };
 
 // Returns a deterministic value for the amount of available disk space.
@@ -199,7 +205,7 @@ class QuotaManagerImplTest : public testing::Test {
     for (const ClientBucketData& data : mock_data) {
       base::test::TestFuture<QuotaErrorOr<BucketInfo>> future;
       quota_manager_impl_->GetOrCreateBucketDeprecated(
-          ToStorageKey(data.origin), data.name, data.type,
+          {ToStorageKey(data.origin), data.name}, data.type,
           future.GetCallback());
       auto bucket = future.Take();
       EXPECT_TRUE(bucket.ok());
@@ -211,12 +217,10 @@ class QuotaManagerImplTest : public testing::Test {
 
   void OpenDatabase() { quota_manager_impl_->EnsureDatabaseOpened(); }
 
-  QuotaErrorOr<BucketInfo> GetOrCreateBucket(const StorageKey& storage_key,
-                                             const std::string& bucket_name) {
+  QuotaErrorOr<BucketInfo> UpdateOrCreateBucket(
+      const BucketInitParams& params) {
     base::test::TestFuture<QuotaErrorOr<BucketInfo>> future;
-    BucketInitParams params(storage_key);
-    params.name = bucket_name;
-    quota_manager_impl_->GetOrCreateBucket(params, future.GetCallback());
+    quota_manager_impl_->UpdateOrCreateBucket(params, future.GetCallback());
     return future.Take();
   }
 
@@ -286,6 +290,13 @@ class QuotaManagerImplTest : public testing::Test {
     return {future.Get<0>(), future.Get<1>(), future.Get<2>()};
   }
 
+  UsageAndQuotaResult GetUsageAndQuotaForBucket(const BucketInfo& bucket_info) {
+    base::test::TestFuture<QuotaStatusCode, int64_t, int64_t> future;
+    quota_manager_impl_->GetBucketUsageAndQuota(bucket_info,
+                                                future.GetCallback());
+    return {future.Get<0>(), future.Get<1>(), future.Get<2>()};
+  }
+
   void GetUsageAndQuotaWithBreakdown(const StorageKey& storage_key,
                                      StorageType type) {
     base::RunLoop run_loop;
@@ -350,14 +361,14 @@ class QuotaManagerImplTest : public testing::Test {
     return {future.Get<0>(), future.Get<1>()};
   }
 
-  void GetHostUsageWithBreakdown(const std::string& host, StorageType type) {
-    base::RunLoop run_loop;
-    usage_ = -1;
-    quota_manager_impl_->GetHostUsageWithBreakdown(
-        host, type,
-        base::BindOnce(&QuotaManagerImplTest::DidGetHostUsageBreakdown,
-                       weak_factory_.GetWeakPtr(), run_loop.QuitClosure()));
-    run_loop.Run();
+  UsageWithBreakdown GetStorageKeyUsageWithBreakdown(
+      const blink::StorageKey& storage_key,
+      StorageType type) {
+    base::test::TestFuture<int64_t, blink::mojom::UsageBreakdownPtr> future;
+    quota_manager_impl_->GetStorageKeyUsageWithBreakdown(storage_key, type,
+                                                         future.GetCallback());
+    auto result = future.Take();
+    return {std::get<0>(result), std::move(std::get<1>(result))};
   }
 
   void RunAdditionalUsageAndQuotaTask(const StorageKey& storage_key,
@@ -768,11 +779,11 @@ TEST_F(QuotaManagerImplTest, DatabaseDisabledAfterThreshold) {
   StorageKey storage_key = ToStorageKey("http://a.com/");
   std::string bucket_name = "bucket_a";
 
-  auto bucket = GetOrCreateBucket(storage_key, bucket_name);
+  auto bucket = UpdateOrCreateBucket({storage_key, bucket_name});
   ASSERT_FALSE(bucket.ok());
   ASSERT_FALSE(is_db_disabled());
 
-  bucket = GetOrCreateBucket(storage_key, bucket_name);
+  bucket = UpdateOrCreateBucket({storage_key, bucket_name});
   ASSERT_FALSE(bucket.ok());
   ASSERT_FALSE(is_db_disabled());
 
@@ -782,18 +793,56 @@ TEST_F(QuotaManagerImplTest, DatabaseDisabledAfterThreshold) {
   ASSERT_TRUE(is_db_disabled());
 }
 
-TEST_F(QuotaManagerImplTest, GetOrCreateBucket) {
+TEST_F(QuotaManagerImplTest, UpdateOrCreateBucket) {
   StorageKey storage_key = ToStorageKey("http://a.com/");
   std::string bucket_name = "bucket_a";
 
-  auto bucket = GetOrCreateBucket(storage_key, bucket_name);
+  auto bucket = UpdateOrCreateBucket({storage_key, bucket_name});
   ASSERT_TRUE(bucket.ok());
 
   BucketId created_bucket_id = bucket.value().id;
 
-  bucket = GetOrCreateBucket(storage_key, bucket_name);
+  bucket = UpdateOrCreateBucket({storage_key, bucket_name});
   EXPECT_TRUE(bucket.ok());
   EXPECT_EQ(bucket.value().id, created_bucket_id);
+}
+
+TEST_F(QuotaManagerImplTest, UpdateOrCreateBucket_Expiration) {
+  auto clock = std::make_unique<base::SimpleTestClock>();
+  QuotaDatabase::SetClockForTesting(clock.get());
+  clock->SetNow(base::Time::Now());
+
+  BucketInitParams params(ToStorageKey("http://a.com/"), "bucket_a");
+  params.expiration = clock->Now() - base::Days(1);
+
+  auto bucket = UpdateOrCreateBucket(params);
+  ASSERT_FALSE(bucket.ok());
+
+  // Create a new bucket.
+  params.expiration = clock->Now() + base::Days(1);
+  params.quota = 1000;
+  bucket = UpdateOrCreateBucket(params);
+  ASSERT_TRUE(bucket.ok());
+  EXPECT_EQ(bucket->expiration, params.expiration);
+  EXPECT_EQ(bucket->quota, 1000);
+
+  // Get/Update the same bucket. Verify expiration is updated, but quota is not.
+  params.expiration = clock->Now() + base::Days(5);
+  params.quota = 500;
+  bucket = UpdateOrCreateBucket(params);
+  ASSERT_TRUE(bucket.ok());
+  EXPECT_EQ(bucket->expiration, params.expiration);
+  EXPECT_EQ(bucket->quota, 1000);
+
+  // Verify that the bucket is clobbered due to being expired. In this case, the
+  // new quota is respected.
+  clock->Advance(base::Days(20));
+  params.expiration = base::Time();
+  bucket = UpdateOrCreateBucket(params);
+  EXPECT_EQ(bucket->expiration, params.expiration);
+  EXPECT_EQ(bucket->quota, 500);
+
+  QuotaDatabase::SetClockForTesting(nullptr);
 }
 
 TEST_F(QuotaManagerImplTest, GetOrCreateBucketSync) {
@@ -803,8 +852,7 @@ TEST_F(QuotaManagerImplTest, GetOrCreateBucketSync) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindLambdaForTesting([&]() {
-        BucketInitParams params(ToStorageKey("http://b.com"));
-        params.name = "bucket_b";
+        BucketInitParams params(ToStorageKey("http://b.com"), "bucket_b");
         // Ensure that the synchronous function returns a bucket.
         auto bucket =
             quota_manager_impl_->proxy()->GetOrCreateBucketSync(params);
@@ -1030,6 +1078,42 @@ TEST_F(QuotaManagerImplTest, GetUsageAndQuota_Simple) {
   EXPECT_EQ(result.quota, quota_returned_for_foo);
 }
 
+TEST_F(QuotaManagerImplTest, GetUsageAndQuota_SingleBucket) {
+  static const ClientBucketData kData[] = {
+      {"http://foo.com/", "logs", kTemp, 10},
+      {"http://foo.com/", "inbox", kTemp, 60},
+  };
+  MockQuotaClient* fs_client =
+      CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kPerm});
+
+  // Initialize the logs bucket with a non-default quota.
+  BucketInitParams params(ToStorageKey("http://foo.com/"), "logs");
+  params.quota = 117;
+  ASSERT_TRUE(UpdateOrCreateBucket(params).ok());
+
+  RegisterClientBucketData(fs_client, kData);
+
+  {
+    QuotaErrorOr<BucketInfo> bucket =
+        UpdateOrCreateBucket({ToStorageKey("http://foo.com/"), "logs"});
+    ASSERT_TRUE(bucket.ok());
+    auto result = GetUsageAndQuotaForBucket(bucket.value());
+    EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+    EXPECT_EQ(result.usage, 10);
+    EXPECT_EQ(result.quota, params.quota);
+  }
+
+  {
+    QuotaErrorOr<BucketInfo> bucket =
+        UpdateOrCreateBucket({ToStorageKey("http://foo.com/"), "inbox"});
+    ASSERT_TRUE(bucket.ok());
+    auto result = GetUsageAndQuotaForBucket(bucket.value());
+    EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+    EXPECT_EQ(result.usage, 60);
+    EXPECT_EQ(result.quota, kDefaultPerHostQuota);
+  }
+}
+
 TEST_F(QuotaManagerImplTest, GetUsage_NoClient) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
@@ -1040,11 +1124,12 @@ TEST_F(QuotaManagerImplTest, GetUsage_NoClient) {
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 0);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(0, usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(0, usage());
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+             .usage);
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+             .usage);
 
   auto global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 0);
@@ -1067,11 +1152,12 @@ TEST_F(QuotaManagerImplTest, GetUsage_EmptyClient) {
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 0);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(0, usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(0, usage());
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+             .usage);
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+             .usage);
 
   auto global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 0);
@@ -1103,7 +1189,11 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_MultiStorageKeys) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20);
+  EXPECT_EQ(result.usage, 10);
+  result =
+      GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:8080/"), kTemp);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 20);
 
   // The host's quota should be its full portion of the global quota
   // since there's plenty of diskspace.
@@ -1111,7 +1201,11 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_MultiStorageKeys) {
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://bar.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 5 + 7);
+  EXPECT_EQ(result.usage, 5);
+  EXPECT_EQ(result.quota, kPerHostQuota);
+  result = GetUsageAndQuotaForWebApps(ToStorageKey("https://bar.com/"), kTemp);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 7);
   EXPECT_EQ(result.quota, kPerHostQuota);
 }
 
@@ -1144,7 +1238,12 @@ TEST_F(QuotaManagerImplTest, GetUsage_MultipleClients) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 1 + 128);
+  EXPECT_EQ(result.usage, 1);
+  EXPECT_EQ(result.quota, kPerHostQuota);
+
+  result = GetUsageAndQuotaForWebApps(ToStorageKey("https://foo.com/"), kTemp);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 128);
   EXPECT_EQ(result.quota, kPerHostQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://bar.com/"), kPerm);
@@ -1233,13 +1332,15 @@ TEST_F(QuotaManagerImplTest, GetUsageWithBreakdown_NoClient) {
   EXPECT_EQ(0, usage());
   EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(0, usage());
-  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
+  auto usage =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp);
+  EXPECT_EQ(0, usage.usage);
+  EXPECT_TRUE(usage_breakdown_expected.Equals(*usage.breakdown));
 
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(0, usage());
-  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
+  usage =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm);
+  EXPECT_EQ(0, usage.usage);
+  EXPECT_TRUE(usage_breakdown_expected.Equals(*usage.breakdown));
 }
 
 TEST_F(QuotaManagerImplTest, GetUsageWithBreakdown_MultiStorageKeys) {
@@ -1259,14 +1360,24 @@ TEST_F(QuotaManagerImplTest, GetUsageWithBreakdown_MultiStorageKeys) {
       blink::mojom::UsageBreakdown();
   GetUsageAndQuotaWithBreakdown(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(QuotaStatusCode::kOk, status());
-  EXPECT_EQ(10 + 20, usage());
-  usage_breakdown_expected.fileSystem = 10 + 20;
+  EXPECT_EQ(10, usage());
+  usage_breakdown_expected.fileSystem = 10;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
+  GetUsageAndQuotaWithBreakdown(ToStorageKey("http://foo.com:8080/"), kTemp);
+  EXPECT_EQ(QuotaStatusCode::kOk, status());
+  EXPECT_EQ(20, usage());
+  usage_breakdown_expected.fileSystem = 20;
   EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
   GetUsageAndQuotaWithBreakdown(ToStorageKey("http://bar.com/"), kTemp);
   EXPECT_EQ(QuotaStatusCode::kOk, status());
-  EXPECT_EQ(5 + 7, usage());
-  usage_breakdown_expected.fileSystem = 5 + 7;
+  EXPECT_EQ(5, usage());
+  usage_breakdown_expected.fileSystem = 5;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
+  GetUsageAndQuotaWithBreakdown(ToStorageKey("https://bar.com/"), kTemp);
+  EXPECT_EQ(QuotaStatusCode::kOk, status());
+  EXPECT_EQ(7, usage());
+  usage_breakdown_expected.fileSystem = 7;
   EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 }
 
@@ -1294,8 +1405,14 @@ TEST_F(QuotaManagerImplTest, GetUsageWithBreakdown_MultipleClients) {
       blink::mojom::UsageBreakdown();
   GetUsageAndQuotaWithBreakdown(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(QuotaStatusCode::kOk, status());
-  EXPECT_EQ(1 + 128, usage());
+  EXPECT_EQ(1, usage());
   usage_breakdown_expected.fileSystem = 1;
+  usage_breakdown_expected.webSql = 0;
+  EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
+  GetUsageAndQuotaWithBreakdown(ToStorageKey("https://foo.com/"), kTemp);
+  EXPECT_EQ(QuotaStatusCode::kOk, status());
+  EXPECT_EQ(128, usage());
+  usage_breakdown_expected.fileSystem = 0;
   usage_breakdown_expected.webSql = 128;
   EXPECT_TRUE(usage_breakdown_expected.Equals(usage_breakdown()));
 
@@ -1335,7 +1452,10 @@ void QuotaManagerImplTest::GetUsage_WithModifyTestBody(const StorageType type) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), type);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20);
+  EXPECT_EQ(result.usage, 10);
+  result = GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:1/"), type);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 20);
 
   client->ModifyStorageKeyAndNotify(ToStorageKey("http://foo.com/"), type, 30);
   client->ModifyStorageKeyAndNotify(ToStorageKey("http://foo.com:1/"), type,
@@ -1347,8 +1467,12 @@ void QuotaManagerImplTest::GetUsage_WithModifyTestBody(const StorageType type) {
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), type);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20 + 30 - 5 + 1);
+  EXPECT_EQ(result.usage, 10 + 30);
   int foo_usage = result.usage;
+  result = GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:1/"), type);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 20 - 5);
+  int foo1_usage = result.usage;
 
   client->ModifyStorageKeyAndNotify(ToStorageKey("http://bar.com/"), type, 40);
 
@@ -1360,7 +1484,7 @@ void QuotaManagerImplTest::GetUsage_WithModifyTestBody(const StorageType type) {
   EXPECT_EQ(result.usage, 40);
 
   auto global_usage_result = GetGlobalUsage(type);
-  EXPECT_EQ(global_usage_result.usage, foo_usage + 40);
+  EXPECT_EQ(global_usage_result.usage, foo_usage + foo1_usage + 40 + 1);
   EXPECT_EQ(global_usage_result.unlimited_usage, 0);
 }
 
@@ -1388,7 +1512,12 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20);
+  EXPECT_EQ(result.usage, 10);
+  EXPECT_EQ(result.quota, kPerHostQuota);
+  result =
+      GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:8080/"), kTemp);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 20);
   EXPECT_EQ(result.quota, kPerHostQuota);
 
   set_additional_callback_count(0);
@@ -1397,7 +1526,7 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   RunAdditionalUsageAndQuotaTask(ToStorageKey("http://bar.com/"), kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20);
+  EXPECT_EQ(result.usage, 10);
   EXPECT_EQ(result.quota, kPerHostQuota);
   EXPECT_EQ(2, additional_callback_count());
 }
@@ -1695,7 +1824,18 @@ TEST_F(QuotaManagerImplTest, GetPersistentUsageAndQuota_MultiStorageKeys) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kPerm);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20 + 13 + 19);
+  EXPECT_EQ(result.usage, 10);
+  EXPECT_EQ(result.quota, 100);
+
+  result =
+      GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:8080/"), kPerm);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 20);
+  EXPECT_EQ(result.quota, 100);
+
+  result = GetUsageAndQuotaForWebApps(ToStorageKey("https://foo.com/"), kPerm);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 13);
   EXPECT_EQ(result.quota, 100);
 }
 
@@ -1720,7 +1860,12 @@ TEST_F(QuotaManagerImplTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kPerm);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20);
+  EXPECT_EQ(result.usage, 10);
+  EXPECT_EQ(result.quota, 100);
+  result =
+      GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:8080/"), kPerm);
+  EXPECT_EQ(result.status, QuotaStatusCode::kOk);
+  EXPECT_EQ(result.usage, 20);
   EXPECT_EQ(result.quota, 100);
 
   set_additional_callback_count(0);
@@ -1729,7 +1874,7 @@ TEST_F(QuotaManagerImplTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {
   RunAdditionalUsageAndQuotaTask(ToStorageKey("http://bar.com/"), kPerm);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.usage, 10 + 20);
+  EXPECT_EQ(result.usage, 10);
   EXPECT_EQ(additional_callback_count(), 2);
 }
 
@@ -1786,11 +1931,18 @@ TEST_F(QuotaManagerImplTest, GetUsage_Simple) {
   EXPECT_EQ(300 + 4000 + 50000 + 7000000, global_usage_result.usage);
   EXPECT_EQ(global_usage_result.unlimited_usage, 0);
 
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(usage(), 1 + 20);
-
-  GetHostUsageWithBreakdown("buz.com", kTemp);
-  EXPECT_EQ(usage(), 4000 + 50000);
+  EXPECT_EQ(
+      1, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+             .usage);
+  EXPECT_EQ(20, GetStorageKeyUsageWithBreakdown(
+                    ToStorageKey("http://foo.com:1/"), kPerm)
+                    .usage);
+  EXPECT_EQ(4000, GetStorageKeyUsageWithBreakdown(
+                      ToStorageKey("https://buz.com/"), kTemp)
+                      .usage);
+  EXPECT_EQ(50000, GetStorageKeyUsageWithBreakdown(
+                       ToStorageKey("http://buz.com/"), kTemp)
+                       .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsage_WithModification) {
@@ -1829,14 +1981,22 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithModification) {
   EXPECT_EQ(global_usage_result.usage, 300 + 4000 + 50000 + 7000000 + 1);
   EXPECT_EQ(global_usage_result.unlimited_usage, 0);
 
-  GetHostUsageWithBreakdown("buz.com", kTemp);
-  EXPECT_EQ(usage(), 4000 + 50000);
+  EXPECT_EQ(4000, GetStorageKeyUsageWithBreakdown(
+                      ToStorageKey("https://buz.com/"), kTemp)
+                      .usage);
+  EXPECT_EQ(50000, GetStorageKeyUsageWithBreakdown(
+                       ToStorageKey("http://buz.com/"), kTemp)
+                       .usage);
 
   client->ModifyStorageKeyAndNotify(ToStorageKey("http://buz.com/"), kTemp,
                                     900000000);
 
-  GetHostUsageWithBreakdown("buz.com", kTemp);
-  EXPECT_EQ(usage(), 4000 + 50000 + 900000000);
+  EXPECT_EQ(4000, GetStorageKeyUsageWithBreakdown(
+                      ToStorageKey("https://buz.com/"), kTemp)
+                      .usage);
+  EXPECT_EQ(50000 + 900000000, GetStorageKeyUsageWithBreakdown(
+                                   ToStorageKey("http://buz.com/"), kTemp)
+                                   .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsage_WithBucketModification) {
@@ -1876,21 +2036,24 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithBucketModification) {
   EXPECT_EQ(global_usage_result.usage, 50 + 200);
   EXPECT_EQ(global_usage_result.unlimited_usage, 0);
 
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(usage(), 100);
+  EXPECT_EQ(100, GetStorageKeyUsageWithBreakdown(
+                     ToStorageKey("http://bar.com/"), kTemp)
+                     .usage);
 
   auto bar_temp_bucket =
       GetBucket(ToStorageKey("http://bar.com/"), "logs", kTemp);
   ASSERT_TRUE(bar_temp_bucket.ok());
   client->ModifyBucketAndNotify(bar_temp_bucket->id, 900000000);
 
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(usage(), 100 + 900000000);
+  EXPECT_EQ(100 + 900000000, GetStorageKeyUsageWithBreakdown(
+                                 ToStorageKey("http://bar.com/"), kTemp)
+                                 .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsage_WithDeleteBucket) {
   static const ClientBucketData kData[] = {
       {"http://foo.com/", kDefaultBucketName, kTemp, 1},
+      {"http://foo.com/", "secondbucket", kTemp, 10000},
       {"http://foo.com:1/", kDefaultBucketName, kTemp, 20},
       {"http://foo.com/", kDefaultBucketName, kPerm, 300},
       {"http://bar.com/", kDefaultBucketName, kTemp, 4000},
@@ -1902,11 +2065,12 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithDeleteBucket) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  int64_t predelete_host_tmp = usage();
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  int64_t predelete_host_pers = usage();
+  const int64_t predelete_storage_key_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_storage_key_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage;
 
   auto bucket =
       GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
@@ -1919,11 +2083,14 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithDeleteBucket) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, predelete_global_tmp - 1);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_host_tmp - 1, usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_host_pers, usage());
+  EXPECT_EQ(
+      predelete_storage_key_tmp - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_storage_key_pers,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetStorageCapacity) {
@@ -1935,7 +2102,8 @@ TEST_F(QuotaManagerImplTest, GetStorageCapacity) {
 TEST_F(QuotaManagerImplTest, EvictBucketData) {
   static const ClientBucketData kData1[] = {
       {"http://foo.com/", kDefaultBucketName, kTemp, 1},
-      {"http://foo.com:1/", "logs", kTemp, 20},
+      {"http://foo.com:1/", "logs", kTemp, 800000},
+      {"http://foo.com/", "logs", kTemp, 20},
       {"http://foo.com/", kDefaultBucketName, kPerm, 300},
       {"http://bar.com/", kDefaultBucketName, kTemp, 4000},
   };
@@ -1956,11 +2124,12 @@ TEST_F(QuotaManagerImplTest, EvictBucketData) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  int64_t predelete_host_tmp = usage();
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  int64_t predelete_host_pers = usage();
+  const int64_t predelete_storage_key_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_storage_key_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage;
 
   for (const ClientBucketData& data : kData1) {
     quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
@@ -1987,30 +2156,35 @@ TEST_F(QuotaManagerImplTest, EvictBucketData) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(predelete_global_tmp - (1 + 50000), global_usage_result.usage);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_host_tmp - (1 + 50000), usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_host_pers, usage());
+  EXPECT_EQ(
+      predelete_storage_key_tmp - (1 + 50000),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_storage_key_pers,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage);
 
   // Non default bucket eviction.
-  bucket = GetBucket(ToStorageKey("http://foo.com:1"), "logs", kTemp);
+  bucket = GetBucket(ToStorageKey("http://foo.com"), "logs", kTemp);
   ASSERT_TRUE(bucket.ok());
 
   ASSERT_EQ(EvictBucketData(bucket->ToBucketLocator()), QuotaStatusCode::kOk);
 
-  bucket = GetBucket(ToStorageKey("http://foo.com:1"), "logs", kTemp);
+  bucket = GetBucket(ToStorageKey("http://foo.com"), "logs", kTemp);
   EXPECT_EQ(bucket.error(), QuotaError::kNotFound);
 
   global_usage_result = GetGlobalUsage(kTemp);
-  EXPECT_EQ(predelete_global_tmp - (1 + 20 + 50000 + 6000),
-            global_usage_result.usage);
+  EXPECT_EQ(predelete_global_tmp - (1 + 20 + 50000), global_usage_result.usage);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_host_tmp - (1 + 20 + 50000 + 6000), usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_host_pers, usage());
+  EXPECT_EQ(
+      predelete_storage_key_tmp - (1 + 20 + 50000),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_storage_key_pers,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage);
 }
 
 TEST_F(QuotaManagerImplTest, EvictBucketDataHistogram) {
@@ -2075,11 +2249,15 @@ TEST_F(QuotaManagerImplTest, EvictBucketDataWithDeletionError) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, (1 + 20 + 4000));
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ((1 + 20), usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(300, usage());
+  EXPECT_EQ(
+      1, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+             .usage);
+  EXPECT_EQ(20, GetStorageKeyUsageWithBreakdown(
+                    ToStorageKey("http://foo.com:1/"), kTemp)
+                    .usage);
+  EXPECT_EQ(300, GetStorageKeyUsageWithBreakdown(
+                     ToStorageKey("http://foo.com/"), kPerm)
+                     .usage);
 
   for (const ClientBucketData& data : kData)
     NotifyStorageAccessed(ToStorageKey(data.origin), data.type);
@@ -2119,11 +2297,15 @@ TEST_F(QuotaManagerImplTest, EvictBucketDataWithDeletionError) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 1);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(1, usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(300, usage());
+  EXPECT_EQ(
+      1, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+             .usage);
+  EXPECT_EQ(0, GetStorageKeyUsageWithBreakdown(
+                   ToStorageKey("http://foo.com:1/"), kTemp)
+                   .usage);
+  EXPECT_EQ(300, GetStorageKeyUsageWithBreakdown(
+                     ToStorageKey("http://foo.com/"), kPerm)
+                     .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetEvictionRoundInfo) {
@@ -2166,33 +2348,40 @@ TEST_F(QuotaManagerImplTest, DeleteHostDataSimple) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   const int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  int64_t predelete_host_tmp = usage();
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  int64_t predelete_host_pers = usage();
+  const int64_t predelete_storage_key_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_storage_key_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage;
 
   EXPECT_EQ(DeleteHostData(std::string(), kTemp), QuotaStatusCode::kOk);
 
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, predelete_global_tmp);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_host_tmp, usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_host_pers, usage());
+  EXPECT_EQ(
+      predelete_storage_key_tmp,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_storage_key_pers,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage);
 
   EXPECT_EQ(DeleteHostData("foo.com", kTemp), QuotaStatusCode::kOk);
 
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(predelete_global_tmp - 1, global_usage_result.usage);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_host_tmp - 1, usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_host_pers, usage());
+  EXPECT_EQ(
+      predelete_storage_key_tmp - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_storage_key_pers,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage);
 }
 
 TEST_F(QuotaManagerImplTest, DeleteHostDataMultiple) {
@@ -2219,17 +2408,24 @@ TEST_F(QuotaManagerImplTest, DeleteHostDataMultiple) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   const int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  const int64_t predelete_foo_tmp = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  const int64_t predelete_bar_tmp = usage();
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  const int64_t predelete_foo_pers = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  const int64_t predelete_bar_pers = usage();
+  const int64_t predelete_sk_foo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_sfoo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("https://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo1_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com:1/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_bar_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage;
+  const int64_t predelete_sk_bar_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kPerm)
+          .usage;
 
   EXPECT_EQ(DeleteHostData("foo.com", kTemp), QuotaStatusCode::kOk);
   EXPECT_EQ(DeleteHostData("bar.com", kTemp), QuotaStatusCode::kOk);
@@ -2254,17 +2450,28 @@ TEST_F(QuotaManagerImplTest, DeleteHostDataMultiple) {
   EXPECT_EQ(global_usage_result.usage,
             predelete_global_tmp - (1 + 20 + 4000 + 50000 + 6000 + 80 + 9));
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - (1 + 20 + 50000 + 6000 + 80), usage());
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(predelete_bar_tmp - (4000 + 9), usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_foo_pers, usage());
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  EXPECT_EQ(predelete_bar_pers, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - (1 + 50000),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_sk_sfoo_tmp - (80),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("https://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_sk_foo1_tmp - (20 + 6000),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com:1/"), kTemp)
+          .usage);
+  EXPECT_EQ(
+      predelete_sk_bar_tmp - (4000 + 9),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(predelete_sk_foo_pers, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://foo.com/"), kPerm)
+                                       .usage);
+  EXPECT_EQ(predelete_sk_bar_pers, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://bar.com/"), kPerm)
+                                       .usage);
 }
 
 TEST_F(QuotaManagerImplTest, DeleteHostDataMultipleClientsDifferentTypes) {
@@ -2290,20 +2497,28 @@ TEST_F(QuotaManagerImplTest, DeleteHostDataMultipleClientsDifferentTypes) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   const int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  const int64_t predelete_foo_tmp = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  const int64_t predelete_bar_tmp = usage();
+  const int64_t predelete_sk_foo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo1_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com:1/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_bar_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+          .usage;
 
   global_usage_result = GetGlobalUsage(kPerm);
   EXPECT_EQ(global_usage_result.usage, (1000 + 10 + 1));
 
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ((10 + 1), usage());
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  EXPECT_EQ(1000, usage());
+  EXPECT_EQ(
+      1, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+             .usage);
+  EXPECT_EQ(10, GetStorageKeyUsageWithBreakdown(
+                    ToStorageKey("http://foo.com:1/"), kPerm)
+                    .usage);
+  EXPECT_EQ(1000, GetStorageKeyUsageWithBreakdown(
+                      ToStorageKey("http://bar.com/"), kPerm)
+                      .usage);
 
   EXPECT_EQ(DeleteHostData("foo.com", kPerm), QuotaStatusCode::kOk);
   EXPECT_EQ(DeleteHostData("bar.com", kPerm), QuotaStatusCode::kOk);
@@ -2326,20 +2541,28 @@ TEST_F(QuotaManagerImplTest, DeleteHostDataMultipleClientsDifferentTypes) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, predelete_global_tmp);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp, usage());
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(predelete_bar_tmp, usage());
+  EXPECT_EQ(predelete_sk_foo_tmp, GetStorageKeyUsageWithBreakdown(
+                                      ToStorageKey("http://foo.com/"), kTemp)
+                                      .usage);
+  EXPECT_EQ(predelete_sk_foo1_tmp, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://foo.com:1/"), kTemp)
+                                       .usage);
+  EXPECT_EQ(predelete_sk_bar_tmp, GetStorageKeyUsageWithBreakdown(
+                                      ToStorageKey("http://bar.com/"), kTemp)
+                                      .usage);
 
   global_usage_result = GetGlobalUsage(kPerm);
   EXPECT_EQ(global_usage_result.usage, 0);
 
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(0, usage());
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  EXPECT_EQ(0, usage());
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+             .usage);
+  EXPECT_EQ(0, GetStorageKeyUsageWithBreakdown(
+                   ToStorageKey("http://foo.com:1/"), kPerm)
+                   .usage);
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kPerm)
+             .usage);
 }
 
 TEST_F(QuotaManagerImplTest, DeleteBucketNoClients) {
@@ -2383,17 +2606,24 @@ TEST_F(QuotaManagerImplTest, DeleteBucketDataMultiple) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   const int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  const int64_t predelete_foo_tmp = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  const int64_t predelete_bar_tmp = usage();
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  const int64_t predelete_foo_pers = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  const int64_t predelete_bar_pers = usage();
+  const int64_t predelete_sk_foo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_sfoo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("https://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo1_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com:1/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_bar_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage;
+  const int64_t predelete_sk_bar_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kPerm)
+          .usage;
 
   for (const ClientBucketData& data : kData1) {
     quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
@@ -2425,17 +2655,26 @@ TEST_F(QuotaManagerImplTest, DeleteBucketDataMultiple) {
   EXPECT_EQ(global_usage_result.usage,
             predelete_global_tmp - (1 + 4000 + 50000 + 9));
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - (1 + 50000), usage());
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(predelete_bar_tmp - (4000 + 9), usage());
-
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_foo_pers, usage());
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  EXPECT_EQ(predelete_bar_pers, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - (1 + 50000),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(predelete_sk_sfoo_tmp, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("https://foo.com/"), kTemp)
+                                       .usage);
+  EXPECT_EQ(predelete_sk_foo1_tmp, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://foo.com:1/"), kTemp)
+                                       .usage);
+  EXPECT_EQ(
+      predelete_sk_bar_tmp - (4000 + 9),
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+          .usage);
+  EXPECT_EQ(predelete_sk_foo_pers, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://foo.com/"), kPerm)
+                                       .usage);
+  EXPECT_EQ(predelete_sk_bar_pers, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://bar.com/"), kPerm)
+                                       .usage);
 }
 
 TEST_F(QuotaManagerImplTest, DeleteBucketDataMultipleClientsDifferentTypes) {
@@ -2469,20 +2708,27 @@ TEST_F(QuotaManagerImplTest, DeleteBucketDataMultipleClientsDifferentTypes) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   const int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  const int64_t predelete_foo_tmp = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  const int64_t predelete_bar_tmp = usage();
-
   global_usage_result = GetGlobalUsage(kPerm);
   const int64_t predelete_global_pers = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  const int64_t predelete_foo_pers = usage();
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  const int64_t predelete_bar_pers = usage();
+  const int64_t predelete_sk_foo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_sfoo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("https://foo.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo1_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com:1/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_bar_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+          .usage;
+  const int64_t predelete_sk_foo_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage;
+  const int64_t predelete_sk_bar_pers =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kPerm)
+          .usage;
 
   for (const ClientBucketData& data : kData1) {
     quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
@@ -2513,20 +2759,30 @@ TEST_F(QuotaManagerImplTest, DeleteBucketDataMultipleClientsDifferentTypes) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, predelete_global_tmp);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp, usage());
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(predelete_bar_tmp, usage());
+  EXPECT_EQ(predelete_sk_foo_tmp, GetStorageKeyUsageWithBreakdown(
+                                      ToStorageKey("http://foo.com/"), kTemp)
+                                      .usage);
+  EXPECT_EQ(predelete_sk_sfoo_tmp, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("https://foo.com/"), kTemp)
+                                       .usage);
+  EXPECT_EQ(predelete_sk_foo1_tmp, GetStorageKeyUsageWithBreakdown(
+                                       ToStorageKey("http://foo.com:1/"), kTemp)
+                                       .usage);
+  EXPECT_EQ(predelete_sk_bar_tmp, GetStorageKeyUsageWithBreakdown(
+                                      ToStorageKey("http://bar.com/"), kTemp)
+                                      .usage);
 
   global_usage_result = GetGlobalUsage(kPerm);
   EXPECT_EQ(global_usage_result.usage, predelete_global_pers - (1 + 1000));
 
-  GetHostUsageWithBreakdown("foo.com", kPerm);
-  EXPECT_EQ(predelete_foo_pers - 1, usage());
-
-  GetHostUsageWithBreakdown("bar.com", kPerm);
-  EXPECT_EQ(predelete_bar_pers - 1000, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_pers - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kPerm)
+          .usage);
+  EXPECT_EQ(
+      predelete_sk_bar_pers - 1000,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kPerm)
+          .usage);
 }
 
 TEST_F(QuotaManagerImplTest, FindAndDeleteBucketData) {
@@ -2558,11 +2814,12 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketData) {
   ASSERT_EQ((1 + 9 + 4000 + 50000), global_usage_result.usage);
   const int64_t predelete_global_tmp = global_usage_result.usage;
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  ASSERT_EQ((1 + 50000), usage());
-
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  ASSERT_EQ((9 + 4000), usage());
+  ASSERT_EQ((1 + 50000), GetStorageKeyUsageWithBreakdown(
+                             ToStorageKey("http://foo.com/"), kTemp)
+                             .usage);
+  ASSERT_EQ((9 + 4000), GetStorageKeyUsageWithBreakdown(
+                            ToStorageKey("http://bar.com/"), kTemp)
+                            .usage);
 
   // Delete bucket for "http://foo.com/".
   EXPECT_EQ(FindAndDeleteBucketData(foo_bucket->storage_key, foo_bucket->name),
@@ -2576,8 +2833,9 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketData) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, predelete_global_tmp - (1 + 50000));
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(0, usage());
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+             .usage);
 
   // Delete bucket for "http://bar.com/".
   EXPECT_EQ(FindAndDeleteBucketData(bar_bucket->storage_key, bar_bucket->name),
@@ -2591,8 +2849,9 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketData) {
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 0);
 
-  GetHostUsageWithBreakdown("bar.com", kTemp);
-  EXPECT_EQ(0, usage());
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://bar.com/"), kTemp)
+             .usage);
 }
 
 TEST_F(QuotaManagerImplTest, FindAndDeleteBucketDataWithDBError) {
@@ -2605,8 +2864,9 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketDataWithDBError) {
   RegisterClientBucketData(fs_client, kData);
 
   // Check usage data before deletion.
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  ASSERT_EQ(123, usage());
+  ASSERT_EQ(123, GetStorageKeyUsageWithBreakdown(
+                     ToStorageKey("http://foo.com/"), kTemp)
+                     .usage);
 
   // Bucket lookup uses the `buckets_by_storage_key` index. So, we can corrupt
   // any other index, and SQLite will only detect the corruption when trying to
@@ -2626,8 +2886,9 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketDataWithDBError) {
   auto global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 0);
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(0, usage());
+  EXPECT_EQ(
+      0, GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+             .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetHostUsageForInternals) {
@@ -2710,7 +2971,7 @@ TEST_F(QuotaManagerImplTest, NotifyAndLRUBucket) {
             eviction_bucket()->storage_key.origin().GetURL().spec());
 }
 
-TEST_F(QuotaManagerImplTest, GetLRUBucket) {
+TEST_F(QuotaManagerImplTest, GetLruEvictableBucket) {
   StorageKey storage_key_a = ToStorageKey("http://a.com/");
   StorageKey storage_key_b = ToStorageKey("http://b.com/");
   StorageKey storage_key_c = ToStorageKey("http://c.com/");
@@ -2851,8 +3112,8 @@ TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
   const base::Time kAccessTime = base::Time::Now();
 
   static const ClientBucketData kData[] = {
-      {"http://example.com/", kDefaultBucketName, kTemp, 0},
-      {"http://example.com/", kDefaultBucketName, kPerm, 0},
+      {"http://example.com/", kDefaultBucketName, kTemp, 123},
+      {"http://example.com/", kDefaultBucketName, kPerm, 456},
   };
 
   MockQuotaClient* client =
@@ -2862,6 +3123,7 @@ TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
   quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kTemp, kAccessTime);
   quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kPerm, kAccessTime);
 
+  base::RunLoop run_loop;
   base::Time time1 = client->IncrementMockTime();
   client->ModifyStorageKeyAndNotify(ToStorageKey("http://example.com/"), kTemp,
                                     10);
@@ -2869,8 +3131,9 @@ TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
                                     10);
   base::Time time2 = client->IncrementMockTime();
   client->ModifyStorageKeyAndNotify(ToStorageKey("http://example.com/"), kTemp,
-                                    10);
+                                    10, run_loop.QuitClosure());
   base::Time time3 = client->IncrementMockTime();
+  run_loop.Run();
 
   auto temp_bucket = GetBucket(kStorageKey, kDefaultBucketName, kTemp);
   auto perm_bucket = GetBucket(kStorageKey, kDefaultBucketName, kPerm);
@@ -2889,6 +3152,7 @@ TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
   EXPECT_EQ(temp_entry->last_accessed, kAccessTime);
   EXPECT_GE(temp_entry->last_modified, time2);
   EXPECT_LE(temp_entry->last_modified, time3);
+  EXPECT_EQ(temp_entry->usage, 143);
 
   auto* perm_entry =
       FindBucketTableEntry(bucket_table_entries, perm_bucket->id);
@@ -2901,6 +3165,7 @@ TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
   EXPECT_EQ(perm_entry->last_accessed, kAccessTime);
   EXPECT_GE(perm_entry->last_modified, time1);
   EXPECT_LE(perm_entry->last_modified, time2);
+  EXPECT_EQ(perm_entry->usage, 466);
 }
 
 TEST_F(QuotaManagerImplTest, QuotaForEmptyHost) {
@@ -2942,27 +3207,36 @@ TEST_F(QuotaManagerImplTest, DeleteSpecificClientTypeSingleBucket) {
       GetBucket(ToStorageKey("http://foo.com"), kDefaultBucketName, kTemp);
   ASSERT_TRUE(foo_bucket.ok());
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  const int64_t predelete_foo_tmp = usage();
+  const int64_t predelete_sk_foo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
 
   DeleteBucketData(foo_bucket->ToBucketLocator(),
                    {QuotaClientType::kFileSystem});
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - 1, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
 
   DeleteBucketData(foo_bucket->ToBucketLocator(),
                    {QuotaClientType::kServiceWorkerCache});
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - 2 - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
 
   DeleteBucketData(foo_bucket->ToBucketLocator(), {QuotaClientType::kDatabase});
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - 4 - 2 - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
 
   DeleteBucketData(foo_bucket->ToBucketLocator(),
                    {QuotaClientType::kIndexedDatabase});
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - 8 - 4 - 2 - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
 }
 
 TEST_F(QuotaManagerImplTest, DeleteMultipleClientTypesSingleBucket) {
@@ -2995,19 +3269,26 @@ TEST_F(QuotaManagerImplTest, DeleteMultipleClientTypesSingleBucket) {
       GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
   ASSERT_TRUE(foo_bucket.ok());
 
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  const int64_t predelete_foo_tmp = usage();
+  const int64_t predelete_sk_foo_tmp =
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage;
 
   DeleteBucketData(foo_bucket->ToBucketLocator(),
                    {QuotaClientType::kFileSystem, QuotaClientType::kDatabase});
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - 4 - 1, usage());
+
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - 4 - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
 
   DeleteBucketData(foo_bucket->ToBucketLocator(),
                    {QuotaClientType::kServiceWorkerCache,
                     QuotaClientType::kIndexedDatabase});
-  GetHostUsageWithBreakdown("foo.com", kTemp);
-  EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
+
+  EXPECT_EQ(
+      predelete_sk_foo_tmp - 8 - 4 - 2 - 1,
+      GetStorageKeyUsageWithBreakdown(ToStorageKey("http://foo.com/"), kTemp)
+          .usage);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsageAndQuota_Incognito) {

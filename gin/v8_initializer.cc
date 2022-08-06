@@ -353,7 +353,7 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 // static
 void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
                                const std::string js_command_line_flags,
-                               v8::LegacyOOMErrorCallback oom_error_callback) {
+                               v8::OOMErrorCallback oom_error_callback) {
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
@@ -373,11 +373,11 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
   // of the virtual memory cage, already use V8's random number generator.
   v8::V8::SetEntropySource(&GenerateEntropy);
 
-#if defined(V8_SANDBOX)
+#if defined(V8_ENABLE_SANDBOX)
   static_assert(ARCH_CPU_64_BITS, "V8 sandbox can only work in 64-bit builds");
   // For now, initializing the sandbox is optional, and we only do it if the
   // correpsonding feature is enabled. In the future, it will be mandatory when
-  // compiling with V8_SANDBOX.
+  // compiling with V8_ENABLE_SANDBOX.
   // However, if V8 uses sandboxed pointers, then the sandbox must be
   // initialized as sandboxed pointers are simply offsets inside the sandbox.
 #if defined(V8_SANDBOXED_POINTERS)
@@ -406,7 +406,7 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     // TODO(1218005) remove this once the finch trial has ended.
     base::UmaHistogramSparse("V8.VirtualMemoryCageSizeGB", sizeInGB);
   }
-#endif  // V8_SANDBOX
+#endif  // V8_ENABLE_SANDBOX
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (g_mapped_snapshot) {
@@ -420,7 +420,7 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
 
   v8_is_initialized = true;
 
-#if defined(V8_SANDBOX)
+#if defined(V8_ENABLE_SANDBOX)
   if (v8_sandbox_is_initialized) {
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused. This should match enum
@@ -442,10 +442,10 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     // and Blink then creates the ArrayBuffer partition in that Pool.
     v8::VirtualAddressSpace* sandbox_address_space =
         v8::V8::GetSandboxAddressSpace();
-    const size_t max_pool_size =
-        base::internal::PartitionAddressSpace::ConfigurablePoolMaxSize();
-    const size_t min_pool_size =
-        base::internal::PartitionAddressSpace::ConfigurablePoolMinSize();
+    const size_t max_pool_size = partition_alloc::internal::
+        PartitionAddressSpace::ConfigurablePoolMaxSize();
+    const size_t min_pool_size = partition_alloc::internal::
+        PartitionAddressSpace::ConfigurablePoolMinSize();
     size_t pool_size = max_pool_size;
 #if BUILDFLAG(IS_WIN)
     // On Windows prior to 8.1 we allocate a smaller Pool since reserving
@@ -475,8 +475,8 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     }
     // The V8 sandbox is guaranteed to be large enough to host the pool.
     CHECK(pool_base);
-    base::internal::PartitionAddressSpace::InitConfigurablePool(pool_base,
-                                                                pool_size);
+    partition_alloc::internal::PartitionAddressSpace::InitConfigurablePool(
+        pool_base, pool_size);
     // TODO(saelo) maybe record the size of the Pool into UMA.
 
     // If this CHECK fails, it means that something used the array buffer
@@ -486,7 +486,7 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     // once sandbox initialization is mandatory.
     CHECK_NE(nullptr, GetSharedMemoryMapperForArrayBuffers());
   }
-#endif  // V8_SANDBOX
+#endif  // V8_ENABLE_SANDBOX
 
   // Initialize the partition used by gin::ArrayBufferAllocator instances. This
   // needs to happen now, after the V8 sandbox has been initialized, so that

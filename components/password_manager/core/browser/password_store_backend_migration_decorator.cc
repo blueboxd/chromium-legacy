@@ -24,14 +24,6 @@ namespace {
 // the Android backend is delayed.
 constexpr int kMigrationToAndroidBackendDelay = 30;
 
-// Check the experiment stage allows migration and that user wasn't kicked out
-// from the experiment after receiving errors from the backend.
-bool ShouldAttemptMigration(PrefService* prefs) {
-  return features::RequiresMigrationForUnifiedPasswordManager() &&
-         !prefs->GetBoolean(
-             prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
-}
-
 }  // namespace
 
 PasswordStoreBackendMigrationDecorator::PasswordStoreBackendMigrationDecorator(
@@ -150,7 +142,7 @@ void PasswordStoreBackendMigrationDecorator::InitBackend(
 
   // Only start the migration when launching the UPM which needs chrome-local
   // data in the remote store. For shadow traffic, this doesn't matter.
-  if (ShouldAttemptMigration(prefs_)) {
+  if (features::RequiresMigrationForUnifiedPasswordManager()) {
     migrator_ = std::make_unique<BuiltInBackendToAndroidBackendMigrator>(
         built_in_backend_.get(), android_backend_.get(), prefs_,
         sync_delegate_.get());
@@ -201,7 +193,7 @@ void PasswordStoreBackendMigrationDecorator::GetAllLoginsForAccountAsync(
 }
 
 void PasswordStoreBackendMigrationDecorator::FillMatchingLoginsAsync(
-    LoginsOrErrorReply callback,
+    LoginsReply callback,
     bool include_psl,
     const std::vector<PasswordFormDigest>& forms) {
   active_backend_->FillMatchingLoginsAsync(std::move(callback), include_psl,
@@ -210,19 +202,19 @@ void PasswordStoreBackendMigrationDecorator::FillMatchingLoginsAsync(
 
 void PasswordStoreBackendMigrationDecorator::AddLoginAsync(
     const PasswordForm& form,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   active_backend_->AddLoginAsync(form, std::move(callback));
 }
 
 void PasswordStoreBackendMigrationDecorator::UpdateLoginAsync(
     const PasswordForm& form,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   active_backend_->UpdateLoginAsync(form, std::move(callback));
 }
 
 void PasswordStoreBackendMigrationDecorator::RemoveLoginAsync(
     const PasswordForm& form,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   active_backend_->RemoveLoginAsync(form, std::move(callback));
 }
 
@@ -231,7 +223,7 @@ void PasswordStoreBackendMigrationDecorator::RemoveLoginsByURLAndTimeAsync(
     base::Time delete_begin,
     base::Time delete_end,
     base::OnceCallback<void(bool)> sync_completion,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   active_backend_->RemoveLoginsByURLAndTimeAsync(
       url_filter, std::move(delete_begin), std::move(delete_end),
       std::move(sync_completion), std::move(callback));
@@ -240,7 +232,7 @@ void PasswordStoreBackendMigrationDecorator::RemoveLoginsByURLAndTimeAsync(
 void PasswordStoreBackendMigrationDecorator::RemoveLoginsCreatedBetweenAsync(
     base::Time delete_begin,
     base::Time delete_end,
-    PasswordChangesOrErrorReply callback) {
+    PasswordStoreChangeListReply callback) {
   active_backend_->RemoveLoginsCreatedBetweenAsync(
       std::move(delete_begin), std::move(delete_end), std::move(callback));
 }
@@ -304,7 +296,7 @@ void PasswordStoreBackendMigrationDecorator::StartMigrationAfterInit() {
 }
 
 void PasswordStoreBackendMigrationDecorator::SyncStatusChanged() {
-  if (!ShouldAttemptMigration(prefs_))
+  if (!features::RequiresMigrationForUnifiedPasswordManager())
     return;
 
   sync_settings_helper_.SyncStatusChangeApplied();

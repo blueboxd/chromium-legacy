@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <utility>
 
+#include "ash/ambient/ambient_view_delegate_impl.h"
 #include "ash/ambient/model/ambient_animation_attribution_provider.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/model/ambient_photo_config.h"
@@ -18,11 +19,12 @@
 #include "ash/ambient/ui/ambient_animation_player.h"
 #include "ash/ambient/ui/ambient_animation_resizer.h"
 #include "ash/ambient/ui/ambient_animation_shield_controller.h"
-#include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/ambient/ui/glanceable_info_view.h"
 #include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/public/cpp/ambient/ambient_metrics.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/location.h"
@@ -38,6 +40,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/outsets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
@@ -67,10 +70,9 @@ constexpr base::TimeDelta kThroughputTrackerRestartPeriod = base::Seconds(30);
 // AmbientAnimationView to the top-left of the weather/time content views.
 constexpr int kWeatherTimeBorderPaddingDip = 28;
 
-// Amount of padding from the left and bottom of the AmbientAnimationView's
-// bounds to the bottom-left of the media string content views.
-constexpr int kMediaStringPaddingFromLeftDip = 28;
-constexpr int kMediaStringPaddingFromBottomDip = 24;
+// Amount of padding from the top-right of the AmbientAnimationView's
+// bounds to the top-right of the media string content views.
+constexpr int kMediaStringPaddingDip = 28;
 
 constexpr int kMediaStringTextElevation = 1;
 
@@ -80,23 +82,13 @@ constexpr int kTimeFontSizeDip = 32;
 constexpr SkColor kDarkModeShieldColor =
     SkColorSetA(gfx::kGoogleGrey900, SK_AlphaOPAQUE / 10);
 
-// TODO(esum): Record throughput metrics to track animation performance in the
-// field. We can use ash::metrics_util::CalculateSmoothness().
-void LogCompositorThroughput(
-    base::TimeTicks logging_start_time,
-    const cc::FrameSequenceMetrics::CustomReportData& data) {
-  base::TimeDelta duration = base::TimeTicks::Now() - logging_start_time;
-  float duration_sec = duration.InSecondsF();
+void LogCompositorThroughput(AmbientAnimationTheme theme, int smoothness) {
   // Use VLOG instead of DVLOG since this log is performance-related and
   // developers will almost certainly only care about this log on non-debug
   // builds. The overhead of "--vmodule" regex matching is very minor so far to
   // performance/CPU.
-  VLOG(1) << "Compositor throughput report: frames_expected="
-          << data.frames_expected << " frames_produced=" << data.frames_produced
-          << " jank_count=" << data.jank_count
-          << " expected_fps=" << data.frames_expected / duration_sec
-          << " actual_fps=" << data.frames_produced / duration_sec
-          << " duration=" << duration;
+  VLOG(1) << "Compositor throughput report: smoothness=" << smoothness;
+  ambient::RecordAmbientModeAnimationSmoothness(smoothness, theme);
 }
 
 // Returns the maximum possible displacement in either dimension from the
@@ -108,12 +100,38 @@ int GetPaddingForAnimationJitter() {
                    abs(kAnimationJitterConfig.y_max_translation)});
 }
 
+// When text with shadows requires X pixels of padding from the edges of its
+// bounding view, it is not always sufficient to simply create a border within
+// the view that is X pixels wide. In the event that the text's shadow extends
+// past the text in a given direction, the text's shadow ends up with X pixels
+// of padding from the edge rather than the text itself.
+//
+// This returns the amount to *subtract* from each side of a text view's border
+// such that the text ultimately has X pixels of padding from the view's edge,
+// and the shadow may extend into the padding.
+gfx::Outsets GetTextShadowCorrection(const gfx::ShadowValues& text_shadows) {
+  // A positive shadow outset means the shadow extends past the text in that
+  // direction. A negative shadow outset means the shadow is "behind" the text
+  // in that direction. In this case, subtracting the negative outset value
+  // will result in padding that is too large (X + <shadow offset>). Hence,
+  // impose a "floor" of 0 pixels here.
+  static constexpr gfx::Outsets kZeroOutsetsFloor;
+  gfx::Outsets shadow_outsets =
+      gfx::ShadowValue::GetMargin(text_shadows).ToOutsets();
+  shadow_outsets.SetToMax(kZeroOutsetsFloor);
+  return shadow_outsets;
+}
+
 // The border serves as padding between the GlanceableInfoView and its
 // parent view's bounds.
 std::unique_ptr<views::Border> CreateGlanceableInfoBorder(
     const gfx::Vector2d& jitter = gfx::Vector2d()) {
-  int top_padding = kWeatherTimeBorderPaddingDip + jitter.y();
-  int left_padding = kWeatherTimeBorderPaddingDip + jitter.x();
+  gfx::Outsets shadow_text_correction =
+      GetTextShadowCorrection(ambient::util::GetTextShadowValues(nullptr));
+  int top_padding =
+      kWeatherTimeBorderPaddingDip - shadow_text_correction.top() + jitter.y();
+  int left_padding =
+      kWeatherTimeBorderPaddingDip - shadow_text_correction.left() + jitter.x();
   DCHECK_GE(top_padding, 0);
   DCHECK_GE(left_padding, 0);
   return views::CreateEmptyBorder(
@@ -124,35 +142,36 @@ std::unique_ptr<views::Border> CreateGlanceableInfoBorder(
 // parent view's bounds.
 std::unique_ptr<views::Border> CreateMediaStringBorder(
     const gfx::Vector2d& jitter = gfx::Vector2d()) {
-  gfx::Insets shadow_insets = gfx::ShadowValue::GetMargin(
+  gfx::Outsets shadow_text_correction = GetTextShadowCorrection(
       ambient::util::GetTextShadowValues(nullptr, kMediaStringTextElevation));
-  int bottom_padding =
-      kMediaStringPaddingFromBottomDip + shadow_insets.bottom() + jitter.y();
-  int left_padding =
-      kMediaStringPaddingFromLeftDip + shadow_insets.left() + jitter.x();
-  DCHECK_GE(bottom_padding, 0);
-  DCHECK_GE(left_padding, 0);
+  int top_padding =
+      kMediaStringPaddingDip - shadow_text_correction.top() + jitter.y();
+  int right_padding =
+      kMediaStringPaddingDip - shadow_text_correction.right() + jitter.x();
+  DCHECK_GE(top_padding, 0);
+  DCHECK_GE(right_padding, 0);
   return views::CreateEmptyBorder(
-      gfx::Insets::TLBR(0, left_padding, bottom_padding, 0));
+      gfx::Insets::TLBR(top_padding, 0, 0, right_padding));
 }
 
 }  // namespace
 
 AmbientAnimationView::AmbientAnimationView(
-    AmbientViewDelegate* view_delegate,
+    AmbientViewDelegateImpl* view_delegate,
     std::unique_ptr<const AmbientAnimationStaticResources> static_resources)
-    : event_handler_(view_delegate->GetAmbientViewEventHandler()),
+    : view_delegate_(view_delegate),
       static_resources_(std::move(static_resources)),
       animation_photo_provider_(static_resources_.get(),
                                 view_delegate->GetAmbientBackendModel()),
       animation_jitter_calculator_(kAnimationJitterConfig) {
+  DCHECK(view_delegate_);
   SetID(AmbientViewID::kAmbientAnimationView);
-  Init(view_delegate);
+  Init();
 }
 
 AmbientAnimationView::~AmbientAnimationView() = default;
 
-void AmbientAnimationView::Init(AmbientViewDelegate* view_delegate) {
+void AmbientAnimationView::Init() {
   SetUseDefaultFillLayout(true);
 
   views::View* animation_container_view =
@@ -241,19 +260,19 @@ void AmbientAnimationView::Init(AmbientViewDelegate* view_delegate) {
       views::BoxLayout::CrossAxisAlignment::kStart);
   glanceable_info_container_->SetBorder(CreateGlanceableInfoBorder());
   glanceable_info_container_->AddChildView(std::make_unique<GlanceableInfoView>(
-      view_delegate, kTimeFontSizeDip,
+      view_delegate_.get(), kTimeFontSizeDip,
       /*time_temperature_font_color=*/gfx::kGoogleGrey900));
 
-  // Media string should appear in the bottom-left corner of the
+  // Media string should appear in the top-right corner of the
   // AmbientAnimationView's bounds.
   media_string_container_ =
       AddChildView(std::make_unique<views::BoxLayoutView>());
   media_string_container_->SetOrientation(
       views::BoxLayout::Orientation::kVertical);
   media_string_container_->SetMainAxisAlignment(
-      views::BoxLayout::MainAxisAlignment::kEnd);
+      views::BoxLayout::MainAxisAlignment::kStart);
   media_string_container_->SetCrossAxisAlignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
+      views::BoxLayout::CrossAxisAlignment::kEnd);
   media_string_container_->SetBorder(CreateMediaStringBorder());
   MediaStringView* media_string_view = media_string_container_->AddChildView(
       std::make_unique<MediaStringView>(MediaStringView::Settings(
@@ -267,7 +286,8 @@ void AmbientAnimationView::Init(AmbientViewDelegate* view_delegate) {
 
 void AmbientAnimationView::AnimationCycleEnded(
     const lottie::Animation* animation) {
-  event_handler_->OnMarkerHit(AmbientPhotoConfig::Marker::kUiCycleEnded);
+  view_delegate_->NotifyObserversMarkerHit(
+      AmbientPhotoConfig::Marker::kUiCycleEnded);
   base::TimeTicks now = base::TimeTicks::Now();
   if (now - last_jitter_timestamp_ >= kAnimationJitterPeriod) {
     // AnimationCycleEnded() may be called while a ui "paint" operation is still
@@ -333,7 +353,8 @@ void AmbientAnimationView::StartPlayingAnimation() {
   // |animation_player_|, so it's safe to pass a raw ptr here.
   animation_player_ =
       std::make_unique<AmbientAnimationPlayer>(animated_image_view_);
-  event_handler_->OnMarkerHit(AmbientPhotoConfig::Marker::kUiStartRendering);
+  view_delegate_->NotifyObserversMarkerHit(
+      AmbientPhotoConfig::Marker::kUiStartRendering);
   last_jitter_timestamp_ = base::TimeTicks::Now();
 }
 
@@ -348,8 +369,9 @@ void AmbientAnimationView::RestartThroughputTracking() {
   ui::Compositor* compositor = widget->GetCompositor();
   DCHECK(compositor);
   throughput_tracker_ = compositor->RequestNewThroughputTracker();
-  throughput_tracker_->Start(base::BindOnce(
-      &LogCompositorThroughput, /*logging_start_time=*/base::TimeTicks::Now()));
+  throughput_tracker_->Start(metrics_util::ForSmoothness(
+      base::BindRepeating(&LogCompositorThroughput,
+                          static_resources_->GetAmbientAnimationTheme())));
 }
 
 void AmbientAnimationView::ApplyJitter() {

@@ -12,12 +12,12 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -102,7 +102,7 @@ class WebApp {
     ClientData(const ClientData& client_data);
     base::Value AsDebugValue() const;
 
-    absl::optional<WebAppSystemWebAppData> system_web_app_data;
+    absl::optional<ash::SystemWebAppData> system_web_app_data;
   };
 
   const ClientData& client_data() const { return client_data_; }
@@ -179,6 +179,10 @@ class WebApp {
   const base::flat_set<std::string>& disallowed_launch_protocols() const {
     return disallowed_launch_protocols_;
   }
+
+  // URL within scope to launch for a "show on lock screen" action. Valid iff
+  // this is considered a lock-screen-capable app.
+  const GURL& lock_screen_start_url() const { return lock_screen_start_url_; }
 
   // URL within scope to launch for a "new note" action. Valid iff this is
   // considered a note-taking app.
@@ -350,6 +354,7 @@ class WebApp {
   void SetDisallowedLaunchProtocols(
       base::flat_set<std::string> disallowed_launch_protocols);
   void SetUrlHandlers(apps::UrlHandlers url_handlers);
+  void SetLockScreenStartUrl(const GURL& lock_screen_start_url);
   void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
   void SetLastBadgingTime(const base::Time& time);
   void SetLastLaunchTime(const base::Time& time);
@@ -383,6 +388,12 @@ class WebApp {
   // WebAppManagementToInstallURLsMap.
   void AddInstallURLToManagementExternalConfigMap(WebAppManagement::Type type,
                                                   GURL install_url);
+
+  // Encapsulate the addition of install_url and is_placeholder information
+  // for cases where both need to be added.
+  void AddExternalSourceInformation(WebAppManagement::Type source_type,
+                                    GURL install_url,
+                                    bool is_placeholder);
 
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
@@ -434,6 +445,7 @@ class WebApp {
   base::flat_set<std::string> allowed_launch_protocols_;
   base::flat_set<std::string> disallowed_launch_protocols_;
   apps::UrlHandlers url_handlers_;
+  GURL lock_screen_start_url_;
   GURL note_taking_new_note_url_;
   base::Time last_badging_time_;
   base::Time last_launch_time_;
@@ -485,7 +497,9 @@ class WebApp {
   //  - WebAppDatabase::CreateWebApp()
   //  - WebAppDatabase::CreateWebAppProto()
   //  - CreateRandomWebApp()
+  // If parsed from manifest, also add to:
   //  - ManifestUpdateTask::IsUpdateNeededForManifest()
+  //  - SetWebAppManifestFields()
 };
 
 // For logging and debug purposes.

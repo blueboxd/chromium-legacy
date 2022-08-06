@@ -1312,7 +1312,7 @@ absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
   is_deferred = false;
   if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
     bool has_strong_directionality;
-    return DetermineDirectionality(input_element->value(),
+    return DetermineDirectionality(input_element->Value(),
                                    &has_strong_directionality);
   }
 
@@ -1808,7 +1808,7 @@ int HTMLElement::offsetTopForBinding() {
 
 int HTMLElement::offsetWidthForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript);
+      this, DocumentUpdateReason::kJavaScript, CSSPropertyID::kWidth);
   int result = 0;
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
     result = AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1823,7 +1823,7 @@ int HTMLElement::offsetWidthForBinding() {
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript);
+      this, DocumentUpdateReason::kJavaScript, CSSPropertyID::kHeight);
   int result = 0;
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
     result = AdjustForAbsoluteZoom::AdjustLayoutUnit(

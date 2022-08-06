@@ -78,36 +78,6 @@ TEST_F(GetAllowedDomainTest, WithValidPattern) {
 
 namespace {
 
-class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
- public:
-  SigninUiUtilTestBrowserWindow() = default;
-
-  SigninUiUtilTestBrowserWindow(const SigninUiUtilTestBrowserWindow&) = delete;
-  SigninUiUtilTestBrowserWindow& operator=(
-      const SigninUiUtilTestBrowserWindow&) = delete;
-
-  ~SigninUiUtilTestBrowserWindow() override = default;
-  void set_browser(Browser* browser) { browser_ = browser; }
-
-  void ShowAvatarBubbleFromAvatarButton(
-      AvatarBubbleMode mode,
-      signin_metrics::AccessPoint access_point,
-      bool is_source_keyboard) override {
-    ASSERT_TRUE(browser_);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // TODO(https://crbug.com/1260291): add support for signed out profiles.
-    NOTREACHED();
-#else
-    // Simulate what |BrowserView| does for a regular Chrome sign-in flow.
-    browser_->signin_view_controller()->ShowSignin(
-        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, access_point);
-#endif
-  }
-
- private:
-  raw_ptr<Browser> browser_ = nullptr;
-};
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 class MockSigninUiDelegate : public SigninUiDelegate {
  public:
@@ -170,21 +140,9 @@ class SigninUiUtilTest : public BrowserWithTestWindowTest {
 
  protected:
   // BrowserWithTestWindowTest:
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-    static_cast<SigninUiUtilTestBrowserWindow*>(browser()->window())
-        ->set_browser(browser());
-  }
-
-  // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
     return IdentityTestEnvironmentProfileAdaptor::
         GetIdentityTestEnvironmentFactories();
-  }
-
-  // BrowserWithTestWindowTest:
-  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
-    return std::make_unique<SigninUiUtilTestBrowserWindow>();
   }
 
   // Returns the identity manager.

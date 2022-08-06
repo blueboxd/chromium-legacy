@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_RESULT_H_
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -420,9 +421,6 @@ class CORE_EXPORT NGLayoutResult final
 
   // Returns the space which generated this object for caching purposes.
   const NGConstraintSpace& GetConstraintSpaceForCaching() const {
-#if DCHECK_IS_ON()
-    DCHECK(has_valid_space_);
-#endif
     return space_;
   }
 
@@ -604,7 +602,8 @@ class CORE_EXPORT NGLayoutResult final
     }
 
     DataUnionType data_union_type() const {
-      return static_cast<DataUnionType>(bit_field.get<DataUnionTypeValue>());
+      return static_cast<DataUnionType>(
+          bit_field.get_concurrently<DataUnionTypeValue>());
     }
 
     void set_data_union_type(DataUnionType data_type) {
@@ -883,8 +882,7 @@ class CORE_EXPORT NGLayoutResult final
     unsigned disable_simplified_layout : 1;
   };
 
-  // The constraint space which generated this layout result, may not be valid
-  // as indicated by |has_valid_space_|.
+  // The constraint space which generated this layout result.
   const NGConstraintSpace space_;
 
   Member<const NGPhysicalFragment> physical_fragment_;
@@ -908,10 +906,6 @@ class CORE_EXPORT NGLayoutResult final
 
   LayoutUnit intrinsic_block_size_;
   Bitfields bitfields_;
-
-#if DCHECK_IS_ON()
-  bool has_valid_space_ = false;
-#endif
 };
 
 }  // namespace blink

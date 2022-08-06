@@ -426,6 +426,13 @@ def AddInstrumentationTestOptions(parser):
       type=_RealPath,
       help='Additional apk that must be installed on '
            'the device when the tests are run')
+  parser.add_argument('--forced-queryable-additional-apk',
+                      action='append',
+                      dest='forced_queryable_additional_apks',
+                      default=[],
+                      type=_RealPath,
+                      help='Configures an additional-apk to be forced '
+                      'to be queryable by other APKs.')
   parser.add_argument(
       '-A', '--annotation',
       dest='annotation_str',
@@ -493,7 +500,11 @@ def AddInstrumentationTestOptions(parser):
       'on the system. WARNING: THIS WILL PERMANENTLY REMOVE THE SYSTEM APP. '
       'Unlike --replace-system-package, the app will not be restored after '
       'tests are finished.')
-
+  parser.add_argument(
+      '--use-voice-interaction-service',
+      help='This can be used to update the voice interaction service to be a '
+      'custom one. This is useful for mocking assistants. eg: '
+      'android.assist.service/.MainInteractionService')
   parser.add_argument(
       '--use-webview-provider',
       type=_RealPath, default=None,

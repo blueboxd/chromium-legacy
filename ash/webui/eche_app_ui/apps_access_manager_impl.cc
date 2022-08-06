@@ -119,6 +119,29 @@ void AppsAccessManagerImpl::OnSendAppsSetupResponseReceived(
           "Eche.Onboarding.UserAction",
           OnboardingUserActionMetric::kUserActionPermissionGranted);
     }
+  } else if (apps_setup_response.result() ==
+             proto::Result::RESULT_ERROR_USER_REJECTED) {
+    base::UmaHistogramEnumeration(
+        "Eche.Onboarding.UserAction",
+        OnboardingUserActionMetric::kUserActionPermissionRejected);
+  } else if (apps_setup_response.result() ==
+             proto::Result::RESULT_ERROR_ACTION_TIMEOUT) {
+    base::UmaHistogramEnumeration(
+        "Eche.Onboarding.UserAction",
+        OnboardingUserActionMetric::kUserActionTimeout);
+  } else if (apps_setup_response.result() ==
+             proto::Result::RESULT_ERROR_ACTION_CANCELED) {
+    base::UmaHistogramEnumeration(
+        "Eche.Onboarding.UserAction",
+        OnboardingUserActionMetric::kUserActionCanceled);
+  } else if (apps_setup_response.result() ==
+             proto::Result::RESULT_ERROR_SYSTEM) {
+    base::UmaHistogramEnumeration("Eche.Onboarding.UserAction",
+                                  OnboardingUserActionMetric::kSystemError);
+  } else {
+    base::UmaHistogramEnumeration(
+        "Eche.Onboarding.UserAction",
+        OnboardingUserActionMetric::kUserActionUnknown);
   }
 }
 
@@ -127,9 +150,14 @@ void AppsAccessManagerImpl::OnAppPolicyStateChange(
   if (current_app_policy_state_ == app_policy_state)
     return;
   current_app_policy_state_ = app_policy_state;
-  AccessStatus access_status = ComputeAppsAccessState();
-  UpdateFeatureEnabledState(access_status);
-  SetAccessStatusInternal(access_status);
+
+  // We only notify policy state after we also query access status from the
+  // remote phone.
+  if (initialized_) {
+    AccessStatus access_status = ComputeAppsAccessState();
+    UpdateFeatureEnabledState(access_status);
+    SetAccessStatusInternal(access_status);
+  }
 }
 
 void AppsAccessManagerImpl::OnFeatureStatusChanged() {
@@ -149,15 +177,6 @@ void AppsAccessManagerImpl::OnConnectionStatusChanged() {
 }
 
 void AppsAccessManagerImpl::AttemptAppsAccessStateRequest() {
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kEchePhoneHubPermissionsOnboarding)) {
-    PA_LOG(INFO) << "kEchePhoneHubPermissionsOnboarding flag is false, ignores "
-                    "to get apps access status from phone.";
-    pref_service_->SetInteger(prefs::kAppsAccessStatus,
-                              static_cast<int>(AccessStatus::kAccessGranted));
-    return;
-  }
-
   if (initialized_)
     return;
 
@@ -241,10 +260,6 @@ AccessStatus AppsAccessManagerImpl::ComputeAppsAccessState() {
 
 void AppsAccessManagerImpl::UpdateFeatureEnabledState(
     AccessStatus access_status) {
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kEchePhoneHubPermissionsOnboarding))
-    return;
-
   const FeatureState feature_state =
       multidevice_setup_client_->GetFeatureState(Feature::kEche);
   switch (access_status) {

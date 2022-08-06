@@ -29,9 +29,9 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/gpu/windows/d3d11_av1_accelerator.h"
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
 #include "media/gpu/windows/d3d11_h265_accelerator.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_status.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
@@ -190,15 +190,15 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
             this, media_log_.get(), video_device_, std::move(video_context)),
         profile_, config.color_space_info());
   } else if (config.codec() == VideoCodec::kHEVC) {
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
-    DCHECK(base::FeatureList::IsEnabled(kD3D11HEVCDecoding));
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+    DCHECK(base::FeatureList::IsEnabled(kPlatformHEVCDecoderSupport));
     accelerated_video_decoder_ = std::make_unique<H265Decoder>(
         std::make_unique<D3D11H265Accelerator>(
             this, media_log_.get(), video_device_, std::move(video_context)),
         profile_, config.color_space_info());
 #else
     return E_FAIL;
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   } else {
     return E_FAIL;
   }
@@ -212,13 +212,14 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
 
 D3D11Status::Or<ComD3D11VideoDecoder> D3D11VideoDecoder::CreateD3D11Decoder() {
   // By default we assume outputs are 8-bit for SDR color spaces and 10 bit for
-  // HDR color spaces (or VP9.2) with HBD capable codecs (the decoder doesn't
-  // support H264PROFILE_HIGH10PROFILE). We'll get a config change once we know
-  // the real bit depth if this turns out to be wrong.
+  // HDR color spaces (or VP9.2, or HEVC Main10) with HBD capable codecs (the
+  // decoder doesn't support H264PROFILE_HIGH10PROFILE). We'll get a config
+  // change once we know the real bit depth if this turns out to be wrong.
   bit_depth_ =
       accelerated_video_decoder_
           ? accelerated_video_decoder_->GetBitDepth()
           : (config_.profile() == VP9PROFILE_PROFILE2 ||
+                     config_.profile() == HEVCPROFILE_MAIN10 ||
                      (config_.color_space_info().ToGfxColorSpace().IsHDR() &&
                       config_.codec() != VideoCodec::kH264)
                  ? 10

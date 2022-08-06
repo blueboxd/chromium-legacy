@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
 #include "chrome/browser/web_applications/manifest_update_task.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_translation_manager.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_uninstall_job.h"
@@ -170,16 +170,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetParentAppId(options.parent_app_id);
   web_app->SetInstallSourceForMetrics(options.install_surface);
 
-  DCHECK(!(source == WebAppManagement::Type::kSync &&
-           web_app_info.is_placeholder));
-  if (source != WebAppManagement::Type::kSync) {
-    web_app->AddPlaceholderInfoToManagementExternalConfigMap(
-        source, web_app_info.is_placeholder);
-    if (web_app_info.install_url.is_valid()) {
-      web_app->AddInstallURLToManagementExternalConfigMap(
-          source, web_app_info.install_url);
-    }
-  }
+  WriteExternalConfigMapInfo(*web_app, source, web_app_info.is_placeholder,
+                             web_app_info.install_url);
 
   if (!options.locally_installed) {
     DCHECK(!(options.add_to_applications_menu || options.add_to_desktop ||
@@ -274,8 +266,6 @@ void WebAppInstallFinalizer::UninstallWebApp(
   DCHECK(app->CanUserUninstallWebApp());
 
   if (app->IsPreinstalledApp()) {
-    UpdateBoolWebAppPref(profile_->GetPrefs(), app_id,
-                         kWasExternalAppUninstalledByUser, true);
     // Update the default uninstalled web_app prefs if it is a preinstalled app
     // but being removed by user.
     UserUninstalledPreinstalledWebAppPrefs(profile_->GetPrefs())
@@ -338,12 +328,6 @@ void WebAppInstallFinalizer::RetryIncompleteUninstalls(
                        base::DoNothing()));
     pending_uninstalls_[app_id] = std::move(uninstall_task);
   }
-}
-
-bool WebAppInstallFinalizer::WasPreinstalledWebAppUninstalled(
-    const AppId& app_id) const {
-  return GetBoolWebAppPref(profile_->GetPrefs(), app_id,
-                           kWasExternalAppUninstalledByUser);
 }
 
 bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
@@ -428,6 +412,15 @@ void WebAppInstallFinalizer::SetSubsystems(
   icon_manager_ = icon_manager;
   policy_manager_ = policy_manager;
   translation_manager_ = translation_manager;
+}
+
+std::vector<AppId> WebAppInstallFinalizer::GetPendingUninstallsForTesting()
+    const {
+  std::vector<AppId> ids;
+  for (const auto& [key, _] : pending_uninstalls_) {
+    ids.push_back(key);
+  }
+  return ids;
 }
 
 void WebAppInstallFinalizer::UninstallWebAppInternal(
@@ -524,6 +517,10 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
       web_app_info.shortcuts_menu_icon_bitmaps;
   IconsMap other_icon_bitmaps = web_app_info.other_icon_bitmaps;
 
+  auto write_icons_callback = base::BindOnce(
+      &WebAppIconManager::WriteData, icon_manager_, app_id,
+      std::move(icon_bitmaps), std::move(shortcuts_menu_icon_bitmaps),
+      std::move(other_icon_bitmaps));
   auto write_translations_callback = base::BindOnce(
       &WebAppInstallFinalizer::WriteTranslations,
       weak_ptr_factory_.GetWeakPtr(), app_id, std::move(web_app_info));
@@ -531,12 +528,11 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
       base::BindOnce(&WebAppInstallFinalizer::CommitToSyncBridge,
                      weak_ptr_factory_.GetWeakPtr(), std::move(web_app));
 
-  icon_manager_->WriteData(
-      app_id, std::move(icon_bitmaps), std::move(shortcuts_menu_icon_bitmaps),
-      std::move(other_icon_bitmaps),
-      base::BindOnce(std::move(write_translations_callback),
-                     base::BindOnce(std::move(commit_to_sync_bridge_callback),
-                                    std::move(commit_callback))));
+  std::move(write_icons_callback)
+      .Run(base::BindOnce(
+          std::move(write_translations_callback),
+          base::BindOnce(std::move(commit_to_sync_bridge_callback),
+                         std::move(commit_callback))));
 }
 
 void WebAppInstallFinalizer::WriteTranslations(
@@ -733,6 +729,21 @@ void WebAppInstallFinalizer::OnUpdateHooksFinished(
 
 const WebAppRegistrar& WebAppInstallFinalizer::GetWebAppRegistrar() const {
   return *registrar_;
+}
+
+void WebAppInstallFinalizer::WriteExternalConfigMapInfo(
+    WebApp& web_app,
+    WebAppManagement::Type source,
+    bool is_placeholder,
+    GURL install_url) {
+  DCHECK(!(source == WebAppManagement::Type::kSync && is_placeholder));
+  if (source != WebAppManagement::Type::kSync) {
+    web_app.AddPlaceholderInfoToManagementExternalConfigMap(source,
+                                                            is_placeholder);
+    if (install_url.is_valid()) {
+      web_app.AddInstallURLToManagementExternalConfigMap(source, install_url);
+    }
+  }
 }
 
 FileHandlerUpdateAction WebAppInstallFinalizer::GetFileHandlerUpdateAction(

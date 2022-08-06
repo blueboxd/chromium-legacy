@@ -44,9 +44,11 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_host_test_helper.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -317,7 +319,13 @@ class DictationTest
   }
 
   // Routers to SpeechRecognitionTestHelper methods.
-  void WaitForRecognitionStarted() { test_helper_.WaitForRecognitionStarted(); }
+  void WaitForRecognitionStarted() {
+    test_helper_.WaitForRecognitionStarted();
+    // Dictation initializes FocusHandler when speech recognition starts.
+    // Several tests require FocusHandler logic, so wait for it to initialize
+    // before proceeding.
+    WaitForFocusHandler();
+  }
 
   void WaitForRecognitionStopped() { test_helper_.WaitForRecognitionStopped(); }
 
@@ -338,7 +346,9 @@ class DictationTest
         browser()->tab_strip_model()->GetActiveWebContents(),
         ui::kAXModeComplete, ax::mojom::Event::kValueChanged);
     SendFinalResultAndWait(result);
-    waiter.WaitForNotification();
+    // TODO(https://crbug.com/1333354): Investigate why this does not always
+    // return true.
+    std::ignore = waiter.WaitForNotification();
     WaitForTextAreaValue(value);
   }
 
@@ -351,7 +361,9 @@ class DictationTest
     content::BoundingBoxUpdateWaiter bounding_box_waiter(web_contents);
     SendFinalResultAndWait(result);
     bounding_box_waiter.Wait();
-    selection_waiter.WaitForNotification();
+    // TODO(https://crbug.com/1333354): Investigate why this does not always
+    // return true.
+    std::ignore = selection_waiter.WaitForNotification();
   }
 
   void SendFinalResultAndWaitForCaretBoundsChanged(const std::string& result) {
@@ -362,7 +374,9 @@ class DictationTest
         browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod());
     SendFinalResultAndWait(result);
     caret_waiter.Wait();
-    selection_waiter.WaitForNotification();
+    // TODO(https://crbug.com/1333354): Investigate why this does not always
+    // return true.
+    std::ignore = selection_waiter.WaitForNotification();
   }
 
   void SendFinalResultAndWaitForClipboardChanged(const std::string& result) {
@@ -386,6 +400,29 @@ class DictationTest
     SuccessWaiter(base::BindLambdaForTesting(
                       [&]() { return value == GetTextAreaValue(); }),
                   error_message)
+        .Wait();
+  }
+
+  void WaitForFocusHandler() {
+    std::string error_message = "Still waiting for FocusHandler";
+    std::string script = R"(
+      if (accessibilityCommon.dictation_.focusHandler_.isReadyForTesting()) {
+        window.domAutomationController.send("ready");
+      } else {
+        window.domAutomationController.send("not ready");
+      }
+    )";
+    SuccessWaiter(
+        base::BindLambdaForTesting([&]() {
+          std::string result =
+              extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                  /*context=*/browser()->profile(),
+                  /*extension_id=*/
+                  extension_misc::kAccessibilityCommonExtensionId,
+                  /*script=*/script);
+          return result == "ready";
+        }),
+        error_message)
         .Wait();
   }
 
@@ -1107,6 +1144,136 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, MAYBE_HintsShownAfterCommandExecuted) {
       /*icon=*/DictationBubbleIconType::kStandby,
       /*text=*/absl::optional<std::u16string>(),
       /*hints=*/std::vector<std::u16string>{kTrySaying, kUndo, kHelp});
+}
+
+// Tests behavior of Dictation macros that haven't been hooked up to the
+// speech parser.
+class DictationHiddenMacrosTest : public DictationTest {
+ protected:
+  DictationHiddenMacrosTest() = default;
+  ~DictationHiddenMacrosTest() = default;
+  DictationHiddenMacrosTest(const DictationHiddenMacrosTest&) = delete;
+  DictationHiddenMacrosTest& operator=(const DictationHiddenMacrosTest&) =
+      delete;
+
+  void RunHiddenMacro(int macro) {
+    std::string script = base::StringPrintf(R"(
+      accessibilityCommon.dictation_.runHiddenMacroForTesting(%d);
+      window.domAutomationController.send("done");
+    )",
+                                            macro);
+    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+        /*context=*/browser()->profile(),
+        /*extension_id=*/extension_misc::kAccessibilityCommonExtensionId,
+        /*script=*/script);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Network,
+    DictationHiddenMacrosTest,
+    ::testing::Values(speech::SpeechRecognitionType::kNetwork));
+
+INSTANTIATE_TEST_SUITE_P(
+    OnDevice,
+    DictationHiddenMacrosTest,
+    ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, StopListening) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  RunHiddenMacro(/*STOP_LISTENING*/ 16);
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordSimple) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test", "This is a test");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a ");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordExtraSpace) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test ", "This is a test ");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a ");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordNewLine) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test\n\n",
+                                         "This is a test\n\n");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a test\n");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordPunctuation) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This.is.a.test. ",
+                                         "This.is.a.test. ");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This.is.a.test");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordMiddleOfWord) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test.", "This is a test.");
+  // Move the text caret into the middle of the word "test".
+  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a t.");
+}
+
+// Tests behavior of Dictation and installation of Pumpkin.
+class DictationPumpkinInstallTest : public DictationTest {
+ protected:
+  DictationPumpkinInstallTest() = default;
+  ~DictationPumpkinInstallTest() = default;
+  DictationPumpkinInstallTest(const DictationPumpkinInstallTest&) = delete;
+  DictationPumpkinInstallTest& operator=(const DictationPumpkinInstallTest&) =
+      delete;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DictationTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndEnableFeature(
+        ::features::kExperimentalAccessibilityDictationWithPumpkin);
+  }
+
+  void WaitForInstallToSucceed() {
+    std::string error_message = "Waiting for Pumpkin installation to succeed";
+    SuccessWaiter(base::BindLambdaForTesting([&]() {
+                    return AccessibilityManager::Get()
+                        ->is_pumpkin_installed_for_testing();
+                  }),
+                  error_message)
+        .Wait();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Network,
+    DictationPumpkinInstallTest,
+    ::testing::Values(speech::SpeechRecognitionType::kNetwork));
+
+INSTANTIATE_TEST_SUITE_P(
+    OnDevice,
+    DictationPumpkinInstallTest,
+    ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
+
+IN_PROC_BROWSER_TEST_P(DictationPumpkinInstallTest, WaitForInstall) {
+  // Dictation will request a Pumpkin install when it starts up. Wait for
+  // the install to succeed.
+  WaitForInstallToSucceed();
 }
 
 // TODO(crbug.com/1264544): Test looking at gn args has pumpkin and does

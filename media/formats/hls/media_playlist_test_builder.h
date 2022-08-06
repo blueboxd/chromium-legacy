@@ -8,10 +8,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "media/formats/hls/media_playlist.h"
 #include "media/formats/hls/media_segment.h"
 #include "media/formats/hls/playlist_test_builder.h"
+#include "media/formats/hls/types.h"
+#include "url/gurl.h"
 
 namespace media::hls {
 
@@ -72,7 +75,7 @@ class MediaPlaylistTestBuilder : public PlaylistTestBuilder<MediaPlaylist> {
   void VerifyExpectations(const MediaPlaylist& playlist,
                           const base::Location& from) const override;
 
-  const MultivariantPlaylist* parent_ = nullptr;
+  raw_ptr<const MultivariantPlaylist> parent_ = nullptr;
   std::vector<SegmentExpectations> segment_expectations_;
 };
 
@@ -97,6 +100,21 @@ inline void HasComputedDuration(base::TimeDelta value,
   EXPECT_EQ(playlist.GetComputedDuration(), value) << from.ToString();
 }
 
+// Checks that the value of `GetPartialSegmentInfo()` matches the given value.
+inline void HasPartialSegmentInfo(
+    absl::optional<MediaPlaylist::PartialSegmentInfo> partial_segment_info,
+    const base::Location& from,
+    const MediaPlaylist& playlist) {
+  ASSERT_EQ(partial_segment_info.has_value(),
+            playlist.GetPartialSegmentInfo().has_value())
+      << from.ToString();
+  if (partial_segment_info.has_value()) {
+    ASSERT_DOUBLE_EQ(partial_segment_info->target_duration,
+                     playlist.GetPartialSegmentInfo()->target_duration)
+        << from.ToString();
+  }
+}
+
 // Checks the media playlist's `HasMediaSequenceTag` property against
 // the given value.
 inline void HasMediaSequenceTag(bool value,
@@ -119,11 +137,44 @@ inline void HasMediaSequenceNumber(types::DecimalInteger number,
   EXPECT_EQ(segment.GetMediaSequenceNumber(), number) << from.ToString();
 }
 
+// Checks that the latest media segment has the given discontinuity sequence
+// number.
+inline void HasDiscontinuitySequenceNumber(types::DecimalInteger number,
+                                           const base::Location& from,
+                                           const MediaSegment& segment) {
+  EXPECT_EQ(segment.GetDiscontinuitySequenceNumber(), number)
+      << from.ToString();
+}
+
 // Checks that the latest media segment has the given URI.
 inline void HasUri(GURL uri,
                    const base::Location& from,
                    const MediaSegment& segment) {
   EXPECT_EQ(segment.GetUri(), uri) << from.ToString();
+}
+
+// Checks that the latest media segment has the given byte range.
+inline void HasByteRange(absl::optional<types::ByteRange> range,
+                         const base::Location& from,
+                         const MediaSegment& segment) {
+  ASSERT_EQ(segment.GetByteRange().has_value(), range.has_value())
+      << from.ToString();
+  if (range.has_value()) {
+    EXPECT_EQ(segment.GetByteRange()->GetOffset(), range->GetOffset())
+        << from.ToString();
+    EXPECT_EQ(segment.GetByteRange()->GetLength(), range->GetLength())
+        << from.ToString();
+    EXPECT_EQ(segment.GetByteRange()->GetEnd(), range->GetEnd())
+        << from.ToString();
+  }
+}
+
+// Checks the latest media segment's `GetBitRate` property against the given
+// value.
+inline void HasBitRate(absl::optional<types::DecimalInteger> bitrate,
+                       const base::Location& from,
+                       const MediaSegment& segment) {
+  EXPECT_EQ(segment.GetBitRate(), bitrate);
 }
 
 // Checks the latest media segment's `HasDiscontinuity` property against the

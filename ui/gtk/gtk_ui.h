@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/observer_list.h"
+#include "base/containers/fixed_flat_map.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gtk/gtk_ui_platform.h"
@@ -25,7 +25,6 @@ typedef struct _GtkStyle GtkStyle;
 namespace gtk {
 using ColorMap = std::map<int, SkColor>;
 
-class DeviceScaleFactorObserver;
 class GtkKeyBindingsHandler;
 class NativeThemeGtk;
 class SettingsProvider;
@@ -81,29 +80,12 @@ class GtkUi : public views::LinuxUI {
   SkColor GetInactiveSelectionBgColor() const override;
   SkColor GetInactiveSelectionFgColor() const override;
   base::TimeDelta GetCursorBlinkInterval() const override;
-  ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
-  ui::NativeTheme* GetNativeTheme(bool use_system_theme) const override;
-  void SetUseSystemThemeCallback(UseSystemThemeCallback callback) override;
-  bool GetDefaultUsesSystemTheme() const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size,
                                    float scale) const override;
-  std::unique_ptr<views::Border> CreateNativeBorder(
-      views::LabelButton* owning_button,
-      std::unique_ptr<views::LabelButtonBorder> border) override;
-  void AddWindowButtonOrderObserver(
-      views::WindowButtonOrderObserver* observer) override;
-  void RemoveWindowButtonOrderObserver(
-      views::WindowButtonOrderObserver* observer) override;
   WindowFrameAction GetWindowFrameAction(
       WindowFrameActionSource source) override;
-  void NotifyWindowManagerStartupComplete() override;
-  void UpdateDeviceScaleFactor() override;
   float GetDeviceScaleFactor() const override;
-  void AddDeviceScaleFactorObserver(
-      views::DeviceScaleFactorObserver* observer) override;
-  void RemoveDeviceScaleFactorObserver(
-      views::DeviceScaleFactorObserver* observer) override;
   bool PreferDarkTheme() const override;
   bool AnimationsEnabled() const override;
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
@@ -113,6 +95,7 @@ class GtkUi : public views::LinuxUI {
   int GetCursorThemeSize() override;
   std::vector<std::string> GetAvailableSystemThemeNamesForTest() const override;
   void SetSystemThemeByNameForTest(const std::string& theme_name) override;
+  ui::NativeTheme* GetNativeTheme() const override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
@@ -150,6 +133,10 @@ class GtkUi : public views::LinuxUI {
 
   // Updates |default_font_*|.
   void UpdateDefaultFont();
+
+  // Updates the device scale factor so that the default font size can be
+  // recalculated.
+  void UpdateDeviceScaleFactor();
 
   float GetRawDeviceScaleFactor();
 
@@ -190,22 +177,9 @@ class GtkUi : public views::LinuxUI {
   // This is only used on GTK3.
   std::unique_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
 
-  // Objects to notify when the window frame button order changes.
-  base::ObserverList<views::WindowButtonOrderObserver>::Unchecked
-      window_button_order_observer_list_;
-
-  // Objects to notify when the device scale factor changes.
-  base::ObserverList<views::DeviceScaleFactorObserver>::Unchecked
-      device_scale_factor_observer_list_;
-
   // The action to take when middle, double, or right clicking the titlebar.
   base::flat_map<WindowFrameActionSource, WindowFrameAction>
       window_frame_actions_;
-
-  // Used to determine whether the system theme should be used for a window.  If
-  // no override is provided or the callback returns true, GtkUi will default
-  // to a NativeThemeGtk instance.
-  UseSystemThemeCallback use_system_theme_callback_;
 
   float device_scale_factor_ = 1.0f;
 

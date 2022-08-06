@@ -49,7 +49,7 @@ content::DesktopMediaID GetDesktopMediaIDForScreen() {
 
 content::DesktopMediaID GetDesktopMediaIDForTab(Browser* browser, int tab) {
   content::RenderFrameHost* main_frame =
-      GetWebContents(browser, tab)->GetMainFrame();
+      GetWebContents(browser, tab)->GetPrimaryMainFrame();
   return content::DesktopMediaID(
       content::DesktopMediaID::TYPE_WEB_CONTENTS,
       content::DesktopMediaID::kNullId,
@@ -197,7 +197,7 @@ class InfobarUIChangeObserver : public TabStripModelObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::map<content::WebContents*, std::unique_ptr<InfoBarChangeObserver>>
       observers_;
-  Browser* browser_;
+  raw_ptr<Browser> browser_;
   base::RepeatingClosure barrier_closure_;
 };
 

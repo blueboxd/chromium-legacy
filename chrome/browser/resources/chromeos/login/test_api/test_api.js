@@ -254,6 +254,15 @@ class GaiaScreenTester extends ScreenElementApi {
 class SyncScreenTester extends ScreenElementApi {
   constructor() {
     super('sync-consent');
+    this.loadedStep = new PolymerElementApi(this, '#syncConsentOverviewDialog');
+  }
+
+  /**
+   * Returns if the Sync Consent Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.loadedStep.isVisible();
   }
 }
 
@@ -362,6 +371,18 @@ class PinSetupScreenTester extends ScreenElementApi {
    */
   pressPinDigit(digit) {
     this.pinButtons[digit].click();
+  }
+
+  /**
+   * @return {string}
+   */
+  getSkipButtonName() {
+    return loadTimeData.getString('discoverPinSetupSkip');
+  }
+
+  /** @return {boolean} */
+  isInTabletMode() {
+    return loadTimeData.getBoolean('testapi_isOobeInTabletMode');
   }
 }
 

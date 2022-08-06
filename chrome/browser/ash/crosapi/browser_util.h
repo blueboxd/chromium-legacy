@@ -217,6 +217,9 @@ bool IsLacrosChromeAppsEnabled();
 // Returns true if Lacros is used in the web Kiosk session.
 bool IsLacrosEnabledInWebKioskSession();
 
+// Returns true if Lacros is used in the Chrome App Kiosk session.
+bool IsLacrosEnabledInChromeKioskSession();
+
 // Returns true if |window| is an exo ShellSurface window representing a Lacros
 // browser.
 bool IsLacrosWindow(const aura::Window* window);
@@ -331,6 +334,9 @@ void ClearGotoFilesClicked(PrefService* local_state,
 // clicked.
 bool WasGotoFilesClicked(PrefService* local_state,
                          const std::string& user_id_hash);
+
+// Returns true if ash 1st party extension keep list should be enforced.
+bool ShouldEnforceAshExtensionKeepList();
 
 }  // namespace browser_util
 }  // namespace crosapi

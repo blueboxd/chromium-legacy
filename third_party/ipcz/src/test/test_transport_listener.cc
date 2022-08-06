@@ -18,8 +18,7 @@ namespace ipcz::test {
 TestTransportListener::TestTransportListener(IpczHandle node,
                                              IpczDriverHandle handle)
     : TestTransportListener(MakeRefCounted<DriverTransport>(
-          DriverObject(WrapRefCounted(reinterpret_cast<Node*>(node)),
-                       handle))) {}
+          DriverObject(reinterpret_cast<Node*>(node)->driver(), handle))) {}
 
 TestTransportListener::TestTransportListener(Ref<DriverTransport> transport)
     : transport_(std::move(transport)) {
@@ -47,11 +46,11 @@ void TestTransportListener::OnRawMessage(GenericMessageHandler handler) {
 
 void TestTransportListener::OnStringMessage(
     std::function<void(std::string_view)> handler) {
-  OnRawMessage([handler](const DriverTransport::Message& message) {
+  OnRawMessage([handler](const DriverTransport::RawMessage& message) {
     EXPECT_TRUE(message.handles.empty());
     handler(std::string_view(reinterpret_cast<const char*>(message.data.data()),
                              message.data.size()));
-    return IPCZ_RESULT_OK;
+    return true;
   });
 }
 
@@ -70,8 +69,9 @@ void TestTransportListener::ActivateTransportIfNecessary() {
   transport_->Activate();
 }
 
-IpczResult TestTransportListener::OnTransportMessage(
-    const DriverTransport::Message& message) {
+bool TestTransportListener::OnTransportMessage(
+    const DriverTransport::RawMessage& message,
+    const DriverTransport& transport) {
   ABSL_ASSERT(message_handler_);
   return message_handler_(message);
 }

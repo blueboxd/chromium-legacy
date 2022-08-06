@@ -4,29 +4,48 @@
 
 #include "chrome/browser/web_applications/web_app_utils.h"
 
+#include <algorithm>
+#include <bitset>
+#include <iterator>
+#include <set>
+#include <type_traits>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
+#include "base/containers/flat_set.h"
+#include "base/containers/flat_tree.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/custom_handlers/protocol_handler.h"
 #include "components/grit/components_resources.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "skia/ext/skia_utils_base.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -42,6 +61,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
@@ -125,7 +145,17 @@ content::BrowserContext* GetBrowserContextForWebApps(
     return nullptr;
   }
   Profile* original_profile = profile->GetOriginalProfile();
-  return AreWebAppsEnabled(original_profile) ? original_profile : nullptr;
+  if (!AreWebAppsEnabled(original_profile))
+    return nullptr;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Use OTR profile for Guest Session.
+  if (profile->IsGuestSession()) {
+    return profile->IsOffTheRecord() ? profile : nullptr;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  return original_profile;
 }
 
 content::BrowserContext* GetBrowserContextForWebAppMetrics(
@@ -142,6 +172,7 @@ content::BrowserContext* GetBrowserContextForWebAppMetrics(
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
     const GURL& url,
+    content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   web_app::WebAppProvider* web_app_provider =
@@ -333,7 +364,8 @@ bool IsWebAppsCrosapiEnabled() {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* lacros_service = chromeos::LacrosService::Get();
-  return lacros_service && lacros_service->init_params()->web_apps_enabled &&
+  return chromeos::BrowserInitParams::Get()->web_apps_enabled &&
+         lacros_service &&
          lacros_service->IsAvailable<crosapi::mojom::AppPublisher>();
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
@@ -477,6 +509,14 @@ bool HasAppSettingsPage(Profile* profile, const GURL& url) {
   if (!provider)
     return false;
   return provider->registrar().IsLocallyInstalled(app_id);
+}
+
+bool IsInScope(const GURL& url, const GURL& scope) {
+  if (!scope.is_valid())
+    return false;
+
+  return base::StartsWith(url.spec(), scope.spec(),
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace web_app

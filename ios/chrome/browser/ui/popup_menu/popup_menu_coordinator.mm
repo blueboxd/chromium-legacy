@@ -359,8 +359,10 @@ enum class IOSOverflowMenuActionType {
         self.overflowMenuMediator.bookmarkModel =
             ios::BookmarkModelFactory::GetForBrowserState(
                 self.browser->GetBrowserState());
-        self.overflowMenuMediator.prefService =
+        self.overflowMenuMediator.browserStatePrefs =
             self.browser->GetBrowserState()->GetPrefs();
+        self.overflowMenuMediator.localStatePrefs =
+            GetApplicationContext()->GetLocalState();
         self.overflowMenuMediator.engagementTracker =
             feature_engagement::TrackerFactory::GetForBrowserState(
                 self.browser->GetBrowserState());
@@ -383,7 +385,8 @@ enum class IOSOverflowMenuActionType {
         UIViewController* menu = [OverflowMenuViewProvider
             makeViewControllerWithModel:self.overflowMenuMediator
                                             .overflowMenuModel
-                         metricsHandler:self];
+                         metricsHandler:self
+                carouselMetricsDelegate:self.overflowMenuMediator];
 
         NamedGuide* guide =
             [NamedGuide guideWithName:guideName

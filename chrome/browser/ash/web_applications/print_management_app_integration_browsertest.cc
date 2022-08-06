@@ -4,7 +4,6 @@
 
 #include "ash/webui/print_management/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +15,7 @@ IN_PROC_BROWSER_TEST_P(PrintManagementAppIntegrationTest,
                        PrintManagementAppInLauncher) {
   const GURL url(ash::kChromeUIPrintManagementAppUrl);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
-      web_app::SystemAppType::PRINT_MANAGEMENT, url, "Print jobs"));
+      ash::SystemWebAppType::PRINT_MANAGEMENT, url, "Print jobs"));
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(

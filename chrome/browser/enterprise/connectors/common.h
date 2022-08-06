@@ -10,12 +10,22 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/supports_user_data.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "url/gurl.h"
 
 class Profile;
+
+namespace content {
+class WebContents;
+}  // namespace content
+
+namespace download {
+class DownloadItem;
+}  // namespace download
 
 namespace enterprise_connectors {
 
@@ -194,6 +204,25 @@ struct ScanResult : public base::SupportsUserData::Data {
   absl::optional<std::u16string> user_justification;
 };
 
+// Enum to identify which message to show once scanning is complete. Ordered
+// by precedence for when multiple files have conflicting results.
+enum class FinalContentAnalysisResult {
+  // Show that an issue was found and that the upload is blocked.
+  FAILURE = 0,
+
+  // Show that files were not uploaded since they were too large.
+  LARGE_FILES = 1,
+
+  // Show that files were not uploaded since they were encrypted.
+  ENCRYPTED_FILES = 2,
+
+  // Show that DLP checks failed, but that the user can proceed if they want.
+  WARNING = 3,
+
+  // Show that no issue was found and that the user may proceed.
+  SUCCESS = 4,
+};
+
 // User data to persist a save package's final callback allowing/denying
 // completion. This is used since the callback can be called either when
 // scanning completes on a block/allow verdict, when the user cancels the scan,
@@ -216,6 +245,26 @@ bool ContainsMalwareVerdict(const ContentAnalysisResponse& response);
 
 // Returns whether device info should be reported for the profile.
 bool IncludeDeviceInfo(Profile* profile, bool per_profile);
+
+// Returns whether the download danger type implies the user should be allowed
+// to review the download.
+bool ShouldPromptReviewForDownload(Profile* profile,
+                                   download::DownloadDangerType danger_type);
+
+// Shows the review dialog after a user has clicked the "Review" button
+// corresponding to a download.
+void ShowDownloadReviewDialog(const std::u16string& filename,
+                              Profile* profile,
+                              download::DownloadItem* download_item,
+                              content::WebContents* web_contents,
+                              download::DownloadDangerType danger_type,
+                              base::OnceClosure keep_closure,
+                              base::OnceClosure discard_closure);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// Returns the single main profile, or nullptr if none is found.
+Profile* GetMainProfileLacros();
+#endif
 
 }  // namespace enterprise_connectors
 

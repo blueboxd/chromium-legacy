@@ -158,8 +158,11 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+  // Set restore members for windows to know ids upon creation. See the
+  // corresponding comment in Widget::InitParams.
   properties.restore_session_id = params.restore_session_id;
   properties.restore_window_id = params.restore_window_id;
+  properties.restore_window_id_source = params.restore_window_id_source;
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -889,6 +892,10 @@ DesktopWindowTreeHostPlatform::GetOwnedWindowAnchorAndRectInPx() {
   // Anchor rect must be translated from DIP to px.
   window_anchor.anchor_rect = ToPixelRect(window_anchor.anchor_rect);
   return window_anchor;
+}
+
+void DesktopWindowTreeHostPlatform::OnMovedToAnotherDisplay() {
+  WindowTreeHost::OnHostResizedInPixels(GetBoundsInPixels().size());
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::ConvertRectToPixels(

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_runner.h"
 #include "ui/events/event_modifiers.h"
@@ -77,7 +78,9 @@ class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
   void DispatchTouchEvent(const TouchEventParams& params);
 
   // Device lifecycle events.
-  void DispatchKeyboardDevicesUpdated(const std::vector<InputDevice>& devices);
+  void DispatchKeyboardDevicesUpdated(
+      const std::vector<InputDevice>& devices,
+      base::flat_map<int, std::vector<uint64_t>> key_bits_mapping);
   void DispatchTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices);
   void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices,
@@ -94,7 +97,9 @@ class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
   // Gamepad event and gamepad device event. These events are dispatched to
   // GamepadObserver through GamepadProviderOzone.
   void DispatchGamepadEvent(const GamepadEvent& event);
-  void DispatchGamepadDevicesUpdated(const std::vector<GamepadDevice>& devices);
+  void DispatchGamepadDevicesUpdated(
+      const std::vector<GamepadDevice>& devices,
+      base::flat_map<int, std::vector<uint64_t>> key_bits_mapping);
 
  protected:
   // DeviceEventObserver overrides:

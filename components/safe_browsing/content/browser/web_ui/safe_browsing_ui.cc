@@ -14,6 +14,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
@@ -46,6 +47,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/core/browser/db/v4_local_database_manager.h"
@@ -170,11 +172,19 @@ void WebUIInfoSingleton::AddToCSBRRsSent(
   for (auto* webui_listener : webui_instances_)
     webui_listener->NotifyCSBRRJsListener(csbrr.get());
   csbrrs_sent_.push_back(std::move(csbrr));
+  if (on_csbrr_logged_for_testing_) {
+    std::move(on_csbrr_logged_for_testing_).Run();
+  }
 }
 
 void WebUIInfoSingleton::ClearCSBRRsSent() {
   std::vector<std::unique_ptr<ClientSafeBrowsingReportRequest>>().swap(
       csbrrs_sent_);
+}
+
+void WebUIInfoSingleton::SetOnCSBRRLoggedCallbackForTesting(
+    base::OnceClosure on_done) {
+  on_csbrr_logged_for_testing_ = std::move(on_done);
 }
 
 void WebUIInfoSingleton::AddToHitReportsSent(
@@ -409,6 +419,7 @@ WebUIInfoSingleton::GetReferringAppInfo(content::WebContents* web_contents) {
 
 void WebUIInfoSingleton::ClearListenerForTesting() {
   has_test_listener_ = false;
+  on_csbrr_logged_for_testing_ = base::NullCallback();
   MaybeClearData();
 }
 
@@ -2236,6 +2247,11 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
   html_source->AddResourcePath("safe_browsing.css", IDR_SAFE_BROWSING_CSS);
   html_source->AddResourcePath("safe_browsing.js", IDR_SAFE_BROWSING_JS);
   html_source->SetDefaultResource(IDR_SAFE_BROWSING_HTML);
+
+  // Static types
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types static-types;");
 
   content::WebUIDataSource::Add(browser_context, html_source);
 }

@@ -10,9 +10,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import * as error_reporter from './error_reporter.js';
 import {assertCast, MessagePipe} from './message_pipe.m.js';
-import {DeleteFileMessage, FileContext, IsFileBrowserWritableMessage, LoadFilesMessage, Message, NavigateMessage, NotifyCurrentFileMessage, OpenAllowedFileMessage, OpenAllowedFileResponse, OpenFilesWithPickerMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileMessage, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.js';
+import {DeleteFileMessage, EditInPhotosMessage, FileContext, IsFileBrowserWritableMessage, LoadFilesMessage, Message, NavigateMessage, NotifyCurrentFileMessage, OpenAllowedFileMessage, OpenAllowedFileResponse, OpenFilesWithPickerMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileMessage, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.js';
 import {mediaAppPageHandler} from './mojo_api_bootstrap.js';
 
+const DEFAULT_APP_ICON = 'app';
 const EMPTY_WRITE_ERROR_NAME = 'EmptyWriteError';
 
 // Open file picker configurations. Should be kept in sync with launch handler
@@ -164,6 +165,29 @@ const guestMessagePipe =
 // event listener before the <iframe> is added to the DOM.
 guestMessagePipe.registerHandler(Message.IFRAME_READY, () => {});
 
+/**
+ * The type of icon to show for this app's window.
+ * @type {string}
+ */
+let appIconType = DEFAULT_APP_ICON;
+
+/**
+ * Sets the app icon depending on the icon type and color theme.
+ * @param {!MediaQueryList|!Event<!{matches: boolean}>}
+ *     mediaQueryList Determines whether or not the icon should be in dark mode.
+ */
+function updateAppIcon(mediaQueryList) {
+  // The default app icon does not have a separate dark variant.
+  const isDark =
+      mediaQueryList.matches && appIconType !== DEFAULT_APP_ICON ? '_dark' : '';
+
+  const icon = /** @type {!HTMLLinkElement} */ (
+      document.querySelector('link[rel=icon]'));
+  icon.href = `system_assets/${appIconType}_icon${isDark}.svg`;
+}
+
+const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
 guestMessagePipe.registerHandler(Message.NOTIFY_CURRENT_FILE, message => {
   const notifyMsg = /** @type {!NotifyCurrentFileMessage} */ (message);
 
@@ -172,18 +196,18 @@ guestMessagePipe.registerHandler(Message.NOTIFY_CURRENT_FILE, message => {
   appTitle = appTitle || title.text;
   title.text = notifyMsg.name || appTitle;
 
-  let genericType = notifyMsg.type ? notifyMsg.type.split('/')[0] : 'file';
+  appIconType = notifyMsg.type ? notifyMsg.type.split('/')[0] : 'file';
   if (title.text === appTitle) {
-    genericType = 'app';
+    appIconType = DEFAULT_APP_ICON;
   } else if (notifyMsg.type === 'application/pdf') {
-    genericType = 'pdf';
-  } else if (!['audio', 'image', 'video', 'file'].includes(genericType)) {
-    genericType = 'file';
+    appIconType = 'pdf';
+  } else if (!['audio', 'image', 'video', 'file'].includes(appIconType)) {
+    appIconType = 'file';
   }
-  const icon = /** @type {!HTMLLinkElement} */ (
-      document.querySelector('link[rel=icon]'));
-  icon.href = `system_assets/${genericType}_icon.svg`;
+  updateAppIcon(darkMediaQuery);
 });
+
+darkMediaQuery.addEventListener('change', updateAppIcon);
 
 guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
   let response = mediaAppPageHandler.openFeedbackDialog();
@@ -201,6 +225,21 @@ guestMessagePipe.registerHandler(Message.OPEN_IN_SANDBOXED_VIEWER, message => {
   window.open(
       `./viewpdfhost.html?${new URLSearchParams(message)}`, '_blank',
       'popup=1');
+});
+
+guestMessagePipe.registerHandler(Message.RELOAD_MAIN_FRAME, () => {
+  window.location.reload();
+});
+
+guestMessagePipe.registerHandler(Message.EDIT_IN_PHOTOS, message => {
+  const editInPhotosMsg = /** @type {!EditInPhotosMessage} */ (message);
+  const fileHandle = fileHandleForToken(editInPhotosMsg.token);
+
+  const transferToken = new blink.mojom.FileSystemAccessTransferTokenRemote(
+      Mojo.getFileSystemAccessTransferToken(fileHandle));
+
+  return mediaAppPageHandler.editInPhotos(
+      transferToken, editInPhotosMsg.mimeType);
 });
 
 guestMessagePipe.registerHandler(Message.IS_FILE_BROWSER_WRITABLE, message => {

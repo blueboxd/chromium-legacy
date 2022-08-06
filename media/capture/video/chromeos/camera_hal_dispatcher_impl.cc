@@ -308,9 +308,7 @@ bool CameraHalDispatcherImpl::IsStarted() {
 void CameraHalDispatcherImpl::AddActiveClientObserver(
     CameraActiveClientObserver* observer) {
   base::AutoLock lock(opened_camera_id_map_lock_);
-  for (auto& opened_camera_id_pair : opened_camera_id_map_) {
-    const auto& camera_client_type = opened_camera_id_pair.first;
-    const auto& camera_id_set = opened_camera_id_pair.second;
+  for (auto& [camera_client_type, camera_id_set] : opened_camera_id_map_) {
     if (!camera_id_set.empty()) {
       observer->OnActiveClientChange(camera_client_type, /*is_active=*/true);
     }
@@ -345,6 +343,10 @@ void CameraHalDispatcherImpl::RegisterPluginVmToken(
 void CameraHalDispatcherImpl::UnregisterPluginVmToken(
     const base::UnguessableToken& token) {
   token_manager_.UnregisterPluginVmToken(token);
+}
+
+void CameraHalDispatcherImpl::DisableSensorForTesting() {
+  sensor_enabled_ = false;
 }
 
 CameraHalDispatcherImpl::CameraHalDispatcherImpl()
@@ -450,6 +452,11 @@ void CameraHalDispatcherImpl::RegisterSensorClientWithToken(
     const base::UnguessableToken& auth_token,
     RegisterSensorClientWithTokenCallback callback) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+
+  if (!sensor_enabled_) {
+    std::move(callback).Run(-EPERM);
+    return;
+  }
 
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -698,9 +705,7 @@ void CameraHalDispatcherImpl::OnCameraHalServerConnectionError() {
   CAMERA_LOG(EVENT) << "Camera HAL server connection lost";
   camera_hal_server_.reset();
   camera_hal_server_callbacks_.reset();
-  for (auto& opened_camera_id_pair : opened_camera_id_map_) {
-    auto camera_client_type = opened_camera_id_pair.first;
-    const auto& camera_id_set = opened_camera_id_pair.second;
+  for (auto& [camera_client_type, camera_id_set] : opened_camera_id_map_) {
     if (!camera_id_set.empty()) {
       active_client_observers_->Notify(
           FROM_HERE, &CameraActiveClientObserver::OnActiveClientChange,

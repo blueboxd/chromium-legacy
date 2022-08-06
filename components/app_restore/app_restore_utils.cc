@@ -70,11 +70,11 @@ void ApplyProperties(app_restore::WindowInfo* window_info,
     // are shown are activated by default. Force the widget to not be
     // activatable; the activation will be restored in ash once the window is
     // launched.
-    property_handler->SetProperty(app_restore::kLaunchedFromFullRestoreKey,
+    property_handler->SetProperty(app_restore::kLaunchedFromAppRestoreKey,
                                   true);
   }
   if (window_info->pre_minimized_show_state_type) {
-    property_handler->SetProperty(aura::client::kPreMinimizedShowStateKey,
+    property_handler->SetProperty(aura::client::kRestoreShowStateKey,
                                   *window_info->pre_minimized_show_state_type);
   }
 }

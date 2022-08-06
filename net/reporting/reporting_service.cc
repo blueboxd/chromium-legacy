@@ -87,7 +87,7 @@ class ReportingServiceImpl : public ReportingService {
       const std::string& user_agent,
       const std::string& group,
       const std::string& type,
-      std::unique_ptr<const base::Value> body,
+      base::Value::Dict body,
       int depth) override {
     DCHECK(context_);
     DCHECK(context_->delegate());
@@ -119,9 +119,8 @@ class ReportingServiceImpl : public ReportingService {
     if (header_string.size() > kMaxJsonSize)
       return;
 
-    std::unique_ptr<base::Value> header_value =
-        base::JSONReader::ReadDeprecated("[" + header_string + "]",
-                                         base::JSON_PARSE_RFC, kMaxJsonDepth);
+    absl::optional<base::Value> header_value = base::JSONReader::Read(
+        "[" + header_string + "]", base::JSON_PARSE_RFC, kMaxJsonDepth);
     if (!header_value)
       return;
 
@@ -129,7 +128,7 @@ class ReportingServiceImpl : public ReportingService {
     DoOrBacklogTask(base::BindOnce(
         &ReportingServiceImpl::DoProcessReportToHeader, base::Unretained(this),
         FixupNetworkIsolationKey(network_isolation_key), origin,
-        std::move(header_value)));
+        std::move(header_value).value()));
   }
 
   void RemoveBrowsingData(
@@ -157,11 +156,11 @@ class ReportingServiceImpl : public ReportingService {
   }
 
   base::Value StatusAsValue() const override {
-    base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey("reportingEnabled", base::Value(true));
-    dict.SetKey("clients", context_->cache()->GetClientsAsValue());
-    dict.SetKey("reports", context_->cache()->GetReportsAsValue());
-    return dict;
+    base::Value::Dict dict;
+    dict.Set("reportingEnabled", true);
+    dict.Set("clients", context_->cache()->GetClientsAsValue());
+    dict.Set("reports", context_->cache()->GetReportsAsValue());
+    return base::Value(std::move(dict));
   }
 
   std::vector<const ReportingReport*> GetReports() const override {
@@ -209,7 +208,7 @@ class ReportingServiceImpl : public ReportingService {
       const std::string& user_agent,
       const std::string& group,
       const std::string& type,
-      std::unique_ptr<const base::Value> body,
+      base::Value::Dict body,
       int depth,
       base::TimeTicks queued_ticks) {
     DCHECK(initialized_);
@@ -220,10 +219,11 @@ class ReportingServiceImpl : public ReportingService {
 
   void DoProcessReportToHeader(const NetworkIsolationKey& network_isolation_key,
                                const url::Origin& origin,
-                               std::unique_ptr<base::Value> header_value) {
+                               const base::Value& header_value) {
     DCHECK(initialized_);
+    DCHECK(header_value.is_list());
     ReportingHeaderParser::ParseReportToHeader(
-        context_.get(), network_isolation_key, origin, std::move(header_value));
+        context_.get(), network_isolation_key, origin, header_value.GetList());
   }
 
   void DoSetDocumentReportingEndpoints(

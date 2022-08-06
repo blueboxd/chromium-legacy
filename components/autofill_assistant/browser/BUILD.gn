@@ -27,7 +27,11 @@ proto_library("proto") {
 }
 
 proto_library("test_proto") {
-  sources = [ "parse_jspb_test.proto" ]
+  sources = [
+    "external_action_extension_test.proto",
+    "parse_jspb_test.proto",
+  ]
+  link_deps = [ "//components/autofill_assistant/browser/public:proto" ]
 }
 
 static_library("browser") {
@@ -400,6 +404,8 @@ static_library("unit_test_support") {
   sources = [
     "actions/mock_action_delegate.cc",
     "actions/mock_action_delegate.h",
+    "actions/wait_for_dom_test_base.cc",
+    "actions/wait_for_dom_test_base.h",
     "fake_script_executor_delegate.cc",
     "fake_script_executor_delegate.h",
     "fake_script_executor_ui_delegate.cc",
@@ -464,6 +470,7 @@ source_set("unit_tests") {
     "actions/edit_password_action_unittest.cc",
     "actions/execute_js_action_unittest.cc",
     "actions/expect_navigation_action_unittest.cc",
+    "actions/external_action_unittest.cc",
     "actions/fallback_handler/required_field_unittest.cc",
     "actions/fallback_handler/required_fields_fallback_handler_unittest.cc",
     "actions/generate_password_for_form_field_action_unittest.cc",
@@ -574,8 +581,12 @@ source_set("unit_tests") {
     "web/element_action_util_unittest.cc",
     "web/element_store_unittest.cc",
     "web/send_keyboard_input_worker_unittest.cc",
-    "website_login_manager_impl_unittest.cc",
   ]
+
+  # TODO(crbug.com/1329148): enable these tests on desktop.
+  if (is_android) {
+    sources += [ "website_login_manager_impl_unittest.cc" ]
+  }
 
   deps = [
     ":browser",

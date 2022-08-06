@@ -87,10 +87,6 @@ class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
 
-  // Retrieves the base path of the file directory where StorageBuckets data is
-  // stored.
-  virtual base::FilePath GetBucketBasePath() = 0;
-
   // Returns a raw mojom::NetworkContext pointer. When network service crashes
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
   // caller should not hold onto this pointer beyond the same message loop task.
@@ -187,6 +183,12 @@ class CONTENT_EXPORT StoragePartition {
     // Shared storage data as part of the Shared Storage API.
     // Public explainer: https://github.com/pythagoraskitty/shared-storage
     REMOVE_DATA_MASK_SHARED_STORAGE = 1 << 14,
+    // Fairly obscure cache of .well-known responses for cross-origin
+    // joining/leaving of interest groups used by FLEDGE.
+    // Public explainer here:
+    // https://github.com/WICG/turtledove/blob/main/FLEDGE.md
+    REMOVE_DATA_MASK_INTEREST_GROUP_PERMISSIONS_CACHE = 1 << 15,
+
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.

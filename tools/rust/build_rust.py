@@ -56,7 +56,7 @@ import build
 
 from update_rust import (CHROMIUM_DIR, RUST_REVISION, RUST_SUB_REVISION,
                          RUST_TOOLCHAIN_OUT_DIR, STAGE0_JSON_SHA256,
-                         THIRD_PARTY_DIR, GetPackageVersion)
+                         THIRD_PARTY_DIR, VERSION_STAMP_PATH, GetPackageVersion)
 
 RUST_GIT_URL = 'https://github.com/rust-lang/rust/'
 
@@ -66,23 +66,30 @@ STAGE0_JSON_PATH = os.path.join(RUST_SRC_DIR, 'src', 'stage0.json')
 CARGO_HOME_DIR = os.path.join(RUST_SRC_DIR, 'cargo-home')
 RUST_SRC_VERSION_FILE_PATH = os.path.join(RUST_SRC_DIR, 'src', 'version')
 RUST_TOOLCHAIN_LIB_DIR = os.path.join(RUST_TOOLCHAIN_OUT_DIR, 'lib')
-VERSION_STAMP_PATH = os.path.join(RUST_TOOLCHAIN_OUT_DIR, 'VERSION')
+RUST_TOOLCHAIN_SRC_DIST_DIR = os.path.join(RUST_TOOLCHAIN_LIB_DIR, 'rustlib',
+                                           'src', 'rust')
+RUST_TOOLCHAIN_SRC_DIST_VENDOR_DIR = os.path.join(RUST_TOOLCHAIN_SRC_DIST_DIR,
+                                                  'vendor')
 RUST_CONFIG_TEMPLATE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'config.toml.template')
+RUST_SRC_VENDOR_DIR = os.path.join(RUST_SRC_DIR, 'vendor')
 
 # Desired tools and libraries in our Rust toolchain.
 DISTRIBUTION_ARTIFACTS = [
     'cargo', 'clippy', 'compiler/rustc', 'library/std', 'rust-analyzer',
-    'rustfmt'
+    'rustfmt', 'src'
 ]
 
 # Which test suites to run. Any failure will fail the build.
 TEST_SUITES = [
     'library/std',
     'src/test/codegen',
+    'src/test/ui',
+]
 
+EXCLUDED_TESTS = [
     # Temporarily disabled due to https://github.com/rust-lang/rust/issues/94322
-    # 'src/test/ui',
+    'src/test/ui/numeric/numeric-cast.rs',
 ]
 
 
@@ -206,6 +213,15 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
   RunCommand(cmd + args, env=RUSTENV)
 
 
+# Get arguments to run desired test suites, minus disabled tests.
+def GetTestArgs():
+  args = TEST_SUITES
+  for excluded in EXCLUDED_TESTS:
+    args.append('--skip')
+    args.append(excluded)
+  return args
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Build and package Rust toolchain')
@@ -302,7 +318,7 @@ def main():
   if not args.skip_test:
     print('Running stage 2 tests...')
     # Run a subset of tests. Tell x.py to keep the rustc we already built.
-    RunXPy('test', TEST_SUITES, args.gcc_toolchain, args.verbose)
+    RunXPy('test', GetTestArgs(), args.gcc_toolchain, args.verbose)
 
   targets = [
       'library/proc_macro', 'library/std', 'src/tools/cargo',
@@ -314,22 +330,28 @@ def main():
   print('Building stage 2 artifacts...')
   RunXPy('build', ['--stage', '2'] + targets, args.gcc_toolchain, args.verbose)
 
-  if not args.skip_install:
-    print(f'Installing to {RUST_TOOLCHAIN_OUT_DIR} ...')
-    # Clean output directory.
-    if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
-      shutil.rmtree(RUST_TOOLCHAIN_OUT_DIR)
+  if args.skip_install:
+    # Rust is fully built. We can quit.
+    return 0
 
-    RunXPy('install', DISTRIBUTION_ARTIFACTS, args.gcc_toolchain, args.verbose)
+  print(f'Installing to {RUST_TOOLCHAIN_OUT_DIR} ...')
+  # Clean output directory.
+  if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
+    shutil.rmtree(RUST_TOOLCHAIN_OUT_DIR)
 
-    # Write expected `rustc --version` string to our toolchain directory.
-    with open(RUST_SRC_VERSION_FILE_PATH) as version_file:
-      rust_version = version_file.readline().rstrip()
-    with open(VERSION_STAMP_PATH, 'w') as stamp:
-      stamp.write('rustc %s-dev (%s chromium)\n' %
-                  (rust_version, GetPackageVersion()))
+  RunXPy('install', DISTRIBUTION_ARTIFACTS, args.gcc_toolchain, args.verbose)
 
-  return 0
+  # Write expected `rustc --version` string to our toolchain directory.
+  with open(RUST_SRC_VERSION_FILE_PATH) as version_file:
+    rust_version = version_file.readline().rstrip()
+  with open(VERSION_STAMP_PATH, 'w') as stamp:
+    stamp.write('rustc %s-dev (%s chromium)\n' %
+                (rust_version, GetPackageVersion()))
+
+  # x.py installed library sources to our toolchain directory. We also need to
+  # copy the vendor directory so Chromium checkouts have all the deps needed to
+  # build std.
+  shutil.copytree(RUST_SRC_VENDOR_DIR, RUST_TOOLCHAIN_SRC_DIST_VENDOR_DIR)
 
 
 if __name__ == '__main__':

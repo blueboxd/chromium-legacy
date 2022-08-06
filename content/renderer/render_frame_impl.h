@@ -95,7 +95,7 @@
 #include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom.h"
 #include "third_party/blink/public/platform/child_url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
@@ -411,7 +411,7 @@ class CONTENT_EXPORT RenderFrameImpl
       network::mojom::URLResponseHeadPtr redirect_response) override;
   void NotifyResourceResponseReceived(
       int64_t request_id,
-      const GURL& response_url,
+      const url::SchemeHostPort& final_response_url,
       network::mojom::URLResponseHeadPtr head,
       network::mojom::RequestDestination request_destination) override;
   void NotifyResourceTransferSizeUpdated(int64_t request_id,
@@ -574,6 +574,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillFreezePage() override;
   void DidOpenDocumentInputStream(const blink::WebURL& url) override;
   void DidSetPageLifecycleState() override;
+  void NotifyCurrentHistoryItemChanged() override;
   void DidUpdateCurrentHistoryItem() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
@@ -875,16 +876,6 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingRemote<mojom::FrameHTMLSerializerHandler> handler_remote)
       override;
 
-  // IPC message handlers ------------------------------------------------------
-  //
-  // The documentation for these functions should be in
-  // content/common/*_messages.h for the message that the function is handling.
-  void OnShowContextMenu(const gfx::Point& location);
-  void OnMoveCaret(const gfx::Point& point);
-  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-  void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
-  void OnSuppressFurtherDialogs();
-
   // Callback scheduled from SerializeAsMHTML for when writing serialized
   // MHTML to the handle has been completed in the file thread.
   void OnWriteMHTMLComplete(
@@ -989,7 +980,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // |transition_type| corresponds to the document which triggered this request.
   void WillSendRequestInternal(blink::WebURLRequest& request,
-                               bool for_main_frame,
+                               bool for_outermost_main_frame,
                                ui::PageTransition transition_type,
                                ForRedirect for_redirect);
 

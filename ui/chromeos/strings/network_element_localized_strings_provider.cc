@@ -428,8 +428,6 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
                           chromeos::features::ShouldUseAttachApn());
   html_source->AddBoolean("esimPolicyEnabled",
                           chromeos::features::IsESimPolicyEnabled());
-  html_source->AddBoolean("extendedOpenVpnSettingsEnabled",
-                          ash::features::IsExtendedOpenVpnSettingsEnabled());
 }
 
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -452,6 +450,9 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddBoolean("eapGtcWifiAuthentication",
+                          ash::features::IsEapGtcWifiAuthenticationEnabled());
 
   html_source->AddBoolean(
       "showHiddenNetworkWarning",

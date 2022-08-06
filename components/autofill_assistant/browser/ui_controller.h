@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
@@ -107,11 +108,14 @@ class UiController : public ScriptExecutorUiDelegate,
 
   void SetExpandSheetForPromptAction(bool expand) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
-  void SetCollectUserDataUiState(bool enabled) override;
+  void SetCollectUserDataUiState(bool loading,
+                                 UserDataEventField event_field) override;
   void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
                                             collect_user_data_options) override;
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
       const override;
+  void OnInterruptStarted() override;
+  void OnInterruptFinished() override;
 
   // Overrides autofill_assistant::UiDelegate:
   std::vector<Details> GetDetails() const override;
@@ -193,9 +197,10 @@ class UiController : public ScriptExecutorUiDelegate,
   void OnShutdown(Metrics::DropOutReason reason) override;
   bool SupportsExternalActions() override;
   void ExecuteExternalAction(
-      const external::Action& info,
-      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback) override;
+      const external::Action& external_action,
+      base::OnceCallback<void()> start_dom_checks_callback,
+      base::OnceCallback<void(const external::Result& result)>
+          end_action_callback) override;
 
   // Overrides AutofillAssistantTtsController::TtsEventDelegate
   void OnTtsEvent(AutofillAssistantTtsController::TtsEventType event) override;
@@ -270,7 +275,7 @@ class UiController : public ScriptExecutorUiDelegate,
   UserData* GetUserData();
   UserModel* GetUserModel();
 
-  Client* const client_;
+  const raw_ptr<Client> client_;
 
   // Current status message, may be empty.
   std::string status_message_;
@@ -317,7 +322,7 @@ class UiController : public ScriptExecutorUiDelegate,
 
   base::ObserverList<UiControllerObserver> observers_;
 
-  ExecutionDelegate* execution_delegate_;
+  raw_ptr<ExecutionDelegate> execution_delegate_;
   EventHandler event_handler_;
   BasicInteractions basic_interactions_{this, execution_delegate_};
 

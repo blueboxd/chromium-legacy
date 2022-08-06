@@ -4,7 +4,7 @@
 
 import {fakeCalibrationComponentsWithFails} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
-import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, ShutdownMethod, State, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationError, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningError, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, ShutdownMethod, State, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from 'chrome://shimless-rma/shimless_rma_types.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 
@@ -32,7 +32,7 @@ export function fakeShimlessRmaServiceTestSuite() {
     const states = [
       {
         state: State.kWelcomeScreen,
-        canCancel: true,
+        canExit: true,
         canGoBack: false,
         error: RmadErrorCode.kOk
       },
@@ -41,7 +41,7 @@ export function fakeShimlessRmaServiceTestSuite() {
 
     return service.getCurrentState().then((state) => {
       assertEquals(state.state, State.kWelcomeScreen);
-      assertTrue(state.canCancel);
+      assertTrue(state.canExit);
       assertFalse(state.canGoBack);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
@@ -682,6 +682,16 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
+  test('SaveLog', () => {
+    const states = [{state: State.kRepairComplete, error: RmadErrorCode.kOk}];
+    service.setStates(states);
+    const expectedSavePath = {'path': 'fake/save/path'};
+    service.setSaveLogResult(expectedSavePath);
+    return service.saveLog().then((res) => {
+      assertEquals(expectedSavePath, res.savePath);
+    });
+  });
+
   test('SetGetPowerwashRequiredResultTrueUpdatesResult', () => {
     service.setGetPowerwashRequiredResult(true);
 
@@ -820,7 +830,7 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
     service.observeProvisioningProgress(provisioningObserver);
     return service.triggerProvisioningObserver(
-        ProvisioningStatus.kInProgress, 0.25, 0);
+        ProvisioningStatus.kInProgress, 0.25, ProvisioningError.kUnknown, 0);
   });
 
   test('ObserveHardwareWriteProtectionStateChange', () => {
@@ -895,6 +905,6 @@ export function fakeShimlessRmaServiceTestSuite() {
         });
     service.observeFinalizationStatus(finalizationObserver);
     return service.triggerFinalizationObserver(
-        FinalizationStatus.kInProgress, 0.5, 0);
+        FinalizationStatus.kInProgress, 0.5, FinalizationError.kUnknown, 0);
   });
 }

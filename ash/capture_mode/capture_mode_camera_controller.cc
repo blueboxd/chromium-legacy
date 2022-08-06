@@ -701,6 +701,13 @@ void CaptureModeCameraController::PseudoFocusCameraPreview() {
   camera_preview_view_->UpdateA11yOverrideWindow();
 }
 
+void CaptureModeCameraController::OnActiveUserSessionChanged() {
+  if (!did_first_user_login_) {
+    did_first_user_login_ = true;
+    GetCameraDevices();
+  }
+}
+
 void CaptureModeCameraController::OnDevicesChanged(
     base::SystemMonitor::DeviceType device_type) {
   if (device_type == base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE)
@@ -726,7 +733,7 @@ void CaptureModeCameraController::ReconnectToVideoSourceProvider() {
 }
 
 void CaptureModeCameraController::GetCameraDevices() {
-  if (is_shutting_down_)
+  if (is_shutting_down_ || !did_first_user_login_)
     return;
 
   DCHECK(video_source_provider_remote_);
@@ -752,6 +759,14 @@ void CaptureModeCameraController::OnCameraDevicesReceived(
   if (on_camera_list_received_for_test_) {
     deferred_runner.ReplaceClosure(
         std::move(on_camera_list_received_for_test_));
+  }
+
+  const bool should_report_cameras_number =
+      !did_report_number_of_cameras_before_ ||
+      (devices.size() != available_cameras_.size());
+  if (should_report_cameras_number) {
+    did_report_number_of_cameras_before_ = true;
+    RecordNumberOfConnectedCameras(devices.size());
   }
 
   if (!DidDevicesChange(devices, available_cameras_))

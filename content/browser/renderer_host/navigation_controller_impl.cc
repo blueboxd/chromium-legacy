@@ -717,6 +717,10 @@ void NavigationControllerImpl::Restore(
 
 void NavigationControllerImpl::Reload(ReloadType reload_type,
                                       bool check_for_repost) {
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy_caller1", "Reload_type",
+                          (int)reload_type);
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy_caller1", "Reload_check",
+                        check_for_repost);
   DCHECK_NE(ReloadType::NONE, reload_type);
   NavigationEntryImpl* entry = nullptr;
   int current_index = -1;
@@ -1033,6 +1037,7 @@ void NavigationControllerImpl::GoToIndex(int index) {
 void NavigationControllerImpl::GoToIndex(int index,
                                          int sandbox_frame_tree_node_id,
                                          bool is_browser_initiated) {
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy_caller1", "GoToIndex_index", index);
   DCHECK(sandbox_frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId ||
          !is_browser_initiated);
   TRACE_EVENT0("browser,navigation,benchmark",
@@ -1280,14 +1285,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
   // implementing back-forward cache.
   // For primary frame tree navigations, choose an appropriate
-  // BackForwardCacheMetrics to be associated with the NavigationEntry, by
-  // either creating a new object or reusing the previous one depending on
-  // whether it's a main frame navigation or not.
+  // BackForwardCacheMetrics to be associated with the new navigation's
+  // NavigationEntry, by either creating a new object or reusing the previous
+  // entry's one.
   scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics;
   if (navigation_request->frame_tree_node()->frame_tree()->type() ==
       FrameTree::Type::kPrimary) {
-    back_forward_cache_metrics =
-        BackForwardCacheMetrics::CreateOrReuseBackForwardCacheMetrics(
+    back_forward_cache_metrics = BackForwardCacheMetrics::
+        CreateOrReuseBackForwardCacheMetricsForNavigation(
             GetLastCommittedEntry(), is_main_frame_navigation,
             params.document_sequence_number);
   }
@@ -1295,7 +1300,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   if (is_main_frame_navigation && !is_same_document_navigation) {
     if (NavigationEntryImpl* navigation_entry = GetLastCommittedEntry()) {
       if (auto* metrics = navigation_entry->back_forward_cache_metrics()) {
-        metrics->MainFrameDidNavigateAwayFromDocument(rfh, navigation_request);
+        metrics->MainFrameDidNavigateAwayFromDocument();
       }
     }
   }
@@ -3119,9 +3124,38 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
         pending_entry_->site_instance());
   }
 
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy", "pending_entry_restored",
+                        pending_entry_ && pending_entry_->IsRestored());
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy", "pending_entry_id",
+                          pending_entry_ ? pending_entry_->GetUniqueID() : -1);
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy", "pending_entry_index",
+                          pending_entry_index_);
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy", "last_committed_index",
+                          last_committed_entry_index_);
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy", "entries_size", entries_.size());
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy", "pending_entry_initial",
+                        pending_entry_ && pending_entry_->IsInitialEntry());
+  SCOPED_CRASH_KEY_BOOL(
+      "nav_reentrancy", "pending_entry_initial2",
+      pending_entry_ &&
+          pending_entry_->IsInitialEntryNotForSynchronousAboutBlank());
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy", "is_initial_nav",
+                        IsInitialNavigation());
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy", "is_initial_blank_nav",
+                        IsInitialBlankNavigation());
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy", "is_forced_reload", is_forced_reload);
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy", "pending_reload_type",
+                          (int)pending_reload_);
+
   // This call does not support re-entrancy.  See http://crbug.com/347742.
   CHECK(!in_navigate_to_pending_entry_);
   in_navigate_to_pending_entry_ = true;
+
+  // If the navigation-reentrancy is caused by calling
+  // NavigateToExistingPendingEntry twice, this will note the previous call's
+  // pending entry's ID.
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy", "prev_pending_entry_id",
+                          pending_entry_ ? pending_entry_->GetUniqueID() : -1);
 
   // It is not possible to delete the pending NavigationEntry while navigating
   // to it. Grab a reference to delay potential deletion until the end of this
@@ -3964,6 +3998,8 @@ void NavigationControllerImpl::SetActive(bool is_active) {
 }
 
 void NavigationControllerImpl::LoadIfNecessary() {
+  SCOPED_CRASH_KEY_BOOL("nav_reentrancy_caller1", "LoadIf_pending",
+                        !!pending_entry_);
   if (!needs_reload_)
     return;
 
@@ -4400,7 +4436,7 @@ NavigationControllerImpl::PopulateSingleNavigationApiHistoryEntryVector(
               frame_state.navigation_api_id.value_or(std::u16string()), url,
               frame_state.item_sequence_number,
               frame_state.document_sequence_number,
-              frame_state.navigation_api_state.value_or(std::u16string()));
+              frame_state.navigation_api_state);
 
       DCHECK(entry->url.empty() ||
              pending_origin.CanBeDerivedFrom(GURL(entry->url)));

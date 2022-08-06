@@ -69,7 +69,7 @@ void WarnIfMissingPauseOrResumeListener(Profile* profile,
   extensions::ExtensionHost* host =
       extensions::ProcessManager::Get(profile)->GetBackgroundHostForExtension(
           extension_id);
-  host->host_contents()->GetMainFrame()->AddMessageToConsole(
+  host->host_contents()->GetPrimaryMainFrame()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kWarning,
       constants::kErrorMissingPauseOrResume);
 }
@@ -340,7 +340,7 @@ std::unique_ptr<base::ListValue> TtsExtensionEngine::BuildSpeakArgs(
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
-  base::Value::Dict options = utterance->GetOptions()->GetDict().Clone();
+  base::Value::Dict options = utterance->GetOptions()->Clone();
   options.Remove(constants::kRequiredEventTypesKey);
   options.Remove(constants::kDesiredEventTypesKey);
   if (sends_end_event)

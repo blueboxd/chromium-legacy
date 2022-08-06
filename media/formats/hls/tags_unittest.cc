@@ -4,7 +4,6 @@
 
 #include "media/formats/hls/tags.h"
 
-#include <functional>
 #include <utility>
 
 #include "base/location.h"
@@ -114,8 +113,8 @@ void RunEmptyTagTest() {
 // There are a couple of tags that are defined simply as `#EXT-X-TAG:n` where
 // `n` must be a valid DecimalInteger. This helper provides coverage for those
 // tags.
-template <typename T, typename Fn>
-void RunDecimalIntegerTagTest(Fn getter_fn) {
+template <typename T>
+void RunDecimalIntegerTagTest(types::DecimalInteger T::*field) {
   // Content is required
   ErrorTest<T>(absl::nullopt, ParseStatusCode::kMalformedTag);
   ErrorTest<T>("", ParseStatusCode::kMalformedTag);
@@ -133,15 +132,15 @@ void RunDecimalIntegerTagTest(Fn getter_fn) {
   ErrorTest<T>("{$X}", ParseStatusCode::kMalformedTag);
 
   auto tag = OkTest<T>("0");
-  EXPECT_EQ(getter_fn(tag), 0u);
+  EXPECT_EQ(tag.*field, 0u);
   tag = OkTest<T>("1");
-  EXPECT_EQ(getter_fn(tag), 1u);
+  EXPECT_EQ(tag.*field, 1u);
   tag = OkTest<T>("10");
-  EXPECT_EQ(getter_fn(tag), 10u);
+  EXPECT_EQ(tag.*field, 10u);
   tag = OkTest<T>("14");
-  EXPECT_EQ(getter_fn(tag), 14u);
+  EXPECT_EQ(tag.*field, 14u);
   tag = OkTest<T>("999999999999999999");
-  EXPECT_EQ(getter_fn(tag), 999999999999999999u);
+  EXPECT_EQ(tag.*field, 999999999999999999u);
 }
 
 VariableDictionary CreateBasicDictionary(
@@ -462,14 +461,72 @@ TEST(HlsTagsTest, ParseXStreamInfTag) {
 TEST(HlsTagsTest, ParseXTargetDurationTag) {
   RunTagIdenficationTest<XTargetDurationTag>("#EXT-X-TARGETDURATION:10\n",
                                              "10");
-  RunDecimalIntegerTagTest<XTargetDurationTag>(
-      std::mem_fn(&XTargetDurationTag::duration));
+  RunDecimalIntegerTagTest(&XTargetDurationTag::duration);
 }
 
 TEST(HlsTagsTest, ParseXMediaSequenceTag) {
   RunTagIdenficationTest<XMediaSequenceTag>("#EXT-X-MEDIA-SEQUENCE:3\n", "3");
-  RunDecimalIntegerTagTest<XMediaSequenceTag>(
-      std::mem_fn(&XMediaSequenceTag::number));
+  RunDecimalIntegerTagTest(&XMediaSequenceTag::number);
+}
+
+TEST(HlsTagsTest, ParseXDiscontinuitySequenceTag) {
+  RunTagIdenficationTest<XDiscontinuitySequenceTag>(
+      "#EXT-X-DISCONTINUITY-SEQUENCE:3\n", "3");
+  RunDecimalIntegerTagTest(&XDiscontinuitySequenceTag::number);
+}
+
+TEST(HlsTagsTest, ParseXByteRangeTag) {
+  RunTagIdenficationTest<XByteRangeTag>("#EXT-X-BYTERANGE:12@34\n", "12@34");
+
+  auto tag = OkTest<XByteRangeTag>("12");
+  EXPECT_EQ(tag.range.length, 12u);
+  EXPECT_EQ(tag.range.offset, absl::nullopt);
+  tag = OkTest<XByteRangeTag>("12@34");
+  EXPECT_EQ(tag.range.length, 12u);
+  EXPECT_EQ(tag.range.offset, 34u);
+
+  ErrorTest<XByteRangeTag>("FOOBAR", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>("12@", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>("@34", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>("@", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>(" 12@34", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>("12@34 ", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>("", ParseStatusCode::kMalformedTag);
+  ErrorTest<XByteRangeTag>(absl::nullopt, ParseStatusCode::kMalformedTag);
+}
+
+TEST(HlsTagsTest, ParseXBitrateTag) {
+  RunTagIdenficationTest<XBitrateTag>("#EXT-X-BITRATE:3\n", "3");
+  RunDecimalIntegerTagTest(&XBitrateTag::bitrate);
+}
+
+TEST(HlsTagsTest, ParseXPartInfTag) {
+  RunTagIdenficationTest<XPartInfTag>("#EXT-X-PART-INF:PART-TARGET=1.0\n",
+                                      "PART-TARGET=1.0");
+
+  // PART-TARGET is required, and must be a valid DecimalFloatingPoint
+  ErrorTest<XPartInfTag>(absl::nullopt, ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("", ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("1", ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("PART-TARGET=-1", ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("PART-TARGET={$part-target}",
+                         ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("PART-TARGET=\"1\"", ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("PART-TARGET=one", ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("FOO=BAR", ParseStatusCode::kMalformedTag);
+  ErrorTest<XPartInfTag>("PART-TARGET=10,PART-TARGET=10",
+                         ParseStatusCode::kMalformedTag);
+
+  auto tag = OkTest<XPartInfTag>("PART-TARGET=1.2");
+  EXPECT_DOUBLE_EQ(tag.target_duration, 1.2);
+  tag = OkTest<XPartInfTag>("PART-TARGET=1");
+  EXPECT_DOUBLE_EQ(tag.target_duration, 1);
+  tag = OkTest<XPartInfTag>("PART-TARGET=0");
+  EXPECT_DOUBLE_EQ(tag.target_duration, 0);
+  tag = OkTest<XPartInfTag>("PART-TARGET=99999999.99");
+  EXPECT_DOUBLE_EQ(tag.target_duration, 99999999.99);
+  tag = OkTest<XPartInfTag>("FOO=BAR,PART-TARGET=100,BAR=BAZ");
+  EXPECT_DOUBLE_EQ(tag.target_duration, 100);
 }
 
 }  // namespace media::hls

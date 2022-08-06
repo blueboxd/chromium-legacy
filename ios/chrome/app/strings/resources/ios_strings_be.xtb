@@ -18,7 +18,6 @@
 <translation id="1066060668811609597">Кіраванне сінхранізацыяй</translation>
 <translation id="1076421457278169141">Код сканіраваны</translation>
 <translation id="1084365883616172403">Публікацыя ў Facebook выканана.</translation>
-<translation id="1086486568852410168">Пошук праз Google Аб'ектыў</translation>
 <translation id="1103523840287552314">Заўсёды перакладаць з мовы: <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Прыняць і працягнуць</translation>
 <translation id="110724200315609752">Пераключыцца на адкрытае акно</translation>
@@ -241,6 +240,7 @@
 <translation id="2982481275546140226">Выдаліць даныя</translation>
 <translation id="298306318844797842">Дадаць спосаб аплаты...</translation>
 <translation id="2989805286512600854">Адкрыць у новай укладцы</translation>
+<translation id="3020183492814296499">Спалучэнні клавіш</translation>
 <translation id="3037605927509011580">Якая неспадзяванка!</translation>
 <translation id="3039722182465315531">Не ўваходзіць</translation>
 <translation id="3076846064362030967">З Уліковага запісу Google вы не выйдзеце. <ph name="BEGIN_LINK" />Іншыя дзеянні<ph name="END_LINK" /> могуць захоўвацца ва Уліковым запісе Google, у які вы ўвайшлі. Іх можна выдаліць у любы час.
@@ -249,6 +249,7 @@
 Каб выдаліць гісторыю пошуку, выканайце інструкцыі вашай пошукавай сістэмы (калі яны даступныя).</translation>
 <translation id="3080525922482950719">Захоўвайце старонкі, каб прачытаць іх пазней або без падключэння да інтэрнэту</translation>
 <translation id="3081338492074632642">Праверце, ці супадае пароль, які вы захоўваеце, з паролем для сайта <ph name="WEBSITE" /></translation>
+<translation id="3103603146121354983">Аўтазапаўненне пароляў</translation>
 <translation id="3112556859945124369">Пазначыць…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Паказаць, якія тыпы даных можна сінхранізаваць<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Блакіруюцца ўсе</translation>
@@ -512,6 +513,7 @@
 <translation id="5416022985862681400">За апошнія 7 дзён</translation>
 <translation id="543338862236136125">Змяніць пароль</translation>
 <translation id="5433691172869980887">Імя карыстальніка скапіравана</translation>
+<translation id="5439599923922718668">Часта наведваецца</translation>
 <translation id="54401264925851789">Інфармацыя пра бяспеку старонкі</translation>
 <translation id="5443952882982198570">Крэдытныя карты</translation>
 <translation id="5457226814769348910">Адкрыць пазасеткавую версію</translation>
@@ -526,7 +528,6 @@
 <translation id="5551897871312988470">Прапаноўваць перакласці з мовы</translation>
 <translation id="5556459405103347317">Перазагрузіць</translation>
 <translation id="5580834567471114021">Дадаць старонку ў спіс на прагляд?</translation>
-<translation id="5592679540098330836">Уключыць сінхранізацыю для ўліковага запісу <ph name="NAME" /></translation>
 <translation id="560322036295180549">Ваша арганізацыя выключыла гэты параметр</translation>
 <translation id="5614553682702429503">Захаваць пароль?</translation>
 <translation id="5626245204502895507">Файл спампаваць не ўдалося.</translation>
@@ -660,6 +661,7 @@
 
 Паспрабуйце выкарыстоўваць унікальны пароль для кожнага сайта.</translation>
 <translation id="650279896687777322">Даведацца больш...</translation>
+<translation id="6510072653668207258">Нагадаць пазней</translation>
 <translation id="651505212789431520">Скасаваць сінхранізацыю? Сінхранізацыю можна ўключыць у любы момант у Наладах.</translation>
 <translation id="6524918542306337007">Рэжым інкогніта недаступны</translation>
 <translation id="6530992499366869131">Папярэджваць мяне ў выпадку, калі пры ўцечцы даных былі раскрыты паролі</translation>
@@ -900,7 +902,6 @@
 <translation id="8588404856427128947">Выключаны</translation>
 <translation id="8590913940444621808">Ніколі не пытацца</translation>
 <translation id="8591976964826315682">Блакіраваць староннія файлы cookie у рэжыме інкогніта</translation>
-<translation id="8592752150819985187">Аўтазапаўненне пароляў</translation>
 <translation id="8605219856220328675">Закрыць укладку.</translation>
 <translation id="8620640915598389714">Змяніць</translation>
 <translation id="8620785403235741379">Выберыце адзін з варыянтаў</translation>

@@ -18,7 +18,6 @@
 <translation id="1066060668811609597">إدارة المزامنة</translation>
 <translation id="1076421457278169141">تم مسح الرمز ضوئيًا</translation>
 <translation id="1084365883616172403">‏اكتمل النشر على Facebook.</translation>
-<translation id="1086486568852410168">‏البحث باستخدام "عدسة Google"</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1104948393051856124">القبول والمتابعة</translation>
 <translation id="110724200315609752">التبديل إلى نافذة مفتوحة</translation>
@@ -243,6 +242,7 @@
 <translation id="2982481275546140226">محو البيانات</translation>
 <translation id="298306318844797842">إضافة طريقة الدفع...</translation>
 <translation id="2989805286512600854">فتح في علامة تبويب جديدة</translation>
+<translation id="3020183492814296499">الاختصارات</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3039722182465315531">عدم تسجيل الدخول</translation>
 <translation id="3076846064362030967">‏لن يتم تسجيل خروجك من حساب Google. قد يتم حفظ <ph name="BEGIN_LINK" />بيانات الأنشطة الأخرى<ph name="END_LINK" /> في حسابك على Google عند تسجيل الدخول إليه. ويمكنك حذفها في أي وقت.
@@ -251,6 +251,7 @@
 اطّلِع على تعليمات محرك البحث بشأن حذف سجلّ البحث، إن أمكن.</translation>
 <translation id="3080525922482950719">يمكنك حفظ صفحات لقرائتها لاحقًا أو بلا إنترنت.</translation>
 <translation id="3081338492074632642">يُرجى التأكُّد من أنّ كلمة المرور التي تحتفظ بها تُطابِق كلمة مرور <ph name="WEBSITE" />.</translation>
+<translation id="3103603146121354983">الملء التلقائي لكلمات المرور</translation>
 <translation id="3112556859945124369">وضع علامة...</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />التعرُّف على أنواع البيانات التي يمكنك مزامنتها<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">حظر الكل</translation>
@@ -514,6 +515,7 @@
 <translation id="5416022985862681400">آخر 7 أيام</translation>
 <translation id="543338862236136125">تعديل كلمة المرور</translation>
 <translation id="5433691172869980887">تم نسخ اسم المستخدم</translation>
+<translation id="5439599923922718668">المواقع الإلكترونية التي تزورها بشكلٍ متكرر</translation>
 <translation id="54401264925851789">معلومات أمان الصفحة</translation>
 <translation id="5443952882982198570">بطاقات الائتمان</translation>
 <translation id="5457226814769348910">فتح نسخة بلا إنترنت</translation>
@@ -528,7 +530,6 @@
 <translation id="5551897871312988470">اقتراح الترجمة</translation>
 <translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5580834567471114021">هل تريد إضافة الصفحة إلى "قائمة القراءة" للاطّلاع عليها في وقت لاحق؟</translation>
-<translation id="5592679540098330836">تفعيل المزامنة للمستخدم <ph name="NAME" /></translation>
 <translation id="560322036295180549">أوقفت مؤسستك هذا الخيار.</translation>
 <translation id="5614553682702429503">هل تريد حفظ كلمة المرور؟</translation>
 <translation id="5626245204502895507">تعذر تنزيل الملف في الوقت الحالي.</translation>
@@ -662,6 +663,7 @@
 
 حاوِل استخدام كلمة مرور فريدة لكل موقع إلكتروني.</translation>
 <translation id="650279896687777322">مزيد من المعلومات...</translation>
+<translation id="6510072653668207258">تذكيري لاحقًا</translation>
 <translation id="651505212789431520">هل تريد إلغاء المزامنة؟ يمكنك تفعيل المزامنة في أي وقت في "الإعدادات".</translation>
 <translation id="6524918542306337007">"وضع التصفُّح المتخفي" غير متاح</translation>
 <translation id="6530992499366869131">التحذير في حال الكشف عن كلمات المرور في عملية اختراق بيانات</translation>
@@ -902,7 +904,6 @@
 <translation id="8588404856427128947">غير مفعَّل</translation>
 <translation id="8590913940444621808">عدم السؤال مرة أخرى</translation>
 <translation id="8591976964826315682">حظر ملفات تعريف الارتباط التابعة لجهات خارجية في وضع التصفُّح المتخفي</translation>
-<translation id="8592752150819985187">الملء التلقائي لكلمات المرور</translation>
 <translation id="8605219856220328675">إغلاق علامة التبويب.</translation>
 <translation id="8620640915598389714">تعديل</translation>
 <translation id="8620785403235741379">تحديد خيار</translation>

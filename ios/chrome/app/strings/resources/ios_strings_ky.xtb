@@ -18,7 +18,6 @@
 <translation id="1066060668811609597">Шайкештирүүнү башкаруу</translation>
 <translation id="1076421457278169141">Код скандалды</translation>
 <translation id="1084365883616172403">Facebook'ка жайгаштырылды.</translation>
-<translation id="1086486568852410168">Google Lens аркылуу издөө</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> тилин ар дайым которуу</translation>
 <translation id="1104948393051856124">Кабыл алуу жана улантуу</translation>
 <translation id="110724200315609752">Ачык терезеге которулуңуз</translation>
@@ -241,6 +240,7 @@
 <translation id="2982481275546140226">Дайын-даректерди өчүрүү</translation>
 <translation id="298306318844797842">Төлөм ыкмасын кошуу…</translation>
 <translation id="2989805286512600854">Жаңы өтмөктө ачуу</translation>
+<translation id="3020183492814296499">Кыска жолдор</translation>
 <translation id="3037605927509011580">Атаңдын көрү!</translation>
 <translation id="3039722182465315531">Кирбейм</translation>
 <translation id="3076846064362030967">Google аккаунтуңуздан чыгарылбайсыз. Аккаунтуңузга кирип турсаңыз, <ph name="BEGIN_LINK" />башка аракеттер<ph name="END_LINK" /> Google аккаунтуңузга сакталышы мүмкүн. Аларды каалаган убакта жок кылсаңыз болот.
@@ -249,6 +249,7 @@
 Издөө таржымалын өчүрүү үчүн издөө каражатындагы нускамаларды (бар болсо) караңыз.</translation>
 <translation id="3080525922482950719">Барактарды сактап коюп, кийинчерээк оффлайн режиминде окуй аласыз</translation>
 <translation id="3081338492074632642">Сактап жаткан сырсөзүңүз <ph name="WEBSITE" /> вебсайтындагы сырсөзгө дал келиши керек</translation>
+<translation id="3103603146121354983">Сырсөздөрдү автоматтык түрдө толтуруу</translation>
 <translation id="3112556859945124369">Белгилөө…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Шайкештире ала турган нерселерди көрүңүз<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Баарын бөгөттөө</translation>
@@ -512,6 +513,7 @@
 <translation id="5416022985862681400">Акыркы 7 күндө</translation>
 <translation id="543338862236136125">Сырсөздү түзөтүү</translation>
 <translation id="5433691172869980887">Колдонуучунун аты көчүрүлдү</translation>
+<translation id="5439599923922718668">Көп каралгандар</translation>
 <translation id="54401264925851789">Баракчанын коопсуздук маалыматы</translation>
 <translation id="5443952882982198570">Насыя карталары</translation>
 <translation id="5457226814769348910">Оффлайн версиясын ачуу</translation>
@@ -526,7 +528,6 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="5551897871312988470">Которуу сунушталсын</translation>
 <translation id="5556459405103347317">Кайра жүктөө</translation>
 <translation id="5580834567471114021">Окуу тизмесине сакталсынбы?</translation>
-<translation id="5592679540098330836"><ph name="NAME" /> үчүн шайкештирүүнү күйгүзүү</translation>
 <translation id="560322036295180549">Уюмуңуз тарабынан өчүрүлгөн</translation>
 <translation id="5614553682702429503">Сырсөз сакталсынбы?</translation>
 <translation id="5626245204502895507">Файлды учурда жүктөп алуу мүмкүн эмес.</translation>
@@ -660,6 +661,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 
 Ар бир сайт үчүн өзүнчө сырсөздү колдонуу сунушталат.</translation>
 <translation id="650279896687777322">Кеңири маалымат...</translation>
+<translation id="6510072653668207258">Мага кийинчерээк эскертилсин</translation>
 <translation id="651505212789431520">Шайкештирүү жокко чыгарылсынбы? Шайкештирүүнү каалаган убакта жөндөөлөргө өтүп, күйгүзүп койсоңуз болот.</translation>
 <translation id="6524918542306337007">Жашыруун режим жеткиликсиз</translation>
 <translation id="6530992499366869131">Сырсөзүңүздү кимдир бирөө билип алса, эскертүү жөнөтүлсүн</translation>
@@ -900,7 +902,6 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8588404856427128947">Өчүк</translation>
 <translation id="8590913940444621808">Эч качан суралбасын</translation>
 <translation id="8591976964826315682">Жашыруун режимде үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
-<translation id="8592752150819985187">Сырсөздөрдү автоматтык түрдө толтуруу</translation>
 <translation id="8605219856220328675">Өтмөктү жабуу.</translation>
 <translation id="8620640915598389714">Түзөтүү</translation>
 <translation id="8620785403235741379">Параметр тандоо</translation>

@@ -9,6 +9,8 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
+import("//build/rust/mixed_static_library.gni")
+import("//build/rust/rust_macro.gni")
 import("//components/viz/common/debugger/viz_debugger.gni")
 import("//content/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -29,6 +31,40 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
+if (enable_rust) {
+  rust_static_library("content_private_test_support") {
+    testonly = true
+
+    crate_name = "content_private_test_support"
+    crate_root = "content_private_test_support.rs"
+    sources = [ crate_root ]
+
+    public_deps = [ ":browser_test_macro" ]
+
+    deps = [
+      ":test_support",
+      "//testing/rust_gtest_interop",
+    ]
+
+    visibility = [ "//content/*" ]
+  }
+
+  rust_macro("browser_test_macro") {
+    testonly = true
+
+    crate_name = "browser_test_macro"
+    crate_root = "browser_test_macro.rs"
+    sources = [ crate_root ]
+    deps = [
+      "//third_party/rust/proc_macro2/v1:lib",
+      "//third_party/rust/quote/v1:lib",
+    ]
+
+    # This target is part of `content_private_test_support`.
+    visibility = [ ":*" ]
+  }
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {
@@ -47,6 +83,8 @@ static_library("test_support") {
     "../browser/aggregation_service/aggregation_service_test_utils.h",
     "../browser/attribution_reporting/attribution_insecure_random_generator.cc",
     "../browser/attribution_reporting/attribution_insecure_random_generator.h",
+    "../browser/attribution_reporting/attribution_interop_parser.cc",
+    "../browser/attribution_reporting/attribution_interop_parser.h",
     "../browser/attribution_reporting/attribution_parser_test_utils.cc",
     "../browser/attribution_reporting/attribution_parser_test_utils.h",
     "../browser/attribution_reporting/attribution_test_utils.cc",
@@ -542,6 +580,10 @@ static_library("test_support") {
     "//v8",
   ]
 
+  if (enable_rust) {
+    deps += [ "//testing/rust_gtest_interop" ]
+  }
+
   data_deps = [
     "//content/shell:pak",
     "//tools/v8_context_snapshot:v8_context_snapshot",
@@ -727,7 +769,7 @@ static_library("test_support") {
 if (is_fuchsia) {
   # TODO(crbug.com/1310086): Split this test suite into chrome/WebEngine
   # versions.
-  # TODO(crbug.com/1309686): Move WebEngine-specific suites to //fuchsia/engine
+  # TODO(crbug.com/1309686): Move WebEngine-specific suites to //fuchsia_web/webengine/
   group("performance_web_engine_test_suite") {
     testonly = true
     data = [ "//content/test/gpu/run_telemetry_benchmark_fuchsia.py" ]
@@ -744,8 +786,8 @@ if (is_fuchsia) {
     data = [ "//content/test/gpu/fuchsia_util.py" ]
     data_deps = [
       "//chrome/app:chrome_fuchsia",
-      "//fuchsia/engine:web_engine_shell",
-      "//fuchsia/engine:web_engine_with_webui_installer",
+      "//fuchsia_web/webengine:web_engine_shell",
+      "//fuchsia_web/webengine:web_engine_with_webui_installer",
     ]
   }
 }
@@ -859,6 +901,25 @@ group("telemetry_gpu_integration_test_data") {
   data_deps = [ ":telemetry_gpu_common_data" ]
 }
 
+if (enable_rust) {
+  rust_static_library("rust_public_browsertest_support") {
+    testonly = true
+
+    crate_name = "content_public_browsertest_support"
+    crate_root = "../public/test/content_public_browsertest_support.rs"
+    sources = [ crate_root ]
+
+    sources += [ "../public/test/content_browser_test.rs" ]
+    cxx_bindings = [ "../public/test/content_browser_test.rs" ]
+
+    deps = [
+      ":browsertest_support",
+      ":content_private_test_support",
+      "//testing/rust_gtest_interop",
+    ]
+  }
+}
+
 # browsertest_support can be used by targets that run content_shell based
 # browser tests.
 static_library("browsertest_support") {
@@ -890,9 +951,15 @@ static_library("browsertest_support") {
     "resource_load_observer.h",
   ]
 
+  public_deps = [
+    "//base",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
   deps = [
     ":test_support",
-    "//base",
     "//base:i18n",
     "//base/test:test_config",
     "//base/test:test_support",
@@ -907,8 +974,6 @@ static_library("browsertest_support") {
     "//media",
     "//net",
     "//net:test_support",
-    "//skia",
-    "//testing/gtest",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/ime/init",
@@ -1077,7 +1142,6 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//base:jni_java",
-      "//build/android:build_java",
       "//components/download/internal/common:internal_java",
       "//components/viz/service:service_java",
       "//content/public/android:content_java",
@@ -1241,6 +1305,7 @@ test("content_browsertests") {
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/native_io/native_io_manager_browsertest.cc",
     "../browser/navigation_browsertest.cc",
+    "../browser/navigation_id_browsertest.cc",
     "../browser/navigation_mhtml_browsertest.cc",
     "../browser/net/accept_header_browsertest.cc",
     "../browser/net/dns_https_protocol_upgrade_browsertest.cc",
@@ -1428,6 +1493,8 @@ test("content_browsertests") {
     "../test/url_loader_interceptor_test.cc",
   ]
 
+  rs_sources = [ "../browser/smoke_rust_browsertest.rs" ]
+
   if (enable_reporting) {
     sources +=
         [ "../browser/net/cross_origin_opener_policy_reporting_browsertest.cc" ]
@@ -1442,6 +1509,8 @@ test("content_browsertests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   configs += [ "//build/config:precompiled_headers" ]
+
+  rs_deps = [ ":rust_public_browsertest_support" ]
 
   public_deps = [
     ":test_interfaces",
@@ -1553,6 +1622,7 @@ test("content_browsertests") {
     "//ui/base/ime/mojom",
     "//ui/compositor",
     "//ui/display",
+    "//ui/display:test_support",
     "//ui/events:test_support",
     "//ui/events/blink:blink",
     "//ui/gfx",
@@ -1612,28 +1682,28 @@ test("content_browsertests") {
     }
   }
 
-  if (is_android || is_linux || is_chromeos || is_mac || is_win) {
-    sources += [
-      "../browser/media/capture/content_capture_device_browsertest_base.cc",
-      "../browser/media/capture/content_capture_device_browsertest_base.h",
-      "../browser/media/capture/fake_video_capture_stack.cc",
-      "../browser/media/capture/fake_video_capture_stack.h",
-      "../browser/media/capture/frame_test_util.cc",
-      "../browser/media/capture/frame_test_util.h",
-      "../browser/media/capture/web_contents_video_capture_device_browsertest.cc",
-    ]
+  if (enable_screen_capture) {
+    if (is_android || is_linux || is_chromeos || is_mac || is_win) {
+      sources += [
+        "../browser/media/capture/content_capture_device_browsertest_base.cc",
+        "../browser/media/capture/content_capture_device_browsertest_base.h",
+        "../browser/media/capture/fake_video_capture_stack.cc",
+        "../browser/media/capture/fake_video_capture_stack.h",
+        "../browser/media/capture/frame_test_util.cc",
+        "../browser/media/capture/frame_test_util.h",
+        "../browser/media/capture/web_contents_video_capture_device_browsertest.cc",
+      ]
 
-    data += [ "$root_out_dir/content_shell.pak" ]
-  }
+      data += [ "$root_out_dir/content_shell.pak" ]
+    }
 
-  if (is_linux || is_chromeos || is_mac || is_win) {
-    sources += [
-      "../browser/media/capture/mouse_cursor_overlay_controller_browsertest.cc",
-    ]
+    if (is_linux || is_chromeos || is_mac || is_win) {
+      sources += [ "../browser/media/capture/mouse_cursor_overlay_controller_browsertest.cc" ]
 
-    # For chromecast, content_browsertests does not provide a shell window.
-    if (use_aura && !is_chromecast) {
-      sources += [ "../browser/media/capture/aura_window_video_capture_device_browsertest.cc" ]
+      # For chromecast, content_browsertests does not provide a shell window.
+      if (use_aura && !is_chromecast) {
+        sources += [ "../browser/media/capture/aura_window_video_capture_device_browsertest.cc" ]
+      }
     }
   }
 
@@ -1709,7 +1779,7 @@ test("content_browsertests") {
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//chromeos/assistant:buildflags" ]
+    deps += [ "//chromeos/ash/components/assistant:buildflags" ]
   }
 
   if (is_android) {
@@ -1991,9 +2061,10 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_filter_data_unittest.cc",
     "../browser/attribution_reporting/attribution_host_unittest.cc",
     "../browser/attribution_reporting/attribution_insecure_random_generator_unittest.cc",
+    "../browser/attribution_reporting/attribution_interop_parser_unittest.cc",
+    "../browser/attribution_reporting/attribution_interop_unittest.cc",
     "../browser/attribution_reporting/attribution_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_report_network_sender_unittest.cc",
-    "../browser/attribution_reporting/attribution_report_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_delegate_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_migrations_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_unittest.cc",
@@ -2082,6 +2153,7 @@ test("content_unittests") {
     "../browser/file_system_access/file_system_access_file_writer_impl_unittest.cc",
     "../browser/file_system_access/file_system_access_handle_base_unittest.cc",
     "../browser/file_system_access/file_system_access_manager_impl_unittest.cc",
+    "../browser/file_system_access/file_system_access_write_lock_manager_unittest.cc",
     "../browser/file_system_access/file_system_chooser_unittest.cc",
     "../browser/file_system_access/safe_move_helper_unittest.cc",
     "../browser/first_party_sets/addition_overlaps_union_find_unittest.cc",
@@ -2135,6 +2207,7 @@ test("content_unittests") {
     "../browser/interest_group/auction_runner_unittest.cc",
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
     "../browser/interest_group/auction_worklet_manager_unittest.cc",
+    "../browser/interest_group/interest_group_permissions_cache_unittest.cc",
     "../browser/interest_group/interest_group_permissions_checker_unittest.cc",
     "../browser/interest_group/interest_group_storage_unittest.cc",
     "../browser/loader/cors_origin_pattern_setter_unittest.cc",
@@ -2317,11 +2390,13 @@ test("content_unittests") {
     "../browser/sms/user_consent_handler_unittest.cc",
     "../browser/sms/webotp_service_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_container_unittest.cc",
+    "../browser/speculation_rules/prefetch/prefetch_cookie_listener_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_document_manager_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_params_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_proxy_configurator_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_service_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_type_unittest.cc",
+    "../browser/speculation_rules/prefetch/prefetch_url_loader_interceptor_unittest.cc",
     "../browser/speculation_rules/speculation_host_impl_unittest.cc",
     "../browser/speech/tts_controller_unittest.cc",
     "../browser/startup_task_runner_unittest.cc",
@@ -2444,6 +2519,7 @@ test("content_unittests") {
       "../browser/web_contents/web_drag_dest_mac_unittest.mm",
       "../browser/web_contents/web_drag_source_mac_unittest.mm",
       "../common/mac/attributed_string_type_converters_unittest.mm",
+      "../common/mac/task_port_policy_unittest.cc",
       "../renderer/sandbox_mac_v2_unittest.mm",
     ]
   }
@@ -2985,9 +3061,29 @@ if (is_android) {
       "$google_play_services_package:google_play_services_tasks_java",
       "//base:base_java",
       "//base:jni_java",
-      "//build/android:build_java",
       "//content/public/android:content_java",
       "//ui/android:ui_full_java",
     ]
   }
+}
+
+group("gpu_pytype") {
+  testonly = true
+
+  data = [
+    "//content/test/gpu/run_pytype.py",
+    "//content/test/gpu/validate_tag_consistency.py",
+
+    "//build/util/lib/results/",
+    "//content/test/gpu/gold_inexact_matching/",
+    "//content/test/gpu/flake_suppressor/",
+    "//testing/unexpected_passes_common/",
+  ]
+
+  data_deps = [
+    # This includes more than we strictly need to, but this ensures that we
+    # don't accidentally omit Python files that the real tests would be using.
+    ":telemetry_gpu_integration_test_scripts_only",
+    ":telemetry_gpu_integration_test_support",
+  ]
 }

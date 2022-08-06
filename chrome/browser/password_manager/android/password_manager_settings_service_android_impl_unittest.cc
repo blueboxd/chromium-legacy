@@ -64,6 +64,8 @@ class PasswordManagerSettingsServiceAndroidImplTest : public testing::Test {
 
   void SetPasswordsSync(bool enabled);
   void SetSettingsSync(bool enabled);
+  void EnablePermanentAuthError();
+  void ResolvePermanentAuthError();
 
   void AssertInitialMigrationDidntChangePrefs();
   void ExpectSettingsRetrievalFromBackend(size_t times);
@@ -172,6 +174,19 @@ void PasswordManagerSettingsServiceAndroidImplTest::SetSettingsSync(
                                                          selected_sync_types);
 }
 
+void PasswordManagerSettingsServiceAndroidImplTest::EnablePermanentAuthError() {
+  GoogleServiceAuthError persistent_error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  DCHECK(persistent_error.IsPersistentError());
+  test_sync_service_.SetAuthError(persistent_error);
+}
+
+void PasswordManagerSettingsServiceAndroidImplTest::
+    ResolvePermanentAuthError() {
+  GoogleServiceAuthError resolved_error(GoogleServiceAuthError::NONE);
+  test_sync_service_.SetAuthError(resolved_error);
+}
+
 // TODO(crbug.com/1324648): Get rid of this method by not instantiating the
 // service when it's not needed from the beginning of the test.
 void PasswordManagerSettingsServiceAndroidImplTest::
@@ -219,9 +234,6 @@ void PasswordManagerSettingsServiceAndroidImplTest::RegisterPrefs() {
       ::prefs::kGoogleServicesLastUsername, kTestAccount);
   test_pref_service_.registry()->RegisterBooleanPref(
       password_manager::prefs::kSettingsMigratedToUPM, false);
-  test_pref_service_.registry()->RegisterBooleanPref(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      false);
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
@@ -376,10 +388,8 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       TestNewMigrationUserUnenrolledFromUPM) {
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+       TestNewMigrationSyncBroken) {
+  EnablePermanentAuthError();
   ASSERT_FALSE(pref_service()->GetBoolean(
       password_manager::prefs::kSettingsMigratedToUPM));
   // Set an explicit value on the "Offer to save passwords" pref.
@@ -548,12 +558,10 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       OnSaveSettingAbsentUserUnenrolledFromUPM) {
+       OnSaveSettingAbsentSyncingBroken) {
   InitializeSettingsService(/*password_sync_enabled=*/true,
                             /*setting_sync_enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
   pref_service()->SetUserPref(
       password_manager::prefs::kOfferToSavePasswordsEnabledGMS,
       base::Value(false));
@@ -598,12 +606,10 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       OnAutoSignInAbsentSetValueUserUnenrolledFromUPM) {
+       OnAutoSignInAbsentSetValueSyncingBroken) {
   InitializeSettingsService(/*password_sync_enabled=*/true,
                             /*setting_sync_enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
   pref_service()->SetUserPref(password_manager::prefs::kAutoSignInEnabledGMS,
                               base::Value(false));
   EXPECT_CALL(*bridge(), SetPasswordSettingValue(_, _, _)).Times(0);
@@ -639,7 +645,7 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 // Checks that general syncable prefs are dumped into the android-only GMS
 // prefs before settings are requested when sync is enabled.
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       PasswordSyncEnablingPrefsUserUnenrolledFromUPM) {
+       PasswordSyncEnablingPrefsNotMovingWhenSyncIsbroken) {
   InitializeSettingsService(/*password_sync_enabled=*/false,
                             /*setting_sync_enabled=*/false);
   pref_service()->SetUserPref(
@@ -653,14 +659,42 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
       password_manager::prefs::kAutoSignInEnabledGMS));
 
   SetPasswordsSync(/*enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
   sync_service()->FireStateChanged();
 
   EXPECT_TRUE(pref_service()->GetBoolean(
       password_manager::prefs::kOfferToSavePasswordsEnabledGMS));
   EXPECT_TRUE(pref_service()->GetBoolean(
+      password_manager::prefs::kAutoSignInEnabledGMS));
+}
+
+// Checks that general syncable prefs are dumped into the android-only GMS
+// prefs and that settings are requested from GMS Core when persistent sync
+// error is resolved.
+TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
+       PasswordSyncEnablingPrefsMovingOnSyncErrorResolution) {
+  InitializeSettingsService(/*password_sync_enabled=*/true,
+                            /*setting_sync_enabled=*/false);
+  pref_service()->SetUserPref(
+      password_manager::prefs::kCredentialsEnableService, base::Value(false));
+  pref_service()->SetUserPref(
+      password_manager::prefs::kCredentialsEnableAutosignin,
+      base::Value(false));
+  ASSERT_TRUE(pref_service()->GetBoolean(
+      password_manager::prefs::kOfferToSavePasswordsEnabledGMS));
+  ASSERT_TRUE(pref_service()->GetBoolean(
+      password_manager::prefs::kAutoSignInEnabledGMS));
+
+  EnablePermanentAuthError();
+  sync_service()->FireStateChanged();
+
+  ResolvePermanentAuthError();
+  ExpectSettingsRetrievalFromBackend(/*times=*/1);
+  sync_service()->FireStateChanged();
+
+  EXPECT_FALSE(pref_service()->GetBoolean(
+      password_manager::prefs::kOfferToSavePasswordsEnabledGMS));
+  EXPECT_FALSE(pref_service()->GetBoolean(
       password_manager::prefs::kAutoSignInEnabledGMS));
 }
 
@@ -861,12 +895,10 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       SavePasswordsSettingUserUnenrolledFromUPM) {
+       SavePasswordsSettingSyncIsBroken) {
   InitializeSettingsService(/*password_sync_enabled=*/true,
                             /*setting_sync_enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
 
   pref_service()->SetUserPref(
       password_manager::prefs::kCredentialsEnableService, base::Value(true));
@@ -930,12 +962,10 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       AutoSignInSettingUserUnenrolledFromUPM) {
+       AutoSignInSettingSyncIsBroken) {
   InitializeSettingsService(/*password_sync_enabled=*/true,
                             /*setting_sync_enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
 
   pref_service()->SetUserPref(
       password_manager::prefs::kCredentialsEnableAutosignin, base::Value(true));
@@ -962,12 +992,10 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       SettingsAreNotRequestedFromBackendWhenUserUnenrolledFromUPM) {
+       SettingsAreNotRequestedFromBackendWhenPasswordSyncBroken) {
   InitializeSettingsService(/*password_sync_enabled=*/true,
                             /*setting_sync_enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
   ExpectSettingsRetrievalFromBackend(/*times=*/0);
   settings_service()->RequestSettingsFromBackend();
 }
@@ -1052,12 +1080,10 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       TurnOffAutoSignInSyncingUserUnenrolledFromUPM) {
+       TurnOffAutoSignInSyncingPasswordsBroken) {
   InitializeSettingsService(/*password_sync_enabled=*/true,
                             /*setting_sync_enabled=*/true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
+  EnablePermanentAuthError();
   ASSERT_TRUE(pref_service()->GetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin));
   ASSERT_TRUE(pref_service()->GetBoolean(

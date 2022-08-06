@@ -35,6 +35,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#include "ui/base/cocoa/cursor_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
@@ -423,7 +424,7 @@ void NativeWidgetNSWindowBridge::StackAbove(uint64_t sibling_id) {
 }
 
 void NativeWidgetNSWindowBridge::StackAtTop() {
-  [window_ setOrderedIndex:0];
+  [window_ orderWindow:NSWindowAbove relativeTo:0];
 }
 
 void NativeWidgetNSWindowBridge::ShowEmojiPanel() {
@@ -439,8 +440,10 @@ void NativeWidgetNSWindowBridge::InitWindow(
     mojom::NativeWidgetNSWindowInitParamsPtr params) {
   modal_type_ = params->modal_type;
   is_translucent_window_ = params->is_translucent;
-  is_headless_mode_window_ = params->is_headless_mode_window;
   pending_restoration_data_ = params->state_restoration_data;
+
+  if (params->is_headless_mode_window)
+    headless_mode_window_ = absl::make_optional<HeadlessModeWindow>();
 
   // Register for application hide notifications so that visibility can be
   // properly tracked. This is not done in the delegate so that the lifetime is
@@ -676,10 +679,10 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
   // changing its visibility state just maintain a local flag to track the
   // expected visibility state and lie to the upper layer pretending the
   // window did change its visibility state.
-  if (is_headless_mode_window_) {
-    headless_window_visibility_state_ =
+  if (headless_mode_window_) {
+    headless_mode_window_->visibility_state =
         new_state != WindowVisibilityState::kHideWindow;
-    host_->OnVisibilityChanged(headless_window_visibility_state_);
+    host_->OnVisibilityChanged(headless_mode_window_->visibility_state);
     return;
   }
 
@@ -910,6 +913,10 @@ void NativeWidgetNSWindowBridge::EndMoveLoop() {
 
 void NativeWidgetNSWindowBridge::SetCursor(NSCursor* cursor) {
   [window_delegate_ setCursor:cursor];
+}
+
+void NativeWidgetNSWindowBridge::SetCursor(const ui::Cursor& cursor) {
+  SetCursor(ui::GetNativeCursor(cursor));
 }
 
 void NativeWidgetNSWindowBridge::OnWindowWillClose() {
@@ -1227,6 +1234,23 @@ void NativeWidgetNSWindowBridge::FullscreenControllerSetFrame(
 }
 
 void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
+  // AppKit implicitly makes the fullscreen window visible, so avoid going
+  // fullscreen in headless mode. Instead, toggle the expected fullscreen state
+  // and fake the relevant callbacks for the fullscreen controller to
+  // believe the fullscreen state was toggled.
+  if (headless_mode_window_) {
+    headless_mode_window_->fullscreen_state =
+        !headless_mode_window_->fullscreen_state;
+    if (headless_mode_window_->fullscreen_state) {
+      fullscreen_controller_.OnWindowWillEnterFullscreen();
+      fullscreen_controller_.OnWindowDidEnterFullscreen();
+    } else {
+      fullscreen_controller_.OnWindowWillExitFullscreen();
+      fullscreen_controller_.OnWindowDidExitFullscreen();
+    }
+    return;
+  }
+
   [window_ toggleFullScreen:nil];
 }
 
@@ -1341,6 +1365,16 @@ void NativeWidgetNSWindowBridge::SetCanAppearInExistingFullscreenSpaces(
 }
 
 void NativeWidgetNSWindowBridge::SetMiniaturized(bool miniaturized) {
+  // In headless mode the platform window is always hidden and WebKit
+  // will not deminiaturize hidden windows. So instead of changing the window
+  // miniaturization state just lie to the upper layer pretending the window did
+  // change its state. We don't need to keep track of the requested state here
+  // because the host will do this.
+  if (headless_mode_window_) {
+    host_->OnWindowMiniaturizedChanged(miniaturized);
+    return;
+  }
+
   if (miniaturized) {
     // Calling performMiniaturize: will momentarily highlight the button, but
     // AppKit will reject it if there is no miniaturize button.
@@ -1436,10 +1470,7 @@ void NativeWidgetNSWindowBridge::SetWindowTitle(const std::u16string& title) {
 }
 
 void NativeWidgetNSWindowBridge::ClearTouchBar() {
-  if (@available(macOS 10.12.2, *)) {
-    if ([bridged_view_ respondsToSelector:@selector(setTouchBar:)])
-      [bridged_view_ setTouchBar:nil];
-  }
+  [bridged_view_ setTouchBar:nil];
 }
 
 void NativeWidgetNSWindowBridge::UpdateTooltip() {
@@ -1498,11 +1529,7 @@ void NativeWidgetNSWindowBridge::OrderChildren() {
     } else {
       if (child_window.parentWindow == window)
         continue;
-      // Attaching a window to be a child window resets the window level, so
-      // restore the window level afterwards.
-      NSInteger level = child_window.level;
       [window addChildWindow:child_window ordered:NSWindowAbove];
-      child_window.level = level;
     }
   }
 }
@@ -1622,8 +1649,8 @@ bool NativeWidgetNSWindowBridge::window_visible() const {
   // returning the actual platform window visibility state tracked by
   // OnVisibilityChanged() callback, return the expected visibility state
   // maintained by SetVisibilityState() call.
-  return is_headless_mode_window_ ? headless_window_visibility_state_
-                                  : window_visible_;
+  return headless_mode_window_ ? headless_mode_window_->visibility_state
+                               : window_visible_;
 }
 
 }  // namespace remote_cocoa

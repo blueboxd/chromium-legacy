@@ -279,10 +279,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
 
+  // Autofill Assistant on Desktop is currently used only by password change.
+  // As soon as it becomes more widely used, this condition needs to be
+  // adjusted.
+  html_source->AddBoolean(
+      "enableAutofillAssistant",
+      password_manager::features::IsAutomatedPasswordChangeEnabled());
+
 #if !BUILDFLAG(IS_CHROMEOS)
-  html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
-                          base::FeatureList::IsEnabled(
-                              language::kDesktopRestructuredLanguageSettings));
   html_source->AddBoolean(
       "enableDesktopDetailedLanguageSettings",
       base::FeatureList::IsEnabled(language::kDesktopDetailedLanguageSettings));
@@ -314,8 +318,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   bool privacy_guide_enabled =
       !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild() &&
-      !PrivacySandboxServiceFactory::GetForProfile(profile)
-           ->IsPrivacySandboxRestricted() &&
       base::FeatureList::IsEnabled(features::kPrivacyGuide);
   html_source->AddBoolean("privacyGuideEnabled", privacy_guide_enabled);
 

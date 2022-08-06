@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -54,16 +55,6 @@ enum class AttributionSrcRequestStatus {
   kFailed = 2,
   kMaxValue = kFailed,
 };
-
-bool ContainsTriggerHeaders(const HTTPHeaderMap& headers) {
-  return headers.Contains(
-             http_names::kAttributionReportingRegisterEventTrigger) ||
-         (headers.Contains(
-              http_names::
-                  kAttributionReportingRegisterAggregatableTriggerData) &&
-          headers.Contains(
-              http_names::kAttributionReportingRegisterAggregatableValues));
-}
 
 void RecordAttributionSrcRequestStatus(AttributionSrcRequestStatus status) {
   base::UmaHistogramEnumeration("Conversions.AttributionSrcRequestStatus",
@@ -166,17 +157,8 @@ void AttributionSrcLoader::Trace(Visitor* visitor) const {
 }
 
 void AttributionSrcLoader::Register(const KURL& src_url, HTMLElement* element) {
-  RegisterResult result;
   CreateAndSendRequest(src_url, element, SrcType::kUndetermined,
-                       /*associated_with_navigation=*/false, result);
-}
-
-AttributionSrcLoader::RegisterResult AttributionSrcLoader::RegisterSources(
-    const KURL& src_url) {
-  RegisterResult result;
-  CreateAndSendRequest(src_url, /*element=*/nullptr, SrcType::kSource,
-                       /*associated_with_navigation=*/false, result);
-  return result;
+                       /*associated_with_navigation=*/false);
 }
 
 absl::optional<Impression> AttributionSrcLoader::RegisterNavigation(
@@ -184,10 +166,9 @@ absl::optional<Impression> AttributionSrcLoader::RegisterNavigation(
     HTMLElement* element) {
   // TODO(apaseltiner): Add tests to ensure that this method can't be used to
   // register triggers.
-  RegisterResult result;
   ResourceClient* client =
       CreateAndSendRequest(src_url, element, SrcType::kSource,
-                           /*associated_with_navigation=*/true, result);
+                           /*associated_with_navigation=*/true);
   if (!client)
     return absl::nullopt;
 
@@ -197,33 +178,22 @@ absl::optional<Impression> AttributionSrcLoader::RegisterNavigation(
 }
 
 AttributionSrcLoader::ResourceClient*
-AttributionSrcLoader::CreateAndSendRequest(
-    const KURL& src_url,
-    HTMLElement* element,
-    SrcType src_type,
-    bool associated_with_navigation,
-    RegisterResult& out_register_result) {
+AttributionSrcLoader::CreateAndSendRequest(const KURL& src_url,
+                                           HTMLElement* element,
+                                           SrcType src_type,
+                                           bool associated_with_navigation) {
   // Detached frames cannot/should not register new attributionsrcs.
-  if (!local_frame_->IsAttached()) {
-    out_register_result = RegisterResult::kFailedToRegister;
+  if (!local_frame_->IsAttached())
     return nullptr;
-  }
 
-  if (num_resource_clients_ >= kMaxConcurrentRequests) {
-    out_register_result = RegisterResult::kFailedToRegister;
+  if (num_resource_clients_ >= kMaxConcurrentRequests)
     return nullptr;
-  }
 
-  if (!src_url.ProtocolIsInHTTPFamily()) {
-    out_register_result = RegisterResult::kInvalidProtocol;
+  if (!src_url.ProtocolIsInHTTPFamily())
     return nullptr;
-  }
 
-  if (RegisterResult result =
-          CanRegisterAttribution(RegisterContext::kAttributionSrc, src_url,
-                                 element, /*request_id=*/absl::nullopt);
-      result != RegisterResult::kSuccess) {
-    out_register_result = result;
+  if (!CanRegisterAttribution(RegisterContext::kAttributionSrc, src_url,
+                              element, /*request_id=*/absl::nullopt)) {
     return nullptr;
   }
 
@@ -235,11 +205,9 @@ AttributionSrcLoader::CreateAndSendRequest(
         WTF::Bind(&AttributionSrcLoader::DoPrerenderingRegistration,
                   WrapPersistentIfNeeded(this), src_url, src_type,
                   associated_with_navigation));
-    out_register_result = RegisterResult::kSuccess;
     return nullptr;
   }
 
-  out_register_result = RegisterResult::kSuccess;
   return DoRegistration(src_url, src_type, associated_with_navigation);
 }
 
@@ -257,6 +225,25 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
 
   request.SetKeepalive(true);
   request.SetRequestContext(mojom::blink::RequestContextType::ATTRIBUTION_SRC);
+
+  const char* eligible = [src_type,
+                          associated_with_navigation]() -> const char* {
+    switch (src_type) {
+      case SrcType::kSource:
+        return associated_with_navigation ? "navigation-source"
+                                          : "event-source";
+      case SrcType::kTrigger:
+        NOTREACHED();
+        return nullptr;
+      case SrcType::kUndetermined:
+        DCHECK(!associated_with_navigation);
+        return "event-source, trigger";
+    }
+  }();
+
+  request.SetHttpHeaderField(http_names::kAttributionReportingEligible,
+                             eligible);
+
   FetchParameters params(std::move(request),
                          local_frame_->DomWindow()->GetCurrentWorld());
   params.MutableOptions().initiator_info.name =
@@ -279,8 +266,7 @@ void AttributionSrcLoader::DoPrerenderingRegistration(
   DoRegistration(src_url, src_type, associated_with_navigation);
 }
 
-AttributionSrcLoader::RegisterResult
-AttributionSrcLoader::CanRegisterAttribution(
+bool AttributionSrcLoader::CanRegisterAttribution(
     RegisterContext context,
     const KURL& url,
     HTMLElement* element,
@@ -289,7 +275,7 @@ AttributionSrcLoader::CanRegisterAttribution(
   DCHECK(window);
 
   if (!RuntimeEnabledFeatures::AttributionReportingEnabled(window))
-    return RegisterResult::kNotAllowed;
+    return false;
 
   const bool feature_policy_enabled = window->IsFeatureEnabled(
       mojom::blink::PermissionsPolicyFeature::kAttributionReporting);
@@ -297,7 +283,7 @@ AttributionSrcLoader::CanRegisterAttribution(
   if (!feature_policy_enabled) {
     LogAuditIssue(AttributionReportingIssueType::kPermissionPolicyDisabled,
                   /*string=*/absl::nullopt, element, request_id);
-    return RegisterResult::kNotAllowed;
+    return false;
   }
 
   // The API is only allowed in secure contexts.
@@ -309,7 +295,7 @@ AttributionSrcLoader::CanRegisterAttribution(
             : AttributionReportingIssueType::kAttributionUntrustworthyOrigin,
         local_frame_->GetSecurityContext()->GetSecurityOrigin()->ToString(),
         element, request_id);
-    return RegisterResult::kInsecureContext;
+    return false;
   }
 
   scoped_refptr<const SecurityOrigin> reporting_origin =
@@ -321,7 +307,7 @@ AttributionSrcLoader::CanRegisterAttribution(
                   kAttributionSourceUntrustworthyOrigin
             : AttributionReportingIssueType::kAttributionUntrustworthyOrigin,
         reporting_origin->ToString(), element, request_id);
-    return RegisterResult::kUntrustworthyOrigin;
+    return false;
   }
 
   UseCounter::Count(window, mojom::blink::WebFeature::kConversionAPIAll);
@@ -331,7 +317,7 @@ AttributionSrcLoader::CanRegisterAttribution(
     UseCounter::Count(window, mojom::blink::WebFeature::kPrivacySandboxAdsAPIs);
   }
 
-  return RegisterResult::kSuccess;
+  return true;
 }
 
 void AttributionSrcLoader::MaybeRegisterTrigger(
@@ -342,13 +328,14 @@ void AttributionSrcLoader::MaybeRegisterTrigger(
     return;
   }
 
-  if (!ContainsTriggerHeaders(response.HttpHeaderFields()))
+  if (!response.HttpHeaderFields().Contains(
+          http_names::kAttributionReportingRegisterTrigger)) {
     return;
+  }
 
-  if (CanRegisterAttribution(RegisterContext::kResourceTrigger,
-                             response.CurrentRequestUrl(),
-                             /*element=*/nullptr, request.InspectorId()) !=
-      RegisterResult::kSuccess) {
+  if (!CanRegisterAttribution(RegisterContext::kResourceTrigger,
+                              response.CurrentRequestUrl(),
+                              /*element=*/nullptr, request.InspectorId())) {
     return;
   }
 
@@ -434,7 +421,8 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
   // are present together.
   bool can_process_trigger =
       type_ == SrcType::kUndetermined || type_ == SrcType::kTrigger;
-  if (can_process_trigger && ContainsTriggerHeaders(headers)) {
+  if (can_process_trigger &&
+      headers.Contains(http_names::kAttributionReportingRegisterTrigger)) {
     type_ = SrcType::kTrigger;
     HandleTriggerRegistration(response);
   }
@@ -462,20 +450,6 @@ void AttributionSrcLoader::ResourceClient::HandleSourceRegistration(
           source_json, *source_data)) {
     loader_->LogAuditIssue(AttributionReportingIssueType::kInvalidHeader,
                            source_json,
-                           /*element=*/nullptr, request_id);
-    return;
-  }
-
-  source_data->aggregatable_source =
-      mojom::blink::AttributionAggregatableSource::New();
-
-  const AtomicString& aggregatable_source_json = response.HttpHeaderField(
-      http_names::kAttributionReportingRegisterAggregatableSource);
-  if (!aggregatable_source_json.IsNull() &&
-      !attribution_response_parsing::ParseAttributionAggregatableSource(
-          aggregatable_source_json, *source_data->aggregatable_source)) {
-    loader_->LogAuditIssue(AttributionReportingIssueType::kInvalidHeader,
-                           aggregatable_source_json,
                            /*element=*/nullptr, request_id);
     return;
   }

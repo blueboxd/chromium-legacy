@@ -63,7 +63,8 @@ void AdaptiveChargingNotificationController::ShowAdaptiveChargingNotification(
       notification_message,
       /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kNotifierId),
+                                 kNotifierId,
+                                 NotificationCatalogName::kAdaptiveCharging),
       notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_ptr_factory_.GetWeakPtr()),
@@ -75,6 +76,12 @@ void AdaptiveChargingNotificationController::ShowAdaptiveChargingNotification(
 
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+}
+
+void AdaptiveChargingNotificationController::CloseAdaptiveChargingNotification(
+    bool by_user) {
+  message_center::MessageCenter::Get()->RemoveNotification(kInfoNotificationId,
+                                                           by_user);
 }
 
 bool AdaptiveChargingNotificationController::ShouldShowNotification() {
@@ -92,6 +99,7 @@ void AdaptiveChargingNotificationController::Click(
     return;
   if (button_index.value() == 0) {
     PowerManagerClient::Get()->ChargeNowForAdaptiveCharging();
+    CloseAdaptiveChargingNotification(/*by_user=*/true);
   } else {
     NOTREACHED() << "Unknown button index value";
   }

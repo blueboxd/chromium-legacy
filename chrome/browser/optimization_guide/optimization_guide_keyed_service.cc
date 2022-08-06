@@ -42,6 +42,7 @@
 #include "components/optimization_guide/core/top_host_provider.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/synthetic_trials.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -60,26 +61,11 @@
 
 namespace {
 
-const char kOldOptimizationGuideHintStore[] = "previews_hint_cache_store";
-
 const char kOldOptimizationGuidePredictionModelAndFeaturesStore[] =
     "optimization_guide_model_and_features_store";
 
 // Deletes old store paths that were written in incorrect locations.
 void DeleteOldStorePaths(const base::FilePath& profile_path) {
-  // Added 04/2021.
-
-  // Delete profile_path.<other path> as that was not actually in the profile
-  // dir.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::GetDeletePathRecursivelyCallback(
-          profile_path.AddExtensionASCII(kOldOptimizationGuideHintStore)));
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::GetDeletePathRecursivelyCallback(profile_path.AddExtensionASCII(
-          kOldOptimizationGuidePredictionModelAndFeaturesStore)));
-
   // Added 05/2022.
 
   // Delete profile_path/optimization_guide_model_and_features_store/...
@@ -235,7 +221,8 @@ void OptimizationGuideKeyedService::Initialize() {
                           optimization_guide_fetching_enabled);
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
         "SyntheticOptimizationGuideRemoteFetching",
-        optimization_guide_fetching_enabled ? "Enabled" : "Disabled");
+        optimization_guide_fetching_enabled ? "Enabled" : "Disabled",
+        variations::SyntheticTrialAnnotationMode::kCurrentLog);
 
 #if BUILDFLAG(IS_ANDROID)
     tab_url_provider_ = std::make_unique<

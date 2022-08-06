@@ -28,7 +28,7 @@ message FieldTrialProto {
 }
 
 // Context contains client environment details.
-// Next ID: 21
+// Next ID: 22
 message ClientContextProto {
   message Chrome {
     optional string chrome_version = 1;
@@ -137,7 +137,13 @@ message ClientContextProto {
   }
   optional PlatformType platform_type = 20;
 
-  reserved 19;
+  // The model for semantic dom annotation.
+  message AnnotateDomModelContextProto {
+    optional int64 model_version = 1;
+  }
+  optional AnnotateDomModelContextProto annotate_dom_model_context = 22;
+
+  reserved 19, 21;
 }
 
 // Get the list of scripts that can potentially be run on a url.
@@ -1047,6 +1053,7 @@ message ActionProto {
     ExecuteJsProto execute_js = 93;
     RegisterPasswordResetRequestProto register_password_reset_request = 94;
     ExternalActionProto external_action = 95;
+    SetNativeValueProto set_native_value = 96;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1148,6 +1155,8 @@ message ProcessedActionProto {
     JsFlowProto.Result js_flow_result = 37;
     // Should be set as a result of SaveSubmittedPassword.
     SaveSubmittedPasswordProto.Result save_submitted_password_result = 38;
+    // Should be set as a result of an ExternalAction.
+    ExternalActionProto.Result external_action_result = 39;
   }
 
   // Reports information about navigation that happened while
@@ -2659,7 +2668,14 @@ message CollectUserDataProto {
   }
 
   // Specifies information about the data source to be used.
-  message DataSource {}
+  message DataSource {
+    // If enabled and the user data request fails, fall back to the Chrome
+    // Autofill data instead where possible. E.g. in WebLayer this setting is
+    // ignored (Chrome Autofill data is not available). If this is false, the
+    // action will fail if the user data request fails, even if Chrome Autofill
+    // data would have been available.
+    optional bool allow_fallback = 1 [default = true];
+  }
 
   optional string prompt = 1;
   // NOTE: The action does not ask separately for billing address.
@@ -3430,4 +3446,8 @@ message ExternalActionProto {
   // Whether interrupts should be executed while Autofill Assistant is in prompt
   // state.
   optional bool allow_interrupt = 3;
+
+  message Result {
+    optional external.ResultInfo result_info = 1;
+  }
 }

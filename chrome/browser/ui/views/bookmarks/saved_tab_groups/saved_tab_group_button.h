@@ -15,8 +15,8 @@
 #include "content/public/browser/page_navigator.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/dialog_model_context_menu_controller.h"
 
 namespace gfx {
 class Canvas;
@@ -29,11 +29,12 @@ class Canvas;
 class SavedTabGroupButton : public views::MenuButton {
  public:
   METADATA_HEADER(SavedTabGroupButton);
-  SavedTabGroupButton(const SavedTabGroup& group,
-                      content::PageNavigator* page_navigator,
-                      PressedCallback callback,
-                      bool is_group_in_tabstrip,
-                      bool animations_enabled = true);
+  SavedTabGroupButton(
+      const SavedTabGroup& group,
+      base::RepeatingCallback<content::PageNavigator*()> page_navigator,
+      PressedCallback callback,
+      bool is_group_in_tabstrip,
+      bool animations_enabled = true);
 
   SavedTabGroupButton(const SavedTabGroupButton&) = delete;
   SavedTabGroupButton& operator=(const SavedTabGroupButton&) = delete;
@@ -55,32 +56,7 @@ class SavedTabGroupButton : public views::MenuButton {
   }
 
  private:
-  // TODO(dljames): Add a way to update the tabs in the context menu controller
-  // when a tab group is updated.
-  class ContextMenuController : public views::ContextMenuController {
-   public:
-    ContextMenuController(const std::vector<SavedTabGroupTab>& tabs,
-                          content::PageNavigator* page_navigator);
-    ~ContextMenuController() override;
-
-   private:
-    void ShowContextMenuForViewImpl(View* source,
-                                    const gfx::Point& point,
-                                    ui::MenuSourceType source_type) override;
-
-    // The menu model for the saved tab group buttons context menu.
-    std::unique_ptr<ui::MenuModel> menu_model_;
-
-    // The menu runner for the saved tab group buttons context menu.
-    std::unique_ptr<views::MenuRunner> menu_runner_;
-
-    // The tabs to be displayed in the context menu. Currently supports tab
-    // title, url, and favicon.
-    const std::vector<SavedTabGroupTab> tabs_;
-
-    // The page navigator used to open the context menu items into a new tab.
-    content::PageNavigator* page_navigator_;
-  };
+  std::unique_ptr<ui::DialogModel> CreateDialogModelForContextMenu();
 
   // The animations for button movement.
   std::unique_ptr<gfx::SlideAnimation> show_animation_;
@@ -91,8 +67,16 @@ class SavedTabGroupButton : public views::MenuButton {
   // Denotes if the tabgroup is currently open in the tabstrip.
   bool is_group_in_tabstrip_;
 
-  // The context menu controller for the saved tab group button.
-  ContextMenuController context_menu_controller_;
+  // The tabs to be displayed in the context menu. Currently supports tab title,
+  // url, and favicon.
+  const std::vector<SavedTabGroupTab> tabs_;
+
+  // A callback used to fetch the current PageNavigator used to open URLs.
+  const base::RepeatingCallback<content::PageNavigator*()>
+      page_navigator_callback_;
+
+  // Context menu controller used for this View.
+  views::DialogModelContextMenuController context_menu_controller_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_BUTTON_H_

@@ -39,6 +39,8 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
 #include "components/search_engines/omnibox_focus_type.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -154,9 +156,10 @@ class SearchProvider::CompareScoredResults {
 SearchProvider::SearchProvider(AutocompleteProviderClient* client,
                                AutocompleteProviderListener* listener)
     : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH, client),
-      listener_(listener),
       providers_(client->GetTemplateURLService()),
       answers_cache_(10) {
+  AddListener(listener);
+
   TemplateURLService* template_url_service = client->GetTemplateURLService();
 
   // |template_url_service| can be null in tests.
@@ -410,11 +413,11 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   // It's possible the template URL changed without changing associated keyword.
   // Hence, it's always necessary to update matches to use the new template
   // URL.  (One could cache the template URL and only call UpdateMatches() and
-  // OnProviderUpdate() if a keyword was deleted/renamed or the template URL
-  // was changed.  That would save extra calls to these functions.  However,
-  // this is uncommon and not likely to be worth the extra work.)
+  // NotifyListeners() if a keyword was deleted/renamed or the template URL was
+  // changed.  That would save extra calls to these functions.  However, this is
+  // uncommon and not likely to be worth the extra work.)
   UpdateMatches();
-  listener_->OnProviderUpdate(true);  // always pretend something changed
+  NotifyListeners(true);  // always pretend something changed
 }
 
 void SearchProvider::OnURLLoadComplete(
@@ -465,7 +468,7 @@ void SearchProvider::OnURLLoadComplete(
   // Update matches, done status, etc., and send alerts if necessary.
   UpdateMatches();
   if (done_ || results_updated)
-    listener_->OnProviderUpdate(results_updated);
+    NotifyListeners(results_updated);
 }
 
 void SearchProvider::StopSuggest() {
@@ -629,20 +632,11 @@ void SearchProvider::Run(bool query_is_private) {
   time_suggest_request_sent_ = base::TimeTicks::Now();
 
   if (!query_is_private) {
-    int timeout_ms = 0;
-    // Consider explicitly setting a timeout for requests sent to Google when
-    // On Device Head provider is enabled.
-    if (IsSearchEngineGoogle(providers_.GetDefaultProviderURL(), client())) {
-      timeout_ms =
-          OmniboxFieldTrial::OnDeviceSearchProviderDefaultLoaderTimeoutMs(
-              client()->IsOffTheRecord());
-    }
-    default_loader_ = CreateSuggestLoader(
-        providers_.GetDefaultProviderURL(), input_,
-        timeout_ms > 0 ? base::Milliseconds(timeout_ms) : base::TimeDelta());
+    default_loader_ =
+        CreateSuggestLoader(providers_.GetDefaultProviderURL(), input_);
   }
-  keyword_loader_ = CreateSuggestLoader(providers_.GetKeywordProviderURL(),
-                                        keyword_input_, base::TimeDelta());
+  keyword_loader_ =
+      CreateSuggestLoader(providers_.GetKeywordProviderURL(), keyword_input_);
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
@@ -650,7 +644,7 @@ void SearchProvider::Run(bool query_is_private) {
     UpdateDone();
     // We only need to update the listener if we're actually done.
     if (done_)
-      listener_->OnProviderUpdate(false);
+      NotifyListeners(false);
   } else {
     // Sent at least one request.
     time_suggest_request_sent_ = base::TimeTicks::Now();
@@ -834,9 +828,9 @@ bool SearchProvider::IsQueryPotentiallyPrivate() const {
   // and happens to currently be invalid -- in which case we again want to run
   // our checks below.  Other QUERY cases are less likely to be URLs and thus we
   // assume we're OK.
-  if (!base::LowerCaseEqualsASCII(input_.scheme(), url::kHttpScheme) &&
-      !base::LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
-      !base::LowerCaseEqualsASCII(input_.scheme(), url::kFtpScheme))
+  if (!base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kHttpScheme) &&
+      !base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kHttpsScheme) &&
+      !base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kFtpScheme))
     return (input_.type() != metrics::OmniboxInputType::QUERY);
 
   // Don't send URLs with usernames, queries or refs.  Some of these are
@@ -858,7 +852,7 @@ bool SearchProvider::IsQueryPotentiallyPrivate() const {
   // Don't send anything for https except the hostname.  Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
-  if (base::LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
+  if (base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kHttpsScheme) &&
       parts.path.is_nonempty())
     return true;
 
@@ -922,8 +916,7 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
 
 std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
     const TemplateURL* template_url,
-    const AutocompleteInput& input,
-    const base::TimeDelta& timeout) {
+    const AutocompleteInput& input) {
   if (!template_url || template_url->suggestions_url().empty())
     return nullptr;
 
@@ -1027,8 +1020,6 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
-  if (timeout.is_positive())
-    loader->SetTimeoutDuration(timeout);
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       client()->GetURLLoaderFactory().get(),
       base::BindOnce(&SearchProvider::OnURLLoadComplete, base::Unretained(this),
@@ -1427,6 +1418,13 @@ bool SearchProvider::ShouldCurbDefaultSuggestions() const {
   // Only curb if the global experimental keyword feature is enabled, we're
   // in keyword mode and we believe the user selected the mode explicitly.
   if (providers_.has_keyword_provider()) {
+    const TemplateURL* turl = providers_.GetKeywordProviderURL();
+    DCHECK(turl);
+    if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
+        (turl->starter_pack_id() ==
+         TemplateURLStarterPackData::StarterPackID::kBookmarks)) {
+      return true;
+    }
     return InExplicitExperimentalKeywordMode(input_,
                                              providers_.keyword_provider());
   } else {

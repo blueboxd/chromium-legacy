@@ -491,15 +491,13 @@ void NetworkService::SetParams(mojom::NetworkServiceParamsPtr params) {
 
 void NetworkService::StartNetLog(base::File file,
                                  net::NetLogCaptureMode capture_mode,
-                                 base::Value client_constants) {
-  DCHECK(client_constants.is_dict());
-  std::unique_ptr<base::DictionaryValue> constants =
-      base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(net::GetNetConstants()));
-  constants->MergeDictionary(&client_constants);
+                                 base::Value::Dict client_constants) {
+  base::Value::Dict constants = net::GetNetConstants();
+  constants.Merge(client_constants);
 
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
-      std::move(file), capture_mode, std::move(constants));
+      std::move(file), capture_mode,
+      std::make_unique<base::Value>(std::move(constants)));
   file_net_log_observer_->StartObserving(net_log_);
 }
 

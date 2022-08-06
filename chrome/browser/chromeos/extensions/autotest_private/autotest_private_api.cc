@@ -46,6 +46,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -99,6 +100,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -130,17 +132,16 @@
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/metrics/login_event_recorder.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
@@ -224,7 +225,7 @@ using chromeos::PrinterClass;
 constexpr char kCrostiniNotAvailableForCurrentUserError[] =
     "Crostini is not available for the current user";
 
-int AccessArray(const volatile int arr[], const volatile int* index) {
+NOINLINE int AccessArray(const int arr[], const int* index) {
   return arr[*index];
 }
 
@@ -372,10 +373,9 @@ api::autotest_private::AppType GetAppType(apps::AppType type) {
     case apps::AppType::kStandaloneBrowserExtension:
       return api::autotest_private::AppType::APP_TYPE_NONE;
     case apps::AppType::kStandaloneBrowserChromeApp:
-      // Intentionally fall-through for now.
       // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
       // Lacros-hosted chrome-apps.
-      break;
+      return api::autotest_private::AppType::APP_TYPE_NONE;
     }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;
@@ -1385,13 +1385,13 @@ AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
 
   auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
       browser_context());
-  base::Value all_policies_array =
+  base::Value::Dict all_policies_dict =
       policy::DictionaryPolicyConversions(std::move(client))
           .EnableDeviceLocalAccountPolicies(true)
           .EnableDeviceInfo(true)
-          .ToValue();
+          .ToValueDict();
 
-  return RespondNow(OneArgument(std::move(all_policies_array)));
+  return RespondNow(OneArgument(base::Value(std::move(all_policies_dict))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1492,11 +1492,10 @@ AutotestPrivateSimulateAsanMemoryBugFunction::Run() {
   DVLOG(1) << "AutotestPrivateSimulateAsanMemoryBugFunction";
 
   if (!IsTestMode(browser_context())) {
-    // This array is volatile not to let compiler optimize us out.
-    volatile int testarray[3] = {0, 0, 0};
+    int testarray[3] = {0, 0, 0};
 
     // Cause Address Sanitizer to abort this process.
-    volatile int index = 5;
+    int index = 5;
     AccessArray(testarray, &index);
   }
   return RespondNow(NoArguments());
@@ -2085,13 +2084,13 @@ AutotestPrivateWaitForSystemWebAppsInstallFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateWaitForSystemWebAppsInstallFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForTest(profile);
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::GetForTest(profile);
 
-  if (!provider)
-    return RespondNow(Error("Web Apps are not available for profile."));
+  if (!swa_manager)
+    return RespondNow(Error("System Web Apps are not available for profile."));
 
-  provider->system_web_app_manager().on_apps_synchronized().Post(
+  swa_manager->on_apps_synchronized().Post(
       FROM_HERE,
       base::BindOnce(
           &AutotestPrivateWaitForSystemWebAppsInstallFunction::Respond, this,
@@ -2112,25 +2111,46 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForTest(profile);
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::GetForTest(profile);
 
-  if (!provider)
-    return RespondNow(Error("Web Apps are not available for profile."));
+  if (!swa_manager)
+    return RespondNow(Error("System Web Apps are not available for profile."));
 
-  std::vector<api::autotest_private::SystemApp> result;
+  swa_manager->on_apps_synchronized().Post(
+      FROM_HERE,
+      base::BindOnce(&AutotestPrivateGetRegisteredSystemWebAppsFunction::
+                         OnSystemWebAppsInstalled,
+                     this));
+  return RespondLater();
+}
 
-  for (const auto& type_and_info :
-       provider->system_web_app_manager().GetRegisteredSystemAppsForTesting()) {
-    api::autotest_private::SystemApp system_app;
-    web_app::SystemWebAppDelegate* delegate = type_and_info.second.get();
-    system_app.internal_name = delegate->GetInternalName();
-    system_app.url =
+void AutotestPrivateGetRegisteredSystemWebAppsFunction::
+    OnSystemWebAppsInstalled() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::GetForTest(profile);
+  std::vector<api::autotest_private::SystemWebApp> result;
+  for (const auto& type_and_info : swa_manager->system_app_delegates()) {
+    api::autotest_private::SystemWebApp system_web_app;
+    ash::SystemWebAppDelegate* delegate = type_and_info.second.get();
+    system_web_app.internal_name = delegate->GetInternalName();
+    system_web_app.url =
         delegate->GetInstallUrl().DeprecatedGetOriginAsURL().spec();
-    result.push_back(std::move(system_app));
+    system_web_app.name = base::UTF16ToUTF8(delegate->GetWebAppInfo()->title);
+
+    absl::optional<web_app::AppId> app_id =
+        swa_manager->GetAppIdForSystemApp(type_and_info.first);
+    if (app_id) {
+      system_web_app.start_url = web_app::WebAppProvider::GetForTest(profile)
+                                     ->registrar()
+                                     .GetAppLaunchUrl(*app_id)
+                                     .spec();
+    }
+    result.push_back(std::move(system_web_app));
   }
 
-  return RespondNow(ArgumentList(
+  Respond(ArgumentList(
       api::autotest_private::GetRegisteredSystemWebApps::Results::Create(
           result)));
 }
@@ -2158,7 +2178,7 @@ AutotestPrivateIsSystemWebAppOpenFunction::Run() {
       api::autotest_private::IsSystemWebAppOpen::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateIsSystemWebAppOpenFunction " << params->app_id;
-  absl::optional<web_app::SystemAppType> app_type =
+  absl::optional<ash::SystemWebAppType> app_type =
       web_app::GetSystemWebAppTypeForAppId(profile, params->app_id);
   if (!app_type)
     return RespondNow(Error("No system web app is found by given app id."));
@@ -2230,13 +2250,13 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
            << params->app_name << " url: " << params->url;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  auto* provider = web_app::WebAppProvider::GetForTest(profile);
-  if (!provider)
-    return RespondNow(Error("Web Apps not enabled for profile."));
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::GetForTest(profile);
+  if (!swa_manager)
+    return RespondNow(Error("System Web Apps not enabled for profile."));
 
-  absl::optional<web_app::SystemAppType> app_type;
-  for (const auto& type_and_info :
-       provider->system_web_app_manager().GetRegisteredSystemAppsForTesting()) {
+  absl::optional<ash::SystemWebAppType> app_type;
+  for (const auto& type_and_info : swa_manager->system_app_delegates()) {
     if (type_and_info.second->GetInternalName() == params->app_name) {
       app_type = type_and_info.first;
       break;

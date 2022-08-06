@@ -180,6 +180,7 @@
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/permissions_manager.h"
+#include "extensions/browser/pref_names.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
@@ -193,6 +194,7 @@
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/extensions/extensions_permissions_tracker.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
+#include "chrome/browser/extensions/api/shared_storage/shared_storage_private_api.h"
 #include "chrome/browser/ui/ash/projector/projector_app_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
@@ -274,8 +276,10 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_prefs_service.h"
 #include "chrome/browser/chromeos/extensions/echo_private/echo_private_api.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login/login_api_prefs.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
+#include "chrome/browser/memory/oom_kills_monitor.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
@@ -318,6 +322,7 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/network_settings_service_ash.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/cryptauth/client_app_metadata_provider_service.h"
 #include "chrome/browser/ash/cryptauth/cryptauth_device_id_provider_impl.h"
@@ -377,7 +382,6 @@
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
-#include "chrome/browser/chromeos/extensions/login_screen/login/prefs.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -390,6 +394,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/components/local_search_service/search_metrics_reporter.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
@@ -397,7 +402,6 @@
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/managed_cellular_pref_handler.h"
 #include "chromeos/network/network_metadata_store.h"
-#include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/bluetooth_config/bluetooth_power_controller_impl.h"
 #include "chromeos/services/bluetooth_config/device_name_manager_impl.h"
@@ -738,6 +742,27 @@ const char kAccessCodeCastDiscoveredNetworks[] =
     "media_router.access_code_cast.discovered_networks";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated on non-ChromeOS on 05/2022.
+extern const char kAccountIdMigrationState[] = "account_id_migration_state";
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated 05/2022.
+const char kColorModeThemed[] = "ash.dark_mode.color_mode_themed";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated 05/2022.
+const char kNativeBridge64BitSupportExperimentEnabled[] =
+    "arc.native_bridge_64bit_support_experiment";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Deprecated 06/2022.
+const char kTokenServiceDiceCompatible[] = "token_service.dice_compatible";
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -786,6 +811,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(kStabilityRendererLaunchCount, 0);
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kNativeBridge64BitSupportExperimentEnabled,
+                                false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -962,6 +992,18 @@ void RegisterProfilePrefsForMigration(
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterDictionaryPref(kAccessCodeCastDiscoveredNetworks);
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kAccountIdMigrationState, 0);
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kColorModeThemed, true);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  registry->RegisterBooleanPref(kTokenServiceDiceCompatible, false);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 
 }  // namespace
@@ -1143,6 +1185,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if BUILDFLAG(IS_CHROMEOS)
   chromeos::echo_offer::RegisterPrefs(registry);
+  memory::OOMKillsMonitor::RegisterPrefs(registry);
   policy::SystemFeaturesDisableListPolicyHandler::RegisterPrefs(registry);
   policy::DlpRulesManagerImpl::RegisterPrefs(registry);
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -1163,6 +1206,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_WIN)
   OSCrypt::RegisterLocalPrefs(registry);
   registry->RegisterBooleanPref(prefs::kRendererCodeIntegrityEnabled, true);
+  registry->RegisterBooleanPref(prefs::kRendererAppContainerEnabled, true);
   registry->RegisterBooleanPref(prefs::kBlockBrowserLegacyExtensionPoints,
                                 true);
   registry->RegisterBooleanPref(
@@ -1296,6 +1340,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   extensions::AudioAPI::RegisterUserPrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
   extensions::ExtensionsUI::RegisterProfilePrefs(registry);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  extensions::shared_storage::RegisterProfilePrefs(registry);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   extensions::PermissionsManager::RegisterProfilePrefs(registry);
   extensions::RuntimeAPI::RegisterPrefs(registry);
   // TODO(devlin): This would be more inline with the other calls here if it
@@ -1391,10 +1438,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if BUILDFLAG(IS_CHROMEOS)
   apps::SupportedLinksInfoBarPrefsService::RegisterProfilePrefs(registry);
+  extensions::login_api::RegisterProfilePrefs(registry);
   extensions::platform_keys::RegisterProfilePrefs(registry);
   certificate_manager::CertificatesHandler::RegisterProfilePrefs(registry);
   policy::PolicyCertService::RegisterProfilePrefs(registry);
   registry->RegisterBooleanPref(prefs::kInsightsExtensionEnabled, false);
+  // By default showing Sync Consent is set to true. It can changed by policy.
+  registry->RegisterBooleanPref(prefs::kEnableSyncConsent, true);
 #if defined(USE_CUPS)
   extensions::PrintingAPIHandler::RegisterProfilePrefs(registry);
 #endif  // defined(USE_CUPS)
@@ -1624,6 +1674,16 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kStabilityRendererLaunchCount);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+  // Added 05/2022.
+#if !BUILDFLAG(IS_ANDROID)
+  local_state->ClearPref(prefs::kTabFreezingEnabled);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 05/2022.
+  local_state->ClearPref(kNativeBridge64BitSupportExperimentEnabled);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
 
@@ -1830,11 +1890,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   syncer::ClearObsoleteSyncDecoupledFromAndroidMasterSync(profile_prefs);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Added 02/2022.
-  web_app::WebAppProvider::MigrateProfilePrefs(profile);
-#endif
-
   // Added 02/2022
   profile_prefs->ClearPref(kFlocIdValuePrefKey);
   profile_prefs->ClearPref(kFlocIdStatusPrefKey);
@@ -1881,6 +1936,38 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 05/2022
   profile_prefs->ClearPref(kAccessCodeCastDiscoveredNetworks);
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 05/2022.
+  // TODO(crbug.com/1028898): Remove after M110.
+  crostini::RemoveTerminalFromRegistry(profile_prefs);
+#endif
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 05/2022
+  profile_prefs->ClearPref(kAccountIdMigrationState);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 05/2022.
+  profile_prefs->ClearPref(kColorModeThemed);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Added 06/2022.
+  profile_prefs->ClearPref(kTokenServiceDiceCompatible);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_ANDROID)
+  // Added 06/2022.
+  syncer::MigrateSyncRequestedPrefPostMice(profile_prefs);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+  // Added 06/2022.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  profile_prefs->ClearPref(extensions::pref_names::kU2fSecurityKeyApiEnabled);
+#endif
+  profile_prefs->ClearPref(prefs::kCloudPrintSubmitEnabled);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

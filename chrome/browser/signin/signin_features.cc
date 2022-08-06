@@ -13,6 +13,11 @@ const base::Feature kProcessGaiaRemoveLocalAccountHeader{
 const base::Feature kSyncPromoAfterSigninIntercept{
     "SyncPromoAfterSigninIntercept", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables using new style (strings, illustration, and disclaimer if needed)
+// for the sign-in intercept bubble.
+const base::Feature kSigninInterceptBubbleV2{"SigninInterceptBubbleV2",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables showing the enterprise dialog after every signin into a managed
 // account.
 const base::Feature kShowEnterpriseDialogForAllManagedAccountsSignin{

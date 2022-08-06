@@ -558,8 +558,10 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
   // The host must be alive as long as |params->provider_info| is alive.
   owner_version_->worker_host()->CompleteStartWorkerPreparation(
-      process_id(), params->provider_info->browser_interface_broker
-                        .InitWithNewPipeAndPassReceiver());
+      process_id(),
+      params->provider_info->browser_interface_broker
+          .InitWithNewPipeAndPassReceiver(),
+      params->interface_provider.InitWithNewPipeAndPassRemote());
 
   // TODO(bashi): Always pass a valid outside fetch client settings object.
   // See crbug.com/937177.
@@ -704,6 +706,10 @@ void EmbeddedWorkerInstance::Detach() {
 
 void EmbeddedWorkerInstance::UpdateForegroundPriority() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (status() == EmbeddedWorkerStatus::STOPPING) {
+    return;
+  }
+
   if (process_handle_ &&
       owner_version_->ShouldRequireForegroundPriority(process_id())) {
     NotifyForegroundServiceWorkerAdded();
@@ -771,7 +777,6 @@ EmbeddedWorkerInstance::CreateFactoryBundle(
     client_security_state = network::mojom::ClientSecurityState::New();
   }
 
-  // TODO(crbug.com/1231019): Tag CL with this bug.
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
           rph, origin,
@@ -918,6 +923,8 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   starting_phase_ = NOT_STARTING;
   thread_id_ = ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId;
   token_ = absl::nullopt;
+
+  DCHECK(!foreground_notified_);
 }
 
 void EmbeddedWorkerInstance::OnSetupFailed(

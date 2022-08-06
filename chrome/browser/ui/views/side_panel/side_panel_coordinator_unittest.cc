@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry_observer.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 
 class SidePanelCoordinatorTest : public TestWithBrowserView {
@@ -45,7 +47,14 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
     contextual_registries_.push_back(SidePanelRegistry::Get(active_contents));
 
+    // Add a kSideSearch entry to the contextual registry for the second tab.
+    registry->Register(std::make_unique<SidePanelEntry>(
+        SidePanelEntry::Id::kSideSearch, u"testing1",
+        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        base::BindRepeating([]() { return std::make_unique<views::View>(); })));
+
     coordinator_ = browser_view()->side_panel_coordinator();
+    coordinator_->SetNoDelaysForTesting();
     global_registry_ = coordinator_->global_registry_;
 
     // Verify the first tab has one entry, kSideSearch.
@@ -57,13 +66,15 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
     EXPECT_EQ(contextual_registry->entries()[0]->id(),
               SidePanelEntry::Id::kSideSearch);
 
-    // Verify the second tab has one entry, kLens.
+    // Verify the second tab has 2 entries, kLens and kSideSearch.
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
     active_contents = browser_view()->GetActiveWebContents();
     contextual_registry = SidePanelRegistry::Get(active_contents);
-    EXPECT_EQ(contextual_registry->entries().size(), 1u);
+    EXPECT_EQ(contextual_registry->entries().size(), 2u);
     EXPECT_EQ(contextual_registry->entries()[0]->id(),
               SidePanelEntry::Id::kLens);
+    EXPECT_EQ(contextual_registry->entries()[1]->id(),
+              SidePanelEntry::Id::kSideSearch);
   }
 
   void VerifyEntryExistanceAndValue(absl::optional<SidePanelEntry*> entry,
@@ -84,6 +95,14 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
 
   absl::optional<SidePanelEntry::Id> GetLastActiveGlobalEntry() {
     return coordinator_->last_active_global_entry_id_;
+  }
+
+  absl::optional<SidePanelEntry::Id> GetSelectedId() {
+    return coordinator_->GetSelectedId();
+  }
+
+  bool ComboboxViewExists() {
+    return coordinator_->header_combobox_ != nullptr;
   }
 
  protected:
@@ -126,6 +145,41 @@ TEST_F(SidePanelCoordinatorTest, ShowOpensSidePanel) {
   EXPECT_TRUE(browser_view()->right_aligned_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryId().has_value());
   EXPECT_EQ(GetLastActiveEntryId().value(), SidePanelEntry::Id::kBookmarks);
+
+  // Verify that the combobox entry for bookmarks is selected.
+  EXPECT_EQ(GetSelectedId(), SidePanelEntry::Id::kBookmarks);
+}
+
+TEST_F(SidePanelCoordinatorTest, CloseInvalidatesComboboxPointer) {
+  // Verify no combobox exists before opening the side panel.
+  EXPECT_FALSE(ComboboxViewExists());
+
+  coordinator_->Toggle();
+  EXPECT_TRUE(ComboboxViewExists());
+
+  // Verify that the pointer to the combobox view is invalidated after closing
+  // the side panel.
+  coordinator_->Toggle();
+  EXPECT_FALSE(ComboboxViewExists());
+}
+
+TEST_F(SidePanelCoordinatorTest, TabSwitchInvalidatesComboboxPointerOnClose) {
+  // Verify no combobox exists before opening the side panel.
+  EXPECT_FALSE(ComboboxViewExists());
+
+  // Show a contextual entry on the first tab.
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+  coordinator_->Show(SidePanelEntry::Id::kSideSearch);
+
+  // Switch to the second tab.
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
+
+  // Expect that the side panel closes.
+  EXPECT_FALSE(browser_view()->right_aligned_side_panel()->GetVisible());
+
+  // Verify that the pointer to the combobox view is invalidated after closing
+  // the side panel.
+  EXPECT_FALSE(ComboboxViewExists());
 }
 
 TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithReadingListOpen) {
@@ -208,7 +262,7 @@ TEST_F(SidePanelCoordinatorTest, ContextualEntryDeregisteredWhileVisible) {
 }
 
 // Test that the side panel closes if a contextual entry is deregistered while
-// visible when no globel entries have been shown since the panel was opened.
+// visible when no global entries have been shown since the panel was opened.
 TEST_F(
     SidePanelCoordinatorTest,
     ContextualEntryDeregisteredWhileVisibleClosesPanelIfNoLastSeenGlobalEntryExists) {
@@ -242,8 +296,32 @@ TEST_F(SidePanelCoordinatorTest, ShowContextualEntry) {
   EXPECT_EQ(GetLastActiveEntryId().value(), SidePanelEntry::Id::kSideSearch);
 }
 
+TEST_F(SidePanelCoordinatorTest, SwapBetweenTwoContextualEntryWithTheSameId) {
+  // Open side search for the first tab.
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+  auto* reading_list_entry = coordinator_->GetCurrentSidePanelEntryForTesting();
+  coordinator_->Show(SidePanelEntry::Id::kSideSearch);
+  auto* side_search_entry1 = coordinator_->GetCurrentSidePanelEntryForTesting();
+
+  // Switch to the second tab and open side search.
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
+  EXPECT_TRUE(browser_view()->right_aligned_side_panel()->GetVisible());
+  EXPECT_EQ(reading_list_entry,
+            coordinator_->GetCurrentSidePanelEntryForTesting());
+  coordinator_->Show(SidePanelEntry::Id::kSideSearch);
+  EXPECT_NE(side_search_entry1,
+            coordinator_->GetCurrentSidePanelEntryForTesting());
+
+  // Switch back to the first tab.
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+  EXPECT_TRUE(browser_view()->right_aligned_side_panel()->GetVisible());
+  EXPECT_EQ(side_search_entry1,
+            coordinator_->GetCurrentSidePanelEntryForTesting());
+}
+
 TEST_F(SidePanelCoordinatorTest,
-       SwapBetweenTabsAfterNavaigatingToContextualEntry) {
+       SwapBetweenTabsAfterNavigatingToContextualEntry) {
   // Open side panel and verify it opens to kReadingList by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
@@ -262,6 +340,7 @@ TEST_F(SidePanelCoordinatorTest,
                                SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+  auto* bookmarks_entry = coordinator_->GetCurrentSidePanelEntryForTesting();
 
   // Switch to a contextual entry and verify the active entry is updated.
   coordinator_->Show(SidePanelEntry::Id::kSideSearch);
@@ -272,6 +351,7 @@ TEST_F(SidePanelCoordinatorTest,
   VerifyEntryExistanceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+  auto* side_search_entry = coordinator_->GetCurrentSidePanelEntryForTesting();
 
   // Switch to a tab where this contextual entry is not available and verify we
   // fall back to the last seen global entry.
@@ -283,6 +363,8 @@ TEST_F(SidePanelCoordinatorTest,
   VerifyEntryExistanceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+  EXPECT_EQ(bookmarks_entry,
+            coordinator_->GetCurrentSidePanelEntryForTesting());
 
   // Switch back to the tab where the contextual entry was visible and verify it
   // is shown.
@@ -294,6 +376,8 @@ TEST_F(SidePanelCoordinatorTest,
   VerifyEntryExistanceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+  EXPECT_EQ(side_search_entry,
+            coordinator_->GetCurrentSidePanelEntryForTesting());
 }
 
 TEST_F(SidePanelCoordinatorTest, TogglePanelWithContextualEntryShowing) {
@@ -534,4 +618,64 @@ TEST_F(SidePanelCoordinatorTest,
   VerifyEntryExistanceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+}
+
+class TestSidePanelObserver : public SidePanelEntryObserver {
+ public:
+  explicit TestSidePanelObserver(SidePanelRegistry* registry)
+      : registry_(registry) {}
+  ~TestSidePanelObserver() override = default;
+
+  void OnEntryHidden(SidePanelEntry* entry) override {
+    registry_->Deregister(entry->id());
+  }
+
+ private:
+  raw_ptr<SidePanelRegistry> registry_;
+};
+
+TEST_F(SidePanelCoordinatorTest,
+       EntryRegistersOnBeingHiddenFromSwitchToOtherEntry) {
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+
+  // Create an observer that deregisters the entry once it is hidden.
+  auto observer =
+      std::make_unique<TestSidePanelObserver>(contextual_registries_[0]);
+  auto entry = std::make_unique<SidePanelEntry>(
+      SidePanelEntry::Id::kAssistant, u"Assistant",
+      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      base::BindRepeating([]() { return std::make_unique<views::View>(); }));
+  entry->AddObserver(observer.get());
+  contextual_registries_[0]->Register(std::move(entry));
+  coordinator_->Show(SidePanelEntry::Id::kAssistant);
+
+  // Switch to another entry.
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+
+  // Verify that the previous entry has deregistered.
+  EXPECT_FALSE(
+      contextual_registries_[0]->GetEntryForId(SidePanelEntry::Id::kAssistant));
+}
+
+TEST_F(SidePanelCoordinatorTest,
+       EntryRegistersOnBeingHiddenFromSidePanelClose) {
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+
+  // Create an observer that deregisters the entry once it is hidden.
+  auto observer =
+      std::make_unique<TestSidePanelObserver>(contextual_registries_[0]);
+  auto entry = std::make_unique<SidePanelEntry>(
+      SidePanelEntry::Id::kAssistant, u"Assistant",
+      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      base::BindRepeating([]() { return std::make_unique<views::View>(); }));
+  entry->AddObserver(observer.get());
+  contextual_registries_[0]->Register(std::move(entry));
+  coordinator_->Show(SidePanelEntry::Id::kAssistant);
+
+  // Close the sidepanel.
+  coordinator_->Toggle();
+
+  // Verify that the previous entry has deregistered.
+  EXPECT_FALSE(
+      contextual_registries_[0]->GetEntryForId(SidePanelEntry::Id::kAssistant));
 }

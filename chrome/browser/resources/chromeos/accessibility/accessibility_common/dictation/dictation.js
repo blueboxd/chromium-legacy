@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {FocusHandler} from '/accessibility_common/dictation/focus_handler.js';
 import {InputController} from '/accessibility_common/dictation/input_controller.js';
+import {HiddenMacroManager} from '/accessibility_common/dictation/macros/hidden_macro_manager.js';
 import {Macro} from '/accessibility_common/dictation/macros/macro.js';
 import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
 import {MetricsUtils} from '/accessibility_common/dictation/metrics_utils.js';
@@ -28,6 +30,9 @@ export class Dictation {
 
     /** @private {SpeechParser} */
     this.speechParser_ = null;
+
+    /** @private {HiddenMacroManager} */
+    this.hiddenMacroManager_ = null;
 
     /** @private {string} */
     this.localePref_ = '';
@@ -62,6 +67,12 @@ export class Dictation {
     /** @private {?MetricsUtils} */
     this.metricsUtils_ = null;
 
+    /** @private {boolean} */
+    this.isPumpkinEnabled_ = false;
+
+    /** @private {?FocusHandler} */
+    this.focusHandler_ = null;
+
     this.initialize_();
   }
 
@@ -70,13 +81,15 @@ export class Dictation {
    * @private
    */
   initialize_() {
-    this.inputController_ =
-        new InputController(() => this.stopDictation_(/*notify=*/ true));
+    this.focusHandler_ = new FocusHandler();
+    this.inputController_ = new InputController(
+        () => this.stopDictation_(/*notify=*/ true), this.focusHandler_);
     this.uiController_ = new UIController();
     this.speechParser_ = new SpeechParser(this.inputController_);
     if (this.localePref_) {
       this.speechParser_.initialize(this.localePref_);
     }
+    this.hiddenMacroManager_ = new HiddenMacroManager(this.inputController_);
 
     // Set default speech recognition properties. Locale will be updated when
     // `updateFromPrefs_` is called.
@@ -101,6 +114,22 @@ export class Dictation {
     // Browser process.
     chrome.accessibilityPrivate.onToggleDictation.addListener(
         activated => this.onToggleDictation_(activated));
+
+    this.maybeInstallPumpkin_();
+  }
+
+  /** @private */
+  maybeInstallPumpkin_() {
+    const pumpkinFeature = chrome.accessibilityPrivate.AccessibilityFeature
+                               .DICTATION_PUMPKIN_PARSING;
+    chrome.accessibilityPrivate.isFeatureEnabled(pumpkinFeature, enabled => {
+      this.isPumpkinEnabled_ = enabled;
+      if (enabled) {
+        chrome.accessibilityPrivate.installPumpkinForDictation(success => {
+          this.onPumpkinInstalled_(success);
+        });
+      }
+    });
   }
 
   /**
@@ -134,7 +163,7 @@ export class Dictation {
     if (this.active_) {
       chrome.speechRecognitionPrivate.start(
           /** @type {!StartOptions} */ (this.speechRecognitionOptions_),
-          (type) => this.onSpeechRecognitionStarted_(type));
+          type => this.onSpeechRecognitionStarted_(type));
       this.setStopTimeout_(Dictation.Timeouts.NO_SPEECH_MS);
     } else {
       // We are no longer starting up - perhaps a stop came
@@ -194,6 +223,7 @@ export class Dictation {
   /**
    * Called when the Speech Recognition engine receives a recognition event.
    * @param {ResultEvent} event
+   * @return {!Promise}
    * @private
    */
   async onSpeechRecognitionResult_(event) {
@@ -214,6 +244,7 @@ export class Dictation {
    * @param {string} transcript
    * @param {boolean} isFinal Whether this is a finalized transcript or an
    *     interim result.
+   * @return {!Promise}
    * @private
    */
   async processSpeechRecognitionResult_(transcript, isFinal) {
@@ -276,6 +307,7 @@ export class Dictation {
 
     this.uiController_.setState(
         UIState.STANDBY, {context: HintContext.STANDBY});
+    this.focusHandler_.refresh();
   }
 
   /**
@@ -310,7 +342,7 @@ export class Dictation {
    * @private
    */
   updateFromPrefs_(prefs) {
-    prefs.forEach((pref) => {
+    prefs.forEach(pref => {
       switch (pref.key) {
         case Dictation.DICTATION_LOCALE_PREF:
           if (pref.value) {
@@ -426,6 +458,24 @@ export class Dictation {
   static removeAsInputMethod() {
     chrome.languageSettingsPrivate.removeInputMethod(
         InputController.IME_ENGINE_ID);
+  }
+
+  /**
+   * @param {boolean} success
+   * @private
+   */
+  onPumpkinInstalled_(success) {
+    if (!this.isPumpkinEnabled_) {
+      return;
+    }
+
+    // TODO(akihiroota): Either instantiate a new Web Worker or sandboxed
+    // iframe to execute Pumpkin code.
+  }
+
+  /** @param {!MacroName} name The macro to run. */
+  runHiddenMacroForTesting(name) {
+    this.hiddenMacroManager_.runMacroForTesting(name);
   }
 }
 

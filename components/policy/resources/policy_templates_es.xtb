@@ -3642,6 +3642,7 @@ Si se define esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que l
 <translation id="4960597185231686653">Un indicador booleano que especifica si el teclado en pantalla permite usar la función de entrada de voz.</translation>
 <translation id="4970046075219007744">Permite que las aplicaciones web soliciten al usuario que les conceda acceso a ciertos tipos de archivo a través de la API File Handling</translation>
 <translation id="4970855112942626932">Inhabilitar inicio de sesión en el navegador</translation>
+<translation id="4974091268178043378">Modo de color de Chrome OS</translation>
 <translation id="4976928720873547342">Si se establece esta política, todos los tipos de datos especificados se excluirán de la sincronización de <ph name="CHROME_SYNC_NAME" /> y de la sincronización del perfil de roaming. Esto puede ser útil para reducir el tamaño del perfil de roaming o para limitar el tipo de datos que se suban a los servidores de <ph name="CHROME_SYNC_NAME" />.
 
       Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" y "wifiConfigurations". Estos nombres distinguen entre mayúsculas y minúsculas.</translation>
@@ -4285,6 +4286,13 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 
           El valor de la política solo se aplica cuando la política <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está habilitada y no es aplicable en caso contrario.</translation>
 <translation id="5697306356229823047">Permite informar sobre usuarios de dispositivos</translation>
+<translation id="5698923148503075597">Si se habilita esta política, la política de nube prevalecerá si entra en conflicto con la política de plataforma.
+
+      Si se inhabilita esta política o no se define, la política de plataforma prevalecerá si entra en conflicto con la política de nube.
+
+      Esta política obligatoria afecta a las políticas de permisos de nube.
+
+      Esta política solo está disponible en <ph name="PRODUCT_NAME" />. No afecta a <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Si se habilita esta política, se desactivará el visor interno de PDF en <ph name="PRODUCT_NAME" />, los archivos PDF se tratarán como descargas y los usuarios podrán abrir PDFs con la aplicación predeterminada.
 
       Si se inhabilita, se abrirán los archivos PDF, a menos que los usuarios desactiven el complemento de PDF.
@@ -4405,6 +4413,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 
       Los usuarios no podrán modificar este ajuste.</translation>
 <translation id="5848438019586925019">El algoritmo para generar pares de claves.</translation>
+<translation id="5851248808417680865">Usar el tema oscuro</translation>
 <translation id="585270638818921943">Evitar que el usuario utilice aplicaciones Android de fuentes que no son de confianza</translation>
 <translation id="5853547031212075792">Permitir que los usuarios habiliten el modo solo‑HTTPS</translation>
 <translation id="5859344336338527083">Si se define esta política, se especificarán las URL que pueden instalar extensiones, aplicaciones y temas. Antes de la versión 21 de <ph name="PRODUCT_NAME" />, los usuarios podían hacer clic en un enlace a un archivo .crx y <ph name="PRODUCT_NAME" /> les ofrecería la opción de instalar el archivo después de mostrar algunas advertencias. A continuación, esos archivos debían descargarse y arrastrarse a la página de configuración de <ph name="PRODUCT_NAME" />. Esta opción permite que determinadas URL sigan utilizando el proceso de instalación anterior, que era más sencillo.
@@ -4536,11 +4545,6 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       Si se le asigna un valor a esta política, los usuarios no podrán cambiarlo. Si no se establece, los usuarios deciden si se muestran o no los encabezados y pies de página.</translation>
 <translation id="5951418260805607969">Mostrar notificación de poco espacio en disco</translation>
 <translation id="5958746038080720143">Habilitar optimizaciones de detección automática de proxy web (WPAD)</translation>
-<translation id="5959428851851090097">Si se habilita esta política, la política de la nube prevalecerá si entra en conflicto con la política de la plataforma.
-
-      Si se inhabilita esta política o no se le asigna ningún valor, la política de la plataforma prevalecerá si entra en conflicto con la política de la nube.
-
-      Esta política obligatoria afecta a las políticas de permisos de nube.</translation>
 <translation id="5961137303188584693">Dirección NIC MAC integrada en el dispositivo</translation>
 <translation id="5963752574792883406">puerto 990 (puede desbloquearse hasta el 01/02/2022)</translation>
 <translation id="5966615072639944554">Extensiones con permiso para utilizar la API de confirmación remota</translation>
@@ -4581,6 +4585,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 
       Esta política solo es efectiva cuando el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> para <ph name="PRODUCT_NAME" />.
       Para <ph name="PRODUCT_OS_NAME" />, esta política siempre es efectiva.</translation>
+<translation id="6019162469732742754">Usar el modo automático</translation>
 <translation id="6019606564278029236">Habilitar la interacción de los usuarios remotos con ventanas con permisos de administrador en sesiones de asistencia remota</translation>
 <translation id="6022948604095165524">Acción al iniciar</translation>
 <translation id="602318745029752898">Permitir las voces de conversión de texto a voz de red mejorada en Enunciar selección</translation>
@@ -5325,6 +5330,15 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 <translation id="6786666051053129545">Habilitar el flujo de Voice Match del Asistente de Google</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Especificar el directorio de perfiles de roaming</translation>
+<translation id="6789319144568227749">Configura la compatibilidad con encabezados de solicitud CORS sin comodín.
+
+      La versión 97 de <ph name="PRODUCT_NAME" /> introduce la compatibilidad con encabezados de solicitud CORS sin comodín. Cuando una secuencia de comandos realiza una solicitud de red de varios orígenes mediante fetch() y XMLHttpRequest con un encabezado Authorization añadido en secuencia de comandos, este encabezado debe estar permitido explícitamente por el encabezado Access-Control-Allow-Headers en la respuesta de solicitud preparatoria CORS. Con "explícitamente", nos referimos a que el carácter comodín ("*") no incluye el encabezado Authorization. Consulta <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> para obtener más información.
+
+      Si no se establece esta política o se le asigna el valor True, <ph name="PRODUCT_NAME" /> admitirá los encabezados de solicitud CORS sin comodín y funcionará como se indica arriba.
+
+      Si se asigna el valor False a esta política, Chrome permitirá el carácter comodín ("*") en el encabezado Access-Control-Allow-Headers de la respuesta de solicitud preparatoria CORS. Así, se incluirá el encabezado Authorization.
+
+      Esta política de Enterprise es temporal. Está previsto que se retire en el futuro.</translation>
 <translation id="6789422336869764846">Si se habilita la política o no se establece, los dispositivos registrados informarán sobre el estado del interruptor del modo desarrollador del dispositivo al iniciarse.
 
       Si se inhabilita la política, los dispositivos registrados no informarán sobre el estado del interruptor del modo desarrollador.</translation>
@@ -5575,6 +5589,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 <translation id="7019805045859631636">Rápido</translation>
 <translation id="7025332601572838001">Configuración del comportamiento de los Términos del Servicio durante la primera ejecución de CCT</translation>
 <translation id="7026351325994257733">Permitir que las configuraciones de la red Wi‑Fi se sincronicen en los dispositivos <ph name="PRODUCT_OS_NAME" /> y en un teléfono Android conectado.</translation>
+<translation id="7027057540229843762">Usar el tema claro</translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
 Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante un periodo de tiempo determinado.</translation>
@@ -6574,15 +6589,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si esta política no se establece o no se habilita, se accederá a los perfiles normales al iniciar sesión.</translation>
 <translation id="8151299379693359769">Habilita una comprobación de seguridad adicional basada en la atestación remota (opcional, valor predeterminado: True).</translation>
 <translation id="8151490482515839285">Habilitar informes de prevención de filtración de datos</translation>
-<translation id="8151949408479239790">Configura la compatibilidad con encabezados de solicitud CORS sin comodín.
-
-      La versión 97 de <ph name="PRODUCT_NAME" /> introduce la compatibilidad con encabezados de solicitud CORS sin comodín. Cuando una secuencia de comandos realiza una solicitud de red de varios orígenes mediante fetch() y XMLHttpRequest con un encabezado Authorization añadido en secuencia de comandos, este encabezado debe estar permitido explícitamente por el encabezado Access-Control-Allow-Headers en la respuesta de solicitud preparatoria CORS. Con "explícitamente", nos referimos a que el carácter comodín ("*") no incluye el encabezado Authorization. Consulta <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> para obtener más información.
-
-      Si no se establece esta política o se le asigna el valor True, <ph name="PRODUCT_NAME" /> admitirá los encabezados de solicitud CORS sin comodín y funcionará como se indica arriba.
-
-      Si se asigna el valor False a esta política, Chrome permitirá el carácter comodín ("*") en el encabezado Access-Control-Allow-Headers de la respuesta de solicitud preparatoria CORS. Así, se incluirá el encabezado Authorization.
-
-      Esta política de Enterprise es temporal. Se prevé que se retire después de la versión 103 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158758865057576716">Habilitar la creación de copias de roaming de los datos del perfil de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Si se asigna el valor "Verdadero" a esta política, se mostrará una barra de marcadores en <ph name="PRODUCT_NAME" />. Si se le asigna el valor "Falso", los usuarios no verán nunca la barra de marcadores.
 
@@ -7148,6 +7154,9 @@ Si se configura la política, los usuarios no podrán cambiar esta función. Si 
 
       "http://acme.com/ABC" solo sería coincidencia en IESiteListMode.</translation>
 <translation id="8736538322216687231">Aplicar el modo restringido en YouTube como mínimo</translation>
+<translation id="8744844164152340112">Controla el tema utilizado para renderizar la interfaz de usuario la primera vez que se usa el dispositivo y durante la sesión (oscuro/claro/automático).
+      El modo automático cambia automáticamente entre los temas oscuro y claro al amanecer y al atardecer.
+      Esta política debería recomendarse para ofrecer a los usuarios la opción de cambiar el tema en la configuración del sistema.</translation>
 <translation id="8745669971728319820">Esta política determina si se recoge información sobre extensiones y complementos.
 
       Si no se establece la política <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> o se inhabilita, esta se ignorará.

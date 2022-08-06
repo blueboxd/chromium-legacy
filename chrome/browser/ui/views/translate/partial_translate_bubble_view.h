@@ -56,6 +56,12 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSourceLanguageDoneButton);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kErrorMessage);
 
+  PartialTranslateBubbleView(views::View* anchor_view,
+                             std::unique_ptr<PartialTranslateBubbleModel> model,
+                             translate::TranslateErrors::Type error_type,
+                             content::WebContents* web_contents,
+                             base::OnceClosure on_closing);
+
   PartialTranslateBubbleView(const PartialTranslateBubbleView&) = delete;
   PartialTranslateBubbleView& operator=(const PartialTranslateBubbleView&) =
       delete;
@@ -69,6 +75,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
+  void WindowClosing() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -79,16 +86,14 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   // Returns the current view state.
   PartialTranslateBubbleModel::ViewState GetViewState() const;
 
- protected:
+  // Initialize the bubble in the correct view state when it is shown.
+  void SetViewState(PartialTranslateBubbleModel::ViewState view_state,
+                    translate::TranslateErrors::Type error_type);
+
   // LocationBarBubbleDelegateView:
   void CloseBubble() override;
 
  private:
-  PartialTranslateBubbleView(views::View* anchor_view,
-                             std::unique_ptr<PartialTranslateBubbleModel> model,
-                             translate::TranslateErrors::Type error_type,
-                             content::WebContents* web_contents);
-
   // views::TabbedPaneListener:
   void TabSelectedAt(int index) override;
 
@@ -214,6 +219,8 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   translate::TranslateErrors::Type error_type_;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
+
+  base::OnceClosure on_closing_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TRANSLATE_PARTIAL_TRANSLATE_BUBBLE_VIEW_H_

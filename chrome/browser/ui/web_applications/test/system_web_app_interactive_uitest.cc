@@ -16,6 +16,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -102,7 +103,8 @@ class SystemWebAppLinkCaptureBrowserTest
     return incognito;
   }
   const GURL kInitiatingAppUrl = GURL("chrome://initiating-app/pwa.html");
-  const SystemAppType kInitiatingAppType = SystemAppType::SETTINGS;
+  const ash::SystemWebAppType kInitiatingAppType =
+      ash::SystemWebAppType::SETTINGS;
 };
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -223,9 +225,11 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
   content::TestNavigationObserver observer(maybe_installation_->GetAppUrl());
   observer.StartWatchingNewWebContents();
 
-  TestRenderViewContextMenu menu(
-      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-      context_menu_params);
+  TestRenderViewContextMenu menu(*browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetPrimaryMainFrame(),
+                                 context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
@@ -266,9 +270,11 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
   content::TestNavigationObserver observer(maybe_installation_->GetAppUrl());
   observer.StartWatchingNewWebContents();
 
-  TestRenderViewContextMenu menu(
-      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-      context_menu_params);
+  TestRenderViewContextMenu menu(*browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetPrimaryMainFrame(),
+                                 context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW, 0);
 
@@ -529,25 +535,21 @@ class SystemWebAppManagerMultiDesktopLaunchBrowserTest
   void WaitForSystemWebAppInstall(Profile* profile) {
     base::RunLoop run_loop;
 
-    web_app::WebAppProvider::GetForSystemWebApps(profile)
-        ->system_web_app_manager()
-        .on_apps_synchronized()
-        .Post(FROM_HERE, base::BindLambdaForTesting([&]() {
-                // Wait one execution loop for
-                // on_apps_synchronized() to be called on all
-                // listeners.
-                base::ThreadTaskRunnerHandle::Get()->PostTask(
-                    FROM_HERE, run_loop.QuitClosure());
-              }));
+    ash::SystemWebAppManager::Get(profile)->on_apps_synchronized().Post(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          // Wait one execution loop for
+          // on_apps_synchronized() to be called on all
+          // listeners.
+          base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
+        }));
     run_loop.Run();
   }
 
   AppId GetAppId(Profile* profile) {
-    SystemWebAppManager& manager =
-        web_app::WebAppProvider::GetForSystemWebApps(profile)
-            ->system_web_app_manager();
     absl::optional<AppId> app_id =
-        manager.GetAppIdForSystemApp(installation_->GetType());
+        ash::SystemWebAppManager::Get(profile)->GetAppIdForSystemApp(
+            installation_->GetType());
     CHECK(app_id.has_value());
     return *app_id;
   }
@@ -808,9 +810,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLaunchOmniboxNavigateBrowsertest,
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   // Verifies the tab has an associated tab helper for System App's AppId.
-  auto* tab_helper = web_app::WebAppTabHelper::FromWebContents(web_contents);
-  EXPECT_TRUE(tab_helper);
-  EXPECT_EQ(tab_helper->GetAppId(),
+  EXPECT_EQ(*web_app::WebAppTabHelper::GetAppId(web_contents),
             *web_app::GetAppIdForSystemWebApp(browser()->profile(),
                                               GetMockAppType()));
 }

@@ -29,6 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
@@ -426,6 +427,11 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // returns true, if the FrameTree that this frame is in is not the outermost
   // FrameTree.
   bool IsInFencedFrameTree() const;
+
+  // Returns false if fenced frames are disabled. Otherwise, returns true if
+  // this frame is the main frame of a fenced frame tree. Works for both MPArch
+  // and ShadowDOM based fenced frames.
+  bool IsFencedFrameRoot() const;
 
   // Returns the mode set on the fenced frame if the frame is inside a fenced
   // frame tree. Otherwise returns `absl::nullopt`. This should not be called

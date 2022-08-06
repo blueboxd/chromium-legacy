@@ -37,6 +37,46 @@ base::Time ConvertToBaseTime(uint64_t time) {
       base::Microseconds(time));
 }
 
+// Trims the notes field in the sync_pb::PasswordSpecificsData proto. If neither
+// the high level notes field nor any of the individual notes contains populated
+// fields, the high level field is cleared.
+void TrimPasswordSpecificsDataNotesForCaching(
+    sync_pb::PasswordSpecificsData& trimmed_password_data) {
+  // `notes` field should be cleared if all notes are empty.
+  bool non_empty_note_exists = false;
+  // Iterate over all notes and clear all supported fields.
+  for (sync_pb::PasswordSpecificsData_Notes_Note& note :
+       *trimmed_password_data.mutable_notes()->mutable_note()) {
+    // Remember the `unique_display_name` such that if this note needs to be
+    // cached, the `unique_display_name` is required to be able reconcile cached
+    // notes during commit.
+    std::string unique_display_name = note.unique_display_name();
+    note.clear_unique_display_name();
+    note.clear_value();
+    note.clear_date_created_windows_epoch_micros();
+    note.clear_hide_by_default();
+    if (note.ByteSizeLong() != 0) {
+      non_empty_note_exists = true;
+      // Set the `unique_display_name` since it's required during the
+      // reconciliation step in PasswordNotesToProto().
+      note.set_unique_display_name(unique_display_name);
+    }
+  }
+  if (non_empty_note_exists) {
+    // Since some of the notes contain populated fields, no more trimming is
+    // possible.
+    return;
+  } else {
+    trimmed_password_data.mutable_notes()->clear_note();
+  }
+  // None of the individual notes contains populated fields. If the high level
+  // Notes proto doesn't contain unknown fields either, we should clear the
+  // notes field when trimming.
+  if (trimmed_password_data.notes().unknown_fields().empty()) {
+    trimmed_password_data.clear_notes();
+  }
+}
+
 }  // namespace
 
 sync_pb::PasswordSpecificsData_PasswordIssues PasswordIssuesMapToProto(
@@ -102,6 +142,52 @@ base::flat_map<InsecureType, InsecurityMetadata> PasswordIssuesMapFromProto(
   return form_issues;
 }
 
+std::vector<PasswordNote> PasswordNotesFromProto(
+    const sync_pb::PasswordSpecificsData_Notes& notes_proto) {
+  std::vector<PasswordNote> notes;
+  for (const sync_pb::PasswordSpecificsData_Notes_Note& note :
+       notes_proto.note()) {
+    notes.emplace_back(
+        base::UTF8ToUTF16(note.unique_display_name()),
+        base::UTF8ToUTF16(note.value()),
+        ConvertToBaseTime(note.date_created_windows_epoch_micros()),
+        note.hide_by_default());
+  }
+  return notes;
+}
+
+sync_pb::PasswordSpecificsData_Notes PasswordNotesToProto(
+    const std::vector<PasswordNote>& notes,
+    const sync_pb::PasswordSpecificsData_Notes& base_notes) {
+  sync_pb::PasswordSpecificsData_Notes notes_proto = base_notes;
+  for (const PasswordNote& note : notes) {
+    sync_pb::PasswordSpecificsData_Notes_Note* note_proto = nullptr;
+    // Try to find a corresponding cached note. Since `unique_display_name` is
+    // unique per password, and immutable, it can be used to reconcile notes.
+    // `unique_display_name` is cached in TrimPasswordSpecificsDataForCaching().
+    for (sync_pb::PasswordSpecificsData_Notes_Note& cached_note :
+         *notes_proto.mutable_note()) {
+      if (cached_note.unique_display_name() ==
+          base::UTF16ToUTF8(note.unique_display_name)) {
+        note_proto = &cached_note;
+        break;
+      }
+    }
+    // If no corresponding cached note is found, add a new one.
+    if (!note_proto) {
+      note_proto = notes_proto.add_note();
+      note_proto->set_unique_display_name(
+          base::UTF16ToUTF8(note.unique_display_name));
+    }
+
+    note_proto->set_value(base::UTF16ToUTF8(note.value));
+    note_proto->set_date_created_windows_epoch_micros(
+        note.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
+    note_proto->set_hide_by_default(note.hide_by_default);
+  }
+  return notes_proto;
+}
+
 sync_pb::PasswordSpecificsData TrimPasswordSpecificsDataForCaching(
     const sync_pb::PasswordSpecificsData& password_specifics_data) {
   sync_pb::PasswordSpecificsData trimmed_password_data =
@@ -124,6 +210,9 @@ sync_pb::PasswordSpecificsData TrimPasswordSpecificsDataForCaching(
   trimmed_password_data.clear_date_last_used();
   trimmed_password_data.clear_password_issues();
   trimmed_password_data.clear_date_password_modified_windows_epoch_micros();
+
+  TrimPasswordSpecificsDataNotesForCaching(trimmed_password_data);
+
   return trimmed_password_data;
 }
 
@@ -181,7 +270,8 @@ sync_pb::PasswordSpecificsData SpecificsDataFromPassword(
           : password_form.federation_origin.Serialize());
   *password_data.mutable_password_issues() =
       PasswordIssuesMapToProto(password_form.password_issues);
-
+  *password_data.mutable_notes() =
+      PasswordNotesToProto(password_form.notes, base_password_data.notes());
   return password_data;
 }
 
@@ -273,7 +363,7 @@ PasswordForm PasswordFromSpecifics(
   password.federation_origin =
       url::Origin::Create(GURL(password_data.federation_url()));
   password.password_issues = PasswordIssuesMapFromProto(password_data);
-
+  password.notes = PasswordNotesFromProto(password_data.notes());
   return password;
 }
 
@@ -283,8 +373,9 @@ bool DeserializeFormData(base::Value::Dict& serialized_data,
   std::string* form_url = serialized_data.FindString(kUrlKey);
   std::string* form_action = serialized_data.FindString(kActionKey);
   base::Value::List* fields = serialized_data.FindList(kFieldsKey);
-  if (!form_name || !form_url || !form_action || !fields)
+  if (!form_name || !form_url || !form_action || !fields) {
     return false;
+  }
   form_data.name = base::UTF8ToUTF16(*form_name);
   form_data.url = GURL(*form_url);
   form_data.action = GURL(*form_action);
@@ -292,14 +383,16 @@ bool DeserializeFormData(base::Value::Dict& serialized_data,
   for (auto& serialized_field : *fields) {
     base::Value::Dict* serialized_field_dictionary =
         serialized_field.GetIfDict();
-    if (!serialized_field_dictionary)
+    if (!serialized_field_dictionary) {
       return false;
+    }
     FormFieldData field;
     std::string* field_name = serialized_field_dictionary->FindString(kNameKey);
     std::string* field_type =
         serialized_field_dictionary->FindString(kFormControlTypeKey);
-    if (!field_name || !field_type)
+    if (!field_name || !field_type) {
       return false;
+    }
     field.name = base::UTF8ToUTF16(*field_name);
     field.form_control_type = *field_type;
     form_data.fields.push_back(field);
@@ -312,17 +405,20 @@ void DeserializeOpaqueLocalData(const std::string& opaque_metadata,
   JSONStringValueDeserializer json_deserializer(opaque_metadata);
   std::unique_ptr<base::Value> root(
       json_deserializer.Deserialize(nullptr, nullptr));
-  if (!root.get() || !root->is_dict())
+  if (!root.get() || !root->is_dict()) {
     return;
+  }
 
   base::Value::Dict serialized_data(std::move(root->GetDict()));
   auto skip_zero_click = serialized_data.FindBool(kSkipZeroClickKey);
   auto* serialized_form_data = serialized_data.FindDict(kFormDataKey);
-  if (!skip_zero_click.has_value() || !serialized_form_data)
+  if (!skip_zero_click.has_value() || !serialized_form_data) {
     return;
+  }
   FormData form_data;
-  if (!DeserializeFormData(*serialized_form_data, form_data))
+  if (!DeserializeFormData(*serialized_form_data, form_data)) {
     return;
+  }
   password_form.skip_zero_click = *skip_zero_click;
   password_form.form_data = std::move(form_data);
 }

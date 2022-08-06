@@ -68,7 +68,7 @@ bool IsLast(bool is_loaded) {
 
 bool IsFiltered(const GURL& url) {
   for (auto* filter : kFilterlist) {
-    if (base::LowerCaseEqualsASCII(url.host(), filter)) {
+    if (base::EqualsCaseInsensitiveASCII(url.host(), filter)) {
       return true;
     }
   }
@@ -241,9 +241,9 @@ void DistillabilityAgent::DidMeaningfulLayout(
   }
 
   DCHECK(render_frame());
-  if (!render_frame()->IsMainFrame())
-    return;
   DCHECK(render_frame()->GetWebFrame());
+  if (!render_frame()->GetWebFrame()->IsOutermostMainFrame())
+    return;
   blink::WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
   if (doc.IsNull() || doc.Body().IsNull())
     return;

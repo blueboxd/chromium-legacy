@@ -222,9 +222,9 @@ SupportedResolutionRangeMap GetSupportedD3D11VideoDecoderResolutions(
       continue;
     }
 
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
     if (!workarounds.disable_accelerated_hevc_decode &&
-        base::FeatureList::IsEnabled(kD3D11HEVCDecoding)) {
+        base::FeatureList::IsEnabled(kPlatformHEVCDecoderSupport)) {
       if (profile_id == D3D11_DECODER_PROFILE_HEVC_VLD_MAIN) {
         supported_resolutions[HEVCPROFILE_MAIN] = GetResolutionsForGUID(
             video_device.Get(), profile_id, kModernResolutions);
@@ -237,7 +237,7 @@ SupportedResolutionRangeMap GetSupportedD3D11VideoDecoderResolutions(
         continue;
       }
     }
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   }
 
   return supported_resolutions;

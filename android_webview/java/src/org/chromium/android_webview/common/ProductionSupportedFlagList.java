@@ -105,14 +105,16 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(AwSwitches.WEBVIEW_SHADOW_DOM_FENCED_FRAMES,
                     "Enables ShadowDOM-based fenced frames. Also implies SharedStorageAPI, "
                             + "and PrivacySandboxAdsAPIsOverride"),
+            Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_APP_RECOVERY,
+                    "Disables WebView from checking for app recovery mitigations."),
+            Flag.commandLine(AwSwitches.WEBVIEW_ENABLE_APP_RECOVERY,
+                    "Enables WebView to check for app recovery mitigations."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
                     "Use Vulkan for composite. Requires Android device and OS support. May crash "
                             + "if enabled on unsupported device."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_SURFACE_CONTROL,
-                    "Use SurfaceControl. Requires WebViewZeroCopyVideo and Android device and OS "
+                    "Use SurfaceControl. Requires WebViewThreadSafeMedia and Android device and OS "
                             + "support."),
-            Flag.baseFeature(GpuFeatures.WEBVIEW_ZERO_COPY_VIDEO,
-                    "Avoid extra copy for video frames when possible"),
             Flag.baseFeature(GpuFeatures.WEBVIEW_THREAD_SAFE_MEDIA,
                     "Use thread-safe media path, requires Android P."),
             Flag.baseFeature(VizFeatures.WEBVIEW_NEW_INVALIDATE_HEURISTIC,
@@ -177,8 +179,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
                     "Enforce delay between offering Autofill opportunities in the "
                             + "strike database."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_USE_UNASSOCIATED_LISTED_ELEMENTS,
-                    "Caches unowned listed elements in the document."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSING_PATTERN_PROVIDER,
                     "Enables Autofill to use its new method to retrieve parsing patterns."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PAGE_LANGUAGE_DETECTION,
@@ -188,14 +188,17 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
                     "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
                             + "fields when parsing forms."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_UPSTREAM_ALLOW_ADDITIONAL_EMAIL_DOMAINS,
-                    "When enabled, Autofill will allow credit card upload save for select "
-                            + "non-Google-based accounts."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_UPSTREAM_ALLOW_ALL_EMAIL_DOMAINS,
-                    "When enabled, Autofill will allow credit card upload save for all "
-                            + "non-Google-based accounts."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_NAME_SURENAME_PARSING,
                     "Adds new name surname field combinations to the parsing logic"),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_ADDRESS_LINE,
+                    "Rationalizes (street address, address line 2) field sequences to "
+                            + "(address line1, address line 2)."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_FILL_CREDIT_CARD_AS_PER_FORMAT_STRING,
+                    "When enabled, Autofill tries to infer the credit card expiry date format "
+                            + "from the label and placeholder."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
+                    "When enabled, Autofill local heuristics consider the placeholder attribute "
+                            + "for determining field types."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -236,8 +239,6 @@ public final class ProductionSupportedFlagList {
                             + " number in the minor version position in the User-Agent string."),
             Flag.baseFeature(NetworkServiceFeatures.URL_LOADER_SYNC_CLIENT,
                     "Optimizes communication between URLLoader and CorsURLLoader."),
-            Flag.baseFeature(NetworkServiceFeatures.COMBINE_RESPONSE_BODY,
-                    "Reduces URLLoaderClient mojo calls."),
             Flag.baseFeature(NetworkServiceFeatures.FASTER_SET_COOKIE, "Optimizes cookie access."),
             Flag.baseFeature(NetworkServiceFeatures.OPTIMIZE_NETWORK_BUFFERS,
                     "Optimizes buffer size for reading from the network or InputStream."),
@@ -251,8 +252,6 @@ public final class ProductionSupportedFlagList {
                     "Enables the <param> element's URL-setting features (this functionality is"
                             + " being deprecated and removed, so ENABLED is the safe/current"
                             + " behavior, and DISABLED is the tested/new behavior)."),
-            Flag.baseFeature(ContentFeatures.PRELOAD_COOKIES,
-                    "Enables preload cookie database on NetworkContext creation."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_REQUEST_PRECONNECT,
                     "Enables preconnecting for frame requests."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
@@ -331,6 +330,16 @@ public final class ProductionSupportedFlagList {
                             + "thread."),
             Flag.baseFeature(BaseFeatures.OPTIMIZE_DATA_URLS,
                     "Optimizes parsing and loading of data: URLs."),
+            Flag.baseFeature(BlinkFeatures.EVENT_PATH, "Enables the deprecated Event.path API."),
+            Flag.baseFeature(BlinkFeatures.PREFETCH_FONT_LOOKUP_TABLES,
+                    "If enabled, font lookup tables will be prefetched on renderer startup."),
+            Flag.baseFeature(BlinkFeatures.PRECOMPILE_INLINE_SCRIPTS,
+                    "If enabled, inline scripts will be stream compiled using a background HTML"
+                            + " scanner."),
+            Flag.baseFeature(BaseFeatures.RUN_TASKS_BY_BATCHES,
+                    "Run tasks in queue for 8ms before before sending a system message."),
+            Flag.baseFeature(BlinkFeatures.OFFSET_PARENT_NEW_SPEC_BEHAVIOR,
+                    "Enables new HTMLElement.offsetParent behavior to match other browsers."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

@@ -345,10 +345,6 @@ void WebRuntimeFeatures::EnableOverlayScrollbars(bool enable) {
   ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(enable);
 }
 
-void WebRuntimeFeatures::ForceOverlayFullscreenVideo(bool enable) {
-  RuntimeEnabledFeatures::SetForceOverlayFullscreenVideoEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableSharedArrayBuffer(bool enable) {
   RuntimeEnabledFeatures::SetSharedArrayBufferEnabled(enable);
 }
@@ -657,6 +653,10 @@ void WebRuntimeFeatures::EnableWebAuthenticationRemoteDesktopSupport(
     bool enable) {
   RuntimeEnabledFeatures::SetWebAuthenticationRemoteDesktopSupportEnabled(
       enable);
+}
+
+void WebRuntimeFeatures::EnableSpeculationRulesPrefetchProxy(bool enable) {
+  RuntimeEnabledFeatures::SetSpeculationRulesPrefetchProxyEnabled(enable);
 }
 
 }  // namespace blink

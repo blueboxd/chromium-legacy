@@ -1,5 +1,13 @@
 [
   {
+    "prefix": "anonymous-iframe-origin-trial",
+    "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
+    "bases": ["wpt_internal/origin_trials/anonymous-iframe"],
+    "args": [
+      "--disable-blink-features=AnonymousIframe"
+    ]
+  },
+  {
     "prefix": "disable-accept-language-header",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/navigation/language"],
@@ -32,9 +40,9 @@
               "external/wpt/animation-worklet",
               "external/wpt/css/css-animations",
               "external/wpt/css/css-backgrounds",
-              "external/wpt/css/css-color/animation",
               "external/wpt/css/css-scroll-snap",
               "external/wpt/css/css-transforms/animation",
+              "external/wpt/css/css-transforms/individual-transform/animation",
               "external/wpt/feature-policy/experimental-features",
               "external/wpt/permissions-policy/experimental-features",
               "external/wpt/html/canvas/offscreen/manual/convert-to-blob",
@@ -51,6 +59,12 @@
               "synthetic_gestures",
               "transitions"],
     "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "conversions-debug-mode",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/attribution-reporting"],
+    "args": ["--conversions-debug-mode"]
   },
   {
     "prefix": "composite-relative-keyframes",
@@ -163,7 +177,6 @@
     "args": ["--enable-features=OverlayScrollbar",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",
-             "--force-overlay-fullscreen-video",
              "--enable-overscroll-notifications",
              "--enable-viewport",
              "--disable-canvas-aa",
@@ -259,7 +272,8 @@
     "prefix": "layout_ng_table_frag",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/css/css-break/table",
-              "external/wpt/css/css-multicol/table"],
+              "external/wpt/css/css-multicol/table",
+              "fragmentation"],
     "args": ["--enable-blink-features=LayoutNGTableFragmentation"]
   },
   {
@@ -419,7 +433,9 @@
               "http/tests/inspector-protocol",
               "http/tests/origin_trials",
               "http/tests/workers",
-              "inspector-protocol/worker"],
+              "inspector-protocol/worker",
+              "wpt_internal/fenced_frame/serviceWorker-dedicated-worker.https.html"
+            ],
     "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
@@ -456,11 +472,10 @@
     "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   },
   {
-    "prefix": "wasm-site-isolated-code-cache",
+    "prefix": "wasm-code-caching",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/devtools/wasm-isolated-code-cache"],
-    "args": ["--disable-features=WebAssemblyBaseline",
-             "--site-per-process"]
+    "bases": ["http/tests/wasm/caching"],
+    "args": ["--js-flags=--allow-natives-syntax"]
   },
   {
     "prefix": "wasm-csp",
@@ -633,17 +648,6 @@
     "args": ["--enable-blink-features=CSSModules", "--js-flags=--harmony-import-assertions"]
   },
   {
-    "prefix": "css-calc-infinity-and-nan-disabled",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/html/rendering/non-replaced-elements/the-page/crashtests/",
-              "external/wpt/css/css-values/",
-              "external/wpt/css/css-transforms/parsing/",
-              "external/wpt/css/css-transforms/crashtests/",
-              "external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/crashtests",
-              "external/wpt/css/css-transitions/crashtests/transition-large-word-spacing-001.html"],
-    "args": ["--disable-blink-features=CSSCalcInfinityAndNaN"]
-  },
-  {
     "prefix": "import-assertions",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/import-assertions"],
@@ -692,6 +696,12 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
     "args": ["--force-color-profile=scrgb-linear"]
+  },
+  {
+    "prefix": "color-spin",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [],
+    "args": ["--force-color-profile=color-spin-gamma24"]
   },
   {
     "prefix": "split-cache-by-include-credentials",
@@ -832,8 +842,7 @@
       "external/wpt/service-workers/service-worker/partitioned-claim.tentative.https.html",
       "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html",
       "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html",
-      "external/wpt/IndexedDB/idb-partitioned-basic.tentative.sub.html",
-      "external/wpt/IndexedDB/idb-partitioned-persistence.tentative.sub.html",
+      "external/wpt/IndexedDB",
       "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
@@ -1020,7 +1029,9 @@
   {
     "prefix": "document-transition",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["wpt_internal/document-transition", "document-transition"],
+    "bases": ["wpt_internal/document-transition",
+              "document-transition",
+              "inspector-protocol/css/css-get-styles-for-document-transition.js"],
     "args": ["--enable-features=DocumentTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
@@ -1038,12 +1049,6 @@
       "external/wpt/html/semantics/interactive-elements/the-dialog-element"
     ],
     "args": ["--disable-features=DialogFocusNewSpecBehavior"]
-  },
-  {
-    "prefix": "disable-ua-ch-platform",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
-    "args": ["--disable-features=UACHPlatformEnabledByDefault"]
   },
   {
     "prefix": "object-param-url",
@@ -1088,7 +1093,7 @@
     "prefix": "automatic-lazy-frame-loading-ads",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--enable-features=AutomaticLazyFrameLoadingToAds"]
+    "args": ["--enable-features=AutomaticLazyFrameLoadingToAds:timeout/1000"]
   },
   {
     "prefix": "initially-invisible-images-lcp",
@@ -1257,5 +1262,14 @@
     "args": [
       "--disable-blink-features=RestrictBatteryStatusToSecureContexts"
     ]
+  },
+  {
+    "prefix": "precompile-inline-scripts",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/html/semantics/scripting-1",
+      "fast/dom/HTMLScriptElement"
+    ],
+    "args": ["--enable-features=PrecompileInlineScripts"]
   }
 ]

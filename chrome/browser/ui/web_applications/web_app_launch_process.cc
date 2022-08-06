@@ -36,7 +36,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #endif
 
 namespace web_app {
@@ -89,16 +89,17 @@ content::WebContents* WebAppLaunchProcess::Run() {
   // DCHECK on the basic scope.
   DCHECK(provider_.registrar().IsUrlInAppScope(launch_url, params_.app_id) ||
          GetSystemWebAppTypeForAppId(&profile_, params_.app_id) &&
-             provider_.system_web_app_manager().GetSystemApp(
-                 *GetSystemWebAppTypeForAppId(&profile_, params_.app_id)) &&
-             provider_.system_web_app_manager()
-                 .GetSystemApp(
+             ash::SystemWebAppManager::GetForLocalAppsUnchecked(&profile_)
+                 ->GetSystemApp(
+                     *GetSystemWebAppTypeForAppId(&profile_, params_.app_id)) &&
+             ash::SystemWebAppManager::GetForLocalAppsUnchecked(&profile_)
+                 ->GetSystemApp(
                      *GetSystemWebAppTypeForAppId(&profile_, params_.app_id))
                  ->IsUrlInSystemAppScope(launch_url));
 #endif
 
   // System Web Apps have their own launch code path.
-  absl::optional<SystemAppType> system_app_type =
+  absl::optional<ash::SystemWebAppType> system_app_type =
       GetSystemWebAppTypeForAppId(&profile_, params_.app_id);
   if (system_app_type) {
     Browser* browser = LaunchSystemWebAppImpl(&profile_, *system_app_type,

@@ -274,14 +274,6 @@ bool VP8VaapiVideoEncoderDelegate::Initialize(
     return false;
   }
 
-  // Even though VP8VaapiVideoEncoderDelegate might support other bitrate
-  // control modes, only the kConstantQuantizationParameter is used.
-  if (ave_config.bitrate_control != VaapiVideoEncoderDelegate::BitrateControl::
-                                        kConstantQuantizationParameter) {
-    DVLOGF(1) << "Only CQ bitrate control is supported";
-    return false;
-  }
-
   if (config.HasSpatialLayer()) {
     DVLOGF(1) << "Invalid configuration. Spatial layers not supported in VP8";
     return false;
@@ -622,10 +614,9 @@ bool VP8VaapiVideoEncoderDelegate::SubmitFrameParameters(
   qmatrix_buf.quantization_index_delta[4] =
       frame_header->quantization_hdr.uv_ac_delta;
 
-  return vaapi_wrapper_->SubmitBuffer(VAEncSequenceParameterBufferType,
-                                      &seq_param) &&
-         vaapi_wrapper_->SubmitBuffer(VAEncPictureParameterBufferType,
-                                      &pic_param) &&
-         vaapi_wrapper_->SubmitBuffer(VAQMatrixBufferType, &qmatrix_buf);
+  return vaapi_wrapper_->SubmitBuffers(
+      {{VAEncSequenceParameterBufferType, sizeof(seq_param), &seq_param},
+       {VAEncPictureParameterBufferType, sizeof(pic_param), &pic_param},
+       {VAQMatrixBufferType, sizeof(qmatrix_buf), &qmatrix_buf}});
 }
 }  // namespace media

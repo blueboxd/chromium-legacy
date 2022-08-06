@@ -43,12 +43,12 @@
 #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/services/speech/buildflags/buildflags.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #include "components/browsing_topics/mojom/browsing_topics_internals.mojom.h"
-#include "components/contextual_search/buildflags.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
@@ -122,7 +122,6 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/android/contextualsearch/contextual_search_observer.h"
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
@@ -130,8 +129,6 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
-#include "components/contextual_search/content/browser/contextual_search_js_api_service_impl.h"
-#include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -157,8 +154,6 @@
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
-#include "chrome/browser/ui/webui/download_shelf/download_shelf.mojom.h"
-#include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
 #include "chrome/browser/ui/webui/internals/user_education/user_education_internals.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
@@ -215,6 +210,8 @@
 #include "ash/webui/file_manager/mojom/file_manager.mojom.h"
 #include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
 #include "ash/webui/firmware_update_ui/mojom/firmware_update.mojom.h"
+#include "ash/webui/guest_os_installer/guest_os_installer_ui.h"
+#include "ash/webui/guest_os_installer/mojom/guest_os_installer.mojom.h"
 #include "ash/webui/help_app_ui/help_app_ui.h"
 #include "ash/webui/help_app_ui/help_app_ui.mojom.h"
 #include "ash/webui/help_app_ui/search/search.mojom.h"
@@ -279,6 +276,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/apps/digital_goods/digital_goods_factory_stub.h"
+#include "chrome/browser/apps/digital_goods/digital_goods_lacros.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
@@ -304,11 +302,12 @@
 #include "chrome/browser/speech/speech_recognition_client_browser_interface_factory.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
 
 #if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 #include "chrome/browser/speech/speech_recognition_service_factory.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif  // BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -330,9 +329,8 @@
 void ash::SystemExtensionsInternalsUI::BindInterface(
     mojo::PendingReceiver<ash::mojom::system_extensions_internals::PageHandler>
         receiver) {
-  auto page_handler = std::make_unique<SystemExtensionsInternalsPageHandler>(
-      Profile::FromWebUI(web_ui()));
-  mojo::MakeSelfOwnedReceiver(std::move(page_handler), std::move(receiver));
+  page_handler_ = std::make_unique<SystemExtensionsInternalsPageHandler>(
+      Profile::FromWebUI(web_ui()), std::move(receiver));
 }
 #endif
 
@@ -358,26 +356,6 @@ void BindUnhandledTapWebContentsObserver(
       std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
-
-#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
-void BindContextualSearchObserver(
-    content::RenderFrameHost* const host,
-    mojo::PendingReceiver<
-        contextual_search::mojom::ContextualSearchJsApiService> receiver) {
-  // Early return if the RenderFrameHost's delegate is not a WebContents.
-  auto* web_contents = content::WebContents::FromRenderFrameHost(host);
-  if (!web_contents)
-    return;
-
-  auto* contextual_search_observer =
-      contextual_search::ContextualSearchObserver::FromWebContents(
-          web_contents);
-  if (contextual_search_observer) {
-    contextual_search::CreateContextualSearchJsApiService(
-        contextual_search_observer->api_handler(), std::move(receiver));
-  }
-}
-#endif  // BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
 
 // Forward image Annotator requests to the profile's AccessibilityLabelsService.
 void BindImageAnnotator(
@@ -561,11 +539,11 @@ void BindSpeechRecognitionContextHandler(
       frame_host->GetProcess()->GetBrowserContext());
   if (captions::IsLiveCaptionFeatureSupported()) {
 #if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
-    SpeechRecognitionServiceFactory::GetForProfile(profile)->Create(
-        std::move(receiver));
+    SpeechRecognitionServiceFactory::GetForProfile(profile)
+        ->BindSpeechRecognitionContext(std::move(receiver));
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-    CrosSpeechRecognitionServiceFactory::GetForProfile(profile)->Create(
-        std::move(receiver));
+    CrosSpeechRecognitionServiceFactory::GetForProfile(profile)
+        ->BindSpeechRecognitionContext(std::move(receiver));
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     // TODO(b:223493879): Provide LaCrOS implementation, via go/crosapi.
 #error "LaCrOS speech recognition service factory not implemented yet."
@@ -693,15 +671,10 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
 
-#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
-  map->Add<contextual_search::mojom::ContextualSearchJsApiService>(
-      base::BindRepeating(&BindContextualSearchObserver));
-
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   map->Add<blink::mojom::UnhandledTapNotifier>(
       base::BindRepeating(&BindUnhandledTapWebContentsObserver));
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
-#endif  // BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
 
 #else
   map->Add<blink::mojom::BadgeService>(
@@ -718,9 +691,13 @@ void PopulateChromeFrameBinders(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(crbug.com/1203666): replace with a real implementation for Lacros.
-  map->Add<payments::mojom::DigitalGoodsFactory>(
-      base::BindRepeating(&apps::DigitalGoodsFactoryStub::Bind));
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    map->Add<payments::mojom::DigitalGoodsFactory>(
+        base::BindRepeating(&apps::DigitalGoodsFactoryLacros::Bind));
+  } else {
+    map->Add<payments::mojom::DigitalGoodsFactory>(
+        base::BindRepeating(&apps::DigitalGoodsFactoryStub::Bind));
+  }
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
@@ -925,9 +902,6 @@ void PopulateChromeWebUIFrameBinders(
   }
 
   RegisterWebUIControllerInterfaceBinder<
-      download_shelf::mojom::PageHandlerFactory, DownloadShelfUI>(map);
-
-  RegisterWebUIControllerInterfaceBinder<
       ::mojom::user_education_internals::UserEducationInternalsPageHandler,
       InternalsUI>(map);
 
@@ -983,6 +957,10 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       ash::cellular_setup::mojom::ESimManager, chromeos::settings::OSSettingsUI,
       chromeos::NetworkUI, chromeos::OobeUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::guest_os_installer::mojom::PageHandlerFactory,
+      ash::GuestOSInstallerUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::crostini_installer::mojom::PageHandlerFactory,

@@ -23,12 +23,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -381,10 +384,10 @@ class TabStripModelTest : public testing::Test {
   std::unique_ptr<WebContents> CreateWebContentsWithSharedRPH(
       WebContents* web_contents) {
     WebContents::CreateParams create_params(
-        profile(), web_contents->GetMainFrame()->GetSiteInstance());
+        profile(), web_contents->GetPrimaryMainFrame()->GetSiteInstance());
     std::unique_ptr<WebContents> retval = WebContents::Create(create_params);
-    EXPECT_EQ(retval->GetMainFrame()->GetProcess(),
-              web_contents->GetMainFrame()->GetProcess());
+    EXPECT_EQ(retval->GetPrimaryMainFrame()->GetProcess(),
+              web_contents->GetPrimaryMainFrame()->GetProcess());
     return retval;
   }
 
@@ -812,6 +815,17 @@ static void InsertWebContentses(TabStripModel* tabstrip,
   tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
                                 std::move(contents3),
                                 TabStripModel::ADD_INHERIT_OPENER);
+}
+
+static bool IsSiteInContentSettingExceptionList(
+    HostContentSettingsMap* settings,
+    GURL& url,
+    ContentSettingsType type) {
+  content_settings::SettingInfo info;
+  settings->GetWebsiteSetting(url, url, type, &info);
+  auto pattern = ContentSettingsPattern::FromURLNoWildcard(url);
+  return info.primary_pattern.Compare(pattern) ==
+         ContentSettingsPattern::IDENTITY;
 }
 
 // Tests opening background tabs.
@@ -2256,8 +2270,9 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.CloseAllTabs();
     // On a mock RPH this checks whether we *attempted* fast shutdown.
     // A real RPH would reject our attempt since there is an unload handler.
-    EXPECT_TRUE(
-        raw_contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
+    EXPECT_TRUE(raw_contents1->GetPrimaryMainFrame()
+                    ->GetProcess()
+                    ->FastShutdownStarted());
     EXPECT_EQ(2, tabstrip.count());
 
     delegate.set_run_unload_listener(false);
@@ -2280,8 +2295,9 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.AppendWebContents(std::move(contents2), true);
 
     tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
-    EXPECT_FALSE(
-        raw_contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
+    EXPECT_FALSE(raw_contents1->GetPrimaryMainFrame()
+                     ->GetProcess()
+                     ->FastShutdownStarted());
     EXPECT_EQ(1, tabstrip.count());
 
     tabstrip.CloseAllTabs();
@@ -2600,6 +2616,25 @@ TEST_F(TabStripModelTest, MoveTabNext_Group) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, MoveTabNext_GroupAtEnd) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 2, 0, "0"));
+  EXPECT_EQ("0 1", GetTabStripStateString(strip));
+
+  tab_groups::TabGroupId group = strip.AddToNewGroup({0, 1});
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), absl::nullopt);
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, MoveTabNext_PinnedDoesNotGroup) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -2676,6 +2711,25 @@ TEST_F(TabStripModelTest, MoveTabPrevious_Group) {
   strip.MoveTabPrevious();
   EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
   EXPECT_EQ(strip.GetTabGroupForTab(1), absl::nullopt);
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveTabPrevious_GroupAtEnd) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 2, 0, "1"));
+  EXPECT_EQ("0 1", GetTabStripStateString(strip));
+
+  tab_groups::TabGroupId group = strip.AddToNewGroup({0, 1});
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(0), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(0), absl::nullopt);
 
   strip.CloseAllTabs();
 }
@@ -4227,4 +4281,169 @@ TEST_F(TabStripModelTest, ActivateRecordsStartTime) {
   strip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(has_tab_switch_start_time(0));
   EXPECT_TRUE(has_tab_switch_start_time(1));
+}
+
+TEST_F(TabStripModelTest, ToggleSiteMuted) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  GURL url("https://example.com/");
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  std::unique_ptr<WebContents> new_tab_contents = CreateWebContents();
+  content::WebContentsTester::For(new_tab_contents.get())
+      ->SetLastCommittedURL(url);
+
+  tabstrip.AddWebContents(std::move(new_tab_contents), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+
+  // Validate if the mute site menu item shows up and the site is unmuted
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      0, TabStripModel::CommandToggleSiteMuted));
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Validate if toggling the state successfully mutes the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_TRUE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_TRUE(IsSiteInContentSettingExceptionList(settings, url,
+                                                  ContentSettingsType::SOUND));
+
+  // Toggling the state again to successfully unmute the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_FALSE(IsSiteInContentSettingExceptionList(settings, url,
+                                                   ContentSettingsType::SOUND));
+
+  tabstrip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, ToggleSiteMutedWithLessSpecificRule) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  GURL url("https://example.com/");
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  std::unique_ptr<WebContents> new_tab_contents = CreateWebContents();
+  content::WebContentsTester::For(new_tab_contents.get())
+      ->SetLastCommittedURL(url);
+
+  tabstrip.AddWebContents(std::move(new_tab_contents), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+
+  // Validate if the mute site menu item shows up and the site is unmuted
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      0, TabStripModel::CommandToggleSiteMuted));
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Add a wildcard to mute all HTTPS sites as a custom behavior
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("https://*");
+  ContentSettingsPattern secondary_pattern =
+      ContentSettingsPattern::FromString("*");
+  settings->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
+                                         ContentSettingsType::SOUND,
+                                         CONTENT_SETTING_BLOCK);
+  EXPECT_TRUE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Validate we are able to unmute the site (with the wildcard custom behavior)
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_TRUE(IsSiteInContentSettingExceptionList(settings, url,
+                                                  ContentSettingsType::SOUND));
+
+  // Validate we are able to mute the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_TRUE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Validate we are able to unmute the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_TRUE(IsSiteInContentSettingExceptionList(settings, url,
+                                                  ContentSettingsType::SOUND));
+
+  tabstrip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, ToggleSiteMutedWithOtherDisjointRule) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  GURL url("https://example.com/");
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  std::unique_ptr<WebContents> new_tab_contents = CreateWebContents();
+  content::WebContentsTester::For(new_tab_contents.get())
+      ->SetLastCommittedURL(url);
+
+  tabstrip.AddWebContents(std::move(new_tab_contents), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+
+  // Validate if the mute site menu item shows up and the site is unmuted
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      0, TabStripModel::CommandToggleSiteMuted));
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Add a wildcard to mute all HTTPS sites as a custom behavior
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("https://www.google.com");
+  ContentSettingsPattern secondary_pattern =
+      ContentSettingsPattern::FromString("*");
+  settings->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
+                                         ContentSettingsType::SOUND,
+                                         CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Validate we are able to mute the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_TRUE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_TRUE(IsSiteInContentSettingExceptionList(settings, url,
+                                                  ContentSettingsType::SOUND));
+
+  // Validate we are able to unmute the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_FALSE(IsSiteInContentSettingExceptionList(settings, url,
+                                                   ContentSettingsType::SOUND));
+
+  tabstrip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, ToggleSiteMutedWithDifferentDefault) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  GURL url("https://example.com/");
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  std::unique_ptr<WebContents> new_tab_contents = CreateWebContents();
+  content::WebContentsTester::For(new_tab_contents.get())
+      ->SetLastCommittedURL(url);
+
+  tabstrip.AddWebContents(std::move(new_tab_contents), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+
+  settings->SetDefaultContentSetting(ContentSettingsType::SOUND,
+                                     ContentSetting::CONTENT_SETTING_BLOCK);
+
+  // Validate if the mute site menu item shows up and the site is muted
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      0, TabStripModel::CommandToggleSiteMuted));
+  EXPECT_TRUE(chrome::IsSiteMuted(tabstrip, 0));
+
+  // Validate if toggling the state successfully unmutes the site
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleSiteMuted);
+  EXPECT_FALSE(chrome::IsSiteMuted(tabstrip, 0));
+  EXPECT_TRUE(IsSiteInContentSettingExceptionList(settings, url,
+                                                  ContentSettingsType::SOUND));
+
+  tabstrip.CloseAllTabs();
 }

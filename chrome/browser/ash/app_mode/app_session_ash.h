@@ -21,7 +21,7 @@ class AppSessionAsh : public chromeos::AppSession {
   void Init(Profile* profile, const std::string& app_id) override;
   void InitForWebKiosk(Browser* browser) override;
 
-  // Initialize the web Kiosk session (ash) when Lacros is enabled.
+  // Initializes an app session for Web kiosk with lacros.
   void InitForWebKioskWithLacros(Profile* profile);
 
  private:

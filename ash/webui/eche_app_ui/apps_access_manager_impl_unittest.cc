@@ -75,9 +75,7 @@ class AppsAccessManagerImplTest : public testing::Test {
     multidevice_setup::RegisterFeaturePrefs(pref_service_.registry());
 
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{chromeos::features::kEcheSWA,
-                              chromeos::features::
-                                  kEchePhoneHubPermissionsOnboarding},
+        /*enabled_features=*/{chromeos::features::kEcheSWA},
         /*disabled_features=*/{});
 
     fake_eche_connector_ = std::make_unique<FakeEcheConnector>();
@@ -633,6 +631,13 @@ TEST_F(AppsAccessManagerImplTest,
   // changed. Simulate flipping the policy state is disabled.
   FakeSendAppsPolicyStateChange(
       eche_app::proto::AppStreamingPolicy::APP_POLICY_DISABLED);
+
+  // No action is taken until get apps access state response is received.
+  EXPECT_EQ(0u, GetNumObserverCalls());
+
+  FakeGetAppsAccessStateResponse(
+      eche_app::proto::Result::RESULT_NO_ERROR,
+      eche_app::proto::AppsAccessState::ACCESS_GRANTED);
 
   fake_multidevice_setup_client()->InvokePendingSetFeatureEnabledStateCallback(
       /*expected_feature=*/Feature::kEche,

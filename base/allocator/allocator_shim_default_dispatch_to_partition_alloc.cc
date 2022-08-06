@@ -16,6 +16,7 @@
 #include "base/allocator/partition_allocator/allocation_guard.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/threading/platform_thread.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -26,6 +27,7 @@
 #include "base/feature_list.h"
 #include "base/memory/nonscannable_memory.h"
 #include "base/numerics/checked_math.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 
@@ -382,7 +384,7 @@ void* PartitionRealloc(const AllocatorDispatch*,
                        void* context) {
   ScopedDisallowAllocations guard{};
 #if BUILDFLAG(IS_APPLE)
-  if (UNLIKELY(!base::IsManagedByPartitionAlloc(
+  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
                    reinterpret_cast<uintptr_t>(address)) &&
                address)) {
     // A memory region allocated by the system allocator is passed in this
@@ -407,7 +409,7 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   ScopedDisallowAllocations guard{};
 #if BUILDFLAG(IS_APPLE)
   // TODO(bartekn): Add MTE unmasking here (and below).
-  if (UNLIKELY(!base::IsManagedByPartitionAlloc(
+  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
                    reinterpret_cast<uintptr_t>(object)) &&
                object)) {
     // A memory region allocated by the system allocator is passed in this
@@ -422,7 +424,7 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   // it along. This should not have a runtime cost vs regular Android, since on
   // Android we have a PA_CHECK() rather than the branch here.
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(IS_CHROMECAST)
-  if (UNLIKELY(!base::IsManagedByPartitionAlloc(
+  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
                    reinterpret_cast<uintptr_t>(object)) &&
                object)) {
     // A memory region allocated by the system allocator is passed in this
@@ -462,7 +464,8 @@ size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
     return 0;
 
 #if BUILDFLAG(IS_APPLE)
-  if (!base::IsManagedByPartitionAlloc(reinterpret_cast<uintptr_t>(address))) {
+  if (!partition_alloc::IsManagedByPartitionAlloc(
+          reinterpret_cast<uintptr_t>(address))) {
     // The object pointed to by `address` is not allocated by the
     // PartitionAlloc.  The return value `0` means that the pointer does not
     // belong to this malloc zone.
@@ -590,7 +593,7 @@ void ConfigurePartitions(
     }
     PA_DCHECK(!enable_brp);
     PA_DCHECK(!use_dedicated_aligned_partition);
-    PA_DCHECK(!current_root->with_thread_cache);
+    PA_DCHECK(!current_root->flags.with_thread_cache);
     return;
   }
 
@@ -651,6 +654,8 @@ void ConfigurePartitions(
 
 #if defined(PA_ALLOW_PCSCAN)
 void EnablePCScan(base::internal::PCScan::InitConfig config) {
+  partition_alloc::internal::base::PlatformThread::SetThreadNameHook(
+      &::base::PlatformThread::SetName);
   internal::PCScan::Initialize(config);
 
   internal::PCScan::RegisterScannableRoot(Allocator());

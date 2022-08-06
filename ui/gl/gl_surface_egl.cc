@@ -17,6 +17,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_environment_variable_override.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,6 +34,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_display_egl_util.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
@@ -184,16 +186,9 @@ using ui::PlatformEvent;
 
 namespace gl {
 
-bool GLSurfaceEGL::initialized_ = false;
-
 namespace {
 
 class EGLGpuSwitchingObserver;
-
-// TODO(jonahr): This is a temporary static object because there is only one
-// display supported. This will be removed once each GLSurfaceEGL owns its own
-// GLDisplay reference, passed in on init.
-GLDisplayEGL* g_gl_display = nullptr;
 
 EGLGpuSwitchingObserver* g_egl_gpu_switching_observer = nullptr;
 
@@ -261,7 +256,7 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
 
  private:
   EGLSurface surface_;
-  GLDisplayEGL* display_;
+  raw_ptr<GLDisplayEGL> display_;
 };
 
 class EGLGpuSwitchingObserver final : public ui::GpuSwitchingObserver {
@@ -276,7 +271,7 @@ class EGLGpuSwitchingObserver final : public ui::GpuSwitchingObserver {
   }
 
  private:
-  GLDisplayEGL* display_ = nullptr;
+  raw_ptr<GLDisplayEGL> display_ = nullptr;
 };
 
 std::vector<const char*> GetAttribArrayFromStringVector(
@@ -298,7 +293,7 @@ std::vector<std::string> GetStringVectorFromCommandLine(
 }
 
 EGLDisplay GetPlatformANGLEDisplay(
-    EGLDisplayPlatform native_display,
+    GLDisplayEGL* gl_display,
     EGLenum platform_type,
     const std::vector<std::string>& enabled_features,
     const std::vector<std::string>& disabled_features,
@@ -339,7 +334,7 @@ EGLDisplay GetPlatformANGLEDisplay(
       GetAttribArrayFromStringVector(enabled_features);
   std::vector<const char*> disabled_features_attribs =
       GetAttribArrayFromStringVector(disabled_features);
-  if (GLSurfaceEGL::GetGLDisplayEGL()->egl_angle_feature_control_supported) {
+  if (gl_display->egl_angle_feature_control_supported) {
     if (!enabled_features_attribs.empty()) {
       display_attribs.push_back(EGL_FEATURE_OVERRIDES_ENABLED_ANGLE);
       display_attribs.push_back(
@@ -353,8 +348,7 @@ EGLDisplay GetPlatformANGLEDisplay(
   }
   // TODO(dbehr) Add an attrib to Angle to pass EGL platform.
 
-  if (GLSurfaceEGL::GetGLDisplayEGL()
-          ->IsANGLEDisplayPowerPreferenceSupported()) {
+  if (gl_display->IsANGLEDisplayPowerPreferenceSupported()) {
     GpuPreference pref =
         GLSurface::AdjustGpuPreference(GpuPreference::kDefault);
     switch (pref) {
@@ -380,24 +374,25 @@ EGLDisplay GetPlatformANGLEDisplay(
   // EGLAttribs (pointers) instead of EGLints into the display
   return eglGetPlatformDisplay(
       EGL_PLATFORM_ANGLE_ANGLE,
-      reinterpret_cast<void*>(native_display.GetDisplay()),
+      reinterpret_cast<void*>(gl_display->GetNativeDisplay()),
       &display_attribs[0]);
 }
 
 EGLDisplay GetDisplayFromType(
     DisplayType display_type,
-    EGLDisplayPlatform native_display,
+    GLDisplayEGL* gl_display,
     const std::vector<std::string>& enabled_angle_features,
     const std::vector<std::string>& disabled_angle_features,
     bool disable_all_angle_features,
     uint64_t system_device_id) {
+  DCHECK(gl_display);
   std::vector<EGLAttrib> extra_display_attribs;
   if (disable_all_angle_features) {
     extra_display_attribs.push_back(EGL_FEATURE_ALL_DISABLED_ANGLE);
     extra_display_attribs.push_back(EGL_TRUE);
   }
-  if (system_device_id != 0 && GLSurfaceEGL::GetGLDisplayEGL()
-                                   ->IsANGLEPlatformANGLEDeviceIdSupported()) {
+  if (system_device_id != 0 &&
+      gl_display->IsANGLEPlatformANGLEDeviceIdSupported()) {
     uint32_t low_part = system_device_id & 0xffffffff;
     extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE);
     extra_display_attribs.push_back(low_part);
@@ -408,7 +403,8 @@ EGLDisplay GetDisplayFromType(
   }
   switch (display_type) {
     case DEFAULT:
-    case SWIFT_SHADER:
+    case SWIFT_SHADER: {
+      EGLDisplayPlatform native_display = gl_display->native_display;
       if (native_display.GetPlatform() != 0) {
         return eglGetPlatformDisplay(
             native_display.GetPlatform(),
@@ -416,14 +412,15 @@ EGLDisplay GetDisplayFromType(
       } else {
         return eglGetDisplay(native_display.GetDisplay());
       }
+    }
     case ANGLE_D3D9:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_D3D11:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_D3D11_NULL:
@@ -431,19 +428,19 @@ EGLDisplay GetDisplayFromType(
       extra_display_attribs.push_back(
           EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGL:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGL_EGL:
       extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
       extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGL_NULL:
@@ -451,19 +448,19 @@ EGLDisplay GetDisplayFromType(
       extra_display_attribs.push_back(
           EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGLES:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGLES_EGL:
       extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
       extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGLES_NULL:
@@ -471,17 +468,17 @@ EGLDisplay GetDisplayFromType(
       extra_display_attribs.push_back(
           EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_NULL:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_VULKAN:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_VULKAN_NULL:
@@ -489,14 +486,14 @@ EGLDisplay GetDisplayFromType(
       extra_display_attribs.push_back(
           EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_D3D11on12:
       extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_D3D11ON12_ANGLE);
       extra_display_attribs.push_back(EGL_TRUE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_SWIFTSHADER:
@@ -504,12 +501,12 @@ EGLDisplay GetDisplayFromType(
       extra_display_attribs.push_back(
           EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_METAL:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_METAL_NULL:
@@ -517,7 +514,7 @@ EGLDisplay GetDisplayFromType(
       extra_display_attribs.push_back(
           EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
+          gl_display, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     default:
@@ -991,42 +988,44 @@ EGLDisplay GLSurfaceEGL::GetEGLDisplay() {
 
 // static
 GLDisplayEGL* GLSurfaceEGL::GetGLDisplayEGL() {
-  if (g_gl_display == nullptr) {
-    g_gl_display = new GLDisplayEGL(EGL_NO_DISPLAY);
+  return GLDisplayManagerEGL::GetInstance()->GetDisplay(
+      GpuPreference::kDefault);
+}
+
+// static
+GLDisplayEGL* GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform native_display,
+                                             uint64_t system_device_id) {
+  GLDisplayEGL* display =
+      GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
+  if (display->GetDisplay() == EGL_NO_DISPLAY) {
+    // Must be called before InitializeDisplay().
+    g_driver_egl.ext.InitializeClientExtensionSettings();
+
+    display = InitializeDisplay(native_display, system_device_id);
+    if (display->GetDisplay() == EGL_NO_DISPLAY)
+      return nullptr;
+
+    // Must be called after InitializeDisplay().
+    g_driver_egl.ext.InitializeExtensionSettings(display);
+
+    InitializeOneOffCommon(display);
   }
-  return g_gl_display;
+  return display;
 }
 
 // static
-bool GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform native_display,
-                                    uint64_t system_device_id) {
-  if (initialized_)
-    return true;
-
-  // Must be called before InitializeDisplay().
-  g_driver_egl.InitializeClientExtensionBindings();
-
-  GLDisplayEGL* display = InitializeDisplay(native_display, system_device_id);
-  if (display->GetDisplay() == EGL_NO_DISPLAY)
-    return false;
-
-  // Must be called after InitializeDisplay().
-  g_driver_egl.InitializeExtensionBindings();
-
-  return InitializeOneOffCommon(display);
-}
-
-// static
-bool GLSurfaceEGL::InitializeOneOffForTesting() {
-  g_driver_egl.InitializeClientExtensionBindings();
-  GLDisplayEGL* display = GetGLDisplayEGL();
+GLDisplayEGL* GLSurfaceEGL::InitializeOneOffForTesting() {
+  g_driver_egl.ext.InitializeClientExtensionSettings();
+  GLDisplayEGL* display =
+      GLDisplayManagerEGL::GetInstance()->GetDisplay(GpuPreference::kDefault);
   display->SetDisplay(eglGetCurrentDisplay());
-  g_driver_egl.InitializeExtensionBindings();
-  return InitializeOneOffCommon(display);
+  g_driver_egl.ext.InitializeExtensionSettings(display);
+  InitializeOneOffCommon(display);
+  return display;
 }
 
 // static
-bool GLSurfaceEGL::InitializeOneOffCommon(GLDisplayEGL* display) {
+void GLSurfaceEGL::InitializeOneOffCommon(GLDisplayEGL* display) {
   display->egl_client_extensions =
       eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   display->egl_extensions =
@@ -1165,27 +1164,25 @@ bool GLSurfaceEGL::InitializeOneOffCommon(GLDisplayEGL* display) {
     ui::GpuSwitchingManager::GetInstance()->AddObserver(
         g_egl_gpu_switching_observer);
   }
-
-  initialized_ = true;
-  return true;
 }
 
 // static
-bool GLSurfaceEGL::InitializeExtensionSettingsOneOff() {
-  if (!initialized_)
+bool GLSurfaceEGL::InitializeExtensionSettingsOneOff(GLDisplayEGL* display) {
+  DCHECK(display);
+  if (display->GetDisplay() == EGL_NO_DISPLAY)
     return false;
-  g_driver_egl.UpdateConditionalExtensionBindings();
-  GetGLDisplayEGL()->egl_client_extensions =
+  g_driver_egl.ext.UpdateConditionalExtensionSettings(display);
+  display->egl_client_extensions =
       eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-  GetGLDisplayEGL()->egl_extensions =
-      eglQueryString(GetGLDisplayEGL()->GetDisplay(), EGL_EXTENSIONS);
+  display->egl_extensions =
+      eglQueryString(display->GetDisplay(), EGL_EXTENSIONS);
 
   return true;
 }
 
 // static
-void GLSurfaceEGL::ShutdownOneOff() {
-  if (!initialized_) {
+void GLSurfaceEGL::ShutdownOneOff(GLDisplayEGL* display) {
+  if (!display || display->GetDisplay() == EGL_NO_DISPLAY) {
     return;
   }
 
@@ -1195,12 +1192,10 @@ void GLSurfaceEGL::ShutdownOneOff() {
     delete g_egl_gpu_switching_observer;
     g_egl_gpu_switching_observer = nullptr;
   }
-  GLDisplayEGL* display = GetGLDisplayEGL();
   angle::ResetPlatform(display->GetDisplay());
-  if (display->GetDisplay() != EGL_NO_DISPLAY) {
-    DCHECK(g_driver_egl.fn.eglTerminateFn);
-    eglTerminate(display->GetDisplay());
-  }
+  DCHECK(g_driver_egl.fn.eglTerminateFn);
+  eglTerminate(display->GetDisplay());
+  display->SetDisplay(EGL_NO_DISPLAY);
 
   display->egl_client_extensions = nullptr;
   display->egl_extensions = nullptr;
@@ -1217,13 +1212,6 @@ void GLSurfaceEGL::ShutdownOneOff() {
   display->egl_display_texture_share_group_supported = false;
   display->egl_create_context_client_arrays_supported = false;
   display->egl_angle_feature_control_supported = false;
-
-  if (g_gl_display) {
-    delete g_gl_display;
-    g_gl_display = nullptr;
-  }
-
-  initialized_ = false;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() = default;
@@ -1233,7 +1221,8 @@ GLSurfaceEGL::~GLSurfaceEGL() = default;
 // static
 GLDisplayEGL* GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display,
                                               uint64_t system_device_id) {
-  GLDisplayEGL* gl_display = GetGLDisplayEGL();
+  GLDisplayEGL* gl_display =
+      GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
   if (gl_display->GetDisplay() != EGL_NO_DISPLAY) {
     return gl_display;
   }
@@ -1320,17 +1309,17 @@ GLDisplayEGL* GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display,
 
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
     DisplayType display_type = init_displays[disp_index];
-    EGLDisplay display = GetDisplayFromType(
-        display_type, gl_display->native_display, enabled_angle_features,
+    EGLDisplay egl_display = GetDisplayFromType(
+        display_type, gl_display, enabled_angle_features,
         disabled_angle_features, disable_all_angle_features, system_device_id);
-    if (display == EGL_NO_DISPLAY) {
+    if (egl_display == EGL_NO_DISPLAY) {
       LOG(ERROR) << "EGL display query failed with error "
                  << GetLastEGLErrorString();
     }
 
     // Init ANGLE platform now that we have the global display.
     if (supports_angle) {
-      if (!angle::InitializePlatform(display)) {
+      if (!angle::InitializePlatform(egl_display)) {
         LOG(ERROR) << "ANGLE Platform initialization failed.";
       }
 
@@ -1346,7 +1335,7 @@ GLDisplayEGL* GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display,
                           ->MaybeGetScopedDisplayUnsetForVulkan();
     }
 
-    if (!eglInitialize(display, nullptr, nullptr)) {
+    if (!eglInitialize(egl_display, nullptr, nullptr)) {
       bool is_last = disp_index == init_displays.size() - 1;
 
       LOG(ERROR) << "eglInitialize " << DisplayTypeString(display_type)
@@ -1369,7 +1358,7 @@ GLDisplayEGL* GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display,
 
     UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplayType", display_type,
                               DISPLAY_TYPE_MAX);
-    gl_display->SetDisplay(display);
+    gl_display->SetDisplay(egl_display);
     gl_display->display_type = display_type;
     break;
   }
@@ -1400,7 +1389,7 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
   DCHECK(!surface_);
   format_ = format;
 
-  if (!display_->GetDisplay()) {
+  if (display_->GetDisplay() == EGL_NO_DISPLAY) {
     LOG(ERROR) << "Trying to create surface with invalid display.";
     return false;
   }

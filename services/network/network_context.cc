@@ -1113,16 +1113,12 @@ void NetworkContext::QueueReport(
     const absl::optional<base::UnguessableToken>& reporting_source,
     const net::NetworkIsolationKey& network_isolation_key,
     const absl::optional<std::string>& user_agent,
-    base::Value body) {
+    base::Value::Dict body) {
 #if BUILDFLAG(ENABLE_REPORTING)
   // If |reporting_source| is provided, it must not be empty.
   DCHECK(!(reporting_source.has_value() && reporting_source->is_empty()));
   if (require_network_isolation_key_)
     DCHECK(!network_isolation_key.IsEmpty());
-
-  DCHECK(body.is_dict());
-  if (!body.is_dict())
-    return;
 
   // Get the ReportingService.
   net::URLRequestContext* request_context = url_request_context();
@@ -1140,9 +1136,9 @@ void NetworkContext::QueueReport(
         request_context->http_user_agent_settings()->GetUserAgent();
   }
 
-  reporting_service->QueueReport(
-      url, reporting_source, network_isolation_key, reported_user_agent, group,
-      type, base::Value::ToUniquePtrValue(std::move(body)), 0 /* depth */);
+  reporting_service->QueueReport(url, reporting_source, network_isolation_key,
+                                 reported_user_agent, group, type,
+                                 std::move(body), 0 /* depth */);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
@@ -1506,7 +1502,7 @@ void NetworkContext::GetExpectCTState(
     const std::string& domain,
     const net::NetworkIsolationKey& network_isolation_key,
     GetExpectCTStateCallback callback) {
-  base::Value result(base::Value::Type::DICTIONARY);
+  base::Value::Dict result;
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
         url_request_context()->transport_security_state();
@@ -1517,26 +1513,26 @@ void NetworkContext::GetExpectCTState(
 
       // TODO(estark): query static Expect-CT state as well.
       if (found) {
-        result.SetStringKey("dynamic_expect_ct_domain", domain);
-        result.SetDoubleKey("dynamic_expect_ct_observed",
-                            dynamic_expect_ct_state.last_observed.ToDoubleT());
-        result.SetDoubleKey("dynamic_expect_ct_expiry",
-                            dynamic_expect_ct_state.expiry.ToDoubleT());
-        result.SetBoolKey("dynamic_expect_ct_enforce",
-                          dynamic_expect_ct_state.enforce);
-        result.SetStringKey("dynamic_expect_ct_report_uri",
-                            dynamic_expect_ct_state.report_uri.spec());
+        result.Set("dynamic_expect_ct_domain", domain);
+        result.Set("dynamic_expect_ct_observed",
+                   dynamic_expect_ct_state.last_observed.ToDoubleT());
+        result.Set("dynamic_expect_ct_expiry",
+                   dynamic_expect_ct_state.expiry.ToDoubleT());
+        result.Set("dynamic_expect_ct_enforce",
+                   dynamic_expect_ct_state.enforce);
+        result.Set("dynamic_expect_ct_report_uri",
+                   dynamic_expect_ct_state.report_uri.spec());
       }
 
-      result.SetBoolKey("result", found);
+      result.Set("result", found);
     } else {
-      result.SetStringKey("error", "no Expect-CT state active");
+      result.Set("error", "no Expect-CT state active");
     }
   } else {
-    result.SetStringKey("error", "non-ASCII domain name");
+    result.Set("error", "non-ASCII domain name");
   }
 
-  std::move(callback).Run(std::move(result));
+  std::move(callback).Run(base::Value(std::move(result)));
 }
 
 void NetworkContext::MaybeEnqueueSCTReport(
@@ -2434,8 +2430,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     } else {
       cache_params.path = params_->http_cache_directory->path();
       cache_params.type = network_session_configurator::ChooseCacheType();
-      if (base::FeatureList::IsEnabled(net::features::kSandboxHttpCache) &&
-          params_->http_cache_file_operations_factory) {
+      if (params_->http_cache_file_operations_factory) {
         cache_params.file_operations_factory =
             base::MakeRefCounted<MojoBackendFileOperationsFactory>(
                 std::move(params_->http_cache_file_operations_factory));

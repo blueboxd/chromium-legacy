@@ -642,7 +642,7 @@ class RenderFrameWebFrameSerializerClient
       const WebVector<char>& data,
       WebFrameSerializerClient::FrameSerializationStatus status) override {
     DCHECK(handler_remote_.is_bound());
-    handler_remote_->DidReceiveData(std::string(data.Data(), data.size()));
+    handler_remote_->DidReceiveData(std::string(data.data(), data.size()));
 
     // Make sure to report Done() to the browser process when receiving the last
     // chunk of data, and reset the mojo remote so that the DCHECK above ensures
@@ -808,39 +808,6 @@ class MHTMLHandleWriterDelegate {
   MHTMLHandleWriter* handle_;
 };
 
-// Use this for histograms with dynamically generated names, which otherwise
-// can't use the UMA_HISTOGRAM_MEMORY_MB macro without code duplication.
-void RecordSuffixedMemoryMBHistogram(base::StringPiece name,
-                                     base::StringPiece suffix,
-                                     int sample_mb) {
-  base::UmaHistogramMemoryMB(base::StrCat({name, suffix}), sample_mb);
-}
-
-void RecordSuffixedRendererMemoryMetrics(
-    const RenderThreadImpl::RendererMemoryMetrics& memory_metrics,
-    base::StringPiece suffix) {
-  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.PartitionAlloc",
-                                  suffix,
-                                  memory_metrics.partition_alloc_kb / 1024);
-  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.BlinkGC",
-                                  suffix, memory_metrics.blink_gc_kb / 1024);
-  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.Malloc", suffix,
-                                  memory_metrics.malloc_mb);
-  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.Discardable",
-                                  suffix, memory_metrics.discardable_kb / 1024);
-  RecordSuffixedMemoryMBHistogram(
-      "Memory.Experimental.Renderer.V8MainThreadIsolate", suffix,
-      memory_metrics.v8_main_thread_isolate_mb);
-  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.TotalAllocated",
-                                  suffix, memory_metrics.total_allocated_mb);
-  RecordSuffixedMemoryMBHistogram(
-      "Memory.Experimental.Renderer.NonDiscardableTotalAllocated", suffix,
-      memory_metrics.non_discardable_total_allocated_mb);
-  RecordSuffixedMemoryMBHistogram(
-      "Memory.Experimental.Renderer.TotalAllocatedPerRenderView", suffix,
-      memory_metrics.total_allocated_per_render_view_mb);
-}
-
 mojo::PendingRemote<blink::mojom::BlobURLToken> CloneBlobURLToken(
     blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>&
         blob_url_token) {
@@ -978,8 +945,10 @@ WebHistoryItem NavigationApiHistoryEntryPtrToWebHistoryItem(
   item.SetURLString(WebString::FromUTF16(entry.url));
   item.SetItemSequenceNumber(entry.item_sequence_number);
   item.SetDocumentSequenceNumber(entry.document_sequence_number);
-  item.SetNavigationApiState(
-      WebSerializedScriptValue::FromString(WebString::FromUTF16(entry.state)));
+  if (entry.state) {
+    item.SetNavigationApiState(WebSerializedScriptValue::FromString(
+        WebString::FromUTF16(entry.state)));
+  }
   return item;
 }
 
@@ -1131,6 +1100,7 @@ std::unique_ptr<blink::WebPolicyContainer> ToWebPolicyContainer(
 
   return std::make_unique<blink::WebPolicyContainer>(
       blink::WebPolicyContainerPolicies{
+          in->policies->cross_origin_embedder_policy,
           in->policies->referrer_policy,
           in->policies->ip_address_space,
           ToWebContentSecurityPolicies(
@@ -2525,15 +2495,15 @@ void RenderFrameImpl::NotifyResourceRedirectReceived(
 
 void RenderFrameImpl::NotifyResourceResponseReceived(
     int64_t request_id,
-    const GURL& response_url,
+    const url::SchemeHostPort& final_response_url,
     network::mojom::URLResponseHeadPtr response_head,
     network::mojom::RequestDestination request_destination) {
   if (!blink::IsRequestDestinationFrame(request_destination)) {
-    GetFrameHost()->SubresourceResponseStarted(
-        url::SchemeHostPort(response_url), response_head->cert_status);
+    GetFrameHost()->SubresourceResponseStarted(final_response_url,
+                                               response_head->cert_status);
   }
-  DidStartResponse(url::SchemeHostPort(response_url), request_id,
-                   std::move(response_head), request_destination);
+  DidStartResponse(final_response_url, request_id, std::move(response_head),
+                   request_destination);
 }
 
 void RenderFrameImpl::NotifyResourceTransferSizeUpdated(
@@ -2782,10 +2752,10 @@ void RenderFrameImpl::CommitNavigation(
 
   // The MHTML mime type should be same as the one we check in the browser
   // process's download_utils::MustDownload.
-  bool is_mhtml_archive =
-      base::LowerCaseEqualsASCII(response_head->mime_type,
-                                 "multipart/related") ||
-      base::LowerCaseEqualsASCII(response_head->mime_type, "message/rfc822");
+  bool is_mhtml_archive = base::EqualsCaseInsensitiveASCII(
+                              response_head->mime_type, "multipart/related") ||
+                          base::EqualsCaseInsensitiveASCII(
+                              response_head->mime_type, "message/rfc822");
   if (is_mhtml_archive && navigation_params->body_loader) {
     // Load full mhtml archive before committing navigation.
     // We need this to retrieve the document mime type prior to committing.
@@ -4059,17 +4029,6 @@ void RenderFrameImpl::DidFinishLoad() {
 
   for (auto& observer : observers_)
     observer.DidFinishLoad();
-
-  if (!RenderThreadImpl::current())
-    return;
-  RenderThreadImpl::RendererMemoryMetrics memory_metrics;
-  if (!RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics))
-    return;
-  RecordSuffixedRendererMemoryMetrics(memory_metrics, ".DidFinishLoad");
-  if (!IsMainFrame())
-    return;
-  RecordSuffixedRendererMemoryMetrics(memory_metrics,
-                                      ".MainFrameDidFinishLoad");
 }
 
 void RenderFrameImpl::DidFinishLoadForPrinting() {
@@ -4137,6 +4096,10 @@ void RenderFrameImpl::DidOpenDocumentInputStream(const blink::WebURL& url) {
 void RenderFrameImpl::DidSetPageLifecycleState() {
   for (auto& observer : observers_)
     observer.DidSetPageLifecycleState();
+}
+
+void RenderFrameImpl::NotifyCurrentHistoryItemChanged() {
+  SendUpdateState();
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
@@ -4299,7 +4262,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request,
                                       ForRedirect for_redirect) {
   // This method is called for subresources, while transition type is
   // a navigation concept. We pass ui::PAGE_TRANSITION_LINK as default one.
-  WillSendRequestInternal(request, /*for_main_frame=*/false,
+  WillSendRequestInternal(request, /*for_outermost_main_frame=*/false,
                           ui::PAGE_TRANSITION_LINK, for_redirect);
 #if !BUILDFLAG(IS_ANDROID)
   for (auto& observer : observers_) {
@@ -4310,7 +4273,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request,
 
 void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
-    bool for_main_frame,
+    bool for_outermost_main_frame,
     ui::PageTransition transition_type,
     ForRedirect for_redirect) {
   if (GetWebView()->GetRendererPreferences().enable_do_not_track) {
@@ -4370,7 +4333,7 @@ void RenderFrameImpl::WillSendRequestInternal(
   url_request_extra_data->set_top_frame_origin(GetSecurityOriginOfTopFrame());
 
   request.SetDownloadToNetworkCacheOnly(is_for_no_state_prefetch &&
-                                        !for_main_frame);
+                                        !for_outermost_main_frame);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
@@ -5792,8 +5755,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  bool for_main_frame = !frame_->Parent();
-  WillSendRequestInternal(request, for_main_frame, transition_type,
+  bool for_outermost_main_frame = frame_->IsOutermostMainFrame();
+  WillSendRequestInternal(request, for_outermost_main_frame, transition_type,
                           ForRedirect(false));
 
   if (!info->url_request.GetURLRequestExtraData()) {

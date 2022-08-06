@@ -55,7 +55,7 @@ class ThirdPartyMetricsObserverTest
 
   // Returns the final RenderFrameHost after navigation commits.
   content::RenderFrameHost* NavigateMainFrame(const std::string& url) {
-    return NavigateFrame(url, web_contents()->GetMainFrame());
+    return NavigateFrame(url, web_contents()->GetPrimaryMainFrame());
   }
 
   // Returns the final RenderFrameHost after navigation commits.
@@ -517,7 +517,7 @@ TEST_F(ThirdPartyMetricsObserverTest,
 
   int frame_tree_node_id = main_rfh()->GetFrameTreeNodeId();
   tester()->SimulateLoadedResource(
-      {url::Origin::Create(GURL("https://bar.test")), net::IPEndPoint(),
+      {url::SchemeHostPort(GURL("https://bar.test")), net::IPEndPoint(),
        frame_tree_node_id, false /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        network::mojom::RequestDestination::kFont, 0,
@@ -555,7 +555,7 @@ TEST_F(ThirdPartyMetricsObserverTest,
   // Load a same-site font, the histogram should not be recorded.
   int frame_tree_node_id = main_rfh()->GetFrameTreeNodeId();
   tester()->SimulateLoadedResource(
-      {url::Origin::Create(GURL("http://b.foo.test")), net::IPEndPoint(),
+      {url::SchemeHostPort(GURL("http://b.foo.test")), net::IPEndPoint(),
        frame_tree_node_id, false /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        network::mojom::RequestDestination::kFont, 0,
@@ -588,7 +588,7 @@ TEST_F(ThirdPartyMetricsObserverTest,
 
   int frame_tree_node_id = main_rfh()->GetFrameTreeNodeId();
   tester()->SimulateLoadedResource(
-      {url::Origin::Create(GURL("https://bar.test")), net::IPEndPoint(),
+      {url::SchemeHostPort(GURL("https://bar.test")), net::IPEndPoint(),
        frame_tree_node_id, false /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        network::mojom::RequestDestination::kFont, 0,

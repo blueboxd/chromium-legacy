@@ -16,7 +16,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -60,10 +59,6 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "content/common/android/cpu_affinity_setter.h"
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "content/browser/network_sandbox.h"
@@ -132,14 +127,6 @@ static NetworkServiceClient* g_client = nullptr;
 
 void CreateInProcessNetworkServiceOnThread(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
-#if BUILDFLAG(IS_ANDROID)
-  if (base::GetFieldTrialParamByFeatureAsBool(
-          features::kBigLittleScheduling,
-          features::kBigLittleSchedulingNetworkMainBigParam, false)) {
-    SetCpuAffinityForCurrentThread(base::CpuAffinityMode::kBigCoresOnly);
-  }
-#endif
-
   // The test interface doesn't need to be implemented in the in-process case.
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::BindRepeating(
@@ -829,9 +816,14 @@ void CreateNetworkContextInNetworkService(
 
   MaybeCleanCacheDirectory(params.get());
 
-  if (params->http_cache_enabled && params->http_cache_directory &&
-      !params->http_cache_directory->path().empty() &&
-      base::FeatureList::IsEnabled(net::features::kSandboxHttpCache)) {
+  const bool has_valid_http_cache_path =
+      params->http_cache_enabled && params->http_cache_directory &&
+      !params->http_cache_directory->path().empty();
+  const bool brokering_is_enabled =
+      IsOutOfProcessNetworkService() &&
+      base::FeatureList::IsEnabled(
+          features::kBrokerFileOperationsOnDiskCacheInNetworkService);
+  if (has_valid_http_cache_path && brokering_is_enabled) {
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<HttpCacheBackendFileOperationsFactory>(
             params->http_cache_directory->path()),

@@ -24,6 +24,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="109942774857561566">Mi annoio</translation>
 <translation id="1104084341931202936">Mostra impostazioni di accessibilità</translation>
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
+<translation id="1111021433905331574">Puoi cambiare il colore della retroilluminazione della tastiera in Impostazioni &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Nascondi automaticamente barra delle app</translation>
 <translation id="1142002900084379065">Foto recenti</translation>
 <translation id="1148499908455722006">Apri la finestra di dialogo delle informazioni per <ph name="USER_NAME" /></translation>
@@ -62,6 +63,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1275285675049378717">Alimentazione di <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">Localizza telefono</translation>
+<translation id="1287002645302686982">Esiste già una scrivania salvata denominata <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="1289185460362160437">Puoi riprendere <ph name="COME_BACK_DAY_OF_WEEK" /> alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Segnale debole</translation>
 <translation id="1290982764014248209">Sposta <ph name="DRAGGED_APP" /> nella cartella <ph name="FOLDER_NAME" />.</translation>
@@ -91,7 +93,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1420408895951708260">Attiva/disattiva luminosità notturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1420732223884894666">Visualizza le foto e i contenuti multimediali recenti del tuo telefono su <ph name="DEVICE_TYPE" /></translation>
 <translation id="1426410128494586442">Sì</translation>
-<translation id="1438357537418863713">Ora lo streaming di app è configurato. Quando inizierai a usare lo streaming, le app avviate di recente verranno visualizzate qui.</translation>
+<translation id="1447641497144572814">Avvio salvaschermo</translation>
 <translation id="1455242230282523554">Mostra impostazioni lingua</translation>
 <translation id="1460620680449458626">Il volume è disattivato.</translation>
 <translation id="1467432559032391204">Sinistra</translation>
@@ -132,6 +134,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1715293566947629045">È in corso la disattivazione del profilo. Attendi qualche minuto.</translation>
 <translation id="1719094688023114093">La funzionalità Sottotitoli in tempo reale è attiva.</translation>
 <translation id="1720011244392820496">Attiva Sync Wi-Fi</translation>
+<translation id="1733996486177697563">Passa dal tema chiaro al tema scuro e viceversa. Tocca e tieni premuto il desktop e seleziona Sfondo e stile.</translation>
 <translation id="1736898441010944794">"<ph name="NAME" />" visibile ai dispositivi Bluetooth.</translation>
 <translation id="174102739345480129">Evidenziatore OFF.</translation>
 <translation id="1743570585616704562">Non riconosciuta</translation>
@@ -192,17 +195,16 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2079504693865562705">Nascondi app nella barra delle app</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2083190527011054446">Buonanotte <ph name="GIVEN_NAME" />,</translation>
+<translation id="2088116547584365419">giochi</translation>
 <translation id="209965399369889474">Nessuna connessione alla rete</translation>
 <translation id="2107914222138020205">Il cavo USB-C non supporta Thunderbolt. Le prestazioni del dispositivo potrebbero essere limitate.</translation>
 <translation id="2108303511227308752">La scorciatoia da tastiera Alt + Backspace è cambiata. Per usare il tasto Canc, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Backspace.</translation>
 <translation id="211328683600082144">ATTIVA MICROFONO</translation>
 <translation id="2123115117533398272">Chrome OS mostra suggerimenti relativi a nuovi contenuti da esplorare. Invia statistiche per migliorare la qualità solo se hai scelto di condividere i dati sull'utilizzo. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Nuova scrivania</translation>
-<translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2132302418721800944">Registra schermo intero</translation>
 <translation id="2135456203358955318">Lente d'ingrandimento ancorata</translation>
 <translation id="2148716181193084225">Oggi</translation>
-<translation id="2159930836979502091">Vai a questa scheda</translation>
 <translation id="2170530631236737939">Scorri con tre dita verso il basso per uscire dalla modalità Panoramica</translation>
 <translation id="219905428774326614">Avvio applicazioni, tutte le app</translation>
 <translation id="2201071101391734388">Foto recente <ph name="INDEX" /> di <ph name="TOTAL_COUNT" />.</translation>
@@ -246,6 +248,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="243878895369688216">Aperto ieri</translation>
 <translation id="2441427462554639370">Registrazione terminata a causa dell'esaurimento dello spazio di archiviazione</translation>
 <translation id="24452542372838207">Espandi la notifica</translation>
+<translation id="2449089818483227734">Batteria in esaurimento</translation>
 <translation id="2450205753526923158">Modalità screenshot</translation>
 <translation id="2456008742792828469">Calendario, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">Conferma la risoluzione</translation>
@@ -264,6 +267,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2586561057878260610">Premi Ctrl + W per eseguire una combinazione con <ph name="DESK_NAME" />. Premi Ctrl + Maiusc + W per chiudere scrivania e finestre.</translation>
 <translation id="2595239820337756193">5 km in miglia</translation>
 <translation id="2596078834055697711">Consente di acquisire uno screenshot della finestra</translation>
+<translation id="2598725286293895280">App non supportate nella scrivania</translation>
 <translation id="2607678425161541573">Accesso online richiesto</translation>
 <translation id="2620016719323068571">Cerca <ph name="CATEGORY" />, file, app e altro ancora…</translation>
 <translation id="2620436844016719705">Sistema</translation>
@@ -294,7 +298,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2791421900609674576">Vedrai consigli per poter continuare dal punto in cui avevi interrotto. Puoi toccare i consigli e tenere premuto per rimuoverli.</translation>
 <translation id="2792498699870441125">Alt+tasto per la ricerca</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
-<translation id="2803313416453193357">Apri cartella</translation>
 <translation id="2805756323405976993">App</translation>
 <translation id="2814448776515246190">Acquisizione parziale</translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
@@ -406,11 +409,13 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
+<translation id="3455468639467374593">Modello, <ph name="TEMPLATE_NAME" /></translation>
 <translation id="3465223694362104965">Dal tuo ultimo accesso, un'altra tastiera si è connessa a questo dispositivo. Prima di usarla, assicurati che sia attendibile.</translation>
 <translation id="3465356146291925647">Gestita dall'amministratore</translation>
 <translation id="3477079411857374384">CTRL + MAIUSC + barra spaziatrice</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">Barra delle app nascosta in automatico</translation>
+<translation id="3505066820268455558">Batteria in carica</translation>
 <translation id="3509391053705095206">Impossibile trovare il telefono. Assicurati che il Bluetooth del telefono sia attivo.</translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3513798432020909783">Account gestito da <ph name="MANAGER_EMAIL" /></translation>
@@ -451,6 +456,8 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3633097874324966332">Apri le impostazioni Bluetooth per accoppiare il dispositivo</translation>
 <translation id="3638400994746983214">Attiva/disattiva Schermata sulla privacy. <ph name="STATE_TEXT" />.</translation>
 <translation id="3649505501900178324">Aggiornamento scaduto</translation>
+<translation id="3659814201068740063">Tempo rimanente: circa <ph name="TIME_LEFT" /> (<ph name="PERCENTAGE" />%).
+Collega il dispositivo all'alimentazione.</translation>
 <translation id="366222428570480733">Utente gestito <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="36813544980941320">Il tuo telefono e il dispositivo <ph name="DEVICE_NAME" /> useranno le stesse reti Wi-Fi</translation>
 <translation id="3694122362646626770">Siti web</translation>
@@ -506,6 +513,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3962859241508114581">Traccia precedente</translation>
 <translation id="3969043077941541451">Off</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
+<translation id="397726367135689299">La ricarica della batteria potrebbe non essere affidabile.</translation>
 <translation id="3977512764614765090">Percentuale di carica della batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="3986082989454912832">Rispondi</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
@@ -640,6 +648,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4734965478015604180">Orizzontale</translation>
 <translation id="4735498845456076464">La scorciatoia da tastiera <ph name="LAUNCHER_KEY_NAME" /> + Numero è cambiata. Per usare i tasti funzione, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + un tasto nella fila superiore.</translation>
 <translation id="473775607612524610">Aggiorna</translation>
+<translation id="4740516757091333363">Vuoi eliminare la scrivania salvata?</translation>
 <translation id="4752784485658729358">Sono consentite solo 6 scrivanie salvate. Rimuovi una scrivania per salvarne una nuova.</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4774338217796918551">Puoi riprendere domani alle ore <ph name="COME_BACK_TIME" />.</translation>
@@ -692,7 +701,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5071064518267176975">Un'app vuole usare il microfono</translation>
 <translation id="5078796286268621944">PIN errato</translation>
 <translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
-<translation id="5106223312672646208">Personalizza</translation>
+<translation id="509790653408515442">Le app del tuo telefono che trasmetti in streaming verranno visualizzate qui</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Mostra mese successivo</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
@@ -715,6 +724,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
 <translation id="5245201184978705914">Impossibile generare la trascrizione</translation>
 <translation id="5253783950165989294">Connessione stabilita con un dispositivo di nome <ph name="DEVICE_NAME" />; batteria <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="5258528442992323769">Nessuna scrivania salvata</translation>
 <translation id="5260676007519551770">Scrivania 4</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> richiede la tua attenzione.</translation>
 <translation id="5283198616748585639">Aggiungi 1 min</translation>
@@ -735,7 +745,10 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (destro)</translation>
 <translation id="5352250171825660495">Tema scuro attivo</translation>
+<translation id="5356963482258194581">Passa dal tema chiaro al tema scuro e viceversa. Fai clic con il tasto destro del mouse sul desktop e seleziona Sfondo e stile.</translation>
+<translation id="5363163447017455357"><ph name="DELIMITER" /> Vai a questa scheda</translation>
 <translation id="5379115545237091094">Troppi tentativi</translation>
+<translation id="5391307769715781764">Vuoi sostituire la scrivania salvata?</translation>
 <translation id="5393156353051693207">Tocca e tieni premuto un punto qualsiasi per riordinare le app</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sopra <ph name="IN_PLACE_APP" />, rilascia per creare una cartella.</translation>
 <translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
@@ -969,6 +982,7 @@ Nuova installazione</translation>
 <translation id="6790428901817661496">Riproduci</translation>
 <translation id="6801878137098616817">Modificato di recente</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
+<translation id="6812232930908427253">Impossibile salvare la scrivania. Troppe finestre o schede.</translation>
 <translation id="6818242057446442178">Indietro per parola</translation>
 <translation id="6819327813400217281">Fotocamera allineata all'angolo in basso a sinistra</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
@@ -1028,6 +1042,7 @@ Nuova installazione</translation>
 <translation id="7130207228079676353">PIÙ PROBABILI</translation>
 <translation id="7131634465328662194">Verrai disconnesso automaticamente.</translation>
 <translation id="7143207342074048698">Connessione</translation>
+<translation id="7144942256906679589">Stato della batteria</translation>
 <translation id="7165278925115064263">ALT + MAIUSC + K</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Aggiorna</translation>
@@ -1050,6 +1065,7 @@ Nuova installazione</translation>
 <translation id="7348093485538360975">Tastiera sullo schermo</translation>
 <translation id="735745346212279324">VPN scollegata</translation>
 <translation id="7360036564632145207">La modifica della protezione dell'accesso ai dati per l'impostazione delle periferiche può ottimizzare le prestazioni</translation>
+<translation id="736045644501761622">Imposta sfondo e stile</translation>
 <translation id="7371404428569700291">Finestra di registrazione</translation>
 <translation id="7377169924702866686">La funzione Bloc maiusc è attiva.</translation>
 <translation id="7377481913241237033">Connessione tramite codice</translation>
@@ -1093,6 +1109,7 @@ Nuova installazione</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7600875258240007829">Visualizza tutte le notifiche</translation>
 <translation id="7607002721634913082">In pausa</translation>
+<translation id="7609951632080598826">Visualizzazione Calendario, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Fotocamera riconnessa.</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Mostra impostazioni di Condivisione nelle vicinanze.</translation>
@@ -1116,7 +1133,6 @@ Nuova installazione</translation>
 <translation id="7720410380936703141">RIPROVA</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifica}other{# notifiche}}</translation>
 <translation id="7724603315864178912">Taglia</translation>
-<translation id="7734209118399753735"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="7745560842763881396">Mostra app nella barra delle app</translation>
 <translation id="7749443890790263709">Numero massimo di scrivanie raggiunto.</translation>
 <translation id="7749640678855296659">Al momento il microfono non è attivo</translation>
@@ -1170,7 +1186,6 @@ Nuova installazione</translation>
 <translation id="8030169304546394654">Disconnessa</translation>
 <translation id="8036504271468642248">Frase precedente</translation>
 <translation id="8042893070933512245">Apri il menu Impostazioni di accessibilità</translation>
-<translation id="8042925093898452104">Chiudi le informazioni dettagliate</translation>
 <translation id="8044457332620420407">La retroilluminazione della tastiera non è attiva</translation>
 <translation id="8048123526339889627">Impostazioni Bluetooth</translation>
 <translation id="8051716679295756675">Esiste già un modello con il nome <ph name="DESK_TEMPLATE_NAME" /></translation>
@@ -1217,6 +1232,7 @@ Nuova installazione</translation>
 <translation id="8345019317483336363">Finestra <ph name="WINDOW_TITLE" /> selezionata</translation>
 <translation id="8351131234907093545">Crea nota</translation>
 <translation id="8364673525741149932">Attiva/disattiva Shelf Party. <ph name="STATE_TEXT" /></translation>
+<translation id="8369166482916924789">Scrivania salvata, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">Avanti per lettera</translation>
 <translation id="8371991222807690464">Le prestazioni delle periferiche potrebbero essere limitate in modalità Ospite</translation>
 <translation id="8374601332003098278">Premi invio per registrare una schermata parziale</translation>
@@ -1250,6 +1266,7 @@ Nuova installazione</translation>
 <translation id="851458219935658693">Mostra finestre della scrivania corrente, pulsante di opzione selezionato</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8535393432370007982">Annulla l'ordinamento per colore</translation>
+<translation id="8542053257095774575">Nessuna scrivania o nessun modello salvati</translation>
 <translation id="8546059259582788728">Annullamento dell'ordinamento completato</translation>
 <translation id="8551588720239073785">Impostazioni di data e ora</translation>
 <translation id="8553395910833293175">Finestra già assegnata a tutte le scrivanie.</translation>
@@ -1282,6 +1299,7 @@ Nuova installazione</translation>
 <translation id="8721053961083920564">Attiva/disattiva volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Acquisizione schermo intero</translation>
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
+<translation id="8735678380411481005">Colore della retroilluminazione della tastiera</translation>
 <translation id="8735953464173050365">Mostra impostazioni tastiera. Selezione attiva: <ph name="KEYBOARD_NAME" /></translation>
 <translation id="8755498163081687682">Verifica la tua identità come richiesto da <ph name="ORIGIN_NAME" /></translation>
 <translation id="875593634123171288">Mostra impostazioni VPN</translation>
@@ -1327,6 +1345,7 @@ Nuova installazione</translation>
 <translation id="9000771174482730261">GESTISCI SPAZIO DI ARCHIVIAZIONE</translation>
 <translation id="9017320285115481645">Inserisci il codice accesso genitori di Family Link.</translation>
 <translation id="9024331582947483881">schermo intero</translation>
+<translation id="9029736946581028033">Il dispositivo si spegnerà a breve</translation>
 <translation id="9030319654231318877">Disattivato fino al tramonto</translation>
 <translation id="9034924485347205037">File Linux</translation>
 <translation id="9047624247355796468">Apri Impostazioni per <ph name="NETWORK_NAME" /></translation>
@@ -1356,6 +1375,7 @@ Nuova installazione</translation>
 <translation id="9168436347345867845">Più tardi</translation>
 <translation id="9178475906033259337">Visualizzazione di un risultato per <ph name="QUERY" /></translation>
 <translation id="9179259655489829027">Questa funzione consente di accedere rapidamente a qualsiasi utente che abbia effettuato l'accesso, senza bisogno di una password. Utilizza questa funzione solo con gli account che consideri attendibili.</translation>
+<translation id="9180906851711123156">Premi Ctrl + W per chiudere</translation>
 <translation id="9183456764293710005">Ingrandimento a schermo intero</translation>
 <translation id="9193626018745640770">Trasmissione a un ricevitore sconosciuto</translation>
 <translation id="9194617393863864469">Accedi con un altro account utente...</translation>

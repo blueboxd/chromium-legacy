@@ -76,6 +76,9 @@ constexpr int kVerticalPaddingBetweenSections = 16;
 // between the apps page bounds and the page content.
 constexpr int kHorizontalInteriorMargin = 16;
 
+// The size of the scroll view gradient.
+constexpr int kScrollViewGradientSize = 16;
+
 // Insets for the continue section. These insets are required to make the
 // suggestion icons visually align with the icons in the apps grid.
 constexpr auto kContinueSectionInsets = gfx::Insets::VH(0, 4);
@@ -287,11 +290,12 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
   // build a single animation with conditional parts. https://crbug.com/1266020
   const int section_offset = is_side_shelf ? -20 : 20;
   int vertical_offset = 0;
-  if (continue_section_->GetTasksSuggestionsCount() > 0) {
+  if (continue_section_->GetVisible() &&
+      continue_section_->GetTasksSuggestionsCount() > 0) {
     vertical_offset += section_offset;
     SlideViewIntoPosition(continue_section_, vertical_offset, slide_duration);
   }
-  if (recent_apps_->GetItemViewCount() > 0) {
+  if (recent_apps_->GetVisible() && recent_apps_->GetItemViewCount() > 0) {
     vertical_offset += section_offset;
     SlideViewIntoPosition(recent_apps_, vertical_offset, slide_duration);
   }
@@ -299,7 +303,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
     // The separator is not offset; it animates next to the view above it.
     SlideViewIntoPosition(separator_, vertical_offset, slide_duration);
   }
-  if (toast_container_ && toast_container_->is_toast_visible()) {
+  if (toast_container_ && toast_container_->IsToastVisible()) {
     vertical_offset += section_offset;
     SlideViewIntoPosition(toast_container_, vertical_offset, slide_duration);
   }
@@ -316,7 +320,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
                           weak_factory_.GetWeakPtr()));
 }
 
-void AppListBubbleAppsPage::AnimateHideLauncher() {
+void AppListBubbleAppsPage::PrepareForHideLauncher() {
   // Remove the gradient mask from the scroll view to improve performance.
   gradient_helper_.reset();
 }
@@ -480,7 +484,7 @@ void AppListBubbleAppsPage::UpdateForNewSortingOrder(
               weak_factory_.GetWeakPtr(), new_order));
 
   // Configure the toast fade out animation if the toast is going to be hidden.
-  const bool current_toast_visible = toast_container_->is_toast_visible();
+  const bool current_toast_visible = toast_container_->IsToastVisible();
   const bool target_toast_visible =
       toast_container_->GetVisibilityForSortOrder(new_order);
   if (current_toast_visible && !target_toast_visible) {
@@ -679,7 +683,8 @@ void AppListBubbleAppsPage::OnAppsGridViewAnimationEnded() {
   // Set up fade in/fade out gradients at top/bottom of scroll view. Wait until
   // the end of the show animation because the animation performs better without
   // the gradient mask layer.
-  gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
+  gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(
+      scroll_view_, kScrollViewGradientSize);
   gradient_helper_->UpdateGradientZone();
 
   // Show the scroll bar for keyboard-driven scroll position changes.
@@ -693,9 +698,10 @@ void AppListBubbleAppsPage::HandleFocusAfterSort() {
   if (view_delegate_->IsInTabletMode())
     return;
 
-  // If the sort is done and the toast is visible, request the focus on the
-  // undo button on the toast. Otherwise request the focus on the search box.
-  if (toast_container_->is_toast_visible()) {
+  // If the sort is done and the toast is visible and not fading out, request
+  // the focus on the undo button on the toast. Otherwise request the focus on
+  // the search box.
+  if (toast_container_->IsToastVisible()) {
     toast_container_->toast_view()->toast_button()->RequestFocus();
   } else {
     search_box_->search_box()->RequestFocus();
@@ -722,11 +728,11 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEnded(
     std::move(update_position_closure_).Run();
 
   // Record the undo toast's visibility before update.
-  const bool old_toast_visible = toast_container_->is_toast_visible();
+  const bool old_toast_visible = toast_container_->IsToastVisible();
 
   toast_container_->OnTemporarySortOrderChanged(new_order);
   HandleFocusAfterSort();
-  const bool target_toast_visible = toast_container_->is_toast_visible();
+  const bool target_toast_visible = toast_container_->IsToastVisible();
 
   // If there is a layer created for fading out `toast_container_`, destroy
   // the layer when the fade out animation ends. NOTE: when the reorder toast

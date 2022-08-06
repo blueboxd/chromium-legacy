@@ -6,9 +6,13 @@
 
 #include "base/debug/stack_trace.h"
 
+namespace ash {
+
 SystemExtensionsInternalsPageHandler::SystemExtensionsInternalsPageHandler(
-    Profile* profile)
-    : profile_(profile) {}
+    Profile* profile,
+    mojo::PendingReceiver<mojom::system_extensions_internals::PageHandler>
+        receiver)
+    : profile_(profile), receiver_(this, std::move(receiver)) {}
 
 SystemExtensionsInternalsPageHandler::~SystemExtensionsInternalsPageHandler() =
     default;
@@ -18,7 +22,8 @@ void SystemExtensionsInternalsPageHandler::
         const base::SafeBaseName& system_extension_dir_name,
         InstallSystemExtensionFromDownloadsDirCallback callback) {
   base::FilePath downloads_path;
-  if (!base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {
+  if (!base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
+                              &downloads_path)) {
     std::move(callback).Run(false);
     return;
   }
@@ -43,3 +48,5 @@ void SystemExtensionsInternalsPageHandler::OnInstallFinished(
 
   std::move(callback).Run(result.ok());
 }
+
+}  // namespace ash

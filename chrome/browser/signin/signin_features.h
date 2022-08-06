@@ -11,6 +11,8 @@ extern const base::Feature kProcessGaiaRemoveLocalAccountHeader;
 
 extern const base::Feature kSyncPromoAfterSigninIntercept;
 
+extern const base::Feature kSigninInterceptBubbleV2;
+
 extern const base::Feature kShowEnterpriseDialogForAllManagedAccountsSignin;
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_FEATURES_H_

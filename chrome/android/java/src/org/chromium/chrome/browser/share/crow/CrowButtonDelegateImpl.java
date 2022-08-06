@@ -14,8 +14,6 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
@@ -31,7 +29,6 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
     private static final String DEBUG_SERVER_URL_PARAM = "DebugServerURL";
     private static final String DOMAIN_LIST_URL_PARAM = "DomainList";
     private static final String DOMAIN_ID_NONE = "0";
-    private static final String DEFAULT_BUTTON_TEXT = "Thank\u00A0creator";
 
     private static final String TAG = "CrowButton";
 
@@ -111,13 +108,8 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
 
     @Override
     public String getButtonText() {
-        String param = ChromeFeatureList.getFieldTrialParamByFeature(
+        return ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.SHARE_CROW_BUTTON, APP_MENU_BUTTON_TEXT_PARAM);
-        // Provide a default with non-breaking space. String is en-us only.
-        if (param.isEmpty()) {
-            return DEFAULT_BUTTON_TEXT;
-        }
-        return param;
     }
 
     @Override
@@ -136,10 +128,7 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
     }
 
     private boolean areMetricsEnabled() {
-        // Require UMA and "Make searches and browsing better" to be enabled.
-        return (PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted()
-                && UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(
-                        Profile.getLastUsedRegularProfile()));
+        return PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted();
     }
 
     @VisibleForTesting

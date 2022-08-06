@@ -7,8 +7,8 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {isVisible, waitAfterNextRender} from 'chrome://test/test_util.js';
 
 import {assertEquals} from '../../chai_assert.js';
-import {FakeContactManager} from '../../nearby_share/shared/fake_nearby_contact_manager.m.js';
-import {FakeNearbyShareSettings} from '../../nearby_share/shared/fake_nearby_share_settings.m.js';
+import {FakeContactManager} from '../../nearby_share/shared/fake_nearby_contact_manager.js';
+import {FakeNearbyShareSettings} from '../../nearby_share/shared/fake_nearby_share_settings.js';
 import {TestBrowserProxy} from '../../test_browser_proxy.js';
 
 import {FakeReceiveManager} from './fake_receive_manager.js';
@@ -280,16 +280,19 @@ suite('NearbyShare', function() {
   });
 
   test('update data usage preference', function() {
-    assertEquals(3, subpage.prefs.nearby_sharing.data_usage.value);
+    assertEquals(2, subpage.settings.dataUsage);
 
     subpage.$$('#editDataUsageButton').click();
     flush();
 
     const dialog = subpage.$$('nearby-share-data-usage-dialog');
-    dialog.$$('#dataUsageDataButton').click();
+    dialog.$$('#dataUsageWifiOnlyButton').click();
     dialog.$$('.action-button').click();
+    flush();
+    syncFakeSettings();
+    flush();
 
-    assertEquals(2, subpage.prefs.nearby_sharing.data_usage.value);
+    assertEquals(3, subpage.settings.dataUsage);
   });
 
   test('update visibility shows dialog', function() {
@@ -364,7 +367,7 @@ suite('NearbyShare', function() {
             nearbyShare.mojom.RegisterReceiveSurfaceResult.kNoConnectionMedium;
         await waitAfterNextRender(highVisibilityDialog);
         highVisibilityDialog.$$('nearby-page-template')
-            .$$('#closeButton')
+            .shadowRoot.querySelector('#closeButton')
             .click();
         flush();
         assertFalse(highVisibilityToggle.checked);

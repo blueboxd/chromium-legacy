@@ -18,6 +18,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
 #include "base/logging.h"
@@ -387,12 +388,18 @@ void PersonalDataManager::OnSyncServiceInitialized(
         sync_service && !sync_service_->IsSyncFeatureEnabled());
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   MigrateUserOptedInWalletSyncTransportIfNeeded();
+#endif
 }
 
 void PersonalDataManager::OnURLsDeleted(
     history::HistoryService* /* history_service */,
     const history::DeletionInfo& deletion_info) {
+  for (PersonalDataManagerObserver& observer : observers_) {
+    observer.OnBrowsingHistoryCleared(deletion_info);
+  }
+
   if (!deletion_info.is_from_expiration() && deletion_info.IsAllHistory()) {
     AutofillDownloadManager::ClearUploadHistory(pref_service_);
   }
@@ -1895,13 +1902,13 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
   const std::vector<std::string>& country_codes =
       CountryDataMap::GetInstance()->country_codes();
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (auto* profile : profiles) {
     std::string country_code = base::ToUpperASCII(
-        base::UTF16ToASCII(profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
+        base::UTF16ToASCII(profile->GetRawInfo(ADDRESS_HOME_COUNTRY)));
 
     if (base::Contains(country_codes, country_code)) {
       // Verified profiles count 100x more than unverified ones.
-      votes[country_code] += profiles[i]->IsVerified() ? 100 : 1;
+      votes[country_code] += profile->IsVerified() ? 100 : 1;
     }
   }
 
@@ -2256,6 +2263,7 @@ bool PersonalDataManager::HasPendingQueries() {
          pending_offer_data_query_ != 0;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
   if (!sync_service_)
     return;
@@ -2317,6 +2325,7 @@ void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
   prefs::SetUserOptedInWalletSyncTransport(pref_service_, primary_account_id,
                                            /*opted_in=*/true);
 }
+#endif
 
 bool PersonalDataManager::IsSyncEnabledFor(syncer::ModelType model_type) {
   return sync_service_ != nullptr && sync_service_->CanSyncFeatureStart() &&

@@ -4,11 +4,11 @@
         "name": "rendering.desktop/css_value_type_shadow"
     },
     {
-        "duration": "34.0",
+        "duration": "33.0",
         "name": "rendering.desktop/main_30fps_impl_60fps"
     },
     {
-        "duration": "69.0",
+        "duration": "70.0",
         "name": "v8.browsing_desktop/browse:media:googleplaystore:2021"
     },
     {
@@ -32,11 +32,11 @@
         "name": "v8.browsing_desktop/browse:media:youtubetv:2019"
     },
     {
-        "duration": "111.0",
+        "duration": "112.0",
         "name": "v8.browsing_desktop/browse:media:youtubetv_watch:2020"
     },
     {
-        "duration": "88.0",
+        "duration": "89.0",
         "name": "v8.browsing_desktop/browse:news:cnn:2021"
     },
     {
@@ -52,7 +52,7 @@
         "name": "v8.browsing_desktop/browse:news:nytimes:2020"
     },
     {
-        "duration": "105.0",
+        "duration": "106.0",
         "name": "v8.browsing_desktop/browse:news:reddit:2020"
     },
     {
@@ -64,15 +64,15 @@
         "name": "v8.browsing_desktop/browse:search:google_india:2021"
     },
     {
-        "duration": "112.0",
+        "duration": "113.0",
         "name": "v8.browsing_desktop/browse:social:facebook_infinite_scroll:2018"
     },
     {
-        "duration": "95.0",
+        "duration": "96.0",
         "name": "v8.browsing_desktop/browse:social:tumblr_infinite_scroll:2018"
     },
     {
-        "duration": "85.0",
+        "duration": "86.0",
         "name": "v8.browsing_desktop/browse:social:twitter:2018"
     },
     {
@@ -88,7 +88,7 @@
         "name": "v8.browsing_desktop/browse:tools:autocad:2021"
     },
     {
-        "duration": "71.0",
+        "duration": "72.0",
         "name": "v8.browsing_desktop/browse:tools:docs_scrolling"
     },
     {
@@ -112,11 +112,11 @@
         "name": "v8.browsing_desktop/browse:tools:maps:2019"
     },
     {
-        "duration": "89.0",
+        "duration": "90.0",
         "name": "v8.browsing_desktop/browse:tools:photoshop:2021"
     },
     {
-        "duration": "182.0",
+        "duration": "184.0",
         "name": "v8.browsing_desktop/browse:tools:photoshop_warm:2021"
     },
     {

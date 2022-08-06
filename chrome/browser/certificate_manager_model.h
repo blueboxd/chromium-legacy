@@ -22,14 +22,9 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-namespace ash {
-class CertificateProvider;
-}  // namespace ash
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS)
 namespace chromeos {
+class CertificateProvider;
 class PolicyCertificateProvider;
 }
 #endif
@@ -131,10 +126,9 @@ class CertificateManagerModel {
 #if BUILDFLAG(IS_CHROMEOS)
     // May be nullptr.
     chromeos::PolicyCertificateProvider* policy_certs_provider = nullptr;
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
     // May be nullptr.
-    std::unique_ptr<ash::CertificateProvider> extension_certificate_provider;
+    std::unique_ptr<chromeos::CertificateProvider>
+        extension_certificate_provider;
 #endif
 
     Params();

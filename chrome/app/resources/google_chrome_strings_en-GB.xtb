@@ -52,6 +52,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1919130412786645364">Allow Chrome sign-in</translation>
 <translation id="1952239763774043237">To get future Google Chrome updates, you'll need macOS 10.13 or later. This computer is using macOS 10.12.</translation>
 <translation id="2018528049276128029">Each profile holds its own Chrome info, like bookmarks, history, passwords and more</translation>
+<translation id="2071318482926839249">Another account is already signed in. To keep your browsing separate, Chrome can create your own profile for you.</translation>
 <translation id="207902854391093810">When trials are on, ad measurement allows sites that you visit to request information from Chrome that helps the site measure the performance of their ads. Ad measurement restricts cross-site tracking by transferring as little information as possible between sites.</translation>
 <translation id="2094648590148273905">Chrome OS Flex terms</translation>
 <translation id="2094919256425865063">Quit Chrome anyway?</translation>
@@ -80,6 +81,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> is already signed in to this Chrome profile. To keep your browsing separate, Chrome can create your own profile for you.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="2586406160782125153">This will delete your browsing data from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
+<translation id="2597976513418770460">Get your Chrome browser stuff from <ph name="ACCOUNT_EMAIL" /></translation>
 <translation id="2622559029861875898">Chrome can't check for updates. Try checking your Internet connection.</translation>
 <translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2652691236519827073">Open Link in New Chrome &amp;tab</translation>
@@ -116,6 +118,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3169523567916669830">During the trials, you can see and remove topics of interest sites used to show you ads. Chrome estimates your interests based on your recent browsing history.</translation>
 <translation id="3245429137663807393">If you also share Chrome usage reports, those reports include the URLs that you visit</translation>
+<translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome will relaunch now}=1{Chrome will relaunch in 1 second}other{Chrome will relaunch in # seconds}}</translation>
 <translation id="3396977131400919238">An operating system error occurred during installation. Please download Google Chrome again.</translation>
@@ -194,6 +197,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4970947549776831107">Chrome blocked this file because this type of file is dangerous</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">To get future Google Chrome updates, you'll need macOS 10.13 or later. This computer is using OS X 10.11.</translation>
+<translation id="5098668839038261629">When on, you'll also be signed out of Chrome</translation>
 <translation id="5112116809696021727">To see if your device is up to date, go to <ph name="LINK_BEGIN" />Chrome OS Settings<ph name="LINK_END" /></translation>
 <translation id="5132929315877954718">Discover great apps, games, extensions and themes for Google Chrome.</translation>
 <translation id="5139423532931106058">Customise your Chrome profile</translation>
@@ -301,7 +305,6 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="7651907282515937834">Chrome Enterprise logo</translation>
 <translation id="7655455401911432608">Your browsing history, a record of sites that you've visited using Chrome on this device.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
-<translation id="7748512868279796735">The following accounts are available for this Chrome profile</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>
 <translation id="7777080907402804672">If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google. You can turn this off in settings at any time.</translation>
 <translation id="7781002470561365167">There is a new version of Google Chrome available.</translation>
@@ -310,6 +313,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="7801699035218095297">Google Chrome is trying to copy passwords. Type your Windows password to allow this.</translation>
 <translation id="7808348361785373670">Remove from Chrome...</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
+<translation id="7880591377632733558">Welcome to Chrome, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7896673875602241923">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chrome user to keep your information separate.</translation>
 <translation id="7917876797003313048">You can manage your signed-in Google Accounts. Your Google Accounts are used for Chrome Browser, Play Store, Gmail and more. If you want to add an account for someone else, like a family member, add a new person to your <ph name="DEVICE_TYPE" /> instead. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
@@ -335,6 +339,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="8418845734693287262">Chrome OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="8421734018304082652">Chrome blocked this file because it's encrypted. Ask its owner to decrypt it</translation>
 <translation id="8433638294851456451">To send a number from here to your Android phone, sign in to Chrome on both devices.</translation>
+<translation id="8451192282033883849">Your account is managed by <ph name="MANAGER_NAME" />. Your administrator can see and edit this Chrome browser profile and its data like bookmarks, history and passwords.</translation>
 <translation id="8498858610309223613">A special security update for Google Chrome was just applied. Restart now and we'll restore your tabs.</translation>
 <translation id="8504220326736535258">Chrome blocked this file because it has malware</translation>
 <translation id="8516431725144212809">Your interests as estimated by Chrome</translation>

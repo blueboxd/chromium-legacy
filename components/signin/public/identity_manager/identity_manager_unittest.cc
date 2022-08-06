@@ -391,8 +391,9 @@ class IdentityManagerTest : public testing::Test {
 #endif
 
     auto gaia_cookie_manager_service =
-        std::make_unique<GaiaCookieManagerService>(token_service.get(),
-                                                   &signin_client_);
+        std::make_unique<GaiaCookieManagerService>(
+            account_tracker_service.get(), token_service.get(),
+            &signin_client_);
 
     auto account_fetcher_service = std::make_unique<AccountFetcherService>();
     account_fetcher_service->Initialize(
@@ -1725,7 +1726,7 @@ TEST_F(IdentityManagerTest, IdentityManagerGetsTokensLoadedEvent) {
   // we fake the credentials loaded state and force another load in
   // order to be able to capture the TokensLoaded event.
   token_service()->set_all_credentials_loaded_for_testing(false);
-  token_service()->LoadCredentials(CoreAccountId());
+  token_service()->LoadCredentials(CoreAccountId(), /*is_syncing=*/false);
   run_loop.Run();
 }
 
@@ -2352,7 +2353,7 @@ TEST_F(IdentityManagerTest, AreRefreshTokensLoaded) {
   // order to test AreRefreshTokensLoaded.
   token_service()->set_all_credentials_loaded_for_testing(false);
   EXPECT_FALSE(identity_manager()->AreRefreshTokensLoaded());
-  token_service()->LoadCredentials(CoreAccountId());
+  token_service()->LoadCredentials(CoreAccountId(), /*is_syncing=*/false);
   run_loop.Run();
   EXPECT_TRUE(identity_manager()->AreRefreshTokensLoaded());
 }
@@ -2405,10 +2406,12 @@ TEST_F(IdentityManagerTest, SetPrimaryAccountClearsExistingPrimaryAccount) {
 }
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(IdentityManagerTest, AccountIdMigration_DoneOnInitialization) {
   EXPECT_EQ(IdentityManager::AccountIdMigrationState::MIGRATION_DONE,
             identity_manager()->GetAccountIdMigrationState());
 }
+#endif
 
 // Checks that IdentityManager::Observer gets OnAccountUpdated when account info
 // is updated.
@@ -2455,6 +2458,7 @@ TEST_F(IdentityManagerTest, TestOnAccountRemovedWithInfoCallback) {
 TEST_F(IdentityManagerTest, TestPickAccountIdForAccount) {
   const CoreAccountId account_id =
       identity_manager()->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const bool account_id_migration_done =
       identity_manager()->GetAccountIdMigrationState() ==
       IdentityManager::AccountIdMigrationState::MIGRATION_DONE;
@@ -2463,6 +2467,9 @@ TEST_F(IdentityManagerTest, TestPickAccountIdForAccount) {
   } else {
     EXPECT_TRUE(gaia::AreEmailsSame(kTestEmail, account_id.ToString()));
   }
+#else
+  EXPECT_TRUE(gaia::AreEmailsSame(kTestGaiaId, account_id.ToString()));
+#endif
 }
 
 #if BUILDFLAG(IS_ANDROID)

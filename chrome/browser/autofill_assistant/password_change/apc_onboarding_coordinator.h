@@ -7,12 +7,21 @@
 
 #include "base/callback.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 // Abstract interface for an onboarding coordinator.
 class ApcOnboardingCoordinator {
  public:
   // A callback with a success parameter indicating whether consent has been
   // given.
   using Callback = base::OnceCallback<void(bool)>;
+
+  // Factory function to create an `ApcOnboardingCoordinator` that is defined
+  // in `apc_onboarding_controller_impl.cc`.
+  static std::unique_ptr<ApcOnboardingCoordinator> Create(
+      content::WebContents* web_contents);
 
   ApcOnboardingCoordinator() = default;
   virtual ~ApcOnboardingCoordinator() = default;

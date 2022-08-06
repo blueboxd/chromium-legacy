@@ -13377,15 +13377,38 @@
   },
   "EnableSyncConsent": {
     "os": [
-      "chromeos_ash"
+      "chromeos_ash",
+      "chromeos_lacros"
     ],
     "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "policies": {
+        },
+        "prefs": {
+          "sync_consent.enabled": {
+            "default_value": true
+          }
+        }
+      },
       {
         "policies": {
           "EnableSyncConsent": false
         },
         "prefs": {
-          "sync_consent.enabled": {}
+          "sync_consent.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EnableSyncConsent": true
+        },
+        "prefs": {
+          "sync_consent.enabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -15504,6 +15527,23 @@
         },
         "prefs": {
           "renderer_code_integrity_enabled": {
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "RendererAppContainerEnabled": {
+    "os": [
+      "win"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "RendererAppContainerEnabled": true
+        },
+        "prefs": {
+          "renderer_app_container_enabled": {
             "location": "local_state"
           }
         }
@@ -18415,5 +18455,65 @@
       }
     }
   ]
-}
+  },
+  "OsColorMode": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+        },
+        "prefs": {
+          "ash.dark_mode.enabled": {
+            "check_for_mandatory": true,
+            "check_for_recommended": false,
+            "value": false
+          },
+          "ash.dark_mode.schedule_type": {
+            "check_for_mandatory": true,
+            "check_for_recommended": false,
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "OsColorMode": "dark"
+        },
+        "prefs": {
+          "ash.dark_mode.enabled": {
+            "value": true
+          },
+          "ash.dark_mode.schedule_type": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "OsColorMode": "light"
+        },
+        "prefs": {
+          "ash.dark_mode.enabled": {
+            "value": false
+          },
+          "ash.dark_mode.schedule_type": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "OsColorMode": "auto"
+        },
+        "prefs": {
+          "ash.dark_mode.schedule_type": {
+            "value": 1
+          }
+        }
+      }
+    ]
+  }
 }

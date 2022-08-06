@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_service.h"
@@ -50,6 +49,8 @@ std::string PageContentAnnotationsTypeToString(
       return "RelatedSearches";
     case PageContentAnnotationsType::kSearchMetadata:
       return "SearchMetadata";
+    case PageContentAnnotationsType::kRemoteMetdata:
+      return "RemoteMetadata";
   }
 }
 
@@ -331,48 +332,10 @@ void PageContentAnnotationsService::OverridePageContentAnnotatorForTesting(
   annotator_ = annotator;
 }
 
-// static
-std::string PageContentAnnotationsService::StringInputForPageTopicsHost(
-    const std::string& host) {
-  std::string output = base::ToLowerASCII(host);
-
-  // Strip the 'www.' if it exists.
-  if (base::StartsWith(output, "www.")) {
-    output = output.substr(4);
-  }
-
-  const char kCharsToReplaceWithSpace[] = {'-', '_', '.', '+'};
-  for (char c : kCharsToReplaceWithSpace) {
-    std::replace(output.begin(), output.end(), c, ' ');
-  }
-
-  return output;
-}
-
-void PageContentAnnotationsService::BatchAnnotatePageTopics(
-    BatchAnnotationCallback callback,
-    const std::vector<std::string>& hosts) {
-  std::vector<std::string> tokenized_hosts;
-  for (const std::string& host : hosts) {
-    tokenized_hosts.emplace_back(StringInputForPageTopicsHost(host));
-  }
-
-  if (!annotator_) {
-    std::move(callback).Run(CreateEmptyBatchAnnotationResults(tokenized_hosts));
-    return;
-  }
-
-  annotator_->Annotate(std::move(callback), tokenized_hosts,
-                       AnnotationType::kPageTopics);
-}
-
 void PageContentAnnotationsService::BatchAnnotate(
     BatchAnnotationCallback callback,
     const std::vector<std::string>& inputs,
     AnnotationType annotation_type) {
-  DCHECK_NE(annotation_type, AnnotationType::kPageTopics)
-      << "Please use |BatchAnnotatePageTopics| instead";
-
   if (!annotator_) {
     std::move(callback).Run(CreateEmptyBatchAnnotationResults(inputs));
     return;
@@ -580,6 +543,18 @@ void PageContentAnnotationsService::PersistRemotePageEntities(
            // Even though we are persisting remote page entities, we store
            // these as an override to the model annotations.
            PageContentAnnotationsType::kModelAnnotations);
+}
+
+void PageContentAnnotationsService::PersistRemotePageMetadata(
+    const HistoryVisit& visit,
+    const proto::PageEntitiesMetadata& page_metadata) {
+  if (!page_metadata.has_alternative_title())
+    return;
+  QueryURL(visit,
+           base::BindOnce(&history::HistoryService::AddPageMetadataForVisit,
+                          history_service_->AsWeakPtr(),
+                          page_metadata.alternative_title()),
+           PageContentAnnotationsType::kRemoteMetdata);
 }
 
 // static

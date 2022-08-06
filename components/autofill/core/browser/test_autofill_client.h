@@ -156,7 +156,7 @@ class TestAutofillClient : public AutofillClient {
   bool IsAutocompleteEnabled() override;
   bool IsPasswordManagerEnabled() override;
   void PropagateAutofillPredictions(
-      content::RenderFrameHost* rfh,
+      AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
@@ -297,12 +297,13 @@ class TestAutofillClient : public AutofillClient {
   std::unique_ptr<PrefService> prefs_;
   std::unique_ptr<TestStrikeDatabase> test_strike_database_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
-  std::unique_ptr<TestFormDataImporter> form_data_importer_;
 
-  // AutofillOfferManager must be destroyed before TestPersonalDataManager
-  // because the former's destructor refers to the latter.
+  // AutofillOfferManager and TestFormDataImporter must be destroyed before
+  // TestPersonalDataManager, because the former's destructors refer to the
+  // latter.
   std::unique_ptr<TestPersonalDataManager> test_personal_data_manager_;
   std::unique_ptr<AutofillOfferManager> autofill_offer_manager_;
+  std::unique_ptr<TestFormDataImporter> form_data_importer_;
 
   GURL form_origin_;
   ukm::SourceId source_id_ = -1;

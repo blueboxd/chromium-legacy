@@ -71,11 +71,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // Clears out all events that start in a non-prunable month.
   void ClearAllPrunableEvents();
 
-  // Resets to defaults the values of all event fetch metrics recorded over the
-  // lifetime of a calendar session, i.e. between a single open and close of the
-  // calendar.
-  void ResetLifetimeMetrics(const base::Time& currently_shown_date);
-
   // Logs to UMA all event fetch metrics recorded over the lifetime of a
   // calendar session.
   void UploadLifetimeMetrics();
@@ -86,11 +81,8 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // Adds every month in `months` to the set of non-prunable months.
   void AddNonPrunableMonths(const std::set<base::Time>& months);
 
-  // Requests events that fall in `months`.
-  void FetchEvents(const std::set<base::Time>& months);
-
-  // Requests events that fall in `num_months` months surrounding `day`.
-  void FetchEventsSurrounding(int num_months, const base::Time day);
+  // Requests events that of the passed in `start_of_month`.
+  void FetchEvents(base::Time start_of_month);
 
   // Cancels any pending event fetch for `start_of_month`.
   void CancelFetch(const base::Time& start_of_month);
@@ -114,14 +106,13 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   void DebugDump();
 
   // Redistributes all the fetched events to the date map with the
-  // `time_difference_minutes_`. This only happens once per calendar view's life
-  // cycle.
-  void RedistributeEvents(int time_difference_minutes);
+  // time difference. This method is only called when there's a timezone change.
+  void RedistributeEvents();
 
-  // Updates the time difference in minutes.
-  void set_time_difference_minutes(int minutes) {
-    time_difference_minutes_ = minutes;
-  }
+  // Checks whether `start_of_month` is further than we've gone, so far, from
+  // the on-screen month with which the calendar was opened and, if it has, then
+  // update our max distance.
+  void UpdateMaxDistanceBrowsed(const base::Time& start_of_month);
 
  protected:
   // Fetch events for `start_of_month`.
@@ -150,31 +141,43 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   bool ShouldInsertEvent(
       const google_apis::calendar::CalendarEvent* event) const;
 
-  // Inserts a single `event` in the EventCache.
-  void InsertEvent(const google_apis::calendar::CalendarEvent* event);
+  // Checks if the event spans more than one day.
+  bool IsMultiDayEvent(google_apis::calendar::CalendarEvent* event) const;
 
-  // Inserts a single `event` in the EventMap for the month that contains its
-  // start date.
-  void InsertEventInMonth(SingleMonthEventMap& month,
-                          const google_apis::calendar::CalendarEvent* event);
+  // Inserts a single `event` that spans more than one day in the EventCache.
+  void InsertMultiDayEvent(const google_apis::calendar::CalendarEvent* event,
+                           const base::Time start_of_month);
 
-  // Returns the `start_time` of `event` adjusted by
-  // `time_difference_minutes_`, to ensure that each event is stored by its
-  // local time, e.g. an event that starts at 2022-05-31 22:00:00.000 PST
-  // (2022-06-01 05:00:00.000 UTC) is stored in the map for 05-2022.
+  // Finds or creates a new SingleMonthEventMap to then insert the `event` into
+  // an event list of that month.
+  void InsertEventInMonth(const google_apis::calendar::CalendarEvent* event,
+                          const base::Time start_of_month,
+                          const base::Time start_time_midnight);
+
+  // Inserts a single `event` in a SingleDayEventList of a SingleMonthEventMap.
+  void InsertEventInMonthEventList(
+      SingleMonthEventMap& month,
+      const google_apis::calendar::CalendarEvent* event,
+      const base::Time start_time_midnight);
+
+  // Returns the `start_time` of `event` adjusted by time difference, to ensure
+  // that each event is stored by its local time, e.g. an event that starts at
+  // 2022-05-31 22:00:00.000 PST (2022-06-01 05:00:00.000 UTC) is stored in the
+  // map for 05-2022.
   base::Time GetStartTimeAdjusted(
       const google_apis::calendar::CalendarEvent* event) const;
 
-  // Returns the `end_time` of `event` adjusted by `time_difference_minutes_`.
+  // Returns the `end_time` of `event` adjusted by time difference.
   base::Time GetEndTimeAdjusted(
       const google_apis::calendar::CalendarEvent* event) const;
 
-  // Returns midnight on the day of the state time of `event`.
+  // Returns midnight on the day of the start time of `event`.
   base::Time GetStartTimeMidnightAdjusted(
       const google_apis::calendar::CalendarEvent* event) const;
 
-  // Inserts EventList `events` in the EventCache.
-  void InsertEvents(const google_apis::calendar::EventList* events);
+  // Returns midnight on the day of the end time of `event`.
+  base::Time GetEndTimeMidnightAdjusted(
+      const google_apis::calendar::CalendarEvent* event) const;
 
   // Inserts EventList `events` in the EventCache. For testing only, it clears
   // out the entire cache and inserts the `events`.
@@ -204,11 +207,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
       base::Time start_of_month,
       CalendarEventFetchInternalErrorCode error);
 
-  // Checks whether `start_of_month` is further than we've gone, so far, from
-  // the on-screen month with which the calendar was opened and, if it has, then
-  // update our max distance.
-  void UpdateMaxDistanceBrowsed(const base::Time& start_of_month);
-
   // Internal storage for fetched events, with each fetched month having a
   // map of days to events.
   MonthToEventsMap event_months_;
@@ -224,18 +222,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
 
   // All fetch requests that are still in-progress.
   std::map<base::Time, std::unique_ptr<CalendarEventFetch>> pending_fetches_;
-
-  // Time difference between the UTC time and the local time in minutes.
-  absl::optional<int> time_difference_minutes_;
-
-  // The first on-screen month to have been displayed when the calendar was
-  // opened.
-  base::Time first_on_screen_month_;
-
-  // Maximum distance, in months, from the on-screen month first displayed in
-  // the calendar when it was opened. This is logged as a metric when the
-  // calendar is closed.
-  size_t max_distance_browsed_;
 
   ScopedSessionObserver session_observer_;
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_BUBBLE_DOWNLOAD_BUBBLE_ROW_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_BUBBLE_DOWNLOAD_BUBBLE_ROW_VIEW_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/download/download_ui_model.h"
@@ -108,6 +109,7 @@ class DownloadBubbleRowView : public views::View,
   raw_ptr<views::MdTextButton> keep_button_ = nullptr;
   raw_ptr<views::MdTextButton> scan_button_ = nullptr;
   raw_ptr<views::MdTextButton> open_now_button_ = nullptr;
+  raw_ptr<views::MdTextButton> resume_button_ = nullptr;
   raw_ptr<views::FlexLayoutView> main_button_holder_ = nullptr;
 
   // The progress bar for in-progress downloads.
@@ -137,8 +139,9 @@ class DownloadBubbleRowView : public views::View,
   download::DownloadItemMode mode_;
   download::DownloadItem::DownloadState state_;
   DownloadUIModel::BubbleUIInfo ui_info_;
+  bool is_paused_;
 
-  const gfx::VectorIcon* last_overriden_icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon> last_overriden_icon_ = nullptr;
   bool already_set_default_icon_ = false;
 
   // HoverButton for main button click and inkdrop animations.

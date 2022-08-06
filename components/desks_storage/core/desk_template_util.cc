@@ -4,21 +4,12 @@
 
 #include "components/desks_storage/core/desk_template_util.h"
 
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 
-// Duplicate value format.
-constexpr char kDuplicateNumberFormat[] = "(%d)";
-// Initial duplicate number value.
-constexpr char kInitialDuplicateNumberValue[] = " (1)";
-// Regex used in determining if duplicate name should be incremented.
-constexpr char kDuplicateNumberRegex[] = "\\(([0-9]+)\\)$";
 constexpr char kTestPwaAppId[] = "test_pwa_app_id";
 constexpr char kTestChromeAppId[] = "test_chrome_app_id";
 constexpr char kTestArcAppId[] = "test_arc_app_id";
@@ -40,38 +31,50 @@ apps::AppPtr MakeApp(const char* app_id,
   return app;
 }
 
-std::u16string AppendDuplicateNumberToDuplicateName(
-    const std::u16string& duplicate_name_u16) {
-  std::string duplicate_name = base::UTF16ToUTF8(duplicate_name_u16);
-  int found_duplicate_number;
-
-  if (RE2::PartialMatch(duplicate_name, kDuplicateNumberRegex,
-                        &found_duplicate_number)) {
-    RE2::Replace(
-        &duplicate_name, kDuplicateNumberRegex,
-        base::StringPrintf(kDuplicateNumberFormat, found_duplicate_number + 1));
-  } else {
-    duplicate_name.append(kInitialDuplicateNumberValue);
+ash::DeskTemplate* FindOtherEntryWithName(
+    const std::u16string& name,
+    const base::GUID& uuid,
+    const std::map<base::GUID, std::unique_ptr<ash::DeskTemplate>>& entries) {
+  auto iter = std::find_if(
+      entries.begin(), entries.end(),
+      [name, uuid](const std::pair<const base::GUID,
+                                   std::unique_ptr<ash::DeskTemplate>>& entry) {
+        // Name duplication is allowed if one of the templates is an admin
+        // template.
+        return (entry.second->uuid() != uuid &&
+                entry.second->template_name() == name &&
+                entry.second->source() != ash::DeskTemplateSource::kPolicy);
+      });
+  if (iter == entries.end()) {
+    return nullptr;
   }
-
-  return base::UTF8ToUTF16(duplicate_name);
+  return iter->second.get();
 }
 
 void PopulateAppRegistryCache(AccountId account_id,
                               apps::AppRegistryCache* cache) {
   std::vector<apps::AppPtr> deltas;
 
-  deltas.push_back(MakeApp(kTestPwaAppId, "Test PWA App", apps::AppType::kWeb));
+  deltas.push_back(
+      MakeApp(kTestPwaAppId, "Test PWA App", apps::AppType::kChromeApp));
   // chromeAppId returns kExtension in the real Apps cache.
-  deltas.push_back(MakeApp(app_constants::kChromeAppId, "Chrome Browser",
+  deltas.push_back(MakeApp(app_constants::kChromeAppId, "Ash Chrome Browser",
                            apps::AppType::kChromeApp));
+  deltas.push_back(MakeApp(app_constants::kLacrosAppId, "Lacros Chrome Browser",
+                           apps::AppType::kStandaloneBrowser));
   deltas.push_back(
       MakeApp(kTestChromeAppId, "Test Chrome App", apps::AppType::kChromeApp));
   deltas.push_back(MakeApp(kTestArcAppId, "Arc app", apps::AppType::kArc));
   deltas.push_back(
-      MakeApp(kTestPwaAppId1, "Test PWA App", apps::AppType::kWeb));
+      MakeApp(kTestPwaAppId1, "Test PWA App 2", apps::AppType::kChromeApp));
+  deltas.push_back(MakeApp(kTestChromeAppId1, "Test Chrome App 2",
+                           apps::AppType::kChromeApp));
   deltas.push_back(
-      MakeApp(kTestChromeAppId1, "Test Chrome App", apps::AppType::kChromeApp));
+      MakeApp(kTestSwaAppId, "Test System Web App 1", apps::AppType::kWeb));
+  deltas.push_back(MakeApp(kTestUnsupportedAppId, "Test Supported App 1",
+                           apps::AppType::kPluginVm));
+  deltas.push_back(MakeApp(kTestLacrosChromeAppId, "Test Chrome App",
+                           apps::AppType::kStandaloneBrowserChromeApp));
 
   if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
     cache->OnApps(std::move(deltas), apps::AppType::kUnknown,

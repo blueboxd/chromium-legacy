@@ -52,6 +52,7 @@ _CONFIG = [
             'base::Days',
             'base::DefaultTickClock',
             'base::ElapsedTimer',
+            'base::EnumSet',
             'base::JobDelegate',
             'base::JobHandle',
             'base::PostJob',
@@ -67,6 +68,7 @@ _CONFIG = [
             "base::i18n::ToUCharPtr",
             'base::Location',
             'base::MakeRefCounted',
+            'base::MatcherStringPattern',
             'base::Microseconds',
             'base::Milliseconds',
             'base::Minutes',
@@ -87,7 +89,6 @@ _CONFIG = [
             'base::ScopedAllowBlocking',
             'base::ScopedFD',
             'base::ScopedClosureRunner',
-            'base::StringPattern',
             'base::StringPiece',
             'base::SubstringSetMatcher',
             'base::SupportsWeakPtr',
@@ -609,9 +610,13 @@ _CONFIG = [
             'service_manager::InterfaceProvider',
 
             # STL containers such as std::string and std::vector are discouraged
-            # but still needed for interop with WebKit/common. Note that other
+            # but still needed for interop with blink/common. Note that other
             # STL types such as std::unique_ptr are encouraged.
             'std::.+',
+
+            # Similarly, GURL is allowed to interoperate with blink/common and
+            # other common code shared between browser and renderer.
+            'GURL',
 
             # UI Cursor
             'ui::Cursor',
@@ -1727,6 +1732,12 @@ _CONFIG = [
         ],
         'allowed': [
             'base::Value',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/modules/clipboard/'],
+        'allowed': [
+            'net::ParseMimeTypeWithoutParameter',
         ],
     },
 ]

@@ -4,7 +4,7 @@
 
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
 import './setup.js';
-import '../trusted/wallpaper/styles.js';
+import '../trusted/wallpaper/trusted_style.css.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {afterNextRender, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -452,6 +452,10 @@ export class CollectionsGrid extends PolymerElement {
         this.isImageTile_(item);
   }
 
+  private getTileAriaDisabled_(item: Tile|null): string {
+    return (!this.isSelectableTile_(item)).toString();
+  }
+
   /**
    * Make the text and background gradient visible again after the image has
    * finished loading. This is called for both on-load and on-error, as either
@@ -463,6 +467,10 @@ export class CollectionsGrid extends PolymerElement {
     for (const elem of parent!.querySelectorAll('[hidden]')) {
       elem.removeAttribute('hidden');
     }
+  }
+
+  private getAriaIndex_(index: number): number {
+    return index + 1;
   }
 }
 

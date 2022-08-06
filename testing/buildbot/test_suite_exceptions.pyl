@@ -228,7 +228,6 @@
   },
   'blink_web_tests': {
     'remove_from': [
-      'Mac10.11 Tests',
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
     ],
@@ -256,15 +255,6 @@
         ],
         'swarming': {
           'shards': 30,
-        },
-      },
-      # TODO (crbug.com/1294574) Re-enable once fixed
-      'Mac Builder Next': {
-        'experiment_percentage': 0,
-      },
-      'Mac10.12 Tests': {
-        'swarming': {
-          'shards': 25,
         },
       },
       'Mac10.13 Tests': {
@@ -475,15 +465,6 @@
           'shards': 20,
         },
       },
-      # TODO (crbug.com/1254971) Re-enable once fixed
-      'mac-osxbeta-rel': {
-        'experiment_percentage': 0,
-      },
-      'mac10.12-blink-rel-dummy': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'mac10.13-blink-rel-dummy': {
         'swarming': {
           'shards': 2,
@@ -536,7 +517,6 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
-      'Mac10.11 Tests', # https://crbug.com/1263696
       # TODO(crbug.com/1171053): Enable the suite in 'Mac10.15 Tests' once it's
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
@@ -597,12 +577,11 @@
         ],
       },
       'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
+        # These are very slow on the Chrome OS MSAN trybot, most likely because browser_tests on cros has ~40% more tests. Also, these tests
+        # run on ash, which means every test starts and shuts down ash, which most likely explains why it takes longer than on other platforms.
         # crbug.com/865455
         'swarming': {
-          # This should be reverted to 48 before end of April 2022, when the slowdown is fixed.
-          # crbug.com/1313907
-          'shards': 72,
+          'shards': 48,
         },
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
@@ -637,20 +616,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
         ],
         'experiment_percentage': 100, # https://crbug.com/1251657
-      },
-      # TODO(crbug.com/1232535) Remove once the bug is resolved.
-      'Mac10.11 Tests': {
-        'args': [
-          '--test-launcher-print-timestamps',
-        ],
-      },
-      # crbug.com/1300822
-      'Mac10.12 Tests': {
-         # crbug.com/1307029
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 20,
-        },
       },
       'Mac10.15 Tests': {
         # crbug.com/1042757
@@ -1437,7 +1402,6 @@
   },
   'content_shell_crash_test': {
     'remove_from': [
-      'Mac10.11 Tests',  # crbug.com/1138050
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084353
     ],
     'modifications': {
@@ -1835,6 +1799,11 @@
       'Android FYI Release (Pixel 2)',
     ],
   },
+  'gpu_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
+    ],
+  },
   'gpu_unittests': {
     'modifications': {
       'fuchsia-code-coverage': {
@@ -2085,6 +2054,26 @@
   },
   'ipc_tests': {
     'modifications': {
+      'Linux ChromiumOS MSan Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+      'Linux MSan Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
       'android-asan': {
         'swarming': {
           'shards': 2,
@@ -2101,12 +2090,6 @@
           # only one color space, so disable wide color gamut for the test to
           # work around the issue. See https://crbug.com/1166379 for more
           # information.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-      'Optional Android Release (Pixel 4)': {
-        'args': [
-          # See above.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
@@ -2151,12 +2134,6 @@
           # only one color space, so disable wide color gamut for the test to
           # work around the issue. See https://crbug.com/1166379 for more
           # information.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-      'Optional Android Release (Pixel 4)': {
-        'args': [
-          # See above.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
@@ -2217,11 +2194,6 @@
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.media_unittests.filter',
-        ],
-      },
-      'fuchsia-fyi-x64-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.media_unittests.filter',
         ],
       },
     },
@@ -2427,11 +2399,6 @@
           'shards': 14,
         },
       },
-      'fuchsia-fyi-x64-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.net_unittests.filter',
-        ],
-      },
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
@@ -2532,7 +2499,8 @@
       },
       'fuchsia-fyi-x64-asan': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.perfetto_unittests.filter',
+          # TODO(crbug.com/1199334): Error messages only show up in klog.
+          '--gtest_filter=-PagedMemoryTest.AccessUncommittedMemoryTriggersASAN'
         ],
       },
     },
@@ -2569,32 +2537,6 @@
       },
     },
   },
-  'pixel_browser_tests': {
-    'modifications': {
-      'win-pixel-tester-rel': {
-        'non_precommit_args': [
-          # Do not allow retry or it will break the bulk approval process.
-          # When retry with fail-pass pattern, the passing test will overwrite the previously
-          # seen flaky version on the trace. We can triage the image using the printed link,
-          # but it will not show on the Skia Gold search page.
-          '--test-launcher-retry-limit=0',
-        ],
-      },
-    },
-  },
-  'pixel_interactive_ui_tests': {
-    'modifications': {
-      'win-pixel-tester-rel': {
-        'non_precommit_args': [
-          # Do not allow retry or it will break the bulk approval process.
-          # When retry with fail-pass pattern, the passing test will overwrite the previously
-          # seen flaky version on the trace. We can triage the image using the printed link,
-          # but it will not show on the Skia Gold search page.
-          '--test-launcher-retry-limit=0',
-        ],
-      },
-    },
-  },
   'pixel_skia_gold_passthrough_test': {
     'modifications': {
       'Android FYI Release (Pixel 4)': {
@@ -2611,12 +2553,6 @@
         'swarming': {
           'quickrun_shards': 2,
         },
-      },
-      'Optional Android Release (Pixel 4)': {
-        'args': [
-          # See above.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
       },
       'Win10 x64 Release (NVIDIA)': {
         'swarming': {
@@ -2664,12 +2600,6 @@
           # only one color space, so disable wide color gamut for the test to
           # work around the issue. See https://crbug.com/1166379 for more
           # information.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-      'Optional Android Release (Pixel 4)': {
-        'args': [
-          # See above.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
@@ -2778,12 +2708,6 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
-      'Optional Android Release (Pixel 4)': {
-        'args': [
-          # See above.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
       'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
@@ -2801,12 +2725,6 @@
           # only one color space, so disable wide color gamut for the test to
           # work around the issue. See https://crbug.com/1166379 for more
           # information.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-      'Optional Android Release (Pixel 4)': {
-        'args': [
-          # See above.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
@@ -2863,55 +2781,6 @@
         },
       },
     }
-  },
-  # TODO(crbug.com/1202958): Remove these when SkiaRenderer is fully shipped
-  # on Chrome OS.
-  'skia_renderer_telemetry_perf_unittests': {
-    'remove_from': [
-      # Not enough capacity.
-      'chromeos-betty-pi-arc-chrome',
-      'chromeos-betty-pi-arc-chrome-dchecks',
-      # it sometimes flakily times out.
-      'chromeos-amd64-generic-rel',
-    ],
-    'modifications': {
-      'chromeos-amd64-generic-rel': {
-        'ci_only': True,
-      },
-      'chromeos-amd64-generic-rel (goma cache silo)': {
-        'ci_only': True,
-      },
-      'chromeos-amd64-generic-rel (reclient)': {
-        'ci_only': True,
-      },
-    },
-  },
-  'skia_renderer_telemetry_unittests': {
-    'remove_from': [
-      # Not enough capacity.
-      'chromeos-betty-pi-arc-chrome',
-      'chromeos-betty-pi-arc-chrome-dchecks',
-    ],
-    'modifications': {
-      'chromeos-amd64-generic-rel': {
-        'ci_only': True,
-      },
-      'chromeos-amd64-generic-rel (goma cache silo)': {
-        'ci_only': True,
-      },
-      'chromeos-amd64-generic-rel (reclient)': {
-        'ci_only': True,
-      },
-    },
-  },
-  'skia_unittests': {
-    'modifications': {
-      'fuchsia-fyi-x64-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.skia_unittests.filter',
-        ],
-      },
-    },
   },
   'snapshot_unittests': {
     'modifications': {
@@ -3041,17 +2910,6 @@
           '--jobs=1',
         ],
       },
-      # Disable parallelism on all Mac bots.
-      'Mac10.11 Tests': {
-        'args': [
-          '--jobs=1',
-        ],
-      },
-      'Mac10.12 Tests': {
-        'args': [
-          '--jobs=1',
-        ],
-      },
       'Mac11 Tests': {
         'ci_only': True,
       },
@@ -3080,7 +2938,6 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # crbug.com/936540
-      'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
@@ -3106,9 +2963,6 @@
       # TODO(crbug.com/1141234): Restore when there's more DUTs
       'chromeos-kevin-chrome',
       'chromeos-kevin-rel',
-
-      # crbug.com/936540
-      'Mac10.11 Tests',
 
       'Win10 Tests x64',
       'Win11 Tests x64',
@@ -3231,7 +3085,6 @@
   'video_decode_accelerator_gl_unittest': {
     'remove_from': [
       # Windows Intel doesn't have the GL extensions to support this test.
-      'Optional Win10 x64 Release (Intel HD 630)',
       'Win10 FYI x64 Release (Intel HD 630)',
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
@@ -3353,10 +3206,7 @@
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
       # Not enough capacity. https://crbug.com/982294
-      'Mac Pro FYI Release (AMD)',
       'Mac FYI Retina Release (NVIDIA)',
-      # Only run validating on Mac Intel due to capacity http://crbug.com/1236796
-      'Optional Mac Release (Intel)',
     ],
   },
   'webgl2_conformance_gl_passthrough_tests 8086:3e9b': {
@@ -3433,9 +3283,6 @@
       # Passthrough version run on this configuration, not enough capacity for
       # both. See https://crbug.com/1238070.
       'ChromeOS FYI Release (kevin)',
-      # The Mac NVIDIA Retina bots don't have the capacity to run
-      # this test suite on mac_optional_gpu_tests_rel.
-      'Optional Mac Retina Release (NVIDIA)',
     ],
     'modifications': {
       # This VM configuration is known to be significantly slower than other
@@ -3510,6 +3357,10 @@
     ],
     'modifications': {
       'chromeos-amd64-generic-rel': {
+        'args': [
+          # Added to debug crbug.com/1293967.
+          '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization',
+        ],
         'swarming': {
           'quickrun_shards': 40,
         },

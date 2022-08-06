@@ -68,7 +68,7 @@ NSString* const kLearnMoreUrl = @"internal://learn-more";
   self.primaryActionString =
       [self contentTextWithStringID:self.activateSyncButtonID];
 
-  self.bannerImage = [UIImage imageNamed:@"sync_screen_banner"];
+  self.bannerName = @"sync_screen_banner";
   self.isTallBanner = NO;
   self.scrollToEndMandatory = YES;
   self.readMoreString =
@@ -97,6 +97,11 @@ NSString* const kLearnMoreUrl = @"internal://learn-more";
   self.disclaimerURLs = @[ net::NSURLWithGURL(GURL(kSettingsSyncURL)) ];
 
   [super viewDidLoad];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [self.delegate logScrollButtonVisible:!self.didReachBottom];
 }
 
 #pragma mark - Properties

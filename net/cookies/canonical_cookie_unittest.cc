@@ -49,6 +49,9 @@ using testing::Eq;
 using testing::Not;
 using testing::Property;
 
+// Tests which use this class verify the expiry date clamping behavior when
+// kClampCookieExpiryTo400Days is enabled. This caps expiry dates on new/updated
+// cookies to max of 400 days, but does not affect previously stored cookies.
 class CanonicalCookieWithClampingTest
     : public testing::Test,
       public testing::WithParamInterface<bool> {
@@ -451,6 +454,49 @@ TEST(CanonicalCookieTest, CreateWithInvalidDomain) {
       {CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN}));
 }
 
+TEST(CanonicalCookieTest, CreateWithNonASCIIDomain) {
+  GURL url("http://www.xn--xample-9ua.com/test/foo.html");
+  base::Time now = base::Time::Now();
+  absl::optional<base::Time> server_time = absl::nullopt;
+
+  // Test with feature flag enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kCookieDomainRejectNonASCII);
+    CookieInclusionStatus status;
+
+    // Test that non-ascii characters are rejected.
+    std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
+        url, "A=1; Domain=\xC3\xA9xample.com", now, server_time,
+        absl::nullopt /* cookie_partition_key */, &status);
+    EXPECT_EQ(nullptr, cookie.get());
+    EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+        {CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN}));
+  }
+
+  // Test with feature flag disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(features::kCookieDomainRejectNonASCII);
+    CookieInclusionStatus status2;
+
+    std::unique_ptr<CanonicalCookie> cookie2 = CanonicalCookie::Create(
+        url, "A=2; Domain=\xC3\xA9xample.com", now, server_time,
+        absl::nullopt /* cookie_partition_key */, &status2);
+
+    EXPECT_TRUE(cookie2.get());
+    EXPECT_TRUE(status2.IsInclude());
+  }
+
+  // Test that regular ascii punycode still works.
+  CookieInclusionStatus status3;
+  std::unique_ptr<CanonicalCookie> cookie3 = CanonicalCookie::Create(
+      url, "A=3; Domain=xn--xample-9ua.com", now, server_time,
+      absl::nullopt /* cookie_partition_key */, &status3);
+  EXPECT_TRUE(cookie3.get());
+  EXPECT_TRUE(status3.IsInclude());
+}
+
 TEST(CanonicalCookieTest, CreateWithDomainAsIP) {
   GURL url("http://1.1.1.1");
   GURL url6("http://[2606:2800:220:1:248:1893:25c8:1946]");
@@ -672,6 +718,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Seconds(60) + creation_time, cookie->ExpiryDate());
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Max-age with expires (max-age should take precedence).
   cookie = CanonicalCookie::Create(
@@ -681,6 +728,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Seconds(60) + creation_time, cookie->ExpiryDate());
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Max-age=0 should create an expired cookie with expiry equal to the earliest
   // representable time.
@@ -691,6 +739,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_TRUE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Time::Min(), cookie->ExpiryDate());
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Negative max-age should create an expired cookie with expiry equal to the
   // earliest representable time.
@@ -701,6 +750,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_TRUE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Time::Min(), cookie->ExpiryDate());
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Max-age with whitespace (should be trimmed out).
   cookie = CanonicalCookie::Create(url, "A=1; max-age = 60  ; Secure",
@@ -710,6 +760,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Seconds(60) + creation_time, cookie->ExpiryDate());
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Max-age with non-integer should be ignored.
   cookie = CanonicalCookie::Create(url, "A=1; max-age=abcd", creation_time,
@@ -718,6 +769,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie.get());
   EXPECT_FALSE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Overflow max-age should be clipped.
   cookie = CanonicalCookie::Create(url,
@@ -735,6 +787,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   } else {
     EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
   }
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Underflow max-age should be clipped.
   cookie = CanonicalCookie::Create(url,
@@ -748,6 +801,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_TRUE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Time::Min(), cookie->ExpiryDate());
+  EXPECT_TRUE(cookie->IsCanonical());
 }
 
 TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
@@ -765,6 +819,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
   EXPECT_TRUE(cookie->IsExpired(creation_time));
   EXPECT_TRUE((past_date - cookie->ExpiryDate()).magnitude() <
               base::Seconds(1));
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Expires in the future
   base::Time future_date = base::Time::Now() + base::Days(10);
@@ -776,6 +831,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
   EXPECT_FALSE(cookie->IsExpired(creation_time));
   EXPECT_TRUE((future_date - cookie->ExpiryDate()).magnitude() <
               base::Seconds(1));
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Expires in the far future
   future_date = base::Time::Now() + base::Days(800);
@@ -793,6 +849,7 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
     EXPECT_TRUE((future_date - cookie->ExpiryDate()).magnitude() <
                 base::Seconds(1));
   }
+  EXPECT_TRUE(cookie->IsCanonical());
 
   // Expires in the far future using CreateUnsafeCookieForTesting.
   cookie = CanonicalCookie::CreateUnsafeCookieForTesting(
@@ -805,6 +862,11 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
   EXPECT_FALSE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
   EXPECT_EQ(base::Time(), cookie->LastUpdateDate());
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    EXPECT_FALSE(cookie->IsCanonical());
+  } else {
+    EXPECT_TRUE(cookie->IsCanonical());
+  }
 
   // Expires in the far future using FromStorage.
   cookie = CanonicalCookie::FromStorage(
@@ -818,6 +880,11 @@ TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
   EXPECT_FALSE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
   EXPECT_EQ(base::Time(), cookie->LastUpdateDate());
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    EXPECT_FALSE(cookie->IsCanonical());
+  } else {
+    EXPECT_TRUE(cookie->IsCanonical());
+  }
 }
 
 TEST(CanonicalCookieTest, EmptyExpiry) {
@@ -2662,6 +2729,20 @@ TEST(CanonicalCookieTest, IsCanonical) {
   EXPECT_TRUE(CanonicalCookie::CreateUnsafeCookieForTesting(
                   "A", "B", "localhost", "/path", base::Time(), base::Time(),
                   base::Time(), base::Time(), false, false,
+                  CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                  ->IsCanonical());
+
+  // non-ASCII domain.
+  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                   "A", "B", "\xC3\xA9xample.com", "/path", base::Time(),
+                   base::Time(), base::Time(), base::Time(), false, false,
+                   CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                   ->IsCanonical());
+
+  // punycode domain.
+  EXPECT_TRUE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                  "A", "B", "xn--xample-9ua.com", "/path", base::Time(),
+                  base::Time(), base::Time(), base::Time(), false, false,
                   CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
                   ->IsCanonical());
 

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_web_ui_controller_factory.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -18,9 +18,9 @@
 
 namespace web_app {
 
-class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
+class UnittestingSystemAppDelegate : public ash::SystemWebAppDelegate {
  public:
-  UnittestingSystemAppDelegate(SystemAppType type,
+  UnittestingSystemAppDelegate(ash::SystemWebAppType type,
                                const std::string& name,
                                const GURL& url,
                                WebAppInstallInfoFactory info_factory);
@@ -37,7 +37,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
 
   std::unique_ptr<WebAppInstallInfo> GetWebAppInfo() const override;
 
-  std::vector<AppId> GetAppIdsToUninstallAndReplace() const override;
+  std::vector<std::string> GetAppIdsToUninstallAndReplace() const override;
   gfx::Size GetMinimumWindowSize() const override;
   bool ShouldReuseExistingWindow() const override;
   bool ShouldShowNewWindowMenuOption() const override;
@@ -53,7 +53,8 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   bool ShouldHaveTabStrip() const override;
   bool ShouldHaveReloadButtonInMinimalUi() const override;
   bool ShouldAllowScriptsToCloseWindows() const override;
-  absl::optional<SystemAppBackgroundTaskInfo> GetTimerInfo() const override;
+  absl::optional<ash::SystemWebAppBackgroundTaskInfo> GetTimerInfo()
+      const override;
   gfx::Rect GetDefaultBounds(Browser* browser) const override;
   Browser* LaunchAndNavigateSystemWebApp(
       Profile* profile,
@@ -72,7 +73,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   void SetShouldReuseExistingWindow(bool);
   void SetShouldShowNewWindowMenuOption(bool);
   void SetShouldIncludeLaunchDirectory(bool);
-  void SetEnabledOriginTrials(const OriginTrialsMap&);
+  void SetEnabledOriginTrials(const ash::OriginTrialsMap&);
   void SetAdditionalSearchTerms(const std::vector<int>&);
   void SetShouldShowInLauncher(bool);
   void SetShouldShowInSearch(bool);
@@ -83,7 +84,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   void SetShouldHaveTabStrip(bool);
   void SetShouldHaveReloadButtonInMinimalUi(bool);
   void SetShouldAllowScriptsToCloseWindows(bool);
-  void SetTimerInfo(const SystemAppBackgroundTaskInfo&);
+  void SetTimerInfo(const ash::SystemWebAppBackgroundTaskInfo&);
   void SetDefaultBounds(base::RepeatingCallback<gfx::Rect(Browser*)>);
   void SetLaunchAndNavigateSystemWebApp(LaunchAndNavigateSystemWebAppCallback);
   void SetIsAppEnabled(bool);
@@ -124,7 +125,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   LaunchAndNavigateSystemWebAppCallback launch_and_navigate_system_web_apps_ =
       base::NullCallback();
 
-  absl::optional<SystemAppBackgroundTaskInfo> timer_info_;
+  absl::optional<ash::SystemWebAppBackgroundTaskInfo> timer_info_;
 };
 
 // Class to setup the installation of a test System Web App.
@@ -152,7 +153,7 @@ class TestSystemWebAppInstallation {
       IncludeLaunchDirectory include_launch_directory);
 
   static std::unique_ptr<TestSystemWebAppInstallation>
-  SetUpAppWithEnabledOriginTrials(const OriginTrialsMap& origin_to_trials);
+  SetUpAppWithEnabledOriginTrials(const ash::OriginTrialsMap& origin_to_trials);
 
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppNotShownInLauncher();
@@ -166,8 +167,8 @@ class TestSystemWebAppInstallation {
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithAdditionalSearchTerms();
 
-  // This method additionally sets up a helper SystemAppType::SETTING system app
-  // for testing capturing links from a different SWA.
+  // This method additionally sets up a helper ash::SystemWebAppType::SETTING
+  // system app for testing capturing links from a different SWA.
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppThatCapturesNavigation();
 
@@ -219,10 +220,10 @@ class TestSystemWebAppInstallation {
 
   AppId GetAppId();
   const GURL& GetAppUrl();
-  SystemWebAppDelegate* GetDelegate();
-  SystemAppType GetType();
+  ash::SystemWebAppDelegate* GetDelegate();
+  ash::SystemWebAppType GetType();
 
-  void set_update_policy(SystemWebAppManager::UpdatePolicy update_policy) {
+  void set_update_policy(ash::SystemWebAppManager::UpdatePolicy update_policy) {
     update_policy_ = update_policy;
   }
 
@@ -241,15 +242,16 @@ class TestSystemWebAppInstallation {
   void RegisterAutoGrantedPermissions(ContentSettingsType permission);
 
   raw_ptr<Profile> profile_;
-  SystemWebAppManager::UpdatePolicy update_policy_ =
-      SystemWebAppManager::UpdatePolicy::kAlwaysUpdate;
+  ash::SystemWebAppManager::UpdatePolicy update_policy_ =
+      ash::SystemWebAppManager::UpdatePolicy::kAlwaysUpdate;
   std::unique_ptr<FakeWebAppProviderCreator> fake_web_app_provider_creator_;
   // nullopt if SetUpWithoutApps() was used.
-  const absl::optional<SystemAppType> type_;
+  const absl::optional<ash::SystemWebAppType> type_;
   std::vector<std::unique_ptr<TestSystemWebAppWebUIControllerFactory>>
       web_ui_controller_factories_;
   std::set<ContentSettingsType> auto_granted_permissions_;
-  base::flat_map<SystemAppType, std::unique_ptr<SystemWebAppDelegate>>
+  base::flat_map<ash::SystemWebAppType,
+                 std::unique_ptr<ash::SystemWebAppDelegate>>
       system_app_delegates_;
 };
 

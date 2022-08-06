@@ -12,11 +12,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "components/infobars/core/infobar.h"
+#include "components/language/core/browser/accept_languages_service.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
-#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_metrics_logger_impl.h"
@@ -25,9 +25,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/language/accept_languages_service_factory.h"
 #include "ios/chrome/browser/language/language_model_manager_factory.h"
 #include "ios/chrome/browser/translate/language_detection_model_service_factory.h"
-#include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/chrome/browser/translate/translate_model_service_factory.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
@@ -137,10 +137,10 @@ ChromeIOSTranslateClient::GetTranslatePrefs() {
   return CreateTranslatePrefs(chrome_browser_state->GetPrefs());
 }
 
-translate::TranslateAcceptLanguages*
-ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
+language::AcceptLanguagesService*
+ChromeIOSTranslateClient::GetAcceptLanguagesService() {
   DCHECK(web_state_);
-  return TranslateAcceptLanguagesFactory::GetForBrowserState(
+  return AcceptLanguagesServiceFactory::GetForBrowserState(
       ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState()));
 }
 

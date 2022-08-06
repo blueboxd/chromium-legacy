@@ -139,6 +139,7 @@ class CC_EXPORT LayerTreeImpl {
   bool IsPendingTree() const;
   bool IsRecycleTree() const;
   bool IsSyncTree() const;
+  bool HasPendingTree() const;
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
   // TODO(bokan): PinchGestureActive is a layering violation, it's not related
@@ -166,6 +167,7 @@ class CC_EXPORT LayerTreeImpl {
   TargetColorParams GetTargetColorParams(
       gfx::ContentColorUsage content_color_usage) const;
   bool IsReadyToActivate() const;
+  void RequestImplSideInvalidationForRerasterTiling();
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
@@ -283,6 +285,9 @@ class CC_EXPORT LayerTreeImpl {
   void set_source_frame_number(int frame_number) {
     source_frame_number_ = frame_number;
   }
+
+  uint64_t trace_id() const { return trace_id_; }
+  void set_trace_id(uint64_t val) { trace_id_ = val; }
 
   bool is_first_frame_after_commit() const {
     return source_frame_number_ != is_first_frame_after_commit_tracker_;
@@ -822,6 +827,7 @@ class CC_EXPORT LayerTreeImpl {
 
   raw_ptr<LayerTreeHostImpl> host_impl_;
   int source_frame_number_;
+  uint64_t trace_id_ = 0;
   int is_first_frame_after_commit_tracker_;
   raw_ptr<HeadsUpDisplayLayerImpl> hud_layer_;
   PropertyTrees property_trees_;

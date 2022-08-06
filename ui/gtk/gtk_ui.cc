@@ -26,7 +26,6 @@
 #include "chrome/browser/themes/theme_properties.h"  // nogncheck
 #include "printing/buildflags/buildflags.h"          // nogncheck
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/cursor/cursor_theme_manager_observer.h"
@@ -43,7 +42,6 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -70,9 +68,6 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/shell_dialogs/select_file_dialog_linux.h"
 #include "ui/shell_dialogs/select_file_policy.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/nav_button_provider.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
@@ -109,122 +104,6 @@ namespace {
 const GtkUi* g_gtk_ui = nullptr;
 
 const double kDefaultDPI = 96;
-
-class GtkButtonImageSource : public gfx::ImageSkiaSource {
- public:
-  GtkButtonImageSource(bool focus,
-                       views::Button::ButtonState button_state,
-                       gfx::Size size)
-      : focus_(focus), width_(size.width()), height_(size.height()) {
-    switch (button_state) {
-      case views::Button::ButtonState::STATE_NORMAL:
-        state_ = ui::NativeTheme::kNormal;
-        break;
-      case views::Button::ButtonState::STATE_HOVERED:
-        state_ = ui::NativeTheme::kHovered;
-        break;
-      case views::Button::ButtonState::STATE_PRESSED:
-        state_ = ui::NativeTheme::kPressed;
-        break;
-      case views::Button::ButtonState::STATE_DISABLED:
-        state_ = ui::NativeTheme::kDisabled;
-        break;
-      case views::Button::ButtonState::STATE_COUNT:
-        NOTREACHED();
-        state_ = ui::NativeTheme::kNormal;
-        break;
-    }
-  }
-
-  GtkButtonImageSource(const GtkButtonImageSource&) = delete;
-  GtkButtonImageSource& operator=(const GtkButtonImageSource&) = delete;
-
-  ~GtkButtonImageSource() override = default;
-
-  gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    int width = width_ * scale;
-    int height = height_ * scale;
-
-    SkBitmap border;
-    border.allocN32Pixels(width, height);
-    border.eraseColor(0);
-
-    cairo_surface_t* surface = cairo_image_surface_create_for_data(
-        static_cast<unsigned char*>(border.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-        width, height, width * 4);
-    cairo_t* cr = cairo_create(surface);
-
-    GtkCssContext context = GetStyleContextFromCss("GtkButton#button");
-    GtkStateFlags state_flags = StateToStateFlags(state_);
-    if (focus_) {
-      state_flags =
-          static_cast<GtkStateFlags>(state_flags | GTK_STATE_FLAG_FOCUSED);
-    }
-    gtk_style_context_set_state(context, state_flags);
-    gtk_render_background(context, cr, 0, 0, width, height);
-    gtk_render_frame(context, cr, 0, 0, width, height);
-    if (focus_) {
-      gfx::Rect focus_rect(width, height);
-
-      if (!GtkCheckVersion(3, 14)) {
-        gint focus_pad;
-        GtkStyleContextGetStyle(context, "focus-padding", &focus_pad, nullptr);
-        focus_rect.Inset(focus_pad);
-
-        if (state_ == ui::NativeTheme::kPressed) {
-          gint child_displacement_x, child_displacement_y;
-          gboolean displace_focus;
-          GtkStyleContextGetStyle(context, "child-displacement-x",
-                                  &child_displacement_x, "child-displacement-y",
-                                  &child_displacement_y, "displace-focus",
-                                  &displace_focus, nullptr);
-          if (displace_focus)
-            focus_rect.Offset(child_displacement_x, child_displacement_y);
-        }
-      }
-
-      if (!GtkCheckVersion(3, 20))
-        focus_rect.Inset(GtkStyleContextGetBorder(context));
-
-      gtk_render_focus(context, cr, focus_rect.x(), focus_rect.y(),
-                       focus_rect.width(), focus_rect.height());
-    }
-
-    cairo_destroy(cr);
-    cairo_surface_destroy(surface);
-
-    return gfx::ImageSkiaRep(border, scale);
-  }
-
- private:
-  bool focus_;
-  ui::NativeTheme::State state_;
-  int width_;
-  int height_;
-};
-
-class GtkButtonPainter : public views::Painter {
- public:
-  GtkButtonPainter(bool focus, views::Button::ButtonState button_state)
-      : focus_(focus), button_state_(button_state) {}
-
-  GtkButtonPainter(const GtkButtonPainter&) = delete;
-  GtkButtonPainter& operator=(const GtkButtonPainter&) = delete;
-
-  ~GtkButtonPainter() override = default;
-
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
-    gfx::ImageSkia image(
-        std::make_unique<GtkButtonImageSource>(focus_, button_state_, size),
-        1.f);
-    canvas->DrawImageInt(image, 0, 0);
-  }
-
- private:
-  const bool focus_;
-  const views::Button::ButtonState button_state_;
-};
 
 // Number of app indicators used (used as part of app-indicator id).
 int indicators_count;
@@ -525,42 +404,6 @@ base::TimeDelta GtkUi::GetCursorBlinkInterval() const {
              : base::TimeDelta();
 }
 
-ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
-  return GetNativeTheme(use_system_theme_callback_.is_null() ||
-                        use_system_theme_callback_.Run(window));
-}
-
-ui::NativeTheme* GtkUi::GetNativeTheme(bool use_system_theme) const {
-  return use_system_theme ? native_theme_
-                          : ui::NativeTheme::GetInstanceForNativeUi();
-}
-
-void GtkUi::SetUseSystemThemeCallback(UseSystemThemeCallback callback) {
-  use_system_theme_callback_ = std::move(callback);
-}
-
-bool GtkUi::GetDefaultUsesSystemTheme() const {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-
-  switch (base::nix::GetDesktopEnvironment(env.get())) {
-    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
-    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-    case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
-    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
-    case base::nix::DESKTOP_ENVIRONMENT_UNITY:
-    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
-      return true;
-    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
-    case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-      return false;
-  }
-  // Unless GetDesktopEnvironment() badly misbehaves, this should never happen.
-  NOTREACHED();
-  return false;
-}
-
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
                                         int dip_size,
                                         float scale) const {
@@ -642,54 +485,6 @@ gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
   return gfx::Image();
 }
 
-std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
-    views::LabelButton* owning_button,
-    std::unique_ptr<views::LabelButtonBorder> border) {
-  if (owning_button->GetNativeTheme() != native_theme_)
-    return std::move(border);
-
-  auto gtk_border = std::make_unique<views::LabelButtonAssetBorder>();
-
-  gtk_border->set_insets(border->GetInsets());
-
-  constexpr bool kFocus = true;
-
-  static struct {
-    bool focus;
-    views::Button::ButtonState state;
-  } const paintstates[] = {
-      {!kFocus, views::Button::STATE_NORMAL},
-      {!kFocus, views::Button::STATE_HOVERED},
-      {!kFocus, views::Button::STATE_PRESSED},
-      {!kFocus, views::Button::STATE_DISABLED},
-      {kFocus, views::Button::STATE_NORMAL},
-      {kFocus, views::Button::STATE_HOVERED},
-      {kFocus, views::Button::STATE_PRESSED},
-      {kFocus, views::Button::STATE_DISABLED},
-  };
-
-  for (const auto& paintstate : paintstates) {
-    gtk_border->SetPainter(
-        paintstate.focus, paintstate.state,
-        border->PaintsButtonState(paintstate.focus, paintstate.state)
-            ? std::make_unique<GtkButtonPainter>(paintstate.focus,
-                                                 paintstate.state)
-            : nullptr);
-  }
-
-  return std::move(gtk_border);
-}
-
-void GtkUi::AddWindowButtonOrderObserver(
-    views::WindowButtonOrderObserver* observer) {
-  window_button_order_observer_list_.AddObserver(observer);
-}
-
-void GtkUi::RemoveWindowButtonOrderObserver(
-    views::WindowButtonOrderObserver* observer) {
-  window_button_order_observer_list_.RemoveObserver(observer);
-}
-
 void GtkUi::SetWindowButtonOrdering(
     const std::vector<views::FrameButton>& leading_buttons,
     const std::vector<views::FrameButton>& trailing_buttons) {
@@ -697,7 +492,7 @@ void GtkUi::SetWindowButtonOrdering(
       leading_buttons, trailing_buttons);
 
   for (views::WindowButtonOrderObserver& observer :
-       window_button_order_observer_list_) {
+       window_button_order_observer_list()) {
     observer.OnWindowButtonOrderingChange();
   }
 }
@@ -739,22 +534,6 @@ ui::SelectFileDialog* GtkUi::CreateSelectFileDialog(
 views::LinuxUI::WindowFrameAction GtkUi::GetWindowFrameAction(
     WindowFrameActionSource source) {
   return window_frame_actions_[source];
-}
-
-void GtkUi::NotifyWindowManagerStartupComplete() {
-  // TODO(port) Implement this using _NET_STARTUP_INFO_BEGIN/_NET_STARTUP_INFO
-  // from http://standards.freedesktop.org/startup-notification-spec/ instead.
-  gdk_display_notify_startup_complete(gdk_display_get_default(), nullptr);
-}
-
-void GtkUi::AddDeviceScaleFactorObserver(
-    views::DeviceScaleFactorObserver* observer) {
-  device_scale_factor_observer_list_.AddObserver(observer);
-}
-
-void GtkUi::RemoveDeviceScaleFactorObserver(
-    views::DeviceScaleFactorObserver* observer) {
-  device_scale_factor_observer_list_.RemoveObserver(observer);
 }
 
 bool GtkUi::PreferDarkTheme() const {
@@ -882,6 +661,10 @@ void GtkUi::SetSystemThemeByNameForTest(const std::string& theme_name) {
   g_value_set_string(&theme, theme_name.c_str());
   g_object_set_property(G_OBJECT(gtk_settings_get_default()), "gtk-theme-name",
                         &theme);
+}
+
+ui::NativeTheme* GtkUi::GetNativeTheme() const {
+  return native_theme_;
 }
 
 bool GtkUi::MatchEvent(const ui::Event& event,
@@ -1190,7 +973,7 @@ void GtkUi::UpdateDeviceScaleFactor() {
   device_scale_factor_ = GetRawDeviceScaleFactor();
   if (device_scale_factor_ != old_device_scale_factor) {
     for (views::DeviceScaleFactorObserver& observer :
-         device_scale_factor_observer_list_) {
+         device_scale_factor_observer_list()) {
       observer.OnDeviceScaleFactorChanged();
     }
   }

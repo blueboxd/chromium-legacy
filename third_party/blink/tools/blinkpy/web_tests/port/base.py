@@ -141,7 +141,6 @@ class Port(object):
     # the documentation in docs/testing/web_test_expectations.md when this list
     # changes.
     ALL_SYSTEMS = (
-        ('mac10.12', 'x86'),
         ('mac10.13', 'x86'),
         ('mac10.14', 'x86'),
         ('mac10.15', 'x86'),
@@ -158,8 +157,8 @@ class Port(object):
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': [
-            'mac10.12', 'mac10.13', 'mac10.14', 'mac10.15', 'mac11',
-            'mac11-arm64', 'mac12', 'mac12-arm64'
+            'mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64',
+            'mac12', 'mac12-arm64'
         ],
         'win': ['win7', 'win10.20h2', 'win11'],
         'linux': ['trusty'],
@@ -463,8 +462,8 @@ class Port(object):
             # memory usage may also grow over time, up to a certain point.
             # Relaunching the driver periodically helps keep it under control.
             return 40
-        # The default is infinite batch size.
-        return 0
+        # The default batch size now is 100, to battle against resource leak.
+        return 100
 
     def default_child_processes(self):
         """Returns the number of child processes to use for this port."""

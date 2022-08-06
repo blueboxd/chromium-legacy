@@ -5,15 +5,13 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/browser/buildflags.gni")
 
-group("web_app_group") {
-  public_configs = [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
-group("web_app_test_group") {
-}
-
 source_set("web_applications") {
   sources = [
+    # TODO(crbug.com/1321984): Extract it to ash/system_web_apps/
+    "../ash/system_web_apps/system_web_app_background_task.cc",
+    "../ash/system_web_apps/system_web_app_background_task.h",
+    "../ash/system_web_apps/system_web_app_manager.cc",
+    "../ash/system_web_apps/system_web_app_manager.h",
     "app_registrar_observer.h",
     "commands/callback_command.cc",
     "commands/callback_command.h",
@@ -23,10 +21,14 @@ source_set("web_applications") {
     "commands/fetch_manifest_and_install_command.h",
     "commands/install_from_info_command.cc",
     "commands/install_from_info_command.h",
+    "commands/install_from_sync_command.cc",
+    "commands/install_from_sync_command.h",
     "commands/install_web_app_with_params_command.cc",
     "commands/install_web_app_with_params_command.h",
     "commands/run_on_os_login_command.cc",
     "commands/run_on_os_login_command.h",
+    "commands/sub_app_install_command.cc",
+    "commands/sub_app_install_command.h",
     "commands/web_app_command.cc",
     "commands/web_app_command.h",
     "commands/web_app_install_command.cc",
@@ -88,6 +90,8 @@ source_set("web_applications") {
     "policy/web_app_settings_policy_handler.h",
     "preinstalled_app_install_features.cc",
     "preinstalled_app_install_features.h",
+    "preinstalled_web_app_config_utils.cc",
+    "preinstalled_web_app_config_utils.h",
     "preinstalled_web_app_manager.cc",
     "preinstalled_web_app_manager.h",
     "preinstalled_web_app_utils.cc",
@@ -96,13 +100,6 @@ source_set("web_applications") {
     "preinstalled_web_apps/preinstalled_web_app_definition_utils.h",
     "preinstalled_web_apps/preinstalled_web_apps.cc",
     "preinstalled_web_apps/preinstalled_web_apps.h",
-    "system_web_apps/system_web_app_background_task.cc",
-    "system_web_apps/system_web_app_background_task.h",
-    "system_web_apps/system_web_app_delegate.cc",
-    "system_web_apps/system_web_app_delegate.h",
-    "system_web_apps/system_web_app_manager.cc",
-    "system_web_apps/system_web_app_manager.h",
-    "system_web_apps/system_web_app_types.h",
     "user_display_mode.cc",
     "user_display_mode.h",
     "user_uninstalled_preinstalled_web_app_prefs.cc",
@@ -154,6 +151,8 @@ source_set("web_applications") {
     "web_app_launch_params.h",
     "web_app_launch_queue.cc",
     "web_app_launch_queue.h",
+    "web_app_logging.cc",
+    "web_app_logging.h",
     "web_app_origin_association_manager.cc",
     "web_app_origin_association_manager.h",
     "web_app_origin_association_task.cc",
@@ -173,12 +172,13 @@ source_set("web_applications") {
     "web_app_sync_bridge.cc",
     "web_app_sync_bridge.h",
     "web_app_sync_install_delegate.h",
-    "web_app_system_web_app_data.cc",
-    "web_app_system_web_app_data.h",
+    "web_app_system_web_app_delegate_map_utils.cc",
+    "web_app_system_web_app_delegate_map_utils.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
     "web_app_translation_manager.cc",
     "web_app_translation_manager.h",
+    "web_app_ui_manager.cc",
     "web_app_ui_manager.h",
     "web_app_uninstall_job.cc",
     "web_app_uninstall_job.h",
@@ -246,15 +246,21 @@ source_set("web_applications") {
     ]
   }
 
+  # Enable the "exit_time_destructors" warning here to avoid accidentally
+  # adding exit time destructors and because the flag is not enabled by default.
+  # TODO(http://crbug.com/101600):  Remove once exit_time_destructors is enabled
+  # by default.
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   # web_applications must not depend on //chrome/browser/extensions and //extensions
   deps = [
-    ":web_app_group",
     "//base",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/browser:browser_process",
+    "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//chrome/common:non_code_constants",
@@ -277,6 +283,7 @@ source_set("web_applications") {
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:app_url_handling",
     "//components/services/app_service/public/cpp:protocol_handling",
+    "//components/services/app_service/public/cpp:run_on_os_login",
     "//components/services/app_service/public/cpp:types",
     "//components/services/app_service/public/mojom",
     "//components/site_engagement/content",
@@ -368,7 +375,14 @@ source_set("web_applications") {
   }
 
   if (is_chromeos_lacros) {
-    deps += [ "//chromeos/lacros:lacros" ]
+    deps += [
+      "//chromeos/lacros",
+      "//chromeos/startup",
+    ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants:constants" ]
   }
 
   public_deps = [
@@ -417,6 +431,8 @@ source_set("web_applications_test_support") {
     "test/fake_web_app_registry_controller.h",
     "test/fake_web_app_ui_manager.cc",
     "test/fake_web_app_ui_manager.h",
+    "test/mock_data_retriever.cc",
+    "test/mock_data_retriever.h",
     "test/mock_file_utils_wrapper.cc",
     "test/mock_file_utils_wrapper.h",
     "test/mock_os_integration_manager.cc",
@@ -446,18 +462,19 @@ source_set("web_applications_test_support") {
   ]
 
   deps = [
-    ":web_app_test_group",
     ":web_applications",
     "//base/test:test_support",
     "//chrome/app:command_ids",
     "//chrome/app/theme:chrome_unscaled_resources_grit",
     "//chrome/browser",
+    "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
     "//components/crx_file:crx_file",
     "//components/keyed_service/content",
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:app_url_handling",
+    "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/app_service/public/cpp:types",
     "//components/sync:test_support_model",
     "//components/sync_preferences:test_support",
@@ -477,10 +494,10 @@ source_set("web_applications_unit_tests") {
 
   sources = [
     "commands/clear_browsing_data_command_unittest.cc",
+    "commands/install_from_sync_command_unittest.cc",
     "commands/run_on_os_login_command_unittest.cc",
     "daily_metrics_helper_unittest.cc",
     "external_install_options_unittest.cc",
-    "externally_installed_web_app_prefs_unittest.cc",
     "externally_managed_app_manager_impl_unittest.cc",
     "externally_managed_app_manager_unittest.cc",
     "isolation_prefs_utils_unittest.cc",
@@ -495,7 +512,6 @@ source_set("web_applications_unit_tests") {
     "preinstalled_web_app_utils_unittest.cc",
     "preinstalled_web_apps/preinstalled_web_app_definition_utils_unittest.cc",
     "test/web_app_test.h",
-    "user_uninstalled_preinstalled_web_app_prefs_unittest.cc",
     "web_app_command_manager_unittest.cc",
     "web_app_constants_unittest.cc",
     "web_app_data_retriever_unittest.cc",
@@ -559,7 +575,6 @@ source_set("web_applications_unit_tests") {
   }
 
   deps = [
-    ":web_app_test_group",
     ":web_applications",
     ":web_applications_test_support",
     "//base/test:test_support",
@@ -567,6 +582,7 @@ source_set("web_applications_unit_tests") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
     "//chrome/browser:browser_process",
+    "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/extensions:test_support",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/web_applications/extensions:extensions",
@@ -578,6 +594,7 @@ source_set("web_applications_unit_tests") {
     "//components/webapps/browser:test_support",
     "//components/webapps/common:mojo_bindings",
     "//content/public/browser",
+    "//content/public/common",
     "//content/test:test_support",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/preferences/public/cpp",
@@ -597,6 +614,10 @@ source_set("web_applications_unit_tests") {
       "//chrome/browser/ash",
       "//components/arc:arc_test_support",
     ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/startup:startup" ]
   }
 
   if (is_win) {
@@ -638,19 +659,31 @@ source_set("browser_tests_base") {
   ]
 }
 
-source_set("web_applications_browser_tests") {
+group("unit_tests") {
+  testonly = true
+
+  deps = [
+    ":web_applications_unit_tests",
+    "//chrome/browser/web_applications/extensions:unit_tests",
+  ]
+}
+
+source_set("browser_tests") {
   testonly = true
 
   sources = [
     "commands/fetch_manifest_and_install_command_browsertest.cc",
     "commands/install_from_info_command_browsertest.cc",
+    "commands/install_from_sync_command_browsertest.cc",
     "commands/install_web_app_with_params_command_browsertest.cc",
+    "externally_installed_web_app_prefs_browsertest.cc",
     "externally_managed_app_manager_impl_browsertest.cc",
     "isolated_app_browsertest.cc",
     "manifest_update_manager_browsertest.cc",
     "preinstalled_web_app_manager_browsertest.cc",
     "preinstalled_web_app_migration_browsertest.cc",
     "preinstalled_web_apps_browsertest.cc",
+    "user_uninstalled_preinstalled_web_app_prefs_browsertest.cc",
     "web_app_audio_focus_browsertest.cc",
     "web_app_icon_manager_browsertest.cc",
     "web_app_internals_browsertest.cc",
@@ -684,6 +717,7 @@ source_set("web_applications_browser_tests") {
     "//build:chromeos_buildflags",
     "//chrome/app:command_ids",
     "//chrome/browser/apps/app_service:test_support",
+    "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/extensions:test_support",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/web_applications/extensions",
@@ -694,6 +728,7 @@ source_set("web_applications_browser_tests") {
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:icon_types",
     "//components/services/app_service/public/cpp:intents",
+    "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/app_service/public/cpp:run_on_os_login",
     "//components/services/app_service/public/cpp:types",
     "//components/webapps/browser",
@@ -714,25 +749,6 @@ source_set("web_applications_browser_tests") {
       "//chrome/browser/ui",
     ]
   }
-}
-
-group("unit_tests") {
-  testonly = true
-
-  deps = [
-    ":web_app_test_group",
-    ":web_applications_unit_tests",
-    "//chrome/browser/web_applications/extensions:unit_tests",
-  ]
-}
-
-group("browser_tests") {
-  testonly = true
-
-  deps = [
-    ":web_app_test_group",
-    ":web_applications_browser_tests",
-  ]
 }
 
 source_set("interactive_ui_tests") {

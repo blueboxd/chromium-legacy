@@ -122,13 +122,13 @@ class ArcContainerClientAdapter
     request.set_dalvik_memory_profile(
         ToLoginManagerDalvikMemoryProfile(params.dalvik_memory_profile));
     request.set_arc_custom_tabs_experiment(params.arc_custom_tabs_experiment);
-    request.set_disable_system_default_app(
-        params.arc_disable_system_default_app);
     request.set_disable_media_store_maintenance(
         params.disable_media_store_maintenance);
     request.set_disable_download_provider(params.disable_download_provider);
     request.set_disable_ureadahead(params.disable_ureadahead);
     request.set_arc_generate_pai(params.arc_generate_play_auto_install);
+    request.set_enable_consumer_auto_update_toggle(
+        params.enable_consumer_auto_update_toggle);
     request.set_enable_notifications_refresh(
         params.enable_notifications_refresh);
     request.set_enable_tts_caching(params.enable_tts_caching);
@@ -167,6 +167,7 @@ class ArcContainerClientAdapter
     request.set_packages_cache_mode(
         ToLoginManagerPackageCacheMode(params.packages_cache_mode));
     request.set_skip_gms_core_cache(params.skip_gms_core_cache);
+    request.set_skip_tts_cache(params.skip_tts_cache);
     request.set_is_demo_session(params.is_demo_session);
     request.set_demo_session_apps_path(params.demo_session_apps_path.value());
     request.set_locale(params.locale);

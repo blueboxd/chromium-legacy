@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.provider.Browser;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -30,6 +31,8 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.SmallTest;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
@@ -46,14 +49,18 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersCoordinator;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.widget.DateDividedAdapter;
@@ -95,6 +102,7 @@ public class HistoryActivityTest {
     private RecyclerView mRecyclerView;
     private TestObserver mTestObserver;
     private PrefChangeRegistrar mPrefChangeRegistrar;
+    private HistoryClustersCoordinator mHistoryClustersCoordinator;
 
     private HistoryItem mItem1;
     private HistoryItem mItem2;
@@ -126,12 +134,19 @@ public class HistoryActivityTest {
         launchHistoryActivity();
         HistoryTestUtils.setupHistoryTestHeaders(mAdapter, mTestObserver);
 
-        Assert.assertEquals(4, mAdapter.getItemCount());
+        int expectedItemCount = 4;
+        // When Journeys is enabled, there is an additional header item.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HISTORY_JOURNEYS)) {
+            expectedItemCount += 1;
+        }
+
+        Assert.assertEquals(expectedItemCount, mAdapter.getItemCount());
     }
 
     private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
         mHistoryManager = activity.getHistoryManagerForTests();
+        mHistoryClustersCoordinator = mHistoryManager.getHistoryClustersCoordinatorForTests();
         mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
         mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
         mTestObserver = new TestObserver();
@@ -289,9 +304,11 @@ public class HistoryActivityTest {
         Assert.assertEquals(3, mAdapter.getItemCount());
     }
 
+    // TODO(crbug.com/1306031): remove this test.
     @Test
     @SmallTest
-    public void testSupervisedUser() throws Exception {
+    @DisableFeatures("AllowHistoryDeletionForChildAccounts")
+    public void testSupervisedUserHistoryDeletionNotAllowed() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
         final HistoryItemView item = (HistoryItemView) getItemView(2);
         View itemRemoveButton = item.getRemoveButtonForTests();
@@ -330,6 +347,56 @@ public class HistoryActivityTest {
 
         // Check that the item's remove button visibility is set correctly after signing out.
         Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures("AllowHistoryDeletionForChildAccounts")
+    public void testSupervisedUser() throws Exception {
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+        final HistoryItemView item = (HistoryItemView) getItemView(2);
+        View itemRemoveButton = item.getRemoveButtonForTests();
+
+        // First check the behaviour for non-supervised users.
+
+        // The item's remove button is visible when there is no selection.
+        Assert.assertEquals(View.VISIBLE, itemRemoveButton.getVisibility());
+
+        toggleItemSelection(2);
+        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_open_in_incognito).isVisible());
+        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_open_in_incognito).isEnabled());
+        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isVisible());
+        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isEnabled());
+        // The item's remove button is invisible for non-supervised users when there is a selection.
+        Assert.assertEquals(View.INVISIBLE, item.getRemoveButtonForTests().getVisibility());
+
+        // Turn selection off and check the remove button is visible.
+        toggleItemSelection(2);
+        Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
+
+        // Now check the behaviour for supervised users.
+        signInToSupervisedAccount();
+
+        // The item's remove button remains visible when there is no selection.
+        Assert.assertEquals(View.VISIBLE, itemRemoveButton.getVisibility());
+
+        // Incognito is hidden.
+        toggleItemSelection(2);
+        Assert.assertNull(toolbar.getItemById(R.id.selection_mode_open_in_incognito));
+
+        // History deletion behaviour is unchanged from the non-supervised case.
+        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isVisible());
+        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isEnabled());
+        Assert.assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        Assert.assertEquals(View.INVISIBLE, item.getRemoveButtonForTests().getVisibility());
+
+        // Make sure selection is no longer enabled.
+        toggleItemSelection(2);
+        Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
+
+        signOut();
     }
 
     @Test
@@ -556,6 +623,35 @@ public class HistoryActivityTest {
         }
     }
 
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.HISTORY_JOURNEYS)
+    public void testToggleToJourneysAndBack() {
+        TabLayout toggle =
+                mActivityTestRule.getActivity().findViewById(R.id.history_toggle_tab_layout);
+        TabLayout.Tab journeysTab = toggle.getTabAt(1);
+
+        Assert.assertFalse(journeysTab.isSelected());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> toggle.selectTab(journeysTab));
+        CriteriaHelper.pollUiThread(() -> {
+            ViewGroup activityContentView = mHistoryClustersCoordinator.getActivityContentView();
+            return mHistoryManager.getView().getChildAt(0) == activityContentView
+                    && activityContentView.findViewById(R.id.history_toggle_tab_layout) != null;
+        });
+
+        TabLayout journeysToggle =
+                mHistoryClustersCoordinator.getActivityContentView().findViewById(
+                        R.id.history_toggle_tab_layout);
+        TabLayout.Tab historyTab = journeysToggle.getTabAt(0);
+        Assert.assertFalse(historyTab.isSelected());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> journeysToggle.selectTab(historyTab));
+        CriteriaHelper.pollUiThread(()
+                                            -> mHistoryManager.getView().getChildAt(0)
+                        == mHistoryManager.getSelectableListLayout());
+    }
+
     // TODO(yolandyan): rewrite this with espresso
     private void toggleItemSelection(int position) throws Exception {
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
@@ -586,6 +682,7 @@ public class HistoryActivityTest {
         // Initialize PrefChangeRegistrar for test.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPrefChangeRegistrar = new PrefChangeRegistrar();
+            // TODO(crbug.com/1306031): remove the ALLOW_DELETING_BROWSER_HISTORY listener.
             mPrefChangeRegistrar.addObserver(Pref.ALLOW_DELETING_BROWSER_HISTORY, mTestObserver);
             mPrefChangeRegistrar.addObserver(Pref.INCOGNITO_MODE_AVAILABILITY, mTestObserver);
             IdentityServicesProvider.get()
@@ -610,14 +707,12 @@ public class HistoryActivityTest {
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
             Profile profile = Profile.getLastUsedRegularProfile();
             UserPrefs.get(profile).setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
-            return profile.isChild()
-                    && !UserPrefs.get(Profile.getLastUsedRegularProfile())
-                                .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)
-                    && !IncognitoUtils.isIncognitoModeEnabled();
+            return profile.isChild() && !IncognitoUtils.isIncognitoModeEnabled();
         }));
 
-        // Wait for preference change callbacks. One for ALLOW_DELETING_BROWSER_HISTORY and one for
-        // INCOGNITO_MODE_AVAILABILITY.
+        // Wait for preference change callbacks:
+        // * one for ALLOW_DELETING_BROWSER_HISTORY
+        // * one for INCOGNITO_MODE_AVAILABILITY.
         mTestObserver.onPreferenceChangeCallback.waitForCallback(onPreferenceChangeCallCount, 2);
 
         // Wait until animator finish removing history item delete icon

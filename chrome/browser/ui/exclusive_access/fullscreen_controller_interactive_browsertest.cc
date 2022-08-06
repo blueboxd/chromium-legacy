@@ -87,7 +87,7 @@ class FullscreenControllerInteractiveTest : public ExclusiveAccessTest {
     EXPECT_TRUE(browser()->IsMouseLocked() == browser()
                                                   ->tab_strip_model()
                                                   ->GetActiveWebContents()
-                                                  ->GetMainFrame()
+                                                  ->GetPrimaryMainFrame()
                                                   ->GetRenderViewHost()
                                                   ->GetWidget()
                                                   ->GetView()
@@ -147,7 +147,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
   do {
     FullscreenNotificationObserver fullscreen_observer(browser());
     if (enter_fullscreen)
-      browser()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
+      browser()->EnterFullscreenModeForTab(tab->GetPrimaryMainFrame(), {});
     else
       browser()->ExitFullscreenModeForTab(tab);
     fullscreen_observer.Wait();
@@ -207,7 +207,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        RunOrDeferClosureDuringTransition) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  GetFullscreenController()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
+  GetFullscreenController()->EnterFullscreenModeForTab(
+      tab->GetPrimaryMainFrame(), {});
   ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 
   base::RunLoop run_loop;
@@ -713,7 +714,7 @@ class FullscreenCapabilityDelegationFullscreenControllerInteractiveTest
     EXPECT_NE(popup, browser);
     content::WebContents* popup_contents =
         popup->tab_strip_model()->GetActiveWebContents();
-    EXPECT_TRUE(WaitForRenderFrameReady(popup_contents->GetMainFrame()));
+    EXPECT_TRUE(WaitForRenderFrameReady(popup_contents->GetPrimaryMainFrame()));
     EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
     return popup_contents;
   }
@@ -767,9 +768,10 @@ IN_PROC_BROWSER_TEST_P(
                                GetParam());
 }
 
+// TODO(crbug.com/1331074): Flaky.
 IN_PROC_BROWSER_TEST_P(
     FullscreenCapabilityDelegationFullscreenControllerInteractiveTest,
-    CapabilityDelegationCrossOriginPopup) {
+    DISABLED_CapabilityDelegationCrossOriginPopup) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   // Navigate to a page that requests fullscreen and replies on message receipt.
@@ -812,6 +814,22 @@ INSTANTIATE_TEST_SUITE_P(
 class MultiScreenFullscreenControllerInteractiveTest
     : public FullscreenControllerInteractiveTest {
  public:
+  void SetUp() override {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    screen_.display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
+                                      display::DisplayList::Type::PRIMARY);
+    display::Screen::SetScreenInstance(&screen_);
+#endif
+    FullscreenControllerInteractiveTest::SetUp();
+  }
+
+  void TearDown() override {
+    FullscreenControllerInteractiveTest::TearDown();
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    display::Screen::SetScreenInstance(nullptr);
+#endif
+  }
+
   // Perform common setup operations for multi-screen fullscreen testing:
   // Mock a screen with two displays, move the browser onto the first display,
   // and auto-grant the Window Placement permission on its active tab.
@@ -821,12 +839,8 @@ class MultiScreenFullscreenControllerInteractiveTest
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
         .UpdateDisplay("0+0-800x800,800+0-800x800");
 #else
-    original_screen_ = display::Screen::GetScreen();
-    screen_.display_list().AddDisplay({1, gfx::Rect(0, 0, 800, 800)},
-                                      display::DisplayList::Type::PRIMARY);
     screen_.display_list().AddDisplay({2, gfx::Rect(800, 0, 800, 800)},
                                       display::DisplayList::Type::NOT_PRIMARY);
-    display::Screen::SetScreenInstance(&screen_);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     EXPECT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 
@@ -847,14 +861,6 @@ class MultiScreenFullscreenControllerInteractiveTest
         permissions::PermissionRequestManager::ACCEPT_ALL);
 
     return tab;
-  }
-
-  void TearDown() override {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-    if (original_screen_)
-      display::Screen::SetScreenInstance(original_screen_);
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-    FullscreenControllerInteractiveTest::TearDown();
   }
 
   // Wait for a JS content fullscreen change with the given script and options.
@@ -930,14 +936,12 @@ class MultiScreenFullscreenControllerInteractiveTest
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   display::DisplayList& display_list() { return screen_.display_list(); }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
  private:
   base::test::ScopedFeatureList feature_list_{
       blink::features::kWindowPlacement};
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<display::Screen> original_screen_ = nullptr;
   display::ScreenBase screen_;
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif
 };
 
 // TODO(crbug.com/1034772): Disabled on Windows, where views::FullscreenHandler

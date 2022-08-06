@@ -153,7 +153,7 @@ class PermissionsManager : public KeyedService {
 
  private:
   // Called whenever `user_permissions_` have changed.
-  void SignalUserPermissionsSettingsChanged() const;
+  void OnUserPermissionsSettingsChanged() const;
 
   // Removes `origin` from the list of sites the user has allowed all
   // extensions to run on and saves the change to `extension_prefs_`. Returns if
@@ -166,7 +166,11 @@ class PermissionsManager : public KeyedService {
   bool RemoveRestrictedSiteAndUpdatePrefs(const url::Origin& origin);
 
   base::ObserverList<Observer>::Unchecked observers_;
-  ExtensionPrefs* const extension_prefs_;
+
+  // The associated browser context.
+  const raw_ptr<content::BrowserContext> browser_context_;
+
+  const raw_ptr<ExtensionPrefs> extension_prefs_;
   UserPermissionsSettings user_permissions_;
 };
 

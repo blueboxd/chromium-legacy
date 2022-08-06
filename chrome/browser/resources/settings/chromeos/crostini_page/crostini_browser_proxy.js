@@ -111,8 +111,9 @@ export class CrostiniBrowserProxy {
 
   /**
    * Import crostini container.
+   * @param {!ContainerId} containerId container id of container to import.
    */
-  importCrostiniContainer() {}
+  importCrostiniContainer(containerId) {}
 
   /** Queries the current status of ARC ADB Sideloading. */
   requestArcAdbSideloadStatus() {}
@@ -242,8 +243,10 @@ export class CrostiniBrowserProxy {
    * @param {!ContainerId} containerId id of container to create.
    * @param {?URL} imageServer url of lxd container server from which to fetch
    * @param {?string} imageAlias name of image to fetch e.g. 'debian/bullseye'
+   * @param {?string} ansiblePlaybook file location of an Ansible playbook to
+   *     preconfigure the container with
    */
-  createContainer(containerId, imageServer, imageAlias) {}
+  createContainer(containerId, imageServer, imageAlias, ansiblePlaybook) {}
 
   /**
    * @param {!ContainerId} containerId id of container to delete.
@@ -267,6 +270,15 @@ export class CrostiniBrowserProxy {
    * CPU and other resources.
    */
   stopContainer(containerId) {}
+
+  /**
+   * Opens file selector dialog to allow user to select an Ansible playbook
+   * to preconfigure their container.
+   *
+   * @return {!Promise<string>} Returns a filepath to the selected Ansible
+   *      Playbook
+   */
+  applyAnsiblePlaybook() {}
 }
 
 
@@ -300,8 +312,8 @@ export class CrostiniBrowserProxyImpl {
   }
 
   /** @override */
-  importCrostiniContainer() {
-    chrome.send('importCrostiniContainer');
+  importCrostiniContainer(containerId) {
+    chrome.send('importCrostiniContainer', [containerId]);
   }
 
   /** @override */
@@ -409,8 +421,10 @@ export class CrostiniBrowserProxyImpl {
   }
 
   /** @override */
-  createContainer(containerId, imageServer, imageAlias) {
-    chrome.send('createContainer', [containerId, imageServer, imageAlias]);
+  createContainer(containerId, imageServer, imageAlias, ansiblePlaybook) {
+    chrome.send(
+        'createContainer',
+        [containerId, imageServer, imageAlias, ansiblePlaybook]);
   }
 
   /** @override */
@@ -431,6 +445,11 @@ export class CrostiniBrowserProxyImpl {
   /** @override */
   stopContainer(containerId) {
     chrome.send('stopContainer', [containerId]);
+  }
+
+  /** @override */
+  applyAnsiblePlaybook() {
+    return sendWithPromise('applyAnsiblePlaybook');
   }
 }
 

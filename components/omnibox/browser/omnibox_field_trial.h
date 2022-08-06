@@ -356,13 +356,6 @@ int KeywordScoreForSufficientlyCompleteMatch();
 // Returns true if the fuzzy URL suggestions feature is enabled.
 bool IsFuzzyUrlSuggestionsEnabled();
 
-// Returns true if the first batch of Pedals on Android is enabled.
-bool IsPedalsAndroidBatch1Enabled();
-
-// Returns true if the third batch of Pedals is enabled for non-English
-// locales.
-bool IsPedalsBatch3NonEnglishEnabled();
-
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -373,11 +366,6 @@ bool IsOnDeviceHeadSuggestEnabledForNonIncognito();
 bool IsOnDeviceHeadSuggestEnabledForAnyMode();
 // Functions can be used in both non-incognito and incognito.
 std::string OnDeviceHeadModelLocaleConstraint(bool is_incognito);
-int OnDeviceHeadSuggestMaxScoreForNonUrlInput(bool is_incognito);
-int OnDeviceSearchProviderDefaultLoaderTimeoutMs(bool is_incognito);
-int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
-// Function only works in non-incognito when server suggestions are available.
-std::string OnDeviceHeadSuggestDemoteMode();
 
 // Returns true if CGI parameter names should not be considered when scoring
 // suggestions.
@@ -473,12 +461,6 @@ extern const char kDynamicMaxAutocompleteIncreasedLimitParam[];
 // Parameter names used by on device head provider.
 // These four parameters are shared by both non-incognito and incognito.
 extern const char kOnDeviceHeadModelLocaleConstraint[];
-extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInput[];
-extern const char kOnDeviceHeadSuggestDelaySuggestRequestMs[];
-extern const char kOnDeviceSearchProviderDefaultLoaderTimeoutMs[];
-// This parameter is for non-incognito which are only useful when server
-// suggestions are available.
-extern const char kOnDeviceHeadSuggestDemoteMode[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.
@@ -575,6 +557,10 @@ extern const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits;
 // prefix-suggest. A duplicative visit is a visit to the same search term in an
 // interval smaller than kAutocompleteDuplicateVisitIntervalThreshold.
 extern const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits;
+
+// Specifies the relevance scores for the Site Search Starter Pack ACMatches
+// (e.g. @bookmarks, @history) provided by the Builtin Provider.
+extern const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore;
 
 // New params should be inserted above this comment and formatted as:
 // - Short comment categorizing the relevant features & params.

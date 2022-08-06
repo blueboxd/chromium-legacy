@@ -360,7 +360,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
     bool TransactionInReaders(Transaction* transaction) const;
 
-    raw_ptr<disk_cache::Entry> disk_entry = nullptr;
+    const raw_ptr<disk_cache::Entry> disk_entry;
 
     // Indicates if the disk_entry was opened or not (i.e.: created).
     // It is set to true when a transaction is added to an entry so that other,
@@ -656,12 +656,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Used when lazily constructing the disk_cache_.
   std::unique_ptr<BackendFactory> backend_factory_;
-  bool building_backend_;
-  bool bypass_lock_for_test_;
-  bool bypass_lock_after_headers_for_test_;
-  bool fail_conditionalization_for_test_;
+  bool building_backend_ = false;
+  bool bypass_lock_for_test_ = false;
+  bool bypass_lock_after_headers_for_test_ = false;
+  bool fail_conditionalization_for_test_ = false;
 
-  Mode mode_;
+  Mode mode_ = NORMAL;
 
   std::unique_ptr<HttpTransactionFactory> network_layer_;
 

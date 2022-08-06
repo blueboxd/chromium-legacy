@@ -15,11 +15,11 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/components/human_presence/human_presence_configuration.h"
-#include "chromeos/components/human_presence/human_presence_internals.h"
+#include "chromeos/ash/components/human_presence/human_presence_configuration.h"
+#include "chromeos/ash/components/human_presence/human_presence_internals.h"
+#include "chromeos/ash/grit/ash_resources.h"
 #include "chromeos/dbus/hps/hps_service.pb.h"
 #include "chromeos/dbus/human_presence/human_presence_dbus_client.h"
-#include "chromeos/grit/chromeos_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -157,7 +157,7 @@ void HumanPresenceInternalsUIMessageHandler::OnConnected(bool connected) {
 absl::optional<std::string>
 HumanPresenceInternalsUIMessageHandler::ReadManifest() {
   std::string manifest;
-  static const base::FilePath::CharType kManifestPath[] =
+  const base::FilePath::CharType kManifestPath[] =
       FILE_PATH_LITERAL("/usr/lib/firmware/hps/manifest.txt");
   if (!base::ReadFileToString(base::FilePath(kManifestPath), &manifest))
     return absl::nullopt;

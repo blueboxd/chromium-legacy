@@ -629,9 +629,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     // is enabled.
     [self reloadAllData];
   }
-    // TODO(crbug.com/1170995): Potentially remove once ContentSuggestions can
-    // be added as part of a header.
-    [self.discoverFeedDelegate contentSuggestionsWasUpdated];
+  [self.discoverFeedDelegate contentSuggestionsWasUpdated];
 }
 
 - (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
@@ -684,22 +682,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
     }
   } else if (sectionInfo == self.singleCellSectionInfo) {
-    if (!self.parentItem) {
-      self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
-    }
+    self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
     if (_notificationPromo->CanShow() && !self.shouldHidePromoAfterTap) {
       ContentSuggestionsWhatsNewItem* item =
           [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
       item.icon = _notificationPromo->GetIcon();
       item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
       self.parentItem.whatsNewItem = item;
-    } else {
-      self.parentItem.whatsNewItem = nil;
     }
     if (self.showMostRecentTabStartSurfaceTile) {
       self.parentItem.returnToRecentItem = self.returnToRecentTabItem;
-    } else {
-      self.parentItem.returnToRecentItem = nil;
     }
     self.parentItem.mostVisitedItems = self.mostVisitedItems;
     if (!ShouldHideShortcutsForStartSurface()) {

@@ -208,6 +208,53 @@ ci.builder(
 )
 
 ci.builder(
+    name = "lacros-arm-archive-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "arm",
+    ),
+    branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_lacros_sdk",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 32,
+            target_cros_boards = [
+                "arm-generic",
+            ],
+            target_platform = builder_config.target_platform.CHROMEOS,
+        ),
+    ),
+    cores = 32,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "lacros-arm-archive-rel.json",
+            ],
+        },
+    },
+    tree_closing = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
     name = "linux-archive-dbg",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(

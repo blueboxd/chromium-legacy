@@ -35,7 +35,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -645,9 +645,6 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
         PhysicalRect cursor_rect(cursor_offset, LayoutSize(size));
         if (!PhysicalRect(page->GetVisualViewport().VisibleContentRect())
                  .Contains(cursor_rect)) {
-          Deprecation::CountDeprecation(
-              node->GetExecutionContext(),
-              WebFeature::kCustomCursorIntersectsViewport);
           continue;
         }
       }
@@ -918,9 +915,9 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
        event_result == WebInputEventResult::kNotHandled) ||
       mev.GetScrollbar()) {
     mouse_event_manager_->SetCapturesDragging(true);
-    // Main frames don't implicitly capture mouse input on MouseDown, just
-    // subframes do (regardless of whether local or remote).
-    if (!frame_->IsMainFrame())
+    // Outermost main frames don't implicitly capture mouse input on MouseDown,
+    // all subframes do (regardless of whether local or remote or fenced).
+    if (frame_->IsAttached() && !frame_->IsOutermostMainFrame())
       CaptureMouseEventsToWidget(true);
   } else {
     mouse_event_manager_->SetCapturesDragging(false);

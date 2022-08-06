@@ -36,73 +36,85 @@
 
 namespace blink {
 
+namespace {
+
+constexpr double kDefaultPositionXValue = 0.0;
+constexpr double kDefaultPositionYValue = 0.0;
+constexpr double kDefaultPositionZValue = 0.0;
+constexpr double kDefaultForwardXValue = 0.0;
+constexpr double kDefaultForwardYValue = 0.0;
+constexpr double kDefaultForwardZValue = -1.0;
+constexpr double kDefaultUpXValue = 0.0;
+constexpr double kDefaultUpYValue = 1.0;
+constexpr double kDefaultUpZValue = 0.0;
+
+}  // namespace
+
 AudioListener::AudioListener(BaseAudioContext& context)
     : InspectorHelperMixin(context.GraphTracer(), context.Uuid()),
       position_x_(AudioParam::Create(
           context,
           Uuid(),
           AudioParamHandler::kParamTypeAudioListenerPositionX,
-          0.0,
+          kDefaultPositionXValue,
           AudioParamHandler::AutomationRate::kAudio,
           AudioParamHandler::AutomationRateMode::kVariable)),
       position_y_(AudioParam::Create(
           context,
           Uuid(),
           AudioParamHandler::kParamTypeAudioListenerPositionY,
-          0.0,
+          kDefaultPositionYValue,
           AudioParamHandler::AutomationRate::kAudio,
           AudioParamHandler::AutomationRateMode::kVariable)),
       position_z_(AudioParam::Create(
           context,
           Uuid(),
           AudioParamHandler::kParamTypeAudioListenerPositionZ,
-          0.0,
+          kDefaultPositionZValue,
           AudioParamHandler::AutomationRate::kAudio,
           AudioParamHandler::AutomationRateMode::kVariable)),
       forward_x_(
           AudioParam::Create(context,
                              Uuid(),
                              AudioParamHandler::kParamTypeAudioListenerForwardX,
-                             0.0,
+                             kDefaultForwardXValue,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       forward_y_(
           AudioParam::Create(context,
                              Uuid(),
                              AudioParamHandler::kParamTypeAudioListenerForwardY,
-                             0.0,
+                             kDefaultForwardYValue,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       forward_z_(
           AudioParam::Create(context,
                              Uuid(),
                              AudioParamHandler::kParamTypeAudioListenerForwardZ,
-                             -1.0,
+                             kDefaultForwardZValue,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       up_x_(
           AudioParam::Create(context,
                              Uuid(),
                              AudioParamHandler::kParamTypeAudioListenerUpX,
-                             0.0,
+                             kDefaultUpXValue,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       up_y_(
           AudioParam::Create(context,
                              Uuid(),
                              AudioParamHandler::kParamTypeAudioListenerUpY,
-                             1.0,
+                             kDefaultUpYValue,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       up_z_(
           AudioParam::Create(context,
                              Uuid(),
                              AudioParamHandler::kParamTypeAudioListenerUpZ,
-                             0.0,
+                             kDefaultUpZValue,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
-      last_update_time_(-1),
-      is_listener_dirty_(false),
       position_x_values_(
           context.GetDeferredTaskHandler().RenderQuantumFrames()),
       position_y_values_(

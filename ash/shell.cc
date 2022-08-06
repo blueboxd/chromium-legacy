@@ -69,6 +69,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
+#include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 #include "ash/in_session_auth/webauthn_dialog_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
@@ -165,6 +166,7 @@
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -567,6 +569,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       webauthn_dialog_controller_(
           std::make_unique<WebAuthNDialogControllerImpl>()),
+      in_session_auth_dialog_controller_(
+          std::make_unique<InSessionAuthDialogControllerImpl>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateControllerImpl>()),
@@ -774,6 +778,7 @@ Shell::~Shell() {
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
 
+  multitask_menu_nudge_controller_.reset();
   capture_mode_controller_.reset();
   tablet_mode_controller_.reset();
   login_screen_controller_.reset();
@@ -823,6 +828,10 @@ Shell::~Shell() {
   // Needs to be destructed before `ime_controler_`.
   keyboard_backlight_color_controller_.reset();
   rgb_keyboard_manager_.reset();
+
+  // `AshColorProvider` observes `WallPaperController` and must be destructed
+  // before it.
+  ash_color_provider_.reset();
 
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
@@ -947,8 +956,6 @@ Shell::~Shell() {
   // before it.
   calendar_controller_.reset();
 
-  ash_color_provider_.reset();
-
   shell_delegate_.reset();
 
   UsbguardClient::Shutdown();
@@ -1060,6 +1067,8 @@ void Shell::Init(
       peripheral_battery_listener_.get());
   power_event_observer_ = std::make_unique<PowerEventObserver>();
   window_cycle_controller_ = std::make_unique<WindowCycleController>();
+  multitask_menu_nudge_controller_ =
+      std::make_unique<MultitaskMenuNudgeController>();
 
   capture_mode_controller_ = std::make_unique<CaptureModeController>(
       shell_delegate_->CreateCaptureModeDelegate());
@@ -1174,10 +1183,8 @@ void Shell::Init(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
-  if (chromeos::features::IsClipboardHistoryEnabled()) {
-    clipboard_history_controller_ =
-        std::make_unique<ClipboardHistoryControllerImpl>();
-  }
+  clipboard_history_controller_ =
+      std::make_unique<ClipboardHistoryControllerImpl>();
 
   // `HoldingSpaceController` must be instantiated before the shelf.
   holding_space_controller_ = std::make_unique<HoldingSpaceController>();

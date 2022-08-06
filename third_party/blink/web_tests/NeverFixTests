@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Win Win7 Win10.20h2 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Win Win7 Win10.20h2 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Skip Pass ]
 
@@ -58,7 +58,6 @@ fast/harness/results.html [ Skip ]
 # Only maintain this for the latest macOS.
 [ Win ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Linux ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
-[ Mac10.12 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 
 # Tests Mac system font specific weight variations.
 [ Linux ] virtual/text-antialias/mac-system-ui-weight.html [ Skip ]
@@ -118,7 +117,6 @@ fast/harness/results.html [ Skip ]
 # AAT Small Caps test not supported on platforms other than Mac 10.13.
 [ Linux ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 [ Win ] virtual/text-antialias/small-caps-aat.html [ Skip ]
-[ Mac10.12 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ Skip ]
@@ -149,6 +147,10 @@ external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-ma
 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
 external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 [ Linux ] virtual/threaded/external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
+
+# These tests require command line arguments so only virtual/conversions-debug-mode version is run.
+wpt_internal/attribution-reporting/* [ Skip ]
+virtual/conversions-debug-mode/wpt_internal/attribution-reporting/* [ Pass ]
 
 # This test requires a compositor to pass as root scrollbar scrolling is always
 # done on the compositor thread.
@@ -1787,10 +1789,10 @@ crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/shared-worker.
 crbug.com/1016767 js/weakrefs/* [ Skip ]
 virtual/weakrefs/js/weakrefs/* [ Pass ]
 
-# The Wasm code cache requires disabling the baseline compiler, so only the
+# The Wasm code cache test requires access to V8 internals, so only the
 # virtual test should be run.
-http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
-virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass ]
+http/tests/wasm/caching/code-cache.html [ Skip ]
+virtual/wasm-code-caching/http/tests/wasm/caching/code-cache.html [ Pass ]
 
 # This test run under virtual suites only.
 crbug.com/981970 external/wpt/fetch/http-cache/split-cache.html [ Skip ]

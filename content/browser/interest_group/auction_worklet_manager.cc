@@ -25,6 +25,7 @@
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/auction_url_loader_factory_proxy.h"
 #include "content/browser/interest_group/debuggable_auction_worklet.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
@@ -101,7 +102,7 @@ class AuctionWorkletManager::WorkletOwner
   // The latter allows a handle to still exist and refer to a WorkletOwner with
   // a broken Worklet pipe, while new requests for the same worklet will result
   // in creating a fresh Mojo worklet.
-  AuctionWorkletManager* worklet_manager_;
+  raw_ptr<AuctionWorkletManager> worklet_manager_;
 
   const WorkletInfo worklet_info_;
 
@@ -126,6 +127,7 @@ AuctionWorkletManager::WorkletOwner::WorkletOwner(
       worklet_info_(std::move(worklet_info)) {
   if (worklet_manager_->auction_process_manager()->RequestWorkletService(
           worklet_info_.type, url::Origin::Create(worklet_info_.script_url),
+          worklet_manager_->delegate()->GetFrameSiteInstance(),
           &process_handle_,
           base::BindOnce(
               &AuctionWorkletManager::WorkletOwner::OnProcessAssigned,
@@ -167,7 +169,7 @@ void AuctionWorkletManager::WorkletOwner::OnProcessAssigned() {
       mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
           worklet_receiver = bidder_worklet_.BindNewPipeAndPassReceiver();
       worklet_debug_ = base::WrapUnique(new DebuggableAuctionWorklet(
-          delegate->GetFrame(), worklet_info_.script_url,
+          delegate->GetFrame(), &process_handle_, worklet_info_.script_url,
           bidder_worklet_.get()));
       process_handle_.GetService()->LoadBidderWorklet(
           std::move(worklet_receiver), worklet_debug_->should_pause_on_start(),
@@ -185,7 +187,7 @@ void AuctionWorkletManager::WorkletOwner::OnProcessAssigned() {
       mojo::PendingReceiver<auction_worklet::mojom::SellerWorklet>
           worklet_receiver = seller_worklet_.BindNewPipeAndPassReceiver();
       worklet_debug_ = base::WrapUnique(new DebuggableAuctionWorklet(
-          delegate->GetFrame(), worklet_info_.script_url,
+          delegate->GetFrame(), &process_handle_, worklet_info_.script_url,
           seller_worklet_.get()));
       process_handle_.GetService()->LoadSellerWorklet(
           std::move(worklet_receiver), worklet_debug_->should_pause_on_start(),

@@ -368,7 +368,13 @@ TEST(DownloadPrefsTest, AutoOpenSetByPolicyBlobURL) {
   EXPECT_FALSE(prefs.IsAutoOpenByPolicy(kBlobDisallowedURL, kFilePath));
 }
 
-TEST(DownloadPrefsTest, Pdf) {
+// TODO(crbug.com/1326319): Flaky on Win.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_Pdf DISABLED_Pdf
+#else
+#define MAYBE_Pdf Pdf
+#endif
+TEST(DownloadPrefsTest, MAYBE_Pdf) {
   const base::FilePath kPdfFile(FILE_PATH_LITERAL("abcd.pdf"));
   const GURL kURL("http://basic.com");
 
@@ -494,9 +500,12 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
                                                account_id.GetAccountIdKey()));
   const base::FilePath ash_resources_dir = base::FilePath("/opt/google/chrome");
   base::FilePath share_cache_dir = profile.GetPath().AppendASCII("ShareCache");
+  base::FilePath preinstalled_web_app_config_dir;
+  base::FilePath preinstalled_web_app_extra_config_dir;
   chrome::SetLacrosDefaultPaths(
       documents_path, default_dir, drivefs_dir, removable_media_dir,
-      android_files_dir, linux_files_dir, ash_resources_dir, share_cache_dir);
+      android_files_dir, linux_files_dir, ash_resources_dir, share_cache_dir,
+      preinstalled_web_app_config_dir, preinstalled_web_app_extra_config_dir);
 #endif
 
   // Test a valid subdirectory of downloads.

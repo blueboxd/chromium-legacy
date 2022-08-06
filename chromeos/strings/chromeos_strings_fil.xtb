@@ -62,13 +62,13 @@
 <translation id="1468664791493211953">Mga Alok</translation>
 <translation id="1476467821656042872">Pinapamahalaan ng <ph name="MANAGER" /> ang device na ito at puwede nitong masubaybayan ang iyong aktibidad.</translation>
 <translation id="1478594628797167447">Scanner</translation>
-<translation id="1486019694341708158">I-on ang pag-toggle para piliin ang mga opsyon sa screensaver</translation>
 <translation id="1491076385728777984">Nag-a-update ng firmware sa <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732">Pinapamahalaan ng <ph name="MANAGER" /> ang user na ito at puwede nitong pamahalaan ang mga setting at subaybayan ang aktibidad ng user sa remote na paraan.</translation>
 <translation id="150962533380566081">Di-wasto ang PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1512982610995527443">Magsa-shut down ang device sa loob ng 5 segundo</translation>
 <translation id="1522984060396982789">Matagumpay ang iyong pag-aayos. Magagawa mong i-shut down ang device o gumawa ng ilang karagdagang pagkilos.</translation>
+<translation id="1526389707933164996">Animation ng screen saver</translation>
 <translation id="152892567002884378">Lakasan ang volume</translation>
 <translation id="1555130319947370107">Asul</translation>
 <translation id="155865706765934889">Touchpad</translation>
@@ -77,7 +77,9 @@
 <translation id="1572585716423026576">Itakda bilang wallpaper</translation>
 <translation id="1578784163189013834">Pumili ng background ng screen saver</translation>
 <translation id="1615335640928990664">Paggamit ng data simula noong <ph name="FRIENDLY_DATE" /></translation>
+<translation id="1620510694547887537">Camera</translation>
 <translation id="1621067168122174824">Patakbuhin ang pagsusuri sa Pag-charge</translation>
+<translation id="1631385268983122904">Huwag munang i-assemble ulit ang device</translation>
 <translation id="1639239467298939599">Naglo-load</translation>
 <translation id="1641857168437328880">Document Feeder (Isang bahagi)</translation>
 <translation id="1643449475550628585">Araw-araw na palitan ang larawan sa wallpaper</translation>
@@ -85,12 +87,15 @@
 <translation id="1645954272419197032">Pakikumpirma ang impormasyon ng device</translation>
 <translation id="1662989795263954667">Huminto - Wala nang ink</translation>
 <translation id="1668469839109562275">Built-in na VPN</translation>
+<translation id="1672499492233627739">Video feed ng webcam</translation>
+<translation id="1676557873873341166">Pagkuha ng video</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">May DNS Resolver</translation>
 <translation id="1715359911173058521">May isyu sa pagkonekta sa scanner. Suriin ang koneksyon ng network o USB at subukan ulit.</translation>
 <translation id="1717874160321062422">Pinapamahalaan ng <ph name="FIRST_MANAGER" /> at <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Mga name server</translation>
 <translation id="1731082422893354635">Bluetooth na touchpad</translation>
+<translation id="1745577949879301685">Hindi ma-load ang mga larawan. Suriin ang iyong koneksyon sa network o subukang i-load ulit ang mga larawan.</translation>
 <translation id="1751249301761991853">Personal</translation>
 <translation id="1753496554272155572">Lumabas sa preview ng wallpaper</translation>
 <translation id="175763766237925754">Mabilis (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -159,10 +164,10 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2338501278241028356">I-on ang Bluetooth upang tuklasin ang mga kalapit na device</translation>
+<translation id="2340422556570134524">Hindi inaasahang na-on ang Write Protect. Manual na i-off ang Write Protect bago subukan ulit.</translation>
 <translation id="2346474577291266260">Napakabilis (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2360257214555822463">May na-detect na <ph name="LINK_BEGIN" />mga hindi kwalipikadong bahagi<ph name="LINK_END" />. Kung pipiliin mong kumpirmahin na na-install na ito, pakigawa ito ngayon.</translation>
-<translation id="2363636958541445404">I-on ang feature para pumili ng mga opsyon sa screensaver</translation>
 <translation id="2364498172489649528">Nakapasa</translation>
 <translation id="236594517359128026">Bago magpatuloy, ilagay ang iyong laptop sa isang patag na lugar</translation>
 <translation id="2380886658946992094">Legal</translation>
@@ -213,6 +218,7 @@
 <translation id="3008341117444806826">I-REFRESH</translation>
 <translation id="3009958530611748826">Pumili ng folder kung saan magse-save</translation>
 <translation id="3017079585324758401">Background</translation>
+<translation id="3027578600144895987">Isara ang camera</translation>
 <translation id="3031560714565892478">Video camera ang device.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">Endpoint</translation>
@@ -231,6 +237,7 @@
 <translation id="315738237743207937">May na-detect na captive portal</translation>
 <translation id="3170673040743561620">Ilagay ang iyong dokumento sa scanner</translation>
 <translation id="3188257591659621405">Aking mga file</translation>
+<translation id="319101249942218879">Pinalitan ang larawan ng avatar</translation>
 <translation id="3192947282887913208">Mga Audio File</translation>
 <translation id="3199982728237701504">Document Feeder (Dalawang bahagi)</translation>
 <translation id="320091191259649613">Kung mararanasan mo pa rin ang issue pagkatapos ng pag-update, posibleng bago lang ang pagkakwalipikado ng bahagi at wala pa ito sa database.</translation>
@@ -253,6 +260,7 @@
 <translation id="3413935475507503304">Para magpatuloy sa update, i-click ang Susunod.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Seguridad</translation>
+<translation id="3441653493275994384">Screen</translation>
 <translation id="3456078764689556234">Na-print ang page <ph name="PRINTED_PAGES" /> sa <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Sina-scan ang pahina <ph name="PAGE_NUM" />. <ph name="PERCENTAGE_VALUE" />% na ang natapos.</translation>
 <translation id="3459509316159669723">Pagpi-print</translation>
@@ -275,6 +283,7 @@
 <translation id="3604713164406837697">Palitan ang wallpaper</translation>
 <translation id="360565022852130722">Naka-secure ang WiFi network gamit ang mahinang protocol na WEP 802.1x</translation>
 <translation id="3606583719724308068">Mataas ang latency sa mga HTTPS na website</translation>
+<translation id="3616113530831147358">Audio</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3632579075709132555">Toggle ng Privacy screen</translation>
 <translation id="3643810137582748570">Laktawan ang pag-calibrate</translation>
@@ -296,6 +305,7 @@
 <translation id="3858860766373142691">Pangalan</translation>
 <translation id="3865414814144988605">Resolution</translation>
 <translation id="387301095347517405">Ang dami ng beses na na-full charge ang iyong baterya</translation>
+<translation id="3885327323343477505">Palitan ang screen saver</translation>
 <translation id="3923184630988645767">Paggamit ng data</translation>
 <translation id="3924044641767672375">Inirerekomenda ang pagkonekta sa Wi-Fi para mas mapadali ang proseso ng pag-aayos. Ise-save ang iyong network.</translation>
 <translation id="3932043219784172185">Walang nakakonektang device</translation>
@@ -323,6 +333,7 @@
 <translation id="4140251671072434548">I-unlock ang RMA Server</translation>
 <translation id="4145784616224233563">Firewall ng HTTP</translation>
 <translation id="4147897805161313378">Google Photos</translation>
+<translation id="4150201353443180367">Display</translation>
 <translation id="4155551848414053977">Tiyaking naka-on ang scanner at available ito sa pamamagitan ng iyong network o ng isang direktang koneksyon</translation>
 <translation id="4159784952369912983">Lila</translation>
 <translation id="4170180284036919717">Kumuha ng larawan</translation>
@@ -395,6 +406,7 @@
 <translation id="4793710386569335688">Para sa higit pang tulong, pumunta sa <ph name="BEGIN_LINK" />Help Center<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algorithm ng pag-compress</translation>
 <translation id="4794140124556169553">Posibleng makaapekto sa performance ng iyong system ang pagpapatakbo ng pagsusuri sa CPU</translation>
+<translation id="4804818685124855865">I-disconnect</translation>
 <translation id="4808449224298348341">Kinansela ang pag-print ng <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Maliwanag na tema</translation>
 <translation id="4813136279048157860">Aking Mga Larawan</translation>
@@ -413,6 +425,7 @@
 <translation id="4890353053343094602">Pumili agad ng bago</translation>
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4897058166682006107">May <ph name="BATTERY_PERCENTAGE" />% baterya ang kaliwang bud ng device.</translation>
+<translation id="4905998861748258752">I-on ang feature para pumili ng mga opsyon sa screen saver</translation>
 <translation id="4908030561598728899">Ini-install ang firmware...</translation>
 <translation id="4915052247106771211">Ire-reset nito ang device sa mga factory setting</translation>
 <translation id="4917385247580444890">Malakas</translation>
@@ -473,6 +486,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5372659122375744710">Hindi secure ang WiFi network</translation>
 <translation id="5376354385557966694">Awtomatikong light mode</translation>
 <translation id="537872351913703572">Mapupunta ang device sa ibang user o organisayon</translation>
+<translation id="5389159777326897627">Wallpaper at style</translation>
 <translation id="5389224261615877010">Bahaghari</translation>
 <translation id="5395600419410242651">Burahin ang lahat ng data</translation>
 <translation id="5400907029458559844">Kumokonekta ang device.</translation>
@@ -486,6 +500,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} pagsubok na lang ang natitira}one{{0} pagsubok na lang ang natitira}other{{0} na pagsubok na lang ang natitira}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Hindi makumpleto ang pag-scan</translation>
+<translation id="5499762266711462226">Nakabase sa wallpaper ang kulay ng keyboard</translation>
 <translation id="5502931783115429516">Hindi tumatakbo ang Android</translation>
 <translation id="5507300744274596613">Tiyaking up to date ang Chrome OS</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -498,7 +513,6 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5620281292257375798">Internal lang</translation>
 <translation id="5649768706273821470">Pakinggan</translation>
 <translation id="5655283760733841251">Taasan ang liwanag ng keyboard</translation>
-<translation id="5661196929408385351">I-powerwash at I-shut down</translation>
 <translation id="5669267381087807207">Ina-activate</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Pamilya</translation>
@@ -530,6 +544,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5931523347251946569">Hindi nahanap ang file</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="594552776027197022">Bumuo ng random na keypair</translation>
+<translation id="5947494881799873997">I-revert</translation>
 <translation id="5951259522948394825">Kumpirmahing maayos ang lahat at tingnan ang diagnostic na ulat</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Default na Wallpaper</translation>
@@ -635,12 +650,12 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="6905724422583748843">Bumalik sa <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">Nakabukas ang takip ng scanner. Isara ang takip at subukan ulit.</translation>
 <translation id="6911383237894364323">Hindi makakonekta sa mga media server</translation>
-<translation id="6935486296377631201">Screensaver</translation>
 <translation id="6943893908656559156">Remote na pagkakakilanlan (opsyonal)</translation>
 <translation id="6957231940976260713">Pangalan ng serbisyo</translation>
 <translation id="6961170852793647506">Para magsimula, ilagay ang iyong dokumento sa scanner</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Rebisyon ng firmware</translation>
+<translation id="6995564396478647735">Tiyaking naka-on ang Write Protect</translation>
 <translation id="7028979494427204405">Pinapamahalaan ng <ph name="MANAGER" /> ang device na ito at mayroon itong access sa lahat ng aktibidad ng user, kabilang ang mga webpage na binisita, mga password, at email.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Hindi nakakonekta ang device.</translation>
@@ -651,6 +666,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Nabigo - Hindi Nabigyan ng Pahintulot</translation>
 <translation id="7103252855940681301">Device <ph name="INDEX" /> sa <ph name="COUNT" /> na nagngangalang <ph name="NAME" />.</translation>
+<translation id="7126228745139711113">Naka-off ang Write Protect</translation>
 <translation id="7134436342991564651">{0,plural, =1{Name server}one{Mga name server}other{Mga name server}}</translation>
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
@@ -662,7 +678,6 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7175037578838465313">I-configure ang <ph name="NAME" /></translation>
 <translation id="7177485034254901881">Pinapamahalaan ng <ph name="MANAGER" /> ang <ph name="DEVICE_TYPE" /> na ito. Puwedeng i-configure ng mga administrator ang device sa remote na paraan.</translation>
 <translation id="7180611975245234373">I-refresh</translation>
-<translation id="7191009787982536050">Animation ng screensaver</translation>
 <translation id="7212734716605298123">Mga update sa firmware para sa mga external na device</translation>
 <translation id="7216409898977639127">Cellular provider</translation>
 <translation id="7271040990581020067">Kasalukuyang ginagamit ang scanner. Subukan ulit sa ibang pagkakataon.</translation>
@@ -679,7 +694,6 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7359657277149375382">Uri ng file</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
-<translation id="7378886533986123738">Palitan ang screensaver</translation>
 <translation id="7397270852490618635">I-off ang maliwanag na tema</translation>
 <translation id="741244894080940828">conversion</translation>
 <translation id="7415801143053185905">Napakataas na latency ng HTTP</translation>
@@ -736,12 +750,14 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7960831585769876809">Temperatura</translation>
 <translation id="7977800524392185497">Para sumali sa isang <ph name="NETWORK_NAME" /> network, pumunta sa Mga Setting</translation>
 <translation id="7978412674231730200">Private na key</translation>
+<translation id="7982789257301363584">Network</translation>
 <translation id="7994702968232966508">Pamamaraang EAP</translation>
 <translation id="802154636333426148">Hindi na-download</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">I-enable ang auto color mode</translation>
 <translation id="8041089156583427627">Magpadala ng Feedback</translation>
 <translation id="8045012663542226664">Pang-mute ng mikropono</translation>
+<translation id="8063022551652308521">Naka-off pa rin ang Write Protect. Para magpatuloy, i-on ang Write Protect.</translation>
 <translation id="8075838845814659848">Natitirang pag-charge</translation>
 <translation id="8082366717211101304">Hindi ma-resolve ang DNS mula sa mga Android app</translation>
 <translation id="8083281199617904460">Nakalaan ang prosesong ito ng pag-aayos para sa sinanay na technician sa pag-aayos. Magsimula lang kapag napalitan na ang mga hindi gumaganang bahagi.</translation>
@@ -812,7 +828,9 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Gamitin ang mga Kaliwa o Pakanang arrow key para pamahalaan ang feature na ito.</translation>
 <translation id="8712637175834984815">Nakuha ko</translation>
 <translation id="871560550817059752">Hindi na-print - Wala nang ink</translation>
+<translation id="8717030727630712160">Ipinagpapatuloy ang proseso ng pag-aayos…</translation>
 <translation id="8723108084122415655">Mas mataas sa limitasyon ng latency ang hindi default na network</translation>
+<translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8726019395068607495">Huminto - Nakabukas ang door</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="8747900814994928677">Kumpirmahin ang pagbabago</translation>
@@ -827,11 +845,13 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8834539327799336565">Kasalukuyang nakakonekta</translation>
 <translation id="8845001906332463065">Humingi ng tulong</translation>
 <translation id="8855781559874488009">Hindi makakonekta sa pamamagitan ng firewall sa mga HTTP na website</translation>
+<translation id="885701979325669005">Storage</translation>
 <translation id="8863170912498892583">I-enable ng madilim na tema</translation>
 <translation id="8863888432376731307">Kunin ang <ph name="INTENT" /> para sa "<ph name="QUERY" />" at higit pa</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Tablet ang device.</translation>
 <translation id="8881098542468797602">Nagtagumpay ang pagsusuri</translation>
+<translation id="8897267175591692539">Puwede mo nang i-assemble ulit ang device</translation>
 <translation id="8898840733695078011">Lakas ng signal</translation>
 <translation id="8910721771319628100">Mas mataas sa limitasyon ng latency ang default na network</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> ni <ph name="GIVEN_NAME" /></translation>
@@ -846,12 +866,12 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="894617464444543719">Telepono ang device.</translation>
 <translation id="8968751544471797276">Rate ng Pag-charge</translation>
 <translation id="8970109610781093811">Patakbuhing muli</translation>
-<translation id="8970887620466824814">Nagkaproblema.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{I-scan}=1{I-scan ang page {NUMBER_OF_PAGES}}one{I-scan ang page {NUMBER_OF_PAGES}}other{I-scan ang page {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">May <ph name="BATTERY_PERCENTAGE" />% baterya ang device.</translation>
 <translation id="9003704114456258138">Frequency</translation>
 <translation id="9025198690966128418">Gamitin bilang personal na device</translation>
+<translation id="9028832514430399253">I-on ang toggle para piliin ang mga opsyon ng screen saver</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9062831201344759865">Mataas ang latency ng resolution ng DNS</translation>
 <translation id="9063121522582193837">Hindi ma-calibrate ang ilang bahagi</translation>
@@ -870,6 +890,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="9126720536733509015">Mag-save ng maraming pahina sa iisang PDF</translation>
 <translation id="9137526406337347448">Mga Serbisyo ng Google</translation>
 <translation id="9138630967333032450">Kaliwang shift</translation>
+<translation id="9148058034647219655">Lumabas</translation>
 <translation id="9149391708638971077">Patakbuhin ang pagsusuri sa Memory</translation>
 <translation id="9173638680043580060">Wala nang isang minuto ang natitira</translation>
 <translation id="917720651393141712">Test</translation>

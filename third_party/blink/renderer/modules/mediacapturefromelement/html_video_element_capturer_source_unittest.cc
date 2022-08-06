@@ -93,13 +93,15 @@ class MockWebMediaPlayer : public WebMediaPlayer {
     return;
   }
 
-  scoped_refptr<media::VideoFrame> GetCurrentFrame() override {
+  scoped_refptr<media::VideoFrame> GetCurrentFrameThenUpdate() override {
     // We could fill in |canvas| with a meaningful pattern in ARGB and verify
     // that is correctly captured (as I420) by HTMLVideoElementCapturerSource
     // but I don't think that'll be easy/useful/robust, so just let go here.
     return is_video_opaque_ ? media::VideoFrame::CreateBlackFrame(size_)
                             : media::VideoFrame::CreateTransparentFrame(size_);
   }
+
+  absl::optional<int> CurrentFrameId() const override { return absl::nullopt; }
 
   bool IsOpaque() const override { return is_video_opaque_; }
   bool HasAvailableVideoFrame() const override { return true; }

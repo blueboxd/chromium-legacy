@@ -1717,6 +1717,9 @@ void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
 void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
                                             ElementListType list_type,
                                             const FilterOperations& filters) {
+  if (list_type != ElementListType::ACTIVE)
+    return;
+
   if (IsUsingLayerLists()) {
     // In BlinkGenPropertyTrees/CompositeAfterPaint we always have property
     // tree nodes and can set the filter directly on the effect node.
@@ -1734,6 +1737,9 @@ void LayerTreeHost::SetElementBackdropFilterMutated(
     ElementId element_id,
     ElementListType list_type,
     const FilterOperations& backdrop_filters) {
+  if (list_type != ElementListType::ACTIVE)
+    return;
+
   if (IsUsingLayerLists()) {
     // In BlinkGenPropertyTrees/CompositeAfterPaint we always have property
     // tree nodes and can set the backdrop_filter directly on the effect node.
@@ -1752,6 +1758,9 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
                                              float opacity) {
   DCHECK_GE(opacity, 0.f);
   DCHECK_LE(opacity, 1.f);
+
+  if (list_type != ElementListType::ACTIVE)
+    return;
 
   if (IsUsingLayerLists()) {
     property_trees()->effect_tree_mutable().OnOpacityAnimated(element_id,
@@ -1780,6 +1789,9 @@ void LayerTreeHost::SetElementTransformMutated(
     ElementId element_id,
     ElementListType list_type,
     const gfx::Transform& transform) {
+  if (list_type != ElementListType::ACTIVE)
+    return;
+
   if (IsUsingLayerLists()) {
     property_trees()->transform_tree_mutable().OnTransformAnimated(element_id,
                                                                    transform);

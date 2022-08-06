@@ -7,6 +7,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
+#include "components/signin/ios/browser/features.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -203,6 +204,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
 
   // Configure the policy to force sign-in.
   config.additional_args.push_back(
@@ -231,7 +233,8 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 #pragma mark - Tests
 
 // Tests the sign-in screen with accounts that are already available.
-- (void)testSignInScreenWithAccount {
+// TODO(crbug.com/1328822): flaky.
+- (void)DISABLED_testSignInScreenWithAccount {
   // Add an identity to sign-in to enable the "Continue as ..." button in the
   // sign-in screen.
   FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
@@ -267,7 +270,8 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 // Tests the sign-in screen without accounts where an account has to be added
 // before signing in.
-- (void)testSignInScreenWithoutAccount {
+// TODO(crbug.com/1328822): flaky.
+- (void)DISABLED_testSignInScreenWithoutAccount {
   // Tap on the "Sign in" button.
   [[EarlGrey
       selectElementWithMatcher:grey_text(l10n_util::GetNSString(
@@ -566,9 +570,16 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 // Tests that the forced sign-in prompt can be shown on dynamic policy update
 // when a browser modal is displayed on top of the browser view.
-- (void)DISABLED_testSignInScreenOnModal {
+// TODO(crbug.com/1331009): Test fails on device.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSignInScreenOnModal DISABLED_testSignInScreenOnModal
+#else
+#define MAYBE_testSignInScreenOnModal testSignInScreenOnModal
+#endif
+- (void)MAYBE_testSignInScreenOnModal {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -592,9 +603,10 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 // Tests that the forced sign-in prompt can be shown on dynamic policy update
 // when on the tab switcher.
-- (void)DISABLED_testSignInScreenOnTabSwitcher {
+- (void)testSignInScreenOnTabSwitcher {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -618,9 +630,10 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 // Tests that the forced sign-in prompt can be shown on dynamic policy update
 // when on an incognito browser tab.
-- (void)DISABLED_testSignInScreenOnIncognito {
+- (void)testSignInScreenOnIncognito {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -644,9 +657,10 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 // Tests that the forced sign-in prompt is shown after the sign-in prompt when
 // sign-in is skipped.
-- (void)DISABLED_testSignInScreenDuringRegularSigninPrompt {
+- (void)testSignInScreenDuringRegularSigninPrompt {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -683,6 +697,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 - (void)testNoSignInScreenWhenSigninFromRegularSigninPrompt {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -760,6 +775,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -816,6 +832,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -872,6 +889,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1006,6 +1024,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1044,13 +1063,13 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
 // Tests that the forced sign-in prompt, when there are multiple windows
 // opened, can be shown on dynamic policy update when on the tab switcher.
-// TODO(crbug.com/1320268): Test fails.
-- (void)DISABLED_testSignInScreenOnTabSwitcherWithMultiWindows {
+- (void)testSignInScreenOnTabSwitcherWithMultiWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1090,8 +1109,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // opened, can be shown on dynamic policy update after cancelling the regular
 // sign-in prompt. The policy is applied while the regular sign-in prompt is
 // shown.
-// TODO(crbug.com/1320268): Test fails.
-- (void)DISABLED_testSignInScreenOnRegularSigninPromptMultiWindows {
+- (void)testSignInScreenOnRegularSigninPromptMultiWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 
@@ -1103,6 +1121,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1144,8 +1163,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that the forced sign-in prompt can be shown on dynamic policy update
 // when a browser modal is displayed on top of the browser view when there are
 // multiple windows.
-// TODO(crbug.com/1320268): Test fails.
-- (void)DISABLED_testSignInScreenOnModalMultiWindows {
+- (void)testSignInScreenOnModalMultiWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 
@@ -1157,6 +1175,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 

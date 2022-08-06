@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -37,10 +39,12 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
   static constexpr webui::ResourcePath kResources[] = {
       {"profile_customization_app.js",
        IDR_SIGNIN_PROFILE_CUSTOMIZATION_PROFILE_CUSTOMIZATION_APP_JS},
+      {"profile_customization_app.html.js",
+       IDR_SIGNIN_PROFILE_CUSTOMIZATION_PROFILE_CUSTOMIZATION_APP_HTML_JS},
       {"profile_customization_browser_proxy.js",
        IDR_SIGNIN_PROFILE_CUSTOMIZATION_PROFILE_CUSTOMIZATION_BROWSER_PROXY_JS},
-      {"signin_shared_css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
-      {"signin_vars_css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
+      {"signin_shared.css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
+      {"signin_vars.css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
   };
   source->AddResourcePaths(kResources);
 
@@ -67,6 +71,9 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
           .GetProfileAttributesWithPath(profile->GetPath());
   source->AddString("profileName",
                     base::UTF16ToUTF8(entry->GetLocalProfileName()));
+  source->AddBoolean(
+      "profileCustomizationInDialogDesign",
+      base::FeatureList::IsEnabled(kSyncPromoAfterSigninIntercept));
 
   if (web_ui->GetWebContents()->GetVisibleURL().query() == "debug") {
     // Not intended to be hooked to anything. The bubble will not initialize it

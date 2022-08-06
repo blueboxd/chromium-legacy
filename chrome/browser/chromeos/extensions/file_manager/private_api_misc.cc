@@ -965,15 +965,12 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       Params;
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
-  // TODO(crbug.com/1057591): Unexpected crashes in
-  // GuestOsSharePath::GetPersistedSharedPaths with null profile_.
-  CHECK(browser_context());
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  CHECK(profile);
-
+  // Use OriginalProfile since using crostini in incognito such as saving
+  // files into Linux files should still work.
+  Profile* profile =
+      Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   auto* guest_os_share_path =
       guest_os::GuestOsSharePath::GetForProfile(profile);
-  CHECK(guest_os_share_path);
   bool first_for_session = params->observe_first_for_session &&
                            guest_os_share_path->GetAndSetFirstForSession();
   auto shared_paths =
@@ -1226,6 +1223,7 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
 
   model->GetRecentFiles(
       file_system_context.get(), source_url(), file_type,
+      params->invalidate_cache,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));
@@ -1343,8 +1341,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateOpenWindowFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
-  web_app::LaunchSystemWebAppAsync(
-      profile, web_app::SystemAppType::FILE_MANAGER, launch_params);
+  web_app::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::FILE_MANAGER,
+                                   launch_params);
 
   return RespondNow(OneArgument(base::Value(true)));
 }

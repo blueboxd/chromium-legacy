@@ -18,7 +18,6 @@ Il tuo motore di ricerca è <ph name="DSE_NAME" />. Consulta le relative istruzi
 <translation id="1066060668811609597">Gestisci la sincronizzazione</translation>
 <translation id="1076421457278169141">Scansione del codice eseguita</translation>
 <translation id="1084365883616172403">Pubblicazione su Facebook completata.</translation>
-<translation id="1086486568852410168">Cerca con Google Lens</translation>
 <translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Accetta e continua</translation>
 <translation id="110724200315609752">Passa alla finestra aperta</translation>
@@ -241,6 +240,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 <translation id="2982481275546140226">Cancella dati</translation>
 <translation id="298306318844797842">Aggiungi il metodo di pagamento…</translation>
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
+<translation id="3020183492814296499">Scorciatoie</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3039722182465315531">Non accedere</translation>
 <translation id="3076846064362030967">Non verrà eseguita la disconnessione dal tuo Account Google. <ph name="BEGIN_LINK" />Altri tipi di attività<ph name="END_LINK" /> potrebbero essere salvati nel tuo Account Google se hai eseguito l'accesso. Puoi eliminarli in qualsiasi momento.
@@ -249,6 +249,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 Consulta le istruzioni del tuo motore di ricerca per eliminare la tua cronologia delle ricerche, se possibile.</translation>
 <translation id="3080525922482950719">Puoi salvare le pagine da leggere in un secondo momento o quando sei offline</translation>
 <translation id="3081338492074632642">Assicurati che la password che stai salvando corrisponda a quella di <ph name="WEBSITE" /></translation>
+<translation id="3103603146121354983">Compila automaticamente le password</translation>
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Scopri cosa puoi sincronizzare<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Blocca tutti</translation>
@@ -512,6 +513,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5416022985862681400">Ultimi 7 giorni</translation>
 <translation id="543338862236136125">Modifica password</translation>
 <translation id="5433691172869980887">Nome utente copiato</translation>
+<translation id="5439599923922718668">Visitati spesso</translation>
 <translation id="54401264925851789">Info sicurezza pagina</translation>
 <translation id="5443952882982198570">Carte di credito</translation>
 <translation id="5457226814769348910">Apri versione offline</translation>
@@ -526,7 +528,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5551897871312988470">Proponi di tradurre</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5580834567471114021">Aggiungere all'elenco di lettura per consultare la pagina in un secondo momento?</translation>
-<translation id="5592679540098330836">Attiva la sincronizzazione per <ph name="NAME" /></translation>
 <translation id="560322036295180549">Opzione disattivata dall'organizzazione</translation>
 <translation id="5614553682702429503">Salvare la password?</translation>
 <translation id="5626245204502895507">Il file non può essere scaricato in questo momento.</translation>
@@ -660,6 +661,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 
 Cerca di usare una password univoca per ogni sito.</translation>
 <translation id="650279896687777322">Scopri di più…</translation>
+<translation id="6510072653668207258">Ricordamelo più tardi</translation>
 <translation id="651505212789431520">Annullare la sincronizzazione? Puoi attivare la sincronizzazione in qualsiasi momento nelle impostazioni.</translation>
 <translation id="6524918542306337007">Modalità di navigazione in incognito non disponibile</translation>
 <translation id="6530992499366869131">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
@@ -900,7 +902,6 @@ I siti possono utilizzare i cookie per conoscere la tua attività di navigazione
 <translation id="8588404856427128947">Non attiva</translation>
 <translation id="8590913940444621808">Non chiedere mai</translation>
 <translation id="8591976964826315682">Blocca cookie di terze parti in modalità di navigazione in incognito</translation>
-<translation id="8592752150819985187">Compila automaticamente le password</translation>
 <translation id="8605219856220328675">Chiudi la scheda.</translation>
 <translation id="8620640915598389714">Modifica</translation>
 <translation id="8620785403235741379">Seleziona un'opzione</translation>

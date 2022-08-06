@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/metrics/histogram_functions.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 
 #include "build/build_config.h"
@@ -10,7 +9,6 @@
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_built_in_backend.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -33,16 +31,11 @@ std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
   if (PasswordStoreAndroidBackendBridge::CanCreateBackend() &&
       base::FeatureList::IsEnabled(
           password_manager::features::kUnifiedPasswordManagerAndroid)) {
-    base::UmaHistogramBoolean(
-        "PasswordManager.PasswordStore.WasEnrolledInUPMWhenBackendWasCreated",
-        !prefs->GetBoolean(password_manager::prefs::
-                               kUnenrolledFromGoogleMobileServicesDueToErrors));
     raw_ptr<SyncDelegate> raw_sync_delegate = sync_delegate.get();
     return std::make_unique<PasswordStoreBackendMigrationDecorator>(
         std::make_unique<PasswordStoreBuiltInBackend>(
             CreateLoginDatabaseForProfileStorage(login_db_path)),
-        std::make_unique<PasswordStoreAndroidBackend>(std::move(sync_delegate),
-                                                      prefs),
+        std::make_unique<PasswordStoreAndroidBackend>(std::move(sync_delegate)),
         prefs, raw_sync_delegate.get());
   }
   return std::make_unique<PasswordStoreBuiltInBackend>(

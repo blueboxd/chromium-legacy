@@ -277,6 +277,10 @@ absl::optional<arc::UserInteractionType> GetUserInterationType(
       user_interaction_type = arc::UserInteractionType::
           APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU;
       break;
+    case apps::mojom::LaunchSource::kFromOtherApp:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_OTHER_APP;
+      break;
     default:
       NOTREACHED();
       return absl::nullopt;
@@ -424,16 +428,19 @@ void OnContentUrlResolved(const base::FilePath& file_path,
                           apps::mojom::IntentPtr intent,
                           arc::mojom::ActivityNamePtr activity,
                           apps::mojom::WindowInfoPtr window_info,
+                          apps::ArcApps::LaunchAppWithIntentCallback callback,
                           const std::vector<GURL>& content_urls) {
   for (const auto& content_url : content_urls) {
     if (!content_url.is_valid()) {
       LOG(ERROR) << "Share files failed, file urls are not valid";
+      std::move(callback).Run(/*success=*/false);
       return;
     }
   }
 
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
+    std::move(callback).Run(/*success=*/false);
     return;
   }
 
@@ -446,6 +453,7 @@ void OnContentUrlResolved(const base::FilePath& file_path,
       OpenUrlsWithPermissionAndWindowInfo);
   if (!arc_file_system) {
     LOG(ERROR) << "Failed to open urls, ARC File System not found";
+    std::move(callback).Run(/*success=*/false);
     return;
   }
   arc_file_system->OpenUrlsWithPermissionAndWindowInfo(
@@ -456,6 +464,8 @@ void OnContentUrlResolved(const base::FilePath& file_path,
       file_path,
       std::make_unique<app_restore::AppLaunchInfo>(
           app_id, event_flags, std::move(intent), session_id, display_id));
+
+  std::move(callback).Run(/*success=*/true);
 }
 
 // Sets the session id for |window_info|. If the full restore feature is
@@ -867,8 +877,7 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
           profile_, apps::GetFileSystemURL(profile_, file_urls),
           base::BindOnce(&OnContentUrlResolved, profile_->GetPath(), app_id,
                          event_flags, std::move(intent), std::move(activity),
-                         std::move(new_window_info)));
-      std::move(callback).Run(/*success=*/true);
+                         std::move(new_window_info), std::move(callback)));
       return;
     }
 
@@ -1399,17 +1408,16 @@ void ArcApps::OnArcSupportedLinksChanged(
       continue;
     }
 
-    std::vector<apps::mojom::IntentFilterPtr> app_service_filters;
+    apps::IntentFilters app_service_filters;
     for (const auto& arc_filter : supported_link->filters.value()) {
-      auto converted =
-          apps_util::ConvertArcToAppServiceIntentFilter(arc_filter);
+      auto converted = apps_util::CreateIntentFilterForArc(arc_filter);
       if (apps_util::IsSupportedLinkForApp(app_id, converted)) {
         app_service_filters.push_back(std::move(converted));
       }
     }
 
-    app_service->SetSupportedLinksPreference(apps::mojom::AppType::kArc, app_id,
-                                             std::move(app_service_filters));
+    proxy()->SetSupportedLinksPreference(app_id,
+                                         std::move(app_service_filters));
   }
 
   for (const auto& supported_link : removed) {
@@ -1418,8 +1426,7 @@ void ArcApps::OnArcSupportedLinksChanged(
     if (app_id.empty()) {
       continue;
     }
-    app_service->RemoveSupportedLinksPreference(apps::mojom::AppType::kArc,
-                                                app_id);
+    proxy()->RemoveSupportedLinksPreference(app_id);
   }
 }
 

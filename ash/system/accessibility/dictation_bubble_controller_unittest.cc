@@ -5,6 +5,7 @@
 #include "ash/system/accessibility/dictation_bubble_controller.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -26,6 +27,11 @@ class DictationBubbleControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{chromeos::features::kDarkLightMode,
+                               features::kNotificationsRefresh});
+
     AshTestBase::SetUp();
     Shell::Get()->accessibility_controller()->dictation().SetEnabled(true);
   }
@@ -92,6 +98,9 @@ class DictationBubbleControllerTest : public AshTestBase {
   std::vector<std::u16string> GetVisibleHints() {
     return GetView()->GetVisibleHintsForTesting();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(DictationBubbleControllerTest, ShowText) {
@@ -155,6 +164,8 @@ TEST_F(DictationBubbleControllerTest, ShowMacroFailImage) {
 
 // Verifies text and icon colors when the dark light mode feature is disabled.
 TEST_F(DictationBubbleControllerTest, NoDarkMode) {
+  ASSERT_FALSE(chromeos::features::IsDarkLightModeEnabled());
+
   // Show bubble UI.
   EXPECT_FALSE(GetView());
   Show(DictationBubbleIconType::kHidden,

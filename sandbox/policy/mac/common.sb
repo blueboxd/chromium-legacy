@@ -95,13 +95,10 @@
 )))
 
 ; Allow logging for all processes.
-(if (not (defined? 'vnode-type))
-  (allow file-write* (path (param log-file-path)))  
-;else
-  (allow file-write*
-    (require-all
-      (path (param log-file-path))
-      (vnode-type REGULAR-FILE))))
+(allow file-write*
+  (require-all
+    (path (param log-file-path))
+    (vnode-type REGULAR-FILE)))
 
 ; Allow component builds to work.
 (if (param-defined? component-path)
@@ -179,13 +176,10 @@
 (allow file-read-data (path "/private/etc/passwd"))
 
 ; Access to /dev.
-(if (not (defined? 'vnode-type))
-  (allow file-ioctl file-ioctl file-read-data file-write-data (path "/dev/dtracehelper"))  
-;else
-  (allow file-ioctl file-read-data file-write-data
-    (require-all
-      (path "/dev/dtracehelper")
-      (vnode-type CHARACTER-DEVICE))))
+(allow file-ioctl file-read-data file-write-data
+  (require-all
+    (path "/dev/dtracehelper")
+    (vnode-type CHARACTER-DEVICE)))
 
 (allow file-read-data
   (path "/dev/null")
@@ -256,6 +250,7 @@
     (sysctl-name "hw.physicalcpu_max")
     (sysctl-name "hw.tbfrequency_compat")
     (sysctl-name "hw.vectorunit")
+    (sysctl-name "kern.bootargs") ; Temporary for https://crbug.com/1291789.
     (sysctl-name "kern.hostname")
     (sysctl-name "kern.maxfilesperproc")
     (sysctl-name "kern.osproductversion")

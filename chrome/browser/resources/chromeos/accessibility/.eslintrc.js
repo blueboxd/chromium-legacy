@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 module.exports = {
-  'rules': {
-    'brace-style': ['error', '1tbs'],
-    'curly': ['error', 'multi-line', 'consistent'],
-    'eqeqeq': ['error', 'always', {'null': 'ignore'}],
-    'no-console': 'off',
-    'no-throw-literal': 'off',
-    'object-shorthand': ['error', 'always'],
-    'prefer-const': ['error', {'destructuring': 'all'}],
+  'rules' : {
+    'arrow-parens' : ['error', 'as-needed'],
+    'arrow-spacing' : ['error'],
+    'brace-style' : ['error', '1tbs'],
+    'curly' : ['error', 'multi-line', 'consistent'],
+    'eqeqeq' : ['error', 'always', {'null' : 'ignore'}],
+    'no-confusing-arrow' : ['error'],
+    'no-console' : 'off',
+    'no-throw-literal' : 'off',
+    'object-shorthand' : ['error', 'always'],
+    'prefer-const' : ['error', {'destructuring' : 'all'}],
   },
 };

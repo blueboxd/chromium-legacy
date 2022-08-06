@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace password_manager {
 
@@ -65,7 +66,8 @@ enum UIDismissalReason {
 };
 
 // Enum representing the different leak detection dialogs shown to the user.
-// Corresponds to LeakDetectionDialogType suffix in histogram_suffixes_list.xml.
+// Corresponds to LeakDetectionDialogType suffix in histogram_suffixes_list.xml
+// and PasswordLeakDetectionDialogType in enums.xml.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class LeakDialogType {
@@ -212,7 +214,10 @@ enum class SubmittedFormFrame {
   MAIN_FRAME = 0,
   IFRAME_WITH_SAME_URL_AS_MAIN_FRAME = 1,
   IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME = 2,
-  IFRAME_WITH_DIFFERENT_SIGNON_REALM = 3,
+  // Deprecated and replaced with a combination of buckets 4 & 5.
+  // IFRAME_WITH_DIFFERENT_SIGNON_REALM = 3,
+  IFRAME_WITH_PSL_MATCHED_SIGNON_REALM = 4,
+  IFRAME_WITH_DIFFERENT_AND_NOT_PSL_MATCHED_SIGNON_REALM = 5,
   SUBMITTED_FORM_FRAME_COUNT
 };
 
@@ -544,9 +549,46 @@ enum class PasswordAccountStorageUsageLevel {
   // The user has enabled Sync.
   kSyncing = 2,
 };
-
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
+
+// Records the `type` of a leak dialog shown to the user and the `reason`
+// why it was dismissed.
+class LeakDialogMetricsRecorder {
+ public:
+  // Create a LeakDialogMetricsRecorder corresponding to a navigation with
+  // `source_id`.
+  LeakDialogMetricsRecorder(ukm::SourceId source_id, LeakDialogType type);
+  LeakDialogMetricsRecorder(const LeakDialogMetricsRecorder&) = delete;
+  LeakDialogMetricsRecorder& operator=(const LeakDialogMetricsRecorder&) =
+      delete;
+
+  // Log the `reason` for dismissing the leak warning dialog, e.g. signaling
+  // that the user ignored it or that they asked for an automatic password
+  // change.
+  void LogLeakDialogTypeAndDismissalReason(LeakDialogDismissalReason reason);
+
+  // Helper method to overwrite the sampling rate during unit tests.
+  void SetSamplingRateForTesting(double rate) { ukm_sampling_rate_ = rate; }
+
+ private:
+  // The UMA prefix.
+  static constexpr char kHistogram[] =
+      "PasswordManager.LeakDetection.DialogDismissalReason";
+
+  // The sampling rate for UKM recording. A value of 0.1 corresponds to a
+  // sampling rate of 10%.
+  double ukm_sampling_rate_ = 0.1;
+
+  // Helper method to determine the suffix for the UMA.
+  const char* GetUMASuffix() const;
+
+  // The source id associated with the navigation.
+  ukm::SourceId source_id_;
+
+  // The type of the leak dialog.
+  LeakDialogType type_;
+};
 
 // Log the |reason| a user dismissed the password manager UI except save/update
 // bubbles.
@@ -576,11 +618,6 @@ void LogUpdateUIDismissalReason(
 // Log the |reason| a user dismissed the move password bubble.
 void LogMoveUIDismissalReason(UIDismissalReason reason,
                               PasswordAccountStorageUserState user_state);
-
-// Log the |type| of a leak dialog shown to the user and the |reason| why it was
-// dismissed.
-void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
-                                         LeakDialogDismissalReason reason);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
@@ -636,9 +673,6 @@ void LogPasswordSuccessfulSubmissionIndicatorEvent(
 // or update.
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
     autofill::mojom::SubmissionIndicatorEvent event);
-
-// Log a frame of a submitted password form.
-void LogSubmittedFormFrame(SubmittedFormFrame frame);
 
 // Logs how many account-stored passwords are available for filling in the
 // current password form right after unlock.

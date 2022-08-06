@@ -131,6 +131,12 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
     observer.RenderProcessExited(this, termination_info);
 }
 
+void MockRenderProcessHost::SimulateReady() {
+  is_ready_ = true;
+  for (auto& observer : observers_)
+    observer.RenderProcessReady(this);
+}
+
 // static
 void MockRenderProcessHost::SetNetworkFactory(
     const CreateNetworkFactoryCallback& create_network_factory_callback) {
@@ -262,7 +268,7 @@ const base::Process& MockRenderProcessHost::GetProcess() {
 }
 
 bool MockRenderProcessHost::IsReady() {
-  return false;
+  return is_ready_;
 }
 
 bool MockRenderProcessHost::Send(IPC::Message* msg) {
@@ -274,6 +280,10 @@ bool MockRenderProcessHost::Send(IPC::Message* msg) {
 
 int MockRenderProcessHost::GetID() const {
   return id_;
+}
+
+base::SafeRef<RenderProcessHost> MockRenderProcessHost::GetSafeRef() const {
+  return weak_ptr_factory_.GetSafeRef();
 }
 
 bool MockRenderProcessHost::IsInitializedAndNotDead() {
@@ -431,6 +441,7 @@ void MockRenderProcessHost::IncrementWorkerRefCount() {
 }
 
 void MockRenderProcessHost::DecrementWorkerRefCount() {
+  DCHECK_GT(worker_ref_count_, 0);
   --worker_ref_count_;
 }
 
@@ -501,7 +512,7 @@ void MockRenderProcessHost::SetProcessLock(
     const IsolationContext& isolation_context,
     const ProcessLock& process_lock) {
   ChildProcessSecurityPolicyImpl::GetInstance()->LockProcess(
-      isolation_context, GetID(), process_lock);
+      isolation_context, GetID(), !IsUnused(), process_lock);
   if (process_lock.IsASiteOrOrigin())
     is_renderer_locked_to_site_ = true;
 }

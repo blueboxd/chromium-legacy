@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
@@ -240,6 +242,7 @@ class VisitedLinkState;
 class WebMouseEvent;
 class WorkletAnimationController;
 enum class CSSPropertyID;
+enum class HidePopupFocusBehavior;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -505,6 +508,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool prerendering() const;
 
+  uint32_t softNavigations() const;
+
   bool wasDiscarded() const;
   void SetWasDiscarded(bool);
 
@@ -714,6 +719,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // data, otherwise use one of the |UpdateStyleAndLayout...| methods above.
   void EnsurePaintLocationDataValidForNode(const Node*,
                                            DocumentUpdateReason reason);
+  void EnsurePaintLocationDataValidForNode(const Node*,
+                                           DocumentUpdateReason reason,
+                                           CSSPropertyID property_id);
 
   // Returns true if page box (margin boxes and page borders) is visible.
   bool IsPageBoxVisible(uint32_t page_index);
@@ -972,6 +980,9 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(Element*);
+  void MoveElementExplicitlySetAttrElementsMapToNewDocument(
+      Element*,
+      Document& new_document);
 
   // Returns false if the function fails.  e.g. |pseudo| is not supported.
   bool SetPseudoStateForTesting(Element& element,
@@ -1502,13 +1513,15 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   bool PopupOrHintShowing() const;
   bool HintShowing() const;
-  void HideTopmostPopupOrHint();
+  void HideTopmostPopupOrHint(HidePopupFocusBehavior focus_behavior);
   // This hides all visible popups up to, but not including,
   // |endpoint|. If |endpoint| is nullptr, all popups are hidden.
-  void HideAllPopupsUntil(const Element* endpoint);
+  void HideAllPopupsUntil(const Element* endpoint,
+                          HidePopupFocusBehavior focus_behavior);
   // This hides the provided popup, if it is showing. This will also
   // hide all popups above |popup| in the popup stack.
-  void HidePopupIfShowing(Element* popup);
+  void HidePopupIfShowing(Element* popup,
+                          HidePopupFocusBehavior focus_behavior);
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1592,6 +1605,10 @@ class CORE_EXPORT Document : public ContainerNode,
   RootScrollerController& GetRootScrollerController() const {
     DCHECK(root_scroller_controller_);
     return *root_scroller_controller_;
+  }
+
+  AnchorElementInteractionTracker* GetAnchorElementInteractionTracker() const {
+    return anchor_element_interaction_tracker_.Get();
   }
 
   // Returns true if this document has a frame and it is a main frame.

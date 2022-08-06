@@ -25,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DOWNLOAD_HOME_FEATURE, FeatureConstants.DOWNLOAD_INDICATOR_FEATURE,
         FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
         FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE, FeatureConstants.CROW_FEATURE,
+        FeatureConstants.CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
         FeatureConstants.DATA_SAVER_MILESTONE_PROMO_FEATURE, FeatureConstants.EPHEMERAL_TAB_FEATURE,
         FeatureConstants.EXPLORE_SITES_TILE_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
@@ -61,6 +62,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.IDENTITY_DISC_FEATURE, FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
         FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
         FeatureConstants.FEED_HEADER_MENU_FEATURE, FeatureConstants.FEED_SWIPE_REFRESH_FEATURE,
+        FeatureConstants.WEB_FEED_AWARENESS_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE,
@@ -98,6 +100,7 @@ public @interface FeatureConstants {
     String AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE = "IPH_AutoDarkUserEducationMessage";
     String AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE =
             "IPH_AutoDarkUserEducationMessageOptIn";
+    String CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING = "IPH_ContextualPageActions_PriceTracking";
     String CROW_FEATURE = "IPH_Crow";
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
     String DOWNLOAD_PAGE_SCREENSHOT_FEATURE = "IPH_DownloadPageScreenshot";
@@ -316,6 +319,11 @@ public @interface FeatureConstants {
      * An IPH feature to show on the feed header menu button of the FeedNewTabPage.
      */
     String FEED_HEADER_MENU_FEATURE = "IPH_FeedHeaderMenu";
+
+    /**
+     * An IPH used for web feed awareness to be shown on the NTP for the Web Feed tab.
+     */
+    String WEB_FEED_AWARENESS_FEATURE = "IPH_WebFeedAwareness";
 
     /**
      * An IPH feature to show the first re-engagement notification.

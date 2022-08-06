@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/breadcrumbs/core/features.h"
+#include "components/commerce/ios/browser/commerce_tab_helper.h"
 #include "components/favicon/core/favicon_service.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #include "components/history/core/browser/top_sites.h"
@@ -26,6 +27,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
+#import "ios/chrome/browser/commerce/shopping_service_factory.h"
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
@@ -58,7 +60,6 @@
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/passwords/well_known_change_password_tab_helper.h"
-#import "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_tab_helper.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -122,6 +123,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (IsPriceAlertsEnabled() &&
       IsPriceAlertsEligible(web_state->GetBrowserState()))
     ShoppingPersistedDataTabHelper::CreateForWebState(web_state);
+  commerce::CommerceTabHelper::CreateForWebState(
+      web_state, browser_state->IsOffTheRecord(),
+      commerce::ShoppingServiceFactory::GetForBrowserState(browser_state));
   AppLauncherTabHelper::CreateForWebState(web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       web_state);

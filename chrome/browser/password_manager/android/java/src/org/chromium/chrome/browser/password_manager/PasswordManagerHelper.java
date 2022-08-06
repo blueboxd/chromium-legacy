@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.common.base.Optional;
@@ -25,14 +26,11 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
-import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.annotation.Retention;
@@ -87,10 +85,6 @@ public class PasswordManagerHelper {
     private static final String LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
             "PasswordManager.CredentialManager.LocalProfile.Launch.Success";
 
-    private static final String PASSWORD_CHECKUP_GET_INTENT_LATENCY_HISTOGRAM =
-            "PasswordManager.PasswordCheckup.GetIntent.Latency";
-    private static final String PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM =
-            "PasswordManager.PasswordCheckup.GetIntent.Success";
     private static final String PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
             "PasswordManager.PasswordCheckup.Launch.Success";
 
@@ -138,7 +132,8 @@ public class PasswordManagerHelper {
         RecordHistogram.recordEnumeratedHistogram("PasswordManager.ManagePasswordsReferrer",
                 referrer, ManagePasswordsReferrer.MAX_VALUE + 1);
 
-        if (credentialManagerLauncher != null && canUseUpmCheckup()) {
+        if (credentialManagerLauncher != null && hasChosenToSyncPasswords(syncService)
+                && !hasPersistentAuthError(syncService)) {
             LoadingModalDialogCoordinator loadingDialogCoordinator =
                     LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
             launchTheCredentialManager(
@@ -157,11 +152,8 @@ public class PasswordManagerHelper {
     // share the same preconditions, e.g. launching the credential manager).
     public static boolean canUseUpmCheckup() {
         SyncService syncService = SyncService.get();
-        PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
         return PasswordManagerHelper.usesUnifiedPasswordManagerUI() && syncService != null
-                && hasChosenToSyncPasswords(syncService)
-                && !prefService.getBoolean(
-                        Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS);
+                && hasChosenToSyncPasswords(syncService) && !hasPersistentAuthError(syncService);
     }
 
     public static void showPasswordCheckup(Context context, @PasswordCheckReferrer int referrer,
@@ -197,8 +189,13 @@ public class PasswordManagerHelper {
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
                 new PasswordCheckupClientMetricsRecorder(
                         PasswordCheckOperation.RUN_PASSWORD_CHECKUP);
-        checkupClient.runPasswordCheckupInBackground(
-                referrer, accountName, successCallback, error -> {
+        checkupClient.runPasswordCheckupInBackground(referrer, accountName,
+                result
+                -> {
+                    passwordCheckupMetricsRecorder.recordMetrics(Optional.absent());
+                    successCallback.onResult(result);
+                },
+                error -> {
                     passwordCheckupMetricsRecorder.recordMetrics(Optional.of(error));
                     failureCallback.onResult(error);
                 });
@@ -221,10 +218,16 @@ public class PasswordManagerHelper {
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
                 new PasswordCheckupClientMetricsRecorder(
                         PasswordCheckOperation.GET_BREACHED_CREDENTIALS_COUNT);
-        checkupClient.getBreachedCredentialsCount(referrer, accountName, successCallback, error -> {
-            passwordCheckupMetricsRecorder.recordMetrics(Optional.of(error));
-            failureCallback.onResult(error);
-        });
+        checkupClient.getBreachedCredentialsCount(referrer, accountName,
+                result
+                -> {
+                    passwordCheckupMetricsRecorder.recordMetrics(Optional.absent());
+                    successCallback.onResult(result);
+                },
+                error -> {
+                    passwordCheckupMetricsRecorder.recordMetrics(Optional.of(error));
+                    failureCallback.onResult(error);
+                });
     }
 
     /**
@@ -320,19 +323,43 @@ public class PasswordManagerHelper {
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
                 new PasswordCheckupClientMetricsRecorder(
                         (PasswordCheckOperation.GET_PASSWORD_CHECKUP_INTENT));
-        long startTimeMs = SystemClock.elapsedRealtime();
         checkupClient.getPasswordCheckupIntent(referrer, account,
                 (intent)
-                        -> PasswordManagerHelper.launchPasswordCheckupIntent(
-                                intent, startTimeMs, loadingDialogCoordinator),
+                        -> {
+                    passwordCheckupMetricsRecorder.recordMetrics(Optional.absent());
+                    maybeLaunchIntentWithLoadingDialog(loadingDialogCoordinator, intent,
+                            PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
+                            LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM);
+                },
                 (error) -> {
-                    RecordHistogram.recordBooleanHistogram(
-                            PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, false);
                     passwordCheckupMetricsRecorder.recordMetrics(Optional.of(error));
                     recordLoadingDialogMetrics(LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM,
                             loadingDialogCoordinator.getState());
                     loadingDialogCoordinator.dismiss();
                 });
+    }
+
+    private static boolean hasPersistentAuthError(@NonNull SyncService syncService) {
+        // TODO(crbug.com/1327311): Ensure that the enum is generated from C++ and maybe
+        // that the transient check is properly mirrored in java to avoid manual code duplication
+        // which is error-prone.
+        switch (syncService.getAuthError()) {
+            // These are failures that are likely to succeed if tried again (or there is no
+            // failure.
+            case GoogleServiceAuthError.State.NONE:
+            case GoogleServiceAuthError.State.CONNECTION_FAILED:
+            case GoogleServiceAuthError.State.SERVICE_UNAVAILABLE:
+            case GoogleServiceAuthError.State.REQUEST_CANCELED:
+                return false;
+            case GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS:
+            case GoogleServiceAuthError.State.USER_NOT_SIGNED_UP:
+            case GoogleServiceAuthError.State.UNEXPECTED_SERVICE_RESPONSE:
+            case GoogleServiceAuthError.State.SERVICE_ERROR:
+                return true;
+            default:
+                assert false : "All error values should be classified as persistent or transient";
+                return true;
+        }
     }
 
     private static void recordFailureMetrics(
@@ -370,17 +397,6 @@ public class PasswordManagerHelper {
                 forAccount ? ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM
                            : LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
                 LOADING_DIALOG_CREDENTIAL_MANAGER_HISTOGRAM);
-    }
-
-    private static void launchPasswordCheckupIntent(PendingIntent intent, long startTimeMs,
-            LoadingModalDialogCoordinator loadingDialogCoordinator) {
-        RecordHistogram.recordTimesHistogram(PASSWORD_CHECKUP_GET_INTENT_LATENCY_HISTOGRAM,
-                SystemClock.elapsedRealtime() - startTimeMs);
-        RecordHistogram.recordBooleanHistogram(PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, true);
-
-        maybeLaunchIntentWithLoadingDialog(loadingDialogCoordinator, intent,
-                PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
-                LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM);
     }
 
     private static void recordSuccessMetrics(long elapsedTimeMs, boolean forAccount) {

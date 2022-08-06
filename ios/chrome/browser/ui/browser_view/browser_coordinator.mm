@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 
-#include <memory>
+#import <memory>
 
 #import "base/metrics/histogram_functions.h"
 #import "base/scoped_observation.h"
@@ -22,12 +22,14 @@
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/signin/account_consistency_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
+#import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
@@ -37,11 +39,13 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+delegates.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
+#import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
@@ -65,6 +69,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_promo_non_modal_presentation_delegate.h"
 #import "ios/chrome/browser/ui/default_promo/tailored_promo_coordinator.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
+#import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/download/safari_download_coordinator.h"
@@ -87,6 +92,7 @@
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_protection_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_suggestion_coordinator.h"
+#import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
@@ -96,8 +102,6 @@
 #import "ios/chrome/browser/ui/safe_browsing/safe_browsing_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
-#import "ios/chrome/browser/ui/sync/sync_error_browser_agent.h"
-#import "ios/chrome/browser/ui/sync/utils/features.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
@@ -113,7 +117,7 @@
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/view_source_browser_agent.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -137,6 +141,7 @@
                                   PasswordSuggestionCommands,
                                   PasswordSuggestionCoordinatorDelegate,
                                   PolicyChangeCommands,
+                                  PreloadControllerDelegate,
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
@@ -268,6 +273,10 @@
 @property(nonatomic, strong)
     DefaultBrowserPromoCoordinator* defaultBrowserPromoCoordinator;
 
+// Coordinator that manages the presentation of Download Manager UI.
+@property(nonatomic, strong)
+    DownloadManagerCoordinator* downloadManagerCoordinator;
+
 // Coordinator that manages the tailored promo modals.
 @property(nonatomic, strong) TailoredPromoCoordinator* tailoredPromoCoordinator;
 
@@ -294,6 +303,8 @@
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
   std::unique_ptr<base::ScopedObservation<WebStateList, WebStateListObserver>>
       _scopedWebStateListObservation;
+  PrerenderService* _prerenderService;
+  BubblePresenter* _bubblePresenter;
 }
 
 #pragma mark - ChromeCoordinator
@@ -336,6 +347,7 @@
   }
 
   [self startBrowserContainer];
+  [self startDownloadManagerCoordinator];
   [self createViewController];
   // Mediators should start before coordinators so model state is accurate for
   // any UI that starts up.
@@ -361,6 +373,7 @@
   [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
   [self destroyViewController];
+  [self stopDownloadManagerCoordinator];
   [self stopBrowserContainer];
   self.dispatcher = nil;
   self.started = NO;
@@ -459,17 +472,33 @@
 // Instantiates a BrowserViewController.
 - (void)createViewController {
   DCHECK(self.browserContainerCoordinator.viewController);
+
   BrowserViewControllerDependencyFactory* factory =
       [[BrowserViewControllerDependencyFactory alloc]
           initWithBrowser:self.browser];
+
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  _prerenderService = PrerenderServiceFactory::GetForBrowserState(browserState);
+  if (!browserState->IsOffTheRecord()) {
+    DCHECK(_prerenderService);
+    _prerenderService->SetDelegate(self);
+  }
+
+  _bubblePresenter =
+      [[BubblePresenter alloc] initWithBrowserState:browserState];
+
   _viewController = [[BrowserViewController alloc]
                      initWithBrowser:self.browser
                    dependencyFactory:factory
       browserContainerViewController:self.browserContainerCoordinator
                                          .viewController
-                          dispatcher:self.dispatcher];
+                          dispatcher:self.dispatcher
+                    prerenderService:_prerenderService
+                     bubblePresenter:_bubblePresenter
+          downloadManagerCoordinator:self.downloadManagerCoordinator];
   WebNavigationBrowserAgent::FromBrowser(self.browser)
       ->SetDelegate(_viewController);
+
   self.contextMenuProvider = [[ContextMenuConfigurationProvider alloc]
          initWithBrowser:self.browser
       baseViewController:_viewController];
@@ -490,10 +519,25 @@
   [self.browserContainerCoordinator start];
 }
 
+// Starts the download manager coordinator.
+- (void)startDownloadManagerCoordinator {
+  self.downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
+      initWithBaseViewController:self.browserContainerCoordinator.viewController
+                         browser:self.browser];
+  self.downloadManagerCoordinator.presenter =
+      [[VerticalAnimationContainer alloc] init];
+}
+
 // Stops the browser container.
 - (void)stopBrowserContainer {
   [self.browserContainerCoordinator stop];
   self.browserContainerCoordinator = nil;
+}
+
+// Stops the download manager coordinator.
+- (void)stopDownloadManagerCoordinator {
+  [self.downloadManagerCoordinator stop];
+  self.downloadManagerCoordinator = nil;
 }
 
 // Starts child coordinators.
@@ -721,8 +765,7 @@
   dependencies.prerenderService =
       PrerenderServiceFactory::GetForBrowserState(browserState);
   dependencies.sideSwipeController = browserViewController.sideSwipeController;
-  dependencies.downloadManagerCoordinator =
-      browserViewController.downloadManagerCoordinator;
+  dependencies.downloadManagerCoordinator = self.downloadManagerCoordinator;
   dependencies.baseViewController = browserViewController;
   dependencies.commandDispatcher = self.browser->GetCommandDispatcher();
   dependencies.tabHelperDelegate = self;
@@ -820,6 +863,18 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   [self.readingListCoordinator start];
+}
+
+- (void)showReadingListIPH {
+  [_bubblePresenter presentReadingListBottomToolbarTipBubble];
+}
+
+- (void)showFollowWhileBrowsingIPH {
+  [_bubblePresenter presentFollowWhileBrowsingTipBubble];
+}
+
+- (void)showDefaultSiteViewIPH {
+  [_bubblePresenter presentDefaultSiteViewTipBubble];
 }
 
 - (void)showDownloadsFolder {
@@ -1219,10 +1274,8 @@
   // The view controller should have been created.
   DCHECK(self.viewController);
 
-  if (IsDisplaySyncErrorsRefactorEnabled()) {
-    SyncErrorBrowserAgent::FromBrowser(self.browser)
-        ->SetUIProviders(self.viewController, self.viewController);
-  }
+  SyncErrorBrowserAgent::FromBrowser(self.browser)
+      ->SetUIProviders(self.viewController, self.viewController);
 
   WebStateDelegateBrowserAgent::FromBrowser(self.browser)
       ->SetUIProviders(self.contextMenuProvider,
@@ -1250,9 +1303,7 @@
 
   WebStateDelegateBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
 
-  if (IsDisplaySyncErrorsRefactorEnabled()) {
-    SyncErrorBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
-  }
+  SyncErrorBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
 }
 
 // Uninstalls delegates for each WebState in WebStateList.
@@ -1464,6 +1515,17 @@
 - (void)closePasswordSuggestion {
   [self.passwordSuggestionCoordinator stop];
   self.passwordSuggestionCoordinator = nil;
+}
+
+#pragma mark - PreloadControllerDelegate methods
+
+- (web::WebState*)webStateToReplace {
+  return self.browser ? self.browser->GetWebStateList()->GetActiveWebState()
+                      : nullptr;
+}
+
+- (UIView*)webViewContainer {
+  return self.browserContainerCoordinator.viewController.view;
 }
 
 @end

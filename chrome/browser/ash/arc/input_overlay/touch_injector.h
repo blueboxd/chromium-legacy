@@ -105,8 +105,7 @@ class TouchInjector : public ui::EventRewriter {
   // (|mode| = DisplayMode::kEdit) or from customized protobuf data (|mode| =
   // DisplayMode::kView).
   void OnBindingChange(Action* target_action,
-                       std::unique_ptr<InputElement> input_element,
-                       DisplayMode mode = DisplayMode::kEdit);
+                       std::unique_ptr<InputElement> input_element);
   // Apply pending binding as current binding, but don't save into the storage.
   void OnApplyPendingBinding();
   // Save customized input binding/pending binding as current binding and go
@@ -121,6 +120,9 @@ class TouchInjector : public ui::EventRewriter {
   void OnProtoDataAvailable(AppDataProto& proto);
   // Save the input menu state when the menu is closed.
   void OnInputMenuViewRemoved();
+
+  // UMA stats.
+  void RecordMenuStateOnLaunch();
 
   // ui::EventRewriter:
   ui::EventDispatchDetails RewriteEvent(
@@ -210,6 +212,13 @@ class TouchInjector : public ui::EventRewriter {
   // Linked to input mapping toggle in the menu. Set it enabled by default. This
   // is to save status if display overlay is destroyed during window operations.
   bool input_mapping_visible_ = true;
+
+  // Used for UMA stats. Don't record the stats when users just switch the
+  // toggle back and forth and finish at the same state. Only record the state
+  // change once the menu is closed.
+  bool touch_injector_enable_uma_ = true;
+  bool input_mapping_visible_uma_ = true;
+
   // The game app is launched for the first time when input overlay is enabled
   // if the value is true.
   bool first_launch_ = false;

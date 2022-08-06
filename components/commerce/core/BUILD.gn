@@ -69,7 +69,10 @@ static_library("metrics") {
 
 proto_library("proto") {
   proto_in_dir = "//"
-  sources = [ "proto/price_tracking.proto" ]
+  sources = [
+    "proto/merchant_trust.proto",
+    "proto/price_tracking.proto",
+  ]
 }
 
 if (is_android) {
@@ -133,10 +136,12 @@ static_library("shopping_service") {
     "shopping_bookmark_model_observer.h",
     "shopping_service.cc",
     "shopping_service.h",
+    "web_wrapper.h",
   ]
 
   deps = [
     ":feature_list",
+    ":metrics",
     ":proto",
     "//base",
     "//components/bookmarks/browser",
@@ -169,10 +174,16 @@ if (is_android) {
 source_set("shopping_service_unit_tests") {
   testonly = true
 
-  sources = [ "shopping_service_unittest.cc" ]
+  sources = [
+    "pdp_metrics_unittest.cc",
+    "shopping_service_test_base.cc",
+    "shopping_service_test_base.h",
+    "shopping_service_unittest.cc",
+  ]
 
   deps = [
     ":feature_list",
+    ":metrics",
     ":shopping_service",
     "//base/test:test_support",
     "//components/bookmarks/browser",
@@ -180,6 +191,7 @@ source_set("shopping_service_unit_tests") {
     "//components/commerce/core:proto",
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/prefs:test_support",
     "//testing/gtest",
     "//url:url",
   ]

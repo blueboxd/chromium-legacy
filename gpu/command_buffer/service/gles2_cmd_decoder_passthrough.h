@@ -438,6 +438,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   GLenum PopError();
   bool FlushErrors();
 
+  bool IsIgnoredCap(GLenum cap) const;
+
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
@@ -886,9 +888,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
 
   GLuint linking_program_service_id_ = 0u;
-
-  // CA Layer state
-  std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
 
   base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_{this};
 

@@ -102,19 +102,8 @@ std::unique_ptr<ScopedVASurface> CreateScopedSurface(
     VaapiWrapper& vaapi_wrapper,
     const gfx::Size& encode_size,
     const std::vector<VaapiWrapper::SurfaceUsageHint>& surface_usage_hints) {
-  // iHD driver doesn't align a resolution for encoding properly. Align it only
-  // with encoder driver.
-  // TODO(https://github.com/intel/media-driver/issues/1232): Remove this
-  // workaround of aligning |encode_size|.
-  gfx::Size surface_size = encode_size;
-  if (!base::Contains(surface_usage_hints,
-                      VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite)) {
-    surface_size = gfx::Size(base::bits::AlignUp(encode_size.width(), 16u),
-                             base::bits::AlignUp(encode_size.height(), 16u));
-  }
-
   auto surfaces = vaapi_wrapper.CreateScopedVASurfaces(
-      kVaSurfaceFormat, surface_size, surface_usage_hints, 1u,
+      kVaSurfaceFormat, encode_size, surface_usage_hints, 1u,
       /*visible_size=*/absl::nullopt,
       /*va_fourcc=*/absl::nullopt);
   return surfaces.empty() ? nullptr : std::move(surfaces.front());
@@ -362,28 +351,28 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<H264VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
+        // HW encoders on Intel GPUs will not put average QP in slice/tile
+        // header when it is not working at CQP mode. Currently only H264 is
+        // working at non CQP mode.
+        if (VaapiWrapper::GetImplementationType() ==
+                VAImplementation::kIntelI965 ||
+            VaapiWrapper::GetImplementationType() ==
+                VAImplementation::kIntelIHD) {
+          encoder_info_.reports_average_qp = false;
+        }
       }
-
-      DCHECK_EQ(ave_config.bitrate_control,
-                VaapiVideoEncoderDelegate::BitrateControl::kConstantBitrate);
       break;
     case VideoCodec::kVP8:
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<VP8VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
       }
-
-      ave_config.bitrate_control = VaapiVideoEncoderDelegate::BitrateControl::
-          kConstantQuantizationParameter;
       break;
     case VideoCodec::kVP9:
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<VP9VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
       }
-
-      ave_config.bitrate_control = VaapiVideoEncoderDelegate::BitrateControl::
-          kConstantQuantizationParameter;
       break;
     default:
       NOTREACHED() << "Unsupported codec type " << GetCodecName(output_codec_);
@@ -862,7 +851,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
   TRACE_EVENT1("media,gpu", "VAVEA::EncodePendingInputs",
                "pending input frames", input_queue_.size());
   while (state_ == kEncoding && !input_queue_.empty()) {
-    const std::unique_ptr<InputFrameRef>& input_frame = input_queue_.front();
+    std::unique_ptr<InputFrameRef>& input_frame = input_queue_.front();
     if (!input_frame) {
       // If this is a flush (null) frame, don't create/submit a new encode
       // result for it, but forward a null result to the
@@ -920,6 +909,17 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
       }
     }
 
+    // Invalidates |input_frame| here; it notifies a client |input_frame->frame|
+    // can be reused for the future encoding.
+    // If the frame is copied (|native_input_mode_| == false), it is clearly
+    // safe to release |input_frame|. If the frame is imported
+    // (|native_input_mode_| == true), the write operation to the frame is
+    // blocked on DMA_BUF_IOCTL_SYNC because a VA-API driver protects the buffer
+    // through a DRM driver until encoding is complete, that is, vaMapBuffer()
+    // on a coded buffer returns.
+    input_frame.reset();
+    input_queue_.pop();
+
     for (auto&& job : jobs) {
       TRACE_EVENT0("media,gpu", "VAVEA::GetEncodeResult");
       std::unique_ptr<EncodeResult> result =
@@ -933,7 +933,6 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
     }
 
     TryToReturnBitstreamBuffers();
-    input_queue_.pop();
   }
 }
 

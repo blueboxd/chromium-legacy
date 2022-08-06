@@ -73,7 +73,6 @@ source_set("popup_menu") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/policy",
-    "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
@@ -133,7 +132,10 @@ source_set("constants") {
 
 source_set("metrics_protocols") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "popup_menu_metrics_handler.h" ]
+  sources = [
+    "popup_menu_carousel_metrics_delegate.h",
+    "popup_menu_metrics_handler.h",
+  ]
 }
 
 source_set("unit_tests") {
@@ -163,7 +165,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/passwords:store_factory",
     "//ios/chrome/browser/policy",
-    "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/policy:test_support",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/popup_menu/cells",

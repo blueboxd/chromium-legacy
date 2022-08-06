@@ -58,12 +58,30 @@ const CSSValue* MaybeConsumeCSSWideKeyword(CSSParserTokenRange& range) {
   return value;
 }
 
+bool IsPropertyAllowedInRule(const CSSProperty& property,
+                             StyleRule::RuleType rule_type) {
+  // This function should be called only when parsing a property. Shouldn't
+  // reach here with a descriptor.
+  DCHECK(property.IsProperty());
+  switch (rule_type) {
+    case StyleRule::kStyle:
+      return true;
+    case StyleRule::kKeyframe:
+      return property.IsValidForKeyframe();
+    case StyleRule::kTry:
+      return property.IsValidForPositionFallback();
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 }  // namespace
 
 CSSPropertyParser::CSSPropertyParser(
     const CSSParserTokenRange& range,
     const CSSParserContext* context,
-    HeapVector<CSSPropertyValue, 256>* parsed_properties)
+    HeapVector<CSSPropertyValue, 64>* parsed_properties)
     : range_(range), context_(context), parsed_properties_(parsed_properties) {
   range_.ConsumeWhitespace();
 }
@@ -73,7 +91,7 @@ bool CSSPropertyParser::ParseValue(
     bool important,
     const CSSParserTokenRange& range,
     const CSSParserContext* context,
-    HeapVector<CSSPropertyValue, 256>& parsed_properties,
+    HeapVector<CSSPropertyValue, 64>& parsed_properties,
     StyleRule::RuleType rule_type) {
   int parsed_properties_size = parsed_properties.size();
 
@@ -87,7 +105,8 @@ bool CSSPropertyParser::ParseValue(
   } else if (rule_type == StyleRule::kFontFace) {
     parse_success = parser.ParseFontFaceDescriptor(resolved_property);
   } else {
-    parse_success = parser.ParseValueStart(unresolved_property, important);
+    parse_success =
+        parser.ParseValueStart(unresolved_property, rule_type, important);
   }
 
   // This doesn't count UA style sheets
@@ -118,6 +137,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
 }
 
 bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
+                                        StyleRule::RuleType rule_type,
                                         bool important) {
   if (ConsumeCSSWideKeyword(unresolved_property, important))
     return true;
@@ -128,6 +148,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   // If a CSSPropertyID is only a known descriptor (@fontface, @property), not a
   // style property, it will not be a valid declaration.
   if (!property.IsProperty())
+    return false;
+  if (!IsPropertyAllowedInRule(property, rule_type))
     return false;
   bool is_shorthand = property.IsShorthand();
   DCHECK(context_);

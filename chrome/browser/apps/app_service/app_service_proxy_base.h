@@ -89,6 +89,9 @@ class AppServiceProxyBase : public KeyedService,
 
   apps::BrowserAppLauncher* BrowserAppLauncher();
 
+  // TODO(crbug.com/1333422): Remove this PreferredAppsImpl() function when
+  // proxy()->AddPreferredApp() can be called directly to add preferred apps.
+  apps::PreferredAppsImpl* PreferredAppsImpl();
   apps::PreferredAppsListHandle& PreferredAppsList();
 
   // Registers `publisher` with the App Service as exclusively publishing apps
@@ -264,6 +267,18 @@ class AppServiceProxyBase : public KeyedService,
   // RemoveSupportedLinksPreference was called for that app.
   void SetSupportedLinksPreference(const std::string& app_id);
 
+  // Set |app_id| as preferred app for all its supported link filters. Supported
+  // link filters, which have the http/https scheme and at least one host, are
+  // always enabled/disabled as a group. |all_link_filters| should contain all
+  // of the apps' Supported Link intent filters.
+  // Any apps with overlapping preferred app preferences will have all their
+  // supported link filters unset, as if RemoveSupportedLinksPreference was
+  // called for that app.
+  // TODO(crbug.com/1265315): Remove this method to use
+  // SetSupportedLinksPreference(std::string).
+  void SetSupportedLinksPreference(const std::string& app_id,
+                                   IntentFilters all_link_filters);
+
   // Removes all supported link filters from the preferred app list for
   // |app_id|.
   void RemoveSupportedLinksPreference(const std::string& app_id);
@@ -352,7 +367,7 @@ class AppServiceProxyBase : public KeyedService,
     raw_ptr<apps::IconLoader> overriding_icon_loader_for_testing_;
   };
 
-  bool IsValidProfile();
+  virtual bool IsValidProfile();
 
   // Called in AppServiceProxyFactory::BuildServiceInstanceFor immediately
   // following the creation of AppServiceProxy. Use this method to perform any
@@ -419,7 +434,7 @@ class AppServiceProxyBase : public KeyedService,
   IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
 
-  std::unique_ptr<PreferredAppsImpl> preferred_apps_impl_;
+  std::unique_ptr<apps::PreferredAppsImpl> preferred_apps_impl_;
   apps::PreferredAppsList preferred_apps_list_;
 
   raw_ptr<Profile> profile_;

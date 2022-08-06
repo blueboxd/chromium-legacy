@@ -84,6 +84,9 @@ const base::Feature kIPHAutoDarkUserEducationMessageFeature{
     "IPH_AutoDarkUserEducationMessage", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHAutoDarkUserEducationMessageOptInFeature{
     "IPH_AutoDarkUserEducationMessageOptIn", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHContextualPageActionsPriceTrackingFeature{
+    "IPH_ContextualPageActions_PriceTracking",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHCrowFeature{"IPH_Crow",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverDetailFeature{
@@ -240,6 +243,8 @@ const base::Feature kIPHExploreSitesTileFeature{
     "IPH_ExploreSitesTile", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedHeaderMenuFeature{"IPH_FeedHeaderMenu",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHWebFeedAwarenessFeature{
+    "IPH_WebFeedAwareness", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHFeedSwipeRefresh{"IPH_FeedSwipeRefresh",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHChromeReengagementNotification1Feature{

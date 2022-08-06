@@ -14,7 +14,7 @@
 
 #include "base/base_export.h"
 #include "base/check_op.h"
-#include "base/substring_set_matcher/string_pattern.h"
+#include "base/substring_set_matcher/matcher_string_pattern.h"
 
 namespace base {
 
@@ -41,10 +41,10 @@ class BASE_EXPORT SubstringSetMatcher {
   // log(k) comes from our usage of std::map to store edges.
   //
   // Returns true on success (may fail if e.g. if the tree gets too many nodes).
-  bool Build(const std::vector<StringPattern>& patterns);
-  bool Build(std::vector<const StringPattern*> patterns);
+  bool Build(const std::vector<MatcherStringPattern>& patterns);
+  bool Build(std::vector<const MatcherStringPattern*> patterns);
 
-  // Matches |text| against all registered StringPatterns. Stores the IDs
+  // Matches |text| against all registered MatcherStringPatterns. Stores the IDs
   // of matching patterns in |matches|. |matches| is not cleared before adding
   // to it.
   // Complexity:
@@ -53,7 +53,7 @@ class BASE_EXPORT SubstringSetMatcher {
   //    Let z = number of matches returned.
   // Complexity = O(t * logk + zlogz)
   bool Match(const std::string& text,
-             std::set<StringPattern::ID>* matches) const;
+             std::set<MatcherStringPattern::ID>* matches) const;
 
   // As Match(), except it returns immediately on the first match.
   // This allows true/false matching to be done without any dynamic
@@ -145,7 +145,7 @@ class BASE_EXPORT SubstringSetMatcher {
 
   // If present, this node represents the end of a pattern. It stores the ID of
   // the corresponding pattern (ie., it is not really a NodeID, but a
-  // StringPattern::ID).
+  // MatcherStringPattern::ID).
   static constexpr uint32_t kMatchIDLabel = 0x102;
 
   // Used for uninitialized label slots; used so that we do not have to test for
@@ -154,8 +154,9 @@ class BASE_EXPORT SubstringSetMatcher {
   static constexpr uint32_t kEmptyLabel = 0x103;
 
   // A node in the trie, packed tightly together so that it occupies 12 bytes
-  // (both on 32- and 64-bit platforms).
-  class AhoCorasickNode {
+  // (both on 32- and 64-bit platforms), but aligned to at least 4 (see the
+  // comment on edges_).
+  class alignas(AhoCorasickEdge) AhoCorasickNode {
    public:
     AhoCorasickNode();
     ~AhoCorasickNode();
@@ -178,6 +179,10 @@ class BASE_EXPORT SubstringSetMatcher {
     NodeID GetEdgeNoInline(uint32_t label) const;
     void SetEdge(uint32_t label, NodeID node);
     const AhoCorasickEdge* edges() const {
+      // NOTE: Returning edges_.inline_edges here is fine, because it's
+      // the first thing in the struct (see the comment on edges_).
+      DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(edges_.inline_edges) %
+                        alignof(AhoCorasickEdge));
       return edges_capacity_ == 0 ? edges_.inline_edges : edges_.edges;
     }
 
@@ -194,9 +199,10 @@ class BASE_EXPORT SubstringSetMatcher {
     }
     void SetFailure(NodeID failure);
 
-    void SetMatchID(StringPattern::ID id) {
+    void SetMatchID(MatcherStringPattern::ID id) {
       DCHECK(!IsEndOfPattern());
-      SetEdge(kMatchIDLabel, id);
+      DCHECK(id < kInvalidNodeID);  // This is enforced by Build().
+      SetEdge(kMatchIDLabel, static_cast<NodeID>(id));
       has_outputs_ = true;
     }
 
@@ -210,7 +216,7 @@ class BASE_EXPORT SubstringSetMatcher {
     }
 
     // Must only be called if |IsEndOfPattern| returns true for this node.
-    StringPattern::ID GetMatchID() const {
+    MatcherStringPattern::ID GetMatchID() const {
       DCHECK(IsEndOfPattern());
       return GetEdge(kMatchIDLabel);
     }
@@ -258,6 +264,11 @@ class BASE_EXPORT SubstringSetMatcher {
     // in the first slot if it exists (ie., is not equal to kRootID), since we
     // need to access that label during every single node we look at during
     // traversal.
+    //
+    // NOTE: Keep this the first member in the struct, so that inline_edges gets
+    // 4-aligned (since the class is marked as such, despite being packed.
+    // Otherwise, edges() can return an unaligned pointer marked as aligned
+    // (the unalignedness gets lost).
     static constexpr int kNumInlineEdges = 2;
     union {
       // Out-of-line edge storage, having room for edges_capacity_ elements.
@@ -293,24 +304,26 @@ class BASE_EXPORT SubstringSetMatcher {
     uint16_t edges_capacity_ = 0;
   } __attribute__((packed));
 
-  using SubstringPatternVector = std::vector<const StringPattern*>;
+  using SubstringPatternVector = std::vector<const MatcherStringPattern*>;
 
   // Given the set of patterns, compute how many nodes will the corresponding
   // Aho-Corasick tree have. Note that |patterns| need to be sorted.
-  NodeID GetTreeSize(const std::vector<const StringPattern*>& patterns) const;
+  NodeID GetTreeSize(
+      const std::vector<const MatcherStringPattern*>& patterns) const;
 
   void BuildAhoCorasickTree(const SubstringPatternVector& patterns);
 
   // Inserts a path for |pattern->pattern()| into the tree and adds
   // |pattern->id()| to the set of matches.
-  void InsertPatternIntoAhoCorasickTree(const StringPattern* pattern);
+  void InsertPatternIntoAhoCorasickTree(const MatcherStringPattern* pattern);
 
   void CreateFailureAndOutputEdges();
 
   // Adds all pattern IDs to |matches| which are a suffix of the string
   // represented by |node|.
-  void AccumulateMatchesForNode(const AhoCorasickNode* node,
-                                std::set<StringPattern::ID>* matches) const;
+  void AccumulateMatchesForNode(
+      const AhoCorasickNode* node,
+      std::set<MatcherStringPattern::ID>* matches) const;
 
   // The nodes of a Aho-Corasick tree.
   std::vector<AhoCorasickNode> tree_;

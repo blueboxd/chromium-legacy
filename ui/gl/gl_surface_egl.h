@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_SURFACE_EGL_H_
 #define UI_GL_GL_SURFACE_EGL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -61,11 +62,15 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
   // |system_device_id| specifies which GPU to use on a multi-GPU system.
   // If its value is 0, use the default GPU of the system.
-  static bool InitializeOneOff(EGLDisplayPlatform native_display,
-                               uint64_t system_device_id);
-  static bool InitializeOneOffForTesting();
-  static bool InitializeExtensionSettingsOneOff();
-  static void ShutdownOneOff();
+  // Calling this functionm a second time on the same |system_device_id|
+  // is a no-op and returns the same GLDisplayEGL.
+  // TODO(https://crbug.com/1251724): This will be called once per display
+  // when Chrome begins to support multi-gpu rendering.
+  static GLDisplayEGL* InitializeOneOff(EGLDisplayPlatform native_display,
+                                        uint64_t system_device_id);
+  static GLDisplayEGL* InitializeOneOffForTesting();
+  static bool InitializeExtensionSettingsOneOff(GLDisplayEGL* display);
+  static void ShutdownOneOff(GLDisplayEGL* display);
   // |system_device_id| specifies which GPU to use on a multi-GPU system.
   // If its value is 0, use the default GPU of the system.
   static GLDisplayEGL* InitializeDisplay(EGLDisplayPlatform native_display,
@@ -76,11 +81,10 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
   EGLConfig config_ = nullptr;
   GLSurfaceFormat format_;
-  GLDisplayEGL* display_ = nullptr;
+  raw_ptr<GLDisplayEGL> display_ = nullptr;
 
  private:
-  static bool InitializeOneOffCommon(GLDisplayEGL* display);
-  static bool initialized_;
+  static void InitializeOneOffCommon(GLDisplayEGL* display);
 };
 
 // Encapsulates an EGL surface bound to a view.

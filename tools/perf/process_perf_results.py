@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 import collections
 import json
@@ -16,6 +17,7 @@ import sys
 import tempfile
 import time
 import uuid
+import six
 
 logging.basicConfig(
     level=logging.INFO,
@@ -102,7 +104,7 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--perf-dashboard-machine-group', _GetMachineGroup(build_properties)
   ]
   buildbucket = build_properties.get('buildbucket', {})
-  if isinstance(buildbucket, basestring):
+  if isinstance(buildbucket, six.string_types):
     buildbucket = json.loads(buildbucket)
 
   if 'build' in buildbucket:
@@ -132,7 +134,7 @@ def _is_gtest(json_file):
 
 def _determine_data_format(json_file):
   if json_file not in _data_format_cache:
-    with open(json_file) as f:
+    with open(json_file, 'rb') as f:
       data = json.load(f)
       if isinstance(data, list):
         _data_format_cache[json_file] = DATA_FORMAT_HISTOGRAMS
@@ -296,7 +298,7 @@ def _scan_output_dir(task_output_dir):
   # the lists were written to.
   for directory in benchmark_directory_list:
     benchmark_name = _get_benchmark_name(directory)
-    if benchmark_name in benchmark_directory_map.keys():
+    if benchmark_name in benchmark_directory_map:
       benchmark_directory_map[benchmark_name].append(directory)
     else:
       benchmark_directory_map[benchmark_name] = [directory]

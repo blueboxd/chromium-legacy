@@ -210,6 +210,7 @@ extern const char kHideWebStoreIcon[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kAttestationExtensionAllowlist[];
 extern const char kPrintingAPIExtensionsAllowlist[];
+extern const char kEnableSyncConsent[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kTapToClickEnabled[];
@@ -319,7 +320,6 @@ extern const char kTextToSpeechVolume[];
 extern const char kTimeLimitLocalOverride[];
 extern const char kUsageTimeLimit[];
 extern const char kScreenTimeLastState[];
-extern const char kEnableSyncConsent[];
 extern const char kNetworkFileSharesAllowed[];
 extern const char kManagedSessionEnabled[];
 extern const char kManagedSessionUseFullLoginWarning[];
@@ -360,13 +360,14 @@ extern const char kUpdateRequiredTimerStartTime[];
 extern const char kUpdateRequiredWarningPeriod[];
 extern const char kSystemProxyUserTrafficHostAndPort[];
 extern const char kEduCoexistenceArcMigrationCompleted[];
-extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
+extern const char kSharedStorage[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS)
-extern const char kExternalStorageDisabled[];
-extern const char kExternalStorageReadOnly[];
 extern const char kForceMaximizeOnFirstRun[];
 extern const char kInsightsExtensionEnabled[];
+extern const char kOOMKillsDailyCount[];
+extern const char kOOMKillsDailySample[];
+extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
 extern const char kSettingsShowOSBanner[];
 extern const char kUsedPolicyCertificates[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -758,6 +759,7 @@ extern const char kSameOriginTabCaptureAllowedByOrigins[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDemoModeConfig[];
 extern const char kDemoModeCountry[];
+extern const char kDemoModeRetailerAndStoreIdInput[];
 extern const char kDemoModeDefaultLocale[];
 extern const char kDeviceSettingsCache[];
 extern const char kHardwareKeyboardLayout[];
@@ -1050,6 +1052,7 @@ extern const char kThirdPartyBlockingEnabled[];
 // Windows mitigation policies.
 #if BUILDFLAG(IS_WIN)
 extern const char kRendererCodeIntegrityEnabled[];
+extern const char kRendererAppContainerEnabled[];
 extern const char kBlockBrowserLegacyExtensionPoints[];
 #endif  // BUILDFLAG(IS_WIN)
 

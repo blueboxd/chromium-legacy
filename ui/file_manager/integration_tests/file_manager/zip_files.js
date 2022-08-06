@@ -5,7 +5,7 @@
 import {addEntries, ENTRIES, expectHistogramTotalCount, getCaller, pending, repeatUntil, RootPath, sendTestMessage} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {remoteCall, setupAndWaitUntilReady} from './background.js';
+import {navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {BASIC_ZIP_ENTRY_SET} from './test_data.js';
 
 /**
@@ -13,6 +13,12 @@ import {BASIC_ZIP_ENTRY_SET} from './test_data.js';
  * @const {string}
  */
 const ZipCreationTimeHistogramName = 'FileBrowser.ZipTask.Time';
+
+/**
+ * The name of the UMA to track extract archive status.
+ * @const {string}
+ */
+const ExtractArchiveStatusHistogramName = 'FileBrowser.ExtractTask.Status';
 
 /**
  * Returns the expected file list row entries after opening (mounting) the
@@ -169,7 +175,7 @@ testcase.zipFileOpenUsb = async () => {
 function getZipSelectionFileListRowEntries() {
   return [
     ['photos', '--', 'Folder', 'Jan 1, 1980, 11:59 PM'],
-    ['photos.zip', '134 bytes', 'Zip archive', 'Oct 21, 1983, 11:55 AM']
+    ['photos.zip', '134 bytes', 'ZIP archive', 'Oct 21, 1983, 11:55 AM']
   ];
 }
 
@@ -338,7 +344,7 @@ testcase.zipExtractShowPanel = async () => {
   await repeatUntil(async () => {
     element = await remoteCall.waitForElement(
         appId, ['#progress-panel', 'xf-panel-item']);
-    const expectedMsg = `Extracting ${entry.nameText}…`;
+    const expectedMsg = `Extracting ${entry.nameText} to Downloads`;
     const actualMsg = element.attributes['primary-text'];
 
     if (actualMsg === expectedMsg) {
@@ -349,6 +355,9 @@ testcase.zipExtractShowPanel = async () => {
         caller,
         `Expected feedback panel msg: "${expectedMsg}", got "${actualMsg}"`);
   });
+
+  // Check: a extract archive status histogram value should have been recorded.
+  await expectHistogramTotalCount(ExtractArchiveStatusHistogramName, 1);
 };
 
 /**
@@ -507,6 +516,9 @@ testcase.zipExtractCheckContent = async () => {
   await remoteCall.waitForElement(appId, '#file-list [file-name="folder"]');
   await remoteCall.waitForElement(appId, '#file-list [file-name="text.txt"]');
   await remoteCall.waitForElement(appId, '#file-list [file-name="image.png"]');
+
+  // Check: a extract archive status histogram value should have been recorded.
+  await expectHistogramTotalCount(ExtractArchiveStatusHistogramName, 1);
 };
 
 /**
@@ -570,6 +582,9 @@ testcase.zipExtractCheckDuplicates = async () => {
   await remoteCall.waitForElement(appId, '#file-list [file-name="folder"]');
   await remoteCall.waitForElement(appId, '#file-list [file-name="text.txt"]');
   await remoteCall.waitForElement(appId, '#file-list [file-name="image.png"]');
+
+  // Check: 2 extract archive status histogram value should have been recorded.
+  await expectHistogramTotalCount(ExtractArchiveStatusHistogramName, 2);
 };
 
 /**
@@ -614,6 +629,9 @@ testcase.zipExtractCheckEncodings = async () => {
   // Check: File content in the ZIP with decoded name should appear.
   await remoteCall.waitForElement(
       appId, '#file-list [file-name="新しいフォルダ"]');
+
+  // Check: a extract archive status histogram value should have been recorded.
+  await expectHistogramTotalCount(ExtractArchiveStatusHistogramName, 1);
 };
 
 /**
@@ -642,4 +660,111 @@ testcase.zipExtractA11y = async () => {
   // NB: It's sufficient to check the ARIA role attribute is set correctly.
   await remoteCall.waitForElement(
       appId, '[command="#extract-all"][role="menuitem"]');
+};
+
+/**
+ * Tests extraction of a ZIP archive fails if there's not enough disk space.
+ */
+testcase.zipExtractNotEnoughSpace = async () => {
+  const entry = ENTRIES.zipExtArchive;  // 120TB fake archive.
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+  // Select the file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  // Right-click the selected file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]']),
+      'fakeMouseRightClick failed');
+
+  // Check: the context menu should appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Click the 'Extract all' menu command.
+  const extract = '[command="#extract-all"]';
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [extract]),
+      'fakeMouseClick failed');
+
+  // Check: Error panel appears.
+  let element = {};
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    element = await remoteCall.waitForElement(
+        appId, ['#progress-panel', 'xf-panel-item']);
+    const expectedMsg = 'Extract operation failed. An error occurred.';
+    const actualMsg = element.attributes['primary-text'];
+
+    if (actualMsg === expectedMsg) {
+      return;
+    }
+
+    return pending(
+        caller,
+        `Expected feedback panel msg: "${expectedMsg}", got "${actualMsg}"`);
+  });
+
+  // Check: a extract archive status histogram value should have been recorded.
+  await expectHistogramTotalCount(ExtractArchiveStatusHistogramName, 1);
+};
+
+/**
+ * Tests that extraction of a ZIP archive from a read only volume succeeds.
+ */
+testcase.zipExtractFromReadOnly = async () => {
+  const entry = ENTRIES.readOnlyZipFile;
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], [entry]);
+
+  // Navigate to Shared with me.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[volume-type-icon=\'drive_shared_with_me\']']);
+
+  // Wait for the navigation to complete.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me');
+
+  // Make sure read-only indicator on toolbar is visible.
+  await remoteCall.waitForElement(appId, '#read-only-indicator:not([hidden])');
+
+  // Select the ZIP file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  // Right-click the selected file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]']),
+      'fakeMouseRightClick failed');
+
+  // Check: the context menu should appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Click the 'Extract all' menu command.
+  const extract = '[command="#extract-all"]';
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [extract]),
+      'fakeMouseClick failed');
+
+  // Navigate to My Files.
+  await navigateWithDirectoryTree(appId, '/My files');
+
+  const directoryQuery =
+      '#file-list [file-name="' + entry.nameText.split('.')[0] + '"]';
+  // Check: the extract directory should appear.
+  await remoteCall.waitForElement(appId, directoryQuery);
+
+  // Double click the created directory to open it.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseDoubleClick', appId, [directoryQuery]),
+      'fakeMouseDoubleClick failed');
+
+  // Check: File content in the ZIP should appear.
+  await remoteCall.waitForElement(appId, '#file-list [file-name="folder"]');
+  await remoteCall.waitForElement(appId, '#file-list [file-name="text.txt"]');
+  await remoteCall.waitForElement(appId, '#file-list [file-name="image.png"]');
 };

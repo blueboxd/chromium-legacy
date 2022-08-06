@@ -215,6 +215,11 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "base/process/process.h"
+#include "base/task/task_traits.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -270,8 +275,8 @@
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_FUCHSIA)
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/metrics/desktop_session_duration/touch_mode_stats_tracker.h"
 #include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
@@ -1053,8 +1058,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_FUCHSIA)
   metrics::DesktopSessionDurationTracker::Initialize();
   ProfileActivityMetricsRecorder::Initialize();
   TouchModeStatsTracker::Initialize(
@@ -1840,6 +1845,16 @@ void ChromeBrowserMainParts::OnFirstIdle() {
   sharing::ShareHistory::CreateForProfile(
       ProfileManager::GetPrimaryUserProfile());
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // If OneGroupPerRenderer feature is enabled, post a task to clean any left
+  // over cgroups due to any unclean exits.
+  if (base::Process::OneGroupPerRendererEnabled()) {
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&base::Process::CleanUpStaleProcessStates));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {
@@ -1857,15 +1872,15 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   // Two different types of hang detection cannot attempt to upload crashes at
   // the same time or they would interfere with each other.
-  constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(300)};
   if (base::HangWatcher::IsCrashReportingEnabled()) {
-    // Use ShutdownWatcherHelper logic to choose delay to get identical
-    // behavior.
-    watch_hangs_scope_.emplace(
-        ShutdownWatcherHelper::GetPerChannelTimeout(kShutdownHangDelay));
+    // TODO(crbug.com/1327000): Migrate away from ShutdownWatcher and its old
+    // timing.
+    constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(30)};
+    watch_hangs_scope_.emplace(kShutdownHangDelay);
   } else {
     // Start watching for jank during shutdown. It gets disarmed when
     // |shutdown_watcher_| object is destructed.
+    constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(300)};
     shutdown_watcher_ = std::make_unique<ShutdownWatcherHelper>();
     shutdown_watcher_->Arm(kShutdownHangDelay);
   }

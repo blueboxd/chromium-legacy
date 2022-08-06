@@ -287,7 +287,7 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_ServerCard) {
 
   EXPECT_EQ(virtual_card_suggestion.frontend_id,
             POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY);
-  EXPECT_EQ(virtual_card_suggestion.backend_id,
+  EXPECT_EQ(absl::get<std::string>(virtual_card_suggestion.payload),
             "00000000-0000-0000-0000-000000000001");
 
   Suggestion real_card_suggestion =
@@ -297,7 +297,7 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_ServerCard) {
           "");
 
   EXPECT_EQ(real_card_suggestion.frontend_id, 0);
-  EXPECT_EQ(real_card_suggestion.backend_id,
+  EXPECT_EQ(absl::get<std::string>(real_card_suggestion.payload),
             "00000000-0000-0000-0000-000000000001");
 }
 
@@ -326,7 +326,7 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_LocalCard) {
 
   EXPECT_EQ(virtual_card_suggestion.frontend_id,
             POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY);
-  EXPECT_EQ(virtual_card_suggestion.backend_id,
+  EXPECT_EQ(absl::get<std::string>(virtual_card_suggestion.payload),
             "00000000-0000-0000-0000-000000000001");
 
   Suggestion real_card_suggestion =
@@ -336,7 +336,7 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_LocalCard) {
           "");
 
   EXPECT_EQ(real_card_suggestion.frontend_id, 0);
-  EXPECT_EQ(real_card_suggestion.backend_id,
+  EXPECT_EQ(absl::get<std::string>(real_card_suggestion.payload),
             "00000000-0000-0000-0000-000000000002");
   EXPECT_TRUE(real_card_suggestion.custom_icon.IsEmpty());
 }
@@ -402,6 +402,48 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldShowVirtualCardOption) {
   // The local card no longer has a server duplicate, should return false.
   EXPECT_FALSE(suggestion_generator()->ShouldShowVirtualCardOption(
       &local_card, form_structure));
+}
+
+TEST_F(AutofillSuggestionGeneratorTest,
+       GetPromoCodeSuggestionsFromPromoCodeOffers) {
+  std::vector<const AutofillOfferData*> promo_code_offers;
+
+  base::Time expiry = AutofillClock::Now() + base::Days(2);
+  std::vector<GURL> merchant_origins;
+  DisplayStrings display_strings;
+  display_strings.value_prop_text = "test_value_prop_text_1";
+  std::string promo_code = "test_promo_code_1";
+  AutofillOfferData offer1 = AutofillOfferData::FreeListingCouponOffer(
+      /*offer_id=*/1, expiry, merchant_origins, /*offer_details_url=*/GURL(),
+      display_strings, promo_code);
+
+  promo_code_offers.push_back(&offer1);
+
+  DisplayStrings display_strings2;
+  display_strings2.value_prop_text = "test_value_prop_text_2";
+  std::string promo_code2 = "test_promo_code_2";
+  AutofillOfferData offer2 = AutofillOfferData::FreeListingCouponOffer(
+      /*offer_id=*/2, expiry, merchant_origins, /*offer_details_url=*/GURL(),
+      display_strings2, promo_code2);
+
+  promo_code_offers.push_back(&offer2);
+
+  std::vector<Suggestion> promo_code_suggestions =
+      AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
+          promo_code_offers);
+  EXPECT_TRUE(promo_code_suggestions.size() == 2);
+
+  EXPECT_EQ(promo_code_suggestions[0].main_text.value, u"test_promo_code_1");
+  EXPECT_EQ(promo_code_suggestions[0].label, u"test_value_prop_text_1");
+  EXPECT_EQ(absl::get<std::string>(promo_code_suggestions[0].payload), "1");
+  EXPECT_EQ(promo_code_suggestions[0].frontend_id,
+            POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
+
+  EXPECT_EQ(promo_code_suggestions[1].main_text.value, u"test_promo_code_2");
+  EXPECT_EQ(promo_code_suggestions[1].label, u"test_value_prop_text_2");
+  EXPECT_EQ(absl::get<std::string>(promo_code_suggestions[1].payload), "2");
+  EXPECT_EQ(promo_code_suggestions[1].frontend_id,
+            POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
 }
 
 }  // namespace autofill

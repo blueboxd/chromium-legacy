@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -73,6 +74,11 @@ constexpr int kShadowElevation = 3;
 AppListConfig* GetAppListConfig() {
   return AppListConfigProvider::Get().GetConfigForType(
       AppListConfigType::kDense, /*can_create=*/true);
+}
+
+// Returns true if ChromeVox (spoken feedback) is enabled.
+bool IsSpokenFeedbackEnabled() {
+  return Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
 }
 
 // A simplified horizontal separator that uses a solid color layer for painting.
@@ -363,6 +369,17 @@ void AppListBubbleView::StartHideAnimation(
   // Ensure any in-progress animations have their cleanup callbacks called.
   AbortAllAnimations();
 
+  if (current_page_ == AppListBubblePage::kApps)
+    apps_page_->PrepareForHideLauncher();
+
+  const gfx::Rect target_bounds = layer()->GetTargetBounds();
+
+  if (view_delegate_->ShouldDismissImmediately()) {
+    // Don't animate, just clean up.
+    OnHideAnimationEnded(target_bounds);
+    return;
+  }
+
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),
       metrics_util::ForSmoothness(base::BindRepeating([](int value) {
@@ -383,12 +400,8 @@ void AppListBubbleView::StartHideAnimation(
   // Opacity: 100% → 0%
   // Duration: 100ms
   // Ease: Linear
-  const gfx::Rect target_bounds = layer()->GetTargetBounds();
   const gfx::Rect final_bounds =
       GetShowHideAnimationBounds(is_side_shelf, target_bounds);
-
-  if (current_page_ == AppListBubblePage::kApps)
-    apps_page_->AnimateHideLauncher();
 
   views::AnimationBuilder()
       .OnEnded(base::BindOnce(&AppListBubbleView::OnHideAnimationEnded,
@@ -464,6 +477,8 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
       MaybeFocusAndActivateSearchBox();
       break;
     case AppListBubblePage::kAssistant:
+      if (showing_folder_)
+        HideFolderView(/*animate=*/false, /*hide_for_reparent=*/false);
       if (previous_page == AppListBubblePage::kApps)
         apps_page_->AnimateHidePage();
       else
@@ -643,8 +658,10 @@ void AppListBubbleView::ShowFolderForItemView(AppListItemView* folder_item_view,
                                           /*hide_for_reparent=*/false);
   if (focus_name_input) {
     folder_view_->FocusNameInput();
-  } else if (apps_page_->scrollable_apps_grid_view()->has_selected_view()) {
-    // If the user is keyboard navigating, move focus into the folder.
+  } else if (apps_page_->scrollable_apps_grid_view()->has_selected_view() ||
+             IsSpokenFeedbackEnabled()) {
+    // If the user is keyboard navigating, or using ChromeVox (spoken feedback),
+    // move focus into the folder.
     folder_view_->FocusFirstItem(/*silently=*/false);
   } else {
     // Release focus so that disabling the views below does not shift focus

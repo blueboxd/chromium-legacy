@@ -216,7 +216,7 @@ NGHighlightPainter::SelectionPaintState::SelectionPaintState(
     const FrameSelection& frame_selection)
     : selection_status_(
           frame_selection.ComputeLayoutSelectionStatus(containing_block)),
-      state_(frame_selection.ComputeLayoutSelectionStateForCursor(
+      state_(frame_selection.ComputePaintingSelectionStateForCursor(
           containing_block.Current())),
       containing_block_(containing_block),
       box_offset_(box_offset),
@@ -775,6 +775,14 @@ void NGHighlightPainter::PaintDecorationsExceptLineThrough(
     if (!decoration_layer.decoration_info)
       continue;
 
+    // SVG painting currently ignores ::selection styles, and will malfunction
+    // or crash if asked to paint decorations introduced by highlight pseudos.
+    // TODO(crbug.com/1147859) is SVG spec ready for highlight decorations?
+    if (text_painter_.GetSvgState() &&
+        decoration_layer_id.type != HighlightLayerType::kOriginating) {
+      continue;
+    }
+
     if (!state_saver.Saved()) {
       state_saver.Save();
       ClipToPartDecorations(part);
@@ -809,6 +817,14 @@ void NGHighlightPainter::PaintDecorationsOnlyLineThrough(
     if (!decoration_layer.decoration_info ||
         !decoration_layer.has_line_through_decorations)
       continue;
+
+    // SVG painting currently ignores ::selection styles, and will malfunction
+    // or crash if asked to paint decorations introduced by highlight pseudos.
+    // TODO(crbug.com/1147859) is SVG spec ready for highlight decorations?
+    if (text_painter_.GetSvgState() &&
+        decoration_layer_id.type != HighlightLayerType::kOriginating) {
+      continue;
+    }
 
     if (!state_saver.Saved()) {
       state_saver.Save();

@@ -64,10 +64,6 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "content/public/browser/conditional_ui_delegate_android.h"
-#endif
-
 #if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)) || BUILDFLAG(IS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
 #endif
@@ -91,7 +87,6 @@ using LoginAuthRequiredCallback =
 
 namespace base {
 class CommandLine;
-class DictionaryValue;
 class FilePath;
 class Location;
 class SequencedTaskRunner;
@@ -1287,8 +1282,14 @@ class CONTENT_EXPORT ContentBrowserClient {
 #if BUILDFLAG(IS_WIN)
   // Defines flags that can be passed to PreSpawnChild.
   enum ChildSpawnFlags {
-    NONE = 0,
-    RENDERER_CODE_INTEGRITY = 1 << 0,
+    kChildSpawnFlagNone = 0,
+    kChildSpawnFlagRendererCodeIntegrity = 1 << 0,
+  };
+
+  // Defines flags that can be passed to GetAppContainerSidForSandboxType.
+  enum AppContainerFlags {
+    kAppContainerFlagNone = 0,
+    kAppContainerFlagDisableAppContainer = 1 << 0,
   };
 
   // This may be called on the PROCESS_LAUNCHER thread before the child process
@@ -1311,8 +1312,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the AppContainer SID for the specified sandboxed process type, or
   // empty string if this sandboxed process type does not support living inside
   // an AppContainer. Called on PROCESS_LAUNCHER thread.
+  // `flags` can signal to the embedder any special behavior that should happen
+  // for the `sandbox_type`.
   virtual std::wstring GetAppContainerSidForSandboxType(
-      sandbox::mojom::Sandbox sandbox_type);
+      sandbox::mojom::Sandbox sandbox_type,
+      AppContainerFlags flags);
+
+  // Returns true if renderer App Container should be disabled.
+  // This is called on the UI thread.
+  virtual bool IsRendererAppContainerDisabled();
 
   // Returns the LPAC capability name to use for file data that the network
   // service needs to access to when running within LPAC sandbox. Embedders
@@ -1701,7 +1709,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |GetNetConstants()| and passed to FileNetLogObserver - see documentation
   // of |FileNetLogObserver::CreateBounded()| for more information.  The
   // convention is to put new constants under a subdict at the key "clientInfo".
-  virtual base::DictionaryValue GetNetLogConstants();
+  virtual base::Value::Dict GetNetLogConstants();
 
 #if BUILDFLAG(IS_ANDROID)
   // Only used by Android WebView.
@@ -2259,16 +2267,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // `net/base/net_error_list.h`. Information is returned in a struct. Default
   // implementation returns nullptr.
   virtual mojom::AlternativeErrorPageOverrideInfoPtr
-  GetAlternativeErrorPageOverrideInfo(const GURL& url,
-                                      BrowserContext* browser_context,
-                                      int32_t error_code);
-
-#if BUILDFLAG(IS_ANDROID)
-  // Gets the delegate interface that is used to interact with the Web
-  // Authentication Conditional UI implementation in the embedder.
-  virtual ConditionalUiDelegateAndroid* GetConditionalUiDelegate(
-      RenderFrameHost* host);
-#endif  //  BUILDFLAG(IS_ANDROID)
+  GetAlternativeErrorPageOverrideInfo(
+      const GURL& url,
+      content::RenderFrameHost* render_frame_host,
+      content::BrowserContext* browser_context,
+      int32_t error_code);
 };
 
 }  // namespace content

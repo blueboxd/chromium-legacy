@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/ui/country_combobox_model.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -34,6 +35,39 @@ namespace autofill {
 
 namespace {
 
+// Extend `components` using Autofill's address format extensions. These are
+// used to add support for fields that are not strictly required for a valid
+// address, and thus not provided by libaddressinput, but still commonly appear
+// in forms.
+void ExtendAddressComponents(std::vector<AddressUiComponent>& components,
+                             const std::string& country_code,
+                             const Localization& localization) {
+  AutofillCountry country(country_code);
+  for (const AutofillCountry::AddressFormatExtension& rule :
+       country.address_format_extensions()) {
+    // Find the location of `rule.placed_after` in `components`.
+    // `components.field` is only valid if `components.literal.empty()`.
+    auto prev_component = base::ranges::find_if(
+        components, [&rule](const AddressUiComponent& component) {
+          return component.literal.empty() &&
+                 component.field == rule.placed_after;
+        });
+    DCHECK(prev_component != components.end());
+
+    // Insert the separator and `rule.type` afterwards.
+    components.insert(
+        ++prev_component,
+        {AddressUiComponent{.literal =
+                                std::string(rule.separator_before_label)},
+         AddressUiComponent{
+             .field = rule.type,
+             .name = localization.GetString(rule.label_id),
+             .length_hint = rule.large_sized
+                                ? AddressUiComponent::HINT_LONG
+                                : AddressUiComponent::HINT_SHORT}});
+  }
+}
+
 // Returns a vector of AddressUiComponent for `country_code` when using
 // `ui_language_code`. If no components are available for `country_code`, it
 // defaults back to the US. If `ui_language_code` is not valid,  the default
@@ -51,37 +85,16 @@ std::vector<AddressUiComponent> GetAddressComponents(
     std::vector<AddressUiComponent> components =
         ::i18n::addressinput::BuildComponentsWithLiterals(
             country, localization, ui_language_code, components_language_code);
-    if (!components.empty())
+    if (!components.empty()) {
+      ExtendAddressComponents(components, country, localization);
       return components;
+    }
   }
   NOTREACHED();
   return {};
 }
 
 }  // namespace
-
-ServerFieldType AddressFieldToServerFieldType(AddressField address_field) {
-  switch (address_field) {
-    case ::i18n::addressinput::COUNTRY:
-      return ADDRESS_HOME_COUNTRY;
-    case ::i18n::addressinput::ADMIN_AREA:
-      return ADDRESS_HOME_STATE;
-    case ::i18n::addressinput::LOCALITY:
-      return ADDRESS_HOME_CITY;
-    case ::i18n::addressinput::DEPENDENT_LOCALITY:
-      return ADDRESS_HOME_DEPENDENT_LOCALITY;
-    case ::i18n::addressinput::SORTING_CODE:
-      return ADDRESS_HOME_SORTING_CODE;
-    case ::i18n::addressinput::POSTAL_CODE:
-      return ADDRESS_HOME_ZIP;
-    case ::i18n::addressinput::STREET_ADDRESS:
-      return ADDRESS_HOME_STREET_ADDRESS;
-    case ::i18n::addressinput::ORGANIZATION:
-      return COMPANY_NAME;
-    case ::i18n::addressinput::RECIPIENT:
-      return NAME_FULL;
-  }
-}
 
 void GetAddressComponents(
     const std::string& country_code,
@@ -144,7 +157,7 @@ std::u16string GetEnvelopeStyleAddress(const AutofillProfile& profile,
         component.field == ::i18n::addressinput::RECIPIENT) {
       continue;
     }
-    ServerFieldType type = AddressFieldToServerFieldType(component.field);
+    ServerFieldType type = i18n::TypeForField(component.field);
     if (type == NAME_FULL)
       type = NAME_FULL_WITH_HONORIFIC_PREFIX;
     address += base::UTF16ToUTF8(profile.GetInfo(type, ui_language_code));

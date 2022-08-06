@@ -103,7 +103,6 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     /**
      * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
      */
-    @VisibleForTesting
     public BrowserServicesIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
     }
@@ -184,12 +183,11 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
         BaseCustomTabActivityModule baseCustomTabsModule = overridenBaseCustomTabFactory != null
                 ? overridenBaseCustomTabFactory.create(mIntentDataProvider,
-                        getStartupTabPreloader(), mNightModeStateController,
-                        intentIgnoringCriterion, getTopUiThemeColorProvider(),
-                        new DefaultBrowserProviderImpl())
-                : new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
                         mNightModeStateController, intentIgnoringCriterion,
-                        getTopUiThemeColorProvider(), new DefaultBrowserProviderImpl());
+                        getTopUiThemeColorProvider(), new DefaultBrowserProviderImpl())
+                : new BaseCustomTabActivityModule(mIntentDataProvider, mNightModeStateController,
+                        intentIgnoringCriterion, getTopUiThemeColorProvider(),
+                        new DefaultBrowserProviderImpl());
         BaseCustomTabActivityComponent component =
                 ChromeApplicationImpl.getComponent().createBaseCustomTabActivityComponent(
                         commonsModule, baseCustomTabsModule);
@@ -549,6 +547,15 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         return mTwaCoordinator == null ? false : mTwaCoordinator.shouldUseAppModeUi();
     }
 
+    /**
+     * @return The package name of the Trusted Web Activity, if the activity is a TWA; null
+     * otherwise.
+     */
+    @Nullable
+    public String getTwaPackage() {
+        return mTwaCoordinator == null ? null : mTwaCoordinator.getTwaPackage();
+    }
+
     @Override
     public void maybePreconnect() {
         // The ids need to be set early on, this way prewarming will pick them up.
@@ -560,5 +567,12 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                     GSA_FALLBACK_STUDY_NAME, experimentIds, override);
         }
         super.maybePreconnect();
+    }
+
+    @Override
+    public boolean supportsAppMenu() {
+        if (mIntentDataProvider.shouldSuppressAppMenu()) return false;
+
+        return super.supportsAppMenu();
     }
 }

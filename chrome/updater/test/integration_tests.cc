@@ -135,7 +135,7 @@ class IntegrationTest : public ::testing::Test {
 
   void EnterTestMode(const GURL& url) { test_commands_->EnterTestMode(url); }
 
-  void SetGroupPolicies(const base::Value::DictStorage& values) {
+  void SetGroupPolicies(const base::Value::Dict& values) {
     test_commands_->SetGroupPolicies(values);
   }
 
@@ -163,6 +163,14 @@ class IntegrationTest : public ::testing::Test {
 
   void ExpectLegacyProcessLauncherSucceeds() {
     test_commands_->ExpectLegacyProcessLauncherSucceeds();
+  }
+
+  void ExpectLegacyAppCommandWebSucceeds(const std::string& app_id,
+                                         const std::string& command_id,
+                                         const base::Value::List& parameters,
+                                         int expected_exit_code) {
+    test_commands_->ExpectLegacyAppCommandWebSucceeds(
+        app_id, command_id, parameters, expected_exit_code);
   }
 
   void RunUninstallCmdLine() { test_commands_->RunUninstallCmdLine(); }
@@ -300,6 +308,8 @@ class IntegrationTest : public ::testing::Test {
   void ExpectLastChecked() { test_commands_->ExpectLastChecked(); }
 
   void ExpectLastStarted() { test_commands_->ExpectLastStarted(); }
+
+  void RunOfflineInstall() { test_commands_->RunOfflineInstall(); }
 
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
@@ -489,13 +499,13 @@ TEST_F(IntegrationTest, LegacyUpdate3Web) {
   ExpectNoUpdateSequence(&test_server, kAppId);
   ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_NO_UPDATE, S_OK);
 
-  base::Value::DictStorage group_policies;
-  group_policies["Updatetest1"] = base::Value(kPolicyAutomaticUpdatesOnly);
+  base::Value::Dict group_policies;
+  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
   SetGroupPolicies(group_policies);
   ExpectLegacyUpdate3WebSucceeds(
       kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL);
 
-  group_policies["Updatetest1"] = base::Value(kPolicyDisabled);
+  group_policies.Set("Updatetest1", kPolicyDisabled);
   SetGroupPolicies(group_policies);
   ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
                                  GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
@@ -512,6 +522,19 @@ TEST_F(IntegrationTest, LegacyUpdate3Web) {
 TEST_F(IntegrationTest, LegacyProcessLauncher) {
   Install();
   ExpectLegacyProcessLauncherSucceeds();
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, LegacyAppCommandWeb) {
+  Install();
+
+  const char kAppId[] = "test1";
+  InstallApp(kAppId);
+
+  base::Value::List parameters;
+  parameters.Append("5432");
+  ExpectLegacyAppCommandWebSucceeds(kAppId, "command1", parameters, 5432);
+
   Uninstall();
 }
 
@@ -613,8 +636,7 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // TODO(crbug.com/1268555): Even on Windows, component builds do not work.
 #if !defined(COMPONENT_BUILD)
-// TODO(crbug.com/1340482) - disable the test on branches because it is flaky.
-TEST_F(IntegrationTest, DISABLED_SelfUpdateFromOldReal) {
+TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
   // TODO(crbug.com/1308856): Current versions of the updater do not send an
@@ -749,6 +771,13 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
   ExpectInstalled();
   ExpectActiveUpdater();
   ExpectAppVersion(appid, version);
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, OfflineInstall) {
+  Install();
+  ExpectInstalled();
+  RunOfflineInstall();
   Uninstall();
 }
 

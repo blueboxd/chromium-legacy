@@ -166,6 +166,7 @@ source_set("browser_sources") {
     "favicon_status.h",
     "feature_observer_client.h",
     "federated_identity_active_session_permission_context_delegate.h",
+    "federated_identity_api_permission_context_delegate.cc",
     "federated_identity_api_permission_context_delegate.h",
     "federated_identity_sharing_permission_context_delegate.h",
     "file_select_listener.h",
@@ -181,6 +182,7 @@ source_set("browser_sources") {
     "font_list_async.h",
     "frame_accept_header.cc",
     "frame_accept_header.h",
+    "frame_rate_throttling.h",
     "frame_type.h",
     "generated_code_cache_settings.h",
     "global_request_id.cc",
@@ -389,6 +391,8 @@ source_set("browser_sources") {
     "url_data_source.h",
     "url_loader_request_interceptor.h",
     "url_loader_throttles.h",
+    "usb_chooser.cc",
+    "usb_chooser.h",
     "video_capture_device_launcher.cc",
     "video_capture_device_launcher.h",
     "video_capture_service.h",
@@ -547,7 +551,6 @@ source_set("browser_sources") {
       "android/synchronous_compositor.h",
       "android/synchronous_compositor_client.h",
       "ax_inspect_factory_android.cc",
-      "conditional_ui_delegate_android.h",
       "tts_environment_android.h",
     ]
   }

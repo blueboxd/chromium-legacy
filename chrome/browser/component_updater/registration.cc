@@ -28,7 +28,6 @@
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/trust_token_key_commitments_component_installer.h"
-#include "chrome/browser/component_updater/url_param_classification_component_installer.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/component_updater/component_updater_service.h"
@@ -37,6 +36,7 @@
 #include "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
 #include "components/component_updater/installer_policies/optimization_hints_component_installer.h"
 #include "components/component_updater/installer_policies/safety_tips_component_installer.h"
+#include "components/component_updater/installer_policies/url_param_classification_component_installer.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -65,6 +65,7 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
+#include "chrome/browser/component_updater/desktop_screenshot_editor_component_installer.h"
 #include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
 #include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -205,6 +206,7 @@ void RegisterComponentsForUpdate() {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+  RegisterDesktopScreenshotEditorComponent(cus);
   RegisterDesktopSharingHubComponent(cus);
   RegisterZxcvbnDataComponent(cus);
   RegisterCommerceHeuristicsComponent(cus);

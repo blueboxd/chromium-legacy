@@ -8,6 +8,7 @@
 
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/navigation_handle.h"
+#include "ui/base/page_transition_types.h"
 
 namespace {
 
@@ -36,11 +37,11 @@ OmniboxSuggestionUsedMetricsObserver::OmniboxSuggestionUsedMetricsObserver() =
 
 OmniboxSuggestionUsedMetricsObserver::~OmniboxSuggestionUsedMetricsObserver() {}
 
-// TODO(https://crbug.com/1317494): Audit and use appropriate policy.
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 OmniboxSuggestionUsedMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
+  // This class is interested only in the primary page.
   return STOP_OBSERVING;
 }
 
@@ -54,6 +55,9 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 OmniboxSuggestionUsedMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   transition_type_ = navigation_handle->GetPageTransition();
+  if (!ui::PageTransitionIsNewNavigation(transition_type_)) {
+    return STOP_OBSERVING;
+  }
   return (transition_type_ & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0
              ? CONTINUE_OBSERVING
              : STOP_OBSERVING;

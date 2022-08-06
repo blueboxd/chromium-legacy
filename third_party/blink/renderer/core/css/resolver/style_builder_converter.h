@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
 
+#include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "cc/input/scroll_snap_data.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/style/quotes_data.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_offset_rotation.h"
+#include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/core/style/style_reflection.h"
 #include "third_party/blink/renderer/core/style/transform_origin.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -182,6 +184,8 @@ class StyleBuilderConverter {
   static float ConvertNumberOrPercentage(StyleResolverState&, const CSSValue&);
   static float ConvertAlpha(StyleResolverState&,
                             const CSSValue&);  // clamps to [0,1]
+  static AtomicString ConvertNoneOrCustomIdent(StyleResolverState&,
+                                               const CSSValue&);
   static StyleOffsetRotation ConvertOffsetRotate(StyleResolverState&,
                                                  const CSSValue&);
   static LengthPoint ConvertPosition(StyleResolverState&, const CSSValue&);
@@ -325,6 +329,10 @@ class StyleBuilderConverter {
       const CSSValue&);
   static scoped_refptr<ToggleTriggerList> ConvertToggleTrigger(
       const StyleResolverState&,
+      const CSSValue&);
+
+  static absl::optional<StyleOverflowClipMargin> ConvertOverflowClipMargin(
+      StyleResolverState&,
       const CSSValue&);
 };
 

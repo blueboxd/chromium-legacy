@@ -341,7 +341,8 @@ void ScriptExecutor::CollectUserData(
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(collect_user_data_options->terms_link_callback));
   ui_delegate_->SetCollectUserDataOptions(collect_user_data_options);
-  ui_delegate_->SetCollectUserDataUiState(/* enabled= */ true);
+  ui_delegate_->SetCollectUserDataUiState(/* loading= */ false,
+                                          UserDataEventField::NONE);
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
@@ -626,6 +627,10 @@ ScriptExecutor::GetPasswordChangeSuccessTracker() const {
 
 content::WebContents* ScriptExecutor::GetWebContents() const {
   return delegate_->GetWebContents();
+}
+
+content::WebContents* ScriptExecutor::GetWebContentsForJsExecution() {
+  return delegate_->GetWebContentsForJsExecution();
 }
 
 ElementStore* ScriptExecutor::GetElementStore() const {
@@ -978,12 +983,24 @@ void ScriptExecutor::GetNextActions() {
                      weak_ptr_factory_.GetWeakPtr(), get_next_actions_start));
 }
 
+void ScriptExecutor::MaybeSetPreviousAction(
+    const ProcessedActionProto& processed_action) {
+  const auto action_info_case = processed_action.action().action_info_case();
+
+  // JS flows are themselves a way of executing a script.
+  if (action_info_case == ActionProto::kJsFlow) {
+    return;
+  }
+
+  previous_action_type_ = action_info_case;
+}
+
 void ScriptExecutor::OnProcessedAction(
     base::TimeTicks start_time,
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
   DCHECK(current_action_);
   base::TimeDelta run_time = base::TimeTicks::Now() - start_time;
-  previous_action_type_ = processed_action_proto->action().action_info_case();
+  MaybeSetPreviousAction(*processed_action_proto);
   processed_actions_.emplace_back(*processed_action_proto);
 
 #ifdef NDEBUG
@@ -1079,13 +1096,14 @@ ProcessedActionStatusDetailsProto& ScriptExecutor::GetLogInfo() {
 }
 
 void ScriptExecutor::RequestUserData(
+    UserDataEventField event_field,
     const CollectUserDataOptions& options,
     base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback) {
   auto* service = delegate_->GetService();
   DCHECK(service);
 
   delegate_->EnterState(AutofillAssistantState::RUNNING);
-  ui_delegate_->SetCollectUserDataUiState(/* enabled= */ false);
+  ui_delegate_->SetCollectUserDataUiState(/* loading= */ true, event_field);
   service->GetUserData(
       options, run_id_, user_data_,
       base::BindOnce(&ScriptExecutor::OnRequestUserData,
@@ -1113,8 +1131,9 @@ bool ScriptExecutor::SupportsExternalActions() {
 
 void ScriptExecutor::RequestExternalAction(
     const ExternalActionProto& external_action,
-    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-        callback) {
+    base::OnceCallback<void()> start_dom_checks_callback,
+    base::OnceCallback<void(const external::Result& result)>
+        end_action_callback) {
   bool prompt = external_action.allow_interrupt() ||
                 external_action.show_touchable_area();
   if (prompt && delegate_->EnterState(AutofillAssistantState::PROMPT)) {
@@ -1128,21 +1147,22 @@ void ScriptExecutor::RequestExternalAction(
   external::Action action;
   *action.mutable_info() = external_action.info();
   ui_delegate_->ExecuteExternalAction(
-      action, base::BindOnce(&ScriptExecutor::OnExternalActionFinished,
-                             weak_ptr_factory_.GetWeakPtr(), external_action,
-                             prompt, std::move(callback)));
+      action, std::move(start_dom_checks_callback),
+      base::BindOnce(&ScriptExecutor::OnExternalActionFinished,
+                     weak_ptr_factory_.GetWeakPtr(), external_action, prompt,
+                     std::move(end_action_callback)));
 }
 
 void ScriptExecutor::OnExternalActionFinished(
     const ExternalActionProto& external_action,
     const bool prompt,
-    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-        callback,
-    ExternalActionDelegate::ActionResult result) {
+    base::OnceCallback<void(const external::Result& result)>
+        end_action_callback,
+    const external::Result& result) {
   if (prompt) {
     CleanUpAfterPrompt(external_action.show_touchable_area());
   }
-  std::move(callback).Run(result);
+  std::move(end_action_callback).Run(result);
 }
 
 bool ScriptExecutor::MustUseBackendData() const {

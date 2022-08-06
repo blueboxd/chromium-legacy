@@ -195,15 +195,18 @@ void ForEachRemoteFrameChildrenControlledByWidget(
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     if (Document* document = local_frame->GetDocument()) {
       // Iterate on any portals owned by a local frame.
-      for (PortalContents* portal :
-           DocumentPortals::From(*document).GetPortals()) {
-        if (RemoteFrame* remote_frame = portal->GetFrame())
-          callback.Run(remote_frame);
+      if (auto* portals = DocumentPortals::Get(*document)) {
+        for (PortalContents* portal : portals->GetPortals()) {
+          if (RemoteFrame* remote_frame = portal->GetFrame())
+            callback.Run(remote_frame);
+        }
       }
       // Iterate on any fenced frames owned by a local frame.
-      for (HTMLFencedFrameElement* fenced_frame :
-           DocumentFencedFrames::From(*document).GetFencedFrames()) {
-        callback.Run(To<RemoteFrame>(fenced_frame->ContentFrame()));
+      if (auto* fenced_frames = DocumentFencedFrames::Get(*document)) {
+        for (HTMLFencedFrameElement* fenced_frame :
+             fenced_frames->GetFencedFrames()) {
+          callback.Run(To<RemoteFrame>(fenced_frame->ContentFrame()));
+        }
       }
     }
   }
@@ -2067,7 +2070,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
       WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
         if (LocalFrameView* view = local_frame->GetFrameView()) {
           if (FragmentAnchor* anchor = view->GetFragmentAnchor())
-            anchor->PerformPreRafActions();
+            anchor->PerformScriptableActions();
         }
       }));
 
@@ -2128,9 +2131,12 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
 
 void WebFrameWidgetImpl::ApplyViewportChanges(
     const ApplyViewportChangesArgs& args) {
-  // Viewport changes only change the main frame.
-  if (!ForMainFrame())
+  // Viewport changes only change the outermost main frame. Technically a
+  // portal has a viewport but it cannot produce changes from the compositor
+  // until activated so this should be correct for portals too.
+  if (!LocalRootImpl()->GetFrame()->IsOutermostMainFrame())
     return;
+
   WebViewImpl* web_view = View();
   // TODO(https://crbug.com/1160652): Figure out if View is null.
   CHECK(widget_base_);
@@ -3727,8 +3733,7 @@ void WebFrameWidgetImpl::MoveRangeSelectionExtent(
       widget_base_->DIPsToRoundedBlinkSpace(extent_in_dips));
 }
 
-void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoRect(
-    const gfx::Rect& rect_in_dips) {
+void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoView() {
   WebLocalFrameImpl* local_frame = FocusedWebLocalFrameInWidget();
   if (!local_frame)
     return;
@@ -3738,7 +3743,7 @@ void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoRect(
   // DidChangeVisibleViewport to ensure that we don't assume the element
   // is already in view and ignore the scroll.
   local_frame->ResetHasScrolledFocusedEditableIntoView();
-  local_frame->ScrollFocusedEditableElementIntoRect(rect_in_dips);
+  local_frame->ScrollFocusedEditableElementIntoView();
 }
 
 void WebFrameWidgetImpl::WaitForPageScaleAnimationForTesting(
@@ -4265,7 +4270,7 @@ bool WebFrameWidgetImpl::HasPendingPageScaleAnimation() {
 
 void WebFrameWidgetImpl::SetSourceURLForCompositor(ukm::SourceId source_id,
                                                    const KURL& url) {
-  LayerTreeHost()->SetSourceURL(source_id, url);
+  LayerTreeHost()->SetSourceURL(source_id, GURL(url));
 }
 
 base::ReadOnlySharedMemoryRegion

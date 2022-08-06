@@ -13,6 +13,8 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_toast_container_view.h"
+#include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
@@ -495,7 +497,7 @@ void AppListControllerImpl::OnSessionStateChanged(
 }
 
 void AppListControllerImpl::OnUserSessionAdded(const AccountId& account_id) {
-  if (!ash::features::IsLauncherAppSortEnabled())
+  if (!features::IsLauncherAppSortEnabled())
     return;
 
   if (!client_)
@@ -518,7 +520,7 @@ bool AppListControllerImpl::GetTargetVisibility(
     const absl::optional<int64_t>& display_id) const {
   return last_target_visible_ &&
          (!display_id.has_value() ||
-          display_id.value() == last_visible_display_id_);
+          display_id.value() == last_target_visible_display_id_);
 }
 
 void AppListControllerImpl::Show(int64_t display_id,
@@ -583,6 +585,9 @@ void AppListControllerImpl::UpdateAppListWithNewTemporarySortOrder(
         FeatureDiscoveryDurationReporter::GetInstance();
     reporter->MaybeFinishObservation(feature_discovery::TrackableFeature::
                                          kAppListReorderAfterEducationNudge);
+    reporter->MaybeFinishObservation(
+        feature_discovery::TrackableFeature::
+            kAppListReorderAfterEducationNudgePerTabletMode);
     reporter->MaybeFinishObservation(feature_discovery::TrackableFeature::
                                          kAppListReorderAfterSessionActivation);
   }
@@ -1161,6 +1166,7 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
     return;
 
   keyboard_traversal_engaged_ = engaged;
+  AssistantUiController::Get()->SetKeyboardTraversalMode(engaged);
 
   // No need to schedule paint for bubble presenter.
   if (features::IsProductivityLauncherEnabled() &&
@@ -1180,11 +1186,12 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
 
   // When the search box has focus, it is actually the textfield that has focus.
   // As such, the |SearchBoxView| must be told to repaint directly.
-  if (focused_view ==
-      fullscreen_presenter_->GetView()->search_box_view()->search_box()) {
-    SearchBoxView* search_box_view =
-        fullscreen_presenter_->GetView()->search_box_view();
-    search_box_view->UpdateSearchBoxFocusPaint();
+  if (focused_view == app_list_view->search_box_view()->search_box()) {
+    app_list_view->search_box_view()->UpdateSearchBoxFocusPaint();
+  } else if (AppListToastView::IsToastButton(focused_view)) {
+    // Toast button can become focused after app list sorting, so make sure the
+    // focus ring appears correctly when updating `keyboard_traversal_engaged_`.
+    focused_view->SchedulePaint();
   } else {
     // Ensure that when an app list item's focus ring is triggered by key
     // events, the item is selected.
@@ -1464,6 +1471,10 @@ bool AppListControllerImpl::ShouldDismissImmediately() {
   if (should_dismiss_immediately_)
     return true;
 
+  if (features::IsProductivityLauncherEnabled())
+    return false;
+
+  // Dismiss immediately if the peeking launcher is below the shelf's top edge.
   DCHECK(Shell::HasInstance());
   const int ideal_shelf_y =
       Shelf::ForWindow(

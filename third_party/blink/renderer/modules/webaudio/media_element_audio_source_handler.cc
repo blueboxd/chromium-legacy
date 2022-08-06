@@ -22,6 +22,14 @@
 
 namespace blink {
 
+namespace {
+
+// Default to stereo. This could change depending on what the media element
+// .src is set to.
+constexpr unsigned kDefaultNumberOfOutputChannels = 2;
+
+}  // namespace
+
 class MediaElementAudioSourceHandlerLocker final {
   STACK_ALLOCATED();
 
@@ -49,14 +57,10 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(
     : AudioHandler(kNodeTypeMediaElementAudioSource,
                    node,
                    node.context()->sampleRate()),
-      media_element_(media_element),
-      source_number_of_channels_(0),
-      source_sample_rate_(0),
-      is_origin_tainted_(false) {
+      media_element_(media_element) {
   DCHECK(IsMainThread());
-  // Default to stereo. This could change depending on what the media element
-  // .src is set to.
-  AddOutput(2);
+
+  AddOutput(kDefaultNumberOfOutputChannels);
 
   if (Context()->GetExecutionContext()) {
     task_runner_ = Context()->GetExecutionContext()->GetTaskRunner(
@@ -96,8 +100,8 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
   }
 
   {
-    // Make sure |is_origin_tainted_| matches |is_tainted|.  But need to
-    // synchronize with process() to set this.
+    // Make sure `is_origin_tainted_` matches `is_tainted`.  But need to
+    // synchronize with `Process()` to set this.
     MediaElementAudioSourceHandlerLocker locker(*this);
     is_origin_tainted_ = is_tainted;
   }
@@ -107,18 +111,18 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
     if (!number_of_channels ||
         number_of_channels > BaseAudioContext::MaxNumberOfChannels() ||
         !audio_utilities::IsValidAudioBufferSampleRate(source_sample_rate)) {
-      // process() will generate silence for these uninitialized values.
+      // `Process()` will generate silence for these uninitialized values.
       DLOG(ERROR) << "setFormat(" << number_of_channels << ", "
                   << source_sample_rate << ") - unhandled format change";
-      // Synchronize with process().
+      // Synchronize with `Process()`.
       MediaElementAudioSourceHandlerLocker locker(*this);
       source_number_of_channels_ = 0;
       source_sample_rate_ = 0;
       return;
     }
 
-    // Synchronize with process() to protect |source_number_of_channels_|,
-    // |source_sample_rate_|, |multi_channel_resampler_|.
+    // Synchronize with `Process()` to protect `source_number_of_channels_`,
+    // `source_sample_rate_`, `multi_channel_resampler_`.
     MediaElementAudioSourceHandlerLocker locker(*this);
 
     source_number_of_channels_ = number_of_channels;

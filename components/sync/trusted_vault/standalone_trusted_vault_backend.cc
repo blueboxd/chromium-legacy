@@ -688,8 +688,6 @@ void StandaloneTrustedVaultBackend::OnKeysDownloaded(
   DCHECK(ongoing_connection_request_);
   ongoing_connection_request_ = nullptr;
 
-  base::UmaHistogramEnumeration("Sync.TrustedVaultDownloadKeysStatus", status);
-
   sync_pb::LocalTrustedVaultPerUser* per_user_vault =
       FindUserVault(primary_account_->gaia);
   DCHECK(per_user_vault);

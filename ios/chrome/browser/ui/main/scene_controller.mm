@@ -51,6 +51,7 @@
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
+#include "ios/chrome/browser/default_browser/promo_source.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
@@ -63,6 +64,7 @@
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #include "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #include "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
@@ -241,7 +243,7 @@ bool IsSigninForcedByPolicy() {
 // switcher dismissal. It can only be YES if the QR Scanner experiment is
 // enabled.
 @property(nonatomic, readwrite)
-    NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
+    TabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
@@ -876,13 +878,17 @@ bool IsSigninForcedByPolicy() {
       AuthenticationServiceFactory::GetForBrowserState(browserState);
 
   if (IsUserPolicyNotificationNeeded(authService, prefService)) {
+    policy::UserPolicySigninService* userPolicyService =
+        policy::UserPolicySigninServiceFactory::GetForBrowserState(
+            browserState);
     [self.sceneState
         addAgent:[[UserPolicySceneAgent alloc]
                         initWithSceneUIProvider:self
                                     authService:authService
                      applicationCommandsHandler:applicationCommandsHandler
                                     prefService:prefService
-                                    mainBrowser:mainBrowser]];
+                                    mainBrowser:mainBrowser
+                                  policyService:userPolicyService]];
   }
 
   // Now that the main browser's command dispatcher is created and the newly
@@ -1049,7 +1055,7 @@ bool IsSigninForcedByPolicy() {
 - (BOOL)potentiallyInterestedUser {
   // If skipping first run, not in Safe Mode, no post opening action and the
   // launch is not after a crash, consider showing the default browser promo.
-  NTPTabOpeningPostOpeningAction postOpeningAction =
+  TabOpeningPostOpeningAction postOpeningAction =
       self.NTPActionAfterTabSwitcherDismissal;
   if (self.startupParameters) {
     postOpeningAction = self.startupParameters.postOpeningAction;
@@ -1058,7 +1064,8 @@ bool IsSigninForcedByPolicy() {
          !self.sceneState.appState.postCrashLaunch &&
          !IsChromeLikelyDefaultBrowser() &&
          !HasUserOpenedSettingsFromFirstRunPromo() &&
-         !fre_field_trial::IsInDefaultBrowserPromoAtFirstRunOnlyGroup();
+         fre_field_trial::GetFREDefaultBrowserScreenPromoFRE() !=
+             NewDefaultBrowserPromoFRE::kFirstRunOnly;
 }
 
 - (void)maybeShowDefaultBrowserPromo:(Browser*)browser {
@@ -1941,13 +1948,16 @@ bool IsSigninForcedByPolicy() {
 }
 
 - (void)showDefaultBrowserSettingsFromViewController:
-    (UIViewController*)baseViewController {
+            (UIViewController*)baseViewController
+                                        sourceForUMA:
+                                            (DefaultBrowserPromoSource)source {
   if (!baseViewController) {
     baseViewController = self.currentInterface.viewController;
   }
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
-        showDefaultBrowserSettingsFromViewController:baseViewController];
+        showDefaultBrowserSettingsFromViewController:baseViewController
+                                        sourceForUMA:source];
     return;
   }
   Browser* browser = self.mainInterface.browser;
@@ -2173,31 +2183,24 @@ bool IsSigninForcedByPolicy() {
 #pragma mark Tab opening utility methods.
 
 - (ProceduralBlock)completionBlockForTriggeringAction:
-    (NTPTabOpeningPostOpeningAction)action {
+    (TabOpeningPostOpeningAction)action {
+  __weak __typeof(self) weakSelf = self;
   switch (action) {
     case START_VOICE_SEARCH:
       return ^{
-        [self startVoiceSearchInCurrentBVC];
+        [weakSelf startVoiceSearchInCurrentBVC];
       };
     case START_QR_CODE_SCANNER:
       return ^{
-        if (!self.currentInterface.browser) {
-          return;
-        }
-        id<QRScannerCommands> QRHandler = HandlerForProtocol(
-            self.currentInterface.browser->GetCommandDispatcher(),
-            QRScannerCommands);
-        [QRHandler showQRScanner];
+        [weakSelf startQRCodeScanner];
       };
     case FOCUS_OMNIBOX:
       return ^{
-        if (!self.currentInterface.browser) {
-          return;
-        }
-        id<OmniboxCommands> focusHandler = HandlerForProtocol(
-            self.currentInterface.browser->GetCommandDispatcher(),
-            OmniboxCommands);
-        [focusHandler focusOmnibox];
+        [weakSelf focusOmnibox];
+      };
+    case SHOW_DEFAULT_BROWSER_SETTINGS:
+      return ^{
+        [weakSelf showDefaultBrowserSettings];
       };
     default:
       return nil;
@@ -2211,10 +2214,43 @@ bool IsSigninForcedByPolicy() {
   BrowserViewController* backgroundBVC =
       self.mainInterface == self.currentInterface ? self.incognitoInterface.bvc
                                                   : self.mainInterface.bvc;
+  // TODO(crbug.com/1329104): playingTTS will be removed as an API from the BVC
+  // and something else will be used instead.
   if (backgroundBVC.playingTTS)
     [backgroundBVC startVoiceSearch];
   else
     [self.currentInterface.bvc startVoiceSearch];
+}
+
+- (void)startQRCodeScanner {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<QRScannerCommands> QRHandler = HandlerForProtocol(
+      self.currentInterface.browser->GetCommandDispatcher(), QRScannerCommands);
+  [QRHandler showQRScanner];
+}
+
+- (void)focusOmnibox {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<OmniboxCommands> omniboxCommandsHandler = HandlerForProtocol(
+      self.currentInterface.browser->GetCommandDispatcher(), OmniboxCommands);
+  [omniboxCommandsHandler focusOmnibox];
+}
+
+- (void)showDefaultBrowserSettings {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<ApplicationSettingsCommands> applicationSettingsCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         ApplicationSettingsCommands);
+  [applicationSettingsCommandsHandler
+      showDefaultBrowserSettingsFromViewController:nil
+                                      sourceForUMA:DefaultBrowserPromoSource::
+                                                       kExternalIntent];
 }
 
 #pragma mark - TabSwitching
@@ -2564,8 +2600,6 @@ bool IsSigninForcedByPolicy() {
       [self completionBlockForTriggeringAction:[self.startupParameters
                                                        postOpeningAction]];
 
-  // Commands are only allowed on NTP.
-  DCHECK(IsURLNtp(urlLoadParams.web_params.url) || !startupCompletion);
   ProceduralBlock tabOpenedCompletion = nil;
   if (startupCompletion && completion) {
     tabOpenedCompletion = ^{

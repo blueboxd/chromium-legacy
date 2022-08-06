@@ -20,7 +20,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/startup/first_run_lacros.h"
+#include "chrome/browser/ui/startup/lacros_first_run_service.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -71,6 +71,7 @@ LacrosWebAppsController::LacrosWebAppsController(Profile* profile)
       provider_(WebAppProvider::GetForWebApps(profile)),
       publisher_helper_(profile,
                         provider_,
+                        /*swa_manager=*/nullptr,
                         apps::AppType::kWeb,
                         this,
                         /*observe_media_requests=*/true) {
@@ -215,13 +216,15 @@ void LacrosWebAppsController::ExecuteContextMenuCommand(
       base::BindOnce(&LacrosWebAppsController::ReturnLaunchResults,
                      weak_ptr_factory_.GetWeakPtr(), std::move(mojo_callback));
 
-  if (!ShouldOpenPrimaryProfileFirstRun(profile_)) {
+  auto* fre_service =
+      LacrosFirstRunServiceFactory::GetForBrowserContext(profile_);
+  if (!fre_service || !fre_service->ShouldOpenFirstRun()) {
     ExecuteContextMenuCommandInternal(app_id, id,
                                       std::move(execution_finished_callback));
     return;
   }
 
-  OpenPrimaryProfileFirstRunIfNeeded(base::BindOnce(
+  fre_service->OpenFirstRunIfNeeded(base::BindOnce(
       &OnOpenPrimaryProfileFirstRunExited,
       std::move(execution_finished_callback),
       base::BindOnce(
@@ -265,13 +268,16 @@ void LacrosWebAppsController::Launch(
       base::BindOnce(&LacrosWebAppsController::ReturnLaunchResults,
                      weak_ptr_factory_.GetWeakPtr(), std::move(mojo_callback));
   auto params = apps::ConvertCrosapiToLaunchParams(launch_params, profile_);
-  if (!ShouldOpenPrimaryProfileFirstRun(profile_)) {
+  auto* fre_service =
+      LacrosFirstRunServiceFactory::GetForBrowserContext(profile_);
+
+  if (!fre_service || !fre_service->ShouldOpenFirstRun()) {
     LaunchInternal(launch_params->app_id, std::move(params),
                    std::move(launch_finished_callback));
     return;
   }
 
-  OpenPrimaryProfileFirstRunIfNeeded(base::BindOnce(
+  fre_service->OpenFirstRunIfNeeded(base::BindOnce(
       &OnOpenPrimaryProfileFirstRunExited, std::move(launch_finished_callback),
       base::BindOnce(&LacrosWebAppsController::LaunchInternal,
                      weak_ptr_factory_.GetWeakPtr(), launch_params->app_id,

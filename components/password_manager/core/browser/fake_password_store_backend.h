@@ -53,25 +53,25 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   void GetAllLoginsForAccountAsync(absl::optional<std::string> account,
                                    LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
-      LoginsOrErrorReply callback,
+      LoginsReply callback,
       bool include_psl,
       const std::vector<PasswordFormDigest>& forms) override;
   void AddLoginAsync(const PasswordForm& form,
-                     PasswordChangesOrErrorReply callback) override;
+                     PasswordStoreChangeListReply callback) override;
   void UpdateLoginAsync(const PasswordForm& form,
-                        PasswordChangesOrErrorReply callback) override;
+                        PasswordStoreChangeListReply callback) override;
   void RemoveLoginAsync(const PasswordForm& form,
-                        PasswordChangesOrErrorReply callback) override;
+                        PasswordStoreChangeListReply callback) override;
   void RemoveLoginsByURLAndTimeAsync(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceCallback<void(bool)> sync_completion,
-      PasswordChangesOrErrorReply callback) override;
+      PasswordStoreChangeListReply callback) override;
   void RemoveLoginsCreatedBetweenAsync(
       base::Time delete_begin,
       base::Time delete_end,
-      PasswordChangesOrErrorReply callback) override;
+      PasswordStoreChangeListReply callback) override;
   void DisableAutoSignInForOriginsAsync(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;

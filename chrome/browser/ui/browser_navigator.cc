@@ -40,12 +40,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/url_param_filter/cross_otr_observer.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_param_filter/content/cross_otr_observer.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -273,6 +273,8 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
                                              profile, params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
         browser_params.initial_bounds = params.window_bounds;
+        browser_params.picture_in_picture_window_title =
+            params.source_contents->GetLastCommittedURL().GetContent();
         return {Browser::Create(browser_params), -1};
       }
 #else   // !IS_CHROMEOS_LACROS
@@ -360,7 +362,7 @@ void NormalizeDisposition(NavigateParams* params) {
 
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
       // Always show a new picture in picture window.
-      params->window_action = NavigateParams::SHOW_WINDOW;
+      params->window_action = NavigateParams::SHOW_WINDOW_INACTIVE;
       break;
 
     case WindowOpenDisposition::NEW_WINDOW:
@@ -532,7 +534,10 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
   }
 #endif
   url_param_filter::CrossOtrObserver::MaybeCreateForWebContents(
-      target_contents.get(), params);
+      target_contents.get(),
+      params.privacy_sensitivity ==
+          NavigateParams::PrivacySensitivity::CROSS_OTR,
+      params.started_from_context_menu, params.transition);
 
   return target_contents;
 }
@@ -556,7 +561,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
   // Open System Apps in their standalone window if necessary.
   // TODO(crbug.com/1096345): Remove this code after we integrate with intent
   // handling.
-  const absl::optional<web_app::SystemAppType> capturing_system_app_type =
+  const absl::optional<ash::SystemWebAppType> capturing_system_app_type =
       web_app::GetCapturingSystemAppForURL(params->initiating_profile,
                                            params->url);
   if (capturing_system_app_type &&
@@ -830,6 +835,14 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
       if (should_close_this_tab)
         params->source_contents->Close();
     }
+  }
+
+  // If this is a Picture in Picture window, then notify the pip manager about
+  // it. This enables the opener and pip window to stay connected, so that (for
+  // example), the pip window does not outlive the opener.
+  if (params->disposition == WindowOpenDisposition::NEW_PICTURE_IN_PICTURE) {
+    PictureInPictureWindowManager::GetInstance()->EnterDocumentPictureInPicture(
+        params->source_contents, contents_to_navigate_or_insert);
   }
 
   params->navigated_or_inserted_contents = contents_to_navigate_or_insert;

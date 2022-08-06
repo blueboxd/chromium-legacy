@@ -70,6 +70,7 @@ class GPUCanvasContext : public CanvasRenderingContext {
   int ExternallyAllocatedBufferCountPerPixel() final { return 1; }
   void Stop() final;
   cc::Layer* CcLayer() const final;
+  void Reshape(int width, int height) override;
 
   // OffscreenCanvas-specific methods
   bool PushFrame() final;
@@ -86,15 +87,25 @@ class GPUCanvasContext : public CanvasRenderingContext {
 
   void configure(const GPUCanvasConfiguration* descriptor, ExceptionState&);
   void unconfigure();
-  String getPreferredFormat(const GPUAdapter* adapter);
+  String getPreferredFormat(ExecutionContext* execution_context,
+                            GPUAdapter* adapter);
   GPUTexture* getCurrentTexture(ExceptionState&);
 
  private:
+  void ReconfigureSwapchain(gfx::Size size);
+
   cc::PaintFlags::FilterQuality filter_quality_ =
       cc::PaintFlags::FilterQuality::kLow;
   Member<GPUSwapChain> swapchain_;
   Member<GPUDevice> configured_device_;
+  WGPUTextureUsage usage_;
+  WGPUTextureFormat format_;
+  V8GPUCanvasAlphaMode::Enum alpha_mode_;
+
   bool stopped_ = false;
+
+  // TODO(crbug.com/1326473): Remove after deprecation period.
+  gfx::Size configured_size_;
 };
 
 }  // namespace blink

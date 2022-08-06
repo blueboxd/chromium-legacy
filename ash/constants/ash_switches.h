@@ -40,11 +40,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableLocaleSync[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcDisableMediaStoreMaintenance[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisablePlayAutoInstall[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kArcDisableSystemDefaultApps[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableTtsCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableUreadahead[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kArcEnableNativeBridge64BitSupportExperiment[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -86,6 +83,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshTouchHud[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshUiMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshUiModeClamshell[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshUiModeTablet[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAshUseCrOSMojoServiceManager[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAuraLegacyPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperLarge[];
@@ -230,6 +229,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeForceTabletFirstRun[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeLargeScreenSpecialScaling[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeScreenshotDirectory[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeShowBlazeyScreen[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeTimerInterval[];

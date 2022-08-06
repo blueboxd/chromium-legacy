@@ -27,3 +27,5 @@ NSString* kRequestDesktopActionSymbol = @"desktopcomputer";
 NSString* kRequestMobileActionSymbol = @"iphone";
 NSString* kFindInPageActionSymbol = @"doc.text.magnifyingglass";
 NSString* kZoomTextActionSymbol = @"plus.magnifyingglass";
+NSString* kSaveImageActionSymbol = @"square.and.arrow.down";
+NSString* kOpenImageActionSymbol = @"arrow.up.right.square";

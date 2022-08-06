@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
@@ -41,6 +42,28 @@ bool IsFullScreenMode(content::WebContents* web_contents, Browser* browser) {
   LocationBarView* location_bar = browser_view->GetLocationBarView();
 
   return !location_bar || !location_bar->IsDrawn();
+}
+
+// A permission request should be auto-ignored if a user interacts with the
+// LocationBar. The only exception is the NTP page where the user needs to press
+// on a microphone icon to get a permission request.
+bool ShouldIgnorePermissionRequest(content::WebContents* web_contents,
+                                   Browser* browser) {
+  DCHECK(web_contents);
+  DCHECK(browser);
+
+  // In case of the NTP, `WebContents::GetVisibleURL()` is equal to
+  // `chrome://newtab/`, but the `LocationBarView` will be empty.
+  if (web_contents->GetVisibleURL() == GURL(chrome::kChromeUINewTabURL)) {
+    return false;
+  }
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (!browser_view)
+    return false;
+
+  LocationBarView* location_bar = browser_view->GetLocationBarView();
+  return location_bar && location_bar->IsEditingOrEmpty();
 }
 
 bool ShouldBubbleStartOpen(permissions::PermissionPrompt::Delegate* delegate) {
@@ -94,6 +117,11 @@ std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
     return nullptr;
   }
 
+  // Auto-ignore the permission request if a user is typing into location bar.
+  if (ShouldIgnorePermissionRequest(web_contents, browser)) {
+    return nullptr;
+  }
+
   return std::make_unique<PermissionPromptImpl>(browser, web_contents,
                                                 delegate);
 }
@@ -119,8 +147,7 @@ PermissionPromptImpl::~PermissionPromptImpl() {
   switch (prompt_style_) {
     case PermissionPromptStyle::kBubbleOnly:
       DCHECK(!chip_);
-      if (prompt_bubble_)
-        prompt_bubble_->GetWidget()->Close();
+      CleanUpPromptBubble();
       break;
     case PermissionPromptStyle::kChip:
     case PermissionPromptStyle::kQuietChip:
@@ -162,14 +189,13 @@ void PermissionPromptImpl::UpdateAnchor() {
         // Change prompt style to chip to avoid dismissing request while
         // switching UI style.
         prompt_bubble_->SetPromptStyle(PermissionPromptStyle::kChip);
-        prompt_bubble_->GetWidget()->Close();
+        CleanUpPromptBubble();
         ShowChip();
         chip_->OpenBubble();
       } else {
         // If |browser_| changed, recreate bubble for correct browser.
         if (was_browser_changed) {
-          prompt_bubble_->GetWidget()->CloseWithReason(
-              views::Widget::ClosedReason::kUnspecified);
+          CleanUpPromptBubble();
           ShowBubble();
         } else {
           prompt_bubble_->UpdateAnchorPosition();
@@ -245,6 +271,15 @@ PermissionPromptImpl::GetPromptDisposition() const {
   }
 }
 
+void PermissionPromptImpl::CleanUpPromptBubble() {
+  if (prompt_bubble_) {
+    views::Widget* widget = prompt_bubble_->GetWidget();
+    widget->RemoveObserver(this);
+    widget->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+    prompt_bubble_ = nullptr;
+  }
+}
+
 views::Widget* PermissionPromptImpl::GetPromptBubbleWidgetForTesting() {
   if (prompt_bubble_) {
     return prompt_bubble_->GetWidget();
@@ -253,8 +288,7 @@ views::Widget* PermissionPromptImpl::GetPromptBubbleWidgetForTesting() {
                : nullptr;
 }
 
-void PermissionPromptImpl::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(widget, prompt_bubble_->GetWidget());
+void PermissionPromptImpl::OnWidgetDestroying(views::Widget* widget) {
   widget->RemoveObserver(this);
   prompt_bubble_ = nullptr;
 }

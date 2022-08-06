@@ -22,12 +22,14 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_app_install_features.h"
+#include "chrome/browser/web_applications/preinstalled_web_app_config_utils.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_apps.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -217,7 +219,7 @@ class PreinstalledWebAppManagerBrowserTest
       const GURL& install_url,
       base::StringPiece app_config_string) {
     base::FilePath test_config_dir(FILE_PATH_LITERAL("test_dir"));
-    PreinstalledWebAppManager::SetConfigDirForTesting(&test_config_dir);
+    SetPreinstalledWebAppConfigDirForTesting(&test_config_dir);
 
     base::FilePath source_root_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir));
@@ -254,7 +256,7 @@ class PreinstalledWebAppManagerBrowserTest
             }));
     sync_run_loop.Run();
 
-    PreinstalledWebAppManager::SetConfigDirForTesting(nullptr);
+    SetPreinstalledWebAppConfigDirForTesting(nullptr);
     PreinstalledWebAppManager::SetFileUtilsForTesting(nullptr);
     PreinstalledWebAppManager::SetConfigsForTesting(nullptr);
 
@@ -663,6 +665,74 @@ IN_PROC_BROWSER_TEST_F(
 
     EXPECT_TRUE(registrar().IsInstalled(app_id));
   }
+}
+
+// Preinstalled apps which are user uninstalled are not included
+// in the config passed to the ExternallyManagedAppInstallManager.
+IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
+                       DisableForPreinstalledAppsInConfig) {
+  PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const auto manifest = base::ReplaceStringPlaceholders(
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"]
+      })",
+      {GetAppUrl().spec()}, nullptr);
+  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
+  UserUninstalledPreinstalledWebAppPrefs prefs(profile()->GetPrefs());
+  prefs.Add(app_id, {GetAppUrl()});
+
+  // Verify prefs have the proper data.
+  EXPECT_EQ(1, prefs.Size());
+  EXPECT_EQ(app_id, prefs.LookUpAppIdByInstallUrl(GetAppUrl()));
+
+  const auto& disabled_configs = manager().debug_info()->disabled_configs;
+  constexpr char kErrorMessage[] =
+      " is not being installed because it was previously uninstalled "
+      "by user.";
+
+  // On sync across configs, app is not installed, and the disabled configs are
+  // filled with the proper logic.
+  EXPECT_EQ(SyncPreinstalledAppConfig(GetAppUrl(), manifest), absl::nullopt);
+  EXPECT_FALSE(registrar().IsInstalled(app_id));
+  EXPECT_EQ(disabled_configs.size(), 1u);
+  EXPECT_EQ(disabled_configs.back().second, GetAppUrl().spec() + kErrorMessage);
+}
+
+// Preinstalled apps which are user uninstalled are included
+// in the config passed to the ExternallyManagedAppInstallManager if
+// |override_previous_user_uninstall| is true.
+IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
+                       PreinstalledAppsUninstallOverride) {
+  PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
+  PreinstalledWebAppManager::OverridePreviousUserUninstallConfigForTesting();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const auto manifest = base::ReplaceStringPlaceholders(
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"]
+      })",
+      {GetAppUrl().spec()}, nullptr);
+  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
+  UserUninstalledPreinstalledWebAppPrefs prefs(profile()->GetPrefs());
+  prefs.Add(app_id, {GetAppUrl()});
+
+  // Verify prefs have the proper data.
+  EXPECT_EQ(1, prefs.Size());
+  EXPECT_EQ(app_id, prefs.LookUpAppIdByInstallUrl(GetAppUrl()));
+
+  // On sync across configs, app is installed because
+  // |override_previous_user_uninstall| is true.
+  const auto& disabled_configs = manager().debug_info()->disabled_configs;
+  EXPECT_EQ(SyncPreinstalledAppConfig(GetAppUrl(), manifest),
+            webapps::InstallResultCode::kSuccessNewInstall);
+  EXPECT_TRUE(registrar().IsInstalled(app_id));
+  EXPECT_EQ(disabled_configs.size(), 0u);
 }
 
 // The offline manifest JSON config functionality is only available on Chrome

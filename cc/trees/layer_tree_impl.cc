@@ -845,6 +845,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // This should match the property synchronization in
   // LayerTreeHost::finishCommitOnImplThread().
   target_tree->set_source_frame_number(source_frame_number());
+  target_tree->set_trace_id(trace_id());
   target_tree->set_background_color(background_color());
   target_tree->set_have_scroll_event_handlers(have_scroll_event_handlers());
   target_tree->set_event_listener_properties(
@@ -1155,23 +1156,45 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
                                              int transform_node_index) {
   // This includes all animations, even those that are finished but
   // haven't yet been deleted.
-  if (mutator_host()->HasAnyAnimationTargetingProperty(
-          element_id, TargetProperty::TRANSFORM)) {
-    TransformTree& transform_tree = property_trees()->transform_tree_mutable();
-    if (TransformNode* node = transform_tree.Node(transform_node_index)) {
-      ElementListType list_type = GetElementTypeForAnimation();
-      bool has_potential_animation =
-          mutator_host()->HasPotentiallyRunningAnimationForProperty(
-              element_id, list_type, TargetProperty::TRANSFORM);
-      if (node->has_potential_animation != has_potential_animation) {
-        node->has_potential_animation = has_potential_animation;
-        node->maximum_animation_scale =
-            mutator_host()->MaximumScale(element_id, list_type);
-        transform_tree.set_needs_update(true);
-        set_needs_update_draw_properties();
+
+  // A given ElementId should be associated with only a single transform
+  // property.  However, the ElementId is opaque to cc.  (If it comes from
+  // blink, it was constructed with a CompositorElementIdNamespace specific to
+  // the correct property.  Otherwise, only the transform property should be
+  // used.)
+  const TargetProperty::Type transform_properties[] = {
+      TargetProperty::TRANSFORM, TargetProperty::SCALE, TargetProperty::ROTATE,
+      TargetProperty::TRANSLATE};
+#if DCHECK_IS_ON()
+  unsigned property_count = 0u;
+#endif
+
+  for (TargetProperty::Type property : transform_properties) {
+    if (mutator_host()->HasAnyAnimationTargetingProperty(element_id,
+                                                         property)) {
+#if DCHECK_IS_ON()
+      ++property_count;
+#endif
+      TransformTree& transform_tree =
+          property_trees()->transform_tree_mutable();
+      if (TransformNode* node = transform_tree.Node(transform_node_index)) {
+        ElementListType list_type = GetElementTypeForAnimation();
+        bool has_potential_animation =
+            mutator_host()->HasPotentiallyRunningAnimationForProperty(
+                element_id, list_type, property);
+        if (node->has_potential_animation != has_potential_animation) {
+          node->has_potential_animation = has_potential_animation;
+          node->maximum_animation_scale =
+              mutator_host()->MaximumScale(element_id, list_type);
+          transform_tree.set_needs_update(true);
+          set_needs_update_draw_properties();
+        }
       }
     }
   }
+#if DCHECK_IS_ON()
+  DCHECK_LE(property_count, 1u);
+#endif
 }
 
 void LayerTreeImpl::UpdatePageScaleNode() {
@@ -1555,11 +1578,14 @@ bool LayerTreeImpl::UpdateDrawProperties(
         this, &render_surface_list_, output_update_layer_list_for_testing);
 
     if (const char* client_name = GetClientNameForMetrics()) {
-      UMA_HISTOGRAM_COUNTS_1M(
-          base::StringPrintf(
-              "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
-              client_name),
-          timer.Elapsed().InMicroseconds());
+      // This metric is only recorded for the Browser.
+      if (settings().single_thread_proxy_scheduler) {
+        UMA_HISTOGRAM_COUNTS_1M(
+            base::StringPrintf(
+                "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
+                client_name),
+            timer.Elapsed().InMicroseconds());
+      }
       UMA_HISTOGRAM_COUNTS_100(
           base::StringPrintf("Compositing.%s.NumRenderSurfaces", client_name),
           base::saturated_cast<int>(render_surface_list_.size()));
@@ -1843,6 +1869,10 @@ bool LayerTreeImpl::IsRecycleTree() const {
 
 bool LayerTreeImpl::IsSyncTree() const {
   return host_impl_->sync_tree() == this;
+}
+
+bool LayerTreeImpl::HasPendingTree() const {
+  return host_impl_->pending_tree() != nullptr;
 }
 
 LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
@@ -2906,6 +2936,10 @@ void LayerTreeImpl::SetVisualUpdateDurations(
   previous_surfaces_visual_update_duration_ =
       previous_surfaces_visual_update_duration;
   visual_update_duration_ = visual_update_duration;
+}
+
+void LayerTreeImpl::RequestImplSideInvalidationForRerasterTiling() {
+  host_impl_->RequestImplSideInvalidationForRerasterTiling();
 }
 
 }  // namespace cc

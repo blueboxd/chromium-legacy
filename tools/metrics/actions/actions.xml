@@ -3471,6 +3471,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppList_CreateFolder">
+  <owner>jamescook@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <description>
+    User created a folder in the Chrome OS app launcher.
+  </description>
+</action>
+
 <action name="AppList_CurrentWindowToHomeLauncher">
   <owner>newcomer@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
@@ -3485,6 +3493,14 @@ should be able to be added at any place in this file.
   <description>
     User tried to hide the current window to display the home launcher by
     swiping up on the shelf.
+  </description>
+</action>
+
+<action name="AppList_DeleteFolder">
+  <owner>jamescook@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <description>
+    User deleted a folder in the Chrome OS app launcher.
   </description>
 </action>
 
@@ -6273,6 +6289,26 @@ should be able to be added at any place in this file.
   <description>
     The feed will trigger a refresh, either manually by the user or because of
     the cache expiring.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.FirstFollow.GotItButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>feed@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped Got It button on the first follow sheet. iOS only.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.FirstFollow.GoToFeedButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>feed@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped Go To Feed button on the first follow sheet. iOS only.
   </description>
 </action>
 
@@ -16232,6 +16268,27 @@ should be able to be added at any place in this file.
   <owner>liberato@chromium.org</owner>
   <description>
     Playback volume was changed, either from script or controls.
+  </description>
+</action>
+
+<action name="MediaApp.PDF.DefaultApp.SwitchedAway">
+  <owner>patricialor@chromium.org</owner>
+  <owner>backlight-swe@google.com</owner>
+  <description>
+    Records that the user used the Files App to change their default app for PDF
+    to a different app, including if they change it from non-MediaApp to another
+    non-MediaApp. Recorded only when the MediaApp is enabled as a handler for
+    PDF files.
+  </description>
+</action>
+
+<action name="MediaApp.PDF.DefaultApp.SwitchedTo">
+  <owner>patricialor@chromium.org</owner>
+  <owner>backlight-swe@google.com</owner>
+  <description>
+    Records that the user used the Files App to change their default app for PDF
+    from a different app back to MediaApp, which is the factory setting.
+    Recorded only when the MediaApp is enabled as a handler for PDF files.
   </description>
 </action>
 
@@ -26885,14 +26942,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="SharingDesktopScreenshot.ScreenshotEdited">
-  <owner>skare@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
-  <description>
-    User chose to edit a screenshot in the capture bubble.
-  </description>
-</action>
-
 <action name="SharingDesktopScreenshot.ScreenshotSavedViaBubble">
   <owner>skare@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
@@ -27835,6 +27884,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromNTPFeedTopPromo">
+  <owner>mrefaat@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the NTP feed top section promo.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromPasswordBubble" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -27973,6 +28031,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithAccount_FromNTPFeedTopPromo"
+    not_user_triggered="true">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with a default account,
+    from NTP Feed top section
+    (signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO).
+  </description>
+</action>
+
 <action name="Signin_ImpressionWithAccount_FromPasswordBubble"
     not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
@@ -28081,6 +28151,18 @@ should be able to be added at any place in this file.
     Recorded when starting sign-in using the promo view, with no default
     account, from NTP content suggestions
     (signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromNTPFeedTopPromo"
+    not_user_triggered="true">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with no default
+    account, from NTP content suggestions
+    (signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO).
   </description>
 </action>
 
@@ -28399,6 +28481,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromNTPFeedTopPromo">
+  <owner>jlebel@chromium.org</owner>
+  <owner>mrefaat@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO.
   </description>
 </action>
 
@@ -28746,6 +28837,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccountExistingAccount_FromNTPFeedTopPromo">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO, with a new
+    account, while Chrome already has other accounts.
+  </description>
+</action>
+
 <action name="Signin_SigninNewAccountExistingAccount_FromPasswordBubble">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -28866,6 +28967,17 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS, with a
     new account, while Chrome does not have other accounts.
+  </description>
+</action>
+
+<action name="Signin_SigninNewAccountNoExistingAccount_FromNTPFeedTopPromo">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO, with a new
+    account, while Chrome does not have other accounts.
   </description>
 </action>
 
@@ -29117,6 +29229,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNotDefault_FromNTPFeedTopPromo">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO, using another
+    account than the default one.
+  </description>
+</action>
+
 <action name="Signin_SigninNotDefault_FromPasswordBubble">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29241,6 +29364,17 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS, using the
+    default account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromNTPFeedTopPromo">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO, using the
     default account.
   </description>
 </action>
@@ -29883,7 +30017,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Audio_Muted">
-  <owner>shihuis@chromium.org</owner>
   <owner>tetsui@chromium.org</owner>
   <description>User muted audio from the button in SystemTray.</description>
 </action>
@@ -29899,7 +30032,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Audio_Unmuted">
-  <owner>shihuis@chromium.org</owner>
   <owner>tetsui@chromium.org</owner>
   <description>User unmuted audio from the button in SystemTray.</description>
 </action>
@@ -33284,6 +33416,8 @@ should be able to be added at any place in this file.
       label="For ChromeHomeMenuHeader feature."/>
   <suffix name="ChromeHomePullToRefresh"
       label="For ChromeHomePullToRefresh feature."/>
+  <suffix name="ContextualPageActions_PriceTracking"
+      label="For Contextual page actions price tracking feature."/>
   <suffix name="ContextualSearch" label="For ContextualSearch feature."/>
   <suffix name="ContextualSearchInPanelHelp"
       label="For ContextualSearchInPanelHelp feature."/>

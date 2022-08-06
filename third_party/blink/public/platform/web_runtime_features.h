@@ -163,6 +163,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableTouchDragAndContextMenu(bool enable);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollUnification(bool);
+  BLINK_PLATFORM_EXPORT static void EnableSpeculationRulesPrefetchProxy(bool);
   BLINK_PLATFORM_EXPORT static void EnableUserActivationSameOriginVisibility(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableV8IdleTasks(bool);
@@ -190,7 +191,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebXRLightEstimation(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRPlaneDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRViewportScale(bool);
-  BLINK_PLATFORM_EXPORT static void ForceOverlayFullscreenVideo(bool);
   BLINK_PLATFORM_EXPORT static void EnableTimerThrottlingForBackgroundTabs(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableExpensiveBackgroundTimerThrottling(

@@ -38,6 +38,7 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   void RemoveWaylandOutput(const uint32_t output_id);
 
   void InitializeAllXdgOutputs();
+  void InitializeAllZAuraOutputs();
 
   // Creates a platform screen.
   std::unique_ptr<WaylandScreen> CreateWaylandScreen();
@@ -53,9 +54,13 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
  private:
   // WaylandOutput::Delegate:
   void OnOutputHandleMetrics(uint32_t output_id,
-                             const gfx::Rect& new_bounds,
+                             const gfx::Point& origin,
+                             const gfx::Size& logical_size,
+                             const gfx::Size& physical_size,
+                             const gfx::Insets& insets,
                              float scale_factor,
-                             int32_t transform) override;
+                             int32_t panel_transform,
+                             int32_t logical_transform) override;
 
   using OutputList = base::flat_map<uint32_t, std::unique_ptr<WaylandOutput>>;
 

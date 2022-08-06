@@ -179,6 +179,10 @@ interface CountQueuingStrategy
     getter highWaterMark
     getter size
     method constructor
+interface CropTarget
+    static method fromElement
+    attribute @@toStringTag
+    method constructor
 interface Crypto
     attribute @@toStringTag
     getter subtle
@@ -2984,6 +2988,7 @@ interface WindowClient : Client
 interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
     getter caches
+    getter crossOriginEmbedderPolicy
     getter crossOriginIsolated
     getter crypto
     getter fonts

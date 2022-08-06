@@ -508,88 +508,40 @@ LayoutRect NGInkOverflow::ComputeTextDecorationOverflow(
     const Font& scaled_font,
     const LayoutRect& ink_overflow) {
   DCHECK(!style.AppliedTextDecorations().IsEmpty());
-  // TODO(https://crbug.com/1145160): Reduce code duplication between here and
-  // TextPainterBase::PaintDecorations*.
-
   // Use a zero offset because all offsets
   // are applied to the ink overflow after it has been computed.
   PhysicalOffset offset;
   // Ideally we should pass MinimumThickness1(false) if this function is
   // called for NGFragmentItem::kSvgText. However it requires to add arguments
   // to some functions.
-  // We pass MinimumTHickness1(true) even for kSvgText.  it's acceptable
+  // We pass MinimumThickness1(true) even for kSvgText.  it's acceptable
   // because it just makes the resultant ink overflow slightly larger.
   const MinimumThickness1 kMinimumThicknessIsOne(true);
   TextDecorationInfo decoration_info(
-      offset, ink_overflow.Width(), style.GetFontBaseline(), style, scaled_font,
-      absl::nullopt, nullptr, kMinimumThicknessIsOne);
-  NGTextDecorationOffset decoration_offset(decoration_info.Style(), style,
-                                           nullptr);
+      offset, ink_overflow.Width(), style,
+      /* inline_context */ nullptr,
+      /* selection_text_decoration */ absl::nullopt, &scaled_font,
+      kMinimumThicknessIsOne);
+  NGTextDecorationOffset decoration_offset(decoration_info.TargetStyle(),
+                                           style);
   const Vector<AppliedTextDecoration>& decorations =
       style.AppliedTextDecorations();
-
-  // text-underline-position may flip underline and overline.
-  ResolvedUnderlinePosition underline_position =
-      decoration_info.UnderlinePosition();
-  bool flip_underline_and_overline = false;
-  if (underline_position == ResolvedUnderlinePosition::kOver) {
-    flip_underline_and_overline = true;
-    underline_position = ResolvedUnderlinePosition::kUnder;
-  }
 
   gfx::RectF accumulated_bound;
   for (wtf_size_t applied_decoration_index = 0;
        applied_decoration_index < decorations.size();
        ++applied_decoration_index) {
-    const AppliedTextDecoration& decoration =
-        decorations[applied_decoration_index];
-    TextDecorationLine lines = decoration.Lines();
-    bool has_underline = EnumHasFlags(lines, TextDecorationLine::kUnderline);
-    bool has_overline = EnumHasFlags(lines, TextDecorationLine::kOverline);
-    if (flip_underline_and_overline)
-      std::swap(has_underline, has_overline);
-
     decoration_info.SetDecorationIndex(applied_decoration_index);
-
-    float resolved_thickness = decoration_info.ResolvedThickness();
-
-    if (has_underline) {
-      // Don't apply text-underline-offset to overline.
-      Length line_offset =
-          flip_underline_and_overline ? Length() : decoration.UnderlineOffset();
-
-      const int paint_underline_offset =
-          decoration_offset.ComputeUnderlineOffset(
-              underline_position, decoration_info.Style().ComputedFontSize(),
-              decoration_info.FontData(), line_offset, resolved_thickness);
-      decoration_info.SetLineData(TextDecorationLine::kUnderline,
-                                  paint_underline_offset);
+    if (decoration_info.HasUnderline()) {
+      decoration_info.SetUnderlineLineData(decoration_offset);
       accumulated_bound.Union(decoration_info.Bounds());
     }
-    if (has_overline) {
-      // Don't apply text-underline-offset to overline.
-      Length line_offset =
-          flip_underline_and_overline ? decoration.UnderlineOffset() : Length();
-
-      FontVerticalPositionType position =
-          flip_underline_and_overline ? FontVerticalPositionType::TopOfEmHeight
-                                      : FontVerticalPositionType::TextTop;
-      const int paint_overline_offset =
-          decoration_offset.ComputeUnderlineOffsetForUnder(
-              line_offset, decoration_info.Style().ComputedFontSize(),
-              decoration_info.FontData(), resolved_thickness, position);
-      decoration_info.SetLineData(TextDecorationLine::kOverline,
-                                  paint_overline_offset);
+    if (decoration_info.HasOverline()) {
+      decoration_info.SetOverlineLineData(decoration_offset);
       accumulated_bound.Union(decoration_info.Bounds());
     }
-    if (EnumHasFlags(lines, TextDecorationLine::kLineThrough)) {
-      // For increased line thickness, the line-through decoration needs to grow
-      // in both directions from its origin, subtract half the thickness to keep
-      // it centered at the same origin.
-      const float line_through_offset =
-          2 * decoration_info.Baseline() / 3 - resolved_thickness / 2;
-      decoration_info.SetLineData(TextDecorationLine::kLineThrough,
-                                  line_through_offset);
+    if (decoration_info.HasLineThrough()) {
+      decoration_info.SetLineThroughLineData();
       accumulated_bound.Union(decoration_info.Bounds());
     }
   }

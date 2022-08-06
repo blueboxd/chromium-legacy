@@ -13,6 +13,9 @@ namespace features {
 const base::Feature kLensStandalone{"LensStandalone",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLensFullscreenSearch{"LensFullscreenSearch",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::FeatureParam<bool> kRegionSearchMacCursorFix{
     &kLensStandalone, "region-search-mac-cursor-fix", true};
 
@@ -24,9 +27,6 @@ const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2{
 
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3{
     &kLensStandalone, "use-menu-item-alt-text-3", false};
-
-const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText4{
-    &kLensStandalone, "use-menu-item-alt-text-4", true};
 
 const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch{
     &kLensStandalone, "region-search-enable-ukm-logging", true};
@@ -48,6 +48,9 @@ constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
 
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
+
+const base::FeatureParam<bool> kSendImagesAsPng{&kLensStandalone,
+                                                "send-png-images", false};
 
 bool GetEnableUKMLoggingForRegionSearch() {
   return kEnableUKMLoggingForRegionSearch.Get();
@@ -73,9 +76,33 @@ std::string GetHomepageURLForLens() {
   return kHomepageURLForLens.Get();
 }
 
+bool UseRegionSearchMenuItemAltText1() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         kRegionSearchUseMenuItemAltText1.Get();
+}
+
+bool UseRegionSearchMenuItemAltText2() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         kRegionSearchUseMenuItemAltText2.Get();
+}
+
+bool UseRegionSearchMenuItemAltText3() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         kRegionSearchUseMenuItemAltText3.Get();
+}
+
+bool IsLensFullscreenSearchEnabled() {
+  return base::FeatureList::IsEnabled(kLensFullscreenSearch);
+}
+
 bool IsLensSidePanelEnabled() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          kEnableSidePanelForLens.Get();
+}
+
+bool GetSendImagesAsPng() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         kSendImagesAsPng.Get();
 }
 
 }  // namespace features

@@ -27,6 +27,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherButtonView.java",
     "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherButtonViewBinder.java",
     "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherDrawable.java",
+    "java/src/org/chromium/chrome/browser/toolbar/ToolbarCaptureType.java",
     "java/src/org/chromium/chrome/browser/toolbar/ToolbarDataProvider.java",
     "java/src/org/chromium/chrome/browser/toolbar/ToolbarIntentMetadata.java",
     "java/src/org/chromium/chrome/browser/toolbar/ToolbarProgressBar.java",
@@ -65,6 +66,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuItemState.java",
     "java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuUiState.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/ActionModeController.java",
+    "java/src/org/chromium/chrome/browser/toolbar/top/CaptureReadinessResult.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/HomeButtonCoordinator.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/IncognitoSwitchCoordinator.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/IncognitoSwitchProperties.java",
@@ -92,6 +94,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/toolbar/top/ToolbarSnapshotState.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/ToolbarTablet.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarCoordinator.java",
+    "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarInteractabilityManager.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarOverlayCoordinator.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarOverlayMediator.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarOverlayProperties.java",
@@ -106,6 +109,7 @@ android_library("java") {
     "//build/android:build_java",
     "//chrome/android/features/start_surface:public_java",
     "//chrome/browser/android/lifecycle:java",
+    "//chrome/browser/back_press/android:java",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/device:java",
     "//chrome/browser/feature_engagement:java",
@@ -265,7 +269,7 @@ android_resources("java_resources") {
   ]
 }
 
-java_library("junit") {
+android_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
@@ -283,6 +287,9 @@ java_library("junit") {
     "java/src/org/chromium/chrome/browser/toolbar/top/HomeButtonCoordinatorTest.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/OptionalBrowsingModeButtonControllerTest.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/ToggleTabStackButtonCoordinatorTest.java",
+    "java/src/org/chromium/chrome/browser/toolbar/top/ToolbarControlContainerTest.java",
+    "java/src/org/chromium/chrome/browser/toolbar/top/ToolbarSnapshotStateTest.java",
+    "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarInteractabilityManagerTest.java",
     "java/src/org/chromium/chrome/browser/toolbar/top/TopToolbarOverlayMediatorTest.java",
   ]
 
@@ -310,13 +317,14 @@ java_library("junit") {
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/feature_engagement:feature_engagement_java",
-    "//components/optimization_guide/proto:optimization_guide_proto_java",
     "//components/search_engines/android:java",
+    "//components/segmentation_platform/public/proto:segmentation_platform_proto_java",
     "//content/public/android:content_full_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:guava_android_java",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_library_java",
@@ -341,7 +349,6 @@ android_library("javatests") {
     ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//build/android:build_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/settings:test_support_java",

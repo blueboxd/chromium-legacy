@@ -21,6 +21,7 @@ include_rules = [
   "+content/public/renderer",
   "+content/child",
   "+content/services/shared_storage_worklet",
+  "+content/services/auction_worklet",
   "+device/base/synchronization",
   "+device/gamepad/public/cpp",
   "+device/gamepad/public/mojom",
@@ -42,7 +43,7 @@ specific_include_rules = {
     "+content/shell",
   ],
   "renderer_main\.cc": [
-   "+chromeos/memory/userspace_swap",
+   "+chromeos/ash/components/memory/userspace_swap",
   ],
   "render_thread_impl_browsertest\.cc": [
     "+content/app/mojo/mojo_init.h",

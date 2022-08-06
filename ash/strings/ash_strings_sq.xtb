@@ -24,6 +24,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="109942774857561566">Jam i mërzitur</translation>
 <translation id="1104084341931202936">Shfaq cilësimet e qasshmërisë</translation>
 <translation id="1104621072296271835">Pajisjet e tua punojnë edhe më mirë së bashku</translation>
+<translation id="1111021433905331574">Mund ta ndryshosh ngjyrën e dritës së sfondit të tastierës te Cilësimet &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Fshih raftin automatikisht</translation>
 <translation id="1142002900084379065">Fotot e fundit</translation>
 <translation id="1148499908455722006">Hap dialogun e informacioneve për <ph name="USER_NAME" /></translation>
@@ -65,6 +66,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1275285675049378717">Po furnizon me energji <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">Gjej telefonin</translation>
+<translation id="1287002645302686982">Një tavolinë e ruajtur pune me emrin "<ph name="DESK_TEMPLATE_NAME" />" ekziston tashmë</translation>
 <translation id="1289185460362160437">Kthehu ditën <ph name="COME_BACK_DAY_OF_WEEK" /> në <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Sinjal i dobët</translation>
 <translation id="1290982764014248209">Zhvendos <ph name="DRAGGED_APP" /> në dosjen <ph name="FOLDER_NAME" />.</translation>
@@ -94,7 +96,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1420408895951708260">Ndrysho "Dritën e natës". <ph name="STATE_TEXT" /></translation>
 <translation id="1420732223884894666">Shiko fotografitë dhe mediat më të fundit të telefonin tënd në <ph name="DEVICE_TYPE" /></translation>
 <translation id="1426410128494586442">Po</translation>
-<translation id="1438357537418863713">Transmetimi i aplikacioneve është konfiguruar tani. Pasi të fillosh, aplikacionet e hapura së fundi do të shfaqen këtu.</translation>
+<translation id="1447641497144572814">Mbrojtësi i ekranit po niset</translation>
 <translation id="1455242230282523554">Shfaq cilësimet e gjuhës</translation>
 <translation id="1460620680449458626">Volumi është i çaktivizuar.</translation>
 <translation id="1467432559032391204">Majtas</translation>
@@ -135,6 +137,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1715293566947629045">Profili po çaktivizohet. Prit disa minuta.</translation>
 <translation id="1719094688023114093">"Titrat në çast" janë aktivë.</translation>
 <translation id="1720011244392820496">Aktivizo "Sinkronizimin e Wi-Fi"</translation>
+<translation id="1733996486177697563">Ndërro mes temës së errët dhe temës së ndriçuar. Prek dhe mbaj prekur në desktop dhe më pas zgjidh "Imazhi i sfondit dhe stili".</translation>
 <translation id="1736898441010944794">"<ph name="NAME" />" i dukshëm për pajisjet me Bluetooth.</translation>
 <translation id="174102739345480129">Treguesi është joaktiv.</translation>
 <translation id="1743570585616704562">Nuk njihet</translation>
@@ -195,17 +198,16 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2079504693865562705">Fshih aplikacionet në raft</translation>
 <translation id="2079545284768500474">Zhbëj</translation>
 <translation id="2083190527011054446">Natën e mirë <ph name="GIVEN_NAME" />,</translation>
+<translation id="2088116547584365419">lojërat</translation>
 <translation id="209965399369889474">Nuk është lidhur në rrjet</translation>
 <translation id="2107914222138020205">Kablloja jote USB-C nuk mbështet Thunderbolt. Cilësia e funksionimit të pajisjes mund të jetë e kufizuar.</translation>
 <translation id="2108303511227308752">Shkurtorja për Alt + Backspace është ndryshuar. Për të përdorur tastin Delete, shtyp tastin <ph name="LAUNCHER_KEY_NAME" /> key + Backspace.</translation>
 <translation id="211328683600082144">NDIZ MIKROFONIN</translation>
 <translation id="2123115117533398272">ChromeOS shfaq sugjerime për përmbajtje të reja për të eksploruar. Dërgon statistika për të përmirësuar cilësinë vetëm nëse ke zgjedhur të ndash të dhënat e përdorimit. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Tavolinë e re</translation>
-<translation id="2127372758936585790">Ngarkues me fuqi të ulët</translation>
 <translation id="2132302418721800944">Regjistro ekranin e plotë</translation>
 <translation id="2135456203358955318">Zmadhuesi i stacionuar</translation>
 <translation id="2148716181193084225">Sot</translation>
-<translation id="2159930836979502091">Shko te kjo skedë</translation>
 <translation id="2170530631236737939">Rrëshqit shpejt poshtë me tre gishta për të dalë nga "Përmbledhja"</translation>
 <translation id="219905428774326614">Launcher, të gjitha aplikacionet</translation>
 <translation id="2201071101391734388">Fotografia e fundit <ph name="INDEX" /> nga <ph name="TOTAL_COUNT" />.</translation>
@@ -249,6 +251,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="243878895369688216">Hapur dje</translation>
 <translation id="2441427462554639370">Regjistrimi u mbyll për shkak të nivelit jashtëzakonisht të ulët të hapësirës ruajtëse</translation>
 <translation id="24452542372838207">Zgjero njoftimin</translation>
+<translation id="2449089818483227734">Bateria në nivel të ulët</translation>
 <translation id="2450205753526923158">Modaliteti i pamjes së ekranit</translation>
 <translation id="2456008742792828469">Kalendar, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">Konfirmo rezolucionin</translation>
@@ -267,6 +270,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2586561057878260610">Shtyp Ctrl + W për ta kombinuar me <ph name="DESK_NAME" />. Shtyp Ctrl + Shift + W për të mbyllur tavolinën e punës dhe dritaret.</translation>
 <translation id="2595239820337756193">Sa milje janë 5 km</translation>
 <translation id="2596078834055697711">Nxirr një pamje ekrani për dritaren</translation>
+<translation id="2598725286293895280">Aplikacione të pambështetura në tavolinën e punës</translation>
 <translation id="2607678425161541573">Kërkohet identifikim në linjë</translation>
 <translation id="2620016719323068571">Kërko te <ph name="CATEGORY" />, skedarët, aplikacionet dhe të tjera...</translation>
 <translation id="2620436844016719705">Sistemi</translation>
@@ -297,7 +301,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2791421900609674576">Do të shohësh rekomandime, në mënyrë që të vazhdosh aty ku e ke lënë. Mund të prekësh dhe të mbash shtypur për të hequr rekomandimet.</translation>
 <translation id="2792498699870441125">Alt+Kërko</translation>
 <translation id="2797741504905337289">Grupi i rafteve</translation>
-<translation id="2803313416453193357">Hap dosjen</translation>
 <translation id="2805756323405976993">Aplikacionet</translation>
 <translation id="2814448776515246190">Regjistrim i pjesshëm</translation>
 <translation id="2819276065543622893">Do të dalësh nga llogaria tani.</translation>
@@ -409,11 +412,13 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3445925074670675829">Pajisja USB-C</translation>
+<translation id="3455468639467374593">Shablloni, <ph name="TEMPLATE_NAME" /></translation>
 <translation id="3465223694362104965">Një tastierë tjetër është lidhur me këtë pajisje që nga identifikimi yt i fundit. Sigurohu që e beson këtë tastierë para se ta përdorësh atë.</translation>
 <translation id="3465356146291925647">Menaxhuar nga administratori yt</translation>
 <translation id="3477079411857374384">Control-Shift-Hapësirë</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">Rafti i fshehur automatikisht</translation>
+<translation id="3505066820268455558">Bateria po karikohet</translation>
 <translation id="3509391053705095206">Telefoni yt nuk mund të gjendet. Sigurohu që të jetë aktivizuar Bluetooth-i i telefonit tënd.</translation>
 <translation id="3510164367642747937">Thekso kursorin e miut</translation>
 <translation id="3513798432020909783">Llogaria menaxhohet nga <ph name="MANAGER_EMAIL" /></translation>
@@ -454,6 +459,8 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3633097874324966332">Hap cilësimet e Bluetooth-it për të çiftuar pajisjen</translation>
 <translation id="3638400994746983214">Ndrysho ekranin e privatësisë. <ph name="STATE_TEXT" /></translation>
 <translation id="3649505501900178324">Afati i përditësimit ka kaluar</translation>
+<translation id="3659814201068740063">Të mbetura: rreth <ph name="TIME_LEFT" /> (<ph name="PERCENTAGE" />%).
+Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="366222428570480733">Përdorues i menaxhuar (<ph name="USER_EMAIL_ADDRESS" />)</translation>
 <translation id="36813544980941320">Rrjetet Wi-Fi do të ndahen mes telefonit tënd dhe <ph name="DEVICE_NAME" /></translation>
 <translation id="3694122362646626770">Sajtet e uebit</translation>
@@ -508,6 +515,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3962859241508114581">Kënga e mëparshme</translation>
 <translation id="3969043077941541451">Joaktive</translation>
 <translation id="397105322502079400">Po llogarit...</translation>
+<translation id="397726367135689299">Karikimi i baterisë mund të mos jetë i qëndrueshëm.</translation>
 <translation id="3977512764614765090">Bateria është në <ph name="PERCENTAGE" />% dhe po karikohet.</translation>
 <translation id="3986082989454912832">Përgjigju</translation>
 <translation id="3995138139523574647">Pajisja USB-C (porta e pasme, djathtas)</translation>
@@ -642,6 +650,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">Shkurtorja e tastierës për <ph name="LAUNCHER_KEY_NAME" /> + Numri është ndryshuar. Për të përdorur tastet e funksioneve, shtyp tastin <ph name="LAUNCHER_KEY_NAME" /> + një tast në rreshtin e sipërm.</translation>
 <translation id="473775607612524610">Përditësoje</translation>
+<translation id="4740516757091333363">Të fshihet tavolina e ruajtur e punës?</translation>
 <translation id="4752784485658729358">Lejohen vetëm 6 tavolina të ruajtura pune. Hiq një tavolinë pune për të ruajtur një të re.</translation>
 <translation id="4759238208242260848">Shkarkimet</translation>
 <translation id="4774338217796918551">Kthehu përsëri nesër në <ph name="COME_BACK_TIME" />.</translation>
@@ -694,7 +703,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="5071064518267176975">Një aplikacion kërkon të përdorë mikrofonin</translation>
 <translation id="5078796286268621944">Kod i pasaktë PIN</translation>
 <translation id="5083553833479578423">Shkyç më shumë funksione të "Asistentit".</translation>
-<translation id="5106223312672646208">Personalizo</translation>
+<translation id="509790653408515442">Kur transmeton aplikacionet e telefonit tënd, ato do të shfaqen këtu</translation>
 <translation id="5107522548814527560">Ueb</translation>
 <translation id="5117590920725113268">Trego muajin e ardhshëm</translation>
 <translation id="5136175204352732067">Është lidhur një tastierë tjetër</translation>
@@ -717,6 +726,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="523505283826916779">Cilësimet e qasjes</translation>
 <translation id="5245201184978705914">Transkripti nuk mund të krijohet</translation>
 <translation id="5253783950165989294">U lidh me një pajisje me emrin "<ph name="DEVICE_NAME" />". Niveli i baterisë <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="5258528442992323769">Nuk ka asnjë tavolinë pune të ruajtur</translation>
 <translation id="5260676007519551770">Tavolina e punës 4</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> kërkon vëmendjen tënde.</translation>
 <translation id="5283198616748585639">Shto 1 minutë</translation>
@@ -737,7 +747,10 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="5331975486040154427">Pajisja USB-C (porta e pasme, majtas)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (djathtas)</translation>
 <translation id="5352250171825660495">"Tema e errët" është aktive</translation>
+<translation id="5356963482258194581">Ndërro mes temës së errët dhe temës së ndriçuar. Kliko me butonin djathtas në desktop dhe zgjidh "Imazhi i sfondit dhe stili".</translation>
+<translation id="5363163447017455357"><ph name="DELIMITER" /> Shko te kjo skedë</translation>
 <translation id="5379115545237091094">Shumë përpjekje</translation>
+<translation id="5391307769715781764">Të zëvendësohet tavolina e ruajtur e punës?</translation>
 <translation id="5393156353051693207">Prek dhe mbaj të shtypur kudo për të rirenditur aplikacionet</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> mbi <ph name="IN_PLACE_APP" />, lëshoje për të krijuar dosje.</translation>
 <translation id="5397578532367286026">Përdorimi dhe historiku i këtij përdoruesi mund të rishikohen nga menaxheri (<ph name="MANAGER_EMAIL" />) në chrome.com.</translation>
@@ -971,6 +984,7 @@ Instalim i ri</translation>
 <translation id="6790428901817661496">Luaj</translation>
 <translation id="6801878137098616817">Modifikuar së fundi</translation>
 <translation id="6803622936009808957">Nuk mundi të pasqyrojë ekranet sepse nuk u gjetën rezolucione të mbështetura. Në vend të kësaj kaloi në desktopin e zgjeruar.</translation>
+<translation id="6812232930908427253">Tavolina e punës nuk mund të ruhej. Shumë dritare ose skeda.</translation>
 <translation id="6818242057446442178">Një fjalë pas</translation>
 <translation id="6819327813400217281">Pamja paraprake e kamerës ka kaluar në këndin e poshtëm majtas</translation>
 <translation id="6820676911989879663">Bëj një pushim!</translation>
@@ -1030,6 +1044,7 @@ Instalim i ri</translation>
 <translation id="7130207228079676353">MË TË MUNDSHME</translation>
 <translation id="7131634465328662194">Do të dalësh automatikisht</translation>
 <translation id="7143207342074048698">Po lidhet</translation>
+<translation id="7144942256906679589">Statusi i baterisë</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Po rikthehet te rezolucioni i vjetër për <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Rifresko</translation>
@@ -1052,6 +1067,7 @@ Instalim i ri</translation>
 <translation id="7348093485538360975">Tastiera në ekran</translation>
 <translation id="735745346212279324">Rrjeti VPN u shkëput</translation>
 <translation id="7360036564632145207">Ndryshimi i mbrojtjes së qasjes te të dhënat e tua për pajisjet periferike mund të optimizojë cilësinë e funksionimit</translation>
+<translation id="736045644501761622">Cakto imazhin e sfondit dhe stilin</translation>
 <translation id="7371404428569700291">Regjistro dritaren</translation>
 <translation id="7377169924702866686">Kyçja e kapitaleve është aktive.</translation>
 <translation id="7377481913241237033">Lidhu me një kod</translation>
@@ -1095,6 +1111,7 @@ Instalim i ri</translation>
 <translation id="7593891976182323525">Kërko ose Shift</translation>
 <translation id="7600875258240007829">Shiko të gjitha njoftimet</translation>
 <translation id="7607002721634913082">Ndërprerë</translation>
+<translation id="7609951632080598826">Pamja e kalendarit, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Kamera u rilidh.</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Shfaq cilësimet e "Ndarjes në afërsi".</translation>
@@ -1118,8 +1135,6 @@ Instalim i ri</translation>
 <translation id="7720410380936703141">PROVO SËRISH</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 njoftim}other{# njoftime}}</translation>
 <translation id="7724603315864178912">Prite</translation>
-<translation id="7734209118399753735"><ph name="EVENT_SUMMARY" />, 
-        <ph name="TIME_RANGE" /></translation>
 <translation id="7745560842763881396">Shfaq aplikacionet në raft</translation>
 <translation id="7749443890790263709">Është arritur numri maksimal i tavolinave të punës.</translation>
 <translation id="7749640678855296659">Mikrofoni yt është aktualisht i fikur</translation>
@@ -1173,7 +1188,6 @@ Instalim i ri</translation>
 <translation id="8030169304546394654">I shkëputur</translation>
 <translation id="8036504271468642248">Fjalia e mëparshme</translation>
 <translation id="8042893070933512245">Hap menynë e cilësimeve të qasshmërisë</translation>
-<translation id="8042925093898452104">Mbyll informacionet e detajuara</translation>
 <translation id="8044457332620420407">Drita e pasme e tastierës është e fikur</translation>
 <translation id="8048123526339889627">Cilësimet e Bluetooth-it</translation>
 <translation id="8051716679295756675">Shablloni me emrin "<ph name="DESK_TEMPLATE_NAME" />" ekziston tashmë</translation>
@@ -1220,6 +1234,7 @@ Instalim i ri</translation>
 <translation id="8345019317483336363">U zgjodh dritarja <ph name="WINDOW_TITLE" /></translation>
 <translation id="8351131234907093545">Krijo një shënim</translation>
 <translation id="8364673525741149932">Aktivizo/çaktivizo "Grupin e rafteve". <ph name="STATE_TEXT" /></translation>
+<translation id="8369166482916924789">Tavolina e ruajtur e punës, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">Përpara një shkronjë</translation>
 <translation id="8371991222807690464">Performanca e pajisjes periferike mund të jetë e kufizuar në modalitetin "vizitor"</translation>
 <translation id="8374601332003098278">Shtyp "Enter" për të regjistruar një pjesë të ekranit</translation>
@@ -1253,6 +1268,7 @@ Instalim i ri</translation>
 <translation id="851458219935658693">Shfaq dritaret nga tavolina aktuale e punës, butoni i radios i zgjedhur</translation>
 <translation id="8517041960877371778">Pajisja jote <ph name="DEVICE_TYPE" /> mund të mos ngarkohet kur është e ndezur.</translation>
 <translation id="8535393432370007982">Zhbëj mënyrën e renditjes sipas ngjyrës</translation>
+<translation id="8542053257095774575">Nuk ka asnjë tavolinë pune apo shabllon të ruajtur</translation>
 <translation id="8546059259582788728">Mënyra e renditjes u zhbë me sukses</translation>
 <translation id="8551588720239073785">Cilësimet e datës dhe orës</translation>
 <translation id="8553395910833293175">Është caktuar tashmë te të gjitha tavolinat e punës.</translation>
@@ -1285,6 +1301,7 @@ Instalim i ri</translation>
 <translation id="8721053961083920564">Ndërro volumin. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Regjistrimi i plotë i ekranit</translation>
 <translation id="8734991477317290293">Ajo ndoshta po përpiqet të regjistrojë goditjet e tasteve</translation>
+<translation id="8735678380411481005">Ngjyra e dritës së sfondit të tastierës</translation>
 <translation id="8735953464173050365">Shfaq cilësimet e tastierës. Është zgjedhur <ph name="KEYBOARD_NAME" /></translation>
 <translation id="8755498163081687682">Verifiko identitetin tënd: <ph name="ORIGIN_NAME" /> dëshiron të konfirmojë që je ti</translation>
 <translation id="875593634123171288">Shfaq cilësimet e VPN</translation>
@@ -1330,6 +1347,7 @@ Instalim i ri</translation>
 <translation id="9000771174482730261">MENAXHO HAPËSIRËN RUAJTËSE</translation>
 <translation id="9017320285115481645">Fut kodin e qasjes së prindit për Family Link</translation>
 <translation id="9024331582947483881">ekrani i plotë</translation>
+<translation id="9029736946581028033">Pajisja do të fiket së shpejti</translation>
 <translation id="9030319654231318877">Joaktive deri në perëndim</translation>
 <translation id="9034924485347205037">Skedarët e Linux</translation>
 <translation id="9047624247355796468">Hap cilësimet për <ph name="NETWORK_NAME" /></translation>
@@ -1359,6 +1377,7 @@ Instalim i ri</translation>
 <translation id="9168436347345867845">Bëje më vonë</translation>
 <translation id="9178475906033259337">Po shfaq 1 rezultat për <ph name="QUERY" /></translation>
 <translation id="9179259655489829027">Ky funksion të lejon që të qasesh me shpejtësi te çdo përdorues i identifikuar pa kërkuar një fjalëkalim. Përdore këtë funksion vetëm me llogaritë që u beson.</translation>
+<translation id="9180906851711123156">Shtyp Ctrl + W për ta mbyllur</translation>
 <translation id="9183456764293710005">Zmadhuesi i ekranit të plotë</translation>
 <translation id="9193626018745640770">Po transmeton në një marrës të panjohur</translation>
 <translation id="9194617393863864469">Identifiko një përdorues tjetër...</translation>

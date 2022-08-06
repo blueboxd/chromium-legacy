@@ -22,6 +22,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/hash/hash.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
@@ -51,7 +53,6 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -673,7 +674,7 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
         ash::personalization_app::kWallpaperSubpageRelativeUrl);
     params.launch_source = apps::mojom::LaunchSource::kFromShelf;
     web_app::LaunchSystemWebAppAsync(
-        profile, web_app::SystemAppType::PERSONALIZATION, params);
+        profile, ash::SystemWebAppType::PERSONALIZATION, params);
     return;
   }
 
@@ -785,13 +786,13 @@ void WallpaperControllerClientImpl::FetchGooglePhotosPhoto(
                      weak_factory_.GetWeakPtr(), std::move(callback));
   google_photos_photos_fetchers_[account_id]->AddRequestAndStartIfNecessary(
       id, /*album_id=*/absl::nullopt,
-      /*resume_token=*/absl::nullopt, std::move(fetched_callback));
+      /*resume_token=*/absl::nullopt, /*shuffle=*/false,
+      std::move(fetched_callback));
 }
 
 void WallpaperControllerClientImpl::FetchDailyGooglePhotosPhoto(
     const AccountId& account_id,
     const std::string& album_id,
-    const absl::optional<std::string>& current_photo_id,
     FetchGooglePhotosPhotoCallback callback) {
   if (google_photos_photos_fetchers_.find(account_id) ==
       google_photos_photos_fetchers_.end()) {
@@ -803,10 +804,11 @@ void WallpaperControllerClientImpl::FetchDailyGooglePhotosPhoto(
   }
   auto fetched_callback = base::BindOnce(
       &WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched,
-      weak_factory_.GetWeakPtr(), current_photo_id, std::move(callback));
+      weak_factory_.GetWeakPtr(), account_id, std::move(callback));
   google_photos_photos_fetchers_[account_id]->AddRequestAndStartIfNecessary(
       /*item_id=*/absl::nullopt, album_id,
-      /*resume_token=*/absl::nullopt, std::move(fetched_callback));
+      /*resume_token=*/absl::nullopt, /*shuffle=*/true,
+      std::move(fetched_callback));
 }
 
 void WallpaperControllerClientImpl::FetchGooglePhotosAccessToken(
@@ -891,7 +893,7 @@ void WallpaperControllerClientImpl::OnGooglePhotosPhotoFetched(
 }
 
 void WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched(
-    const absl::optional<std::string>& current_photo_id,
+    const AccountId& account_id,
     FetchGooglePhotosPhotoCallback callback,
     ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
         response) {
@@ -906,20 +908,44 @@ void WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched(
     return;
   }
 
-  // TODO(b/229146895): Revist the random selection approach, specifically for
-  // large albums and to prevent repeateding the same subset of pictures in the
-  // event of unlucky randomness.
+  // For small albums (n<12), we will repeat the photos in the same shuffled
+  // order indefinitely as we cycle through the cache. For large albums, the
+  // cache of size 10 makes sure we don't repeat photos within 10 refreshes.
+  auto& photos = response->photos.value();
+  int new_size = std::min(10, static_cast<int>(photos.size() - 1));
 
-  // To avoid re-selecting the currently selected photo if one exists:
-  // * Reduce range to [0, size - 1) to prevent selecting of the last photo.
-  // * Treat selecting of the current photo as selecting of the last photo.
-  size_t selected_index = base::RandGenerator(response->photos.value().size() -
-                                              (current_photo_id ? 1u : 0u));
-  if (current_photo_id &&
-      response->photos.value()[selected_index]->id == current_photo_id)
-    selected_index = response->photos.value().size() - 1u;
+  // Using a cache with the new size to populate with the stored data means
+  // that we will inherently drop the oldest values if the album has shrunk
+  // enough to warrant a change in cache size.
+  ash::WallpaperController::DailyGooglePhotosIdCache ids(new_size);
+  if (!wallpaper_controller_->GetDailyGooglePhotosWallpaperIdCache(account_id,
+                                                                   ids)) {
+    // This is expected the first time a user uses Google Photos wallpaper, but
+    // would be an error after that.
+    DVLOG(1) << "No cache of previously shown Google Photos ids found."
+                "Starting with an empty one.";
+  }
 
-  std::move(callback).Run(std::move(response->photos.value()[selected_index]),
+  // TODO(b/229146895): Delete this shuffle once the Google Photos API has
+  // been updated to shuffle for us. This doesn't work for big albums (n>100).
+  base::RandomShuffle(photos.begin(), photos.end());
+
+  // Get the first photo from the shuffled set that is not in the LRU cache.
+  auto selected_itr = std::find_if(
+      photos.begin(), photos.end(),
+      [&ids](
+          const ash::personalization_app::mojom::GooglePhotosPhotoPtr& photo) {
+        return ids.Peek(base::PersistentHash(photo->id)) == ids.end();
+      });
+
+  DCHECK(selected_itr != photos.end());
+  auto& selected = *selected_itr;
+
+  ids.Put(base::PersistentHash(selected->id));
+  bool success = wallpaper_controller_->SetDailyGooglePhotosWallpaperIdCache(
+      account_id, ids);
+  DCHECK(success);
+  std::move(callback).Run(std::move(selected),
                           /*success=*/true);
 }
 

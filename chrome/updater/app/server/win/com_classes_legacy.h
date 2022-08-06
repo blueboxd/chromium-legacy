@@ -215,8 +215,6 @@ class LegacyProcessLauncherImpl
 // Placeholders may be embedded within words, and appropriate quoting of
 // back-slash, double-quotes, space, and tab is applied if necessary.
 //
-// TODO(crbug/1318293): Verify AppCommand executables are authenticode signed by
-// Google before executing them.
 // TODO(crbug/1316682): Implement AutoRunOnOSUpgrade app commands.
 class LegacyAppCommandWebImpl
     : public Microsoft::WRL::RuntimeClass<
@@ -281,7 +279,8 @@ class LegacyAppCommandWebImpl
       const std::wstring& command_id,
       Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl>& web_impl);
 
-  HRESULT Initialize(std::wstring command_format);
+  bool InitializeExecutable(UpdaterScope scope, const base::FilePath& exe_path);
+  HRESULT Initialize(UpdaterScope scope, std::wstring command_format);
 
   absl::optional<std::wstring> FormatCommandLine(
       const std::vector<std::wstring>& parameters) const;

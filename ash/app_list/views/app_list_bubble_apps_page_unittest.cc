@@ -325,6 +325,37 @@ TEST_F(AppListBubbleAppsPageTest, CanShowContinueSectionByClickingButton) {
   EXPECT_TRUE(apps_page->separator_for_test()->GetVisible());
 }
 
+// Regression test for https://crbug.com/1329227
+TEST_F(AppListBubbleAppsPageTest, HiddenContinueSectionDoesNotAnimateOnShow) {
+  base::test::ScopedFeatureList feature_list(
+      features::kLauncherHideContinueSection);
+
+  // Simulate a user with the continue section hidden on startup.
+  Shell::Get()->app_list_controller()->SetHideContinueSection(true);
+
+  // Enable animations.
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Show the app list with enough items that the continue section and
+  // recent apps would normally be visible.
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  helper->AddRecentApps(5);
+  helper->AddAppItems(5);
+  helper->ShowAppList();
+
+  // Continue section view is not visible and does not have a layer animation.
+  auto* continue_section = helper->GetBubbleContinueSectionView();
+  EXPECT_FALSE(continue_section->GetVisible());
+  EXPECT_FALSE(continue_section->layer());
+
+  // Recent apps view is not visible and does not have a layer animation.
+  auto* recent_apps = helper->GetBubbleRecentAppsView();
+  EXPECT_FALSE(recent_apps->GetVisible());
+  EXPECT_FALSE(recent_apps->layer());
+}
+
 TEST_F(AppListBubbleAppsPageTest, SortAppsMakesA11yAnnouncement) {
   auto* helper = GetAppListTestHelper();
   helper->AddAppItems(5);
@@ -457,12 +488,12 @@ TEST_P(AppListBubbleAppsReorderTest, ScrollToShowUndoToastWhenSorting) {
             apps_page->separator_for_test()->GetVisible());
 
   // Before sorting, the undo toast should be invisible.
-  EXPECT_FALSE(reorder_undo_toast_container->is_toast_visible());
+  EXPECT_FALSE(reorder_undo_toast_container->IsToastVisible());
 
   SortAppList(AppListSortOrder::kNameAlphabetical, /*wait=*/true);
 
   // After sorting, the undo toast should be visible.
-  EXPECT_TRUE(reorder_undo_toast_container->is_toast_visible());
+  EXPECT_TRUE(reorder_undo_toast_container->IsToastVisible());
 
   // Scroll the apps page to the end.
   views::ScrollView* scroll_view = apps_page->scroll_view();
@@ -486,7 +517,7 @@ TEST_P(AppListBubbleAppsReorderTest, ScrollToShowUndoToastWhenSorting) {
                                     scroll_view->contents(), &origin);
   toast_container_bounds_in_scroll_view =
       gfx::Rect(origin, reorder_undo_toast_container->size());
-  EXPECT_TRUE(reorder_undo_toast_container->is_toast_visible());
+  EXPECT_TRUE(reorder_undo_toast_container->IsToastVisible());
   EXPECT_TRUE(scroll_view->GetVisibleRect().Contains(
       toast_container_bounds_in_scroll_view));
 }
@@ -502,11 +533,11 @@ TEST_F(AppListBubbleAppsPageTest, CloseReorderToast) {
 
   AppListToastContainerView* toast_container =
       helper->GetBubbleAppsPage()->toast_container_for_test();
-  EXPECT_FALSE(toast_container->is_toast_visible());
+  EXPECT_FALSE(toast_container->IsToastVisible());
 
   // Sort app list and expect undo toast to be shown with close button.
   SortAppList(AppListSortOrder::kNameAlphabetical, /*wait=*/true);
-  EXPECT_TRUE(toast_container->is_toast_visible());
+  EXPECT_TRUE(toast_container->IsToastVisible());
   EXPECT_TRUE(toast_container->GetCloseButton());
 
   // Click on close button to dismiss the toast.
@@ -516,7 +547,7 @@ TEST_F(AppListBubbleAppsPageTest, CloseReorderToast) {
   EXPECT_EQ(toast_container->toast_view()->layer()->GetTargetOpacity(), 0.0f);
   LayerAnimationStoppedWaiter().Wait(toast_container->toast_view()->layer());
 
-  EXPECT_FALSE(toast_container->is_toast_visible());
+  EXPECT_FALSE(toast_container->IsToastVisible());
 }
 
 }  // namespace

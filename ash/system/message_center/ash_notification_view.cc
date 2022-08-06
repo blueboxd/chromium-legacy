@@ -25,6 +25,7 @@
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/message_center_utils.h"
 #include "ash/system/message_center/metrics_utils.h"
+#include "ash/system/message_center/notification_grouping_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
@@ -49,6 +50,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_view_controller.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/vector_icons.h"
@@ -238,6 +240,13 @@ using Orientation = views::BoxLayout::Orientation;
 
 BEGIN_METADATA(AshNotificationView, NotificationTitleRow, views::View)
 END_METADATA
+
+void AshNotificationView::Layout() {
+  if (is_animating_)
+    return;
+
+  message_center::NotificationViewBase::Layout();
+}
 
 void AshNotificationView::GroupedNotificationsContainer::
     ChildPreferredSizeChanged(views::View* view) {
@@ -477,6 +486,8 @@ AshNotificationView::AshNotificationView(
                 CreateGroupedNotificationsContainerBuilder(this).CopyAddressTo(
                     &grouped_notifications_container_))
             .Build());
+    static_cast<views::BoxLayout*>(GetLayoutManager())
+        ->SetFlexForView(grouped_notifications_scroll_view_, 1);
   } else {
     AddChildView(CreateGroupedNotificationsContainerBuilder(this)
                      .CopyAddressTo(&grouped_notifications_container_)
@@ -586,6 +597,81 @@ void AshNotificationView::AnimateGroupedChildExpandedCollapse(bool expanded) {
       "Ash.NotificationView.CollapsedSummaryView.FadeIn.AnimationSmoothness");
 }
 
+void AshNotificationView::AnimateSingleToGroup(
+    NotificationGroupingController* grouping_controller,
+    const std::string& notification_id,
+    std::string parent_id) {
+  ash::message_center_utils::InitLayerForAnimations(left_content());
+  ash::message_center_utils::InitLayerForAnimations(right_content());
+  ash::message_center_utils::InitLayerForAnimations(
+      message_label_in_expanded_state_);
+  ash::message_center_utils::InitLayerForAnimations(image_container_view());
+  ash::message_center_utils::InitLayerForAnimations(action_buttons_row());
+
+  message_center::Notification* parent_notification =
+      message_center::MessageCenter::Get()->FindNotificationById(parent_id);
+
+  auto on_animation_ended = base::BindOnce(
+      [](base::WeakPtr<ash::AshNotificationView> parent,
+         views::View* left_content, views::View* right_content,
+         views::View* message_label_in_expanded_state,
+         views::View* image_container_view, views::View* action_buttons_row,
+         AshNotificationExpandButton* expand_button,
+         NotificationGroupingController* grouping_controller,
+         const std::string& notification_id, std::string parent_id,
+         message_center::Notification* parent_notification) {
+        if (!parent)
+          return;
+
+        grouping_controller->ConvertFromSingleToGroupNotificationAfterAnimation(
+            notification_id, parent_id, parent_notification);
+
+        left_content->layer()->SetOpacity(1.0f);
+        right_content->layer()->SetOpacity(1.0f);
+        message_label_in_expanded_state->layer()->SetOpacity(1.0f);
+        image_container_view->layer()->SetOpacity(1.0f);
+        action_buttons_row->layer()->SetOpacity(1.0f);
+
+        // After fade out single notification and set up a group one, perform
+        // a fade in.
+        parent->AnimateSingleToGroupFadeIn();
+
+        expand_button->set_previous_bounds(expand_button->GetContentsBounds());
+        parent->Layout();
+        expand_button->AnimateSingleToGroupNotification();
+      },
+      weak_factory_.GetWeakPtr(), left_content_, right_content(),
+      message_label_in_expanded_state_, image_container_view(),
+      action_buttons_row(), expand_button_, grouping_controller,
+      notification_id, parent_id, parent_notification);
+
+  std::pair<base::OnceClosure, base::OnceClosure> split =
+      base::SplitOnceCallback(std::move(on_animation_ended));
+
+  ui::AnimationThroughputReporter reporter(
+      left_content()->layer()->GetAnimator(),
+      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+        base::UmaHistogramPercentage(
+            "Ash.NotificationView.ConvertSingleToGroup.FadeOut."
+            "AnimationSmoothness",
+            smoothness);
+      })));
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(std::move(split.first))
+      .OnAborted(std::move(split.second))
+      .Once()
+      .SetDuration(
+          base::Milliseconds(kConvertFromSingleToGroupFadeOutDurationMs))
+      .SetOpacity(left_content(), 0.0f, gfx::Tween::LINEAR)
+      .SetOpacity(right_content(), 0.0f, gfx::Tween::LINEAR)
+      .SetOpacity(message_label_in_expanded_state_, 0.0f, gfx::Tween::LINEAR)
+      .SetOpacity(image_container_view(), 0.0f, gfx::Tween::LINEAR)
+      .SetOpacity(action_buttons_row(), 0.0f, gfx::Tween::LINEAR);
+}
+
 void AshNotificationView::ToggleExpand() {
   SetManuallyExpandedOrCollapsed(true);
 
@@ -659,6 +745,7 @@ base::TimeDelta AshNotificationView::GetBoundsAnimationDuration(
 
 void AshNotificationView::AddGroupNotification(
     const message_center::Notification& notification) {
+  DCHECK(is_grouped_parent_view_);
   // Do not add a grouped notification if a view for it already exists.
   if (FindGroupNotificationView(notification.id()))
     return;
@@ -667,8 +754,11 @@ void AshNotificationView::AddGroupNotification(
       std::make_unique<AshNotificationView>(notification,
                                             /*shown_in_popup=*/false);
   notification_view->SetGroupedChildExpanded(IsExpanded());
+  notification_view->set_parent_message_view(this);
   notification_view->set_scroller(
       scroller() ? scroller() : grouped_notifications_scroll_view_);
+
+  header_row()->SetTimestamp(notification.timestamp());
 
   grouped_notifications_container_->AddChildViewAt(std::move(notification_view),
                                                    0);
@@ -682,6 +772,7 @@ void AshNotificationView::AddGroupNotification(
 
 void AshNotificationView::PopulateGroupNotifications(
     const std::vector<const message_center::Notification*>& notifications) {
+  DCHECK(is_grouped_parent_view_);
   // Clear all grouped notifications since we will add all grouped notifications
   // from scratch.
   total_grouped_notifications_ = 0;
@@ -691,11 +782,16 @@ void AshNotificationView::PopulateGroupNotifications(
     auto notification_view =
         std::make_unique<AshNotificationView>(*notification,
                                               /*shown_in_popup=*/false);
+
+    if (!total_grouped_notifications_)
+      header_row()->SetTimestamp(notification->timestamp());
+
     notification_view->SetVisible(
         total_grouped_notifications_ <
             message_center_style::kMaxGroupedNotificationsInCollapsedState ||
         IsExpanded());
     notification_view->SetGroupedChildExpanded(IsExpanded());
+    notification_view->set_parent_message_view(this);
     notification_view->set_scroller(
         scroller() ? scroller() : grouped_notifications_scroll_view_);
 
@@ -710,18 +806,44 @@ void AshNotificationView::PopulateGroupNotifications(
 
 void AshNotificationView::RemoveGroupNotification(
     const std::string& notification_id) {
-  AshNotificationView* to_be_deleted = static_cast<AshNotificationView*>(
+  AshNotificationView* to_be_removed = static_cast<AshNotificationView*>(
       FindGroupNotificationView(notification_id));
 
-  if (!to_be_deleted)
+  if (!to_be_removed)
     return;
 
-  grouped_notifications_container_->RemoveChildViewT(to_be_deleted);
-  total_grouped_notifications_--;
-  left_content_->SetVisible(total_grouped_notifications_ == 0);
-  UpdateGroupedNotificationsVisibility();
-  expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
-  PreferredSizeChanged();
+  auto on_notification_slid_out = base::BindRepeating(
+      [](base::WeakPtr<AshNotificationView> self,
+         const std::string& notification_id) {
+        if (!self)
+          return;
+
+        views::View* to_be_removed =
+            self->FindGroupNotificationView(notification_id);
+        if (!to_be_removed)
+          return;
+
+        self->total_grouped_notifications_--;
+        self->expand_button_->UpdateGroupedNotificationsCount(
+            self->total_grouped_notifications_);
+
+        self->AnimateResizeAfterRemoval(to_be_removed);
+      },
+      weak_factory_.GetWeakPtr(), notification_id);
+
+  // If the removed notification has a layer transform it has already been slid
+  // out (For example user swiped it by dragging). We only need to animate a
+  // slide out if there is no transform.
+  if (to_be_removed->layer()->transform().IsIdentity()) {
+    message_center_utils::SlideOutView(
+        to_be_removed, on_notification_slid_out,
+        /*delay_in_ms=*/0,
+        /*duration_in_ms=*/kSlideOutGroupedNotificationAnimationDurationMs,
+        gfx::Tween::LINEAR,
+        "Ash.Notification.GroupNotification.SlideOut.AnimationSmoothness");
+  } else {
+    on_notification_slid_out.Run();
+  }
 }
 
 const char* AshNotificationView::GetClassName() const {
@@ -737,6 +859,7 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
       !is_grouped_child_view_ && !is_grouped_parent_view_ && expanded;
   header_row()->SetVisible(is_grouped_parent_view_ ||
                            (is_single_expanded_notification));
+  header_row()->SetTimestampVisible(!is_grouped_parent_view_ || !expanded);
 
   if (title_row_) {
     title_row_->UpdateVisibility(is_grouped_child_view_ ||
@@ -891,17 +1014,15 @@ void AshNotificationView::CreateOrUpdateSmallIconView(
 void AshNotificationView::CreateOrUpdateInlineSettingsViews(
     const message_center::Notification& notification) {
   if (inline_settings_enabled()) {
-    // TODO(crbug/1265636): Fix this logic when grouped parent notification has
-    // inline settings.
-    DCHECK(is_grouped_parent_view_ ||
-           (message_center::SettingsButtonHandler::INLINE ==
-            notification.rich_notification_data().settings_button_handler));
+    DCHECK(message_center::SettingsButtonHandler::INLINE ==
+           notification.rich_notification_data().settings_button_handler);
     return;
   }
 
   set_inline_settings_enabled(
+      !is_grouped_child_view_ &&
       notification.rich_notification_data().settings_button_handler ==
-      message_center::SettingsButtonHandler::INLINE);
+          message_center::SettingsButtonHandler::INLINE);
 
   if (!inline_settings_enabled()) {
     return;
@@ -1315,6 +1436,65 @@ void AshNotificationView::UpdateIconAndButtonsColor(
     snooze_button_->SetIconColor(button_color);
 }
 
+void AshNotificationView::AnimateResizeAfterRemoval(
+    views::View* to_be_removed) {
+  auto on_resize_complete = base::BindRepeating(
+      [](base::WeakPtr<AshNotificationView> self) {
+        if (!self)
+          return;
+
+        self->set_is_animating(false);
+
+        if (self->shown_in_popup_) {
+          self->grouped_notifications_scroll_view_->Layout();
+        }
+      },
+      weak_factory_.GetWeakPtr());
+
+  int group_container_previous_height =
+      grouped_notifications_container_->height();
+  int removed_index =
+      grouped_notifications_container_->GetIndexOf(to_be_removed);
+  grouped_notifications_container_->RemoveChildViewT(to_be_removed).reset();
+
+  message_center_utils::GetActiveNotificationViewControllerForNotificationView(
+      this)
+      ->AnimateResize();
+
+  if (shown_in_popup_) {
+    grouped_notifications_scroll_view_->Layout();
+  } else {
+    Layout();
+    PreferredSizeChanged();
+  }
+
+  int grouped_container_height_reduction =
+      group_container_previous_height -
+      grouped_notifications_container_->height();
+
+  views::AnimationBuilder animation_builder;
+
+  if (grouped_notifications_container_->children().begin() + removed_index >=
+      grouped_notifications_container_->children().end()) {
+    return;
+  }
+  set_is_animating(true);
+  animation_builder.OnEnded(on_resize_complete);
+  for (auto it =
+           grouped_notifications_container_->children().begin() + removed_index;
+       it != grouped_notifications_container_->children().end(); it++) {
+    gfx::Rect child_bounds = (*it)->layer()->GetTargetBounds();
+    (*it)->layer()->SetBounds(gfx::Rect(
+        child_bounds.x(), child_bounds.y() + grouped_container_height_reduction,
+        child_bounds.width(), child_bounds.height()));
+
+    animation_builder.Once()
+        .SetDuration(base::Milliseconds(
+            message_center::kNotificationResizeAnimationDurationMs))
+        .SetBounds((*it), child_bounds, gfx::Tween::EASE_OUT);
+  }
+}
+
 void AshNotificationView::PerformExpandCollapseAnimation() {
   if (title_row_)
     title_row_->PerformExpandCollapseAnimation();
@@ -1369,7 +1549,7 @@ void AshNotificationView::PerformExpandCollapseAnimation() {
       Layout();
     DCHECK(!needs_layout());
 
-    expand_button_->PerformExpandCollapseAnimation();
+    expand_button_->AnimateExpandCollapse();
   }
 }
 
@@ -1556,6 +1736,16 @@ void AshNotificationView::PerformToggleInlineSettingsAnimation(
       main_right_view_, kToggleInlineSettingsFadeInDelayMs,
       kToggleInlineSettingsFadeInDurationMs, gfx::Tween::LINEAR,
       "Ash.NotificationView.MainRightView.FadeIn.AnimationSmoothness");
+}
+
+void AshNotificationView::AnimateSingleToGroupFadeIn() {
+  auto* fade_in_view = shown_in_popup_ ? grouped_notifications_scroll_view_
+                                       : grouped_notifications_container_;
+  message_center_utils::InitLayerForAnimations(fade_in_view);
+  message_center_utils::FadeInView(
+      fade_in_view, /*delay_in_ms=*/0,
+      kConvertFromSingleToGroupFadeInDurationMs, gfx::Tween::LINEAR,
+      "Ash.NotificationView.ConvertSingleToGroup.FadeIn.AnimationSmoothness");
 }
 
 int AshNotificationView::CalculateMaxHeightForGroupedNotifications() {

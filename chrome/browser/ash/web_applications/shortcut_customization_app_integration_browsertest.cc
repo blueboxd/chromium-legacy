@@ -10,7 +10,6 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -39,7 +38,7 @@ IN_PROC_BROWSER_TEST_P(ShortcutCustomizationAppIntegrationTest,
                        ShortcutCustomizationAppInLauncher) {
   const GURL url(ash::kChromeUIShortcutCustomizationAppURL);
   EXPECT_NO_FATAL_FAILURE(
-      ExpectSystemWebAppValid(web_app::SystemAppType::SHORTCUT_CUSTOMIZATION,
+      ExpectSystemWebAppValid(ash::SystemWebAppType::SHORTCUT_CUSTOMIZATION,
                               url, "Shortcut Customization"));
 
   histogram_tester_.ExpectBucketCount(
@@ -51,8 +50,8 @@ IN_PROC_BROWSER_TEST_P(ShortcutCustomizationAppIntegrationTest,
                        LaunchMetricsTest) {
   WaitForTestSystemAppInstall();
 
-  LaunchSystemWebAppAsync(profile(),
-                          web_app::SystemAppType::SHORTCUT_CUSTOMIZATION);
+  web_app::LaunchSystemWebAppAsync(
+      profile(), ash::SystemWebAppType::SHORTCUT_CUSTOMIZATION);
 
   histogram_tester_.ExpectUniqueSample(
       "Apps.DefaultAppLaunch.FromChromeInternal", 44, 1);

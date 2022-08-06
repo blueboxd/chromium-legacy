@@ -221,6 +221,7 @@ PageLoadTracker::PageLoadTracker(
   embedder_interface_->RegisterObservers(this);
   if (navigation_handle->IsInPrerenderedMainFrame()) {
     DCHECK(!started_in_foreground_);
+    DCHECK_EQ(ukm::kInvalidSourceId, source_id_);
     InvokeAndPruneObservers("PageLoadMetricsObserver::OnPrerenderStart",
                             base::BindRepeating(
                                 [](content::NavigationHandle* navigation_handle,
@@ -230,13 +231,15 @@ PageLoadTracker::PageLoadTracker(
                                       navigation_handle,
                                       currently_committed_url);
                                 },
-                                navigation_handle, currently_committed_url));
+                                navigation_handle, currently_committed_url),
+                            /*permit_forwarding=*/false);
     base::UmaHistogramEnumeration(
         internal::kPageLoadPrerender2Event,
         internal::PageLoadPrerenderEvent::kNavigationInPrerenderedMainFrame);
     RecordPageType(internal::PageLoadTrackerPageType::kPrerenderPage);
   } else if (navigation_handle->GetNavigatingFrameType() ==
              content::FrameType::kFencedFrameRoot) {
+    DCHECK_NE(ukm::kInvalidSourceId, source_id_);
     InvokeAndPruneObservers("PageLoadMetricsObserver::OnFencedFramesStart",
                             base::BindRepeating(
                                 [](content::NavigationHandle* navigation_handle,
@@ -246,9 +249,11 @@ PageLoadTracker::PageLoadTracker(
                                       navigation_handle,
                                       currently_committed_url);
                                 },
-                                navigation_handle, currently_committed_url));
+                                navigation_handle, currently_committed_url),
+                            /*permit_forwarding=*/true);
     RecordPageType(internal::PageLoadTrackerPageType::kFencedFramesPage);
   } else {
+    DCHECK_NE(ukm::kInvalidSourceId, source_id_);
     InvokeAndPruneObservers(
         "PageLoadMetricsObserver::OnStart",
         base::BindRepeating(
@@ -259,8 +264,8 @@ PageLoadTracker::PageLoadTracker(
                                        currently_committed_url,
                                        started_in_foreground);
             },
-            navigation_handle, currently_committed_url,
-            started_in_foreground_));
+            navigation_handle, currently_committed_url, started_in_foreground_),
+        /*permit_forwarding=*/false);
     RecordPageType(internal::PageLoadTrackerPageType::kPrimaryPage);
   }
 
@@ -339,7 +344,8 @@ void PageLoadTracker::PageHidden() {
                                  PageLoadMetricsObserverInterface* observer) {
                                 return observer->OnHidden(*timing);
                               },
-                              &metrics_update_dispatcher_.timing()));
+                              &metrics_update_dispatcher_.timing()),
+                          /*permit_forwarding=*/false);
 }
 
 void PageLoadTracker::PageShown() {
@@ -361,7 +367,8 @@ void PageLoadTracker::PageShown() {
       "PageLoadMetricsObserver::OnShown",
       base::BindRepeating([](PageLoadMetricsObserverInterface* observer) {
         return observer->OnShown();
-      }));
+      }),
+      /*permit_forwarding=*/false);
 }
 
 void PageLoadTracker::SubFrameDeleted(int frame_tree_node_id) {
@@ -399,6 +406,12 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
     // Notify the parent of the inner main frame navigation as a sub-frame
     // navigation.
     parent_tracker_->DidFinishSubFrameNavigation(navigation_handle);
+  } else if (navigation_handle->IsPrerenderedPageActivation()) {
+    // We don't deliver OnCommit() for activation. Prerendered pages will see
+    // DidActivatePrerenderedPage() instead.
+    // Event records below are also not needed as we did them for the initial
+    // navigation on starting prerendering.
+    return;
   }
 
   did_commit_ = true;
@@ -419,14 +432,16 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
              PageLoadMetricsObserverInterface* observer) {
             return observer->ShouldObserveMimeType(mime_type);
           },
-          navigation_handle->GetWebContents()->GetContentsMimeType()));
+          navigation_handle->GetWebContents()->GetContentsMimeType()),
+      /*permit_forwarding=*/false);
   InvokeAndPruneObservers("PageLoadMetricsObserver::OnCommit",
                           base::BindRepeating(
                               [](content::NavigationHandle* navigation_handle,
                                  PageLoadMetricsObserverInterface* observer) {
                                 return observer->OnCommit(navigation_handle);
                               },
-                              navigation_handle));
+                              navigation_handle),
+                          /*permit_forwarding=*/false);
 }
 
 void PageLoadTracker::DidActivatePrerenderedPage(
@@ -522,7 +537,8 @@ void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
                                  PageLoadMetricsObserverInterface* observer) {
                                 return observer->OnRedirect(navigation_handle);
                               },
-                              navigation_handle));
+                              navigation_handle),
+                          /*permit_forwarding=*/false);
 }
 
 void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
@@ -546,7 +562,8 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
              PageLoadMetricsObserverInterface* observer) {
             return observer->FlushMetricsOnAppEnterBackground(*timing);
           },
-          &metrics_update_dispatcher_.timing()));
+          &metrics_update_dispatcher_.timing()),
+      /*permit_forwarding=*/false);
 }
 
 void PageLoadTracker::OnLoadedResource(
@@ -624,7 +641,11 @@ void PageLoadTracker::AddObserverInterface(
     std::unique_ptr<PageLoadMetricsObserverInterface> observer) {
   if (observer->GetObserverName()) {
     DCHECK(observers_map_.find(observer->GetObserverName()) ==
-           observers_map_.end());
+           observers_map_.end())
+        << "We expect that observer's class and name is unique in trackers. "
+           "Note that observer's class can be non-unique in test, e.g. "
+           "PageLoadMetricsTestWaiter. In that case, use a unique name in "
+           "the test. See also constructor of PageLoadMetricsTestWaiter.";
     observers_map_.emplace(observer->GetObserverName(), observer.get());
   }
   observers_.push_back(std::move(observer));
@@ -1046,6 +1067,9 @@ PageLoadTracker::GetExperimentalLargestContentfulPaintHandler() const {
 }
 
 ukm::SourceId PageLoadTracker::GetPageUkmSourceId() const {
+  DCHECK_NE(ukm::kInvalidSourceId, source_id_)
+      << "GetPageUkmSourceId was called on a prerendered page before its "
+         "activation. We should not collect UKM while prerendering pages.";
   return source_id_;
 }
 
@@ -1065,7 +1089,8 @@ void PageLoadTracker::OnEnterBackForwardCache() {
              PageLoadMetricsObserverInterface* observer) {
             return observer->OnEnterBackForwardCache(*timing);
           },
-          &metrics_update_dispatcher_.timing()));
+          &metrics_update_dispatcher_.timing()),
+      /*permit_forwarding=*/false);
   metrics_update_dispatcher_.UpdateLayoutShiftNormalizationForBfcache();
   metrics_update_dispatcher_
       .UpdateResponsivenessMetricsNormalizationForBfcache();
@@ -1138,7 +1163,8 @@ base::WeakPtr<PageLoadTracker> PageLoadTracker::GetWeakPtr() {
 
 void PageLoadTracker::InvokeAndPruneObservers(
     const char* trace_name,
-    PageLoadTracker::InvokeCallback callback) {
+    PageLoadTracker::InvokeCallback callback,
+    bool permit_forwarding) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), trace_name);
   std::vector<std::unique_ptr<PageLoadMetricsObserverInterface>>
       forward_observers;
@@ -1154,6 +1180,7 @@ void PageLoadTracker::InvokeAndPruneObservers(
         it = observers_.erase(it);
         break;
       case PageLoadMetricsObserver::FORWARD_OBSERVING:
+        DCHECK(permit_forwarding);
         DCHECK((*it)->GetObserverName())
             << "GetObserverName should be implemented";
         auto target_observer =

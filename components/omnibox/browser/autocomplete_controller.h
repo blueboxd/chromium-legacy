@@ -24,6 +24,7 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/omnibox_log.h"
 
 class ClipboardProvider;
@@ -280,7 +281,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   void UpdateHeaderInfoFromZeroSuggestProvider(AutocompleteResult* result);
 
   // For each group of contiguous matches from the same TemplateURL, show the
-  // provider name as a description on the first match in the group.
+  // provider name as a description on the first match in the group. Starter
+  // Pack matches show their URLs as descriptions instead of the provider name.
   void UpdateKeywordDescriptions(AutocompleteResult* result);
 
   // For each AutocompleteMatch in |result|, updates the assisted query stats
@@ -320,8 +322,15 @@ class AutocompleteController : public AutocompleteProviderListener,
   // The client passed to the providers.
   std::unique_ptr<AutocompleteProviderClient> provider_client_;
 
+  // Returns a list of which providers to run based on whether we're in keyword
+  // mode and which keyword we're searching.  Currently returns all providers
+  // except when we're in keyword mode for a starter pack search engine.
+  Providers GetProvidersToRun();
+
   // A list of all providers.
   Providers providers_;
+
+  raw_ptr<BookmarkProvider> bookmark_provider_;
 
   raw_ptr<DocumentProvider> document_provider_;
 

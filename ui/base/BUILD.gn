@@ -287,6 +287,8 @@ component("base") {
       "cocoa/controls/button_utils.mm",
       "cocoa/controls/textfield_utils.h",
       "cocoa/controls/textfield_utils.mm",
+      "cocoa/cursor_utils.h",
+      "cocoa/cursor_utils.mm",
       "cocoa/defaults_utils.h",
       "cocoa/defaults_utils.mm",
       "cocoa/find_pasteboard.h",
@@ -526,6 +528,11 @@ component("base") {
     deps += [ "//ui/resources:ui_unscaled_resources_grd" ]
   }
 
+  if (is_mac) {
+    public_deps += [ "//ui/base/cursor" ]
+    deps += [ "//ui/resources:ui_resources_grd" ]
+  }
+
   if (toolkit_views) {
     deps += [ "//ui/events" ]
   }
@@ -536,6 +543,13 @@ component("base") {
 
   if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [
+      "//chromeos/crosapi/cpp:crosapi_constants",
+      "//chromeos/lacros:lacros_paths",
+    ]
   }
 
   if (use_glib) {
@@ -1114,7 +1128,7 @@ test("ui_base_unittests") {
         "//ui/base/ime/linux",
       ]
     }
-    if (is_linux && !is_chromecast && !is_chromeos_lacros) {
+    if (is_linux && !is_castos) {
       sources += [ "ime/linux/composition_text_util_pango_unittest.cc" ]
     }
     if (is_chromeos_ash || use_ozone) {

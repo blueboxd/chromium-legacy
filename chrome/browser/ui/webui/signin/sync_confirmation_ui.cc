@@ -67,8 +67,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   webui::SetJSModuleDefaults(source);
 
   static constexpr webui::ResourcePath kResources[] = {
-      {"signin_shared_css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
-      {"signin_vars_css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
+      {"signin_shared.css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
+      {"signin_vars.css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
       {"sync_confirmation_browser_proxy.js",
        IDR_SIGNIN_SYNC_CONFIRMATION_SYNC_CONFIRMATION_BROWSER_PROXY_JS},
       {"sync_confirmation.js",
@@ -116,6 +116,8 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
     title_id = IDS_SYNC_CONFIRMATION_TITLE_LACROS;
     info_title_id = IDS_SYNC_CONFIRMATION_SYNC_INFO_TITLE_LACROS;
     confirm_label_id = IDS_DONE;
+  } else {
+    title_id = IDS_SYNC_CONFIRMATION_TITLE_LACROS_NON_FORCED;
   }
 #endif
   AddStringResource(source, "syncConfirmationTitle", title_id);
@@ -130,6 +132,9 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
   source->AddResourcePath(
       "sync_confirmation_app.js",
       IDR_SIGNIN_SYNC_CONFIRMATION_SYNC_CONFIRMATION_APP_JS);
+  source->AddResourcePath(
+      "sync_confirmation_app.html.js",
+      IDR_SIGNIN_SYNC_CONFIRMATION_SYNC_CONFIRMATION_APP_HTML_JS);
   source->SetDefaultResource(
       IDR_SIGNIN_SYNC_CONFIRMATION_SYNC_CONFIRMATION_HTML);
 
@@ -195,6 +200,9 @@ void SyncConfirmationUI::InitializeForSyncDisabled(
   source->AddResourcePath(
       "sync_disabled_confirmation_app.js",
       IDR_SIGNIN_SYNC_CONFIRMATION_SYNC_DISABLED_CONFIRMATION_APP_JS);
+  source->AddResourcePath(
+      "sync_disabled_confirmation_app.html.js",
+      IDR_SIGNIN_SYNC_CONFIRMATION_SYNC_DISABLED_CONFIRMATION_APP_HTML_JS);
 
   AddStringResource(source, "syncDisabledConfirmationTitle",
                     IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE);

@@ -35,7 +35,7 @@ id<GREYMatcher> HistoryButton() {
 }
 
 // Matcher for an element with or without the
-// UIAccessibilityTraitSelected accessibility trait depending on |selected|.
+// UIAccessibilityTraitSelected accessibility trait depending on `selected`.
 id<GREYMatcher> ElementIsSelected(BOOL selected) {
   return selected
              ? grey_accessibilityTrait(UIAccessibilityTraitSelected)
@@ -43,7 +43,7 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
 }
 
 // Returns a matcher (which always matches) that records the selection
-// state of matched element in |selected| parameter.
+// state of matched element in `selected` parameter.
 id<GREYMatcher> RecordElementSelectionState(BOOL& selected) {
   GREYMatchesBlock matches = ^BOOL(UIView* view) {
     selected = ([view accessibilityTraits] & UIAccessibilityTraitSelected) != 0;
@@ -135,11 +135,6 @@ using chrome_test_util::WindowWithNumber;
     EARL_GREY_TEST_DISABLED(
         @"Earl Grey doesn't work properly with SwiftUI and multiwindow");
   }
-
-  // TODO(crbug.com/1320858).
-#if TARGET_OS_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"This test fails on iPad Simulator");
-#endif
 
   [ChromeEarlGrey openNewWindow];
   [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];

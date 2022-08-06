@@ -18,7 +18,6 @@
 <translation id="1066060668811609597">Управљајте синхронизацијом</translation>
 <translation id="1076421457278169141">Скенирали сте кôд</translation>
 <translation id="1084365883616172403">Facebook пост је довршен.</translation>
-<translation id="1086486568852410168">Претражите помоћу Google објектива</translation>
 <translation id="1103523840287552314">Увек преводи <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Прихвати и настави</translation>
 <translation id="110724200315609752">Пређи на отворен прозор</translation>
@@ -241,6 +240,7 @@
 <translation id="2982481275546140226">Обриши податке</translation>
 <translation id="298306318844797842">Додајте начин плаћања...</translation>
 <translation id="2989805286512600854">Отвори на новој картици</translation>
+<translation id="3020183492814296499">Пречице</translation>
 <translation id="3037605927509011580">О, не!</translation>
 <translation id="3039722182465315531">Не пријављуј ме</translation>
 <translation id="3076846064362030967">Нећемо вас одјавити са Google налога. <ph name="BEGIN_LINK" />Други облици активности<ph name="END_LINK" /> могу да се сачувају на Google налогу када сте пријављени. Можете да их избришете у било ком тренутку.
@@ -249,6 +249,7 @@
 Погледајте упутства претраживача за брисање историје претраге ако је то примењиво.</translation>
 <translation id="3080525922482950719">Можете да сачувате странице да бисте их читали касније или офлајн</translation>
 <translation id="3081338492074632642">Проверите да ли се лозинка коју чувате подудара са лозинком за <ph name="WEBSITE" /></translation>
+<translation id="3103603146121354983">Аутоматски попуните лозинке</translation>
 <translation id="3112556859945124369">Означи…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Погледајте шта можете да синхронизујете<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Све је блокирано</translation>
@@ -512,6 +513,7 @@
 <translation id="5416022985862681400">Последњих 7 дана</translation>
 <translation id="543338862236136125">Измените лозинку</translation>
 <translation id="5433691172869980887">Корисничко име је копирано</translation>
+<translation id="5439599923922718668">Често посећивано</translation>
 <translation id="54401264925851789">Информације о безбедности странице</translation>
 <translation id="5443952882982198570">Кредитне картице</translation>
 <translation id="5457226814769348910">Отвори офлајн верзију</translation>
@@ -526,7 +528,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5551897871312988470">Понуди превод</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5580834567471114021">Желите да додате на листу за читање за касније?</translation>
-<translation id="5592679540098330836">Укључите синхронизацију за: <ph name="NAME" /></translation>
 <translation id="560322036295180549">Искључила је организација</translation>
 <translation id="5614553682702429503">Желите ли да сачувате лозинку?</translation>
 <translation id="5626245204502895507">Тренутно није могуће преузети датотеку.</translation>
@@ -660,6 +661,7 @@ Handoff треба да се омогући у одељку General (Опште)
 
 Потрудите се да користите јединствену лозинку за сваки сајт.</translation>
 <translation id="650279896687777322">Сазнајте више…</translation>
+<translation id="6510072653668207258">Подсети ме касније</translation>
 <translation id="651505212789431520">Желите ли да откажете синхронизацију? Можете да укључите синхронизацију у Подешавањима у било ком тренутку.</translation>
 <translation id="6524918542306337007">Режим без архивирања није доступан</translation>
 <translation id="6530992499366869131">Упозори ме ако су лозинке откривене при упаду у податке</translation>
@@ -736,6 +738,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7099761977003084116">Недавне картице</translation>
 <translation id="7102005569666697658"><ph name="FILE_SIZE" /> се преузима…</translation>
 <translation id="7108338896283013870">Сакриј</translation>
+<translation id="7108762695052995889">Иди на сајт</translation>
 <translation id="7133798577887235672">Име и презиме</translation>
 <translation id="7136892417564438900">Камера је недоступна</translation>
 <translation id="7153999225810839758">Чита се за <ph name="TIME" /> мин</translation>
@@ -900,7 +903,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8588404856427128947">Искључено</translation>
 <translation id="8590913940444621808">Никада не питај</translation>
 <translation id="8591976964826315682">Блокирајте колачиће трећих страна у режиму без архивирања</translation>
-<translation id="8592752150819985187">Аутоматски попуните лозинке</translation>
 <translation id="8605219856220328675">Затвори картицу.</translation>
 <translation id="8620640915598389714">Измени</translation>
 <translation id="8620785403235741379">Изаберите опцију</translation>

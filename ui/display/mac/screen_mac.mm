@@ -18,6 +18,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/display.h"
@@ -170,6 +171,10 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   // TODO(crbug.com/1078903): Support multiple internal displays.
   if (CGDisplayIsBuiltin(display_id))
     SetInternalDisplayIds({display_id});
+
+  // TODO(crbug.com/1254885): Implement for below 10.15.
+  if (@available(macOS 10.15, *))
+    display.set_label(base::SysNSStringToUTF8(screen.localizedName));
 
   return DisplayMac{display, screen};
 }

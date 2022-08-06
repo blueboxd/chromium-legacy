@@ -71,6 +71,12 @@
           "builder": "mac11-arm64-rel-tests",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "mac11-arm64-rel",
+          "group": "tryserver.chromium.mac"
+        }
       ]
     }
   },
@@ -89,6 +95,6 @@
   "builder_group": "chromium.mac",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

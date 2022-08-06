@@ -385,6 +385,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       [self.handler showClearBrowsingData];
       break;
     case ItemTypePrivacySafeBrowsing:
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.ShowedFromParentSettings"));
       [self.handler showSafeBrowsing];
       break;
     default:
@@ -470,7 +472,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 #pragma mark - private
 
 // Called from the HTTPS-Only Mode setting's UIControlEventTouchUpInside.
-// When this is called, |switchView| already has the updated value:
+// When this is called, `switchView` already has the updated value:
 // If the switch was off, and user taps it, when this method is called,
 // switchView.on is YES.
 - (void)HTTPSOnlyModeTapped:(UISwitch*)switchView {
@@ -479,7 +481,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 }
 
 // Called from the reauthentication setting's UIControlEventTouchUpInside.
-// When this is called, |switchView| already has the updated value:
+// When this is called, `switchView` already has the updated value:
 // If the switch was off, and user taps it, when this method is called,
 // switchView.on is YES.
 - (void)switchTapped:(UISwitch*)switchView {

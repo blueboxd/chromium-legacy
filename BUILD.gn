@@ -223,7 +223,7 @@ group("gn_all") {
     }
   }
 
-  if (!is_ios && !is_android) {
+  if (!is_ios && !is_android && !is_fuchsia) {
     deps += [ "//components/viz/demo:viz_demo" ]
     if (!use_libfuzzer) {
       # TODO(crbug.com/1241949): libcronet.$version.so fails to link in libfuzzer builds.
@@ -260,12 +260,11 @@ group("gn_all") {
   }
 
   if (is_fuchsia && !is_chromecast) {
+    # Add targets that only exist on Fuchsia.
     deps += [
       ":d8_fuchsia",
       "//build/fuchsia/cipd",
-      "//fuchsia/engine:web_engine",
-      "//fuchsia/runners:cast_runner",
-      "//fuchsia/runners:web_runner",
+      "//fuchsia_web:gn_all",
       "//tools/fuchsia/size_tests:fuchsia_sizes",
 
       # Ensure this target, used by cipd, is built in all configurations.
@@ -474,6 +473,7 @@ group("gn_all") {
       "//components/exo/wayland:wayland_client_compatibility_tests",
       "//components/session_manager/core",
       "//third_party/shell-encryption:shell_encryption_unittests",
+      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
       "//ui/chromeos:ui_chromeos_unittests",
     ]
   }
@@ -691,11 +691,14 @@ group("gn_all") {
     deps += [ "//chromecast:cast_test_lists" ]
 
     if (!is_fuchsia) {
-      deps += [ "//chromecast:cast_shell" ]
-      deps += [ "//chromecast/cast_core:core_runtime_simple" ]
-    }
-    if (enable_extensions && use_aura) {
-      deps += [ "//chrome/browser/resources/chromeos/accessibility:build" ]
+      deps += [
+        "//chromecast:cast_shell",
+        "//chromecast/cast_core:core_runtime_simple",
+      ]
+
+      if (enable_extensions && use_aura) {
+        deps += [ "//chrome/browser/resources/chromeos/accessibility:build" ]
+      }
     }
   }
 
@@ -727,15 +730,19 @@ group("gn_all") {
     deps += [ "//third_party/sqlite:sqlite_shell" ]
   }
 
+  if ((is_linux && !is_chromecast) || is_chromeos_lacros || is_fuchsia) {
+    # TODO(https://crbug.com/1329673): Figure out if this should be in gn_all and how cross-platform this is.
+    deps += [ "//components/services/filesystem:filesystem_service_unittests" ]
+  }
+
   if ((is_linux && !is_chromecast) || is_chromeos_lacros) {
-    # TODO(GYP): Figure out if any of these should be in gn_all
+    # TODO(https://crbug.com/1329673): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
     deps += [
       "//chrome/installer/util:strings",
       "//chrome/tools/convert_dict",
       "//components/constrained_window:unit_tests",
       "//components/metrics:serialization",
-      "//components/services/filesystem:filesystem_service_unittests",
       "//components/sessions:unit_tests",
       "//media/cast:udp_proxy",
       "//storage/browser:dump_file_system",
@@ -888,6 +895,16 @@ if (enable_remoting && ((is_linux && ozone_platform_x11) ||
     if (is_win) {
       deps += [ "//chrome/chrome_cleaner:shipped_binaries" ]
     }
+  }
+}
+
+if (is_chromeos_ash) {
+  group("traffic_annotation_auditor_dependencies") {
+    deps = [
+      "//chrome",
+      "//chromeos",
+      "//tools/traffic_annotation/summary:annotations_xml",
+    ]
   }
 }
 
@@ -1342,6 +1359,7 @@ if (!is_ios) {
       "//third_party/blink/web_tests/overflow/",
       "//third_party/blink/web_tests/paint/",
       "//third_party/blink/web_tests/payments/",
+      "//third_party/blink/web_tests/pending_beacon/",
       "//third_party/blink/web_tests/permissionclient/",
       "//third_party/blink/web_tests/plugins/",
       "//third_party/blink/web_tests/pointer-lock/",
@@ -1400,7 +1418,6 @@ if (!is_ios) {
       data += [
         "//third_party/blink/web_tests/SmokeTests/Mac.txt",
         "//third_party/blink/web_tests/platform/mac/",
-        "//third_party/blink/web_tests/platform/mac-mac10.12/",
         "//third_party/blink/web_tests/platform/mac-mac10.13/",
         "//third_party/blink/web_tests/platform/mac-mac10.14/",
         "//third_party/blink/web_tests/platform/mac-mac10.15/",

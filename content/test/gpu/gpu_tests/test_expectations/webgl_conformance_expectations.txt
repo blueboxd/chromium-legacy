@@ -5,8 +5,7 @@
 #         chromeos
 #         fuchsia
 #         linux ubuntu
-#         mac bigsur catalina lion highsierra mac-10.12 mojave monterey
-#             mountainlion sierra
+#         mac highsierra mojave catalina bigsur monterey
 #         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
@@ -26,8 +25,8 @@
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
-#               intel-0x5912
+#         intel intel-hd-630-family intel-0xa2e intel-0xd26 intel-0xa011
+#               intel-0x3e92 intel-0x3e9b intel-0x5912
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Decoder
@@ -138,11 +137,9 @@ crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl linux ] WebglExtension_E
 crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 
 # Extensions not available under D3D9
-[ win angle-d3d9 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
 crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 [ win amd angle-d3d9 ] WebglExtension_WEBGL_depth_texture [ Skip ]
 [ win angle-d3d9 ] WebglExtension_WEBGL_draw_buffers [ Skip ]
-[ win angle-d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Skip ]
 [ win angle-d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ win angle-d3d9 no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
@@ -419,7 +416,8 @@ crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] confor
 # Intel OpenGL driver issue, fixed in 27.20.100.9126
 crbug.com/angleproject/5543 [ win intel angle-opengl passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
 
-# Note that the following test seems to pass, but it may still be flaky.
+# Consistent failures in functions.control_flow.return_in_nested_loop_vertex and functions.control_flow.return_in_nested_loop_fragment
+# Possible HLSL compiler bug.
 crbug.com/478572 [ win angle-d3d9 passthrough ] deqp/data/gles2/shaders/functions.html [ Failure ]
 
 # Win / AMD D3D11 (default) failures
@@ -441,10 +439,6 @@ crbug.com/956134 [ win angle-d3d9 ] conformance/extensions/webgl-depth-texture.h
 
 # Mark ANGLE's OpenGL as flaky on Windows Nvidia
 crbug.com/582083 [ win nvidia angle-opengl ] conformance/* [ RetryOnFailure ]
-
-# D3D9 / Passthrough command decoder
-crbug.com/angleproject/2192 [ win angle-d3d9 passthrough ] conformance/textures/canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/angleproject/2192 [ win angle-d3d9 passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 
 # D3D9 / AMD RX 5500 XT / Passthrough command decoder
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/more/glsl/uniformOutOfBounds.html [ RetryOnFailure ]
@@ -475,7 +469,7 @@ crbug.com/844311 [ mac no-swiftshader-gl ] conformance/glsl/misc/fragcolor-fragd
 # Mac AMD failures
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/1230781 [ mac amd-0x679e ] conformance/canvas/to-data-url-test.html [ Failure ]
-crbug.com/1236072 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
+crbug.com/1240443 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 crbug.com/1227774 [ mac amd angle-opengl ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/1276186 [ mac amd-0x679e angle-opengl ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 
@@ -626,6 +620,7 @@ crbug.com/1287249 [ android android-pixel-6 passthrough ] conformance/extensions
 crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
 crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
+crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough ] conformance/more/conformance/quickCheckAPI-A.html [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]

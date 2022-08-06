@@ -8815,6 +8815,24 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "blink_fuzzer_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_fuzzer_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "blink_heap_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/heap:blink_heap_unittests/"
       },
@@ -8924,7 +8942,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_browsertests",
-        "test_id_prefix": "ninja://fuchsia/runners:cast_runner_browsertests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_browsertests/"
       },
       {
         "merge": {
@@ -8942,7 +8960,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_integration_tests",
-        "test_id_prefix": "ninja://fuchsia/runners:cast_runner_integration_tests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_integration_tests/"
       },
       {
         "merge": {
@@ -8960,7 +8978,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_unittests",
-        "test_id_prefix": "ninja://fuchsia/runners:cast_runner_unittests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_unittests/"
       },
       {
         "merge": {
@@ -9182,6 +9200,24 @@
         },
         "test": "extensions_unittests",
         "test_id_prefix": "ninja://extensions:extensions_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "filesystem_service_unittests",
+        "test_id_prefix": "ninja://components/services/filesystem:filesystem_service_unittests/"
       },
       {
         "merge": {
@@ -9833,7 +9869,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_browsertests",
-        "test_id_prefix": "ninja://fuchsia/engine:web_engine_browsertests/"
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_browsertests/"
       },
       {
         "args": [
@@ -9854,7 +9890,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_integration_tests",
-        "test_id_prefix": "ninja://fuchsia/engine:web_engine_integration_tests/"
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_integration_tests/"
       },
       {
         "merge": {
@@ -9872,7 +9908,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_unittests",
-        "test_id_prefix": "ninja://fuchsia/engine:web_engine_unittests/"
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_unittests/"
       },
       {
         "merge": {
@@ -9890,7 +9926,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_runner_integration_tests",
-        "test_id_prefix": "ninja://fuchsia/runners:web_runner_integration_tests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:web_runner_integration_tests/"
       },
       {
         "merge": {
@@ -10338,6 +10374,25 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "blink_fuzzer_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_fuzzer_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-20.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "blink_heap_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/heap:blink_heap_unittests/"
       },
@@ -10453,7 +10508,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_browsertests",
-        "test_id_prefix": "ninja://fuchsia/runners:cast_runner_browsertests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_browsertests/"
       },
       {
         "merge": {
@@ -10472,7 +10527,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_integration_tests",
-        "test_id_prefix": "ninja://fuchsia/runners:cast_runner_integration_tests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_integration_tests/"
       },
       {
         "merge": {
@@ -10491,7 +10546,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_unittests",
-        "test_id_prefix": "ninja://fuchsia/runners:cast_runner_unittests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_unittests/"
       },
       {
         "merge": {
@@ -10648,6 +10703,25 @@
         },
         "test": "events_unittests",
         "test_id_prefix": "ninja://ui/events:events_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-20.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "filesystem_service_unittests",
+        "test_id_prefix": "ninja://components/services/filesystem:filesystem_service_unittests/"
       },
       {
         "merge": {
@@ -11211,7 +11285,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_browsertests",
-        "test_id_prefix": "ninja://fuchsia/engine:web_engine_browsertests/"
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_browsertests/"
       },
       {
         "args": [
@@ -11233,7 +11307,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_integration_tests",
-        "test_id_prefix": "ninja://fuchsia/engine:web_engine_integration_tests/"
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_integration_tests/"
       },
       {
         "merge": {
@@ -11252,7 +11326,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_unittests",
-        "test_id_prefix": "ninja://fuchsia/engine:web_engine_unittests/"
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_unittests/"
       },
       {
         "merge": {
@@ -11271,7 +11345,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_runner_integration_tests",
-        "test_id_prefix": "ninja://fuchsia/runners:web_runner_integration_tests/"
+        "test_id_prefix": "ninja://fuchsia_web/runners:web_runner_integration_tests/"
       },
       {
         "merge": {
@@ -23212,6 +23286,7 @@
         "args": [
           "--test-type=integration"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "chromedriver_py_tests",
         "merge": {
           "args": [],
@@ -26801,6 +26876,7 @@
         "args": [
           "--test-type=integration"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "chromedriver_py_tests",
         "merge": {
           "args": [],
@@ -41671,7 +41747,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "absl_hardening_tests",
@@ -41703,7 +41779,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -41718,7 +41794,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "base_unittests",
@@ -41750,7 +41826,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -41765,7 +41841,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "boringssl_crypto_tests",
@@ -41797,7 +41873,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -41812,7 +41888,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "boringssl_ssl_tests",
@@ -41844,7 +41920,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -41859,7 +41935,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "components_unittests",
@@ -41891,7 +41967,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -41906,7 +41982,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "crypto_unittests",
@@ -41938,7 +42014,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -41953,7 +42029,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "gfx_unittests",
@@ -41985,7 +42061,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42000,7 +42076,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "google_apis_unittests",
@@ -42032,7 +42108,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42047,7 +42123,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "ios_chrome_unittests",
@@ -42079,7 +42155,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42094,7 +42170,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "ios_net_unittests",
@@ -42126,7 +42202,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42141,7 +42217,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "ios_web_inttests",
@@ -42173,7 +42249,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42188,7 +42264,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "ios_web_unittests",
@@ -42220,7 +42296,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42235,7 +42311,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "ios_web_view_inttests",
@@ -42267,7 +42343,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42282,7 +42358,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "net_unittests",
@@ -42314,7 +42390,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42329,7 +42405,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "skia_unittests",
@@ -42361,7 +42437,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42376,7 +42452,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "sql_unittests",
@@ -42408,7 +42484,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42423,7 +42499,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "ui_base_unittests",
@@ -42455,7 +42531,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],
@@ -42470,7 +42546,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13e113",
+          "13f17a",
           "--xctest"
         ],
         "isolate_name": "url_unittests",
@@ -42502,7 +42578,7 @@
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_13e113",
+              "name": "xcode_ios_13f17a",
               "path": "Xcode.app"
             }
           ],

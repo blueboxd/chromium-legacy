@@ -59,8 +59,6 @@ class MockHost(MockSystemHost):
         self.web = web or MockWeb()
         self._git = git
 
-        self.results_fetcher = MockTestResultsFetcher()
-
         # Note: We're using a real PortFactory here. Tests which don't wish to depend
         # on the list of known ports should override this with a MockPortFactory.
         self.port_factory = PortFactory(self)
@@ -78,9 +76,9 @@ class MockHost(MockSystemHost):
                 'port_name': 'linux-trusty',
                 'specifiers': ['Trusty', 'Debug']
             },
-            'Fake Test Mac10.12': {
-                'port_name': 'mac-mac10.12',
-                'specifiers': ['Mac10.12', 'Release'],
+            'Fake Test Mac11': {
+                'port_name': 'mac-mac11',
+                'specifiers': ['Mac11', 'Release'],
                 'is_try_builder': True,
             },
             'fake_blink_try_linux': {
@@ -99,7 +97,24 @@ class MockHost(MockSystemHost):
                 'specifiers': ['KitKat', 'Release'],
                 'is_try_builder': True,
             },
+            # For the try flag unit tests.
+            'linux-rel': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'is_try_builder': True,
+            },
+            'win7-rel': {
+                'port_name': 'win-win7',
+                'specifiers': ['Win7', 'Release'],
+                'is_try_builder': True,
+            },
+            'mac-rel': {
+                'port_name': 'mac-mac12',
+                'specifiers': ['Trusty', 'Release'],
+                'is_try_builder': True,
+            },
         })
+        self.results_fetcher = MockTestResultsFetcher(self.builders)
 
     def git(self, path=None):
         if path:

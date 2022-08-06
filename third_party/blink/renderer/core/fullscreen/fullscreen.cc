@@ -126,8 +126,10 @@ void FullscreenElementChanged(Document& document,
 
     // Update paint properties on the visual viewport since
     // user-input-scrollable bits will change based on fullscreen state.
-    if (Page* page = frame->GetPage())
-      page->GetVisualViewport().SetNeedsPaintPropertyUpdate();
+    if (Page* page = frame->GetPage()) {
+      if (page->GetVisualViewport().IsActiveViewport())
+        page->GetVisualViewport().SetNeedsPaintPropertyUpdate();
+    }
   }
 }
 
@@ -201,7 +203,7 @@ void GoFullscreen(Element& element,
   // If there are any open popups, close them, unless this fullscreen
   // element is a descendant of an open popup.
   if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
-    document.HideAllPopupsUntil(&element);
+    document.HideAllPopupsUntil(&element, HidePopupFocusBehavior::kNone);
 
   // To fullscreen an |element| within a |document|, set the |element|'s
   // fullscreen flag and add it to |document|'s top layer.

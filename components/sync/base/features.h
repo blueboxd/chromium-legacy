@@ -17,11 +17,6 @@ inline constexpr base::Feature kAllowSilentTrustedVaultDeviceRegistration{
     "AllowSilentTrustedVaultDeviceRegistration",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Causes the device to be a valid send-tab-to-self target and sender,
-// regardless of UserSelectableType::kTabs and SyncRequested.
-inline constexpr base::Feature kDecoupleSendTabToSelfAndSyncSettings{
-    "DecoupleSendTabToSelfAndSyncSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, EntitySpecifics will be cached in EntityMetadata in order to
 // prevent data loss caused by older clients dealing with unknown proto fields
 // (introduced later).
@@ -41,6 +36,13 @@ inline constexpr base::Feature kIgnoreSyncEncryptionKeysLongMissing{
 inline constexpr base::FeatureParam<int> kMinGuResponsesToIgnoreKey{
     &kIgnoreSyncEncryptionKeysLongMissing, "MinGuResponsesToIgnoreKey", 50};
 
+// When enabled, Sync machinery will read and writes password notes to the
+// `encrypted_notes_backup` field inside the PasswordSpecifics proto. Together
+// with the logic on the server. this protects against notes being overwritten
+// by legacy clients not supporting password notes.
+inline constexpr base::Feature kReadWritePasswordNotesBackupField{
+    "ReadWritePasswordNotesBackupField", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows custom passphrase users to receive Wallet data for secondary accounts
 // while in transport-only mode.
 inline constexpr base::Feature
@@ -49,6 +51,10 @@ inline constexpr base::Feature
         base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_ANDROID)
+inline constexpr base::Feature kSyncAndroidPromosWithAlternativeTitle{
+    "SyncAndroidPromosWithAlternativeTitle", base::FEATURE_DISABLED_BY_DEFAULT};
+inline constexpr base::Feature kSyncAndroidPromosWithIllustration{
+    "SyncAndroidPromosWithIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
 inline constexpr base::Feature kSyncAndroidPromosWithSingleButton{
     "SyncAndroidPromosWithSingleButton", base::FEATURE_DISABLED_BY_DEFAULT};
 inline constexpr base::Feature kSyncAndroidPromosWithTitle{
@@ -87,6 +93,10 @@ inline constexpr base::Feature kSyncSettingsShowLacrosSideBySideWarning{
 // Whether explicit passphrase sharing between Ash and Lacros is enabled.
 inline constexpr base::Feature kSyncChromeOSExplicitPassphraseSharing{
     "SyncChromeOSExplicitPassphraseSharing", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Whether Apps toggle value is exposed by Ash to Lacros.
+inline constexpr base::Feature kSyncChromeOSAppsToggleSharing{
+    "SyncChromeOSAppsToggleSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_IOS)
@@ -140,6 +150,9 @@ inline constexpr base::Feature
 // Returns whether RPC is enabled.
 bool IsSyncTrustedVaultPassphraseiOSRPCEnabled();
 #endif  // BUILDFLAG(IS_IOS)
+
+inline constexpr base::Feature kSyncEnableHistoryDataType = {
+    "SyncEnableHistoryDataType", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace syncer
 

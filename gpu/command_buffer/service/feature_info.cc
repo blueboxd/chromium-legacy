@@ -194,7 +194,7 @@ FeatureInfo::FeatureInfo(
           .status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_CASTOS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
@@ -1246,8 +1246,9 @@ void FeatureInfo::InitializeFeatures() {
   }
 
 #if BUILDFLAG(IS_MAC)
-  // Mac can create GLImages out of AR30 IOSurfaces only after High Sierra.
-  feature_flags_.chromium_image_ar30 = base::mac::IsAtLeastOS10_13();
+  // Mac can create GLImages out of AR30 IOSurfaces only after 10.13 which is
+  // required for Chromium.
+  feature_flags_.chromium_image_ar30 = true;
 #elif !BUILDFLAG(IS_WIN)
   // TODO(mcasas): connect in Windows, https://crbug.com/803451
   // XB30 support was introduced in GLES 3.0/ OpenGL 3.3, before that it was

@@ -11,7 +11,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/i18n/number_formatting.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
@@ -20,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -33,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/render_frame_host.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/test_crosapi_dependency_registry.h"
 #include "chrome/browser/ash/crosapi/test_local_printer_ash.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/test/chromeos/printing/fake_local_printer_chromeos.h"
@@ -87,24 +87,21 @@ constexpr mojom::PrinterType kFetchableTypes[] = {
 struct PrinterInfo {
   std::string id;
   bool is_default;
-  base::Value basic_info = base::Value(base::Value::Type::DICTIONARY);
-  base::Value capabilities = base::Value(base::Value::Type::DICTIONARY);
+  base::Value::Dict basic_info;
+  base::Value::Dict capabilities;
 };
 
 PrinterInfo GetSimplePrinterInfo(const std::string& name, bool is_default) {
   PrinterInfo simple_printer;
   simple_printer.id = name;
   simple_printer.is_default = is_default;
-  simple_printer.basic_info.SetKey("printer_name",
-                                   base::Value(simple_printer.id));
-  simple_printer.basic_info.SetKey("printer_description",
-                                   base::Value("Printer for test"));
-  simple_printer.basic_info.SetKey("printer_status", base::Value(1));
-  base::Value cdd(base::Value::Type::DICTIONARY);
-  base::Value capabilities(base::Value::Type::DICTIONARY);
-  simple_printer.capabilities.SetKey("printer",
-                                     simple_printer.basic_info.Clone());
-  simple_printer.capabilities.SetKey("capabilities", cdd.Clone());
+  simple_printer.basic_info.Set("printer_name", simple_printer.id);
+  simple_printer.basic_info.Set("printer_description", "Printer for test");
+  simple_printer.basic_info.Set("printer_status", 1);
+  base::Value::Dict cdd;
+  base::Value::Dict capabilities;
+  simple_printer.capabilities.Set("printer", simple_printer.basic_info.Clone());
+  simple_printer.capabilities.Set("capabilities", cdd.Clone());
   return simple_printer;
 }
 
@@ -112,13 +109,11 @@ PrinterInfo GetEmptyPrinterInfo() {
   PrinterInfo empty_printer;
   empty_printer.id = kEmptyPrinterName;
   empty_printer.is_default = false;
-  empty_printer.basic_info.SetKey("printer_name",
-                                  base::Value(empty_printer.id));
-  empty_printer.basic_info.SetKey("printer_description",
-                                  base::Value("Printer with no capabilities"));
-  empty_printer.basic_info.SetKey("printer_status", base::Value(0));
-  empty_printer.capabilities.SetKey("printer",
-                                    empty_printer.basic_info.Clone());
+  empty_printer.basic_info.Set("printer_name", empty_printer.id);
+  empty_printer.basic_info.Set("printer_description",
+                               "Printer with no capabilities");
+  empty_printer.basic_info.Set("printer_status", 0);
+  empty_printer.capabilities.Set("printer", empty_printer.basic_info.Clone());
   return empty_printer;
 }
 
@@ -211,14 +206,14 @@ class TestPrinterHandler : public PrinterHandler {
 
   void StartGetPrinters(AddedPrintersCallback added_printers_callback,
                         GetPrintersDoneCallback done_callback) override {
-    if (!printers_.GetListDeprecated().empty())
-      added_printers_callback.Run(printers_);
+    if (!printers_.empty())
+      added_printers_callback.Run(printers_.Clone());
     std::move(done_callback).Run();
   }
 
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override {
-    std::move(callback).Run(printer_capabilities_[destination_id]->Clone());
+    std::move(callback).Run(printer_capabilities_[destination_id].Clone());
   }
 
   void StartGrantPrinterAccess(const std::string& printer_id,
@@ -232,22 +227,19 @@ class TestPrinterHandler : public PrinterHandler {
   }
 
   void SetPrinters(const std::vector<PrinterInfo>& printers) {
-    base::Value::ListStorage printer_list;
+    printers_.clear();
     for (const auto& printer : printers) {
       if (printer.is_default)
         default_printer_ = printer.id;
-      printer_list.push_back(printer.basic_info.Clone());
-      printer_capabilities_[printer.id] = base::DictionaryValue::From(
-          std::make_unique<base::Value>(printer.capabilities.Clone()));
+      printers_.Append(printer.basic_info.Clone());
+      printer_capabilities_[printer.id] = printer.capabilities.Clone();
     }
-    printers_ = base::ListValue(printer_list);
   }
 
  private:
   std::string default_printer_;
-  base::ListValue printers_;
-  std::map<std::string, std::unique_ptr<base::DictionaryValue>>
-      printer_capabilities_;
+  base::Value::List printers_;
+  std::map<std::string, base::Value::Dict> printer_capabilities_;
 };
 
 class FakePrintPreviewUI : public PrintPreviewUI {
@@ -392,26 +384,25 @@ class PrintPreviewHandlerTest : public testing::Test {
 #endif
 
   void SetUp() override {
-    ASSERT_TRUE(testing_profile_manager_.SetUp());
-    profile_ = testing_profile_manager_.CreateSystemProfile();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    local_printer_ = std::make_unique<TestLocalPrinterAsh>(profile_, nullptr);
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
+    local_printer_ = std::make_unique<TestLocalPrinterAsh>(&profile_, nullptr);
     crosapi::IdleServiceAsh::DisableForTesting();
     chromeos::LoginState::Initialize();
     manager_ = crosapi::CreateCrosapiManagerWithTestRegistry();
 #endif
     initiator_web_contents_ = content::WebContents::Create(
-        content::WebContents::CreateParams(profile_));
+        content::WebContents::CreateParams(&profile_));
     content::WebContents* initiator = initiator_web_contents_.get();
     // Ensure the initiator has a RenderFrameHost with a live RenderFrame, as
     // the print code will not bother to send IPCs to a non-live RenderFrame.
     content::NavigationSimulator::NavigateAndCommitFromDocument(
-        GURL("about:blank"), initiator->GetMainFrame());
+        GURL("about:blank"), initiator->GetPrimaryMainFrame());
     preview_web_contents_ = content::WebContents::Create(
-        content::WebContents::CreateParams(profile_));
+        content::WebContents::CreateParams(&profile_));
     PrintViewManager::CreateForWebContents(initiator);
     PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(
-        initiator->GetMainFrame(), false);
+        initiator->GetPrimaryMainFrame(), false);
     web_ui_ = std::make_unique<content::TestWebUI>();
     web_ui_->set_web_contents(preview_web_contents_.get());
 
@@ -678,13 +669,12 @@ class PrintPreviewHandlerTest : public testing::Test {
 
   blink::AssociatedInterfaceProvider*
   GetInitiatorAssociatedInterfaceProvider() {
-    return initiator_web_contents_->GetMainFrame()
+    return initiator_web_contents_->GetPrimaryMainFrame()
         ->GetRemoteAssociatedInterfaces();
   }
 
-  const Profile* profile() { return profile_; }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
-    return profile_->GetTestingPrefService();
+    return profile_.GetTestingPrefService();
   }
   content::TestWebUI* web_ui() { return web_ui_.get(); }
   TestPrintPreviewHandler* handler() { return handler_; }
@@ -693,9 +683,15 @@ class PrintPreviewHandlerTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};
-  raw_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestLocalPrinterAsh> local_printer_;
+  std::unique_ptr<crosapi::CrosapiManager> manager_;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  TestLocalPrinter local_printer_;
+#endif
+  TestingProfile profile_;
   std::unique_ptr<content::TestWebUI> web_ui_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<content::WebContents> preview_web_contents_;
@@ -703,12 +699,6 @@ class PrintPreviewHandlerTest : public testing::Test {
   std::vector<PrinterInfo> printers_;
   raw_ptr<TestPrinterHandler> printer_handler_;
   raw_ptr<TestPrintPreviewHandler> handler_;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<TestLocalPrinterAsh> local_printer_;
-  std::unique_ptr<crosapi::CrosapiManager> manager_;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  TestLocalPrinter local_printer_;
-#endif
 };
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
@@ -905,39 +895,45 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableBackgroundGraphics) {
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultPaperSizeName) {
-  const char kPrintingPaperSizeDefaultName[] = R"(
-    {
-      "name": "iso_a5_148x210mm"
-    })";
   const char kExpectedInitialSettingsPolicy[] = R"(
     {
       "width": 148000,
       "height": 210000
     })";
 
-  absl::optional<base::Value> default_paper_size =
-      base::JSONReader::Read(kPrintingPaperSizeDefaultName);
-  ASSERT_TRUE(default_paper_size.has_value());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   crosapi::mojom::Policies policies;
   policies.paper_size_default = gfx::Size(148000, 210000);
   SetPolicies(policies);
 #else
   // Set a pref that should take priority over StickySettings.
-  prefs()->Set(prefs::kPrintingPaperSizeDefault, default_paper_size.value());
+  const char kPrintingPaperSizeDefaultName[] = R"(
+    {
+      "name": "iso_a5_148x210mm"
+    })";
+  prefs()->Set(prefs::kPrintingPaperSizeDefault,
+               base::test::ParseJson(kPrintingPaperSizeDefaultName));
 #endif
   Initialize();
 
-  absl::optional<base::Value> expected_initial_settings_policy =
-      base::JSONReader::Read(kExpectedInitialSettingsPolicy);
-  ASSERT_TRUE(expected_initial_settings_policy.has_value());
-
   ValidateInitialSettingsAllowedDefaultModePolicy(
       *web_ui()->call_data().back(), "mediaSize", absl::nullopt,
-      std::move(expected_initial_settings_policy));
+      base::test::ParseJson(kExpectedInitialSettingsPolicy));
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultPaperSizeCustomSize) {
+  const char kExpectedInitialSettingsPolicy[] = R"(
+    {
+      "width": 148000,
+      "height": 210000
+    })";
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.paper_size_default = gfx::Size(148000, 210000);
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
   const char kPrintingPaperSizeDefaultCustomSize[] = R"(
     {
       "name": "custom",
@@ -946,32 +942,14 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultPaperSizeCustomSize) {
         "height": 210000
       }
     })";
-  const char kExpectedInitialSettingsPolicy[] = R"(
-    {
-      "width": 148000,
-      "height": 210000
-    })";
-
-  absl::optional<base::Value> default_paper_size =
-      base::JSONReader::Read(kPrintingPaperSizeDefaultCustomSize);
-  ASSERT_TRUE(default_paper_size.has_value());
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  crosapi::mojom::Policies policies;
-  policies.paper_size_default = gfx::Size(148000, 210000);
-  SetPolicies(policies);
-#else
-  // Set a pref that should take priority over StickySettings.
-  prefs()->Set(prefs::kPrintingPaperSizeDefault, default_paper_size.value());
+  prefs()->Set(prefs::kPrintingPaperSizeDefault,
+               base::test::ParseJson(kPrintingPaperSizeDefaultCustomSize));
 #endif
   Initialize();
 
-  absl::optional<base::Value> expected_initial_settings_policy =
-      base::JSONReader::Read(kExpectedInitialSettingsPolicy);
-  ASSERT_TRUE(expected_initial_settings_policy.has_value());
-
   ValidateInitialSettingsAllowedDefaultModePolicy(
       *web_ui()->call_data().back(), "mediaSize", absl::nullopt,
-      std::move(expected_initial_settings_policy));
+      base::test::ParseJson(kExpectedInitialSettingsPolicy));
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1380,7 +1358,7 @@ class FailingTestPrinterHandler : public TestPrinterHandler {
 
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override {
-    std::move(callback).Run(base::Value());
+    std::move(callback).Run(base::Value::Dict());
   }
 };
 

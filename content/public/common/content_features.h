@@ -45,6 +45,8 @@ CONTENT_EXPORT extern const base::Feature
     kBlockInsecurePrivateNetworkRequestsDeprecationTrial;
 CONTENT_EXPORT extern const base::Feature
     kBlockInsecurePrivateNetworkRequestsForNavigations;
+CONTENT_EXPORT extern const base::Feature
+    kBrokerFileOperationsOnDiskCacheInNetworkService;
 CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;
 CONTENT_EXPORT extern const base::Feature
     kBrowserVerifiedUserActivationKeyboard;
@@ -262,6 +264,10 @@ CONTENT_EXPORT extern const base::Feature kWebAssemblyCodeProtectionPku;
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&
         // defined(ARCH_CPU_X86_64)
 CONTENT_EXPORT extern const base::Feature kWebAssemblyDynamicTiering;
+#if defined(ARCH_CPU_X86_64)
+CONTENT_EXPORT extern const base::Feature
+    kEnableExperimentalWebAssemblyStackSwitching;
+#endif  // defined(ARCH_CPU_X86_64)
 CONTENT_EXPORT extern const base::Feature kWebAssemblyLazyCompilation;
 CONTENT_EXPORT extern const base::Feature kWebAssemblySimd;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTiering;
@@ -270,7 +276,6 @@ CONTENT_EXPORT extern const base::Feature kWebAuthCable;
 CONTENT_EXPORT extern const base::Feature kWebAuthConditionalUI;
 CONTENT_EXPORT extern const base::Feature kWebBluetooth;
 CONTENT_EXPORT extern const base::Feature kWebBluetoothNewPermissionsBackend;
-CONTENT_EXPORT extern const base::Feature kWebBluetoothBondOnDemand;
 CONTENT_EXPORT extern const base::Feature kWebBundles;
 CONTENT_EXPORT extern const base::Feature kWebBundlesFromNetwork;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
@@ -288,7 +293,6 @@ CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoom;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
-CONTENT_EXPORT extern const base::Feature kBigLittleScheduling;
 CONTENT_EXPORT extern const base::Feature kCoalesceIndependentBeginFrame;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteExceptions;
@@ -297,12 +301,6 @@ CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
 
-extern const char kBigLittleSchedulingBrowserMainBiggerParam[];
-extern const char kBigLittleSchedulingBrowserMainBigParam[];
-extern const char kBigLittleSchedulingBrowserIOBigParam[];
-extern const char kBigLittleSchedulingRenderMainBigParam[];
-extern const char kBigLittleSchedulingNetworkMainBigParam[];
-extern const char kBigLittleSchedulingGpuMainBigParam[];
 extern const char kDragAndDropMovementThresholdDipParam[];
 
 CONTENT_EXPORT extern const base::Feature kOptimizeEarlyNavigation;

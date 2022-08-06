@@ -12,6 +12,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
@@ -44,15 +45,33 @@ class LogManager;
 
 // This class defines the interface should be implemented by autofill
 // implementation in browser side to interact with AutofillDriver.
+//
+// AutofillManager has two implementations:
+// - AndroidAutofillManager for WebView and WebLayer,
+// - BrowserAutofillManager for Chrome.
+//
+// It is owned by the AutofillDriver.
 class AutofillManager
     : public AutofillDownloadManager::Observer,
       public translate::TranslateDriver::LanguageDetectionObserver {
  public:
   // An observer class used by browsertests that gets notified whenever
   // particular actions occur.
-  class ObserverForTest {
+  class Observer : public base::CheckedObserver {
    public:
-    virtual void OnFormParsed() = 0;
+    virtual void OnFormParsed(){};
+
+    // See |AutofillManager::OnTextFieldDidChange|.
+    virtual void OnTextFieldDidChange(){};
+
+    // See |AutofillManager::OnTextFieldDidScroll|.
+    virtual void OnTextFieldDidScroll(){};
+
+    // See |AutofillManager::OnSelectControlDidChange|.
+    virtual void OnSelectControlDidChange(){};
+
+    // See |AutofillManager::OnFormSubmitted|.
+    virtual void OnFormSubmitted(){};
   };
 
   using EnableDownloadManager =
@@ -116,11 +135,15 @@ class AutofillManager
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
   // a window relative value of |field|.
   // |bounding_box| are viewport coordinates.
+  // |touch_to_fill_eligible| indicates if the Touch To Fill surface could be
+  // used for showing suggestion. Note that it doesn't guarantee the given form
+  // input field is eligible for autofilling.
   void OnAskForValuesToFill(int query_id,
                             const FormData& form,
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box,
-                            bool autoselect_first_suggestion);
+                            bool autoselect_first_suggestion,
+                            TouchToFillEligible touch_to_fill_eligible);
 
   // Invoked when |form|'s |field| has focus.
   // |bounding_box| are viewport coordinates.
@@ -172,10 +195,19 @@ class AutofillManager
   // Invoked when the options of a select element in the |form| changed.
   virtual void SelectFieldOptionsDidChange(const FormData& form) = 0;
 
+  // Invoked after JavaScript set the value of |field| in |form|. Only called
+  // if |field| was in autofilled state. Note that from a renderer's
+  // perspective, modifying the value with JavaScript leads to a state where
+  // the field is not considered autofilled anymore. So this notification won't
+  // be sent again until the field gets autofilled again.
+  virtual void JavaScriptChangedAutofilledValue(
+      const FormData& form,
+      const FormFieldData& field,
+      const std::u16string& old_value) = 0;
+
   // Invoked when the field type predictions are downloaded from the autofill
   // server.
   virtual void PropagateAutofillPredictions(
-      content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) = 0;
 
   virtual void ReportAutofillWebOTPMetrics(bool used_web_otp) = 0;
@@ -209,8 +241,10 @@ class AutofillManager
   // Returns the number of forms this Autofill handler is aware of.
   size_t NumFormsDetected() const { return form_structures_.size(); }
 
-  void SetEventObserverForTesting(ObserverForTest* observer) {
-    observer_for_testing_ = observer;
+  void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
+
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
   }
 
   // Returns the present form structures seen by Autofill handler.
@@ -293,11 +327,13 @@ class AutofillManager
                                         const FormFieldData& field,
                                         const gfx::RectF& bounding_box) = 0;
 
-  virtual void OnAskForValuesToFillImpl(int query_id,
-                                        const FormData& form,
-                                        const FormFieldData& field,
-                                        const gfx::RectF& bounding_box,
-                                        bool autoselect_first_suggestion) = 0;
+  virtual void OnAskForValuesToFillImpl(
+      int query_id,
+      const FormData& form,
+      const FormFieldData& field,
+      const gfx::RectF& bounding_box,
+      bool autoselect_first_suggestion,
+      TouchToFillEligible touch_to_fill_eligible) = 0;
 
   virtual void OnFocusOnFormFieldImpl(const FormData& form,
                                       const FormFieldData& field,
@@ -396,8 +432,8 @@ class AutofillManager
   std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>
       form_interactions_ukm_logger_;
 
-  // Will be not null only for |SaveCardBubbleViewsFullFormBrowserTest|.
-  raw_ptr<ObserverForTest> observer_for_testing_ = nullptr;
+  // Observers that listen to updates of this instance.
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace autofill

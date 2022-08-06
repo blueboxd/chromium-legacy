@@ -277,10 +277,6 @@ uint32_t AlgorithmIdForWireFormat(WebCryptoAlgorithmId id) {
       return kHkdfTag;
     case kWebCryptoAlgorithmIdPbkdf2:
       return kPbkdf2Tag;
-    // TODO(crbug.com/1032821): Handle them explicitly for Lint.
-    case kWebCryptoAlgorithmIdEd25519:
-    case kWebCryptoAlgorithmIdX25519:
-      return 0;
   }
   NOTREACHED() << "Unknown algorithm ID " << id;
   return 0;
@@ -380,7 +376,7 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
         return false;
       }
       WriteUint32(static_cast<uint32_t>(params.PublicExponent().size()));
-      WriteRawBytes(params.PublicExponent().Data(),
+      WriteRawBytes(params.PublicExponent().data(),
                     params.PublicExponent().size());
       WriteUint32(AlgorithmIdForWireFormat(params.GetHash().Id()));
       break;
@@ -413,7 +409,7 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
     return false;
   }
   WriteUint32(static_cast<uint32_t>(key_data.size()));
-  WriteRawBytes(key_data.Data(), key_data.size());
+  WriteRawBytes(key_data.data(), key_data.size());
 
   return true;
 }

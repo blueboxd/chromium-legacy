@@ -29,6 +29,7 @@
 
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/notreached.h"
@@ -145,6 +146,10 @@ enum {
   kOverflowClipY = 1 << 1,
   kOverflowClipBothAxis = kOverflowClipX | kOverflowClipY,
 };
+
+// Expands |clip_rect| to allow infinite overflow in horizontal and/or vertical
+// direction.
+void ApplyVisibleOverflowToClipRect(OverflowClipAxes, PhysicalRect& clip_rect);
 
 #if DCHECK_IS_ON()
 const int kShowTreeCharacterOffset = 39;
@@ -362,6 +367,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return parent_;
   }
   bool IsDescendantOf(const LayoutObject*) const;
+  LayoutObject* NonCulledParent() const;
 
   LayoutObject* PreviousSibling() const {
     NOT_DESTROYED();
@@ -644,6 +650,16 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   inline bool ShouldApplyBlockSizeContainment() const {
     NOT_DESTROYED();
     return StyleRef().ContainsBlockSize() && IsEligibleForSizeContainment();
+  }
+  inline bool ShouldApplyWidthContainment() const {
+    NOT_DESTROYED();
+    return IsHorizontalWritingMode() ? ShouldApplyInlineSizeContainment()
+                                     : ShouldApplyBlockSizeContainment();
+  }
+  inline bool ShouldApplyHeightContainment() const {
+    NOT_DESTROYED();
+    return IsHorizontalWritingMode() ? ShouldApplyBlockSizeContainment()
+                                     : ShouldApplyInlineSizeContainment();
   }
   inline bool ShouldApplyStyleContainment() const {
     NOT_DESTROYED();
@@ -1046,6 +1062,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return false;
   }
 
+  virtual bool IsDocumentTransitionContent() const {
+    NOT_DESTROYED();
+    return false;
+  }
+
   virtual bool IsInlineBlockOrInlineTable() const {
     NOT_DESTROYED();
     return false;
@@ -1274,6 +1295,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectSVGForeignObject);
   }
+  bool IsSVGForeignObjectIncludingNG() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectSVGForeignObject) ||
+           IsOfType(kLayoutObjectNGSVGForeignObject);
+  }
   bool IsSVGResourceContainer() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectSVGResourceContainer);
@@ -1285,6 +1311,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool IsNGSVGText() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGSVGText);
+  }
+  bool IsNGSVGForeignObject() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectNGSVGForeignObject);
   }
 
   // FIXME: Those belong into a SVG specific base-class for all layoutObjects
@@ -1301,7 +1331,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool IsBlendingAllowed() const {
     NOT_DESTROYED();
     return !IsSVG() || IsSVGShape() || IsSVGImage() || IsSVGText() ||
-           IsSVGInline() || IsSVGRoot() || IsSVGForeignObject() ||
+           IsSVGInline() || IsSVGRoot() || IsSVGForeignObjectIncludingNG() ||
            IsNGSVGText() ||
            // Blending does not apply to non-renderable elements such as
            // patterns (see: https://github.com/w3c/fxtf-drafts/issues/309).
@@ -1708,6 +1738,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     // Always check HasNonVisibleOverflow() in case the object is not allowed to
     // have non-visible overflow.
+#if DCHECK_IS_ON()
+    const auto* element = DynamicTo<Element>(GetNode());
+    DCHECK(!element || !element->IsReplacedElementRespectingCSSOverflow() ||
+           !StyleRef().IsScrollContainer())
+        << "Replaced elements forbid scrolling " << element;
+#endif
     return HasNonVisibleOverflow() && StyleRef().IsScrollContainer();
   }
 
@@ -1820,6 +1856,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   // Returns true if this object is a proper descendant of any list marker.
   bool IsInListMarker() const;
+
+  bool IsTextDecorationBoundary(NGStyleVariant) const;
 
   // The pseudo element style can be cached or uncached. Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
@@ -2740,6 +2778,15 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool CanUpdateSelectionOnRootLineBoxes() const;
 
+  SelectionState GetSelectionStateForPaint() const {
+    NOT_DESTROYED();
+    return bitfields_.GetSelectionStateForPaint();
+  }
+  void SetSelectionStateForPaint(SelectionState state) {
+    NOT_DESTROYED();
+    bitfields_.SetSelectionStateForPaint(state);
+  }
+
   // A single rectangle that encompasses all of the selected objects within this
   // object. Used to determine the tightest possible bounding box for the
   // selection. The rect is in the object's local physical coordinate space.
@@ -3586,6 +3633,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectView,
     kLayoutObjectWidget,
 
+    kLayoutObjectNGSVGForeignObject,
     kLayoutObjectNGSVGText,
     kLayoutObjectSVG, /* Keep by itself? */
     kLayoutObjectSVGContainer,
@@ -3956,6 +4004,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           needs_devtools_info_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
+          selection_state_for_paint_(
+              static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
               static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
           background_paint_location_(kBackgroundPaintInBorderBoxSpace),
@@ -4304,7 +4354,15 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // This is the cached 'position' value of this object
     // (see ComputedStyle::position).
     unsigned positioned_state_ : 2;  // PositionedState
+
+    // `selection_state_` is direct mapping of the DOM selection into the
+    // respective LayoutObjects that `CanBeSelectionLeaf()`.
+    // `selection_state_for_paint_` is adjusted so that the state takes into
+    // account whether such a LayoutObject will be painted. If selection
+    // starts/ends in an object that is not painted, we won't be able to record
+    // the bounds for composited selection state that is pushed to cc.
     unsigned selection_state_ : 3;   // SelectionState
+    unsigned selection_state_for_paint_ : 3;  // SelectionState
 
     // Reasons for the full subtree invalidation.
     unsigned subtree_paint_property_update_reasons_
@@ -4362,6 +4420,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     }
     ALWAYS_INLINE void SetSelectionState(SelectionState selection_state) {
       selection_state_ = static_cast<unsigned>(selection_state);
+    }
+
+    ALWAYS_INLINE SelectionState GetSelectionStateForPaint() const {
+      return static_cast<SelectionState>(selection_state_for_paint_);
+    }
+    ALWAYS_INLINE void SetSelectionStateForPaint(
+        SelectionState selection_state) {
+      selection_state_for_paint_ = static_cast<unsigned>(selection_state);
     }
 
     ALWAYS_INLINE unsigned SubtreePaintPropertyUpdateReasons() const {

@@ -34,13 +34,13 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
-LLVM_BUILD_TOOLS_DIR = os.path.abspath(
-    os.path.join(THIRD_PARTY_DIR, 'llvm-build-tools'))
-LLVM_BOOTSTRAP_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-bootstrap')
-LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR,
+LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
+LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
-LLVM_INSTRUMENTED_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-instrumented')
+LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
 LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
+LLVM_BUILD_TOOLS_DIR = os.path.abspath(
+    os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
@@ -392,16 +392,19 @@ def DownloadPinnedClang():
   # The update.py in this current revision may have a patched revision while
   # building new clang packages. Get update.py off HEAD~ to pull the current
   # pinned clang.
-  with tempfile.NamedTemporaryFile() as f:
+  if not os.path.exists(PINNED_CLANG_DIR):
+    os.mkdir(os.path.join(PINNED_CLANG_DIR))
+
+  script_path = os.path.join(PINNED_CLANG_DIR, 'update.py')
+
+  with open(script_path, 'w') as f:
     subprocess.check_call(
         ['git', 'show', 'HEAD~:tools/clang/scripts/update.py'],
         stdout=f,
         cwd=CHROMIUM_DIR)
-    print("Running update.py")
-    # Without the flush, the subprocess call below doesn't work.
-    f.flush()
-    subprocess.check_call(
-        [sys.executable, f.name, '--output-dir=' + PINNED_CLANG_DIR])
+  print("Running pinned update.py")
+  subprocess.check_call(
+      [sys.executable, script_path, '--output-dir=' + PINNED_CLANG_DIR])
 
 
 # TODO(crbug.com/929645): Remove once we don't need gcc's libstdc++.
@@ -410,9 +413,11 @@ def MaybeDownloadHostGcc(args):
   assert sys.platform.startswith('linux')
   if args.gcc_toolchain:
     return
-  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc-10.2.0-trusty')
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc-10.2.0-bionic')
+  if os.path.isdir(gcc_dir):  # TODO(thakis): Remove this branch after a few weeks.
+    RmTree(gcc_dir)
   if not os.path.exists(gcc_dir):
-    DownloadAndUnpack(CDS_URL + '/tools/gcc-10.2.0-trusty.tgz', gcc_dir)
+    DownloadAndUnpack(CDS_URL + '/tools/gcc-10.2.0-bionic.tgz', gcc_dir)
   args.gcc_toolchain = gcc_dir
 
 
@@ -488,6 +493,12 @@ def main():
                       help='Build arm binaries. Only valid on macOS.')
   parser.add_argument('--disable-asserts', action='store_true',
                       help='build with asserts disabled')
+  parser.add_argument('--host-cc',
+                      help='build with host C compiler, requires --host-cxx as '
+                      'well')
+  parser.add_argument('--host-cxx',
+                      help='build with host C++ compiler, requires --host-cc '
+                      'as well')
   parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                       'building; --gcc-toolchain=/opt/foo picks '
                       '/opt/foo/bin/gcc')
@@ -659,29 +670,49 @@ def main():
       # Build libclang.a as well as libclang.so
       '-DLIBCLANG_BUILD_STATIC=ON',
   ]
-
-  if sys.platform.startswith('linux'):
-    MaybeDownloadHostGcc(args)
+  if args.host_cc or args.host_cxx:
+    assert args.host_cc and args.host_cxx, \
+           "--host-cc and --host-cxx need to be used together"
+    cc = args.host_cc
+    cxx = args.host_cxx
+  else:
     DownloadPinnedClang()
-    cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang')
-    cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang++')
-    # Use the libraries in the specified gcc installation for building.
-    cflags.append('--gcc-toolchain=' + args.gcc_toolchain)
-    cxxflags.append('--gcc-toolchain=' + args.gcc_toolchain)
-    base_cmake_args += [
-        # The host clang has lld.
-        '-DLLVM_ENABLE_LLD=ON',
-        '-DLLVM_STATIC_LINK_CXX_STDLIB=ON',
-        # Force compiler-rt tests to use our gcc toolchain
-        # because the one on the host may be too old.
-        # Even with -static-libstdc++ the compiler-rt tests add -lstdc++
-        # which adds a DT_NEEDED to libstdc++.so so we need to add RPATHs
-        # to the gcc toolchain.
-        '-DCOMPILER_RT_TEST_COMPILER_CFLAGS=--gcc-toolchain=' +
-        args.gcc_toolchain + ' -Wl,-rpath,' +
-        os.path.join(args.gcc_toolchain, 'lib64') + ' -Wl,-rpath,' +
-        os.path.join(args.gcc_toolchain, 'lib32')
-    ]
+    if sys.platform == 'win32':
+      cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang-cl.exe')
+      cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang-cl.exe')
+      lld = os.path.join(PINNED_CLANG_DIR, 'bin', 'lld-link.exe')
+      # CMake has a hard time with backslashes in compiler paths:
+      # https://stackoverflow.com/questions/13050827
+      cc = cc.replace('\\', '/')
+      cxx = cxx.replace('\\', '/')
+      lld = lld.replace('\\', '/')
+    else:
+      cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang')
+      cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang++')
+
+    if sys.platform != 'darwin':
+      # The host clang has lld, but self-hosting with lld is still slightly
+      # broken on mac.
+      # TODO: check if this works now.
+      base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
+
+    if sys.platform.startswith('linux'):
+      MaybeDownloadHostGcc(args)
+      # Use the libraries in the specified gcc installation for building.
+      cflags.append('--gcc-toolchain=' + args.gcc_toolchain)
+      cxxflags.append('--gcc-toolchain=' + args.gcc_toolchain)
+      base_cmake_args += [
+          '-DLLVM_STATIC_LINK_CXX_STDLIB=ON',
+          # Force compiler-rt tests to use our gcc toolchain
+          # because the one on the host may be too old.
+          # Even with -static-libstdc++ the compiler-rt tests add -lstdc++
+          # which adds a DT_NEEDED to libstdc++.so so we need to add RPATHs
+          # to the gcc toolchain.
+          '-DCOMPILER_RT_TEST_COMPILER_CFLAGS=--gcc-toolchain=' +
+          args.gcc_toolchain + ' -Wl,-rpath,' +
+          os.path.join(args.gcc_toolchain, 'lib64') + ' -Wl,-rpath,' +
+          os.path.join(args.gcc_toolchain, 'lib32')
+      ]
 
   if sys.platform == 'darwin':
     # For libc++, we only want the headers.
@@ -969,7 +1000,7 @@ def main():
     if args.build_mac_arm:
       assert platform.machine() != 'arm64', 'build_mac_arm for cross build only'
       cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=arm64',
-                     '-DLLVM_USE_HOST_TOOLS=ON']
+                     '-DCMAKE_SYSTEM_NAME=Darwin']
 
   # The default LLVM_DEFAULT_TARGET_TRIPLE depends on the host machine.
   # Set it explicitly to make the build of clang more hermetic, and also to
@@ -1030,8 +1061,8 @@ def main():
       RmTree(compiler_rt_build_dir)
     os.makedirs(compiler_rt_build_dir)
     os.chdir(compiler_rt_build_dir)
-    if args.bootstrap:
-      # The bootstrap compiler produces 64-bit binaries by default.
+    if 'clang-cl' in cc:
+      # clang-cl produces 64-bit binaries by default.
       cflags += ['-m32']
       cxxflags += ['-m32']
 

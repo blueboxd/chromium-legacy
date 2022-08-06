@@ -142,6 +142,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
 
 #if BUILDFLAG(IS_CHROMEOS)
+  source_map->RegisterSource("certificateProvider",
+                             IDR_CERTIFICATE_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("enterprise.platformKeys",
                              IDR_ENTERPRISE_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("enterprise.platformKeys.KeyPair",
@@ -152,6 +154,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
   source_map->RegisterSource("fileBrowserHandler",
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileSystemProvider",
+                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys",
                              IDR_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys.getPublicKeyUtil",
@@ -160,15 +164,19 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("platformKeys.SubtleCrypto",
                              IDR_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
   source_map->RegisterSource("platformKeys.utils", IDR_PLATFORM_KEYS_UTILS_JS);
+
+  // Remote Apps.
+  source_map->RegisterSource("chromeos.remote_apps.mojom-lite",
+                             IDR_REMOTE_APPS_MOJOM_LITE_JS);
+  source_map->RegisterSource("chromeos.remote_apps",
+                             IDR_REMOTE_APPS_BINDINGS_JS);
+  source_map->RegisterSource("url/mojom/url.mojom-lite",
+                             IDR_MOJO_URL_MOJOM_LITE_JS);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  source_map->RegisterSource("certificateProvider",
-                             IDR_CERTIFICATE_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileManagerPrivate",
                              IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("fileSystemProvider",
-                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("terminalPrivate",
                              IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS);
 
@@ -188,14 +196,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_GOOGLE_TTS_STREAM_MOJOM_JS);
   source_map->RegisterSource("chromeos.tts.google_stream",
                              IDR_GOOGLE_TTS_STREAM_BINDINGS_JS);
-
-  // Imprivata API.
-  source_map->RegisterSource("chromeos.remote_apps.mojom-lite",
-                             IDR_REMOTE_APPS_MOJOM_LITE_JS);
-  source_map->RegisterSource("chromeos.remote_apps",
-                             IDR_REMOTE_APPS_BINDINGS_JS);
-  source_map->RegisterSource("url/mojom/url.mojom-lite",
-                             IDR_MOJO_URL_MOJOM_LITE_JS);
 
   source_map->RegisterSource("ash.enhanced_network_tts.mojom-lite",
                              IDR_ENHANCED_NETWORK_TTS_MOJOM_LITE_JS);

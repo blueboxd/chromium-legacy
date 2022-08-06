@@ -20,6 +20,8 @@ namespace autofill_assistant {
 // unittests.
 class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
  public:
+  enum InterruptNotification { INTERRUPT_STARTED = 0, INTERRUPT_FINISHED = 1 };
+
   FakeScriptExecutorUiDelegate();
 
   FakeScriptExecutorUiDelegate(const FakeScriptExecutorUiDelegate&) = delete;
@@ -52,7 +54,8 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
-  void SetCollectUserDataUiState(bool enabled) override;
+  void SetCollectUserDataUiState(bool loading,
+                                 UserDataEventField event_field) override;
   void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
                                             collect_user_data_options) override;
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
@@ -81,8 +84,11 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   bool SupportsExternalActions() override;
   void ExecuteExternalAction(
       const external::Action& external_action,
-      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback) override;
+      base::OnceCallback<void()> start_dom_checks_callback,
+      base::OnceCallback<void(const external::Result& result)>
+          end_action_callback) override;
+  void OnInterruptStarted() override;
+  void OnInterruptFinished() override;
 
   const std::vector<Details>& GetDetails() { return details_; }
 
@@ -96,7 +102,13 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
 
   CollectUserDataOptions* GetOptions() { return collect_user_data_options_; }
 
-  bool GetCollectUserDataUiEnabled() { return collect_user_data_ui_enabled_; }
+  UserDataEventField GetCollectUserDataUiLoadingField() {
+    return collect_user_data_ui_loading__field_;
+  }
+
+  std::vector<InterruptNotification> GetInterruptNotificationHistory() {
+    return interrupt_notification_history_;
+  }
 
  private:
   std::string status_message_;
@@ -107,7 +119,8 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   std::unique_ptr<std::vector<UserAction>> user_actions_;
   std::unique_ptr<CollectUserDataOptions> last_collect_user_data_options_;
   raw_ptr<CollectUserDataOptions> collect_user_data_options_;
-  bool collect_user_data_ui_enabled_ = true;
+  UserDataEventField collect_user_data_ui_loading__field_ =
+      UserDataEventField::NONE;
   std::unique_ptr<UserData> payment_request_info_;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
@@ -115,6 +128,7 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   bool expand_or_collapse_value_ = false;
   bool expand_sheet_for_prompt_ = true;
   std::unique_ptr<GenericUserInterfaceProto> persistent_generic_ui_;
+  std::vector<InterruptNotification> interrupt_notification_history_;
 };
 
 }  // namespace autofill_assistant

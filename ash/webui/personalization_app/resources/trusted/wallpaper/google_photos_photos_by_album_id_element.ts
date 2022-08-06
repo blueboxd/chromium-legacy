@@ -9,8 +9,8 @@
 
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
-import './styles.js';
-import '../../common/styles.js';
+import './trusted_style.css.js';
+import '../../common/common_style.css.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
@@ -22,7 +22,7 @@ import {getLoadingPlaceholders, isSelectionEvent} from '../../common/utils.js';
 import {dismissErrorAction, setErrorAction} from '../personalization_actions.js';
 import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {isGooglePhotosPhoto} from '../utils.js';
+import {isGooglePhotosPhoto, isImageAMatchForKey, isImageEqualToSelected} from '../utils.js';
 
 import {recordWallpaperGooglePhotosSourceUMA, WallpaperGooglePhotosSource} from './google_photos_metrics_logger.js';
 import {getTemplate} from './google_photos_photos_by_album_id_element.html.js';
@@ -230,7 +230,7 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
           id: ERROR_ID,
           message: this.i18n('googlePhotosError'),
           dismiss: {
-            message: this.i18n('googlePhotosRetry'),
+            message: this.i18n('googlePhotosTryAgain'),
             callback: (fromUser: boolean) => {
               if (fromUser) {
                 // Post the reattempt instead of performing it immediately to
@@ -276,6 +276,14 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     }
   }
 
+  /**
+   * Returns 'true' or 'false' depending on whether the specified |photo| is
+   * a placeholder.
+   */
+  private getPhotoAriaDisabled_(photo: GooglePhotosPhoto|null): string {
+    return this.isPhotoPlaceholder_(photo).toString();
+  }
+
   /** Returns the aria label for the specified |photo|. */
   private getPhotoAriaLabel_(photo: GooglePhotosPhoto|null): string|undefined {
     if (photo) {
@@ -285,12 +293,30 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     return undefined;
   }
 
+  /** Returns the aria posinset index for the photo at index |i|. */
+  private getPhotoAriaIndex_(i: number): number {
+    return i + 1;
+  }
+
+  /**
+   * Returns 'true' or 'false' depending on whether the specified |photo| is
+   * currently selected.
+   */
+  private getPhotoAriaSelected_(
+      photo: GooglePhotosPhoto|null,
+      currentSelected: GooglePhotosPhotosByAlbumId['currentSelected_'],
+      pendingSelected: GooglePhotosPhotosByAlbumId['pendingSelected_']):
+      string {
+    return this.isPhotoSelected_(photo, currentSelected, pendingSelected)
+        .toString();
+  }
+
   /** Returns whether the specified |photo| is a placeholder. */
   private isPhotoPlaceholder_(photo: GooglePhotosPhoto|null): boolean {
     return !!photo && photo.id === PLACEHOLDER_ID;
   }
 
-  // Returns whether the specified |photo| is currently selected.
+  /** Returns whether the specified |photo| is currently selected. */
   private isPhotoSelected_(
       photo: GooglePhotosPhoto|null,
       currentSelected: GooglePhotosPhotosByAlbumId['currentSelected_'],
@@ -299,13 +325,18 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     if (!photo || (!currentSelected && !pendingSelected)) {
       return false;
     }
+    // NOTE: Old clients may not support |dedupKey| when setting Google Photos
+    // wallpaper, so use |id| in such cases for backwards compatibility.
     if (isGooglePhotosPhoto(pendingSelected) &&
-        pendingSelected!.id === photo.id) {
+        ((pendingSelected!.dedupKey &&
+          isImageAMatchForKey(photo, pendingSelected!.dedupKey)) ||
+         isImageAMatchForKey(photo, pendingSelected!.id))) {
       return true;
     }
     if (!pendingSelected && !!currentSelected &&
-        currentSelected.type === WallpaperType.kOnceGooglePhotos &&
-        currentSelected.key === photo.id) {
+        (currentSelected.type === WallpaperType.kOnceGooglePhotos ||
+         currentSelected.type === WallpaperType.kDailyGooglePhotos) &&
+        isImageEqualToSelected(photo, currentSelected)) {
       return true;
     }
     return false;

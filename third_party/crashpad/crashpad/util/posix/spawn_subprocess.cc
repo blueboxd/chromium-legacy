@@ -169,7 +169,7 @@ bool SpawnSubprocess(const std::vector<std::string>& argv,
 
     // This cast is safe for the same reason that the argv_for_spawn cast is.
     char* const* envp_for_spawn =
-        envp ? const_cast<char* const*>(envp_c.data()) : environ;
+        envp ? const_cast<char* const*>(envp_c.data()) : (*_NSGetEnviron());
 
 #if BUILDFLAG(IS_ANDROID) && __ANDROID_API__ < 28
     pid = fork();

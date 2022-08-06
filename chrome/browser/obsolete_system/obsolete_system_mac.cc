@@ -19,19 +19,6 @@ enum class Obsoleteness {
 };
 
 Obsoleteness OsObsoleteness() {
-  // Use base::SysInfo::OperatingSystemVersionNumbers() here rather than the
-  // preferred base::mac::IsOS*() function because the IsOS functions for
-  // obsolete system versions are removed to help prevent obsolete code from
-  // existing in the Chromium codebase.
-  int32_t major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-
-  if (major < 10 || (major == 10 && minor <= 11))
-    return Obsoleteness::MacOS1011Obsolete;
-
-  if (major == 10 && minor == 12)
-    return Obsoleteness::MacOS1012Obsolete;
-
   return Obsoleteness::NotObsolete;
 }
 

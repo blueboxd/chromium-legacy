@@ -15,6 +15,54 @@ class LazyInstance;
 template <typename Type>
 struct LazyInstanceTraitsBase;
 
+template <typename T>
+constexpr TimeDelta Seconds(T n);
+template <typename T>
+constexpr TimeDelta Milliseconds(T n);
+template <typename T>
+constexpr TimeDelta Microseconds(T n);
+
+BASE_EXPORT std::string StringPrintf(const char* format, ...);
+BASE_EXPORT void TerminateBecauseOutOfMemory(size_t size);
+
+#if BUILDFLAG(IS_ANDROID)
+template <typename CharT, typename Traits>
+class BasicStringPiece;
+using StringPiece = BasicStringPiece<char, std::char_traits<char>>;
+#endif
+
+#if BUILDFLAG(IS_MAC)
+
+namespace internal {
+
+template <typename CFT>
+struct ScopedCFTypeRefTraits;
+
+}  // namespace internal
+
+template <typename T, typename Traits>
+class ScopedTypeRef;
+
+namespace mac {
+
+template <typename T>
+T CFCast(const CFTypeRef& cf_val);
+template <typename T>
+T CFCastStrict(const CFTypeRef& cf_val);
+
+bool IsAtLeastOS10_14();
+bool IsOS10_11();
+
+}  // namespace mac
+
+#endif  // BUILDFLAG(IS_MAC)
+
+namespace subtle {
+
+BASE_EXPORT TimeTicks TimeTicksNowIgnoringOverride();
+
+}  // namespace subtle
+
 }  // namespace base
 
 namespace partition_alloc::internal::base {
@@ -24,6 +72,31 @@ namespace partition_alloc::internal::base {
 using ::base::LapTimer;
 using ::base::LazyInstance;
 using ::base::LazyInstanceTraitsBase;
+using ::base::Microseconds;
+using ::base::Milliseconds;
+using ::base::Seconds;
+using ::base::StringPrintf;
+using ::base::TerminateBecauseOutOfMemory;
+using ::base::TimeDelta;
+using ::base::TimeTicks;
+
+#if BUILDFLAG(IS_MAC)
+template <typename CFT>
+using ScopedCFTypeRef =
+    ::base::ScopedTypeRef<CFT, ::base::internal::ScopedCFTypeRefTraits<CFT>>;
+#endif
+
+#if BUILDFLAG(IS_MAC)
+namespace mac {
+
+using ::base::mac::CFCast;
+using ::base::mac::IsAtLeastOS10_14;
+using ::base::mac::IsOS10_11;
+
+}  // namespace mac
+#endif  // BUILDFLAG(IS_MAC)
+
+using ::base::subtle::TimeTicksNowIgnoringOverride;
 
 }  // namespace partition_alloc::internal::base
 

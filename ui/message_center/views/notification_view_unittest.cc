@@ -14,6 +14,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/test/test_event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -104,12 +105,6 @@ class NotificationTestDelegate : public NotificationDelegate {
   bool disable_notification_called_ = false;
 };
 
-class DummyEvent : public ui::Event {
- public:
-  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-  ~DummyEvent() override = default;
-};
-
 }  // namespace
 
 class NotificationViewTest : public views::ViewObserver,
@@ -166,11 +161,11 @@ class NotificationViewTest : public views::ViewObserver,
   std::unique_ptr<Notification> CreateSimpleNotificationWithRichData(
       const RichNotificationData& optional_fields) const {
     std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-        NOTIFICATION_TYPE_BASE_FORMAT, std::string(kDefaultNotificationId),
-        u"title", u"message",
-        ui::ImageModel::FromImage(CreateTestImage(80, 80)), u"display source",
-        GURL(), NotifierId(NotifierType::APPLICATION, "extension_id"),
-        optional_fields, delegate_);
+        NOTIFICATION_TYPE_SIMPLE, std::string(kDefaultNotificationId), u"title",
+        u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
+        u"display source", GURL(),
+        NotifierId(NotifierType::APPLICATION, "extension_id"), optional_fields,
+        delegate_);
     notification->set_small_image(CreateTestImage(16, 16));
     notification->set_image(CreateTestImage(320, 240));
 
@@ -249,7 +244,7 @@ class NotificationViewTest : public views::ViewObserver,
 
   // Toggle inline settings with a dummy event.
   void ToggleInlineSettings() {
-    notification_view_->ToggleInlineSettings(DummyEvent());
+    notification_view_->ToggleInlineSettings(ui::test::TestEvent());
   }
 
  protected:
@@ -321,8 +316,8 @@ class NotificationViewTest : public views::ViewObserver,
 TEST_F(NotificationViewTest, UpdateViewsOrderingTest) {
   EXPECT_NE(nullptr, title_view());
   EXPECT_NE(nullptr, message_label());
-  EXPECT_EQ(0, left_content()->GetIndexOf(title_view()));
-  EXPECT_EQ(1, left_content()->GetIndexOf(message_label()));
+  EXPECT_EQ(0u, left_content()->GetIndexOf(title_view()));
+  EXPECT_EQ(1u, left_content()->GetIndexOf(message_label()));
 
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_title(std::u16string());
@@ -331,7 +326,7 @@ TEST_F(NotificationViewTest, UpdateViewsOrderingTest) {
 
   EXPECT_EQ(nullptr, title_view());
   EXPECT_NE(nullptr, message_label());
-  EXPECT_EQ(0, left_content()->GetIndexOf(message_label()));
+  EXPECT_EQ(0u, left_content()->GetIndexOf(message_label()));
 
   notification->set_title(u"title");
 
@@ -339,8 +334,8 @@ TEST_F(NotificationViewTest, UpdateViewsOrderingTest) {
 
   EXPECT_NE(nullptr, title_view());
   EXPECT_NE(nullptr, message_label());
-  EXPECT_EQ(0, left_content()->GetIndexOf(title_view()));
-  EXPECT_EQ(1, left_content()->GetIndexOf(message_label()));
+  EXPECT_EQ(0u, left_content()->GetIndexOf(title_view()));
+  EXPECT_EQ(1u, left_content()->GetIndexOf(message_label()));
 }
 
 TEST_F(NotificationViewTest, CreateOrUpdateTitle) {
@@ -626,8 +621,8 @@ TEST_F(NotificationViewTest, AppIconWebAppNotification) {
   data.settings_button_handler = SettingsButtonHandler::INLINE;
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      NOTIFICATION_TYPE_BASE_FORMAT, std::string(kDefaultNotificationId),
-      u"title", u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
+      NOTIFICATION_TYPE_SIMPLE, std::string(kDefaultNotificationId), u"title",
+      u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
       u"display source", GURL(), notifier_id, data, delegate_);
   notification->set_small_image(gfx::Image::CreateFrom1xBitmap(small_bitmap));
   notification->set_image(CreateTestImage(320, 240));
@@ -748,13 +743,14 @@ TEST_F(NotificationViewTest, TestDeleteOnDisableNotification) {
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
   UpdateNotificationViews(*notification);
 
-  notification_view()->OnSettingsButtonPressed(DummyEvent());
-  block_all_button()->NotifyClick(DummyEvent());
+  notification_view()->OnSettingsButtonPressed(ui::test::TestEvent());
+  block_all_button()->NotifyClick(ui::test::TestEvent());
 
   // After DisableNotification() is called, |notification_view| can be deleted.
   // https://crbug.com/924922
   set_delete_on_notification_removed(true);
-  views::test::ButtonTestApi(settings_done_button()).NotifyClick(DummyEvent());
+  views::test::ButtonTestApi(settings_done_button())
+      .NotifyClick(ui::test::TestEvent());
 }
 
 // Tests that action buttons (e.g. the inline reply button) ignores the

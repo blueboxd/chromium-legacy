@@ -45,10 +45,10 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -192,11 +192,11 @@ class CrostiniManagerTest : public testing::Test {
         local_state_(std::make_unique<ScopedTestingLocalState>(
             TestingBrowserProcess::GetGlobal())),
         browser_part_(g_browser_process->platform_part()) {
-    chromeos::DBusThreadManager::Initialize();
     ash::AnomalyDetectorClient::InitializeFake();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
+    ash::DebugDaemonClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
     fake_cicerone_client_ = ash::FakeCiceroneClient::Get();
     fake_concierge_client_ = ash::FakeConciergeClient::Get();
@@ -211,10 +211,10 @@ class CrostiniManagerTest : public testing::Test {
   ~CrostiniManagerTest() override {
     ash::AnomalyDetectorClient::Shutdown();
     ash::SeneschalClient::Shutdown();
+    ash::DebugDaemonClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ChunneldClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   void SetUp() override {
@@ -713,22 +713,23 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalOperationBlocked) {
 }
 
 TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerCreated) {
-  const base::Value* pref =
-      profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
-  EXPECT_EQ(pref->GetList().size(), 0);
+  const base::Value::List* pref =
+      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+  EXPECT_EQ(pref->size(), 0);
   crostini_manager()->CreateLxdContainer(
       container_id(), absl::nullopt, absl::nullopt,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
-  pref = profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
-  EXPECT_EQ(pref->GetList().size(), 1);
+  pref =
+      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+  EXPECT_EQ(pref->size(), 1);
 }
 
 TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerExists) {
-  const base::Value* pref =
-      profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
-  EXPECT_EQ(pref->GetList().size(), 0);
+  const base::Value::List* pref =
+      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+  EXPECT_EQ(pref->size(), 0);
   vm_tools::cicerone::CreateLxdContainerResponse response;
   response.set_status(vm_tools::cicerone::CreateLxdContainerResponse::EXISTS);
   fake_cicerone_client_->set_create_lxd_container_response(response);
@@ -737,8 +738,9 @@ TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerExists) {
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
-  pref = profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
-  EXPECT_EQ(pref->GetList().size(), 1);
+  pref =
+      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+  EXPECT_EQ(pref->size(), 1);
 }
 
 class CrostiniManagerRestartTest : public CrostiniManagerTest,

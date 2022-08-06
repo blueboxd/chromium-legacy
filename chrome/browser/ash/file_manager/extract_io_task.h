@@ -35,7 +35,8 @@ enum class ExtractStatus {
   kCancelled = 2,
   kInsufficientDiskSpace = 3,
   kPasswordError = 4,
-  kMaxValue = kPasswordError,
+  kAesEncrypted = 5,
+  kMaxValue = kAesEncrypted,
 };
 
 class ExtractIOTask : public IOTask {
@@ -107,8 +108,14 @@ class ExtractIOTask : public IOTask {
   // Boolean set to true if we find archives that are encrypted.
   bool have_encrypted_content_ = false;
 
+  // Boolean set to true if the encryption scheme is AES.
+  bool uses_aes_encryption_ = false;
+
   // Counter of the number of archives needing extraction.
   size_t extractCount_;
+
+  // Reference to the unpacker service instances.
+  std::map<base::FilePath, scoped_refptr<unzip::ZipFileUnpacker>> unpackers_;
 
   base::WeakPtrFactory<ExtractIOTask> weak_ptr_factory_{this};
 };

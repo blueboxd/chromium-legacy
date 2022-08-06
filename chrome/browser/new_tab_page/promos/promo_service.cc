@@ -43,7 +43,8 @@ const char kNewTabPromosApiPath[] = "/async/newtab_promos";
 const char kXSSIResponsePreamble[] = ")]}'";
 
 bool CanBlockPromos() {
-  return base::FeatureList::IsEnabled(ntp_features::kDismissPromos);
+  return base::FeatureList::IsEnabled(
+      ntp_features::kNtpMiddleSlotPromoDismissal);
 }
 
 GURL GetGoogleBaseUrl() {
@@ -201,8 +202,8 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
 
 void PromoService::OnJsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.value) {
-    DVLOG(1) << "Parsing JSON failed: " << *result.error;
+  if (!result.has_value()) {
+    DVLOG(1) << "Parsing JSON failed: " << result.error();
     PromoDataLoaded(Status::FATAL_ERROR, absl::nullopt);
     return;
   }
@@ -210,7 +211,7 @@ void PromoService::OnJsonParsed(
   absl::optional<PromoData> data;
   PromoService::Status status;
 
-  if (JsonToPromoData(*result.value, &data)) {
+  if (JsonToPromoData(*result, &data)) {
     bool is_blocked = IsBlockedAfterClearingExpired(data->promo_id);
     if (is_blocked)
       data = PromoData();
@@ -257,12 +258,27 @@ void PromoService::BlocklistPromo(const std::string& promo_id) {
   double now = base::Time::Now().ToDeltaSinceWindowsEpoch().InSecondsF();
   update->SetDoubleKey(promo_id, now);
 
+  // Check if the promo id to be blocked is the same as the promo id of the
+  // current promo being served.
   if (promo_data_ && promo_data_->promo_id == promo_id) {
     promo_data_ = PromoData();
     promo_status_ = Status::OK_BUT_BLOCKED;
     NotifyObservers();
     // TODO(crbug.com/1003508): hide promos on existing, already-opened NTPs.
   }
+}
+
+void PromoService::UndoBlocklistPromo(const std::string& promo_id) {
+  if (promo_id.empty()) {
+    return;
+  }
+
+  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kNtpPromoBlocklist);
+  update->RemoveKey(promo_id);
+
+  // Refresh promo service since cached promo data was cleared in
+  // BlocklistPromo(), which is called before UndoBlocklistPromo().
+  Refresh();
 }
 
 void PromoService::PromoDataLoaded(Status status,

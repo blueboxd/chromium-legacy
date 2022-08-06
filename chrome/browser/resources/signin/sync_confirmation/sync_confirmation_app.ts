@@ -20,10 +20,10 @@ import {getTemplate} from './sync_confirmation_app.html.js';
 import {SyncConfirmationBrowserProxy, SyncConfirmationBrowserProxyImpl} from './sync_confirmation_browser_proxy.js';
 
 
-type AccountInfo = {
-  src: string,
-  showEnterpriseBadge: boolean,
-};
+interface AccountInfo {
+  src: string;
+  showEnterpriseBadge: boolean;
+}
 
 const SyncConfirmationAppElementBase = WebUIListenerMixin(PolymerElement);
 
@@ -54,7 +54,14 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('isModalDialog');
-        }
+        },
+      },
+
+      isSigninInterceptFre_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('isSigninInterceptFre');
+        },
       },
 
       showEnterpriseBadge_: {
@@ -67,6 +74,7 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
   private accountImageSrc_: string;
   private anyButtonClicked_: boolean;
   private isModalDialog_: boolean;
+  private isSigninInterceptFre_: boolean;
   private showEnterpriseBadge_: boolean;
   private syncConfirmationBrowserProxy_: SyncConfirmationBrowserProxy =
       SyncConfirmationBrowserProxyImpl.getInstance();
@@ -131,6 +139,11 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
   private handleAccountInfoChanged_(accountInfo: AccountInfo) {
     this.accountImageSrc_ = accountInfo.src;
     this.showEnterpriseBadge_ = accountInfo.showEnterpriseBadge;
+  }
+
+  private getSigninInterceptDesignClass_(isSigninInterceptFre: boolean):
+      string {
+    return isSigninInterceptFre ? 'signin-intercept-design' : '';
   }
 }
 

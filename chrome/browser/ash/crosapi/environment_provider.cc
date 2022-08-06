@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 
-#include "ash/components/tpm/install_attributes.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
@@ -14,9 +13,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_config_utils.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/policy_namespace.mojom.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "components/account_id/account_id.h"
 #include "components/account_manager_core/account.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"

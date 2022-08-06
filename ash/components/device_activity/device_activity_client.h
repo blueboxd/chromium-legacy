@@ -14,9 +14,9 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 #include "url/gurl.h"
@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) PsmDelegate {
 // TODO(https://crbug.com/1302175): Move methods passing DeviceActiveUseCase* to
 // methods of DeviceActiveUseCase class.
 class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
-    : public chromeos::NetworkStateHandlerObserver {
+    : public NetworkStateHandlerObserver {
  public:
   // Tracks the state the client is in, given the use case (i.e DAILY).
   // These values are persisted to logs. Entries should not be renumbered and

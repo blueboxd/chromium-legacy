@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -102,7 +103,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
-#include "chrome/browser/ui/webui/chromeos/video_source.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -148,9 +148,9 @@ namespace mojom = ::ash::multidevice_setup::mojom;
 
 namespace {
 
-const char* kKnownDisplayTypes[] = {
-    OobeUI::kAppLaunchSplashDisplay, OobeUI::kGaiaSigninDisplay,
-    OobeUI::kLoginDisplay, OobeUI::kOobeDisplay};
+const char* kKnownDisplayTypes[] = {OobeUI::kAppLaunchSplashDisplay,
+                                    OobeUI::kGaiaSigninDisplay,
+                                    OobeUI::kOobeDisplay};
 
 // Sorted
 constexpr char kArcOverlayCSSPath[] = "overlay.css";
@@ -304,8 +304,8 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
 }
 
-// Default and non-shared resource definition for kLoginDisplay display type.
-// chrome://oobe/login
+// Default and non-shared resource definition for kGaiaSigninDisplay display
+// type. chrome://oobe/gaia-signin
 void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   if (switches::IsOsInstallAllowed()) {
     source->SetDefaultResource(IDR_OS_INSTALL_LOGIN_HTML);
@@ -399,8 +399,8 @@ std::string GetDisplayType(const GURL& url) {
   std::string path = url.path().size() ? url.path().substr(1) : "";
 
   if (!base::Contains(kKnownDisplayTypes, path)) {
-    LOG(ERROR) << "Unknown display type '" << path << "'. Setting default.";
-    return OobeUI::kLoginDisplay;
+    NOTREACHED() << "Unknown display type '" << path << "'. Setting default.";
+    return OobeUI::kOobeDisplay;
   }
   return path;
 }
@@ -410,7 +410,6 @@ std::string GetDisplayType(const GURL& url) {
 // static
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
-const char OobeUI::kLoginDisplay[] = "login";
 const char OobeUI::kOobeDisplay[] = "oobe";
 
 void OobeUI::ConfigureOobeDisplay() {
@@ -562,10 +561,6 @@ void OobeUI::ConfigureOobeDisplay() {
   // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui()->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
-
-  // // Handler for the oobe video assets which will be shown if available.
-  content::URLDataSource::Add(profile,
-                              std::make_unique<chromeos::VideoSource>());
 
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();

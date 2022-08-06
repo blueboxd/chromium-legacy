@@ -8,6 +8,7 @@
 #include "base/test/task_environment.h"
 #include "chromeos/crosapi/mojom/app_service_types.mojom.h"
 #include "chromeos/crosapi/mojom/app_service_types_mojom_traits.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
@@ -17,6 +18,7 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 // Test that every field in apps::App in correctly converted.
@@ -46,7 +48,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTrip) {
 
   auto intent_filter = std::make_unique<apps::IntentFilter>();
   intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme, "https",
-                                         apps::PatternMatchType::kNone);
+                                         apps::PatternMatchType::kLiteral);
   intent_filter->activity_name = "activity_name";
   intent_filter->activity_label = "activity_label";
   input->intent_filters.push_back(std::move(intent_filter));
@@ -105,7 +107,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTrip) {
   ASSERT_EQ(condition->condition_values.size(), 1U);
   EXPECT_EQ(condition->condition_values[0]->value, "https");
   EXPECT_EQ(condition->condition_values[0]->match_type,
-            apps::PatternMatchType::kNone);
+            apps::PatternMatchType::kLiteral);
   EXPECT_EQ(filter->activity_name, "activity_name");
   EXPECT_EQ(filter->activity_label, "activity_label");
 
@@ -114,8 +116,8 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTrip) {
   ASSERT_EQ(output->permissions.size(), 1U);
   auto& out_permission = output->permissions[0];
   EXPECT_EQ(out_permission->permission_type, apps::PermissionType::kCamera);
-  ASSERT_TRUE(out_permission->value->bool_value.has_value());
-  EXPECT_TRUE(out_permission->value->bool_value.value());
+  ASSERT_TRUE(absl::holds_alternative<bool>(out_permission->value->value));
+  EXPECT_TRUE(absl::get<bool>(out_permission->value->value));
   EXPECT_TRUE(out_permission->is_managed);
 
   EXPECT_TRUE(output->allow_uninstall.value());
@@ -149,7 +151,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripNoOptional) {
 
   auto intent_filter = std::make_unique<apps::IntentFilter>();
   intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme, "https",
-                                         apps::PatternMatchType::kNone);
+                                         apps::PatternMatchType::kLiteral);
   input->intent_filters.push_back(std::move(intent_filter));
   input->window_mode = apps::WindowMode::kBrowser;
   input->allow_uninstall = true;
@@ -184,7 +186,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripNoOptional) {
   ASSERT_EQ(condition->condition_values.size(), 1U);
   EXPECT_EQ(condition->condition_values[0]->value, "https");
   EXPECT_EQ(condition->condition_values[0]->match_type,
-            apps::PatternMatchType::kNone);
+            apps::PatternMatchType::kLiteral);
 
   EXPECT_EQ(output->window_mode, apps::WindowMode::kBrowser);
   EXPECT_TRUE(output->allow_uninstall);
@@ -573,10 +575,10 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripIntentFilters) {
   auto input = std::make_unique<apps::App>(apps::AppType::kArc, "abcdefg");
   auto intent_filter = std::make_unique<apps::IntentFilter>();
   intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme, "1",
-                                         apps::PatternMatchType::kNone);
+                                         apps::PatternMatchType::kLiteral);
   intent_filter->AddSingleValueCondition(apps::ConditionType::kHost, "2",
                                          apps::PatternMatchType::kLiteral);
-  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern, "3",
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPath, "3",
                                          apps::PatternMatchType::kPrefix);
   intent_filter->AddSingleValueCondition(apps::ConditionType::kAction, "4",
                                          apps::PatternMatchType::kGlob);
@@ -602,7 +604,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripIntentFilters) {
     EXPECT_EQ(condition->condition_type, apps::ConditionType::kScheme);
     ASSERT_EQ(condition->condition_values.size(), 1U);
     EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kNone);
+              apps::PatternMatchType::kLiteral);
     EXPECT_EQ(condition->condition_values[0]->value, "1");
   }
   {
@@ -615,7 +617,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripIntentFilters) {
   }
   {
     auto& condition = filter->conditions[2];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kPattern);
+    EXPECT_EQ(condition->condition_type, apps::ConditionType::kPath);
     ASSERT_EQ(condition->condition_values.size(), 1U);
     EXPECT_EQ(condition->condition_values[0]->match_type,
               apps::PatternMatchType::kPrefix);
@@ -841,186 +843,186 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripWindowMode) {
 
 // Test that serialization and deserialization works with launch source.
 TEST(AppServiceTypesMojomTraitsTest, RoundTripLaunchSource) {
-  apps::mojom::LaunchSource input;
+  apps::LaunchSource input;
   {
-    input = apps::mojom::LaunchSource::kUnknown;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kUnknown;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromAppListGrid;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromAppListGrid;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromAppListGridContextMenu;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromAppListGridContextMenu;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromAppListQuery;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromAppListQuery;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromAppListQueryContextMenu;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromAppListQueryContextMenu;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromAppListRecommendation;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromAppListRecommendation;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromParentalControls;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromParentalControls;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromShelf;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromShelf;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromFileManager;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromFileManager;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromLink;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromLink;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromOmnibox;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromOmnibox;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromChromeInternal;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromChromeInternal;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromKeyboard;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromKeyboard;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromOtherApp;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromOtherApp;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromMenu;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromMenu;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromInstalledNotification;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromInstalledNotification;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromTest;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromTest;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromArc;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromArc;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromSharesheet;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromSharesheet;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromReleaseNotesNotification;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromReleaseNotesNotification;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromFullRestore;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromFullRestore;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromSmartTextContextMenu;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromSmartTextContextMenu;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
   }
   {
-    input = apps::mojom::LaunchSource::kFromDiscoverTabNotification;
-    apps::mojom::LaunchSource output;
+    input = apps::LaunchSource::kFromDiscoverTabNotification;
+    apps::LaunchSource output;
     ASSERT_TRUE(
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
@@ -1116,7 +1118,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripPermissions) {
 TEST(AppServiceTypesMojomTraitsTest, PreferredApp) {
   auto intent_filter = std::make_unique<apps::IntentFilter>();
   intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme, "1",
-                                         apps::PatternMatchType::kNone);
+                                         apps::PatternMatchType::kLiteral);
   auto input =
       std::make_unique<apps::PreferredApp>(std::move(intent_filter), "abcdefg");
 
@@ -1132,7 +1134,7 @@ TEST(AppServiceTypesMojomTraitsTest, PreferredAppChanges) {
   apps::IntentFilters added_filters;
   auto intent_filter1 = std::make_unique<apps::IntentFilter>();
   intent_filter1->AddSingleValueCondition(apps::ConditionType::kScheme, "1",
-                                          apps::PatternMatchType::kNone);
+                                          apps::PatternMatchType::kLiteral);
   auto intent_filter2 = std::make_unique<apps::IntentFilter>();
   intent_filter2->AddSingleValueCondition(apps::ConditionType::kHost, "2",
                                           apps::PatternMatchType::kLiteral);
@@ -1141,7 +1143,7 @@ TEST(AppServiceTypesMojomTraitsTest, PreferredAppChanges) {
 
   apps::IntentFilters removed_filters;
   auto intent_filter3 = std::make_unique<apps::IntentFilter>();
-  intent_filter3->AddSingleValueCondition(apps::ConditionType::kPattern, "3",
+  intent_filter3->AddSingleValueCondition(apps::ConditionType::kPath, "3",
                                           apps::PatternMatchType::kPrefix);
   auto intent_filter4 = std::make_unique<apps::IntentFilter>();
   intent_filter4->AddSingleValueCondition(apps::ConditionType::kAction, "4",

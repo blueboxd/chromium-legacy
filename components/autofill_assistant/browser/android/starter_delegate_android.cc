@@ -16,9 +16,9 @@
 #include "components/autofill_assistant/browser/android/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/assistant_field_trial_util.h"
 #include "components/autofill_assistant/browser/headless/headless_script_controller_impl.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/public/runtime_manager_impl.h"
 #include "components/autofill_assistant/browser/script_parameters.h"
-#include "components/autofill_assistant/browser/website_login_manager_impl.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/channel.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -200,7 +200,8 @@ void StarterDelegateAndroid::ShowOnboarding(
                               base::android::ConvertUTF8ToJavaString(
                                   env, trigger_context.GetExperimentIds()),
                               base::android::ToJavaArrayOfStrings(env, keys),
-                              base::android::ToJavaArrayOfStrings(env, values));
+                              base::android::ToJavaArrayOfStrings(env, values),
+                              trigger_context.GetIsExternallyTriggered());
 }
 
 void StarterDelegateAndroid::HideOnboarding() {
@@ -321,7 +322,8 @@ void StarterDelegateAndroid::Start(
   if (trigger_context->GetScriptParameters().GetRunHeadless()) {
     headless_script_controller_ =
         std::make_unique<HeadlessScriptControllerImpl>(
-            &GetWebContents(), /*action_extension_delegate=*/nullptr);
+            &GetWebContents(), /*action_extension_delegate=*/nullptr,
+            GetWebsiteLoginManager());
 
     headless_script_controller_->StartScript(
         // Note: this ignores device-only parameters.

@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"
-#include "ash/webui/telemetry_extension_ui/services/probe_service.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/remote_probe_service_strategy.h"
+#include "chromeos/crosapi/mojom/probe_service.mojom.h"
 
 namespace chromeos {
 
@@ -49,7 +48,7 @@ class HardwareInfoDelegate {
   void FallbackHandler(ManufacturerCallback done_cb,
                        std::string probe_service_result);
 
-  mojo::Remote<ash::health::mojom::ProbeService>& GetRemoteService();
+  mojo::Remote<crosapi::mojom::ProbeService>& GetRemoteService();
 
   std::unique_ptr<RemoteProbeServiceStrategy> remote_probe_service_strategy_;
 };

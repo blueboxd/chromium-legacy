@@ -21,6 +21,10 @@ For tests that test fonts by providing `fuchsia.fonts.Provider`. The injected
 #### fonts.shard.test-cml
 For tests that access system fonts.
 
+#### test_fonts.shard.test-cml
+For tests that use the fonts in `//third_party/test_fonts` by way of
+`//skia:test_fonts_cfv2`.
+
 #### jit_capabilities.test-cmx
 Required by tests that execute JavaScript. Should only be required in a small
 number of tests.
@@ -47,8 +51,13 @@ https://fuchsia.dev/reference/fidl/fuchsia.web#CreateContextParams and
 https://fuchsia.dev/reference/fidl/fuchsia.web#ContextFeatureFlags.
 Any test-specific exceptions are documented for each file.
 
-#### audio_capabilities.test-cmx
-Corresponds to the `AUDIO` flag. Required for enabling audio input and output.
+#### audio_output.shard.test-cml
+Required by tests that need to enable audio output.
+
+#### platform_video_codecs.shard.test-cml
+Required by tests that need accelerated (e.g., hardware) video codecs. A private
+(semi-isolated) instance of codec_factory is run for tests using this shard in
+support of running on system images that don't run it.
 
 #### network.shard.test-cml
 For tests that need access to network services, including those that access a
@@ -60,7 +69,7 @@ that access to the root SSL certificates is not needed if ContextProvider is
 used to launch the `Context`. The `fuchsia.device.NameProvider` dependency comes
 from fdio. The injected `netstack.cmx` requires `fuchsia.stash.SecureStore`.
 
-#### present_view_capabilities.test-cmx
+#### present_view.shard.test-cml and present_view_capabilities.test-cmx
 Services that are needed to render web content in a Scenic view and present it.
 Most services are required per the FIDL documentation.
 `fuchsia.ui.policy.Presenter` is additionally required by tests that create

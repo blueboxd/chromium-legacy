@@ -118,7 +118,11 @@ const CLIENT_DELEGATE = {
   sendXhr(url, method, requestBody, useCredentials, headers) {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'sendXhr', [
-          url, method, requestBody ? requestBody : '', !!useCredentials, headers
+          url,
+          method,
+          requestBody ? requestBody : '',
+          !!useCredentials,
+          headers,
         ]);
   },
 
@@ -177,15 +181,17 @@ const CLIENT_DELEGATE = {
   },
 
   /**
-   * Gets information about the specified screencast from DriveFS.
-   * @param {string} screencastId The Drive item id of container folder.
-   * @return {!Promise<projectorApp.Screencast>}
+   * Gets information about the specified video from DriveFS.
+   * @param {string} videoFileId The Drive item id of the video file.
+   * @param {string|undefined} resourceKey The Drive item resource key.
+   * TODO(b/237089852): Wire up the resource key once DriveFS has support.
+   * @return {!Promise<!projectorApp.Video>}
    */
-  getScreencast(screencastId) {
+  getVideo(videoFileId, resourceKey) {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'getScreencast', [screencastId]);
+        'getVideo', [videoFileId, resourceKey]);
+    // TODO(b/237089852): Wait for the launch event and generate the object URL.
   },
-
 };
 
 /**
@@ -223,7 +229,6 @@ export class UntrustedAppRequestHandler extends RequestHandler {
     this.registerMethod('onSodaInstallError', (args) => {
       getAppElement().onSodaInstallError();
     });
-
     this.registerMethod('onScreencastsStateChange', (pendingScreencasts) => {
       getAppElement().onScreencastsStateChange(pendingScreencasts);
     });
@@ -234,7 +239,6 @@ export class UntrustedAppRequestHandler extends RequestHandler {
     return this.targetWindow_;
   }
 }
-
 
 /**
  * This is a class that is used to setup the duplex communication channels

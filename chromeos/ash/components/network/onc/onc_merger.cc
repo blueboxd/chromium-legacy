@@ -12,12 +12,11 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/policy_util.h"
 #include "chromeos/components/onc/onc_signature.h"
-#include "chromeos/network/policy_util.h"
 #include "components/onc/onc_constants.h"
 
-namespace chromeos {
-namespace onc {
+namespace ash::onc {
 namespace {
 
 // Returns true if the field is the identifier of a configuration, i.e. the GUID
@@ -399,19 +398,16 @@ class MergeToAugmented : public MergeToEffective {
     if (is_credential) {
       // Set |kFakeCredential| to notify UI that credential is saved.
       if (values.user_policy) {
-        augmented_value.SetKey(
-            ::onc::kAugmentationUserPolicy,
-            base::Value(chromeos::policy_util::kFakeCredential));
+        augmented_value.SetKey(::onc::kAugmentationUserPolicy,
+                               base::Value(policy_util::kFakeCredential));
       }
       if (values.device_policy) {
-        augmented_value.SetKey(
-            ::onc::kAugmentationDevicePolicy,
-            base::Value(chromeos::policy_util::kFakeCredential));
+        augmented_value.SetKey(::onc::kAugmentationDevicePolicy,
+                               base::Value(policy_util::kFakeCredential));
       }
       if (values.active_setting) {
-        augmented_value.SetKey(
-            ::onc::kAugmentationActiveSetting,
-            base::Value(chromeos::policy_util::kFakeCredential));
+        augmented_value.SetKey(::onc::kAugmentationActiveSetting,
+                               base::Value(policy_util::kFakeCredential));
       }
     } else {
       if (values.user_policy) {
@@ -493,5 +489,4 @@ base::Value MergeSettingsAndPoliciesToAugmented(
                                   active_settings);
 }
 
-}  // namespace onc
-}  // namespace chromeos
+}  // namespace ash::onc

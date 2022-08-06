@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -74,6 +75,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -1598,7 +1600,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtClose) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      0, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
 
   Browser* new_browser = QuitBrowserAndRestore(browser());
 
@@ -2902,12 +2904,8 @@ class SessionRestoreWithIncompleteFileTest : public InProcessBrowserTest {
     // be read, but a read error should be logged.
     base::FilePath user_data_dir;
     EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    const std::string profile_dir = chrome::kTestUserProfileDir;
-#else
-    const std::string profile_dir = chrome::kInitialProfile;
-#endif
-    base::FilePath sessions_dir = user_data_dir.AppendASCII(profile_dir);
+    base::FilePath sessions_dir =
+        user_data_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
     if (!base::DeletePathRecursively(
             sessions_dir.Append(sessions::kSessionsDirectory))) {
       ADD_FAILURE() << "Unable to delete sessions directory";

@@ -236,6 +236,15 @@ class CC_EXPORT CompositorFrameReportingController {
 
   // interval of last begin frame args.
   base::TimeDelta last_interval_;
+
+  CompositorFrameReporter::CompositorLatencyInfo
+      previous_latency_predictions_main_;
+  CompositorFrameReporter::CompositorLatencyInfo
+      previous_latency_predictions_impl_;
+
+  // Container that stores the EventLatency stage latency predictions based on
+  // previous event traces.
+  CompositorFrameReporter::EventLatencyInfo event_latency_predictions_;
 };
 
 }  // namespace cc

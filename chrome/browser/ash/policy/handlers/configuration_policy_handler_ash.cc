@@ -32,7 +32,6 @@
 #include "components/onc/onc_pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
-#include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
@@ -137,19 +136,28 @@ base::Value CalculateIdleActionValue(const base::Value* idle_action_value,
 }  // namespace
 
 ExternalDataPolicyHandler::ExternalDataPolicyHandler(const char* policy_name)
-    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::DICTIONARY) {}
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::DICT) {}
 
 ExternalDataPolicyHandler::~ExternalDataPolicyHandler() {}
 
 bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
-  if (!TypeCheckingPolicyHandler::CheckPolicySettings(policies, errors))
-    return false;
-
   const std::string policy = policy_name();
   if (!policies.IsPolicySet(policy))
     return true;
-  const base::Value* value = policies.GetValue(policy, base::Value::Type::DICT);
+
+  return CheckPolicySettings(policy.c_str(), policies.Get(policy), errors);
+}
+
+bool ExternalDataPolicyHandler::CheckPolicySettings(
+    const char* policy,
+    const PolicyMap::Entry* entry,
+    PolicyErrorMap* errors) {
+  if (!TypeCheckingPolicyHandler::CheckPolicySettings(
+          policy, base::Value::Type::DICT, entry, errors))
+    return false;
+
+  const base::Value* value = entry->value(base::Value::Type::DICT);
   DCHECK(value);
   absl::optional<std::string> url_string =
       GetSubkeyString(*value, errors, policy, kSubkeyURL);
@@ -160,14 +168,14 @@ bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 
   const GURL url(url_string.value());
   if (!url.is_valid()) {
-    errors->AddError(policy, kSubkeyURL, IDS_POLICY_VALUE_FORMAT_ERROR);
+    errors->AddError(policy, kSubkeyURL, IDS_POLICY_INVALID_URL_ERROR);
     return false;
   }
 
   std::vector<uint8_t> hash;
   if (!base::HexStringToBytes(hash_string.value(), &hash) ||
       hash.size() != crypto::kSHA256Length) {
-    errors->AddError(policy, kSubkeyHash, IDS_POLICY_VALUE_FORMAT_ERROR);
+    errors->AddError(policy, kSubkeyHash, IDS_POLICY_INVALID_HASH_ERROR);
     return false;
   }
 

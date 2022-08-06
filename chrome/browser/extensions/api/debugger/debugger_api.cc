@@ -41,6 +41,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -215,6 +216,12 @@ bool ExtensionMayAttachToWebContents(const Extension& extension,
   // former being a 'virtual' URL as obtained from NavigationEntry.
   if (!ExtensionMayAttachToURL(extension, extension_profile,
                                web_contents.GetLastCommittedURL(), error)) {
+    return false;
+  }
+  if (web_contents.GetController().GetPendingEntry() &&
+      !ExtensionMayAttachToURL(
+          extension, extension_profile,
+          web_contents.GetController().GetPendingEntry()->GetURL(), error)) {
     return false;
   }
 
@@ -817,6 +824,11 @@ ExtensionFunction::ResponseAction DebuggerGetTargetsFunction::Run() {
   base::Value::List result;
   Profile* profile = Profile::FromBrowserContext(browser_context());
   for (auto& host : list) {
+    // TODO(crbug.com/1348385): hide all Tab targets for now to avoid
+    // compatibility problems. Consider exposing them later when they're fully
+    // supported, and compatibility considerations are better understood.
+    if (host->GetType() == DevToolsAgentHost::kTypeTab)
+      continue;
     if (!ExtensionMayAttachToTargetProfile(
             profile, include_incognito_information(), *host)) {
       continue;

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "build/build_config.h"
@@ -39,9 +40,9 @@
 #endif
 
 const char kGuestProfileName[] = "Guest";
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 const char kSystemProfileName[] = "System";
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
 TestingProfileManager::TestingProfileManager(TestingBrowserProcess* process)
     : called_set_up_(false),
@@ -89,9 +90,14 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   if (profile_name != chrome::kInitialProfile &&
       profile_name != chrome::kLockScreenProfile &&
       profile_name != ash::ProfileHelper::GetLockScreenAppProfileName()) {
+    const std::string fake_email =
+        profile_name.find('@') == std::string::npos
+            ? base::ToLowerASCII(profile_name) + "@test"
+            : profile_name;
     profile_path =
         profile_path.Append(ash::ProfileHelper::Get()->GetUserProfileDir(
-            ash::ProfileHelper::GetUserIdHashByUserIdForTesting(profile_name)));
+            ash::ProfileHelper::GetUserIdHashByUserIdForTesting(
+                AccountId::FromUserEmail(fake_email).GetUserEmail())));
   } else {
     profile_path = profile_path.AppendASCII(profile_name);
   }
@@ -182,7 +188,7 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   return profile_ptr;
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 TestingProfile* TestingProfileManager::CreateSystemProfile() {
   DCHECK(called_set_up_);
 
@@ -202,7 +208,7 @@ TestingProfile* TestingProfileManager::CreateSystemProfile() {
 
   return profile_ptr;
 }
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   DCHECK(called_set_up_);
@@ -249,7 +255,7 @@ void TestingProfileManager::DeleteGuestProfile() {
   profile_manager_->profiles_info_.erase(ProfileManager::GetGuestProfilePath());
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 void TestingProfileManager::DeleteSystemProfile() {
   DCHECK(called_set_up_);
 
@@ -259,7 +265,7 @@ void TestingProfileManager::DeleteSystemProfile() {
   profile_manager_->profiles_info_.erase(
       ProfileManager::GetSystemProfilePath());
 }
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
 void TestingProfileManager::DeleteProfileAttributesStorage() {
   profile_manager_->profile_attributes_storage_.reset(nullptr);

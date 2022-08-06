@@ -4,11 +4,13 @@
 
 package org.chromium.content_public.browser;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
@@ -17,6 +19,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -47,6 +50,7 @@ public class LoadUrlParams {
     private long mInputStartTimestamp;
     private boolean mHasUserGesture;
     private boolean mShouldClearHistoryList;
+    private Supplier<Long> mNavigationUIDataSupplier;
 
     /**
      * Creates an instance with default page transition type.
@@ -90,6 +94,33 @@ public class LoadUrlParams {
         mBaseUrlForDataUrl = null;
         mVirtualUrlForDataUrl = null;
         mDataUrlAsString = null;
+    }
+
+    /** Creates a new LoadUrlParams that is a copy of {@code other}. */
+    public static LoadUrlParams copy(@NonNull LoadUrlParams other) {
+        LoadUrlParams copy = new LoadUrlParams(other.mUrl);
+        copy.mInitiatorOrigin = other.mInitiatorOrigin;
+        copy.mLoadUrlType = other.mLoadUrlType;
+        copy.mTransitionType = other.mTransitionType;
+        copy.mReferrer = other.mReferrer;
+        if (other.mExtraHeaders != null) {
+            copy.mExtraHeaders = new HashMap<>(other.mExtraHeaders);
+        }
+
+        copy.mVerbatimHeaders = other.mVerbatimHeaders;
+        copy.mUaOverrideOption = other.mUaOverrideOption;
+        copy.mPostData = other.mPostData;
+        copy.mBaseUrlForDataUrl = other.mBaseUrlForDataUrl;
+        copy.mVirtualUrlForDataUrl = other.mVirtualUrlForDataUrl;
+        copy.mDataUrlAsString = other.mDataUrlAsString;
+        copy.mCanLoadLocalResources = other.mCanLoadLocalResources;
+        copy.mIsRendererInitiated = other.mIsRendererInitiated;
+        copy.mShouldReplaceCurrentEntry = other.mShouldReplaceCurrentEntry;
+        copy.mIntentReceivedTimestamp = other.mIntentReceivedTimestamp;
+        copy.mInputStartTimestamp = other.mInputStartTimestamp;
+        copy.mHasUserGesture = other.mHasUserGesture;
+        copy.mShouldClearHistoryList = other.mShouldClearHistoryList;
+        return copy;
     }
 
     /**
@@ -548,6 +579,16 @@ public class LoadUrlParams {
             return true;
         }
         return LoadUrlParamsJni.get().isDataScheme(mBaseUrlForDataUrl);
+    }
+
+    /** Set the {@link NavigationUIData}. */
+    public void setNavigationUIDataSupplier(Supplier<Long> navigationUIDataSupplier) {
+        mNavigationUIDataSupplier = navigationUIDataSupplier;
+    }
+
+    /** Returns the supplier for {@link NavigationUIData} or null. */
+    public Supplier<Long> getNavigationUIDataSupplier() {
+        return mNavigationUIDataSupplier;
     }
 
     @NativeMethods

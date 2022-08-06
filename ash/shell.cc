@@ -53,6 +53,7 @@
 #include "ash/display/persistent_window_controller.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/display/projecting_observer.h"
+#include "ash/display/refresh_rate_throttle_controller.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_ash.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -114,6 +115,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper_legacy.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
+#include "ash/system/camera/autozoom_controller_impl.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
@@ -142,6 +144,7 @@
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
+#include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/system/session/logout_confirmation_controller.h"
@@ -205,6 +208,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "dbus/bus.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -420,12 +424,6 @@ Shell::CreateDefaultNonClientFrameView(views::Widget* widget) {
   return std::make_unique<NonClientFrameViewAsh>(widget);
 }
 
-void Shell::SetDisplayWorkAreaInsets(Window* contains,
-                                     const gfx::Insets& insets) {
-  window_tree_host_manager_->UpdateWorkAreaOfDisplayNearestWindow(contains,
-                                                                  insets);
-}
-
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
   for (auto& observer : shell_observers_)
     observer.OnCastingSessionStartedOrStopped(started);
@@ -629,6 +627,9 @@ Shell::~Shell() {
 
   hud_display::HUDDisplayView::Destroy();
 
+  // Observes `SessionController` and must be destroyed before it.
+  privacy_hub_controller_.reset();
+
   for (auto& observer : shell_observers_)
     observer.OnShellDestroying();
 
@@ -643,6 +644,7 @@ Shell::~Shell() {
   display_configuration_observer_.reset();
   display_prefs_.reset();
   display_alignment_controller_.reset();
+  refresh_rate_throttle_controller_.reset();
 
   // Remove the focus from any window. This will prevent overhead and side
   // effects (e.g. crashes) from changing focus during shutdown.
@@ -863,6 +865,8 @@ Shell::~Shell() {
   docked_magnifier_controller_ = nullptr;
   // Similarly for PrivacyScreenController.
   privacy_screen_controller_ = nullptr;
+  // Similarly for AutozoomControllerImpl
+  autozoom_controller_ = nullptr;
 
   geolocation_controller_.reset();
 
@@ -993,6 +997,7 @@ void Shell::Init(
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
+  privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   if (!ash::features::IsBluetoothRevampEnabled()) {
     bluetooth_power_controller_ =
@@ -1129,6 +1134,9 @@ void Shell::Init(
   // Privacy Screen depends on the display manager, so initialize it after
   // display manager was properly initialized.
   privacy_screen_controller_ = std::make_unique<PrivacyScreenController>();
+
+  if (media::ShouldEnableAutoFraming())
+    autozoom_controller_ = std::make_unique<AutozoomControllerImpl>();
 
   // Fast Pair depends on the display manager, so initialize it after
   // display manager was properly initialized.
@@ -1460,6 +1468,12 @@ void Shell::InitializeDisplayManager() {
 
   projecting_observer_ =
       std::make_unique<ProjectingObserver>(display_manager_->configurator());
+
+  if (base::FeatureList::IsEnabled(features::kSeamlessRefreshRateSwitching)) {
+    refresh_rate_throttle_controller_ =
+        std::make_unique<RefreshRateThrottleController>(
+            display_manager_->configurator(), PowerStatus::Get());
+  }
 
   display_prefs_ = std::make_unique<DisplayPrefs>(local_state_);
 

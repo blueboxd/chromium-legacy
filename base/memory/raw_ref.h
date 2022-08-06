@@ -5,6 +5,7 @@
 #ifndef BASE_MEMORY_RAW_REF_H_
 #define BASE_MEMORY_RAW_REF_H_
 
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -67,7 +68,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ref {
       std::is_same_v<Impl, internal::AsanBackupRefPtrImpl>;
 
  public:
-  ALWAYS_INLINE explicit raw_ref(T& p) noexcept : inner_(&p) {}
+  ALWAYS_INLINE explicit raw_ref(T& p) noexcept : inner_(std::addressof(p)) {}
 
   ALWAYS_INLINE raw_ref& operator=(T& p) noexcept {
     inner_.operator=(&p);
@@ -274,6 +275,29 @@ class TRIVIAL_ABI GSL_POINTER raw_ref {
 template <class T>
 raw_ref(T) -> raw_ref<T>;
 
+// Template helpers for working with raw_ref<T>.
+template <typename T>
+struct IsRawRef : std::false_type {};
+
+template <typename T, typename I>
+struct IsRawRef<raw_ref<T, I>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool IsRawRefV = IsRawRef<T>::value;
+
+template <typename T>
+struct RemoveRawRef {
+  using type = T;
+};
+
+template <typename T, typename I>
+struct RemoveRawRef<raw_ref<T, I>> {
+  using type = T;
+};
+
+template <typename T>
+using RemoveRawRefT = typename RemoveRawRef<T>::type;
+
 }  // namespace base
 
 using base::raw_ref;
@@ -292,40 +316,12 @@ struct less<raw_ref<T, Impl>> {
     return lhs < rhs;
   }
 
-  bool operator()(const raw_ref<const T, Impl>& lhs,
-                  const raw_ref<const T, Impl>& rhs) const {
+  bool operator()(T& lhs, const raw_ref<T, Impl>& rhs) const {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }
 
-  bool operator()(const raw_ref<T, Impl>& lhs,
-                  const raw_ref<const T, Impl>& rhs) const {
-    Impl::IncrementLessCountForTest();
-    return lhs < rhs;
-  }
-
-  bool operator()(const raw_ref<const T, Impl>& lhs,
-                  const raw_ref<T, Impl>& rhs) const {
-    Impl::IncrementLessCountForTest();
-    return lhs < rhs;
-  }
-
-  bool operator()(const T& lhs, const raw_ref<const T, Impl>& rhs) const {
-    Impl::IncrementLessCountForTest();
-    return lhs < rhs;
-  }
-
-  bool operator()(const T& lhs, const raw_ref<T, Impl>& rhs) const {
-    Impl::IncrementLessCountForTest();
-    return lhs < rhs;
-  }
-
-  bool operator()(const raw_ref<const T, Impl>& lhs, const T& rhs) const {
-    Impl::IncrementLessCountForTest();
-    return lhs < rhs;
-  }
-
-  bool operator()(const raw_ref<T, Impl>& lhs, const T& rhs) const {
+  bool operator()(const raw_ref<T, Impl>& lhs, T& rhs) const {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }

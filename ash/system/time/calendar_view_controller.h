@@ -73,6 +73,9 @@ class ASH_EXPORT CalendarViewController {
   // Called when a calendar event is about to launch. Used to record metrics.
   void OnCalendarEventWillLaunch();
 
+  // Called when the CalendarDateCellView representing today gets a fetch.
+  void OnTodaysEventFetchComplete();
+
   // If the selected date in the current month. This is used to inform the
   // `CalendarView` if the month should be updated when a date is selected.
   bool IsSelectedDateInCurrentMonth();
@@ -99,9 +102,6 @@ class ASH_EXPORT CalendarViewController {
   // Gets the month name of the previous month based `currently_shown_date_`'s
   // month.
   std::u16string GetPreviousMonthName();
-
-  // `row_height_` is expanded when the EventListView is shown.
-  int GetRowHeightWithEventListView() const;
 
   // Getters of the today's row position, top and bottom.
   int GetTodayRowTopHeight() const;
@@ -199,6 +199,10 @@ class ASH_EXPORT CalendarViewController {
   // Whether the user journey time has been recorded. It is recorded when an
   // event is launched, or when this (which is owned by the view) is destroyed.
   bool user_journey_time_recorded_ = false;
+
+  // Whether the metric for recording time to show the user the first fetch of
+  // events has been recorded.
+  bool todays_date_cell_fetch_recorded_ = false;
 
   // The currently selected date.
   absl::optional<base::Time> selected_date_;

@@ -25,11 +25,11 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/system_proxy/system_proxy_client.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_service_impl.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -407,8 +407,9 @@ void SystemProxyManager::SendKerberosAuthenticationDetails() {
   if (primary_profile_) {
     request.set_active_principal_name(
         primary_profile_->GetPrefs()
-            ->Get(prefs::kKerberosActivePrincipalName)
-            ->GetString());
+            ->GetValue(prefs::kKerberosActivePrincipalName)
+            // TODO (https://crbug.com/1344857) Maybe call GetString directly.
+            .GetString());
   }
   SystemProxyClient::Get()->SetAuthenticationDetails(
       request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,

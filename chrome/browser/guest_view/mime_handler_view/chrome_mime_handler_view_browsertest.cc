@@ -89,11 +89,12 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
   TestGuestViewManager* GetGuestViewManager() {
     TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
         TestGuestViewManager::FromBrowserContext(browser()->profile()));
-    // TestGuestViewManager::WaitForSingleGuestCreated can and will get called
-    // before a guest is created. Since GuestViewManager is usually not created
-    // until the first guest is created, this means that |manager| will be
-    // nullptr if trying to use the manager to wait for the first guest. Because
-    // of this, the manager must be created here if it does not already exist.
+    // TestGuestViewManager::DeprecatedWaitForSingleGuestCreated can and will
+    // get called before a guest is created. Since GuestViewManager is usually
+    // not created until the first guest is created, this means that |manager|
+    // will be nullptr if trying to use the manager to wait for the first guest.
+    // Because of this, the manager must be created here if it does not already
+    // exist.
     if (!manager) {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
@@ -115,8 +116,7 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
 
   void RunTestWithUrl(const GURL& url) {
     // Use the testing subclass of MimeHandlerViewGuest.
-    GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-        base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+    TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
 
     const extensions::Extension* extension = LoadTestExtension();
     ASSERT_TRUE(extension);
@@ -128,7 +128,7 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
 
-    ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
+    ASSERT_TRUE(GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
     ASSERT_TRUE(GetEmbedderWebContents());
   }
 
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, EmbedderFrameRemovedNoCrash) {
   RunTest("test_iframe_basic.html");
   auto* guest_view = GuestViewBase::FromWebContents(
-      GetGuestViewManager()->WaitForSingleGuestCreated());
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
   ASSERT_TRUE(guest_view);
   int32_t element_instance_id = guest_view->element_instance_id();
   auto* embedder_web_contents = GetEmbedderWebContents();
@@ -363,8 +363,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, EmbedderFrameRemovedNoCrash) {
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
                        EmbedWithInitialFrameAcceptBeforeUnloadDialog) {
   // Use the testing subclass of MimeHandlerViewGuest.
-  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+  TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
   const extensions::Extension* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -395,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
   ASSERT_TRUE(alert->is_before_unload_dialog());
   alert->view()->AcceptAppModalDialog();
 
-  EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
+  EXPECT_TRUE(GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, PostMessage) {
@@ -524,7 +523,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
   content::PrepContentsForBeforeUnloadTest(web_contents, false);
 
   // Make sure we have a guestviewmanager.
-  auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   UserActivationUpdateWaiter activation_waiter(guest_contents);
 
   // Activate |guest_contents| through a click, then wait until the activation
@@ -555,7 +555,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
                               "const e = document.createElement('embed');"
                               "e.src = './testEmbedded.csv'; e.type='text/csv';"
                               "document.body.appendChild(e);"));
-  DocumentLoadCompletionWaiter(GetGuestViewManager()->WaitForNextGuestCreated())
+  DocumentLoadCompletionWaiter(
+      GetGuestViewManager()->DeprecatedWaitForNextGuestCreated())
       .Wait();
   // After load, an IPC has been sent to the renderer to update routing IDs for
   // the guest frame and the content frame (and activate the
@@ -581,8 +582,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
 // blocked in sandboxed frames).
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, DoNotLoadInSandboxedFrame) {
   // Use the testing subclass of MimeHandlerViewGuest.
-  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+  TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
 
   const extensions::Extension* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, DoNotLoadInSandboxedFrame) {
   // Therefore, it suffices to wait for one GuestView to be created, then remove
   // the non-sandboxed frame, and ensue there are no GuestViews left.
   if (guest_view_manager->num_guests_created() == 0)
-    ASSERT_TRUE(guest_view_manager->WaitForNextGuestCreated());
+    ASSERT_TRUE(guest_view_manager->DeprecatedWaitForNextGuestCreated());
   ASSERT_EQ(1U, guest_view_manager->num_guests_created());
 
   // Remove the non-sandboxed frame.
@@ -630,8 +630,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, DoNotLoadInSandboxedFrame) {
 
 // Tests that a MimeHandlerViewGuest auto-rejects pointer lock requests.
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, RejectPointLock) {
-  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+  TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
 
   auto* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
@@ -639,7 +638,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, RejectPointLock) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/test_embedded.html")));
 
-  auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   // Make sure the load has started, before waiting for it to stop.
   // This is a little hacky, but will unjank the test for now.
   while (!guest_contents->IsLoading() &&
@@ -670,7 +670,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), data_url));
   auto* embedder_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   while (guest_web_contents->IsLoading()) {
     base::RunLoop run_loop;
@@ -704,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
       "data:text/html, <iframe src='data:application/pdf,foo' "
       "style='display:none'></iframe>,foo2");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), data_url));
-  ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
+  ASSERT_TRUE(GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated());
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

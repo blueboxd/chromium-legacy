@@ -5,20 +5,30 @@
 #ifndef IPCZ_SRC_IPCZ_NODE_LINK_MEMORY_H_
 #define IPCZ_SRC_IPCZ_NODE_LINK_MEMORY_H_
 
+#include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <vector>
 
 #include "ipcz/buffer_id.h"
 #include "ipcz/buffer_pool.h"
 #include "ipcz/driver_memory.h"
 #include "ipcz/driver_memory_mapping.h"
+#include "ipcz/fragment_descriptor.h"
+#include "ipcz/fragment_ref.h"
 #include "ipcz/ipcz.h"
+#include "ipcz/ref_counted_fragment.h"
+#include "ipcz/router_link_state.h"
 #include "ipcz/sublink_id.h"
+#include "third_party/abseil-cpp/absl/container/flat_hash_map.h"
+#include "third_party/abseil-cpp/absl/synchronization/mutex.h"
 #include "third_party/abseil-cpp/absl/types/span.h"
 #include "util/ref_counted.h"
 
 namespace ipcz {
 
 class Node;
+class NodeLink;
 
 // NodeLinkMemory owns and manages all shared memory resource allocation on a
 // single NodeLink. Each end of a NodeLink has its own NodeLinkMemory instance
@@ -31,39 +41,24 @@ class NodeLinkMemory : public RefCounted {
   // reserved for use by initial portals.
   static constexpr size_t kMaxInitialPortals = 12;
 
-  NodeLinkMemory(NodeLinkMemory&&);
+  // Sets a reference to the NodeLink using this NodeLinkMemory. This is called
+  // by the NodeLink itself before any other methods can be called on the
+  // NodeLinkMemory, and it's only reset to null once the NodeLink is
+  // deactivated. This link may be used to share information with the remote
+  // node, where another NodeLinkMemory is cooperatively managing the same
+  // memory pool as this one.
+  void SetNodeLink(Ref<NodeLink> link);
 
-  // Returned by Allocate().
-  struct Allocation {
-    // The NodeLinkMemory created by a succesful call to Allocate(), or null if
-    // memory could not be allocated. This memory is initialized with a
-    // primary buffer (BufferId 0) whose contents have also been appropriately
-    // initialized. This object is ready for immediate use by a new NodeLink on
-    // the `node` passed to Allocate().
-    Ref<NodeLinkMemory> node_link_memory;
-
-    // A handle to the region underlying the new NodeLinkMemory's primary
-    // buffer. This should be shared with the corresponding NodeLink's remote
-    // node, where it can be passed to Adopt() to establish a new NodeLinkMemory
-    // there.
-    DriverMemory primary_buffer_memory;
-  };
-
-  // Constructs a new NodeLinkMemory over a newly allocated DriverMemory object.
-  // The new DriverMemory is returned in `primary_buffer_memory`, while the
-  // returned NodeLinkMemory internally retains a mapping of that memory.
-  static Allocation Allocate(Ref<Node> node);
+  // Allocates a new DriverMemory object and initializes its contents to be
+  // suitable as the primary buffer of a new NodeLinkMemory. Returns the memory
+  // along with a mapping of it.
+  static DriverMemoryWithMapping AllocateMemory(const IpczDriver& driver);
 
   // Constructs a new NodeLinkMemory with BufferId 0 (the primary buffer) mapped
-  // from `primary_buffer_memory`. The buffer must have been created and
-  // initialized by a prior call to Allocate() above.
-  static Ref<NodeLinkMemory> Adopt(Ref<Node> node,
-                                   DriverMemory primary_buffer_memory);
-
-  // Exposes the underlying BufferPool which owns all shared buffers for this
-  // NodeLinkMemory and which facilitates dynamic allocation of the fragments
-  // within.
-  BufferPool& buffer_pool() { return buffer_pool_; }
+  // as `primary_buffer_memory`. The buffer must have been created and
+  // initialized by a prior call to AllocateMemory() above.
+  static Ref<NodeLinkMemory> Create(Ref<Node> node,
+                                    DriverMemoryMapping primary_buffer_memory);
 
   // Returns a new BufferId which should still be unused by any buffer in this
   // NodeLinkMemory's BufferPool, or that of its peer NodeLinkMemory. When
@@ -75,11 +70,91 @@ class NodeLinkMemory : public RefCounted {
   // use on the corresponding NodeLink.
   SublinkId AllocateSublinkIds(size_t count);
 
+  // Returns a ref to the RouterLinkState for the `i`th initial portal on the
+  // NodeLink, established by the Connect() call which created this link. Unlike
+  // other RouterLinkStates which are allocated dynamically, these have a fixed
+  // location within the NodeLinkMemory's primary buffer. The returned
+  // FragmentRef is unmanaged and will never free its underlying fragment.
+  FragmentRef<RouterLinkState> GetInitialRouterLinkState(size_t i);
+
+  // Resolves `descriptor` to a concrete Fragment. If the descriptor is null or
+  // describes a region of memory which exceeds the bounds of the identified
+  // buffer, this returns a null Fragment. If the descriptor's BufferId is not
+  // yet registered with this NodeLinkMemory, this returns a pending Fragment
+  // with the same BufferId and dimensions as `descriptor`.
+  Fragment GetFragment(const FragmentDescriptor& descriptor);
+
+  // Adopts an existing reference to a RefCountedFragment within `fragment`.
+  // This does NOT increment the ref count of the RefCountedFragment.
+  template <typename T>
+  FragmentRef<T> AdoptFragmentRef(const Fragment& fragment) {
+    ABSL_ASSERT(sizeof(T) <= fragment.size());
+    return FragmentRef<T>(RefCountedFragment::kAdoptExistingRef,
+                          WrapRefCounted(this), fragment);
+  }
+
+  // Adds a new buffer to the underlying BufferPool to use as additional
+  // allocation capacity for blocks of size `block_size`. Note that the
+  // contents of the mapped region must already be initialized as a
+  // BlockAllocator.
+  bool AddBlockBuffer(BufferId id,
+                      size_t block_size,
+                      DriverMemoryMapping mapping);
+
+  // Allocates a Fragment of `size` bytes from the underlying BufferPool. May
+  // return a null Fragment if there was no readily available capacity.
+  Fragment AllocateFragment(size_t size);
+
+  // Frees a Fragment previously allocated through this NodeLinkMemory. Returns
+  // true on success. Returns false if `fragment` does not represent an
+  // allocated fragment within this NodeLinkMemory.
+  bool FreeFragment(const Fragment& fragment);
+
+  // Allocates a fragment to store a new RouterLinkState and initializes a new
+  // RouterLinkState instance there. If no capacity is currently available to
+  // allocate an appropriate fragment, this may return null.
+  FragmentRef<RouterLinkState> TryAllocateRouterLinkState();
+
+  // Allocates a fragment to store a new RouterLinkState and initializes a new
+  // RouterLinkState instance there. Calls `callback` with a reference to the
+  // new fragment once allocated. Unlike TryAllocateRouterLinkState(), this
+  // allocation always succeeds eventually unless driver memory allocation
+  // itself begins to fail unrecoverably. If the allocation can succeed
+  // synchronously, `callback` may be called before this method returns.
+  using RouterLinkStateCallback =
+      std::function<void(FragmentRef<RouterLinkState>)>;
+  void AllocateRouterLinkState(RouterLinkStateCallback callback);
+
+  // Runs `callback` as soon as the identified buffer is added to the underlying
+  // BufferPool. If the buffer is already present here, `callback` is run
+  // immediately.
+  void WaitForBufferAsync(BufferId id,
+                          BufferPool::WaitForBufferCallback callback);
+
  private:
   struct PrimaryBuffer;
 
-  NodeLinkMemory(Ref<Node> node, DriverMemoryMapping primary_buffer);
+  // Constructs a new NodeLinkMemory over `mapping`, which must correspond to
+  // a DriverMemory whose contents have already been initialized as a
+  // NodeLinkMemory primary buffer.
+  NodeLinkMemory(Ref<Node> node, DriverMemoryMapping mapping);
   ~NodeLinkMemory() override;
+
+  // Indicates whether the NodeLinkMemory should be allowed to expand its
+  // allocation capacity further for blocks of size `block_size`.
+  bool CanExpandBlockCapacity(size_t block_size);
+
+  // Attempts to expand the total block allocation capacity for blocks of
+  // `block_size` bytes. `callback` may be called synchronously or
+  // asynchronously with a result indicating whether the expansion succeeded.
+  using RequestBlockCapacityCallback = std::function<void(bool)>;
+  void RequestBlockCapacity(size_t block_size,
+                            RequestBlockCapacityCallback callback);
+  void OnCapacityRequestComplete(size_t block_size, bool success);
+
+  // Initializes `fragment` as a new RouterLinkState and returns a ref to it.
+  FragmentRef<RouterLinkState> InitializeRouterLinkStateFragment(
+      const Fragment& fragment);
 
   const Ref<Node> node_;
 
@@ -90,6 +165,19 @@ class NodeLinkMemory : public RefCounted {
   // Mapping for this link's fixed primary buffer.
   const absl::Span<uint8_t> primary_buffer_memory_;
   PrimaryBuffer& primary_buffer_;
+
+  absl::Mutex mutex_;
+
+  // The NodeLink which is using this NodeLinkMemory. Used to communicate with
+  // the NodeLinkMemory on the other side of the link.
+  Ref<NodeLink> node_link_ ABSL_GUARDED_BY(mutex_);
+
+  // Callbacks to invoke when a pending capacity request is fulfilled for a
+  // specific block size. Also used to prevent stacking of capacity requests for
+  // the same block size.
+  using CapacityCallbackList = std::vector<RequestBlockCapacityCallback>;
+  absl::flat_hash_map<uint32_t, CapacityCallbackList> capacity_callbacks_
+      ABSL_GUARDED_BY(mutex_);
 };
 
 }  // namespace ipcz

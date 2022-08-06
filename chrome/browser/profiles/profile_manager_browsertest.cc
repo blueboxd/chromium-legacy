@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -57,8 +58,17 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_test_helper.h"
+#include "chromeos/startup/browser_init_params.h"
+#include "content/public/test/test_launcher.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -517,8 +527,9 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, ProfileFromProfileKey) {
 class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Use a user hash other than the default chrome::kTestUserProfileDir
-    // so that the prefix case is tested.
+    // Use a user hash other than the default
+    // ash::BrowserContextHelper::kTestUserBrowserContextDirName so that
+    // the prefix case is tested.
     command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                     "test-user-hash");
   }
@@ -532,8 +543,9 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
   base::FilePath profile_path;
   base::PathService::Get(chrome::DIR_USER_DATA, &profile_path);
 
-  profile_path = profile_path.AppendASCII(
-      std::string(chrome::kProfileDirPrefix) + "test-user-hash");
+  profile_path = profile_path.Append(
+      ash::BrowserContextHelper::GetUserBrowserContextDirName(
+          "test-user-hash"));
   EXPECT_EQ(profile_path.value(), last_used_profile->GetPath().value());
 }
 
@@ -906,3 +918,109 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerNonAsciiBrowserTest,
 }
 
 #endif  //! BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// Tests transition between child and regular user profile that happens when
+// supervision is added to or removed from the user account.
+// Uses PRE tests to setup a new profile and the actual test to test the profile
+// type transition.
+// Uses parametrization to cover two transition directions.
+enum class TransitionType {
+  kChildToRegular,
+  kRegularToChild,
+};
+
+class ChildProfileTransitionBrowserTest
+    : public ProfileManagerBrowserTestBase,
+      public testing::WithParamInterface<enum TransitionType> {
+ protected:
+  ChildProfileTransitionBrowserTest() = default;
+  ~ChildProfileTransitionBrowserTest() = default;
+
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    crosapi::mojom::BrowserInitParamsPtr init_params =
+        crosapi::mojom::BrowserInitParams::New();
+
+    const TransitionType transition = GetParam();
+    if (transition == TransitionType::kChildToRegular) {
+      init_params->session_type =
+          content::IsPreTest() ? crosapi::mojom::SessionType::kChildSession
+                               : crosapi::mojom::SessionType::kRegularSession;
+    } else if (transition == TransitionType::kRegularToChild) {
+      init_params->session_type =
+          content::IsPreTest() ? crosapi::mojom::SessionType::kRegularSession
+                               : crosapi::mojom::SessionType::kChildSession;
+    } else {
+      NOTREACHED();
+    }
+
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
+
+    ProfileManagerBrowserTestBase::CreatedBrowserMainParts(browser_main_parts);
+  }
+
+  bool IsChildProfileExpected() const {
+    const TransitionType transition = GetParam();
+    const bool is_pre_test = content::IsPreTest();
+
+    if (transition == TransitionType::kChildToRegular) {
+      return is_pre_test ? true : false;
+    } else if (transition == TransitionType::kRegularToChild) {
+      return is_pre_test ? false : true;
+    } else {
+      NOTREACHED();
+      return false;
+    }
+  }
+
+  const ProfileAttributesEntry* GetProfileAttributesEntry(
+      const Profile* profile) const {
+    ProfileAttributesStorage& storage =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage();
+    return storage.GetProfileAttributesWithPath(profile->GetPath());
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(ChildToRegular,
+                         ChildProfileTransitionBrowserTest,
+                         testing::Values(TransitionType::kChildToRegular));
+
+INSTANTIATE_TEST_SUITE_P(RegularToChild,
+                         ChildProfileTransitionBrowserTest,
+                         testing::Values(TransitionType::kRegularToChild));
+
+IN_PROC_BROWSER_TEST_P(ChildProfileTransitionBrowserTest, PRE_Transition) {
+  const bool is_child_profile_expected = IsChildProfileExpected();
+
+  const Profile* profile = browser()->profile();
+  // Check profile object.
+  ASSERT_TRUE(profile);
+  EXPECT_EQ(is_child_profile_expected, profile->IsChild());
+  EXPECT_EQ(profile->GetPrefs()->GetString(prefs::kSupervisedUserId),
+            is_child_profile_expected ? supervised_users::kChildAccountSUID
+                                      : std::string());
+
+  // Check stored profile attributes.
+  const ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile);
+  ASSERT_NE(entry, nullptr);
+  EXPECT_EQ(is_child_profile_expected, entry->IsChild());
+}
+
+IN_PROC_BROWSER_TEST_P(ChildProfileTransitionBrowserTest, Transition) {
+  const bool is_child_profile_expected = IsChildProfileExpected();
+
+  const Profile* profile = browser()->profile();
+  // Check profile object.
+  ASSERT_TRUE(profile);
+  EXPECT_EQ(is_child_profile_expected, profile->IsChild());
+  EXPECT_EQ(profile->GetPrefs()->GetString(prefs::kSupervisedUserId),
+            is_child_profile_expected ? supervised_users::kChildAccountSUID
+                                      : std::string());
+
+  // Check stored profile attributes.
+  const ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile);
+  ASSERT_NE(entry, nullptr);
+  EXPECT_EQ(is_child_profile_expected, entry->IsChild());
+}
+#endif

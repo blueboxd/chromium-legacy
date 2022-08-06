@@ -107,6 +107,18 @@
   <message name="IDS_ENABLE_NOTIFICATIONS_VIBRATE_SUMMARY" desc="Summary for the preference to enable vibration for notifications">
     Notifications may vibrate the device
   </message>
+    <message name="IDS_ENABLE_DESKTOP_SITE_PERIPHERAL_TITLE" translateable="false" desc="Title for the preference to enable peripheral setting for request desktop site">
+    Accessories
+  </message>
+  <message name="IDS_ENABLE_DESKTOP_SITE_PERIPHERAL_SUMMARY" translateable="false" desc="Summary for the preference to enable peripheral setting for request desktop site">
+    Always request desktop site if a keyboard, trackpad, or mouse is attached
+  </message>
+  <message name="IDS_ENABLE_DESKTOP_SITE_EXTERNAL_DISPLAY_TITLE" translateable="false" desc="Title for the preference to enable display setting for request desktop site">
+    Displays
+  </message>
+  <message name="IDS_ENABLE_DESKTOP_SITE_EXTERNAL_DISPLAY_SUMMARY" translateable="false" desc="Summary for the preference to enable display setting for request desktop site">
+    Always request desktop site if a monitor is connected
+  </message>
 
   <!-- Site settings: general category strings -->
 
@@ -139,6 +151,15 @@
   </message>
   <message name="IDS_WEBSITE_SETTINGS_EMBEDDED_ON" desc="String used to indicate the embedder origin of a site">
     Embedded on <ph name="WEBSITE_URL">%1$s<ex>google.com</ex></ph>
+  </message>
+  <message name="IDS_CLEAR_BROWSING_DATA_LINK" desc="Title of the button that will open the clear browsing data dialog.">
+    Clear browsing data…
+  </message>
+  <message name="IDS_SUMMARY_WITH_ONE_BULLET" desc="Used to generate a summary that consists of two parts, separated by a bullet.">
+    <ph name="FIRST_PART">%1$s<ex>http</ex></ph> • <ph name="SECOND_PART">%2$s<ex>10 MB</ex></ph>
+  </message>
+  <message name="IDS_DOMAIN_SETTINGS_TITLE" desc="Title of the domain-level Site Settings page.">
+    Settings for <ph name="DOMAIN">%1$s<ex>google.com</ex></ph>
   </message>
 
   <!-- Site settings: Possible permission values for a single site -->
@@ -232,6 +253,9 @@
   </message>
   <message name="IDS_WEBSITE_RESET" desc="The label for the button allowing users to clear all data and reset the permissions for a website.">
     Clear &amp; reset
+  </message>
+  <message name="IDS_WEBSITE_RESET_FULL" desc="The label for the button allowing users to clear all data and reset the permissions for a website.">
+    Clear data &amp; reset permissions
   </message>
   <message name="IDS_WEBSITE_RESET_CONFIRMATION" desc="The confirmation text asking if the user is sure about clearing all data and reset the permissions for a site.">
     Are you sure you want to clear all local data, including cookies, and reset all permissions for this website?

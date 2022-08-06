@@ -8,31 +8,10 @@
 namespace apps {
 
 PreferredAppsListHandle::PreferredAppsListHandle() = default;
-PreferredAppsListHandle::~PreferredAppsListHandle() = default;
 
-PreferredAppsListHandle::Observer::Observer(PreferredAppsListHandle* handle) {
-  Observe(handle);
-}
-
-PreferredAppsListHandle::Observer::Observer() = default;
-PreferredAppsListHandle::Observer::~Observer() {
-  if (handle_) {
-    handle_->RemoveObserver(this);
-  }
-}
-
-void PreferredAppsListHandle::Observer::Observe(
-    PreferredAppsListHandle* handle) {
-  if (handle == handle_) {
-    // Early exit to avoid infinite loops if we're in the middle of a callback.
-    return;
-  }
-  if (handle_) {
-    handle_->RemoveObserver(this);
-  }
-  handle_ = handle;
-  if (handle_) {
-    handle_->AddObserver(this);
+PreferredAppsListHandle::~PreferredAppsListHandle() {
+  for (auto& obs : observers_) {
+    obs.OnPreferredAppsListWillBeDestroyed(this);
   }
 }
 

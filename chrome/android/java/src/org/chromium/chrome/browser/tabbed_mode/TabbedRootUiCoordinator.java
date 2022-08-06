@@ -20,6 +20,7 @@ import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -52,6 +53,9 @@ import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthCoordinatorFactory;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthTopToolbarDelegate;
 import org.chromium.chrome.browser.language.AppLanguagePromoDialog;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.layouts.LayoutManager;
@@ -88,11 +92,13 @@ import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.UndoGroupSnackbarController;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
-import org.chromium.chrome.browser.ui.AppLaunchDrawBlocker;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
@@ -208,6 +214,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      * @param tabModelSelectorSupplier Supplies the {@link TabModelSelector}.
      * @param startSurfaceSupplier Supplier of the {@link StartSurface}.
+     * @param tabSwitcherSupplier Supplier of the {@link TabSwitcher}.
      * @param intentMetadataOneshotSupplier Supplier with information about the launching intent.
      * @param layoutStateProviderOneshotSupplier Supplier of the {@link LayoutStateProvider}.
      * @param startSurfaceParentTabSupplier Supplies the parent tab for the StartSurface.
@@ -241,10 +248,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param tabReparentingControllerSupplier Supplier for the {@link TabReparentingController}.
      * @param initializeUiWithIncognitoColors Whether to initialize the UI with incognito colors.
      * @param backPressManager The {@link BackPressManager} handling back press.
-     * @param unblockDrawForOverviewPageRunnable The runnable for unblocking the {@link
-     *                                           AppLaunchDrawBlocker} which is specifically for
-     *                                           blocking draw on launch when overview page
-     *                                           is showing during startup.
      */
     public TabbedRootUiCoordinator(@NonNull AppCompatActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -256,6 +259,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             @NonNull OneshotSupplier<StartSurface> startSurfaceSupplier,
+            @NonNull OneshotSupplier<TabSwitcher> tabSwitcherSupplier,
             @NonNull OneshotSupplier<ToolbarIntentMetadata> intentMetadataOneshotSupplier,
             @NonNull OneshotSupplier<LayoutStateProvider> layoutStateProviderOneshotSupplier,
             @NonNull Supplier<Tab> startSurfaceParentTabSupplier,
@@ -284,22 +288,20 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<InsetObserverView> insetObserverViewSupplier,
             @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn,
             OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
-            boolean initializeUiWithIncognitoColors, @NonNull BackPressManager backPressManager,
-            @NonNull Runnable unblockDrawForOverviewPageRunnable) {
+            boolean initializeUiWithIncognitoColors, @NonNull BackPressManager backPressManager) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, tabBookmarkerSupplier,
                 contextualSearchManagerSupplier, tabModelSelectorSupplier, startSurfaceSupplier,
-                intentMetadataOneshotSupplier, layoutStateProviderOneshotSupplier,
-                startSurfaceParentTabSupplier, browserControlsManager, windowAndroid, jankTracker,
-                activityLifecycleDispatcher, layoutManagerSupplier, menuOrKeyboardActionController,
-                activityThemeColorSupplier, modalDialogManagerSupplier, appMenuBlocker,
-                supportsAppMenuSupplier, supportsFindInPage, tabCreatorManagerSupplier,
-                fullscreenManager, compositorViewHolderSupplier, tabContentManagerSupplier,
-                snackbarManagerSupplier, activityType, isInOverviewModeSupplier,
-                isWarmOnResumeSupplier, appMenuDelegate, statusBarColorProvider,
-                intentRequestTracker, tabReparentingControllerSupplier,
-                ephemeralTabCoordinatorSupplier, initializeUiWithIncognitoColors, backPressManager,
-                unblockDrawForOverviewPageRunnable);
+                tabSwitcherSupplier, intentMetadataOneshotSupplier,
+                layoutStateProviderOneshotSupplier, startSurfaceParentTabSupplier,
+                browserControlsManager, windowAndroid, jankTracker, activityLifecycleDispatcher,
+                layoutManagerSupplier, menuOrKeyboardActionController, activityThemeColorSupplier,
+                modalDialogManagerSupplier, appMenuBlocker, supportsAppMenuSupplier,
+                supportsFindInPage, tabCreatorManagerSupplier, fullscreenManager,
+                compositorViewHolderSupplier, tabContentManagerSupplier, snackbarManagerSupplier,
+                activityType, isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
+                statusBarColorProvider, intentRequestTracker, tabReparentingControllerSupplier,
+                ephemeralTabCoordinatorSupplier, initializeUiWithIncognitoColors, backPressManager);
         mControlContainerHeightResource = controlContainerHeightResource;
         mInsetObserverViewSupplier = insetObserverViewSupplier;
         mBackButtonShouldCloseTabFn = backButtonShouldCloseTabFn;
@@ -525,6 +527,45 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     }
 
     @Override
+    protected IncognitoReauthCoordinatorFactory getIncognitoReauthCoordinatorFactory() {
+        // TODO(crbug.com/1315676): When the refactor is enabled by default, use
+        // |tabSwitcherCustomView| directly instead of the supplier.
+        OneshotSupplier<TabSwitcherCustomViewManager> tabSwitcherCustomViewSupplier =
+                new OneshotSupplierImpl<>();
+        if (ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(mActivity)
+                && mActivityType == ActivityType.TABBED) {
+            ((OneshotSupplierImpl) tabSwitcherCustomViewSupplier)
+                    .set(mTabSwitcherSupplier.get().getTabSwitcherCustomViewManager());
+        } else {
+            tabSwitcherCustomViewSupplier =
+                    mStartSurfaceSupplier.get().getTabSwitcherCustomViewManagerSupplier();
+        }
+
+        // TODO(crbug.com/1324211, crbug.com/1227656) : Refactor below to remove
+        // IncognitoReauthTopToolbarDelegate and pass TopToolbarInteractabilityManager.
+        IncognitoReauthTopToolbarDelegate incognitoReauthTopToolbarDelegate =
+                new IncognitoReauthTopToolbarDelegate() {
+                    @Override
+                    public int disableNewTabButton() {
+                        return mToolbarManager.getTopToolbarInteractabilityManager()
+                                .disableNewTabButton();
+                    }
+
+                    @Override
+                    public void enableNewTabButton(int clientToken) {
+                        mToolbarManager.getTopToolbarInteractabilityManager().enableNewTabButton(
+                                clientToken);
+                    }
+                };
+
+        return new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
+                mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
+                new SettingsLauncherImpl(), tabSwitcherCustomViewSupplier,
+                incognitoReauthTopToolbarDelegate, mLayoutManager,
+                /*isTabbedActivity=*/true);
+    }
+
+    @Override
     protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
         super.setLayoutStateProvider(layoutStateProvider);
         if (mGestureNavLayoutObserver != null) {
@@ -625,9 +666,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         mAppMenuCoordinator.getAppMenuHandler(), R.id.manage_all_windows_menu_id);
             }
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TOOLBAR_IPH_ANDROID)) {
-            mPromoShownOneshotSupplier.set(didTriggerPromo);
-        }
+        mPromoShownOneshotSupplier.set(didTriggerPromo);
 
         if (mOfflineIndicatorController != null) {
             // Initialize the OfflineIndicatorInProductHelpController if the

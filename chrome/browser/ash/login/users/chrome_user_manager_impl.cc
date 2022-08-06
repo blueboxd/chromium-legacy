@@ -91,7 +91,6 @@
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/policy_details.h"
@@ -110,7 +109,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/device_local_account_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -138,10 +136,6 @@ const char kDeviceLocalAccountPendingDataRemoval[] =
 const char kDeviceLocalAccountsWithSavedData[] = "PublicAccounts";
 
 constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
-
-// If the service doesn't exist or the policy is not set, enable managed
-// session by default.
-constexpr bool kManagedSessionEnabledByDefault = true;
 
 std::string FullyCanonicalize(const std::string& email) {
   return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
@@ -209,16 +203,6 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
 
   UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
                                  base::DoNothing());
-}
-
-bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
-  const policy::PolicyMap::Entry* entry =
-      broker->core()->store()->policy_map().Get(
-          policy::key::kDeviceLocalAccountManagedSessionEnabled);
-  if (!entry)
-    return kManagedSessionEnabledByDefault;
-  return entry->value(base::Value::Type::BOOLEAN) &&
-         entry->value(base::Value::Type::BOOLEAN)->GetBool();
 }
 
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -735,12 +719,11 @@ bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
 
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
     std::set<AccountId>* device_local_accounts_set) {
-  const base::Value* prefs_device_local_accounts =
-      GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData);
+  const base::Value::List& prefs_device_local_accounts =
+      GetLocalState()->GetValueList(kDeviceLocalAccountsWithSavedData);
   std::vector<AccountId> device_local_accounts;
-  ParseUserList(prefs_device_local_accounts->GetListDeprecated(),
-                std::set<AccountId>(), &device_local_accounts,
-                device_local_accounts_set);
+  ParseUserList(prefs_device_local_accounts, std::set<AccountId>(),
+                &device_local_accounts, device_local_accounts_set);
   for (const AccountId& account_id : device_local_accounts) {
     policy::DeviceLocalAccount::Type type;
     if (!policy::IsDeviceLocalAccountUser(account_id.GetUserEmail(), &type)) {
@@ -1330,39 +1313,13 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
            reporting_users.GetListDeprecated().end());
 }
 
-bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
-    const user_manager::User& active_user) const {
-  policy::DeviceLocalAccountPolicyService* service =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_ash()
-          ->GetDeviceLocalAccountPolicyService();
-  if (!service)
-    return kManagedSessionEnabledByDefault;
-
-  policy::DeviceLocalAccountPolicyBroker* broker =
-      service->GetBrokerForUser(active_user.GetAccountId().GetUserEmail());
-
-  if (!broker) {
-    // The broker could be unavailable at the early initialization stage when
-    // - `DeviceSettingsProvider` does not have a list of device local accounts
-    //   in `kAccountsPrefDeviceLocalAccounts`
-    // - and there is an attempt to autologin with public account before the
-    // device settings become available. The broker will become available later
-    // and the real policy value will be returned with future calls.
-    return kManagedSessionEnabledByDefault;
-  }
-
-  return IsManagedSessionEnabled(broker);
-}
-
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
-  return IsManagedSessionEnabled(broker) &&
-         (AreRiskyPoliciesUsed(broker) ||
-          g_browser_process->local_state()->GetBoolean(
-              ::prefs::kManagedSessionUseFullLoginWarning) ||
-          PolicyHasWebTrustedAuthorityCertificate(broker) ||
-          IsProxyUsed(GetLocalState()));
+  return AreRiskyPoliciesUsed(broker) ||
+         g_browser_process->local_state()->GetBoolean(
+             ::prefs::kManagedSessionUseFullLoginWarning) ||
+         PolicyHasWebTrustedAuthorityCertificate(broker) ||
+         IsProxyUsed(GetLocalState());
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
@@ -1374,10 +1331,13 @@ void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
-  users_update->EraseListIter(
-      std::find(users_update->GetListDeprecated().begin(),
-                users_update->GetListDeprecated().end(),
-                base::Value(FullyCanonicalize(account_id.GetUserEmail()))));
+  base::Value::List& update_list = users_update->GetList();
+  auto it =
+      std::find(update_list.begin(), update_list.end(),
+                base::Value(FullyCanonicalize(account_id.GetUserEmail())));
+  if (it == update_list.end())
+    return;
+  update_list.erase(it);
 }
 
 const AccountId& ChromeUserManagerImpl::GetGuestAccountId() const {

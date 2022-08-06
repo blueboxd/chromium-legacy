@@ -21,6 +21,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom-test-utils.h"
@@ -42,6 +43,7 @@
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -90,10 +92,9 @@ class IndexedDBFactoryTest : public testing::Test {
       // Loop through all open storage keys, and force close them, and request
       // the deletion of the leveldb state. Once the states are no longer
       // around, delete all of the databases on disk.
-      auto open_factory_buckets = factory->GetOpenBuckets();
-      for (const auto& bucket_locator : open_factory_buckets) {
+      for (const auto& bucket_id : factory->GetOpenBuckets()) {
         context_->ForceClose(
-            bucket_locator,
+            bucket_id,
             storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN,
             base::DoNothing());
       }
@@ -101,7 +102,7 @@ class IndexedDBFactoryTest : public testing::Test {
       for (auto bucket_locator : context_->GetAllBuckets()) {
         bool success = false;
         storage::mojom::IndexedDBControlAsyncWaiter waiter(context_.get());
-        waiter.DeleteForBucket(bucket_locator.storage_key, &success);
+        waiter.DeleteForStorageKey(bucket_locator.storage_key, &success);
         EXPECT_TRUE(success);
       }
     }
@@ -209,7 +210,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   storage::MockQuotaManager* quota_manager() { return quota_manager_.get(); }
 
- private:
+ protected:
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
   base::ScopedTempDir temp_dir_;
@@ -231,20 +232,97 @@ class IndexedDBFactoryTestWithMockTime : public IndexedDBFactoryTest {
       const IndexedDBFactoryTestWithMockTime&) = delete;
 };
 
-TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
+class IndexedDBFactoryTestWithStoragePartitioning
+    : public IndexedDBFactoryTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  IndexedDBFactoryTestWithStoragePartitioning() {
+    feature_list_.InitWithFeatureState(
+        blink::features::kThirdPartyStoragePartitioning,
+        IsThirdPartyStoragePartitioningEnabled());
+  }
+
+  bool IsThirdPartyStoragePartitioningEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    IndexedDBFactoryTestWithStoragePartitioning,
+    testing::Bool());
+
+TEST_P(IndexedDBFactoryTestWithStoragePartitioning,
+       BasicFactoryCreationAndTearDown) {
+  auto filesystem_proxy = storage::CreateFilesystemProxy();
   SetupContext();
 
   const blink::StorageKey storage_key_1 =
       blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
-  auto bucket_locator_1 = storage::BucketLocator();
-  bucket_locator_1.storage_key = storage_key_1;
+  storage::BucketLocator bucket_locator_1 =
+      quota_manager()
+          ->GetOrCreateBucketSync(
+              storage::BucketInitParams::ForDefaultBucket(storage_key_1))
+          ->ToBucketLocator();
+  auto file_1 = context_->GetLevelDBPathForTesting(bucket_locator_1)
+                    .AppendASCII("1.json");
+  ASSERT_TRUE(CreateDirectory(file_1.DirName()));
+  ASSERT_TRUE(base::WriteFile(file_1, std::string(10, 'a')));
+
   const blink::StorageKey storage_key_2 =
       blink::StorageKey::CreateFromStringForTesting("http://localhost:82");
-  auto bucket_locator_2 = storage::BucketLocator();
-  bucket_locator_2.storage_key = storage_key_2;
+  storage::BucketLocator bucket_locator_2 =
+      quota_manager()
+          ->GetOrCreateBucketSync(
+              storage::BucketInitParams::ForDefaultBucket(storage_key_2))
+          ->ToBucketLocator();
+  auto file_2 = context_->GetLevelDBPathForTesting(bucket_locator_2)
+                    .AppendASCII("2.json");
+  ASSERT_TRUE(CreateDirectory(file_2.DirName()));
+  ASSERT_TRUE(base::WriteFile(file_2, std::string(100, 'a')));
+
+  const blink::StorageKey storage_key_3 =
+      blink::StorageKey::CreateFromStringForTesting("http://localhost2:82");
+  storage::BucketLocator bucket_locator_3 =
+      quota_manager()
+          ->GetOrCreateBucketSync(
+              storage::BucketInitParams::ForDefaultBucket(storage_key_3))
+          ->ToBucketLocator();
+  auto file_3 = context_->GetLevelDBPathForTesting(bucket_locator_3)
+                    .AppendASCII("3.json");
+  ASSERT_TRUE(CreateDirectory(file_3.DirName()));
+  ASSERT_TRUE(base::WriteFile(file_3, std::string(1000, 'a')));
+
+  const blink::StorageKey storage_key_4 =
+      blink::StorageKey::CreateWithOptionalNonce(
+          storage_key_1.origin(), net::SchemefulSite(storage_key_3.origin()),
+          nullptr, blink::mojom::AncestorChainBit::kCrossSite);
+  storage::BucketLocator bucket_locator_4 =
+      quota_manager()
+          ->GetOrCreateBucketSync(
+              storage::BucketInitParams::ForDefaultBucket(storage_key_4))
+          ->ToBucketLocator();
+  auto file_4 = context_->GetLevelDBPathForTesting(bucket_locator_4)
+                    .AppendASCII("4.json");
+  ASSERT_TRUE(CreateDirectory(file_4.DirName()));
+  ASSERT_TRUE(base::WriteFile(file_4, std::string(10000, 'a')));
+
+  const blink::StorageKey storage_key_5 = storage_key_1;
+  storage::BucketInitParams params(storage_key_5, "inbox");
+  storage::BucketLocator bucket_locator_5 =
+      quota_manager()->GetOrCreateBucketSync(params)->ToBucketLocator();
+  auto file_5 = context_->GetLevelDBPathForTesting(bucket_locator_5)
+                    .AppendASCII("5.json");
+  ASSERT_TRUE(CreateDirectory(file_5.DirName()));
+  ASSERT_TRUE(base::WriteFile(file_5, std::string(20000, 'a')));
+  EXPECT_NE(file_5.DirName(), file_1.DirName());
 
   IndexedDBBucketStateHandle bucket_state1_handle;
   IndexedDBBucketStateHandle bucket_state2_handle;
+  IndexedDBBucketStateHandle bucket_state3_handle;
+  IndexedDBBucketStateHandle bucket_state4_handle;
+  IndexedDBBucketStateHandle bucket_state5_handle;
   leveldb::Status s;
 
   std::tie(bucket_state1_handle, s, std::ignore, std::ignore, std::ignore) =
@@ -261,12 +339,73 @@ TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
   EXPECT_TRUE(bucket_state2_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(s.ok()) << s.ToString();
 
+  std::tie(bucket_state3_handle, s, std::ignore, std::ignore, std::ignore) =
+      factory()->GetOrOpenBucketFactory(
+          bucket_locator_3, context()->GetDataPath(bucket_locator_3),
+          /*create_if_missing=*/true);
+  EXPECT_TRUE(bucket_state3_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
+  std::tie(bucket_state4_handle, s, std::ignore, std::ignore, std::ignore) =
+      factory()->GetOrOpenBucketFactory(
+          bucket_locator_4, context()->GetDataPath(bucket_locator_4),
+          /*create_if_missing=*/true);
+  EXPECT_TRUE(bucket_state4_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
+  std::tie(bucket_state5_handle, s, std::ignore, std::ignore, std::ignore) =
+      factory()->GetOrOpenBucketFactory(
+          bucket_locator_5, context()->GetDataPath(bucket_locator_5),
+          /*create_if_missing=*/true);
+  EXPECT_TRUE(bucket_state5_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
   std::vector<storage::mojom::StorageUsageInfoPtr> origin_info;
   storage::mojom::IndexedDBControlAsyncWaiter sync_control(context());
   sync_control.GetUsage(&origin_info);
 
-  EXPECT_EQ(2ul, origin_info.size());
-  EXPECT_EQ(2ul, factory()->GetOpenBuckets().size());
+  int64_t bucket_size_1 =
+      filesystem_proxy->ComputeDirectorySize(file_1.DirName());
+  int64_t bucket_size_2 =
+      filesystem_proxy->ComputeDirectorySize(file_2.DirName());
+  int64_t bucket_size_3 =
+      filesystem_proxy->ComputeDirectorySize(file_3.DirName());
+  int64_t bucket_size_4 =
+      filesystem_proxy->ComputeDirectorySize(file_4.DirName());
+  int64_t bucket_size_5 =
+      filesystem_proxy->ComputeDirectorySize(file_5.DirName());
+
+  // Since buckets 1, 4 and 5 have the same origin, they merge when calling
+  // GetUsage.
+  EXPECT_EQ(3ul, origin_info.size());
+  for (const auto& info : origin_info) {
+    if (info->origin == bucket_locator_1.storage_key.origin()) {
+      // This is the size of the 10 and 10000 character files (buckets 1 and 4).
+      if (IsThirdPartyStoragePartitioningEnabled()) {
+        // If third party storage partitioning is on, additional space is taken
+        // by supporting files for the independent buckets.
+        EXPECT_EQ(info->total_size_bytes,
+                  bucket_size_1 + bucket_size_4 + bucket_size_5);
+      } else {
+        EXPECT_EQ(bucket_size_1, bucket_size_4);
+        EXPECT_NE(bucket_size_1, bucket_size_5);
+        EXPECT_EQ(info->total_size_bytes, bucket_size_1 + bucket_size_5);
+      }
+    } else if (info->origin == bucket_locator_2.storage_key.origin()) {
+      // This is the size of the 100 character file (bucket 2).
+      EXPECT_EQ(info->total_size_bytes, bucket_size_2);
+    } else if (info->origin == bucket_locator_3.storage_key.origin()) {
+      // This is the size of the 1000 character file (bucket 3).
+      EXPECT_EQ(info->total_size_bytes, bucket_size_3);
+    } else {
+      NOTREACHED();
+    }
+  }
+  if (IsThirdPartyStoragePartitioningEnabled()) {
+    EXPECT_EQ(5ul, factory()->GetOpenBuckets().size());
+  } else {
+    EXPECT_EQ(4ul, factory()->GetOpenBuckets().size());
+  }
 }
 
 TEST_F(IndexedDBFactoryTest, CloseSequenceStarts) {
@@ -286,12 +425,12 @@ TEST_F(IndexedDBFactoryTest, CloseSequenceStarts) {
   EXPECT_TRUE(bucket_state_handle.IsHeld()) << s.ToString();
   bucket_state_handle.Release();
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 
-  factory()->ForceClose(bucket_locator, false);
+  factory()->ForceClose(bucket_locator.id, false);
   RunPostedTasks();
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 }
 
 TEST_F(IndexedDBFactoryTest, ImmediateClose) {
@@ -313,9 +452,9 @@ TEST_F(IndexedDBFactoryTest, ImmediateClose) {
   EXPECT_TRUE(bucket_state_handle.IsHeld()) << s.ToString();
   bucket_state_handle.Release();
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   RunPostedTasks();
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
   EXPECT_EQ(0ul, factory()->GetOpenBuckets().size());
 }
 
@@ -340,16 +479,16 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   EXPECT_TRUE(bucket_state_handle.IsHeld()) << s.ToString();
   bucket_state_handle.Release();
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 
   EXPECT_EQ(IndexedDBBucketState::ClosingState::kPreCloseGracePeriod,
-            factory()->GetBucketFactory(bucket_locator)->closing_stage());
+            factory()->GetBucketFactory(bucket_locator.id)->closing_stage());
 
   task_environment()->FastForwardBy(base::Seconds(2));
 
   // The factory should be closed, as the pre close tasks are delayed.
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 
   // Move the clock to run the tasks in the next close sequence.
   // NOTE: The constants rate-limiting sweeps and compaction are currently the
@@ -367,16 +506,16 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
 
   // Manually execute the timer so that the PreCloseTaskList task doesn't also
   // run.
-  factory()->GetBucketFactory(bucket_locator)->close_timer()->FireNow();
+  factory()->GetBucketFactory(bucket_locator.id)->close_timer()->FireNow();
 
   // The pre-close tasks should be running now.
-  ASSERT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  ASSERT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   EXPECT_EQ(IndexedDBBucketState::ClosingState::kRunningPreCloseTasks,
-            factory()->GetBucketFactory(bucket_locator)->closing_stage());
+            factory()->GetBucketFactory(bucket_locator.id)->closing_stage());
   ASSERT_TRUE(
-      factory()->GetBucketFactory(bucket_locator)->pre_close_task_queue());
+      factory()->GetBucketFactory(bucket_locator.id)->pre_close_task_queue());
   EXPECT_TRUE(factory()
-                  ->GetBucketFactory(bucket_locator)
+                  ->GetBucketFactory(bucket_locator.id)
                   ->pre_close_task_queue()
                   ->started());
 
@@ -395,16 +534,16 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   clock.Advance(IndexedDBBucketState::kMaxEarliestGlobalSweepFromNow);
 
   bucket_state_handle.Release();
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   EXPECT_EQ(IndexedDBBucketState::ClosingState::kPreCloseGracePeriod,
-            factory()->GetBucketFactory(bucket_locator)->closing_stage());
+            factory()->GetBucketFactory(bucket_locator.id)->closing_stage());
 
   // Manually execute the timer so that the PreCloseTaskList task doesn't also
   // run.
-  factory()->GetBucketFactory(bucket_locator)->close_timer()->FireNow();
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  factory()->GetBucketFactory(bucket_locator.id)->close_timer()->FireNow();
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   RunPostedTasks();
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 
   //  Finally, move the clock forward so the storage key should allow a sweep.
   clock.Advance(IndexedDBBucketState::kMaxEarliestBucketSweepFromNow);
@@ -413,15 +552,15 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
                                         context()->GetDataPath(bucket_locator),
                                         /*create_if_missing=*/true);
   bucket_state_handle.Release();
-  factory()->GetBucketFactory(bucket_locator)->close_timer()->FireNow();
+  factory()->GetBucketFactory(bucket_locator.id)->close_timer()->FireNow();
 
-  ASSERT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  ASSERT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   EXPECT_EQ(IndexedDBBucketState::ClosingState::kRunningPreCloseTasks,
-            factory()->GetBucketFactory(bucket_locator)->closing_stage());
+            factory()->GetBucketFactory(bucket_locator.id)->closing_stage());
   ASSERT_TRUE(
-      factory()->GetBucketFactory(bucket_locator)->pre_close_task_queue());
+      factory()->GetBucketFactory(bucket_locator.id)->pre_close_task_queue());
   EXPECT_TRUE(factory()
-                  ->GetBucketFactory(bucket_locator)
+                  ->GetBucketFactory(bucket_locator.id)
                   ->pre_close_task_queue()
                   ->started());
 }
@@ -538,8 +677,11 @@ TEST_F(IndexedDBFactoryTest, InMemoryFactoriesStay) {
 
   const blink::StorageKey storage_key =
       blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
-  auto bucket_locator = storage::BucketLocator();
-  bucket_locator.storage_key = storage_key;
+  storage::BucketLocator bucket_locator =
+      quota_manager()
+          ->GetOrCreateBucketSync(
+              storage::BucketInitParams::ForDefaultBucket(storage_key))
+          ->ToBucketLocator();
   IndexedDBBucketStateHandle bucket_state_handle;
   leveldb::Status s;
 
@@ -553,14 +695,14 @@ TEST_F(IndexedDBFactoryTest, InMemoryFactoriesStay) {
                   ->is_incognito());
   bucket_state_handle.Release();
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 
-  factory()->ForceClose(bucket_locator, false);
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  factory()->ForceClose(bucket_locator.id, false);
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
 
-  factory()->ForceClose(bucket_locator, true);
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  factory()->ForceClose(bucket_locator.id, true);
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 }
 
 TEST_F(IndexedDBFactoryTest, TooLongOrigin) {
@@ -575,16 +717,18 @@ TEST_F(IndexedDBFactoryTest, TooLongOrigin) {
   const blink::StorageKey too_long_storage_key =
       blink::StorageKey::CreateFromStringForTesting("http://" + origin +
                                                     ":81/");
-  auto too_long_bucket_locator = storage::BucketLocator();
-  too_long_bucket_locator.storage_key = too_long_storage_key;
+  storage::BucketLocator bucket_locator =
+      quota_manager()
+          ->GetOrCreateBucketSync(
+              storage::BucketInitParams::ForDefaultBucket(too_long_storage_key))
+          ->ToBucketLocator();
   IndexedDBBucketStateHandle bucket_state_handle;
   leveldb::Status s;
 
   std::tie(bucket_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenBucketFactory(
-          too_long_bucket_locator,
-          context()->GetDataPath(too_long_bucket_locator),
-          /*create_if_missing=*/true);
+      factory()->GetOrOpenBucketFactory(bucket_locator,
+                                        context()->GetDataPath(bucket_locator),
+                                        /*create_if_missing=*/true);
   EXPECT_FALSE(bucket_state_handle.IsHeld());
   EXPECT_TRUE(s.IsIOError());
 }
@@ -633,7 +777,7 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesHandles) {
   // Now simulate shutdown, which should clear all factories.
   factory()->ContextDestroyed();
   EXPECT_FALSE(StorageBucketFromHandle(bucket_state_handle));
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 }
 
 TEST_F(IndexedDBFactoryTest, FactoryForceClose) {
@@ -654,9 +798,9 @@ TEST_F(IndexedDBFactoryTest, FactoryForceClose) {
   StorageBucketFromHandle(bucket_state_handle)->ForceClose();
   bucket_state_handle.Release();
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   RunPostedTasks();
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 }
 
 TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
@@ -682,13 +826,13 @@ TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
   RunPostedTasks();
   EXPECT_TRUE(callbacks->connection());
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 
   callbacks->connection()->CloseAndReportForceClose();
 
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
 }
@@ -729,8 +873,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
   // Since there are no more references the factory should be closing.
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 }
 
 TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
@@ -769,8 +913,8 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
       IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
 
   // Since there are no more references the factory should be closing.
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 }
 
 TEST_F(IndexedDBFactoryTest, DatabaseForceCloseWithFullConnection) {
@@ -790,8 +934,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseWithFullConnection) {
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
   // Since there are no more references the factory should be closing.
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 }
 
 TEST_F(IndexedDBFactoryTest, DeleteDatabase) {
@@ -810,8 +954,8 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabase) {
                             /*force_close=*/false);
 
   // Since there are no more references the factory should be closing.
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 }
 
 TEST_F(IndexedDBFactoryTest, DeleteDatabaseWithForceClose) {
@@ -847,8 +991,8 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseWithForceClose) {
   // isn't force closed, and instead is going through it's shutdown sequence.
   EXPECT_FALSE(connection->IsConnected());
   EXPECT_TRUE(db_callbacks->forced_close_called());
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 
   // Wait until the DB is deleted before tearing down since these concurrent
   // operations may conflict.
@@ -871,7 +1015,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNames_NoFactory) {
 
   EXPECT_TRUE(callbacks->info_called());
   // Don't create a factory if one doesn't exist.
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id));
 }
 
 TEST_F(IndexedDBFactoryTest, GetDatabaseNames_ExistingFactory) {
@@ -897,9 +1041,9 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNames_ExistingFactory) {
                              context()->GetDataPath(bucket_locator));
 
   EXPECT_TRUE(callbacks->info_called());
-  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator));
+  EXPECT_TRUE(factory()->GetBucketFactory(bucket_locator.id));
   // GetDatabaseInfo didn't create the factory, so it shouldn't close it.
-  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator)->IsClosing());
+  EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 }
 
 class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
@@ -1140,7 +1284,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
       }
     }
     RunPostedTasks();
-    factory()->ForceClose(bucket_locator, false);
+    factory()->ForceClose(bucket_locator.id, false);
     RunPostedTasks();
     return callbacks->data_loss();
   };

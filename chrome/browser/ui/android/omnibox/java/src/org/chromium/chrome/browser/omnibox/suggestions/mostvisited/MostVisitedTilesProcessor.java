@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher;
@@ -40,6 +41,8 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
     private final @NonNull SuggestionHost mSuggestionHost;
     private final @NonNull FaviconFetcher mFaviconFetcher;
     private final int mMinCarouselItemViewHeight;
+    private boolean mShouldWrapTitleText;
+    private boolean mEnableOrganicRepeatableQueries;
 
     /**
      * Constructor.
@@ -79,6 +82,14 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
     }
 
     @Override
+    public void onNativeInitialized() {
+        mShouldWrapTitleText = ChromeFeatureList.isEnabled(
+                ChromeFeatureList.OMNIBOX_MOST_VISITED_TILES_TITLE_WRAP_AROUND);
+        mEnableOrganicRepeatableQueries =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES);
+    }
+
+    @Override
     public void populateModel(AutocompleteMatch suggestion, PropertyModel model, int matchIndex) {
         final List<AutocompleteMatch.SuggestTile> tiles = suggestion.getSuggestTiles();
         final int tilesCount = tiles.size();
@@ -89,11 +100,11 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
             final SuggestTile tile = tiles.get(elementIndex);
             final String title = tile.title;
             final GURL url = tile.url;
-            final boolean isSearch = tile.isSearch;
+            final boolean isSearch = tile.isSearch && mEnableOrganicRepeatableQueries;
             final int itemIndex = elementIndex;
 
             tileModel.set(TileViewProperties.TITLE, title);
-            tileModel.set(TileViewProperties.TITLE_LINES, 1);
+            tileModel.set(TileViewProperties.TITLE_LINES, mShouldWrapTitleText ? 2 : 1);
             tileModel.set(TileViewProperties.ON_FOCUS_VIA_SELECTION,
                     () -> mSuggestionHost.setOmniboxEditingText(url.getSpec()));
             tileModel.set(TileViewProperties.ON_CLICK, v -> {

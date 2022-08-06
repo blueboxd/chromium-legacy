@@ -224,7 +224,7 @@ class DriveBackendSyncTest : public testing::Test,
       CannedSyncableFileSystem* file_system = new CannedSyncableFileSystem(
           origin, in_memory_env_.get(), io_task_runner_.get(),
           file_task_runner_.get());
-      file_system->SetUp(CannedSyncableFileSystem::QUOTA_DISABLED);
+      file_system->SetUp();
 
       SyncStatusCode status = SYNC_STATUS_UNKNOWN;
       base::RunLoop run_loop;

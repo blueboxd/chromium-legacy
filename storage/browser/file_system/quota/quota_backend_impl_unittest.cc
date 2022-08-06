@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/files/file_error_or.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -139,10 +140,10 @@ class QuotaBackendImplTest : public testing::Test,
 
     std::string type_string =
         SandboxFileSystemBackendDelegate::GetTypeString(type);
-    base::File::Error error = base::File::FILE_ERROR_FAILED;
-    base::FilePath path = file_util_->GetDirectoryForStorageKeyAndType(
-        blink::StorageKey(origin), type_string, true /* create */, &error);
-    ASSERT_EQ(base::File::FILE_OK, error);
+    base::FileErrorOr<base::FilePath> path =
+        file_util_->GetDirectoryForStorageKeyAndType(
+            blink::StorageKey(origin), type_string, true /* create */);
+    ASSERT_FALSE(path.is_error());
 
     ASSERT_TRUE(file_system_usage_cache_.UpdateUsage(
         GetUsageCachePath(origin, type), 0));
@@ -154,11 +155,11 @@ class QuotaBackendImplTest : public testing::Test,
 
   base::FilePath GetUsageCachePath(const url::Origin& origin,
                                    FileSystemType type) {
-    base::FilePath path;
-    base::File::Error error = backend_->GetUsageCachePath(origin, type, &path);
-    EXPECT_EQ(base::File::FILE_OK, error);
-    EXPECT_FALSE(path.empty());
-    return path;
+    base::FileErrorOr<base::FilePath> path =
+        backend_->GetUsageCachePath(origin, type);
+    EXPECT_FALSE(path.is_error());
+    EXPECT_FALSE(path->empty());
+    return path.value();
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;

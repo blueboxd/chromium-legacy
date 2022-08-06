@@ -45,7 +45,6 @@
 <translation id="3344973607274501920">Chromium non ha potuto controllare le tue password. Verifica la tua connessione a Internet.</translation>
 <translation id="3472200483164753384">Non supportata su Chromium Canary</translation>
 <translation id="3567399274263440288">Accedi con il tuo Account Google a Chromium per usare al meglio questo browser.</translation>
-<translation id="3619462831205197427">Accedi a questo sito, al tuo Account Google e a Chromium.</translation>
 <translation id="3639997914391704523">Chromium può controllare le tue password quando accedi con il tuo Account Google.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> stava usando Chromium e ha lasciato preferiti, password e altre impostazioni su questo dispositivo.</translation>
 <translation id="3805899903892079518">Chromium non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
@@ -74,11 +73,11 @@
 <translation id="5945387852661427312">Stai per eseguire l'accesso con un account gestito da <ph name="DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chromium. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chromium, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="5983312940147103417">Migliora Chromium</translation>
 <translation id="602807004951640891">Se utilizzi Chromium, accetti i <ph name="BEGIN_LINK_TOS" />Termini di servizio<ph name="END_LINK_TOS" />.</translation>
+<translation id="6062449165341879460">La tua organizzazione <ph name="DOMAIN" /> avrà accesso ai dati, ai preferiti, alla cronologia, alle password e ad altre impostazioni di Chromium che hai memorizzato in questo account. Quando esci, i dati verranno cancellati da questo dispositivo.  Tuttavia, i tuoi dati rimarranno memorizzati nel tuo Account Google gestito e saranno disponibili per la tua organizzazione. La tua organizzazione può anche impostare criteri specifici per l'account in grado di modificare il comportamento di Chromium.</translation>
 <translation id="6119647025869519954">Per impostare Chromium come browser predefinito:
 1. Apri le Impostazioni.
 2. Tocca App browser predefinita.
 3. Seleziona Chromium.</translation>
-<translation id="6183442264225539303">Accedi a questo sito e a Chromium. Puoi attivare la sincronizzazione in un secondo momento.</translation>
 <translation id="6268381023930128611">Uscire da Chromium?</translation>
 <translation id="632825460376924298">Consenti l'accesso a Chromium</translation>
 <translation id="6337530241089703714">Scegli se cancellare i tuoi dati di Chromium da questo dispositivo o se conservarli</translation>
@@ -120,6 +119,7 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="865600487977764604">Ti protegge su Chromium e potrebbe essere utilizzata per migliorare la tua sicurezza in altre app Google se hai eseguito l'accesso.</translation>
 <translation id="8663480472502753423">Mantieni Chromium aggiornato</translation>
+<translation id="8685813584220679697">Accedi a questo sito e a Chromium.</translation>
 <translation id="8747378496147986285">Quando l'opzione è attiva:
 <ph name="BEGIN_INDENT" />  • Contribuisci a migliorare Chromium per le persone che lo usano come fai tu.<ph name="END_INDENT" />
 

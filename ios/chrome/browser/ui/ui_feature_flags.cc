@@ -55,7 +55,7 @@ const base::Feature kIOSLocationBarUseNativeContextMenu{
     "IOSLocationBarUseNativeContextMenu", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
-    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseLensToSearchForImage{"UseLensToSearchForImage",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -79,5 +79,14 @@ const base::Feature kCalendarExperienceKit{"CalendarExperienceKit",
 const base::Feature kEnableExpKitAppleCalendar{
     "EnableExpKitAppleCalendar", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableExpKitCalendarTextClassifier{
-    "EnableExpKitCalendarTextClassifier", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableCBDSignOut{"EnableCbdSignOut",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnablePhoneNumbers{"EnablePhoneNumbers",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMapsExperienceKit{"MapsExperienceKit",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableMiniMap{"EnableMiniMap",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};

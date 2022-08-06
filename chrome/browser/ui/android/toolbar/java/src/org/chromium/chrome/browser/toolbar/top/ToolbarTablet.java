@@ -31,7 +31,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
@@ -672,6 +671,9 @@ public class ToolbarTablet
             ApiCompatibilityUtils.setImageTintList(mOptionalButton, null);
         }
 
+        if (buttonSpec.getIPHCommandBuilder() != null) {
+            buttonSpec.getIPHCommandBuilder().setAnchorView(mOptionalButton);
+        }
         mOptionalButton.setOnClickListener(buttonSpec.getOnClickListener());
         if (buttonSpec.getOnLongClickListener() == null) {
             mOptionalButton.setLongClickable(false);
@@ -697,7 +699,7 @@ public class ToolbarTablet
 
     @Override
     @VisibleForTesting
-    public View getOptionalButtonView() {
+    public View getOptionalButtonViewForTesting() {
         return mOptionalButton;
     }
 
@@ -832,7 +834,7 @@ public class ToolbarTablet
     }
 
     private boolean isGridTabSwitcherEnabled() {
-        return CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
+        return ChromeFeatureList.sGridTabSwitcherForTablets.isEnabled();
     }
 
     private boolean isTabletGridTabSwitcherPolishEnabled() {

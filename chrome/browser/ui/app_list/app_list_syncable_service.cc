@@ -52,7 +52,6 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -131,21 +130,12 @@ void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
       std::make_unique<apps::App>(apps::AppType::kChromeApp, id);
   delta->install_reason = apps::InstallReason::kDefault;
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    std::vector<apps::AppPtr> deltas;
-    deltas.push_back(std::move(delta));
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .OnApps(std::move(deltas), apps::AppType::kChromeApp,
-                false /* should_notify_initialized */);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_deltas;
-    mojom_deltas.push_back(apps::ConvertAppToMojomApp(delta));
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .OnApps(std::move(mojom_deltas), apps::mojom::AppType::kChromeApp,
-                false /* should_notify_initialized */);
-  }
+  std::vector<apps::AppPtr> deltas;
+  deltas.push_back(std::move(delta));
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .OnApps(std::move(deltas), apps::AppType::kChromeApp,
+              false /* should_notify_initialized */);
 }
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
@@ -182,6 +172,10 @@ void RemoveSyncItemFromLocalStorage(Profile* profile,
 void UpdateSyncItemInLocalStorage(
     Profile* profile,
     const AppListSyncableService::SyncItem* sync_item) {
+  // Do not persist ephemeral sync items to local state.
+  if (sync_item->is_ephemeral)
+    return;
+
   DictionaryPrefUpdate pref_update(profile->GetPrefs(),
                                    prefs::kAppListLocalState);
   base::Value* dict_item = pref_update->FindKeyOfType(
@@ -1510,6 +1504,10 @@ bool AppListSyncableService::SyncStarted() {
 void AppListSyncableService::SendSyncChange(
     SyncItem* sync_item,
     SyncChange::SyncChangeType sync_change_type) {
+  // Do not sync ephemeral sync items.
+  if (sync_item->is_ephemeral)
+    return;
+
   if (!SyncStarted()) {
     DVLOG(2) << this << " - SendSyncChange: SYNC NOT STARTED: "
              << sync_item->ToString();
@@ -1784,6 +1782,16 @@ bool AppListSyncableService::UpdateSyncItemFromAppItem(
     // part of folder item creation flow, so no further processing should be
     // necessary.
   }
+
+  if (sync_item->is_ephemeral != app_item->is_ephemeral()) {
+    DCHECK(!sync_item->is_ephemeral);
+    sync_item->is_ephemeral = app_item->is_ephemeral();
+    // Do not mark the item as changed - the ephemeral value is not expected to
+    // be persisted to local state, nor synced. Ephemeral apps and folders are
+    // not synced. The ChromeAppListItem will always have the is_ephemeral flag
+    // set first.
+  }
+
   return changed;
 }
 
@@ -1894,8 +1902,6 @@ bool AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
 
   const SyncItem* folder_sync_item = FindSyncItem(folder_id);
   if (!folder_sync_item) {
-    // TODO(https://crbug.com/1259459): delete this code block if the sync item
-    // indexed by `folder_id` always exists.
     app_item->SetChromeFolderId("");
     return false;
   }

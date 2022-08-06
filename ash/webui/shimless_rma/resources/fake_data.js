@@ -12,127 +12,127 @@ export const fakeStates = [
     state: State.kWelcomeScreen,
     canExit: true,
     canGoBack: false,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kConfigureNetwork,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kUpdateOs,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kSelectComponents,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kChooseDestination,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kChooseWipeDevice,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kChooseWriteProtectDisableMethod,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kEnterRSUWPDisableCode,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kWaitForManualWPDisable,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kWPDisableComplete,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kUpdateRoFirmware,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kUpdateDeviceInformation,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kRestock,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kCheckCalibration,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kSetupCalibration,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kRunCalibration,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kProvisionDevice,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kWaitForManualWPEnable,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kFinalize,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kRepairComplete,
     canExit: true,
     canGoBack: true,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
   {
     state: State.kUnknown,
     canExit: false,
     canGoBack: false,
-    error: RmadErrorCode.kOk
+    error: RmadErrorCode.kOk,
   },
 ];
 
@@ -158,17 +158,17 @@ export const fakeComponents = [
   {
     component: ComponentType.kCamera,
     state: ComponentRepairStatus.kOriginal,
-    identifier: 'Camera_XYZ_1'
+    identifier: 'Camera_XYZ_1',
   },
   {
     component: ComponentType.kBattery,
     state: ComponentRepairStatus.kMissing,
-    identifier: 'Battery_XYZ_Lithium'
+    identifier: 'Battery_XYZ_Lithium',
   },
   {
     component: ComponentType.kTouchpad,
     state: ComponentRepairStatus.kOriginal,
-    identifier: 'Touchpad_XYZ_2'
+    identifier: 'Touchpad_XYZ_2',
   },
 ];
 
@@ -177,19 +177,49 @@ export const fakeComponents = [
 /** @type {!Array<!Component>} */
 export const fakeComponentsForRepairStateTest = [
   {
+    component: ComponentType.kAudioCodec,
+    state: ComponentRepairStatus.kMissing,
+    identifier: 'Audio_XYZ',
+  },
+  {
     component: ComponentType.kCamera,
     state: ComponentRepairStatus.kOriginal,
-    identifier: 'Camera_XYZ_1'
+    identifier: 'Camera_XYZ_1',
   },
   {
     component: ComponentType.kBattery,
     state: ComponentRepairStatus.kMissing,
-    identifier: 'Battery_XYZ_Lithium'
+    identifier: 'Battery_XYZ_Lithium',
   },
   {
     component: ComponentType.kTouchpad,
     state: ComponentRepairStatus.kReplaced,
-    identifier: 'Touchpad_XYZ_2'
+    identifier: 'Touchpad_XYZ_2',
+  },
+  {
+    component: ComponentType.kStorage,
+    state: ComponentRepairStatus.kMissing,
+    identifier: 'Storage_XYZ',
+  },
+  {
+    component: ComponentType.kVpdCached,
+    state: ComponentRepairStatus.kMissing,
+    identifier: 'VpdCached_XYZ',
+  },
+  {
+    component: ComponentType.kNetwork,
+    state: ComponentRepairStatus.kOriginal,
+    identifier: 'Network_XYZ',
+  },
+  {
+    component: ComponentType.kCamera,
+    state: ComponentRepairStatus.kOriginal,
+    identifier: 'Camera_XYZ_2',
+  },
+  {
+    component: ComponentType.kTouchsreen,
+    state: ComponentRepairStatus.kMissing,
+    identifier: 'Touchscreen_XYZ',
   },
 ];
 
@@ -198,27 +228,27 @@ export const fakeCalibrationComponentsWithFails = [
   {
     component: ComponentType.kCamera,
     status: CalibrationStatus.kCalibrationWaiting,
-    progress: 0.0
+    progress: 0.0,
   },
   {
     component: ComponentType.kBattery,
     status: CalibrationStatus.kCalibrationComplete,
-    progress: 1.0
+    progress: 1.0,
   },
   {
     component: ComponentType.kBaseAccelerometer,
     status: CalibrationStatus.kCalibrationInProgress,
-    progress: 1.0
+    progress: 1.0,
   },
   {
     component: ComponentType.kLidAccelerometer,
     status: CalibrationStatus.kCalibrationFailed,
-    progress: 1.0
+    progress: 1.0,
   },
   {
     component: ComponentType.kTouchpad,
     status: CalibrationStatus.kCalibrationSkip,
-    progress: 0.0
+    progress: 0.0,
   },
 ];
 
@@ -227,27 +257,27 @@ export const fakeCalibrationComponentsWithoutFails = [
   {
     component: ComponentType.kCamera,
     status: CalibrationStatus.kCalibrationComplete,
-    progress: 0.0
+    progress: 0.0,
   },
   {
     component: ComponentType.kBattery,
     status: CalibrationStatus.kCalibrationComplete,
-    progress: 1.0
+    progress: 1.0,
   },
   {
     component: ComponentType.kBaseAccelerometer,
     status: CalibrationStatus.kCalibrationComplete,
-    progress: 1.0
+    progress: 1.0,
   },
   {
     component: ComponentType.kLidAccelerometer,
     status: CalibrationStatus.kCalibrationComplete,
-    progress: 1.0
+    progress: 1.0,
   },
   {
     component: ComponentType.kTouchpad,
     status: CalibrationStatus.kCalibrationComplete,
-    progress: 0.0
+    progress: 0.0,
   },
 ];
 

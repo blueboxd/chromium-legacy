@@ -82,6 +82,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/privacy_budget/active_sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -118,6 +119,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
+#include "chrome/common/profiler/unwind_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -189,6 +191,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -291,7 +294,6 @@
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
@@ -971,10 +973,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   MediaCaptureDevicesDispatcher::GetInstance();
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  process_singleton_ = std::make_unique<ChromeProcessSingleton>(
-      user_data_dir_,
-      base::BindRepeating(
-          &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
+  process_singleton_ = std::make_unique<ChromeProcessSingleton>(user_data_dir_);
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   // Android's first run is done in Java instead of native.
@@ -1145,9 +1144,13 @@ void ChromeBrowserMainParts::PostCreateThreads() {
 // Sampling multiple threads might cause overhead on Android and we don't want
 // to enable it unless the data is needed.
 #if !BUILDFLAG(IS_ANDROID)
+  // We pass in CreateCoreUnwindersFactory here since it lives in the chrome/
+  // layer while TracingSamplerProfiler is outside of chrome/.
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+      base::BindOnce(&tracing::TracingSamplerProfiler::
+                         CreateOnChildThreadWithCustomUnwinders,
+                     base::BindRepeating(&CreateCoreUnwindersFactory)));
 #endif
 
   tracing::SetupBackgroundTracingFieldTrial();
@@ -1316,7 +1319,10 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
   // Allow ProcessSingleton to process messages.
-  process_singleton_->Unlock();
+  // This is done here instead of just relying on the main message loop's start
+  // to avoid rendezvous in RunLoops that may precede MainMessageLoopRun.
+  process_singleton_->Unlock(base::BindRepeating(
+      &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   // Set up a task to delete old WebRTC log files for all profiles. Use a delay
@@ -1406,20 +1412,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   CHECK(aura::Env::GetInstance());
 #endif  // defined(USE_AURA)
 
-  // Android doesn't support extensions.
-#if !BUILDFLAG(IS_ANDROID)
-  // If the command line specifies --pack-extension, attempt the pack extension
-  // startup action and exit.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPackExtension)) {
-    extensions::StartupHelper extension_startup_helper;
-    if (extension_startup_helper.PackExtension(
-            *base::CommandLine::ForCurrentProcess()))
-      return content::RESULT_CODE_NORMAL_EXIT;
-    return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
-  }
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
   // When another process is running, use that process instead of starting a
   // new one. NotifyOtherProcess will currently give the other process up to
@@ -1432,6 +1424,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   switch (notify_result_) {
     case ProcessSingleton::PROCESS_NONE:
       // No process already running, fall through to starting a new one.
+      process_singleton_->StartWatching();
       g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
           *base::CommandLine::ForCurrentProcess());
       break;
@@ -1866,6 +1859,14 @@ void ChromeBrowserMainParts::OnFirstIdle() {
         base::BindOnce(&base::Process::CleanUpStaleProcessStates));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+  if (blink::IdentifiabilityStudySettings::Get()->IsActive()) {
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce(&ActivelySampleIdentifiableSurfaces));
+  }
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {

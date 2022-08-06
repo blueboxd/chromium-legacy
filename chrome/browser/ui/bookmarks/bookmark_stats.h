@@ -9,6 +9,11 @@
 
 class Profile;
 
+namespace bookmarks {
+class BookmarkNode;
+struct BookmarkNodeData;
+}  // namespace bookmarks
+
 // This enum is used for the Bookmarks.EntryPoint histogram.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -73,6 +78,12 @@ void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
 // Records the user opening the apps page for UMA purposes.
 void RecordBookmarkAppsPageOpen(BookmarkLaunchLocation location);
 
+// Records that the user edited or renamed a bookmark.
+void RecordBookmarkEdited(BookmarkLaunchLocation location);
+
+// Records that the user removed a bookmark.
+void RecordBookmarkRemoved(BookmarkLaunchLocation location);
+
 // Records the user adding a bookmark via star action, drag and drop, via
 // Bookmark this tab... and Bookmark all tabs... buttons. For the Bookmark
 // open tabs... the action is recorded only once and not as many times as
@@ -81,5 +92,11 @@ void RecordBookmarksAdded(const Profile* profile);
 
 // Records the user bookmarking all tabs, along with the open tabs count.
 void RecordBookmarkAllTabsWithTabsCount(const Profile* profile, int count);
+
+// Records that a bookmark or bookmarks were dropped. Determines the type of
+// drop operation based on the data and parent node.
+void RecordBookmarkDropped(const bookmarks::BookmarkNodeData& data,
+                           const bookmarks::BookmarkNode* parent_node,
+                           bool is_reorder);
 
 #endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_

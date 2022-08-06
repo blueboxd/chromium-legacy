@@ -39,7 +39,6 @@ std::unique_ptr<IntentFile> IntentFile::Clone() const {
 
 bool IntentFile::MatchConditionValue(const ConditionValuePtr& condition_value) {
   switch (condition_value->match_type) {
-    case PatternMatchType::kNone:
     case PatternMatchType::kLiteral:
     case PatternMatchType::kPrefix:
     case PatternMatchType::kSuffix: {
@@ -156,7 +155,7 @@ absl::optional<std::string> Intent::GetIntentConditionValueByType(
       return url.has_value() ? absl::optional<std::string>(url->host())
                              : absl::nullopt;
     }
-    case ConditionType::kPattern: {
+    case ConditionType::kPath: {
       return url.has_value() ? absl::optional<std::string>(url->path())
                              : absl::nullopt;
     }
@@ -217,6 +216,21 @@ bool Intent::MatchFilter(const IntentFilterPtr& filter) {
 bool Intent::IsShareIntent() {
   return action == apps_util::kIntentActionSend ||
          action == apps_util::kIntentActionSendMultiple;
+}
+
+bool Intent::OnlyShareToDrive() {
+  return IsShareIntent() && drive_share_url && !share_text && files.empty();
+}
+
+bool Intent::IsIntentValid() {
+  // TODO(crbug.com/853604):Add more checks here to make this a general intent
+  // validity check. Return false if this is a share intent with no file or
+  // text.
+  if (IsShareIntent()) {
+    return share_text || !files.empty();
+  }
+
+  return true;
 }
 
 IntentFilePtr ConvertMojomIntentFileToIntentFile(

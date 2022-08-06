@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.IncognitoCustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -61,7 +61,6 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.profile_metrics.BrowserProfileType;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -106,7 +105,7 @@ public class BookmarkUtils {
         // TODO(crbug.com/1252228): Reading list support needs some tests.
         if (BookmarkFeatures.isImprovedSaveFlowEnabled()) {
             BookmarkId newBookmarkId = addBookmarkInternal(activity, bookmarkModel, tab.getTitle(),
-                    tab.getOriginalUrl(), tab.getWebContents(),
+                    tab.getOriginalUrl(),
                     fromExplicitTrackUi ? bookmarkModel.getMobileFolderId() : null, bookmarkType);
             showSaveFlow(activity, bottomSheetController, fromExplicitTrackUi, newBookmarkId,
                     /*wasBookmarkMoved=*/false);
@@ -159,7 +158,7 @@ public class BookmarkUtils {
                     tab.getOriginalUrl(), tab.getTitle(), snackbarManager, bookmarkModel, activity);
         }
         BookmarkId bookmarkId = addBookmarkInternal(activity, bookmarkModel, tab.getTitle(),
-                tab.getOriginalUrl(), tab.getWebContents(), /*parent=*/null, BookmarkType.NORMAL);
+                tab.getOriginalUrl(), /*parent=*/null, BookmarkType.NORMAL);
 
         if (bookmarkId != null && bookmarkId.getType() == BookmarkType.NORMAL) {
             @BrowserProfileType
@@ -243,12 +242,10 @@ public class BookmarkUtils {
      *
      * @param context The current Android {@link Context}.
      * @param bookmarkModel The current {@link BookmarkModel} which talks to native.
-     * @param tab The current {@link Tab} which bookmark properties are pulled.
      * @param bookmarkType The {@link BookmarkType} of the bookmark.
      */
     static BookmarkId addBookmarkInternal(Context context, BookmarkModel bookmarkModel,
-            String title, GURL url, WebContents webContents, @Nullable BookmarkId parent,
-            @BookmarkType int bookmarkType) {
+            String title, GURL url, @Nullable BookmarkId parent, @BookmarkType int bookmarkType) {
         parent = parent == null ? getLastUsedParent(context, bookmarkModel) : parent;
         BookmarkItem parentItem = null;
         if (parent != null) {
@@ -274,8 +271,8 @@ public class BookmarkUtils {
             title = context.getResources().getString(R.string.new_tab_title);
         }
 
-        bookmarkId = bookmarkModel.addBookmark(
-                webContents, parent, bookmarkModel.getChildCount(parent), title, url);
+        bookmarkId =
+                bookmarkModel.addBookmark(parent, bookmarkModel.getChildCount(parent), title, url);
         // TODO(lazzzis): remove log after bookmark sync is fixed, crbug.com/986978
         if (bookmarkId == null) {
             Log.e(TAG,
@@ -341,7 +338,7 @@ public class BookmarkUtils {
 
         // Tablet.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            openUrl(context, url, activity == null ? null : activity.getComponentName(),
+            openUrl(context, url, folderId, activity == null ? null : activity.getComponentName(),
                     /*launchType=*/null, isIncognito);
             return;
         }
@@ -455,7 +452,7 @@ public class BookmarkUtils {
      * @return Whether the bookmark was successfully opened.
      */
     public static boolean openBookmark(Context context, ComponentName openBookmarkComponentName,
-            BookmarkModel model, BookmarkId bookmarkId, boolean isIncognito) {
+            BookmarkModel model, @Nullable BookmarkId bookmarkId, boolean isIncognito) {
         if (model.getBookmarkById(bookmarkId) == null) return false;
 
         RecordUserAction.record("MobileBookmarkManagerEntryOpened");
@@ -471,11 +468,11 @@ public class BookmarkUtils {
 
         if (bookmarkItem.getId().getType() == BookmarkType.READING_LIST
                 && !bookmarkItem.isFolder()) {
-            openReadingListItem(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName,
-                    isIncognito);
+            openReadingListItem(context, bookmarkItem.getUrl().getSpec(), bookmarkItem.getId(),
+                    openBookmarkComponentName, isIncognito);
             model.setReadStatusForReadingList(bookmarkItem.getUrl(), true);
         } else {
-            openUrl(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName,
+            openUrl(context, bookmarkItem.getUrl().getSpec(), bookmarkId, openBookmarkComponentName,
                     /*launchType=*/null, isIncognito);
         }
         return true;
@@ -532,18 +529,23 @@ public class BookmarkUtils {
      * Opens a url.
      *
      * @param url Url to open.
+     * @param id The bookmarkId to open, can be null.
      * @param componentName Name of the component opening the URL. If null, {@link
      *          ChromeLauncherActivity} is used.
      * @param launchType If not null, url is opened in a new tab with the specified {@link
      *         TabLaunchType}.
      */
-    private static void openUrl(Context context, String url, ComponentName componentName,
-            @Nullable @TabLaunchType Integer launchType, boolean isOffTheRecord) {
+    private static void openUrl(Context context, String url, @Nullable BookmarkId id,
+            ComponentName componentName, @Nullable @TabLaunchType Integer launchType,
+            boolean isOffTheRecord) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.putExtra(
                 Browser.EXTRA_APPLICATION_ID, context.getApplicationContext().getPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.AUTO_BOOKMARK);
+        if (id != null) {
+            intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_BOOKMARK_ID, id.toString());
+        }
 
         if (launchType != null) {
             IntentHandler.setTabLaunchType(intent, launchType);
@@ -568,12 +570,12 @@ public class BookmarkUtils {
         IntentHandler.startActivityForTrustedIntent(intent);
     }
 
-    private static void openReadingListItem(
-            Context context, String url, ComponentName componentName, boolean isOffTheRecord) {
+    private static void openReadingListItem(Context context, String url, BookmarkId id,
+            ComponentName componentName, boolean isOffTheRecord) {
         if (ReadingListFeatures.shouldUseCustomTab()) {
             openReadingListInCustomTab(context, url, isOffTheRecord);
         } else {
-            openUrl(context, url, componentName,
+            openUrl(context, url, id, componentName,
                     DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
                             ? null
                             : TabLaunchType.FROM_READING_LIST,

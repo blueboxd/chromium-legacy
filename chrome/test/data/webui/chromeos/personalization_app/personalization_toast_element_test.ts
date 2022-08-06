@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {DismissErrorAction, PersonalizationActionName, PersonalizationToastElement} from 'chrome://personalization/trusted/personalization_app.js';
+import {DismissErrorAction, PersonalizationActionName, PersonalizationToastElement} from 'chrome://personalization/js/personalization_app.js';
 import {assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -74,7 +74,7 @@ suite('PersonalizationToastTest', function() {
 
     personalizationStore.data.error = {
       message: 'There was an error',
-      dismiss: {callback: dismissCallback}
+      dismiss: {callback: dismissCallback},
     };
     personalizationStore.notifyObservers();
     await waitAfterNextRender(personalizationToastElement);

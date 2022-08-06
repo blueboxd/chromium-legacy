@@ -227,6 +227,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   bool IsNotificationIndicatorShownForTest() const;
   GridDelegate* grid_delegate_for_test() { return grid_delegate_; }
+  const gfx::ImageSkia& icon_image_for_test() const { return icon_image_; }
 
   AppListMenuModelAdapter* item_menu_model_adapter() const {
     return item_menu_model_adapter_.get();
@@ -477,6 +478,10 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Whether the last grid index update was a change in position between rows.
   // Used to determine whether the animation between rows should be used.
   bool has_pending_row_change_ = false;
+
+  // Whether the context menu removed focus on a view when opening. Used to
+  // determine if the focus should be restored on context menu close.
+  bool focus_removed_by_context_menu_ = false;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 };

@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/ash/thumbnail_loader.h"
-#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/ash/components/string_matching/tokenized_string.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -25,12 +25,12 @@ class FileResult;
 
 class FileSearchProvider : public SearchProvider {
  public:
-  struct PathInfo {
+  struct FileInfo {
     base::FilePath path;
     bool is_directory;
     base::Time last_accessed;
 
-    PathInfo(const base::FilePath& path,
+    FileInfo(const base::FilePath& path,
              const bool is_directory,
              const base::Time& last_accessed)
         : path(path),
@@ -53,15 +53,14 @@ class FileSearchProvider : public SearchProvider {
   }
 
  private:
-  void OnSearchComplete(std::vector<FileSearchProvider::PathInfo> paths);
+  void OnSearchComplete(std::vector<FileSearchProvider::FileInfo> paths);
   std::unique_ptr<FileResult> MakeResult(
-      const FileSearchProvider::PathInfo& path,
+      const FileSearchProvider::FileInfo& path,
       const double relevance);
 
   base::TimeTicks query_start_time_;
   std::u16string last_query_;
-  absl::optional<chromeos::string_matching::TokenizedString>
-      last_tokenized_query_;
+  absl::optional<ash::string_matching::TokenizedString> last_tokenized_query_;
 
   Profile* const profile_;
   ash::ThumbnailLoader thumbnail_loader_;

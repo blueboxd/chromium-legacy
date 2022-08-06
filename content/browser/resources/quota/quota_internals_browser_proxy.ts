@@ -7,40 +7,46 @@ import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
 import {QuotaInternalsHandler} from './quota_internals.mojom-webui.js';
 
-type BucketTableEntry = {
-  'bucketId': bigint,
-  'storageKey': string,
-  'type': string,
-  'name': string,
-  'usage': bigint,
-  'useCount': bigint,
-  'lastAccessed': Time,
-  'lastModified': Time,
-};
+enum StorageType {
+  TEMPORARY,
+  PERSISTENT,
+  SYNCABLE,
+}
 
-type GetDiskAvailabilityAndTempPoolSizeResult = {
-  totalSpace: bigint,
-  availableSpace: bigint,
-  tempPoolSize: bigint,
-};
+interface BucketTableEntry {
+  'bucketId': bigint;
+  'storageKey': string;
+  'type': StorageType;
+  'name': string;
+  'usage': bigint;
+  'useCount': bigint;
+  'lastAccessed': Time;
+  'lastModified': Time;
+}
 
-type GetGlobalUsageResult = {
-  usage: bigint,
-  unlimitedUsage: bigint,
-};
+interface GetDiskAvailabilityAndTempPoolSizeResult {
+  totalSpace: bigint;
+  availableSpace: bigint;
+  tempPoolSize: bigint;
+}
 
-type GetStatisticsResult = {
+interface GetGlobalUsageResult {
+  usage: bigint;
+  unlimitedUsage: bigint;
+}
+
+interface GetStatisticsResult {
   evictionStatistics: {
     'errors-on-getting-usage-and-quota': string,
     'evicted-buckets': string,
     'eviction-rounds': string,
     'skipped-eviction-rounds': string,
-  },
-};
+  };
+}
 
-type RetrieveBucketsTableResult = {
-  entries: BucketTableEntry[],
-};
+interface RetrieveBucketsTableResult {
+  entries: BucketTableEntry[];
+}
 
 function urlPort(url: URL): number {
   if (url.port) {

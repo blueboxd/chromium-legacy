@@ -127,6 +127,36 @@ const char kSamlPasswordChangeUrl[] = "saml.password_change_url";
 // possible to check sync state to see if the user enabled it.
 const char kSyncOobeCompleted[] = "sync.oobe_completed";
 
+// A string representing the last version of Chrome that System Web Apps were
+// updated for.
+const char kSystemWebAppLastUpdateVersion[] =
+    "web_apps.system_web_app_last_update";
+
+// A string representing the last locale that System Web Apps were installed in.
+// This is used to refresh System Web Apps i18n when the locale is changed.
+const char kSystemWebAppLastInstalledLocale[] =
+    "web_apps.system_web_app_last_installed_language";
+
+// An int representing the number of failures to install SWAs for a given
+// version & locale pair. After 3 failures, we'll abandon this version to avoid
+// bootlooping, and wait for a new version to come along.
+const char kSystemWebAppInstallFailureCount[] =
+    "web_apps.system_web_app_failure_count";
+
+// A string representing the latest Chrome version where an attempt was made
+// to install. In the case of success, this and LastUpdateVersion will be the
+// same. If there is an installation failure, they will diverge until a
+// successful installation is made.
+extern const char kSystemWebAppLastAttemptedVersion[] =
+    "web_apps.system_web_app_last_attempted_update";
+
+// A string representing the most recent locale that was attempted to be
+// installed. In the case of success, this and LastUpdateVersion will be the
+// same. If there is an installation failure, they will diverge until a
+// successful installation is made.
+extern const char kSystemWebAppLastAttemptedLocale[] =
+    "web_apps.system_web_app_last_attempted_language";
+
 // Boolean pref indicating whether a user has enabled the display password
 // button on the login/lock screen.
 const char kLoginDisplayPasswordButtonEnabled[] =
@@ -146,6 +176,11 @@ const char kLauncherContinueSectionHidden[] =
 const char kLauncherFeedbackOnContinueSectionSent[] =
     "ash.launcher.continue_section_removal_feedback_sent";
 
+// A time pref indicating the last time a request was made to update the
+// Continue section.
+const char kLauncherLastContinueRequestTime[] =
+    "launcher.last_continue_request_time";
+
 // Boolean pref recording whether a search result has ever been launched from
 // the Chrome OS launcher.
 const char kLauncherResultEverLaunched[] = "launcher.result_ever_launched";
@@ -154,6 +189,9 @@ const char kLauncherResultEverLaunched[] = "launcher.result_ever_launched";
 // scores for the launcher normalizer.
 const char kLauncherSearchNormalizerParameters[] =
     "launcher.search_normalizer_parameters";
+
+// Whether or not to use a long delay for Continue section requests.
+const char kLauncherUseLongContinueDelay[] = "launcher.use_long_continue_delay";
 
 // Boolean pref indicating whether system-wide trace collection using the
 // Perfetto system tracing service is allowed.
@@ -1015,6 +1053,14 @@ const char kShowPostRebootNotification[] = "ash.show_post_reboot_notification";
 // selected for a user profile.
 const char kPersonalizationKeyboardBacklightColor[] =
     "ash.personalization.keyboard_backlight_color";
+
+// Integer pref corresponding to the autozoom state, the value should be one of
+// cros::mojom::CameraAutoFramingState.
+const char kAutozoomState[] = "ash.camera.autozoom_state";
+
+// A dictionary storing the number of times and most recent time the autozoom
+// nudge was shown.
+const char kAutozoomNudges[] = "ash.camera.autozoom_nudges";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

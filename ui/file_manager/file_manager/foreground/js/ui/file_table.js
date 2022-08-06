@@ -16,6 +16,7 @@ import {importerHistoryInterfaces} from '../../../externs/background/import_hist
 import {EntryLocation} from '../../../externs/entry_location.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
+import {FilesTooltip} from '../../elements/files_tooltip.js';
 import {FileListModel} from '../file_list_model.js';
 import {ListThumbnailLoader} from '../list_thumbnail_loader.js';
 import {MetadataModel} from '../metadata/metadata_model.js';
@@ -210,7 +211,7 @@ export class FileTableColumnModel extends TableColumnModel {
     const config = {};
     for (let i = 0; i < this.columns_.length; i++) {
       config[this.columns_[i].id] = {
-        width: snapshot.newPos[i + 1] - snapshot.newPos[i]
+        width: snapshot.newPos[i + 1] - snapshot.newPos[i],
       };
     }
     return config;
@@ -858,9 +859,9 @@ export class FileTable extends Table {
     const label = /** @type {!HTMLDivElement} */
         (this.ownerDocument.createElement('div'));
 
-    const mimeType =
-        this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
-            .contentMimeType;
+    const metadata = this.metadataModel_.getCache(
+        [entry], ['contentMimeType', 'isDlpRestricted'])[0];
+    const mimeType = metadata.contentMimeType;
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     const icon = filelist.renderFileTypeIcon(
         this.ownerDocument, entry, locationInfo, mimeType);
@@ -876,8 +877,12 @@ export class FileTable extends Table {
     label.className = 'detail-name';
     label.appendChild(
         filelist.renderFileNameLabel(this.ownerDocument, entry, locationInfo));
-    if (locationInfo.isDriveBased) {
+    if (locationInfo && locationInfo.isDriveBased) {
       label.appendChild(filelist.renderPinned(this.ownerDocument));
+    }
+    const isDlpRestricted = !!metadata.isDlpRestricted;
+    if (isDlpRestricted) {
+      label.appendChild(this.renderDlpManagedIcon_());
     }
     return label;
   }
@@ -979,7 +984,7 @@ export class FileTable extends Table {
             history => {
               return Promise.all([
                 history.wasImported(fileEntry, destination),
-                history.wasCopied(fileEntry, destination)
+                history.wasCopied(fileEntry, destination),
               ]);
             })
         .then(
@@ -1116,8 +1121,13 @@ export class FileTable extends Table {
             this.metadataModel_.getCache(
                 [entry],
                 [
-                  'availableOffline', 'customIconUrl', 'shared',
-                  'isMachineRoot', 'isExternalMedia', 'hosted', 'pinned'
+                  'availableOffline',
+                  'customIconUrl',
+                  'shared',
+                  'isMachineRoot',
+                  'isExternalMedia',
+                  'hosted',
+                  'pinned',
                 ])[0],
             util.isTeamDriveRoot(entry));
       });
@@ -1140,11 +1150,20 @@ export class FileTable extends Table {
     const nameId = item.id + '-entry-name';
     const sizeId = item.id + '-size';
     const dateId = item.id + '-date';
+    const dlpId = item.id + '-dlp-managed-icon';
     filelist.decorateListItem(item, entry, assert(this.metadataModel_));
     item.setAttribute('file-name', entry.name);
     item.querySelector('.detail-name').setAttribute('id', nameId);
     item.querySelector('.size').setAttribute('id', sizeId);
     item.querySelector('.date').setAttribute('id', dateId);
+    const dlpManagedIcon = item.querySelector('.dlp-managed-icon');
+    if (dlpManagedIcon) {
+      dlpManagedIcon.setAttribute('id', dlpId);
+      /** @type {!FilesTooltip} */ (
+          this.ownerDocument.querySelector('files-tooltip'))
+          .addTargets(item.querySelectorAll('.dlp-managed-icon'));
+    }
+
     item.setAttribute('aria-labelledby', nameId);
     return item;
   }
@@ -1215,6 +1234,26 @@ export class FileTable extends Table {
         (this.ownerDocument.createElement('div'));
     checkmark.className = 'detail-checkmark';
     return checkmark;
+  }
+
+  /**
+   * Renders the DLP managed icon in the detail table.
+   * @return {!HTMLDivElement} Created element.
+   * @private
+   */
+  renderDlpManagedIcon_() {
+    const icon = /** @type {!HTMLDivElement} */
+        (this.ownerDocument.createElement('div'));
+    icon.className = 'dlp-managed-icon';
+    icon.toggleAttribute('has-tooltip');
+    icon.setAttribute(
+        'aria-label',
+        strf(
+            'DLP_MANAGED_ICON_TOOLTIP',
+            'https://support.google.com/chrome/a/?p=chromeos_datacontrols'));
+    icon.toggleAttribute('show-link-tooltip');
+    icon.toggleAttribute('show-card-tooltip');
+    return icon;
   }
 
   /**

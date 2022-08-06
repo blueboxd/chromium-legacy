@@ -151,7 +151,9 @@ class PageInfo {
     PAGE_INFO_AD_PERSONALIZATION_PAGE_OPENED = 30,
     PAGE_INFO_AD_PERSONALIZATION_SETTINGS_OPENED = 31,
     PAGE_INFO_ABOUT_THIS_SITE_MORE_ABOUT_CLICKED = 32,
-    kMaxValue = PAGE_INFO_ABOUT_THIS_SITE_MORE_ABOUT_CLICKED
+    PAGE_INFO_COOKIES_PAGE_OPENED = 33,
+    PAGE_INFO_COOKIES_SETTINGS_OPENED = 34,
+    kMaxValue = PAGE_INFO_COOKIES_SETTINGS_OPENED
   };
 
   struct ChooserUIInfo {
@@ -235,6 +237,9 @@ class PageInfo {
 
   // Handles opening the link to show more site settings and records the event.
   void OpenSiteSettingsView();
+
+  // Handles opening the link to show cookies settings and records the event.
+  void OpenCookiesSettingsView();
 
   // Handles opening the cookies dialog and records the event.
   void OpenCookiesDialog();
@@ -361,6 +366,9 @@ class PageInfo {
   int GetFirstPartyBlockedCookiesCount(const GURL& site_url);
   int GetThirdPartyAllowedCookiesCount(const GURL& site_url);
   int GetThirdPartyBlockedCookiesCount(const GURL& site_url);
+
+  // Get the count of sites allowed to access cookies.
+  int GetSitesWithAllowedCookiesCount();
 
   // The page info UI displays information and controls for site-
   // specific data (local stored objects like cookies), site-specific

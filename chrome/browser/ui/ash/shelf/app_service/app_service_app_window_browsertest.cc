@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
@@ -44,7 +45,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_constants/constants.h"
 #include "components/exo/shell_surface_util.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "content/public/test/browser_test.h"
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBrowserTest,
   // Close the HostedApp.
   TabStripModel* tab_strip = browser()->tab_strip_model();
   tab_strip->CloseWebContentsAt(tab_strip->active_index(),
-                                TabStripModel::CLOSE_NONE);
+                                TabCloseTypes::CLOSE_NONE);
 
   instances = app_service_proxy_->InstanceRegistry().GetInstances(app_id1);
   EXPECT_TRUE(instances.empty());
@@ -458,20 +458,6 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBorealisBrowserTest,
   EXPECT_EQ(1u,
             app_service_proxy_->InstanceRegistry().GetInstances(app_id).size());
   ASSERT_NE(-1, shelf_model()->ItemIndexByAppID(app_id));
-
-  // With non mojom AppService, anonymous apps are published sync, so we don't
-  // need to flush mojom calls and verify no title for shelf items.
-  if (!base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    // Initially, anonymous apps haven't been published, as that is an
-    // asynchronous operation. This means their shelf item has no title.
-    EXPECT_TRUE(shelf_model()
-                    ->items()[shelf_model()->ItemIndexByAppID(app_id)]
-                    .title.empty());
-
-    // Flushing calls here simulates the fraction-of-seconds delay between the
-    // window appearing and its app being published.
-    app_service_proxy_->FlushMojoCallsForTesting();
-  }
 
   // Now that the app is published, it will have a name based on the window title
   EXPECT_EQ(

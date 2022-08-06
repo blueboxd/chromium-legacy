@@ -110,7 +110,7 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
 
     case BIRTHDATE_DAY:
     case BIRTHDATE_MONTH:
-    case BIRTHDATE_YEAR_4_DIGITS:
+    case BIRTHDATE_4_DIGIT_YEAR:
       return FieldTypeGroup::kBirthdateField;
 
     case PRICE:
@@ -185,6 +185,11 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
 
     case HTML_TYPE_EMAIL:
       return FieldTypeGroup::kEmail;
+
+    case HTML_TYPE_BIRTHDATE_DAY:
+    case HTML_TYPE_BIRTHDATE_MONTH:
+    case HTML_TYPE_BIRTHDATE_YEAR:
+      return FieldTypeGroup::kBirthdateField;
 
     case HTML_TYPE_UPI_VPA:
       // TODO(crbug/702223): Add support for UPI-VPA.
@@ -325,15 +330,26 @@ ServerFieldType AutofillType::GetStorableType() const {
       return PHONE_HOME_CITY_CODE;
 
     case HTML_TYPE_TEL_LOCAL:
-    case HTML_TYPE_TEL_LOCAL_PREFIX:
-    case HTML_TYPE_TEL_LOCAL_SUFFIX:
       return PHONE_HOME_NUMBER;
+
+    case HTML_TYPE_TEL_LOCAL_PREFIX:
+      return PHONE_HOME_NUMBER_PREFIX;
+
+    case HTML_TYPE_TEL_LOCAL_SUFFIX:
+      return PHONE_HOME_NUMBER_SUFFIX;
 
     case HTML_TYPE_TEL_EXTENSION:
       return PHONE_HOME_EXTENSION;
 
     case HTML_TYPE_EMAIL:
       return EMAIL_ADDRESS;
+
+    case HTML_TYPE_BIRTHDATE_DAY:
+      return BIRTHDATE_DAY;
+    case HTML_TYPE_BIRTHDATE_MONTH:
+      return BIRTHDATE_MONTH;
+    case HTML_TYPE_BIRTHDATE_YEAR:
+      return BIRTHDATE_4_DIGIT_YEAR;
 
     case HTML_TYPE_ADDITIONAL_NAME_INITIAL:
       return NAME_MIDDLE_INITIAL;

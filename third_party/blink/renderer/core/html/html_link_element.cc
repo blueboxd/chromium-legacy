@@ -80,6 +80,10 @@ void HTMLLinkElement::ParseAttribute(
       UseCounter::Count(&GetDocument(),
                         WebFeature::kHTMLLinkElementMonetization);
     }
+    if (rel_attribute_.IsCanonical() &&
+        GetDocument().IsInOutermostMainFrame()) {
+      UseCounter::Count(&GetDocument(), WebFeature::kLinkRelCanonical);
+    }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
   } else if (name == html_names::kBlockingAttr &&
@@ -117,7 +121,7 @@ void HTMLLinkElement::ParseAttribute(
     Process();
   } else if (name == html_names::kMediaAttr) {
     media_ = value.LowerASCII();
-    Process();
+    Process(LinkLoadParameters::Reason::kMediaChange);
   } else if (name == html_names::kIntegrityAttr) {
     integrity_ = value;
   } else if (name == html_names::kFetchpriorityAttr &&
@@ -216,9 +220,9 @@ LinkStyle* HTMLLinkElement::GetLinkStyle() const {
   return static_cast<LinkStyle*>(link_.Get());
 }
 
-void HTMLLinkElement::Process() {
+void HTMLLinkElement::Process(LinkLoadParameters::Reason reason) {
   if (LinkResource* link = LinkResourceToProcess())
-    link->Process();
+    link->Process(reason);
 }
 
 Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(

@@ -296,36 +296,12 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_Success_Hostname) {
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenTcp_KeepAliveOptionsDelayMissingOnKeepAliveTrue) {
-  const std::string script =
-      JsReplace("openTcp($1, 228, { keepAlive: true })", kLocalhostAddress);
-
-  EXPECT_THAT(
-      EvalJs(shell(), script).ExtractString(),
-      ::testing::HasSubstr("keepAliveDelay must be set when keepAlive = true"));
-}
-
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
                        OpenTcp_KeepAliveOptionsDelayLessThanASecond) {
   const std::string script =
-      JsReplace("openTcp($1, 228, { keepAlive: true, keepAliveDelay: 950 })",
-                kLocalhostAddress);
+      JsReplace("openTcp($1, 228, { keepAliveDelay: 950 })", kLocalhostAddress);
 
-  EXPECT_THAT(
-      EvalJs(shell(), script).ExtractString(),
-      ::testing::HasSubstr("keepAliveDelay must be no less than one second"));
-}
-
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenTcp_KeepAliveOptionsDelaySetOnKeepAliveFalse) {
-  const std::string script = JsReplace(
-      "openTcp($1, 228, { keepAlive: false, keepAliveDelay: 10_000 })",
-      kLocalhostAddress);
-
-  EXPECT_THAT(
-      EvalJs(shell(), script).ExtractString(),
-      ::testing::HasSubstr(
-          "keepAliveDelay must not be set when keepAlive = false or missing"));
+  EXPECT_THAT(EvalJs(shell(), script).ExtractString(),
+              ::testing::HasSubstr("keepAliveDelay must be no less than"));
 }
 
 using ProtocolType = DirectSocketsServiceImpl::ProtocolType;
@@ -364,8 +340,12 @@ class DirectSocketsOpenCannotConnectBrowserTest
         "open%s failed: NetworkError: Network Error.", type.c_str());
 
     const std::string example_hostname = "mail.example.com";
-    const std::string script = base::StringPrintf(
-        "open%s('%s', 993)", type.c_str(), example_hostname.c_str());
+    const std::string script =
+        protocol == DirectSocketsServiceImpl::ProtocolType::kTcp
+            ? base::StringPrintf("openTcp('%s', 993)", example_hostname.c_str())
+            : base::StringPrintf(
+                  "openUdp({ remoteAddress: '%s', remotePort: 993 })",
+                  example_hostname.c_str());
 
     for (const auto& address : ProduceAllTestParams()) {
       const std::string mapping_rules = base::StringPrintf(
@@ -432,7 +412,8 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsOne) {
   EXPECT_EQ(3456, call.send_buffer_size);
   EXPECT_EQ(7890, call.receive_buffer_size);
   EXPECT_EQ(false, call.no_delay);
-  EXPECT_FALSE(call.keep_alive_options);
+  EXPECT_TRUE(call.keep_alive_options);
+  EXPECT_EQ(false, call.keep_alive_options->enable);
 
   // To sync histograms from renderer.
   FetchHistogramsFromChildProcesses();
@@ -450,10 +431,9 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsTwo) {
           openTcp(
             'fedc:ba98:7654:3210:fedc:ba98:7654:3210',
             789, {
-              sendBufferSize: 0,
+              sendBufferSize: 1243,
               receiveBufferSize: 1234,
               noDelay: true,
-              keepAlive: true,
               keepAliveDelay: 100_000
             }
           )
@@ -466,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsTwo) {
   EXPECT_EQ(DirectSocketsServiceImpl::ProtocolType::kTcp, call.protocol_type);
   EXPECT_EQ("fedc:ba98:7654:3210:fedc:ba98:7654:3210", call.remote_address);
   EXPECT_EQ(789, call.remote_port);
-  EXPECT_EQ(0, call.send_buffer_size);
+  EXPECT_EQ(1243, call.send_buffer_size);
   EXPECT_EQ(1234, call.receive_buffer_size);
   EXPECT_EQ(true, call.no_delay);
   EXPECT_TRUE(call.keep_alive_options);
@@ -483,10 +463,9 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsThree) {
           openTcp(
             'fedc:ba98:7654:3210:fedc:ba98:7654:3210',
             789, {
-              sendBufferSize: 0,
+              sendBufferSize: 1243,
               receiveBufferSize: 1234,
               noDelay: true,
-              keepAlive: false
             }
           )
         )";
@@ -498,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsThree) {
   EXPECT_EQ(DirectSocketsServiceImpl::ProtocolType::kTcp, call.protocol_type);
   EXPECT_EQ("fedc:ba98:7654:3210:fedc:ba98:7654:3210", call.remote_address);
   EXPECT_EQ(789, call.remote_port);
-  EXPECT_EQ(0, call.send_buffer_size);
+  EXPECT_EQ(1243, call.send_buffer_size);
   EXPECT_EQ(1234, call.receive_buffer_size);
   EXPECT_EQ(true, call.no_delay);
   EXPECT_TRUE(call.keep_alive_options);
@@ -518,7 +497,8 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_Success_Hostname) {
       "openUdp succeeded: {remoteAddress: \"%s\", remotePort: 993}",
       kExampleAddress);
 
-  const std::string script = JsReplace("openUdp($1, 993)", kExampleHostname);
+  const std::string script = JsReplace(
+      "openUdp({ remoteAddress: $1, remotePort: 993 })", kExampleHostname);
 
   EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
@@ -528,7 +508,8 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_NotAllowedError) {
   DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
 
   // Port 0 is not permitted by MockUDPSocket.
-  const std::string script = JsReplace("openUdp($1, $2)", kLocalhostAddress, 0);
+  const std::string script = JsReplace(
+      "openUdp({ remoteAddress: $1, remotePort: $2 })", kLocalhostAddress, 0);
 
   EXPECT_THAT(EvalJs(shell(), script).ExtractString(),
               ::testing::HasSubstr("NetworkError"));
@@ -545,16 +526,14 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsOne) {
   const std::string expected_result =
       "openUdp failed: NetworkError: Network Error.";
 
-  const std::string script =
-      R"(
-          openUdp(
-            '12.34.56.78',
-            9012, {
-              sendBufferSize: 3456,
-              receiveBufferSize: 7890
-            }
-          )
-        )";
+  const std::string script = R"(
+    openUdp({
+      remoteAddress: '12.34.56.78',
+      remotePort: 9012,
+      sendBufferSize: 3456,
+      receiveBufferSize: 7890
+    })
+  )";
   EXPECT_EQ(expected_result, EvalJs(shell(), script));
 
   ASSERT_EQ(1U, mock_network_context.history().size());
@@ -576,16 +555,14 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsTwo) {
   MockOpenNetworkContext mock_network_context(net::OK);
   DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
 
-  const std::string script =
-      R"(
-          openUdp(
-            'fedc:ba98:7654:3210:fedc:ba98:7654:3210',
-            789, {
-              sendBufferSize: 0,
-              receiveBufferSize: 1234
-            }
-          )
-        )";
+  const std::string script = R"(
+    openUdp({
+      remoteAddress: 'fedc:ba98:7654:3210:fedc:ba98:7654:3210',
+      remotePort: 789,
+      sendBufferSize: 1243,
+      receiveBufferSize: 1234
+    })
+  )";
   EXPECT_THAT(EvalJs(shell(), script).ExtractString(),
               StartsWith("openUdp succeeded"));
 
@@ -594,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsTwo) {
   EXPECT_EQ(DirectSocketsServiceImpl::ProtocolType::kUdp, call.protocol_type);
   EXPECT_EQ("fedc:ba98:7654:3210:fedc:ba98:7654:3210", call.remote_address);
   EXPECT_EQ(789, call.remote_port);
-  EXPECT_EQ(0, call.send_buffer_size);
+  EXPECT_EQ(1243, call.send_buffer_size);
   EXPECT_EQ(1234, call.receive_buffer_size);
 }
 
@@ -699,7 +676,8 @@ IN_PROC_BROWSER_TEST_P(DirectSocketsOpenCorsBrowserTest, OpenUdp) {
       blink::mojom::DirectSocketFailureType::kCORS, 0);
 
   const std::string script =
-      JsReplace("openUdp($1, $2)", kLocalhostAddress, https_server()->port());
+      JsReplace("openUdp({ remoteAddress: $1, remotePort: $2 })",
+                kLocalhostAddress, https_server()->port());
 
   bool cors_success = GetParam();
 

@@ -135,8 +135,8 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     version_->SetMainScriptResponse(
         std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
             network::mojom::URLResponseHead()));
-    version_->set_fetch_handler_existence(
-        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+    version_->set_fetch_handler_type(
+        ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
     // Make the registration findable via storage functions.
@@ -254,8 +254,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
                                   /*mock frame_routing_id=*/1),
           /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
           &remote_endpoint);
-  container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
-                             url::Origin::Create(scope),
+  container_host->UpdateUrls(scope, url::Origin::Create(scope),
                              blink::StorageKey(url::Origin::Create(scope)));
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
@@ -407,8 +406,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       CreateContainerHostForWindow(
           frame_host->GetGlobalId(), /*is_parent_frame_secure=*/true,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
-  container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
-                             url::Origin::Create(scope), key);
+  container_host->UpdateUrls(scope, url::Origin::Create(scope), key);
 
   // Prepare a ServiceWorkerObjectHost for the worker.
   blink::mojom::ServiceWorkerObjectInfoPtr info =

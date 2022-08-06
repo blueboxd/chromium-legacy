@@ -218,7 +218,7 @@ bool HitTestCulledInlineAncestors(
 //
 // TODO(kojii): This may become more complicated when we use
 // |NGBoxFragmentPainter| for all fragments, and we still want this
-// oprimization.
+// optimization.
 bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
   // If |fragment| is |IsFormattingContextRoot|, it may be legacy.
   // Avoid falling back to |LayoutObject| if |CanTraverse|, because it
@@ -410,6 +410,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   PaintInfo& info = paint_state.MutablePaintInfo();
   const PhysicalOffset paint_offset = paint_state.PaintOffset();
   const PaintPhase original_phase = info.phase;
+  bool painted_overflow_controls = false;
 
   // For text-combine-upright:all, we need to realize canvas here for scaling
   // to fit text content in 1em and shear for "font-style: oblique -15deg".
@@ -459,6 +460,13 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
     info.SetSkipsBackground(false);
 
     if (paint_location & kBackgroundPaintInContentsSpace) {
+      // If possible, paint overflow controls before scrolling background to
+      // make it easier to merge scrolling background and scrolling contents
+      // into the same layer. The function checks if it's appropriate to paint
+      // overflow controls now.
+      if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
+        painted_overflow_controls = PaintOverflowControls(info, paint_offset);
+
       info.SetIsPaintingBackgroundInContentsSpace(true);
       PaintObject(info, paint_offset);
       info.SetIsPaintingBackgroundInContentsSpace(false);
@@ -512,14 +520,22 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
     NGTextCombinePainter::Paint(info, paint_offset, *text_combine);
   }
 
-  // We paint scrollbars after we painted other things, so that the scrollbars
-  // will sit above them.
-  info.phase = original_phase;
-  if (box_fragment_.IsScrollContainer()) {
-    DCHECK(!text_combine);
-    ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
-        .PaintOverflowControls(info, ToRoundedVector2d(paint_offset));
+  // If we haven't painted overflow controls, paint scrollbars after we painted
+  // the other things, so that the scrollbars will sit above them.
+  if (!painted_overflow_controls) {
+    info.phase = original_phase;
+    PaintOverflowControls(info, paint_offset);
   }
+}
+
+bool NGBoxFragmentPainter::PaintOverflowControls(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  if (!box_fragment_.IsScrollContainer())
+    return false;
+
+  return ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
+      .PaintOverflowControls(paint_info, ToRoundedVector2d(paint_offset));
 }
 
 void NGBoxFragmentPainter::RecordScrollHitTestData(
@@ -1907,22 +1923,8 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
                              physical_offset))
     return false;
 
-  bool pointer_events_bounding_box = false;
-  bool hit_test_self = fragment.IsInSelfHitTestingPhase(hit_test.phase);
-  if (hit_test_self) {
-    // Table row and table section are never a hit target.
-    // SVG <text> is not a hit target except if 'pointer-events: bounding-box'.
-    if (PhysicalFragment().IsTableNGRow() ||
-        PhysicalFragment().IsTableNGSection()) {
-      hit_test_self = false;
-    } else if (fragment.IsSvgText()) {
-      pointer_events_bounding_box =
-          fragment.Style().UsedPointerEvents() == EPointerEvents::kBoundingBox;
-      hit_test_self = pointer_events_bounding_box;
-    }
-  }
-
-  if (hit_test_self && box_fragment_.IsScrollContainer() &&
+  if (hit_test.phase == HitTestPhase::kForeground &&
+      !box_fragment_.HasSelfPaintingLayer() &&
       HitTestOverflowControl(hit_test, physical_offset))
     return true;
 
@@ -1969,6 +1971,21 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   if (style.HasBorderRadius() &&
       HitTestClippedOutByBorder(hit_test.location, physical_offset))
     return false;
+
+  bool pointer_events_bounding_box = false;
+  bool hit_test_self = fragment.IsInSelfHitTestingPhase(hit_test.phase);
+  if (hit_test_self) {
+    // Table row and table section are never a hit target.
+    // SVG <text> is not a hit target except if 'pointer-events: bounding-box'.
+    if (PhysicalFragment().IsTableNGRow() ||
+        PhysicalFragment().IsTableNGSection()) {
+      hit_test_self = false;
+    } else if (fragment.IsSvgText()) {
+      pointer_events_bounding_box =
+          fragment.Style().UsedPointerEvents() == EPointerEvents::kBoundingBox;
+      hit_test_self = pointer_events_bounding_box;
+    }
+  }
 
   // Now hit test ourselves.
   if (hit_test_self) {

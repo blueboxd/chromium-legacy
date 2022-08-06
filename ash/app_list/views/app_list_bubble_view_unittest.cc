@@ -505,7 +505,7 @@ TEST_F(AppListBubbleViewTest, AssistantScreenshotClosesBubbleWithoutAnimation) {
   // Simulate the app list being closed by taking a screenshot with assistant.
   // This makes AppListControllerImpl::ShouldDismissImmediately() return true.
   AssistantUiController::Get()->ToggleUi(
-      absl::nullopt, chromeos::assistant::AssistantExitPoint::kScreenshot);
+      absl::nullopt, assistant::AssistantExitPoint::kScreenshot);
 
   // The bubble dismissed immediately so it is not animating.
   ui::Layer* bubble_layer = GetAppListTestHelper()->GetBubbleView()->layer();
@@ -580,10 +580,13 @@ TEST_F(AppListBubbleViewTest, ClosingBubbleClearsSearch) {
   EXPECT_TRUE(search_box_input->HasFocus());
   EXPECT_EQ(u"a", search_box_input->GetText());
   TestAppListClient* client = GetAppListTestHelper()->app_list_client();
-  EXPECT_EQ(u"a", client->last_search_query());
+  EXPECT_EQ(std::vector<std::u16string>({u"a"}),
+            client->GetAndResetPastSearchQueries());
 
   // The app list view and widget are cached after this close.
   DismissAppList();
+  EXPECT_EQ(std::vector<std::u16string>({u""}),
+            client->GetAndResetPastSearchQueries());
 
   // Search box is empty on next show.
   ShowAppList();
@@ -594,7 +597,6 @@ TEST_F(AppListBubbleViewTest, ClosingBubbleClearsSearch) {
   search_box_input = GetSearchBoxView()->search_box();
   EXPECT_TRUE(search_box_input->HasFocus());
   EXPECT_EQ(u"", search_box_input->GetText());
-  EXPECT_EQ(u"", client->last_search_query());
 }
 
 // Regression test for https://crbug.com/1313140
@@ -702,6 +704,10 @@ TEST_F(AppListBubbleViewTest, AssistantPageLayout) {
 TEST_F(AppListBubbleViewTest, SearchBoxCloseButton) {
   ShowAppList();
   PressAndReleaseKey(ui::VKEY_A);
+  TestAppListClient* const app_list_client =
+      GetAppListTestHelper()->app_list_client();
+  EXPECT_EQ(std::vector<std::u16string>({u"a"}),
+            app_list_client->GetAndResetPastSearchQueries());
 
   // Close button is visible after typing text.
   SearchBoxView* search_box_view = GetSearchBoxView();
@@ -711,6 +717,8 @@ TEST_F(AppListBubbleViewTest, SearchBoxCloseButton) {
   // Clicking the close button clears the search, but the search box is still
   // focused/active.
   LeftClickOn(search_box_view->close_button());
+  EXPECT_EQ(std::vector<std::u16string>({u""}),
+            app_list_client->GetAndResetPastSearchQueries());
   EXPECT_FALSE(search_box_view->close_button()->GetVisible());
   EXPECT_TRUE(search_box_view->search_box()->GetText().empty());
   EXPECT_TRUE(search_box_view->search_box()->HasFocus());
@@ -747,15 +755,21 @@ TEST_F(AppListBubbleViewTest, TypingTextShowsSearchPage) {
 }
 
 TEST_F(AppListBubbleViewTest, TypingTextStartsSearch) {
-  TestAppListClient* client = GetAppListTestHelper()->app_list_client();
-
   ShowAppList();
 
   PressAndReleaseKey(ui::VKEY_A);
-  EXPECT_EQ(client->last_search_query(), u"a");
+
+  TestAppListClient* client = GetAppListTestHelper()->app_list_client();
+  EXPECT_EQ(std::vector<std::u16string>({u"a"}),
+            client->GetAndResetPastSearchQueries());
 
   PressAndReleaseKey(ui::VKEY_B);
-  EXPECT_EQ(client->last_search_query(), u"ab");
+  EXPECT_EQ(std::vector<std::u16string>({u"ab"}),
+            client->GetAndResetPastSearchQueries());
+
+  PressAndReleaseKey(ui::VKEY_BACK);
+  EXPECT_EQ(std::vector<std::u16string>({u"a"}),
+            client->GetAndResetPastSearchQueries());
 }
 
 TEST_F(AppListBubbleViewTest, BackActionsClearSearch) {
@@ -1287,6 +1301,13 @@ TEST_F(AppListBubbleViewTest, PressingTabMovesFocusInsideFolder) {
   AddFolderWithApps(3);
   ShowAppList();
 
+  // Force the sorting toast to show.
+  AppListController::Get()->UpdateAppListWithNewTemporarySortOrder(
+      AppListSortOrder::kColor,
+      /*animate=*/false, /*update_position_closure=*/base::OnceClosure());
+  ASSERT_TRUE(GetToastContainerView()->GetToastButton());
+
+  // Open the folder.
   AppListItemView* folder_item = GetAppsGridView()->GetItemViewAt(0);
   LeftClickOn(folder_item);
 
@@ -1313,6 +1334,12 @@ TEST_F(AppListBubbleViewTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
   AddFolderWithApps(5);
   ShowAppList();
 
+  // Force the sorting toast to show.
+  AppListController::Get()->UpdateAppListWithNewTemporarySortOrder(
+      AppListSortOrder::kColor,
+      /*animate=*/false, /*update_position_closure=*/base::OnceClosure());
+  ASSERT_TRUE(GetToastContainerView()->GetToastButton());
+
   // Open the folder.
   AppListItemView* folder_item = GetAppsGridView()->GetItemViewAt(0);
   LeftClickOn(folder_item);
@@ -1326,6 +1353,9 @@ TEST_F(AppListBubbleViewTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
   auto* recent_apps = GetRecentAppsView();
   EXPECT_TRUE(recent_apps->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(recent_apps->GetViewAccessibility().IsLeaf());
+  auto* toast_container = GetToastContainerView();
+  EXPECT_TRUE(toast_container->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(toast_container->GetViewAccessibility().IsLeaf());
   auto* apps_grid = GetAppsGridView();
   EXPECT_TRUE(apps_grid->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(apps_grid->GetViewAccessibility().IsLeaf());
@@ -1339,6 +1369,8 @@ TEST_F(AppListBubbleViewTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
   EXPECT_FALSE(continue_section->GetViewAccessibility().IsLeaf());
   EXPECT_FALSE(recent_apps->GetViewAccessibility().IsIgnored());
   EXPECT_FALSE(recent_apps->GetViewAccessibility().IsLeaf());
+  EXPECT_FALSE(toast_container->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(toast_container->GetViewAccessibility().IsLeaf());
   EXPECT_FALSE(apps_grid->GetViewAccessibility().IsIgnored());
   EXPECT_FALSE(apps_grid->GetViewAccessibility().IsLeaf());
 }

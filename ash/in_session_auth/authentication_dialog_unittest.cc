@@ -6,11 +6,12 @@
 
 #include <cctype>
 
+#include "ash/components/cryptohome/common_types.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
-#include "ash/components/login/auth/auth_factors_data.h"
 #include "ash/components/login/auth/auth_performer.h"
-#include "ash/components/login/auth/cryptohome_key_constants.h"
 #include "ash/components/login/auth/mock_auth_performer.h"
+#include "ash/components/login/auth/public/auth_factors_data.h"
+#include "ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "ash/public/cpp/in_session_auth_token_provider.h"
 #include "ash/public/cpp/test/mock_in_session_auth_token_provider.h"
 #include "ash/test/ash_test_base.h"
@@ -23,6 +24,8 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+
+using ::cryptohome::KeyLabel;
 
 namespace ash {
 namespace {
@@ -45,7 +48,7 @@ class AuthenticationDialogTest : public AshTestBase {
                         AuthPerformer::StartSessionCallback callback) {
     user_context->SetAuthFactorsData(
         AuthFactorsData{{cryptohome::KeyDefinition::CreateForPassword(
-            "secret", kCryptohomeGaiaKeyLabel, 0)}});
+            "secret", KeyLabel(kCryptohomeGaiaKeyLabel), 0)}});
 
     std::move(callback).Run(true, std::move(user_context), absl::nullopt);
   }

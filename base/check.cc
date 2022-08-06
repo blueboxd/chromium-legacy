@@ -4,24 +4,18 @@
 
 #include "base/check.h"
 
-#include "build/build_config.h"
-
-// check.h is a widely included header and its size has significant impact on
-// build time. Try not to raise this limit unless absolutely necessary. See
-// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#ifndef NACL_TC_REV
-#pragma clang max_tokens_here 17000
-#endif
-
 #include "base/check_op.h"
 #include "base/debug/alias.h"
+#include "base/debug/debugging_buildflags.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_annotations.h"
+#include "build/build_config.h"
+
 #if !BUILDFLAG(IS_NACL)
 #include "base/debug/crash_logging.h"
 #endif  // !BUILDFLAG(IS_NACL)
-#include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
-#include "base/thread_annotations.h"
-#include "build/build_config.h"
 
 #include <atomic>
 
@@ -29,14 +23,16 @@ namespace logging {
 
 namespace {
 
-#if defined(DCHECK_IS_CONFIGURABLE)
+// DCHECK_IS_CONFIGURABLE and ENABLE_LOG_ERROR_NOT_REACHED are both interested
+// in non-FATAL DCHECK()/NOTREACHED() reports.
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE) || BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
 void DCheckDumpOnceWithoutCrashing(LogMessage* log_message) {
   // Best-effort gate to prevent multiple DCHECKs from being dumped. This will
   // race if multiple threads DCHECK at the same time, but we'll eventually stop
   // reporting and at most report once per thread.
   static std::atomic<bool> has_dumped = false;
   if (!has_dumped.load(std::memory_order_relaxed)) {
-    const std::string str = log_message->GetMessageWithoutPrefix();
+    const std::string str = log_message->BuildCrashString();
     // Copy the LogMessage message to stack memory to make sure it can be
     // recovered in crash dumps.
     // TODO(pbos): Surface DCHECK_MESSAGE well in crash reporting to make this
@@ -54,6 +50,21 @@ void DCheckDumpOnceWithoutCrashing(LogMessage* log_message) {
       has_dumped.store(true, std::memory_order_relaxed);
   }
 }
+
+class NotReachedLogMessage : public LogMessage {
+ public:
+  using LogMessage::LogMessage;
+  ~NotReachedLogMessage() override {
+    if (severity() != logging::LOGGING_FATAL)
+      DCheckDumpOnceWithoutCrashing(this);
+  }
+};
+#else
+using NotReachedLogMessage = LogMessage;
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE) ||
+        // BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
+
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 class DCheckLogMessage : public LogMessage {
  public:
@@ -85,13 +96,13 @@ class DCheckErrnoLogMessage : public ErrnoLogMessage {
 #endif  // BUILDFLAG(IS_WIN)
 #else
 static_assert(logging::LOGGING_DCHECK == logging::LOGGING_FATAL);
-typedef LogMessage DCheckLogMessage;
+using DCheckLogMessage = LogMessage;
 #if BUILDFLAG(IS_WIN)
-typedef Win32ErrorLogMessage DCheckWin32ErrorLogMessage;
+using DCheckWin32ErrorLogMessage = Win32ErrorLogMessage;
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
-typedef ErrnoLogMessage DCheckErrnoLogMessage;
+using DCheckErrnoLogMessage = ErrnoLogMessage;
 #endif  // BUILDFLAG(IS_WIN)
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 }  // namespace
 
@@ -170,6 +181,17 @@ CheckError CheckError::NotImplemented(const char* file,
                                       const char* function) {
   auto* const log_message = new LogMessage(file, line, LOGGING_ERROR);
   log_message->stream() << "Not implemented reached in " << function;
+  return CheckError(log_message);
+}
+
+CheckError CheckError::NotReached(const char* file, int line) {
+  // Outside DCHECK builds NOTREACHED() should not be FATAL. For now.
+  const LogSeverity severity = DCHECK_IS_ON() ? LOGGING_DCHECK : LOGGING_ERROR;
+  auto* const log_message = new NotReachedLogMessage(file, line, severity);
+
+  // TODO(pbos): Consider a better message for NotReached(), this is here to
+  // match existing behavior + test expectations.
+  log_message->stream() << "Check failed: false. ";
   return CheckError(log_message);
 }
 

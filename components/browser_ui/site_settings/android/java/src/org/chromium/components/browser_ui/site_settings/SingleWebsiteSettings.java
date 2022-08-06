@@ -497,18 +497,14 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             } else if (type == ContentSettingsType.GEOLOCATION) {
                 setUpLocationPreference(preference);
             } else if (type == ContentSettingsType.NOTIFICATIONS) {
-                setUpNotificationsPreference(preference, isPermissionEmbargoed(type));
+                setUpNotificationsPreference(preference, mSite.isEmbargoed(type));
             } else {
                 setupContentSettingsPreference(preference,
                         mSite.getContentSetting(
                                 getSiteSettingsDelegate().getBrowserContextHandle(), type),
-                        isPermissionEmbargoed(type));
+                        mSite.isEmbargoed(type));
             }
         }
-    }
-
-    private boolean isPermissionEmbargoed(@ContentSettingsType int type) {
-        return mSite.getPermissionInfo(type) != null && mSite.getPermissionInfo(type).isEmbargoed();
     }
 
     private void setUpClearDataPreference() {
@@ -534,8 +530,14 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
 
     private void setupResetSitePreference() {
         Preference preference = findPreference(PREF_RESET_SITE);
-        int titleResId = mHideNonPermissionPreferences ? R.string.page_info_permissions_reset
+        int titleResId;
+        if (SiteSettingsFeatureList.isEnabled(SiteSettingsFeatureList.SITE_DATA_IMPROVEMENTS)) {
+            titleResId = mHideNonPermissionPreferences ? R.string.page_info_permissions_reset
+                                                       : R.string.website_reset_full;
+        } else {
+            titleResId = mHideNonPermissionPreferences ? R.string.page_info_permissions_reset
                                                        : R.string.website_reset;
+        }
         preference.setTitle(titleResId);
         preference.setOrder(mMaxPermissionOrder + 1);
         preference.setOnPreferenceClickListener(this);
@@ -663,7 +665,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     public void launchOsChannelSettingsFromPreference(Preference preference) {
         // There is no notification channel if the origin is merely embargoed. Create it
         // just-in-time if the user tries to change to setting.
-        if (isPermissionEmbargoed(ContentSettingsType.NOTIFICATIONS)) {
+        if (mSite.isEmbargoed(ContentSettingsType.NOTIFICATIONS)) {
             mSite.setContentSetting(getSiteSettingsDelegate().getBrowserContextHandle(),
                     ContentSettingsType.NOTIFICATIONS, ContentSettingValues.BLOCK);
         }
@@ -948,7 +950,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         }
 
         setupContentSettingsPreference(
-                preference, permission, isPermissionEmbargoed(ContentSettingsType.GEOLOCATION));
+                preference, permission, mSite.isEmbargoed(ContentSettingsType.GEOLOCATION));
     }
 
     private void setUpSoundPreference(Preference preference) {

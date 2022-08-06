@@ -18,12 +18,10 @@
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/captive_portal/core/captive_portal_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -43,11 +41,13 @@ class URLLoaderFactory;
 
 namespace ash {
 
+class NetworkState;
+
 // This class handles all notifications about network changes from
 // NetworkStateHandler and delegates portal detection for the default
 // network to captive_portal::CaptivePortalService.
 class NetworkPortalDetectorImpl : public NetworkPortalDetector,
-                                  public chromeos::NetworkStateHandlerObserver,
+                                  public NetworkStateHandlerObserver,
                                   public content::NotificationObserver,
                                   public PortalDetectorStrategy::Delegate {
  public:
@@ -102,7 +102,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   void RemoveObserver(Observer* observer) override;
   CaptivePortalStatus GetCaptivePortalStatus() override;
   bool IsEnabled() override;
-  void Enable(bool start_detection) override;
+  void Enable() override;
   void StartPortalDetection() override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
 
@@ -230,7 +230,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   content::NotificationRegistrar registrar_;
 
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   // Test time ticks used by unit tests.

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/google/core/common/google_switches.h"
 #include "components/history/core/browser/history_service.h"
@@ -222,7 +223,8 @@ class PageContentAnnotationsWebContentsObserverTest
 
     PageContentAnnotationsWebContentsObserver::CreateForWebContents(
         web_contents(), page_content_annotations_service_.get(),
-        template_url_service_.get(), optimization_guide_decider_.get());
+        template_url_service_.get(), optimization_guide_decider_.get(),
+        /*no_state_prefetch_manager=*/nullptr);
 
     // Overwrite Google base URL.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

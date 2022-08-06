@@ -310,6 +310,26 @@ LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
       ResourcesFileSharingMode::kError)
     params.enable_resource_file_sharing = false;
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kLacrosChromeAdditionalArgsFile)) {
+    const base::FilePath path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            ash::switches::kLacrosChromeAdditionalArgsFile);
+    std::string data;
+    if (!base::ReadFileToString(path, &data)) {
+      PLOG(WARNING) << "Unable to read from lacros additional args file "
+                    << path.value();
+    }
+    std::vector<base::StringPiece> delimited_flags =
+        base::SplitStringPieceUsingSubstr(data, "\n", base::TRIM_WHITESPACE,
+                                          base::SPLIT_WANT_NONEMPTY);
+
+    for (const auto& flag : delimited_flags) {
+      if (flag[0] != '#')
+        params.lacros_additional_args.emplace_back(flag);
+    }
+  }
+
   return params;
 }
 
@@ -324,12 +344,11 @@ std::string GetXdgRuntimeDir() {
   return "/run/chrome";
 }
 
-void TerminateLacrosChrome(base::Process process) {
+void TerminateLacrosChrome(base::Process process, base::TimeDelta timeout) {
   // Here, lacros-chrome process may crashed, or be in the shutdown procedure.
   // Give some amount of time for the collection. In most cases,
   // this wait captures the process termination.
-  constexpr base::TimeDelta kGracefulShutdownTimeout = base::Seconds(5);
-  if (process.WaitForExitWithTimeout(kGracefulShutdownTimeout, nullptr))
+  if (process.WaitForExitWithTimeout(timeout, nullptr))
     return;
 
   // Here, the process is not yet terminated.
@@ -414,12 +433,14 @@ BrowserManager::RestoreFromDeskTemplate::RestoreFromDeskTemplate(
     const gfx::Rect& bounds,
     ui::WindowShowState show_state,
     int32_t active_tab_index,
-    const std::string& app_name)
+    const std::string& app_name,
+    int32_t restore_window_id)
     : urls(urls),
       bounds(bounds),
       show_state(show_state),
       active_tab_index(active_tab_index),
-      app_name(app_name) {}
+      app_name(app_name),
+      restore_window_id(restore_window_id) {}
 
 BrowserManager::RestoreFromDeskTemplate::RestoreFromDeskTemplate(
     RestoreFromDeskTemplate&&) = default;
@@ -499,7 +520,7 @@ BrowserManager::~BrowserManager() {
 
   // Try to kill the lacros-chrome binary.
   if (lacros_process_.IsValid())
-    lacros_process_.Terminate(/*ignored=*/0, /*wait=*/false);
+    lacros_process_.Terminate(/*exit_code=*/0, /*wait=*/false);
 
   DCHECK_EQ(g_instance, this);
   g_instance = nullptr;
@@ -711,7 +732,8 @@ void BrowserManager::CreateBrowserWithRestoredData(
     const gfx::Rect& bounds,
     const ui::WindowShowState show_state,
     int32_t active_tab_index,
-    const std::string& app_name) {
+    const std::string& app_name,
+    int32_t restore_window_id) {
   auto result = MaybeStart(browser_util::InitialBrowserAction(
       mojom::InitialBrowserAction::kDoNotOpenWindow));
   // The service will not be available, return immediately.
@@ -719,7 +741,7 @@ void BrowserManager::CreateBrowserWithRestoredData(
     return;
 
   windows_to_restore_.emplace_back(urls, bounds, show_state, active_tab_index,
-                                   app_name);
+                                   app_name, restore_window_id);
   if (result == MaybeStartResult::kRunning)
     RestoreWindowsFromTemplate();
 }
@@ -829,10 +851,18 @@ void BrowserManager::Shutdown() {
   if (!lacros_process_.IsValid())
     return;
 
-  // Signal the the lacros process to terminate. This will result in mojo
-  // disconnecting and a callback into `OnMojoDisconnected()`. This will post a
-  // task that waits for a successful lacros-chrome exit on a separate thread.
-  lacros_process_.Terminate(/*ignored=*/0, /*wait=*/false);
+  // Signal the lacros process to terminate. We then immediately call into
+  // HandleLacrosChromeTermination() to synchronously post a shutdown blocking
+  // task that waits for lacros-chrome to cleanly exit. Terminate() will
+  // eventually result in a callback into OnMojoDisconnected(), however this
+  // resolves asynchronously and there is a risk that ash exits before this is
+  // called.
+  LOG(WARNING) << "Ash-chrome shutdown initiated. Terminating lacros-chrome";
+  lacros_process_.Terminate(/*exit_code=*/0, /*wait=*/false);
+
+  // Wait 3s for lacros-chrome to terminate to align with the timeout set by
+  // session_manager.
+  HandleLacrosChromeTermination(base::Seconds(3));
 }
 
 void BrowserManager::SetState(State state) {
@@ -973,11 +1003,6 @@ void BrowserManager::Start(
 
   SetState(State::CREATING_LOG_FILE);
 
-  // TODO(ythjkt): After M92 cherry-pick, clean up the following code by moving
-  // the data wipe check logic from `BrowserDataMigrator` to browser_util.
-  const std::string user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
-      ProfileManager::GetPrimaryUserProfile());
-
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&DoLacrosBackgroundWorkPreLaunch, lacros_path_,
@@ -1093,6 +1118,9 @@ void BrowserManager::StartWithLogFile(
   for (const auto& flag : delimited_flags)
     argv.emplace_back(flag);
 
+  argv.insert(argv.end(), params.lacros_additional_args.begin(),
+              params.lacros_additional_args.end());
+
   // Forward flag for zero copy video capture to Lacros if it is enabled.
   if (switches::IsVideoCaptureUseGpuMemoryBufferEnabled()) {
     argv.emplace_back(
@@ -1115,7 +1143,7 @@ void BrowserManager::StartWithLogFile(
 
   base::ScopedFD startup_fd = browser_util::CreateStartupData(
       environment_provider_.get(), std::move(initial_browser_action),
-      !keep_alive_features_.empty());
+      !keep_alive_features_.empty(), lacros_selection_);
   if (startup_fd.is_valid()) {
     // Hardcoded to use FD 3 to make the ash-chrome's behavior more predictable.
     // Lacros-chrome should not depend on the hardcoded value though. Instead
@@ -1248,16 +1276,29 @@ void BrowserManager::OnCoreDestruction(policy::CloudPolicyCore* core) {
 }
 
 void BrowserManager::OnMojoDisconnected() {
-  DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
-  DCHECK(lacros_process_.IsValid());
   LOG(WARNING)
       << "Mojo to lacros-chrome is disconnected. Terminating lacros-chrome";
+  HandleLacrosChromeTermination(base::Seconds(5));
+}
+
+void BrowserManager::HandleLacrosChromeTermination(base::TimeDelta timeout) {
+  // This may be called following a synchronous termination in `Shutdown()` or
+  // when the mojo pipe with the lacros-chrome process has disconnected. Early
+  // return if already handling lacros-chrome termination.
+  if (!lacros_process_.IsValid())
+    return;
+
+  DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
+  DCHECK(lacros_process_.IsValid());
 
   browser_service_.reset();
   crosapi_id_.reset();
   base::ThreadPool::PostTaskAndReply(
-      FROM_HERE, {base::WithBaseSyncPrimitives()},
-      base::BindOnce(&TerminateLacrosChrome, std::move(lacros_process_)),
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(),
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&TerminateLacrosChrome, std::move(lacros_process_),
+                     timeout),
       base::BindOnce(&BrowserManager::OnLacrosChromeTerminated,
                      weak_factory_.GetWeakPtr()));
 
@@ -1270,7 +1311,9 @@ void BrowserManager::OnLacrosChromeTerminated() {
   SetState(State::STOPPED);
   // TODO(https://crbug.com/1109366): Restart lacros-chrome if it exits
   // abnormally (e.g. crashes). For now, assume the user meant to close it.
-  SetLaunchOnLoginPref(false);
+  // Relaunch lacros-chrome if it was closed due to ash shutting down.
+  // Note that this only matters for side-by-side lacros.
+  SetLaunchOnLoginPref(shutdown_requested_);
 
   is_terminated_ = true;
 
@@ -1620,7 +1663,8 @@ void BrowserManager::RestoreWindowsFromTemplate() {
   for (const auto& data : windows_to_restore_) {
     crosapi::mojom::DeskTemplateStatePtr additional_state =
         crosapi::mojom::DeskTemplateState::New(data.urls, data.active_tab_index,
-                                               data.app_name);
+                                               data.app_name,
+                                               data.restore_window_id);
     crosapi::CrosapiManager::Get()
         ->crosapi_ash()
         ->desk_template_ash()

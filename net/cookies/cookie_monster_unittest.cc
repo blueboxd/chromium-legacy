@@ -3323,21 +3323,21 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   histograms.ExpectTotalCount(cookie_source_histogram, 1);
   histograms.ExpectBucketCount(
       cookie_source_histogram,
-      CookieMonster::COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME, 1);
+      CookieMonster::CookieSource::kSecureCookieCryptographicScheme, 1);
 
   // Set a non-secure cookie on a cryptographic scheme.
   EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(), "C=D; path=/;"));
   histograms.ExpectTotalCount(cookie_source_histogram, 2);
   histograms.ExpectBucketCount(
       cookie_source_histogram,
-      CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME, 1);
+      CookieMonster::CookieSource::kNonsecureCookieCryptographicScheme, 1);
 
   // Set a secure cookie on a non-cryptographic scheme.
   EXPECT_FALSE(SetCookie(cm.get(), http_www_foo_.url(), "D=E; path=/; Secure"));
   histograms.ExpectTotalCount(cookie_source_histogram, 2);
   histograms.ExpectBucketCount(
       cookie_source_histogram,
-      CookieMonster::COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 0);
+      CookieMonster::CookieSource::kSecureCookieNoncryptographicScheme, 0);
 
   // Overwrite a secure cookie (set by a cryptographic scheme) on a
   // non-cryptographic scheme.
@@ -3345,10 +3345,10 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   histograms.ExpectTotalCount(cookie_source_histogram, 2);
   histograms.ExpectBucketCount(
       cookie_source_histogram,
-      CookieMonster::COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME, 1);
+      CookieMonster::CookieSource::kSecureCookieCryptographicScheme, 1);
   histograms.ExpectBucketCount(
       cookie_source_histogram,
-      CookieMonster::COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 0);
+      CookieMonster::CookieSource::kSecureCookieNoncryptographicScheme, 0);
 
   // Test that attempting to clear a secure cookie on a http:// URL does
   // nothing.
@@ -3367,7 +3367,7 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   histograms.ExpectTotalCount(cookie_source_histogram, 4);
   histograms.ExpectBucketCount(
       cookie_source_histogram,
-      CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
+      CookieMonster::CookieSource::kNonsecureCookieNoncryptographicScheme, 1);
 }
 
 // Test that inserting the first cookie for a key and deleting the last cookie
@@ -4638,9 +4638,7 @@ TEST_F(CookieMonsterTest, CookiesWithoutSameSiteMustBeSecure) {
       {true, "A=B",  // not-recently-set session cookie.
        CookieInclusionStatus(), CookieEffectiveSameSite::LAX_MODE, kLongAge},
       // Cookie set from a secure URL with SameSite=None and Secure is set.
-      {true, "A=B; SameSite=None; Secure",
-       CookieInclusionStatus(
-           CookieInclusionStatus::WARN_SAMESITE_NONE_REQUIRED),
+      {true, "A=B; SameSite=None; Secure", CookieInclusionStatus(),
        CookieEffectiveSameSite::NO_RESTRICTION},
       // Cookie set from a secure URL with SameSite=None but not specifying
       // Secure is rejected.
@@ -5302,23 +5300,20 @@ class FirstPartySetEnabledCookieMonsterTest : public CookieMonsterTest {
 };
 
 TEST_F(FirstPartySetEnabledCookieMonsterTest, RecordsPeriodicFPSSizes) {
+  net::SchemefulSite owner1(GURL("https://owner1.test"));
+  net::SchemefulSite owner2(GURL("https://owner2.test"));
+  net::SchemefulSite member1(GURL("https://member1.test"));
+  net::SchemefulSite member2(GURL("https://member2.test"));
+  net::SchemefulSite member3(GURL("https://member3.test"));
+  net::SchemefulSite member4(GURL("https://member4.test"));
+
   access_delegate_->SetFirstPartySets({
-      {
-          SchemefulSite(GURL("https://owner1.test")),
-          {
-              SchemefulSite(GURL("https://owner1.test")),
-              SchemefulSite(GURL("https://member1.test")),
-              SchemefulSite(GURL("https://member2.test")),
-          },
-      },
-      {
-          SchemefulSite(GURL("https://owner2.test")),
-          {
-              SchemefulSite(GURL("https://owner2.test")),
-              SchemefulSite(GURL("https://member3.test")),
-              SchemefulSite(GURL("https://member4.test")),
-          },
-      },
+      {owner1, net::FirstPartySetEntry(owner1)},
+      {member1, net::FirstPartySetEntry(owner1)},
+      {member2, net::FirstPartySetEntry(owner1)},
+      {owner2, net::FirstPartySetEntry(owner2)},
+      {member3, net::FirstPartySetEntry(owner2)},
+      {member4, net::FirstPartySetEntry(owner2)},
   });
 
   ASSERT_TRUE(SetCookie(cm(), GURL("https://owner1.test"), kValidCookieLine));
@@ -5337,8 +5332,11 @@ TEST_F(FirstPartySetEnabledCookieMonsterTest, RecordsPeriodicFPSSizes) {
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(cm()->DoRecordPeriodicStatsForTesting());
   EXPECT_THAT(histogram_tester.GetAllSamples("Cookie.PerFirstPartySetCount"),
-              testing::ElementsAre(base::Bucket(2 /* min */, 1 /* samples */),
-                                   base::Bucket(3 /* min */, 1 /* samples */)));
+              testing::ElementsAre(  //
+                                     // owner2.test & member3.test
+                  base::Bucket(2 /* min */, 1 /* samples */),
+                  // owner1.test, member1.test, & member2.test
+                  base::Bucket(3 /* min */, 1 /* samples */)));
 }
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURLNonce) {

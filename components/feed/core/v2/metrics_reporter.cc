@@ -52,6 +52,9 @@ constexpr base::TimeDelta kOpenTimeout = base::Seconds(20);
 // timeout.
 constexpr base::TimeDelta kTimeSpentInFeedInteractionTimeout =
     base::Seconds(30);
+// The maximum time between sequential interactions with the feed that are
+// considered as a single visit.
+constexpr base::TimeDelta kVisitTimeout = base::Minutes(5);
 
 void ReportEngagementTypeHistogram(const StreamType& stream_type,
                                    FeedEngagementType engagement_type) {
@@ -203,6 +206,31 @@ UserSettingsOnStart GetUserSettingsOnStart(
   }
 }
 
+void ReportSubscriptionCountAtEngagementTime(const StreamType& stream_type,
+                                             int subscription_count) {
+  if (stream_type.IsForYou()) {
+    base::UmaHistogramSparse("ContentSuggestions.Feed.FollowCount.Engaged2",
+                             subscription_count);
+  } else {
+    DCHECK(stream_type.IsWebFeed());
+    base::UmaHistogramSparse(
+        "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2",
+        subscription_count);
+  }
+}
+
+void ReportCombinedSubscriptionCountAtEngagementTime(int subscription_count) {
+  base::UmaHistogramSparse(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2",
+      subscription_count);
+  // TODO(b/228342051): The histogram below is being obsoleted because it has a
+  // misleading name. Once the new *.Engaged2 series collects a large enough
+  // sample history, it will be effectively removed/obsoleted.
+  base::UmaHistogramSparse(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged",
+      subscription_count);
+}
+
 }  // namespace
 
 MetricsReporter::SurfaceWaiting::SurfaceWaiting() = default;
@@ -314,13 +342,12 @@ void MetricsReporter::RecordEngagement(const StreamType& stream_type,
                                        int scroll_distance_dp,
                                        bool interacted) {
   scroll_distance_dp = std::abs(scroll_distance_dp);
-  // Determine if this interaction is part of a new 'session'.
+  // Determine if this interaction is part of a new feed 'visit'.
   base::TimeTicks now = base::TimeTicks::Now();
-  const base::TimeDelta kVisitTimeout = base::Minutes(5);
   if (now - visit_start_time_ > kVisitTimeout) {
     FinalizeVisit();
   }
-  // Reset the last active time for session measurement.
+  // Reset the last active time for visit measurement.
   visit_start_time_ = now;
 
   TrackTimeSpentInFeed(true);
@@ -352,12 +379,19 @@ void MetricsReporter::RecordEngagement(const StreamType& stream_type,
     data.engaged_reported = true;
     if (!combined_stats_.engaged_reported) {
       ReportCombinedEngagementTypeHistogram(FeedEngagementType::kFeedEngaged);
-      // Unretained is safe because MetricsReporter outlives `FeedStream`.
+      // Reports subscription count for the specific feed and for the combined
+      // histogram.
       delegate_->SubscribedWebFeedCount(base::BindOnce(
-          &MetricsReporter::ReportSubscriptionCountAtEngagementTime,
-          base::Unretained(this)));
-
+          [](const StreamType& st, int sc) {
+            ReportSubscriptionCountAtEngagementTime(st, sc);
+            ReportCombinedSubscriptionCountAtEngagementTime(sc);
+          },
+          stream_type));
       combined_stats_.engaged_reported = true;
+    } else {
+      // Reports subscription count for the specific feed only.
+      delegate_->SubscribedWebFeedCount(base::BindOnce(
+          &ReportSubscriptionCountAtEngagementTime, stream_type));
     }
   }
 }
@@ -431,11 +465,26 @@ void MetricsReporter::FeedViewed(SurfaceId surface_id) {
 }
 
 void MetricsReporter::OpenAction(const StreamType& stream_type,
-                                 int index_in_stream) {
+                                 int index_in_stream,
+                                 OpenActionType action_type) {
   CardOpenBegin(stream_type);
-  ReportUserActionHistogram(FeedUserActionType::kTappedOnCard);
-  base::RecordAction(
-      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Open"));
+  switch (action_type) {
+    case OpenActionType::kDefault:
+      ReportUserActionHistogram(FeedUserActionType::kTappedOnCard);
+      base::RecordAction(
+          base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Open"));
+      break;
+    case OpenActionType::kNewTab:
+      ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
+      break;
+    case OpenActionType::kNewTabInGroup:
+      ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTabInGroup);
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.OpenInNewTabInGroup"));
+      break;
+  }
   ReportContentSuggestionsOpened(stream_type, index_in_stream);
   RecordInteraction(stream_type);
 }
@@ -443,16 +492,6 @@ void MetricsReporter::OpenAction(const StreamType& stream_type,
 void MetricsReporter::OpenVisitComplete(base::TimeDelta visit_time) {
   base::UmaHistogramLongTimes("ContentSuggestions.Feed.VisitDuration",
                               visit_time);
-}
-
-void MetricsReporter::OpenInNewTabAction(const StreamType& stream_type,
-                                         int index_in_stream) {
-  CardOpenBegin(stream_type);
-  ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);
-  base::RecordAction(base::UserMetricsAction(
-      "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
-  ReportContentSuggestionsOpened(stream_type, index_in_stream);
-  RecordInteraction(stream_type);
 }
 
 void MetricsReporter::PageLoaded() {
@@ -466,14 +505,12 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
   ReportUserActionHistogram(action_type);
   switch (action_type) {
     case FeedUserActionType::kTappedOnCard:
+    case FeedUserActionType::kTappedOpenInNewTab:
+    case FeedUserActionType::kTappedOpenInNewTabInGroup:
       DCHECK(false) << "This should be reported with OpenAction() instead";
       break;
     case FeedUserActionType::kShownCard_DEPRECATED:
       DCHECK(false) << "deprecated";
-      break;
-    case FeedUserActionType::kTappedOpenInNewTab:
-      DCHECK(false)
-          << "This should be reported with OpenInNewTabAction() instead";
       break;
     case FeedUserActionType::kOpenedFeedSurface:
       DCHECK(false) << "This should be reported with SurfaceOpened() instead";
@@ -974,13 +1011,6 @@ void MetricsReporter::RefreshSubscribedWebFeedsAttempted(
     base::UmaHistogramEnumeration(
         "ContentSuggestions.Feed.WebFeed.RefreshSubscribedFeeds.Force", status);
   }
-}
-
-void MetricsReporter::ReportSubscriptionCountAtEngagementTime(
-    int subscription_count) {
-  base::UmaHistogramSparse(
-      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged",
-      subscription_count);
 }
 
 void MetricsReporter::ReportFollowCountOnLoad(bool content_shown,

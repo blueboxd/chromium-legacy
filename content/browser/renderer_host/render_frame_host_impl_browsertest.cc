@@ -3809,9 +3809,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                 .party_context());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTest,
-    DISABLED_ComputeIsolationInfoForNavigationSiteForCookies) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeIsolationInfoForNavigationSiteForCookies) {
   // Start second server for HTTPS.
   https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
   ASSERT_TRUE(https_server()->Start());
@@ -6437,14 +6436,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeBrowserTest,
   WaitForLoadStop(web_contents());
 
   EXPECT_FALSE(main_rfh->IsAnonymous());
-  EXPECT_EQ(false, EvalJs(main_rfh, "window.isAnonymouslyFramed"));
+  EXPECT_EQ(false, EvalJs(main_rfh, "window.anonymouslyFramed"));
   EXPECT_FALSE(main_rfh->storage_key().nonce().has_value());
 
   EXPECT_EQ(1U, main_rfh->child_count());
   EXPECT_TRUE(main_rfh->child_at(0)->anonymous());
   EXPECT_FALSE(main_rfh->child_at(0)->current_frame_host()->IsAnonymous());
   EXPECT_EQ(true, EvalJs(main_rfh->child_at(0)->current_frame_host(),
-                         "window.isAnonymouslyFramed"));
+                         "window.anonymouslyFramed"));
   EXPECT_FALSE(main_rfh->child_at(0)
                    ->current_frame_host()
                    ->storage_key()
@@ -6459,40 +6458,30 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeBrowserTest,
   GURL main_url = embedded_test_server()->GetURL("/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  base::UnguessableToken first_nonce = web_contents()
-                                           ->GetPrimaryMainFrame()
-                                           ->GetPage()
-                                           .anonymous_iframes_nonce();
+  base::UnguessableToken first_nonce =
+      web_contents()->GetPrimaryMainFrame()->anonymous_iframes_nonce();
   EXPECT_TRUE(first_nonce);
 
   // Same-document navigation does not change the nonce.
   EXPECT_TRUE(NavigateToURL(shell(), main_url.Resolve("#here")));
-  EXPECT_EQ(first_nonce, web_contents()
-                             ->GetPrimaryMainFrame()
-                             ->GetPage()
-                             .anonymous_iframes_nonce());
+  EXPECT_EQ(first_nonce,
+            web_contents()->GetPrimaryMainFrame()->anonymous_iframes_nonce());
 
   // Cross-document same-site navigation creates a new nonce.
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
-  base::UnguessableToken second_nonce = web_contents()
-                                            ->GetPrimaryMainFrame()
-                                            ->GetPage()
-                                            .anonymous_iframes_nonce();
+  base::UnguessableToken second_nonce =
+      web_contents()->GetPrimaryMainFrame()->anonymous_iframes_nonce();
   EXPECT_TRUE(second_nonce);
   EXPECT_NE(first_nonce, second_nonce);
 
   // Cross-document cross-site navigation creates a new nonce.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  EXPECT_NE(first_nonce, web_contents()
-                             ->GetPrimaryMainFrame()
-                             ->GetPage()
-                             .anonymous_iframes_nonce());
-  EXPECT_NE(second_nonce, web_contents()
-                              ->GetPrimaryMainFrame()
-                              ->GetPage()
-                              .anonymous_iframes_nonce());
+  EXPECT_NE(first_nonce,
+            web_contents()->GetPrimaryMainFrame()->anonymous_iframes_nonce());
+  EXPECT_NE(second_nonce,
+            web_contents()->GetPrimaryMainFrame()->anonymous_iframes_nonce());
 }
 
 class RenderFrameHostImplAnonymousIframeNikBrowserTest
@@ -6556,7 +6545,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeNikBrowserTest,
     EXPECT_EQ(1U, main_rfh->child_count());
     RenderFrameHostImpl* iframe = main_rfh->child_at(0)->current_frame_host();
     EXPECT_EQ(anonymous, iframe->IsAnonymous());
-    EXPECT_EQ(anonymous, EvalJs(iframe, "window.isAnonymouslyFramed"));
+    EXPECT_EQ(anonymous, EvalJs(iframe, "window.anonymouslyFramed"));
 
     ResetNetworkState();
 
@@ -6959,6 +6948,14 @@ class RenderFrameHostImplBrowsingContextStateNameTest
 #endif  // BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
                        MAYBE_BlockNameUpdateForBackForwardCache) {
+  const bool disable_frame_name_update = base::FeatureList::IsEnabled(
+      features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost);
+
+  // TODO(1326943): This configuration is flaky.
+  if (!disable_frame_name_update) {
+    GTEST_SKIP();
+  }
+
   // Create the RenderFrameHost and store it in the BackForwardCache.
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -6992,8 +6989,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
                                 ->current_replication_state()
                                 .unique_name;
 
-  if (base::FeatureList::IsEnabled(
-          features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost)) {
+  if (disable_frame_name_update) {
     // Verify that the frame name and unique name haven't been changed, even
     // though a name change was triggered by the Javascript.
     EXPECT_EQ(frame_name, "page_name");
@@ -7019,6 +7015,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
 #endif  // BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
                        MAYBE_BlockNameUpdateForPendingDelete) {
+  const bool disable_frame_name_update = base::FeatureList::IsEnabled(
+      features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost);
+
+  // TODO(1326944): This configuration is flaky.
+  if (!disable_frame_name_update) {
+    GTEST_SKIP();
+  }
+
   // Disable BackForwardCache so that a pending delete state can be forced.
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
       content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
@@ -7057,8 +7061,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
                                 ->current_replication_state()
                                 .unique_name;
 
-  if (base::FeatureList::IsEnabled(
-          features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost)) {
+  if (disable_frame_name_update) {
     // Verify that the frame name and unique name haven't been changed, even
     // though a name change was triggered by the Javascript.
     EXPECT_EQ(frame_name, "page_name");

@@ -23,6 +23,14 @@ import("//printing/buildflags/buildflags.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+
+  use_socket_broker = is_android
+
+  flags = [ "USE_SOCKET_BROKER=$use_socket_broker" ]
+}
+
 source_set("browser") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
@@ -50,6 +58,7 @@ source_set("browser") {
   ldflags = []
 
   deps = [
+    ":buildflags",
     "//base",
     "//base:base_static",
     "//base:clang_profiling_buildflags",
@@ -109,6 +118,7 @@ source_set("browser") {
     "//components/web_package",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
+    "//content/browser/aggregation_service/proto:aggregatable_report_proto",
     "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/browser/attribution_reporting:mojo_bindings",
     "//content/browser/background_fetch:background_fetch_proto",
@@ -368,6 +378,8 @@ source_set("browser") {
     "aggregation_service/aggregatable_report.h",
     "aggregation_service/aggregatable_report_assembler.cc",
     "aggregation_service/aggregatable_report_assembler.h",
+    "aggregation_service/aggregatable_report_scheduler.cc",
+    "aggregation_service/aggregatable_report_scheduler.h",
     "aggregation_service/aggregatable_report_sender.cc",
     "aggregation_service/aggregatable_report_sender.h",
     "aggregation_service/aggregation_service.cc",
@@ -388,6 +400,8 @@ source_set("browser") {
     "aggregation_service/public_key.h",
     "aggregation_service/public_key_parsing_utils.cc",
     "aggregation_service/public_key_parsing_utils.h",
+    "aggregation_service/report_scheduler_timer.cc",
+    "aggregation_service/report_scheduler_timer.h",
     "attribution_reporting/aggregatable_attribution_utils.cc",
     "attribution_reporting/aggregatable_attribution_utils.h",
     "attribution_reporting/aggregatable_histogram_contribution.cc",
@@ -432,10 +446,9 @@ source_set("browser") {
     "attribution_reporting/attribution_report.h",
     "attribution_reporting/attribution_report_network_sender.cc",
     "attribution_reporting/attribution_report_network_sender.h",
-    "attribution_reporting/attribution_report_scheduler.cc",
-    "attribution_reporting/attribution_report_scheduler.h",
     "attribution_reporting/attribution_report_sender.h",
     "attribution_reporting/attribution_reporting.cc",
+    "attribution_reporting/attribution_reporting_constants.h",
     "attribution_reporting/attribution_source_type.cc",
     "attribution_reporting/attribution_source_type.h",
     "attribution_reporting/attribution_storage.cc",
@@ -629,6 +642,8 @@ source_set("browser") {
     "browsing_topics/browsing_topics_site_data_manager_impl.h",
     "browsing_topics/browsing_topics_site_data_storage.cc",
     "browsing_topics/browsing_topics_site_data_storage.h",
+    "buckets/bucket_context.cc",
+    "buckets/bucket_context.h",
     "buckets/bucket_host.cc",
     "buckets/bucket_host.h",
     "buckets/bucket_manager.cc",
@@ -690,25 +705,14 @@ source_set("browser") {
     "code_cache/generated_code_cache.h",
     "code_cache/generated_code_cache_context.cc",
     "code_cache/generated_code_cache_context.h",
-    "code_cache/simple_lru_cache_index.cc",
-    "code_cache/simple_lru_cache_index.h",
+    "code_cache/simple_lru_cache.cc",
+    "code_cache/simple_lru_cache.h",
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
-    "compute_pressure/compute_pressure_host.cc",
-    "compute_pressure/compute_pressure_host.h",
-    "compute_pressure/compute_pressure_manager.cc",
-    "compute_pressure/compute_pressure_manager.h",
-    "compute_pressure/compute_pressure_quantizer.cc",
-    "compute_pressure/compute_pressure_quantizer.h",
-    "compute_pressure/compute_pressure_sample.h",
-    "compute_pressure/compute_pressure_sampler.cc",
-    "compute_pressure/compute_pressure_sampler.h",
-    "compute_pressure/cpu_core_speed_info.cc",
-    "compute_pressure/cpu_core_speed_info.h",
-    "compute_pressure/cpu_probe.cc",
-    "compute_pressure/cpu_probe.h",
-    "compute_pressure/cpuid_base_frequency_parser.cc",
-    "compute_pressure/cpuid_base_frequency_parser.h",
+    "compute_pressure/pressure_quantizer.cc",
+    "compute_pressure/pressure_quantizer.h",
+    "compute_pressure/pressure_service_impl.cc",
+    "compute_pressure/pressure_service_impl.h",
     "contacts/contacts_manager_impl.cc",
     "contacts/contacts_manager_impl.h",
     "contacts/contacts_provider.h",
@@ -841,6 +845,8 @@ source_set("browser") {
     "devtools/shared_worker_devtools_agent_host.h",
     "devtools/shared_worker_devtools_manager.cc",
     "devtools/shared_worker_devtools_manager.h",
+    "devtools/web_contents_devtools_agent_host.cc",
+    "devtools/web_contents_devtools_agent_host.h",
     "devtools/worker_devtools_agent_host.cc",
     "devtools/worker_devtools_agent_host.h",
     "devtools/worker_devtools_manager.cc",
@@ -966,6 +972,8 @@ source_set("browser") {
     "gpu/gpu_data_manager_impl.h",
     "gpu/gpu_data_manager_impl_private.cc",
     "gpu/gpu_data_manager_impl_private.h",
+    "gpu/gpu_disk_cache_factory.cc",
+    "gpu/gpu_disk_cache_factory.h",
     "gpu/gpu_feature_checker_impl.cc",
     "gpu/gpu_feature_checker_impl.h",
     "gpu/gpu_internals_ui.cc",
@@ -979,8 +987,6 @@ source_set("browser") {
     "gpu/gpu_process_host_receiver_bindings.cc",
     "gpu/peak_gpu_memory_tracker_impl.cc",
     "gpu/peak_gpu_memory_tracker_impl.h",
-    "gpu/shader_cache_factory.cc",
-    "gpu/shader_cache_factory.h",
     "handwriting/handwriting_recognition_service_factory.cc",
     "handwriting/handwriting_recognition_service_factory.h",
     "handwriting/handwriting_recognition_service_impl.cc",
@@ -1102,6 +1108,8 @@ source_set("browser") {
     "interest_group/debuggable_auction_worklet.h",
     "interest_group/debuggable_auction_worklet_tracker.cc",
     "interest_group/debuggable_auction_worklet_tracker.h",
+    "interest_group/interest_group_auction.cc",
+    "interest_group/interest_group_auction.h",
     "interest_group/interest_group_manager_impl.cc",
     "interest_group/interest_group_manager_impl.h",
     "interest_group/interest_group_permissions_cache.cc",
@@ -1110,6 +1118,8 @@ source_set("browser") {
     "interest_group/interest_group_permissions_checker.h",
     "interest_group/interest_group_storage.cc",
     "interest_group/interest_group_storage.h",
+    "interest_group/interest_group_update.cc",
+    "interest_group/interest_group_update.h",
     "interest_group/interest_group_update_manager.cc",
     "interest_group/interest_group_update_manager.h",
     "interest_group/storage_interest_group.cc",
@@ -1330,6 +1340,7 @@ source_set("browser") {
     "notifications/platform_notification_context_impl.h",
     "notifications/platform_notification_service_proxy.cc",
     "notifications/platform_notification_service_proxy.h",
+    "origin_agent_cluster_isolation_state.cc",
     "origin_agent_cluster_isolation_state.h",
     "payments/installed_payment_apps_finder_impl.cc",
     "payments/installed_payment_apps_finder_impl.h",
@@ -1382,6 +1393,43 @@ source_set("browser") {
     "portal/portal.h",
     "portal/portal_navigation_throttle.cc",
     "portal/portal_navigation_throttle.h",
+    "preloading/prefetch/prefetch_canary_checker.cc",
+    "preloading/prefetch/prefetch_canary_checker.h",
+    "preloading/prefetch/prefetch_container.cc",
+    "preloading/prefetch/prefetch_container.h",
+    "preloading/prefetch/prefetch_cookie_listener.cc",
+    "preloading/prefetch/prefetch_cookie_listener.h",
+    "preloading/prefetch/prefetch_dns_prober.cc",
+    "preloading/prefetch/prefetch_dns_prober.h",
+    "preloading/prefetch/prefetch_document_manager.cc",
+    "preloading/prefetch/prefetch_document_manager.h",
+    "preloading/prefetch/prefetch_features.cc",
+    "preloading/prefetch/prefetch_features.h",
+    "preloading/prefetch/prefetch_from_string_url_loader.cc",
+    "preloading/prefetch/prefetch_from_string_url_loader.h",
+    "preloading/prefetch/prefetch_network_context.cc",
+    "preloading/prefetch/prefetch_network_context.h",
+    "preloading/prefetch/prefetch_network_context_client.cc",
+    "preloading/prefetch/prefetch_network_context_client.h",
+    "preloading/prefetch/prefetch_origin_prober.cc",
+    "preloading/prefetch/prefetch_origin_prober.h",
+    "preloading/prefetch/prefetch_params.cc",
+    "preloading/prefetch/prefetch_params.h",
+    "preloading/prefetch/prefetch_probe_result.cc",
+    "preloading/prefetch/prefetch_probe_result.h",
+    "preloading/prefetch/prefetch_proxy_configurator.cc",
+    "preloading/prefetch/prefetch_proxy_configurator.h",
+    "preloading/prefetch/prefetch_service.cc",
+    "preloading/prefetch/prefetch_service.h",
+    "preloading/prefetch/prefetch_status.h",
+    "preloading/prefetch/prefetch_type.cc",
+    "preloading/prefetch/prefetch_type.h",
+    "preloading/prefetch/prefetch_url_loader_interceptor.cc",
+    "preloading/prefetch/prefetch_url_loader_interceptor.h",
+    "preloading/prefetch/prefetched_mainframe_response_container.cc",
+    "preloading/prefetch/prefetched_mainframe_response_container.h",
+    "preloading/preloading.cc",
+    "preloading/preloading.h",
     "preloading/preloading_attempt_impl.cc",
     "preloading/preloading_attempt_impl.h",
     "preloading/preloading_data_impl.cc",
@@ -1410,6 +1458,8 @@ source_set("browser") {
     "preloading/prerender/prerender_navigation_utils.h",
     "preloading/prerender/prerender_subframe_navigation_throttle.cc",
     "preloading/prerender/prerender_subframe_navigation_throttle.h",
+    "preloading/speculation_rules/speculation_host_impl.cc",
+    "preloading/speculation_rules/speculation_host_impl.h",
     "presentation/presentation_service_impl.cc",
     "presentation/presentation_service_impl.h",
     "private_aggregation/private_aggregation_budget_key.cc",
@@ -1418,8 +1468,14 @@ source_set("browser") {
     "private_aggregation/private_aggregation_budget_storage.h",
     "private_aggregation/private_aggregation_budgeter.cc",
     "private_aggregation/private_aggregation_budgeter.h",
+    "private_aggregation/private_aggregation_features.cc",
+    "private_aggregation/private_aggregation_features.h",
     "private_aggregation/private_aggregation_host.cc",
     "private_aggregation/private_aggregation_host.h",
+    "private_aggregation/private_aggregation_manager.cc",
+    "private_aggregation/private_aggregation_manager.h",
+    "private_aggregation/private_aggregation_manager_impl.cc",
+    "private_aggregation/private_aggregation_manager_impl.h",
     "process_internals/process_internals_handler_impl.cc",
     "process_internals/process_internals_handler_impl.h",
     "process_internals/process_internals_ui.cc",
@@ -1698,7 +1754,6 @@ source_set("browser") {
     "renderer_host/private_network_access_util.h",
     "renderer_host/recently_destroyed_hosts.cc",
     "renderer_host/recently_destroyed_hosts.h",
-    "renderer_host/render_frame_host.cc",
     "renderer_host/render_frame_host_csp_context.cc",
     "renderer_host/render_frame_host_csp_context.h",
     "renderer_host/render_frame_host_delegate.cc",
@@ -1749,6 +1804,8 @@ source_set("browser") {
     "renderer_host/render_widget_host_view_child_frame.h",
     "renderer_host/render_widget_targeter.cc",
     "renderer_host/render_widget_targeter.h",
+    "renderer_host/renderer_cancellation_throttle.cc",
+    "renderer_host/renderer_cancellation_throttle.h",
     "renderer_host/renderer_sandboxed_process_launcher_delegate.cc",
     "renderer_host/renderer_sandboxed_process_launcher_delegate.h",
     "renderer_host/should_swap_browsing_instance.h",
@@ -1929,35 +1986,6 @@ source_set("browser") {
     "sms/user_consent_handler.h",
     "sms/webotp_service.cc",
     "sms/webotp_service.h",
-    "speculation_rules/prefetch/prefetch_container.cc",
-    "speculation_rules/prefetch/prefetch_container.h",
-    "speculation_rules/prefetch/prefetch_cookie_listener.cc",
-    "speculation_rules/prefetch/prefetch_cookie_listener.h",
-    "speculation_rules/prefetch/prefetch_document_manager.cc",
-    "speculation_rules/prefetch/prefetch_document_manager.h",
-    "speculation_rules/prefetch/prefetch_features.cc",
-    "speculation_rules/prefetch/prefetch_features.h",
-    "speculation_rules/prefetch/prefetch_from_string_url_loader.cc",
-    "speculation_rules/prefetch/prefetch_from_string_url_loader.h",
-    "speculation_rules/prefetch/prefetch_network_context.cc",
-    "speculation_rules/prefetch/prefetch_network_context.h",
-    "speculation_rules/prefetch/prefetch_network_context_client.cc",
-    "speculation_rules/prefetch/prefetch_network_context_client.h",
-    "speculation_rules/prefetch/prefetch_params.cc",
-    "speculation_rules/prefetch/prefetch_params.h",
-    "speculation_rules/prefetch/prefetch_proxy_configurator.cc",
-    "speculation_rules/prefetch/prefetch_proxy_configurator.h",
-    "speculation_rules/prefetch/prefetch_service.cc",
-    "speculation_rules/prefetch/prefetch_service.h",
-    "speculation_rules/prefetch/prefetch_status.h",
-    "speculation_rules/prefetch/prefetch_type.cc",
-    "speculation_rules/prefetch/prefetch_type.h",
-    "speculation_rules/prefetch/prefetch_url_loader_interceptor.cc",
-    "speculation_rules/prefetch/prefetch_url_loader_interceptor.h",
-    "speculation_rules/prefetch/prefetched_mainframe_response_container.cc",
-    "speculation_rules/prefetch/prefetched_mainframe_response_container.h",
-    "speculation_rules/speculation_host_impl.cc",
-    "speculation_rules/speculation_host_impl.h",
     "speech/speech_recognition_dispatcher_host.cc",
     "speech/speech_recognition_dispatcher_host.h",
     "speech/speech_recognition_manager_impl.cc",
@@ -2403,12 +2431,6 @@ source_set("browser") {
   if (is_linux || is_chromeos) {
     sources += [
       "child_process_launcher_helper_linux.cc",
-      "compute_pressure/cpu_probe_linux.cc",
-      "compute_pressure/cpu_probe_linux.h",
-      "compute_pressure/procfs_stat_cpu_parser.cc",
-      "compute_pressure/procfs_stat_cpu_parser.h",
-      "compute_pressure/sysfs_cpufreq_core_parser.cc",
-      "compute_pressure/sysfs_cpufreq_core_parser.h",
       "font_access/font_enumeration_data_source_linux.cc",
       "font_access/font_enumeration_data_source_linux.h",
       "font_service.cc",
@@ -2457,7 +2479,10 @@ source_set("browser") {
 
   if (is_linux) {
     sources += [ "speech/tts_linux.cc" ]
-    deps += [ "//third_party/speech-dispatcher" ]
+    deps += [
+      "//third_party/speech-dispatcher",
+      "//ui/linux:linux_ui",
+    ]
   }
 
   # ChromeOS also defines linux but their memory-monitors conflict.
@@ -2467,6 +2492,8 @@ source_set("browser") {
       "tracing/cros_tracing_agent.h",
     ]
     deps += [
+      "//chromeos/ash/components/dbus/debug_daemon",
+      "//chromeos/dbus",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//services/data_decoder/public/cpp",
       "//services/data_decoder/public/mojom",
@@ -2603,7 +2630,6 @@ source_set("browser") {
         "media/capture/aura_window_video_capture_device.h",
         "media/capture/mouse_cursor_overlay_controller_aura.cc",
       ]
-      deps += [ "//ui/aura/cursor" ]
     }
 
     if (is_mac) {
@@ -2689,14 +2715,21 @@ source_set("browser") {
   if (enable_plugins) {
     sources += [
       "../public/browser/plugin_service.h",
-      "media/session/pepper_playback_observer.cc",
-      "media/session/pepper_playback_observer.h",
-      "media/session/pepper_player_delegate.cc",
-      "media/session/pepper_player_delegate.h",
       "plugin_list.cc",
       "plugin_list.h",
       "plugin_service_impl.cc",
       "plugin_service_impl.h",
+      "renderer_host/plugin_registry_impl.cc",
+      "renderer_host/plugin_registry_impl.h",
+    ]
+  }
+
+  if (enable_ppapi) {
+    sources += [
+      "media/session/pepper_playback_observer.cc",
+      "media/session/pepper_playback_observer.h",
+      "media/session/pepper_player_delegate.cc",
+      "media/session/pepper_player_delegate.h",
       "ppapi_plugin_process_host.cc",
       "ppapi_plugin_process_host.h",
       "ppapi_plugin_process_host_receiver_bindings.cc",
@@ -2746,8 +2779,6 @@ source_set("browser") {
       "renderer_host/pepper/pepper_udp_socket_message_filter.h",
       "renderer_host/pepper/quota_reservation.cc",
       "renderer_host/pepper/quota_reservation.h",
-      "renderer_host/plugin_registry_impl.cc",
-      "renderer_host/plugin_registry_impl.h",
     ]
     deps += [
       "//ppapi/host",
@@ -2764,10 +2795,6 @@ source_set("browser") {
         "renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.cc",
         "renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.h",
       ]
-    }
-
-    if (is_linux || is_chromeos) {
-      deps += [ "//components/services/font:ppapi_fontconfig_matching" ]
     }
   }
 
@@ -2911,8 +2938,6 @@ source_set("browser") {
       "android/web_contents_observer_proxy.h",
       "contacts/contacts_provider_android.cc",
       "contacts/contacts_provider_android.h",
-      "devtools/devtools_frame_trace_recorder.cc",
-      "devtools/devtools_frame_trace_recorder.h",
       "font_unique_name_lookup/font_unique_name_lookup.cc",
       "font_unique_name_lookup/font_unique_name_lookup.h",
       "font_unique_name_lookup/font_unique_name_lookup_service.cc",
@@ -3090,10 +3115,7 @@ source_set("browser") {
       "//ash/components/audio",
       "//ash/constants",
       "//chromeos/ash/components/assistant:buildflags",
-      "//chromeos/dbus",
-      "//chromeos/dbus/power",
-      "//chromeos/dbus/power:power_manager_proto",
-      "//chromeos/network",
+      "//chromeos/ash/components/network",
       "//chromeos/system",
       "//components/session_manager/core",
     ]

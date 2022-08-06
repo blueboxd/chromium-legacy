@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ProjectorBrowserProxyImpl} from '../communication/projector_browser_proxy.js';
 
@@ -11,14 +11,14 @@ import {AppTrustedCommFactory, UntrustedAppClient} from './trusted/trusted_app_c
 
 /**
  * Gets the query string from the URL.
- * For example, if the URL is chrome://projector/annotator/abc, then query
- * is "abc".
+ * For example, if the URL is chrome://projector/annotator/abc?resourceKey=xyz,
+ * then query is "abc?resourceKey=xyz".
  */
 function getQuery() {
-  if (!document.location.pathname) {
+  if (!document.location.href) {
     return '';
   }
-  const paths = document.location.pathname.split('/');
+  const paths = document.location.href.split('/');
   if (paths.length < 1) {
     return '';
   }
@@ -70,12 +70,5 @@ Polymer({
       }
       client.onScreencastsStateChange(pendingScreencasts);
     });
-
-    this.addWebUIListener(
-        'onSodaInstalled',
-        () => {
-            // TODO(b/197164300): Pass this information to google3 deployed
-            // content in iframe.
-        });
   },
 });

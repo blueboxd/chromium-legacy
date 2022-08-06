@@ -39,6 +39,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -102,6 +103,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image_to_video_frame_copier.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_video_frame_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -121,17 +123,6 @@ namespace {
 const base::Feature kOneCopyCanvasCapture {
   "OneCopyCanvasCapture",
 #if BUILDFLAG(IS_MAC)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-const base::Feature kTwoCopyCanvasCapture {
-  "TwoCopyCanvasCapture",
-// For ChromeOS, currently just enable this feature on X86 CPU, see b/203695564.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
-    (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -423,6 +414,10 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
         nullptr,
+        GetPage()
+            ->GetPageScheduler()
+            ->GetAgentGroupScheduler()
+            .CompositorTaskRunner(),
         surface_layer_bridge_->GetFrameSinkId().client_id(),
         surface_layer_bridge_->GetFrameSinkId().sink_id(),
         CanvasResourceDispatcher::kInvalidPlaceholderCanvasId, size_);
@@ -684,8 +679,7 @@ void HTMLCanvasElement::Reset() {
     if (layout_object->IsCanvas()) {
       if (old_size != Size())
         To<LayoutHTMLCanvas>(layout_object)->CanvasSizeChanged();
-      if (had_resource_provider)
-        layout_object->SetShouldDoFullPaintInvalidation();
+      layout_object->SetShouldDoFullPaintInvalidation();
     }
   }
 }
@@ -724,8 +718,14 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   scoped_refptr<StaticBitmapImage> source_image;
   if (!copier_) {
     copier_ = std::make_unique<StaticBitmapImageToVideoFrameCopier>(
-        base::FeatureList::IsEnabled(kTwoCopyCanvasCapture));
+        WebGraphicsContext3DVideoFramePool::
+            IsGpuMemoryBufferReadbackFromTextureEnabled());
   }
+
+  const bool context_color_is_opaque =
+      context_ ? context_->CanvasRenderingContextSkColorInfo().isOpaque()
+               : false;
+
   for (CanvasDrawListener* listener : listeners_) {
     if (!listener->NeedsNewFrame())
       continue;
@@ -739,19 +739,24 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
     // First attempt to copy directly from the rendering context to a video
     // frame. Not all rendering contexts need to support this (for contexts
     // where GetSourceImageForCanvasInternal is zero-copy, this is superfluous).
-    if (context_ && can_discard_alpha &&
+    if (context_ && (context_color_is_opaque || can_discard_alpha) &&
         base::FeatureList::IsEnabled(kOneCopyCanvasCapture)) {
       if (context_->CopyRenderingResultsToVideoFrame(
               copier_->GetAcceleratedVideoFramePool(
                   SharedGpuContext::ContextProviderWrapper()),
               kBackBuffer, gfx::ColorSpace::CreateREC709(),
               std::move(split_callback.first))) {
+        TRACE_EVENT1("blink", "HTMLCanvasElement::NotifyListenersCanvasChanged",
+                     "one_copy_canvas_capture", true);
         continue;
       }
     }
 
     // If that fails, then create a StaticBitmapImage for the contents of
     // the RenderingContext.
+    TRACE_EVENT1("blink", "HTMLCanvasElement::NotifyListenersCanvasChanged",
+                 "one_copy_canvas_capture", false);
+
     if (!source_image) {
       SourceImageStatus status;
       source_image = GetSourceImageForCanvasInternal(&status);

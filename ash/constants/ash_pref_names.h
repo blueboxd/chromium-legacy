@@ -57,6 +57,16 @@ extern const char kSamlPasswordChangeUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSyncOobeCompleted[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSystemWebAppLastUpdateVersion[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSystemWebAppLastInstalledLocale[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSystemWebAppInstallFailureCount[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSystemWebAppLastAttemptedVersion[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSystemWebAppLastAttemptedLocale[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLoginDisplayPasswordButtonEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSuggestedContentEnabled[];
@@ -65,9 +75,13 @@ extern const char kLauncherContinueSectionHidden[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLauncherFeedbackOnContinueSectionSent[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLauncherLastContinueRequestTime[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLauncherResultEverLaunched[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLauncherSearchNormalizerParameters[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLauncherUseLongContinueDelay[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDeviceSystemWideTracingEnabled[];
 
@@ -468,6 +482,11 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowPostRebootNotification[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPersonalizationKeyboardBacklightColor[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAutozoomState[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAutozoomNudges[];
+
 }  // namespace prefs
 }  // namespace ash
 

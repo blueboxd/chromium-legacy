@@ -5,16 +5,41 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMMANDS_INSTALL_ISOLATED_APP_COMMAND_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMMANDS_INSTALL_ISOLATED_APP_COMMAND_H_
 
+#include <string>
+
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
+
+class GURL;
+struct WebAppInstallInfo;
 
 namespace web_app {
+class WebAppDataRetriever;
+class WebAppInstallFinalizer;
+class WebAppUrlLoader;
+
+enum class WebAppUrlLoaderResult;
+
+enum class InstallIsolatedAppCommandResult {
+  kOk,
+  kUnknownError,
+};
 
 class InstallIsolatedAppCommand : public WebAppCommand {
  public:
-  explicit InstallIsolatedAppCommand(base::StringPiece application_url);
+  // TODO(kuragin): Consider to create an instance of |GURL| instead of passing
+  // a string and probably introduce factory function in order to handle invalid
+  // urls.
+  explicit InstallIsolatedAppCommand(
+      base::StringPiece application_url,
+      WebAppUrlLoader& url_loader,
+      WebAppInstallFinalizer& install_finalizer,
+      base::OnceCallback<void(InstallIsolatedAppCommandResult)> callback);
   ~InstallIsolatedAppCommand() override;
 
   base::Value ToDebugValue() const override;
@@ -23,8 +48,35 @@ class InstallIsolatedAppCommand : public WebAppCommand {
   void OnSyncSourceRemoved() override;
   void OnShutdown() override;
 
+  void SetDataRetrieverForTesting(
+      std::unique_ptr<WebAppDataRetriever> data_retriever);
+
  private:
-  base::WeakPtr<InstallIsolatedAppCommand> weak_this_;
+  void ReportFailure();
+  void ReportSuccess();
+  void Report(bool success);
+
+  void DownloadIcons();
+
+  void OnLoadUrl(WebAppUrlLoaderResult result);
+  void OnCheckInstallabilityAndRetrieveManifest(
+      blink::mojom::ManifestPtr opt_manifest,
+      const GURL& manifest_url,
+      bool valid_manifest_for_web_app,
+      bool is_installable);
+  void OnGetWebAppInstallInfo(std::unique_ptr<WebAppInstallInfo> install_info);
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  std::string url_;
+
+  WebAppUrlLoader& url_loader_;
+  WebAppInstallFinalizer& install_finalizer_;
+
+  std::unique_ptr<WebAppDataRetriever> data_retriever_;
+
+  base::OnceCallback<void(InstallIsolatedAppCommandResult)> callback_;
+
   base::WeakPtrFactory<InstallIsolatedAppCommand> weak_factory_{this};
 };
 

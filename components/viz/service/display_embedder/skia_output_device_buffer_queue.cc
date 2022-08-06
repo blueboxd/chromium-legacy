@@ -24,8 +24,8 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -59,10 +59,9 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
  public:
   OverlayData() = default;
 
-  OverlayData(
-      std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation,
-      std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
-          scoped_read_access)
+  OverlayData(std::unique_ptr<gpu::OverlayImageRepresentation> representation,
+              std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
+                  scoped_read_access)
       : representation_(std::move(representation)),
         scoped_read_access_(std::move(scoped_read_access)),
         ref_(1) {
@@ -111,7 +110,7 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
 
   bool unique() const { return ref_ == 1; }
   const gpu::Mailbox& mailbox() const { return representation_->mailbox(); }
-  gpu::SharedImageRepresentationOverlay::ScopedReadAccess* scoped_read_access()
+  gpu::OverlayImageRepresentation::ScopedReadAccess* scoped_read_access()
       const {
     return scoped_read_access_.get();
   }
@@ -123,8 +122,8 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     ref_ = 0;
   }
 
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+  std::unique_ptr<gpu::OverlayImageRepresentation> representation_;
+  std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
       scoped_read_access_;
   int ref_ = 0;
 };
@@ -151,6 +150,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
 #if BUILDFLAG(IS_ANDROID)
+  capabilities_.renderer_allocates_images = true;
   if (::features::IncreaseBufferCountForHighFrameRate()) {
     capabilities_.number_of_buffers = 5;
   }
@@ -191,7 +191,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
   // TODO(vasilyt): We should not need this when we stop using
-  // SharedImageBackingGLImage.
+  // GLImageBacking.
   if (context_state_->context_lost()) {
     for (auto& overlay : overlays_) {
       overlay.OnContextLost();
@@ -209,6 +209,7 @@ SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
 }
 
 OutputPresenter::Image* SkiaOutputDeviceBufferQueue::GetNextImage() {
+  DCHECK(!capabilities_.renderer_allocates_images);
   CHECK(!available_images_.empty());
   auto* image = available_images_.front();
   available_images_.pop_front();
@@ -219,6 +220,7 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete(
     OutputPresenter::Image* image,
     gfx::GpuFenceHandle release_fence) {
   if (displayed_image_) {
+    DCHECK(!capabilities_.renderer_allocates_images);
     DCHECK_EQ(displayed_image_->skia_representation()->size(), image_size_);
     DCHECK_EQ(displayed_image_->GetPresentCount() > 1,
               displayed_image_ == image);
@@ -262,6 +264,7 @@ void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
   MaybeScheduleBackgroundImage();
 
   if (plane) {
+    DCHECK(!capabilities_.renderer_allocates_images);
     // If the current_image_ is nullptr, it means there is no change on the
     // primary plane. So we just need to schedule the last submitted image.
     auto* image =
@@ -339,8 +342,11 @@ const gpu::Mailbox SkiaOutputDeviceBufferQueue::GetImageMailboxForColor(
 #endif
 
 SkiaOutputDeviceBufferQueue::OverlayData*
-SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(
-    const gpu::Mailbox& mailbox) {
+SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
+                                                    bool* is_existing) {
+  if (is_existing)
+    *is_existing = false;
+
   if (!mailbox.IsSharedImage())
     return nullptr;
 
@@ -350,6 +356,8 @@ SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(
     // added to keep it alive. This ref will be removed, when the overlay is
     // replaced by a new frame.
     it->Ref();
+    if (is_existing)
+      *is_existing = true;
     return &*it;
   }
 
@@ -425,14 +433,17 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 #endif
 
     OutputPresenter::ScopedOverlayAccess* access = nullptr;
-    auto* overlay_data = GetOrCreateOverlayData(mailbox);
+    bool overlay_has_been_submitted;
+    auto* overlay_data =
+        GetOrCreateOverlayData(mailbox, &overlay_has_been_submitted);
     if (overlay_data) {
       access = overlay_data->scoped_read_access();
       pending_overlay_mailboxes_.emplace_back(mailbox);
     }
 
-    gfx::GpuFenceHandle acquire_fence;
+    std::unique_ptr<gfx::GpuFence> acquire_fence;
     if (context_state_->GrContextIsGL() && access &&
+        !overlay_has_been_submitted &&
         (access->representation()->usage() &
          gpu::SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING) &&
         gl::GLFence::IsGpuFenceSupported()) {
@@ -447,12 +458,11 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 
       // Dup the fence - it must be inserted into each shared image before
       // ScopedReadAccess is created.
-      acquire_fence = current_frame_fence->GetGpuFenceHandle().Clone();
+      acquire_fence = std::make_unique<gfx::GpuFence>(
+          current_frame_fence->GetGpuFenceHandle().Clone());
     }
 
-    presenter_->ScheduleOverlayPlane(
-        overlay, access,
-        std::make_unique<gfx::GpuFence>(std::move(acquire_fence)));
+    presenter_->ScheduleOverlayPlane(overlay, access, std::move(acquire_fence));
   }
 }
 
@@ -606,7 +616,7 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   // MacOS it needs context to be current.
 #if BUILDFLAG(IS_APPLE)
   // TODO(vasilyt): We shouldn't need this after we stop using
-  // SharedImageBackingGLImage as backing.
+  // GLImageBacking as backing.
   if (!context_state_->MakeCurrent(nullptr)) {
     for (auto& overlay : overlays_) {
       overlay.OnContextLost();
@@ -717,6 +727,9 @@ void SkiaOutputDeviceBufferQueue::SetViewportSize(
 }
 
 bool SkiaOutputDeviceBufferQueue::RecreateImages() {
+  if (capabilities_.renderer_allocates_images) {
+    return true;
+  }
   FreeAllSurfaces();
   size_t number_to_allocate =
       capabilities_.supports_dynamic_frame_buffer_allocation
@@ -739,7 +752,7 @@ void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage() {
   if (!needs_background_image_)
     return;
 
-  gpu::SharedImageRepresentationOverlay::ScopedReadAccess* access = nullptr;
+  gpu::OverlayImageRepresentation::ScopedReadAccess* access = nullptr;
   OutputPresenter::OverlayPlaneCandidate candidate;
 #if defined(USE_OZONE)
   candidate.color_space = color_space_;
@@ -767,6 +780,7 @@ void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage() {
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  DCHECK(!capabilities_.renderer_allocates_images);
   primary_plane_waiting_on_paint_ = false;
 
   if (!current_image_) {
@@ -780,11 +794,13 @@ SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
 }
 
 void SkiaOutputDeviceBufferQueue::EndPaint() {
+  DCHECK(!capabilities_.renderer_allocates_images);
   DCHECK(current_image_);
   current_image_->EndWriteSkia();
 }
 
 bool SkiaOutputDeviceBufferQueue::EnsureMinNumberOfBuffers(size_t n) {
+  DCHECK(!capabilities_.renderer_allocates_images);
   DCHECK(capabilities_.supports_dynamic_frame_buffer_allocation);
   DCHECK_GT(n, 0u);
   DCHECK_LE(n, static_cast<size_t>(capabilities_.number_of_buffers));

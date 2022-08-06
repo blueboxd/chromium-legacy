@@ -19,6 +19,7 @@
 #include "content/public/common/content_client.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_switches.h"
+#include "media/cdm/cdm_type.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 
@@ -103,7 +104,7 @@ constexpr auto kServiceIdleTimeout = base::Seconds(5);
 
 // Services are keyed on CDM type, user profile and site URL. Note that site
 // is not normal URL nor origin. See chrome/browser/site_isolation for details.
-using ServiceKey = std::tuple<base::Token, const BrowserContext*, GURL>;
+using ServiceKey = std::tuple<media::CdmType, const BrowserContext*, GURL>;
 
 std::ostream& operator<<(std::ostream& os, const ServiceKey& key) {
   return os << "{" << std::get<0>(key).ToString() << ", " << std::get<1>(key)
@@ -172,7 +173,7 @@ void EraseCdmService(const ServiceKey& key) {
 // Gets an instance of the service for `cdm_type`, `browser_context` and `site`.
 // Instances are started lazily as needed.
 template <typename T>
-T& GetService(const base::Token& cdm_type,
+T& GetService(const media::CdmType& cdm_type,
               BrowserContext* browser_context,
               const GURL& site,
               const std::string& service_name,
@@ -225,12 +226,11 @@ T& GetService(const base::Token& cdm_type,
 
 }  // namespace
 
-media::mojom::CdmService& GetCdmService(const base::Token& cdm_type,
-                                        BrowserContext* browser_context,
+media::mojom::CdmService& GetCdmService(BrowserContext* browser_context,
                                         const GURL& site,
                                         const CdmInfo& cdm_info) {
-  return GetService<media::mojom::CdmService>(cdm_type, browser_context, site,
-                                              cdm_info.name, cdm_info.path);
+  return GetService<media::mojom::CdmService>(
+      cdm_info.type, browser_context, site, cdm_info.name, cdm_info.path);
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -239,7 +239,7 @@ media::mojom::MediaFoundationService& GetMediaFoundationService(
     const GURL& site,
     const base::FilePath& cdm_path) {
   return GetService<media::mojom::MediaFoundationService>(
-      base::Token(), browser_context, site, "Media Foundation Service",
+      media::CdmType(), browser_context, site, "Media Foundation Service",
       cdm_path);
 }
 #endif  // BUILDFLAG(IS_WIN)

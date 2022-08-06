@@ -76,13 +76,14 @@ class PasswordStoreAndroidBackend
    public:
     using ErrorReply = base::OnceClosure;
 
-    JobReturnHandler();
     JobReturnHandler(LoginsOrErrorReply callback,
-                     PasswordStoreBackendMetricsRecorder metrics_recorder);
+                     PasswordStoreBackendMetricsRecorder metrics_recorder,
+                     bool is_unenrolled_from_upm);
     JobReturnHandler(PasswordChangesOrErrorReply callback,
-                     PasswordStoreBackendMetricsRecorder metrics_recorder);
+                     PasswordStoreBackendMetricsRecorder metrics_recorder,
+                     bool is_unenrolled_from_upm);
     JobReturnHandler(JobReturnHandler&&);
-    JobReturnHandler& operator=(JobReturnHandler&&);
+    JobReturnHandler& operator=(JobReturnHandler&&) = delete;
     ~JobReturnHandler();
 
     template <typename T>
@@ -102,6 +103,7 @@ class PasswordStoreAndroidBackend
     absl::variant<LoginsOrErrorReply, PasswordChangesOrErrorReply>
         success_callback_;
     PasswordStoreBackendMetricsRecorder metrics_recorder_;
+    const bool is_unenrolled_from_upm_;
   };
 
   using JobId = PasswordStoreAndroidBackendBridge::JobId;
@@ -156,16 +158,10 @@ class PasswordStoreAndroidBackend
                        PasswordChanges changes) override;
   void OnError(PasswordStoreAndroidBackendBridge::JobId job_id,
                AndroidBackendError error) override;
-  void OnSubscribed(PasswordStoreAndroidBackendBridge::JobId job_id) override;
-  void OnSubscribeFailed(PasswordStoreAndroidBackendBridge::JobId job_id,
-                         AndroidBackendError error) override;
 
   template <typename Callback>
   void QueueNewJob(JobId job_id, Callback callback, MetricInfix metric_infix);
   absl::optional<JobReturnHandler> GetAndEraseJob(JobId job_id);
-
-  // Initial, early ping to GMS. Calls completion with true iff successful.
-  void Subscribe(base::OnceCallback<void(bool)> completion);
 
   // Gets logins matching |form|.
   void GetLoginsAsync(const PasswordFormDigest& form,

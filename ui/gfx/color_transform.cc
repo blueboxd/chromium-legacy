@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkM44.h"
-#include "third_party/skia/include/third_party/skcms/skcms.h"
+#include "third_party/skia/modules/skcms/skcms.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
@@ -142,6 +142,21 @@ float ToLinear(ColorSpace::TransferID id, float v) {
   }
   NOTREACHED();
   return 0;
+}
+
+// Return the maximum luminance to be used for tone mapping a PQ signal, with
+// the indicated metadata.
+float GetToneMapPQMaxLuminanceNits(
+    const absl::optional<gfx::HDRMetadata>& hdr_metadata) {
+  if (hdr_metadata) {
+    if (hdr_metadata->max_content_light_level > 0)
+      return hdr_metadata->max_content_light_level;
+    if (hdr_metadata->color_volume_metadata.luminance_max > 0.f) {
+      return hdr_metadata->color_volume_metadata.luminance_max;
+    }
+  }
+  // The maximum value that ColorTransformPQToLinear can produce.
+  return 10000.f;
 }
 
 }  // namespace
@@ -1119,9 +1134,9 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
         break;
       }
       case ColorSpace::TransferID::PQ: {
-        // The maximum value that ColorTransformPQToLinear can produce.
         const float src_max_luminance_relative =
-            10000 / options.sdr_max_luminance_nits;
+            GetToneMapPQMaxLuminanceNits(options.src_hdr_metadata) /
+            options.sdr_max_luminance_nits;
         if (src_max_luminance_relative > options.dst_max_luminance_relative) {
           const ColorSpace rec2020_linear(
               ColorSpace::PrimaryID::BT2020, ColorSpace::TransferID::LINEAR,

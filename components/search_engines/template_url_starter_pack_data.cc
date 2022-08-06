@@ -13,7 +13,13 @@
 
 namespace TemplateURLStarterPackData {
 
-const int kCurrentDataVersion = 2;
+// Update this whenever a change is made to any starter pack data.
+const int kCurrentDataVersion = 5;
+
+// Only update this if there's an incompatible change that requires force
+// updating the user's starter pack data. This will overwrite any of the
+// user's changes to the starter pack entries.
+const int kFirstCompatibleDataVersion = 5;
 
 const StarterPackEngine bookmarks = {
     .name_message_id = IDS_SEARCH_ENGINES_STARTER_PACK_BOOKMARKS_NAME,
@@ -39,11 +45,11 @@ const StarterPackEngine tabs = {
     .name_message_id = IDS_SEARCH_ENGINES_STARTER_PACK_TABS_NAME,
     .keyword_message_id = IDS_SEARCH_ENGINES_STARTER_PACK_TABS_KEYWORD,
     .favicon_url = nullptr,
-    // This search_url and destination_url are placeholder URLs to make
-    // templateURL happy.  chrome://tabs does not currently exist and the tab
-    // search engine will only provide suggestions from the OpenTabProvider.
+    // This search_url is a placeholder URL to make templateURL happy.
+    // chrome://tabs does not currently exist and the tab search engine will
+    // only provide suggestions from the OpenTabProvider.
     .search_url = "chrome://tabs/?q={searchTerms}",
-    .destination_url = "chrome://tabs",
+    .destination_url = "http://support.google.com/chrome/?p=tab_search",
     .id = StarterPackID::kTabs,
     .type = SEARCH_ENGINE_STARTER_PACK_TABS,
 };
@@ -56,6 +62,10 @@ const StarterPackEngine* engines[] = {
 
 int GetDataVersion() {
   return kCurrentDataVersion;
+}
+
+int GetFirstCompatibleDataVersion() {
+  return kFirstCompatibleDataVersion;
 }
 
 std::vector<std::unique_ptr<TemplateURLData>> GetStarterPackEngines() {

@@ -13,6 +13,7 @@
 #include "ash/public/cpp/external_arc/message_center/arc_notification_delegate.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_item_impl.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
+#include "ash/public/cpp/external_arc/message_center/metrics_utils.h"
 #include "ash/public/cpp/message_center/arc_notification_constants.h"
 #include "ash/public/cpp/message_center/arc_notification_manager_delegate.h"
 #include "ash/system/message_center/message_view_factory.h"
@@ -43,6 +44,7 @@ namespace {
 
 constexpr char kPlayStorePackageName[] = "com.android.vending";
 constexpr char kArcGmsPackageName[] = "org.chromium.arc.gms";
+constexpr char kArcHostVpnPackageName[] = "org.chromium.arc.hostvpn";
 
 constexpr char kManagedProvisioningPackageName[] =
     "com.android.managedprovisioning";
@@ -219,6 +221,9 @@ void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
     auto result = items_.insert(std::make_pair(key, std::move(item)));
     DCHECK(result.second);
     it = result.first;
+
+    metrics_utils::LogArcNotificationStyle(data->style);
+    metrics_utils::LogArcNotificationActionEnabled(data->is_action_enabled);
   }
 
   std::string app_id =
@@ -550,9 +555,11 @@ bool ArcNotificationManager::ShouldIgnoreNotification(
 
   // (b/186419166) Ignore notifications from managed provisioning and ARC GMS
   // Proxy.
+  // (b/147256449) Ignore notifications from facade VPN app
   if (data->package_name.has_value() &&
       (*data->package_name == kManagedProvisioningPackageName ||
-       *data->package_name == kArcGmsPackageName)) {
+       *data->package_name == kArcGmsPackageName ||
+       *data->package_name == kArcHostVpnPackageName)) {
     return true;
   }
 

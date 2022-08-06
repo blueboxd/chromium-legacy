@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -318,6 +319,16 @@ void TakesACallback(const RepeatingClosure& callback) {
 int Noexcept() noexcept {
   return 42;
 }
+
+class NoexceptFunctor {
+ public:
+  int operator()() noexcept { return 42; }
+};
+
+class ConstNoexceptFunctor {
+ public:
+  int operator()() noexcept { return 42; }
+};
 
 class BindTest : public ::testing::Test {
  public:
@@ -1191,6 +1202,25 @@ TYPED_TEST(BindVariantsTest, RawPtrReceiver) {
   EXPECT_EQ(1, std::move(rawptr_cb).Run());
 }
 
+TYPED_TEST(BindVariantsTest, UnretainedRawRefReceiver) {
+  StrictMock<HasRef> has_ref;
+  EXPECT_CALL(has_ref, AddRef()).Times(0);
+  EXPECT_CALL(has_ref, Release()).Times(0);
+  EXPECT_CALL(has_ref, HasAtLeastOneRef()).WillRepeatedly(Return(true));
+
+  raw_ref<HasRef> raw_has_ref(has_ref);
+  auto has_ref_cb =
+      TypeParam::Bind(&HasRef::HasAtLeastOneRef, Unretained(raw_has_ref));
+  EXPECT_EQ(1, std::move(has_ref_cb).Run());
+
+  StrictMock<NoRef> no_ref;
+  EXPECT_CALL(has_ref, IntMethod0()).WillRepeatedly(Return(1));
+
+  raw_ref<NoRef> raw_no_ref(has_ref);
+  auto no_ref_cb = TypeParam::Bind(&NoRef::IntMethod0, Unretained(raw_no_ref));
+  EXPECT_EQ(1, std::move(no_ref_cb).Run());
+}
+
 // Tests for Passed() wrapper support:
 //   - Passed() can be constructed from a pointer to scoper.
 //   - Passed() can be constructed from a scoper rvalue.
@@ -1734,6 +1764,8 @@ TEST_F(BindTest, BindNoexcept) {
   EXPECT_EQ(
       42, base::BindOnce(&BindTest::ConstNoexceptMethod, base::Unretained(this))
               .Run());
+  EXPECT_EQ(42, base::BindOnce(NoexceptFunctor()).Run());
+  EXPECT_EQ(42, base::BindOnce(ConstNoexceptFunctor()).Run());
 }
 
 int PingPong(int* i_ptr) {

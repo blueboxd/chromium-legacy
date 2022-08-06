@@ -96,7 +96,8 @@ static inline uintptr_t ComputeStackFrameSize(const T *low, const T *high) {
 template <bool STRICT_UNWINDING, bool WITH_CONTEXT>
 ABSL_ATTRIBUTE_NO_SANITIZE_ADDRESS  // May read random elements from stack.
 ABSL_ATTRIBUTE_NO_SANITIZE_MEMORY   // May read random elements from stack.
-static void ** NextStackFrame(void **old_frame_pointer, const void *uc) {
+static void ** NextStackFrame(void **old_frame_pointer, const void *uc,
+                              const std::pair<size_t, size_t> range) {
   //               .
   //               .
   //               .
@@ -114,7 +115,13 @@ static void ** NextStackFrame(void **old_frame_pointer, const void *uc) {
   // $sp ->|      ...       |
   //       +----------------+
   void **new_frame_pointer = reinterpret_cast<void **>(old_frame_pointer[-2]);
-  bool check_frame_size = true;
+
+  // The RISCV ELF psABI mandates that the stack pointer is always 16-byte
+  // aligned.
+  // TODO(#1236) this doesn't hold for ILP32E which only mandates a 4-byte
+  // alignment.
+  if ((reinterpret_cast<uintptr_t>(new_frame_pointer) & 15) != 0)
+    return nullptr;
 
 #if defined(__linux__)
   if (WITH_CONTEXT && uc != nullptr) {
@@ -138,45 +145,28 @@ static void ** NextStackFrame(void **old_frame_pointer, const void *uc) {
 
       // Alleged frame pointer is readable, use it for further unwinding.
       new_frame_pointer = pre_signal_frame_pointer;
-
-      // Skip frame size check if we return from a signal.  We may be using an
-      // alterate stack for signals.
-      check_frame_size = false;
     }
+    return new_frame_pointer;
   }
 #endif
 
-  // The RISCV ELF psABI mandates that the stack pointer is always 16-byte
-  // aligned.
-  // FIXME(abdulras) this doesn't hold for ILP32E which only mandates a 4-byte
-  // alignment.
-  if ((reinterpret_cast<uintptr_t>(new_frame_pointer) & 15) != 0)
-    return nullptr;
-
   // Check frame size.  In strict mode, we assume frames to be under 100,000
   // bytes.  In non-strict mode, we relax the limit to 1MB.
-  if (check_frame_size) {
-    const uintptr_t max_size = STRICT_UNWINDING ? 100000 : 1000000;
-    const uintptr_t frame_size =
-        ComputeStackFrameSize(old_frame_pointer, new_frame_pointer);
+  const uintptr_t max_size = STRICT_UNWINDING ? 100000 : 1000000;
+  const uintptr_t frame_size =
+      ComputeStackFrameSize(old_frame_pointer, new_frame_pointer);
+  if (frame_size == kUnknownFrameSize) {
+    if (STRICT_UNWINDING)
+      return nullptr;
 
-    // If we have a alternate signal stack, the stack pointer may not be
-    // contiguous. In such a case, we can simply skip the check and assume that
-    // the non-contiguity is permissible.
-    if (frame_size == kUnknownFrameSize) {
-      assert(old_frame_pointer >= new_frame_pointer);
-
-      stack_t ss{};
-      if (sigaltstack(nullptr, &ss) == 0) {
-        if (ss.ss_flags & SS_DISABLE)
-          return nullptr;
-        return new_frame_pointer;
-      }
-    }
-
-    if (frame_size == kUnknownFrameSize || frame_size > max_size)
+    // In non-strict mode permit non-contiguous stacks (e.g. alternate signal
+    // frame handling).
+    if (reinterpret_cast<uintptr_t>(new_frame_pointer) < range.first ||
+        reinterpret_cast<uintptr_t>(new_frame_pointer) > range.second)
       return nullptr;
   }
+  if (frame_size > max_size)
+    return nullptr;
 
   return new_frame_pointer;
 }
@@ -195,6 +185,12 @@ static int UnwindImpl(void **result, int *sizes, int max_depth, int skip_count,
 #error reading stack pointer not yet supported on this platform
 #endif
 
+  std::pair<size_t, size_t> stack = {
+      // assume that the first page is not the stack.
+      static_cast<size_t>(sysconf(_SC_PAGESIZE)),
+      std::numeric_limits<size_t>::max() - sizeof(void *)
+  };
+
   int n = 0;
   void *return_address = nullptr;
   while (frame_pointer && n < max_depth) {
@@ -205,7 +201,8 @@ static int UnwindImpl(void **result, int *sizes, int max_depth, int skip_count,
     // non-strict unwinding rules to produce a stack trace that is as complete
     // as possible (even if it contains a few bogus entries in some rare cases).
     void **next_frame_pointer =
-        NextStackFrame<!IS_STACK_FRAMES, IS_WITH_CONTEXT>(frame_pointer, ucp);
+        NextStackFrame<!IS_STACK_FRAMES, IS_WITH_CONTEXT>(frame_pointer, ucp,
+                                                          stack);
 
     if (skip_count > 0) {
       skip_count--;
@@ -232,7 +229,8 @@ static int UnwindImpl(void **result, int *sizes, int max_depth, int skip_count,
         num_dropped_frames++;
       }
       frame_pointer =
-          NextStackFrame<!IS_STACK_FRAMES, IS_WITH_CONTEXT>(frame_pointer, ucp);
+          NextStackFrame<!IS_STACK_FRAMES, IS_WITH_CONTEXT>(frame_pointer, ucp,
+                                                            stack);
     }
     *min_dropped_frames = num_dropped_frames;
   }

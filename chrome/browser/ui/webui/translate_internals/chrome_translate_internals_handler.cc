@@ -50,14 +50,14 @@ ChromeTranslateInternalsHandler::GetVariationsService() {
 }
 
 void ChromeTranslateInternalsHandler::RegisterMessageCallback(
-    const std::string& message,
+    base::StringPiece message,
     MessageCallback callback) {
   web_ui()->RegisterMessageCallback(message, std::move(callback));
 }
 
 void ChromeTranslateInternalsHandler::CallJavascriptFunction(
-    const std::string& function_name,
-    const std::vector<const base::Value*>& args) {
+    base::StringPiece function_name,
+    base::span<const base::ValueView> args) {
   web_ui()->CallJavascriptFunctionUnsafe(function_name, args);
 }
 

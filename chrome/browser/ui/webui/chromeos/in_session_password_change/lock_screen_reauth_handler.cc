@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "ash/components/login/auth/challenge_response/cert_utils.h"
-#include "ash/components/login/auth/cryptohome_key_constants.h"
+#include "ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "ash/constants/ash_features.h"
 #include "base/notreached.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
@@ -22,7 +23,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/version/version_loader.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/user_manager/known_user.h"
@@ -133,12 +134,16 @@ void LockScreenReauthHandler::LoadAuthenticatorParam() {
 }
 
 void LockScreenReauthHandler::LoadGaia(const login::GaiaContext& context) {
+  LOG_ASSERT(Profile::FromWebUI(web_ui()) ==
+             ProfileHelper::Get()->GetLockScreenProfile());
   // Start a new session with SigninPartitionManager, generating a unique
   // StoragePartition.
   login::SigninPartitionManager* signin_partition_manager =
       login::SigninPartitionManager::Factory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
 
+  // TODO(http://crbug/1348126): we should also close signin session after the
+  // flow is finished.
   signin_partition_manager->StartSigninSession(
       web_ui()->GetWebContents(),
       base::BindOnce(&LockScreenReauthHandler::LoadGaiaWithPartition,
@@ -206,8 +211,13 @@ void LockScreenReauthHandler::OnSetCookieForLoadGaiaWithPartition(
                     login::ExtractSamlPasswordAttributesEnabled());
   params.SetStringKey("clientVersion", version_info::GetVersionNumber());
   params.SetBoolKey("readOnlyEmail", true);
-  params.SetBoolKey("enableAzureADIntegration",
-                    ash::features::IsAzureADIntegrationEnabled());
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state->IsManagedPreference(
+          ash::prefs::kUrlParameterToAutofillSAMLUsername)) {
+    params.SetStringKey("urlParameterToAutofillSAMLUsername",
+                        local_state->GetString(
+                            ash::prefs::kUrlParameterToAutofillSAMLUsername));
+  }
 
   CallJavascript("loadAuthenticator", params);
   if (features::IsNewLockScreenReauthLayoutEnabled()) {

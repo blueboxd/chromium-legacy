@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/address_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
@@ -36,6 +37,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
@@ -47,6 +49,17 @@ constexpr bool IsEmpty(const char16_t* s) {
 }
 
 }  // namespace
+
+// static
+bool FormField::MatchesRegexWithCache(base::StringPiece16 input,
+                                      base::StringPiece16 pattern,
+                                      std::vector<std::u16string>* groups) {
+  // TODO(crbug.com/1309848): If ParseForm() is called from the same thread,
+  // use a thread-unsafe parser.
+  static base::NoDestructor<AutofillRegexCache> cache(ThreadSafe(true));
+  const icu::RegexPattern* regex_pattern = cache->GetRegexPattern(pattern);
+  return autofill::MatchesRegex(input, *regex_pattern, groups);
+}
 
 // static
 FieldCandidatesMap FormField::ParseFormFields(
@@ -63,11 +76,10 @@ FieldCandidatesMap FormField::ParseFormFields(
                       page_language, pattern_source, log_manager);
   const size_t email_count = field_candidates.size();
 
-  // Merchant promo code pass.
-  ParseFormFieldsPass(MerchantPromoCodeField::Parse, processed_fields,
-                      &field_candidates, page_language, pattern_source,
-                      log_manager);
-  const size_t promo_code_count = field_candidates.size() - email_count;
+  // Single fields pass.
+  ParseSingleFieldForms(fields, page_language, is_form_tag, pattern_source,
+                        &field_candidates, log_manager);
+  const size_t fillable_single_fields = field_candidates.size() - email_count;
 
   // Phone pass.
   ParseFormFieldsPass(PhoneField::Parse, processed_fields, &field_candidates,
@@ -119,13 +131,14 @@ FieldCandidatesMap FormField::ParseFormFields(
   // very easy to have false positives. See http://crbug.com/447332
   // For <form> tags, make an exception for email fields, which are commonly
   // the only recognized field on account registration sites. Also make an
-  // exception for promo code fields, which are often a single field in its own
-  // form.
+  // exception for single-field Autofillable types, even when the form contains
+  // less than kMinRequiredFieldsForHeuristics fields in its form signature.
   if (fillable_fields < kMinRequiredFieldsForHeuristics) {
-    if ((is_form_tag && email_count > 0) || promo_code_count > 0) {
+    if ((is_form_tag && email_count > 0) || fillable_single_fields > 0) {
       base::EraseIf(field_candidates, [&](const auto& candidate) {
         return !(candidate.second.BestHeuristicType() == EMAIL_ADDRESS ||
-                 candidate.second.BestHeuristicType() == MERCHANT_PROMO_CODE);
+                 FormField::IsSingleFieldParseableType(
+                     candidate.second.BestHeuristicType()));
       });
     } else {
       LogBuffer table_rows(IsLoggingActive(log_manager));
@@ -155,21 +168,22 @@ FieldCandidatesMap FormField::ParseFormFields(
   return field_candidates;
 }
 
-FieldCandidatesMap FormField::ParseFormFieldsForPromoCodes(
+void FormField::ParseSingleFieldForms(
     const std::vector<std::unique_ptr<AutofillField>>& fields,
     const LanguageCode& page_language,
     bool is_form_tag,
     PatternSource pattern_source,
+    FieldCandidatesMap* field_candidates,
     LogManager* log_manager) {
   std::vector<AutofillField*> processed_fields = RemoveCheckableFields(fields);
-  FieldCandidatesMap field_candidates;
 
   // Merchant promo code pass.
-  ParseFormFieldsPass(MerchantPromoCodeField::Parse, processed_fields,
-                      &field_candidates, page_language, pattern_source,
-                      log_manager);
-
-  return field_candidates;
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillParseMerchantPromoCodeFields)) {
+    ParseFormFieldsPass(MerchantPromoCodeField::Parse, processed_fields,
+                        field_candidates, page_language, pattern_source,
+                        log_manager);
+  }
 }
 
 // static
@@ -386,19 +400,21 @@ bool FormField::Match(const AutofillField* field,
 
   const bool match_label =
       match_type.attributes.contains(MatchAttribute::kLabel);
-  if (match_label && MatchesPattern(label, pattern, capture_destination)) {
+  if (match_label &&
+      MatchesRegexWithCache(label, pattern, capture_destination)) {
     found_match = true;
     match_type_string = "Match in label";
     value = label;
   } else if (match_type.attributes.contains(MatchAttribute::kName) &&
-             MatchesPattern(name, pattern, capture_destination)) {
+             MatchesRegexWithCache(name, pattern, capture_destination)) {
     found_match = true;
     match_type_string = "Match in name";
     value = name;
   } else if (match_label &&
              base::FeatureList::IsEnabled(
                  features::kAutofillConsiderPlaceholderForParsing) &&
-             MatchesPattern(field->placeholder, pattern, capture_destination)) {
+             MatchesRegexWithCache(field->placeholder, pattern,
+                                   capture_destination)) {
     // TODO(crbug.com/1317961): The label and placeholder cases should logically
     // be grouped together. Placeholder is currently last, because for the finch
     // study we want the group assignment to happen as late as possible.
@@ -474,6 +490,11 @@ bool FormField::MatchesFormControlType(base::StringPiece type,
     return true;
 
   return false;
+}
+
+// static
+bool FormField::IsSingleFieldParseableType(ServerFieldType field_type) {
+  return field_type == MERCHANT_PROMO_CODE;
 }
 
 }  // namespace autofill

@@ -1263,23 +1263,146 @@ TEST_P(FileHandlersFromManifestTest, PopulateFileHandlerIcons) {
   }
 }
 
+// Test duplicate icon download urls that from the manifest.
+TEST(WebAppInstallUtils, DuplicateIconDownloadURLs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({blink::features::kFileHandlingIcons}, {});
+
+  WebAppInstallInfo web_app_info;
+
+  // manifest icons
+  {
+    apps::IconInfo info;
+    info.url = GURL("http://www.chromium.org/image/icon1.png");
+    web_app_info.manifest_icons.push_back(info);
+  }
+  {
+    apps::IconInfo info;
+    info.url = GURL("http://www.chromium.org/image/icon2.png");
+    web_app_info.manifest_icons.push_back(info);
+  }
+
+  // shortcut icons
+  {
+    WebAppShortcutsMenuItemInfo shortcut_item;
+    {
+      std::vector<WebAppShortcutsMenuItemInfo::Icon> shortcut_manifest_icons;
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon2.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon3.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      shortcut_item.SetShortcutIconInfosForPurpose(
+          IconPurpose::ANY, std::move(shortcut_manifest_icons));
+    }
+    {
+      std::vector<WebAppShortcutsMenuItemInfo::Icon> shortcut_manifest_icons;
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon3.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon4.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      shortcut_item.SetShortcutIconInfosForPurpose(
+          IconPurpose::MONOCHROME, std::move(shortcut_manifest_icons));
+    }
+    web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
+  }
+  {
+    WebAppShortcutsMenuItemInfo shortcut_item;
+    {
+      std::vector<WebAppShortcutsMenuItemInfo::Icon> shortcut_manifest_icons;
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon4.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon5.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      shortcut_item.SetShortcutIconInfosForPurpose(
+          IconPurpose::ANY, std::move(shortcut_manifest_icons));
+    }
+    {
+      std::vector<WebAppShortcutsMenuItemInfo::Icon> shortcut_manifest_icons;
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon5.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      {
+        WebAppShortcutsMenuItemInfo::Icon icon;
+        icon.url = GURL("http://www.chromium.org/image/icon6.png");
+        shortcut_manifest_icons.push_back(icon);
+      }
+      shortcut_item.SetShortcutIconInfosForPurpose(
+          IconPurpose::MASKABLE, std::move(shortcut_manifest_icons));
+    }
+    web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
+  }
+
+  // file handler icons
+  {
+    apps::FileHandler file_handler;
+    std::vector<apps::IconInfo> downloaded_icons;
+    {
+      apps::IconInfo info;
+      info.url = GURL("http://www.chromium.org/image/icon6.png");
+      web_app_info.manifest_icons.push_back(info);
+    }
+    {
+      apps::IconInfo info;
+      info.url = GURL("http://www.chromium.org/image/icon7.png");
+      web_app_info.manifest_icons.push_back(info);
+    }
+    web_app_info.file_handlers.push_back(file_handler);
+  }
+  {
+    apps::FileHandler file_handler;
+    std::vector<apps::IconInfo> downloaded_icons;
+    {
+      apps::IconInfo info;
+      info.url = GURL("http://www.chromium.org/image/icon7.png");
+      web_app_info.manifest_icons.push_back(info);
+    }
+    {
+      apps::IconInfo info;
+      info.url = GURL("http://www.chromium.org/image/icon8.png");
+      web_app_info.manifest_icons.push_back(info);
+    }
+    web_app_info.file_handlers.push_back(file_handler);
+  }
+
+  base::flat_set<GURL> download_urls = GetValidIconUrlsToDownload(web_app_info);
+
+  const size_t download_urls_size = 8;
+  EXPECT_EQ(download_urls_size, download_urls.size());
+  for (size_t i = 0; i < download_urls_size; i++) {
+    std::string url_str = "http://www.chromium.org/image/icon" +
+                          base::NumberToString(i + 1) + ".png";
+    EXPECT_EQ(1u, download_urls.count(GURL(url_str)));
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(, FileHandlersFromManifestTest, testing::Bool());
 
 #if BUILDFLAG(IS_WIN)
-class RegisterOsSettingsTest : public testing::Test {
- public:
-  RegisterOsSettingsTest() {
-    feature_list_.InitAndEnableFeature(
-        features::kEnableWebAppUninstallFromOsSettings);
-  }
-  ~RegisterOsSettingsTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  content::BrowserTaskEnvironment browser_task_environment_;
-};
+using RegisterOsSettingsTest = testing::Test;
 
 TEST_F(RegisterOsSettingsTest, MaybeRegisterOsUninstall) {
+  content::BrowserTaskEnvironment task_environment;
+
   // MaybeRegisterOsUninstall
   // Scenario 1.
   // web app sources: kDefault, kPolicy
@@ -1351,6 +1474,8 @@ TEST_F(RegisterOsSettingsTest, MaybeRegisterOsSettings_NoRegistration) {
 }
 
 TEST_F(RegisterOsSettingsTest, MaybeUnregisterOsUninstall) {
+  content::BrowserTaskEnvironment task_environment;
+
   // MaybeUnregisterOsUninstall
   // Scenario 1.
   // web app sources: kDefault

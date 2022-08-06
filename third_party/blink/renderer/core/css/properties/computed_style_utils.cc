@@ -560,14 +560,13 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   if (offset.IsPercentOrCalc() && box && layout_object->IsPositioned()) {
     LayoutUnit containing_block_size;
     if (layout_object->IsStickyPositioned()) {
-      const LayoutBox* enclosing_scrollport_box = box->EnclosingScrollportBox();
-      DCHECK(enclosing_scrollport_box);
+      const LayoutBox* scroll_container = box->ContainingScrollContainer();
+      DCHECK(scroll_container);
       bool use_inline_size =
-          is_horizontal_property ==
-          enclosing_scrollport_box->IsHorizontalWritingMode();
-      containing_block_size =
-          use_inline_size ? enclosing_scrollport_box->ContentLogicalWidth()
-                          : enclosing_scrollport_box->ContentLogicalHeight();
+          is_horizontal_property == scroll_container->IsHorizontalWritingMode();
+      containing_block_size = use_inline_size
+                                  ? scroll_container->ContentLogicalWidth()
+                                  : scroll_container->ContentLogicalHeight();
     } else {
       containing_block_size =
           is_horizontal_property ==
@@ -2478,40 +2477,40 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
   for (const auto& operation : filter_operations.Operations()) {
     FilterOperation* filter_operation = operation.Get();
     switch (filter_operation->GetType()) {
-      case FilterOperation::kReference:
+      case FilterOperation::OperationType::kReference:
         filter_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kUrl);
         filter_value->Append(*MakeGarbageCollected<CSSStringValue>(
             To<ReferenceFilterOperation>(filter_operation)->Url()));
         break;
-      case FilterOperation::kGrayscale:
+      case FilterOperation::OperationType::kGrayscale:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kGrayscale);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kSepia:
+      case FilterOperation::OperationType::kSepia:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSepia);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kSaturate:
+      case FilterOperation::OperationType::kSaturate:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSaturate);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kHueRotate:
+      case FilterOperation::OperationType::kHueRotate:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kHueRotate);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kDegrees));
         break;
-      case FilterOperation::kInvert:
+      case FilterOperation::OperationType::kInvert:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kInvert);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2519,7 +2518,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kOpacity:
+      case FilterOperation::OperationType::kOpacity:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kOpacity);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2527,7 +2526,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kBrightness:
+      case FilterOperation::OperationType::kBrightness:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBrightness);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2535,7 +2534,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kContrast:
+      case FilterOperation::OperationType::kContrast:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kContrast);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2543,14 +2542,14 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::kBlur:
+      case FilterOperation::OperationType::kBlur:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBlur);
         filter_value->Append(*ZoomAdjustedPixelValue(
             To<BlurFilterOperation>(filter_operation)->StdDeviation().Value(),
             style));
         break;
-      case FilterOperation::kDropShadow: {
+      case FilterOperation::OperationType::kDropShadow: {
         const auto& drop_shadow_operation =
             To<DropShadowFilterOperation>(*filter_operation);
         filter_value =
@@ -3051,18 +3050,13 @@ CSSValue* ComputedStyleUtils::ValueForIntrinsicLength(
         intrinsic_length->GetLength(), style);
   }
 
-  if (RuntimeEnabledFeatures::ContainIntrinsicSizeAutoEnabled()) {
-    if (!intrinsic_length)
-      return CSSIdentifierValue::Create(CSSValueID::kNone);
-    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-    if (intrinsic_length->HasAuto())
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
-    list->Append(*length);
-    return list;
-  }
   if (!intrinsic_length)
-    return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return length;
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (intrinsic_length->HasAuto())
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
+  list->Append(*length);
+  return list;
 }
 
 std::unique_ptr<CrossThreadStyleValue>

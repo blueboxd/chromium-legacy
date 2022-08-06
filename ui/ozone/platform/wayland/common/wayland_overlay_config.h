@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/overlay_plane_data.h"
@@ -31,6 +32,9 @@ struct WaylandOverlayConfig {
   // Specifies the stacking order of this overlay plane, relative to primary
   // plane.
   int z_order = 0;
+
+  // Specifies the color space data of the wayland config.
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
   // Specifies how the buffer is to be transformed during composition.
   gfx::OverlayTransform transform =
@@ -79,7 +83,7 @@ struct WaylandOverlayConfig {
   gfx::RRectF rounded_clip_bounds;
 
   // Optional: background color of this overlay plane.
-  absl::optional<SkColor> background_color;
+  absl::optional<SkColor4f> background_color;
 };
 
 }  // namespace wl

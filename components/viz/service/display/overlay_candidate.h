@@ -33,7 +33,6 @@ class Rect;
 namespace viz {
 class AggregatedRenderPassDrawQuad;
 class DisplayResourceProvider;
-class StreamVideoDrawQuad;
 
 class VIZ_SERVICE_EXPORT OverlayCandidate {
  public:
@@ -44,6 +43,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
     kSuccess,
     kFailNotOverlay,
     kFailNotAxisAligned,
+    kFailNotAxisAligned3dTransform,
+    kFailNotAxisAligned2dShear,
+    kFailNotAxisAligned2dRotation,
     kFailColorMatrix,
     kFailOpacity,
     kFailBlending,
@@ -109,9 +111,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   gpu::Mailbox mailbox;
 
 #if BUILDFLAG(IS_ANDROID)
-  // For candidates from StreamVideoDrawQuads, this records whether the quad is
-  // marked as being backed by a SurfaceTexture or not.  If so, it's not really
-  // promotable to an overlay.
+  // For candidates from TextureDrawQuads with is_stream_video set to true, this
+  // records whether the quad is marked as being backed by a SurfaceTexture or
+  // not.  If so, it's not really promotable to an overlay.
   bool is_backed_by_surface_texture = false;
   // Crop within the buffer to be placed inside |display_rect| before
   // |clip_rect| was applied. Valid only for surface control.
@@ -160,11 +162,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // is the recorded output of rendering the |rpdq|.
   sk_sp<SkDeferredDisplayList> ddl;
 
-  // The bounds in pixels of the rendered |rpdq|.
-  // TODO(petermcneeley) : Refactor the usage of this member to be compatible
-  // with |uv_rect| member in this class.
-  gfx::RectF bounds_rect;
-
   // Quad |shared_quad_state| opacity is ubiquitous for quad types
   // AggregateRenderPassDrawQuad, TileDrawQuad, SolidColorDrawQuad. A delegate
   // context must support non opaque opacity for these types.
@@ -182,6 +179,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // surface and have the same |DrawQuad::rect| they will have the same
   // |tracking_id|.
   TrackingId tracking_id = kDefaultTrackingId;
+
+  // Whether this overlay candidate represents the root render pass.
+  bool is_root_render_pass = false;
 };
 
 using OverlayCandidateList = std::vector<OverlayCandidate>;

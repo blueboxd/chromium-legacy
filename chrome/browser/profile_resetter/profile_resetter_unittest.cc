@@ -157,7 +157,6 @@ void ProfileResetterTest::SetUp() {
   extensions::ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
 
-  profile()->CreateWebDataService();
   TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&CreateTemplateURLServiceForTesting));
   resetter_ = std::make_unique<ProfileResetter>(profile());
@@ -942,7 +941,7 @@ struct FeedbackCapture {
 
   MOCK_METHOD0(OnUpdatedList, void(void));
 
-  std::unique_ptr<base::ListValue> list_;
+  base::Value::List list_;
 };
 
 // Make sure GetReadableFeedback handles non-ascii letters.
@@ -981,12 +980,11 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   ::testing::Mock::VerifyAndClearExpectations(&capture);
   // The homepage and the startup page are in punycode. They are unreadable.
   // Trying to find the extension name.
-  std::unique_ptr<base::ListValue> list = std::move(capture.list_);
-  ASSERT_TRUE(list);
+  base::Value::List list = std::move(capture.list_);
   bool checked_extensions = false;
   bool checked_shortcuts = false;
-  for (size_t i = 0; i < list->GetListDeprecated().size(); ++i) {
-    const base::Value& dict = list->GetListDeprecated()[i];
+  for (size_t i = 0; i < list.size(); ++i) {
+    const base::Value& dict = list[i];
     ASSERT_TRUE(dict.is_dict());
     const std::string* value = dict.FindStringKey("key");
     ASSERT_TRUE(value);

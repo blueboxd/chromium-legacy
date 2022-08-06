@@ -57,6 +57,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -325,11 +326,12 @@ void WallpaperControllerClientImpl::SetCustomWallpaper(
     const std::string& file_name,
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
-    bool preview_mode) {
+    bool preview_mode,
+    const std::string& file_path) {
   if (!IsKnownUser(account_id))
     return;
   wallpaper_controller_->SetCustomWallpaper(account_id, file_name, layout,
-                                            image, preview_mode);
+                                            image, preview_mode, file_path);
 }
 
 void WallpaperControllerClientImpl::SetOnlineWallpaper(
@@ -498,7 +500,8 @@ bool WallpaperControllerClientImpl::IsActiveUserWallpaperControlledByPolicy() {
   return wallpaper_controller_->IsActiveUserWallpaperControlledByPolicy();
 }
 
-ash::WallpaperInfo WallpaperControllerClientImpl::GetActiveUserWallpaperInfo() {
+absl::optional<ash::WallpaperInfo>
+WallpaperControllerClientImpl::GetActiveUserWallpaperInfo() {
   return wallpaper_controller_->GetActiveUserWallpaperInfo();
 }
 
@@ -557,9 +560,9 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
 }
 
 void WallpaperControllerClientImpl::OnVolumeMounted(
-    chromeos::MountError error_code,
+    ash::MountError error_code,
     const file_manager::Volume& volume) {
-  if (error_code != chromeos::MOUNT_ERROR_NONE) {
+  if (error_code != ash::MountError::kNone) {
     return;
   }
   if (volume.type() != file_manager::VolumeType::VOLUME_TYPE_GOOGLE_DRIVE) {
@@ -632,7 +635,7 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   params.url = GURL(
       std::string(ash::personalization_app::kChromeUIPersonalizationAppURL) +
       ash::personalization_app::kWallpaperSubpageRelativeUrl);
-  params.launch_source = apps::mojom::LaunchSource::kFromShelf;
+  params.launch_source = apps::LaunchSource::kFromShelf;
   ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::PERSONALIZATION,
                                params);
 }

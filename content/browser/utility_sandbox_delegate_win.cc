@@ -107,6 +107,11 @@ bool PrintBackendPreSpawnTarget(sandbox::TargetPolicy* policy) {
 }
 }  // namespace
 
+std::string UtilitySandboxedProcessLauncherDelegate::GetSandboxTag() {
+  return sandbox::policy::SandboxWin::GetSandboxTagForDelegate(
+      "utility", GetSandboxType());
+}
+
 bool UtilitySandboxedProcessLauncherDelegate::GetAppContainerId(
     std::string* appcontainer_id) {
   if (sandbox_type_ == sandbox::mojom::Sandbox::kNetwork) {
@@ -186,16 +191,16 @@ bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
     if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
       return false;
 
-    // Allow file read. These should match IconLoader::GroupForFilepath().
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                    L"\\??\\*.exe");
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                    L"\\??\\*.dll");
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                    L"\\??\\*.ico");
+    if (!policy->GetConfig()->IsConfigured()) {
+      auto* config = policy->GetConfig();
+      // Allow file read. These should match IconLoader::GroupForFilepath().
+      config->AddRule(sandbox::SubSystem::kFiles,
+                      sandbox::Semantics::kFilesAllowReadonly, L"\\??\\*.exe");
+      config->AddRule(sandbox::SubSystem::kFiles,
+                      sandbox::Semantics::kFilesAllowReadonly, L"\\??\\*.dll");
+      config->AddRule(sandbox::SubSystem::kFiles,
+                      sandbox::Semantics::kFilesAllowReadonly, L"\\??\\*.ico");
+    }
   }
 
   if (sandbox_type_ == sandbox::mojom::Sandbox::kXrCompositing &&

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/components/login/auth/extended_authenticator.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/login/quick_unlock/auth_token.h"
 #include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
@@ -76,7 +76,7 @@ void QuickUnlockPrivateGetAuthTokenHelper::OnAuthSuccess(
       ash::quick_unlock::QuickUnlockFactory::GetForProfile(profile_);
   quick_unlock_storage->MarkStrongAuth();
   token_info->token = quick_unlock_storage->CreateAuthToken(user_context);
-  token_info->lifetime_seconds = AuthToken::kTokenExpirationSeconds;
+  token_info->lifetime_seconds = AuthToken::kTokenExpiration.InSeconds();
 
   // The user has successfully authenticated, so we should reset pin/fingerprint
   // attempt counts.

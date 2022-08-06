@@ -2301,6 +2301,9 @@
   <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE" desc="An offline message title shown when we suggest that user may be behind the captive portal.">
     Network not available
   </message>
+  <message name="IDS_LOGIN_AUTO_ENROLLMENT_OFFLINE_TITLE" desc="A message title shown when we suggest that user can't reach proper servers during auto-enrollment.">
+    Can't reach Google
+  </message>
   <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal. Translation note: enter as Guest - could also be said enter as Guest user. Word user may be added to the translation if needed.">
     To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>visit the network's sign-in page<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.
   </message>
@@ -2329,7 +2332,7 @@
     Please connect to the Internet to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_LOGIN_AUTO_ENROLLMENT_OFFLINE_MESSAGE" desc="An offline message that shows in the error screen when auto-enrollment state failed to be downloaded.">
-    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is unable to connect to the Internet using <ph name="NETWORK_NAME">$2<ex>Ethernet</ex></ph>. Please choose another network. <ph name="LEARN_MORE_LINK_START">$3<ex>&gt;a&lt;</ex></ph>Learn more<ph name="LEARN_MORE_LINK_END">$4<ex>&gt;/a&lt;</ex></ph>
+    We can't reach Google through the connected network. Try choosing a different network or checking your network settings or proxy settings (if you are using a proxy).
   </message>
   <message name="IDS_UPDATE_PROXY_ERROR_MESSAGE" desc="An offline message that shows up when a proxy error has appeared in the OOBE update screen.">
     The update check failed using the current proxy settings. Please adjust your <ph name="PROXY_SETTINGS_LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
@@ -3183,6 +3186,9 @@
   <message name="IDS_NETWORK_UI_TAB_NETWORK_SELECT" desc="Network Select tab name">
     Network Select
   </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_HOTSPOT" desc="Hotspot tab name">
+    Hotspot
+  </message>
   <message name="IDS_NETWORK_UI_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
     Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;
   </message>
@@ -3306,6 +3312,36 @@
   <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_UNKNOWN" desc="Text displayed when the Shill debugging mode is unknown.">
     Unknown
   </message>
+  <message name="IDS_NETWORK_UI_TETHERING_CAPABILITIES_LABEL" desc="Title for the section for displaying and refreshing tethering capabilities.">
+    Tethering Capabilities:
+  </message>
+  <message name="IDS_NETWORK_UI_REFRESH_TETHERING_CAPABILITIES_BUTTON_TEXT" desc="Text for button which, when pressed, refreshing the tethering capabilities.">
+    Refresh Tethering Capabilities
+  </message>
+  <message name="IDS_NETWORK_UI_TETHERING_STATUS_LABEL" desc="Title for the section for displaying and refreshing tethering status.">
+    Tethering Status:
+  </message>
+  <message name="IDS_NETWORK_UI_REFRESH_TETHERING_STATUS_BUTTON_TEXT" desc="Text for button which, when pressed, refresh the tethering status.">
+    Refresh Tethering Status
+  </message>
+  <message name="IDS_NETWORK_UI_TETHERING_CONFIG_LABEL" desc="Title for the section for displaying and refreshing tethering configuration.">
+    Tethering Configuration:
+  </message>
+  <message name="IDS_NETWORK_UI_REFRESH_TETHERING_CONFIG_BUTTON_TEXT" desc="Text for button which, when pressed, refresh the tethering configuration.">
+    Refresh Tethering Configuration
+  </message>
+  <message name="IDS_NETWORK_UI_SET_TETHERING_CONFIG_BUTTON_TEXT" desc="Text for button which, when pressed, set the tethering configuration.">
+    Set Tethering Configuration
+  </message>
+  <message name="IDS_NETWORK_UI_TETHERING_READINESS_LABEL" desc="Title for the section for displaying and checking tethering readiness.">
+    Tethering Readiness:
+  </message>
+  <message name="IDS_NETWORK_UI_CHECK_TETHERING_READINESS_BUTTON_TEXT" desc="Text for button which, when pressed, check the tethering readiness.">
+    Check Tethering Readiness
+  </message>
+  <message name="IDS_NETWORK_UI_SET_TETHERING_ENABLED_LABEL" desc="Title for the section for enabling or disabling tethering.">
+    Enable/Disable Tethering
+  </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
     To view network UI logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
@@ -3326,28 +3362,6 @@
   </message>
   <message name="IDS_SET_TIME_TIMEZONE_LABEL" desc="Label for the set time dialog timezone select element.">
     Timezone
-  </message>
-
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE" desc="Title of a prompt dialog for granting permissions to a volume (eg. USB drive, SD card, MTP device) with the specified name. Only used for screen readers (a11y); not visible.">
-    Permission requested
-  </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_MESSAGE" desc="Message in a prompt dialog for granting read-only permissions to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
-    <ph name="APP_NAME">$1<ex>Super Kiosk app</ex></ph> wants to copy files from <ph name="VOLUME_NAME">$2<ex>FooBar 4GB</ex></ph>.
-  </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_WRITABLE_MESSAGE" desc="Message in a prompt dialog for granting full permissions (read, write, delete, create files and directories) to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
-    <ph name="APP_NAME">$1<ex>Super Kiosk app</ex></ph> wants to access <ph name="VOLUME_NAME">$2<ex>FooBar 4GB</ex></ph>. It may modify or delete your files.
-  </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_ALLOW_BUTTON" desc="Label on the button to grant permissions.">
-    Allow
-  </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON" desc="Label on the button to reject permissions.">
-    Deny
-  </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_NOTIFICATION_MESSAGE" desc="Message in a notification about granted read-only pemissions (read, write, delete, create files and directories) to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
-    Read-only access to <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph> has been granted.
-  </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_NOTIFICATION_WRITABLE_MESSAGE" desc="Message in a notification about granted full permissions (read, write, delete, create files and directories) to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
-    Read and write access to <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph> has been granted.
   </message>
 
   <!-- Webstore widget -->
@@ -5373,9 +5387,6 @@
   </message>
 
   <!-- Strings for Plugin VM -->
-  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Product name for 'Parallels Desktop'. Should not be translated as it is a third party name." translateable="false">
-    Parallels Desktop
-  </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_TITLE" desc="Title of the Plugin VM installer when asking user to start installation.">
     Set up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> on your Chromebook
   </message>

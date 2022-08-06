@@ -13,6 +13,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/dcheck_is_on.h"
 #include "base/i18n/base_i18n_switches.h"
@@ -57,7 +58,6 @@
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
@@ -67,6 +67,8 @@
 #include "chrome/browser/media/audio_service_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/audio_debug_recordings_handler.h"
+#include "chrome/browser/media/webrtc/capture_policy_utils.h"
+#include "chrome/browser/media/webrtc/chrome_screen_enumerator.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_controller.h"
 #include "chrome/browser/memory/chrome_browser_main_extra_parts_memory.h"
@@ -83,20 +85,20 @@
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
-#include "chrome/browser/prefetch/prefetch_proxy/chrome_prefetch_service_delegate.h"
-#include "chrome/browser/prefetch/prefetch_proxy/chrome_speculation_host_delegate.h"
-#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
-#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service.h"
-#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service_factory.h"
-#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_url_loader_interceptor.h"
-#include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
-#include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
-#include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
 #include "chrome/browser/preloading/navigation_ablation_throttle.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/chrome_prefetch_service_delegate.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/chrome_speculation_host_delegate.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_features.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_service.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_service_factory.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_url_loader_interceptor.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
@@ -266,6 +268,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_isolation_mode.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
@@ -440,6 +443,8 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
+#include "chrome/browser/new_tab_page/new_tab_page_util.h"
+#include "chrome/browser/page_info/about_this_site_side_panel_throttle.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/serial/chrome_serial_delegate.h"
@@ -455,6 +460,7 @@
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/grit/chrome_unscaled_resources.h"  // nogncheck crbug.com/1125897
+#include "components/commerce/core/commerce_feature_list.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 #endif  //  !BUILDFLAG(IS_ANDROID)
 
@@ -576,7 +582,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -683,6 +688,30 @@ const base::Feature kNetworkServiceCodeIntegrity{
 
 #endif  // BUILDFLAG(IS_WIN) && !defined(COMPONENT_BUILD) &&
         // !defined(ADDRESS_SANITIZER)
+
+#if BUILDFLAG(IS_ANDROID)
+// Kill switch that allows falling back to the legacy behavior on Android when
+// it comes to site isolation for Gaia's origin (|GaiaUrls::gaia_origin()|).
+const base::Feature kAllowGaiaOriginIsolationOnAndroid{
+    "AllowGaiaOriginIsolationOnAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_ANDROID)
+
+// A small ChromeBrowserMainExtraParts that invokes a callback when threads are
+// ready. Used to initialize ChromeContentBrowserClient data that needs the UI
+// thread.
+class ChromeBrowserMainExtraPartsThreadNotifier final
+    : public ChromeBrowserMainExtraParts {
+ public:
+  explicit ChromeBrowserMainExtraPartsThreadNotifier(
+      base::OnceClosure threads_ready_closure)
+      : threads_ready_closure_(std::move(threads_ready_closure)) {}
+
+  // ChromeBrowserMainExtraParts:
+  void PostCreateThreads() final { std::move(threads_ready_closure_).Run(); }
+
+ private:
+  base::OnceClosure threads_ready_closure_;
+};
 
 bool IsSSLErrorOverrideAllowedForOrigin(const GURL& request_url,
                                         PrefService* prefs) {
@@ -1291,6 +1320,31 @@ bool IsTopChromeWebUIURL(const GURL& url) {
          base::EndsWith(url.host_piece(), chrome::kChromeUITopChromeDomain);
 }
 
+bool DoesGaiaOriginRequireDedicatedProcess() {
+#if !BUILDFLAG(IS_ANDROID)
+  return true;
+#else
+  // Sign-in process isolation is not strictly needed on Android, see
+  // https://crbug.com/739418. On Android, it's more optional but it does
+  // improve security generally and specifically it allows the exposure of
+  // certain optional privileged APIs.
+
+  // Kill switch that falls back to the legacy behavior.
+  if (!base::FeatureList::IsEnabled(kAllowGaiaOriginIsolationOnAndroid)) {
+    return false;
+  }
+
+  if (site_isolation::SiteIsolationPolicy::
+          ShouldDisableSiteIsolationDueToMemoryThreshold(
+              content::SiteIsolationMode::kPartialSiteIsolation)) {
+    // Insufficient memory to isolate Gaia's origin.
+    return false;
+  }
+
+  return true;
+#endif  // !BUILDFLAG(IS_ANDROID)
+}
+
 }  // namespace
 
 ChromeContentBrowserClient::ChromeContentBrowserClient() {
@@ -1439,9 +1493,14 @@ ChromeContentBrowserClient::CreateBrowserMainParts(bool is_integration_test) {
       is_integration_test, &startup_data_);
 #else
   NOTREACHED();
-  main_parts = std::make_unique<ChromeBrowserManiParts>(is_integration_test,
+  main_parts = std::make_unique<ChromeBrowserMainParts>(is_integration_test,
                                                         &startup_data_);
 #endif
+
+  main_parts->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsThreadNotifier>(
+          base::BindOnce(&ChromeContentBrowserClient::InitOnUIThread,
+                         weak_factory_.GetWeakPtr())));
 
   bool add_profiles_extra_parts = true;
 #if BUILDFLAG(IS_ANDROID)
@@ -1514,11 +1573,6 @@ void ChromeContentBrowserClient::PostAfterStartupTask(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::OnceClosure task) {
   AfterStartupTaskUtils::PostTask(from_here, task_runner, std::move(task));
-
-  InitNetworkContextsParentDirectory();
-
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  safe_browsing_service_ = g_browser_process->safe_browsing_service();
 }
 
 bool ChromeContentBrowserClient::IsBrowserStartupComplete() {
@@ -2098,11 +2152,9 @@ std::vector<url::Origin>
 ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   std::vector<url::Origin> isolated_origin_list;
 
-// Sign-in process isolation is not needed on Android, see
-// https://crbug.com/739418.
-#if !BUILDFLAG(IS_ANDROID)
-  isolated_origin_list.push_back(GaiaUrls::GetInstance()->gaia_origin());
-#endif
+  if (DoesGaiaOriginRequireDedicatedProcess()) {
+    isolated_origin_list.push_back(GaiaUrls::GetInstance()->gaia_origin());
+  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto origins_from_extensions = ChromeContentBrowserClientExtensionsPart::
@@ -2170,6 +2222,13 @@ bool ChromeContentBrowserClient::IsIsolatedAppsDeveloperModeAllowed(
   return profile &&
          profile->GetPrefs()->GetBoolean(
              policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed);
+}
+
+bool ChromeContentBrowserClient::IsGetDisplayMediaSetSelectAllScreensAllowed(
+    content::BrowserContext* context,
+    const url::Origin& origin) {
+  return capture_policy::IsGetDisplayMediaSetSelectAllScreensAllowed(
+      context, origin.GetURL());
 }
 
 bool ChromeContentBrowserClient::IsFileAccessAllowed(
@@ -2422,6 +2481,13 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             prefs->GetBoolean(policy::policy_prefs::kEventPathEnabled)
                 ? blink::switches::kEventPathPolicy_ForceEnable
                 : blink::switches::kEventPathPolicy_ForceDisable);
+      } else if (chrome::GetChannel() < version_info::Channel::BETA) {
+        // When its Enterprise Policy is unspecified, disable Event.path by
+        // default on Canary and Dev to help the deprecation and removal.
+        // See crbug.com/1277431 for more details.
+        command_line->AppendSwitchASCII(
+            blink::switches::kEventPathPolicy,
+            blink::switches::kEventPathPolicy_ForceDisable);
       }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
@@ -2455,6 +2521,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       if (prefs->GetBoolean(
               webauthn::pref_names::kRemoteProxiedRequestsAllowed)) {
         command_line->AppendSwitch(switches::kWebAuthRemoteDesktopSupport);
+      }
+
+      if (IsCartModuleEnabled()) {
+        command_line->AppendSwitch(commerce::switches::kEnableChromeCart);
       }
 #endif
     }
@@ -2668,10 +2738,11 @@ ChromeContentBrowserClient::AllowServiceWorker(
       HostContentSettingsMapFactory::GetForProfile(profile));
 }
 
-void ChromeContentBrowserClient::WillStartServiceWorker(
-    content::BrowserContext* context,
-    const GURL& script_url,
-    content::RenderProcessHost* render_process_host) {
+void ChromeContentBrowserClient::
+    UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
+        content::BrowserContext* context,
+        const GURL& script_url,
+        std::vector<std::string>& out_forced_enabled_runtime_features) {
   DCHECK(context);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2679,8 +2750,9 @@ void ChromeContentBrowserClient::WillStartServiceWorker(
   if (!ash::IsSystemExtensionsEnabled(profile))
     return;
 
-  ash::SystemExtensionsProvider::Get(profile).WillStartServiceWorker(
-      script_url, render_process_host);
+  ash::SystemExtensionsProvider::Get(profile)
+      .UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
+          script_url, out_forced_enabled_runtime_features);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -3605,11 +3677,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         if (registrar.IsLocallyInstalled(app_id))
           web_prefs->web_app_scope = registrar.GetAppScope(app_id);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
         auto* system_app = browser->app_controller()->system_app();
         if (system_app) {
           web_prefs->allow_scripts_to_close_windows =
               system_app->ShouldAllowScriptsToCloseWindows();
         }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       }
     }
 #endif
@@ -3744,7 +3818,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->text_track_font_family = style->font_family;
     web_prefs->text_track_font_variant = style->font_variant;
     web_prefs->text_track_window_color = style->window_color;
-    web_prefs->text_track_window_padding = style->window_padding;
     web_prefs->text_track_window_radius = style->window_radius;
   }
 
@@ -4184,11 +4257,14 @@ bool ChromeContentBrowserClient::PreSpawnChild(
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
+  if (policy->GetConfig()->IsConfigured())
+    return true;
+
   // Allow loading Chrome's DLLs.
   for (const auto* dll : {chrome::kBrowserResourcesDll, chrome::kElfDll}) {
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SIGNED_BINARY,
-                             sandbox::TargetPolicy::SIGNED_ALLOW_LOAD,
-                             GetModulePath(dll).value().c_str());
+    result = policy->GetConfig()->AddRule(sandbox::SubSystem::kSignedBinary,
+                                          sandbox::Semantics::kSignedAllowLoad,
+                                          GetModulePath(dll).value().c_str());
     if (result != sandbox::SBOX_ALL_OK)
       return false;
   }
@@ -4295,12 +4371,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(
         page_load_metrics::MetricsNavigationThrottle::Create(handle));
   }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  MaybeAddThrottle(
-      ash::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle),
-      &throttles);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   MaybeAddThrottle(
@@ -4551,6 +4621,9 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   MaybeAddThrottle(MaybeCreateNavigationAblationThrottle(handle), &throttles);
 
+#if !BUILDFLAG(IS_ANDROID)
+  MaybeAddThrottle(MaybeCreateAboutThisSiteThrottleFor(handle), &throttles);
+#endif
   return throttles;
 }
 
@@ -4574,6 +4647,11 @@ std::unique_ptr<content::NavigationUIData>
 ChromeContentBrowserClient::GetNavigationUIData(
     content::NavigationHandle* navigation_handle) {
   return std::make_unique<ChromeNavigationUIData>(navigation_handle);
+}
+
+std::unique_ptr<media::ScreenEnumerator>
+ChromeContentBrowserClient::CreateScreenEnumerator() const {
+  return std::make_unique<ChromeScreenEnumerator>();
 }
 
 std::unique_ptr<content::DevToolsManagerDelegate>
@@ -4681,7 +4759,12 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
   }
 }
 
-void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {
+void ChromeContentBrowserClient::InitOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  safe_browsing_service_ = g_browser_process->safe_browsing_service();
+
+  // Initialize `network_contexts_parent_directory_`.
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(!user_data_dir.empty());
@@ -6176,7 +6259,9 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
   // Persistent MediaDevice IDs are allowed if cookies are allowed.
   return CookieSettingsFactory::GetForProfile(
              Profile::FromBrowserContext(browser_context))
-      ->IsFullCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
+      ->IsFullCookieAccessAllowed(
+          url, site_for_cookies, top_frame_origin,
+          content_settings::CookieSettings::QueryReason::kSiteStorage);
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -6290,20 +6375,6 @@ bool ChromeContentBrowserClient::IsClipboardCopyAllowed(
   return service->IsUrlAllowedToCopy(url, data_size_in_bytes,
                                      &replacement_data);
 }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-bool ChromeContentBrowserClient::ShouldAllowPluginCreation(
-    const url::Origin& embedder_origin,
-    const content::PepperPluginInfo& plugin_info) {
-#if BUILDFLAG(ENABLE_PDF)
-  if (plugin_info.name == ChromeContentClient::kPDFInternalPluginName) {
-    return IsPdfInternalPluginAllowedOrigin(embedder_origin);
-  }
-#endif  // BUILDFLAG(ENABLE_PDF)
-
-  return true;
-}
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_VR)
 content::XrIntegrationClient*
@@ -6571,21 +6642,6 @@ bool ChromeContentBrowserClient::WillProvidePublicFirstPartySets() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableComponentUpdate) &&
          base::FeatureList::IsEnabled(features::kFirstPartySets);
-}
-
-base::Value::Dict ChromeContentBrowserClient::GetFirstPartySetsOverrides() {
-  if (!g_browser_process) {
-    // If browser process doesn't exist (e.g. in minimal mode on Android),
-    // we can't provide any overrides.
-    return base::Value::Dict();
-  }
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state || !local_state->FindPreference(
-                          first_party_sets::kFirstPartySetsOverrides)) {
-    return base::Value::Dict();
-  }
-  return local_state->GetValueDict(first_party_sets::kFirstPartySetsOverrides)
-      .Clone();
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr

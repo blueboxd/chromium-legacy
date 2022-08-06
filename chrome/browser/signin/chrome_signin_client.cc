@@ -55,13 +55,13 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/net/delay_network_call.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -317,7 +317,7 @@ ChromeSigninClient::GetInitialPrimaryAccount() {
     return absl::nullopt;
 
   const crosapi::mojom::AccountPtr& device_account =
-      chromeos::BrowserInitParams::Get()->device_account;
+      chromeos::BrowserParamsProxy::Get()->DeviceAccount();
   if (!device_account)
     return absl::nullopt;
 
@@ -334,7 +334,7 @@ absl::optional<bool> ChromeSigninClient::IsInitialPrimaryAccountChild() const {
     return absl::nullopt;
 
   const bool is_child_session =
-      chromeos::BrowserInitParams::Get()->session_type ==
+      chromeos::BrowserParamsProxy::Get()->SessionType() ==
       crosapi::mojom::SessionType::kChildSession;
   return is_child_session;
 }

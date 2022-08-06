@@ -143,46 +143,50 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kPermissionPolicyDisabled:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           PermissionPolicyDisabled;
-    case AttributionReportingIssueType::kAttributionSourceUntrustworthyOrigin:
+    case AttributionReportingIssueType::kUntrustworthyReportingOrigin:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
-          AttributionSourceUntrustworthyOrigin;
-    case AttributionReportingIssueType::kAttributionUntrustworthyOrigin:
+          UntrustworthyReportingOrigin;
+    case AttributionReportingIssueType::kInsecureContext:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
-          AttributionUntrustworthyOrigin;
-    case AttributionReportingIssueType::kInvalidHeader:
+          InsecureContext;
+    case AttributionReportingIssueType::kInvalidRegisterSourceHeader:
       return protocol::Audits::AttributionReportingIssueTypeEnum::InvalidHeader;
+    case AttributionReportingIssueType::kInvalidRegisterTriggerHeader:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidRegisterTriggerHeader;
+    case AttributionReportingIssueType::kInvalidEligibleHeader:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidEligibleHeader;
+    case AttributionReportingIssueType::kTooManyConcurrentRequests:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          TooManyConcurrentRequests;
+    case AttributionReportingIssueType::kSourceAndTriggerHeaders:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          SourceAndTriggerHeaders;
   }
 }
 
 }  // namespace
 
-void AuditsIssue::ReportAttributionIssue(
-    ExecutionContext* reporting_execution_context,
-    AttributionReportingIssueType type,
-    const absl::optional<base::UnguessableToken>& offending_frame_token,
-    Element* element,
-    const absl::optional<String>& request_id,
-    const absl::optional<String>& invalid_parameter) {
+void AuditsIssue::ReportAttributionIssue(ExecutionContext* execution_context,
+                                         AttributionReportingIssueType type,
+                                         Element* element,
+                                         const String& request_id,
+                                         const String& invalid_parameter) {
   auto details = protocol::Audits::AttributionReportingIssueDetails::create()
                      .setViolationType(BuildAttributionReportingIssueType(type))
                      .build();
 
-  if (offending_frame_token) {
-    details->setFrame(
-        protocol::Audits::AffectedFrame::create()
-            .setFrameId(IdentifiersFactory::IdFromToken(*offending_frame_token))
-            .build());
-  }
   if (element) {
     details->setViolatingNodeId(DOMNodeIds::IdForNode(element));
   }
-  if (request_id) {
+  if (!request_id.IsNull()) {
     details->setRequest(protocol::Audits::AffectedRequest::create()
-                            .setRequestId(*request_id)
+                            .setRequestId(request_id)
                             .build());
   }
-  if (invalid_parameter) {
-    details->setInvalidParameter(*invalid_parameter);
+  if (!invalid_parameter.IsNull()) {
+    details->setInvalidParameter(invalid_parameter);
   }
 
   auto issue_details =
@@ -194,7 +198,7 @@ void AuditsIssue::ReportAttributionIssue(
                                 AttributionReportingIssue)
                    .setDetails(std::move(issue_details))
                    .build();
-  reporting_execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
+  execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
 }
 
 void AuditsIssue::ReportNavigatorUserAgentAccess(
@@ -467,6 +471,9 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kEventPath:
       type = protocol::Audits::DeprecationIssueTypeEnum::EventPath;
       break;
+    case DeprecationIssueType::kExpectCTHeader:
+      type = protocol::Audits::DeprecationIssueTypeEnum::ExpectCTHeader;
+      break;
     case DeprecationIssueType::kGeolocationInsecureOrigin:
       type =
           protocol::Audits::DeprecationIssueTypeEnum::GeolocationInsecureOrigin;
@@ -502,6 +509,14 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       type = protocol::Audits::DeprecationIssueTypeEnum::
           MediaSourceDurationTruncatingBuffered;
       break;
+    case DeprecationIssueType::kNavigateEventRestoreScroll:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          NavigateEventRestoreScroll;
+      break;
+    case DeprecationIssueType::kNavigateEventTransitionWhile:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          NavigateEventTransitionWhile;
+      break;
     case DeprecationIssueType::kNoSysexWebMIDIWithoutPermission:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           NoSysexWebMIDIWithoutPermission;
@@ -524,6 +539,13 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kOpenWebDatabaseInsecureContext:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           OpenWebDatabaseInsecureContext;
+      break;
+    case DeprecationIssueType::kOverflowVisibleOnReplacedElement:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          OverflowVisibleOnReplacedElement;
+      break;
+    case DeprecationIssueType::kPersistentQuotaType:
+      type = protocol::Audits::DeprecationIssueTypeEnum::PersistentQuotaType;
       break;
     case DeprecationIssueType::kPictureSourceSrc:
       type = protocol::Audits::DeprecationIssueTypeEnum::PictureSourceSrc;

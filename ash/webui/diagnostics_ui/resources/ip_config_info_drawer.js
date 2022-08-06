@@ -4,7 +4,7 @@
 
 import './data_point.js';
 import './diagnostics_shared_css.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -119,7 +119,10 @@ Polymer({
    * @return {string}
    */
   computeSubnetMask_() {
-    if (this.network.ipConfig && this.network.ipConfig.routingPrefix) {
+    // Routing prefix should be [1,32] when set. 0 indicates an unset value.
+    if (this.network.ipConfig && this.network.ipConfig.routingPrefix &&
+        this.network.ipConfig.routingPrefix >= 0 &&
+        this.network.ipConfig.routingPrefix <= 32) {
       return getSubnetMaskFromRoutingPrefix(
           this.network.ipConfig.routingPrefix);
     }

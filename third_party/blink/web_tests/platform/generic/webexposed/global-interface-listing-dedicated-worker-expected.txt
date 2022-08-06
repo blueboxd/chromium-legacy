@@ -169,7 +169,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter size
 [Worker]     method constructor
 [Worker] interface CropTarget
-[Worker]     static method fromElement
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface Crypto
@@ -836,6 +835,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter activeSourceBuffers
 [Worker]     getter duration
+[Worker]     getter handle
 [Worker]     getter onsourceclose
 [Worker]     getter onsourceended
 [Worker]     getter onsourceopen
@@ -845,7 +845,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clearLiveSeekableRange
 [Worker]     method constructor
 [Worker]     method endOfStream
-[Worker]     method getHandle
 [Worker]     method removeSourceBuffer
 [Worker]     method setLiveSeekableRange
 [Worker]     setter duration
@@ -1293,6 +1292,23 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter applicationServerKey
 [Worker]     getter userVisibleOnly
 [Worker]     method constructor
+[Worker] interface RTCEncodedAudioFrame
+[Worker]     attribute @@toStringTag
+[Worker]     getter data
+[Worker]     getter timestamp
+[Worker]     method constructor
+[Worker]     method getMetadata
+[Worker]     method toString
+[Worker]     setter data
+[Worker] interface RTCEncodedVideoFrame
+[Worker]     attribute @@toStringTag
+[Worker]     getter data
+[Worker]     getter timestamp
+[Worker]     getter type
+[Worker]     method constructor
+[Worker]     method getMetadata
+[Worker]     method toString
+[Worker]     setter data
 [Worker] interface ReadableByteStreamController
 [Worker]     attribute @@toStringTag
 [Worker]     getter byobRequest
@@ -1360,7 +1376,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter referrer
 [Worker]     getter referrerPolicy
 [Worker]     getter signal
-[Worker]     getter targetAddressSpace
 [Worker]     getter url
 [Worker]     method arrayBuffer
 [Worker]     method blob
@@ -1495,6 +1510,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onremovesourcebuffer
 [Worker] interface StorageBucket
 [Worker]     attribute @@toStringTag
+[Worker]     getter indexedDB
 [Worker]     method constructor
 [Worker]     method durability
 [Worker]     method estimate
@@ -1603,6 +1619,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
+[Worker] interface TransformStreamDefaultController
+[Worker]     attribute @@toStringTag
+[Worker]     getter desiredSize
+[Worker]     method constructor
+[Worker]     method enqueue
+[Worker]     method error
+[Worker]     method terminate
 [Worker] interface TrustedHTML
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

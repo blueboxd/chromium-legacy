@@ -13,36 +13,27 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/command_line.h"
-#include "base/containers/contains.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/utf_string_conversion_utils.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/client_data_json.h"
-#include "content/browser/webauth/is_uvpaa.h"
 #include "content/browser/webauth/virtual_authenticator_manager_impl.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/device_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "crypto/sha2.h"
-#include "device/base/features.h"
 #include "device/fido/attestation_statement.h"
+#include "device/fido/authenticator_data.h"
+#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_make_credential_request.h"
-#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -54,15 +45,11 @@
 #include "device/fido/public_key.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/asn1_util.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/url_constants.h"
-#include "url/url_util.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "device/fido/mac/authenticator.h"
@@ -71,6 +58,16 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "device/fido/cros/authenticator.h"
+#include "device/fido/features.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "device/fido/features.h"
+#include "device/fido/win/authenticator.h"
+#endif
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
+#include "content/browser/webauth/is_uvpaa.h"
 #endif
 
 namespace content {
@@ -172,11 +169,11 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
 }
 
 // Parses the FIDO transport types extension from the DER-encoded, X.509
-// certificate in |der_cert| and appends any unique transport types found to
-// |out_transports|.
-void AppendUniqueTransportsFromCertificate(
+// certificate in |der_cert| and adds any transport types found to
+// |out_transports|. Returns true if any transports were added.
+bool AddTransportsFromCertificate(
     base::span<const uint8_t> der_cert,
-    std::vector<device::FidoTransportProtocol>* out_transports) {
+    base::flat_set<device::FidoTransportProtocol>* out_transports) {
   // See
   // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-authenticator-transports-extension-v1.2-ps-20170411.html#fido-u2f-certificate-transports-extension
   static constexpr uint8_t kTransportTypesOID[] = {
@@ -190,7 +187,7 @@ void AppendUniqueTransportsFromCertificate(
                             sizeof(kTransportTypesOID)),
           &present, &critical, &contents) ||
       !present) {
-    return;
+    return false;
   }
 
   const net::der::Input contents_der(contents);
@@ -198,7 +195,7 @@ void AppendUniqueTransportsFromCertificate(
   absl::optional<net::der::BitString> transport_bits =
       contents_parser.ReadBitString();
   if (!transport_bits) {
-    return;
+    return false;
   }
 
   // The certificate extension contains a BIT STRING where different bits
@@ -216,12 +213,15 @@ void AppendUniqueTransportsFromCertificate(
       {4, device::FidoTransportProtocol::kInternal},
   };
 
+  bool ret = false;
   for (const auto& mapping : kTransportMapping) {
-    if (transport_bits->AssertsBit(mapping.bit_index) &&
-        !base::Contains(*out_transports, mapping.transport)) {
-      out_transports->push_back(mapping.transport);
+    if (transport_bits->AssertsBit(mapping.bit_index)) {
+      out_transports->insert(mapping.transport);
+      ret |= true;
     }
   }
+
+  return ret;
 }
 
 enum class AttestationErasureOption {
@@ -293,10 +293,8 @@ base::flat_set<device::FidoTransportProtocol> GetWebAuthnTransports(
     transports.insert(device::FidoTransportProtocol::kInternal);
   }
 
-  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
-    transports.insert(
-        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-  }
+  transports.insert(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
 
   // kAndroidAccessory doesn't work on Windows because of USB stack issues.
   // Note: even if this value were inserted it wouldn't take effect on Windows
@@ -513,22 +511,26 @@ bool AuthenticatorCommon::IsFocused() const {
 
 void AuthenticatorCommon::OnLargeBlobCompressed(
     uint64_t original_size,
-    data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
-  if (result.value) {
+    base::expected<mojo_base::BigBuffer, std::string> result) {
+  if (result.has_value()) {
     ctap_get_assertion_request_->large_blob_write = device::LargeBlob(
-        device::fido_parsing_utils::Materialize(*result.value), original_size);
+        device::fido_parsing_utils::Materialize(*result), original_size);
   }
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
 
 void AuthenticatorCommon::OnLargeBlobUncompressed(
     device::AuthenticatorGetAssertionResponse response,
-    data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
+    base::expected<mojo_base::BigBuffer, std::string> result) {
+  absl::optional<mojo_base::BigBuffer> value;
+  if (result.has_value())
+    value = std::move(*result);
+
   CompleteGetAssertionRequest(
       blink::mojom::AuthenticatorStatus::SUCCESS,
       CreateGetAssertionResponse(
           std::move(response),
-          device::fido_parsing_utils::MaterializeOrNull(result.value)));
+          device::fido_parsing_utils::MaterializeOrNull(value)));
 }
 
 // mojom::Authenticator
@@ -600,11 +602,11 @@ void AuthenticatorCommon::MakeCredential(
   absl::optional<std::string> appid_exclude;
   if (options->appid_exclude) {
     appid_exclude = "";
-    auto status = security_checker_->ValidateAppIdExtension(
+    auto add_id_status = security_checker_->ValidateAppIdExtension(
         *options->appid_exclude, caller_origin,
         options->remote_desktop_client_override, &appid_exclude.value());
-    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
-      CompleteMakeCredentialRequest(status);
+    if (add_id_status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      CompleteMakeCredentialRequest(add_id_status);
       return;
     }
     // `ValidateAppidExtension` must have set a value to use. If not, it would
@@ -918,11 +920,11 @@ void AuthenticatorCommon::GetAssertion(
   if (options->appid) {
     requested_extensions_.insert(RequestExtension::kAppID);
     std::string app_id;
-    auto status = security_checker_->ValidateAppIdExtension(
+    auto add_id_status = security_checker_->ValidateAppIdExtension(
         *options->appid, caller_origin, options->remote_desktop_client_override,
         &app_id);
-    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
-      CompleteGetAssertionRequest(status);
+    if (add_id_status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      CompleteGetAssertionRequest(add_id_status);
       return;
     }
     // `ValidateAppidExtension` must have set a value to use. If not, it would
@@ -1016,9 +1018,7 @@ void AuthenticatorCommon::GetAssertion(
           blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
       return;
     }
-    if (!options->is_conditional) {
-      maybe_show_account_picker_ = true;
-    }
+    discoverable_credential_request_ = true;
   }
 
   if (options->large_blob_read && options->large_blob_write) {
@@ -1151,6 +1151,30 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
   IsUVPlatformAuthenticatorAvailable(std::move(uma_decorated_callback));
 #else
   std::move(uma_decorated_callback).Run(false);
+#endif
+}
+
+void AuthenticatorCommon::IsConditionalMediationAvailable(
+    blink::mojom::Authenticator::IsConditionalMediationAvailableCallback
+        callback) {
+  // Conditional mediation is always supported if the virtual environment is
+  // providing a platform authenticator.
+  absl::optional<bool> embedder_isuvpaa_override =
+      GetWebAuthenticationDelegate()
+          ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+              GetRenderFrameHost());
+  if (embedder_isuvpaa_override.has_value()) {
+    std::move(callback).Run(*embedder_isuvpaa_override);
+    return;
+  }
+#if BUILDFLAG(IS_MAC)
+  std::move(callback).Run(true);
+#elif BUILDFLAG(IS_WIN)
+  device::WinWebAuthnApiAuthenticator::IsConditionalMediationAvailable(
+      AuthenticatorEnvironmentImpl::GetInstance()->win_webauthn_api(),
+      std::move(callback));
+#else
+  std::move(callback).Run(false);
 #endif
 }
 
@@ -1510,31 +1534,40 @@ void AuthenticatorCommon::OnSignResponse(
       authenticator->GetType() == device::FidoAuthenticator::Type::kWinNative);
 #endif
 
-  // Show an account picker for requests with empty allow lists.
-  // Authenticators may omit the identifying information in the user entity
-  // if only one credential matches, or if they have account selection UI
-  // built-in. In that case, consider that credential pre-selected.
-  // Authenticators can also use the userSelected signal (from CTAP 2.1)
-  // to indicate that selection has already occurred.
-  if (maybe_show_account_picker_ && !response_data->at(0).user_selected &&
-      (response_data->size() > 1 ||
-       (response_data->at(0).user_entity &&
-        (response_data->at(0).user_entity->name ||
-         response_data->at(0).user_entity->display_name)))) {
-    std::vector<device::PublicKeyCredentialUserEntity> users_list;
-    users_list.reserve(response_data->size());
-    for (const auto& response : *response_data) {
-      if (response.user_entity) {
-        users_list.push_back(*response.user_entity);
-      }
+  // Show an account picker for discoverable credential requests (empty allow
+  // lists). Responses with a single credential are considered pre-selected if
+  // one of the following is true:
+  // - The authenticator omitted user entity information because only one
+  // credential matched (only valid in CTAP 2.0).
+  // - The `userSelected` flag is set, because the user chose an account on an
+  // integrated authenticator UI (CTAP 2.1).
+  // - The user already pre-selected a platform authenticator credential from
+  // browser UI prior to the actual GetAssertion request. (The request handler
+  // set the `userSelected` flag in this case.)
+  if (response_data->size() == 1) {
+    const device::AuthenticatorGetAssertionResponse& response =
+        response_data->at(0);
+    if (!discoverable_credential_request_ || response.user_selected ||
+        !response.user_entity || !response.user_entity->name ||
+        !response.user_entity->display_name) {
+      OnAccountSelected(std::move(response_data->at(0)));
+      return;
     }
-    request_delegate_->SelectAccount(
-        std::move(*response_data),
-        base::BindOnce(&AuthenticatorCommon::OnAccountSelected,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    OnAccountSelected(std::move(response_data->at(0)));
   }
+
+  // Discoverable credential request without preselection UI. Show an account
+  // picker.
+  std::vector<device::PublicKeyCredentialUserEntity> users_list;
+  users_list.reserve(response_data->size());
+  for (const auto& response : *response_data) {
+    if (response.user_entity) {
+      users_list.push_back(*response.user_entity);
+    }
+  }
+  request_delegate_->SelectAccount(
+      std::move(*response_data),
+      base::BindOnce(&AuthenticatorCommon::OnAccountSelected,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AuthenticatorCommon::OnAccountSelected(
@@ -1643,23 +1676,34 @@ AuthenticatorCommon::CreateMakeCredentialResponse(
                 *response_data.transport_used())
           : device::AuthenticatorAttachment::kAny;
 
-  // The transport list must not contain duplicates but the order doesn't matter
-  // because Blink will sort the resulting strings before returning them.
-  std::vector<device::FidoTransportProtocol> transports;
+  base::flat_set<device::FidoTransportProtocol> transports;
+  // transports_authoritative tracks whether the contents of `transports` are
+  // considered to be sufficient complete to report back to the website.
+  bool transports_authoritative = false;
+
   if (response_data.transport_used()) {
-    transports.push_back(*response_data.transport_used());
+    transports.insert(*response_data.transport_used());
   }
-  // If the attestation certificate specifies that the token supports any other
-  // transports, include them in the list.
+  if (response_data.transports) {
+    transports.insert(response_data.transports->begin(),
+                      response_data.transports->end());
+    transports_authoritative = true;
+  }
+  // Also include any transports from the attestation certificate.
   absl::optional<base::span<const uint8_t>> leaf_cert =
       response_data.attestation_object()
           .attestation_statement()
           .GetLeafCertificate();
   if (leaf_cert) {
-    AppendUniqueTransportsFromCertificate(*leaf_cert, &transports);
+    transports_authoritative |=
+        AddTransportsFromCertificate(*leaf_cert, &transports);
   }
 
-  response->transports = std::move(transports);
+  // The order of transports doesn't matter because Blink will sort the
+  // resulting strings before returning them.
+  if (transports_authoritative) {
+    response->transports.assign(transports.begin(), transports.end());
+  }
 
   bool did_create_hmac_secret = false;
   bool did_store_cred_blob = false;
@@ -1897,11 +1941,11 @@ void AuthenticatorCommon::Cleanup() {
   app_id_.reset();
   caller_origin_ = url::Origin();
   relying_party_id_.clear();
-  maybe_show_account_picker_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
   requested_extensions_.clear();
   pending_proxied_request_id_.reset();
+  discoverable_credential_request_ = false;
 }
 
 void AuthenticatorCommon::DisableUI() {

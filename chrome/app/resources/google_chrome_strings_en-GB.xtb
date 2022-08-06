@@ -14,8 +14,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1142745911746664600">Can't update Chrome</translation>
 <translation id="1152920704813762236">About Chrome OS</translation>
 <translation id="1154147086299354128">&amp;Open in Chrome</translation>
-<translation id="1178374936842835197">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
-        Chrome OS Flex settings<ph name="LINK_END" /></translation>
 <translation id="1203500561924088507">Thanks for installing. You must restart your browser before using <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1278833599417554002">Relaunch to update &amp;Chrome</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
@@ -69,6 +67,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2139300032719313227">Restart Chrome OS</translation>
 <translation id="2151406531797534936">Please restart Chrome now</translation>
 <translation id="2174917724755363426">Installation is not complete. Are you sure that you want to cancel?</translation>
+<translation id="223889379102603431">Information about how Chrome manages its root certificates</translation>
 <translation id="2258103955319320201">To access your Chrome browser across all your devices, sign in, then turn on sync</translation>
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
@@ -81,6 +80,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2401189691232800402">Chrome OS system</translation>
 <translation id="2467438592969358367">Google Chrome wants to export your passwords. Type your Windows password to allow this.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
+<translation id="2494974097748878569">Google Assistant in Chrome</translation>
 <translation id="2534507159460261402">Google Pay (copied to Chrome)</translation>
 <translation id="2559253115192232574">Later, a site that you visit can ask Chrome to see your interests in order to personalise the ads that you see. Chrome can share up to three interests.</translation>
 <translation id="2563121210305478421">Relaunch Chrome?</translation>
@@ -121,7 +121,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="3100998948628680988">Name your Chrome profile</translation>
-<translation id="3103390129666310801">To see if your device is up to date, go to <ph name="LINK_BEGIN" />Chrome OS Flex settings<ph name="LINK_END" /></translation>
 <translation id="3114643501466072395">To check if your other passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK" />sign in to Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
@@ -212,7 +211,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">To get future Google Chrome updates, you'll need macOS 10.13 or later. This computer is using OS X 10.11.</translation>
 <translation id="5098668839038261629">When on, you'll also be signed out of Chrome</translation>
-<translation id="5112116809696021727">To see if your device is up to date, go to <ph name="LINK_BEGIN" />Chrome OS Settings<ph name="LINK_END" /></translation>
 <translation id="5132929315877954718">Discover great apps, games, extensions and themes for Google Chrome.</translation>
 <translation id="5139423532931106058">Customise your Chrome profile</translation>
 <translation id="5163087008893166964">Welcome to Chrome; new browser window opened</translation>
@@ -252,8 +250,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
 <translation id="5941711191222866238">Minimise</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
-<translation id="5959292945051687759">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
-        Chrome OS settings<ph name="LINK_END" /></translation>
 <translation id="6003112304606738118">Downloading… <ph name="HOURS" /> hour(s) remaining</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6070348360322141662">For added security, Google Chrome will encrypt your data</translation>
@@ -281,6 +277,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6739177684496155661">Continue in a new Chrome profile?</translation>
 <translation id="6750954913813541382">To fix spelling errors, Chrome sends the text that you type in the browser to Google</translation>
 <translation id="677276454032249905">Exit Chrome anyway?</translation>
+<translation id="6785872064505734160">Google Assistant in Chrome can complete actions across websites for you</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
 <translation id="6881299373831449287">Updating Chrome</translation>
 <translation id="6885412569789873916">Chrome Beta apps</translation>
@@ -353,6 +350,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
 <translation id="813913629614996137">Initialising...</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
+<translation id="8270775718612349140">Certificates managed by Chrome</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="828798499196665338">Your parent has turned off 'Permissions for sites, apps and extensions' for Chrome. Enabling this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>

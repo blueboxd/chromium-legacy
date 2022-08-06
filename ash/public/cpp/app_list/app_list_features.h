@@ -35,12 +35,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
 // zero-state.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
 
-// Enables Drive file suggestions in the suggestion chips.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedFiles;
-
-// Enables local file suggestions in the suggestion chips.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedLocalFiles;
-
 // Enables hashed recording of a app list launches.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
@@ -80,11 +74,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLauncherPlayStoreSearch;
 
 ASH_PUBLIC_EXPORT bool IsAppRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsZeroStateAppsRankerEnabled();
-ASH_PUBLIC_EXPORT bool IsQueryBasedMixedTypesRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsZeroStateMixedTypesRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsAppReinstallZeroStateEnabled();
-ASH_PUBLIC_EXPORT bool IsSuggestedFilesEnabled();
-ASH_PUBLIC_EXPORT bool IsSuggestedLocalFilesEnabled();
 ASH_PUBLIC_EXPORT bool IsAppListLaunchRecordingEnabled();
 ASH_PUBLIC_EXPORT bool IsFuzzyAppSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsExactMatchForNonLatinLocaleEnabled();
@@ -100,8 +91,6 @@ ASH_PUBLIC_EXPORT bool IsLauncherLacrosIntegrationEnabled();
 ASH_PUBLIC_EXPORT bool IsCompactBubbleLauncherEnabled();
 ASH_PUBLIC_EXPORT bool IsLauncherPlayStoreSearchEnabled();
 
-ASH_PUBLIC_EXPORT std::string AnswerServerUrl();
-ASH_PUBLIC_EXPORT std::string AnswerServerQuerySuffix();
 ASH_PUBLIC_EXPORT std::string AppSearchResultRankerPredictorName();
 ASH_PUBLIC_EXPORT std::string CategoricalSearchType();
 

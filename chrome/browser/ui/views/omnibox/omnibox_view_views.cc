@@ -34,13 +34,13 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -1809,17 +1809,16 @@ views::View::DropCallback OmniboxViewViews::CreateDropCallback(
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   MaybeAddSendTabToSelfItem(menu_contents);
 
-  int paste_position = menu_contents->GetIndexOfCommandId(Textfield::kPaste);
-  DCHECK_GE(paste_position, 0);
-  menu_contents->InsertItemWithStringIdAt(paste_position + 1, IDC_PASTE_AND_GO,
-                                          IDS_PASTE_AND_GO);
+  absl::optional<size_t> paste_position =
+      menu_contents->GetIndexOfCommandId(Textfield::kPaste);
+  DCHECK(paste_position.has_value());
+  menu_contents->InsertItemWithStringIdAt(paste_position.value() + 1,
+                                          IDC_PASTE_AND_GO, IDS_PASTE_AND_GO);
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  menu_contents->AddItemWithStringId(
-      IDC_EDIT_SEARCH_ENGINES, OmniboxFieldTrial::IsActiveSearchEnginesEnabled()
-                                   ? IDS_MANAGE_SEARCH_ENGINES_AND_SITE_SEARCH
-                                   : IDS_MANAGE_SEARCH_ENGINES);
+  menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
+                                     IDS_MANAGE_SEARCH_ENGINES_AND_SITE_SEARCH);
 
   const PrefService::Preference* show_full_urls_pref =
       location_bar_view_->profile()->GetPrefs()->FindPreference(
@@ -1920,7 +1919,7 @@ void OmniboxViewViews::MaybeAddSendTabToSelfItem(
     return;
   }
 
-  int index = menu_contents->GetIndexOfCommandId(Textfield::kUndo);
+  size_t index = menu_contents->GetIndexOfCommandId(Textfield::kUndo).value();
   // Add a separator if this is not the first item.
   if (index) {
     menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);

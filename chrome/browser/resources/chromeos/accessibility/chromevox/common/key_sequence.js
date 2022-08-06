@@ -24,6 +24,9 @@
  * - Whether or not a prefix key was entered before the discrete keys.
  * - Whether sticky mode was active.
  */
+
+import {KeyCode} from '../../common/key_code.js';
+
 export class KeySequence {
   /**
    * @param {Event|Object} originalEvent The original key event entered by a
@@ -88,7 +91,7 @@ export class KeySequence {
       altGraphKey: [],
       shiftKey: [],
       metaKey: [],
-      keyCode: []
+      keyCode: [],
     };
 
     this.extractKey_(originalEvent);
@@ -537,7 +540,7 @@ KeySequence.KEY_PRESS_CODE = {
   59: 186,
   91: 219,
   92: 220,
-  93: 221
+  93: 221,
 };
 
 /**

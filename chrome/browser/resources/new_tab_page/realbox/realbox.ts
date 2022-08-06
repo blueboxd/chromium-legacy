@@ -20,16 +20,16 @@ import {RealboxBrowserProxy} from './realbox_browser_proxy.js';
 import {RealboxDropdownElement} from './realbox_dropdown.js';
 import {AutocompleteMatchWithImageData, RealboxIconElement} from './realbox_icon.js';
 
-type Input = {
-  text: string,
-  inline: string,
-};
+interface Input {
+  text: string;
+  inline: string;
+}
 
-type InputUpdate = {
-  text?: string,
-  inline?: string,
-  moveCursorToEnd?: boolean,
-};
+interface InputUpdate {
+  text?: string;
+  inline?: string;
+  moveCursorToEnd?: boolean;
+}
 
 export interface RealboxElement {
   $: {
@@ -298,7 +298,7 @@ export class RealboxElement extends PolymerElement {
       this.updateInput_({
         text: decodeString16(this.selectedMatch_!.fillIntoEdit),
         inline: '',
-        moveCursorToEnd: true
+        moveCursorToEnd: true,
       });
     } else {
       this.$.matches.unselect();
@@ -317,17 +317,17 @@ export class RealboxElement extends PolymerElement {
     if (variant === 0) {
       this.updateStyles({
         '--search-box-bg': skColorToRgba(assert(this.theme.bg)),
-        '--search-box-bg-hovered': skColorToRgba(assert(this.theme.bgHovered))
+        '--search-box-bg-hovered': skColorToRgba(assert(this.theme.bgHovered)),
       });
     } else if (variant === 1) {
       this.updateStyles({
         '--search-box-bg': skColorToRgba(assert(this.theme.ntpBg)),
-        '--search-box-bg-hovered': skColorToRgba(assert(this.theme.bgHovered))
+        '--search-box-bg-hovered': skColorToRgba(assert(this.theme.bgHovered)),
       });
     } else if (variant === 2) {
       this.updateStyles({
         '--search-box-bg': skColorToRgba(assert(this.theme.ntpBg)),
-        '--search-box-bg-hovered': skColorToRgba(assert(this.theme.resultsBg))
+        '--search-box-bg-hovered': skColorToRgba(assert(this.theme.resultsBg)),
       });
     }
 
@@ -593,7 +593,8 @@ export class RealboxElement extends PolymerElement {
 
     // Update the input.
     const newFill = decodeString16(this.selectedMatch_!.fillIntoEdit);
-    const newInline = this.selectedMatch_!.allowedToBeDefaultMatch ?
+    const newInline = this.selectedMatchIndex_ === 0 &&
+            this.selectedMatch_!.allowedToBeDefaultMatch ?
         decodeString16(this.selectedMatch_!.inlineAutocompletion) :
         '';
     const newFillEnd = newFill.length - newInline.length;
@@ -622,7 +623,7 @@ export class RealboxElement extends PolymerElement {
     this.updateInput_({
       text: decodeString16(this.selectedMatch_!.fillIntoEdit),
       inline: '',
-      moveCursorToEnd: true
+      moveCursorToEnd: true,
     });
   }
 

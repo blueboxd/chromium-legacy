@@ -16,10 +16,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/network/wifi_signal_strength_rssi_fetcher.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 
 using ::chromeos::cros_healthd::mojom::NetworkInterfaceInfoPtr;
@@ -77,15 +77,20 @@ NetworkInterfaceInfoPtr GetWifiNetworkInterfaceInfo(
 }
 
 NetworkConnectionState GetNetworkConnectionState(
-    const chromeos::NetworkState* network) {
-  if (network->IsConnectedState() && network->IsCaptivePortal()) {
-    return NetworkConnectionState::PORTAL;
-  }
-  if (network->IsConnectedState() && network->IsOnline()) {
-    return NetworkConnectionState::ONLINE;
-  }
+    const ash::NetworkState* network) {
   if (network->IsConnectedState()) {
-    return NetworkConnectionState::CONNECTED;
+    auto portal_state = network->GetPortalState();
+    switch (portal_state) {
+      case ash::NetworkState::PortalState::kUnknown:
+        return NetworkConnectionState::CONNECTED;
+      case ash::NetworkState::PortalState::kOnline:
+        return NetworkConnectionState::ONLINE;
+      case ash::NetworkState::PortalState::kPortalSuspected:
+      case ash::NetworkState::PortalState::kPortal:
+      case ash::NetworkState::PortalState::kProxyAuthRequired:
+      case ash::NetworkState::PortalState::kNoInternet:
+        return NetworkConnectionState::PORTAL;
+    }
   }
   if (network->IsConnectingState()) {
     return NetworkConnectionState::CONNECTING;
@@ -93,21 +98,20 @@ NetworkConnectionState GetNetworkConnectionState(
   return NetworkConnectionState::NOT_CONNECTED;
 }
 
-NetworkType GetNetworkType(const ::chromeos::NetworkTypePattern& type) {
-  if (type.Equals(::chromeos::NetworkTypePattern::Cellular())) {
+NetworkType GetNetworkType(const ash::NetworkTypePattern& type) {
+  if (type.Equals(ash::NetworkTypePattern::Cellular())) {
     return NetworkType::CELLULAR;
   }
-  if (type.MatchesPattern(
-          ::chromeos::NetworkTypePattern::EthernetOrEthernetEAP())) {
+  if (type.MatchesPattern(ash::NetworkTypePattern::EthernetOrEthernetEAP())) {
     return NetworkType::ETHERNET;
   }
-  if (type.Equals(::chromeos::NetworkTypePattern::Tether())) {
+  if (type.Equals(ash::NetworkTypePattern::Tether())) {
     return NetworkType::TETHER;
   }
-  if (type.Equals(::chromeos::NetworkTypePattern::VPN())) {
+  if (type.Equals(ash::NetworkTypePattern::VPN())) {
     return NetworkType::VPN;
   }
-  if (type.Equals(::chromeos::NetworkTypePattern::WiFi())) {
+  if (type.Equals(ash::NetworkTypePattern::WiFi())) {
     return NetworkType::WIFI;
   }
   NOTREACHED() << "Unsupported network type: " << type.ToDebugString();

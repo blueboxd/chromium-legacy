@@ -9,7 +9,9 @@
 #include "chrome/browser/ui/views/title_origin_label.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
@@ -47,15 +49,17 @@ void JavaScriptTabModalDialogViewViews::AddedToWidget() {
   auto* bubble_frame_view = static_cast<views::BubbleFrameView*>(
       GetWidget()->non_client_view()->frame_view());
   bubble_frame_view->SetTitleView(CreateTitleOriginLabel(GetWindowTitle()));
-  GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescription(
-      message_text_);
-
+  if (!message_text_.empty()) {
+    GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescription(
+        message_text_);
+  }
   // On some platforms, the platform accessibility API automatically
   // calculates the name of the native window based on the child RootView.
   // We override that calculation here so that we can present both the
   // title (e.g. "url.com says") and the message text on platforms where
   // the accessible description is ignored.
-  GetViewAccessibility().OverrideNativeWindowTitle(GetWindowTitle());
+  GetViewAccessibility().OverrideNativeWindowTitle(l10n_util::GetStringFUTF16(
+      IDS_CONCAT_TWO_STRINGS_WITH_COMMA, GetWindowTitle(), message_text_));
 }
 
 JavaScriptTabModalDialogViewViews::JavaScriptTabModalDialogViewViews(

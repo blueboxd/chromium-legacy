@@ -312,6 +312,14 @@ builder.
   * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
   * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
 
+* [linux-blink-web-tests-force-accessibility-rel](https://ci.chromium.org/p/chromium/builders/try/linux-blink-web-tests-force-accessibility-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-blink-web-tests-force-accessibility-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-blink-web-tests-force-accessibility-rel""))
+
+  Path regular expressions:
+  * [`//third_party/blink/renderer/modules/accessibility/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/)
+  * [`//content/renderer/accessibility/.+`](https://cs.chromium.org/chromium/src/content/renderer/accessibility/)
+  * [`//content/browser/accessibility/.+`](https://cs.chromium.org/chromium/src/content/browser/accessibility/)
+  * [`//ui/accessibility/.+`](https://cs.chromium.org/chromium/src/ui/accessibility/)
+
 * [linux-cfm-rel](https://ci.chromium.org/p/chromium/builders/try/linux-cfm-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-cfm-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-cfm-rel""))
 
   Path regular expressions:
@@ -480,11 +488,17 @@ as required builders.
 * [android-12-x64-rel](https://ci.chromium.org/p/chromium/builders/try/android-12-x64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-12-x64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-12-x64-rel""))
   * Experiment percentage: 100.0
 
+* [android-12l-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-12l-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-12l-x86-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-12l-x86-rel""))
+  * Experiment percentage: 2.0
+
+* [android-nougat-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-nougat-x86-rel""))
+  * Experiment percentage: 5.0
+
 * [android-pie-arm64-coverage-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-coverage-experimental-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-coverage-experimental-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-pie-arm64-coverage-experimental-rel""))
   * Experiment percentage: 3.0
 
 * [fuchsia-binary-size](https://ci.chromium.org/p/chromium/builders/try/fuchsia-binary-size) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-binary-size"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-binary-size""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 50.0
 
 * [linux-1mbu-compile-fyi-rel](https://ci.chromium.org/p/chromium/builders/try/linux-1mbu-compile-fyi-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-1mbu-compile-fyi-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-1mbu-compile-fyi-rel""))
   * Experiment percentage: 5.0
@@ -494,6 +508,9 @@ as required builders.
 
 * [linux-rel-ml](https://ci.chromium.org/p/chromium/builders/try/linux-rel-ml) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-rel-ml"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-rel-ml""))
   * Experiment percentage: 5.0
+
+* [linux-wayland-rel-reclient](https://ci.chromium.org/p/chromium/builders/try/linux-wayland-rel-reclient) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-wayland-rel-reclient"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-wayland-rel-reclient""))
+  * Experiment percentage: 1.0
 
 * [mac12-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac12-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac12-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""mac12-arm64-rel""))
   * Experiment percentage: 100.0

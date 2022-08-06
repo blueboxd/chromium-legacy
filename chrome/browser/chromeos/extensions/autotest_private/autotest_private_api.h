@@ -15,8 +15,11 @@
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/common/extensions/api/autotest_private.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom-forward.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -331,6 +334,8 @@ class AutotestPrivateGetLacrosInfoFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateGetLacrosInfoFunction() override;
   ResponseAction Run() override;
+  static api::autotest_private::LacrosState ToLacrosState(
+      crosapi::BrowserManager::State state);
 };
 
 class AutotestPrivateGetArcAppFunction : public ExtensionFunction {
@@ -410,6 +415,8 @@ class AutotestPrivateIsSystemWebAppOpenFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateIsSystemWebAppOpenFunction() override;
   ResponseAction Run() override;
+
+  void OnSystemWebAppsInstalled();
 };
 
 class AutotestPrivateLaunchArcAppFunction : public ExtensionFunction {
@@ -440,6 +447,19 @@ class AutotestPrivateLaunchSystemWebAppFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateLaunchSystemWebAppFunction() override;
   ResponseAction Run() override;
+
+  void OnSystemWebAppsInstalled();
+};
+
+class AutotestPrivateLaunchFilesAppToPathFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchFilesAppToPath",
+                             AUTOTESTPRIVATE_LAUNCHFILESAPPTOPATH)
+
+ private:
+  ~AutotestPrivateLaunchFilesAppToPathFunction() override;
+  ResponseAction Run() override;
+  void OnShowItemInFolder(platform_util::OpenOperationResult result);
 };
 
 class AutotestPrivateCloseAppFunction : public ExtensionFunction {
@@ -582,7 +602,7 @@ class AutotestPrivateInstallBorealisFunction : public ExtensionFunction {
   ~AutotestPrivateInstallBorealisFunction() override;
   ResponseAction Run() override;
 
-  void Complete(bool was_successful);
+  void Complete(std::string error_or_empty);
 
   std::unique_ptr<InstallationObserver> installation_observer_;
 };
@@ -827,6 +847,17 @@ class AutotestPrivateIsArcPackageListInitialRefreshedFunction
 
  private:
   ~AutotestPrivateIsArcPackageListInitialRefreshedFunction() override;
+  ResponseAction Run() override;
+};
+
+// Set user pref value in the pref tree.
+class AutotestPrivateSetAllowedPrefFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setAllowedPref",
+                             AUTOTESTPRIVATE_SETALLOWEDPREF)
+
+ private:
+  ~AutotestPrivateSetAllowedPrefFunction() override;
   ResponseAction Run() override;
 };
 
@@ -1287,6 +1318,17 @@ class AutotestPrivateActivateAdjacentDesksToTargetIndexFunction
   ResponseAction Run() override;
 
   void OnAnimationComplete();
+};
+
+class AutotestPrivateGetDeskCountFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetDeskCountFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getDeskCount",
+                             AUTOTESTPRIVATE_GETDESKCOUNT)
+
+ private:
+  ~AutotestPrivateGetDeskCountFunction() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateMouseClickFunction : public ExtensionFunction {

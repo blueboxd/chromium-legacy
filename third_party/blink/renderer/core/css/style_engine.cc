@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -140,13 +141,22 @@ StyleEngine::StyleEngine(Document& document)
     font_selector_->RegisterForInvalidationCallbacks(this);
     if (const auto* owner = document.GetFrame()->Owner())
       owner_color_scheme_ = owner->GetColorScheme();
-  }
-  if (document.IsInMainFrame())
-    viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
-  if (auto* settings = GetDocument().GetSettings()) {
-    preferred_color_scheme_ = settings->GetPreferredColorScheme();
+
+    // Viewport styles are only processed in the main frame of a page with an
+    // active viewport. That is, a pages that their own independently zoomable
+    // viewport: the outermost main frame and portals.
+    DCHECK(document.GetPage());
+    VisualViewport& viewport = document.GetPage()->GetVisualViewport();
+    if (document.IsInMainFrame() && viewport.IsActiveViewport()) {
+      viewport_resolver_ =
+          MakeGarbageCollected<ViewportStyleResolver>(document);
+    }
+
+    DCHECK(document.GetSettings());
+    preferred_color_scheme_ = document.GetSettings()->GetPreferredColorScheme();
     UpdateColorSchemeMetrics();
   }
+
   forced_colors_ =
       WebThemeEngineHelper::GetNativeThemeEngine()->GetForcedColors();
   UpdateForcedBackgroundColor();
@@ -1023,9 +1033,7 @@ void StyleEngine::InvalidateElementAffectedByHas(Element& element,
   if (for_pseudo_change && !element.AffectedByPseudoInHas())
     return;
 
-  const ComputedStyle* style = element.GetComputedStyle();
-
-  if (style && style->AffectedBySubjectHas()) {
+  if (element.AffectedBySubjectHas()) {
     // TODO(blee@igalia.com) Need filtering for irrelevant elements.
     // e.g. When we have '.a:has(.b) {}', '.c:has(.d) {}', mutation of class
     // value 'd' can invalidate ancestor with class value 'a' because we
@@ -2648,7 +2656,7 @@ scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
     return initial_data_;
   if (const PropertyRegistry* registry = document_->GetPropertyRegistry()) {
     if (!registry->IsEmpty())
-      initial_data_ = StyleInitialData::Create(*registry);
+      initial_data_ = StyleInitialData::Create(GetDocument(), *registry);
   }
   return initial_data_;
 }
@@ -3406,7 +3414,7 @@ void StyleEngine::MarkForLayoutTreeChangesAfterDetach() {
 }
 
 void StyleEngine::ReportUseOfLegacyLayoutWithContainerQueries() {
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGTableFragmentationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
 
   // Only report once.
   if (legacy_layout_query_container_)

@@ -47,7 +47,6 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list:web_state_list",
     "//ios/chrome/browser/webdata_services",
@@ -71,18 +70,25 @@ source_set("bridges") {
     "card_expiration_date_fix_flow_view_bridge.mm",
     "card_name_fix_flow_view_bridge.h",
     "card_name_fix_flow_view_bridge.mm",
+    "card_unmask_prompt_view_bridge.h",
+    "card_unmask_prompt_view_bridge.mm",
+    "card_unmask_prompt_view_controller.h",
+    "card_unmask_prompt_view_controller.mm",
+    "create_card_unmask_prompt_view_bridge.h",
+    "create_card_unmask_prompt_view_bridge.mm",
     "legacy_card_unmask_prompt_view_bridge.h",
     "legacy_card_unmask_prompt_view_bridge.mm",
   ]
   deps = [
     ":autofill_ui",
+    ":features",
     "//base",
     "//components/autofill/core/browser",
     "//components/strings",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view/cells",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/table_view:utils",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
@@ -90,7 +96,10 @@ source_set("bridges") {
     "//ios/web",
     "//ui/base",
   ]
-  public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
+  public_deps = [
+    "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/table_view",
+  ]
   frameworks = [ "UIKit.framework" ]
 }
 
@@ -111,7 +120,6 @@ source_set("autofill_ui") {
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
-import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
@@ -11,39 +10,14 @@ component("dbus") {
   output_name = "chromeos_dbus"  # Avoid conflict with //dbus
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
   public_deps = [
-    "//chromeos/dbus/arc",
     "//chromeos/dbus/common",
     "//chromeos/dbus/constants",
-    "//chromeos/dbus/debug_daemon",
     "//chromeos/dbus/init",
     "//chromeos/dbus/shill",
     "//dbus",
   ]
-  deps = [
-    ":metrics_event_proto",
-    ":plugin_vm_service_proto",
-    ":vm_applications_apps_proto",
-    ":vm_disk_management_proto",
-    ":vm_launch_proto",
-    ":vm_permission_service_proto",
-    ":vm_sk_forwarding_proto",
-    "//base",
-    "//chromeos/dbus/cec_service",
-    "//chromeos/dbus/cros_disks",
-    "//chromeos/dbus/easy_unlock",
-    "//chromeos/dbus/fwupd",
-    "//chromeos/dbus/gnubby",
-    "//chromeos/dbus/image_burner",
-    "//chromeos/dbus/util",
-    "//components/account_id",
-    "//components/device_event_log",
-    "//components/policy/proto",
-    "//net",
-    "//url",
-  ]
+  deps = [ "//base" ]
   sources = [
-    "dbus_clients_browser.cc",
-    "dbus_clients_browser.h",
     "dbus_thread_manager.cc",
     "dbus_thread_manager.h",
   ]
@@ -73,15 +47,9 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos/dbus/cec_service:unit_tests",
-    "//chromeos/dbus/cros_disks:unit_tests",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice:unit_tests",
-    "//chromeos/dbus/easy_unlock:unit_tests",
-    "//chromeos/dbus/fwupd:test_support",
-    "//chromeos/dbus/gnubby:unit_tests",
-    "//chromeos/dbus/hermes:test_support",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/power:test_support",
     "//chromeos/dbus/shill:test_support",
@@ -89,7 +57,6 @@ source_set("unit_tests") {
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
     "//chromeos/dbus/u2f",
     "//chromeos/dbus/u2f:u2f_proto",
-    "//chromeos/dbus/util:unit_tests",
     "//dbus",
     "//dbus:test_support",
     "//testing/gmock",
@@ -103,49 +70,4 @@ source_set("unit_tests") {
     "pipe_reader_unittest.cc",
     "tpm_manager/tpm_manager_client_unittest.cc",
   ]
-}
-
-proto_library("metrics_event_proto") {
-  sources =
-      [ "//third_party/cros_system_api/dbus/metrics_event/metrics_event.proto" ]
-
-  proto_out_dir = "chromeos/dbus/metrics_event"
-}
-
-proto_library("plugin_vm_service_proto") {
-  sources = [ "//third_party/cros_system_api/dbus/plugin_vm_service/plugin_vm_service.proto" ]
-
-  proto_out_dir = "chromeos/dbus/plugin_vm_service"
-}
-
-proto_library("vm_applications_apps_proto") {
-  sources = [ "//third_party/cros_system_api/dbus/vm_applications/apps.proto" ]
-
-  proto_out_dir = "chromeos/dbus/vm_applications"
-}
-
-proto_library("vm_disk_management_proto") {
-  sources = [ "//third_party/cros_system_api/dbus/vm_disk_management/disk_management.proto" ]
-
-  proto_out_dir = "chromeos/dbus/vm_disk_management"
-}
-
-proto_library("vm_launch_proto") {
-  sources = [ "//third_party/cros_system_api/dbus/vm_launch/launch.proto" ]
-
-  proto_out_dir = "chromeos/dbus/vm_launch"
-}
-
-proto_library("vm_sk_forwarding_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/vm_sk_forwarding/sk_forwarding.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/vm_sk_forwarding"
-}
-
-proto_library("vm_permission_service_proto") {
-  sources = [ "//third_party/cros_system_api/dbus/vm_permission_service/vm_permission_service.proto" ]
-
-  proto_out_dir = "chromeos/dbus/vm_permission_service"
 }

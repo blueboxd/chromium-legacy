@@ -27,6 +27,7 @@
 <translation id="1199355487114804640">Pokretanje/pauziranje</translation>
 <translation id="1201402288615127009">Naprijed</translation>
 <translation id="1204296502688602597">Latentnost DNS-a</translation>
+<translation id="1207734034680156868">Prijedlozi se temelje na vašem opisu</translation>
 <translation id="123124571410524056">Sumnja na portal</translation>
 <translation id="1236400083787698183">Prije ponovnog pokretanja, pokrenite Powerwash na uređaju. Ako uređaj ima poklopac, nemojte ga zatvarati dok se Powerwash ne završi. Powerwash može potrajati do jedne minute.</translation>
 <translation id="1238612778414822719">HTTPs latentnost</translation>
@@ -92,6 +93,7 @@
 <translation id="1644574205037202324">Historija</translation>
 <translation id="1645954272419197032">Potvrdite informacije s uređaja</translation>
 <translation id="1662989795263954667">Zaustavljeno – nema tinte</translation>
+<translation id="1664796644829245314">Pregledanje sljedećeg: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Ugrađeni VPN</translation>
 <translation id="1672499492233627739">Sažetak sadržaja videozapisa web kamere</translation>
 <translation id="1676557873873341166">Snimanje videozapisa</translation>
@@ -118,6 +120,7 @@
 <translation id="1851218745569890714">Videokonferencija</translation>
 <translation id="1852934301711881861">Instaliraj ChromeOS Flex</translation>
 <translation id="1856388568474281774">Strelica nadolje</translation>
+<translation id="1858620243986915808">Priloži snimak ekrana</translation>
 <translation id="1871569928317311284">Isključi tamnu temu</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Isključi tamni način rada</translation>
@@ -132,6 +135,7 @@
 <translation id="1977994649430373166">Fotografija Google profila</translation>
 <translation id="1979103255016296513">Vrijeme za promjenu lozinke je isteklo</translation>
 <translation id="1999615961760456652">Zaštitni portal</translation>
+<translation id="200669432486043882">Zamijeni datoteku</translation>
 <translation id="2006864819935886708">Povezivost</translation>
 <translation id="2008685064673031089">Primarno pretraživanje</translation>
 <translation id="2011174342667534258">Verzija SDK:</translation>
@@ -194,6 +198,7 @@
 <translation id="2448312741937722512">Vrsta</translation>
 <translation id="2461822463642141190">Trenutno</translation>
 <translation id="2480034874476596812">Ručno isključivanje</translation>
+<translation id="248546197012830854">Uređaj je offline. Povežite se s WiFi mrežom da vidite sadržaj za pomoć.</translation>
 <translation id="2491955442992294626">Ključevi se ne testiraju kada koristite drugi prozor</translation>
 <translation id="2493126929778606526">Vaše najbolje fotografije, automatski odabrane</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +237,12 @@
 <translation id="3008341117444806826">OSVJEŽI</translation>
 <translation id="3009958530611748826">Odaberite folder za pohranjivanje</translation>
 <translation id="3017079585324758401">Pozadina</translation>
+<translation id="302435934487327038">Instaliranje je završeno</translation>
 <translation id="3027578600144895987">Zatvorite kameru</translation>
 <translation id="3031560714565892478">Uređaj je video kamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Krajnja tačka</translation>
 <translation id="3069085583900247081">Test nije uspio</translation>
-<translation id="3076243757415932261">Potvrđivanje komponenti...</translation>
 <translation id="3083667275341675831">Dijagnostika povezivosti</translation>
 <translation id="3084958266922136097">Onemogućite čuvara ekrana</translation>
 <translation id="3091839911843451378">Nije uspjelo – zaustavljeno</translation>
@@ -272,7 +277,6 @@
 <translation id="3369013195428705271">Jeste li sigurni da želite obrisati svu historiju štampanja? Vaši trenutni zadaci štampanja se neće izbrisati.</translation>
 <translation id="3383751554789092165">Promijenite informacije s uređaja po potrebi.</translation>
 <translation id="3404249063913988450">Omogućite čuvara ekrana</translation>
-<translation id="3404770484521709967">Komponente su ispravno instalirane.</translation>
 <translation id="3413935475507503304">Da nastavite s ažuriranjem, kliknite na Naprijed.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Sigurnost</translation>
@@ -392,7 +396,6 @@
 <translation id="445059817448385655">Stara lozinka</translation>
 <translation id="4453205916657964690">Maska podmreže</translation>
 <translation id="4454245904991689773">Skeniraj u:</translation>
-<translation id="4472575034687746823">Započnite</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Provjera pingom mrežnog pristupnika koji nije zadan nije uspjela</translation>
 <translation id="4500213108254186382">Mjerač ubrzanja u poklopcu</translation>
@@ -660,14 +663,15 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="6611280807952151149">Izađi iz popravke uređaja <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Pokrenuto</translation>
 <translation id="6620487321149975369">Zadaci za štampanje će se pojaviti u historiji osim ako ih ne uklonite ručno</translation>
+<translation id="6624819909909965616">Nije moguće otpremiti fajl veći od 10 MB.</translation>
 <translation id="6643016212128521049">Obriši</translation>
+<translation id="6644568396961840069">Pohranjivanje fajla nije uspjelo. Pokušajte priključiti drugu vanjsku pohranu ili pokušajte ponovo kasnije.</translation>
 <translation id="6647510110698214773">Algoritam šifriranja</translation>
 <translation id="6650062777702288430">Prekidač za Kana/alfanumeričke znakove</translation>
 <translation id="6657585470893396449">Lozinka</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6692996468359469499">Primajte informacije u vezi s vašim odabirom</translation>
 <translation id="6704062477274546131">Razrješavanje DNS-a</translation>
-<translation id="6721744718589119342">Možda ćemo vam poslati e-poruku za više informacija ili novosti</translation>
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6723847290197874913">Pozadinsko svjetlo tastature</translation>
 <translation id="672609503628871915">Pogledajte što je novo</translation>
@@ -695,6 +699,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="6965382102122355670">Uredu</translation>
 <translation id="6977381486153291903">Revizija firmvera</translation>
 <translation id="6995564396478647735">Provjerite je li uključena Zaštita od pisanja</translation>
+<translation id="7005833343836210400">Uređaj je offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posjećene web stranice, lozinke i e-poštu.</translation>
 <translation id="7040230719604914234">Operater</translation>
 <translation id="7041549558901442110">Uređaj nije povezan.</translation>
@@ -720,6 +725,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="7180611975245234373">Osvježi</translation>
 <translation id="7212734716605298123">Ažuriranja firmvera za vanjske uređaje</translation>
 <translation id="7216409898977639127">Mobilni operater</translation>
+<translation id="725133483556299729">Odabir e-poruke</translation>
 <translation id="7271040990581020067">Skener se trenutno koristi. Pokušajte ponovo kasnije.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Odaberite 1 komponentu ili više i pokušajte ponovo, ili preskočite kalibraciju</translation>
@@ -797,6 +803,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="7978412674231730200">Privatni ključ</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="7994702968232966508">EAP metoda</translation>
+<translation id="8018928621986160031">Sačuvano u "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Omogućavanje načina rada automatske boje</translation>
@@ -805,8 +812,8 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="8063022551652308521">Zaštita od pisanja je i dalje isključena. Da nastavite, uključite Zaštitu od pisanja.</translation>
 <translation id="8075838845814659848">Preostali nivo napunjenosti</translation>
 <translation id="8082366717211101304">Nije moguće razriješiti DNS iz Android aplikacija</translation>
-<translation id="8083281199617904460">Ovaj postupak popravka je namijenjen obučenom tehničaru za popravak. Počnite samo nakon zamjene komponenti koje ne rade ispravno.</translation>
 <translation id="808894953321890993">Promijeni lozinku</translation>
+<translation id="8094062939584182041">Dozvolite Googleu da vam šalje e-poruke o ovom problemu</translation>
 <translation id="8104083085214006426">Koristite otvorenu i nezaštićenu mrežu</translation>
 <translation id="8109786307828817014">Nastaviti s neuspjelim kalibracijama?</translation>
 <translation id="811820734797650957">(Android) Pristupnik se može provjeriti pingom</translation>
@@ -821,6 +828,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="8217675307824400706">Povežite se</translation>
 <translation id="8221728673725659466">Kalibracija je završena</translation>
 <translation id="8226628635270268143">Odaberite omiljene fotografije i albume</translation>
+<translation id="8227119283605456246">Priloži fajl</translation>
 <translation id="8230672074305416752">Provjera pingom zadanog mrežnog pristupnika nije uspjela</translation>
 <translation id="8246209727385807362">Nepoznat mobilni operater</translation>
 <translation id="827422111966801947">Indigo plava</translation>
@@ -865,6 +873,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="8576249514688522074">Pokretanje je prekinuto</translation>
 <translation id="8620617069779373398">Status rominga</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Dijelite URL:</translation>
 <translation id="8660881923941176839">funte</translation>
 <translation id="8662671328352114214">Pridružite se <ph name="TYPE" /> mreži</translation>
 <translation id="8671972493856476349">Ažurirajte na <ph name="VERSION_NUMBER" /> i ponovo pokrenite</translation>

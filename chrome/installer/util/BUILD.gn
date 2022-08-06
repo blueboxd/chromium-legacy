@@ -164,6 +164,8 @@ static_library("with_no_strings") {
       "scoped_user_protocol_entry.h",
       "shell_util.cc",
       "shell_util.h",
+      "taskbar_util.cc",
+      "taskbar_util.h",
     ]
 
     public_deps += [
@@ -374,6 +376,17 @@ if (is_win) {
     data = [
       "//chrome/test/data/extensions/",
       "//chrome/test/data/installer/",
+    ]
+  }
+
+  source_set("interactive_ui_tests") {
+    testonly = true
+    sources = [ "shell_util_interactive_uitest.cc" ]
+    deps = [
+      ":with_no_strings",
+      "//base",
+      "//base/test:test_support",
+      "//testing/gtest",
     ]
   }
 }  # is_win

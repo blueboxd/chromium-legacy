@@ -4,7 +4,7 @@
 
 import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 
-import {MockChromeFileManagerPrivateDirectoryChanged, MockChromeStorageAPI} from '../../common/js/mock_chrome.js';
+import {installMockChrome, MockChromeFileManagerPrivateDirectoryChanged, MockChromeStorageAPI} from '../../common/js/mock_chrome.js';
 import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {xfm} from '../../common/js/xfm.js';
@@ -273,12 +273,28 @@ function changeCurrentVolumeDiskSpace(newSizeStats, dispatchEvent = true) {
   if (!currentVolume.volumeId) {
     return;
   }
-  if (!newSizeStats) {
-    mockChromeFileManagerPrivate.unsetVolumeSizeStats(currentVolume.volumeId);
+
+  if (currentVolume.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
+    if (!newSizeStats) {
+      mockChromeFileManagerPrivate.unsetDriveQuotaMetadata();
+    } else {
+      mockChromeFileManagerPrivate.setDriveQuotaMetadata({
+        totalUserBytes: newSizeStats.totalSize,
+        usedUserBytes: newSizeStats.totalSize - newSizeStats.remainingSize,
+        organizationLimitExceeded: false,
+        organizationName: 'Test Org',
+        userType: chrome.fileManagerPrivate.UserType.UNMANAGED,
+      });
+    }
   } else {
-    mockChromeFileManagerPrivate.setVolumeSizeStats(
-        currentVolume.volumeId, newSizeStats);
+    if (!newSizeStats) {
+      mockChromeFileManagerPrivate.unsetVolumeSizeStats(currentVolume.volumeId);
+    } else {
+      mockChromeFileManagerPrivate.setVolumeSizeStats(
+          currentVolume.volumeId, newSizeStats);
+    }
   }
+
   volumeManagerGetVolumeInfoType = currentVolume;
   if (dispatchEvent) {
     mockChromeFileManagerPrivate.dispatchOnDirectoryChanged();
@@ -358,6 +374,15 @@ export function setUp() {
 
   new MockChromeStorageAPI();
 
+  installMockChrome({
+    runtime: {
+      lastError: null,
+    },
+    fileManagerPrivate: {
+      UserType: {UNMANAGED: 'kUnmanaged', ORGANIZATION: 'kOrganization'},
+    },
+  });
+
   mockChromeFileManagerPrivate =
       new MockChromeFileManagerPrivateDirectoryChanged();
 
@@ -365,7 +390,7 @@ export function setUp() {
   const volumeManager = /** @type{!VolumeManager} */ ({
     getVolumeInfo: (entry) => {
       return volumeManagerGetVolumeInfoType;
-    }
+    },
   });
   const crostini = /** @type {!Crostini} */ ({});
   controller = new BannerController(directoryModel, volumeManager, crostini);
@@ -760,12 +785,12 @@ export async function testTwoVolumeBannersShowOnWatchedVolumeTypes() {
     minSize: 1 * 1024 * 1024 * 1024,  // 1 GB
   });
 
-  // Banner should show on Drive when volume goes below 10% remaining free
+  // Banner should show on Drive when volume goes below 20% remaining free
   // space.
   testWarningBanners[1].setAllowedVolumes([driveAllowedVolumeType]);
   testWarningBanners[1].setDiskThreshold({
     type: VolumeManagerCommon.VolumeType.DRIVE,
-    minRatio: 0.1,
+    minRatio: 0.2,
   });
 
   // When a volume is first navigated to it retrieves the size of the disk at
@@ -805,14 +830,14 @@ export async function testTwoVolumeBannersShowOnWatchedVolumeTypes() {
   // Verify well below threshold, banner is triggered for minRatio.
   changeCurrentVolumeDiskSpace({
     totalSize: 20 * 1024 * 1024 * 1024,     // 20 GB
-    remainingSize: 1 * 1024 * 1024 * 1024,  // 1 GB
+    remainingSize: 2 * 1024 * 1024 * 1024,  // 2 GB
   });
   await waitUntil(isOnlyBannerVisible(testWarningBanners[1]));
 
   // Verify equal to threshold, banner is triggered for minRatio.
   changeCurrentVolumeDiskSpace({
     totalSize: 20 * 1024 * 1024 * 1024,     // 20 GB
-    remainingSize: 2 * 1024 * 1024 * 1024,  // 2 GB
+    remainingSize: 4 * 1024 * 1024 * 1024,  // 4 GB
   });
   await waitUntil(isOnlyBannerVisible(testWarningBanners[1]));
 }
@@ -833,7 +858,7 @@ export async function testChangingDirectoryMidSizeUpdateHidesBanner() {
   testWarningBanners[1].setAllowedVolumes([driveAllowedVolumeType]);
   testWarningBanners[1].setDiskThreshold({
     type: VolumeManagerCommon.VolumeType.DRIVE,
-    minRatio: 0.1,
+    minRatio: 0.2,
   });
 
   // When a volume is first navigated to it retrieves the size of the disk at
@@ -1095,8 +1120,9 @@ export async function testEducationalBannerDismissedForever() {
 export async function testBannersAreUpdatedOnDismissClick() {
   // Add 3 educational banner and 1 warning banner.
   controller.setEducationalBannersInOrder([
-    testEducationalBanners[0].tagName, testEducationalBanners[1].tagName,
-    testEducationalBanners[2].tagName
+    testEducationalBanners[0].tagName,
+    testEducationalBanners[1].tagName,
+    testEducationalBanners[2].tagName,
   ]);
   controller.setWarningBannersInOrder([testWarningBanners[0].tagName]);
 

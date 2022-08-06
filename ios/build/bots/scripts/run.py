@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -464,7 +464,8 @@ class Runner():
     parser.add_argument(
         '-r',
         '--retries',
-        help='Number of times to retry failed test cases.',
+        help=('Number of times to retry failed test cases. Note: This will be '
+              'overwritten as 0 if test repeat argument value > 1.'),
         metavar='n',
         type=int,
     )
@@ -588,6 +589,10 @@ class Runner():
       if args.xcode_parallelization and not (args.platform and args.version):
         parser.error('--xcode-parallelization also requires '
                      'both -p/--platform and -v/--version')
+
+      # Do not retry when repeat
+      if args.repeat and args.repeat > 1:
+        args.retries = 0
 
       args_json = json.loads(args.args_json)
       if (args.gtest_filter or args.test_cases or

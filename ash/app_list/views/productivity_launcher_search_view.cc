@@ -4,8 +4,10 @@
 
 #include "ash/app_list/views/productivity_launcher_search_view.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/app_list/app_list_model_provider.h"
@@ -172,6 +174,8 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
   }
 
   SearchResultBaseView* first_result_view = nullptr;
+  std::vector<SearchResultContainerView::SearchResultAimationMetadata>
+      search_result_metadata;
 
   // If the user cleared the search box text, skip animating the views. The
   // visible views will animate out and the whole search page will be hidden.
@@ -192,11 +196,33 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
     }
 
     for (SearchResultContainerView* view : result_container_views_) {
+      view->AppendShownResultMetadata(&search_result_metadata);
+    }
+
+    int first_animated_result_view_index = 0;
+    for (size_t i = 0; i < std::min(search_result_metadata.size(),
+                                    last_result_metadata_.size());
+         ++i) {
+      const bool matching_result_id = search_result_metadata[i].result_id ==
+                                      last_result_metadata_[i].result_id;
+      const bool skip_animations = search_result_metadata[i].skip_animations &&
+                                   last_result_metadata_[i].skip_animations;
+      if (!skip_animations && !matching_result_id)
+        break;
+      first_animated_result_view_index += 1;
+    }
+
+    aggregate_animation_info.first_animated_result_view_index =
+        first_animated_result_view_index;
+
+    for (SearchResultContainerView* view : result_container_views_) {
       absl::optional<AnimationInfo> container_animation_info =
           view->ScheduleResultAnimations(aggregate_animation_info);
       DCHECK(container_animation_info);
       aggregate_animation_info.total_views +=
           container_animation_info->total_views;
+      aggregate_animation_info.total_result_views +=
+          container_animation_info->total_result_views;
       aggregate_animation_info.animating_views +=
           container_animation_info->animating_views;
       // Fetch the first visible search result view for search box autocomplete.
@@ -216,6 +242,7 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
   Layout();
 
   last_search_result_count_ = result_count;
+  last_result_metadata_.swap(search_result_metadata);
 
   ScheduleResultsChangedA11yNotification();
 

@@ -223,6 +223,15 @@ void ShillClientUnittestBase::ExpectStringArgument(
 }
 
 // static
+void ShillClientUnittestBase::ExpectBoolArgument(bool expected_value,
+                                                 dbus::MessageReader* reader) {
+  bool value;
+  ASSERT_TRUE(reader->PopBool(&value));
+  EXPECT_EQ(expected_value, value);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// static
 void ShillClientUnittestBase::ExpectArrayOfStringsArgument(
     const std::vector<std::string>& expected_strings,
     dbus::MessageReader* reader) {
@@ -305,7 +314,7 @@ base::Value ShillClientUnittestBase::CreateExampleServiceProperties() {
   properties.SetKey(shill::kWifiHexSsid,
                     base::Value(base::HexEncode(ssid.c_str(), ssid.size())));
   properties.SetKey(shill::kSecurityClassProperty,
-                    base::Value(shill::kSecurityPsk));
+                    base::Value(shill::kSecurityClassPsk));
   return properties;
 }
 

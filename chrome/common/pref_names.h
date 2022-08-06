@@ -195,6 +195,7 @@ extern const char kAccessibilityFocusHighlightEnabled[];
 extern const char kLiveCaptionEnabled[];
 extern const char kLiveCaptionLanguageCode[];
 #endif
+extern const char kPageColors[];
 #if BUILDFLAG(IS_MAC)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
@@ -321,7 +322,6 @@ extern const char kTimeLimitLocalOverride[];
 extern const char kUsageTimeLimit[];
 extern const char kScreenTimeLastState[];
 extern const char kNetworkFileSharesAllowed[];
-extern const char kManagedSessionEnabled[];
 extern const char kManagedSessionUseFullLoginWarning[];
 extern const char kTPMFirmwareUpdateCleanupDismissed[];
 extern const char kTPMUpdatePlannedNotificationShownTime[];
@@ -352,6 +352,8 @@ extern const char kKerberosRememberPasswordEnabled[];
 extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
 extern const char kKerberosActivePrincipalName[];
+extern const char kKerberosDomainAutocomplete[];
+extern const char kKerberosDefaultConfiguration[];
 extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
@@ -368,7 +370,6 @@ extern const char kInsightsExtensionEnabled[];
 extern const char kOOMKillsDailyCount[];
 extern const char kOOMKillsDailySample[];
 extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
-extern const char kSettingsShowOSBanner[];
 extern const char kUsedPolicyCertificates[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 extern const char kShowHomeButton[];
@@ -542,7 +543,10 @@ extern const char kWebRTCAllowLegacyTLSProtocols[];
 extern const char kHasSeenWelcomePage[];
 extern const char kManagedAccountsSigninRestriction[];
 extern const char kManagedAccountsSigninRestrictionScopeMachine[];
-#endif
+#if !BUILDFLAG(IS_CHROMEOS)
+extern const char kEnterpriseProfileCreationKeepBrowsingData[];
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
 // Only used in branded builds.
@@ -711,12 +715,6 @@ extern const char kWebAppsIsolationState[];
 extern const char kWebAppsUrlHandlerInfo[];
 #endif
 
-extern const char kSystemWebAppLastUpdateVersion[];
-extern const char kSystemWebAppLastInstalledLocale[];
-extern const char kSystemWebAppInstallFailureCount[];
-extern const char kSystemWebAppLastAttemptedVersion[];
-extern const char kSystemWebAppLastAttemptedLocale[];
-
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
 extern const char kMediaDeviceIdSalt[];
@@ -803,7 +801,6 @@ extern const char kPowerMetricsIdleSuspendCount[];
 extern const char kPowerMetricsLidClosedSuspendCount[];
 extern const char kReportingUsers[];
 extern const char kArcAppInstallEventLoggingEnabled[];
-extern const char kExtensionInstallEventLoggingEnabled[];
 extern const char kRemoveUsersRemoteCommand[];
 extern const char kAutoScreenBrightnessMetricsDailySample[];
 extern const char kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount[];
@@ -866,6 +863,7 @@ extern const char kCipherSuiteBlacklist[];
 extern const char kH2ClientCertCoalescingHosts[];
 extern const char kHSTSPolicyBypassList[];
 extern const char kCECPQ2Enabled[];
+extern const char kEncryptedClientHelloEnabled[];
 
 extern const char kBuiltInDnsClientEnabled[];
 extern const char kDnsOverHttpsMode[];
@@ -924,6 +922,11 @@ extern const char kLastChromadMigrationAttemptTime[];
 #if BUILDFLAG(IS_WIN)
 extern const char kHardwareSecureDecryptionDisabledTimes[];
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS)
+extern const char kKioskMetrics[];
+extern const char kNewWindowsInKioskAllowed[];
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kAttemptedToEnableAutoupdate[];
@@ -1251,15 +1254,13 @@ extern const char kOriginAgentClusterDefaultEnabled[];
 
 extern const char kForceMajorVersionToMinorPositionInUserAgent[];
 
+extern const char kIdleProfileCloseTimeout[];
+
 extern const char kSCTAuditingHashdanceReportCount[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kConsumerAutoUpdateToggle[];
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-extern const char kKioskMetrics[];
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace prefs
 

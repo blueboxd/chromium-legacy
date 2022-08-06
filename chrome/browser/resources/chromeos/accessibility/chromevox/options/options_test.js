@@ -24,6 +24,7 @@ ChromeVoxOptionsTest = class extends ChromeVoxNextE2ETest {
         'CommandHandlerInterface',
         '/chromevox/background/command_handler_interface.js');
     await importModule('EventGenerator', '/common/event_generator.js');
+    await importModule('KeyCode', '/common/key_code.js');
   }
 
   async loadOptionsPage() {
@@ -59,7 +60,7 @@ AX_TEST_F(
       const [mockFeedback, evt] = await this.loadOptionsPage();
       const numberStyleSelect = evt.target.find({
         role: RoleType.POP_UP_BUTTON,
-        attributes: {name: 'Read numbers as:'}
+        attributes: {name: 'Read numbers as:'},
       });
       assertNotNullNorUndefined(numberStyleSelect);
       mockFeedback.call(numberStyleSelect.focus.bind(numberStyleSelect))
@@ -93,7 +94,7 @@ AX_TEST_F(
       const PUNCTUATION_ECHO_ALL = '2';
       const punctuationEchoSelect = evt.target.find({
         role: RoleType.POP_UP_BUTTON,
-        attributes: {name: 'Punctuation echo:'}
+        attributes: {name: 'Punctuation echo:'},
       });
       assertNotNullNorUndefined(punctuationEchoSelect);
       mockFeedback.call(punctuationEchoSelect.focus.bind(punctuationEchoSelect))
@@ -136,7 +137,7 @@ AX_TEST_F('ChromeVoxOptionsTest', 'DISABLED_SmartStickyMode', async function() {
   const smartStickyModeCheckbox = evt.target.find({
     role: RoleType.CHECK_BOX,
     attributes:
-        {name: 'Turn off sticky mode when editing text (Smart Sticky Mode)'}
+        {name: 'Turn off sticky mode when editing text (Smart Sticky Mode)'},
   });
   assertNotNullNorUndefined(smartStickyModeCheckbox);
   mockFeedback.call(smartStickyModeCheckbox.focus.bind(smartStickyModeCheckbox))
@@ -165,12 +166,12 @@ AX_TEST_F('ChromeVoxOptionsTest', 'DISABLED_UsePitchChanges', async function() {
     role: RoleType.CHECK_BOX,
     attributes: {
       name: 'Change pitch when speaking element types and quoted, ' +
-          'deleted, bolded, parenthesized, or capitalized text.'
-    }
+          'deleted, bolded, parenthesized, or capitalized text.',
+    },
   });
   const capitalStrategySelect = evt.target.find({
     role: RoleType.POP_UP_BUTTON,
-    attributes: {name: 'When reading capitals:'}
+    attributes: {name: 'When reading capitals:'},
   });
   assertNotNullNorUndefined(pitchChangesCheckbox);
   assertNotNullNorUndefined(capitalStrategySelect);

@@ -35,7 +35,7 @@ class PaintOpHelper {
       }
       case PaintOpType::ClipPath: {
         const auto* op = static_cast<const ClipPathOp*>(base_op);
-        str << "ClipPathOp(path=" << PaintOpHelper::SkiaTypeToString(op->path)
+        str << "ClipPathOp(path=" << PaintOpHelper::SkiaTypeToString(*op->path)
             << ", op=" << PaintOpHelper::SkiaTypeToString(op->op)
             << ", antialias=" << op->antialias
             << ", use_cache=" << (op->use_cache == UsePaintCache::kEnabled)
@@ -125,7 +125,7 @@ class PaintOpHelper {
       }
       case PaintOpType::DrawPath: {
         const auto* op = static_cast<const DrawPathOp*>(base_op);
-        str << "DrawPathOp(path=" << PaintOpHelper::SkiaTypeToString(op->path)
+        str << "DrawPathOp(path=" << PaintOpHelper::SkiaTypeToString(*op->path)
             << ", flags=" << PaintOpHelper::FlagsToString(op->flags)
             << ", use_cache=" << (op->use_cache == UsePaintCache::kEnabled)
             << ")";
@@ -359,10 +359,6 @@ class PaintOpHelper {
     return data ? "<SkData>" : "(nil)";
   }
 
-  static std::string SkiaTypeToString(const ThreadsafePath& path) {
-    return SkiaTypeToString(static_cast<const SkPath&>(path));
-  }
-
   static std::string SkiaTypeToString(const SkPath& path) {
     // TODO(vmpstr): SkPath has a dump function which we can use here?
     return "<SkPath>";
@@ -530,7 +526,8 @@ class PaintOpHelper {
     str << ", start_radius=" << shader->start_radius_;
     str << ", tx=" << static_cast<unsigned>(shader->tx_);
     str << ", ty=" << static_cast<unsigned>(shader->ty_);
-    str << ", fallback_color=" << shader->fallback_color_;
+    str << ", fallback_color="
+        << PaintOpHelper::SkiaTypeToString(shader->fallback_color_);
     str << ", scaling_behavior=" << EnumToString(shader->scaling_behavior_);
     if (shader->local_matrix_.has_value()) {
       str << ", local_matrix=" << SkiaTypeToString(*shader->local_matrix_);
@@ -556,9 +553,10 @@ class PaintOpHelper {
       str << "(nil)";
     }
     if (shader->colors_.size() > 0) {
-      str << ", colors=[" << shader->colors_[0];
+      str << ", colors=["
+          << PaintOpHelper::SkiaTypeToString(shader->colors_[0]);
       for (size_t i = 1; i < shader->colors_.size(); ++i) {
-        str << ", " << shader->colors_[i];
+        str << ", " << PaintOpHelper::SkiaTypeToString(shader->colors_[i]);
       }
       str << "]";
     } else {

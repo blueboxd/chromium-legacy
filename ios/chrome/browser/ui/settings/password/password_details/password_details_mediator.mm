@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/password_manager/core/browser/password_form.h"
+#import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
@@ -16,8 +16,6 @@
 #endif
 
 using base::SysNSStringToUTF16;
-using InsecureCredentialsView =
-    password_manager::InsecureCredentialsManager::CredentialsView;
 
 @interface PasswordDetailsMediator () <
     PasswordCheckObserver,
@@ -37,23 +35,23 @@ using InsecureCredentialsView =
 @implementation PasswordDetailsMediator
 
 - (instancetype)initWithPassword:
-                    (const password_manager::PasswordForm&)passwordForm
+                    (const password_manager::CredentialUIEntry&)credential
             passwordCheckManager:(IOSChromePasswordCheckManager*)manager {
   self = [super init];
   if (self) {
     _manager = manager;
-    _password = passwordForm;
+    _credential = credential;
     _passwordCheckObserver.reset(
         new PasswordCheckObserverBridge(self, manager));
     NSMutableSet<NSString*>* usernames = [[NSMutableSet alloc] init];
-    auto forms = manager->GetAllCredentials();
-    for (const auto& form : forms) {
-      if (form.signon_realm == passwordForm.signon_realm) {
-        [usernames addObject:base::SysUTF16ToNSString(form.username_value)];
+    auto credentials =
+        manager->GetSavedPasswordsPresenter()->GetSavedCredentials();
+    for (const auto& cred : credentials) {
+      if (cred.signon_realm == credential.signon_realm) {
+        [usernames addObject:base::SysUTF16ToNSString(cred.username)];
       }
     }
-    [usernames
-        removeObject:base::SysUTF16ToNSString(passwordForm.username_value)];
+    [usernames removeObject:base::SysUTF16ToNSString(credential.username)];
     _usernamesWithSameDomain = usernames;
   }
   return self;
@@ -77,11 +75,13 @@ using InsecureCredentialsView =
             (PasswordDetailsTableViewController*)viewController
                didEditPasswordDetails:(PasswordDetails*)password {
   if ([password.password length] != 0) {
-    if (_manager->EditPasswordForm(_password,
-                                   SysNSStringToUTF16(password.username),
-                                   SysNSStringToUTF16(password.password))) {
-      _password.username_value = SysNSStringToUTF16(password.username);
-      _password.password_value = SysNSStringToUTF16(password.password);
+    password_manager::CredentialUIEntry updated_credential = _credential;
+    updated_credential.username = SysNSStringToUTF16(password.username);
+    updated_credential.password = SysNSStringToUTF16(password.password);
+    if (_manager->GetSavedPasswordsPresenter()->EditSavedCredentials(
+            _credential, updated_credential) ==
+        password_manager::SavedPasswordsPresenter::EditResult::kSuccess) {
+      _credential = updated_credential;
       return;
     }
   }
@@ -132,26 +132,19 @@ using InsecureCredentialsView =
   // passwords.
 }
 
-- (void)compromisedCredentialsDidChange:(InsecureCredentialsView)credentials {
-  [self fetchPasswordWith:credentials];
+- (void)compromisedCredentialsDidChange {
+  [self fetchPasswordWith:_manager->GetUnmutedCompromisedCredentials()];
 }
 
 #pragma mark - Private
 
 // Updates password details and sets it to a consumer.
-- (void)fetchPasswordWith:(InsecureCredentialsView)credentials {
+- (void)fetchPasswordWith:
+    (const std::vector<password_manager::CredentialUIEntry>&)credentials {
   PasswordDetails* password =
-      [[PasswordDetails alloc] initWithPasswordForm:_password];
-  password.compromised = NO;
-
-  for (const auto& credential : credentials) {
-    if (std::tie(credential.signon_realm, credential.username,
-                 credential.password) == std::tie(_password.signon_realm,
-                                                  _password.username_value,
-                                                  _password.password_value))
-      password.compromised = YES;
-  }
-
+      [[PasswordDetails alloc] initWithCredential:_credential];
+  password.compromised = std::find(credentials.begin(), credentials.end(),
+                                   _credential) != credentials.end();
   [self.consumer setPassword:password];
 }
 

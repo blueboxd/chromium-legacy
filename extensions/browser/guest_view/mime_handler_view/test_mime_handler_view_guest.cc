@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -18,7 +19,16 @@ TestMimeHandlerViewGuest::TestMimeHandlerViewGuest(
     content::WebContents* owner_web_contents)
     : MimeHandlerViewGuest(owner_web_contents) {}
 
-TestMimeHandlerViewGuest::~TestMimeHandlerViewGuest() {}
+TestMimeHandlerViewGuest::~TestMimeHandlerViewGuest() = default;
+
+// static
+void TestMimeHandlerViewGuest::RegisterTestGuestViewType(
+    guest_view::TestGuestViewManager* manager) {
+  manager->RegisterGuestViewType(
+      TestMimeHandlerViewGuest::Type,
+      base::BindRepeating(&TestMimeHandlerViewGuest::Create),
+      base::NullCallback());
+}
 
 // static
 GuestViewBase* TestMimeHandlerViewGuest::Create(
@@ -39,7 +49,7 @@ void TestMimeHandlerViewGuest::WaitForGuestAttached() {
 }
 
 void TestMimeHandlerViewGuest::CreateWebContents(
-    const base::DictionaryValue& create_params,
+    const base::Value::Dict& create_params,
     WebContentsCreatedCallback callback) {
   // Delay the creation of the guest's WebContents if |delay_| is set.
   if (delay_) {
@@ -47,8 +57,8 @@ void TestMimeHandlerViewGuest::CreateWebContents(
     content::GetUIThreadTaskRunner({})->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&TestMimeHandlerViewGuest::CallBaseCreateWebContents,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       create_params.CreateDeepCopy(), std::move(callback)),
+                       weak_ptr_factory_.GetWeakPtr(), create_params.Clone(),
+                       std::move(callback)),
         delta);
 
     // Reset the delay for the next creation.
@@ -66,10 +76,10 @@ void TestMimeHandlerViewGuest::DidAttachToEmbedder() {
 }
 
 void TestMimeHandlerViewGuest::CallBaseCreateWebContents(
-    std::unique_ptr<base::DictionaryValue> create_params,
+    base::Value::Dict create_params,
     WebContentsCreatedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  MimeHandlerViewGuest::CreateWebContents(*create_params, std::move(callback));
+  MimeHandlerViewGuest::CreateWebContents(create_params, std::move(callback));
 }
 
 // static

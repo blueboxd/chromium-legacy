@@ -10,7 +10,6 @@
 #include "chromecast/browser/audio_socket_broker.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_web_contents.h"
-#include "chromecast/common/mojom/accessibility.mojom.h"
 #include "chromecast/common/mojom/activity_window.mojom.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "chromecast/common/mojom/assistant_messenger.mojom.h"
@@ -116,21 +115,20 @@ void PopulateCastFrameBinders(
   binder_map->Add<::chromecast::mojom::AudioSocketBroker>(
       base::BindRepeating(&BindAudioSocketBroker));
 
-  binder_map->Add(base::BindRepeating(
+  binder_map->Add<mojom::ApplicationMediaCapabilities>(base::BindRepeating(
       &BindFromCastWebContents<mojom::ApplicationMediaCapabilities>));
-  binder_map->Add(
+  binder_map->Add<::media::mojom::Remotee>(
       base::BindRepeating(&BindFromCastWebContents<::media::mojom::Remotee>));
-  binder_map->Add(base::BindRepeating(
+  binder_map->Add<::chromecast::mojom::ActivityWindow>(base::BindRepeating(
       &BindFromCastWebContents<::chromecast::mojom::ActivityWindow>));
-  binder_map->Add(base::BindRepeating(
+  binder_map->Add<
+      ::chromecast::mojom::AssistantMessageService>(base::BindRepeating(
       &BindFromCastWebContents<::chromecast::mojom::AssistantMessageService>));
-  binder_map->Add(base::BindRepeating(
+  binder_map->Add<::chromecast::mojom::GestureSource>(base::BindRepeating(
       &BindFromCastWebContents<::chromecast::mojom::GestureSource>));
-  binder_map->Add(base::BindRepeating(
+  binder_map->Add<::chromecast::mojom::SettingsPlatform>(base::BindRepeating(
       &BindFromCastWebContents<::chromecast::mojom::SettingsPlatform>));
-  binder_map->Add(base::BindRepeating(
-      &BindFromCastWebContents<mojom::CastAccessibilityService>));
-  binder_map->Add(
+  binder_map->Add<mojom::CastDemo>(
       base::BindRepeating(&BindFromCastWebContents<mojom::CastDemo>));
 
   binder_map->SetDefaultBinderDeprecated(

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/background_color_paint_image_generator.h"
@@ -54,9 +55,8 @@ void BoxPainterBase::PaintFillLayers(const PaintInfo& paint_info,
   if (should_draw_background_in_separate_buffer)
     context.BeginLayer();
 
-  for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
-       ++it) {
-    PaintFillLayer(paint_info, c, **it, rect, bleed, geometry);
+  for (auto* const paint : base::Reversed(reversed_paint_list)) {
+    PaintFillLayer(paint_info, c, *paint, rect, bleed, geometry);
   }
 
   if (should_draw_background_in_separate_buffer)
@@ -837,11 +837,26 @@ inline bool PaintFastBottomLayer(const Document* document,
 
   auto image_auto_dark_mode = ImageClassifierHelper::GetImageAutoDarkMode(
       *document->GetFrame(), style, image_border.Rect(), src_rect);
+
+  Image::ImageClampingMode clamping_mode =
+      Image::ImageClampingMode::kClampImageToSourceRect;
+
+  // If the intended snapped background image is the whole tile, do not clamp
+  // the source rect. This allows mipmaps and filtering to read beyond the
+  // final adjusted source rect even if snapping and scaling means it's subset.
+  // However, this detects and preserves clamping to the source rect for sprite
+  // sheet background images.
+  if (geometry.TileSize().width == geometry.SnappedDestRect().Width() &&
+      geometry.TileSize().height == geometry.SnappedDestRect().Height()) {
+    clamping_mode = Image::ImageClampingMode::kDoNotClampImageToSourceRect;
+  }
+
   // Since there is no way for the developer to specify decode behavior, use
   // kSync by default.
   context.DrawImageRRect(image, Image::kSyncDecode, image_auto_dark_mode,
                          image_border, src_rect, composite_op,
-                         info.respect_image_orientation, may_be_lcp_candidate);
+                         info.respect_image_orientation, may_be_lcp_candidate,
+                         clamping_mode);
 
   return true;
 }

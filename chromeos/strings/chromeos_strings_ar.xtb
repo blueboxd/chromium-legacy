@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1621067168122174824">تشغيل اختبار فحص البطارية</translation>
 <translation id="1631385268983122904">لا يمكنك تجميع الجهاز بعد.</translation>
-<translation id="1639239467298939599">جارٍ التحميل.</translation>
+<translation id="1639239467298939599">جارٍ التحميل</translation>
 <translation id="1641857168437328880">وحدة تغذية المستندات (وجه واحد)</translation>
 <translation id="1643449475550628585">تغيير صورة الخلفية يوميًا</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1645954272419197032">مطلوب تأكيد معلومات الجهاز</translation>
 <translation id="1662989795263954667">توقّفت الطابعة - نفد الحبر</translation>
+<translation id="1664796644829245314">معاينة <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">الشبكة الافتراضية الخاصة المُدمجة</translation>
 <translation id="1672499492233627739">خلاصة فيديو كاميرا الويب</translation>
 <translation id="1676557873873341166">تسجيل فيديو</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">اختبار اجتماعات الفيديو</translation>
 <translation id="1852934301711881861">‏تثبيت نظام التشغيل ChromeOS Flex</translation>
 <translation id="1856388568474281774">السهم المتّجه للأسفل</translation>
+<translation id="1858620243986915808">إرفاق لقطة شاشة</translation>
 <translation id="1871569928317311284">إيقاف تشغيل المظهر الداكن</translation>
 <translation id="1874612839560830905">‏وحدة النقل العظمى (MTU)</translation>
 <translation id="188114911237521550">إيقاف تشغيل الوضع المُعتِم</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">‏صورة الملف الشخصي في حساب Google</translation>
 <translation id="1979103255016296513">تأخير تغيير كلمة المرور</translation>
 <translation id="1999615961760456652">مدخل مشروط الوصول إليه</translation>
+<translation id="200669432486043882">استبدال ملف</translation>
 <translation id="2006864819935886708">إمكانية التوصيل</translation>
 <translation id="2008685064673031089">البحث الأوّلي</translation>
 <translation id="2011174342667534258">‏إصدار حزمة تطوير البرامج (SDK):</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">النوع</translation>
 <translation id="2461822463642141190">الاستهلاك الحالي لطاقة البطارية</translation>
 <translation id="2480034874476596812">الإيقاف يدويًا</translation>
+<translation id="248546197012830854">‏الجهاز غير متصل بالإنترنت. عليك الاتصال بشبكة Wi-Fi للاطّلاع على محتوى المساعدة.</translation>
 <translation id="2491955442992294626">لا يمكن اختبار المفاتيح أثناء استخدام نافذة أخرى.</translation>
 <translation id="2493126929778606526">أفضل الصور التي تم اختيارها تلقائيًا</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">إعادة التحميل</translation>
 <translation id="3009958530611748826">اختيار مجلّد لحفظ عمليات المسح الضوئي فيه</translation>
 <translation id="3017079585324758401">الخلفية</translation>
+<translation id="302435934487327038">اكتملت عملية التثبيت</translation>
 <translation id="3027578600144895987">إغلاق الكاميرا</translation>
 <translation id="3031560714565892478">الجهاز هو كاميرا فيديو.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> ميلي أمبير</translation>
 <translation id="3056720590588772262">نقطة النهاية</translation>
 <translation id="3069085583900247081">تعذّر إجراء اختبار</translation>
-<translation id="3076243757415932261">جارٍ التحقّق من المكوّنات...</translation>
 <translation id="3083667275341675831">بيانات تشخيص الاتصال</translation>
 <translation id="3084958266922136097">إيقاف شاشة التوقف</translation>
 <translation id="3091839911843451378">تعذَّرت الطباعة - توقّفت الطابعة</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">هل تريد فعلاً محو سجلّ الطباعة بالكامل؟ لن يتم محو مهام الطباعة الجارية.</translation>
 <translation id="3383751554789092165">يُرجى تغيير معلومات الجهاز حسب الحاجة.</translation>
 <translation id="3404249063913988450">تفعيل شاشة التوقف</translation>
-<translation id="3404770484521709967">تم تثبيت المكوّنات بشكل صحيح.</translation>
 <translation id="3413935475507503304">لمواصلة عملية التحديث، انقر على "التالي".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">أمن المعلومات</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">كلمة المرور القديمة</translation>
 <translation id="4453205916657964690">قناع الشبكة الفرعية</translation>
 <translation id="4454245904991689773">حفظ الملفات التي تم مسحها ضوئيًا في</translation>
-<translation id="4472575034687746823">الخطوات الأولى</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
 <translation id="4483049906298469269">تعذَّر فحص اتصال بوابة الشبكة غير التلقائية.</translation>
 <translation id="4500213108254186382">مقياس التسارع المُثبَّت في غطاء الجهاز</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149">إغلاق صفحة إصلاح <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">قيد التشغيل</translation>
 <translation id="6620487321149975369">ستظهر طلبات الطباعة في السجلّ إلّا إذا تمت إزالتها يدويًا.</translation>
+<translation id="6624819909909965616">لا يمكن تحميل ملف أكبر من 10 ميغابايت.</translation>
 <translation id="6643016212128521049">محو</translation>
+<translation id="6644568396961840069">تعذَّر حفظ الملف. يُرجى محاولة توصيل وحدة تخزين خارجية مختلفة أو إعادة المحاولة لاحقًا.</translation>
 <translation id="6647510110698214773">خوارزمية التشفير</translation>
 <translation id="6650062777702288430">مفتاح التبديل بين لوحة مفاتيح "كانا" ولوحة المفاتيح الأبجدية الرقمية</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="6692996468359469499">الحصول على معلومات ذات صلة باختيارك</translation>
 <translation id="6704062477274546131">دقة نظام أسماء النطاقات</translation>
-<translation id="6721744718589119342">قد نرسل إليك رسالة إلكترونية للحصول على مزيد من المعلومات أو لإطلاعك على آخر التعديلات.</translation>
 <translation id="6723839937902243910">الطاقة</translation>
 <translation id="6723847290197874913">الإضاءة الخلفية للوحة المفاتيح</translation>
 <translation id="672609503628871915">تعرف على الجديد</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">حسنًا</translation>
 <translation id="6977381486153291903">مراجعة البرامج الثابتة</translation>
 <translation id="6995564396478647735">التأكد من تفعيل ميزة "وضع القراءة فقط"</translation>
+<translation id="7005833343836210400">الجهاز غير متصل بالإنترنت.</translation>
 <translation id="7028979494427204405">يُدير <ph name="MANAGER" /> هذا الجهاز ويمكنه الوصول إلى جميع أنشطة المستخدم، بما في ذلك صفحات الويب التي تمت زيارتها وكلمات المرور والبريد الإلكتروني.</translation>
 <translation id="7040230719604914234">مشغل شبكة الجوّال</translation>
 <translation id="7041549558901442110">الجهاز غير متصل.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="7212734716605298123">تحديثات البرامج الثابتة للأجهزة الخارجية</translation>
 <translation id="7216409898977639127">موفر شبكة الجوّال</translation>
+<translation id="725133483556299729">اختيار عنوان البريد الإلكتروني</translation>
 <translation id="7271040990581020067">يتم حاليًا استخدام الماسح الضوئي. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">يُرجى اختيار مكوِّن واحد أو أكثر وإعادة المحاولة أو تخطّي المعايرة.</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">مفتاح خاص</translation>
 <translation id="7982789257301363584">الشبكة</translation>
 <translation id="7994702968232966508">‏طريقة EAP</translation>
+<translation id="8018928621986160031">تم الحفظ في "<ph name="FILE_LOCATION" />".</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">تفعيل وضع الألوان التلقائية</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">لا تزال ميزة "وضع القراءة فقط" متوقّفة، وعليك تفعيلها للمتابعة.</translation>
 <translation id="8075838845814659848">شحن البطارية المتبقي</translation>
 <translation id="8082366717211101304">‏تعذَّر التحويل باستخدام نظام أسماء النطاقات (DNS) من تطبيقات Android.</translation>
-<translation id="8083281199617904460">إنّ إجراء عملية الإصلاح هذه مقصور على فنيّي الإصلاح المدرّبين. يُرجى بدء عملية الإصلاح بعد استبدال المكوّنات المُعطّلة.</translation>
 <translation id="808894953321890993">تغيير كلمة المرور</translation>
+<translation id="8094062939584182041">‏السماح بتلقّي رسائل إلكترونية من Google حول هذه المشكلة</translation>
 <translation id="8104083085214006426">أنت تستخدم شبكةً مفتوحة وغير آمنة.</translation>
 <translation id="8109786307828817014">هل تريد المتابعة رغم تعذّر معايرة المكوّنات؟</translation>
 <translation id="811820734797650957">‏(نظام التشغيل Android) اختبار إمكانية فحص اتصال البوابة</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">الاتصال بالإنترنت</translation>
 <translation id="8221728673725659466">اكتملت المعايرة</translation>
 <translation id="8226628635270268143">اختيار صورك وألبوماتك المفضَّلة</translation>
+<translation id="8227119283605456246">إرفاق ملف</translation>
 <translation id="8230672074305416752">تعذَّر فحص اتصال بوابة الشبكة التلقائية.</translation>
 <translation id="8246209727385807362">مشغل شبكة جوّال غير معروف</translation>
 <translation id="827422111966801947">نيلي</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">غير مهيأة</translation>
 <translation id="8620617069779373398">حالة التجوال</translation>
 <translation id="8655295600908251630">القناة</translation>
+<translation id="8655828773034788261">‏مشاركة عنوان URL:</translation>
 <translation id="8660881923941176839">رطل</translation>
 <translation id="8662671328352114214">الانضمام إلى شبكة <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">التحديث إلى الإصدار <ph name="VERSION_NUMBER" /> ثم إعادة التشغيل</translation>

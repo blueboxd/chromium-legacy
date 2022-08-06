@@ -116,15 +116,6 @@
   },
   'android_webview_unittests': {
   },
-  'angle_end2end_tests': {
-    'modifications': {
-      'win10-angle-x64-intel': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
-    },
-  },
   'angle_unittests': {
     'remove_from': [
       # On Android, these are already run on the main waterfall.
@@ -144,15 +135,6 @@
         'args': [
           # crbug.com/
           '--gtest_filter=-ConstructCompilerTest.DefaultParameters',
-        ],
-      },
-    },
-  },
-  'angle_white_box_tests': {
-    'modifications': {
-      'win10-angle-x64-intel': {
-        'args': [
-          '--max-processes=1',
         ],
       },
     },
@@ -219,6 +201,11 @@
         },
       },
     },
+  },
+  'blink_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
+    ],
   },
   'blink_unittests': {
     'modifications': {
@@ -513,6 +500,12 @@
           'hard_timeout': 1800,
         },
       },
+      'win10.20h2-blink-rel': {
+        'swarming': {
+          'shards': 6,
+          'hard_timeout': 1200,
+        },
+      },
       'win10.20h2-blink-rel-dummy': {
         'swarming': {
           'shards': 6,
@@ -789,6 +782,12 @@
           'hard_timeout': 1800,
         },
       },
+      'win10.20h2-blink-rel': {
+        'swarming': {
+          'shards': 9,
+          'hard_timeout': 1200,
+        },
+      },
       'win10.20h2-blink-rel-dummy': {
         'swarming': {
           'shards': 9,
@@ -1026,6 +1025,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
+        'swarming': {
+          'shards': 20,
+        },
       },
       'linux-chromeos-code-coverage': {
         'swarming': {
@@ -1196,13 +1198,13 @@
       },
       'chromeos-kevin-chrome': {
         'swarming': {
-          # Reducing parallelism due to DUT shortage (b/238271231) 
+          # Reducing parallelism due to DUT shortage (b/238271231)
           'shards': 5,
         }
       },
       'chromeos-kevin-rel': {
         'swarming': {
-          # Reducing parallelism due to DUT shortage (b/238271231) 
+          # Reducing parallelism due to DUT shortage (b/238271231)
           'shards': 5,
         }
       },
@@ -1311,6 +1313,11 @@
           # are n2 machines available in the test pool.
           'shards': 25,
         },
+      },
+      'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
+        ],
       },
       'android-pie-arm64-rel': {
         'args': [
@@ -1519,6 +1526,12 @@
           'shards': 2,
         },
       },
+      # https://crbug.com/1344223
+      'Mac10.13 Tests': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'android-11-x86-rel': {
         'args': [
           # TODO(crbug.com/1192348): Fix the test failure
@@ -1711,6 +1724,9 @@
         },
       },
       'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter',
+        ],
         'swarming': {
           'shards': 20,
         },
@@ -1792,6 +1808,7 @@
     'remove_from': [
       'Mac10.11 Tests',  # crbug.com/1138050
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084353
+      'android-nougat-x86-rel', # crbug.com/1084353
     ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
@@ -2181,6 +2198,11 @@
       'Linux ChromiumOS MSan Focal',
     ],
   },
+  'gold_common_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
+    ],
+  },
   'gpu_process_launch_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -2491,6 +2513,11 @@
         },
       },
     },
+  },
+  'lacros_all_tast_tests eve': {
+    'remove_from': [
+      'lacros-amd64-generic-rel',
+    ]
   },
   'maps_pixel_passthrough_test': {
     'modifications': {
@@ -3268,6 +3295,11 @@
       },
     },
   },
+  'system_webview_shell_layout_test_apk': {
+    'remove_from': [
+      'android-nougat-x86-rel', # crbug.com/1343548
+    ],
+  },
   'system_webview_wpt': {
     'modifications': {
       'android-webview-pie-x86-wpt-fyi-rel': {
@@ -3285,7 +3317,7 @@
       'Mac Retina Debug (AMD)',
       'Win10 FYI x64 Debug (NVIDIA)',
       # Disabled due to dbus crashes crbug.com/927465
-      'Linux FYI Release (Intel HD 630)',
+      'Linux FYI Release (Intel UHD 630)',
       'Linux FYI Release (NVIDIA)',
       'Linux Release (NVIDIA)',
     ],
@@ -3332,6 +3364,13 @@
       },
       'Mac12 Tests': {
         'ci_only': True,
+      },
+      'android-nougat-x86-rel': {
+        'args': [
+          # For whatever reason, automatic browser selection on this bot chooses
+          # webview instead of the full browser, so explicitly specify it here.
+          '--browser=android-chromium',
+        ],
       },
       'chromeos-amd64-generic-rel': {
         'swarming': {
@@ -3735,6 +3774,16 @@
       },
     },
   },
+  'webgl_conformance_gl_passthrough_tests 1002:6821': {
+    'modifications': {
+      'mac_optional_gpu_tests_rel': {
+        'args': [
+          # Added to debug crbug.com/1293967.
+          '--extra-browser-args=--disable-background-media-suspend --disable-renderer-backgrounding --disable-background-timer-throttling',
+        ],
+      },
+    },
+  },
   'webgl_conformance_metal_passthrough_tests': {
     'remove_from': [
       # crbug.com/1270755
@@ -3782,7 +3831,7 @@
       'chromeos-amd64-generic-rel': {
         'args': [
           # Added to debug crbug.com/1293967.
-          '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization',
+          '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization --disable-background-media-suspend --disable-renderer-backgrounding --disable-background-timer-throttling',
         ],
         'swarming': {
           'quickrun_shards': 40,

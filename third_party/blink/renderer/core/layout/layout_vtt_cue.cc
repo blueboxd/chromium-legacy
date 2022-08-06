@@ -255,6 +255,10 @@ void SnapToLinesLayouter::UpdateLayout() {
       // out of the viewport. Otherwise we'd need to mutate the layout
       // tree during layout.
       cue_box_.SetLogicalTop(cue_box_.ContainingBlock()->LogicalHeight() + 1);
+      // The above code doesn't work well if the container's writing-mode and
+      // the cue's writing-mode is different. SetLogicalTop() is based on the
+      // cue's writing-mode, and LogicalHeight() is based on the container's
+      // writing-mode.
       break;
     }
 
@@ -324,12 +328,17 @@ void LayoutVTTCue::RepositionCueSnapToLinesNotSet() {
 
 gfx::Rect LayoutVTTCue::ComputeControlsRect() const {
   NOT_DESTROYED();
+  return ComputeControlsRect(*Parent());
+}
+
+// static
+gfx::Rect LayoutVTTCue::ComputeControlsRect(const LayoutObject& container) {
   // Determine the area covered by the media controls, if any. For this, the
   // LayoutVTTCue will walk the tree up to the HTMLMediaElement, then ask for
   // the MediaControls.
-  DCHECK(Parent()->GetNode()->IsTextTrackContainer());
+  DCHECK(container.GetNode()->IsTextTrackContainer());
 
-  auto* media_element = To<HTMLMediaElement>(Parent()->Parent()->GetNode());
+  auto* media_element = To<HTMLMediaElement>(container.Parent()->GetNode());
   DCHECK(media_element);
 
   MediaControls* controls = media_element->GetMediaControls();

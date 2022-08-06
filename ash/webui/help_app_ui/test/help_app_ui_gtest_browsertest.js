@@ -34,7 +34,7 @@ var HelpAppUIGtestBrowserTest = class extends testing.Test {
     return {
       enabled: [
         'ash::features::kHelpAppLauncherSearch',
-      ]
+      ],
     };
   }
 
@@ -54,7 +54,7 @@ var HelpAppUIWithDarkLightModeGtestBrowserTest =
       enabled: [
         ...super.featureList.enabled,
         'chromeos::features::kDarkLightMode',
-      ]
+      ],
     };
   }
 
@@ -178,6 +178,10 @@ TEST_F(
 
 TEST_F('HelpAppUIGtestBrowserTest', 'GuestHasLang', () => {
   runHelpAppTestInGuest('GuestHasLang');
+});
+
+TEST_F('HelpAppUIGtestBrowserTest', 'GuestLoadsLoadTimeData', () => {
+  runHelpAppTestInGuest('GuestLoadsLoadTimeData');
 });
 
 TEST_F('HelpAppUIGtestBrowserTest', 'GuestCanSearchWithHeadings', () => {

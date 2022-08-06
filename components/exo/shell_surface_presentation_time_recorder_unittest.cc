@@ -110,6 +110,8 @@ class ShellSurfacePresentationTimeRecorderTest : public test::ExoTestBase {
         /*flags=*/0);
     recorder_->set_fake_feedback(feedback);
 
+    // Fake damage to ensure that Commit() generates a compositor frame.
+    root_surface()->Damage(gfx::Rect(0, 0, 32, 32));
     root_surface()->Commit();
     recorder_->WaitForFramePresented();
   }

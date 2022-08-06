@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
+#import "ios/chrome/browser/ui/settings/password/password_issue.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_presenter.h"
@@ -114,15 +114,12 @@
   [self.delegate passwordIssuesCoordinatorDidRemove:self];
 }
 
-- (void)presentPasswordIssueDetails:(id<PasswordIssue>)password {
-  password_manager::PasswordForm form =
-      base::mac::ObjCCastStrict<PasswordIssueWithForm>(password).form;
-
+- (void)presentPasswordIssueDetails:(PasswordIssue*)password {
   DCHECK(!self.passwordDetails);
   self.passwordDetails = [[PasswordDetailsCoordinator alloc]
       initWithBaseNavigationController:self.baseNavigationController
                                browser:self.browser
-                              password:form
+                            credential:password.credential
                           reauthModule:self.reauthModule
                   passwordCheckManager:_manager];
   self.passwordDetails.delegate = self;
@@ -140,10 +137,10 @@
 }
 
 - (void)passwordDetailsCoordinator:(PasswordDetailsCoordinator*)coordinator
-                    deletePassword:
-                        (const password_manager::PasswordForm&)password {
-  if (![self.delegate willHandlePasswordDeletion:password]) {
-    [self.mediator deletePassword:password];
+                  deleteCredential:
+                      (const password_manager::CredentialUIEntry&)credential {
+  if (![self.delegate willHandlePasswordDeletion:credential]) {
+    [self.mediator deleteCredential:credential];
   }
   [self.baseNavigationController popViewControllerAnimated:YES];
 }

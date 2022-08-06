@@ -14,14 +14,11 @@
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace sql {
 class Database;
 }  // namespace sql
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -73,6 +70,10 @@ class CONTENT_EXPORT RateLimitTable {
       sql::Database* db,
       const StorableSource& source);
 
+  [[nodiscard]] RateLimitResult SourceAllowedForDestinationLimit(
+      sql::Database* db,
+      const StorableSource& source);
+
   [[nodiscard]] RateLimitResult AttributionAllowedForReportingOriginLimit(
       sql::Database* db,
       const AttributionInfo& attribution_info);
@@ -89,7 +90,7 @@ class CONTENT_EXPORT RateLimitTable {
       sql::Database* db,
       base::Time delete_begin,
       base::Time delete_end,
-      base::RepeatingCallback<bool(const url::Origin&)> filter);
+      StoragePartition::StorageKeyMatcherFunction filter);
   // Returns false on failure.
   [[nodiscard]] bool ClearDataForSourceIds(
       sql::Database* db,
@@ -121,7 +122,7 @@ class CONTENT_EXPORT RateLimitTable {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Must outlive |this|.
-  raw_ptr<const AttributionStorageDelegate, DanglingUntriaged> delegate_
+  raw_ptr<const AttributionStorageDelegate> delegate_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Time at which `DeleteExpiredRateLimits()` was last called. Initialized to

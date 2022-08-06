@@ -78,9 +78,9 @@ constexpr char kKbdInvalidCustomTopRowLayout[] = "X X X";
 
 // Values for enum output parameters to IdentifyKeyboard() that do not
 // match any enum types.
-constexpr auto kImpossibleDeviceType =
+const auto kImpossibleDeviceType =
     static_cast<ui::EventRewriterChromeOS::DeviceType>(-1);
-constexpr auto kImpossibleKeyboardTopRowLayout =
+const auto kImpossibleKeyboardTopRowLayout =
     static_cast<ui::EventRewriterChromeOS::KeyboardTopRowLayout>(-1);
 
 class TestEventRewriterContinuation
@@ -93,12 +93,12 @@ class TestEventRewriterContinuation
       const TestEventRewriterContinuation&) = delete;
 
   ui::EventDispatchDetails SendEvent(const ui::Event* event) override {
-    passthrough_events.push_back(ui::Event::Clone(*event));
+    passthrough_events.push_back(event->Clone());
     return ui::EventDispatchDetails();
   }
 
   ui::EventDispatchDetails SendEventFinally(const ui::Event* event) override {
-    rewritten_events.push_back(ui::Event::Clone(*event));
+    rewritten_events.push_back(event->Clone());
     return ui::EventDispatchDetails();
   }
 
@@ -3754,7 +3754,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
  private:
   // ui::EventSink overrides:
   ui::EventDispatchDetails OnEventFromSource(ui::Event* event) override {
-    events_.push_back(ui::Event::Clone(*event));
+    events_.push_back(event->Clone());
     return ui::EventDispatchDetails();
   }
 

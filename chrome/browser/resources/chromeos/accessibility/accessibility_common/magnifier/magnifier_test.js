@@ -30,6 +30,7 @@ MagnifierE2ETest = class extends E2ETestBase {
   async setUpDeferred() {
     await super.setUpDeferred();
     await importModule('RectUtil', '/common/rect_util.js');
+    await importModule('KeyCode', '/common/key_code.js');
   }
 
   async getPref(name) {
@@ -194,7 +195,7 @@ TEST_F(
           chrome.accessibilityPrivate.sendSyntheticKeyEvent({
             type:
                 chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
-            keyCode: KeyCode.UP
+            keyCode: KeyCode.UP,
           });
 
           // Verify new magnifier bounds include |targetBounds|.
@@ -215,7 +216,7 @@ TEST_F(
         chrome.accessibilityPrivate.sendSyntheticKeyEvent({
           type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
           keyCode: KeyCode.E,
-          modifiers: {alt: true}
+          modifiers: {alt: true},
         });
 
         // Wait for Chrome menu to open.

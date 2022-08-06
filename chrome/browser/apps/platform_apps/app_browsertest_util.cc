@@ -163,8 +163,7 @@ void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
       ->BrowserAppLauncher()
       ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
           extension->id(), apps::LaunchContainer::kLaunchContainerNone,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::LaunchSource::kFromTest));
+          WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
 }
 
 void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
@@ -173,7 +172,7 @@ void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
       ->LaunchAppWithParamsForTesting(CreateAppLaunchParamsUserContainer(
           browser()->profile(), extension,
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
-          apps::mojom::LaunchSource::kFromCommandLine));
+          apps::LaunchSource::kFromCommandLine));
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstAppWindowWebContents() {
@@ -206,10 +205,10 @@ size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(
     const Extension* extension) {
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   function->set_extension(extension);
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(function.get(),
                                                             "[]", browser())));
-  return result->GetListDeprecated().size();
+  return result.size();
 }
 
 bool PlatformAppBrowserTest::RunGetWindowFunctionForExtension(
@@ -245,12 +244,14 @@ AppWindow* PlatformAppBrowserTest::CreateAppWindowFromParams(
     const Extension* extension,
     const AppWindow::CreateParams& params) {
   AppWindow* window = new AppWindow(
-      browser()->profile(), new ChromeAppDelegate(browser()->profile(), true),
+      browser()->profile(),
+      std::make_unique<ChromeAppDelegate>(browser()->profile(), true),
       extension);
   ProcessManager* process_manager = ProcessManager::Get(context);
   ExtensionHost* background_host =
       process_manager->GetBackgroundHostForExtension(extension->id());
-  window->Init(GURL(std::string()), new AppWindowContentsImpl(window),
+  window->Init(GURL(std::string()),
+               std::make_unique<AppWindowContentsImpl>(window),
                background_host->host_contents()->GetPrimaryMainFrame(), params);
   return window;
 }

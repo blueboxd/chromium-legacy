@@ -56,7 +56,6 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
@@ -870,7 +869,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)handleMoveNode:(const bookmarks::BookmarkNode*)node
-            toPosition:(int)position {
+            toPosition:(size_t)position {
   [self.snackbarCommandsHandler
       showSnackbarMessage:
           bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
@@ -2222,9 +2221,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // existing contents), hence no change in index is necessary. It is required
   // to make these adjustments because this is how bookmark_model handles move
   // operations.
-  int newPosition = sourceIndexPath.row < destinationIndexPath.row
-                        ? destinationIndexPath.row + 1
-                        : destinationIndexPath.row;
+  size_t newPosition = sourceIndexPath.row < destinationIndexPath.row
+                           ? destinationIndexPath.row + 1
+                           : destinationIndexPath.row;
   [self handleMoveNode:node toPosition:newPosition];
 }
 

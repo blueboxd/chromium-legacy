@@ -17,9 +17,9 @@
 #include "chromeos/ash/components/network/cellular_inhibitor.h"
 #include "chromeos/ash/components/network/fake_stub_cellular_networks_provider.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/test_cellular_esim_profile_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -177,8 +177,8 @@ class CellularConnectionHandlerTest : public testing::Test {
     helper_.hermes_euicc_test()->AddCarrierProfile(
         dbus::ObjectPath(CreateTestProfilePath(profile_num)),
         dbus::ObjectPath(CreateTestEuiccPath(euicc_num)), iccid,
-        CreateTestName(profile_num), "service_provider", "activation_code",
-        CreateTestServicePath(profile_num), state,
+        CreateTestName(profile_num), "nickname", "service_provider",
+        "activation_code", CreateTestServicePath(profile_num), state,
         hermes::profile::ProfileClass::kOperational, add_profile_behavior);
 
     if (!add_service) {

@@ -15,6 +15,8 @@
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/network/cellular_connection_handler.h"
 #include "chromeos/ash/components/network/cellular_esim_installer.h"
 #include "chromeos/ash/components/network/cellular_inhibitor.h"
@@ -25,21 +27,19 @@
 #include "chromeos/ash/components/network/mock_network_state_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_device_handler.h"
+#include "chromeos/ash/components/network/network_policy_observer.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/network/test_cellular_esim_profile_handler.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/components/onc/onc_validator.h"
-#include "chromeos/dbus/hermes/hermes_clients.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_policy_observer.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -101,15 +101,6 @@ constexpr char kEmptyUnencryptedConfiguration[] =
 void ErrorCallback(const std::string& error_name) {
   ADD_FAILURE() << "Unexpected error: " << error_name;
 }
-
-class TestNetworkProfileHandler : public NetworkProfileHandler {
- public:
-  TestNetworkProfileHandler() { Init(); }
-
-  TestNetworkProfileHandler(const TestNetworkProfileHandler&) = delete;
-  TestNetworkProfileHandler& operator=(const TestNetworkProfileHandler&) =
-      delete;
-};
 
 class TestNetworkPolicyObserver : public NetworkPolicyObserver {
  public:
@@ -768,6 +759,24 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, UpdatePolicyBeforeFinished) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer()->GetPoliciesAppliedCountAndReset());
+}
+
+// Regression test for b/240237232: A shill profile disappears before triggering
+// policy application and the actual policy application run.
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       ProfileDisappearsAfterPolicySet) {
+  InitializeStandardProfiles();
+  base::RunLoop().RunUntilIdle();
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+
+  // Pretend that NetworkProfileHandler doesn't know the network profile
+  // anymore.
+  network_profile_handler_->OnPropertyChanged(
+      shill::kProfilesProperty, base::Value(base::Value::Type::LIST));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, policy_observer()->GetPoliciesAppliedCountAndReset());
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {

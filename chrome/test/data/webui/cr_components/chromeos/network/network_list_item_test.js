@@ -49,9 +49,9 @@ suite('NetworkListItemTest', function() {
     flush();
   }
 
-  function initCellularNetwork(iccid, eid, simLocked) {
+  function initCellularNetwork(iccid, eid, simLocked, name) {
     const properties = OncMojo.getDefaultManagedProperties(
-        mojom.NetworkType.kCellular, 'cellular');
+        mojom.NetworkType.kCellular, 'cellular', name);
     properties.typeProperties.cellular.iccid = iccid;
     properties.typeProperties.cellular.eid = eid;
     properties.typeProperties.cellular.simLocked = simLocked;
@@ -154,6 +154,31 @@ suite('NetworkListItemTest', function() {
     assertEquals('Ethernet', getTitle());
   });
 
+  test('eSIM network title', async () => {
+    init();
+
+    const getTitle = () => {
+      const element = listItem.$$('#itemTitle');
+      return element ? element.textContent.trim() : '';
+    };
+
+    const euicc = eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
+    const providerName = 'provider1';
+    listItem.item = initCellularNetwork(
+        /*iccid=*/ '1', /*eid=*/ '1', /*simlock=*/ false, 'nickname');
+    await flushAsync();
+    assertEquals(
+        listItem.i18n('networkListItemTitle', 'nickname', providerName),
+        getTitle());
+
+    // Change eSIM network's name to the same as provider name, verifies that
+    // the title only show the network name.
+    listItem.item = initCellularNetwork(
+        /*iccid=*/ '1', /*eid=*/ '1', /*simlock=*/ false, providerName);
+    await flushAsync();
+    assertEquals(providerName, getTitle());
+  });
+
   test('Network title is escaped', async () => {
     init();
 
@@ -185,7 +210,7 @@ suite('NetworkListItemTest', function() {
     managedPropertiesActivated.typeProperties.cellular.activationState =
         mojom.ActivationStateType.kActivated;
     managedPropertiesActivated.typeProperties.cellular.paymentPortal = {
-      url: 'url'
+      url: 'url',
     };
     mojoApi_.setManagedPropertiesForTest(managedPropertiesActivated);
 
@@ -206,7 +231,7 @@ suite('NetworkListItemTest', function() {
     managedPropertiesESimNotActivated.typeProperties.cellular.activationState =
         mojom.ActivationStateType.kNotActivated;
     managedPropertiesESimNotActivated.typeProperties.cellular.paymentPortal = {
-      url: 'url'
+      url: 'url',
     };
     mojoApi_.setManagedPropertiesForTest(managedPropertiesESimNotActivated);
 
@@ -224,7 +249,7 @@ suite('NetworkListItemTest', function() {
     managedPropertiesNotActivated.typeProperties.cellular.activationState =
         mojom.ActivationStateType.kNotActivated;
     managedPropertiesNotActivated.typeProperties.cellular.paymentPortal = {
-      url: 'url'
+      url: 'url',
     };
     mojoApi_.setManagedPropertiesForTest(managedPropertiesNotActivated);
 

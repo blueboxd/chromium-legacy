@@ -63,7 +63,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/types/event_type.h"
+#include "ui/events/test/test_event.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/test/widget_test.h"
 
@@ -73,11 +73,6 @@ using AboutThisSiteStatus =
 namespace {
 
 constexpr char kExpiredCertificateFile[] = "expired_cert.pem";
-
-class ClickEvent : public ui::Event {
- public:
-  ClickEvent() : ui::Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-};
 
 void PerformMouseClickOnView(views::View* view) {
   ui::AXActionData data;
@@ -91,7 +86,7 @@ void OpenPageInfoBubble(Browser* browser) {
   LocationIconView* location_icon_view =
       browser_view->toolbar()->location_bar()->location_icon_view();
   ASSERT_TRUE(location_icon_view);
-  ClickEvent event;
+  ui::test::TestEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
       PageInfoBubbleView::GetPageInfoBubbleForTesting();
@@ -905,4 +900,29 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDisabledBrowserTest,
   ukm_recorder.ExpectEntryMetric(
       entries[0], ukm::builders::AboutThisSiteStatus::kStatusName,
       static_cast<int>(AboutThisSiteStatus::kUnknown));
+}
+
+class PageInfoBubbleViewSiteSettingsBrowserTest : public InProcessBrowserTest {
+ public:
+  PageInfoBubbleViewSiteSettingsBrowserTest() {
+    feature_list.InitWithFeatures({page_info::kPageInfoHideSiteSettings}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSiteSettingsBrowserTest,
+                       SiteSettingsNotValid) {
+  GURL url = GURL("https://www.google.com/");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  OpenPageInfoBubble(browser());
+
+  views::Widget* page_info_bubble =
+      PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetWidget();
+  EXPECT_TRUE(page_info_bubble);
+
+  views::View* view = page_info_bubble->GetRootView()->GetViewByID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS);
+  EXPECT_FALSE(view);
 }

@@ -12,12 +12,12 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 import {PasswordManagerImpl, PasswordManagerProxy, PasswordsFileExportProgressListener} from './password_manager_proxy.js';
@@ -68,8 +68,8 @@ export class PasswordsExportDialogElement extends
       showProgressDialog_: Boolean,
       showErrorDialog_: Boolean,
 
-      // <if expr="chromeos_ash or chromeos_lacros">
-      tokenRequestManager: Object
+      // <if expr="is_chromeos">
+      tokenRequestManager: Object,
       // </if>
     };
   }
@@ -86,7 +86,7 @@ export class PasswordsExportDialogElement extends
   private delayedCompletionToken_: number|null;
   private delayedProgress_: chrome.passwordsPrivate.PasswordExportProgress|null;
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   tokenRequestManager: BlockingRequestManager;
   // </if>
 
@@ -206,10 +206,10 @@ export class PasswordsExportDialogElement extends
   }
 
   private onExportTap_() {
-    // <if expr="chromeos_ash or chromeos_lacros">
+    // <if expr="is_chromeos">
     this.tokenRequestManager.request(() => this.exportPasswords_());
     // </if>
-    // <if expr="not (chromeos_ash or chromeos_lacros)">
+    // <if expr="not is_chromeos">
     this.exportPasswords_();
     // </if>
   }

@@ -23,10 +23,12 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/autocomplete_provider_debouncer.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/omnibox_log.h"
+#include "components/omnibox/browser/open_tab_provider.h"
 
 class ClipboardProvider;
 class DocumentProvider;
@@ -98,7 +100,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   // updated.
   AutocompleteController(
       std::unique_ptr<AutocompleteProviderClient> provider_client,
-      int provider_types);
+      int provider_types,
+      bool is_cros_launcher = false);
   ~AutocompleteController() override;
   AutocompleteController(const AutocompleteController&) = delete;
   AutocompleteController& operator=(const AutocompleteController&) = delete;
@@ -196,6 +199,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   VoiceSuggestProvider* voice_suggest_provider() const {
     return voice_suggest_provider_;
   }
+  OpenTabProvider* open_tab_provider() const { return open_tab_provider_; }
 
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
@@ -278,17 +282,14 @@ class AutocompleteController : public AutocompleteProviderListener,
   void UpdateResult(bool regenerate_result,
                     bool force_notify_default_match_changed);
 
+  // Invokes `UpdateResult()` through `update_debouncer_`.
+  void DelayedUpdateResult(bool regenerate_result,
+                           bool force_notify_default_match_changed);
+
   // Updates |result| to populate each match's |associated_keyword| if that
   // match can show a keyword hint.  |result| should be sorted by
   // relevance before this is called.
   void UpdateAssociatedKeywords(AutocompleteResult* result);
-
-  // Updates |result| with the suggestion group ID to header string mapping as
-  // well as the set of hidden suggestion group IDs.
-  // Called for zero-prefix suggestions only. This call is followed by
-  // AutocompleteResult::GroupAndDemoteMatchesWithHeaders() which groups and
-  // demotes matches with suggestion group IDs to the bottom of the result set.
-  void UpdateHeaderInfoFromZeroSuggestProvider(AutocompleteResult* result);
 
   // For each group of contiguous matches from the same TemplateURL, show the
   // provider name as a description on the first match in the group. Starter
@@ -360,6 +361,8 @@ class AutocompleteController : public AutocompleteProviderListener,
 
   raw_ptr<VoiceSuggestProvider> voice_suggest_provider_;
 
+  raw_ptr<OpenTabProvider> open_tab_provider_;
+
   // Input passed to Start.
   AutocompleteInput input_;
 
@@ -393,6 +396,13 @@ class AutocompleteController : public AutocompleteProviderListener,
   // to read the whole dropdown and doesn't expect it to change.
   base::TimeDelta stop_timer_duration_;
 
+  // Debouncer to avoid invoking `UpdateResult()` in quick succession. The last
+  // call, i.e. when all providers complete and `done_` is set true, is immune
+  // to this restriction. Other calls, including the sync update, are delayed.
+  // Only applies when the `kAutocompleteStability` is enabled with the
+  // corresponding params set.
+  AutocompleteProviderDebouncer update_debouncer_;
+
   // True if a query is not currently running.
   bool done_;
 
@@ -400,6 +410,11 @@ class AutocompleteController : public AutocompleteProviderListener,
   // notifications until Start() has been invoked on all providers. When this
   // boolean is true, we are definitely within the synchronous pass.
   bool in_start_;
+
+  // True if this instance of AutocompleteController is owned by the CrOS
+  // launcher. This is currently used to determine whether to enable the Open
+  // Tab provider always (CrOS launcher) or just in keyword mode (!launcher).
+  bool is_cros_launcher_;
 
   // Logs stability and timing metrics for updates.
   AutocompleteControllerMetrics metrics_{*this};

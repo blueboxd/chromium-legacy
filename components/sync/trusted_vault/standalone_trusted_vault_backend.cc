@@ -39,6 +39,7 @@ namespace syncer {
 namespace {
 
 constexpr int kCurrentLocalTrustedVaultVersion = 1;
+constexpr int kCurrentDeviceRegistrationVersion = 1;
 constexpr base::TimeDelta kVerifyDeviceRegistrationDelay = base::Seconds(10);
 
 sync_pb::LocalTrustedVault ReadEncryptedFile(const base::FilePath& file_path) {
@@ -142,8 +143,7 @@ void UpgradeToVersion1(sync_pb::LocalTrustedVault* local_trusted_vault) {
 }
 
 void RecordVerifyRegistrationStatus(
-    StandaloneTrustedVaultBackend::TrustedVaultDownloadKeysStatusForUMA
-        status) {
+    TrustedVaultDownloadKeysStatusForUMA status) {
   base::UmaHistogramEnumeration(
       "Sync.TrustedVaultVerifyDeviceRegistrationState", status);
 }
@@ -164,7 +164,7 @@ StandaloneTrustedVaultBackend::PendingTrustedRecoveryMethod::
     ~PendingTrustedRecoveryMethod() = default;
 
 // static
-StandaloneTrustedVaultBackend::TrustedVaultDownloadKeysStatusForUMA
+TrustedVaultDownloadKeysStatusForUMA
 StandaloneTrustedVaultBackend::GetDownloadKeysStatusForUMAFromResponse(
     TrustedVaultDownloadKeysStatus response_status) {
   switch (response_status) {
@@ -202,6 +202,23 @@ StandaloneTrustedVaultBackend::StandaloneTrustedVaultBackend(
       clock_(base::DefaultClock::GetInstance()) {}
 
 StandaloneTrustedVaultBackend::~StandaloneTrustedVaultBackend() = default;
+
+void StandaloneTrustedVaultBackend::WriteDegradedRecoverabilityState(
+    const sync_pb::LocalTrustedVaultDegradedRecoverabilityState&
+        degraded_recoverability_state) {
+  DCHECK(primary_account_.has_value());
+  sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+      FindUserVault(primary_account_->gaia);
+  *per_user_vault->mutable_degraded_recoverability_state() =
+      degraded_recoverability_state;
+  WriteToDisk(data_, file_path_);
+}
+
+void StandaloneTrustedVaultBackend::OnDegradedRecoverabilityChanged(
+    bool value) {
+  // TODO(crbug.com/1247990): To be implemented.
+  NOTIMPLEMENTED();
+}
 
 void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
   data_ = ReadEncryptedFile(file_path_);
@@ -367,14 +384,19 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
   if (registration_state.has_value() &&
       !device_registration_state_recorded_to_uma_) {
     device_registration_state_recorded_to_uma_ = true;
+    base::UmaHistogramBoolean(
+        "Sync.TrustedVaultDeviceRegistered",
+        per_user_vault->local_device_registration_info().device_registered());
     RecordTrustedVaultDeviceRegistrationState(*registration_state);
 
-    // If the local state indicates that the device is already registered, and
-    // behind a feature toggle, trigger a procedure to verify that the server
-    // has a consistent state (i.e. downloading of new keys should succeed but
-    // return no new keys).
-    if (*registration_state ==
-            TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegistered &&
+    // If the local state indicates that the device is already registered and
+    // there is no ongoing re-registration attempt, and behind a feature toggle,
+    // trigger a procedure to verify that the server has a consistent state
+    // (i.e. downloading of new keys should succeed but return no new keys).
+    if ((*registration_state ==
+             TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0 ||
+         *registration_state ==
+             TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV1) &&
         base::FeatureList::IsEnabled(
             kSyncTrustedVaultVerifyDeviceRegistration)) {
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -564,6 +586,16 @@ StandaloneTrustedVaultBackend::GetLastAddedRecoveryMethodPublicKeyForTesting()
   return last_added_recovery_method_public_key_for_testing_;
 }
 
+void StandaloneTrustedVaultBackend::SetDeviceRegisteredVersionForTesting(
+    const std::string& gaia_id,
+    int version) {
+  sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
+  DCHECK(per_user_vault);
+  per_user_vault->mutable_local_device_registration_info()
+      ->set_device_registered_version(version);
+  WriteToDisk(data_, file_path_);
+}
+
 void StandaloneTrustedVaultBackend::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
 }
@@ -596,8 +628,17 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice(
     return absl::nullopt;
   }
 
-  if (per_user_vault->local_device_registration_info().device_registered()) {
-    return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegistered;
+  if (per_user_vault->local_device_registration_info().device_registered() &&
+      per_user_vault->local_device_registration_info()
+              .device_registered_version() ==
+          kCurrentDeviceRegistrationVersion) {
+    static_assert(kCurrentDeviceRegistrationVersion == 1);
+    return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV1;
+  }
+
+  if (per_user_vault->local_device_registration_info().device_registered() &&
+      !base::FeatureList::IsEnabled(kSyncTrustedVaultRedoDeviceRegistration)) {
+    return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0;
   }
 
   if (per_user_vault->keys_are_stale()) {
@@ -660,6 +701,7 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice(
     return TrustedVaultDeviceRegistrationStateForUMA::
         kAttemptingRegistrationWithPersistentAuthError;
   }
+
   return had_generated_key_pair ? TrustedVaultDeviceRegistrationStateForUMA::
                                       kAttemptingRegistrationWithExistingKeyPair
                                 : TrustedVaultDeviceRegistrationStateForUMA::
@@ -689,6 +731,8 @@ void StandaloneTrustedVaultBackend::OnDeviceRegistered(
       // client doesn't fully handled successful device registration before.
       per_user_vault->mutable_local_device_registration_info()
           ->set_device_registered(true);
+      per_user_vault->mutable_local_device_registration_info()
+          ->set_device_registered_version(kCurrentDeviceRegistrationVersion);
       WriteToDisk(data_, file_path_);
       return;
     case TrustedVaultRegistrationStatus::kLocalDataObsolete:
@@ -791,6 +835,8 @@ void StandaloneTrustedVaultBackend::OnKeysDownloaded(
       // are available).
       per_user_vault->mutable_local_device_registration_info()
           ->set_device_registered(false);
+      per_user_vault->mutable_local_device_registration_info()
+          ->clear_device_registered_version();
       WriteToDisk(data_, file_path_);
       break;
     }
@@ -829,8 +875,7 @@ void StandaloneTrustedVaultBackend::FulfillOngoingFetchKeys(
   DCHECK(!ongoing_fetch_keys_callback_.is_null());
 
   if (status_for_uma.has_value()) {
-    base::UmaHistogramEnumeration("Sync.TrustedVaultDownloadKeysStatus",
-                                  *status_for_uma);
+    RecordTrustedVaultDownloadKeysStatus(*status_for_uma);
   }
 
   const sync_pb::LocalTrustedVaultPerUser* per_user_vault =

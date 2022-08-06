@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/strings/string_piece.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -18,6 +19,7 @@
 
 namespace base {
 class Value;
+class ValueView;
 }  // namespace base
 
 namespace translate {
@@ -46,13 +48,13 @@ class TranslateInternalsHandler {
   // Registers to handle |message| from JavaScript with |callback|.
   using MessageCallback =
       base::RepeatingCallback<void(const base::Value::List&)>;
-  virtual void RegisterMessageCallback(const std::string& message,
+  virtual void RegisterMessageCallback(base::StringPiece message,
                                        MessageCallback callback) = 0;
 
   // Calls a Javascript function with the given name and arguments.
   virtual void CallJavascriptFunction(
-      const std::string& function_name,
-      const std::vector<const base::Value*>& args) = 0;
+      base::StringPiece function_name,
+      base::span<const base::ValueView> args) = 0;
 
  protected:
   // Subclasses should call this in order to handle messages from JavaScript.

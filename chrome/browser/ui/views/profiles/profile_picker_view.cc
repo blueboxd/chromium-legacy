@@ -387,8 +387,9 @@ void ProfilePickerView::UpdateParams(ProfilePicker::Params&& params) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Cancel any flow that was in progress.
   params_.NotifyAccountSelected(std::string());
-  params_.NotifyFirstRunExited(ProfilePicker::FirstRunExitStatus::kQuitEarly,
-                               base::OnceClosure());
+  params_.NotifyFirstRunExited(
+      ProfilePicker::FirstRunExitStatus::kQuitEarly,
+      ProfilePicker::FirstRunExitSource::kReusingWindow, base::OnceClosure());
 #endif
 
   params_ = std::move(params);
@@ -737,7 +738,8 @@ void ProfilePickerView::CancelSignedInFlow() {
     case ProfilePicker::EntryPoint::kNewSessionOnExistingProcess:
     case ProfilePicker::EntryPoint::kProfileLocked:
     case ProfilePicker::EntryPoint::kUnableToCreateBrowser:
-    case ProfilePicker::EntryPoint::kBackgroundModeManager: {
+    case ProfilePicker::EntryPoint::kBackgroundModeManager:
+    case ProfilePicker::EntryPoint::kProfileIdle: {
       // Navigate to the very beginning which is guaranteed to be the profile
       // picker.
       contents_->GetController().GoToIndex(0);

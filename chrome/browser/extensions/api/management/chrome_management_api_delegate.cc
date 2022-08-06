@@ -337,6 +337,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
       // These modes are not supported by the extension app backend.
       case web_app::DisplayMode::kWindowControlsOverlay:
       case web_app::DisplayMode::kTabbed:
+      case web_app::DisplayMode::kBorderless:
       case web_app::DisplayMode::kUndefined:
         info.launch_type = extensions::api::management::LAUNCH_TYPE_NONE;
         break;
@@ -373,7 +374,7 @@ void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
       apps::AppLaunchParams(app_id, launch_container,
                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                            apps::mojom::LaunchSource::kFromManagementApi));
+                            apps::LaunchSource::kFromManagementApi));
 }
 
 void OnWebAppInstallCompleted(InstallOrLaunchWebAppCallback callback,
@@ -443,7 +444,7 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
       apps::AppLaunchParams(extension->id(), launch_container,
                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                            apps::mojom::LaunchSource::kFromManagementApi));
+                            apps::LaunchSource::kFromManagementApi));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::DemoSession::RecordAppLaunchSourceIfInDemoMode(

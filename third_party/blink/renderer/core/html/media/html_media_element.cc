@@ -350,7 +350,7 @@ bool CanLoadURL(const KURL& url, const String& content_type_str) {
       content_type_codecs.IsEmpty()) {
     return MIMETypeRegistry::SupportsMediaMIMEType(content_mime_type,
                                                    content_type_codecs) !=
-           MIMETypeRegistry::kIsNotSupported;
+           MIMETypeRegistry::kNotSupported;
   }
 
   return false;
@@ -407,13 +407,13 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   String type_codecs = content_type.Parameter("codecs");
 
   if (type.IsEmpty())
-    return MIMETypeRegistry::kIsNotSupported;
+    return MIMETypeRegistry::kNotSupported;
 
   // 4.8.12.3 MIME types - The canPlayType(type) method must return the empty
   // string if type is a type that the user agent knows it cannot render or is
   // the type "application/octet-stream"
   if (type == "application/octet-stream")
-    return MIMETypeRegistry::kIsNotSupported;
+    return MIMETypeRegistry::kNotSupported;
 
   // |contentType| could be handled using ParsedContentType, but there are
   // still a lot of sites using codec strings that don't work with the
@@ -432,11 +432,6 @@ bool HTMLMediaElement::IsHLSURL(const KURL& url) {
     return false;
 
   return url.GetPath().EndsWith(".m3u8");
-}
-
-bool HTMLMediaElement::MediaTracksEnabledInternally() {
-  return RuntimeEnabledFeatures::AudioVideoTracksEnabled() ||
-         RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled();
 }
 
 // static
@@ -610,8 +605,9 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // media element to a new document. This is a work in progress, and may cause
   // security and/or stability issues.
   const bool reuse_player =
-      RuntimeEnabledFeatures::PictureInPictureV2Enabled() && new_origin &&
-      old_origin && old_origin->IsSameOriginWith(new_origin.get());
+      RuntimeEnabledFeatures::DocumentPictureInPictureAPIEnabled() &&
+      new_origin && old_origin &&
+      old_origin->IsSameOriginWith(new_origin.get());
   if (!reuse_player) {
     // Don't worry about notifications from any previous document if we're not
     // re-using the player.
@@ -916,13 +912,13 @@ String HTMLMediaElement::canPlayType(ExecutionContext* context,
 
   // 4.8.12.3
   switch (support) {
-    case MIMETypeRegistry::kIsNotSupported:
+    case MIMETypeRegistry::kNotSupported:
       can_play = g_empty_string;
       break;
-    case MIMETypeRegistry::kMayBeSupported:
+    case MIMETypeRegistry::kMaybeSupported:
       can_play = "maybe";
       break;
-    case MIMETypeRegistry::kIsSupported:
+    case MIMETypeRegistry::kSupported:
       can_play = "probably";
       break;
   }
@@ -1114,7 +1110,7 @@ void HTMLMediaElement::LoadInternal() {
   if (text_tracks_) {
     for (unsigned i = 0; i < text_tracks_->length(); ++i) {
       TextTrack* track = text_tracks_->AnonymousIndexedGetter(i);
-      if (track->mode() != TextTrack::DisabledKeyword())
+      if (track->mode() != TextTrackMode::kDisabled)
         text_tracks_when_resource_selection_began_.push_back(track);
     }
   }
@@ -2021,6 +2017,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
           frame,
           HasVideo() ? mojom::blink::RequestContextType::VIDEO
                      : mojom::blink::RequestContextType::AUDIO,
+          network::mojom::blink::IPAddressSpace::kUnknown,
           current_src_for_check,
           // Strictly speaking, this check is an approximation; a request could
           // have have redirected back to its original URL, for example.
@@ -3112,7 +3109,6 @@ void HTMLMediaElement::AudioTrackChanged(AudioTrack* track) {
   DVLOG(3) << "audioTrackChanged(" << *this
            << ") trackId= " << String(track->id())
            << " enabled=" << BoolString(track->enabled());
-  DCHECK(MediaTracksEnabledInternally());
 
   audioTracks().ScheduleChangeEvent();
 
@@ -3165,7 +3161,6 @@ VideoTrackList& HTMLMediaElement::videoTracks() {
 void HTMLMediaElement::SelectedVideoTrackChanged(VideoTrack* track) {
   DVLOG(3) << "selectedVideoTrackChanged(" << *this << ") selectedTrackId="
            << (track->selected() ? String(track->id()) : "none");
-  DCHECK(MediaTracksEnabledInternally());
 
   if (track->selected())
     videoTracks().TrackSelected(track->id());
@@ -3306,7 +3301,7 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   // wrong. (The 'change' event shouldn't be fired at all in this case...)
 
   // ..., its text track mode to the text track hidden mode, ...
-  text_track->setMode(TextTrack::HiddenKeyword());
+  text_track->SetModeEnum(TextTrackMode::kHidden);
 
   // 5. Return the new TextTrack object.
   return text_track;
@@ -4376,9 +4371,6 @@ void HTMLMediaElement::Trace(Visitor* visitor) const {
 }
 
 void HTMLMediaElement::CreatePlaceholderTracksIfNecessary() {
-  if (!MediaTracksEnabledInternally())
-    return;
-
   // Create a placeholder audio track if the player says it has audio but it
   // didn't explicitly announce the tracks.
   if (HasAudio() && !audioTracks().length()) {

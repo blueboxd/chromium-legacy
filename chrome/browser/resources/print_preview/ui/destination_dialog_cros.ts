@@ -37,10 +37,10 @@ import {PrintPreviewDestinationListItemElement} from './destination_list_item_cr
 import {PrintPreviewSearchBoxElement} from './print_preview_search_box.js';
 import {PrintPreviewProvisionalDestinationResolverElement} from './provisional_destination_resolver.js';
 
-type PrintServersChangedEventDetail = {
-  printServerNames: string[],
-  isSingleServerFetchingMode: boolean,
-};
+interface PrintServersChangedEventDetail {
+  printServerNames: string[];
+  isSingleServerFetchingMode: boolean;
+}
 
 export interface PrintPreviewDestinationDialogCrosElement {
   $: {
@@ -111,7 +111,7 @@ export class PrintPreviewDestinationDialogCrosElement extends
       loadingAnyDestinations_: {
         type: Boolean,
         computed: 'computeLoadingDestinations_(' +
-            'loadingDestinations_, loadingServerPrinters_)'
+            'loadingDestinations_, loadingServerPrinters_)',
       },
     };
   }

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
+#include "components/printing/browser/print_to_pdf/pdf_print_job.h"
 #include "components/printing/common/print.mojom-forward.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "printing/buildflags/buildflags.h"
@@ -76,6 +77,15 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
                             content::RenderFrameHost* rfh,
                             PrinterHandler::PrintCallback callback);
 #endif
+
+  // Prints the current document pages specified by `page_ranges` with
+  // parameters, specified by `print_pages_params` into a PDF document,
+  // returned with `callback`. If `page_ranges` is empty, the entire
+  // document is printed.
+  void PrintToPdf(content::RenderFrameHost* rfh,
+                  const std::string& page_ranges,
+                  mojom::PrintPagesParamsPtr print_pages_params,
+                  print_to_pdf::PdfPrintJob::PrintToPdfCallback callback);
 
   // Whether printing is enabled or not.
   void UpdatePrintingEnabled();

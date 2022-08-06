@@ -52,6 +52,7 @@ align-items: normal
 align-self: auto
 alignment-baseline: auto
 anchor-name: none
+anchor-scroll: none
 animation-delay: 0s
 animation-direction: normal
 animation-duration: 0s
@@ -278,6 +279,8 @@ paint-order: normal
 perspective: none
 perspective-origin: 0px 0px
 pointer-events: auto
+pop-up-hide-delay: infinity * 1s
+pop-up-show-delay: 0.5s
 position: static
 position-fallback: none
 r: 0px

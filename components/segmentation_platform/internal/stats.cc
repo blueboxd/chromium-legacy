@@ -9,9 +9,9 @@
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
+#include "components/segmentation_platform/public/proto/types.pb.h"
 
 namespace segmentation_platform::stats {
 namespace {
@@ -472,6 +472,23 @@ void RecordModelExecutionDurationTotal(SegmentId segment_id,
       duration);
 }
 
+void RecordOnDemandSegmentSelectionDuration(
+    const std::string& segmentation_key,
+    const SegmentSelectionResult& result,
+    base::TimeDelta duration) {
+  std::string histogram_prefix =
+      base::StrCat({"SegmentationPlatform.SegmentSelectionOnDemand.Duration.",
+                    SegmentationKeyToUmaName(segmentation_key), "."});
+  base::UmaHistogramTimes(base::StrCat({histogram_prefix, "Any"}), duration);
+
+  std::string histogram_name = base::StrCat(
+      {histogram_prefix,
+       result.segment.has_value()
+           ? OptimizationTargetToHistogramVariant(result.segment.value())
+           : "None"});
+  base::UmaHistogramTimes(histogram_name, duration);
+}
+
 void RecordModelExecutionResult(SegmentId segment_id, float result) {
   base::UmaHistogramPercentage(
       "SegmentationPlatform.ModelExecution.Result." +
@@ -559,6 +576,35 @@ void RecordSegmentSelectionFailure(const std::string& segmentation_key,
       base::StrCat({"SegmentationPlatform.SelectionFailedReason.",
                     SegmentationKeyToUmaName(segmentation_key)}),
       reason);
+}
+
+std::string FeatureProcessingErrorToString(FeatureProcessingError error) {
+  switch (error) {
+    case FeatureProcessingError::kUkmEngineDisabled:
+      return "UkmEngineDisabled";
+    case FeatureProcessingError::kUmaValidationError:
+      return "UmaValidationError";
+    case FeatureProcessingError::kSqlValidationError:
+      return "SqlValidationError";
+    case FeatureProcessingError::kCustomInputError:
+      return "CustomInputError";
+    case FeatureProcessingError::kSqlBindValuesError:
+      return "SqlBindValuesError";
+    case FeatureProcessingError::kSqlQueryRunError:
+      return "SqlQueryRunError";
+    case FeatureProcessingError::kResultTensorError:
+      return "ResultTensorError";
+    default:
+      return "Other";
+  }
+}
+
+void RecordFeatureProcessingError(SegmentId segment_id,
+                                  FeatureProcessingError error) {
+  base::UmaHistogramEnumeration(
+      "SegmentationPlatform.FeatureProcessing.Error." +
+          OptimizationTargetToHistogramVariant(segment_id),
+      error);
 }
 
 void RecordModelAvailability(SegmentId segment_id,

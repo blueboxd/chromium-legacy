@@ -67,22 +67,22 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/attestation/attestation_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/hermes/hermes_euicc_client.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/version/version_loader.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -440,7 +440,7 @@ void ReadTpmStatus(DeviceStatusCollector::TpmStatusReceiver callback) {
   chromeos::TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
       ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
       base::BindOnce(&TpmStatusCombiner::OnGetTpmStatus, tpm_status_combiner));
-  chromeos::AttestationClient::Get()->GetStatus(
+  ash::AttestationClient::Get()->GetStatus(
       ::attestation::GetStatusRequest(),
       base::BindOnce(&TpmStatusCombiner::OnGetEnrollmentStatus,
                      tpm_status_combiner));
@@ -1235,79 +1235,89 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       }
     }
 
-    // Process SystemResultV2.
-    const auto& system_result_v2 = probe_result->system_result_v2;
-    if (!system_result_v2.is_null()) {
-      switch (system_result_v2->which()) {
-        case cros_healthd::SystemResultV2::Tag::kError: {
-          LOG(ERROR) << "cros_healthd: Error getting system info v2: "
-                     << system_result_v2->get_error()->msg;
+    // Process SystemResult.
+    const auto& system_result = probe_result->system_result;
+    if (!system_result.is_null()) {
+      switch (system_result->which()) {
+        case cros_healthd::SystemResult::Tag::kError: {
+          LOG(ERROR) << "cros_healthd: Error getting system info: "
+                     << system_result->get_error()->msg;
           break;
         }
 
-        // The System Info V2 tag is always called to get vendor, product name,
+        // The System Info tag is always called to get vendor, product name,
         // and product version. Because of this, make sure to wrap additional
         // data collection behind a policy, similar to bios version and os
         // info below.
-        case cros_healthd::SystemResultV2::Tag::kSystemInfoV2: {
-          const auto& system_info_v2 = system_result_v2->get_system_info_v2();
+        case cros_healthd::SystemResult::Tag::kSystemInfo: {
+          const auto& system_info = system_result->get_system_info();
 
           if (report_vpd_info || report_system_info) {
             em::SystemStatus* const system_status_out =
                 response_params_.device_status->mutable_system_status();
-            if (report_vpd_info) {
-              if (system_info_v2->vpd_info->activate_date.has_value()) {
+            if (report_vpd_info && !system_info->vpd_info.is_null()) {
+              const auto& vpd_info = system_info->vpd_info;
+              if (vpd_info->activate_date.has_value()) {
                 system_status_out->set_first_power_date(
-                    system_info_v2->vpd_info->activate_date.value());
+                    vpd_info->activate_date.value());
                 SetDeviceStatusReported();
               }
-              if (system_info_v2->vpd_info->mfg_date.has_value()) {
+              if (vpd_info->mfg_date.has_value()) {
                 system_status_out->set_manufacture_date(
-                    system_info_v2->vpd_info->mfg_date.value());
+                    vpd_info->mfg_date.value());
                 SetDeviceStatusReported();
               }
-              if (system_info_v2->vpd_info->sku_number.has_value()) {
+              if (vpd_info->sku_number.has_value()) {
                 system_status_out->set_vpd_sku_number(
-                    system_info_v2->vpd_info->sku_number.value());
+                    vpd_info->sku_number.value());
                 SetDeviceStatusReported();
               }
-              if (system_info_v2->vpd_info->serial_number.has_value()) {
+              if (vpd_info->serial_number.has_value()) {
                 system_status_out->set_vpd_serial_number(
-                    system_info_v2->vpd_info->serial_number.value());
+                    vpd_info->serial_number.value());
                 SetDeviceStatusReported();
               }
             }
             if (report_system_info) {
-              if (system_info_v2->os_info->marketing_name.has_value()) {
-                system_status_out->set_marketing_name(
-                    system_info_v2->os_info->marketing_name.value());
+              if (!system_info->dmi_info.is_null()) {
+                const auto& dmi_info = system_info->dmi_info;
+                if (dmi_info->bios_version.has_value()) {
+                  system_status_out->set_bios_version(
+                      dmi_info->bios_version.value());
+                  SetDeviceStatusReported();
+                }
+                if (dmi_info->board_name.has_value()) {
+                  system_status_out->set_board_name(
+                      dmi_info->board_name.value());
+                  SetDeviceStatusReported();
+                }
+                if (dmi_info->board_version.has_value()) {
+                  system_status_out->set_board_version(
+                      dmi_info->board_version.value());
+                  SetDeviceStatusReported();
+                }
+                if (dmi_info->chassis_type) {
+                  system_status_out->set_chassis_type(
+                      dmi_info->chassis_type->value);
+                  SetDeviceStatusReported();
+                }
               }
-              if (system_info_v2->dmi_info->bios_version.has_value()) {
-                system_status_out->set_bios_version(
-                    system_info_v2->dmi_info->bios_version.value());
+              if (!system_info->os_info.is_null()) {
+                const auto& os_info = system_info->os_info;
+                if (os_info->marketing_name.has_value()) {
+                  system_status_out->set_marketing_name(
+                      os_info->marketing_name.value());
+                }
+                system_status_out->set_product_name(os_info->code_name);
+                SetDeviceStatusReported();
               }
-              if (system_info_v2->dmi_info->board_name.has_value()) {
-                system_status_out->set_board_name(
-                    system_info_v2->dmi_info->board_name.value());
-              }
-              if (system_info_v2->dmi_info->board_version.has_value()) {
-                system_status_out->set_board_version(
-                    system_info_v2->dmi_info->board_version.value());
-              }
-              if (system_info_v2->dmi_info->chassis_type) {
-                system_status_out->set_chassis_type(
-                    system_info_v2->dmi_info->chassis_type->value);
-              }
-              system_status_out->set_product_name(
-                  system_info_v2->os_info->code_name);
-              SetDeviceStatusReported();
             }
           }
 
           em::SmbiosInfo* const smbios_info_out =
               response_params_.device_status->mutable_smbios_info();
-          if (!system_info_v2->dmi_info.is_null()) {
-            const auto& dmi_info = system_info_v2->dmi_info;
+          if (!system_info->dmi_info.is_null()) {
+            const auto& dmi_info = system_info->dmi_info;
 
             // The vendor, product name, and product version should always be
             // reported.
@@ -1327,10 +1337,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
             }
             SetDeviceStatusReported();
           }
-          if (report_system_info && !system_info_v2->os_info.is_null()) {
+          if (report_system_info && !system_info->os_info.is_null()) {
             em::BootInfo* const boot_info_out =
                 response_params_.device_status->mutable_boot_info();
-            const auto& os_info = system_info_v2->os_info;
+            const auto& os_info = system_info->os_info;
             boot_info_out->set_boot_method(
                 static_cast<em::BootInfo::BootMethod>(os_info->boot_mode));
             SetDeviceStatusReported();
@@ -2143,8 +2153,7 @@ void DeviceStatusCollector::OnProbeDataFetched(
 
 void DeviceStatusCollector::ReportingUsersChanged() {
   std::vector<std::string> reporting_users;
-  for (auto& value :
-       pref_service_->GetList(prefs::kReportingUsers)->GetListDeprecated()) {
+  for (auto& value : pref_service_->GetValueList(prefs::kReportingUsers)) {
     if (value.is_string())
       reporting_users.push_back(value.GetString());
   }
@@ -2330,9 +2339,9 @@ bool DeviceStatusCollector::GetNetworkConfiguration(
     if ((*device)->type() == shill::kTypeCellular) {
       std::vector<std::string> eids;
       for (const auto& euicc_path :
-           chromeos::HermesManagerClient::Get()->GetAvailableEuiccs()) {
-        chromeos::HermesEuiccClient::Properties* properties =
-            chromeos::HermesEuiccClient::Get()->GetProperties(euicc_path);
+           ash::HermesManagerClient::Get()->GetAvailableEuiccs()) {
+        ash::HermesEuiccClient::Properties* properties =
+            ash::HermesEuiccClient::Get()->GetProperties(euicc_path);
         interface->add_eids(properties->eid().value());
       }
     }
@@ -2380,13 +2389,13 @@ bool DeviceStatusCollector::GetNetworkStatus(
   // Walk the various networks and store their state in the status report.
   chromeos::NetworkStateHandler::NetworkStateList state_list;
   network_state_handler->GetNetworkListByType(
-      chromeos::NetworkTypePattern::Default(),
+      ash::NetworkTypePattern::Default(),
       true,   // configured_only
       false,  // visible_only
       0,      // no limit to number of results
       &state_list);
 
-  for (const chromeos::NetworkState* state : state_list) {
+  for (const ash::NetworkState* state : state_list) {
     // Determine the connection state and signal strength for |state|.
     em::NetworkState::ConnectionState connection_state_enum =
         em::NetworkState::UNKNOWN;

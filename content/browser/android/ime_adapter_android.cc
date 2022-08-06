@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/stylus_writing_gesture.mojom.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "ui/base/ime/ime_text_span.h"
 
@@ -363,6 +364,40 @@ bool ImeAdapterAndroid::RequestStartStylusWriting() {
     return Java_ImeAdapterImpl_requestStartStylusWriting(env, obj);
   }
   return false;
+}
+
+void ImeAdapterAndroid::OnEditElementFocusedForStylusWriting(
+    const gfx::Rect& focused_edit_bounds,
+    const gfx::Rect& caret_bounds) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (!obj.is_null()) {
+    gfx::Point caret_center = caret_bounds.CenterPoint();
+    Java_ImeAdapterImpl_onEditElementFocusedForStylusWriting(
+        env, obj, focused_edit_bounds.x(), focused_edit_bounds.y(),
+        focused_edit_bounds.right(), focused_edit_bounds.bottom(),
+        caret_center.x(), caret_center.y());
+  }
+}
+
+void ImeAdapterAndroid::HandleStylusWritingGestureAction(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&,
+    const base::android::JavaParamRef<jobject>& jgesture_data_byte_buffer) {
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
+  if (!input_handler)
+    return;
+  blink::mojom::StylusWritingGestureDataPtr gesture_data;
+  if (!blink::mojom::StylusWritingGestureData::Deserialize(
+          static_cast<jbyte*>(
+              env->GetDirectBufferAddress(jgesture_data_byte_buffer.obj())),
+          env->GetDirectBufferCapacity(jgesture_data_byte_buffer.obj()),
+          &gesture_data)) {
+    NOTREACHED();
+    return;
+  }
+
+  input_handler->HandleStylusWritingGestureAction(std::move(gesture_data));
 }
 
 void ImeAdapterAndroid::AdvanceFocusForIME(JNIEnv* env,

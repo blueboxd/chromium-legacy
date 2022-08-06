@@ -90,6 +90,7 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   void OnMonthChanged() override;
   void OpenEventList() override;
   void CloseEventList() override;
+  void OnSelectedDateUpdated() override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
@@ -269,6 +270,10 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   // We only fetch events after we've "settled" on the current on-screen month.
   void OnScrollingSettledTimerFired();
 
+  // Sets `expanded_row_index_` and auto-scrolls the `scroll_view_` when
+  // `event_list_view_` is opened. After scrolling, disables the scroll bar.
+  void SetExpandedRowThenDisableScroll(int row_index);
+
   // ScrollView callback.
   void OnContentsScrolled();
 
@@ -288,6 +293,9 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   // restoring the position of them, re-enabling animation and etc.
   void OnOpenEventListAnimationComplete();
   void OnCloseEventListAnimationComplete();
+
+  // Requests the focusing ring to go to the close button of `event_list_view_`.
+  void RequestFocusForEventListCloseButton();
 
   // Animates the month and scrolls back to today and resets the
   // `scrolling_settled_timer_` to update the `on_screen_month_` map after the

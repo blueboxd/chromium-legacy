@@ -14,6 +14,10 @@
 @class ConsistencyDefaultAccountViewController;
 @protocol ConsistencyLayoutDelegate;
 
+namespace signin_metrics {
+enum class AccessPoint : int;
+}
+
 // Delegate protocol for ConsistencyDefaultAccountViewController.
 @protocol ConsistencyDefaultAccountActionDelegate <NSObject>
 
@@ -34,12 +38,12 @@
     : UIViewController <ChildConsistencySheetViewController,
                         ConsistencyDefaultAccountConsumer>
 
+- (instancetype)initWithAccessPoint:(signin_metrics::AccessPoint)accessPoint;
+
 // Delegate for all the user actions.
 @property(nonatomic, weak) id<ConsistencyDefaultAccountActionDelegate>
     actionDelegate;
 @property(nonatomic, weak) id<ConsistencyLayoutDelegate> layoutDelegate;
-@property(nonatomic, assign)
-    EnterpriseSignInRestrictions enterpriseSignInRestrictions;
 
 // Starts the spinner and disables buttons.
 - (void)startSpinner;

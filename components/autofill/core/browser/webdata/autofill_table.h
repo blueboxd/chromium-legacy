@@ -39,6 +39,7 @@ class AutofillTableTest;
 class CreditCard;
 struct CreditCardCloudTokenData;
 struct FormFieldData;
+class IBAN;
 struct PaymentsCustomerData;
 
 // This class manages the various Autofill tables within the SQLite database
@@ -323,6 +324,19 @@ struct PaymentsCustomerData;
 //                      database, but always returned as an empty string in
 //                      CreditCard. Added in version 71.
 //
+// ibans                This table contains International Bank Account
+//                      Number(IBAN) data added by the user. The columns are
+//                      standard entries in an Iban form.
+//
+//   guid               A guid string to uniquely identify the IBAN.
+//   use_count          The number of times this IBAN has been used to fill
+//                      a form.
+//   use_date           The date this IBAN was last used to fill a form,
+//                      in time_t.
+//   value              Actual value of the IBAN (the bank account number).
+//   nickname           A nickname for the IBAN, entered by the user.
+//
+//
 // server_addresses     This table contains Autofill address data synced from
 //                      the wallet server. It's basically the same as the
 //                      autofill_profiles table but locally immutable.
@@ -533,6 +547,22 @@ class AutofillTable : public WebDatabaseTable,
   // the given ones.
   void SetServerProfiles(const std::vector<AutofillProfile>& profiles);
 
+  // Records a single IBAN in the iban table.
+  bool AddIBAN(const IBAN& iban);
+
+  // Updates the database values for the specified IBAN.
+  bool UpdateIBAN(const IBAN& iban);
+
+  // Removes a row from the ibans table. |guid| is the identifier of the
+  // IBAN to remove.
+  bool RemoveIBAN(const std::string& guid);
+
+  // Retrieves an IBAN with the given |guid|.
+  std::unique_ptr<IBAN> GetIBAN(const std::string& guid);
+
+  // Retrieves the local IBANs in the database.
+  bool GetIBANs(std::vector<std::unique_ptr<IBAN>>* ibans);
+
   // Records a single credit card in the credit_cards table.
   bool AddCreditCard(const CreditCard& credit_card);
 
@@ -700,6 +730,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion101RemoveCreditCardArtImageTable();
   bool MigrateToVersion102AddAutofillBirthdatesTable();
   bool MigrateToVersion104AddProductDescriptionColumn();
+  bool MigrateToVersion105AddAutofillIBANTable();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -793,6 +824,7 @@ class AutofillTable : public WebDatabaseTable,
 
   bool InitMainTable();
   bool InitCreditCardsTable();
+  bool InitIBANsTable();
   bool InitProfilesTable();
   bool InitProfileAddressesTable();
   bool InitProfileNamesTable();

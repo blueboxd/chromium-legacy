@@ -51,7 +51,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,6 +58,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
@@ -161,6 +161,19 @@ void LoggedInSpokenFeedbackTest::DisableEarcons() {
       "ChromeVox.earcons.playEarcon = function() {};");
 }
 
+void LoggedInSpokenFeedbackTest::ImportJSModuleForChromeVox(std::string name,
+                                                            std::string path) {
+  extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId,
+      "import('" + path +
+          "').then(mod => {"
+          "window." +
+          name + " = mod." + name +
+          ";"
+          "window.domAutomationController.send('done')"
+          "})");
+}
+
 void LoggedInSpokenFeedbackTest::EnableChromeVox() {
   // Test setup.
   // Enable ChromeVox, disable earcons and wait for key mappings to be fetched.
@@ -171,6 +184,10 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
   // Load ChromeVox and block until it's fully loaded.
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
   sm_.ExpectSpeechPattern("*");
+  sm_.Call([this]() {
+    ImportJSModuleForChromeVox("ChromeVox",
+                               "/chromevox/background/chromevox.js");
+  });
   sm_.Call([this]() { DisableEarcons(); });
 }
 
@@ -567,23 +584,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   app->readiness = apps::Readiness::kReady;
   app->paused = true;
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    std::vector<apps::AppPtr> apps;
-    apps.push_back(std::move(app));
-    apps::AppServiceProxyFactory::GetForProfile(
-        AccessibilityManager::Get()->profile())
-        ->AppRegistryCache()
-        .OnApps(std::move(apps), apps::AppType::kBuiltIn,
-                false /* should_notify_initialized */);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_apps;
-    mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
-    apps::AppServiceProxyFactory::GetForProfile(
-        AccessibilityManager::Get()->profile())
-        ->AppRegistryCache()
-        .OnApps(std::move(mojom_apps), apps::mojom::AppType::kBuiltIn,
-                false /* should_notify_initialized */);
-  }
+  std::vector<apps::AppPtr> apps;
+  apps.push_back(std::move(app));
+  apps::AppServiceProxyFactory::GetForProfile(
+      AccessibilityManager::Get()->profile())
+      ->AppRegistryCache()
+      .OnApps(std::move(apps), apps::AppType::kBuiltIn,
+              false /* should_notify_initialized */);
 
   // Create and add a test app to the shelf model.
   ShelfItem item;
@@ -627,23 +634,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   apps::AppPtr app =
       std::make_unique<apps::App>(apps::AppType::kBuiltIn, app_id);
   app->readiness = apps::Readiness::kDisabledByPolicy;
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    std::vector<apps::AppPtr> apps;
-    apps.push_back(std::move(app));
-    apps::AppServiceProxyFactory::GetForProfile(
-        AccessibilityManager::Get()->profile())
-        ->AppRegistryCache()
-        .OnApps(std::move(apps), apps::AppType::kBuiltIn,
-                false /* should_notify_initialized */);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_apps;
-    mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
-    apps::AppServiceProxyFactory::GetForProfile(
-        AccessibilityManager::Get()->profile())
-        ->AppRegistryCache()
-        .OnApps(std::move(mojom_apps), apps::mojom::AppType::kBuiltIn,
-                false /* should_notify_initialized */);
-  }
+  std::vector<apps::AppPtr> apps;
+  apps.push_back(std::move(app));
+  apps::AppServiceProxyFactory::GetForProfile(
+      AccessibilityManager::Get()->profile())
+      ->AppRegistryCache()
+      .OnApps(std::move(apps), apps::AppType::kBuiltIn,
+              false /* should_notify_initialized */);
 
   // Create and add a test app to the shelf model.
   ShelfItem item;
@@ -1749,7 +1746,7 @@ IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
   sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern("Template, Desk 1");
   sm_.ExpectSpeech("Button");
-  sm_.ExpectSpeech("Press Ctrl plus W to close");
+  sm_.ExpectSpeech("Press Ctrl plus W to delete");
   sm_.ExpectSpeech("Press Search plus Space to activate");
 
   // The next item is the textfield inside the template card, which also has the
@@ -1757,6 +1754,18 @@ IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
   sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern("Desk 1");
   sm_.ExpectSpeech("Edit text");
+
+  // Reverse tab to focus back on the template card.
+  sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
+
+  // Trigger a delete template dialog by pressing Ctrl+W.
+  sm_.Call([this]() { SendKeyPressWithControl(ui::VKEY_W); });
+  sm_.ExpectSpeech("Delete template?");
+  sm_.ExpectSpeech("Dialog");
+  sm_.ExpectSpeech("Delete");
+  sm_.ExpectSpeech("default");
+  sm_.ExpectSpeech("Button");
+  sm_.ExpectSpeech("Press Search plus Space to activate");
 
   sm_.Replay();
 }

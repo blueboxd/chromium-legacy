@@ -12,7 +12,7 @@ import {MessagePipe} from './message_pipe.m.js';
 import {Message} from './message_types.js';
 
 const help_app = {
-  handler: new ash.helpApp.mojom.PageHandlerRemote()
+  handler: new ash.helpApp.mojom.PageHandlerRemote(),
 };
 
 // Set up a page handler to talk to the browser process.
@@ -271,7 +271,7 @@ guestMessagePipe.registerHandler(
         // This is a google-internal histogram. If changing this, also change
         // the corresponding histograms file.
         if (!valid) {
-          chrome.metricsPrivate.recordSparseHashable(
+          chrome.metricsPrivate.recordSparseValueWithPersistentHash(
               'Discover.LauncherSearch.InvalidConceptInUpdate', item.id);
         }
         return valid;

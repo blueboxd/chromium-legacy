@@ -3,10 +3,11 @@
 # Expectations for --force-renderer-accessibility
 # crbug.com/1138028 tracks the removal of these failure expectations
 
+# To save time in linux-blink-web-tests-force-accessibility-rel builder, do not
+# run virtual test suites.
+virtual/* [ Skip ]
+
 # Unintentional failure
-accessibility/aom-click-action.html [ Skip ]
-external/wpt/accessibility/crashtests/serialize-with-no-document.html [ Skip ]
-external/wpt/accessibility/crashtests/svg-mouse-listener.html [ Skip ]
 external/wpt/css/css-backgrounds/background-repeat-space-5.html [ Skip ]
 external/wpt/css/css-contain/content-visibility/detach-locked-slot-children-crash.html [ Skip ]
 external/wpt/css/css-display/display-contents-shadow-dom-1.html [ Skip ]
@@ -15,6 +16,7 @@ external/wpt/css/css-grid/subgrid/subgrid-item-block-size-001.html [ Skip ]
 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Skip ]
 external/wpt/css/css-multicol/multicol-list-item-002.html [ Skip ]
 external/wpt/css/css-transitions/transition-base-response-002.html [ Skip ]
+external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Failure Pass ]
 external/wpt/editing/other/exec-command-without-editable-element.tentative.html [ Skip ]
 external/wpt/editing/other/insert-paragraph-in-void-element.tentative.html [ Skip ]
 external/wpt/fetch/metadata/generated/element-img-environment-change.https.sub.html [ Skip ]
@@ -34,8 +36,6 @@ external/wpt/html/browsers/browsing-the-web/back-forward-cache/service-worker-co
 external/wpt/html/browsers/browsing-the-web/back-forward-cache/service-worker-unregister.https.html [ Skip ]
 external/wpt/html/browsers/browsing-the-web/back-forward-cache/storage-events.html [ Skip ]
 external/wpt/html/browsers/browsing-the-web/back-forward-cache/timers.html [ Skip ]
-external/wpt/html/semantics/interactive-elements/the-dialog-element/inert-svg-hittest.html [ Skip ]
-external/wpt/inert/dynamic-inert-on-focused-element.html [ Skip ]
 external/wpt/inert/inert-iframe-hittest.html [ Skip ]
 external/wpt/infrastructure/assumptions/non-local-ports.sub.window.html [ Skip ]
 external/wpt/mimesniff/media/media-sniff.window.html [ Skip ]
@@ -55,6 +55,7 @@ fast/forms/calendar-picker/date-picker-ax.html [ Skip ]
 fast/forms/month/month-picker-ax.html [ Skip ]
 fast/forms/select-popup/popup-menu-appearance-texttransform.html [ Skip ]
 fast/forms/suggested-value.html [ Skip ]
+fast/loader/iframe-navigation-stealing-focus.html [ Pass Timeout ]
 fast/spatial-navigation/snav-div-in-anchor.html [ Skip ]
 http/tests/devtools/console/console-format.js [ Skip ]
 http/tests/inspector-protocol/accessibility/accessibility-ignoredNodesModal.js [ Skip ]
@@ -74,7 +75,6 @@ virtual/css-highlight-overlay-painting/external/wpt/css/css-pseudo/highlight-pai
 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/backdrop-descendant-selector.html [ Skip ]
 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/backdrop-in-flow.html [ Skip ]
 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/dont-share-style-to-top-layer.html [ Skip ]
-virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/inert-svg-hittest.html [ Skip ]
 virtual/disable-frequency-capping-for-overlay-popup-detection/http/tests/subresource_filter/overlay_popup_ad/overlay-popup-ad-fixed-position.html [ Skip ]
 virtual/disable-frequency-capping-for-overlay-popup-detection/http/tests/subresource_filter/overlay_popup_ad/overlay-popup-image-ad-fixed-position.html [ Skip ]
 virtual/disable-frequency-capping-for-overlay-popup-detection/http/tests/subresource_filter/overlay_popup_ad/overlay-popup-non-ad-followed-by-ad.html [ Skip ]

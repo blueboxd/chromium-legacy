@@ -432,21 +432,23 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   DCHECK(pending_profiles_query_ || pending_server_profiles_query_ ||
          pending_creditcards_query_ || pending_server_creditcards_query_ ||
          pending_server_creditcard_cloud_token_data_query_ ||
-         pending_customer_data_query_ || pending_upi_ids_query_ ||
-         pending_offer_data_query_);
+         pending_ibans_query_ || pending_customer_data_query_ ||
+         pending_upi_ids_query_ || pending_offer_data_query_);
 
   if (!result) {
     // Error from the web database.
-    if (h == pending_creditcards_query_)
-      pending_creditcards_query_ = 0;
-    else if (h == pending_profiles_query_)
+    if (h == pending_profiles_query_)
       pending_profiles_query_ = 0;
-    else if (h == pending_server_creditcards_query_)
-      pending_server_creditcards_query_ = 0;
     else if (h == pending_server_profiles_query_)
       pending_server_profiles_query_ = 0;
+    else if (h == pending_creditcards_query_)
+      pending_creditcards_query_ = 0;
+    else if (h == pending_server_creditcards_query_)
+      pending_server_creditcards_query_ = 0;
     else if (h == pending_server_creditcard_cloud_token_data_query_)
       pending_server_creditcard_cloud_token_data_query_ = 0;
+    else if (h == pending_ibans_query_)
+      pending_ibans_query_ = 0;
     else if (h == pending_customer_data_query_)
       pending_customer_data_query_ = 0;
     else if (h == pending_upi_ids_query_)
@@ -486,6 +488,12 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         ReceiveLoadedDbValues(
             h, result.get(), &pending_server_creditcard_cloud_token_data_query_,
             &server_credit_card_cloud_token_data_);
+        break;
+      case AUTOFILL_IBANS_RESULT:
+        DCHECK_EQ(h, pending_ibans_query_)
+            << "received ibans from invalid request.";
+        ReceiveLoadedDbValues(h, result.get(), &pending_ibans_query_,
+                              &local_ibans_);
         break;
       case AUTOFILL_CUSTOMERDATA_RESULT:
         DCHECK_EQ(h, pending_customer_data_query_)
@@ -574,23 +582,12 @@ void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
 CoreAccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
   // Return the account of the active signed-in user irrespective of whether
   // they enabled sync or not.
-  // However if there is no |sync_service_| (e.g. in incognito), return the
-  // latest cached AccountInfo of the user's primary account, which is empty if
-  // the user has disabled sync.
-  // In both cases, the AccountInfo will be empty if the user is not signed in.
-  return sync_service_ ? sync_service_->GetAccountInfo()
-                       : identity_manager_->GetPrimaryAccountInfo(
-                             signin::ConsentLevel::kSync);
+  return identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kSignin);
 }
 
-// TODO(crbug.com/903914): Clean up this function so that it's more clear what
-// it's checking. It should not check the database helper.
 bool PersonalDataManager::IsSyncFeatureEnabled() const {
-  if (!sync_service_)
-    return false;
-
-  return !sync_service_->GetAccountInfo().IsEmpty() &&
-         !database_helper_->IsUsingAccountStorageForServerData();
+  return sync_service_ && sync_service_->IsSyncFeatureEnabled();
 }
 
 void PersonalDataManager::OnAccountsCookieDeletedByUserAction() {
@@ -775,6 +772,51 @@ AutofillProfile* PersonalDataManager::GetProfileFromProfilesByGUID(
     const std::vector<AutofillProfile*>& profiles) {
   auto iter = FindElementByGUID(profiles, guid);
   return iter != profiles.end() ? *iter : nullptr;
+}
+
+void PersonalDataManager::AddIBAN(const IBAN& iban) {
+  if (!IsAutofillIBANEnabled())
+    return;
+
+  if (is_off_the_record_ || FindByGUID(local_ibans_, iban.guid()) ||
+      !database_helper_->GetLocalDatabase() ||
+      FindByContents(local_ibans_, iban)) {
+    return;
+  }
+
+  // Add the new iban to the web database.
+  database_helper_->GetLocalDatabase()->AddIBAN(iban);
+
+  // Refresh our local cache and send notifications to observers.
+  Refresh();
+}
+
+void PersonalDataManager::UpdateIBAN(const IBAN& iban) {
+  DCHECK_EQ(IBAN::LOCAL_IBAN, iban.record_type());
+  if (is_off_the_record_) {
+    return;
+  }
+  IBAN* existing_iban = GetIBANByGUID(iban.guid());
+  if (!existing_iban) {
+    return;
+  }
+
+  // Do not overwrite iban if it's existed already.
+  if (existing_iban->Compare(iban) == 0) {
+    return;
+  }
+
+  // Update the cached version.
+  *existing_iban = iban;
+  if (!database_helper_->GetLocalDatabase()) {
+    return;
+  }
+
+  // Make the update.
+  database_helper_->GetLocalDatabase()->UpdateIBAN(iban);
+
+  // Refresh our local cache and send notifications to observers.
+  Refresh();
 }
 
 void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
@@ -1018,14 +1060,23 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (!database_helper_->GetLocalDatabase())
     return;
 
-  bool is_credit_card = FindByGUID(local_credit_cards_, guid);
-  if (is_credit_card) {
+  if (FindByGUID(local_credit_cards_, guid)) {
     database_helper_->GetLocalDatabase()->RemoveCreditCard(guid);
+    // Refresh our local cache and send notifications to observers.
+    Refresh();
+  } else if (FindByGUID(local_ibans_, guid)) {
+    database_helper_->GetLocalDatabase()->RemoveIBAN(guid);
     // Refresh our local cache and send notifications to observers.
     Refresh();
   } else {
     RemoveAutofillProfileByGUIDAndBlankCreditCardReference(guid);
   }
+}
+
+IBAN* PersonalDataManager::GetIBANByGUID(const std::string& guid) {
+  const std::vector<IBAN*>& ibans = GetIBANs();
+  auto iter = FindElementByGUID(ibans, guid);
+  return iter != ibans.end() ? *iter : nullptr;
 }
 
 CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
@@ -1118,7 +1169,6 @@ std::vector<CreditCard*> PersonalDataManager::GetServerCreditCards() const {
 
 std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
   std::vector<CreditCard*> result;
-
   result.reserve(local_credit_cards_.size() + server_credit_cards_.size());
   for (const auto& card : local_credit_cards_)
     result.push_back(card.get());
@@ -1126,6 +1176,15 @@ std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
     for (const auto& card : server_credit_cards_) {
       result.push_back(card.get());
     }
+  }
+  return result;
+}
+
+std::vector<IBAN*> PersonalDataManager::GetIBANs() const {
+  std::vector<IBAN*> result;
+  result.reserve(local_ibans_.size());
+  for (const auto& iban : local_ibans_) {
+    result.push_back(iban.get());
   }
   return result;
 }
@@ -1210,6 +1269,7 @@ void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
   LoadCreditCardCloudTokenData();
+  LoadIBANs();
   LoadPaymentsCustomerData();
   LoadUpiIds();
   LoadAutofillOffers();
@@ -1367,7 +1427,8 @@ const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
+  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled() ||
+         IsAutofillIBANEnabled();
 }
 
 bool PersonalDataManager::IsAutofillProfileEnabled() const {
@@ -1376,6 +1437,10 @@ bool PersonalDataManager::IsAutofillProfileEnabled() const {
 
 bool PersonalDataManager::IsAutofillCreditCardEnabled() const {
   return prefs::IsAutofillCreditCardEnabled(pref_service_);
+}
+
+bool PersonalDataManager::IsAutofillIBANEnabled() const {
+  return prefs::IsAutofillIBANEnabled(pref_service_);
 }
 
 bool PersonalDataManager::IsAutofillWalletImportEnabled() const {
@@ -1726,9 +1791,22 @@ void PersonalDataManager::LoadCreditCardCloudTokenData() {
       database_helper_->GetServerDatabase()->GetCreditCardCloudTokenData(this);
 }
 
-void PersonalDataManager::LoadUpiIds() {
-  if (!database_helper_->GetLocalDatabase())
+void PersonalDataManager::LoadIBANs() {
+  if (!database_helper_->GetLocalDatabase()) {
+    NOTREACHED();
     return;
+  }
+
+  CancelPendingLocalQuery(&pending_ibans_query_);
+
+  pending_ibans_query_ = database_helper_->GetLocalDatabase()->GetIBANs(this);
+}
+
+void PersonalDataManager::LoadUpiIds() {
+  if (!database_helper_->GetLocalDatabase()) {
+    NOTREACHED();
+    return;
+  }
 
   CancelPendingLocalQuery(&pending_upi_ids_query_);
 
@@ -2094,15 +2172,7 @@ void PersonalDataManager::NotifyPersonalDataObserver() {
   }
 }
 
-void PersonalDataManager::OnCreditCardSaved(bool is_local_card) {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillCreditCardUploadFeedback)) {
-    return;
-  }
-  for (PersonalDataManagerObserver& observer : observers_)
-    observer.OnCreditCardSaved(
-        /*should_show_sign_in_promo_if_applicable=*/is_local_card);
-}
+void PersonalDataManager::OnCreditCardSaved(bool is_local_card) {}
 
 void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
   // If the full Sync feature isn't enabled, then do NOT convert any Wallet

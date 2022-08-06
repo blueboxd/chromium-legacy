@@ -118,6 +118,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/test/test_event.h"
 #include "ui/views/controls/styled_label.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -145,6 +146,7 @@ const char kEmptyPage[] = "/empty.html";
 const char kHTTPSPage[] = "/ssl/google.html";
 const char kMaliciousPage[] = "/safe_browsing/malware.html";
 const char kCrossSiteMaliciousPage[] = "/safe_browsing/malware2.html";
+const char kCrossSiteMaliciousEmbedPage[] = "/safe_browsing/malware4.html";
 const char kPageWithCrossOriginMaliciousIframe[] =
     "/safe_browsing/malware3.html";
 const char kCrossOriginMaliciousIframeHost[] = "malware.test";
@@ -176,16 +178,11 @@ content::RenderFrameHost* GetRenderFrameHost(Browser* browser) {
       ->GetPrimaryMainFrame();
 }
 
-class ClickEvent : public ui::Event {
- public:
-  ClickEvent() : ui::Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-};
-
 views::BubbleDialogDelegateView* OpenPageInfo(Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   LocationIconView* location_icon_view =
       browser_view->toolbar()->location_bar()->location_icon_view();
-  ClickEvent event;
+  ui::test::TestEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
       PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
@@ -533,6 +530,16 @@ class SafeBrowsingBlockingPageBrowserTest
     static_cast<FakeSafeBrowsingDatabaseManager*>(
         service->database_manager().get())
         ->AddDangerousUrl(url, threat_type);
+  }
+
+  void SetURLThreatPatternType(const GURL& url,
+                               ThreatPatternType threat_pattern_type) {
+    TestSafeBrowsingService* service = factory_.test_safe_browsing_service();
+    ASSERT_TRUE(service);
+
+    static_cast<FakeSafeBrowsingDatabaseManager*>(
+        service->database_manager().get())
+        ->AddDangerousUrlPattern(url, threat_pattern_type);
   }
 
   void ClearBadURL(const GURL& url) {
@@ -1868,6 +1875,49 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   WaitForReady(browser());
   AssertNoInterstitial(true);
   EXPECT_EQ(bad_url, contents->GetLastCommittedURL());
+}
+
+// Regression test for https://crbug.com/1333623.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       EmbedElementMalwareLandingInterstitial) {
+  GURL url = embedded_test_server()->GetURL(kCrossSiteMaliciousEmbedPage);
+  GURL embed_url = embedded_test_server()->GetURL(kMaliciousIframe);
+  SetURLThreatType(embed_url, SB_THREAT_TYPE_URL_MALWARE);
+  SetURLThreatPatternType(embed_url, ThreatPatternType::MALWARE_LANDING);
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  base::RunLoop().RunUntilIdle();
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      content::WaitForRenderFrameReady(contents->GetPrimaryMainFrame()));
+  // Show an interstitial when the malware landing page is loaded as an <embed>
+  // element, because it can cause similar harm as <iframe>.
+  EXPECT_TRUE(IsShowingInterstitial(contents));
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       JsElementInterstitial) {
+  SBThreatType threat_type = GetThreatType();
+  GURL url = embedded_test_server()->GetURL(kMaliciousJsPage);
+  GURL js_url = embedded_test_server()->GetURL(kMaliciousJs);
+  SetURLThreatType(js_url, threat_type);
+  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    SetURLThreatPatternType(js_url, ThreatPatternType::MALWARE_LANDING);
+  }
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  base::RunLoop().RunUntilIdle();
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      content::WaitForRenderFrameReady(contents->GetPrimaryMainFrame()));
+  if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+      threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
+    // Do not show an interstitial when the malware landing page or UwS landing
+    // page is loaded as a subresource to avoid false positives.
+    EXPECT_FALSE(IsShowingInterstitial(contents));
+  } else {
+    EXPECT_TRUE(IsShowingInterstitial(contents));
+  }
 }
 
 class SafeBrowsingBlockingPageDelayedWarningBrowserTest

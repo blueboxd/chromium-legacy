@@ -35,11 +35,13 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
   apps::AppRegistryCache& app_registry_cache =
       apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
 
-  bool photosInstalled = false;
+  bool photos_installed = false;
+  auto photos_version = base::Version();
   app_registry_cache.ForOneApp(
       arc::kGooglePhotosAppId,
-      [&photosInstalled](const apps::AppUpdate& update) {
-        photosInstalled = apps_util::IsInstalled(update.Readiness());
+      [&photos_installed, &photos_version](const apps::AppUpdate& update) {
+        photos_installed = apps_util::IsInstalled(update.Readiness());
+        photos_version = base::Version(update.Version());
       });
 
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
@@ -56,7 +58,23 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
   version_info::Channel channel = chrome::GetChannel();
   source->AddBoolean("colorThemes",
                      chromeos::features::IsDarkLightModeEnabled());
-  source->AddBoolean("photosAvailable", photosInstalled);
+  base::Version min_photos_version_for_image(
+      base::GetFieldTrialParamValueByFeature(
+          chromeos::features::kMediaAppPhotosIntegrationImage,
+          "minPhotosVersionForImage"));
+  base::Version min_photos_version_for_video(
+      base::GetFieldTrialParamValueByFeature(
+          chromeos::features::kMediaAppPhotosIntegrationVideo,
+          "minPhotosVersionForVideo"));
+  bool suitable_photos_version = photos_installed && photos_version.IsValid();
+  bool available_for_image = suitable_photos_version &&
+                             min_photos_version_for_image.IsValid() &&
+                             photos_version >= min_photos_version_for_image;
+  bool available_for_video = suitable_photos_version &&
+                             min_photos_version_for_video.IsValid() &&
+                             photos_version >= min_photos_version_for_video;
+  source->AddBoolean("photosAvailableForImage", available_for_image);
+  source->AddBoolean("photosAvailableForVideo", available_for_video);
   source->AddBoolean("photosIntegrationImage",
                      base::FeatureList::IsEnabled(
                          chromeos::features::kMediaAppPhotosIntegrationImage));

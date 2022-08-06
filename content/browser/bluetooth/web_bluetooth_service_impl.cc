@@ -311,7 +311,9 @@ class WebBluetoothServiceImpl::WatchAdvertisementsClient
         filtered_event->manufacturer_data,
         [this](const std::pair<uint16_t, std::vector<uint8_t>>& entry) {
           return !service_->IsAllowedToAccessManufacturerData(device_id_,
-                                                              entry.first);
+                                                              entry.first) ||
+                 BluetoothBlocklist::Get().IsExcluded(entry.first,
+                                                      entry.second);
         });
     client_->AdvertisingEvent(std::move(filtered_event));
   }
@@ -2638,7 +2640,8 @@ void WebBluetoothServiceImpl::PairConfirmed(
 void WebBluetoothServiceImpl::PromptForBluetoothPairing(
     const std::u16string& device_identifier,
     BluetoothDelegate::PairPromptCallback callback,
-    BluetoothDelegate::PairingKind pairing_kind) {
+    BluetoothDelegate::PairingKind pairing_kind,
+    const absl::optional<std::u16string>& pin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BluetoothDelegate* delegate =
       GetContentClient()->browser()->GetBluetoothDelegate();
@@ -2652,8 +2655,9 @@ void WebBluetoothServiceImpl::PromptForBluetoothPairing(
   switch (pairing_kind) {
     case BluetoothDelegate::PairingKind::kConfirmOnly:
     case BluetoothDelegate::PairingKind::kProvidePin:
+    case BluetoothDelegate::PairingKind::kConfirmPinMatch:
       delegate->ShowDevicePairPrompt(&render_frame_host(), device_identifier,
-                                     std::move(callback), pairing_kind);
+                                     std::move(callback), pairing_kind, pin);
       break;
     default:
       NOTREACHED();

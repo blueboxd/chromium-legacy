@@ -276,10 +276,13 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
+  // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
+  // container from ServiceWorkerVersion
 
   if (installed_scripts_manager_) {
     // This service worker is installed. Load and run the installed script.
@@ -334,12 +337,16 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(IsContextThread());
   DCHECK(!reject_coep_unsafe_none);
+  // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
+  // container from ServiceWorkerVersion
+
   if (worker_main_script_load_params) {
     SetWorkerMainScriptLoadingParametersForModules(
         std::move(worker_main_script_load_params));
@@ -734,7 +741,8 @@ void ServiceWorkerGlobalScope::DispatchExtendableEventWithRespondWith(
   wait_until_observer->WillDispatchEvent();
   respond_with_observer->WillDispatchEvent();
   DispatchEventResult dispatch_result = DispatchEvent(*event);
-  respond_with_observer->DidDispatchEvent(dispatch_result);
+  respond_with_observer->DidDispatchEvent(ScriptController()->GetScriptState(),
+                                          dispatch_result);
   // false is okay because waitUntil() for events with respondWith() doesn't
   // care about the promise rejection or an uncaught runtime script error.
   wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
@@ -783,7 +791,7 @@ bool ServiceWorkerGlobalScope::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated();
 }
 
-bool ServiceWorkerGlobalScope::DirectSocketCapability() const {
+bool ServiceWorkerGlobalScope::IsolatedApplicationCapability() const {
   // TODO(mkwst): Make a decision here, and spec it.
   return false;
 }
@@ -946,6 +954,7 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
     const KURL& request_url,
     bool range_request,
+    absl::optional<network::DataElementChunkedDataPipe> request_body,
     base::TimeTicks event_dispatch_time,
     base::TimeTicks respond_with_settled_time) {
   DCHECK(IsContextThread());
@@ -968,7 +977,7 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithNoResponse(
 
   NoteRespondedToFetchEvent(request_url, range_request);
 
-  response_callback->OnFallback(std::move(timing));
+  response_callback->OnFallback(std::move(request_body), std::move(timing));
 }
 
 void ServiceWorkerGlobalScope::RespondToFetchEvent(
@@ -2571,6 +2580,16 @@ void ServiceWorkerGlobalScope::RecordQueuingTime(base::TimeTicks created_time) {
 bool ServiceWorkerGlobalScope::IsInFencedFrame() const {
   return GetAncestorFrameType() ==
          mojom::blink::AncestorFrameType::kFencedFrame;
+}
+
+mojom::blink::ServiceWorkerFetchHandlerType
+ServiceWorkerGlobalScope::FetchHandlerType() {
+  EventListenerVector* elv = GetEventListeners(event_type_names::kFetch);
+  if (!elv) {
+    return mojom::blink::ServiceWorkerFetchHandlerType::kNoHandler;
+  }
+  // TODO(crbug.com/1347319): implement nop handler detection.
+  return mojom::blink::ServiceWorkerFetchHandlerType::kNotSkippable;
 }
 
 }  // namespace blink

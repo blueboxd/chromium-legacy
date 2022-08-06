@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="1645954272419197032">Bevestig de apparaatgegevens</translation>
 <translation id="1662989795263954667">Gestopt: geen inkt meer</translation>
+<translation id="1664796644829245314">Voorbeeld van <ph name="PREVIEW_OBJECT" /> laten zien</translation>
 <translation id="1668469839109562275">Ingebouwde VPN</translation>
 <translation id="1672499492233627739">Videofeed van webcam</translation>
 <translation id="1676557873873341166">Video opnemen</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videovergaderingen</translation>
 <translation id="1852934301711881861">Chrome OS Flex installeren</translation>
 <translation id="1856388568474281774">Pijl-omlaag</translation>
+<translation id="1858620243986915808">Screenshot bijvoegen</translation>
 <translation id="1871569928317311284">Donker thema uitzetten</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Donkere modus uitzetten</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google-profielfoto</translation>
 <translation id="1979103255016296513">Wachtwoord moet dringend worden gewijzigd</translation>
 <translation id="1999615961760456652">Captive portal</translation>
+<translation id="200669432486043882">Bestand vervangen</translation>
 <translation id="2006864819935886708">Connectiviteit</translation>
 <translation id="2008685064673031089">Priemgetallen zoeken</translation>
 <translation id="2011174342667534258">SDK-versie:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Huidig</translation>
 <translation id="2480034874476596812">Handmatig uitzetten</translation>
+<translation id="248546197012830854">Het apparaat is offline. Maak verbinding met een wifi-netwerk om Help-content te bekijken.</translation>
 <translation id="2491955442992294626">Toetsen worden niet getest als je een ander venster gebruikt</translation>
 <translation id="2493126929778606526">Je beste foto's, automatisch geselecteerd</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">VERNIEUWEN</translation>
 <translation id="3009958530611748826">Selecteer een map voor opslaan</translation>
 <translation id="3017079585324758401">Achtergrond</translation>
+<translation id="302435934487327038">Installatie afgerond</translation>
 <translation id="3027578600144895987">Camera sluiten</translation>
 <translation id="3031560714565892478">Apparaat is een videocamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Eindpunt</translation>
 <translation id="3069085583900247081">Test mislukt</translation>
-<translation id="3076243757415932261">Componenten valideren...</translation>
 <translation id="3083667275341675831">Verbindingsdiagnose</translation>
 <translation id="3084958266922136097">Screensaver uitzetten</translation>
 <translation id="3091839911843451378">Mislukt - Gestopt</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Weet je zeker dat je je hele afdrukgeschiedenis wilt verwijderen? Je actieve afdruktaken worden niet verwijderd.</translation>
 <translation id="3383751554789092165">Wijzig zo nodig de apparaatgegevens.</translation>
 <translation id="3404249063913988450">Screensaver aanzetten</translation>
-<translation id="3404770484521709967">Componenten zijn juist geïnstalleerd.</translation>
 <translation id="3413935475507503304">Klik op Volgende om door te gaan met de update.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Beveiliging</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Oud wachtwoord</translation>
 <translation id="4453205916657964690">Subnetmasker</translation>
 <translation id="4454245904991689773">Scannen naar</translation>
-<translation id="4472575034687746823">Aan de slag</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kan de niet-standaard netwerkgateway niet pingen</translation>
 <translation id="4500213108254186382">Versnellingsmeter in de klep</translation>
@@ -660,14 +662,15 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" />-reparatie afsluiten</translation>
 <translation id="6618744767048954150">Wordt uitgevoerd</translation>
 <translation id="6620487321149975369">Afdruktaken zie je in de geschiedenis, tenzij ze handmatig worden verwijderd</translation>
+<translation id="6624819909909965616">Je kunt geen bestanden uploaden die groter zijn dan 10 MB</translation>
 <translation id="6643016212128521049">Wissen</translation>
+<translation id="6644568396961840069">Kan bestand niet opslaan. Sluit een andere externe opslag aan of probeer het later opnieuw.</translation>
 <translation id="6647510110698214773">Versleutelingsalgoritme</translation>
 <translation id="6650062777702288430">Schakelaar voor kana/alfanumeriek</translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="6659594942844771486">Browsertabblad</translation>
 <translation id="6692996468359469499">Informatie over je selectie bekijken</translation>
 <translation id="6704062477274546131">DNS-resolutie</translation>
-<translation id="6721744718589119342">We kunnen je een e-mail sturen als we meer informatie nodig hebben of als er updates zijn</translation>
 <translation id="6723839937902243910">Voeding</translation>
 <translation id="6723847290197874913">Achtergrondverlichting toetsenbord</translation>
 <translation id="672609503628871915">Wat is er nieuw?</translation>
@@ -695,6 +698,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Firmwarerevisie</translation>
 <translation id="6995564396478647735">Zorg dat schrijfbeveiliging aanstaat</translation>
+<translation id="7005833343836210400">Apparaat is offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> beheert dit apparaat en heeft toegang tot alle gebruikersactiviteit, waaronder bezochte webpagina's, wachtwoorden en e-mails.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Apparaat is niet verbonden.</translation>
@@ -720,6 +724,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7212734716605298123">Firmware-updates voor externe apparaten</translation>
 <translation id="7216409898977639127">Mobiele provider</translation>
+<translation id="725133483556299729">E-mailadres selecteren</translation>
 <translation id="7271040990581020067">De scanner wordt momenteel gebruikt. Probeer het later opnieuw.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Selecteer 1 of meer componenten en probeer het opnieuw of sla de kalibratie over</translation>
@@ -797,6 +802,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="7978412674231730200">Privésleutel</translation>
 <translation id="7982789257301363584">Netwerk</translation>
 <translation id="7994702968232966508">EAP-methode</translation>
+<translation id="8018928621986160031">Opgeslagen in <ph name="FILE_LOCATION" /></translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Modus voor automatische kleuren aanzetten</translation>
@@ -805,8 +811,8 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="8063022551652308521">Schrijfbeveiliging staat nog steeds uit. Als je wilt doorgaan, zet je schrijfbeveiliging aan.</translation>
 <translation id="8075838845814659848">Resterende batterijlading</translation>
 <translation id="8082366717211101304">Kan DNS niet omzetten vanuit Android-apps</translation>
-<translation id="8083281199617904460">Dit reparatieproces is bedoeld voor een getrainde reparateur. Start pas nadat de componenten die niet goed werken zijn vervangen.</translation>
 <translation id="808894953321890993">Wachtwoord wijzigen</translation>
+<translation id="8094062939584182041">Toestaan dat Google je e-mail stuurt over dit probleem</translation>
 <translation id="8104083085214006426">Je gebruikt een open of niet-beveiligd netwerk</translation>
 <translation id="8109786307828817014">Doorgaan met mislukte kalibraties?</translation>
 <translation id="811820734797650957">(Android) Gateway kan worden gepingd</translation>
@@ -821,6 +827,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="8217675307824400706">Verbinding maken</translation>
 <translation id="8221728673725659466">Kalibratie afgerond</translation>
 <translation id="8226628635270268143">Kies je favoriete foto's en albums</translation>
+<translation id="8227119283605456246">Bestand bijvoegen</translation>
 <translation id="8230672074305416752">Kan de standaard netwerkgateway niet pingen</translation>
 <translation id="8246209727385807362">Onbekende provider</translation>
 <translation id="827422111966801947">Indigo</translation>
@@ -865,6 +872,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="8576249514688522074">Niet geïnitialiseerd</translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
 <translation id="8655295600908251630">Kanaal</translation>
+<translation id="8655828773034788261">URL delen:</translation>
 <translation id="8660881923941176839">pound</translation>
 <translation id="8662671328352114214">Deelnemen aan <ph name="TYPE" />-netwerk</translation>
 <translation id="8671972493856476349">Updaten naar <ph name="VERSION_NUMBER" /> en opnieuw opstarten</translation>

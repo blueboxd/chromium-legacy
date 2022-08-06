@@ -17,14 +17,14 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.Promise;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.firstrun.FirstRunFragment;
@@ -33,59 +33,36 @@ import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.firstrun.SkipTosDialogPolicyListener;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
-import org.chromium.chrome.browser.ui.signin.fre.FreUMADialogCoordinator;
 import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunCoordinator;
 import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunView;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * This fragment handles the sign-in without sync consent during the FRE.
  */
-public class SigninFirstRunFragment extends Fragment implements FirstRunFragment,
-                                                                SigninFirstRunCoordinator.Delegate,
-                                                                FreUMADialogCoordinator.Listener {
+public class SigninFirstRunFragment
+        extends Fragment implements FirstRunFragment, SigninFirstRunCoordinator.Delegate {
     @VisibleForTesting
     static final int ADD_ACCOUNT_REQUEST_CODE = 1;
-
-    /**
-     * Used for MobileFre.SlowestLoadPoint histogram. Should be treated as append-only.
-     * See {@code LoadPoint} in tools/metrics/histograms/enums.xml.
-     */
-    @VisibleForTesting
-    @IntDef({LoadPoint.NATIVE_INITIALIZATION, LoadPoint.POLICY_LOAD, LoadPoint.CHILD_STATUS_LOAD,
-            LoadPoint.MAX})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface LoadPoint {
-        int NATIVE_INITIALIZATION = 0;
-        int POLICY_LOAD = 1;
-        int CHILD_STATUS_LOAD = 2;
-        int MAX = 3;
-    }
 
     // Used as a view holder for the current orientation of the device.
     private FrameLayout mFragmentView;
     private ModalDialogManager mModalDialogManager;
     private SkipTosDialogPolicyListener mSkipTosDialogPolicyListener;
-    private @Nullable SigninFirstRunCoordinator mSigninFirstRunCoordinator;
-    private @LoadPoint int mSlowestLoadPoint;
+    private SigninFirstRunCoordinator mSigninFirstRunCoordinator;
     private boolean mExitFirstRunCalled;
-    private boolean mNativeInitialized;
-    private boolean mNativePolicyAndChildStatusLoaded;
-    private boolean mAllowCrashUpload;
 
     public SigninFirstRunFragment() {}
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        getPageDelegate().getPolicyLoadListener().onAvailable(hasPolicies -> onPolicyLoad());
-        getPageDelegate().getChildAccountStatusSupplier().onAvailable(
-                ignored -> onChildAccountStatusAvailable());
+        mModalDialogManager = ((ModalDialogManagerHolder) getActivity()).getModalDialogManager();
+        mSigninFirstRunCoordinator = new SigninFirstRunCoordinator(requireContext(),
+                mModalDialogManager, this, PrivacyPreferencesManagerImpl.getInstance());
+
         if (getPageDelegate().isLaunchedFromCct()) {
             mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(
                     getPageDelegate().getPolicyLoadListener(), EnterpriseInfo.getInstance(), null);
@@ -93,7 +70,6 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
                 if (skipTos) exitFirstRun();
             });
         }
-        mModalDialogManager = ((ModalDialogManagerHolder) getActivity()).getModalDialogManager();
     }
 
     @Override
@@ -104,6 +80,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
             mSkipTosDialogPolicyListener.destroy();
             mSkipTosDialogPolicyListener = null;
         }
+        mSigninFirstRunCoordinator.destroy();
     }
 
     @Override
@@ -119,17 +96,10 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mAllowCrashUpload = false;
         mFragmentView = new FrameLayout(getActivity());
         mFragmentView.addView(inflateFragmentView(inflater, getResources().getConfiguration()));
 
         return mFragmentView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        setSigninFirstRunCoordinator(null);
     }
 
     @Override
@@ -155,21 +125,8 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
 
     /** Implements {@link FirstRunFragment}. */
     @Override
-    public void onNativeInitialized() {
-        if (mNativeInitialized) return;
-
-        mNativeInitialized = true;
-        mSlowestLoadPoint = LoadPoint.NATIVE_INITIALIZATION;
-        getPageDelegate().recordNativeInitializedHistogram();
-        notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded();
-    }
-
-    /** Implements {@link FirstRunFragment}. */
-    @Override
     public void reset() {
-        if (mSigninFirstRunCoordinator != null) {
-            mSigninFirstRunCoordinator.reset();
-        }
+        mSigninFirstRunCoordinator.reset();
     }
 
     /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
@@ -191,8 +148,8 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
 
     /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
-    public void acceptTermsOfService() {
-        getPageDelegate().acceptTermsOfService(mAllowCrashUpload);
+    public void acceptTermsOfService(boolean allowCrashUpload) {
+        getPageDelegate().acceptTermsOfService(allowCrashUpload);
     }
 
     /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
@@ -209,20 +166,38 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
 
     /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
+    public void recordNativePolicyAndChildStatusLoadedHistogram() {
+        getPageDelegate().recordNativePolicyAndChildStatusLoadedHistogram();
+    }
+
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
+    @Override
+    public void recordNativeInitializedHistogram() {
+        getPageDelegate().recordNativeInitializedHistogram();
+    }
+
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
+    @Override
     public void showInfoPage(@StringRes int url) {
         getPageDelegate().showInfoPage(url);
     }
 
     /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
-    public void openUmaDialog() {
-        new FreUMADialogCoordinator(requireContext(), mModalDialogManager, this, mAllowCrashUpload);
+    public OneshotSupplier<Boolean> getPolicyLoadListener() {
+        return getPageDelegate().getPolicyLoadListener();
     }
 
-    /** Implements {@link FreUMADialogCoordinator.Listener} */
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
-    public void onAllowCrashUploadChecked(boolean allowCrashUpload) {
-        mAllowCrashUpload = allowCrashUpload;
+    public OneshotSupplier<Boolean> getChildAccountStatusSupplier() {
+        return getPageDelegate().getChildAccountStatusSupplier();
+    }
+
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
+    @Override
+    public Promise<Void> getNativeInitializationPromise() {
+        return getPageDelegate().getNativeInitializationPromise();
     }
 
     @MainThread
@@ -237,57 +212,6 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         }
     }
 
-    /**
-     * Destroys the old coordinator if needed and sets {@link #mSigninFirstRunCoordinator}.
-     * @param coordinator the new coordinator instance (may be null).
-     */
-    private void setSigninFirstRunCoordinator(@Nullable SigninFirstRunCoordinator coordinator) {
-        if (mSigninFirstRunCoordinator != null) {
-            mSigninFirstRunCoordinator.destroy();
-        }
-        mSigninFirstRunCoordinator = coordinator;
-        if (mSigninFirstRunCoordinator != null && mNativePolicyAndChildStatusLoaded) {
-            mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
-                    getPageDelegate().getPolicyLoadListener().get());
-        }
-    }
-
-    private void onChildAccountStatusAvailable() {
-        mSlowestLoadPoint = LoadPoint.CHILD_STATUS_LOAD;
-        notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded();
-    }
-
-    private void onPolicyLoad() {
-        mSlowestLoadPoint = LoadPoint.POLICY_LOAD;
-        notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded();
-    }
-
-    /**
-     * Notifies the coordinator that native, policies and child account status has been loaded.
-     * This method may be called multiple times after all 3 wait conditions have been satisfied.
-     */
-    private void notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded() {
-        // This may happen when the native initialized supplier in FirstRunActivity calls back after
-        // the fragment has been detached from the activity. See https://crbug.com/1294998.
-        if (getPageDelegate() == null) return;
-
-        if (mSigninFirstRunCoordinator != null && mNativeInitialized
-                && getPageDelegate().getChildAccountStatusSupplier().get() != null
-                && getPageDelegate().getPolicyLoadListener().get() != null) {
-            // Only notify once.
-            if (!mNativePolicyAndChildStatusLoaded) {
-                mNativePolicyAndChildStatusLoaded = true;
-                mAllowCrashUpload =
-                        !mSigninFirstRunCoordinator.isMetricsReportingDisabledByPolicy();
-                mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
-                        getPageDelegate().getPolicyLoadListener().get());
-                getPageDelegate().recordNativePolicyAndChildStatusLoadedHistogram();
-                RecordHistogram.recordEnumeratedHistogram(
-                        "MobileFre.SlowestLoadPoint", mSlowestLoadPoint, LoadPoint.MAX);
-            }
-        }
-    }
-
     private View inflateFragmentView(LayoutInflater inflater, Configuration configuration) {
         // Since the landscape view has two panes the minimum screenWidth to show it is set to
         // 600dp per android guideline.
@@ -297,9 +221,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
                         ? R.layout.signin_first_run_landscape_view
                         : R.layout.signin_first_run_portrait_view,
                 null, false);
-        setSigninFirstRunCoordinator(new SigninFirstRunCoordinator(requireContext(), view,
-                mModalDialogManager, this, PrivacyPreferencesManagerImpl.getInstance()));
-        notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded();
+        mSigninFirstRunCoordinator.setView(view);
         return view;
     }
 }

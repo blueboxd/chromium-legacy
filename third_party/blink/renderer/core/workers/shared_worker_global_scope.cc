@@ -155,10 +155,13 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
+
+  SetPolicyContainer(std::move(policy_container));
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
@@ -193,6 +196,7 @@ void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
@@ -202,6 +206,7 @@ void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     SetWorkerMainScriptLoadingParametersForModules(
         std::move(worker_main_script_load_params));
   }
+  SetPolicyContainer(std::move(policy_container));
 
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
@@ -303,8 +308,8 @@ bool SharedWorkerGlobalScope::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated();
 }
 
-bool SharedWorkerGlobalScope::DirectSocketCapability() const {
-  return Agent::IsDirectSocketEnabled();
+bool SharedWorkerGlobalScope::IsolatedApplicationCapability() const {
+  return Agent::IsIsolatedApplication();
 }
 
 }  // namespace blink

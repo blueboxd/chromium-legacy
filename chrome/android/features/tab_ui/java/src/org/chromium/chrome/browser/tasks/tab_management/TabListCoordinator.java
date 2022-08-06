@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -87,6 +88,7 @@ public class TabListCoordinator
     private boolean mIsInitialized;
     private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
     private OnLayoutChangeListener mListLayoutListener;
+    private boolean mLayoutListenerRegistered;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -336,8 +338,8 @@ public class TabListCoordinator
         final int cardWidthPx = (viewWidth / layoutManager.getSpanCount());
         final int cardHeightPx = TabUtils.deriveGridCardHeight(cardWidthPx, mContext);
         for (int i = 0; i < mModel.size(); i++) {
-            mModel.get(i).model.set(TabProperties.GRID_CARD_WIDTH, cardWidthPx);
-            mModel.get(i).model.set(TabProperties.GRID_CARD_HEIGHT, cardHeightPx);
+            mModel.get(i).model.set(
+                    TabProperties.GRID_CARD_SIZE, new Size(cardWidthPx, cardHeightPx));
         }
     }
 
@@ -404,11 +406,21 @@ public class TabListCoordinator
         if (mGlobalLayoutListener != null) {
             mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
         }
-        if (mListLayoutListener != null) {
-            mRecyclerView.addOnLayoutChangeListener(mListLayoutListener);
-        }
+        registerLayoutChangeListener();
         mRecyclerView.prepareTabSwitcherView();
         mMediator.prepareTabSwitcherView();
+    }
+
+    private void registerLayoutChangeListener() {
+        if (mListLayoutListener != null) {
+            assert !mLayoutListenerRegistered;
+            mLayoutListenerRegistered = true;
+            mRecyclerView.addOnLayoutChangeListener(mListLayoutListener);
+        }
+    }
+
+    public void prepareTabGridDialogView() {
+        registerLayoutChangeListener();
     }
 
     void postHiding() {
@@ -417,6 +429,7 @@ public class TabListCoordinator
         }
         if (mListLayoutListener != null) {
             mRecyclerView.removeOnLayoutChangeListener(mListLayoutListener);
+            mLayoutListenerRegistered = false;
         }
         mRecyclerView.postHiding();
         mMediator.postHiding();
@@ -433,6 +446,7 @@ public class TabListCoordinator
         }
         if (mListLayoutListener != null) {
             mRecyclerView.removeOnLayoutChangeListener(mListLayoutListener);
+            mLayoutListenerRegistered = false;
         }
         mRecyclerView.setRecyclerListener(null);
     }

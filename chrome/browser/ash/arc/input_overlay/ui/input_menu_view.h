@@ -41,7 +41,8 @@ class InputMenuView : public views::View {
  public:
   static std::unique_ptr<InputMenuView> BuildMenuView(
       DisplayOverlayController* display_overlay_controller,
-      views::View* entry_view);
+      views::View* entry_view,
+      const gfx::Size& parent_size);
 
   InputMenuView(DisplayOverlayController* display_overlay_controller,
                 views::View* entry_view);
@@ -50,11 +51,14 @@ class InputMenuView : public views::View {
   InputMenuView& operator=(const InputMenuView&) = delete;
   ~InputMenuView() override;
 
+  // views::View:
+  void OnThemeChanged() override;
+
  private:
   class FeedbackButton;
 
   void CloseMenu();
-  void Init();
+  void Init(const gfx::Size& parent_size);
   std::unique_ptr<views::View> BuildSeparator();
 
   void OnToggleGameControlPressed();
@@ -66,7 +70,8 @@ class InputMenuView : public views::View {
   gfx::Insets CalculateInsets(views::View* view,
                               int left,
                               int right,
-                              int other_spacing) const;
+                              int other_spacing,
+                              int menu_width) const;
   // Set |toggle| colors to spec.
   void SetCustomToggleColor(views::ToggleButton* toggle);
 

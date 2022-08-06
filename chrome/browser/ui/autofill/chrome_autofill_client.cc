@@ -90,6 +90,7 @@
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/signin/signin_bridge.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_impl.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
@@ -611,23 +612,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #endif
 }
 
-void ChromeAutofillClient::CreditCardUploadCompleted(bool card_saved) {
-#if BUILDFLAG(IS_ANDROID)
-  // TODO(siyua@): Placeholder for Clank Notification.
-#else
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillCreditCardUploadFeedback)) {
-    return;
-  }
-
-  // Do lazy initialization of SaveCardBubbleControllerImpl.
-  SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
-  SaveCardBubbleControllerImpl* controller =
-      SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  card_saved ? controller->UpdateIconForSaveCardSuccess()
-             : controller->UpdateIconForSaveCardFailure();
-#endif
-}
+void ChromeAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
 
 void ChromeAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,
@@ -690,8 +675,9 @@ bool ChromeAutofillClient::ShowTouchToFillCreditCard(
   // Don't show TTF surface while Autofill Assistant's UI is shown.
   if (IsAutofillAssistantShowing())
     return false;
-  // TODO(crbug.com/1247698): Show Touch To Fill surface.
-  return true;
+
+  return touch_to_fill_credit_card_controller_.Show(
+      std::make_unique<TouchToFillCreditCardViewImpl>(), delegate);
 #else
   // Touch To Fill is not supported on Desktop.
   NOTREACHED();
@@ -701,7 +687,7 @@ bool ChromeAutofillClient::ShowTouchToFillCreditCard(
 
 void ChromeAutofillClient::HideTouchToFillCreditCard() {
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1247698): Hide Touch To Fill surface.
+  touch_to_fill_credit_card_controller_.Hide();
 #else
   // Touch To Fill is not supported on Desktop.
   NOTREACHED();
@@ -993,8 +979,7 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
 #endif
 }
 
-void ChromeAutofillClient::OnPromoCodeSuggestionsFooterSelected(
-    const GURL& url) {
+void ChromeAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,
@@ -1018,16 +1003,22 @@ void ChromeAutofillClient::PrimaryMainFrameWasResized(bool width_changed) {
 #endif
 
   HideAutofillPopup(PopupHidingReason::kWidgetChanged);
+  // Do not need to hide the Touch To Fill surface, since it is an overlay UI
+  // which doesn't depend on frame size.
 }
 
 void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
+  if (IsTouchToFillCreditCardSupported())
+    HideTouchToFillCreditCard();
 }
 
 void ChromeAutofillClient::OnWebContentsLostFocus(
     content::RenderWidgetHost* render_widget_host) {
   has_focus_ = false;
   HideAutofillPopup(PopupHidingReason::kFocusChanged);
+  // Should not hide the Touch To Fill surface, since it is an overlay UI
+  // which takes the focus.
 }
 
 void ChromeAutofillClient::OnWebContentsFocused(
@@ -1042,6 +1033,7 @@ void ChromeAutofillClient::OnWebContentsFocused(
 void ChromeAutofillClient::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
   HideAutofillPopup(PopupHidingReason::kContentAreaMoved);
+  // Touch To Fill is not supported on Desktop.
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

@@ -12,6 +12,7 @@
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/performance/largest_contentful_paint_type.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -118,12 +119,18 @@ class LargestContentfulPaintHandler {
       ContentfulPaintTimingInfo::LargestContentTextOrImage*
           largest_content_type);
 
-  void RecordTiming(
+  void RecordMainFrameTiming(
+      const page_load_metrics::mojom::LargestContentfulPaintTiming&
+          largest_contentful_paint,
+      const absl::optional<base::TimeDelta>&
+          first_input_or_scroll_notified_timestamp);
+  void RecordSubFrameTiming(
       const page_load_metrics::mojom::LargestContentfulPaintTiming&
           largest_contentful_paint,
       const absl::optional<base::TimeDelta>&
           first_input_or_scroll_notified_timestamp,
-      content::RenderFrameHost* subframe_rfh);
+      content::RenderFrameHost* subframe_rfh,
+      const GURL& main_frame_url);
   inline void RecordMainFrameTreeNodeId(int main_frame_tree_node_id) {
     main_frame_tree_node_id_.emplace(main_frame_tree_node_id);
   }
@@ -160,7 +167,7 @@ class LargestContentfulPaintHandler {
   void OnSubFrameDeleted(int frame_tree_node_id);
 
  private:
-  void RecordSubframeTiming(
+  void RecordSubFrameTimingInternal(
       const page_load_metrics::mojom::LargestContentfulPaintTiming&
           largest_contentful_paint,
       const absl::optional<base::TimeDelta>&
@@ -172,11 +179,6 @@ class LargestContentfulPaintHandler {
       const page_load_metrics::mojom::LargestContentfulPaintTiming&
           largest_contentful_paint,
       const base::TimeDelta& navigation_start_offset);
-  void RecordMainFrameTiming(
-      const page_load_metrics::mojom::LargestContentfulPaintTiming&
-          largest_contentful_paint,
-      const absl::optional<base::TimeDelta>&
-          first_input_or_scroll_notified_timestamp);
   void UpdateFirstInputOrScrollNotified(
       const absl::optional<base::TimeDelta>& candidate_new_time,
       const base::TimeDelta& navigation_start_offset);

@@ -29,8 +29,6 @@ static_library("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
-    "capabilities.cc",
-    "capabilities.h",
     "data_device.cc",
     "data_device.h",
     "data_device_delegate.h",
@@ -68,6 +66,8 @@ static_library("exo") {
     "seat.cc",
     "seat.h",
     "seat_observer.h",
+    "security_delegate.cc",
+    "security_delegate.h",
     "shared_memory.cc",
     "shared_memory.h",
     "shell_surface_util.cc",
@@ -108,7 +108,6 @@ static_library("exo") {
     "//third_party/blink/public/common",
     "//ui/accessibility:ax_base",
     "//ui/aura",
-    "//ui/aura/cursor",
     "//ui/base/dragdrop:types",
     "//ui/base/dragdrop/mojom",
     "//ui/base/ime",
@@ -224,6 +223,10 @@ source_set("test_support") {
     "test/exo_test_base_views.h",
     "test/exo_test_suite_aura.cc",
     "test/exo_test_suite_aura.h",
+    "test/mock_security_delegate.cc",
+    "test/mock_security_delegate.h",
+    "test/test_security_delegate.cc",
+    "test/test_security_delegate.h",
   ]
 
   public_deps = [ "//testing/gtest" ]
@@ -353,6 +356,7 @@ source_set("unit_tests") {
       "//ui/base/cursor/mojom:cursor_type",
       "//ui/base/dragdrop:types",
       "//ui/base/dragdrop/mojom",
+      "//ui/base/ime/ash",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
     ]

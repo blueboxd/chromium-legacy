@@ -17,10 +17,10 @@
 #include "base/timer/mock_timer.h"
 #include "chromeos/ash/components/network/auto_connect_handler.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/system_token_cert_db_storage.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -49,8 +49,7 @@ class AutoConnectNotifierTest : public AshTestBase {
     chromeos::SystemTokenCertDbStorage::Initialize();
     chromeos::NetworkCertLoader::Initialize();
     chromeos::NetworkCertLoader::ForceAvailableForNetworkAuthForTesting();
-    network_handler_test_helper_ =
-        std::make_unique<chromeos::NetworkHandlerTestHelper>();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     CHECK(chromeos::NetworkHandler::Get()->auto_connect_handler());
     network_config_helper_ = std::make_unique<
         chromeos::network_config::CrosNetworkConfigTestHelper>();
@@ -113,8 +112,7 @@ class AutoConnectNotifierTest : public AshTestBase {
   base::MockOneShotTimer* mock_notification_timer_;
 
  private:
-  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
-      network_handler_test_helper_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
       network_config_helper_;
   ToastManagerImpl* toast_manager_ = nullptr;

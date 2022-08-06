@@ -23,11 +23,6 @@ std::unique_ptr<Thread> WebFakeThreadScheduler::CreateMainThread() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebFakeThreadScheduler::DefaultTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 WebFakeThreadScheduler::CompositorTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
@@ -42,18 +37,9 @@ WebFakeThreadScheduler::GetCurrentAgentGroupScheduler() {
   return nullptr;
 }
 
-bool WebFakeThreadScheduler::IsHighPriorityWorkAnticipated() {
-  return false;
-}
-
 void WebFakeThreadScheduler::SetRendererHidden(bool hidden) {}
 
 void WebFakeThreadScheduler::SetRendererBackgrounded(bool backgrounded) {}
-
-std::unique_ptr<WebFakeThreadScheduler::RendererPauseHandle>
-WebFakeThreadScheduler::PauseRenderer() {
-  return nullptr;
-}
 
 #if BUILDFLAG(IS_ANDROID)
 void WebFakeThreadScheduler::PauseTimersForAndroidWebView() {}
@@ -62,9 +48,6 @@ void WebFakeThreadScheduler::ResumeTimersForAndroidWebView() {}
 #endif
 
 void WebFakeThreadScheduler::Shutdown() {}
-
-void WebFakeThreadScheduler::SetTopLevelBlameContext(
-    base::trace_event::BlameContext* blame_context) {}
 
 void WebFakeThreadScheduler::SetRendererProcessType(
     WebRendererProcessType type) {}

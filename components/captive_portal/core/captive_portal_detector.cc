@@ -20,8 +20,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/ash/components/network/network_configuration_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #endif
 
 namespace {
@@ -29,9 +29,9 @@ namespace {
 GURL GetProbeUrl(const GURL& default_url) {
   DCHECK_EQ(chromeos::NetworkHandler::Get()->task_runner(),
             base::ThreadTaskRunnerHandle::Get().get());
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->DefaultNetwork();
+  const ash::NetworkState* network = chromeos::NetworkHandler::Get()
+                                         ->network_state_handler()
+                                         ->DefaultNetwork();
   return network && !network->probe_url().is_empty() ? network->probe_url()
                                                      : default_url;
 }

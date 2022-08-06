@@ -45,7 +45,6 @@
 <translation id="3344973607274501920">Não foi possível verificar suas senhas com o Chromium. Verifique sua conexão de Internet.</translation>
 <translation id="3472200483164753384">Indisponível no Chromium Canary</translation>
 <translation id="3567399274263440288">Para aproveitar o Chromium ao máximo, faça login na sua Conta do Google.</translation>
-<translation id="3619462831205197427">Faça login neste site, na sua Conta do Google e no Chromium.</translation>
 <translation id="3639997914391704523">O Chromium pode verificar suas senhas quando você faz login com sua Conta do Google.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> estava usando o Chromium e deixou favoritos, senhas e outras configurações neste dispositivo.</translation>
 <translation id="3805899903892079518">O Chromium não têm acesso às suas fotos ou seus vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
@@ -74,11 +73,11 @@
 <translation id="5945387852661427312">Você está fazendo login com uma conta gerenciada por <ph name="DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chromium, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chromium, seus dados serão excluídos deste dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="5983312940147103417">Melhorar o Chromium</translation>
 <translation id="602807004951640891">Ao usar o Chromium, você concorda com os <ph name="BEGIN_LINK_TOS" />Termos de Serviço<ph name="END_LINK_TOS" />.</translation>
+<translation id="6062449165341879460">A organização <ph name="DOMAIN" /> vai ter acesso aos dados, favoritos, histórico, senhas e outras configurações do Chromium que você armazenar nessa conta. Quando você sair, seus dados vão ser apagados deste dispositivo.  No entanto, os dados continuarão armazenados na sua Conta do Google gerenciada e vão ficar disponíveis para sua organização. A organização também pode definir políticas do usuário específicas para a conta, e elas podem mudar o comportamento do Chromium.</translation>
 <translation id="6119647025869519954">Para tornar o Chromium seu navegador padrão:
 1. Abra as Configurações.
 2. Toque em 'App do navegador padrão".
 3. Selecione o Chromium.</translation>
-<translation id="6183442264225539303">Faça login neste site e no Chromium. É possível ativar a sincronização mais tarde.</translation>
 <translation id="6268381023930128611">Sair do Chromium?</translation>
 <translation id="632825460376924298">Permitir login no Chromium</translation>
 <translation id="6337530241089703714">Você quer apagar ou manter os dados do Chromium neste dispositivo?</translation>
@@ -120,6 +119,7 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="865600487977764604">Protege você no Chromium e pode ser usado para melhorar a segurança em outros apps do Google quando sua conta está conectada.</translation>
 <translation id="8663480472502753423">Manter o Chromium atualizado</translation>
+<translation id="8685813584220679697">Faça login neste site e no Chromium.</translation>
 <translation id="8747378496147986285">Quando ativada, essa configuração:
 <ph name="BEGIN_INDENT" />  • ajuda a melhorar o Chromium para as pessoas que o usam da mesma forma que você.<ph name="END_INDENT" />
 

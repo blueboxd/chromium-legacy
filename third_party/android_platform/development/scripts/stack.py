@@ -28,6 +28,7 @@ import stack_core
 import subprocess
 import symbol
 import sys
+import zipfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__),
                                 os.pardir, os.pardir, os.pardir, os.pardir,
@@ -89,10 +90,10 @@ def PrintUsage():
   print("  --arch=arm|arm64|x64|x86|mips")
   print("       the target architecture")
   print()
-  print("  --fallback-monochrome")
-  print("       fallback to monochrome instead of chrome if fail to detect")
-  print("       shared lib which is loaded from APK, this doesn't work for")
-  print("       component build.")
+  print("  --fallback-so-file=name")
+  print("     fallback to given .so file (eg. libmonochrome_64.so) instead")
+  print("     of libmonochrome.so if we fail to detect the shared lib which")
+  print("     is loaded from APK, this doesn't work for component build.")
   print()
   print("  --quiet")
   print("       Show less logging")
@@ -101,6 +102,7 @@ def PrintUsage():
   print("       enable extra logging, particularly for debugging failed")
   print("       symbolization")
   sys.exit(1)
+
 
 def UnzipSymbols(symbolfile, symdir=None):
   """Unzips a file to DEFAULT_SYMROOT and returns the unzipped location.
@@ -123,33 +125,28 @@ def UnzipSymbols(symbolfile, symdir=None):
     os.makedirs(symdir)
 
   logging.info('extracting %s...', symbolfile)
-  saveddir = os.getcwd()
-  os.chdir(symdir)
-  try:
-    unzipcode = subprocess.call(["unzip", "-qq", "-o", symbolfile])
-    if unzipcode > 0:
-      os.remove(symbolfile)
-      raise SymbolDownloadException("failed to extract symbol files (%s)."
-                                    % symbolfile)
-  finally:
-    os.chdir(saveddir)
+  with zipfile.ZipFile(symbolfile, 'r') as zip_ref:
+    zip_ref.extractall(symdir)
 
-  android_symbols = glob.glob("%s/out/target/product/*/symbols" % symdir)
-  if android_symbols:
-    return (symdir, android_symbols[0])
-
-  # This is a zip of Chrome symbols, so symbol.CHROME_SYMBOLS_DIR needs to be
-  # updated to point here.
-  symbol.CHROME_SYMBOLS_DIR = symdir
-  return (symdir, symdir)
+  return symdir
 
 
 def main(argv, test_symbolizer=None):
   try:
     options, arguments = getopt.getopt(argv, "p", [
-        "pass-through", "more-info", "less-info", "chrome-symbols-dir=",
-        "output-directory=", "apks-directory=", "symbols-dir=", "symbols-zip=",
-        "arch=", "fallback-monochrome", "verbose", "quiet", "help",
+        "pass-through",
+        "more-info",
+        "less-info",
+        "chrome-symbols-dir=",
+        "output-directory=",
+        "apks-directory=",
+        "symbols-dir=",
+        "symbols-zip=",
+        "arch=",
+        "fallback-so-file=",
+        "verbose",
+        "quiet",
+        "help",
     ])
   except getopt.GetoptError:
     PrintUsage()
@@ -157,7 +154,7 @@ def main(argv, test_symbolizer=None):
   pass_through = False
   zip_arg = None
   more_info = False
-  fallback_monochrome = False
+  fallback_so_file = None
   arch_defined = False
   apks_directory = None
   log_level = logging.INFO
@@ -185,8 +182,8 @@ def main(argv, test_symbolizer=None):
       more_info = True
     elif option == "--less-info":
       more_info = False
-    elif option == "--fallback-monochrome":
-      fallback_monochrome = True
+    elif option == "--fallback-so-file":
+      fallback_so_file = value
     elif option == "--verbose":
       log_level = logging.DEBUG
     elif option == "--quiet":
@@ -194,6 +191,15 @@ def main(argv, test_symbolizer=None):
 
   if len(arguments) > 1:
     PrintUsage()
+
+  rootdir = None
+  if zip_arg:
+    rootdir = UnzipSymbols(zip_arg)
+    for subdir, dirs, _ in os.walk(rootdir):
+      if 'lib.unstripped' in dirs:
+        unzipped_output_dir = subdir
+        break
+    constants.SetOutputDirectory(unzipped_output_dir)
 
   logging.basicConfig(level=log_level)
   # Do an up-front test that the output directory is known.
@@ -203,19 +209,15 @@ def main(argv, test_symbolizer=None):
   logging.info('Reading Android symbols from: %s',
                os.path.normpath(symbol.SYMBOLS_DIR))
   chrome_search_path = symbol.GetLibrarySearchPaths()
-  logging.info('Searching for Chrome symbols from within: %s',
-               ':'.join((os.path.normpath(d) for d in chrome_search_path)))
-
-  rootdir = None
-  if zip_arg:
-    rootdir, symbol.SYMBOLS_DIR = UnzipSymbols(zip_arg)
+  logging.info('Searching for Chrome symbols from within: %s', ':'.join(
+      (os.path.normpath(d) for d in chrome_search_path)))
 
   if not arguments or arguments[0] == '-':
     logging.info('Reading native crash info from stdin (symbolization starts '
                  'on the first unrelated line or EOF)')
     with llvm_symbolizer.LLVMSymbolizer() as symbolizer:
       stack_core.StreamingConvertTrace(sys.stdin, {}, more_info,
-                                       fallback_monochrome, arch_defined,
+                                       fallback_so_file, arch_defined,
                                        symbolizer, apks_directory, pass_through)
   else:
     logging.info('Searching for native crashes in: %s',
@@ -235,11 +237,11 @@ def main(argv, test_symbolizer=None):
     load_vaddrs = {}
 
     with llvm_symbolizer.LLVMSymbolizer() as symbolizer:
-      logging.info('Searching for Chrome symbols from within: %s',
-                   ':'.join((os.path.normpath(d) for d in chrome_search_path)))
-      stack_core.ConvertTrace(lines, load_vaddrs, more_info,
-                              fallback_monochrome, arch_defined,
-                              test_symbolizer or symbolizer, apks_directory)
+      logging.info('Searching for Chrome symbols from within: %s', ':'.join(
+          (os.path.normpath(d) for d in chrome_search_path)))
+      stack_core.ConvertTrace(lines, load_vaddrs, more_info, fallback_so_file,
+                              arch_defined, test_symbolizer or symbolizer,
+                              apks_directory)
 
   if rootdir:
     # be a good citizen and clean up...os.rmdir and os.removedirs() don't work
@@ -248,6 +250,7 @@ def main(argv, test_symbolizer=None):
     os.system(cmd)
 
   return 0
+
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv[1:]))

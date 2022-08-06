@@ -57,7 +57,6 @@
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/api_activity_monitor.h"
-#include "extensions/browser/device_local_account_util.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extension_prefs.h"
@@ -1050,6 +1049,12 @@ ExtensionWebRequestEventRouter::RequestFilter::operator=(
   return *this;
 }
 
+ExtensionWebRequestEventRouter::BrowserContextData::BrowserContextData() =
+    default;
+ExtensionWebRequestEventRouter::BrowserContextData::BrowserContextData(
+    BrowserContextData&&) = default;
+ExtensionWebRequestEventRouter::BrowserContextData::~BrowserContextData() =
+    default;
 //
 // ExtensionWebRequestEventRouter
 //
@@ -1092,7 +1097,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     NotifyPageLoad();
 
   bool has_listener = false;
-  for (const auto& kv : listeners_[browser_context]) {
+  for (const auto& kv : data_[browser_context].active_listeners) {
     if (!kv.second.empty()) {
       has_listener = true;
       break;
@@ -1611,14 +1616,13 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
       EventRouter::GetBaseEventName((*listener_ids)[0].sub_event_name);
   DCHECK(IsWebRequestEvent(event_name));
 
-  Listeners& event_listeners = listeners_[browser_context][event_name];
-  content::BrowserContext* cross_browser_context =
-      GetCrossBrowserContext(browser_context);
-  Listeners* cross_event_listeners =
-      cross_browser_context ? &listeners_[cross_browser_context][event_name]
-                            : nullptr;
-
-  std::unique_ptr<WebRequestEventDetails> event_details_filtered_copy;
+  BrowserContextData& data = data_[browser_context];
+  Listeners& event_listeners = data.active_listeners[event_name];
+  Listeners* cross_event_listeners = nullptr;
+  if (data.cross_context) {
+    cross_event_listeners =
+        &data_[data.cross_context].active_listeners[event_name];
+  }
 
   for (const EventListener::ID& id : *listener_ids) {
     // It's possible that the listener is no longer present. Check to make sure
@@ -1640,22 +1644,8 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     // Filter out the optional keys that this listener didn't request.
     base::Value::List args_filtered;
 
-    // In Public Sessions we want to restrict access to security or privacy
-    // sensitive data. Data is filtered for *all* listeners, not only extensions
-    // which are force-installed by policy. Allowlisted extensions are exempt
-    // from this filtering.
-    WebRequestEventDetails* custom_event_details = event_details.get();
-    if (extension_web_request_api_helpers::
-            ArePublicSessionRestrictionsEnabled() &&
-        !extensions::IsAllowlistedForPublicSession(listener->id.extension_id)) {
-      if (!event_details_filtered_copy) {
-        event_details_filtered_copy =
-            event_details->CreatePublicSessionCopy();
-      }
-      custom_event_details = event_details_filtered_copy.get();
-    }
     args_filtered.Append(
-        base::Value::FromUniquePtrValue(custom_event_details->GetFilteredDict(
+        base::Value::FromUniquePtrValue(event_details->GetFilteredDict(
             listener->extra_info_spec, PermissionHelper::Get(browser_context),
             listener->id.extension_id, crosses_incognito)));
 
@@ -1679,7 +1669,7 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     int worker_thread_id,
     int64_t service_worker_version_id,
     EventResponse* response) {
-  Listeners& listeners = listeners_[browser_context][event_name];
+  Listeners& listeners = data_[browser_context].active_listeners[event_name];
   EventListener::ID id(browser_context, extension_id, sub_event_name,
                        render_process_id, web_view_instance_id,
                        worker_thread_id, service_worker_version_id);
@@ -1733,7 +1723,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
 
   RecordAddEventListenerUMAs(extra_info_spec);
 
-  listeners_[browser_context][event_name].push_back(std::move(listener));
+  data_[browser_context].active_listeners[event_name].push_back(
+      std::move(listener));
 
   if (extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
     IncrementExtraHeadersListenerCount(browser_context);
@@ -1741,17 +1732,11 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   return true;
 }
 
-size_t ExtensionWebRequestEventRouter::GetListenerCountForTesting(
-    content::BrowserContext* browser_context,
-    const std::string& event_name) {
-  return listeners_[browser_context][event_name].size();
-}
-
 ExtensionWebRequestEventRouter::EventListener*
 ExtensionWebRequestEventRouter::FindEventListener(const EventListener::ID& id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string event_name = EventRouter::GetBaseEventName(id.sub_event_name);
-  Listeners& listeners = listeners_[id.browser_context][event_name];
+  Listeners& listeners = data_[id.browser_context].active_listeners[event_name];
   return FindEventListenerInContainer(id, listeners);
 }
 
@@ -1773,7 +1758,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string event_name = EventRouter::GetBaseEventName(id.sub_event_name);
-  Listeners& listeners = listeners_[id.browser_context][event_name];
+  Listeners& listeners = data_[id.browser_context].active_listeners[event_name];
   for (auto it = listeners.begin(); it != listeners.end(); ++it) {
     std::unique_ptr<EventListener>& listener = *it;
 
@@ -1809,13 +1794,12 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
 
   // Iterate over all listeners of all WebRequest events to delete
   // any listeners that belong to the provided <webview>.
-  ListenerMapForBrowserContext& map_for_browser_context =
-      listeners_[browser_context];
-  for (const auto& event_iter : map_for_browser_context) {
+  const BrowserContextData& data = data_[browser_context];
+  for (const auto& kv : data.active_listeners) {
+    const Listeners& listeners = kv.second;
     // Construct a listeners_to_delete vector so that we don't modify the set of
     // listeners as we iterate through it.
     std::vector<EventListener::ID> listeners_to_delete;
-    const Listeners& listeners = event_iter.second;
     for (const auto& listener : listeners) {
       if (listener->id.render_process_id == render_process_id &&
           listener->id.web_view_instance_id == web_view_instance_id) {
@@ -1831,18 +1815,18 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
 void ExtensionWebRequestEventRouter::OnOTRBrowserContextCreated(
     content::BrowserContext* original_browser_context,
     content::BrowserContext* otr_browser_context) {
-  cross_browser_context_map_[original_browser_context] =
-      std::make_pair(false, otr_browser_context);
-  cross_browser_context_map_[otr_browser_context] =
-      std::make_pair(true, original_browser_context);
+  data_[original_browser_context].cross_context = otr_browser_context;
+  auto& otr_data = data_[otr_browser_context];
+  otr_data.cross_context = original_browser_context;
+  otr_data.is_incognito = true;
 }
 
 void ExtensionWebRequestEventRouter::OnOTRBrowserContextDestroyed(
     content::BrowserContext* original_browser_context,
     content::BrowserContext* otr_browser_context) {
-  cross_browser_context_map_.erase(otr_browser_context);
-  cross_browser_context_map_.erase(original_browser_context);
+  data_[original_browser_context].cross_context = nullptr;
   OnBrowserContextShutdown(otr_browser_context);
+  DCHECK(!base::Contains(data_, otr_browser_context));
 }
 
 void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
@@ -1889,41 +1873,33 @@ void ExtensionWebRequestEventRouter::IncrementExtraHeadersListenerCount(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Try inserting the |browser_context| key, assuming it is not there. Note:
-  // emplace returns a pair consisting of an iterator to the inserted element,
-  // or the already-existing element if no insertion happened, and a bool
-  // denoting whether the insertion took place.
-  auto result = extra_headers_listener_count_.emplace(browser_context, 1);
-
-  // If the insert failed, increment the existing value.
-  if (!result.second) {
-    // We only keep values greater than 0 in the map.
-    DCHECK_GT(result.first->second, 0);
-    result.first->second++;
-  }
+  BrowserContextData& data = data_[browser_context];
+  DCHECK_GE(data.extra_headers_count, 0);
+  data.extra_headers_count++;
 }
 
 void ExtensionWebRequestEventRouter::DecrementExtraHeadersListenerCount(
     content::BrowserContext* browser_context) {
-  auto it = extra_headers_listener_count_.find(browser_context);
-  DCHECK(it != extra_headers_listener_count_.end());
-  it->second--;
-  if (it->second > 0)
-    return;
-
-  DCHECK_EQ(0, it->second);
-  extra_headers_listener_count_.erase(it);
+  BrowserContextData& data = data_[browser_context];
+  data.extra_headers_count--;
+  DCHECK_GE(data.extra_headers_count, 0);
 }
 
 void ExtensionWebRequestEventRouter::OnBrowserContextShutdown(
     content::BrowserContext* browser_context) {
-  listeners_.erase(browser_context);
-  extra_headers_listener_count_.erase(browser_context);
+  data_.erase(browser_context);
+}
+
+size_t ExtensionWebRequestEventRouter::GetListenerCountForTesting(
+    content::BrowserContext* browser_context,
+    const std::string& event_name) {
+  return data_[browser_context].active_listeners[event_name].size();
 }
 
 bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerImpl(
     content::BrowserContext* browser_context) {
-  return base::Contains(extra_headers_listener_count_, browser_context);
+  auto iter = data_.find(browser_context);
+  return iter != data_.end() && iter->second.extra_headers_count > 0;
 }
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
@@ -1939,18 +1915,20 @@ void ExtensionWebRequestEventRouter::NotifyPageLoad() {
 
 content::BrowserContext* ExtensionWebRequestEventRouter::GetCrossBrowserContext(
     content::BrowserContext* browser_context) const {
-  auto cross_browser_context = cross_browser_context_map_.find(browser_context);
-  if (cross_browser_context == cross_browser_context_map_.end())
-    return NULL;
-  return cross_browser_context->second.second;
+  auto iter = data_.find(browser_context);
+  if (iter == data_.end())
+    return nullptr;
+  return iter->second.cross_context;
 }
 
 bool ExtensionWebRequestEventRouter::IsIncognitoBrowserContext(
     content::BrowserContext* browser_context) const {
-  auto cross_browser_context = cross_browser_context_map_.find(browser_context);
-  if (cross_browser_context == cross_browser_context_map_.end())
+  // TODO(devlin): Well, this method is silly. We have
+  // BrowserContext::IsOffTheRecord(). Just use that.
+  auto iter = data_.find(browser_context);
+  if (iter == data_.end())
     return false;
-  return cross_browser_context->second.first;
+  return iter->second.is_incognito;
 }
 
 bool ExtensionWebRequestEventRouter::WasSignaled(
@@ -1973,7 +1951,8 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
         0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
   }
 
-  Listeners& listeners = listeners_[browser_context][web_request_event_name];
+  Listeners& listeners =
+      data_[browser_context].active_listeners[web_request_event_name];
   for (std::unique_ptr<EventListener>& listener : listeners) {
     if (!content::RenderProcessHost::FromID(listener->id.render_process_id)) {
       // The IPC sender has been deleted. This listener will be removed soon
@@ -2683,12 +2662,7 @@ WebRequestInternalAddEventListenerFunction::Run() {
     // http://www.example.com/bar/*.
     // For this reason we do only a coarse check here to warn the extension
     // developer if they do something obviously wrong.
-    // When restrictions are enabled in Public Session, allow all URLs for
-    // webRequests initiated by a regular extension.
-    if (!(extension_web_request_api_helpers::
-              ArePublicSessionRestrictionsEnabled() &&
-          extension->is_extension()) &&
-        extension->permissions_data()
+    if (extension->permissions_data()
             ->GetEffectiveHostPermissions()
             .is_empty() &&
         extension->permissions_data()
@@ -2768,18 +2742,6 @@ WebRequestInternalEventHandledFunction::Run() {
         dict_value.FindKey("requestHeaders");
     const base::Value* response_headers_value =
         dict_value.FindKey("responseHeaders");
-
-    // In Public Session we restrict everything but "cancel" (except for
-    // allowlisted extensions which have no such restrictions).
-    if (extension_web_request_api_helpers::
-            ArePublicSessionRestrictionsEnabled() &&
-        !extensions::IsAllowlistedForPublicSession(extension_id_safe()) &&
-        (redirect_url_value || auth_credentials_value ||
-         request_headers_value || response_headers_value)) {
-      OnError(event_name, sub_event_name, request_id, render_process_id,
-              web_view_instance_id, std::move(response));
-      return RespondNow(Error(keys::kInvalidPublicSessionBlockingResponse));
-    }
 
     const base::Value* cancel_value = dict_value.FindKey("cancel");
     if (cancel_value) {

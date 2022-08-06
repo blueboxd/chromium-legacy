@@ -38,8 +38,9 @@ TAG_HEADER = """\
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-hd-630-family intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912
+#         intel intel-hd-630-family intel-gen-9 intel-0xa2e intel-0xd26
+#               intel-0xa011 intel-0x3e92 intel-0x3e9b intel-0x5912
+#               intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Decoder
@@ -53,13 +54,11 @@ TAG_HEADER = """\
 #         angle-vulkan ]
 # Skia Renderer
 # tags: [ skia-renderer-dawn
-#         skia-renderer-disabled
 #         skia-renderer-gl
 #         skia-renderer-vulkan ]
-# SwiftShader
-# tags: [ swiftshader-gl no-swiftshader-gl ]
 # Driver
-# tags: [ mesa_lt_19.1 ]
+# tags: [ mesa_lt_19.1
+#         mesa_ge_21.0 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server

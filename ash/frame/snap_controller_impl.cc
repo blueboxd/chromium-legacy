@@ -18,6 +18,18 @@ namespace ash {
 SnapControllerImpl::SnapControllerImpl() = default;
 SnapControllerImpl::~SnapControllerImpl() = default;
 
+WindowSnapWMEvent::SnapRatio GetWMEventSnapRatio(
+    chromeos::SnapRatio snap_ratio) {
+  switch (snap_ratio) {
+    case chromeos::SnapRatio::kDefaultSnapRatio:
+      return WindowSnapWMEvent::SnapRatio::kDefaultSnapRatio;
+    case chromeos::SnapRatio::kOneThirdSnapRatio:
+      return WindowSnapWMEvent::SnapRatio::kOneThirdSnapRatio;
+    case chromeos::SnapRatio::kTwoThirdSnapRatio:
+      return WindowSnapWMEvent::SnapRatio::kTwoThirdSnapRatio;
+  }
+}
+
 bool SnapControllerImpl::CanSnap(aura::Window* window) {
   return WindowState::Get(window)->CanSnap();
 }
@@ -58,7 +70,8 @@ void SnapControllerImpl::ShowSnapPreview(aura::Window* window,
 }
 
 void SnapControllerImpl::CommitSnap(aura::Window* window,
-                                    chromeos::SnapDirection snap) {
+                                    chromeos::SnapDirection snap,
+                                    chromeos::SnapRatio snap_ratio) {
   phantom_window_controller_.reset();
   if (snap == chromeos::SnapDirection::kNone)
     return;
@@ -67,9 +80,10 @@ void SnapControllerImpl::CommitSnap(aura::Window* window,
   window_state->set_snap_action_source(
       WindowSnapActionSource::kUseCaptionButtonToSnap);
 
-  const WMEvent snap_event(snap == chromeos::SnapDirection::kPrimary
-                               ? WM_EVENT_SNAP_PRIMARY
-                               : WM_EVENT_SNAP_SECONDARY);
+  const WindowSnapWMEvent snap_event(snap == chromeos::SnapDirection::kPrimary
+                                         ? WM_EVENT_SNAP_PRIMARY
+                                         : WM_EVENT_SNAP_SECONDARY,
+                                     GetWMEventSnapRatio(snap_ratio));
   window_state->OnWMEvent(&snap_event);
 }
 

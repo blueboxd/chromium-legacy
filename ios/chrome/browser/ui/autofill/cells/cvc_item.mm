@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #import "base/feature_list.h"
 #import "build/branding_buildflags.h"
 #import "components/autofill/core/common/autofill_features.h"
@@ -113,8 +111,8 @@ const CGFloat kGooglePayBadgeHeight = 22;
     UIView* contentView = self.contentView;
 
     _instructionsTextLabel = [[UILabel alloc] init];
-    _instructionsTextLabel.font =
-        [[MDCTypography fontLoader] mediumFontOfSize:14];
+    _instructionsTextLabel.font = [UIFont systemFontOfSize:14
+                                                    weight:UIFontWeightMedium];
     _instructionsTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _instructionsTextLabel.numberOfLines = 0;
     _instructionsTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -135,7 +133,7 @@ const CGFloat kGooglePayBadgeHeight = 22;
     [contentView addSubview:googlePayBadge];
 
     _errorLabel = [[UILabel alloc] init];
-    _errorLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
+    _errorLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightRegular];
     _errorLabel.textColor = [UIColor colorNamed:kRedColor];
     _errorLabel.numberOfLines = 0;
     _errorLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -190,7 +188,7 @@ const CGFloat kGooglePayBadgeHeight = 22;
 
     _buttonForNewCard = [UIButton buttonWithType:UIButtonTypeCustom];
     _buttonForNewCard.titleLabel.font =
-        [[MDCTypography fontLoader] regularFontOfSize:12];
+        [UIFont systemFontOfSize:12 weight:UIFontWeightRegular];
     [_buttonForNewCard
         setTitle:l10n_util::GetNSString(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK)
         forState:UIControlStateNormal];

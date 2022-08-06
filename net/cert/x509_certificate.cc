@@ -27,13 +27,13 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/internal/cert_errors.h"
-#include "net/cert/internal/name_constraints.h"
-#include "net/cert/internal/parsed_certificate.h"
-#include "net/cert/internal/signature_algorithm.h"
-#include "net/cert/internal/verify_name_match.h"
-#include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/pem.h"
+#include "net/cert/pki/cert_errors.h"
+#include "net/cert/pki/name_constraints.h"
+#include "net/cert/pki/parsed_certificate.h"
+#include "net/cert/pki/signature_algorithm.h"
+#include "net/cert/pki/verify_name_match.h"
+#include "net/cert/pki/verify_signed_data.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/parser.h"
@@ -621,7 +621,7 @@ void X509Certificate::GetPublicKeyInfo(const CRYPTO_BUFFER* cert_buffer,
   if (!pkey)
     return;
 
-  switch (pkey->type) {
+  switch (EVP_PKEY_id(pkey.get())) {
     case EVP_PKEY_RSA:
       *type = kPublicKeyTypeRSA;
       break;
@@ -743,8 +743,9 @@ bool X509Certificate::IsSelfSigned(const CRYPTO_BUFFER* cert_buffer) {
   if (normalized_subject != normalized_issuer)
     return false;
 
-  std::unique_ptr<SignatureAlgorithm> signature_algorithm =
-      SignatureAlgorithm::Create(signature_algorithm_tlv, nullptr /* errors */);
+  absl::optional<SignatureAlgorithm> signature_algorithm =
+      ParseSignatureAlgorithm(signature_algorithm_tlv,
+                              /*errors=*/nullptr);
   if (!signature_algorithm)
     return false;
 

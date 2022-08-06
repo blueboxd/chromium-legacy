@@ -17,6 +17,7 @@
 #include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -70,8 +71,14 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // For triggers.
   // Creates and starts a host. Returns the root frame tree node id of the
   // prerendered page, which can be used as the id of the host.
+  // `preloading_attempt` is the attempt corresponding to this prerender, the
+  // default value is set to nullptr as every case of prerendering trigger is
+  // not yet integrated with PreloadingAttempt.
+  // TODO(crbug.com/1325073): Remove the default value as nullptr for
+  // preloading_attempt once prerendering is integrated with Preloading APIs.
   int CreateAndStartHost(const PrerenderAttributes& attributes,
-                         WebContents& web_contents);
+                         WebContents& web_contents,
+                         PreloadingAttempt* preloading_attempt = nullptr);
 
   // Cancels the host registered for `frame_tree_node_id`. The host is
   // immediately removed from the map of non-reserved hosts but asynchronously
@@ -177,6 +184,14 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // PrerenderTriggerType.
   bool IsAllowedToStartPrerenderingForTrigger(
       PrerenderTriggerType trigger_type);
+
+  // Destroys a host when the current memory usage is higher than a certain
+  // threshold.
+  void DestroyWhenUsingExcessiveMemory(int frame_tree_node_id);
+  void DidReceiveMemoryDump(
+      int frame_tree_node_id,
+      bool success,
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // Hosts that are not reserved for activation yet.
   // TODO(https://crbug.com/1132746): Expire prerendered contents if they are

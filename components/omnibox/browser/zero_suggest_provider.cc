@@ -12,126 +12,346 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/i18n/case_conversion.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/escape.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/top_sites.h"
-#include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
-#include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
-#include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
-#include "components/variations/net/variations_http_headers.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
 
-using metrics::OmniboxEventProto;
+using OEP = metrics::OmniboxEventProto;
+using OFT = OmniboxFocusType;
+using OIT = metrics::OmniboxInputType;
 
 namespace {
 
-// Represents whether ZeroSuggestProvider is allowed to display contextual
-// suggestions on focus, and if not, why not.
+// Represents whether ZeroSuggestProvider is allowed to display zero-prefix
+// suggestions, and if not, why not.
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
-enum class ZeroSuggestEligibility {
-  ELIGIBLE = 0,
-  // URL_INELIGIBLE would be ELIGIBLE except some property of the current URL
-  // itself prevents ZeroSuggest from triggering.
-  URL_INELIGIBLE = 1,
-  GENERALLY_INELIGIBLE = 2,
-  ELIGIBLE_MAX_VALUE
+enum class Eligibility {
+  kEligible = 0,
+  // Suggest request without sending the current page URL cannot be made. E.g.,
+  // the user is in incognito mode or Google is not set as the DSE.
+  kRequestNoURLIneligible = 1,
+  // Suggest request with sending the current page URL cannot be made. E.g.,
+  // the user has not consented and the suggest endpoint and page URL are not
+  // same-origin.
+  kRemoteSendURLIneligible = 2,
+  // Zero-prefix suggestions are not eligible in the given context. E.g., due to
+  // the page classification, focus type, input type, or an invalid page URL.
+  kGenerallyIneligible = 3,
+
+  kMaxValue = kGenerallyIneligible,
 };
 
-// Keeps track of how many Suggest requests are sent, how many requests were
-// invalidated, e.g., due to user starting to type, how many responses were
-// received, how many of those responses end up updating the results.
-// These values are written to logs.  New enum values can be added, but existing
+// The provider event types recorded as a result of prefetch and non-prefetch
+// requests for zero-prefix suggestions. Each event must be logged at most once
+// from when the provider is started until it is stopped.
+// These values are written to logs. New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
-enum ZeroSuggestRequestsHistogramValue {
-  ZERO_SUGGEST_REQUEST_SENT = 1,
-  ZERO_SUGGEST_REQUEST_INVALIDATED = 2,
-  ZERO_SUGGEST_RESPONSE_RECEIVED = 3,
-  ZERO_SUGGEST_RESPONSE_LOADED_FROM_HTTP_CACHE = 4,
-  // ZERO_SUGGEST_CACHED_RESPONSE_IS_OUT_OF_DATE = 5,  no longer used.
-  ZERO_SUGGEST_RESPONSE_UPDATED_RESULTS = 6,
-  ZERO_SUGGEST_MAX_REQUEST_HISTOGRAM_VALUE
+enum class Event {
+  // Cached response was synchronously converted to displayed matches.
+  KCachedResponseConvertedToMatches = 0,
+  // Remote request was sent.
+  kRequestSent = 1,
+  // Remote request was invalidated.
+  kRequestInvalidated = 2,
+  // Remote response was received asynchronously.
+  kRemoteResponseReceived = 3,
+  // Remote response was cached.
+  kRemoteResponseCached = 4,
+  // Remote response ended up being converted to displayed matches. This may
+  // happen due to an empty displayed result set or an empty remote result set.
+  kRemoteResponseConvertedToMatches = 5,
+
+  kMaxValue = kRemoteResponseConvertedToMatches,
 };
 
-void LogOmniboxZeroSuggestRequest(
-    ZeroSuggestRequestsHistogramValue request_value,
-    bool is_prefetch) {
+void LogEvent(Event event,
+              ZeroSuggestProvider::ResultType result_type,
+              bool is_prefetch) {
+  DCHECK_NE(ZeroSuggestProvider::ResultType::kNone, result_type);
+  const std::string result_type_string =
+      result_type == ZeroSuggestProvider::ResultType::kRemoteNoURL
+          ? ".NoURL"
+          : ".URLBased";
+  const std::string request_type_string =
+      is_prefetch ? ".Prefetch" : ".NonPrefetch";
   base::UmaHistogramEnumeration(
-      is_prefetch ? "Omnibox.ZeroSuggestRequests.Prefetch"
-                  : "Omnibox.ZeroSuggestRequests.NonPrefetch",
-      request_value, ZERO_SUGGEST_MAX_REQUEST_HISTOGRAM_VALUE);
+      "Omnibox.ZeroSuggestProvider" + result_type_string + request_type_string,
+      event);
 }
 
 // Relevance value to use if it was not set explicitly by the server.
 const int kDefaultZeroSuggestRelevance = 100;
 
-// Used for testing whether zero suggest is ever available.
-constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
-
-// Metric name tracking the omnibox suggestion eligibility.
-constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
-    "Omnibox.ZeroSuggest.Eligible.OnFocusV2";
-
-// Remote suggestions are allowed only if the user is signed-in and has Google
-// set up as their default search engine. The authentication state check is done
-// not for privacy reasons but to prevent signed-out users from querying the
-// server which does not have any suggestions for them. This check is skipped if
-// |check_authentication_state| is false.
-// This function only applies to kRemoteNoUrlVariant. For kRemoteSendUrlVariant,
-// most of these checks with the exception of the authentication state are done
-// in BaseSearchProvider::CanSendURL().
-bool RemoteNoUrlSuggestionsAreAllowed(
-    AutocompleteProviderClient* client,
-    const TemplateURLService* template_url_service,
-    bool check_authentication_state) {
-  if (!client->SearchSuggestEnabled())
+// Returns whether the current URL can be sent in the suggest request.
+// This function only applies to kRemoteSendURL variant.
+bool AllowRemoteSendURL(const AutocompleteProviderClient* client,
+                        const AutocompleteInput& input) {
+  const TemplateURLService* template_url_service =
+      client->GetTemplateURLService();
+  if (!template_url_service) {
     return false;
-
-  if (check_authentication_state && !client->IsAuthenticated())
-    return false;
-
-  if (template_url_service == nullptr)
-    return false;
-
+  }
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
-  return default_provider &&
-         default_provider->GetEngineType(
-             template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
+  if (!default_provider) {
+    return false;
+  }
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+  GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
+      search_terms_args, template_url_service);
+
+  return BaseSearchProvider::CanSendRequestWithURL(
+      input.current_url(), suggest_url, default_provider,
+      template_url_service->search_terms_data(), client,
+      /*sending_search_terms=*/false);
+}
+
+// Return whether a suggest request can be made without sending the current URL.
+// This function only applies to kRemoteNoURL variant.
+bool AllowRemoteNoURL(const AutocompleteProviderClient* client) {
+  const TemplateURLService* template_url_service =
+      client->GetTemplateURLService();
+  if (!template_url_service) {
+    return false;
+  }
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  if (!default_provider) {
+    return false;
+  }
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+  GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
+      search_terms_args, template_url_service);
+
+  const bool allow_remote_no_url = BaseSearchProvider::CanSendRequest(
+      suggest_url, default_provider, template_url_service->search_terms_data(),
+      client);
+
+  // Zero-suggest on the NTP is allowed only if the user is signed-in. This
+  // check is done not for privacy reasons but to prevent signed-out users from
+  // querying the server which does not have any suggestions for them.
+  bool check_authentication_state = !base::FeatureList::IsEnabled(
+      omnibox::kZeroSuggestOnNTPForSignedOutUsers);
+
+  return allow_remote_no_url &&
+         (!check_authentication_state || client->IsAuthenticated());
+}
+
+// Returns a copy of |input| with an empty text for zero-suggest. The input text
+// is checked against the suggest response which always has an empty query. If
+// those don't match, the response is dropped. It however copies over the URL,
+// as zero-suggest on Web/SRP on Mobile relies on the URL to be set.
+// TODO(crbug.com/1344004): Find out if the other fields also need to be set and
+// whether this call can be avoided altogether by e.g., not checking the input
+// text against the query in the response.
+AutocompleteInput GetZeroSuggestInput(
+    const AutocompleteInput& input,
+    const AutocompleteProviderClient* client) {
+  AutocompleteInput sanitized_input(u"", input.current_page_classification(),
+                                    client->GetSchemeClassifier());
+  sanitized_input.set_current_url(input.current_url());
+  sanitized_input.set_current_title(input.current_title());
+  sanitized_input.set_prevent_inline_autocomplete(true);
+  sanitized_input.set_allow_exact_keyword_match(false);
+  return sanitized_input;
+}
+
+// Called in OnURLLoadComplete() or OnPrefetchURLLoadComplete() when the
+// remote response is received with the input for which the request was made.
+//
+// Populates |results| with the response if it can be successfully parsed for
+// |input|; and stores the response json in the user prefs, if applicable to
+// |result_type|. Returns true if the response can be successfully parsed.
+bool StoreRemoteResponse(const std::string& response_json,
+                         const AutocompleteProviderClient* client,
+                         const AutocompleteInput& input,
+                         ZeroSuggestProvider::ResultType result_type,
+                         bool is_prefetch,
+                         SearchSuggestionParser::Results* results) {
+  DCHECK(results);
+
+  if (response_json.empty()) {
+    return false;
+  }
+
+  auto response_data =
+      SearchSuggestionParser::DeserializeJsonData(response_json);
+  if (!response_data) {
+    return false;
+  }
+
+  if (!SearchSuggestionParser::ParseSuggestResults(
+          *response_data, input, client->GetSchemeClassifier(),
+          kDefaultZeroSuggestRelevance,
+          /*is_keyword_result=*/false, results)) {
+    return false;
+  }
+
+  // Store the valid response only if running the kRemoteNoURL variant.
+  if (result_type == ZeroSuggestProvider::ResultType::kRemoteNoURL) {
+    client->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
+                                  response_json);
+    LogEvent(Event::kRemoteResponseCached, result_type, is_prefetch);
+  }
+
+  return true;
+}
+
+// Called in Start() with an input ensured to be appropriate for zero-suggest.
+//
+// Returns true if the response stored in the user prefs is applicable to
+// |result_type| and can be successfully parsed for |input|. If so, populates
+// |results| with the stored response.
+bool ReadStoredResponse(const AutocompleteProviderClient* client,
+                        const AutocompleteInput& input,
+                        ZeroSuggestProvider::ResultType result_type,
+                        SearchSuggestionParser::Results* results) {
+  DCHECK(results);
+
+  // Use the stored response only if running the kRemoteNoURL variant.
+  if (result_type != ZeroSuggestProvider::ResultType::kRemoteNoURL) {
+    return false;
+  }
+
+  const std::string response_json =
+      client->GetPrefs()->GetString(omnibox::kZeroSuggestCachedResults);
+  if (response_json.empty()) {
+    return false;
+  }
+
+  std::unique_ptr<base::Value> response_data =
+      SearchSuggestionParser::DeserializeJsonData(response_json);
+  if (!response_data) {
+    return false;
+  }
+
+  if (!SearchSuggestionParser::ParseSuggestResults(
+          *response_data, input, client->GetSchemeClassifier(),
+          kDefaultZeroSuggestRelevance,
+          /*is_keyword_result=*/false, results)) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
+
+// static
+ZeroSuggestProvider::ResultType ZeroSuggestProvider::ResultTypeToRun(
+    const AutocompleteProviderClient* client,
+    const AutocompleteInput& input) {
+  const auto page_class = input.current_page_classification();
+  const auto focus_type_input_type =
+      std::make_pair(input.focus_type(), input.type());
+
+  // Android Search Widget.
+  if (page_class == OEP::ANDROID_SHORTCUTS_WIDGET) {
+    if (focus_type_input_type == std::make_pair(OFT::ON_FOCUS, OIT::URL)) {
+      return ResultType::kRemoteNoURL;
+    }
+  }
+
+  // New Tab Page.
+  if (BaseSearchProvider::IsNTPPage(page_class)) {
+    if (focus_type_input_type == std::make_pair(OFT::ON_FOCUS, OIT::EMPTY)) {
+      return ResultType::kRemoteNoURL;
+    }
+  }
+
+  // The following cases require sending the current page URL in the request.
+  // Ensure the URL is valid with an HTTP(S) scheme and is not the NTP page URL.
+  if (BaseSearchProvider::IsNTPPage(page_class) ||
+      !BaseSearchProvider::CanSendPageURLInRequest(input.current_url())) {
+    return ResultType::kNone;
+  }
+
+  // Open Web - does NOT include Search Results Page.
+  if (page_class == OEP::OTHER) {
+    if (focus_type_input_type == std::make_pair(OFT::ON_FOCUS, OIT::URL) &&
+        base::FeatureList::IsEnabled(
+            omnibox::kFocusTriggersContextualWebZeroSuggest)) {
+      return ResultType::kRemoteSendURL;
+    }
+    if (focus_type_input_type ==
+            std::make_pair(OFT::DELETED_PERMANENT_TEXT, OIT::EMPTY) &&
+        base::FeatureList::IsEnabled(
+            omnibox::kClobberTriggersContextualWebZeroSuggest)) {
+      return ResultType::kRemoteSendURL;
+    }
+  }
+
+  // Search Results Page.
+  if (BaseSearchProvider::IsSearchResultsPage(page_class)) {
+    if (focus_type_input_type == std::make_pair(OFT::ON_FOCUS, OIT::URL) &&
+        base::FeatureList::IsEnabled(omnibox::kFocusTriggersSRPZeroSuggest)) {
+      return ResultType::kRemoteSendURL;
+    }
+    if (focus_type_input_type ==
+            std::make_pair(OFT::DELETED_PERMANENT_TEXT, OIT::EMPTY) &&
+        base::FeatureList::IsEnabled(omnibox::kClobberTriggersSRPZeroSuggest)) {
+      return ResultType::kRemoteSendURL;
+    }
+  }
+
+  return ResultType::kNone;
+}
+
+// static
+bool ZeroSuggestProvider::AllowZeroPrefixSuggestions(
+    const AutocompleteProviderClient* client,
+    const AutocompleteInput& input) {
+  auto eligibility = Eligibility::kEligible;
+
+  switch (ResultTypeToRun(client, input)) {
+    case ResultType::kRemoteNoURL: {
+      if (!AllowRemoteNoURL(client)) {
+        eligibility = Eligibility::kRequestNoURLIneligible;
+      }
+      break;
+    }
+    case ResultType::kRemoteSendURL: {
+      if (!AllowRemoteSendURL(client, input)) {
+        eligibility = Eligibility::kRemoteSendURLIneligible;
+      }
+      break;
+    }
+    default: {
+      eligibility = Eligibility::kGenerallyIneligible;
+      break;
+    }
+  }
+
+  base::UmaHistogramEnumeration("Omnibox.ZeroSuggestProvider.Eligibility",
+                                eligibility);
+  return eligibility == Eligibility::kEligible;
+}
 
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
@@ -146,73 +366,92 @@ void ZeroSuggestProvider::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                std::string());
 }
 
-void ZeroSuggestProvider::Start(const AutocompleteInput& input,
-                                bool minimal_changes) {
-  Start(input, minimal_changes, /*is_prefetch=*/false);
-}
-
 void ZeroSuggestProvider::StartPrefetch(const AutocompleteInput& input) {
-  Start(input, /*minimal_changes=*/false, /*is_prefetch=*/true);
-}
+  TRACE_EVENT0("omnibox", "ZeroSuggestProvider::StartPrefetch");
 
-void ZeroSuggestProvider::Start(const AutocompleteInput& input,
-                                bool minimal_changes,
-                                bool is_prefetch) {
-  TRACE_EVENT0("omnibox", "ZeroSuggestProvider::Start");
-  Stop(true, false);
-
-  if (!AllowZeroSuggestSuggestions(input)) {
-    UMA_HISTOGRAM_ENUMERATION(kOmniboxZeroSuggestEligibleHistogramName,
-                              ZeroSuggestEligibility::GENERALLY_INELIGIBLE,
-                              ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE);
+  if (!AllowZeroPrefixSuggestions(client(), input)) {
     return;
   }
 
-  result_type_running_ = NONE;
-  input_ = input;
-  set_field_trial_triggered(false);
-  set_field_trial_triggered_in_session(false);
+  // Do not start a request if async requests are disallowed.
+  if (input.omit_asynchronous_matches()) {
+    return;
+  }
 
+  ResultType result_type = ResultTypeToRun(client(), input);
+
+  if (prefetch_loader_) {
+    LogEvent(Event::kRequestInvalidated, result_type, /*is_prefetch=*/true);
+  }
+
+  // Create a loader for the request and take ownership of it.
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = input.current_page_classification();
   search_terms_args.focus_type = input.focus_type();
-  const int cache_duration_sec =
-      OmniboxFieldTrial::kZeroSuggestCacheDurationSec.Get();
-  if (cache_duration_sec > 0) {
-    search_terms_args.zero_suggest_cache_duration_sec = cache_duration_sec;
-  }
-  GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
-      search_terms_args, client()->GetTemplateURLService());
-  if (!suggest_url.is_valid())
-    return;
-
-  result_type_running_ = TypeOfResultToRun(client(), input, suggest_url);
-  if (result_type_running_ == NONE)
-    return;
-
-  if (is_prefetch)
-    prefetch_done_ = false;
-  else
-    done_ = false;
-
-  MaybeUpdateResultsWithStoredResponse();
-
-  search_terms_args.current_page_url = result_type_running_ == REMOTE_SEND_URL
+  search_terms_args.current_page_url = result_type == ResultType::kRemoteSendURL
                                            ? input.current_url().spec()
                                            : std::string();
-  // Grab ownership of the loader until results come in to
-  // `OnURLLoadComplete()`.
+  prefetch_loader_ =
+      client()
+          ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
+          ->StartSuggestionsRequest(
+              search_terms_args, client()->GetTemplateURLService(),
+              base::BindOnce(&ZeroSuggestProvider::OnPrefetchURLLoadComplete,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             GetZeroSuggestInput(input, client()),
+                             result_type));
+
+  LogEvent(Event::kRequestSent, result_type, /*is_prefetch=*/true);
+}
+
+void ZeroSuggestProvider::Start(const AutocompleteInput& input,
+                                bool minimal_changes) {
+  TRACE_EVENT0("omnibox", "ZeroSuggestProvider::Start");
+  Stop(true, false);
+
+  result_type_running_ = ResultType::kNone;
+  if (!AllowZeroPrefixSuggestions(client(), input)) {
+    return;
+  }
+
+  result_type_running_ = ResultTypeToRun(client(), input);
+  set_field_trial_triggered(false);
+  set_field_trial_triggered_in_session(false);
+
+  // Convert the stored response to |matches_|, if applicable.
+  SearchSuggestionParser::Results results;
+  if (ReadStoredResponse(client(), GetZeroSuggestInput(input, client()),
+                         result_type_running_, &results)) {
+    ConvertSuggestResultsToAutocompleteMatches(results, input);
+    LogEvent(Event::KCachedResponseConvertedToMatches, result_type_running_,
+             /*is_prefetch=*/false);
+  }
+
+  // Do not start a request if async requests are disallowed.
+  if (input.omit_asynchronous_matches()) {
+    return;
+  }
+
+  done_ = false;
+
+  // Create a loader for the request and take ownership of it.
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+  search_terms_args.page_classification = input.current_page_classification();
+  search_terms_args.focus_type = input.focus_type();
+  search_terms_args.current_page_url =
+      result_type_running_ == ResultType::kRemoteSendURL
+          ? input.current_url().spec()
+          : std::string();
   loader_ = client()
                 ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
                 ->StartSuggestionsRequest(
                     search_terms_args, client()->GetTemplateURLService(),
                     base::BindOnce(&ZeroSuggestProvider::OnURLLoadComplete,
                                    weak_ptr_factory_.GetWeakPtr(),
-                                   client()->GetWeakPtr(), search_terms_args,
-                                   is_prefetch, base::TimeTicks::Now()));
+                                   GetZeroSuggestInput(input, client()),
+                                   result_type_running_));
 
-  LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT,
-                               /*is_prefetch=*/!prefetch_done_);
+  LogEvent(Event::kRequestSent, result_type_running_, /*is_prefetch=*/false);
 }
 
 void ZeroSuggestProvider::Stop(bool clear_cached_results,
@@ -220,25 +459,22 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
   AutocompleteProvider::Stop(clear_cached_results, due_to_user_inactivity);
 
   if (loader_) {
-    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED,
-                                 /*is_prefetch=*/!prefetch_done_);
+    LogEvent(Event::kRequestInvalidated, result_type_running_,
+             /*is_prefetch=*/false);
+    loader_.reset();
   }
-  loader_.reset();
-  prefetch_done_ = true;
-  result_type_running_ = NONE;
+
+  if (clear_cached_results) {
+    experiment_stats_v2s_.clear();
+  }
 }
 
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
   // Remove the deleted match from the cache, so it is not shown to the user
   // again. Since we cannot remove just one result, blow away the cache.
-  //
-  // Although the cache is currently only used for REMOTE_NO_URL, we have no
+  // Although the cache is currently only used for kRemoteNoURL, we have no
   // easy way of checking the request type after-the-fact. It's safe though, to
   // always clear the cache even if we are on a different request type.
-  //
-  // TODO(tommycli): It seems quite odd that the cache is saved to a pref, as
-  // if we would want to persist it across restarts. That seems to be directly
-  // contradictory to the fact that ZeroSuggest results can change rapidly.
   client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
                                   std::string());
   BaseSearchProvider::DeleteMatch(match);
@@ -246,7 +482,7 @@ void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
 
 void ZeroSuggestProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   BaseSearchProvider::AddProviderInfo(provider_info);
-  if (!results_.suggest_results.empty() || !results_.navigation_results.empty())
+  if (!matches().empty())
     provider_info->back().set_times_returned_results_in_session(1);
 }
 
@@ -259,22 +495,11 @@ void ZeroSuggestProvider::ResetSession() {
 
 ZeroSuggestProvider::ZeroSuggestProvider(AutocompleteProviderClient* client,
                                          AutocompleteProviderListener* listener)
-    : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
-      result_type_running_(NONE) {
+    : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client) {
   AddListener(listener);
 }
 
 ZeroSuggestProvider::~ZeroSuggestProvider() = default;
-
-const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
-  // Zero suggest provider should not receive keyword results.
-  DCHECK(!is_keyword);
-  return client()->GetTemplateURLService()->GetDefaultSearchProvider();
-}
-
-const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
-  return input_;
-}
 
 bool ZeroSuggestProvider::ShouldAppendExtraParams(
     const SearchSuggestionParser::SuggestResult& result) const {
@@ -293,104 +518,79 @@ void ZeroSuggestProvider::RecordDeletionResult(bool success) {
 }
 
 void ZeroSuggestProvider::OnURLLoadComplete(
-    const base::WeakPtr<AutocompleteProviderClient> client,
-    TemplateURLRef::SearchTermsArgs search_terms_args,
-    bool is_prefetch,
-    base::TimeTicks request_time,
+    const AutocompleteInput& input,
+    ResultType result_type,
     const network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
-  DCHECK(!done_ || !prefetch_done_);
+  DCHECK(!done_);
   DCHECK_EQ(loader_.get(), source);
-
-  LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_RESPONSE_RECEIVED, is_prefetch);
-  if (source->LoadedFromCache()) {
-    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_RESPONSE_LOADED_FROM_HTTP_CACHE,
-                                 is_prefetch);
-  }
 
   const bool response_received =
       response_body && source->NetError() == net::OK &&
       (source->ResponseInfo() && source->ResponseInfo()->headers &&
        source->ResponseInfo()->headers->response_code() == 200);
-  const bool results_updated =
-      response_received &&
-      UpdateResultsWithResponse(SearchSuggestionParser::ExtractJsonData(
-          source, std::move(response_body)));
-  if (results_updated) {
-    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_RESPONSE_UPDATED_RESULTS,
-                                 is_prefetch);
+  if (!response_received) {
+    loader_.reset();
+    done_ = true;
+    return;
+  }
+
+  LogEvent(Event::kRemoteResponseReceived, result_type,
+           /*is_prefetch=*/false);
+
+  SearchSuggestionParser::Results results;
+  const bool response_parsed = StoreRemoteResponse(
+      SearchSuggestionParser::ExtractJsonData(source, std::move(response_body)),
+      client(), input, result_type,
+      /*is_prefetch=*/false, &results);
+  if (!response_parsed) {
+    loader_.reset();
+    done_ = true;
+    return;
   }
 
   loader_.reset();
-  prefetch_done_ = true;
   done_ = true;
-  result_type_running_ = NONE;
 
-  // Do not notify the provider listener for prefetch requests.
-  if (!is_prefetch)
-    NotifyListeners(results_updated);
+  // For display stability reasons, update the displayed results with the remote
+  // response only if they are empty or if an empty result set is received. In
+  // the latter case, the displayed results may no longer be valid to be shown.
+  const bool empty_matches = matches().empty();
+  const bool empty_results =
+      results.suggest_results.empty() && results.navigation_results.empty();
+  if (!empty_matches && !empty_results) {
+    return;
+  }
+
+  // Convert the response to |matches_| and notify the listeners.
+  ConvertSuggestResultsToAutocompleteMatches(results, input);
+  LogEvent(Event::kRemoteResponseConvertedToMatches, result_type,
+           /*is_prefetch=*/false);
+  NotifyListeners(/*updated_matches=*/true);
 }
 
-bool ZeroSuggestProvider::UpdateResultsWithResponse(
-    const std::string& json_data) {
-  if (json_data.empty())
-    return false;
+void ZeroSuggestProvider::OnPrefetchURLLoadComplete(
+    const AutocompleteInput& input,
+    ResultType result_type,
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> response_body) {
+  DCHECK_EQ(prefetch_loader_.get(), source);
 
-  std::unique_ptr<base::Value> data(
-      SearchSuggestionParser::DeserializeJsonData(json_data));
-  if (!data)
-    return false;
+  const bool response_received =
+      response_body && source->NetError() == net::OK &&
+      (source->ResponseInfo() && source->ResponseInfo()->headers &&
+       source->ResponseInfo()->headers->response_code() == 200);
+  if (response_received) {
+    LogEvent(Event::kRemoteResponseReceived, result_type, /*is_prefetch=*/true);
 
-  // Store non-empty response if running the REMOTE_NO_URL variant.
-  if (result_type_running_ == REMOTE_NO_URL) {
-    client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
-                                    json_data);
-
-    // If we received an empty result list, we should update the display, as it
-    // may be showing cached results that should not be shown.
-    //
-    // `data->GetListDeprecated()[1]` is the results list.
-    const bool non_empty_parsed_list =
-        data->is_list() && data->GetListDeprecated().size() >= 2u &&
-        data->GetListDeprecated()[1].is_list() &&
-        !data->GetListDeprecated()[1].GetListDeprecated().empty();
-    const bool non_empty_cache = !results_.suggest_results.empty() ||
-                                 !results_.navigation_results.empty();
-    if (non_empty_parsed_list && non_empty_cache)
-      return false;
+    SearchSuggestionParser::Results unused_results;
+    StoreRemoteResponse(SearchSuggestionParser::ExtractJsonData(
+                            source, std::move(response_body)),
+                        client(), input, result_type,
+                        /*is_prefetch=*/true, &unused_results);
   }
 
-  const bool results_updated = ParseSuggestResults(
-      *data, kDefaultZeroSuggestRelevance, false, &results_);
-  if (results_updated) {
-    ConvertResultsToAutocompleteMatches();
-  }
-  return results_updated;
-}
-
-void ZeroSuggestProvider::MaybeUpdateResultsWithStoredResponse() {
-  // Use the stored response only if running the REMOTE_NO_URL variant.
-  if (result_type_running_ != REMOTE_NO_URL) {
-    return;
-  }
-
-  std::string json_data =
-      client()->GetPrefs()->GetString(omnibox::kZeroSuggestCachedResults);
-  if (json_data.empty()) {
-    return;
-  }
-
-  std::unique_ptr<base::Value> data(
-      SearchSuggestionParser::DeserializeJsonData(json_data));
-  if (!data) {
-    return;
-  }
-
-  const bool results_updated = ParseSuggestResults(
-      *data, kDefaultZeroSuggestRelevance, false, &results_);
-  if (results_updated) {
-    ConvertResultsToAutocompleteMatches();
-  }
+  prefetch_loader_.reset();
 }
 
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
@@ -421,190 +621,58 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   return match;
 }
 
-void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
+void ZeroSuggestProvider::ConvertSuggestResultsToAutocompleteMatches(
+    const SearchSuggestionParser::Results& results,
+    const AutocompleteInput& input) {
   matches_.clear();
+  suggestion_groups_map_.clear();
+  experiment_stats_v2s_.clear();
 
-  TemplateURLService* template_url_service = client()->GetTemplateURLService();
-  DCHECK(template_url_service);
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  // Fail if we can't set the clickthrough URL for query suggestions.
-  if (default_provider == nullptr ||
-      !default_provider->SupportsReplacement(
-          template_url_service->search_terms_data()))
-    return;
-
-  MatchMap map;
+  if (!field_trial_triggered()) {
+    set_field_trial_triggered(results.field_trial_triggered);
+  }
+  if (!field_trial_triggered_in_session()) {
+    set_field_trial_triggered_in_session(results.field_trial_triggered);
+  }
 
   // Add all the SuggestResults to the map. We display all ZeroSuggest search
   // suggestions as unbolded.
-  for (size_t i = 0; i < results_.suggest_results.size(); ++i) {
-    AddMatchToMap(results_.suggest_results[i], std::string(), i, false, false,
-                  &map);
+  MatchMap map;
+  for (size_t i = 0; i < results.suggest_results.size(); ++i) {
+    AddMatchToMap(results.suggest_results[i], std::string(), input,
+                  client()->GetTemplateURLService()->GetDefaultSearchProvider(),
+                  client()->GetTemplateURLService()->search_terms_data(), i,
+                  false, false, &map);
   }
 
   const int num_query_results = map.size();
-  const int num_nav_results = results_.navigation_results.size();
+  const int num_nav_results = results.navigation_results.size();
   const int num_results = num_query_results + num_nav_results;
-  UMA_HISTOGRAM_COUNTS_1M("ZeroSuggest.QueryResults", num_query_results);
-  UMA_HISTOGRAM_COUNTS_1M("ZeroSuggest.URLResults", num_nav_results);
-  UMA_HISTOGRAM_COUNTS_1M("ZeroSuggest.AllResults", num_results);
+  base::UmaHistogramCounts1M("ZeroSuggest.QueryResults", num_query_results);
+  base::UmaHistogramCounts1M("ZeroSuggest.URLResults", num_nav_results);
+  base::UmaHistogramCounts1M("ZeroSuggest.AllResults", num_results);
 
-  if (num_results == 0)
+  if (num_results == 0) {
     return;
+  }
 
-  for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
+  for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it) {
     matches_.push_back(it->second);
+  }
 
   const SearchSuggestionParser::NavigationResults& nav_results(
-      results_.navigation_results);
+      results.navigation_results);
   for (const auto& nav_result : nav_results) {
     matches_.push_back(NavigationToMatch(nav_result));
   }
-}
 
-bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
-    const AutocompleteInput& input) const {
-  const auto& page_url = input.current_url();
-  const auto page_class = input.current_page_classification();
-  const auto input_type = input.type();
-
-  if (input.focus_type() == OmniboxFocusType::DEFAULT)
-    return false;
-
-  if (client()->IsOffTheRecord())
-    return false;
-
-  if (input_type == metrics::OmniboxInputType::EMPTY) {
-    // Function that returns whether EMPTY input zero-suggest is allowed.
-    auto IsEmptyZeroSuggestAllowed = [&]() {
-      if (page_class == metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
-          IsNTPPage(page_class)) {
-        return true;
-      }
-
-      if (page_class == metrics::OmniboxEventProto::OTHER) {
-        return input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
-               base::FeatureList::IsEnabled(
-                   omnibox::kClobberTriggersContextualWebZeroSuggest);
-      }
-
-      if (IsSearchResultsPage(page_class)) {
-        return input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
-               base::FeatureList::IsEnabled(
-                   omnibox::kClobberTriggersSRPZeroSuggest);
-      }
-
-      return false;
-    };
-
-    // Return false if disallowed. Otherwise, proceed down to further checks.
-    if (!IsEmptyZeroSuggestAllowed())
-      return false;
+  // Update the suggestion groups information from the server response.
+  for (const auto& entry : results.suggestion_groups_map) {
+    suggestion_groups_map_[entry.first].MergeFrom(entry.second);
   }
 
-  // When omnibox contains pre-populated content, only show zero suggest for
-  // pages with URLs the user will recognize.
-  //
-  // This list intentionally does not include items such as ftp: and file:
-  // because (a) these do not work on Android and iOS, where most visited
-  // zero suggest is launched and (b) on desktop, where contextual zero suggest
-  // is running, these types of schemes aren't eligible to be sent to the
-  // server to ask for suggestions (and thus in practice we won't display zero
-  // suggest for them).
-  if (input_type != metrics::OmniboxInputType::EMPTY &&
-      !(page_url.is_valid() &&
-        ((page_url.scheme() == url::kHttpScheme) ||
-         (page_url.scheme() == url::kHttpsScheme) ||
-         (page_url.scheme() == url::kAboutScheme) ||
-         (page_url.scheme() ==
-          client()->GetEmbedderRepresentationOfAboutScheme())))) {
-    return false;
+  // Update the list of experiment stats from the server response.
+  for (const auto& experiment_stats_v2 : results.experiment_stats_v2s) {
+    experiment_stats_v2s_.push_back(experiment_stats_v2);
   }
-
-  return true;
-}
-
-// static
-ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
-    AutocompleteProviderClient* client,
-    const AutocompleteInput& input,
-    const GURL& suggest_url) {
-  DCHECK(client);
-  // Check if the URL can be sent in any suggest request.
-  const TemplateURLService* template_url_service =
-      client->GetTemplateURLService();
-  DCHECK(template_url_service);
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-
-  GURL current_url = input.current_url();
-  metrics::OmniboxEventProto::PageClassification current_page_classification =
-      input.current_page_classification();
-
-  const bool can_send_current_url = CanSendURL(
-      current_url, suggest_url, default_provider, current_page_classification,
-      template_url_service->search_terms_data(), client, false);
-  // Collect metrics on eligibility.
-  GURL arbitrary_insecure_url(kArbitraryInsecureUrlString);
-  ZeroSuggestEligibility eligibility = ZeroSuggestEligibility::ELIGIBLE;
-  if (!can_send_current_url) {
-    const bool can_send_ordinary_url =
-        CanSendURL(arbitrary_insecure_url, suggest_url, default_provider,
-                   current_page_classification,
-                   template_url_service->search_terms_data(), client, false);
-    eligibility = can_send_ordinary_url
-                      ? ZeroSuggestEligibility::URL_INELIGIBLE
-                      : ZeroSuggestEligibility::GENERALLY_INELIGIBLE;
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      kOmniboxZeroSuggestEligibleHistogramName, static_cast<int>(eligibility),
-      static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
-
-  if (current_page_classification == OmniboxEventProto::CHROMEOS_APP_LIST ||
-      current_page_classification ==
-          OmniboxEventProto::ANDROID_SHORTCUTS_WIDGET) {
-    return REMOTE_NO_URL;
-  }
-
-  // Contextual Open Web - does NOT include Search Results Page.
-  if (current_page_classification == OmniboxEventProto::OTHER &&
-      can_send_current_url) {
-    if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
-        (base::FeatureList::IsEnabled(
-            omnibox::kFocusTriggersContextualWebZeroSuggest))) {
-      return REMOTE_SEND_URL;
-    }
-
-    if (input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
-        base::FeatureList::IsEnabled(
-            omnibox::kClobberTriggersContextualWebZeroSuggest)) {
-      return REMOTE_SEND_URL;
-    }
-  }
-
-  // Search Results page classification only.
-  if (IsSearchResultsPage(current_page_classification) &&
-      can_send_current_url) {
-    if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
-        base::FeatureList::IsEnabled(omnibox::kFocusTriggersSRPZeroSuggest)) {
-      return REMOTE_SEND_URL;
-    }
-
-    if (input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
-        base::FeatureList::IsEnabled(omnibox::kClobberTriggersSRPZeroSuggest)) {
-      return REMOTE_SEND_URL;
-    }
-  }
-
-  // Default to REMOTE_NO_URL on the NTP, if allowed.
-  bool check_authentication_state = !base::FeatureList::IsEnabled(
-      omnibox::kOmniboxTrendingZeroPrefixSuggestionsOnNTP);
-  bool remote_no_url_allowed = RemoteNoUrlSuggestionsAreAllowed(
-      client, template_url_service, check_authentication_state);
-  if (IsNTPPage(current_page_classification) && remote_no_url_allowed) {
-    return REMOTE_NO_URL;
-  }
-
-  return NONE;
 }

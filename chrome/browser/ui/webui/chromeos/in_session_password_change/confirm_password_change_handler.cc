@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/components/login/auth/saml_password_attributes.h"
+#include "ash/components/login/auth/public/saml_password_attributes.h"
 #include "base/check.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
@@ -55,10 +55,10 @@ void ConfirmPasswordChangeHandler::HandleGetInitialState(
     const base::Value::List& params) {
   const std::string callback_id = params[0].GetString();
 
-  base::Value state(base::Value::Type::DICTIONARY);
-  state.SetBoolKey("showOldPasswordPrompt", scraped_old_password_.empty());
-  state.SetBoolKey("showNewPasswordPrompt", scraped_new_password_.empty());
-  state.SetBoolKey("showSpinner", show_spinner_initially_);
+  base::Value::Dict state;
+  state.Set("showOldPasswordPrompt", scraped_old_password_.empty());
+  state.Set("showNewPasswordPrompt", scraped_new_password_.empty());
+  state.Set("showSpinner", show_spinner_initially_);
 
   AllowJavascript();
   ResolveJavascriptCallback(base::Value(callback_id), state);

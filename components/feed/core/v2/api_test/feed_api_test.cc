@@ -906,6 +906,9 @@ std::string FeedApiTest::GetLanguageTag() {
 bool FeedApiTest::IsAutoplayEnabled() {
   return false;
 }
+TabGroupEnabledState FeedApiTest::GetTabGroupEnabledState() {
+  return TabGroupEnabledState::kNone;
+}
 void FeedApiTest::ClearAll() {
   if (on_clear_all_)
     on_clear_all_.Run();
@@ -997,7 +1000,9 @@ std::string FeedApiTest::DumpStoreState(bool print_keys) {
 void FeedApiTest::FollowWebFeed(const WebFeedPageInformation page_info) {
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
   network_.InjectResponse(SuccessfulFollowResponse(page_info.url().host()));
-  stream_->subscriptions().FollowWebFeed(page_info, callback.Bind());
+  stream_->subscriptions().FollowWebFeed(
+      page_info, feedwire::webfeed::WebFeedChangeReason::WEB_PAGE_MENU,
+      callback.Bind());
 
   EXPECT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback.RunAndGetResult().request_status);

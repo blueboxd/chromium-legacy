@@ -24,12 +24,11 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
 
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {getTemplate} from './password_remove_dialog.html.js';
 
 export type PasswordRemoveDialogPasswordsRemovedEvent =
-    CustomEvent<{removedFromAccount: boolean, removedFromDevice: boolean}>;
+    CustomEvent<{removedFromStores: chrome.passwordsPrivate.PasswordStoreSet}>;
 
 declare global {
   interface HTMLElementEventMap {
@@ -86,7 +85,7 @@ export class PasswordRemoveDialogElement extends
     };
   }
 
-  duplicatedPassword: MultiStorePasswordUiEntry;
+  duplicatedPassword: chrome.passwordsPrivate.PasswordUiEntry;
   private removeFromAccountChecked_: boolean;
   private removeFromDeviceChecked_: boolean;
   private accountEmail_: string;
@@ -96,8 +95,9 @@ export class PasswordRemoveDialogElement extends
 
     // At creation time, the password should exist in both locations.
     assert(
-        this.duplicatedPassword.isPresentInAccount() &&
-        this.duplicatedPassword.isPresentOnDevice());
+        this.duplicatedPassword.storedIn ===
+        chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT);
+
     this.$.dialog.showModal();
 
     SyncBrowserProxyImpl.getInstance().getStoredAccounts().then(accounts => {
@@ -121,7 +121,7 @@ export class PasswordRemoveDialogElement extends
       assert(this.removeFromDeviceChecked_);
     }
     PasswordManagerImpl.getInstance().removeSavedPassword(
-        this.duplicatedPassword.getAnyId(), fromStores);
+        this.duplicatedPassword.id, fromStores);
 
     this.$.dialog.close();
     this.dispatchEvent(
@@ -129,8 +129,7 @@ export class PasswordRemoveDialogElement extends
           bubbles: true,
           composed: true,
           detail: {
-            removedFromAccount: this.removeFromAccountChecked_,
-            removedFromDevice: this.removeFromDeviceChecked_,
+            removedFromStores: fromStores,
           },
         }));
   }

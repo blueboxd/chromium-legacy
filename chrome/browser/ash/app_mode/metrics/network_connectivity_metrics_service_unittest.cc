@@ -8,10 +8,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/components/sync_wifi/network_test_helper.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -44,19 +44,9 @@ class NetworkConnectivityMetricsServiceTest : public testing::Test {
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
   absl::optional<int> GetNetworkDropsFromLocalState() {
-    const auto* metrics_value =
-        local_state()->GetDictionary(prefs::kKioskMetrics);
-    if (!metrics_value)
-      return absl::nullopt;
-    const auto* metrics_dict = metrics_value->GetIfDict();
-    if (!metrics_dict)
-      return absl::nullopt;
-    const auto* network_drops_value = metrics_dict->Find(kKioskNetworkDrops);
-    if (!network_drops_value) {
-      return absl::nullopt;
-    }
-
-    return network_drops_value->GetIfInt();
+    return local_state()
+        ->GetValueDict(prefs::kKioskMetrics)
+        .FindInt(kKioskNetworkDrops);
   }
 
   void SimulateConnectionFailure(const NetworkState* network,

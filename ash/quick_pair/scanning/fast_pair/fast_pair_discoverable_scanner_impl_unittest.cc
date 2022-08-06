@@ -30,9 +30,9 @@
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -173,7 +173,7 @@ class FastPairDiscoverableScannerImplTest : public testing::Test {
 
   FakeQuickPairProcessManager* fake_process_manager_;
   base::test::SingleThreadTaskEnvironment task_enviornment_;
-  chromeos::NetworkStateTestHelper helper_{/*use_defaults=*/true};
+  NetworkStateTestHelper helper_{/*use_default_devices_and_services=*/true};
   scoped_refptr<FakeFastPairScanner> scanner_;
   std::unique_ptr<FakeFastPairRepository> repository_;
   std::unique_ptr<FastPairDiscoverableScannerImpl> discoverable_scanner_;

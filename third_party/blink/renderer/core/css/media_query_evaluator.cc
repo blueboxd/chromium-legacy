@@ -134,7 +134,7 @@ bool MediaQueryEvaluator::MediaTypeMatch(
 static bool ApplyRestrictor(MediaQuery::RestrictorType r, KleeneValue value) {
   if (value == KleeneValue::kUnknown)
     return false;
-  if (r == MediaQuery::kNot)
+  if (r == MediaQuery::RestrictorType::kNot)
     return value == KleeneValue::kFalse;
   return value == KleeneValue::kTrue;
 }
@@ -368,6 +368,10 @@ static bool DisplayModeMediaFeatureEval(const MediaQueryExpValue& value,
       return mode == blink::mojom::DisplayMode::kMinimalUi;
     case CSSValueID::kBrowser:
       return mode == blink::mojom::DisplayMode::kBrowser;
+    case CSSValueID::kWindowControlsOverlay:
+      return mode == blink::mojom::DisplayMode::kWindowControlsOverlay;
+    case CSSValueID::kBorderless:
+      return mode == blink::mojom::DisplayMode::kBorderless;
     default:
       NOTREACHED();
       return false;

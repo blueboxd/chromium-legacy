@@ -41,7 +41,7 @@ function getContextMenuPosition(element: Element): {x: number, y: number} {
   const rect = element.getBoundingClientRect();
   return {
     x: rect.left + TOUCH_CONTEXT_MENU_OFFSET_X,
-    y: rect.bottom + TOUCH_CONTEXT_MENU_OFFSET_Y
+    y: rect.bottom + TOUCH_CONTEXT_MENU_OFFSET_Y,
   };
 }
 
@@ -777,7 +777,11 @@ export class TabListElement extends CustomElement implements
   }
 
   shouldPreventDrag(): boolean {
-    return this.$all('tabstrip-tab').length === 1;
+    // Do not allow dragging if there's only 1 tab with no tab group, or only 1
+    // tab group with no other tabs outside of the tab group.
+    return (this.pinnedTabsElement_.childElementCount +
+        this.unpinnedTabsElement_.childElementCount) ===
+        1;
   }
 
   private tabThumbnailUpdated_(tabId: number, imgData: string) {

@@ -67,6 +67,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/webui/resources/js/browser_command/browser_command.mojom.h"
 
 namespace {
 
@@ -148,7 +149,6 @@ new_tab_page::mojom::ThemePtr MakeTheme(
       ntp_custom_background_service
           ? ntp_custom_background_service->GetCustomBackground()
           : absl::nullopt;
-  theme->is_default = theme_service->UsingDefaultTheme();
   theme->background_color = color_provider.GetColor(kColorNewTabPageBackground);
   SkColor text_color;
   if (custom_background.has_value()) {
@@ -260,9 +260,9 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   theme->most_visited = std::move(most_visited);
 
   auto search_box = realbox::mojom::SearchBoxTheme::New();
-  search_box->bg = color_provider.GetColor(kColorOmniboxBackground);
+  search_box->bg = color_provider.GetColor(kColorNewTabPageSearchBoxBackground);
   search_box->bg_hovered =
-      color_provider.GetColor(kColorOmniboxBackgroundHovered);
+      color_provider.GetColor(kColorNewTabPageSearchBoxBackgroundHovered);
   search_box->border_color =
       webui::GetNativeTheme(web_contents)->UserHasContrastPreference()
           ? color_provider.GetColor(kColorLocationBarBorder)
@@ -615,10 +615,22 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
 }
 
 void NewTabPageHandler::GetPromo(GetPromoCallback callback) {
+  std::string command_id;
   // Replace the promo URL with "command:<id>" if such a command ID is set
   // via the feature params.
-  const std::string command_id = base::GetFieldTrialParamValueByFeature(
-      features::kPromoBrowserCommands, features::kBrowserCommandIdParam);
+  // If fake data is being used, we set the command_id to 7, which corresponds
+  // to kNoOpCommand in
+  // ui/webui/resources/js/browser_command/browser_command.mojom
+  if (base::GetFieldTrialParamValueByFeature(
+          ntp_features::kNtpMiddleSlotPromoDismissal,
+          ntp_features::kNtpMiddleSlotPromoDismissalParam) == "fake") {
+    command_id = base::NumberToString(
+        static_cast<int>(browser_command::mojom::Command::kNoOpCommand));
+  } else {
+    command_id = base::GetFieldTrialParamValueByFeature(
+        features::kPromoBrowserCommands, features::kBrowserCommandIdParam);
+  }
+
   if (!command_id.empty()) {
     auto promo = new_tab_page::mojom::Promo::New();
     std::vector<new_tab_page::mojom::PromoPartPtr> parts;
@@ -637,6 +649,7 @@ void NewTabPageHandler::GetPromo(GetPromoCallback callback) {
     link->text = "Test command: " + command_id;
     parts.push_back(new_tab_page::mojom::PromoPart::NewLink(std::move(link)));
     promo->middle_slot_parts = std::move(parts);
+    promo->id = "test" + command_id;
     std::move(callback).Run(std::move(promo));
     return;
   }
@@ -647,6 +660,14 @@ void NewTabPageHandler::GetPromo(GetPromoCallback callback) {
   }
   promo_load_start_time_ = base::TimeTicks::Now();
   promo_service_->Refresh();
+}
+
+void NewTabPageHandler::BlocklistPromo(const std::string& promo_id) {
+  promo_service_->BlocklistPromo(promo_id);
+}
+
+void NewTabPageHandler::UndoBlocklistPromo(const std::string& promo_id) {
+  promo_service_->UndoBlocklistPromo(promo_id);
 }
 
 void NewTabPageHandler::OnDismissModule(const std::string& module_id) {
@@ -684,9 +705,9 @@ void NewTabPageHandler::UpdateDisabledModules() {
   // If the module visibility is managed by policy we either disable all modules
   // (if invisible) or no modules (if visible).
   if (!profile_->GetPrefs()->IsManagedPreference(prefs::kNtpModulesVisible)) {
-    const auto* module_ids_value =
-        profile_->GetPrefs()->GetList(prefs::kNtpDisabledModules);
-    for (const auto& id : module_ids_value->GetListDeprecated()) {
+    const auto& module_ids_value =
+        profile_->GetPrefs()->GetValueList(prefs::kNtpDisabledModules);
+    for (const auto& id : module_ids_value) {
       module_ids.push_back(id.GetString());
     }
   }
@@ -717,9 +738,9 @@ void NewTabPageHandler::GetModulesOrder(GetModulesOrderCallback callback) {
 
   // First, apply order as set by the last drag&drop interaction.
   if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop)) {
-    const auto* module_ids_value =
-        profile_->GetPrefs()->GetList(prefs::kNtpModulesOrder);
-    for (const auto& id : module_ids_value->GetListDeprecated()) {
+    const auto& module_ids_value =
+        profile_->GetPrefs()->GetValueList(prefs::kNtpModulesOrder);
+    for (const auto& id : module_ids_value) {
       module_ids.push_back(id.GetString());
     }
   }

@@ -82,9 +82,15 @@ WebUIDataSource* CreateGpuHTMLSource() {
   source->UseStringsJs();
   source->AddResourcePath("browser_bridge.js", IDR_GPU_BROWSER_BRIDGE_JS);
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
+  source->AddResourcePath("info_view.html.js",
+                          IDR_GPU_INTERNALS_INFO_VIEW_HTML_JS);
   source->AddResourcePath("info_view.js", IDR_GPU_INTERNALS_INFO_VIEW_JS);
+  source->AddResourcePath("info_view_table.html.js",
+                          IDR_GPU_INTERNALS_INFO_VIEW_TABLE_HTML_JS);
   source->AddResourcePath("info_view_table.js",
                           IDR_GPU_INTERNALS_INFO_VIEW_TABLE_JS);
+  source->AddResourcePath("info_view_table_row.html.js",
+                          IDR_GPU_INTERNALS_INFO_VIEW_TABLE_ROW_HTML_JS);
   source->AddResourcePath("info_view_table_row.js",
                           IDR_GPU_INTERNALS_INFO_VIEW_TABLE_ROW_JS);
   source->AddResourcePath("vulkan_info.js", IDR_GPU_VULKAN_INFO_JS);
@@ -258,7 +264,7 @@ base::Value::List GetBasicGpuInfo(const gpu::GPUInfo& gpu_info,
       "Window system binding extensions", gpu_info.gl_ws_extensions));
 
   {
-    base::Value::DeprecatedListStorage gpu_extra_info_values =
+    base::Value::List gpu_extra_info_values =
         display::Screen::GetScreen()->GetGpuExtraInfo(gpu_extra_info);
     for (auto& pair : gpu_extra_info_values) {
       if (!pair.GetDict().FindString("description") ||
@@ -894,7 +900,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunctionUnsafe("browserBridge.onGpuInfoUpdate",
-                                         base::Value(std::move(gpu_info_val)));
+                                         std::move(gpu_info_val));
 }
 
 void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {

@@ -111,11 +111,10 @@ public class InterceptNavigationDelegateTest {
                     new InterceptNavigationDelegateClientImpl(tab);
             InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(client) {
                 @Override
-                public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle,
-                        GURL escapedUrl, boolean applyUserGestureCarryover) {
+                public boolean shouldIgnoreNavigation(
+                        NavigationHandle navigationHandle, GURL escapedUrl) {
                     mNavParamHistory.add(navigationHandle);
-                    return super.shouldIgnoreNavigation(
-                            navigationHandle, escapedUrl, applyUserGestureCarryover);
+                    return super.shouldIgnoreNavigation(navigationHandle, escapedUrl);
                 }
             };
             client.initializeWithDelegate(delegate);
@@ -212,8 +211,6 @@ public class InterceptNavigationDelegateTest {
 
         Assert.assertTrue(mNavParamHistory.get(2).isExternalProtocol());
         Assert.assertFalse(mNavParamHistory.get(2).isInPrimaryMainFrame());
-        Assert.assertTrue(
-                mExternalNavParamHistory.get(2).getRedirectHandler().shouldStayInApp(true, false));
     }
 
     @Test

@@ -26,7 +26,6 @@ class Transform;
 class GEOMETRY_SKIA_EXPORT LinearGradient {
  public:
   struct Step {
-    constexpr Step() = default;
     // Percent that defines a position in diagonal, from 0 to 100.
     float percent = 0;
     // Alpha, from 0 to 255.
@@ -54,9 +53,9 @@ class GEOMETRY_SKIA_EXPORT LinearGradient {
 
   // Gets/Sets an angle (in degrees).
   int16_t angle() const { return angle_; }
-  void set_angle(int16_t degree) { angle_ = degree % 360; }
+  void set_angle(int16_t degree) { angle_ = degree; }
 
-  // Reverse the step 180 degree.
+  // Reverse the steps.
   void ReverseSteps();
 
   // Transform the angle.

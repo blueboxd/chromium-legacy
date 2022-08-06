@@ -81,9 +81,8 @@ NonMainThreadSchedulerImpl::GetCurrentAgentGroupScheduler() {
   return nullptr;
 }
 
-std::unique_ptr<NonMainThreadSchedulerImpl::RendererPauseHandle>
-NonMainThreadSchedulerImpl::PauseScheduler() {
-  return nullptr;
+void NonMainThreadSchedulerImpl::SetV8Isolate(v8::Isolate* isolate) {
+  ThreadSchedulerBase::SetV8Isolate(isolate);
 }
 
 base::TimeTicks
@@ -103,7 +102,8 @@ const base::TickClock* NonMainThreadSchedulerImpl::GetTickClock() const {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 NonMainThreadSchedulerImpl::DeprecatedDefaultTaskRunner() {
-  return DefaultTaskRunner();
+  NOTREACHED();
+  return nullptr;
 }
 
 void NonMainThreadSchedulerImpl::AttachToCurrentThread() {

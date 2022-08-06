@@ -145,6 +145,17 @@ void FrameWidgetInputHandlerImpl::SetEditableSelectionOffsets(int32_t start,
       widget_, main_thread_frame_widget_input_handler_, start, end));
 }
 
+void FrameWidgetInputHandlerImpl::HandleStylusWritingGestureAction(
+    mojom::blink::StylusWritingGestureDataPtr gesture_data) {
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<mojom::blink::FrameWidgetInputHandler> handler,
+         mojom::blink::StylusWritingGestureDataPtr gesture_data) {
+        if (handler)
+          handler->HandleStylusWritingGestureAction(std::move(gesture_data));
+      },
+      main_thread_frame_widget_input_handler_, std::move(gesture_data)));
+}
+
 void FrameWidgetInputHandlerImpl::ExecuteEditCommand(const String& command,
                                                      const String& value) {
   RunOnMainThread(base::BindOnce(
@@ -153,8 +164,7 @@ void FrameWidgetInputHandlerImpl::ExecuteEditCommand(const String& command,
         if (handler)
           handler->ExecuteEditCommand(command, value);
       },
-      main_thread_frame_widget_input_handler_, command.IsolatedCopy(),
-      value.IsolatedCopy()));
+      main_thread_frame_widget_input_handler_, command, value));
 }
 
 void FrameWidgetInputHandlerImpl::Undo() {
@@ -213,7 +223,7 @@ void FrameWidgetInputHandlerImpl::Replace(const String& word) {
         if (handler)
           handler->Replace(word);
       },
-      main_thread_frame_widget_input_handler_, word.IsolatedCopy()));
+      main_thread_frame_widget_input_handler_, word));
 }
 
 void FrameWidgetInputHandlerImpl::ReplaceMisspelling(const String& word) {
@@ -223,7 +233,7 @@ void FrameWidgetInputHandlerImpl::ReplaceMisspelling(const String& word) {
         if (handler)
           handler->ReplaceMisspelling(word);
       },
-      main_thread_frame_widget_input_handler_, word.IsolatedCopy()));
+      main_thread_frame_widget_input_handler_, word));
 }
 
 void FrameWidgetInputHandlerImpl::Delete() {

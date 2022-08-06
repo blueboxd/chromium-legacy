@@ -69,6 +69,7 @@ ChromeVoxKeySequenceUnitTest = class extends AccessibilityTestBase {
   async setUpDeferred() {
     await super.setUpDeferred();
     await importModule('KeySequence', '/chromevox/common/key_sequence.js');
+    await importModule('KeyCode', '/common/key_code.js');
 
     // Set up mock ChromeVox modifier
     KeySequence.modKeyStr = 'Alt';
@@ -153,8 +154,6 @@ ChromeVoxKeySequenceUnitTest = class extends AccessibilityTestBase {
 ChromeVoxKeySequenceUnitTest.prototype.extraLibraries = [
   '../../common/testing/assert_additions.js',
   '../../common/closure_shim.js',
-  '../../common/key_code.js',
-  '../background/chromevox.js',
   '../testing/fake_dom.js',
 ];
 
@@ -442,8 +441,8 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'Deserialize', function() {
       'altGraphKey': [false],
       'shiftKey': [false],
       'metaKey': [false],
-      'keyCode': [KeyCode.DOWN]
-    }
+      'keyCode': [KeyCode.DOWN],
+    },
   });
   assertTrue(forwardSequence.cvoxModifier);
   assertEqualsJSON(forwardSequence.keys.keyCode, [KeyCode.DOWN]);
@@ -459,8 +458,8 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'Deserialize', function() {
       'altGraphKey': [false],
       'shiftKey': [false],
       'metaKey': [false],
-      'keyCode': [KeyCode.CONTROL]
-    }
+      'keyCode': [KeyCode.CONTROL],
+    },
   });
   assertEqualsJSON(ctrlSequence.keys.ctrlKey, [true]);
   assertEqualsJSON(ctrlSequence.keys.keyCode, [KeyCode.CONTROL]);

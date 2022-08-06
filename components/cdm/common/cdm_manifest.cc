@@ -178,7 +178,7 @@ bool GetEncryptionSchemes(
 // Returns true and updates |audio_codecs| with the full set of audio
 // codecs that support decryption.
 bool GetAudioCodecs(const base::Value& manifest,
-                    std::vector<media::AudioCodec>* audio_codecs) {
+                    base::flat_set<media::AudioCodec>* audio_codecs) {
   DCHECK(manifest.is_dict());
   DCHECK(audio_codecs);
 
@@ -229,7 +229,7 @@ bool GetVideoCodecs(const base::Value& manifest,
   // As the manifest string does not include profiles, specify {} to indicate
   // that all relevant profiles should be considered supported.
   media::CdmCapability::VideoCodecMap result;
-  const std::vector<media::VideoCodecProfile> kAllProfiles = {};
+  const media::VideoCodecInfo kAllProfiles;
   for (const auto& codec : supported_codecs) {
     if (codec == kCdmSupportedCodecVp8) {
       result.emplace(media::VideoCodec::kVP8, kAllProfiles);

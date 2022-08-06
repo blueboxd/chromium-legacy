@@ -115,7 +115,7 @@ class GuestOsMountProviderInner : public CachedCallback<ScopedVolume, bool> {
     std::string source_path = base::StringPrintf("sftp://%d:%d", cid, port);
 
     dmgr->MountPath(source_path, "", mount_label_, {},
-                    chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                    ash::MountType::kNetworkStorage,
                     chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
                     base::BindOnce(&GuestOsMountProviderInner::OnMountEvent,
                                    weak_ptr_factory_.GetWeakPtr(),
@@ -124,13 +124,13 @@ class GuestOsMountProviderInner : public CachedCallback<ScopedVolume, bool> {
   void OnMountEvent(
       RealCallback callback,
       base::FilePath remote_path,
-      chromeos::MountError error_code,
+      ash::MountError error_code,
       const ash::disks::DiskMountManager::MountPointInfo& mount_info) {
-    if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
+    if (error_code != ash::MountError::kNone) {
       LOG(ERROR) << "Error mounting Guest OS container: error_code="
                  << error_code << ", source_path=" << mount_info.source_path
                  << ", mount_path=" << mount_info.mount_path
-                 << ", mount_type=" << mount_info.mount_type
+                 << ", mount_type=" << static_cast<int>(mount_info.mount_type)
                  << ", mount_condition=" << mount_info.mount_condition;
       std::move(callback).Run(Failure(false));
       return;

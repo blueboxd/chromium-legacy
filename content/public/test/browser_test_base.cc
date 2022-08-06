@@ -81,6 +81,7 @@
 #include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/tracing/public/cpp/trace_startup.h"
@@ -601,8 +602,8 @@ void BrowserTestBase::SetUp() {
   // The delegate should have been set by JNI_OnLoad for the test target.
   DCHECK(delegate);
 
-  bool startup_error = delegate->BasicStartupComplete(/*exit_code=*/nullptr);
-  DCHECK(!startup_error);
+  absl::optional<int> startup_error = delegate->BasicStartupComplete();
+  ASSERT_FALSE(startup_error.has_value());
 
   InitializeMojo();
 
@@ -627,7 +628,9 @@ void BrowserTestBase::SetUp() {
 
     base::ThreadPoolInstance::Create("Browser");
 
-    delegate->PreBrowserMain();
+    absl::optional<int> pre_browser_main_exit_code = delegate->PreBrowserMain();
+    ASSERT_FALSE(pre_browser_main_exit_code.has_value());
+
     BrowserTaskExecutor::Create();
 
     auto* provider = delegate->CreateVariationsIdsProvider();
@@ -636,7 +639,9 @@ void BrowserTestBase::SetUp() {
           variations::VariationsIdsProvider::Mode::kUseSignedInState);
     }
 
-    delegate->PostEarlyInitialization(invoked_in_browser);
+    absl::optional<int> post_early_initialization_exit_code =
+        delegate->PostEarlyInitialization(invoked_in_browser);
+    ASSERT_FALSE(post_early_initialization_exit_code.has_value());
 
     StartBrowserThreadPool();
     BrowserTaskExecutor::PostFeatureListSetup();
@@ -1021,10 +1026,27 @@ void BrowserTestBase::InitializeNetworkProcess() {
   // pick up the host resolver rules, but it will not automatically see
   // `replace_system_dns_config_` and `test_doh_config_`.
   //
-  // TODO(https://crbug.com/1295732) Always send `replace_system_dns_config_`
-  // and `test_doh_config_` to the network process, regardless of where it's
-  // running.
+  // TODO(https://crbug.com/1295732): Can the Mojo interface also be used in
+  // this case?
   if (IsInProcessNetworkService()) {
+    if (replace_system_dns_config_ || test_doh_config_) {
+      base::RunLoop run_loop;
+      content::GetNetworkTaskRunner()->PostTaskAndReply(
+          FROM_HERE, base::BindLambdaForTesting([&] {
+            network::NetworkService* network_service =
+                network::NetworkService::GetNetworkServiceForTesting();
+            ASSERT_TRUE(network_service);
+            if (replace_system_dns_config_) {
+              network_service->ReplaceSystemDnsConfigForTesting();
+            }
+            if (test_doh_config_) {
+              network_service->SetTestDohConfigForTesting(
+                  test_doh_config_->first, test_doh_config_->second);
+            }
+          }),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
     return;
   }
 

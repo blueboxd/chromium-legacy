@@ -270,9 +270,16 @@ export class PrefsManager {
     const updatePrefs = () => {
       chrome.storage.sync.get(
           [
-            'voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor',
-            'backgroundShading', 'navigationControls', 'enhancedNetworkVoices',
-            'enhancedVoicesDialogShown', 'enhancedVoiceName'
+            'voice',
+            'rate',
+            'pitch',
+            'wordHighlight',
+            'highlightColor',
+            'backgroundShading',
+            'navigationControls',
+            'enhancedNetworkVoices',
+            'enhancedVoicesDialogShown',
+            'enhancedVoiceName',
           ],
           prefs => {
             if (prefs['voice']) {
@@ -311,17 +318,15 @@ export class PrefsManager {
                   prefs['enhancedNetworkVoices'];
             } else {
               chrome.storage.sync.set({
-                'enhancedNetworkVoices': this.enhancedNetworkVoicesEnabled_
+                'enhancedNetworkVoices': this.enhancedNetworkVoicesEnabled_,
               });
             }
-            // Tests can set |this.enhancedVoicesDialogShown_|.
-            if (!this.enhancedVoicesDialogShown_ &&
-                prefs['enhancedVoicesDialogShown'] !== undefined) {
+            if (prefs['enhancedVoicesDialogShown'] !== undefined) {
               this.enhancedVoicesDialogShown_ =
                   prefs['enhancedVoicesDialogShown'];
             } else {
               chrome.storage.sync.set({
-                'enhancedVoicesDialogShown': this.enhancedVoicesDialogShown_
+                'enhancedVoicesDialogShown': this.enhancedVoicesDialogShown_,
               });
             }
             if (prefs['rate'] && prefs['pitch']) {

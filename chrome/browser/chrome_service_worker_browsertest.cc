@@ -187,7 +187,6 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
 
   void TestStartServiceWorkerAndDispatchMessage(const char* test_script) {
     base::RunLoop run_loop;
-    blink::TransferableMessage msg;
     const std::u16string message_data = u"testMessage";
 
     WriteFile(FILE_PATH_LITERAL("sw.js"), "self.onfetch = function(e) {};");
@@ -195,8 +194,8 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
 
     InitializeServer();
     NavigateToPageAndWaitForReadyTitle("/test.html");
-    msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
-    msg.encoded_message = msg.owned_encoded_message;
+    blink::TransferableMessage msg =
+        blink::EncodeWebMessagePayload(message_data);
 
     GURL url = embedded_test_server()->GetURL("/scope/");
     GetServiceWorkerContext()->StartServiceWorkerAndDispatchMessage(
@@ -842,8 +841,8 @@ class StaticURLDataSource : public content::URLDataSource {
     std::string data;
     std::move(callback).Run(base::RefCountedString::TakeString(&data));
   }
-  std::string GetMimeType(const std::string& path) override {
-    if (path == "sw.js")
+  std::string GetMimeType(const GURL& url) override {
+    if (url.ExtractFileName() == "sw.js")
       return "application/javascript";
     return "text/html";
   }

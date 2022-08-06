@@ -17,11 +17,11 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
 #include "base/task/current_thread.h"
+#include "components/cast/message_port/fuchsia/create_web_message.h"
 #include "components/cast/message_port/fuchsia/message_port_fuchsia.h"
 #include "components/cast/message_port/platform_message_port.h"
 #include "fuchsia_web/runners/cast/cast_runner.h"
 #include "fuchsia_web/runners/cast/cast_streaming.h"
-#include "fuchsia_web/runners/cast/create_web_message.h"
 #include "fuchsia_web/runners/cast/fidl/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia_web/runners/common/modular/agent_manager.h"
 #include "fuchsia_web/runners/common/web_component.h"
@@ -104,12 +104,14 @@ void CastComponent::ConnectMetricsRecorder(
 
 void CastComponent::ConnectAudio(
     fidl::InterfaceRequest<fuchsia::media::Audio> request) {
-  startup_context()->svc()->Connect(std::move(request));
+  agent_manager_->ConnectToAgentService(application_config_.agent_url(),
+                                        std::move(request));
 }
 
 void CastComponent::ConnectDeviceWatcher(
     fidl::InterfaceRequest<fuchsia::camera3::DeviceWatcher> request) {
-  startup_context()->svc()->Connect(std::move(request));
+  agent_manager_->ConnectToAgentService(application_config_.agent_url(),
+                                        std::move(request));
 }
 
 bool CastComponent::HasWebPermission(

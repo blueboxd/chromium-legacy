@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "gtest/gtest.h"
 
 #include "puffin/memory_stream.h"
@@ -24,6 +26,12 @@ using std::vector;
 namespace puffin {
 
 namespace {
+
+base::FilePath out_test_file(const char* file) {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &path);
+  return path.AppendASCII(file);
+}
 
 #if PRINT_SAMPLE
 // Print an array into hex-format to the output. This can be used to create
@@ -117,8 +125,9 @@ void TestPatching(const Buffer& src_buf,
   auto src_stream = MemoryStream::CreateForRead(src_buf);
   Buffer dst_buf_out(dst_buf.size());
   auto dst_stream = MemoryStream::CreateForWrite(&dst_buf_out);
-  ASSERT_TRUE(PuffPatch(std::move(src_stream), std::move(dst_stream),
-                        patch.data(), patch.size()));
+  ASSERT_EQ(PuffPatch(std::move(src_stream), std::move(dst_stream),
+                      patch.data(), patch.size()),
+            Status::P_OK);
   EXPECT_EQ(dst_buf_out, dst_buf);
 }
 
@@ -137,6 +146,29 @@ TEST(PatchingTest, Patching2To1Test) {
 TEST(PatchingTest, Patching1ToNoDeflateTest) {
   TestPatching(kDeflatesSample1, {11, 22, 33, 44},
                kSubblockDeflateExtentsSample1, {}, kPatch1ToNoDeflate);
+}
+
+TEST(PatchingTest, ApplyPuffPatchTest) {
+  ASSERT_EQ(ApplyPuffPatch(out_test_file("puffin_app_v1.crx3"),
+                           out_test_file("puffin_app_v1_to_v2.puff"),
+                           out_test_file("puffin_app_v1_to_v2.crx3")),
+            Status::P_OK);
+  std::string expected, actual;
+  ASSERT_TRUE(
+      base::ReadFileToString(out_test_file("puffin_app_v2.crx3"), &expected));
+  ASSERT_TRUE(base::ReadFileToString(out_test_file("puffin_app_v1_to_v2.crx3"),
+                                     &actual));
+  ASSERT_EQ(expected.compare(actual), 0);
+
+  ASSERT_EQ(ApplyPuffPatch(out_test_file("puffin_app_v2.crx3"),
+                           out_test_file("puffin_app_v2_to_v1.puff"),
+                           out_test_file("puffin_app_v2_to_v1.crx3")),
+            Status::P_OK);
+  ASSERT_TRUE(
+      base::ReadFileToString(out_test_file("puffin_app_v1.crx3"), &expected));
+  ASSERT_TRUE(base::ReadFileToString(out_test_file("puffin_app_v2_to_v1.crx3"),
+                                     &actual));
+  ASSERT_EQ(expected.compare(actual), 0);
 }
 
 // TODO(ahassani): add tests for:

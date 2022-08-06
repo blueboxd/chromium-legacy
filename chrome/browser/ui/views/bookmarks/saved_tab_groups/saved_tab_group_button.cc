@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_button_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/saved_tab_groups/saved_tab_group.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -48,12 +48,11 @@ SavedTabGroupButton::SavedTabGroupButton(
     const SavedTabGroup& group,
     base::RepeatingCallback<content::PageNavigator*()> page_navigator,
     PressedCallback callback,
-    bool is_group_in_tabstrip,
     bool animations_enabled)
-    : MenuButton(std::move(callback), group.title),
-      tab_group_color_id_(group.color),
-      is_group_in_tabstrip_(is_group_in_tabstrip),
-      tabs_(group.saved_tabs),
+    : MenuButton(std::move(callback), group.title()),
+      tab_group_color_id_(group.color()),
+      is_group_in_tabstrip_(group.tab_group_id().has_value()),
+      tabs_(group.saved_tabs()),
       page_navigator_callback_(std::move(page_navigator)),
       context_menu_controller_(
           this,
@@ -61,8 +60,8 @@ SavedTabGroupButton::SavedTabGroupButton(
               &SavedTabGroupButton::CreateDialogModelForContextMenu,
               base::Unretained(this)),
           views::MenuRunner::CONTEXT_MENU | views::MenuRunner::IS_NESTED) {
-  SetText(group.title);
-  SetAccessibleName(group.title);
+  SetText(group.title());
+  SetAccessibleName(group.title());
   SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
 
   // Since the theme provider is not currently available when instantiated the
@@ -187,21 +186,13 @@ void SavedTabGroupButton::OnThemeChanged() {
   }
 }
 
-void SavedTabGroupButton::RemoveButtonOutline() {
-  is_group_in_tabstrip_ = false;
-}
-
-bool SavedTabGroupButton::HasButtonOutline() const {
-  return is_group_in_tabstrip_;
-}
-
 std::unique_ptr<ui::DialogModel>
 SavedTabGroupButton::CreateDialogModelForContextMenu() {
   ui::DialogModel::Builder dialog_model = ui::DialogModel::Builder();
 
   for (const SavedTabGroupTab& tab : tabs_) {
     dialog_model.AddMenuItem(
-        ui::ImageModel::FromImage(tab.favicon), tab.tab_title,
+        ui::ImageModel::FromImage(tab.favicon()), tab.title(),
         base::BindRepeating(
             [](GURL url,
                base::RepeatingCallback<content::PageNavigator*()>
@@ -215,7 +206,7 @@ SavedTabGroupButton::CreateDialogModelForContextMenu() {
                   /*started_from_context_menu=*/true);
               page_navigator_callback.Run()->OpenURL(params);
             },
-            tab.url, page_navigator_callback_));
+            tab.url(), page_navigator_callback_));
   }
 
   return dialog_model.Build();

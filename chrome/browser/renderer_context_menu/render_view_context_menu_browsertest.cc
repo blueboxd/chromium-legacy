@@ -439,8 +439,8 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     // Prepare to load a pdf plugin inside.
-    test_guest_view_manager_->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-        base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+    TestMimeHandlerViewGuest::RegisterTestGuestViewType(
+        test_guest_view_manager_);
     ASSERT_TRUE(
         content::ExecuteScript(web_contents,
                                "var l = document.getElementById('link1');"
@@ -448,7 +448,7 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
 
     // Wait for the guest contents of the PDF plugin is created.
     WebContents* guest_contents =
-        test_guest_view_manager_->WaitForSingleGuestCreated();
+        test_guest_view_manager_->DeprecatedWaitForSingleGuestCreated();
     TestMimeHandlerViewGuest* guest = static_cast<TestMimeHandlerViewGuest*>(
         extensions::MimeHandlerViewGuest::FromWebContents(guest_contents));
     ASSERT_TRUE(guest);
@@ -1440,11 +1440,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
     ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
     // As soon as at least three profiles exist, we show all profiles in a
     // submenu.
-    ui::MenuModel* model = NULL;
-    int index = -1;
+    ui::MenuModel* model = nullptr;
+    size_t index = 0;
     ASSERT_TRUE(menu->GetMenuModelAndItemIndex(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                                &model, &index));
-    ASSERT_EQ(2, model->GetItemCount());
+    ASSERT_EQ(2u, model->GetItemCount());
     ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                             IDC_OPEN_LINK_IN_PROFILE_LAST));
   }
@@ -1508,11 +1508,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
       CreateContextMenuMediaTypeNone(url, url));
 
   // Verify that the size of the menu is correct.
-  ui::MenuModel* model = NULL;
-  int index = -1;
+  ui::MenuModel* model = nullptr;
+  size_t index = 0;
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                              &model, &index));
-  ASSERT_EQ(static_cast<int>(profiles_in_menu.size()), model->GetItemCount());
+  ASSERT_EQ(profiles_in_menu.size(), model->GetItemCount());
 
   // Open the menu items. They should match their corresponding profiles in
   // |profiles_in_menu|.
@@ -1572,7 +1572,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenProfileNoneReferrer) {
 
   // Verify that the Open in Profile option is shown.
   ui::MenuModel* model = nullptr;
-  int index;
+  size_t index = 0;
   ASSERT_TRUE(menu.GetMenuModelAndItemIndex(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                             &model, &index));
 
@@ -2024,8 +2024,13 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
   base::RepeatingClosure quit_closure_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel DISABLED_LensRegionSearchWithValidRegionUnifiedSidePanel
+#else
+#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel LensRegionSearchWithValidRegionUnifiedSidePanel
+#endif
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
-                       LensRegionSearchWithValidRegionUnifiedSidePanel) {
+                       MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel) {
   lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
   SetupAndLoadPage("/empty.html");
   // We need a base::RunLoop to ensure that our test does not finish until the
@@ -2188,15 +2193,8 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   ASSERT_TRUE(response_received);
 }
 
-// Flaky on Linux and LaCros. http://crbug.com/1234671
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_LensImageSearchWithValidImage \
-  DISABLED_LensImageSearchWithValidImage
-#else
-#define MAYBE_LensImageSearchWithValidImage LensImageSearchWithValidImage
-#endif
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
-                       MAYBE_LensImageSearchWithValidImage) {
+                       LensImageSearchWithValidImage) {
   SetupAndLoadValidImagePage();
 
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
@@ -2641,10 +2639,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuWithProfileLinksBrowserTest,
     ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
     // With at least two secondary profiles, they are displayed in a submenu.
     ui::MenuModel* model = nullptr;
-    int index = -1;
+    size_t index = 0;
     ASSERT_TRUE(menu->GetMenuModelAndItemIndex(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                                &model, &index));
-    ASSERT_EQ(2, model->GetItemCount());
+    ASSERT_EQ(2u, model->GetItemCount());
     ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
                                             IDC_OPEN_LINK_IN_PROFILE_LAST));
   }

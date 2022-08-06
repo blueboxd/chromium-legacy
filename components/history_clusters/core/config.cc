@@ -44,6 +44,18 @@ Config::Config() {
       internal::kJourneys, "JourneysPersistClustersInHistoryDb",
       persist_clusters_in_history_db);
 
+  persist_clusters_in_history_db_after_startup_delay_minutes =
+      base::GetFieldTrialParamByFeatureAsInt(
+          internal::kJourneys,
+          "JourneysPersistClustersInHistoryDbAfterStartupDelayMinutes",
+          persist_clusters_in_history_db_after_startup_delay_minutes);
+
+  persist_clusters_in_history_db_period_minutes =
+      base::GetFieldTrialParamByFeatureAsInt(
+          internal::kJourneys,
+          "JourneysPersistClustersInHistoryDbPeriodMinutes",
+          persist_clusters_in_history_db_period_minutes);
+
   min_score_to_always_show_above_the_fold =
       base::GetFieldTrialParamByFeatureAsDouble(
           internal::kJourneys, "JourneysMinScoreToAlwaysShowAboveTheFold",
@@ -288,6 +300,22 @@ Config::~Config() = default;
 
 void SetConfigForTesting(const Config& config) {
   GetConfigInternal() = config;
+}
+
+base::flat_set<std::string> JourneysMidBlocklist() {
+  const base::FeatureParam<std::string> kJourneysMidBlocklist{
+      &internal::kHistoryClustersKeywordFiltering, "JourneysMidBlocklist", ""};
+  std::string blocklist_string = kJourneysMidBlocklist.Get();
+  if (blocklist_string.empty())
+    return {};
+
+  auto blocklist = base::SplitString(blocklist_string, ",",
+                                     base::WhitespaceHandling::TRIM_WHITESPACE,
+                                     base::SplitResult::SPLIT_WANT_NONEMPTY);
+
+  return blocklist.empty()
+             ? base::flat_set<std::string>()
+             : base::flat_set<std::string>(blocklist.begin(), blocklist.end());
 }
 
 bool IsApplicationLocaleSupportedByJourneys(

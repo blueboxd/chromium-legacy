@@ -1072,7 +1072,7 @@ TEST_F(RenderTextTest, SelectWithTranslucentBackground) {
       SkImageInfo::MakeN32Premul(kCanvasSize.width(), kCanvasSize.height()));
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   Canvas canvas(&paint_canvas, 1.0f);
-  paint_canvas.clear(SK_ColorWHITE);
+  paint_canvas.clear(SkColors::kWhite);
 
   SetGlyphWidth(kGlyphWidth);
   RenderText* render_text = GetRenderText();
@@ -1322,7 +1322,7 @@ TEST_F(RenderTextTest, RevealObscuredText) {
             render_text->GetDisplayText());
 
   // Invalid reveal index.
-  render_text->RenderText::SetObscuredRevealIndex(-1);
+  render_text->RenderText::SetObscuredRevealIndex(absl::nullopt);
   EXPECT_EQ(no_seuss, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(seuss.length() + 1);
   EXPECT_EQ(no_seuss, render_text->GetDisplayText());
@@ -7439,7 +7439,7 @@ TEST_F(RenderTextTest, DISABLED_TextDoesntClip) {
   render_text->SetColor(SK_ColorBLACK);
 
   for (auto* string : kTestStrings) {
-    paint_canvas.clear(SK_ColorWHITE);
+    paint_canvas.clear(SkColors::kWhite);
     render_text->SetText(base::UTF8ToUTF16(string));
     render_text->ApplyBaselineStyle(SUPERSCRIPT, Range(1, 2));
     render_text->ApplyBaselineStyle(SUPERIOR, Range(3, 4));
@@ -7510,7 +7510,7 @@ TEST_F(RenderTextTest, DISABLED_TextDoesClip) {
   render_text->SetColor(SK_ColorBLACK);
 
   for (auto* string : kTestStrings) {
-    paint_canvas.clear(SK_ColorWHITE);
+    paint_canvas.clear(SkColors::kWhite);
     render_text->SetText(base::UTF8ToUTF16(string));
     const Size string_size = render_text->GetStringSize();
     int fake_width = string_size.width() / 2;

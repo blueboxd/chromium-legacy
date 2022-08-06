@@ -5,6 +5,9 @@
 // Subpages
 import './appearance_page/appearance_fonts_page.js';
 import './autofill_page/autofill_section.js';
+// <if expr="is_win">
+import './autofill_page/passkeys_subpage.js';
+// </if>
 import './autofill_page/password_check.js';
 import './autofill_page/password_view.js';
 import './autofill_page/passwords_device_section.js';
@@ -53,6 +56,8 @@ import './a11y_page/a11y_page.js';
 import './downloads_page/downloads_page.js';
 // <if expr="not chromeos_ash">
 import './languages_page/languages_page.js';
+import './languages_page/spell_check_page.js';
+import './languages_page/translate_page.js';
 // </if>
 import './reset_page/reset_page.js';
 // <if expr="not chromeos_ash">
@@ -81,8 +86,11 @@ export {SettingsAutofillSectionElement} from './autofill_page/autofill_section.j
 export {BlockingRequestManager} from './autofill_page/blocking_request_manager.js';
 // </if>
 export {SettingsCreditCardEditDialogElement} from './autofill_page/credit_card_edit_dialog.js';
+// <if expr="is_win">
+export {Passkey, PasskeysBrowserProxy, PasskeysBrowserProxyImpl} from './autofill_page/passkeys_browser_proxy.js';
+export {SettingsPasskeysSubpageElement} from './autofill_page/passkeys_subpage.js';
+// </if>
 export {SettingsPasswordCheckElement} from './autofill_page/password_check.js';
-export {SettingsPasswordCheckEditDialogElement} from './autofill_page/password_check_edit_dialog.js';
 export {SettingsPasswordEditDisclaimerDialogElement} from './autofill_page/password_check_edit_disclaimer_dialog.js';
 export {PasswordCheckListItemElement} from './autofill_page/password_check_list_item.js';
 export {PasswordDialogMode, PasswordEditDialogElement} from './autofill_page/password_edit_dialog.js';
@@ -94,7 +102,7 @@ export {PasswordRemoveDialogElement} from './autofill_page/password_remove_dialo
 export {PasswordViewElement} from './autofill_page/password_view.js';
 export {PasswordsDeviceSectionElement} from './autofill_page/passwords_device_section.js';
 export {PasswordsExportDialogElement} from './autofill_page/passwords_export_dialog.js';
-export {PasswordsImportDialogElement} from './autofill_page/passwords_import_dialog.js';
+export {ImportDialogState, PasswordsImportDialogElement} from './autofill_page/passwords_import_dialog.js';
 export {PasswordsSectionElement} from './autofill_page/passwords_section.js';
 export {PaymentsManagerImpl, PaymentsManagerProxy} from './autofill_page/payments_manager_proxy.js';
 export {SettingsPaymentsSectionElement} from './autofill_page/payments_section.js';
@@ -126,10 +134,11 @@ export {SettingsAddLanguagesDialogElement} from './languages_page/add_languages_
 export {SettingsEditDictionaryPageElement} from './languages_page/edit_dictionary_page.js';
 // </if>
 export {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.js';
-export {SettingsLanguagesPageElement} from './languages_page/languages_page.js';
+export {kMenuCloseDelay, SettingsLanguagesPageElement} from './languages_page/languages_page.js';
 export {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_page/languages_settings_metrics_proxy.js';
-export {kMenuCloseDelay, SettingsLanguagesSubpageElement} from './languages_page/languages_subpage.js';
 export {LanguageHelper, LanguagesModel} from './languages_page/languages_types.js';
+export {SettingsSpellCheckPageElement} from './languages_page/spell_check_page.js';
+export {SettingsTranslatePageElement} from './languages_page/translate_page.js';
 // </if>
 // <if expr="not chromeos_ash and not chromeos_lacros">
 export {BrowserProfile, ImportDataBrowserProxy, ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
@@ -142,6 +151,7 @@ export {ManageProfileBrowserProxy, ManageProfileBrowserProxyImpl, ProfileShortcu
 export {SettingsSyncControlsElement} from './people_page/sync_controls.js';
 export {SettingsSyncEncryptionOptionsElement} from './people_page/sync_encryption_options.js';
 export {SettingsSyncPageElement} from './people_page/sync_page.js';
+export {AutofillAssistantBrowserProxy, AutofillAssistantBrowserProxyImpl} from './privacy_page/autofill_assistant_browser_proxy.js';
 export {SettingsCollapseRadioButtonElement} from './privacy_page/collapse_radio_button.js';
 export {SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
 export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggle.js';

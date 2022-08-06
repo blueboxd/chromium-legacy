@@ -99,18 +99,24 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   static constexpr char kManifestFilePath[] = "fedcm.json";
 
   using AccountList = std::vector<content::IdentityRequestAccount>;
+  using AccountsRequestCallback =
+      base::OnceCallback<void(FetchStatus, AccountList)>;
+  using DownloadCallback =
+      base::OnceCallback<void(std::unique_ptr<std::string> response_body,
+                              int response_code)>;
   using FetchManifestListCallback =
       base::OnceCallback<void(FetchStatus, const std::set<GURL>&)>;
   using FetchManifestCallback = base::OnceCallback<
       void(FetchStatus, Endpoints, IdentityProviderMetadata)>;
   using FetchClientMetadataCallback =
       base::OnceCallback<void(FetchStatus, ClientMetadata)>;
-  using AccountsRequestCallback =
-      base::OnceCallback<void(FetchStatus, AccountList)>;
+  using LogoutCallback = base::OnceCallback<void()>;
+  using ParseJsonCallback =
+      base::OnceCallback<void(FetchStatus fetch_status,
+                              data_decoder::DataDecoder::ValueOrError)>;
+  using RevokeCallback = base::OnceCallback<void(RevokeResponse)>;
   using TokenRequestCallback =
       base::OnceCallback<void(FetchStatus, const std::string&)>;
-  using RevokeCallback = base::OnceCallback<void(RevokeResponse)>;
-  using LogoutCallback = base::OnceCallback<void()>;
 
   static std::unique_ptr<IdpNetworkRequestManager> Create(
       const GURL& provider,
@@ -152,37 +158,30 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   // Request a new token for this user account and RP from the IDP.
   virtual void SendTokenRequest(const GURL& token_url,
                                 const std::string& account,
-                                const std::string& request,
+                                const std::string& url_encoded_post_data,
                                 TokenRequestCallback callback);
-
-  // Send a revoke token request to the IDP.
-  virtual void SendRevokeRequest(const GURL& revoke_url,
-                                 const std::string& client_id,
-                                 const std::string& hint,
-                                 RevokeCallback callback);
 
   // Send logout request to a single target.
   virtual void SendLogout(const GURL& logout_url, LogoutCallback);
 
  private:
-  void OnManifestLoaded(absl::optional<int> idp_brand_icon_ideal_size,
-                        absl::optional<int> idp_brand_icon_minimum_size,
-                        std::unique_ptr<std::string> response_body);
-  void OnManifestParsed(absl::optional<int> idp_brand_icon_ideal_size,
-                        absl::optional<int> idp_brand_icon_minimum_size,
-                        data_decoder::DataDecoder::ValueOrError result);
-  void OnClientMetadataLoaded(std::unique_ptr<std::string> response_body);
-  void OnClientMetadataParsed(data_decoder::DataDecoder::ValueOrError result);
-  void OnAccountsRequestResponse(AccountsRequestCallback callback,
-                                 std::string client_id,
-                                 std::unique_ptr<std::string> response_body);
-  void OnAccountsRequestParsed(AccountsRequestCallback callback,
-                               std::string client_id,
-                               data_decoder::DataDecoder::ValueOrError result);
-  void OnTokenRequestResponse(std::unique_ptr<std::string> response_body);
-  void OnTokenRequestParsed(data_decoder::DataDecoder::ValueOrError result);
-  void OnRevokeResponse(std::unique_ptr<std::string> response_body);
-  void OnLogoutCompleted(std::unique_ptr<std::string> response_body);
+  // Starts download request using `url_loader`. Calls `parse_json_callback`
+  // when the download result has been parsed.
+  void DownloadJsonAndParse(
+      std::unique_ptr<network::SimpleURLLoader> url_loader,
+      ParseJsonCallback parse_json_callback,
+      size_t max_download_size);
+
+  // Starts download result using `url_loader`. Calls `download_callback` when
+  // the download completes.
+  void DownloadUrl(std::unique_ptr<network::SimpleURLLoader> url_loader,
+                   DownloadCallback download_callback,
+                   size_t max_download_size);
+
+  // Called when download initiated by DownloadUrl() completes.
+  void OnDownloadedUrl(std::unique_ptr<network::SimpleURLLoader> url_loader,
+                       DownloadCallback callback,
+                       std::unique_ptr<std::string> response_body);
 
   std::unique_ptr<network::SimpleURLLoader> CreateUncredentialedUrlLoader(
       const GURL& url,
@@ -200,18 +199,6 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
 
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
-  FetchManifestCallback idp_manifest_callback_;
-  FetchClientMetadataCallback client_metadata_callback_;
-  TokenRequestCallback token_request_callback_;
-  RevokeCallback revoke_callback_;
-  LogoutCallback logout_callback_;
-
-  // url_loader_ is used for all loads except for the manifest list, which uses
-  // a different SimpleURLLoader. This is so we can fetch the manifest list in
-  // parallel with the other requests.
-  // TODO(cbiesinger): Also allow fetching the client metadata file in
-  // parallel with the account list.
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   network::mojom::ClientSecurityStatePtr client_security_state_;
 
   base::WeakPtrFactory<IdpNetworkRequestManager> weak_ptr_factory_{this};

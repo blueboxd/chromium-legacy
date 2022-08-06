@@ -6,7 +6,10 @@
  * @fileoverview Translates text to braille, optionally with some parts
  * uncontracted.
  */
-import {BrailleTextStyleSpan, ExtraCellsSpan, ValueSelectionSpan, ValueSpan} from '/chromevox/background/braille/spans.js';
+import {Spannable} from '../../common/spannable.js';
+
+import {LibLouis} from './liblouis.js';
+import {BrailleTextStyleSpan, ExtraCellsSpan, ValueSelectionSpan, ValueSpan} from './spans.js';
 
 /**
  * A wrapper around one or two braille translators that uses contracted
@@ -80,7 +83,7 @@ export class ExpandingBrailleTranslator {
         end: pos,
         cells,
         textToBraille: [],
-        brailleToText: new Array(cells.byteLength)
+        brailleToText: new Array(cells.byteLength),
       };
       for (let i = 0; i < cells.byteLength; ++i) {
         chunk.brailleToText[i] = 0;
@@ -314,7 +317,7 @@ ExpandingBrailleTranslator.ExpansionType = {
    * the user is editing a text field where it doesn't make sense to use
    * contracted braille (such as a url or email address).
    */
-  ALL: 2
+  ALL: 2,
 };
 
 

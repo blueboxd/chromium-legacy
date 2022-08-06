@@ -13,8 +13,8 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
+import '../../settings_shared.css.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
 import '../guest_os/guest_os_shared_paths.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
@@ -77,8 +77,11 @@ export function isAppInstalled(app) {
  */
 const OsSettingsAppsPageElementBase = mixinBehaviors(
     [
-      AppManagementStoreClient, DeepLinkingBehavior, I18nBehavior,
-      PrefsBehavior, RouteObserverBehavior
+      AppManagementStoreClient,
+      DeepLinkingBehavior,
+      I18nBehavior,
+      PrefsBehavior,
+      RouteObserverBehavior,
     ],
     PolymerElement);
 

@@ -54,10 +54,11 @@ ContentSetting CookieSettings::GetDefaultCookieSetting(
       ContentSettingsType::COOKIES, provider_id);
 }
 
-void CookieSettings::GetCookieSettings(
-    ContentSettingsForOneType* settings) const {
+ContentSettingsForOneType CookieSettings::GetCookieSettings() const {
+  ContentSettingsForOneType settings;
   host_content_settings_map_->GetSettingsForOneType(
-      ContentSettingsType::COOKIES, settings);
+      ContentSettingsType::COOKIES, &settings);
+  return settings;
 }
 
 void CookieSettings::RegisterProfilePrefs(
@@ -89,10 +90,12 @@ void CookieSettings::ResetCookieSetting(const GURL& primary_url) {
 
 bool CookieSettings::IsThirdPartyAccessAllowed(
     const GURL& first_party_url,
-    content_settings::SettingSource* source) {
+    content_settings::SettingSource* source,
+    QueryReason query_reason) {
   // Use GURL() as an opaque primary url to check if any site
   // could access cookies in a 3p context on |first_party_url|.
-  return IsAllowed(GetCookieSetting(GURL(), first_party_url, source));
+  return IsAllowed(
+      GetCookieSetting(GURL(), first_party_url, source, query_reason));
 }
 
 void CookieSettings::SetThirdPartyCookieSetting(const GURL& first_party_url,
@@ -165,7 +168,8 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
     const GURL& url,
     const GURL& first_party_url,
     bool is_third_party_request,
-    content_settings::SettingSource* source) const {
+    content_settings::SettingSource* source,
+    QueryReason query_reason) const {
   // Auto-allow in extensions or for WebUI embedding a secure origin.
   if (ShouldAlwaysAllowCookies(url, first_party_url)) {
     return CONTENT_SETTING_ALLOW;
@@ -202,8 +206,7 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
   // our checking logic.
   // We'll perform this check after we know if we will |block| or not to avoid
   // performing extra work in scenarios we already allow.
-  if (block &&
-      base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+  if (block && ShouldConsiderStorageAccessGrants(query_reason)) {
     ContentSetting host_setting = host_content_settings_map_->GetContentSetting(
         url, first_party_url, ContentSettingsType::STORAGE_ACCESS);
 

@@ -7,6 +7,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
@@ -62,11 +65,27 @@ class ASH_EXPORT SearchResultContainerView : public views::View,
     // Total number of visible views (either title or result views).
     int total_views = 0;
 
+    // Total number of visible result views.
+    int total_result_views = 0;
+
+    // The index of the first result view that should be animated.
+    int first_animated_result_view_index = 0;
+
     // The number of views that are animating (either title or result views).
     int animating_views = 0;
 
     // Whether fast search result update animations should be used.
     bool use_short_animations = false;
+  };
+
+  // Information needed to determine if a search result shuold have an updated
+  // animation.
+  struct SearchResultAimationMetadata {
+    // The ID of the search result.
+    std::string result_id;
+
+    // Whether animations should be skipped for this search result.
+    bool skip_animations = false;
   };
 
   // Schedules animations for result list updates. Expected to be implemented
@@ -77,6 +96,11 @@ class ASH_EXPORT SearchResultContainerView : public views::View,
   // Returns the animation info for this container.
   virtual absl::optional<ResultsAnimationInfo> ScheduleResultAnimations(
       const ResultsAnimationInfo& aggregate_animation_info);
+
+  // Appends search result IDs of the search results shown by the container
+  // view into 'result_ids_'
+  virtual void AppendShownResultMetadata(
+      std::vector<SearchResultAimationMetadata>* result_metadata_);
 
   // Returns whether the container view has any animating child views.
   virtual bool HasAnimatingChildView();

@@ -142,7 +142,7 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case SEARCH_TERM:
     case BIRTHDATE_DAY:
     case BIRTHDATE_MONTH:
-    case BIRTHDATE_YEAR_4_DIGITS:
+    case BIRTHDATE_4_DIGIT_YEAR:
     case UNKNOWN_TYPE:
     case MAX_VALID_FIELD_TYPE:
       return false;
@@ -231,7 +231,7 @@ base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
       return "BIRTHDATE_DAY";
     case BIRTHDATE_MONTH:
       return "BIRTHDATE_MONTH";
-    case BIRTHDATE_YEAR_4_DIGITS:
+    case BIRTHDATE_4_DIGIT_YEAR:
       return "BIRTHDATE_YEAR_4_DIGITS";
     case CREDIT_CARD_NAME_FULL:
       return "CREDIT_CARD_NAME_FULL";
@@ -399,6 +399,12 @@ base::StringPiece FieldTypeToStringPiece(HtmlFieldType type) {
       return "HTML_TYPE_TEL_EXTENSION";
     case HTML_TYPE_EMAIL:
       return "HTML_TYPE_EMAIL";
+    case HTML_TYPE_BIRTHDATE_DAY:
+      return "HTML_TYPE_BIRTHDATE_DAY";
+    case HTML_TYPE_BIRTHDATE_MONTH:
+      return "HTML_TYPE_BIRTHDATE_MONTH";
+    case HTML_TYPE_BIRTHDATE_YEAR:
+      return "HTML_TYPE_BIRTHDATE_YEAR";
     case HTML_TYPE_TRANSACTION_AMOUNT:
       return "HTML_TYPE_TRANSACTION_AMOUNT";
     case HTML_TYPE_TRANSACTION_CURRENCY:

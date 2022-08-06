@@ -159,18 +159,21 @@ content_settings::PatternPair GetPatternsFromScopingType(
   content_settings::PatternPair patterns;
 
   switch (scoping_type) {
-    case WebsiteSettingsInfo::COOKIES_SCOPE:
+    case WebsiteSettingsInfo::
+        REQUESTING_ORIGIN_WITH_TOP_ORIGIN_EXCEPTIONS_SCOPE:
       patterns.first = ContentSettingsPattern::FromURL(primary_url);
       patterns.second = ContentSettingsPattern::Wildcard();
       break;
-    case WebsiteSettingsInfo::STORAGE_ACCESS_SCOPE:
+    case WebsiteSettingsInfo::REQUESTING_AND_TOP_ORIGIN_SCOPE:
       DCHECK(!secondary_url.is_empty());
       patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
       patterns.second =
           ContentSettingsPattern::FromURLNoWildcard(secondary_url);
       break;
-    case WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE:
-    case WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE:
+    case WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE:
+    case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
+    case WebsiteSettingsInfo::GENERIC_SINGLE_ORIGIN_SCOPE:
+    case WebsiteSettingsInfo::TOP_ORIGIN_WITH_RESOURCE_EXCEPTIONS_SCOPE:
       patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
       patterns.second = ContentSettingsPattern::Wildcard();
       break;
@@ -683,6 +686,26 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
           num_third_party_cookie_allow_exceptions, 1, 1000, 30);
     }
   }
+}
+
+base::Time HostContentSettingsMap::GetExpirationForTesting(
+    GURL& primary_url,
+    GURL& secondary_url,
+    ContentSettingsType content_type) {
+  content_settings::PatternPair patterns = GetPatternsForContentSettingsType(
+      primary_url, secondary_url, content_type);
+
+  std::unique_ptr<content_settings::RuleIterator> iterator =
+      pref_provider_->GetRuleIterator(content_type, /* off_the_record */ false);
+  while (iterator->HasNext()) {
+    content_settings::Rule rule = iterator->Next();
+    if (rule.primary_pattern == patterns.first &&
+        rule.secondary_pattern == patterns.second) {
+      return rule.expiration;
+    }
+  }
+
+  return base::Time();
 }
 
 void HostContentSettingsMap::AddObserver(content_settings::Observer* observer) {

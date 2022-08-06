@@ -61,7 +61,7 @@ std::string GetCdmSessionTypeName(media::CdmSessionType session_type) {
 }
 
 base::Value VideoCodecProfilesToValue(
-    const std::vector<media::VideoCodecProfile>& profiles) {
+    const base::flat_set<media::VideoCodecProfile>& profiles) {
   base::Value list(base::Value::Type::LIST);
   for (const auto& profile : profiles)
     list.Append(media::GetProfileName(profile));
@@ -78,9 +78,10 @@ base::Value CdmCapabilityToValue(const media::CdmCapability& cdm_capability) {
 
   auto* video_codec_dict =
       dict.SetKey("Video Codecs", base::Value(base::Value::Type::DICTIONARY));
-  for (const auto& video_codec_map : cdm_capability.video_codecs) {
-    auto codec_name = media::GetCodecName(video_codec_map.first);
-    auto& profiles = video_codec_map.second;
+  for (const auto& [video_codec, video_codec_info] :
+       cdm_capability.video_codecs) {
+    auto codec_name = media::GetCodecName(video_codec);
+    auto& profiles = video_codec_info.supported_profiles;
     video_codec_dict->SetPath(codec_name, VideoCodecProfilesToValue(profiles));
   }
 
@@ -123,8 +124,8 @@ base::Value CdmInfoToValue(const CdmInfo& cdm_info) {
 
 std::u16string SerializeUpdate(const std::string& function,
                                const base::Value* value) {
-  return content::WebUI::GetJavascriptCall(
-      function, std::vector<const base::Value*>(1, value));
+  base::ValueView args[] = {*value};
+  return content::WebUI::GetJavascriptCall(function, args);
 }
 
 }  // namespace

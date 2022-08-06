@@ -68,7 +68,7 @@ absl::optional<IconKey> AppServiceProxyBase::InnerIconLoader::GetIconKey(
   }
 
   absl::optional<IconKey> icon_key;
-  host_->app_registry_cache_.ForApp(
+  host_->app_registry_cache_.ForOneApp(
       app_id,
       [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
   return icon_key;
@@ -197,10 +197,6 @@ BrowserAppLauncher* AppServiceProxyBase::BrowserAppLauncher() {
   return browser_app_launcher_.get();
 }
 
-apps::PreferredAppsImpl* AppServiceProxyBase::PreferredAppsImpl() {
-  return preferred_apps_impl_.get();
-}
-
 apps::PreferredAppsListHandle& AppServiceProxyBase::PreferredAppsList() {
   return preferred_apps_list_;
 }
@@ -278,22 +274,51 @@ AppServiceProxyBase::LoadIconFromIconKey(AppType app_type,
 
 void AppServiceProxyBase::Launch(const std::string& app_id,
                                  int32_t event_flags,
-                                 apps::mojom::LaunchSource launch_source,
+                                 apps::LaunchSource launch_source,
+                                 apps::WindowInfoPtr window_info) {
+  app_registry_cache_.ForOneApp(
+      app_id, [this, event_flags, launch_source,
+               &window_info](const apps::AppUpdate& update) {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          return;
+        }
+
+        if (MaybeShowLaunchPreventionDialog(update)) {
+          return;
+        }
+
+        RecordAppLaunch(update.AppId(), launch_source);
+        RecordAppPlatformMetrics(profile_, update, launch_source,
+                                 apps::LaunchContainer::kLaunchContainerNone);
+
+        publisher->Launch(update.AppId(), event_flags, launch_source,
+                          std::move(window_info));
+
+        PerformPostLaunchTasks(launch_source);
+      });
+}
+
+void AppServiceProxyBase::Launch(const std::string& app_id,
+                                 int32_t event_flags,
+                                 apps::mojom::LaunchSource mojom_launch_source,
                                  apps::mojom::WindowInfoPtr window_info) {
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
-        app_id, [this, event_flags, launch_source,
+        app_id, [this, event_flags, mojom_launch_source,
                  &window_info](const apps::AppUpdate& update) {
           if (MaybeShowLaunchPreventionDialog(update)) {
             return;
           }
 
+          apps::LaunchSource launch_source =
+              ConvertMojomLaunchSourceToLaunchSource(mojom_launch_source);
           RecordAppLaunch(update.AppId(), launch_source);
           RecordAppPlatformMetrics(profile_, update, launch_source,
                                    apps::LaunchContainer::kLaunchContainerNone);
 
           app_service_->Launch(ConvertAppTypeToMojomAppType(update.AppType()),
-                               update.AppId(), event_flags, launch_source,
+                               update.AppId(), event_flags, mojom_launch_source,
                                std::move(window_info));
 
           PerformPostLaunchTasks(launch_source);
@@ -304,16 +329,53 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
 void AppServiceProxyBase::LaunchAppWithFiles(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
+    LaunchSource launch_source,
+    std::vector<base::FilePath> file_paths) {
+  app_registry_cache_.ForOneApp(
+      app_id, [this, event_flags, launch_source,
+               &file_paths](const apps::AppUpdate& update) {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          return;
+        }
+
+        if (MaybeShowLaunchPreventionDialog(update)) {
+          return;
+        }
+
+        RecordAppPlatformMetrics(profile_, update, launch_source,
+                                 LaunchContainer::kLaunchContainerNone);
+
+        // TODO(crbug/1117655): File manager records metrics for apps it
+        // launched. So we only record launches from other places. We should
+        // eventually move those metrics here, after AppService supports all
+        // app types launched by file manager.
+        if (launch_source != LaunchSource::kFromFileManager) {
+          RecordAppLaunch(update.AppId(), launch_source);
+        }
+
+        publisher->LaunchAppWithFiles(update.AppId(), event_flags,
+                                      launch_source, std::move(file_paths));
+
+        PerformPostLaunchTasks(launch_source);
+      });
+}
+
+void AppServiceProxyBase::LaunchAppWithFiles(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::LaunchSource mojom_launch_source,
     apps::mojom::FilePathsPtr file_paths) {
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
-        app_id, [this, event_flags, launch_source,
+        app_id, [this, event_flags, mojom_launch_source,
                  &file_paths](const apps::AppUpdate& update) {
           if (MaybeShowLaunchPreventionDialog(update)) {
             return;
           }
 
+          apps::LaunchSource launch_source =
+              ConvertMojomLaunchSourceToLaunchSource(mojom_launch_source);
           RecordAppPlatformMetrics(profile_, update, launch_source,
                                    apps::LaunchContainer::kLaunchContainerNone);
 
@@ -321,13 +383,13 @@ void AppServiceProxyBase::LaunchAppWithFiles(
           // launched. So we only record launches from other places. We should
           // eventually move those metrics here, after AppService supports all
           // app types launched by file manager.
-          if (launch_source != apps::mojom::LaunchSource::kFromFileManager) {
+          if (launch_source != apps::LaunchSource::kFromFileManager) {
             RecordAppLaunch(update.AppId(), launch_source);
           }
 
           app_service_->LaunchAppWithFiles(
               ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
-              event_flags, launch_source, std::move(file_paths));
+              event_flags, mojom_launch_source, std::move(file_paths));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -337,14 +399,55 @@ void AppServiceProxyBase::LaunchAppWithFiles(
 void AppServiceProxyBase::LaunchAppWithIntent(
     const std::string& app_id,
     int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  CHECK(intent);
+  app_registry_cache_.ForOneApp(
+      app_id,
+      [this, event_flags, &intent, launch_source, &window_info,
+       callback = std::move(callback)](const AppUpdate& update) mutable {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          std::move(callback).Run(/*success=*/false);
+          return;
+        }
+
+        if (MaybeShowLaunchPreventionDialog(update)) {
+          std::move(callback).Run(/*success=*/false);
+          return;
+        }
+
+        // TODO(crbug/1117655): File manager records metrics for apps it
+        // launched. So we only record launches from other places. We should
+        // eventually move those metrics here, after AppService supports all
+        // app types launched by file manager.
+        if (launch_source != LaunchSource::kFromFileManager) {
+          RecordAppLaunch(update.AppId(), launch_source);
+        }
+        RecordAppPlatformMetrics(profile_, update, launch_source,
+                                 LaunchContainer::kLaunchContainerNone);
+
+        publisher->LaunchAppWithIntent(
+            update.AppId(), event_flags, std::move(intent), launch_source,
+            std::move(window_info), std::move(callback));
+
+        PerformPostLaunchTasks(launch_source);
+      });
+}
+
+void AppServiceProxyBase::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
     apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
+    apps::mojom::LaunchSource mojom_launch_source,
     apps::mojom::WindowInfoPtr window_info,
     apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
   CHECK(intent);
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
-        app_id, [this, event_flags, &intent, launch_source, &window_info,
+        app_id, [this, event_flags, &intent, mojom_launch_source, &window_info,
                  callback = std::move(callback)](
                     const apps::AppUpdate& update) mutable {
           if (MaybeShowLaunchPreventionDialog(update)) {
@@ -353,11 +456,13 @@ void AppServiceProxyBase::LaunchAppWithIntent(
             return;
           }
 
+          apps::LaunchSource launch_source =
+              ConvertMojomLaunchSourceToLaunchSource(mojom_launch_source);
           // TODO(crbug/1117655): File manager records metrics for apps it
           // launched. So we only record launches from other places. We should
           // eventually move those metrics here, after AppService supports all
           // app types launched by file manager.
-          if (launch_source != apps::mojom::LaunchSource::kFromFileManager) {
+          if (launch_source != apps::LaunchSource::kFromFileManager) {
             RecordAppLaunch(update.AppId(), launch_source);
           }
           RecordAppPlatformMetrics(profile_, update, launch_source,
@@ -365,7 +470,7 @@ void AppServiceProxyBase::LaunchAppWithIntent(
 
           app_service_->LaunchAppWithIntent(
               ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
-              event_flags, std::move(intent), launch_source,
+              event_flags, std::move(intent), mojom_launch_source,
               std::move(window_info), std::move(callback));
 
           PerformPostLaunchTasks(launch_source);
@@ -373,6 +478,17 @@ void AppServiceProxyBase::LaunchAppWithIntent(
   } else if (callback) {
     std::move(callback).Run(/*success=*/false);
   }
+}
+
+void AppServiceProxyBase::LaunchAppWithUrl(const std::string& app_id,
+                                           int32_t event_flags,
+                                           GURL url,
+                                           LaunchSource launch_source,
+                                           WindowInfoPtr window_info) {
+  LaunchAppWithIntent(
+      app_id, event_flags,
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
+      launch_source, std::move(window_info), base::DoNothing());
 }
 
 void AppServiceProxyBase::LaunchAppWithUrl(
@@ -406,7 +522,7 @@ void AppServiceProxyBase::LaunchAppWithParams(AppLaunchParams&& params,
         // launched. So we only record launches from other places. We should
         // eventually move those metrics here, after AppService supports all
         // app types launched by file manager.
-        if (launch_source != apps::mojom::LaunchSource::kFromFileManager) {
+        if (launch_source != apps::LaunchSource::kFromFileManager) {
           RecordAppLaunch(update.AppId(), launch_source);
         }
 
@@ -505,9 +621,9 @@ std::vector<std::string> AppServiceProxyBase::GetAppIdsForUrl(
     const GURL& url,
     bool exclude_browsers,
     bool exclude_browser_tab_apps) {
-  auto intent_launch_info =
-      GetAppsForIntent(apps_util::CreateIntentFromUrl(url), exclude_browsers,
-                       exclude_browser_tab_apps);
+  auto intent_launch_info = GetAppsForIntent(
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
+      exclude_browsers, exclude_browser_tab_apps);
   std::vector<std::string> app_ids;
   for (auto& entry : intent_launch_info) {
     app_ids.push_back(std::move(entry.app_id));
@@ -516,17 +632,11 @@ std::vector<std::string> AppServiceProxyBase::GetAppIdsForUrl(
 }
 
 std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
-    const apps::mojom::IntentPtr& mojom_intent,
+    const apps::IntentPtr& intent,
     bool exclude_browsers,
     bool exclude_browser_tab_apps) {
   std::vector<IntentLaunchInfo> intent_launch_info;
-  if (apps_util::OnlyShareToDrive(mojom_intent) ||
-      !apps_util::IsIntentValid(mojom_intent)) {
-    return intent_launch_info;
-  }
-
-  auto intent = ConvertMojomIntentToIntent(mojom_intent);
-  if (!intent) {
+  if (!intent || intent->OnlyShareToDrive() || !intent->IsIntentValid()) {
     return intent_launch_info;
   }
 
@@ -593,9 +703,10 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
 }
 
 std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForFiles(
-    std::vector<apps::mojom::IntentFilePtr> files) {
-  return GetAppsForIntent(
-      apps_util::CreateViewIntentFromFiles(std::move(files)), false, false);
+    std::vector<apps::IntentFilePtr> files) {
+  return GetAppsForIntent(std::make_unique<apps::Intent>(
+                              apps_util::kIntentActionView, std::move(files)),
+                          false, false);
 }
 
 void AppServiceProxyBase::AddPreferredApp(const std::string& app_id,
@@ -870,12 +981,12 @@ apps::mojom::IntentFilterPtr AppServiceProxyBase::FindBestMatchingMojomFilter(
 }
 
 void AppServiceProxyBase::PerformPostLaunchTasks(
-    apps::mojom::LaunchSource launch_source) {}
+    apps::LaunchSource launch_source) {}
 
 void AppServiceProxyBase::RecordAppPlatformMetrics(
     Profile* profile,
     const apps::AppUpdate& update,
-    apps::mojom::LaunchSource launch_source,
+    apps::LaunchSource launch_source,
     apps::LaunchContainer container) {}
 
 void AppServiceProxyBase::PerformPostUninstallTasks(

@@ -9,7 +9,6 @@
 #include "ash/public/cpp/projector/annotator_tool.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
-#include "ash/webui/projector_app/annotator_message_handler.h"
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "base/bind.h"
@@ -52,17 +51,18 @@ void ProjectorClientImpl::InitForProjectorAnnotator(views::WebView* web_view) {
   web_view->LoadInitialURL(GURL(ash::kChromeUITrustedAnnotatorAppUrl));
 }
 
+// Using base::Unretained for callback is safe since the ProjectorClientImpl
+// owns `drive_helper_`.
 ProjectorClientImpl::ProjectorClientImpl(ash::ProjectorController* controller)
-    : controller_(controller) {
+    : controller_(controller),
+      drive_helper_(base::BindRepeating(
+          &ProjectorClientImpl::MaybeSwitchDriveIntegrationServiceObservation,
+          base::Unretained(this))) {
   controller_->SetClient(this);
   session_manager::SessionManager* session_manager =
       session_manager::SessionManager::Get();
   if (session_manager)
     session_observation_.Observe(session_manager);
-
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user_manager)
-    session_state_observation_.Observe(user_manager);
 }
 
 ProjectorClientImpl::ProjectorClientImpl()
@@ -91,8 +91,7 @@ void ProjectorClientImpl::StopSpeechRecognition() {
   speech_recognizer_->Stop();
 }
 
-bool ProjectorClientImpl::GetDriveFsMountPointPath(
-    base::FilePath* result) const {
+bool ProjectorClientImpl::GetBaseStoragePath(base::FilePath* result) const {
   if (!IsDriveFsMounted())
     return false;
 
@@ -106,9 +105,7 @@ bool ProjectorClientImpl::GetDriveFsMountPointPath(
     return true;
   }
 
-  drive::DriveIntegrationService* integration_service =
-      GetDriveIntegrationServiceForActiveProfile();
-  *result = integration_service->GetMountPointPath();
+  *result = ProjectorDriveFsProvider::GetDriveFsMountPointPath();
   return true;
 }
 
@@ -121,16 +118,11 @@ bool ProjectorClientImpl::IsDriveFsMounted() const {
     // folder for Projector storage.
     return true;
   }
-
-  drive::DriveIntegrationService* integration_service =
-      GetDriveIntegrationServiceForActiveProfile();
-  return integration_service && integration_service->IsMounted();
+  return ProjectorDriveFsProvider::IsDriveFsMounted();
 }
 
 bool ProjectorClientImpl::IsDriveFsMountFailed() const {
-  drive::DriveIntegrationService* integration_service =
-      GetDriveIntegrationServiceForActiveProfile();
-  return integration_service && integration_service->mount_failed();
+  return ProjectorDriveFsProvider::IsDriveFsMountFailed();
 }
 
 void ProjectorClientImpl::OpenProjectorApp() const {
@@ -159,11 +151,6 @@ void ProjectorClientImpl::OnNewScreencastPreconditionChanged(
   ash::ProjectorAppClient* app_client = ash::ProjectorAppClient::Get();
   if (app_client)
     app_client->OnNewScreencastPreconditionChanged(precondition);
-}
-
-void ProjectorClientImpl::SetAnnotatorMessageHandler(
-    ash::AnnotatorMessageHandler* handler) {
-  message_handler_ = handler;
 }
 
 void ProjectorClientImpl::OnSpeechResult(
@@ -198,7 +185,7 @@ void ProjectorClientImpl::OnSpeechRecognitionStopped() {
 }
 
 void ProjectorClientImpl::SetTool(const ash::AnnotatorTool& tool) {
-  message_handler_->SetTool(tool);
+  ash::ProjectorAppClient::Get()->SetTool(tool);
 }
 
 // TODO(b/220202359): Implement undo.
@@ -208,7 +195,7 @@ void ProjectorClientImpl::Undo() {}
 void ProjectorClientImpl::Redo() {}
 
 void ProjectorClientImpl::Clear() {
-  message_handler_->Clear();
+  ash::ProjectorAppClient::Get()->Clear();
 }
 
 void ProjectorClientImpl::OnFileSystemMounted() {
@@ -224,10 +211,6 @@ void ProjectorClientImpl::OnFileSystemBeingUnmounted() {
 void ProjectorClientImpl::OnFileSystemMountFailed() {
   OnNewScreencastPreconditionChanged(
       controller_->GetNewScreencastPrecondition());
-}
-
-void ProjectorClientImpl::OnUserProfileLoaded(const AccountId& account_id) {
-  MaybeSwitchDriveIntegrationServiceObservation();
 }
 
 void ProjectorClientImpl::OnUserSessionStarted(bool is_primary_user) {
@@ -247,20 +230,9 @@ void ProjectorClientImpl::OnUserSessionStarted(bool is_primary_user) {
                           base::Unretained(this)));
 }
 
-void ProjectorClientImpl::ActiveUserChanged(user_manager::User* active_user) {
-  // After user login, the first ActiveUserChanged() might be called before
-  // profile is loaded.
-  if (active_user->is_profile_created())
-    MaybeSwitchDriveIntegrationServiceObservation();
-}
-
 void ProjectorClientImpl::MaybeSwitchDriveIntegrationServiceObservation() {
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  if (!IsProjectorAllowedForProfile(profile))
-    return;
-
   drive::DriveIntegrationService* drive_service =
-      GetDriveIntegrationServiceForActiveProfile();
+      ProjectorDriveFsProvider::GetActiveDriveIntegrationService();
   if (!drive_service || drive_observation_.IsObservingSource(drive_service))
     return;
 
@@ -272,6 +244,11 @@ void ProjectorClientImpl::OnEnablementPolicyChanged() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ash::SystemWebAppManager* swa_manager =
       ash::SystemWebAppManager::Get(profile);
+  // TODO(b/240497023): convert to dcheck once confirm that the pointer is
+  // always available at this point.
+  if (!swa_manager) {
+    return;
+  }
   const bool is_installed =
       swa_manager &&
       swa_manager->IsSystemWebApp(ash::kChromeUITrustedProjectorSwaAppId);
@@ -286,7 +263,29 @@ void ProjectorClientImpl::OnEnablementPolicyChanged() {
   if (!is_enabled)
     CloseProjectorApp();
 
-  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile);
-  web_app_provider->sync_bridge().SetAppIsDisabled(
-      ash::kChromeUITrustedProjectorSwaAppId, !is_enabled);
+  auto* web_app_provider = ash::SystemWebAppManager::GetWebAppProvider(profile);
+  // TODO(b/240497023): convert to dcheck once confirm that the pointer is
+  // always available at this point.
+  if (!web_app_provider) {
+    return;
+  }
+  web_app_provider->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&ProjectorClientImpl::SetAppIsDisabled,
+                                weak_ptr_factory_.GetWeakPtr(), !is_enabled));
+}
+
+void ProjectorClientImpl::SetAppIsDisabled(bool disabled) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+
+  auto* web_app_provider = ash::SystemWebAppManager::GetWebAppProvider(profile);
+  // TODO(b/240497023): convert to dcheck once confirm that the pointer is
+  // always available at this point.
+  if (!web_app_provider) {
+    return;
+  }
+  auto* sync_bridge = &web_app_provider->sync_bridge();
+  DCHECK(sync_bridge);
+
+  sync_bridge->SetAppIsDisabled(ash::kChromeUITrustedProjectorSwaAppId,
+                                disabled);
 }

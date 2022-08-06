@@ -23,6 +23,7 @@ ChromeVoxTutorialTest = class extends ChromeVoxPanelTestBase {
     await importModule(
         ['PanelCommand', 'PanelCommandType'],
         '/chromevox/common/panel_command.js');
+    await importModule('KeyCode', '/common/key_code.js');
   }
 
   assertActiveLessonIndex(expectedIndex) {
@@ -301,7 +302,7 @@ AX_TEST_F('ChromeVoxTutorialTest', 'DISABLED_EscapeTest', async function() {
         tutorial.onKeyDown({
           key: 'Escape',
           preventDefault: () => {},
-          stopPropagation: () => {}
+          stopPropagation: () => {},
         });
       })
       .expectSpeech('Some web content')
@@ -638,7 +639,8 @@ AX_TEST_F(
       let userActionMonitorCreatedCount = 0;
       let userActionMonitorDestroyedCount = 0;
       let isUserActionMonitorActive = false;
-
+      // Expose the correct BackgroundBridge so we can override the functions
+      this.getPanel().exportBackgroundBridgeForTesting();
       // Swap in functions below so we can track the number of times
       // UserActionMonitor is created and destroyed.
       this.getPanelWindow().BackgroundBridge.UserActionMonitor.create = () => {

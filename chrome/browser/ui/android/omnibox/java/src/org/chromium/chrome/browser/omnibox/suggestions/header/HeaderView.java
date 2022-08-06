@@ -54,7 +54,6 @@ public class HeaderView extends SimpleHorizontalLayoutView {
         mHeaderText.setLayoutParams(LayoutParams.forDynamicView());
         mHeaderText.setMaxLines(1);
         mHeaderText.setEllipsize(TruncateAt.END);
-        mHeaderText.setAllCaps(true);
         TextViewCompat.setTextAppearance(
                 mHeaderText, ChromeColors.getTextMediumThickSecondaryStyle(false));
         mHeaderText.setMinHeight(context.getResources().getDimensionPixelSize(
@@ -73,7 +72,6 @@ public class HeaderView extends SimpleHorizontalLayoutView {
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_action_icon_width),
                 LayoutParams.MATCH_PARENT));
         addView(mHeaderIcon);
-
         ViewCompat.setAccessibilityDelegate(this, new AccessibilityDelegateCompat() {
             @Override
             public void onInitializeAccessibilityNodeInfo(
@@ -131,6 +129,27 @@ public class HeaderView extends SimpleHorizontalLayoutView {
         if (selected && mOnSelectListener != null) {
             mOnSelectListener.run();
         }
+    }
+
+    /**
+     * Specifies whether the chevron on the right side of header should be removed.
+     *
+     * @param shouldRemoveSuggestionHeaderChevron true, if the chevron on the right side of header
+     *         should be removed.
+     */
+    void setShouldRemoveSuggestionHeaderChevron(boolean shouldRemoveSuggestionHeaderChevron) {
+        mHeaderIcon.setVisibility(shouldRemoveSuggestionHeaderChevron ? GONE : VISIBLE);
+    }
+
+    /**
+     * Specifies whether suggestion header text should be capitalized.
+     *
+     * @param shouldRemoveSuggestionHeaderCapitalization true, if capitalization on the suggestion
+     *         header should be removed.
+     */
+    void setShouldRemoveSuggestionHeaderCapitalization(
+            boolean shouldRemoveSuggestionHeaderCapitalization) {
+        mHeaderText.setAllCaps(!shouldRemoveSuggestionHeaderCapitalization);
     }
 
     @Override

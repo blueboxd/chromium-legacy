@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {cancelPreviewWallpaper, DefaultImageSymbol, DisplayableImage, fetchCollections, fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchLocalData, getDefaultImageThumbnail, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, initializeBackdropData, initializeGooglePhotosData, isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage, kDefaultImageSymbol, selectWallpaper, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
+import {cancelPreviewWallpaper, DefaultImageSymbol, DisplayableImage, fetchCollections, fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchLocalData, getDefaultImageThumbnail, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, initializeBackdropData, initializeGooglePhotosData, isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage, kDefaultImageSymbol, selectWallpaper, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
@@ -123,7 +123,7 @@ suite('Personalization app controller', () => {
       name: 'foo',
       date: {data: []},
       url: {url: 'foo.com'},
-      location: 'home'
+      location: 'home',
     }];
 
     wallpaperProvider.setGooglePhotosAlbums([album]);
@@ -248,7 +248,7 @@ suite('Personalization app controller', () => {
           // Begin loading local image list.
           {
             'wallpaper.loading.local': {images: true, data: {}},
-            'wallpaper.local': {images: null, data: {}}
+            'wallpaper.local': {images: null, data: {}},
           },
           // Done loading local image data.
           {
@@ -258,8 +258,8 @@ suite('Personalization app controller', () => {
                 {path: 'LocalImage0.png'},
                 {path: 'LocalImage1.png'},
               ],
-              data: {}
-            }
+              data: {},
+            },
           },
           // Mark image 0 as loading.
           {
@@ -284,7 +284,7 @@ suite('Personalization app controller', () => {
                 {path: 'LocalImage1.png'},
               ],
               data: {},
-            }
+            },
           },
           // Finish loading image 0.
           {
@@ -298,7 +298,7 @@ suite('Personalization app controller', () => {
                 {path: 'LocalImage1.png'},
               ],
               data: {'LocalImage0.png': 'data://localimage0data'},
-            }
+            },
           },
           // Finish loading image 1.
           {
@@ -315,8 +315,8 @@ suite('Personalization app controller', () => {
                 'LocalImage0.png': 'data://localimage0data',
                 'LocalImage1.png': 'data://localimage1data',
               },
-            }
-          }
+            },
+          },
         ],
         personalizationStore.states.map(filterAndFlattenState(
             ['wallpaper.local', 'wallpaper.loading.local'])));
@@ -411,7 +411,7 @@ suite('Personalization app controller', () => {
             name: 'set_local_image_data',
             id: 'NewPath.png',
             data: 'data://newpath',
-          }
+          },
         ],
         personalizationStore.actions,
     );
@@ -470,7 +470,7 @@ suite('Personalization app controller', () => {
                 'NewPath.png': 'data://newpath',
               },
             },
-          }
+          },
         ],
         personalizationStore.states.map(filterAndFlattenState(
             ['wallpaper.local', 'wallpaper.loading.local'])));
@@ -512,7 +512,6 @@ suite('full screen mode', () => {
     wallpaperProvider = new TestWallpaperProvider();
     personalizationStore = new TestPersonalizationStore({});
     personalizationStore.setReducersEnabled(true);
-    loadTimeData.resetForTesting({[fullscreenPreviewFeature]: true});
   });
 
   test(
@@ -715,8 +714,6 @@ suite('local images available but no internet connection', () => {
   });
 
   test('error displays when fetch collections failed', async () => {
-    loadTimeData.overrideValues({['networkError']: 'someError'});
-
     // Set collections to null to simulate collections failure.
     wallpaperProvider.setCollectionsToFail();
 
@@ -745,7 +742,7 @@ suite('local images available but no internet connection', () => {
           // Set collections.
           // Collections are completed loading with null value. Error displays.
           {
-            'error': {message: loadTimeData.getString('networkError')},
+            'error': {message: loadTimeData.getString('wallpaperNetworkError')},
           },
         ],
         personalizationStore.states.map(filterAndFlattenState(['error'])));
@@ -774,7 +771,7 @@ suite('does not respond to re-selecting the current wallpaper', () => {
       return image.assetId.toString();
     }
     if (isFilePath(image)) {
-      return image.path.substr(image.path.lastIndexOf('/') + 1);
+      return image.path;
     }
     assertNotReached('unknown wallpaper type');
   }
@@ -867,7 +864,7 @@ suite('does not respond to re-selecting the current wallpaper', () => {
           name: 'foo',
           date: {data: []},
           url: {url: 'foo.com'},
-          location: 'home'
+          location: 'home',
         };
         // Reset the history of actions and prior states, but keep the current
         // state.

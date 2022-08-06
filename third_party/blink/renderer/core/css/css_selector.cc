@@ -323,6 +323,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoRightPage:
     case kPseudoInRange:
     case kPseudoOutOfRange:
+    case kPseudoToggle:
     case kPseudoWebKitCustomElement:
     case kPseudoBlinkInternalElement:
     case kPseudoCue:
@@ -380,7 +381,6 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-list-box", CSSSelector::kPseudoListBox},
     {"-internal-media-controls-overlay-cast-button",
      CSSSelector::kPseudoWebKitCustomElement},
-    {"-internal-modal", CSSSelector::kPseudoModal},
     {"-internal-multi-select-focus", CSSSelector::kPseudoMultiSelectFocus},
     {"-internal-popup-hidden", CSSSelector::kPseudoPopupHidden},
     {"-internal-relative-anchor", CSSSelector::kPseudoRelativeAnchor},
@@ -449,6 +449,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"left", CSSSelector::kPseudoLeftPage},
     {"link", CSSSelector::kPseudoLink},
     {"marker", CSSSelector::kPseudoMarker},
+    {"modal", CSSSelector::kPseudoModal},
     {"no-button", CSSSelector::kPseudoNoButton},
     {"only-child", CSSSelector::kPseudoOnlyChild},
     {"only-of-type", CSSSelector::kPseudoOnlyOfType},
@@ -505,6 +506,7 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
      CSSSelector::kPseudoPageTransitionOutgoingImage},
     {"part", CSSSelector::kPseudoPart},
     {"slotted", CSSSelector::kPseudoSlotted},
+    {"toggle", CSSSelector::kPseudoToggle},
     {"where", CSSSelector::kPseudoWhere},
 };
 
@@ -583,6 +585,11 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
 
   if (match->type == CSSSelector::kPseudoHas &&
       !RuntimeEnabledFeatures::CSSPseudoHasEnabled()) {
+    return CSSSelector::kPseudoUnknown;
+  }
+
+  if (match->type == CSSSelector::kPseudoToggle &&
+      !RuntimeEnabledFeatures::CSSTogglesEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 
@@ -693,7 +700,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoHostHasAppearance:
     case kPseudoIsHtml:
     case kPseudoListBox:
-    case kPseudoModal:
     case kPseudoMultiSelectFocus:
     case kPseudoSpatialNavigationFocus:
     case kPseudoSpatialNavigationInterest:
@@ -747,6 +753,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoLastChild:
     case kPseudoLastOfType:
     case kPseudoLink:
+    case kPseudoModal:
     case kPseudoNoButton:
     case kPseudoNot:
     case kPseudoNthChild:
@@ -774,6 +781,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoStart:
     case kPseudoState:
     case kPseudoTarget:
+    case kPseudoToggle:
     case kPseudoTopLayer:
     case kPseudoUnknown:
     case kPseudoValid:
@@ -793,32 +801,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
       pseudo_type_ = kPseudoUnknown;
       break;
   }
-}
-
-bool CSSSelector::operator==(const CSSSelector& other) const {
-  const CSSSelector* sel1 = this;
-  const CSSSelector* sel2 = &other;
-
-  while (sel1 && sel2) {
-    if (sel1->Attribute() != sel2->Attribute() ||
-        sel1->Relation() != sel2->Relation() || sel1->match_ != sel2->match_ ||
-        sel1->Value() != sel2->Value() ||
-        sel1->GetPseudoType() != sel2->GetPseudoType() ||
-        sel1->Argument() != sel2->Argument()) {
-      return false;
-    }
-    if (sel1->match_ == kTag) {
-      if (sel1->TagQName() != sel2->TagQName())
-        return false;
-    }
-    sel1 = sel1->TagHistory();
-    sel2 = sel2->TagHistory();
-  }
-
-  if (sel1 || sel2)
-    return false;
-
-  return true;
 }
 
 static void SerializeIdentifierOrAny(const AtomicString& identifier,
@@ -897,6 +879,15 @@ const CSSSelector* CSSSelector::SerializeCompound(
         case kPseudoLang:
           builder.Append('(');
           SerializeIdentifier(simple_selector->Argument(), builder);
+          builder.Append(')');
+          break;
+        case kPseudoToggle:
+          builder.Append('(');
+          SerializeIdentifier(simple_selector->Argument(), builder);
+          if (const ToggleRoot::State* value = simple_selector->ToggleValue()) {
+            builder.Append(" ");
+            builder.Append(value->ToString());
+          }
           builder.Append(')');
           break;
         case kPseudoHas:
@@ -1077,6 +1068,13 @@ void CSSSelector::SetSelectorList(
   data_.rare_data_->selector_list_ = std::move(selector_list);
 }
 
+void CSSSelector::SetToggle(const AtomicString& name,
+                            std::unique_ptr<ToggleRoot::State>&& value) {
+  CreateRareData();
+  data_.rare_data_->argument_ = name;
+  data_.rare_data_->toggle_value_ = std::move(value);
+}
+
 void CSSSelector::SetContainsPseudoInsideHasPseudoClass() {
   CreateRareData();
   data_.rare_data_->bits_.has_.contains_pseudo_ = true;
@@ -1135,6 +1133,15 @@ static bool ValidateSubSelector(const CSSSelector* selector) {
     case CSSSelector::kPseudoIsHtml:
     case CSSSelector::kPseudoListBox:
     case CSSSelector::kPseudoHostHasAppearance:
+    case CSSSelector::kPseudoToggle:
+      // TODO(https://crbug.com/1346456): Many pseudos should probably be
+      // added to this list.  The default: case below should also be removed
+      // so that those adding new pseudos know they need to choose one path or
+      // the other here.
+      //
+      // However, it's not clear why a pseudo should be in one list or the
+      // other.  It's also entirely possible that this entire switch() should
+      // be removed and all cases should return true.
       return true;
     default:
       return false;

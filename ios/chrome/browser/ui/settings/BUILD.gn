@@ -132,6 +132,7 @@ source_set("settings") {
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prerender:prerender_pref",
     "//ios/chrome/browser/search_engines",
@@ -146,7 +147,6 @@ source_set("settings") {
     "//ios/chrome/browser/ui/authentication/enterprise:enterprise_utils",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/autofill/cells",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/content_suggestions/cells",
@@ -154,6 +154,8 @@ source_set("settings") {
     "//ios/chrome/browser/ui/elements:elements_internal",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/icons:custom_symbols",
+    "//ios/chrome/browser/ui/icons:settings_icons",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
@@ -208,6 +210,7 @@ source_set("settings") {
     "//url",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
+  public_deps = [ "//ios/third_party/material_components_ios" ]
   frameworks = [
     "CoreLocation.framework",
     "UIKit.framework",

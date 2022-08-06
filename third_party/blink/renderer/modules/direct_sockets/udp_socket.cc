@@ -6,28 +6,21 @@
 
 #include "base/barrier_callback.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_udp_socket_connection.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_udp_socket_open_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_udp_socket_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/direct_sockets/stream_wrapper.h"
 #include "third_party/blink/renderer/modules/direct_sockets/udp_readable_stream_wrapper.h"
 #include "third_party/blink/renderer/modules/direct_sockets/udp_writable_stream_wrapper.h"
-#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -37,22 +30,30 @@ namespace {
 constexpr char kUDPNetworkFailuresHistogramName[] =
     "DirectSockets.UDPNetworkFailures";
 
-constexpr uint32_t readableStreamDefaultBufferSize = 32;
+bool CheckSendReceiveBufferSize(const UDPSocketOptions* options,
+                                ExceptionState& exception_state) {
+  if (options->hasSendBufferSize() && options->sendBufferSize() == 0) {
+    exception_state.ThrowTypeError("sendBufferSize must be greater than zero.");
+    return false;
+  }
+  if (options->hasReceiveBufferSize() && options->receiveBufferSize() == 0) {
+    exception_state.ThrowTypeError(
+        "receiverBufferSize must be greater than zero.");
+    return false;
+  }
+
+  return true;
+}
 
 mojom::blink::DirectSocketOptionsPtr CreateUDPSocketOptions(
-    const String& address,
-    const uint16_t port,
     const UDPSocketOptions* options,
     ExceptionState& exception_state) {
   auto socket_options = mojom::blink::DirectSocketOptions::New();
 
-  socket_options->remote_hostname = address;
-  socket_options->remote_port = port;
+  socket_options->remote_hostname = options->remoteAddress();
+  socket_options->remote_port = options->remotePort();
 
-  if (options->hasReadableStreamBufferSize() &&
-      options->readableStreamBufferSize() == 0) {
-    exception_state.ThrowTypeError(
-        "readableStreamBufferSize must be greater than zero.");
+  if (!CheckSendReceiveBufferSize(options, exception_state)) {
     return {};
   }
 
@@ -70,8 +71,6 @@ mojom::blink::DirectSocketOptionsPtr CreateUDPSocketOptions(
 
 // static
 UDPSocket* UDPSocket::Create(ScriptState* script_state,
-                             const String& address,
-                             const uint16_t port,
                              const UDPSocketOptions* options,
                              ExceptionState& exception_state) {
   if (!Socket::CheckContextAndPermissions(script_state, exception_state)) {
@@ -79,7 +78,7 @@ UDPSocket* UDPSocket::Create(ScriptState* script_state,
   }
 
   auto* socket = MakeGarbageCollected<UDPSocket>(script_state);
-  if (!socket->Open(address, port, options, exception_state)) {
+  if (!socket->Open(options, exception_state)) {
     return nullptr;
   }
   return socket;
@@ -93,19 +92,13 @@ UDPSocket::UDPSocket(ScriptState* script_state)
 
 UDPSocket::~UDPSocket() = default;
 
-bool UDPSocket::Open(const String& address,
-                     const uint16_t port,
-                     const UDPSocketOptions* options,
+bool UDPSocket::Open(const UDPSocketOptions* options,
                      ExceptionState& exception_state) {
   auto open_udp_socket_options =
-      CreateUDPSocketOptions(address, port, options, exception_state);
+      CreateUDPSocketOptions(options, exception_state);
 
   if (exception_state.HadException()) {
     return false;
-  }
-
-  if (options->hasReadableStreamBufferSize()) {
-    readable_stream_buffer_size_ = options->readableStreamBufferSize();
   }
 
   ConnectService();
@@ -127,35 +120,34 @@ void UDPSocket::Init(int32_t result,
         WTF::Bind(&UDPSocket::OnBothStreamsClosed, WrapWeakPersistent(this)));
 
     readable_stream_wrapper_ = MakeGarbageCollected<UDPReadableStreamWrapper>(
-        script_state_, close_callback, udp_socket_,
-        readable_stream_buffer_size_.value_or(readableStreamDefaultBufferSize));
+        script_state_, close_callback, udp_socket_);
     writable_stream_wrapper_ = MakeGarbageCollected<UDPWritableStreamWrapper>(
         script_state_, close_callback, udp_socket_);
 
-    auto* connection = UDPSocketConnection::Create();
+    auto* open_info = UDPSocketOpenInfo::Create();
 
-    connection->setReadable(readable_stream_wrapper_->Readable());
-    connection->setWritable(writable_stream_wrapper_->Writable());
+    open_info->setReadable(readable_stream_wrapper_->Readable());
+    open_info->setWritable(writable_stream_wrapper_->Writable());
 
-    connection->setRemoteAddress(String{peer_addr->ToStringWithoutPort()});
-    connection->setRemotePort(peer_addr->port());
+    open_info->setRemoteAddress(String{peer_addr->ToStringWithoutPort()});
+    open_info->setRemotePort(peer_addr->port());
 
-    connection->setLocalAddress(String{local_addr->ToStringWithoutPort()});
-    connection->setLocalPort(local_addr->port());
+    open_info->setLocalAddress(String{local_addr->ToStringWithoutPort()});
+    open_info->setLocalPort(local_addr->port());
 
-    connection_resolver_->Resolve(connection);
+    opened_resolver_->Resolve(open_info);
   } else {
     if (result != net::OK) {
       // Error codes are negative.
       base::UmaHistogramSparse(kUDPNetworkFailuresHistogramName, -result);
     }
-    connection_resolver_->Reject(CreateDOMExceptionFromNetErrorCode(result));
+    opened_resolver_->Reject(CreateDOMExceptionFromNetErrorCode(result));
     CloseServiceAndResetFeatureHandle();
 
     closed_resolver_->Reject();
   }
 
-  connection_resolver_ = nullptr;
+  opened_resolver_ = nullptr;
 }
 
 mojo::PendingReceiver<blink::mojom::blink::DirectUDPSocket>
@@ -217,7 +209,7 @@ void UDPSocket::Trace(Visitor* visitor) const {
 }
 
 void UDPSocket::OnServiceConnectionError() {
-  if (connection_resolver_) {
+  if (opened_resolver_) {
     Init(net::ERR_UNEXPECTED, absl::nullopt, absl::nullopt);
   }
 }

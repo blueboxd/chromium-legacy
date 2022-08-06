@@ -29,8 +29,6 @@ import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator.S
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge.WebFeedMetadata;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController.FeedLauncher;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.share.crow.CrowButtonDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -88,16 +86,14 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mCrowButton = findViewById(R.id.crow_chip_view);
         mItemText = findViewById(R.id.menu_item_text);
 
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DYNAMIC_COLOR_BUTTONS_ANDROID)) {
-            final ColorStateList textColor = AppCompatResources.getColorStateList(
-                    mContext, R.color.default_text_color_accent1_tint_list);
-            mFollowingChipView.getPrimaryTextView().setTextColor(textColor);
-            mFollowChipView.getPrimaryTextView().setTextColor(textColor);
-            mCrowButton.getPrimaryTextView().setTextColor(textColor);
-            final ColorStateList backgroundColor = AppCompatResources.getColorStateList(
-                    mContext, R.color.menu_footer_chip_background_list);
-            mFollowChipView.setBackgroundTintList(backgroundColor);
-        }
+        final ColorStateList textColor = AppCompatResources.getColorStateList(
+                mContext, R.color.default_text_color_accent1_tint_list);
+        mFollowingChipView.getPrimaryTextView().setTextColor(textColor);
+        mFollowChipView.getPrimaryTextView().setTextColor(textColor);
+        mCrowButton.getPrimaryTextView().setTextColor(textColor);
+        final ColorStateList backgroundColor = AppCompatResources.getColorStateList(
+                mContext, R.color.menu_footer_chip_background_list);
+        mFollowChipView.setBackgroundTintList(backgroundColor);
     }
 
     /**
@@ -185,16 +181,19 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mChipView = mFollowChipView;
         showEnabledChipView(mFollowChipView, mContext.getText(R.string.menu_follow),
                 R.drawable.ic_add, (view) -> {
-                    WebFeedBridge.followFromUrl(mTab, mUrl, result -> {
-                        byte[] followId = result.metadata != null ? result.metadata.id : null;
-                        mWebFeedSnackbarController.showPostFollowHelp(
-                                mTab, result, followId, mUrl, mTitle);
-                        PrefService prefs = FeedFeatures.getPrefService();
-                        if (!prefs.getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
-                            prefs.setBoolean(Pref.ARTICLES_LIST_VISIBLE, true);
-                            FeedFeatures.setLastSeenFeedTabId(StreamTabId.FOLLOWING);
-                        }
-                    });
+                    WebFeedBridge.followFromUrl(
+                            mTab, mUrl, WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU, result -> {
+                                byte[] followId =
+                                        result.metadata != null ? result.metadata.id : null;
+                                mWebFeedSnackbarController.showPostFollowHelp(mTab, result,
+                                        followId, mUrl, mTitle,
+                                        WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU);
+                                PrefService prefs = FeedFeatures.getPrefService();
+                                if (!prefs.getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
+                                    prefs.setBoolean(Pref.ARTICLES_LIST_VISIBLE, true);
+                                    FeedFeatures.setLastSeenFeedTabId(StreamTabId.FOLLOWING);
+                                }
+                            });
                     WebFeedBridge.incrementFollowedFromWebPageMenuCount();
                     FeedServiceBridge.reportOtherUserAction(
                             StreamKind.UNKNOWN, FeedUserActionType.TAPPED_FOLLOW_BUTTON);
@@ -207,9 +206,11 @@ public class WebFeedMainMenuItem extends FrameLayout {
         showEnabledChipView(mFollowingChipView, mContext.getText(R.string.menu_following),
                 R.drawable.ic_check_googblue_24dp, (view) -> {
                     WebFeedBridge.unfollow(webFeedId, /*isDurable=*/false,
+                            WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU,
                             (result)
                                     -> mWebFeedSnackbarController.showSnackbarForUnfollow(
-                                            result.requestStatus, webFeedId, mUrl, mTitle));
+                                            result.requestStatus, webFeedId, mUrl, mTitle,
+                                            WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU));
                     mAppMenuHandler.hideAppMenu();
                 });
     }

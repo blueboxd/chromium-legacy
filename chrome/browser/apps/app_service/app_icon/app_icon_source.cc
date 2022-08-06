@@ -87,7 +87,7 @@ void AppIconSource::StartDataRequest(
   if (query_position != std::string::npos)
     size_param = size_param.substr(0, query_position);
   int size_in_dip = 0;
-  if (!base::StringToInt(size_param, &size_in_dip)) {
+  if (!base::StringToInt(size_param, &size_in_dip) || size_in_dip < 1) {
     LoadDefaultImage(std::move(callback));
     return;
   }
@@ -102,7 +102,7 @@ void AppIconSource::StartDataRequest(
       base::BindOnce(&RunCallback, std::move(callback)));
 }
 
-std::string AppIconSource::GetMimeType(const std::string&) {
+std::string AppIconSource::GetMimeType(const GURL&) {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";

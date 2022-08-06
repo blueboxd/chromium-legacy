@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/crostini/crostini_sshfs.h"
 
+#include <inttypes.h>
 #include <memory>
 #include <utility>
 
@@ -19,7 +20,7 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/external_mount_points.h"
 
@@ -140,37 +141,47 @@ void CrostiniSshfs::OnGetContainerSshKeys(
   // Add ourselves as an observer so we can continue once the path is mounted.
   auto* dmgr = ash::disks::DiskMountManager::GetInstance();
 
-  // Call to sshfs to mount.
+  // Construct sshfs:// source path.
   in_progress_mount_->source_path = base::StringPrintf(
       "sshfs://%s@%s:", info->username.c_str(), hostname.c_str());
+
+  // If we have a vsock port and cid, use sftp:// over vsock instead.
+  if (info->sftp_vsock_port != 0) {
+    absl::optional<VmInfo> vm_info =
+        manager->GetVmInfo(in_progress_mount_->container_id.vm_name);
+    if (vm_info) {
+      in_progress_mount_->source_path = base::StringPrintf(
+          "sftp://%" PRId64 ":%u", vm_info->info.cid(), info->sftp_vsock_port);
+    }
+  }
   in_progress_mount_->container_homedir = info->homedir;
 
   dmgr->MountPath(in_progress_mount_->source_path, "",
                   file_manager::util::GetCrostiniMountPointName(profile_),
                   file_manager::util::GetCrostiniMountOptions(
                       hostname, host_private_key, container_public_key),
-                  chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                  ash::MountType::kNetworkStorage,
                   chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
                   base::BindOnce(&CrostiniSshfs::OnMountEvent,
                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniSshfs::OnMountEvent(
-    chromeos::MountError error_code,
+    ash::MountError error_code,
     const ash::disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
+  if (error_code != ash::MountError::kNone) {
     LOG(ERROR) << "Error mounting crostini container: error_code=" << error_code
                << ", source_path=" << mount_info.source_path
                << ", mount_path=" << mount_info.mount_path
-               << ", mount_type=" << mount_info.mount_type
+               << ", mount_type=" << static_cast<int>(mount_info.mount_type)
                << ", mount_condition=" << mount_info.mount_condition;
     switch (error_code) {
-      case chromeos::MountError::MOUNT_ERROR_INTERNAL:
+      case ash::MountError::kInternal:
         Finish(CrostiniSshfsResult::kMountErrorInternal);
         return;
-      case chromeos::MountError::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
+      case ash::MountError::kMountProgramFailed:
         Finish(CrostiniSshfsResult::kMountErrorProgramFailed);
         return;
       default:

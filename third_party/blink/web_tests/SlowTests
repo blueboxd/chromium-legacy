@@ -87,7 +87,10 @@ crbug.com/1280585 http/tests/inspector-protocol/network/xhr-post-replay-cors.js 
 crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax-browser-navigate.js [ Slow ]
 crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax-js-navigate.js [ Slow ]
 crbug.com/1280537 http/tests/inspector-protocol/network/blocked-cookie-same-site-lax-js-subresource.js [ Slow ]
-crbug.com/1279832 http/tests/inspector-protocol/network/cross-origin-isolation/coop-coep-get-security-isolation-info.js [ Slow ]
+crbug.com/1279832 http/tests/inspector-protocol/network/cross-origin-isolation/coop-coep-get-security-isolation-info-no-endpoint-no-report-only.js [ Slow ]
+crbug.com/1279832 http/tests/inspector-protocol/network/cross-origin-isolation/coop-coep-get-security-isolation-info-endpoint-no-report-only.js [ Slow ]
+crbug.com/1279832 http/tests/inspector-protocol/network/cross-origin-isolation/coop-coep-get-security-isolation-info-no-endpoint-report-only.js [ Slow ]
+crbug.com/1279832 http/tests/inspector-protocol/network/cross-origin-isolation/coop-coep-get-security-isolation-info-endpoint-report-only.js [ Slow ]
 crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-browser-navigate.js [ Slow ]
 crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-navigate.js [ Slow ]
 crbug.com/1277877 http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-subresource.js [ Slow ]
@@ -802,3 +805,25 @@ crbug.com/1314927 external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.t
 crbug.com/1314927 external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
 
 crbug.com/1327869 css3/calc/simple-calcs-prefixed.html [ Slow ]
+
+crbug.com/1228246 http/tests/inspector-protocol/network/same-site-issue-warn-cookie-strict-subresource-context-downgrade.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/network/same-site-issue-warn-cookie-lax-subresource-context-downgrade.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/service-worker/network-get-request-body-blob.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/service-worker/network-extrainfo-subresource.js [ Slow ]
+
+crbug.com/1302664 [ Debug Mac ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/animation/transform-interpolation-skew.html [ Slow ]
+
+crbug.com/1301971 [ Debug Mac12 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/animation/transform-interpolation-verify-reftests.html [ Slow ]
+crbug.com/1301971 [ Debug Linux ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/animation/transform-interpolation-verify-reftests.html [ Slow ]
+
+crbug.com/1300811 [ Debug Mac ] animations/interpolation/webkit-column-width-interpolation.html [ Slow ]
+crbug.com/1300811 [ Debug Linux ] animations/interpolation/webkit-column-width-interpolation.html [ Slow ]
+
+crbug.com/1228246 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/network/disable-interception-midway.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/fetch/request-paused-network-id-cors.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/fetch/fetch-cors-preflight-sw.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/network/request-interception-patterns.js [ Slow ]
+crbug.com/1228246 http/tests/inspector-protocol/fetch/disable-with-response-in-flight.js [ Slow ]
+crbug.com/1306770 http/tests/inspector-protocol/network/interception-download.js [ Slow ]
+crbug.com/1344358 inspector-protocol/page/frameNavigatedContext.js [ Slow ]

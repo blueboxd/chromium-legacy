@@ -4,9 +4,9 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {dispatchSimpleEvent, getPropertyDescriptor, PropertyKind} from 'chrome://resources/js/cr.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
-import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.js';
+import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.js';
+import {Menu} from 'chrome://resources/js/cr/ui/menu.js';
 
 import {FileType} from '../../../common/js/file_type.js';
 import {vmTypeToIconName} from '../../../common/js/icon_util.js';
@@ -562,7 +562,8 @@ export class DirectoryItem extends FilesTreeItem {
           }
           this.parentTree_.metadataModel_.get(
               this.entries_,
-              constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+              constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES.concat(
+                  constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES));
         },
         () => {
           this.expanded = false;

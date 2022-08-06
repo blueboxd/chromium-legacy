@@ -132,7 +132,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter size
 [Worker]     method constructor
 [Worker] interface CropTarget
-[Worker]     static method fromElement
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface Crypto
@@ -1216,7 +1215,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter referrer
 [Worker]     getter referrerPolicy
 [Worker]     getter signal
-[Worker]     getter targetAddressSpace
 [Worker]     getter url
 [Worker]     method arrayBuffer
 [Worker]     method blob
@@ -1292,6 +1290,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface StorageBucket
 [Worker]     attribute @@toStringTag
+[Worker]     getter indexedDB
 [Worker]     method constructor
 [Worker]     method durability
 [Worker]     method estimate
@@ -1400,6 +1399,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
+[Worker] interface TransformStreamDefaultController
+[Worker]     attribute @@toStringTag
+[Worker]     getter desiredSize
+[Worker]     method constructor
+[Worker]     method enqueue
+[Worker]     method error
+[Worker]     method terminate
 [Worker] interface TrustedHTML
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

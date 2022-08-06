@@ -294,6 +294,11 @@ public final class ChromePreferenceKeys {
             "Chrome.Flags.CrashStreakBeforeCache";
 
     /**
+     * Cached value of the native SafeModeForCachedFlags feature flag.
+     */
+    public static final String FLAGS_SAFE_MODE_ENABLED = "Chrome.Flags.SafeModeEnabled";
+
+    /**
      * How many runs of Safe Mode for Cached Flags are left before trying a normal run.
      */
     public static final String FLAGS_SAFE_MODE_RUNS_LEFT = "Chrome.Flags.SafeModeRunsLeft";
@@ -717,6 +722,12 @@ public final class ChromePreferenceKeys {
     public static final String IS_LAST_VISITED_TAB_SRP = "Chrome.StartSurface.IsLastVisitedTabSRP";
 
     /**
+     * Key used to store user actions for collapsing search resumption module on NTP.
+     */
+    public static final String SEARCH_RESUMPTION_MODULE_COLLAPSE_ON_NTP =
+            "Chrome.SearchResumptionModule.Collapse";
+
+    /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
      * enabled.
      */
@@ -1011,6 +1022,7 @@ public final class ChromePreferenceKeys {
                 FLAGS_CRASH_STREAK_BEFORE_CACHE,
                 FLAGS_FIELD_TRIAL_PARAM_CACHED.pattern(),
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
+                FLAGS_SAFE_MODE_ENABLED,
                 FLAGS_SAFE_MODE_RUNS_LEFT,
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP,
@@ -1085,6 +1097,7 @@ public final class ChromePreferenceKeys {
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,
                 SYNC_PROMO_TOTAL_SHOW_COUNT,
                 START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                SEARCH_RESUMPTION_MODULE_COLLAPSE_ON_NTP,
                 START_SHOW_ON_STARTUP,
                 TAP_FEED_CARDS_COUNT,
                 TAP_MV_TILES_COUNT,

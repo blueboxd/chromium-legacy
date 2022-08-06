@@ -12,12 +12,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/segmentation_platform/internal/database/signal_key.h"
-#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
-#include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/public/features.h"
+#include "components/segmentation_platform/public/proto/aggregation.pb.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
+#include "components/segmentation_platform/public/proto/types.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
@@ -136,6 +136,7 @@ ValidationResult ValidateMetadataSqlFeature(const proto::SqlFeature& feature) {
   if (feature.sql().empty())
     return ValidationResult::kFeatureSqlQueryEmpty;
 
+  int total_tensor_length = 0;
   for (int i = 0; i < feature.bind_values_size(); ++i) {
     const auto& bind_value = feature.bind_values(i);
     if (!bind_value.has_value() ||
@@ -144,6 +145,12 @@ ValidationResult ValidateMetadataSqlFeature(const proto::SqlFeature& feature) {
             ValidationResult::kValidationSuccess) {
       return ValidationResult::kFeatureBindValuesInvalid;
     }
+    total_tensor_length += bind_value.value().tensor_length();
+  }
+
+  if (total_tensor_length !=
+      std::count(feature.sql().begin(), feature.sql().end(), '?')) {
+    return ValidationResult::kFeatureBindValuesInvalid;
   }
 
   return ValidationResult::kValidationSuccess;

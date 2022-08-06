@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/display_lock/content_visibility_auto_state_changed_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -31,6 +32,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -87,13 +89,6 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
           is_hidden_until_found_ || is_details_slot_
               ? static_cast<uint16_t>(DisplayLockActivationReason::kFindInPage)
               : 0u);
-      break;
-    case EContentVisibility::kHiddenMatchable:
-      UseCounter::Count(document_,
-                        WebFeature::kContentVisibilityHiddenMatchable);
-      RequestLock(
-          static_cast<uint16_t>(DisplayLockActivationReason::kAny) &
-          ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport));
       break;
   }
   // In a new state, we might need to either start or stop observing viewport
@@ -289,6 +284,9 @@ void DisplayLockContext::Lock() {
   // If we have top layer elements in our subtree, we have to detach their
   // layout objects, since otherwise they would be hoisted out of our subtree.
   DetachDescendantTopLayerElements();
+
+  // Schedule ContentVisibilityAutoStateChanged event if needed.
+  ScheduleStateChangeEventIfNeeded();
 
   if (!element_->GetLayoutObject())
     return;
@@ -518,6 +516,17 @@ void DisplayLockContext::UpgradeForcedScope(ForcedPhase old_phase,
   }
 }
 
+void DisplayLockContext::ScheduleStateChangeEventIfNeeded() {
+  if (state_ == EContentVisibility::kAuto &&
+      RuntimeEnabledFeatures::ContentVisibilityAutoStateChangedEventEnabled() &&
+      !IsShapingDeferred()) {
+    element_->EnqueueEvent(
+        *ContentVisibilityAutoStateChangedEvent::Create(
+            event_type_names::kContentvisibilityautostatechanged, is_locked_),
+        TaskType::kMiscPlatformAPI);
+  }
+}
+
 void DisplayLockContext::NotifyForcedUpdateScopeEnded(ForcedPhase phase) {
   forced_info_.end(phase);
 }
@@ -563,6 +572,9 @@ void DisplayLockContext::Unlock() {
   // of |element_| in the AX cache.
   if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(element_);
+
+  // Schedule ContentVisibilityAutoStateChanged event if needed.
+  ScheduleStateChangeEventIfNeeded();
 
   auto* layout_object = element_->GetLayoutObject();
   // We might commit without connecting, so there is no layout object yet.
@@ -707,7 +719,9 @@ bool DisplayLockContext::MarkNeedsRepaintAndPaintArtifactCompositorUpdate() {
   DCHECK(ConnectedToView());
   if (auto* layout_object = element_->GetLayoutObject()) {
     layout_object->PaintingLayer()->SetNeedsRepaint();
-    document_->View()->SetPaintArtifactCompositorNeedsUpdate();
+    document_->View()->SetPaintArtifactCompositorNeedsUpdate(
+        PaintArtifactCompositorUpdateReason::
+            kDisplayLockContextNeedsPaintArtifactCompositorUpdate);
     return true;
   }
   return false;
@@ -1035,6 +1049,9 @@ bool DisplayLockContext::ForceUnlockIfNeeded() {
               layout_invalidation_reason::kDisplayLock);
         }
       }
+      // If we forced unlock, then we need to prevent subsequent calls to
+      // Lock() until the next frame.
+      SetRequestedState(EContentVisibility::kVisible);
     }
     return true;
   }

@@ -142,6 +142,19 @@ bool WillCreateURLLoaderFactoryInternal(
         target_factory_receiver,
     network::mojom::URLLoaderFactoryOverridePtr* factory_override);
 
+void OnPrefetchRequestWillBeSent(FrameTreeNode* frame_tree_node,
+                                 const std::string& request_id,
+                                 const GURL& initiator,
+                                 const network::ResourceRequest& request);
+void OnPrefetchResponseReceived(FrameTreeNode* frame_tree_node,
+                                const std::string& request_id,
+                                const GURL& url,
+                                const network::mojom::URLResponseHead& head);
+void OnPrefetchRequestComplete(
+    FrameTreeNode* frame_tree_node,
+    const std::string& request_id,
+    const network::URLLoaderCompletionStatus& status);
+
 void OnResetNavigationRequest(NavigationRequest* navigation_request);
 void OnNavigationRequestWillBeSent(const NavigationRequest& navigation_request);
 void OnNavigationResponseReceived(
@@ -161,9 +174,15 @@ void BackForwardCacheNotUsed(
     const BackForwardCacheCanStoreTreeResult* tree_result);
 
 void DidActivatePrerender(const NavigationRequest& nav_request);
+
+// This function reports cancellation status to DevTools with the
+// `reason_details`, which is used to give users more information about the
+// cancellation details, and reason_details will be formatted for display in
+// the DevTools. See the DevTools implementation for the format.
 void DidCancelPrerender(const GURL& prerendering_url,
                         FrameTreeNode* ftn,
-                        PrerenderHost::FinalStatus status);
+                        PrerenderHost::FinalStatus status,
+                        const std::string& reason_details);
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,

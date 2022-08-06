@@ -191,6 +191,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the state of a badge when it was tapped. {MobileInfobarType}
   </summary>
+  <token key="MobileInfobarType" variants="MobileInfobarType"/>
 </histogram>
 
 <histogram name="Mobile.Messages.Banner.Dismiss.{MobileInfobarType}"
@@ -200,6 +201,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the reason why an infobar banner was dismissed. {MobileInfobarType}
   </summary>
+  <token key="MobileInfobarType" variants="MobileInfobarType"/>
 </histogram>
 
 <histogram name="Mobile.Messages.Banner.Event.{MobileInfobarType}"
@@ -207,6 +209,7 @@ chromium-metrics-reviews@google.com.
   <owner>sczs@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
   <summary>Records infobar banner events. {MobileInfobarType}</summary>
+  <token key="MobileInfobarType" variants="MobileInfobarType"/>
 </histogram>
 
 <histogram name="Mobile.Messages.Banner.OnScreenTime" units="ms"
@@ -259,6 +262,7 @@ chromium-metrics-reviews@google.com.
   <owner>sczs@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
   <summary>Records generic infobar modal events. {MobileInfobarType}</summary>
+  <token key="MobileInfobarType" variants="MobileInfobarType"/>
 </histogram>
 
 <histogram base="true" name="Mobile.Messages.OverflowRow.Tapped"
@@ -371,6 +375,7 @@ chromium-metrics-reviews@google.com.
     <variant name="QRCodeImage" summary="QR code image"/>
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
+    <variant name="ShareChrome" summary="link to Chrome in the app store"/>
     <variant name="SharedHighlight" summary="highlighted fragment"/>
     <variant name="TabGridItem" summary="tab grid item"/>
     <variant name="TabGridSelectionMode" summary="tab grid selection mode"/>
@@ -750,7 +755,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MobileFre.FragmentInflationSpeed" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-01-15">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -864,7 +869,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1193,7 +1198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

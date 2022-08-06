@@ -71,7 +71,7 @@
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
 #include "chrome/browser/ui/sharing_hub/screenshot/screenshot_captured_bubble_controller.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
@@ -176,6 +176,10 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/apps/intent_helper/supported_links_infobar_delegate.h"
 #endif
 
 namespace {
@@ -697,7 +701,7 @@ void NewWindow(Browser* browser) {
     }
     apps::AppLaunchParams params = apps::AppLaunchParams(
         app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
-        apps::mojom::LaunchSource::kFromKeyboard);
+        apps::LaunchSource::kFromKeyboard);
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()
         ->LaunchAppWithParams(std::move(params));
@@ -710,7 +714,7 @@ void NewWindow(Browser* browser) {
   if (extension && extension->is_hosted_app()) {
     const auto app_launch_params = CreateAppLaunchParamsUserContainer(
         profile, extension, WindowOpenDisposition::NEW_WINDOW,
-        apps::mojom::LaunchSource::kFromKeyboard);
+        apps::LaunchSource::kFromKeyboard);
     OpenApplicationWindow(
         profile, app_launch_params,
         extensions::AppLaunchInfo::GetLaunchWebURL(extension));
@@ -1287,10 +1291,7 @@ void ManagePasswordsForPage(Browser* browser) {
 void SendTabToSelfFromPageAction(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  send_tab_to_self::SendTabToSelfBubbleController* controller =
-      send_tab_to_self::SendTabToSelfBubbleController::
-          CreateOrGetFromWebContents(web_contents);
-  controller->ShowBubble();
+  send_tab_to_self::ShowBubble(web_contents);
 }
 
 void GenerateQRCodeFromPageAction(Browser* browser) {
@@ -1714,8 +1715,13 @@ Browser* OpenInChrome(Browser* hosted_app_browser) {
       source_tabstrip->DetachWebContentsAtForInsertion(
           source_tabstrip->active_index()),
       true);
-  apps::MaybeShowIntentPicker(
-      target_browser->tab_strip_model()->GetActiveWebContents());
+  auto* web_contents =
+      target_browser->tab_strip_model()->GetActiveWebContents();
+  apps::MaybeShowIntentPicker(web_contents);
+#if BUILDFLAG(IS_CHROMEOS)
+  apps::SupportedLinksInfoBarDelegate::RemoveSupportedLinksInfoBar(
+      web_contents);
+#endif
   target_browser->window()->Show();
   return target_browser;
 }

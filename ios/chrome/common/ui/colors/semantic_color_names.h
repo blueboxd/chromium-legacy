@@ -48,6 +48,9 @@ extern NSString* const kTextfieldPlaceholderColor;
 extern NSString* const kToolbarButtonColor;
 // Color used for a shadow/separator next to a toolbar.
 extern NSString* const kToolbarShadowColor;
+// Simple primary color based on theme. White for light theme, black for dark
+// theme.
+extern NSString* const kSolidPrimaryColor;
 
 // Standard Colors
 
@@ -69,11 +72,21 @@ extern NSString* const kGreenColor;
 
 // Other shades of green from the palette.
 extern NSString* const kGreen50Color;
+extern NSString* const kGreen500Color;
 extern NSString* const kGreen700Color;
 
 // Standard red color. This is most commonly used for the tint color on
 // destructive controls.
 extern NSString* const kRedColor;
+
+// Other shades of red from the palette.
+extern NSString* const kRed500Color;
+
+// Purple 600.
+extern NSString* const kPurple600Color;
+
+// Yellow 500.
+extern NSString* const kYellow500Color;
 
 // Grey Color Palette.
 extern NSString* const kGrey50Color;

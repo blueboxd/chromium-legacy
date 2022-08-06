@@ -21,8 +21,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
-#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
-#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -122,15 +122,14 @@ constexpr char kShareIconResourceName[] = "realbox/icons/share.svg";
 #endif
 
 base::flat_map<int32_t, realbox::mojom::SuggestionGroupPtr>
-CreateSuggestionGroupsMap(
-    const AutocompleteResult& result,
-    PrefService* prefs,
-    const SearchSuggestionParser::HeadersMap& headers_map) {
+CreateSuggestionGroupsMap(const AutocompleteResult& result,
+                          PrefService* prefs,
+                          const SuggestionGroupsMap& suggestion_groups_map) {
   base::flat_map<int32_t, realbox::mojom::SuggestionGroupPtr> result_map;
-  for (const auto& pair : headers_map) {
+  for (const auto& pair : suggestion_groups_map) {
     realbox::mojom::SuggestionGroupPtr suggestion_group =
         realbox::mojom::SuggestionGroup::New();
-    suggestion_group->header = pair.second;
+    suggestion_group->header = pair.second.header;
     suggestion_group->hidden =
         result.IsSuggestionGroupHidden(prefs, pair.first);
     suggestion_group->show_group_a11y_label = l10n_util::GetStringFUTF16(
@@ -138,7 +137,8 @@ CreateSuggestionGroupsMap(
     suggestion_group->hide_group_a11y_label = l10n_util::GetStringFUTF16(
         IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON, suggestion_group->header);
 
-    result_map.emplace(pair.first, std::move(suggestion_group));
+    result_map.emplace(static_cast<int>(pair.first),
+                       std::move(suggestion_group));
   }
   return result_map;
 }
@@ -213,8 +213,8 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                                      description_class.style));
     }
     mojom_match->destination_url = match.destination_url;
-    mojom_match->suggestion_group_id = match.suggestion_group_id.value_or(
-        SearchSuggestionParser::kInvalidSuggestionGroupId);
+    mojom_match->suggestion_group_id = static_cast<int>(
+        match.suggestion_group_id.value_or(SuggestionGroupId::kInvalid));
     const bool is_bookmarked =
         bookmark_model->IsBookmarked(match.destination_url);
     mojom_match->icon_url =
@@ -281,7 +281,8 @@ realbox::mojom::AutocompleteResultPtr CreateAutocompleteResult(
     bookmarks::BookmarkModel* bookmark_model,
     PrefService* prefs) {
   return realbox::mojom::AutocompleteResult::New(
-      input, CreateSuggestionGroupsMap(result, prefs, result.headers_map()),
+      input,
+      CreateSuggestionGroupsMap(result, prefs, result.suggestion_groups_map()),
       CreateAutocompleteMatches(result, bookmark_model));
 }
 
@@ -380,6 +381,8 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
     return kDriveVideoIconResourceName;
   } else if (icon.name == omnibox::kExtensionAppIcon.name) {
     return kExtensionAppIconResourceName;
+  } else if (icon.name == omnibox::kJourneysIcon.name) {
+    return kJourneysIconResourceName;
   } else if (icon.name == omnibox::kPageIcon.name) {
     return kPageIconResourceName;
   } else if (icon.name == omnibox::kPedalIcon.name) {
@@ -687,13 +690,16 @@ void RealboxHandler::ToggleSuggestionGroupIdVisibility(
   if (!autocomplete_controller_)
     return;
 
-  omnibox::SuggestionGroupVisibility new_value =
+  // It should be safe to cast |suggestion_group_id| to SuggestionGroupId type,
+  // since the group ID was originally passed to the page by the browser.
+  // TODO(crbug.com/1343512): Investigate migrating this enum to a proto enum
+  // to take advantage of its built-in check for conversion from int32 type.
+  const auto& group_id = static_cast<SuggestionGroupId>(suggestion_group_id);
+  const bool current_visibility =
       autocomplete_controller_->result().IsSuggestionGroupHidden(
-          profile_->GetPrefs(), suggestion_group_id)
-          ? omnibox::SuggestionGroupVisibility::SHOWN
-          : omnibox::SuggestionGroupVisibility::HIDDEN;
-  omnibox::SetSuggestionGroupVisibility(profile_->GetPrefs(),
-                                        suggestion_group_id, new_value);
+          profile_->GetPrefs(), group_id);
+  autocomplete_controller_->result().SetSuggestionGroupHidden(
+      profile_->GetPrefs(), group_id, !current_visibility);
 }
 
 void RealboxHandler::LogCharTypedToRepaintLatency(base::TimeDelta latency) {
@@ -776,7 +782,8 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
     // Request favicons for navigational matches.
     // TODO(crbug.com/1075848): Investigate using chrome://favicon2.
     if (!AutocompleteMatch::IsSearchType(match.type) &&
-        match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+        match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
+        match.type != AutocompleteMatchType::HISTORY_CLUSTER) {
       gfx::Image favicon = favicon_cache_.GetLargestFaviconForPageUrl(
           match.destination_url,
           base::BindOnce(&RealboxHandler::OnRealboxFaviconFetched,

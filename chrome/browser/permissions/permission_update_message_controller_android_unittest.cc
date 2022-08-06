@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_update_message_controller_android.h"
 
+#include "base/android/jni_android.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/android/android_theme_resources.h"
@@ -152,7 +153,7 @@ TEST_F(PermissionUpdateMessageControllerAndroidTest,
   ShowMedia(mock_permission_update_callback2.Get(), false);
   EXPECT_EQ(1u, GetMessageDelegatesSize());
   EXPECT_CALL(mock_permission_update_callback1, Run(false));
-  EXPECT_CALL(mock_permission_update_callback2, Run(false)).Times(0);
+  EXPECT_CALL(mock_permission_update_callback2, Run(false));
 
   // Message is dismissed first by primary action, and then permission update
   // callback is invoked. In this case, the dismiss reason should be

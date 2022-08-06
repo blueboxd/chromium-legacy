@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Function;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityUtils;
@@ -50,6 +51,9 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Displays and manages the content view / list UI for browsing history.
@@ -125,6 +129,8 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
      *         unselectable items.
      * @param tabSupplier Supplies the current tab, null if the history UI will be shown in a
      *                    separate activity.
+     * @param showHistoryToggleSupplier A supplier that tells us if and when we should show the
+     *         toggle that swaps between the Journeys and regular history UIs.
      * @param toggleViewFactory Function that provides a toggle view container for the given parent
      *         ViewGroup. This toggle is used to switch between the Journeys UI and the regular
      *         history UI and is thus controlled by our parent component.
@@ -134,7 +140,8 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
             boolean isSeparateActivity, boolean isIncognito, boolean shouldShowPrivacyDisclaimers,
             boolean shouldShowClearDataIfAvailable, @Nullable String hostName,
             @Nullable SelectionDelegate<HistoryItem> selectionDelegate,
-            @Nullable Supplier<Tab> tabSupplier, boolean showHistoryToggle,
+            @Nullable Supplier<Tab> tabSupplier,
+            ObservableSupplier<Boolean> showHistoryToggleSupplier,
             Function<ViewGroup, ViewGroup> toggleViewFactory, HistoryProvider historyProvider) {
         mActivity = activity;
         mObserver = observer;
@@ -170,8 +177,8 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
         // explicitly redirects to use regular profile for Incognito case.
         Profile profile = Profile.getLastUsedRegularProfile();
         mHistoryAdapter = new HistoryAdapter(this,
-                sProviderForTests != null ? sProviderForTests : historyProvider, showHistoryToggle,
-                toggleViewFactory);
+                sProviderForTests != null ? sProviderForTests : historyProvider,
+                showHistoryToggleSupplier, toggleViewFactory);
 
         // Create a recycler view.
         mRecyclerView =
@@ -343,6 +350,26 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
     }
 
     /**
+     * Opens the url of each of the visits in the provided list in a new tab.
+     */
+    public void openItemsInNewTab(List<HistoryItem> items, boolean isIncognito) {
+        if (mIsSeparateActivity && items.size() > 1) {
+            ArrayList<String> additionalUrls = new ArrayList<>(items.size() - 1);
+            for (int i = 1; i < items.size(); i++) {
+                additionalUrls.add(items.get(i).getUrl().getSpec());
+            }
+
+            Intent intent = getOpenUrlIntent(items.get(0).getUrl(), isIncognito, true);
+            intent.putExtra(IntentHandler.EXTRA_ADDITIONAL_URLS, additionalUrls);
+            IntentHandler.startActivityForTrustedIntent(intent);
+        } else {
+            for (HistoryItem item : items) {
+                openUrl(item.getUrl(), isIncognito, true);
+            }
+        }
+    }
+
+    /**
      * Open the provided url.
      * @param url The url to open.
      * @param isIncognito Whether to open the url in an incognito tab. If null, the tab
@@ -489,7 +516,7 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
         viewIntent.putExtra(
                 Browser.EXTRA_APPLICATION_ID, activity.getApplicationContext().getPackageName());
         viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        viewIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.AUTO_BOOKMARK);
+        viewIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PAGE_TRANSITION_TYPE);
         // Determine component or class name.
         ComponentName component;
         if (activity instanceof HistoryActivity) { // phone
@@ -504,8 +531,6 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
             viewIntent.setClass(activity, ChromeLauncherActivity.class);
         }
         IntentUtils.addTrustedIntentExtras(viewIntent);
-        viewIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE,
-                HistoryContentManager.PAGE_TRANSITION_TYPE);
         return viewIntent;
     }
 

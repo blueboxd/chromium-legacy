@@ -12,7 +12,6 @@
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,7 +45,6 @@ class CrostiniPortForwarderTest : public testing::Test {
   ~CrostiniPortForwarderTest() override = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
@@ -75,7 +73,6 @@ class CrostiniPortForwarderTest : public testing::Test {
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ChunneldClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -83,7 +80,7 @@ class CrostiniPortForwarderTest : public testing::Test {
    public:
     MOCK_METHOD(void,
                 OnActivePortsChanged,
-                (const base::ListValue& activePorts),
+                (const base::Value::List& activePorts),
                 (override));
   };
 
@@ -130,11 +127,13 @@ class CrostiniPortForwarderTest : public testing::Test {
       return;
     }
     EXPECT_EQ(key.port_number,
-              pref.value().FindIntKey(crostini::kPortNumberKey).value());
-    EXPECT_EQ(static_cast<int>(key.protocol_type),
-              pref.value().FindIntKey(crostini::kPortProtocolKey).value());
+              pref.value().GetDict().FindInt(crostini::kPortNumberKey).value());
+    EXPECT_EQ(
+        static_cast<int>(key.protocol_type),
+        pref.value().GetDict().FindInt(crostini::kPortProtocolKey).value());
     EXPECT_EQ(key.container_id, guest_os::GuestId(pref.value()));
-    EXPECT_EQ(label, *pref.value().FindStringKey(crostini::kPortLabelKey));
+    EXPECT_EQ(label,
+              *pref.value().GetDict().FindString(crostini::kPortLabelKey));
   }
 
   void MakePortExistenceExpectation(CrostiniPortForwarder::PortRuleKey port,
@@ -520,16 +519,16 @@ TEST_F(CrostiniPortForwarderTest, GetActivePorts) {
             3U);
 
   // Get active ports.
-  base::ListValue forwarded_ports = crostini_port_forwarder_->GetActivePorts();
-  EXPECT_EQ(forwarded_ports.GetListDeprecated().size(), ports_to_add.size());
+  base::Value::List forwarded_ports =
+      crostini_port_forwarder_->GetActivePorts();
+  EXPECT_EQ(forwarded_ports.size(), ports_to_add.size());
   for (unsigned int i = 0; i < ports_to_add.size(); i++) {
     unsigned int reverse_index = ports_to_add.size() - i - 1;
-    EXPECT_EQ(*(forwarded_ports.GetListDeprecated()[i].FindPath("port_number")),
+    EXPECT_EQ(*(forwarded_ports[i].GetDict().Find("port_number")),
               base::Value(ports_to_add.at(reverse_index).port_number));
-    EXPECT_EQ(
-        *(forwarded_ports.GetListDeprecated()[i].FindPath("protocol_type")),
-        base::Value(
-            static_cast<int>(ports_to_add.at(reverse_index).protocol_type)));
+    EXPECT_EQ(*(forwarded_ports[i].GetDict().Find("protocol_type")),
+              base::Value(static_cast<int>(
+                  ports_to_add.at(reverse_index).protocol_type)));
   }
 }
 

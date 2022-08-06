@@ -28,11 +28,6 @@ TestStoragePartition::GetURLLoaderFactoryForBrowserProcess() {
   return nullptr;
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-TestStoragePartition::GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() {
-  return nullptr;
-}
-
 std::unique_ptr<network::PendingSharedURLLoaderFactory>
 TestStoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread() {
   return nullptr;
@@ -43,8 +38,8 @@ TestStoragePartition::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_;
 }
 
-void TestStoragePartition::CreateHasTrustTokensAnswerer(
-    mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+void TestStoragePartition::CreateTrustTokenQueryAnswerer(
+    mojo::PendingReceiver<network::mojom::TrustTokenQueryAnswerer> receiver,
     const url::Origin& top_frame_origin) {
   NOTREACHED() << "Not implemented.";
 }
@@ -197,7 +192,7 @@ void TestStoragePartition::ClearData(uint32_t remove_mask,
 void TestStoragePartition::ClearData(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,
-    OriginMatcherFunction origin_matcher,
+    StorageKeyPolicyMatcherFunction storage_key_matcher,
     network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
     bool perform_storage_cleanup,
     const base::Time begin,

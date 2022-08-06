@@ -22,7 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_connect.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -277,10 +277,9 @@ void TetherService::DeviceListChanged() {
   UpdateEnabledState();
 }
 
-void TetherService::DevicePropertiesUpdated(
-    const chromeos::DeviceState* device) {
-  if (device->Matches(chromeos::NetworkTypePattern::Tether() |
-                      chromeos::NetworkTypePattern::WiFi())) {
+void TetherService::DevicePropertiesUpdated(const DeviceState* device) {
+  if (device->Matches(NetworkTypePattern::Tether() |
+                      NetworkTypePattern::WiFi())) {
     UpdateEnabledState();
   }
 }
@@ -288,8 +287,7 @@ void TetherService::DevicePropertiesUpdated(
 void TetherService::UpdateEnabledState() {
   bool was_pref_enabled = IsEnabledByPreference();
   chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
-      network_state_handler_->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether());
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether());
 
   // If |was_pref_enabled| differs from the new Tether TechnologyState, the
   // settings toggle has been changed. Update the kInstantTetheringEnabled user
@@ -480,14 +478,14 @@ bool TetherService::IsBluetoothPowered() const {
 
 bool TetherService::IsWifiPresent() const {
   return network_state_handler_->IsTechnologyAvailable(
-      chromeos::NetworkTypePattern::WiFi());
+      NetworkTypePattern::WiFi());
 }
 
 bool TetherService::IsCellularAvailableButNotEnabled() const {
   return (network_state_handler_->IsTechnologyAvailable(
-              chromeos::NetworkTypePattern::Cellular()) &&
+              NetworkTypePattern::Cellular()) &&
           !network_state_handler_->IsTechnologyEnabled(
-              chromeos::NetworkTypePattern::Cellular()));
+              NetworkTypePattern::Cellular()));
 }
 
 bool TetherService::IsAllowedByPolicy() const {

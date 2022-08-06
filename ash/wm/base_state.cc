@@ -14,6 +14,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/client/aura_constants.h"
@@ -157,8 +158,9 @@ void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
           window, is_desired_primary_snapped ? SplitViewController::LEFT
                                              : SplitViewController::RIGHT);
     } else {
-      const WMEvent event(is_desired_primary_snapped ? WM_EVENT_SNAP_PRIMARY
-                                                     : WM_EVENT_SNAP_SECONDARY);
+      const WindowSnapWMEvent event(is_desired_primary_snapped
+                                        ? WM_EVENT_SNAP_PRIMARY
+                                        : WM_EVENT_SNAP_SECONDARY);
       window_state->OnWMEvent(&event);
     }
     window_state->ReadOutWindowCycleSnapAction(
@@ -209,6 +211,16 @@ void BaseState::UpdateMinimizedState(WindowState* window_state,
 gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
     aura::Window* window,
     const WindowStateType state_type) {
+  return BaseState::GetSnappedWindowBoundsInParent(window, state_type,
+                                                   kDefaultSnapRatio);
+}
+
+gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
+    aura::Window* window,
+    const WindowStateType state_type,
+    float snap_ratio) {
+  DCHECK(state_type == WindowStateType::kPrimarySnapped ||
+         state_type == WindowStateType::kSecondarySnapped);
   gfx::Rect bounds_in_parent;
   if (ShouldAllowSplitView()) {
     bounds_in_parent =
@@ -216,13 +228,15 @@ gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
             (state_type == WindowStateType::kPrimarySnapped)
                 ? SplitViewController::LEFT
                 : SplitViewController::RIGHT,
-            window);
+            window, snap_ratio);
   } else {
-    bounds_in_parent = (state_type == WindowStateType::kPrimarySnapped)
-                           ? GetDefaultSnappedWindowBoundsInParent(
-                                 window, SnapViewType::kPrimary)
-                           : GetDefaultSnappedWindowBoundsInParent(
-                                 window, SnapViewType::kSecondary);
+    // Use `window_positioning_utils` to calculate the snapped window bounds.
+    bounds_in_parent = ash::GetSnappedWindowBoundsInParent(
+        window,
+        state_type == WindowStateType::kPrimarySnapped
+            ? SnapViewType::kPrimary
+            : SnapViewType::kSecondary,
+        snap_ratio);
   }
   return bounds_in_parent;
 }

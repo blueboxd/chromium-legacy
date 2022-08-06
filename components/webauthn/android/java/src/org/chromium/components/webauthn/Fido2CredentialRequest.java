@@ -23,6 +23,7 @@ import org.chromium.base.Log;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.AuthenticatorTransport;
 import org.chromium.blink.mojom.PaymentOptions;
+import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialDescriptor;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialType;
@@ -41,6 +42,7 @@ import org.chromium.url.Origin;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -96,8 +98,7 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         mMakeCredentialCallback = null;
     }
 
-    public void handleMakeCredentialRequest(
-            org.chromium.blink.mojom.PublicKeyCredentialCreationOptions options,
+    public void handleMakeCredentialRequest(PublicKeyCredentialCreationOptions options,
             RenderFrameHost frameHost, Origin origin, MakeCredentialResponseCallback callback,
             FidoErrorResponseCallback errorCallback) {
         assert mMakeCredentialCallback == null && mErrorCallback == null;
@@ -269,7 +270,13 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         if (mBrowserBridge == null) {
             mBrowserBridge = new WebAuthnBrowserBridge();
         }
-        mBrowserBridge.onCredentialsDetailsListReceived(frameHost, credentials,
+        List<WebAuthnCredentialDetails> discoverableCredentials = new ArrayList<>();
+        for (WebAuthnCredentialDetails credential : credentials) {
+            if (credential.mIsDiscoverable) {
+                discoverableCredentials.add(credential);
+            }
+        }
+        mBrowserBridge.onCredentialsDetailsListReceived(frameHost, discoverableCredentials,
                 (selectedCredentialId)
                         -> dispatchGetAssertionRequest(
                                 options, callerOriginString, clientDataHash, selectedCredentialId));

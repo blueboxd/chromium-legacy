@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/base/schemeful_site.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace base {
@@ -45,6 +46,7 @@ class Value;
 }  // namespace base
 
 namespace storage {
+struct BucketLocator;
 class QuotaClientCallbackWrapper;
 }  // namespace storage
 
@@ -85,25 +87,19 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
+  void BindIndexedDBForBucket(
+      const storage::BucketLocator& bucket_locator,
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
-  void DeleteForBucket(const blink::StorageKey& storage_key,
-                       DeleteForBucketCallback callback) override;
-  void DeleteForBucket(const storage::BucketLocator& bucket_locator,
-                       DeleteForBucketCallback callback);
-  void ForceClose(const blink::StorageKey& storage_key,
+  void DeleteForStorageKey(const blink::StorageKey& storage_key,
+                           DeleteForStorageKeyCallback callback) override;
+  void ForceClose(storage::BucketId bucket_id,
                   storage::mojom::ForceCloseReason reason,
                   base::OnceClosure callback) override;
-  void ForceClose(const storage::BucketLocator& bucket_locator,
-                  storage::mojom::ForceCloseReason reason,
-                  base::OnceClosure callback);
-  void GetConnectionCount(const blink::StorageKey& storage_key,
+  void GetConnectionCount(storage::BucketId bucket_id,
                           GetConnectionCountCallback callback) override;
-  void GetConnectionCount(const storage::BucketLocator& bucket_locator,
-                          GetConnectionCountCallback callback);
-  void DownloadBucketData(const blink::StorageKey& storage_key,
+  void DownloadBucketData(storage::BucketId bucket_id,
                           DownloadBucketDataCallback callback) override;
-  void DownloadBucketData(const storage::BucketLocator& bucket_locator,
-                          DownloadBucketDataCallback callback);
   void GetAllBucketsDetails(GetAllBucketsDetailsCallback callback) override;
   void SetForceKeepSessionState() override;
   void ApplyPolicyUpdates(std::vector<storage::mojom::StoragePolicyUpdatePtr>
@@ -152,6 +148,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void ForceInitializeFromFilesForTesting(
       ForceInitializeFromFilesForTestingCallback callback) override;
 
+  void DeleteBucketData(const storage::BucketLocator& bucket_locator,
+                        base::OnceCallback<void(bool success)> callback);
+
   IndexedDBFactoryImpl* GetIDBFactory();
 
   // Called by StoragePartitionImpl to clear session-only data.
@@ -183,7 +182,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // Returns a list of all BucketLocators with backing stores.
   std::vector<storage::BucketLocator> GetAllBuckets();
-  bool HasBucket(const storage::BucketLocator& bucket_locator);
+  absl::optional<storage::BucketLocator> LookUpBucket(
+      storage::BucketId bucket_id);
 
   // Used by IndexedDBInternalsUI to populate internals page.
   base::Value* GetAllBucketsDetails();
@@ -198,7 +198,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   const base::FilePath GetFirstPartyDataPathForTesting() const;
 
   bool IsInMemoryContext() const { return base_data_path_.empty(); }
-  size_t GetConnectionCountSync(const storage::BucketLocator& bucket_locator);
+  size_t GetConnectionCountSync(storage::BucketId bucket_id);
   int GetBucketBlobFileCount(const storage::BucketLocator& bucket_locator);
 
   bool is_incognito() const { return base_data_path_.empty(); }
@@ -217,10 +217,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
       const std::u16string& database_name,
       const std::u16string& object_store_name);
 
-  // In unittests where the quota_manager_proxy is mocked, this is how you can
-  // skip the bucket lookup and fake its existence.
-  void RegisterBucketLocatorToSkipQuotaLookupForTesting(
-      const storage::BucketLocator& bucket_locator);
+  // In unit tests where you want to verify usage, this is an easy way to get
+  // the path to populate data at.
+  base::FilePath GetLevelDBPathForTesting(
+      const storage::BucketLocator& bucket_locator) const;
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBContextImpl>;
@@ -240,26 +240,24 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // mojom::IndexedDBControl internal implementation:
   void BindIndexedDBImpl(
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
-      const absl::optional<storage::BucketLocator>& bucket_locator);
+      storage::QuotaErrorOr<storage::BucketInfo> bucket_info);
   void GetUsageImpl(GetUsageCallback usage_callback);
-  void DeleteForBucketImpl(
-      DeleteForBucketCallback callback,
-      const absl::optional<storage::BucketLocator>& bucket_locator);
   void ForceCloseImpl(
       const storage::mojom::ForceCloseReason reason,
       base::OnceClosure closure,
       const absl::optional<storage::BucketLocator>& bucket_locator);
-  void GetConnectionCountImpl(
-      GetConnectionCountCallback callback,
-      const absl::optional<storage::BucketLocator>& bucket_locator);
-  void DownloadBucketDataImpl(
-      DownloadBucketDataCallback callback,
-      const absl::optional<storage::BucketLocator>& bucket_locator);
+  void GetConnectionCountImpl(GetConnectionCountCallback callback,
+                              storage::BucketId bucket_id);
+
+  void OnGotBucketsForDeletion(
+      base::OnceCallback<void(bool)> callback,
+      storage::QuotaErrorOr<std::set<storage::BucketInfo>> buckets);
+  void DoDeleteBucketData(const storage::BucketLocator& bucket_locator,
+                          base::OnceCallback<void(bool)> callback);
 
   void ShutdownOnIDBSequence();
 
-  const base::FilePath GetFirstPartyDataPath() const;
-  const base::FilePath GetThirdPartyDataPath() const;
+  const base::FilePath GetLegacyDataPath() const;
   base::FilePath GetBlobStorePath(
       const storage::BucketLocator& bucket_locator) const;
   base::FilePath GetLevelDBPath(
@@ -284,26 +282,18 @@ class CONTENT_EXPORT IndexedDBContextImpl
   using DidGetBucketLocatorCallback = base::OnceCallback<void(
       const absl::optional<storage::BucketLocator>& bucket_locator)>;
 
-  // This function provides an easy way to wrap the common operation: find
-  // bucket in `storage_key_to_bucket_locator_` if it exists, otherwise look
-  // it up in the `quota_manager_proxy_`, cache it, and then run the callback.
   void GetOrCreateDefaultBucket(const blink::StorageKey& storage_key,
                                 DidGetBucketLocatorCallback callback);
 
-  // This function provides an easy way to wrap the common operation: find
-  // bucket in `bucket_id_to_bucket_locator_` if it exists, otherwise look
-  // it up in the `quota_manager_proxy_`, cache it, and then run the callback.
-  void GetBucketById(const storage::BucketId& bucket_id,
-                     DidGetBucketLocatorCallback callback);
+  // Finds IDB files in their legacy location, which is currently used for
+  // default buckets in first party contexts. Non-default buckets and default
+  // buckets in third party contexts, when partitioning is enabled, are returned
+  // by `FindIndexedDBFiles`.
+  const std::map<blink::StorageKey, base::FilePath> FindLegacyIndexedDBFiles();
 
-  // TODO(crbug.com/1315371): We need a way to map the StorageKey to a single
-  // valid BucketLocator for legacy API purposes. This member should be removed
-  // as it blocks the use of non-default named buckets.
-  std::map<blink::StorageKey, storage::BucketLocator>
-      storage_key_to_bucket_locator_;
-
-  std::map<storage::BucketId, storage::BucketLocator>
-      bucket_id_to_bucket_locator_;
+  // Reads IDB files from disk, looking in the directories where
+  // third-party-context IDB files are stored.
+  const std::map<storage::BucketId, base::FilePath> FindIndexedDBFiles();
 
   const scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   IndexedDBDispatcherHost dispatcher_host_;

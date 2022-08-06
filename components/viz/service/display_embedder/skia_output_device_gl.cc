@@ -13,13 +13,12 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
-#include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -37,6 +36,10 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "components/viz/service/display/dc_layer_overlay.h"
+#endif
 
 namespace viz {
 
@@ -67,7 +70,7 @@ class SkiaOutputDeviceGL::OverlayData {
       : texture_(std::move(texture)) {}
 
   explicit OverlayData(
-      std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation)
+      std::unique_ptr<gpu::OverlayImageRepresentation> representation)
       : representation_(std::move(representation)) {}
 
   ~OverlayData() = default;
@@ -92,9 +95,8 @@ class SkiaOutputDeviceGL::OverlayData {
   void EndOverlayAccess() { access_.reset(); }
 
  private:
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
-  std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
-      access_;
+  std::unique_ptr<gpu::OverlayImageRepresentation> representation_;
+  std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess> access_;
   scoped_refptr<gpu::gles2::TexturePassthrough> texture_;
 };
 
@@ -157,8 +159,8 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
 #endif  // IS_CHROMEOS_ASH
 
-  DCHECK(context_state_->gr_context());
-  DCHECK(context_state_->context());
+  DCHECK(context_state_);
+  DCHECK(gl_surface_);
 
   if (gl_surface_->SupportsSwapTimestamps()) {
     gl_surface_->SetEnableSwapTimestamps();
@@ -168,25 +170,29 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     context_state_->MakeCurrent(gl_surface_.get());
   }
 
+  DCHECK(context_state_->gr_context());
+  DCHECK(context_state_->context());
+
   GrDirectContext* gr_context = context_state_->gr_context();
   gl::CurrentGL* current_gl = context_state_->context()->GetCurrentGL();
 
   // Get alpha bits from the default frame buffer.
+  int alpha_bits = 0;
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
   gr_context->resetContext(kRenderTarget_GrGLBackendState);
   const auto* version = current_gl->Version;
   if (version->is_desktop_core_profile) {
     glGetFramebufferAttachmentParameterivEXT(
         GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE,
-        &alpha_bits_);
+        &alpha_bits);
   } else {
-    glGetIntegerv(GL_ALPHA_BITS, &alpha_bits_);
+    glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);
   }
   CHECK_GL_ERROR();
 
   auto color_type = kRGBA_8888_SkColorType;
 
-  if (!alpha_bits_) {
+  if (alpha_bits == 0) {
     color_type = gl_surface_->GetFormat().GetBufferSize() == 16
                      ? kRGB_565_SkColorType
                      : kRGB_888x_SkColorType;
@@ -199,8 +205,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
       color_type = kRGBA_8888_SkColorType;
     }
   }
-
-  // sRGB
+  // SRGB
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
       color_type;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] =
@@ -209,7 +214,11 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
       color_type;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRX_8888)] =
       color_type;
-  // scRGB
+  // HDR10
+  capabilities_
+      .sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_1010102)] =
+      kRGBA_1010102_SkColorType;
+  // scRGB linear
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_F16)] =
       kRGBA_F16_SkColorType;
 }
@@ -228,10 +237,12 @@ bool SkiaOutputDeviceGL::Reshape(
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-  gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
-  SkColorType color_type = characterization.colorType();
-  if (!gl_surface_->Resize(size, device_scale_factor, color_space,
-                           alpha_bits_)) {
+  const gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
+  const SkColorType color_type = characterization.colorType();
+  const bool has_alpha =
+      !SkAlphaTypeIsOpaque(characterization.imageInfo().alphaType());
+
+  if (!gl_surface_->Resize(size, device_scale_factor, color_space, has_alpha)) {
     CheckForLoopFailures();
     // To prevent tail call, so we can see the stack.
     base::debug::Alias(nullptr);
@@ -252,6 +263,9 @@ bool SkiaOutputDeviceGL::Reshape(
     case kRGB_565_SkColorType:
       framebuffer_info.fFormat = GL_RGB565;
       break;
+    case kRGBA_1010102_SkColorType:
+      framebuffer_info.fFormat = GL_RGB10_A2_EXT;
+      break;
     case kRGBA_F16_SkColorType:
       framebuffer_info.fFormat = GL_RGBA16F;
       break;
@@ -259,9 +273,6 @@ bool SkiaOutputDeviceGL::Reshape(
       NOTREACHED() << "color_type: " << color_type;
   }
 
-  // TODO(kylechar): We might need to support RGB10A2 for HDR10. HDR10 was only
-  // used with Windows updated RS3 (2017) as a workaround for a DWM bug so it
-  // might not be relevant to support anymore as a result.
   GrBackendRenderTarget render_target(size.width(), size.height(),
                                       characterization.sampleCount(),
                                       /*stencilBits=*/0, framebuffer_info);
@@ -440,6 +451,7 @@ void SkiaOutputDeviceGL::ScheduleOverlays(
     params->clip_rect = dc_layer.clip_rect;
     params->protected_video_type = dc_layer.protected_video_type;
     params->hdr_metadata = dc_layer.hdr_metadata;
+    params->is_video_fullscreen_mode = dc_layer.is_video_fullscreen_mode;
 
     // Schedule DC layer overlay to be presented at next SwapBuffers().
     if (!gl_surface_->ScheduleDCLayer(std::move(params)))

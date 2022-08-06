@@ -113,16 +113,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   }
   void SetFormattedPrice(const std::u16string& formatted_price);
 
-  const absl::optional<GURL>& query_url() const { return metadata_->query_url; }
-  void set_query_url(const GURL& url) { metadata_->query_url = url; }
-
-  const absl::optional<std::string>& equivalent_result_id() const {
-    return metadata_->equivalent_result_id;
-  }
-  void set_equivalent_result_id(const std::string& equivalent_result_id) {
-    metadata_->equivalent_result_id = equivalent_result_id;
-  }
-
   const std::string& id() const { return metadata_->id; }
 
   double display_score() const { return metadata_->display_score; }
@@ -164,14 +154,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const Actions& actions() const { return metadata_->actions; }
   void SetActions(const Actions& sets);
 
-  bool notify_visibility_change() const {
-    return metadata_->notify_visibility_change;
-  }
-
-  void set_notify_visibility_change(bool notify_visibility_change) {
-    metadata_->notify_visibility_change = notify_visibility_change;
-  }
-
   bool is_omnibox_search() const { return metadata_->is_omnibox_search; }
   void set_is_omnibox_search(bool is_omnibox_search) {
     metadata_->is_omnibox_search = is_omnibox_search;
@@ -183,6 +165,13 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_recommendation() const { return metadata_->is_recommendation; }
   void set_is_recommendation(bool is_recommendation) {
     metadata_->is_recommendation = is_recommendation;
+  }
+
+  bool skip_update_animation() const {
+    return metadata_->skip_update_animation;
+  }
+  void set_skip_update_animation(bool skip_update_animation) {
+    metadata_->skip_update_animation = skip_update_animation;
   }
 
   bool use_badge_icon_background() const {

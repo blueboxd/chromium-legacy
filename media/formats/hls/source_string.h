@@ -83,11 +83,23 @@ class MEDIA_EXPORT GenericSourceString {
   // string. Returns the substring that was consumed.
   GenericSourceString Consume(size_t count = base::StringPiece::npos);
 
+  // Finds the first occurrence of the given character, and returns the
+  // substring prefixing that character. The prefix and character are consumed
+  // from this string. If the given character does not appear anywhere in this
+  // string, the entire string is consumed and returned.
+  GenericSourceString ConsumeDelimiter(char c);
+
   // Produces a `ResolvedSourceString` by bypassing variable substitution.
   // This is useful for passing strings that must not contain variables to
   // functions consuming strings that may or may not have contained variable
   // references.
   ResolvedSourceString SkipVariableSubstitution() const;
+
+  // Trims whitespace from the start of this SourceString. The only tolerated
+  // "whitespace" characters are space (' ') and tab ('\t'). Page break ('\f')
+  // is not tolerated, and carriage return ('\r') and line-feed ('\n') should
+  // never appear in `SourceString`.
+  void TrimStart();
 
   // Returns whether this string contains variable substitutions, i.e. is
   // different from the original source.

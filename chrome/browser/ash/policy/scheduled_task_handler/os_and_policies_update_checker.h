@@ -11,8 +11,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/policy/scheduled_task_handler/task_executor_with_retries.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 
 namespace policy {
 
@@ -37,9 +37,8 @@ constexpr base::TimeDelta kWaitForNetworkTimeout = base::Minutes(5);
 
 // This class is used by the scheduled update check policy to perform the actual
 // device update check.
-class OsAndPoliciesUpdateChecker
-    : public ash::UpdateEngineClient::Observer,
-      public chromeos::NetworkStateHandlerObserver {
+class OsAndPoliciesUpdateChecker : public ash::UpdateEngineClient::Observer,
+                                   public ash::NetworkStateHandlerObserver {
  public:
   explicit OsAndPoliciesUpdateChecker(
       chromeos::NetworkStateHandler* network_state_handler);
@@ -67,8 +66,8 @@ class OsAndPoliciesUpdateChecker
   // Returns true if |Start| has been called and not been |Stop|ped.
   bool IsRunning() const;
 
-  // chromeos::NetworkStateHandlerObserver overrides.
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  // ash::NetworkStateHandlerObserver overrides.
+  void DefaultNetworkChanged(const ash::NetworkState* network) override;
 
  private:
   // Schedules update check by using |update_check_task_executor_|.
@@ -119,7 +118,7 @@ class OsAndPoliciesUpdateChecker
   // Not owned.
   chromeos::NetworkStateHandler* const network_state_handler_;
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   // Scheduled and retries |StartUpdateCheck|.

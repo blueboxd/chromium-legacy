@@ -12,7 +12,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_consumer.h"
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
@@ -24,11 +23,9 @@
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 
-@protocol ActivityServicePositioner;
 class Browser;
 @class BookmarkInteractionController;
 @class BrowserContainerViewController;
-@class BrowserViewControllerHelper;
 @class BubblePresenter;
 @class CommandDispatcher;
 @protocol CRWResponderInputView;
@@ -62,6 +59,7 @@ class PrerenderService;
 typedef struct {
   PrerenderService* prerenderService;
   BubblePresenter* bubblePresenter;
+  ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
   PopupMenuCoordinator* popupMenuCoordinator;
   DownloadManagerCoordinator* downloadManagerCoordinator;
   NewTabPageCoordinator* ntpCoordinator;
@@ -85,13 +83,10 @@ typedef struct {
                         IncognitoReauthConsumer,
                         LogoAnimationControllerOwnerOwner,
                         OmniboxPopupPresenterDelegate,
-                        PageInfoPresentation,
                         ThumbStripSupporting,
                         ToolbarCoordinatorDelegate,
-                        WebNavigationNTPDelegate,
                         WebStateContainerViewProvider,
-                        BrowserCommands,
-                        NewTabPageCommands>
+                        BrowserCommands>
 
 // Initializes a new BVC.
 // `browser` is the browser whose tabs this BVC will display.
@@ -103,8 +98,6 @@ typedef struct {
 - (instancetype)initWithBrowser:(Browser*)browser
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
-       browserViewControllerHelper:
-           (BrowserViewControllerHelper*)browserViewControllerHelper
                         dispatcher:(CommandDispatcher*)dispatcher
                keyCommandsProvider:(KeyCommandsProvider*)keyCommandsProvider
                       dependencies:
@@ -134,20 +127,6 @@ typedef struct {
 // The container used for infobar modal overlays.
 @property(nonatomic, strong)
     UIViewController* infobarModalOverlayContainerViewController;
-
-// The sad tab view controller. Only used to add the sad tab view (if any) to
-// snapshots.
-// TODO(crbug.com/1272491): Refactor snapshotting to remove the need for this
-// property.
-@property(nonatomic, strong) UIViewController* sadTabViewController;
-
-// Presenter used to display accessories over the toolbar (e.g. Find In Page).
-@property(nonatomic, strong)
-    ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
-
-// Positioner for activity services attached to the toolbar.
-@property(nonatomic, readonly) id<ActivityServicePositioner>
-    activityServicePositioner;
 
 // Scheduler for the non-modal default browser promo.
 // TODO(crbug.com/1204120): The BVC should not need this model-level object.

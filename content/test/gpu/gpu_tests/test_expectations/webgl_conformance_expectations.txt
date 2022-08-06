@@ -25,8 +25,9 @@
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-hd-630-family intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912
+#         intel intel-hd-630-family intel-gen-9 intel-0xa2e intel-0xd26
+#               intel-0xa011 intel-0x3e92 intel-0x3e9b intel-0x5912
+#               intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Decoder
@@ -40,13 +41,11 @@
 #         angle-vulkan ]
 # Skia Renderer
 # tags: [ skia-renderer-dawn
-#         skia-renderer-disabled
 #         skia-renderer-gl
 #         skia-renderer-vulkan ]
-# SwiftShader
-# tags: [ swiftshader-gl no-swiftshader-gl ]
 # Driver
-# tags: [ mesa_lt_19.1 ]
+# tags: [ mesa_lt_19.1
+#         mesa_ge_21.0 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -118,33 +117,24 @@ crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 crbug.com/1194209 [ mac no-passthrough ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
 
 # Extensions not available with SwiftShader
-crbug.com/1099955 [ swiftshader-gl angle-disabled linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled mac   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled win   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled linux ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled mac   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled win   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled linux ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/1099955 [ swiftshader-gl angle-disabled win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/1280666 [ swiftshader-gl angle-disabled mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl mac   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl mac   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1099955 [ angle-swiftshader linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ angle-swiftshader mac   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ angle-swiftshader win   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ angle-swiftshader linux ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ angle-swiftshader mac   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ angle-swiftshader win   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ angle-swiftshader linux ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1099955 [ angle-swiftshader win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 
 # Extensions not available under D3D9
 crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 [ win amd angle-d3d9 ] WebglExtension_WEBGL_depth_texture [ Skip ]
 [ win angle-d3d9 ] WebglExtension_WEBGL_draw_buffers [ Skip ]
 [ win angle-d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ win angle-d3d9 no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ win angle-d3d9 ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # Android general
-[ android no-swiftshader-gl ] WebglExtension_EXT_frag_depth [ Skip ]
+[ android ] WebglExtension_EXT_frag_depth [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 
@@ -155,14 +145,14 @@ crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Sk
 [ android qualcomm ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 [ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Skip ]
 [ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ android qualcomm no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ android android-nexus-5 no-passthrough ] WebglExtension_OES_texture_float_linear [ Skip ]
 [ android android-nexus-5 ] WebglExtension_WEBGL_depth_texture [ Skip ]
 [ android android-nexus-5 ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ android android-nexus-5x ] WebglExtension_WEBGL_depth_texture [ Skip ]
-[ android android-nexus-5x no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
+[ android android-nexus-5x ] WebglExtension_EXT_sRGB [ Skip ]
 crbug.com/1286830 [ android arm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/1286830 [ android arm no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+crbug.com/1286830 [ android arm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # Extensions not available on angle-vulkan
 crbug.com/1187260 [ angle-vulkan passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
@@ -177,7 +167,7 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_t
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_OES_fbo_render_mipmap [ Skip ]
 
 # Extensions not available on ChromeOS.
-crbug.com/957807 [ chromeos no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
+crbug.com/957807 [ chromeos ] WebglExtension_EXT_sRGB [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_EXT_texture_filter_anisotropic [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
@@ -187,8 +177,8 @@ crbug.com/957807 [ chromeos ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Sk
 [ fuchsia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ fuchsia fuchsia-board-astro ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 [ fuchsia fuchsia-board-sherlock ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
-[ fuchsia fuchsia-board-astro no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
-[ fuchsia fuchsia-board-sherlock no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ fuchsia fuchsia-board-astro ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ fuchsia fuchsia-board-sherlock ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # This test uses H.264 and the ChromeOS and Fuchsia bots aren't compiled with
 # proprietary codecs.
@@ -197,7 +187,7 @@ crbug.com/1136205 [ fuchsia ] conformance/textures/misc/video-rotation.html [ Sk
 
 # Texture compression is only expected to be available on desktop GPUs.
 crbug.com/1080360 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/1080401 [ chromeos chromeos-board-kevin no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+crbug.com/1080401 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/1080408 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 crbug.com/1080377 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 
@@ -238,7 +228,6 @@ crbug.com/735483 conformance/rendering/texture-switch-performance.html [ Skip ]
 # fail, etc.)
 crbug.com/1175419 [ fuchsia ] conformance/extensions/khr-parallel-shader-compile.html [ Skip ]
 crbug.com/angleproject/5259 [ fuchsia ] conformance/uniforms/uniform-default-values.html [ Skip ]
-crbug.com/1143392 [ fuchsia ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 crbug.com/871352 [ fuchsia ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/1143424 [ fuchsia ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/478572 [ fuchsia ] deqp/data/gles2/shaders/functions.html [ Skip ]
@@ -282,7 +271,7 @@ crbug.com/1043953 [ chromeos chromeos-board-amd64-generic ] conformance/textures
 # Fails on Android Nvidia Tegra driver version 343, passes on 361
 # We don't have tags for specific driver version so just fail all.
 [ android nvidia ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
-[ android nvidia no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Failure ]
+[ android nvidia ] WebglExtension_EXT_texture_compression_rgtc [ Failure ]
 
 # ========================
 # Conformance expectations
@@ -341,10 +330,6 @@ crbug.com/angleproject/6228 [ win intel angle-vulkan passthrough ] conformance/m
 
 # Flaky timeouts on multiple platforms - at least Linux/Mac/Win
 crbug.com/1254497 conformance/misc/type-conversion-test.html [ RetryOnFailure ]
-
-# Test times out, but upstream CTS splits this test into manageable size.
-# TODO(senorblanco): remove this after CTS roll containing the split
-crbug.com/1342210 [ win debug ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 
 ####################
 # Fuchsia failures #
@@ -469,16 +454,12 @@ crbug.com/1336736 [ win angle-d3d11 ] conformance/textures/misc/texture-video-tr
 # Mac failures     #
 ####################
 
-crbug.com/844311 [ mac no-swiftshader-gl ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
+crbug.com/844311 [ mac ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
 
 # Mac AMD failures
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/1230781 [ mac amd-0x679e ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1240443 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
-
-# Test times out, but upstream CTS splits this test into manageable size.
-# TODO(senorblanco): remove this after CTS roll containing the split
-crbug.com/1342210 [ mac debug ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 
 crbug.com/1276186 [ mac amd-0x679e angle-opengl ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 
@@ -508,13 +489,11 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough ] conformance/uniforms
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/acos/acos_001_to_006.html [ Failure ]
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/asin/asin_001_to_006.html [ Failure ]
 crbug.com/angleproject/6489 [ mac angle-metal passthrough ] conformance/ogles/GL/build/build_009_to_016.html [ Failure ]
-# TODO(senorblanco): uncomment or remove this after the CTS roll that splits the test
-# crbug.com/angleproject/6486 [ mac angle-metal passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Mac / Passthrough command decoder / Metal / Intel
 crbug.com/angleproject/4846 [ mac angle-metal passthrough intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/1291005 [ mac angle-metal no-swiftshader-gl intel ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/1291005 [ mac angle-metal no-swiftshader-gl intel ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
+crbug.com/1291005 [ mac angle-metal intel ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/1291005 [ mac angle-metal intel ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 
 # Mac / M1 / OpenGL
 crbug.com/1130703 [ mac apple-apple-m1 passthrough angle-opengl ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
@@ -577,6 +556,10 @@ crbug.com/352645 [ android android-webview-instrumentation angle-disabled ] conf
 # should be probably back to flaky once the bug is fixed. So uncomment below test once the bug is fixed.
 # crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 
+# These video tests are flakey on many configurations.
+crbug.com/1347077 [ android ] conformance/textures/misc/video-rotation.html [ Failure ]
+crbug.com/1347077 [ android ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+
 # Nexus 5
 crbug.com/899754 [ android android-nexus-5 ] conformance/attribs/gl-disabled-vertex-attrib-update.html [ Failure ]
 crbug.com/611943 [ android android-nexus-5 ] conformance/extensions/ext-texture-filter-anisotropic.html [ Failure ]
@@ -593,10 +576,6 @@ crbug.com/478572 [ android android-nexus-5 ] deqp/data/gles2/shaders/linkage.htm
 crbug.com/678850 [ android android-nexus-5 ] conformance/more/functions/vertexAttribPointerBadArgs.html [ Failure ]
 crbug.com/678850 [ android android-nexus-5 ] conformance/attribs/gl-vertexattribpointer.html [ Failure ]
 
-# Test times out, but upstream CTS splits this test into manageable size.
-# TODO(senorblanco): remove this after CTS roll containing the split
-crbug.com/1342210 [ android android-nexus-5 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
-
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/constructors/glsl-construct-bvec4.html [ Failure ]
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/constructors/glsl-construct-ivec3.html [ Failure ]
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/constructors/glsl-construct-ivec4.html [ Failure ]
@@ -607,7 +586,6 @@ crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/const
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/glsl/constructors/glsl-construct-vec4.html [ Failure ]
 crbug.com/1338214 [ android android-chromium android-Nexus-5 passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
-crbug.com/1338214 [ android android-Nexus-5 passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
 crbug.com/1338214 [ android android-Nexus-5 passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
 
 # Started failing after the upgrade to Marshmallow.
@@ -620,7 +598,7 @@ crbug.com/1264882 [ android-marshmallow android-nexus-5 ] conformance/glsl/bugs/
 crbug.com/882323 [ android android-nexus-5x ] deqp/data/gles2/shaders/conversions.html [ Failure ]
 crbug.com/609883 [ android android-nexus-5x ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Failure ]
 crbug.com/1043431 [ android android-nexus-5x ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
-crbug.com/951628 [ android android-nexus-5x no-passthrough no-swiftshader-gl ] conformance/rendering/blending.html [ Failure ]
+crbug.com/951628 [ android android-nexus-5x no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1083320 [ android android-nexus-5x ] conformance/misc/uninitialized-test.html [ Failure ]
 crbug.com/1056830 [ android android-nexus-5x ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 # Timing out on this device for unknown reasons.
@@ -630,21 +608,17 @@ crbug.com/1270815 [ android android-nexus-5x ] conformance/textures/misc/texture
 # Flakily returning RGBA(0,0,0,0) for pixels in video related tests
 crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
 crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
-crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/video/* [ Failure ]
 
 # Android NVIDIA Shield TV
 crbug.com/1294071 [ android-pie android-shield-android-tv ] conformance/glsl/bugs/vector-matrix-constructor-scalarization.html [ Failure ]
 # Flakily returning RGBA(0,0,0,0) for all pixels
-crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 
 # Pixel 4
 crbug.com/1175223 [ android android-pixel-4 angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
-crbug.com/1175226 [ android android-pixel-4 no-passthrough no-swiftshader-gl ] conformance/rendering/blending.html [ Failure ]
-crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
-crbug.com/1187332 [ android android-pixel-4 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1175226 [ android android-pixel-4 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1278904 [ android android-pixel-4 android-chromium ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 
 # Pixel 6
@@ -654,14 +628,11 @@ crbug.com/1286924 [ android android-pixel-6 arm ] conformance/textures/image_bit
 crbug.com/1286924 [ android android-pixel-6 arm ] conformance/textures/video/* [ Failure ]
 crbug.com/1286924 [ android android-pixel-6 arm passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1286924 [ android android-pixel-6 arm passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
-crbug.com/1286924 [ android android-pixel-6 arm passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
 crbug.com/1286924 [ android android-pixel-6 passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 crbug.com/1286924 [ android android-pixel-6 passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
 crbug.com/1287249 [ android android-pixel-6 passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
 crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
-crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
-crbug.com/1287249 [ android android-pixel-6 no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough ] conformance/more/conformance/quickCheckAPI-A.html [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
@@ -682,7 +653,6 @@ crbug.com/angleproject/2988 [ android angle-opengles ] conformance/context/conte
 
 # Failing webgl passthrough test on nexus 5x.
 crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
-crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 # Failing test in passthrough mode when experiment DrDc is enabled via fieldtrial_testing_config.json.
 crbug.com/1276552 [ android passthrough ] conformance/canvas/render-after-resize-test.html [ Failure ]
@@ -709,7 +679,7 @@ crbug.com/1237319 [ chromeos angle-opengles passthrough intel ] conformance/exte
 
 # Arm-based issues.
 crbug.com/1080400 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_color_buffer_half_float [ Failure ]
-crbug.com/1080356 [ chromeos chromeos-board-kevin no-swiftshader-gl ] WebglExtension_EXT_frag_depth [ Failure ]
+crbug.com/1080356 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_frag_depth [ Failure ]
 crbug.com/1080375 [ chromeos chromeos-board-kevin ] WebglExtension_OES_texture_float [ Failure ]
 crbug.com/1080402 [ chromeos chromeos-board-kevin ] WebglExtension_OES_texture_float_linear [ Failure ]
 crbug.com/1080403 [ chromeos chromeos-board-kevin ] WebglExtension_OES_texture_half_float [ Failure ]
@@ -719,9 +689,6 @@ crbug.com/1080379 [ chromeos chromeos-board-kevin ] conformance/glsl/bugs/consta
 crbug.com/1080380 [ chromeos chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
 crbug.com/1080380 [ chromeos chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
 crbug.com/1108368 [ chromeos chromeos-board-kevin ] conformance/misc/shader-precision-format.html [ Failure ]
-
-# Flaky test on chromeos-amd64-generic-rel.
-crbug.com/1227774 [ chromeos chromeos-board-amd64-generic ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 
 # Failing on chromeos-amd64-generic-rel.
 crbug.com/1232446 [ chromeos chromeos-board-amd64-generic ] conformance/rendering/gl-scissor-test.html [ Failure ]
@@ -734,20 +701,11 @@ crbug.com/angleproject/5038 [ chromeos no-passthrough ] conformance/extensions/e
 # Lacros/Wayland failures #
 ###########################
 
-crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_sRGB [ Failure ]
-crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_shader_texture_lod [ Failure ]
+crbug.com/1185344 [ linux display-server-wayland intel angle-disabled ] WebglExtension_EXT_sRGB [ Failure ]
+crbug.com/1185344 [ linux display-server-wayland intel angle-disabled ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 
-########################
-# SwiftShader failures #
-########################
-
-# All platforms, GL backend
-crbug.com/1099959 [ swiftshader-gl no-passthrough ] conformance/extensions/oes-fbo-render-mipmap.html [ Failure ]
-crbug.com/1099959 [ swiftshader-gl no-passthrough ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
-crbug.com/1099959 [ swiftshader-gl no-passthrough ] conformance/rendering/blending.html [ Failure ]
-crbug.com/1099959 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_frag_depth [ Failure ]
-crbug.com/1099959 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_sRGB [ Failure ]
-crbug.com/1099959 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_compression_rgtc [ Failure ]
+# Failures on validating command decoder only; won't fix.
+crbug.com/angleproject/5038 [ linux intel display-server-wayland no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
 # Flaky tests on Android Nexus 5
 crbug.com/1341423 [ android android-nexus-5 no-passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ RetryOnFailure ]

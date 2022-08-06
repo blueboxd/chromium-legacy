@@ -63,8 +63,8 @@ class PasswordsPrivateDelegateImpl
                    const std::u16string& note,
                    bool use_account_store,
                    content::WebContents* web_contents) override;
-  absl::optional<api::passwords_private::CredentialIds> ChangeSavedPassword(
-      const std::vector<int>& ids,
+  absl::optional<int> ChangeSavedPassword(
+      int id,
       const api::passwords_private::ChangeSavedPasswordParams& params) override;
   void RemoveSavedPassword(
       int id,
@@ -88,26 +88,16 @@ class PasswordsPrivateDelegateImpl
   // TODO(crbug.com/1102294): Mimic the signature in PasswordFeatureManager.
   void SetAccountStorageOptIn(bool opt_in,
                               content::WebContents* web_contents) override;
-  std::vector<api::passwords_private::InsecureCredential>
+  std::vector<api::passwords_private::PasswordUiEntry>
   GetCompromisedCredentials() override;
-  std::vector<api::passwords_private::InsecureCredential> GetWeakCredentials()
+  std::vector<api::passwords_private::PasswordUiEntry> GetWeakCredentials()
       override;
-  void GetPlaintextInsecurePassword(
-      api::passwords_private::InsecureCredential credential,
-      api::passwords_private::PlaintextReason reason,
-      content::WebContents* web_contents,
-      PlaintextInsecurePasswordCallback callback) override;
-  bool ChangeInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential,
-      base::StringPiece new_password) override;
-  bool RemoveInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential) override;
   bool MuteInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential) override;
+      const api::passwords_private::PasswordUiEntry& credential) override;
   bool UnmuteInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential) override;
+      const api::passwords_private::PasswordUiEntry& credential) override;
   void RecordChangePasswordFlowStarted(
-      const api::passwords_private::InsecureCredential& credential,
+      const api::passwords_private::PasswordUiEntry& credential,
       bool is_manual_flow) override;
   void RefreshScriptsIfNecessary(
       RefreshScriptsIfNecessaryCallback callback) override;
@@ -115,7 +105,7 @@ class PasswordsPrivateDelegateImpl
   void StopPasswordCheck() override;
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;
   void StartAutomatedPasswordChange(
-      const api::passwords_private::InsecureCredential& credential,
+      const api::passwords_private::PasswordUiEntry& credential,
       StartAutomatedPasswordChangeCallback callback) override;
   password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager()
       override;
@@ -176,13 +166,6 @@ class PasswordsPrivateDelegateImpl
   void OnExportPasswordsAuthResult(
       base::OnceCallback<void(const std::string&)> accepted_callback,
       content::WebContents* web_contents,
-      bool authenticated);
-
-  // Callback for GetPlaintextInsecurePassword() after authentication check.
-  void OnGetPlaintextInsecurePasswordAuthResult(
-      api::passwords_private::InsecureCredential credential,
-      api::passwords_private::PlaintextReason reason,
-      PlaintextInsecurePasswordCallback callback,
       bool authenticated);
 
   void OnAccountStorageOptInStateChanged();

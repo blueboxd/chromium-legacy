@@ -45,6 +45,7 @@
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
@@ -309,11 +310,11 @@ class CORE_EXPORT WebLocalFrameImpl final
                            bool skip_accelerated_content) override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   WebPerformance Performance() const override;
-  bool IsAdSubframe() const override;
+  bool IsAdFrame() const override;
   bool IsAdScriptInStack() const override;
   void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence) override;
   const absl::optional<blink::FrameAdEvidence>& AdEvidence() override;
-  bool IsSubframeCreatedByAdScript() override;
+  bool IsFrameCreatedByAdScript() override;
   gfx::Size SpoolSizeInPixelsForTesting(const gfx::Size& page_size_in_pixels,
                                         uint32_t page_count) override;
   void PrintPagesForTesting(cc::PaintCanvas*,

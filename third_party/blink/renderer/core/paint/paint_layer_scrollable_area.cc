@@ -93,6 +93,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
@@ -122,7 +123,8 @@ static const int kDefaultMinimumHeightForResizing = 15;
 PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
 void PaintLayerScrollableAreaRareData::Trace(Visitor* visitor) const {
-  visitor->Trace(sticky_constraints_map_);
+  visitor->Trace(sticky_layers_);
+  visitor->Trace(anchor_positioned_layers_);
 }
 
 const int kResizerControlExpandRatioForTouch = 2;
@@ -468,8 +470,11 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   }
 
   if (auto* scrolling_coordinator = GetScrollingCoordinator()) {
-    if (!scrolling_coordinator->UpdateCompositorScrollOffset(*frame, *this))
-      GetLayoutBox()->GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
+    if (!scrolling_coordinator->UpdateCompositorScrollOffset(*frame, *this)) {
+      GetLayoutBox()->GetFrameView()->SetPaintArtifactCompositorNeedsUpdate(
+          PaintArtifactCompositorUpdateReason::
+              kPaintLayerScrollableAreaUpdateScrollOffset);
+    }
   }
 
   // The ScrollOffsetTranslation paint property depends on the scroll offset.
@@ -537,6 +542,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
 void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   InvalidatePaintForStickyDescendants();
+  InvalidatePaintForAnchorPositionedLayers();
 
   auto* box = GetLayoutBox();
   auto* frame_view = box->GetFrameView();
@@ -942,6 +948,9 @@ void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
 }
 
 void PaintLayerScrollableArea::UpdateAfterLayout() {
+  InvalidateAllStickyConstraints();
+  InvalidateAllAnchorPositionedLayers();
+
   bool is_horizontal_scrollbar_frozen;
   bool is_vertical_scrollbar_frozen;
   if (in_overflow_relayout_ && !allow_second_overflow_relayout_) {
@@ -1387,9 +1396,15 @@ static inline const LayoutObject& ScrollbarStyleSource(
       return *doc_element->GetLayoutObject();
 
     if (Settings* settings = doc.GetSettings()) {
+      LocalFrame* frame = layout_box.GetFrame();
+      DCHECK(frame);
+      DCHECK(frame->GetPage());
+
+      VisualViewport& viewport = frame->GetPage()->GetVisualViewport();
       if (!settings->GetAllowCustomScrollbarInMainFrame() &&
-          layout_box.GetFrame() && layout_box.GetFrame()->IsMainFrame())
+          frame->IsMainFrame() && viewport.IsActiveViewport()) {
         return layout_box;
+      }
     }
 
     // Try the <body> element as a scrollbar source, but only if the body
@@ -2023,29 +2038,6 @@ bool PaintLayerScrollableArea::IsLocalPointInResizeControl(
   return ResizerCornerRect(resizer_hit_test_type).Contains(local_point);
 }
 
-bool PaintLayerScrollableArea::HitTestResizerInFragments(
-    const PaintLayerFragments& layer_fragments,
-    const HitTestLocation& hit_test_location) const {
-  if (GetLayoutBox()->StyleRef().Visibility() != EVisibility::kVisible ||
-      !GetLayoutBox()->CanResize())
-    return false;
-
-  if (layer_fragments.IsEmpty())
-    return false;
-
-  for (int i = layer_fragments.size() - 1; i >= 0; --i) {
-    const PaintLayerFragment& fragment = layer_fragments.at(i);
-    if (fragment.background_rect.Intersects(hit_test_location)) {
-      gfx::Rect resizer_corner_rect = ResizerCornerRect(kResizerForPointer);
-      resizer_corner_rect.Offset(ToRoundedVector2d(fragment.layer_offset));
-      if (resizer_corner_rect.Contains(hit_test_location.RoundedPoint()))
-        return true;
-    }
-  }
-
-  return false;
-}
-
 void PaintLayerScrollableArea::UpdateResizerStyle(
     const ComputedStyle* old_style) {
   // Change of resizer status affects HasOverlayOverflowControls(). Invalid
@@ -2077,49 +2069,59 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
   }
 }
 
-StickyPositionScrollingConstraints*
-PaintLayerScrollableArea::GetStickyConstraints(PaintLayer* layer) {
-  auto it = EnsureRareData().sticky_constraints_map_.find(layer);
-  if (it == EnsureRareData().sticky_constraints_map_.end())
-    return nullptr;
-  return it->value;
-}
-
-void PaintLayerScrollableArea::AddStickyConstraints(
-    PaintLayer* layer,
-    StickyPositionScrollingConstraints* constraints) {
+void PaintLayerScrollableArea::AddStickyLayer(PaintLayer* layer) {
   UseCounter::Count(GetLayoutBox()->GetDocument(), WebFeature::kPositionSticky);
-  EnsureRareData().sticky_constraints_map_.Set(layer, constraints);
+  EnsureRareData().sticky_layers_.insert(layer);
 }
 
 void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
-  if (PaintLayerScrollableAreaRareData* d = RareData()) {
-    for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
-      if (sticky_layer->GetLayoutObject().StyleRef().GetPosition() ==
-          EPosition::kSticky) {
-        sticky_layer->SetNeedsCompositingInputsUpdate();
-        sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
-      }
-    }
-    d->sticky_constraints_map_.clear();
-  }
-}
-
-void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
-    PaintLayer* layer) {
-  if (PaintLayerScrollableAreaRareData* d = RareData()) {
-    d->sticky_constraints_map_.erase(layer);
-    if (layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
-      layer->SetNeedsCompositingInputsUpdate();
-      layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
-    }
-  }
+  // Don't clear StickyConstraints for each LayoutObject of each layer in
+  // sticky_layers_ because sticky_layers_ may contain stale pointers.
+  // LayoutBoxModelObject::UpdateStickyPositionConstraints() will check both
+  // HasStickyLayer() of its containing scrollable area and its
+  // StickyConstraints() to see if its sticky constraints need update.
+  if (rare_data_)
+    rare_data_->sticky_layers_.clear();
 }
 
 void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
+  // If this is called during layout, sticky_layers_ may contain stale pointers.
+  // Return because we'll InvalidateAllStickyConstraints(), and we'll
+  // SetNeedsPaintPropertyUpdate() when updating sticky constraints.
+  if (GetLayoutBox()->NeedsLayout())
+    return;
+
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
-    for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys())
-      sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    for (PaintLayer* sticky_layer : d->sticky_layers_) {
+      auto& object = sticky_layer->GetLayoutObject();
+      object.SetNeedsPaintPropertyUpdate();
+      DCHECK(object.StickyConstraints());
+      object.StickyConstraints()->ComputeStickyOffset(ScrollPosition());
+    }
+  }
+}
+
+bool PaintLayerScrollableArea::AddAnchorPositionedLayer(PaintLayer* layer) {
+  auto add_result = EnsureRareData().anchor_positioned_layers_.insert(layer);
+  return add_result.is_new_entry;
+}
+
+void PaintLayerScrollableArea::InvalidateAllAnchorPositionedLayers() {
+  if (rare_data_)
+    rare_data_->anchor_positioned_layers_.clear();
+}
+
+void PaintLayerScrollableArea::InvalidatePaintForAnchorPositionedLayers() {
+  // If this is called during layout, anchor_positioned_layers_ may contain
+  // stale pointers. Return because we'll InvalidateAllAnchorPositionedLayers(),
+  // and we'll SetNeedsPaintPropertyUpdate() when updating anchor positioned
+  // layers.
+  if (GetLayoutBox()->NeedsLayout())
+    return;
+
+  if (PaintLayerScrollableAreaRareData* d = RareData()) {
+    for (PaintLayer* anchor_positioned_layer : d->anchor_positioned_layers_)
+      anchor_positioned_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 
@@ -2575,9 +2577,7 @@ cc::AnimationHost* PaintLayerScrollableArea::GetCompositorAnimationHost()
 
 cc::AnimationTimeline*
 PaintLayerScrollableArea::GetCompositorAnimationTimeline() const {
-  return layer_->GetLayoutObject()
-      .GetFrameView()
-      ->GetCompositorAnimationTimeline();
+  return layer_->GetLayoutObject().GetFrameView()->GetScrollAnimationTimeline();
 }
 
 bool PaintLayerScrollableArea::HasTickmarks() const {

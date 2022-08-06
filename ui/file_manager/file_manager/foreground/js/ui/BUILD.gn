@@ -66,6 +66,7 @@ html_to_js("web_components") {
 js_type_check("closure_compile_jsmodules") {
   is_polymer3 = true
   closure_flags = default_closure_args + [
+                    "language_in=ECMASCRIPT_2020",
                     "js_module_root=gen/ui/file_manager/tsc/",
                     "js_module_root=../../ui/file_manager/",
                     "js_module_root=gen/ui/file_manager/",
@@ -134,10 +135,9 @@ js_library("actions_submenu") {
   deps = [
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/foreground/js:actions_model",
-    "//ui/webui/resources/js:util.m",
-    "//ui/webui/resources/js/cr/ui:command.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
-    "//ui/webui/resources/js/cr/ui:menu_item.m",
+    "//ui/webui/resources/js/cr/ui:command",
+    "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_item",
   ]
 }
 
@@ -148,7 +148,7 @@ js_unittest("actions_submenu_unittest") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/foreground/js:mock_actions_model",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
+    "//ui/webui/resources/js/cr/ui:menu",
   ]
 }
 
@@ -172,7 +172,7 @@ js_library("combobutton") {
     ":multi_menu_button",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:menu_item.m",
+    "//ui/webui/resources/js/cr/ui:menu_item",
   ]
 
   externs_list = [ "//ui/file_manager/file_manager/externs/paper_elements.js" ]
@@ -183,7 +183,7 @@ js_library("commandbutton") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:command.m",
+    "//ui/webui/resources/js/cr/ui:command",
   ]
 }
 
@@ -204,7 +204,6 @@ js_library("dialog_footer") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/foreground/js:file_list_model",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-    "//ui/webui/resources/js:util.m",
   ]
 }
 
@@ -231,9 +230,9 @@ js_library("directory_tree") {
     "//ui/file_manager/file_manager/foreground/js/metadata:metadata_model",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js/cr/ui:command.m",
-    "//ui/webui/resources/js/cr/ui:context_menu_handler.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
+    "//ui/webui/resources/js/cr/ui:command",
+    "//ui/webui/resources/js/cr/ui:context_menu_handler",
+    "//ui/webui/resources/js/cr/ui:menu",
   ]
   visibility +=
       [ "//ui/file_manager/file_manager/externs:command_handler_deps" ]
@@ -379,11 +378,10 @@ js_library("file_manager_ui") {
     "//ui/file_manager/file_manager/foreground/js:launch_param",
     "//ui/file_manager/file_manager/foreground/js:providers_model",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:context_menu_handler.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
-    "//ui/webui/resources/js/cr/ui:menu_item.m",
+    "//ui/webui/resources/js/cr/ui:context_menu_handler",
+    "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_item",
   ]
   visibility +=
       [ "//ui/file_manager/file_manager/externs:command_handler_deps" ]
@@ -416,6 +414,7 @@ js_library("file_table") {
     "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/file_manager/file_manager/externs/background:import_history",
+    "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
     "//ui/file_manager/file_manager/foreground/js:file_list_model",
     "//ui/file_manager/file_manager/foreground/js:list_thumbnail_loader",
     "//ui/file_manager/file_manager/foreground/js/metadata:metadata_model",
@@ -508,8 +507,8 @@ js_library("files_confirm_dialog") {
 js_library("files_menu") {
   deps = [
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
-    "//ui/webui/resources/js/cr/ui:menu_item.m",
+    "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_item",
   ]
   externs_list = [ "//ui/file_manager/file_manager/externs/paper_elements.js" ]
 }
@@ -519,7 +518,6 @@ js_library("gear_menu") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:util.m",
   ]
 }
 
@@ -557,7 +555,6 @@ js_library("list_container") {
     "//ui/file_manager/file_manager/foreground/js:list_thumbnail_loader",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr/ui:list.m",
     "//ui/webui/resources/js/cr/ui:list_item.m",
     "//ui/webui/resources/js/cr/ui:list_selection_model.m",
@@ -582,8 +579,8 @@ js_library("multi_menu") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:event_tracker.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
-    "//ui/webui/resources/js/cr/ui:menu_item.m",
+    "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_item",
   ]
 }
 
@@ -594,10 +591,10 @@ js_library("multi_menu_button") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:event_tracker.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
-    "//ui/webui/resources/js/cr/ui:menu_button.m",
-    "//ui/webui/resources/js/cr/ui:menu_item.m",
-    "//ui/webui/resources/js/cr/ui:position_util.m",
+    "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_button",
+    "//ui/webui/resources/js/cr/ui:menu_item",
+    "//ui/webui/resources/js/cr/ui:position_util",
   ]
 }
 
@@ -608,8 +605,8 @@ js_unittest("multi_menu_unittest") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:command.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
+    "//ui/webui/resources/js/cr/ui:command",
+    "//ui/webui/resources/js/cr/ui:menu",
   ]
 }
 
@@ -630,7 +627,7 @@ js_library("providers_menu") {
     "//ui/file_manager/file_manager/foreground/js:providers_model",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:menu.m",
+    "//ui/webui/resources/js/cr/ui:menu",
   ]
 }
 
@@ -643,7 +640,6 @@ js_library("search_box") {
     "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr:event_target.m",
     "//ui/webui/resources/js/cr/ui:list_item.m",
   ]
@@ -677,7 +673,7 @@ js_library("autocomplete_list") {
     "//ui/webui/resources/js/cr/ui:list.m",
     "//ui/webui/resources/js/cr/ui:list_item.m",
     "//ui/webui/resources/js/cr/ui:list_single_selection_model.m",
-    "//ui/webui/resources/js/cr/ui:position_util.m",
+    "//ui/webui/resources/js/cr/ui:position_util",
   ]
 }
 
@@ -699,6 +695,7 @@ js_test_type_check("js_test_type_check") {
   is_polymer3 = true
 
   closure_flags = strict_error_checking_closure_args + [
+                    "language_in=ECMASCRIPT_2020",
                     "generate_exports=false",
                     "js_module_root=./gen/ui",
                     "js_module_root=../../ui/file_manager/",

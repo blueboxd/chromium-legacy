@@ -5,13 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_PASSWORD_CHANGE_RUN_PROGRESS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_PASSWORD_CHANGE_RUN_PROGRESS_H_
 
+#include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "ui/views/view.h"
 
-namespace views {
-class ImageView;
-}  // namespace views
-
+class AnimatedIcon;
 class AnimatedProgressBar;
 
 // Show the UI for a password change run progress via combination of progress
@@ -50,11 +48,19 @@ class PasswordChangeRunProgress : public views::View {
   // Returns the current progress bar step.
   autofill_assistant::password_change::ProgressStep GetCurrentProgressBarStep();
 
+  // Adds a callback for when the progress bar is complete.
+  // The completion happens after the last step animation is done.
+  void SetAnimationEndedCallback(base::OnceClosure callback);
+
  private:
+  // Method ran once the last progress bar animation is completed,
+  // Used to trigger the last item animation.
+  void OnLastProgressBarAnimationCompleted();
+
   // A progress step is made out of an icon, a progress bar or both.
   struct ProgressStepUIElements {
     raw_ptr<AnimatedProgressBar> progress_bar = nullptr;
-    raw_ptr<views::ImageView> icon = nullptr;
+    raw_ptr<AnimatedIcon> icon = nullptr;
   };
 
   // Maps a progress step to the UI elements that represent it.

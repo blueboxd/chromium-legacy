@@ -21,14 +21,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
-#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -66,6 +65,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "components/account_id/account_id.h"
 #endif
 
@@ -289,12 +289,10 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-      // Out of paranoia, check that the PictureInPictureV2 feature is actually
-      // enabled as a browser feature before allowing the browser to create an
-      // always-on-top window.  This helps protect against a compromised
-      // renderer. TODO(https://crbug.com/1285144): Remove this check once
-      // the feature is no longer experimental.
-      if (!base::FeatureList::IsEnabled(features::kPictureInPictureV2))
+      // We may receive a PiP request with the feature disabled if the user has
+      // explicitly turned on the Blink feature without turning on the
+      // browser-side feature.
+      if (!base::FeatureList::IsEnabled(features::kDocumentPictureInPictureAPI))
         return {nullptr, -1};
 
       // Picture in picture windows may not be opened by other picture in
@@ -606,6 +604,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
   // Open System Apps in their standalone window if necessary.
   // TODO(crbug.com/1096345): Remove this code after we integrate with intent
   // handling.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const absl::optional<ash::SystemWebAppType> capturing_system_app_type =
       ash::GetCapturingSystemAppForURL(params->initiating_profile, params->url);
   if (capturing_system_app_type &&
@@ -627,6 +626,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
     // the navigation should appear to be cancelled.
     return nullptr;
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)
   // Force isolated PWAs to open in an app window.
@@ -715,12 +715,9 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
     return nullptr;
   }
   // If Lacros comes here with an internal os:// redirect scheme to Ash, and Ash
-  // does not accept the URL, we convert it into a Lacros chrome:// url instead.
-  // This will most likely end in a 404 inside the Lacros browser. Note that we
-  // do not want to create a "404 SWA application".
+  // does not accept the URL, we convert it into a blocked url instead.
   if (crosapi::gurl_os_handler_utils::IsAshOsUrl(params->url)) {
-    params->url =
-        crosapi::gurl_os_handler_utils::GetChromeUrlFromSystemUrl(params->url);
+    params->url = GURL(content::kBlockedURL);
   }
 #endif
 

@@ -275,12 +275,15 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 bool ShouldNotifyAboutCookie(net::CookieInclusionStatus status) {
   // Notify about cookies actually used, and those blocked by preferences ---
   // for purposes of cookie UI --- as well those carrying warnings pertaining to
-  // SameSite features, in order to issue a deprecation warning for them.
+  // SameSite features and cookies with non-ASCII domain attributes, in order to
+  // issue a deprecation warning for them.
   return status.IsInclude() || status.ShouldWarn() ||
          status.HasExclusionReason(
              net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES) ||
          status.HasExclusionReason(
-             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
+             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY) ||
+         status.HasExclusionReason(
+             net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
 }
 
 // Concerning headers that consumers probably shouldn't be allowed to set.
@@ -779,8 +782,6 @@ URLLoader::URLLoader(
         cache_not_used_reason =
             CacheTransparencyCacheNotUsedReason::kIncompatibleRequestHeaders;
       } else {
-        request_load_flags |= net::LOAD_USE_SINGLE_KEYED_CACHE;
-
         url_request_->set_expected_response_checksum(checksum.value());
       }
       base::UmaHistogramEnumeration("Network.CacheTransparency.CacheNotUsed",
@@ -1243,6 +1244,7 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
                            const net::TransportInfo& info,
                            net::CompletionOnceCallback callback) {
   DCHECK_EQ(url_request, url_request_.get());
+  transport_info_ = info;
 
   // Now that the request endpoint's address has been resolved, check if
   // this request should be blocked per Private Network Access.
@@ -1388,6 +1390,9 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   DispatchOnRawResponse();
   ReportFlaggedResponseCookies();
 
+  if (memory_cache_)
+    memory_cache_->OnRedirect(url_request_.get(), request_destination_);
+
   const CrossOriginEmbedderPolicy kEmpty;
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   const CrossOriginEmbedderPolicy& cross_origin_embedder_policy =
@@ -1431,6 +1436,10 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
   DCHECK_EQ(emitted_devtools_raw_request_, emitted_devtools_raw_response_);
   response->emitted_extra_info = emitted_devtools_raw_request_;
+
+  // Ensure that the redirect target is not treated as a pervasive payload.
+  url_request_->set_expected_response_checksum(std::string());
+
   url_loader_client_.Get()->OnReceiveRedirect(redirect_info,
                                               std::move(response));
 }
@@ -1551,7 +1560,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 
   if (memory_cache_) {
     memory_cache_writer_ = memory_cache_->MaybeCreateWriter(
-        url_request_.get(), request_destination_, response_);
+        url_request_.get(), request_destination_, transport_info_, response_);
   }
 
   ContinueOnResponseStarted();
@@ -1753,9 +1762,12 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
   DCHECK(read_in_progress_);
   read_in_progress_ = false;
 
-  if (memory_cache_writer_ && pending_write_) {
-    memory_cache_writer_->OnDataRead(
-        pending_write_->buffer() + pending_write_buffer_offset_, num_bytes);
+  if (memory_cache_writer_ && pending_write_ && num_bytes > 0) {
+    if (!memory_cache_writer_->OnDataRead(
+            pending_write_->buffer() + pending_write_buffer_offset_,
+            num_bytes)) {
+      memory_cache_writer_.reset();
+    }
   }
 
   size_t new_data_offset = pending_write_buffer_offset_;

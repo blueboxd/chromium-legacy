@@ -208,28 +208,6 @@ error::Error RasterDecoderImpl::HandleUnlockTransferCacheEntryINTERNAL(
   return error::kNoError;
 }
 
-error::Error
-RasterDecoderImpl::HandleDeletePaintCacheTextBlobsINTERNALImmediate(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile raster::cmds::DeletePaintCacheTextBlobsINTERNALImmediate& c =
-      *static_cast<const volatile raster::cmds::
-                       DeletePaintCacheTextBlobsINTERNALImmediate*>(cmd_data);
-  GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t ids_size;
-  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&ids_size)) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLuint* ids =
-      gles2::GetImmediateDataAs<volatile const GLuint*>(c, ids_size,
-                                                        immediate_data_size);
-  if (ids == nullptr) {
-    return error::kOutOfBounds;
-  }
-  DeletePaintCacheTextBlobsINTERNALHelper(n, ids);
-  return error::kNoError;
-}
-
 error::Error RasterDecoderImpl::HandleDeletePaintCachePathsINTERNALImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -419,7 +397,7 @@ RasterDecoderImpl::HandleConvertYUVAMailboxesToRGBINTERNALImmediate(
   GLenum plane_config = static_cast<GLenum>(c.plane_config);
   GLenum subsampling = static_cast<GLenum>(c.subsampling);
   uint32_t mailboxes_size;
-  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 80>(1, &mailboxes_size)) {
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 144>(1, &mailboxes_size)) {
     return error::kOutOfBounds;
   }
   if (mailboxes_size > immediate_data_size) {

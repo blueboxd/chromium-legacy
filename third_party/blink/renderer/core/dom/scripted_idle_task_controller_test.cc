@@ -37,9 +37,6 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override {
     return nullptr;
   }
-  scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override {
-    return nullptr;
-  }
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override {
     return task_runner_;
@@ -61,9 +58,6 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   std::unique_ptr<scheduler::WebAgentGroupScheduler> CreateAgentGroupScheduler()
       override {
     NOTREACHED();
-    return nullptr;
-  }
-  std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
     return nullptr;
   }
   scheduler::WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override {

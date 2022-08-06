@@ -260,7 +260,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     CHECK(default_bucket.ok());
     default_bucket_ = default_bucket.value().ToBucketLocator();
 
-    // Create the non-default bucket member corresponding to the StorageKey
+    // Create a non-default bucket member corresponding to the StorageKey
     // member we created.
     base::test::TestFuture<QuotaErrorOr<BucketInfo>> custom_future;
     BucketInitParams params = BucketInitParams::ForDefaultBucket(storage_key());
@@ -271,6 +271,17 @@ class ObfuscatedFileUtilTest : public testing::Test,
     QuotaErrorOr<BucketInfo> custom_bucket = custom_future.Take();
     CHECK(custom_bucket.ok());
     custom_bucket_ = custom_bucket.value().ToBucketLocator();
+
+    // Create an alternate non-default bucket member corresponding to the
+    // StorageKey member we created.
+    base::test::TestFuture<QuotaErrorOr<BucketInfo>> alternate_future;
+    params.name = "alternate non-default bucket";
+    quota_manager_->proxy()->UpdateOrCreateBucket(
+        params, base::SequencedTaskRunnerHandle::Get(),
+        alternate_future.GetCallback());
+    QuotaErrorOr<BucketInfo> alternate_bucket = alternate_future.Take();
+    CHECK(alternate_bucket.ok());
+    alternate_custom_bucket_ = alternate_bucket.value().ToBucketLocator();
 
     is_non_default_bucket()
         ? sandbox_file_system_.SetUp(file_system_context_, custom_bucket_)
@@ -325,17 +336,28 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   // This can only be used after SetUp has run and created file_system_context_
   // and obfuscated_file_util_.
-  // Use this for tests which need to run in multiple origins; we need a test
-  // helper per origin.
+  // Use this for tests which need to run in multiple StorageKeys; we need a
+  // test helper per StorageKey.
   std::unique_ptr<SandboxFileSystemTestHelper> NewFileSystem(
-      const Origin& origin,
+      const blink::StorageKey& storage_key,
       FileSystemType type) {
-    // TODO(https://crbug.com/1245710): Refactor ObfuscatedFileSystem to use
-    // StorageKey instead of origin and replace in-line conversion below.
-    auto file_system = std::make_unique<SandboxFileSystemTestHelper>(
-        blink::StorageKey(origin), type);
-
+    auto file_system =
+        std::make_unique<SandboxFileSystemTestHelper>(storage_key, type);
     file_system->SetUp(file_system_context_);
+    return file_system;
+  }
+
+  // This can only be used after SetUp has run and created file_system_context_
+  // and obfuscated_file_util_.
+  // Use this for tests which need to run in multiple BucketLocators; we need a
+  // test helper per BucketLocator.
+  std::unique_ptr<SandboxFileSystemTestHelper> NewFileSystem(
+      const BucketLocator& bucket_locator,
+      FileSystemType type) {
+    auto file_system = std::make_unique<SandboxFileSystemTestHelper>(
+        bucket_locator.storage_key, type);
+
+    file_system->SetUp(file_system_context_, bucket_locator);
     return file_system;
   }
 
@@ -383,7 +405,10 @@ class ObfuscatedFileUtilTest : public testing::Test,
                              sandbox_file_system->storage_type());
                        },
                        quota_manager_, &sandbox_file_system_));
-    usage_cache()->Delete(sandbox_file_system_.GetUsageCachePath());
+    base::FileErrorOr<base::FilePath> path =
+        sandbox_file_system_.GetUsageCachePath();
+    if (!path.is_error())
+      usage_cache()->Delete(path.value());
   }
 
   int64_t SizeByQuotaUtil() { return sandbox_file_system_.GetCachedUsage(); }
@@ -391,10 +416,11 @@ class ObfuscatedFileUtilTest : public testing::Test,
   int64_t SizeInUsageFile() {
     task_environment_.RunUntilIdle();
     int64_t usage = 0;
-    return usage_cache()->GetUsage(sandbox_file_system_.GetUsageCachePath(),
-                                   &usage)
-               ? usage
-               : -1;
+    base::FileErrorOr<base::FilePath> path =
+        sandbox_file_system_.GetUsageCachePath();
+    if (path.is_error())
+      return -1;
+    return usage_cache()->GetUsage(path.value(), &usage) ? usage : -1;
   }
 
   bool PathExists(const FileSystemURL& url) {
@@ -837,8 +863,10 @@ class ObfuscatedFileUtilTest : public testing::Test,
     ASSERT_TRUE(db != nullptr);
 
     // Destroy it.
-    ofu()->DestroyDirectoryDatabase(url.storage_key(),
-                                    GetTypeString(url.type()));
+    (is_non_default_bucket()) ? ofu()->DestroyDirectoryDatabaseForBucket(
+                                    url.bucket().value(), url.type())
+                              : ofu()->DestroyDirectoryDatabaseForStorageKey(
+                                    url.storage_key(), url.type());
     ASSERT_TRUE(ofu()->directories_.empty());
   }
 
@@ -896,6 +924,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   blink::StorageKey storage_key_;
   BucketLocator default_bucket_;
   BucketLocator custom_bucket_;
+  BucketLocator alternate_custom_bucket_;
   FileSystemType type_;
   SandboxFileSystemTestHelper sandbox_file_system_;
   blink::mojom::QuotaStatusCode quota_status_;
@@ -1707,7 +1736,7 @@ TEST_P(ObfuscatedFileUtilTest, TestStorageKeyEnumerator) {
     storage_keys_expected.insert(storage_key);
     if (record.has_temporary) {
       std::unique_ptr<SandboxFileSystemTestHelper> file_system =
-          NewFileSystem(storage_key.origin(), kFileSystemTypeTemporary);
+          NewFileSystem(storage_key, kFileSystemTypeTemporary);
       std::unique_ptr<FileSystemOperationContext> context(
           NewContext(file_system.get()));
       bool created = false;
@@ -1719,7 +1748,7 @@ TEST_P(ObfuscatedFileUtilTest, TestStorageKeyEnumerator) {
     }
     if (record.has_persistent) {
       std::unique_ptr<SandboxFileSystemTestHelper> file_system =
-          NewFileSystem(storage_key.origin(), kFileSystemTypePersistent);
+          NewFileSystem(storage_key, kFileSystemTypePersistent);
       std::unique_ptr<FileSystemOperationContext> context(
           NewContext(file_system.get()));
       bool created = false;
@@ -1836,7 +1865,9 @@ TEST_P(ObfuscatedFileUtilTest, TestInconsistency) {
   EXPECT_EQ(10, file_info.size);
 
   // Destroy database to make inconsistency between database and filesystem.
-  ofu()->DestroyDirectoryDatabase(storage_key(), type_string());
+  (is_non_default_bucket())
+      ? ofu()->DestroyDirectoryDatabaseForBucket(custom_bucket_, type())
+      : ofu()->DestroyDirectoryDatabaseForStorageKey(storage_key(), type());
 
   // Try to get file info of broken file.
   EXPECT_FALSE(PathExists(kPath1));
@@ -1856,7 +1887,9 @@ TEST_P(ObfuscatedFileUtilTest, TestInconsistency) {
   EXPECT_TRUE(created);
 
   // Destroy again.
-  ofu()->DestroyDirectoryDatabase(storage_key(), type_string());
+  (is_non_default_bucket())
+      ? ofu()->DestroyDirectoryDatabaseForBucket(custom_bucket_, type())
+      : ofu()->DestroyDirectoryDatabaseForStorageKey(storage_key(), type());
 
   // Repair broken `kPath1`.
   context = NewContext(nullptr);
@@ -1874,7 +1907,9 @@ TEST_P(ObfuscatedFileUtilTest, TestInconsistency) {
                                   FileSystemOperation::CopyOrMoveOptionSet(),
                                   true /* copy */));
 
-  ofu()->DestroyDirectoryDatabase(storage_key(), type_string());
+  (is_non_default_bucket())
+      ? ofu()->DestroyDirectoryDatabaseForBucket(custom_bucket_, type())
+      : ofu()->DestroyDirectoryDatabaseForStorageKey(storage_key(), type());
   context = NewContext(nullptr);
   created = false;
   EXPECT_EQ(base::File::FILE_OK,
@@ -2505,7 +2540,85 @@ TEST_P(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
                              false /* exclusive */, true /* recursive */));
 }
 
-TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
+TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForBucketAndType) {
+  // TODO(https://crbug.com/1322223): Remove this early return once we resolve
+  // failures involving non-default buckets in incognito mode.
+  if (is_incognito())
+    return;
+  // Create directories.
+  std::unique_ptr<SandboxFileSystemTestHelper> fs1 =
+      NewFileSystem(default_bucket_, kFileSystemTypeTemporary);
+  std::unique_ptr<SandboxFileSystemTestHelper> fs2 =
+      NewFileSystem(default_bucket_, kFileSystemTypePersistent);
+  std::unique_ptr<SandboxFileSystemTestHelper> fs3 =
+      NewFileSystem(custom_bucket_, kFileSystemTypeTemporary);
+  std::unique_ptr<SandboxFileSystemTestHelper> fs4 =
+      NewFileSystem(custom_bucket_, kFileSystemTypePersistent);
+
+  // Make sure directories for default_bucket_ exist.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       default_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       default_bucket_,
+                       GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
+
+  // Make sure directories for custom_bucket_ exist.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
+
+  // Delete a directory for default_bucket_'s persistent filesystem.
+  ASSERT_TRUE(ofu()->DeleteDirectoryForBucketAndType(
+      default_bucket_, kFileSystemTypePersistent));
+
+  // The directory for default_bucket_'s temporary filesystem should not be
+  // removed.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       default_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+
+  // The directory for default_bucket_'s persistent filesystem should be
+  // removed.
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForBucketAndType(
+                    default_bucket_, GetTypeString(kFileSystemTypePersistent),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
+
+  // The directories for custom_bucket_ should not be removed.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
+
+  // Deleting directories which don't exist is not an error.
+  ASSERT_TRUE(ofu()->DeleteDirectoryForBucketAndType(
+      alternate_custom_bucket_, kFileSystemTypePersistent));
+}
+
+TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForStorageKeyAndType) {
   const blink::StorageKey storage_key1 =
       blink::StorageKey::CreateFromStringForTesting(
           "http://www.example.com:12");
@@ -2517,79 +2630,162 @@ TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
 
   // Create origin directories.
   std::unique_ptr<SandboxFileSystemTestHelper> fs1 =
-      NewFileSystem(storage_key1.origin(), kFileSystemTypeTemporary);
+      NewFileSystem(storage_key1, kFileSystemTypeTemporary);
   std::unique_ptr<SandboxFileSystemTestHelper> fs2 =
-      NewFileSystem(storage_key1.origin(), kFileSystemTypePersistent);
+      NewFileSystem(storage_key1, kFileSystemTypePersistent);
   std::unique_ptr<SandboxFileSystemTestHelper> fs3 =
-      NewFileSystem(storage_key2.origin(), kFileSystemTypeTemporary);
+      NewFileSystem(storage_key2, kFileSystemTypeTemporary);
   std::unique_ptr<SandboxFileSystemTestHelper> fs4 =
-      NewFileSystem(storage_key2.origin(), kFileSystemTypePersistent);
+      NewFileSystem(storage_key2, kFileSystemTypePersistent);
 
   // Make sure directories for storage_key1 exist.
-  base::File::Error error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key1, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key1, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
 
   // Make sure directories for storage_key2 exist.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
 
   // Delete a directory for storage_key1's persistent filesystem.
   ASSERT_TRUE(ofu()->DeleteDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypePersistent)));
+      storage_key1, kFileSystemTypePersistent));
 
   // The directory for storage_key1's temporary filesystem should not be
   // removed.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key1, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
 
   // The directory for storage_key1's persistent filesystem should be removed.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForStorageKeyAndType(
+                    storage_key1, GetTypeString(kFileSystemTypePersistent),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
 
   // The directories for storage_key2 should not be removed.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
 
   // Make sure storage_key3's directories don't exist.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key3, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key3, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForStorageKeyAndType(
+                    storage_key3, GetTypeString(kFileSystemTypeTemporary),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForStorageKeyAndType(
+                    storage_key3, GetTypeString(kFileSystemTypePersistent),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
 
   // Deleting directories which don't exist is not an error.
   ASSERT_TRUE(ofu()->DeleteDirectoryForStorageKeyAndType(
-      storage_key3, GetTypeString(kFileSystemTypeTemporary)));
+      storage_key3, kFileSystemTypeTemporary));
   ASSERT_TRUE(ofu()->DeleteDirectoryForStorageKeyAndType(
-      storage_key3, GetTypeString(kFileSystemTypePersistent)));
+      storage_key3, kFileSystemTypePersistent));
 }
 
-TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
+TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForBucketAndType_DeleteAll) {
+  // TODO(https://crbug.com/1322223): Remove this early return once we resolve
+  // failures involving non-default buckets in incognito mode.
+  if (is_incognito())
+    return;
+  // Create origin directories.
+  std::unique_ptr<SandboxFileSystemTestHelper> fs1 =
+      NewFileSystem(default_bucket_, kFileSystemTypeTemporary);
+  std::unique_ptr<SandboxFileSystemTestHelper> fs2 =
+      NewFileSystem(default_bucket_, kFileSystemTypePersistent);
+  std::unique_ptr<SandboxFileSystemTestHelper> fs3 =
+      NewFileSystem(custom_bucket_, kFileSystemTypeTemporary);
+  std::unique_ptr<SandboxFileSystemTestHelper> fs4 =
+      NewFileSystem(custom_bucket_, kFileSystemTypePersistent);
+
+  // Make sure directories for default_bucket_ exist.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       default_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       default_bucket_,
+                       GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
+
+  // Make sure directories for custom_bucket_ exist.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
+
+  // Delete all directories for default_bucket_.
+  ofu()->DeleteDirectoryForBucketAndType(default_bucket_, absl::nullopt);
+
+  // The directories for default_bucket_ should be removed.
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForBucketAndType(
+                    default_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForBucketAndType(
+                    default_bucket_, GetTypeString(kFileSystemTypePersistent),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
+
+  // The directories for custom_bucket_ should not be removed.
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForBucketAndType(
+                       custom_bucket_, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
+}
+
+TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForStorageKeyAndType_DeleteAll) {
   const blink::StorageKey storage_key1 =
       blink::StorageKey::CreateFromStringForTesting(
           "http://www.example.com:12");
@@ -2599,56 +2795,66 @@ TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
 
   // Create origin directories.
   std::unique_ptr<SandboxFileSystemTestHelper> fs1 =
-      NewFileSystem(storage_key1.origin(), kFileSystemTypeTemporary);
+      NewFileSystem(storage_key1, kFileSystemTypeTemporary);
   std::unique_ptr<SandboxFileSystemTestHelper> fs2 =
-      NewFileSystem(storage_key1.origin(), kFileSystemTypePersistent);
+      NewFileSystem(storage_key1, kFileSystemTypePersistent);
   std::unique_ptr<SandboxFileSystemTestHelper> fs3 =
-      NewFileSystem(storage_key2.origin(), kFileSystemTypeTemporary);
+      NewFileSystem(storage_key2, kFileSystemTypeTemporary);
   std::unique_ptr<SandboxFileSystemTestHelper> fs4 =
-      NewFileSystem(storage_key2.origin(), kFileSystemTypePersistent);
+      NewFileSystem(storage_key2, kFileSystemTypePersistent);
 
   // Make sure directories for storage_key1 exist.
-  base::File::Error error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key1, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key1, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
 
   // Make sure directories for storage_key2 exist.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
 
   // Delete all directories for storage_key1.
-  ofu()->DeleteDirectoryForStorageKeyAndType(storage_key1, std::string());
+  ofu()->DeleteDirectoryForStorageKeyAndType(storage_key1, absl::nullopt);
 
   // The directories for storage_key1 should be removed.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key1, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForStorageKeyAndType(
+                    storage_key1, GetTypeString(kFileSystemTypeTemporary),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
+  ASSERT_EQ(ofu()
+                ->GetDirectoryForStorageKeyAndType(
+                    storage_key1, GetTypeString(kFileSystemTypePersistent),
+                    /*create=*/false)
+                .error(),
+            base::File::FILE_ERROR_NOT_FOUND);
 
   // The directories for storage_key2 should not be removed.
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypeTemporary), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
-  error = base::File::FILE_ERROR_FAILED;
-  ofu()->GetDirectoryForStorageKeyAndType(
-      storage_key2, GetTypeString(kFileSystemTypePersistent), false, &error);
-  ASSERT_EQ(base::File::FILE_OK, error);
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypeTemporary),
+                       /*create=*/false)
+                   .is_error());
+  ASSERT_FALSE(ofu()
+                   ->GetDirectoryForStorageKeyAndType(
+                       storage_key2, GetTypeString(kFileSystemTypePersistent),
+                       /*create=*/false)
+                   .is_error());
 }
 
 }  // namespace storage

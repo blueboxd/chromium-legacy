@@ -17,7 +17,7 @@ import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 import '../../prefs/pref_util.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -110,7 +110,7 @@ class SettingsSearchEngineElement extends SettingsSearchEngineElementBase {
     const event = new CustomEvent('refresh-pref', {
       bubbles: true,
       composed: true,
-      detail: 'default_search_provider.enabled'
+      detail: 'default_search_provider.enabled',
     });
     this.dispatchEvent(event);
   }

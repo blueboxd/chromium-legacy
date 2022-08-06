@@ -8,7 +8,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/policy_service.h"
 
@@ -70,7 +70,7 @@ bool OsAndPoliciesUpdateChecker::IsRunning() const {
 }
 
 void OsAndPoliciesUpdateChecker::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
+    const ash::NetworkState* network) {
   // If a network is found, it's okay to start an update check. Stop observing
   // for more network changes, any network flakiness will now be handled by
   // timeouts and retries.
@@ -182,6 +182,8 @@ void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
     case update_engine::Operation::UPDATE_AVAILABLE:
     case update_engine::Operation::CHECKING_FOR_UPDATE:
     case update_engine::Operation::ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::CLEANUP_PREVIOUS_UPDATE:
+    case update_engine::Operation::UPDATED_BUT_DEFERRED:
       // Do nothing on intermediate states.
       break;
 

@@ -536,7 +536,7 @@ std::basic_string<CharT> DoReplaceStringPlaceholders(
     const std::vector<std::basic_string<CharT>>& subst,
     std::vector<size_t>* offsets) {
   size_t substitutions = subst.size();
-  DCHECK_LT(substitutions, 10U);
+  DCHECK_LT(substitutions, 11U);
 
   size_t sub_length = 0;
   for (const auto& cur : subst)
@@ -558,7 +558,8 @@ std::basic_string<CharT> DoReplaceStringPlaceholders(
           --i;
         } else {
           if (*i < '1' || *i > '9') {
-            DLOG(ERROR) << "Invalid placeholder: $" << *i;
+            DLOG(ERROR) << "Invalid placeholder: $"
+                        << std::basic_string<CharT>(1, *i);
             continue;
           }
           size_t index = static_cast<size_t>(*i - '1');

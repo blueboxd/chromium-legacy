@@ -19,6 +19,7 @@
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_section_header_view.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -378,7 +379,7 @@ void NetworkListView::UpdateNetworkListInternal() {
 std::unique_ptr<std::set<std::string>>
 NetworkListView::UpdateNetworkListEntries() {
   // Keep an index where the next child should be inserted.
-  int index = 0;
+  size_t index = 0;
 
   const NetworkStateProperties* default_network = model()->default_network();
   bool using_proxy =
@@ -397,8 +398,10 @@ NetworkListView::UpdateNetworkListEntries() {
   index += new_guids->size();
 
   if (ShouldMobileDataSectionBeShown()) {
-    if (!mobile_header_view_)
+    if (!mobile_header_view_) {
+      RecordDetailedViewSection(DetailedViewSection::kMobileSection);
       mobile_header_view_ = new MobileSectionHeaderView();
+    }
 
     index = UpdateNetworkSectionHeader(
         NetworkType::kMobile, false /* enabled */, index, mobile_header_view_,
@@ -423,8 +426,10 @@ NetworkListView::UpdateNetworkListEntries() {
     needs_relayout_ = true;
   }
 
-  if (!wifi_header_view_)
+  if (!wifi_header_view_) {
+    RecordDetailedViewSection(DetailedViewSection::kWifiSection);
     wifi_header_view_ = new WifiSectionHeaderView();
+  }
 
   bool wifi_enabled =
       model()->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
@@ -687,7 +692,7 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
 
 std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
     NetworkType type,
-    int index) {
+    size_t index) {
   std::unique_ptr<std::set<std::string>> new_guids(new std::set<std::string>);
   for (const auto& info : network_list_) {
     if (!NetworkTypeMatchesType(info->type, type))
@@ -698,29 +703,44 @@ std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
   return new_guids;
 }
 
-void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
+void NetworkListView::UpdateNetworkChild(size_t index,
+                                         const NetworkInfo* info) {
   HoverHighlightView* network_view = nullptr;
   NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
+
+  // This value is used to determine whether at least one network of |type| type
+  // already existed prior to this method.
+  bool has_reordered_a_network = false;
+
   if (found == network_guid_map_.end()) {
     network_view = new HoverHighlightView(this);
     UpdateViewForNetwork(network_view, *info);
   } else {
+    has_reordered_a_network = true;
     network_view = found->second;
     if (NeedUpdateViewForNetwork(*info))
       UpdateViewForNetwork(network_view, *info);
   }
+
+  // Only emit ethernet metric each time we show Ethernet section
+  // for the first time. We use |has_reordered_a_network| to determine
+  // if Ethernet networks already exist in network detailed list.
+  if (NetworkTypeMatchesType(info->type, NetworkType::kEthernet) &&
+      !has_reordered_a_network) {
+    RecordDetailedViewSection(DetailedViewSection::kEthernetSection);
+  }
+
   PlaceViewAtIndex(network_view, index);
   network_view->SetEnabled(!info->disable);
   network_map_[network_view] = info->guid;
   network_guid_map_[info->guid] = network_view;
 }
 
-void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
+void NetworkListView::PlaceViewAtIndex(views::View* view, size_t index) {
   if (view->parent() != scroll_content()) {
     scroll_content()->AddChildViewAt(view, index);
-  } else if (index > 0 &&
-             static_cast<size_t>(index) < scroll_content()->children().size() &&
-             scroll_content()->children()[static_cast<size_t>(index)] == view) {
+  } else if (index > 0 && index < scroll_content()->children().size() &&
+             scroll_content()->children()[index] == view) {
     // ReorderChildView() would no-op in this case, but we still want to avoid
     // setting |needs_relayout_|.
     return;
@@ -731,7 +751,7 @@ void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
 }
 
 void NetworkListView::UpdateInfoLabel(int message_id,
-                                      int insertion_index,
+                                      size_t insertion_index,
                                       TrayInfoLabel** info_label_ptr) {
   TrayInfoLabel* info_label = *info_label_ptr;
   if (!message_id) {
@@ -751,10 +771,10 @@ void NetworkListView::UpdateInfoLabel(int message_id,
   *info_label_ptr = info_label;
 }
 
-int NetworkListView::UpdateNetworkSectionHeader(
+size_t NetworkListView::UpdateNetworkSectionHeader(
     chromeos::network_config::mojom::NetworkType type,
     bool enabled,
-    int child_index,
+    size_t child_index,
     NetworkSectionHeaderView* view,
     views::Separator** separator_view) {
   // Show or hide a separator above the header. The separator should only be

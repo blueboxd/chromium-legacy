@@ -555,6 +555,8 @@ class AutofillClient : public RiskDataLoader {
 
   // Called after credit card upload is finished. Will show upload result to
   // users. |card_saved| indicates if the card is successfully saved.
+  // TODO(crbug.com/932818): This function is overridden in iOS codebase.
+  // Ideally should remove it if iOS is not using it to do anything.
   virtual void CreditCardUploadCompleted(bool card_saved) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
@@ -712,8 +714,10 @@ class AutofillClient : public RiskDataLoader {
   virtual bool IsQueryIDRelevant(int query_id) = 0;
 #endif
 
-  // Opens a new tab and navigates to the given |url|.
-  virtual void OnPromoCodeSuggestionsFooterSelected(const GURL& url) = 0;
+  // Navigates to |url| in a new tab. |url| links to the promo code offer
+  // details page for the offers in a promo code suggestions popup. Every offer
+  // in a promo code suggestions popup links to the same offer details page.
+  virtual void OpenPromoCodeOfferDetailsURL(const GURL& url) = 0;
 };
 
 }  // namespace autofill

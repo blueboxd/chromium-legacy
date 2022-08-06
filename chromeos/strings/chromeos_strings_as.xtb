@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1645954272419197032">অনুগ্ৰহ কৰি ডিভাইচৰ তথ্য নিশ্চিত কৰক</translation>
 <translation id="1662989795263954667">বন্ধ হৈছে - চিয়াঁহী শেষ হৈছে</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> পূৰ্বদৰ্শন কৰক</translation>
 <translation id="1668469839109562275">বিল্ট-ইন ভিপিএন</translation>
 <translation id="1672499492233627739">ৱেবকেমৰ ভিডিঅ’ ফীড</translation>
 <translation id="1676557873873341166">ভিডিঅ’ চিত্ৰগ্ৰহণ কৰি থকা হৈছে</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">ভিডিঅ’ কনফাৰেন্সিং</translation>
 <translation id="1852934301711881861">ChromeOS Flex ইনষ্টল কৰক</translation>
 <translation id="1856388568474281774">ডাউন এৰ’</translation>
+<translation id="1858620243986915808">স্ক্ৰীনশ্বট সংলগ্ন কৰক</translation>
 <translation id="1871569928317311284">গাঢ় ৰঙৰ থীম অফ কৰক</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">গাঢ় ম’ড অফ কৰক</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google প্ৰ’ফাইল ফট’</translation>
 <translation id="1979103255016296513">পাছৱর্ড সলনি কৰাৰ সময় উকলিছে</translation>
 <translation id="1999615961760456652">কেপ্টিভ প’ৰ্টেল</translation>
+<translation id="200669432486043882">ফাইল সলনি কৰক</translation>
 <translation id="2006864819935886708">সংযোগ</translation>
 <translation id="2008685064673031089">প্ৰাইম সন্ধান</translation>
 <translation id="2011174342667534258">SDKৰ সংস্কৰণ:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">প্রকাৰ</translation>
 <translation id="2461822463642141190">বৰ্তমান</translation>
 <translation id="2480034874476596812">মেনুৱেলী অফ কৰক</translation>
+<translation id="248546197012830854">ডিভাইচটো অফলাইন হৈ আছে। সহায় বিষয়ক সমল চাবলৈ ৱাই-ফাই নেটৱৰ্কৰ সৈতে সংযুক্ত হওক।</translation>
 <translation id="2491955442992294626">আপুনি আন এখন ৱিণ্ড’ ব্যৱহাৰ কৰি থাকোঁতে কীসমূহ পৰীক্ষা কৰা নহয়</translation>
 <translation id="2493126929778606526">স্বয়ংক্ৰিয়ভাৱে বাছনি কৰা আপোনাৰ শ্ৰেষ্ঠ ফট’সমূহ</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ৰিফ্ৰেশ্ব কৰক</translation>
 <translation id="3009958530611748826">ছেভ কৰিবলৈ এটা ফ’ল্ডাৰ বাছনি কৰক</translation>
 <translation id="3017079585324758401">নেপথ্য</translation>
+<translation id="302435934487327038">ইনষ্টল সম্পূৰ্ণ হৈছে</translation>
 <translation id="3027578600144895987">কেমেৰাটো বন্ধ কৰক</translation>
 <translation id="3031560714565892478">ডিভাইচটো এটা ভিডিঅ’ কেমেৰা।</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />এমএ</translation>
 <translation id="3056720590588772262">এণ্ডপইণ্ট</translation>
 <translation id="3069085583900247081">পৰীক্ষা বিফল হৈছে</translation>
-<translation id="3076243757415932261">উপাদানৰ মান্যতা নিৰূপণ কৰি থকা হৈছে...</translation>
 <translation id="3083667275341675831">সংযোগ সম্পৰ্কীয় ডায়গন’ষ্টিক্স</translation>
 <translation id="3084958266922136097">স্ক্ৰীন ছেভাৰ অক্ষম কৰক</translation>
 <translation id="3091839911843451378">বিফল হৈছে - বন্ধ হৈছে</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">আপুনি সকলো প্ৰিণ্টৰ ইতিহাস নিশ্চিতভাৱে মচিব বিচাৰেনে? আপোনাৰ চলি থকা প্ৰিণ্টৰ কামসমূহ মচা নহয়।</translation>
 <translation id="3383751554789092165">প্ৰয়োজন অনুসৰি ডিভাইচৰ তথ্য সলনি কৰক।</translation>
 <translation id="3404249063913988450">স্ক্ৰীন ছেভাৰ সক্ষম কৰক</translation>
-<translation id="3404770484521709967">উপাদানসমূহ সঠিকভাৱে ইনষ্টল হৈছে।</translation>
 <translation id="3413935475507503304">আপডে’টটো কাৰ্যকৰী কৰিবলৈ, পৰৱৰ্তীত টিপক।</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">সুৰক্ষা</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">পুৰণি পাছৱৰ্ড</translation>
 <translation id="4453205916657964690">ছাবনেট মাস্ক</translation>
 <translation id="4454245904991689773">স্কেন কৰি ইয়াত ছেভ কৰক</translation>
-<translation id="4472575034687746823">আৰম্ভ কৰক</translation>
 <translation id="4479639480957787382">ইথাৰনেট</translation>
 <translation id="4483049906298469269">ডিফ’ল্ট হিচাপে নথকা নেটৱৰ্কৰ গে’টৱে’টোক পিং কৰাত বিফল হ'ল</translation>
 <translation id="4500213108254186382">লিড্‌ এক্সেলেৰ’মিটাৰ</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> মেৰামতি কৰাৰ পৰা বাহিৰ হওক</translation>
 <translation id="6618744767048954150">চলি আছে</translation>
 <translation id="6620487321149975369">প্ৰিণ্টিঙৰ কামসমূহ মেনুৱেলভাৱে আঁতৰাই নিদিয়ালৈকে সেইসমূহ ইতিহাসত দেখা পোৱা যাব</translation>
+<translation id="6624819909909965616">১০ এমবিতকৈ ডাঙৰ ফাইল আপল’ড কৰিব নোৱাৰি</translation>
 <translation id="6643016212128521049">মচক</translation>
+<translation id="6644568396961840069">ফাইলটো ছেভ কৰিব পৰা নগ’ল। বেলেগ এটা বাহ্যিক ষ্ট’ৰেজত প্লাগ ইন কৰি চাওক অথবা পাছত পুনৰ চেষ্টা কাৰক।</translation>
 <translation id="6647510110698214773">এনক্ৰিপশ্বনৰ এলগ’ৰিডম</translation>
 <translation id="6650062777702288430">কানা/আলফানিউমেৰিক ছুইচ</translation>
 <translation id="6657585470893396449">পাছৱৰ্ড</translation>
 <translation id="6659594942844771486">ব্ৰাউজাৰ টেব</translation>
 <translation id="6692996468359469499">আপুনি বাছনি সম্পর্কীয় তথ্য পাওক</translation>
 <translation id="6704062477274546131">DNS ৰিজ’লিউশ্বন</translation>
-<translation id="6721744718589119342">অধিক তথ্য আৰু আপডে’টৰ বাবে আমি আপোনালৈ ইমেইল পঠিয়াব পাৰোঁ</translation>
 <translation id="6723839937902243910">পাৱাৰ</translation>
 <translation id="6723847290197874913">কীব’ৰ্ডৰ বেকলাইট</translation>
 <translation id="672609503628871915">নতুন কি আছে চাওক</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6977381486153291903">ফাৰ্মৱেৰৰ পুনৰীক্ষণ</translation>
 <translation id="6995564396478647735">ৰাইট কৰিব নোৱৰাকৈ সুৰক্ষিত কৰাটো অন হৈ থকাটো নিশ্চিত কৰক</translation>
+<translation id="7005833343836210400">ডিভাইচটো অফলাইন হৈ আছে</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" />এ এই ডিভাইচটো পৰিচালনা কৰে আৰু চোৱা ৱেবপৃষ্ঠা, পাছৱৰ্ড আৰু ইমেইলকে ধৰি ব্যৱহাৰকাৰীৰ আটাইবোৰ কাৰ্যকলাপ এক্সেছ কৰিব পাৰে।</translation>
 <translation id="7040230719604914234">অপাৰেটৰ</translation>
 <translation id="7041549558901442110">ডিভাইচটো সংযোগ কৰা হোৱা নাই।</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">ৰিফ্ৰেশ্ব কৰক</translation>
 <translation id="7212734716605298123">বাহ্যিক ডিভাইচৰ বাবে ফাৰ্মৱেৰৰ আপডে’ট</translation>
 <translation id="7216409898977639127">চেলুলাৰ প্ৰদানকাৰী</translation>
+<translation id="725133483556299729">ইমেইল বাছনি কৰক</translation>
 <translation id="7271040990581020067">বৰ্তমান স্কেনাৰটো ব্যৱহাৰ কৰি থকা হৈছে। পাছত পুনৰ চেষ্টা কৰক।</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">১ টা অথবা অধিক উপাদান বাছনি কৰক আৰু পুনৰ চেষ্টা কৰক অথবা কেলিব্ৰে’শ্বন কৰাটো এৰি যাওক</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">ব্যক্তিগত কী</translation>
 <translation id="7982789257301363584">নেটৱৰ্ক</translation>
 <translation id="7994702968232966508">ই.এ.পি. পদ্ধতি</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />"ত ছেভ কৰা আছে</translation>
 <translation id="802154636333426148">ডাউনল’ড কৰিব পৰা নগ’ল</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">স্বয়ংক্ৰিয় ৰঙৰ ম'ডটো সক্ষম কৰক</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">ৰাইট কৰিব নোৱৰাকৈ সুৰক্ষিত কৰাটো এতিয়াও অফ কৰি থোৱা আছে। আগবাঢ়িবলৈ ইয়াক অন কৰক।</translation>
 <translation id="8075838845814659848">বাকী থকা চাৰ্জ</translation>
 <translation id="8082366717211101304">Android এপৰ পৰা DNS সমাধান কৰিব নোৱাৰি</translation>
-<translation id="8083281199617904460">মেৰামতি কৰাৰ প্ৰক্ৰিয়াটো কেৱল প্ৰশিক্ষণপ্ৰাপ্ত মেৰামতি কৰা টেকনিচিয়ানৰ বাবেহে। কাম নকৰা উপাদানসমূহ সলনি কৰাৰ পাছতহে ষ্টাৰ্ট কৰক।</translation>
 <translation id="808894953321890993">পাছৱৰ্ড সলনি কৰক</translation>
+<translation id="8094062939584182041">Googleক এই সমস্যাটোৰ বিষয়ে আপোনালৈ ইমেইল কৰিবলৈ দিয়ক</translation>
 <translation id="8104083085214006426">আপুনি এটা মুক্ত আৰু অসুৰক্ষিত নেটৱৰ্ক ব্যৱহাৰ কৰি আছে</translation>
 <translation id="8109786307828817014">বিফল হোৱা কেলিব্ৰে’শ্বনৰ সৈতে আগবাঢ়িবনে?</translation>
 <translation id="811820734797650957">(Android) গে’টৱে’ পিং কৰিব পাৰি</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">সংযুক্ত হওক</translation>
 <translation id="8221728673725659466">কেলিব্ৰেশ্বন সম্পূৰ্ণ হ’ল</translation>
 <translation id="8226628635270268143">আপোনাৰ প্ৰিয় ফট’ আৰু এলবামসমূহ বাছনি কৰক</translation>
+<translation id="8227119283605456246">ফাইল সংলগ্ন কৰক</translation>
 <translation id="8230672074305416752">ডিফ'ল্ট নেটৱৰ্কৰ গে’টৱে’টো পিং কৰাত বিফল হ'ল</translation>
 <translation id="8246209727385807362">অজ্ঞাত বাহক</translation>
 <translation id="827422111966801947">ইণ্ডিগ'</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">আৰম্ভ কৰা হোৱা নাই</translation>
 <translation id="8620617069779373398">ৰ’মিঙৰ স্থিতি</translation>
 <translation id="8655295600908251630">চেনেল</translation>
+<translation id="8655828773034788261">URL শ্বেয়াৰ কৰক:</translation>
 <translation id="8660881923941176839">পাউণ্ড</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> নেটৱর্কত যোগদান কৰক</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" />লৈ আপডে’ট কৰক আৰু ৰিষ্টাৰ্ট কৰক</translation>

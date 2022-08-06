@@ -40,6 +40,7 @@
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_active_popup.h"
 #include "ui/accessibility/ax_constants.mojom.h"
+#include "ui/accessibility/ax_enum_localization_util.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -773,7 +774,7 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
   // If this is a web area for a presentational iframe, give it a role of
   // something other than document so that the fact that it's a separate doc
   // is not exposed to AT.
-  if (GetDelegate()->IsWebAreaForPresentationalIframe())
+  if (GetDelegate()->IsRootWebAreaForPresentationalIframe())
     return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId, L"group"};
 
   // See UIARoleProperties for descriptions of the properties.
@@ -1022,8 +1023,8 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
               L"document"};
 
     case ax::mojom::Role::kGraphicsObject:
-      return {UIALocalizationStrategy::kSupply, UIA_PaneControlTypeId,
-              L"region"};
+      return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
+              L"group"};
 
     case ax::mojom::Role::kGraphicsSymbol:
       return {UIALocalizationStrategy::kSupply, UIA_ImageControlTypeId, L"img"};
@@ -1226,7 +1227,7 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
               L"document"};
 
     case ax::mojom::Role::kPopUpButton: {
-      const std::string html_tag =
+      const std::string& html_tag =
           GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
       if (html_tag == "select") {
         return {UIALocalizationStrategy::kDeferToControlType,
@@ -5237,7 +5238,7 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
           // Localized Control Type of "output" whereas the Core-AAM states
           // the Localized Control Type of the ARIA status role should be
           // "status".
-          const std::string html_tag =
+          const std::string& html_tag =
               GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
           std::u16string localized_control_type =
               html_tag == "output"
@@ -6124,7 +6125,7 @@ int AXPlatformNodeWin::MSAARole() {
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
-  if (GetDelegate()->IsWebAreaForPresentationalIframe())
+  if (GetDelegate()->IsRootWebAreaForPresentationalIframe())
     return ROLE_SYSTEM_GROUPING;
 
   switch (GetRole()) {
@@ -6721,7 +6722,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
-  if (GetDelegate()->IsWebAreaForPresentationalIframe()) {
+  if (GetDelegate()->IsRootWebAreaForPresentationalIframe()) {
     return ROLE_SYSTEM_GROUPING;
   }
 
@@ -7443,9 +7444,9 @@ int AXPlatformNodeWin::MSAAState() const {
   // Exposing the busy state on the root web area means the NVDA user will end
   // up without a virtualBuffer until the page fully loads. So if we have
   // content, don't expose the busy state.
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
-      !IsPlatformDocumentWithContent()) {
-    msaa_state |= STATE_SYSTEM_BUSY;
+  if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy)) {
+    if (!IsPlatformDocument() || !GetChildCount())
+      msaa_state |= STATE_SYSTEM_BUSY;
   }
 
   if (HasState(ax::mojom::State::kCollapsed))

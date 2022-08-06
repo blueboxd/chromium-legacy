@@ -16,7 +16,7 @@
 #include "components/autofill_assistant/browser/fake_common_dependencies.h"
 #include "components/autofill_assistant/browser/fake_starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/features.h"
-#include "components/autofill_assistant/browser/mock_website_login_manager.h"
+#include "components/autofill_assistant/browser/public/password_change/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/service/mock_service_request_sender.h"
 #include "components/autofill_assistant/browser/test_util.h"
 #include "components/autofill_assistant/browser/trigger_scripts/mock_dynamic_trigger_conditions.h"
@@ -215,7 +215,8 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
                           /* is_direct_action = */ true,
                           /* initial_url = */ "https://www.example.com",
                           /* is_in_chrome_triggered = */ true,
-                          /* is_externally_triggered = */ false),
+                          /* is_externally_triggered = */ false,
+                          /* skip_autofill_assistant_onboarding = */ false),
                       mock_callback_.Get());
 }
 

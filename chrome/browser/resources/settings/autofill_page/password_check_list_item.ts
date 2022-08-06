@@ -10,7 +10,7 @@
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/js/action_link.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_favicon.js';
 import './passwords_shared.css.js';
 
@@ -83,12 +83,12 @@ export class PasswordCheckListItemElement extends
         value() {
           return loadTimeData.getBoolean(
               'showDismissCompromisedPasswordOption');
-        }
-      }
+        },
+      },
     };
   }
 
-  item: chrome.passwordsPrivate.InsecureCredential;
+  item: chrome.passwordsPrivate.PasswordUiEntry;
   isPasswordVisible: boolean;
   private password_: string;
   clickedChangePassword: boolean;
@@ -188,9 +188,9 @@ export class PasswordCheckListItemElement extends
   showPassword() {
     this.passwordManager_.recordPasswordCheckInteraction(
         PasswordCheckInteraction.SHOW_PASSWORD);
-    this.getPlaintextInsecurePassword(
-            this.item, chrome.passwordsPrivate.PlaintextReason.VIEW)
-        .then(insecureCredential => this.item = insecureCredential);
+    this.requestPlaintextPassword(
+            this.item.id, chrome.passwordsPrivate.PlaintextReason.VIEW)
+        .then(password => this.set('item.password', password), _error => {});
   }
 
   private onReadonlyInputTap_() {

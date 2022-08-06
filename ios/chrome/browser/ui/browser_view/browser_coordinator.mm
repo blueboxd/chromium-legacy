@@ -28,6 +28,8 @@
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
@@ -52,8 +54,8 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+delegates.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
+#import "ios/chrome/browser/ui/browser_view/tab_events_mediator.h"
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
@@ -62,6 +64,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/feed_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
+#import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
@@ -129,12 +132,14 @@
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/ui/webui/net_export_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/print/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
@@ -144,6 +149,7 @@
 #import "ios/chrome/browser/web_state_list/view_source_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
@@ -160,6 +166,9 @@
 constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     base::Milliseconds(300);
 
+// URL to share when user selects "Share Chrome"
+const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
+
 @interface BrowserCoordinator () <ActivityServiceCommands,
                                   BrowserCoordinatorCommands,
                                   CRWWebStateObserver,
@@ -168,7 +177,9 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
                                   EnterprisePromptCoordinatorDelegate,
                                   FormInputAccessoryCoordinatorNavigator,
                                   NetExportTabHelperDelegate,
+                                  NewTabPageCommands,
                                   PageInfoCommands,
+                                  PageInfoPresentation,
                                   PasswordBreachCommands,
                                   PasswordProtectionCommands,
                                   PasswordSuggestionCommands,
@@ -177,9 +188,11 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
                                   PreloadControllerDelegate,
                                   RepostFormTabHelperDelegate,
                                   SigninPresenter,
+                                  SnapshotGeneratorDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
-                                  WebStateListObserving>
+                                  WebStateListObserving,
+                                  WebNavigationNTPDelegate>
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -199,6 +212,9 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
 // Mediator for tab lifecylce.
 @property(nonatomic, strong) TabLifecycleMediator* tabLifecycleMediator;
+
+// Mediator for tab events.
+@property(nonatomic, strong) TabEventsMediator* tabEventsMediator;
 
 // =================================================
 // Child Coordinators, listed in alphabetical order.
@@ -348,6 +364,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   KeyCommandsProvider* _keyCommandsProvider;
   PrerenderService* _prerenderService;
   BubblePresenter* _bubblePresenter;
+  ToolbarAccessoryPresenter* _toolbarAccessoryPresenter;
   NewTabPageCoordinator* _ntpCoordinator;
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
   PrimaryToolbarCoordinator* _primaryToolbarCoordinator;
@@ -374,6 +391,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   DCHECK(!self.viewController);
 
   [self addWebStateObserver];
+  [self addWebStateListObserver];
   [self createViewControllerDependencies];
   [self createViewController];
   [self updateViewControllerDependencies];
@@ -385,7 +403,6 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   // Browser delegates can have dependencies on coordinators.
   [self installDelegatesForBrowser];
   [self installDelegatesForBrowserState];
-  [self addWebStateListObserver];
   [super start];
   self.started = YES;
 }
@@ -396,16 +413,17 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   [super stop];
 
   self.active = NO;
-  [self removeWebStateListObserver];
   [self uninstallDelegatesForBrowserState];
   [self uninstallDelegatesForBrowser];
   [self uninstallDelegatesForAllWebStates];
+  [self.tabEventsMediator disconnect];
   [self.tabLifecycleMediator disconnect];
   self.viewController.commandDispatcher = nil;
   [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
   [self destroyViewController];
   [self destroyViewControllerDependencies];
+  [self removeWebStateListObserver];
   [self removeWebStateObserver];
   self.started = NO;
 }
@@ -519,20 +537,15 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 - (void)createViewController {
   DCHECK(self.browserContainerCoordinator.viewController);
 
-  BrowserViewControllerHelper* browserViewControllerHelper =
-      [[BrowserViewControllerHelper alloc] init];
-
   _viewController = [[BrowserViewController alloc]
                      initWithBrowser:self.browser
       browserContainerViewController:self.browserContainerCoordinator
                                          .viewController
-         browserViewControllerHelper:browserViewControllerHelper
                           dispatcher:self.dispatcher
                  keyCommandsProvider:_keyCommandsProvider
                         dependencies:_viewControllerDependencies];
 
-  WebNavigationBrowserAgent::FromBrowser(self.browser)
-      ->SetDelegate(_viewController);
+  WebNavigationBrowserAgent::FromBrowser(self.browser)->SetDelegate(self);
 
   self.contextMenuProvider = [[ContextMenuConfigurationProvider alloc]
          initWithBrowser:self.browser
@@ -562,6 +575,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     @protocol(DefaultBrowserPromoNonModalCommands),
     @protocol(FeedCommands),
     @protocol(FindInPageCommands),
+    @protocol(NewTabPageCommands),
     @protocol(PageInfoCommands),
     @protocol(PasswordBreachCommands),
     @protocol(PasswordProtectionCommands),
@@ -584,6 +598,8 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
           _dispatcher);
   _keyCommandsProvider.omniboxHandler =
       static_cast<id<OmniboxCommands>>(_dispatcher);
+  _keyCommandsProvider.bookmarksCommandsHandler =
+      static_cast<id<BookmarksCommands>>(_dispatcher);
 
   _prerenderService = PrerenderServiceFactory::GetForBrowserState(browserState);
   if (!browserState->IsOffTheRecord()) {
@@ -613,8 +629,12 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   [_dispatcher startDispatchingToTarget:_bubblePresenter
                             forProtocol:@protocol(HelpCommands)];
 
+  _toolbarAccessoryPresenter = [[ToolbarAccessoryPresenter alloc]
+      initWithIsIncognito:self.browser->GetBrowserState()->IsOffTheRecord()];
+
   _sideSwipeController =
       [[SideSwipeController alloc] initWithBrowser:self.browser];
+  [_sideSwipeController setSnapshotDelegate:self];
   _sideSwipeController.toolbarInteractionHandler = _toolbarCoordinatorAdaptor;
   _sideSwipeController.primaryToolbarSnapshotProvider =
       _primaryToolbarCoordinator;
@@ -681,6 +701,8 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
   _viewControllerDependencies.prerenderService = _prerenderService;
   _viewControllerDependencies.bubblePresenter = _bubblePresenter;
+  _viewControllerDependencies.toolbarAccessoryPresenter =
+      _toolbarAccessoryPresenter;
   _viewControllerDependencies.popupMenuCoordinator = self.popupMenuCoordinator;
   _viewControllerDependencies.downloadManagerCoordinator =
       self.downloadManagerCoordinator;
@@ -712,6 +734,8 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   _bubblePresenter.delegate = self.viewController;
   _bubblePresenter.rootViewController = self.viewController;
 
+  _toolbarAccessoryPresenter.baseViewController = self.viewController;
+
   self.qrScannerCoordinator.baseViewController = self.viewController;
   [self.qrScannerCoordinator start];
 
@@ -725,14 +749,13 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
   [_dispatcher startDispatchingToTarget:self.viewController
                             forProtocol:@protocol(BrowserCommands)];
-  [_dispatcher startDispatchingToTarget:self.viewController
-                            forProtocol:@protocol(NewTabPageCommands)];
 }
 
 // Destroys the browser view controller dependencies.
 - (void)destroyViewControllerDependencies {
   _viewControllerDependencies.prerenderService = nil;
   _viewControllerDependencies.bubblePresenter = nil;
+  _viewControllerDependencies.toolbarAccessoryPresenter = nil;
   _viewControllerDependencies.popupMenuCoordinator = nil;
   _viewControllerDependencies.downloadManagerCoordinator = nil;
   _viewControllerDependencies.ntpCoordinator = nil;
@@ -760,6 +783,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   [_dispatcher stopDispatchingToTarget:_bubblePresenter];
   [_bubblePresenter stop];
   _bubblePresenter = nil;
+  _toolbarAccessoryPresenter = nil;
 
   _prerenderService = nil;
   _fullscreenController = nullptr;
@@ -842,8 +866,6 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
       [[SadTabCoordinator alloc] initWithBaseViewController:self.viewController
                                                     browser:self.browser];
   [self.sadTabCoordinator setOverscrollDelegate:self.viewController];
-  self.viewController.sadTabViewController =
-      self.sadTabCoordinator.viewController;
 
   /* SharingCoordinator is created and started by an ActivityServiceCommand */
 
@@ -1015,9 +1037,14 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   dependencies.tabHelperDelegate = self;
 
   self.tabLifecycleMediator = [[TabLifecycleMediator alloc]
+           initWithWebStateList:self.browser->GetWebStateList()
+                       delegate:browserViewController
+      snapshotGeneratorDelegate:self
+                   dependencies:dependencies];
+
+  self.tabEventsMediator = [[TabEventsMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
-                  delegate:browserViewController
-              dependencies:dependencies];
+            ntpCoordinator:_ntpCoordinator];
 
   self.viewController.reauthHandler =
       HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
@@ -1048,21 +1075,43 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   // Exit fullscreen if needed to make sure that share button is visible.
   _fullscreenController->ExitFullscreen();
 
+  id<ActivityServicePositioner> positioner =
+      _primaryToolbarCoordinator.activityServicePositioner;
   UIBarButtonItem* anchor = nil;
-  if ([self.viewController.activityServicePositioner
-          respondsToSelector:@selector(barButtonItem)]) {
-    anchor = self.viewController.activityServicePositioner.barButtonItem;
+  if ([positioner respondsToSelector:@selector(barButtonItem)]) {
+    anchor = positioner.barButtonItem;
   }
 
   self.sharingCoordinator = [[SharingCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
                           params:params
-                      originView:self.viewController.activityServicePositioner
-                                     .sourceView
-                      originRect:self.viewController.activityServicePositioner
-                                     .sourceRect
+                      originView:positioner.sourceView
+                      originRect:positioner.sourceRect
                           anchor:anchor];
+  [self.sharingCoordinator start];
+}
+
+- (void)shareChromeApp {
+  GURL URL = GURL(kChromeAppStoreUrl);
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_TITLE);
+  NSString* additionalText =
+      l10n_util::GetNSString(IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_DESC);
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                           additionalText:additionalText
+                                 scenario:ActivityScenario::ShareChrome];
+
+  // Exit fullscreen if needed to make sure that share button is visible.
+  FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
+
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                          params:params
+                      originView:self.viewController.view];
   [self.sharingCoordinator start];
 }
 
@@ -1197,10 +1246,17 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 }
 
 - (void)showSendTabToSelfUI:(const GURL&)url title:(NSString*)title {
-  DCHECK(!_sendTabToSelfCoordinator);
+  // TODO(crbug.com/1347821): Make this DCHECK(!_sendTabToSelfCoordinator)
+  // once SendTabToSelfCoordinator is aware of sign-in being aborted.
+  if (_sendTabToSelfCoordinator) {
+    [_sendTabToSelfCoordinator stop];
+    _sendTabToSelfCoordinator = nil;
+  }
+
   _sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
+                 signinPresenter:self
                              url:url
                            title:title];
   [_sendTabToSelfCoordinator start];
@@ -1223,6 +1279,12 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   viewSourceAgent->ViewSourceForActiveWebState();
 }
 #endif  // !defined(NDEBUG)
+
+- (void)focusFakebox {
+  if ([self isNTPActiveForCurrentWebState]) {
+    [_ntpCoordinator focusFakebox];
+  }
+}
 
 #pragma mark - DefaultPromoCommands
 
@@ -1277,12 +1339,11 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   self.findBarCoordinator =
       [[FindBarCoordinator alloc] initWithBaseViewController:self.viewController
                                                      browser:self.browser];
-  self.findBarCoordinator.presenter =
-      self.viewController.toolbarAccessoryPresenter;
+  self.findBarCoordinator.presenter = _toolbarAccessoryPresenter;
   self.findBarCoordinator.delegate = self;
   self.findBarCoordinator.presentationDelegate = self.viewController;
 
-  if (self.viewController.toolbarAccessoryPresenter.isPresenting) {
+  if (_toolbarAccessoryPresenter.isPresenting) {
     self.nextToolbarCoordinator = self.findBarCoordinator;
     [self closeTextZoom];
     return;
@@ -1372,7 +1433,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   PageInfoCoordinator* pageInfoCoordinator = [[PageInfoCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
-  pageInfoCoordinator.presentationProvider = self.viewController;
+  pageInfoCoordinator.presentationProvider = self;
   self.pageInfoCoordinator = pageInfoCoordinator;
   [self.pageInfoCoordinator start];
 }
@@ -1450,11 +1511,10 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   self.textZoomCoordinator = [[TextZoomCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
-  self.textZoomCoordinator.presenter =
-      self.viewController.toolbarAccessoryPresenter;
+  self.textZoomCoordinator.presenter = _toolbarAccessoryPresenter;
   self.textZoomCoordinator.delegate = self;
 
-  if (self.viewController.toolbarAccessoryPresenter.isPresenting) {
+  if (_toolbarAccessoryPresenter.isPresenting) {
     self.nextToolbarCoordinator = self.textZoomCoordinator;
     [self closeFindInPage];
     return;
@@ -1683,6 +1743,11 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     CaptivePortalTabHelper::FromWebState(webState)->SetTabInsertionBrowserAgent(
         insertionAgent);
   }
+
+  if (NewTabPageTabHelper::FromWebState(webState)) {
+    NewTabPageTabHelper::FromWebState(webState)->SetDelegate(
+        self.viewController);
+  }
 }
 
 // Uninstalls delegates for `webState`.
@@ -1715,6 +1780,10 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   if (CaptivePortalTabHelper::FromWebState(webState)) {
     CaptivePortalTabHelper::FromWebState(webState)->SetTabInsertionBrowserAgent(
         nil);
+  }
+
+  if (NewTabPageTabHelper::FromWebState(webState)) {
+    NewTabPageTabHelper::FromWebState(webState)->SetDelegate(nil);
   }
 }
 
@@ -1948,6 +2017,217 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
               showSignin:command
       baseViewController:self.viewController];
+}
+
+#pragma mark - SnapshotGeneratorDelegate methods
+// TODO(crbug.com/1272491): Refactor snapshot generation into (probably) a
+// mediator with a narrowly-defined API to get UI-layer information from the
+// BVC.
+
+- (BOOL)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    canTakeSnapshotForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  PagePlaceholderTabHelper* pagePlaceholderTabHelper =
+      PagePlaceholderTabHelper::FromWebState(webState);
+  return !pagePlaceholderTabHelper->displaying_placeholder() &&
+         !pagePlaceholderTabHelper->will_add_placeholder_for_next_navigation();
+}
+
+- (UIEdgeInsets)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    snapshotEdgeInsetsForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+
+  UIEdgeInsets maxViewportInsets =
+      _fullscreenController->GetMaxViewportInsets();
+
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    BOOL canShowTabStrip = IsRegularXRegularSizeClass(self.viewController);
+    // If the NTP is active, then it's used as the base view for snapshotting.
+    // When the tab strip is visible, or for the incognito NTP, the NTP is laid
+    // out between the toolbars, so it should not be inset while snapshotting.
+    if (canShowTabStrip || self.browser->GetBrowserState()->IsOffTheRecord()) {
+      return UIEdgeInsetsZero;
+    }
+
+    // For the regular NTP without tab strip, it sits above the bottom toolbar
+    // but, since it is displayed as full-screen at the top, it requires maximum
+    // viewport insets.
+    maxViewportInsets.bottom = 0;
+    return maxViewportInsets;
+  } else {
+    // If the NTP is inactive, the WebState's view is used as the base view for
+    // snapshotting.  If fullscreen is implemented by resizing the scroll view,
+    // then the WebState view is already laid out within the visible viewport
+    // and doesn't need to be inset.  If fullscreen uses the content inset, then
+    // the WebState view is laid out fullscreen and should be inset by the
+    // viewport insets.
+    return _fullscreenController->ResizesScrollView() ? UIEdgeInsetsZero
+                                                      : maxViewportInsets;
+  }
+}
+
+- (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+           snapshotOverlaysForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  DCHECK_NE(webStateList->GetIndexOfWebState(webState),
+            WebStateList::kInvalidIndex);
+  BOOL isWebUsageEnabled =
+      self.browser->GetBrowserState() && self.started &&
+      WebUsageEnablerBrowserAgent::FromBrowser(self.browser)
+          ->IsWebUsageEnabled();
+
+  if (!isWebUsageEnabled || webState != webStateList->GetActiveWebState())
+    return @[];
+
+  NSMutableArray<UIView*>* overlays = [NSMutableArray array];
+
+  UIView* downloadManagerView = _downloadManagerCoordinator.viewController.view;
+  if (downloadManagerView) {
+    [overlays addObject:downloadManagerView];
+  }
+
+  UIView* sadTabView = self.sadTabCoordinator.viewController.view;
+  if (sadTabView) {
+    [overlays addObject:sadTabView];
+  }
+
+  BrowserContainerViewController* browserContainerViewController =
+      self.browserContainerCoordinator.viewController;
+  // The overlay container view controller is presenting something if it has
+  // a `presentedViewController` AND that view controller's
+  // `presentingViewController` is the overlay container. Otherwise, some other
+  // view controller higher up in the hierarchy is doing the presenting. E.g.
+  // for the overflow menu, the BVC (and eventually the tab grid view
+  // controller) are presenting the overflow menu, but because those view
+  // controllers are also above tthe `overlayContainerViewController` in the
+  // view hierarchy, the overflow menu view controller is also the
+  // `overlayContainerViewController`'s presentedViewController.
+  UIViewController* overlayContainerViewController =
+      browserContainerViewController.webContentsOverlayContainerViewController;
+  UIViewController* presentedOverlayViewController =
+      overlayContainerViewController.presentedViewController;
+  if (presentedOverlayViewController &&
+      presentedOverlayViewController.presentingViewController ==
+          overlayContainerViewController) {
+    [overlays addObject:presentedOverlayViewController.view];
+  }
+
+  UIView* screenTimeView =
+      browserContainerViewController.screenTimeViewController.view;
+  if (screenTimeView) {
+    [overlays addObject:screenTimeView];
+  }
+
+  UIView* childOverlayView =
+      overlayContainerViewController.childViewControllers.firstObject.view;
+  if (childOverlayView) {
+    DCHECK_EQ(1U, overlayContainerViewController.childViewControllers.count);
+    [overlays addObject:childOverlayView];
+  }
+
+  return overlays;
+}
+
+- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    willUpdateSnapshotForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+
+  if (self.isNTPActiveForCurrentWebState) {
+    [_ntpCoordinator willUpdateSnapshot];
+  }
+  OverscrollActionsTabHelper::FromWebState(webState)->Clear();
+}
+
+- (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+         baseViewForWebState:(web::WebState*)webState {
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive())
+    return _ntpCoordinator.viewController.view;
+  return webState->GetView();
+}
+
+- (UIViewTintAdjustmentMode)snapshotGenerator:
+                                (SnapshotGenerator*)snapshotGenerator
+         defaultTintAdjustmentModeForWebState:(web::WebState*)webState {
+  return UIViewTintAdjustmentModeAutomatic;
+}
+
+#pragma mark - NewTabPageCommands
+
+- (void)openNTPScrolledIntoFeedType:(FeedType)feedType {
+  // Dismiss any presenting modal. Ex. Follow management page.
+
+  __weak __typeof(self) weakSelf = self;
+  [self.viewController
+      clearPresentedStateWithCompletion:^{
+        [weakSelf scrollToNTPAfterPresentedStateCleared:feedType];
+      }
+                         dismissOmnibox:YES];
+}
+
+- (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
+  [_ntpCoordinator updateFollowingFeedHasUnseenContent:hasUnseenContent];
+}
+
+- (void)handleFeedModelDidEndUpdates:(FeedType)feedType {
+  [_ntpCoordinator handleFeedModelDidEndUpdates:feedType];
+}
+
+- (void)scrollToNTPAfterPresentedStateCleared:(FeedType)feedType {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+
+  // Configure next NTP to be scrolled into `feedType`.
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(currentWebState);
+  if (NTPHelper) {
+    NTPHelper->SetNextNTPFeedType(feedType);
+    // TODO(crbug.com/1329173): Scroll into feed.
+  }
+
+  // Navigate to NTP in same tab.
+  UrlLoadingBrowserAgent* urlLoadingBrowserAgent =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  UrlLoadParams urlLoadParams =
+      UrlLoadParams::InCurrentTab(GURL(kChromeUINewTabURL));
+  urlLoadingBrowserAgent->Load(urlLoadParams);
+}
+
+#pragma mark - WebNavigationNTPDelegate
+
+- (BOOL)isNTPActiveForCurrentWebState {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  if (currentWebState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(currentWebState);
+    return NTPHelper && NTPHelper->IsActive();
+  }
+  return NO;
+}
+
+- (void)reloadNTPForWebState:(web::WebState*)webState {
+  [_ntpCoordinator reload];
+}
+
+#pragma mark - PageInfoPresentation
+
+- (void)presentPageInfoView:(UIView*)pageInfoView {
+  [pageInfoView setFrame:self.viewController.view.bounds];
+  [self.viewController.view addSubview:pageInfoView];
+}
+
+- (void)prepareForPageInfoPresentation {
+  // Dismiss the omnibox (if open).
+  id<OmniboxCommands> omniboxHandler =
+      HandlerForProtocol(_dispatcher, OmniboxCommands);
+  [omniboxHandler cancelOmniboxEdit];
+}
+
+- (CGPoint)convertToPresentationCoordinatesForOrigin:(CGPoint)origin {
+  return [self.viewController.view convertPoint:origin fromView:nil];
 }
 
 @end

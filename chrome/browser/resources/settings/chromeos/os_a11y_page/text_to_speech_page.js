@@ -4,13 +4,13 @@
 
 /**
  * @fileoverview
- * 'settings-text-to-speech-page' is the subpage with the text-to-speech
- * accessibility settings.
+ * 'settings-text-to-speech-page' is the accessibility settings subpage
+ * for text-to-speech accessibility settings.
  */
 
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -38,8 +38,11 @@ import {TextToSpeechPageBrowserProxy, TextToSpeechPageBrowserProxyImpl} from './
  */
 const SettingsTextToSpeechPageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, RouteObserverBehavior,
-      RouteOriginBehavior, WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      RouteObserverBehavior,
+      RouteOriginBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -90,7 +93,7 @@ class SettingsTextToSpeechPageElement extends
     super();
 
     /** RouteOriginBehavior override */
-    this.route_ = routes.TEXT_TO_SPEECH;
+    this.route_ = routes.A11Y_TEXT_TO_SPEECH;
 
     /** @private {!TextToSpeechPageBrowserProxy} */
     this.textToSpeechBrowserProxy_ =
@@ -127,7 +130,7 @@ class SettingsTextToSpeechPageElement extends
     RouteOriginBehaviorImpl.currentRouteChanged.call(this, newRoute, prevRoute);
 
     // Does not apply to this page.
-    if (newRoute !== routes.TEXT_TO_SPEECH) {
+    if (newRoute !== routes.A11Y_TEXT_TO_SPEECH) {
       return;
     }
 
@@ -135,11 +138,23 @@ class SettingsTextToSpeechPageElement extends
   }
 
   /**
-   * Updates the Select-to-Speak description text based on:
+   * Return ChromeVox description text based on whether ChromeVox is enabled.
+   * @param {boolean} enabled
+   * @return {string}
+   * @private
+   */
+  getChromeVoxDescription_(enabled) {
+    return this.i18n(
+        enabled ? 'chromeVoxDescriptionOn' : 'chromeVoxDescriptionOff');
+  }
+
+  /**
+   * Return Select-to-Speak description text based on:
    *    1. Whether Select-to-Speak is enabled.
    *    2. If it is enabled, whether a physical keyboard is present.
    * @param {boolean} enabled
    * @param {boolean} hasKeyboard
+   * @return {string}
    * @private
    */
   getSelectToSpeakDescription_(enabled, hasKeyboard) {

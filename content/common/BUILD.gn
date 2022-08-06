@@ -120,12 +120,6 @@ source_set("common") {
     "origin_util.cc",
     "partition_alloc_support.cc",
     "partition_alloc_support.h",
-    "pepper_file_util.cc",
-    "pepper_file_util.h",
-    "pepper_plugin_list.cc",
-    "pepper_plugin_list.h",
-    "pepper_renderer_instance_data.cc",
-    "pepper_renderer_instance_data.h",
     "process_type.cc",
     "process_visibility_tracker.cc",
     "process_visibility_tracker.h",
@@ -137,7 +131,6 @@ source_set("common") {
     "shared_file_util.h",
     "skia_utils.cc",
     "skia_utils.h",
-    "state_transitions.h",
     "thread_pool_util.cc",
     "thread_pool_util.h",
     "trace_utils.h",
@@ -327,7 +320,7 @@ source_set("common") {
   }
 
   if (use_aura) {
-    deps += [ "//ui/aura/cursor" ]
+    deps += [ "//ui/wm" ]
   } else {
     sources -= [ "cursors/webcursor_aura.cc" ]
   }
@@ -357,19 +350,18 @@ source_set("common") {
     sources -= [ "font_list_fontconfig.cc" ]
   }
 
-  if (enable_plugins) {
-    deps += [
-      "//ppapi/proxy:ipc",
-      "//ppapi/shared_impl",
-    ]
-  } else {
-    sources -= [
+  if (enable_ppapi) {
+    sources += [
       "pepper_file_util.cc",
       "pepper_file_util.h",
       "pepper_plugin_list.cc",
       "pepper_plugin_list.h",
       "pepper_renderer_instance_data.cc",
       "pepper_renderer_instance_data.h",
+    ]
+    deps += [
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
     ]
   }
 
@@ -438,7 +430,6 @@ mojom("mojo_bindings") {
     "native_types.mojom",
     "navigation_client.mojom",
     "private_aggregation_host.mojom",
-    "render_accessibility.mojom",
     "render_message_filter.mojom",
     "renderer.mojom",
     "renderer_host.mojom",

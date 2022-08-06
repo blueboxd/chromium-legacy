@@ -11,7 +11,11 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"
+#include "ash/shell.h"
+#include "ash/shell_observer.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/system_nudge_label.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -30,12 +34,15 @@ namespace ash {
 // Creates and manages the nudge widget and its contents view for a contextual
 // system nudge. The nudge displays an icon and a label view in a shelf-colored
 // system bubble with rounded corners.
-class ASH_EXPORT SystemNudge : public ShelfObserver {
+class ASH_EXPORT SystemNudge : public ShelfObserver, ShellObserver {
  public:
   SystemNudge(const std::string& name,
               int icon_size,
               int icon_label_spacing,
-              int nudge_padding);
+              int nudge_padding,
+              bool anchor_status_area = false,
+              AshColorProvider::ContentLayerType icon_color_layer_type =
+                  AshColorProvider::ContentLayerType::kIconColorPrimary);
   SystemNudge(const SystemNudge&) = delete;
   SystemNudge& operator=(const SystemNudge&) = delete;
   ~SystemNudge() override;
@@ -44,6 +51,10 @@ class ASH_EXPORT SystemNudge : public ShelfObserver {
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnHotseatStateChanged(HotseatState old_state,
                              HotseatState new_state) override;
+
+  // ShellObserver:
+  void OnShelfAlignmentChanged(aura::Window* root_window,
+                               ShelfAlignment old_alignment) override;
 
   // Displays the nudge.
   void Show();
@@ -80,6 +91,13 @@ class ASH_EXPORT SystemNudge : public ShelfObserver {
     int icon_label_spacing;
     // The padding which separates the nudge's border with its inner contents.
     int nudge_padding;
+    // If true, the nudge will be on the same side of the status area.
+    // Otherwise the nudge will be on the left/right side of the window for
+    // non-RTL/RTL locale.
+    bool anchor_status_area = false;
+    // The color of the icon.
+    AshColorProvider::ContentLayerType icon_color_layer_type =
+        AshColorProvider::ContentLayerType::kIconColorPrimary;
   };
 
   // Calculate and set widget bounds based on a fixed width and a variable
@@ -95,6 +113,13 @@ class ASH_EXPORT SystemNudge : public ShelfObserver {
   SystemNudgeParams params_;
 
   base::ScopedObservation<Shelf, ShelfObserver> shelf_observation_{this};
+  base::ScopedObservation<Shell,
+                          ShellObserver,
+                          &Shell::AddShellObserver,
+                          &Shell::RemoveShellObserver>
+      shell_observation_{this};
+
+  base::WeakPtrFactory<SystemNudge> weak_factory_{this};
 };
 
 }  // namespace ash

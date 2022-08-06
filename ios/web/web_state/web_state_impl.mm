@@ -9,8 +9,6 @@
 
 #import "base/compiler_specific.h"
 #include "base/debug/dump_without_crashing.h"
-#import "base/feature_list.h"
-#import "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/permissions/permissions.h"
 #import "ios/web/public/session/crw_session_storage.h"
@@ -28,10 +26,10 @@
 namespace web {
 namespace {
 
-// With |kEnableUnrealizedWebStates|, detect inefficient usage of WebState
-// realization. Various bugs have triggered the realization of the entire
-// WebStateList. Detect this by checking for the realization of 3 WebStates
-// within one second. Only report this error once per launch.
+// Detect inefficient usage of WebState realization. Various bugs have
+// triggered the realization of the entire WebStateList. Detect this by
+// checking for the realization of 3 WebStates within one second. Only
+// report this error once per launch.
 constexpr size_t kMaxEvents = 3;
 constexpr CFTimeInterval kWindowSizeInSeconds = 1.0f;
 size_t g_last_realized_count = 0;
@@ -82,8 +80,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params)
 
 WebStateImpl::WebStateImpl(const CreateParams& params,
                            CRWSessionStorage* session_storage) {
-  if (session_storage &&
-      base::FeatureList::IsEnabled(features::kEnableUnrealizedWebStates)) {
+  if (session_storage) {
     saved_ = std::make_unique<SerializedData>(this, params, session_storage);
   } else {
     pimpl_ = std::make_unique<RealizedWebState>(this);

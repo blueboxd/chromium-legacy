@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/task/common/lazy_now.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
@@ -160,8 +161,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       kCompositor = 9,  // Main-thread only.
       kInput = 10,
       kPostMessageForwarding = 11,
+      kInternalNavigationCancellation = 12,
 
-      kCount = 12
+      kCount = 13
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required
@@ -418,7 +420,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   void OnTaskCompleted(const base::sequence_manager::Task& task,
                        TaskQueue::TaskTiming* task_timing,
-                       base::sequence_manager::LazyNow* lazy_now);
+                       base::LazyNow* lazy_now);
 
   void LogTaskExecution(perfetto::EventContext& ctx,
                         const base::sequence_manager::Task& task);
@@ -488,10 +490,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   bool HasTaskToRunImmediatelyOrReadyDelayedTask() const {
     return task_queue_->HasTaskToRunImmediatelyOrReadyDelayedTask();
-  }
-
-  void SetBlameContext(base::trace_event::BlameContext* blame_context) {
-    task_queue_->SetBlameContext(blame_context);
   }
 
   void SetShouldReportPostedTasksWhenDisabled(bool should_report) {

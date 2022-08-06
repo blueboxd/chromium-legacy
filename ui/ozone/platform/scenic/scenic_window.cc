@@ -77,13 +77,11 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   scenic_session_.SetDebugName("Chromium ScenicWindow");
 
   // Subscribe to metrics events from the node. These events are used to
-  // get the device pixel ratio for the screen.
+  // get the device pixel ratio for the screen. In order to receive metrics
+  // events on this node, we must also attach it to the scene graph.
   node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
-
-  // Add input shape.
-  node_.AddChild(input_node_);
-
-  node_.AddChild(render_node_);
+  view_.AddChild(node_);
+  safe_presenter_.QueuePresent();
 
   delegate_->OnAcceleratedWidgetAvailable(window_id_);
 
@@ -397,6 +395,7 @@ void ScenicWindow::UpdateSize() {
   const float height = view_properties_->bounding_box.max.y -
                        view_properties_->bounding_box.min.y;
 
+  const gfx::Point old_origin = bounds_.origin();
   bounds_ = gfx::Rect(ceilf(width * device_pixel_ratio_),
                       ceilf(height * device_pixel_ratio_));
 
@@ -420,8 +419,7 @@ void ScenicWindow::UpdateSize() {
   // separately and we need to make sure our sizes change is committed.
   safe_presenter_.QueuePresent();
 
-  PlatformWindowDelegate::BoundsChange bounds;
-  bounds.bounds = bounds_;
+  PlatformWindowDelegate::BoundsChange bounds(old_origin != bounds_.origin());
   bounds.system_ui_overlap =
       ConvertInsets(device_pixel_ratio_, *view_properties_);
   delegate_->OnBoundsChanged(bounds);
@@ -431,10 +429,13 @@ bool ScenicWindow::UpdateRootNodeVisibility() {
   bool should_show_root_node = is_visible_ && !is_zero_sized();
   if (should_show_root_node != is_root_node_shown_) {
     is_root_node_shown_ = should_show_root_node;
-    if (should_show_root_node)
-      view_.AddChild(node_);
-    else
-      node_.Detach();
+    if (should_show_root_node) {
+      // Attach nodes to render content and receive input.
+      node_.AddChild(input_node_);
+      node_.AddChild(render_node_);
+    } else {
+      node_.DetachChildren();
+    }
   }
   return is_root_node_shown_;
 }

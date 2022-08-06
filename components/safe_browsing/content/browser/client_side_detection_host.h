@@ -20,6 +20,7 @@
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -58,11 +59,13 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
     virtual scoped_refptr<SafeBrowsingDatabaseManager>
     GetSafeBrowsingDBManager() = 0;
     virtual scoped_refptr<BaseUIManager> GetSafeBrowsingUIManager() = 0;
-    virtual ClientSideDetectionService* GetClientSideDetectionService() = 0;
+    virtual base::WeakPtr<ClientSideDetectionService>
+    GetClientSideDetectionService() = 0;
     virtual void AddReferrerChain(ClientPhishingRequest* verdict,
                                   GURL current_url,
                                   const content::GlobalRenderFrameHostId&
                                       current_outermost_main_frame_id) = 0;
+    virtual raw_ptr<VerdictCacheManager> GetCacheManager() = 0;
   };
 
   // The caller keeps ownership of the tab object and is responsible for
@@ -134,7 +137,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
 
   // Used for testing.  This function does not take ownership of the service
   // class.
-  void set_client_side_detection_service(ClientSideDetectionService* service);
+  void set_client_side_detection_service(
+      base::WeakPtr<ClientSideDetectionService> service);
 
   // Sets a test tick clock only for testing.
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
@@ -172,7 +176,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
 
   // This pointer may be nullptr if client-side phishing detection is
   // disabled.
-  raw_ptr<ClientSideDetectionService> csd_service_;
+  base::WeakPtr<ClientSideDetectionService> csd_service_;
   // The WebContents that the class is observing.
   raw_ptr<content::WebContents> tab_;
   // These pointers may be nullptr if SafeBrowsing is disabled.

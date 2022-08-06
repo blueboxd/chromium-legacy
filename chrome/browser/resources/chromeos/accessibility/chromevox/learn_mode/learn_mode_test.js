@@ -25,6 +25,10 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         'CommandHandlerInterface',
         '/chromevox/background/command_handler_interface.js');
+    await importModule(
+        ['BrailleKeyEvent', 'BrailleKeyCommand'],
+        '/chromevox/common/braille/braille_key_types.js');
+    await importModule('KeyCode', '/common/key_code.js');
   }
 
   async runOnLearnModePage() {
@@ -65,7 +69,7 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
       chrome.runtime.sendMessage({
         target: 'LearnMode',
         action: 'onKeyDown',
-        args: [this.makeMockKeyEvent(evt)]
+        args: [this.makeMockKeyEvent(evt)],
       });
     };
   }
@@ -75,7 +79,7 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
       chrome.runtime.sendMessage({
         target: 'LearnMode',
         action: 'onKeyUp',
-        args: [this.makeMockKeyEvent(evt)]
+        args: [this.makeMockKeyEvent(evt)],
       });
     };
   }
@@ -85,7 +89,7 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
       chrome.runtime.sendMessage({
         target: 'LearnMode',
         action: 'onAccessibilityGesture',
-        args: [gesture]
+        args: [gesture],
       });
     };
   }

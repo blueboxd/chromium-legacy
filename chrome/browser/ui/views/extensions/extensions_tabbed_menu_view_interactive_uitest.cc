@@ -12,16 +12,17 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
+#include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_coordinator.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_interactive_uitest.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/permissions_manager.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/test/permissions_manager_waiter.h"
 #include "extensions/test/test_extension_dir.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/layout/animating_layout_manager.h"
@@ -39,18 +40,26 @@ class ExtensionsTabbedMenuViewInteractiveUITest
       const ExtensionsTabbedMenuViewInteractiveUITest&) = delete;
 
   std::vector<InstalledExtensionMenuItemView*> installed_items() {
-    return ExtensionsTabbedMenuView::GetExtensionsTabbedMenuViewForTesting()
-        ->GetInstalledItemsForTesting();
+    return extensions_tabbed_menu_view()->GetInstalledItemsForTesting();
   }
 
   std::vector<SiteAccessMenuItemView*> requests_access_items() {
-    return ExtensionsTabbedMenuView::GetExtensionsTabbedMenuViewForTesting()
+    return extensions_tabbed_menu_view()
         ->GetVisibleRequestsAccessItemsForTesting();
   }
 
   std::vector<SiteAccessMenuItemView*> has_access_items() {
-    return ExtensionsTabbedMenuView::GetExtensionsTabbedMenuViewForTesting()
-        ->GetVisibleHasAccessItemsForTesting();
+    return extensions_tabbed_menu_view()->GetVisibleHasAccessItemsForTesting();
+  }
+
+  // This should only be called after the menu is visible.
+  ExtensionsTabbedMenuView* extensions_tabbed_menu_view() {
+    ExtensionsTabbedMenuView* menu =
+        GetExtensionsToolbarContainer()
+            ->GetExtensionsTabbedMenuCoordinatorForTesting()
+            ->GetExtensionsTabbedMenuView();
+    EXPECT_TRUE(menu);
+    return menu;
   }
 
   // Asserts there is exactly one installed menu item and then returns it.
@@ -83,8 +92,7 @@ void ExtensionsTabbedMenuViewInteractiveUITest::ShowUi(
 #endif
 
   ShowInstalledTabInMenu();
-  ASSERT_TRUE(
-      ExtensionsTabbedMenuView::GetExtensionsTabbedMenuViewForTesting());
+  ASSERT_TRUE(extensions_tabbed_menu_view());
 }
 
 bool ExtensionsTabbedMenuViewInteractiveUITest::VerifyUi() {
@@ -321,10 +329,11 @@ IN_PROC_BROWSER_TEST_F(
       visible_actions[0]->view_controller()->GetContextMenu(
           extensions::ExtensionContextMenuModel::ContextMenuSource::
               kToolbarAction));
-  int visibility_index = context_menu->GetIndexOfCommandId(
+  absl::optional<size_t> visibility_index = context_menu->GetIndexOfCommandId(
       extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY);
-  ASSERT_GE(visibility_index, 0);
-  std::u16string visibility_label = context_menu->GetLabelAt(visibility_index);
+  ASSERT_TRUE(visibility_index.has_value());
+  std::u16string visibility_label =
+      context_menu->GetLabelAt(visibility_index.value());
   EXPECT_EQ(visibility_label, u"Unpin");
 
   // Trigger the pinned extension.
@@ -358,10 +367,11 @@ IN_PROC_BROWSER_TEST_F(
       visible_actions[0]->view_controller()->GetContextMenu(
           extensions::ExtensionContextMenuModel::ContextMenuSource::
               kToolbarAction));
-  int visibility_index = context_menu->GetIndexOfCommandId(
+  absl::optional<size_t> visibility_index = context_menu->GetIndexOfCommandId(
       extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY);
-  ASSERT_GE(visibility_index, 0);
-  std::u16string visibility_label = context_menu->GetLabelAt(visibility_index);
+  ASSERT_TRUE(visibility_index.has_value());
+  std::u16string visibility_label =
+      context_menu->GetLabelAt(visibility_index.value());
   EXPECT_EQ(visibility_label, u"Pin");
 }
 
@@ -413,13 +423,12 @@ IN_PROC_BROWSER_TEST_F(
                                ContextMenuSource::kMenuItem));
   ASSERT_TRUE(context_menu);
   {
-    content::WindowedNotificationObserver permissions_observer(
-        extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-        content::NotificationService::AllSources());
+    extensions::PermissionsManagerWaiter waiter(
+        extensions::PermissionsManager::Get(profile()));
     context_menu->ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK,
         /*event_flags=*/0);
-    permissions_observer.Wait();
+    waiter.WaitForExtensionPermissionsUpdate();
   }
 
   // Verify the extension is in the requests access section.
@@ -433,13 +442,12 @@ IN_PROC_BROWSER_TEST_F(
   // Allow the site to access the extension by changing the extension
   // permissions to run on site using the context menu.
   {
-    content::WindowedNotificationObserver permissions_observer(
-        extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-        content::NotificationService::AllSources());
+    extensions::PermissionsManagerWaiter waiter(
+        extensions::PermissionsManager::Get(profile()));
     context_menu->ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE,
         /*event_flags=*/0);
-    permissions_observer.Wait();
+    waiter.WaitForExtensionPermissionsUpdate();
   }
 
   // Verify the extension is in the has access section.

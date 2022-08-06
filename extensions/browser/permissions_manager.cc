@@ -49,15 +49,15 @@ void AddSiteToPrefs(ExtensionPrefs* extension_prefs,
                     const url::Origin& origin) {
   std::unique_ptr<prefs::ScopedDictionaryPrefUpdate> update =
       extension_prefs->CreatePrefUpdate(kUserPermissions);
-  base::ListValue* list = nullptr;
+  base::Value::List* list = nullptr;
 
-  bool pref_exists = (*update)->GetList(pref, &list);
+  bool pref_exists = (*update)->GetListWithoutPathExpansion(pref, &list);
   if (pref_exists) {
     list->Append(origin.Serialize());
   } else {
-    auto sites = std::make_unique<base::Value>(base::Value::Type::LIST);
-    sites->Append(origin.Serialize());
-    (*update)->Set(pref, std::move(sites));
+    base::Value::List sites;
+    sites.Append(origin.Serialize());
+    (*update)->SetKey(pref, base::Value(std::move(sites)));
   }
 }
 
@@ -67,9 +67,10 @@ void RemoveSiteFromPrefs(ExtensionPrefs* extension_prefs,
                          const url::Origin& origin) {
   std::unique_ptr<prefs::ScopedDictionaryPrefUpdate> update =
       extension_prefs->CreatePrefUpdate(kUserPermissions);
-  base::ListValue* list;
-  (*update)->GetList(pref, &list);
-  list->EraseListValue(base::Value(origin.Serialize()));
+  base::Value::List* list = nullptr;
+  (*update)->GetListWithoutPathExpansion(pref, &list);
+  DCHECK(list);
+  list->EraseValue(base::Value(origin.Serialize()));
 }
 
 // Returns sites from `pref` in `extension_prefs`.
@@ -142,6 +143,12 @@ KeyedService* PermissionsManagerFactory::BuildServiceInstanceFor(
 
 }  // namespace
 
+UpdatedExtensionPermissionsInfo::UpdatedExtensionPermissionsInfo(
+    const Extension* extension,
+    const PermissionSet& permissions,
+    Reason reason)
+    : reason(reason), extension(extension), permissions(permissions) {}
+
 // Implementation of UserPermissionsSettings.
 PermissionsManager::UserPermissionsSettings::UserPermissionsSettings() =
     default;
@@ -181,6 +188,23 @@ BrowserContextKeyedServiceFactory* PermissionsManager::GetFactory() {
 void PermissionsManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kUserPermissions.name);
+}
+
+void PermissionsManager::UpdateUserSiteSetting(
+    const url::Origin& origin,
+    PermissionsManager::UserSiteSetting site_setting) {
+  switch (site_setting) {
+    case UserSiteSetting::kGrantAllExtensions:
+      AddUserPermittedSite(origin);
+      break;
+    case UserSiteSetting::kBlockAllExtensions:
+      AddUserRestrictedSite(origin);
+      break;
+    case UserSiteSetting::kCustomizeByExtension:
+      RemoveUserPermittedSite(origin);
+      RemoveUserRestrictedSite(origin);
+      break;
+  }
 }
 
 void PermissionsManager::AddUserRestrictedSite(const url::Origin& origin) {
@@ -236,51 +260,42 @@ void PermissionsManager::UpdatePermissionsWithUserSettings(
   //    runtime-granted permissions (where the user said "this extension may run
   //    on this site") and `user_permitted_set` (sites the user allows any
   //    extension to run on).
-  std::unique_ptr<const PermissionSet> allowed_permissions =
+  std::unique_ptr<PermissionSet> allowed_permissions =
       PermissionSet::CreateUnion(user_permitted_set,
                                  *GetRuntimePermissionsFromPrefs(extension));
 
-  // 2) Calculate the set of all permissions the extension requests. This is the
-  //    union of optional and required permissions in the extension's manifest.
-  const PermissionSet& required_permissions =
-      PermissionsParser::GetRequiredPermissions(&extension);
-  std::unique_ptr<const PermissionSet> requested_permissions =
-      PermissionSet::CreateUnion(
-          required_permissions,
-          PermissionsParser::GetOptionalPermissions(&extension));
-
-  // 3) Determine the active permissions, within the bounds of requested
-  //    permissions. "Active permissions" here are the permissions the extension
-  //    most recently set for itself, as extensions can revoke their own
-  //    permissions via chrome.permissions.remove() (which removes the
+  // 2) Calculate the set of extension-desired permissions, which is the set of
+  //    permissions the extension most recently set for itself (this may be
+  //    different than granted, as extensions can remove permissions from
+  //    themselves via chrome.permissions.remove() (which removes the
   //    permission from the active set, but not the granted set).
-  std::unique_ptr<const PermissionSet> stored_active_permissions =
-      extension_prefs_->GetActivePermissions(extension.id());
-  std::unique_ptr<const PermissionSet> bounded_active =
-      PermissionSet::CreateIntersection(*stored_active_permissions,
-                                        *requested_permissions);
-  // Since we don't allow withholding of API and manifest permissions, the
-  // allowed set always contains all (bounded) requested API and manifest
-  // permissions.
-  allowed_permissions = std::make_unique<const PermissionSet>(
-      bounded_active->apis().Clone(),
-      bounded_active->manifest_permissions().Clone(),
-      allowed_permissions->explicit_hosts().Clone(),
-      allowed_permissions->scriptable_hosts().Clone());
+  std::unique_ptr<PermissionSet> bounded_desired =
+      GetBoundedExtensionDesiredPermissions(extension);
 
-  // 4) Calculate the new active and withheld permissions. The active
+  // 3) Add in any always-approved hosts that shouldn't be removed (such as
+  //    chrome://favicon).
+  ExtensionsBrowserClient::Get()->AddAdditionalAllowedHosts(
+      *bounded_desired, allowed_permissions.get());
+
+  // 4) Finalize the allowed set. Since we don't allow withholding of API and
+  //    manifest permissions, the allowed set always contains all (bounded)
+  //    requested API and manifest permissions.
+  allowed_permissions->SetAPIPermissions(bounded_desired->apis().Clone());
+  allowed_permissions->SetManifestPermissions(
+      bounded_desired->manifest_permissions().Clone());
+
+  // 5) Calculate the new active and withheld permissions. The active
   //    permissions are the intersection of all permissions the extension is
   //    allowed to have with all permissions the extension elected to have.
   //    Said differently, we grant a permission if both the extension and the
   //    user approved it.
   //    Withheld permissions are any required permissions that are not in the
   //    new active set.
-  std::unique_ptr<const PermissionSet> new_active =
-      PermissionSet::CreateIntersection(
-          *allowed_permissions, *bounded_active,
-          URLPatternSet::IntersectionBehavior::kDetailed);
-  std::unique_ptr<const PermissionSet> new_withheld =
-      PermissionSet::CreateDifference(required_permissions, *new_active);
+  std::unique_ptr<PermissionSet> new_active = PermissionSet::CreateIntersection(
+      *allowed_permissions, *bounded_desired,
+      URLPatternSet::IntersectionBehavior::kDetailed);
+  std::unique_ptr<PermissionSet> new_withheld = PermissionSet::CreateDifference(
+      PermissionsParser::GetRequiredPermissions(&extension), *new_active);
 
   // Set the new permissions on the extension.
   extension.permissions_data()->SetPermissions(std::move(new_active),
@@ -383,10 +398,10 @@ bool PermissionsManager::HasWithheldHostPermissions(
   return extension_prefs_->GetWithholdingPermissions(extension_id);
 }
 
-std::unique_ptr<const PermissionSet>
+std::unique_ptr<PermissionSet>
 PermissionsManager::GetRuntimePermissionsFromPrefs(
     const Extension& extension) const {
-  std::unique_ptr<const PermissionSet> permissions =
+  std::unique_ptr<PermissionSet> permissions =
       extension_prefs_->GetRuntimeGrantedPermissions(extension.id());
 
   // If there are no stored permissions, there's nothing to adjust.
@@ -440,13 +455,12 @@ PermissionsManager::GetRuntimePermissionsFromPrefs(
     new_explicit_hosts.AddPattern(std::move(new_pattern));
   }
 
-  return std::make_unique<PermissionSet>(
-      permissions->apis().Clone(), permissions->manifest_permissions().Clone(),
-      std::move(new_explicit_hosts), permissions->scriptable_hosts().Clone());
+  permissions->SetExplicitHosts(std::move(new_explicit_hosts));
+  return permissions;
 }
 
-std::unique_ptr<const PermissionSet>
-PermissionsManager::GetExtensionDesiredPermissionsFromPrefs(
+std::unique_ptr<PermissionSet>
+PermissionsManager::GetBoundedExtensionDesiredPermissions(
     const Extension& extension) const {
   // Determine the extension's "required" permissions (though even these can
   // be withheld).
@@ -458,8 +472,8 @@ PermissionsManager::GetExtensionDesiredPermissionsFromPrefs(
   // might not be all granted permissions, since extensions can revoke their
   // own permissions via chrome.permissions.remove() (which removes the
   // permission from the active set, but not the granted set).
-  std::unique_ptr<const PermissionSet> desired_active_permissions =
-      extension_prefs_->GetActivePermissions(extension.id());
+  std::unique_ptr<PermissionSet> desired_active_permissions =
+      extension_prefs_->GetDesiredActivePermissions(extension.id());
   // The stored desired permissions may be null if the extension has never
   // used the permissions API to modify its active permissions. In this case,
   // the desired permissions are simply the set of required permissions.
@@ -471,7 +485,7 @@ PermissionsManager::GetExtensionDesiredPermissionsFromPrefs(
   // extension (depending on how its permissions have changed).
   // Start by calculating the set of all current potentially-desired
   // permissions by combining the required and optional permissions.
-  std::unique_ptr<const PermissionSet> requested_permissions =
+  std::unique_ptr<PermissionSet> requested_permissions =
       PermissionSet::CreateUnion(
           required_permissions,
           PermissionsParser::GetOptionalPermissions(&extension));
@@ -480,7 +494,7 @@ PermissionsManager::GetExtensionDesiredPermissionsFromPrefs(
   // permissions. This filters out any previously-stored permissions that are
   // no longer used (which we continue to store in prefs in case the extension
   // wants them back in the future).
-  std::unique_ptr<const PermissionSet> bounded_desired =
+  std::unique_ptr<PermissionSet> bounded_desired =
       PermissionSet::CreateIntersection(*desired_active_permissions,
                                         *requested_permissions);
 
@@ -496,7 +510,7 @@ PermissionsManager::GetExtensionDesiredPermissionsFromPrefs(
   return bounded_desired;
 }
 
-std::unique_ptr<const PermissionSet>
+std::unique_ptr<PermissionSet>
 PermissionsManager::GetEffectivePermissionsToGrant(
     const Extension& extension,
     const PermissionSet& desired_permissions) const {
@@ -527,15 +541,14 @@ PermissionsManager::GetEffectivePermissionsToGrant(
 
   // Determine the permissions granted by the user at runtime. If none are found
   // in prefs, default it to an empty set.
-  std::unique_ptr<const PermissionSet> granted_permissions =
+  std::unique_ptr<PermissionSet> granted_permissions =
       GetRuntimePermissionsFromPrefs(extension);
   if (!granted_permissions)
     granted_permissions = std::make_unique<PermissionSet>();
 
   // Add any additional hosts that should be auto-granted.
-  granted_permissions =
-      ExtensionsBrowserClient::Get()->AddAdditionalAllowedHosts(
-          desired_permissions, *granted_permissions);
+  ExtensionsBrowserClient::Get()->AddAdditionalAllowedHosts(
+      desired_permissions, granted_permissions.get());
 
   URLPatternSet granted_scriptable_hosts =
       granted_permissions->scriptable_hosts().Clone();
@@ -572,6 +585,13 @@ PermissionsManager::GetEffectivePermissionsToGrant(
       desired_permissions.apis().Clone(),
       desired_permissions.manifest_permissions().Clone(),
       std::move(new_explicit_hosts), std::move(new_scriptable_hosts));
+}
+
+void PermissionsManager::NotifyExtensionPermissionsUpdated(
+    const UpdatedExtensionPermissionsInfo& info) {
+  for (Observer& observer : observers_) {
+    observer.OnExtensionPermissionsUpdated(info);
+  }
 }
 
 void PermissionsManager::AddObserver(Observer* observer) {
@@ -676,7 +696,7 @@ bool PermissionsManager::RemoveRestrictedSiteAndUpdatePrefs(
 
 void PermissionsManager::NotifyObserversOfChange() {
   for (auto& observer : observers_)
-    observer.UserPermissionsSettingsChanged(GetUserPermissionsSettings());
+    observer.OnUserPermissionsSettingsChanged(GetUserPermissionsSettings());
 }
 
 }  // namespace extensions

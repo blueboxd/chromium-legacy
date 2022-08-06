@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.history_clusters;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.components.browser_ui.widget.MoreProgressButton;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -53,7 +54,7 @@ class HistoryClustersViewBinder {
         if (key == HistoryClustersToolbarProperties.QUERY_STATE) {
             QueryState queryState = model.get(HistoryClustersToolbarProperties.QUERY_STATE);
             if (queryState.isSearching()) {
-                listLayout.onStartSearch("");
+                listLayout.onStartSearch(queryState.getSearchEmptyString());
             } else {
                 listLayout.onEndSearch();
             }
@@ -62,10 +63,16 @@ class HistoryClustersViewBinder {
 
     public static void bindClusterView(PropertyModel model, View view, PropertyKey key) {
         HistoryClusterView clusterView = (HistoryClusterView) view;
-        if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
+        if (key == HistoryClustersItemProperties.ACCESSIBILITY_STATE) {
+            clusterView.setAccessibilityState(
+                    model.get(HistoryClustersItemProperties.ACCESSIBILITY_STATE));
+        } else if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
             OnClickListener clickListener = model.get(HistoryClustersItemProperties.CLICK_HANDLER);
             clusterView.setOnClickListener(clickListener);
             clusterView.setEndButtonClickListener(clickListener);
+        } else if (key == HistoryClustersItemProperties.DIVIDER_VISIBLE) {
+            clusterView.setDividerVisibility(
+                    model.get(HistoryClustersItemProperties.DIVIDER_VISIBLE));
         } else if (key == HistoryClustersItemProperties.END_BUTTON_DRAWABLE) {
             clusterView.setEndButtonDrawable(
                     model.get(HistoryClustersItemProperties.END_BUTTON_DRAWABLE));
@@ -98,5 +105,18 @@ class HistoryClustersViewBinder {
             PropertyModel propertyModel, View view, PropertyKey propertyKey) {
         // This view's appearance and behavior are dictated by our parent component, so we
         // don't manipulate it here.
+    }
+
+    public static void bindMoreProgressView(
+            PropertyModel propertyModel, View view, PropertyKey key) {
+        MoreProgressButton button = (MoreProgressButton) view;
+        if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
+            button.setOnClickRunnable(
+                    ()
+                            -> propertyModel.get(HistoryClustersItemProperties.CLICK_HANDLER)
+                                       .onClick(null));
+        } else if (key == HistoryClustersItemProperties.PROGRESS_BUTTON_STATE) {
+            button.setState(propertyModel.get(HistoryClustersItemProperties.PROGRESS_BUTTON_STATE));
+        }
     }
 }

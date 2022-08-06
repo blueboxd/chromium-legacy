@@ -176,110 +176,6 @@ TEST(AXEventGeneratorTest, IterateThroughEmptyEventSets) {
   EXPECT_TRUE(expected_event_map.empty());
 }
 
-TEST(AXEventGeneratorTest, LoadCompleteSameTree) {
-  AXTreeUpdate initial_state;
-  initial_state.root_id = 1;
-  initial_state.nodes.resize(1);
-  initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
-  initial_state.has_tree_data = true;
-  AXTree tree(initial_state);
-
-  AXEventGenerator event_generator(&tree);
-  ASSERT_THAT(event_generator, IsEmpty());
-  AXTreeUpdate load_complete_update = initial_state;
-  load_complete_update.tree_data.loaded = true;
-
-  ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_THAT(event_generator, UnorderedElementsAre(HasEventAtNode(
-                                   AXEventGenerator::Event::LOAD_COMPLETE, 1)));
-}
-
-TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
-  AXTreeUpdate initial_state;
-  initial_state.root_id = 1;
-  initial_state.nodes.resize(1);
-  initial_state.nodes[0].id = 1;
-  initial_state.has_tree_data = true;
-  initial_state.tree_data.loaded = true;
-  AXTree tree(initial_state);
-
-  AXEventGenerator event_generator(&tree);
-  ASSERT_THAT(event_generator, IsEmpty());
-  AXTreeUpdate load_complete_update;
-  load_complete_update.root_id = 2;
-  load_complete_update.nodes.resize(1);
-  load_complete_update.nodes[0].id = 2;
-  load_complete_update.nodes[0].relative_bounds.bounds =
-      gfx::RectF(0, 0, 800, 600);
-  load_complete_update.has_tree_data = true;
-  load_complete_update.tree_data.loaded = true;
-
-  ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(
-                  HasEventAtNode(AXEventGenerator::Event::LOAD_COMPLETE, 2),
-                  HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 2)));
-
-  // Load complete should not be emitted for sizeless roots.
-  load_complete_update.root_id = 3;
-  load_complete_update.nodes.resize(1);
-  load_complete_update.nodes[0].id = 3;
-  load_complete_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 0, 0);
-  load_complete_update.has_tree_data = true;
-  load_complete_update.tree_data.loaded = true;
-
-  ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(
-                  HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 3)));
-
-  // TODO(accessibility): http://crbug.com/888758
-  // Load complete should not be emitted for chrome-search URLs.
-  load_complete_update.root_id = 4;
-  load_complete_update.nodes.resize(1);
-  load_complete_update.nodes[0].id = 4;
-  load_complete_update.nodes[0].relative_bounds.bounds =
-      gfx::RectF(0, 0, 800, 600);
-  load_complete_update.nodes[0].AddStringAttribute(
-      ax::mojom::StringAttribute::kUrl, "chrome-search://foo");
-  load_complete_update.has_tree_data = true;
-  load_complete_update.tree_data.loaded = true;
-
-  ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(
-                  HasEventAtNode(AXEventGenerator::Event::LOAD_COMPLETE, 4),
-                  HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 4)));
-}
-
-TEST(AXEventGeneratorTest, LoadStart) {
-  AXTreeUpdate initial_state;
-  initial_state.root_id = 1;
-  initial_state.nodes.resize(1);
-  initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
-  initial_state.has_tree_data = true;
-  AXTree tree(initial_state);
-
-  AXEventGenerator event_generator(&tree);
-  ASSERT_THAT(event_generator, IsEmpty());
-  AXTreeUpdate load_start_update;
-  load_start_update.root_id = 2;
-  load_start_update.nodes.resize(1);
-  load_start_update.nodes[0].id = 2;
-  load_start_update.nodes[0].relative_bounds.bounds =
-      gfx::RectF(0, 0, 800, 600);
-  load_start_update.has_tree_data = true;
-  load_start_update.tree_data.loaded = false;
-
-  ASSERT_TRUE(tree.Unserialize(load_start_update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(
-                  HasEventAtNode(AXEventGenerator::Event::LOAD_START, 2),
-                  HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 2)));
-}
-
 TEST(AXEventGeneratorTest, DocumentSelectionChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -560,15 +456,14 @@ TEST(AXEventGeneratorTest, SelectionInTextFieldChanged) {
         UnorderedElementsAre(
             HasEventAtNode(AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED,
                            root.id),
-            HasEventAtNode(
-                AXEventGenerator::Event::SELECTION_IN_TEXT_FIELD_CHANGED,
-                text_field.id)));
+            HasEventAtNode(AXEventGenerator::Event::TEXT_SELECTION_CHANGED,
+                           text_field.id)));
   }
 
   event_generator.ClearEvents();
   {
     // A selection that does not include a text field in it should not raise the
-    // "SELECTION_IN_TEXT_FIELD_CHANGED" event.
+    // "TEXT_SELECTION_CHANGED" event.
     tree_data.sel_anchor_object_id = root.id;
     tree_data.sel_anchor_offset = 0;
     tree_data.sel_focus_object_id = root.id;
@@ -587,7 +482,7 @@ TEST(AXEventGeneratorTest, SelectionInTextFieldChanged) {
   event_generator.ClearEvents();
   {
     // A selection that spans more than one node but which nevertheless ends on
-    // a text field should still raise the "SELECTION_IN_TEXT_FIELD_CHANGED"
+    // a text field should still raise the "TEXT_SELECTION_CHANGED"
     // event.
     tree_data.sel_anchor_object_id = root.id;
     tree_data.sel_anchor_offset = 0;
@@ -603,9 +498,8 @@ TEST(AXEventGeneratorTest, SelectionInTextFieldChanged) {
         UnorderedElementsAre(
             HasEventAtNode(AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED,
                            root.id),
-            HasEventAtNode(
-                AXEventGenerator::Event::SELECTION_IN_TEXT_FIELD_CHANGED,
-                text_field.id)));
+            HasEventAtNode(AXEventGenerator::Event::TEXT_SELECTION_CHANGED,
+                           text_field.id)));
   }
 }
 

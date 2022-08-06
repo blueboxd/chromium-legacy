@@ -115,6 +115,7 @@ FormData GetFormData(const FormDataDescription& d) {
     ff.is_autofilled = dd.is_autofilled.value_or(false);
     ff.origin = dd.origin.value_or(f.main_frame_origin);
     ff.should_autocomplete = dd.should_autocomplete;
+    ff.properties_mask = dd.properties_mask;
     f.fields.push_back(ff);
   }
   return f;
@@ -159,7 +160,7 @@ void FormStructureTest::CheckFormStructureTestData(
                 static_cast<int>(form_structure->autofill_count()));
     }
     if (test_case.form_flags.section_count) {
-      std::set<std::string> section_names;
+      std::set<Section> section_names;
       for (const auto& field : *form_structure)
         section_names.insert(field->section);
       EXPECT_EQ(*test_case.form_flags.section_count,
@@ -170,11 +171,6 @@ void FormStructureTest::CheckFormStructureTestData(
          i < test_case.expected_field_types.expected_html_type.size(); i++) {
       EXPECT_EQ(test_case.expected_field_types.expected_html_type[i],
                 form_structure->field(i)->html_type());
-    }
-    for (size_t i = 0;
-         i < test_case.expected_field_types.expected_phone_part.size(); i++) {
-      EXPECT_EQ(test_case.expected_field_types.expected_phone_part[i],
-                form_structure->field(i)->phone_part());
     }
     for (size_t i = 0;
          i < test_case.expected_field_types.expected_heuristic_type.size();

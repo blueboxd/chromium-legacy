@@ -27,17 +27,20 @@ import {WelcomeBrowserProxyImpl} from './welcome_browser_proxy.js';
 /**
  * The strings contained in the arrays should be valid DOM-element tag names.
  */
-type NuxOnboardingModules = {
-  'new-user': string[],
-  'returning-user': string[],
-};
+interface NuxOnboardingModules {
+  'new-user': string[];
+  'returning-user': string[];
+}
 
 /**
  * This list needs to be updated if new modules need to be supported in the
  * onboarding flow.
  */
 const MODULES_WHITELIST: Set<string> = new Set([
-  'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default', 'signin-view'
+  'nux-google-apps',
+  'nux-ntp-background',
+  'nux-set-as-default',
+  'signin-view',
 ]);
 
 /**
@@ -82,7 +85,7 @@ export class WelcomeAppElement extends WelcomeAppElementBase {
     this.modules_ = {
       'new-user': loadTimeData.getString('newUserModules').split(','),
       'returning-user':
-          loadTimeData.getString('returningUserModules').split(',')
+          loadTimeData.getString('returningUserModules').split(','),
     };
   }
 
@@ -188,7 +191,7 @@ export class WelcomeAppElement extends WelcomeAppElementBase {
             if (MODULES_NEEDING_INDICATOR.has(elementTagName)) {
               element.set('indicatorModel', {
                 total: indicatorElementCount,
-                active: indicatorActiveCount++
+                active: indicatorActiveCount++,
               });
             }
           });

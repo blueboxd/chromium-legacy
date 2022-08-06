@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CLUSTERS_CORE_QUERY_CLUSTERS_STATE_H_
 #define COMPONENTS_HISTORY_CLUSTERS_CORE_QUERY_CLUSTERS_STATE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -22,6 +23,8 @@
 namespace history_clusters {
 
 class HistoryClustersService;
+
+using LabelCount = std::pair<std::u16string, size_t>;
 
 // This object encapsulates the results of a query to HistoryClustersService.
 // It manages fetching more pages from the clustering backend as the user
@@ -53,6 +56,14 @@ class QueryClustersState {
   // Used to request another batch of clusters of the same query.
   void LoadNextBatchOfClusters(ResultCallback callback);
 
+  // The list of raw labels in the same order as the clusters are ordered
+  // alongside the number of occurrences so far. The counts can be fetched by
+  // inputting the labels into the map as keys - but note, this only counts the
+  // number of label instances seen SO FAR, not necessarily in all of History.
+  const std::vector<LabelCount>& raw_label_counts_so_far() {
+    return raw_label_counts_so_far_;
+  }
+
  private:
   friend class QueryClustersStateTest;
 
@@ -75,12 +86,21 @@ class QueryClustersState {
                      QueryClustersContinuationParams continuation_params,
                      std::vector<history::Cluster> clusters);
 
+  // Updates the internal state of raw labels for this next batch of `clusters`.
+  void UpdateUniqueRawLabels(const std::vector<history::Cluster>& clusters);
+
   // A weak pointer to the service in case we outlive the service.
   // Never nullptr, except in unit tests.
   const base::WeakPtr<HistoryClustersService> service_;
 
   // The string query the user entered into the searchbox.
   const std::string query_;
+
+  // The de-duplicated list of raw labels we've seen so far and their number of
+  // occurrences, in the same order as the clusters themselves were provided.
+  // This is only computed if `query` is empty. For non-empty `query`, this will
+  // be an empty list.
+  std::vector<LabelCount> raw_label_counts_so_far_;
 
   // The continuation params used to track where the last query left off and
   // query for the "next page".

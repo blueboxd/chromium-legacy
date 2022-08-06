@@ -52,7 +52,12 @@ enum VisitSource {
   SOURCE_SAFARI_IMPORTED = 5,
 };
 
+// Corresponds to the "id" column of the "visits" SQL table.
 typedef int64_t VisitID;
+// `kInvalidVisitID` is 0 because SQL AUTOINCREMENT's very first row has
+// "id" == 1. Therefore any 0 VisitID is a sentinel null-like value.
+constexpr VisitID kInvalidVisitID = 0;
+
 // Structure to hold the mapping between each visit's id and its source.
 typedef std::map<VisitID, VisitSource> VisitSourceMap;
 
@@ -78,8 +83,15 @@ class VisitRow {
     return visit_time < other.visit_time;
   }
 
-  // ID of this row (visit ID, used a a referrer for other visits).
-  VisitID visit_id = 0;
+  // Row ID of this visit in the table. Some nuances with this ID:
+  //  - Do NOT assume that a higher `visit_id` implies a more recent visit.
+  //    For example: A Mobile phone that recently got back online can sync a
+  //    bunch of older visits onto a Desktop machine all at once.
+  //  - Do NOT assume that `visit_id` for the same synced visit matches across
+  //    devices. This is just a local AUTOINCREMENTed SQL row ID that has no
+  //    special meaning or uniqueness guarantee outside of this local machine.
+  //  - See `originator_cache_guid` and `originator_visit_id` for more details.
+  VisitID visit_id = kInvalidVisitID;
 
   // Row ID into the URL table of the URL that this page is.
   URLID url_id = 0;
@@ -87,9 +99,9 @@ class VisitRow {
   base::Time visit_time;
 
   // Indicates another visit that was the redirecting or referring page for this
-  // one. 0 indicates no referrer/redirect.
+  // one. 0 (kInvalidVisitId) indicates no referrer/redirect.
   // Note that this corresponds to the "from_visit" column in the visit DB.
-  VisitID referring_visit = 0;
+  VisitID referring_visit = kInvalidVisitID;
 
   // A combination of bits from PageTransition.
   ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
@@ -109,28 +121,33 @@ class VisitRow {
 
   // Indicates the visit that opened this one.
   //
-  // 0 indicates no opener visit. Only non-zero if this visit was directly
-  // initiated by open in a new tab, window, or for same-document navigations.
-  // It is possible for this to be non-zero and the visit to not exist (i.e., if
-  // the visit expired).
+  // 0 (kInvalidVisitId) indicates no opener visit. Only non-zero if this visit
+  // was directly initiated by open in a new tab, window, or for same-document
+  // navigations. It is possible for this to be non-zero and the visit to not
+  // exist (i.e., if the visit expired).
   //
   // This differs from `referring_visit` since this links visits across tabs
   // whereas `referring_visit` is only populated if the Referrer is from the
   // same tab.
-  VisitID opener_visit = 0;
+  VisitID opener_visit = kInvalidVisitID;
 
   // These are set only for synced visits originating from a different machine.
   // `originator_cache_guid` is the originator machine's unique client ID. It's
   // called a "cache" just to match Chrome Sync's terminology.
   std::string originator_cache_guid;
-  VisitID originator_visit_id = 0;
+  // The visit ID of this visit on the originating device, which is *not*
+  // comparable to local visit IDs (as in `visit_id` / `referring_visit` /
+  // `opener_visit`).
+  // Note that even for synced visits, this may be 0, if the visit came from a
+  // "legacy" client (which was using Sessions sync rather than History sync).
+  VisitID originator_visit_id = kInvalidVisitID;
   // `originator_referring_visit` and `originator_opener_visit` are similar to
   // the non-"originator" versions, but their contents refer to originator visit
   // IDs rather than to local ones.
   // Note that `originator_referring_visit` corresponds to the
   // "originator_from_visit" column in the visit DB.
-  VisitID originator_referring_visit = 0;
-  VisitID originator_opener_visit = 0;
+  VisitID originator_referring_visit = kInvalidVisitID;
+  VisitID originator_opener_visit = kInvalidVisitID;
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -425,7 +442,7 @@ struct HistoryAddPageArgs {
   //       GURL(), base::Time(), nullptr, 0, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       false, SOURCE_BROWSED, false, true,
-  //       absl::nullopt, absl::nullopt)
+  //       absl::nullopt, absl::nullopt, absl::nullopt)
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
@@ -438,7 +455,6 @@ struct HistoryAddPageArgs {
                      VisitSource source,
                      bool did_replace_entry,
                      bool consider_for_ntp_most_visited,
-                     bool floc_allowed,
                      absl::optional<std::u16string> title = absl::nullopt,
                      absl::optional<Opener> opener = absl::nullopt,
                      absl::optional<int64_t> bookmark_id = absl::nullopt);
@@ -851,13 +867,14 @@ struct ClusterVisit {
   float score = 0.0;
 
   // Flagged as true if this cluster visit matches the user's search query.
-  // This value depends on the user's search query, and is not meant to be ever
-  // persisted. It's a UI-state-specific flag that's convenient to buffer here.
+  // This depends on the user's search query, and should not be persisted. It's
+  // a UI-state-specific flag that's convenient to buffer here.
   bool matches_search_query = false;
 
   // A list of visits that have been de-duplicated into this visit. The parent
   // visit is considered the best visit among all the duplicates, and the worse
   // visits are now contained here.
+  // TODO(manukh): Persist to db.
   std::vector<ClusterVisit> duplicate_visits;
 
   // The site engagement score of the URL associated with this visit. This
@@ -874,7 +891,7 @@ struct ClusterVisit {
   // that combines this with the page title as a deduping key.
   GURL url_for_deduping;
 
-  // The normalized URL for the visit (i.e. a SRP URL normalized based on the
+  // The normalized URL for the visit (i.e. an SRP URL normalized based on the
   // user's default search provider).
   GURL normalized_url;
 
@@ -882,13 +899,15 @@ struct ClusterVisit {
   // a consistent experience between WebUI and Mobile.
   std::u16string url_for_display;
 
-  // Which positions matched the search query in various fields.
+  // Which positions matched the search query in various fields. This depends on
+  // the user's search query, and should not be persisted.
   query_parser::Snippet::MatchPositions title_match_positions;
   query_parser::Snippet::MatchPositions url_for_display_match_positions;
 
   // If true, the visit should be "below the fold" and not initially shown in
   // any UI. It is still included in the cluster so that it can be queried over,
-  // as well as deleted when the whole cluster is deleted.
+  // as well as deleted when the whole cluster is deleted. This is computed in
+  // the UI code, and should not be persisted.
   bool hidden = false;
 };
 
@@ -951,9 +970,13 @@ struct Cluster {
   Cluster(int64_t cluster_id,
           const std::vector<ClusterVisit>& visits,
           const base::flat_map<std::u16string, ClusterKeywordData>&
-              keyword_to_data_map,
+              keyword_to_data_map = {},
           bool should_show_on_prominent_ui_surfaces = true,
-          absl::optional<std::u16string> label = absl::nullopt);
+          absl::optional<std::u16string> label = absl::nullopt,
+          absl::optional<std::u16string> raw_label = absl::nullopt,
+          query_parser::Snippet::MatchPositions label_match_positions = {},
+          std::vector<std::string> related_searches = {},
+          float search_match_score = 0);
   Cluster(const Cluster&);
   Cluster(Cluster&&);
   Cluster& operator=(const Cluster&);
@@ -964,10 +987,9 @@ struct Cluster {
 
   int64_t cluster_id = 0;
   std::vector<ClusterVisit> visits;
-  // TODO(manukh): retrieve and persist `keyword_to_data_map`,
-  // `should_show_on_prominent_ui_surfaces, and `label`.
 
   // A map of keywords to additional data.
+  // TODO(manukh): Persist to db.
   base::flat_map<std::u16string, ClusterKeywordData> keyword_to_data_map;
 
   // Whether the cluster should be shown prominently on UI surfaces.
@@ -982,48 +1004,20 @@ struct Cluster {
   absl::optional<std::u16string> raw_label;
 
   // The positions within the label that match the search query, if it exists.
+  // This depends on the user's search query, and should not be persisted.
   query_parser::Snippet::MatchPositions label_match_positions;
 
   // The vector of related searches for the whole cluster. This is derived from
   // the related searches of the constituent visits, and computed in
-  // cross-platform code so we have a consistent set across platforms.
+  // cross-platform code so it's consistent across platforms. Should not be
+  // persisted.
   std::vector<std::string> related_searches;
 
   // A floating point score that's positive if the cluster matches the user's
-  // search query, and zero otherwise. This score changes depending on the
-  // entered search query, so this should never be persisted. It's a
-  // UI-state-specific score that's convenient to buffer here.
+  // search query, and zero otherwise. This depends on the user's search query,
+  // and should not be persisted. It's a UI-state-specific score that's
+  // convenient to buffer here.
   float search_match_score = 0.0;
-};
-
-// A minimal representation of `Cluster` used when retrieving them from
-// `VisitAnnotationsDatabase`.
-// TODO(manukh): Also use this representation when inserting them into the DB,
-//  since the additional information in a `Cluster` isn't necessary.
-struct ClusterRow {
-  ClusterRow();
-  explicit ClusterRow(int64_t cluster_id);
-  ClusterRow(const ClusterRow&);
-  ClusterRow& operator=(const ClusterRow&);
-  ~ClusterRow();
-
-  int64_t cluster_id;
-  std::vector<VisitID> visit_ids;
-};
-
-// Sets of `Cluster` IDs and `AnnotatedVisit`s. This is convenient in that,
-// unlike a vector of `Cluster`s, it contains a flat vector of unique
-// `AnnotatedVisit`s.
-struct ClusterIdsAndAnnotatedVisitsResult {
-  ClusterIdsAndAnnotatedVisitsResult();
-  ClusterIdsAndAnnotatedVisitsResult(
-      std::vector<int64_t> cluster_ids,
-      std::vector<AnnotatedVisit> annotated_visits);
-  ClusterIdsAndAnnotatedVisitsResult(const ClusterIdsAndAnnotatedVisitsResult&);
-  ~ClusterIdsAndAnnotatedVisitsResult();
-
-  std::vector<int64_t> cluster_ids;
-  std::vector<AnnotatedVisit> annotated_visits;
 };
 
 }  // namespace history

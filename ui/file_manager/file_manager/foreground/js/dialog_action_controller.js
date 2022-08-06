@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
 import {DialogType} from '../../common/js/dialog_type.js';
@@ -132,7 +132,7 @@ export class DialogActionController {
       this.selectFilesAndClose_({
         urls: [url],
         multiple: false,
-        filterIndex: this.dialogFooter_.selectedFilterIndex
+        filterIndex: this.dialogFooter_.selectedFilterIndex,
       });
     } catch (error) {
       if (!(error instanceof UserCanceledError)) {
@@ -168,7 +168,7 @@ export class DialogActionController {
       const singleSelection = {
         urls: [url],
         multiple: false,
-        filterIndex: this.dialogFooter_.selectedFilterIndex
+        filterIndex: this.dialogFooter_.selectedFilterIndex,
       };
       this.selectFilesAndClose_(singleSelection);
       return;
@@ -222,7 +222,7 @@ export class DialogActionController {
     const singleSelection = {
       urls: [files[0]],
       multiple: false,
-      filterIndex: this.dialogFooter_.selectedFilterIndex
+      filterIndex: this.dialogFooter_.selectedFilterIndex,
     };
     this.selectFilesAndClose_(singleSelection);
   }

@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chrome/browser/ash/guest_os/guest_os_test_helpers.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -82,14 +82,14 @@ class GuestOsMountProviderTest : public testing::Test {
       const std::string& source_format,
       const std::string& mount_label,
       const std::vector<std::string>& mount_options,
-      chromeos::MountType type,
+      ash::MountType type,
       chromeos::MountAccessMode access_mode,
       ash::disks::DiskMountManager::MountPathCallback callback) {
     auto event = DiskMountManager::MountEvent::MOUNTING;
-    auto code = chromeos::MountError::MOUNT_ERROR_NONE;
+    auto code = ash::MountError::kNone;
     auto info = DiskMountManager::MountPointInfo(
         base::StringPrintf("sftp://%d:%d", cid_, port_),
-        "/media/fuse/" + kMountName, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+        "/media/fuse/" + kMountName, ash::MountType::kNetworkStorage,
         ash::disks::MOUNT_CONDITION_NONE);
     disk_manager_->NotifyMountEvent(event, code, info);
     std::move(callback).Run(code, info);
@@ -100,7 +100,7 @@ class GuestOsMountProviderTest : public testing::Test {
     EXPECT_CALL(*disk_manager_,
                 MountPath(base::StringPrintf("sftp://%d:%d", cid_, port_), "",
                           kMountName, default_mount_options,
-                          chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                          ash::MountType::kNetworkStorage,
                           chromeos::MOUNT_ACCESS_MODE_READ_WRITE, _))
         .Times(n)
         .WillRepeatedly(
@@ -170,7 +170,7 @@ TEST_F(GuestOsMountProviderTest, CanRemountAfterUnmount) {
           [this](const std::string& mount_path,
                  DiskMountManager::UnmountPathCallback callback) {
             EXPECT_EQ(mount_path, "/media/fuse/" + kMountName);
-            std::move(callback).Run(chromeos::MOUNT_ERROR_NONE);
+            std::move(callback).Run(ash::MountError::kNone);
           }));
 
   provider_->Mount(

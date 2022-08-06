@@ -33,6 +33,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/history_fuzzy_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -61,6 +62,7 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
@@ -73,7 +75,6 @@
 
 using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
-
 
 // Helpers --------------------------------------------------------------------
 
@@ -139,7 +140,6 @@ void RecordActionShownForAllActions(
 
 }  // namespace
 
-
 // OmniboxEditModel::State ----------------------------------------------------
 
 OmniboxEditModel::State::State(
@@ -162,9 +162,7 @@ OmniboxEditModel::State::State(
 
 OmniboxEditModel::State::State(const State& other) = default;
 
-OmniboxEditModel::State::~State() {
-}
-
+OmniboxEditModel::State::~State() = default;
 
 // OmniboxEditModel -----------------------------------------------------------
 
@@ -190,8 +188,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       std::make_unique<OmniboxController>(this, client_.get());
 }
 
-OmniboxEditModel::~OmniboxEditModel() {
-}
+OmniboxEditModel::~OmniboxEditModel() = default;
 
 void OmniboxEditModel::set_popup_view(OmniboxPopupView* popup_view) {
   popup_view_ = popup_view;
@@ -374,8 +371,8 @@ void OmniboxEditModel::OnChanged() {
   // Don't call CurrentMatch() when there's no editing, as in this case we'll
   // never actually use it.  This avoids running the autocomplete providers (and
   // any systems they then spin up) during startup.
-  const AutocompleteMatch& current_match = user_input_in_progress_ ?
-      CurrentMatch(nullptr) : AutocompleteMatch();
+  const AutocompleteMatch& current_match =
+      user_input_in_progress_ ? CurrentMatch(nullptr) : AutocompleteMatch();
 
   client_->OnTextChanged(current_match, user_input_in_progress_, user_text_,
                          result(), has_focus());
@@ -704,7 +701,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     input.set_prefer_keyword(input_.prefer_keyword());
     input.set_keyword_mode_entry_method(input_.keyword_mode_entry_method());
     input.set_allow_exact_keyword_match(input_.allow_exact_keyword_match());
-    input.set_want_asynchronous_matches(input_.want_asynchronous_matches());
+    input.set_omit_asynchronous_matches(input_.omit_asynchronous_matches());
     input.set_focus_type(input_.focus_type());
     input_ = input;
     AutocompleteMatch url_match(VerbatimMatchForInput(
@@ -807,6 +804,27 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  const std::u16string& pasted_text,
                                  size_t index,
                                  base::TimeTicks match_selection_timestamp) {
+  TemplateURLService* service = client_->GetTemplateURLService();
+  bool is_tab_search_mode =
+      OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
+      match.from_keyword &&
+      service->IsKeywordFromStarterPackTabSearch(keyword_);
+  if (is_tab_search_mode) {
+    // The starter pack's tab search feature uses the omnibox's OpenTabProvider
+    // to search through a user's open tabs and does not have a proper landing
+    // page for substituting URL searches. To support this, only allow the user
+    // to open matches from the OpenTabProvider, effectively disabling the 
+    // search-other-engine suggestion that is usually the default suggestion in
+    // keyword mode.
+    if (match.provider->type() != AutocompleteProvider::TYPE_OPEN_TAB) {
+      return;
+    }
+
+    // All suggestions in tab search mode that ARE from the open tab provider
+    // should open in the existing open tab (switch to open tab).
+    disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+  }
+
   TRACE_EVENT("omnibox", "OmniboxEditModel::OpenMatch", "match", match,
               "disposition", disposition, "altenate_nav_url", alternate_nav_url,
               "pasted_text", pasted_text);
@@ -821,6 +839,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   focus_resulted_in_navigation_ = true;
 
   RecordActionShownForAllActions(result(), OmniboxPopupSelection::kNoMatch);
+  HistoryFuzzyProvider::RecordOpenMatchMetrics(result(), match);
 
   std::u16string input_text(pasted_text);
   if (input_text.empty())
@@ -911,7 +930,6 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                now - last_omnibox_focus_);
   }
 
-  TemplateURLService* service = client_->GetTemplateURLService();
   TemplateURL* template_url = match.GetTemplateURL(service, false);
   if (template_url) {
     if (ui::PageTransitionTypeIncludingQualifiersIs(
@@ -1267,7 +1285,8 @@ void OmniboxEditModel::OnKillFocus() {
 }
 
 bool OmniboxEditModel::WillHandleEscapeKey() const {
-  return user_input_in_progress_ || has_temporary_text_;
+  return user_input_in_progress_ || has_temporary_text_ ||
+         base::FeatureList::IsEnabled(omnibox::kBlurWithEscape);
 }
 
 bool OmniboxEditModel::OnEscapeKeyPressed() {
@@ -1305,9 +1324,15 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // for ease of replacement, and matches other browsers.
   bool user_input_was_in_progress = user_input_in_progress_;
   bool popup_was_open = PopupIsOpen();
+  // TODO(crbug.com/1340378): If the popup was open, `user_input_in_progress_`
+  //  *should* also be true; checking `user_text_` in the DCHECK below, and
+  //  checking `popup_was_open` in the if predicate below *should* be
+  //  unnecessary. However, that's not always the case (see
+  //  `user_input_in_progress_` comment in the header).
+  DCHECK(!popup_was_open || user_input_was_in_progress || user_text_.empty());
   view_->RevertAll();
   view_->SelectAll(true);
-  if (user_input_was_in_progress) {
+  if (user_input_was_in_progress || popup_was_open) {
     base::UmaHistogramEnumeration(
         kOmniboxEscapeHistogramName,
         popup_was_open ? OmniboxEscapeAction::kClosePopupAndClearUserInput
@@ -1320,8 +1345,6 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
     // loaded triggers the ZeroSuggest popup.
     return true;
   }
-
-  DCHECK(!popup_was_open);
 
   // Blur the omnibox and focus the web contents.
   if (base::FeatureList::IsEnabled(omnibox::kBlurWithEscape)) {
@@ -1424,7 +1447,8 @@ void OmniboxEditModel::OnPopupDataChanged(
   omnibox_controller_->InvalidateCurrentMatch();
 
   // Update keyword/hint-related local state.
-  bool keyword_state_changed = (keyword_ != keyword) ||
+  bool keyword_state_changed =
+      (keyword_ != keyword) ||
       ((is_keyword_hint_ != is_keyword_hint) && !keyword.empty());
   if (keyword_state_changed) {
     bool keyword_was_selected = is_keyword_selected();
@@ -1680,8 +1704,9 @@ void OmniboxEditModel::InternalSetUserText(const std::u16string& text) {
 
 std::u16string OmniboxEditModel::MaybeStripKeyword(
     const std::u16string& text) const {
-  return is_keyword_selected() ?
-      KeywordProvider::SplitReplacementStringFromInput(text, false) : text;
+  return is_keyword_selected()
+             ? KeywordProvider::SplitReplacementStringFromInput(text, false)
+             : text;
 }
 
 std::u16string OmniboxEditModel::MaybePrependKeyword(
@@ -1780,7 +1805,8 @@ gfx::Image OmniboxEditModel::GetMatchIcon(const AutocompleteMatch& match,
 
   // Get the favicon for navigational suggestions.
   if (!AutocompleteMatch::IsSearchType(match.type) &&
-      match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+      match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
+      match.type != AutocompleteMatchType::HISTORY_CLUSTER) {
     // Because the Views UI code calls GetMatchIcon in both the layout and
     // painting code, we may generate multiple `OnFaviconFetched` callbacks,
     // all run one after another. This seems to be harmless as the callback
@@ -1952,13 +1978,11 @@ bool OmniboxEditModel::TriggerPopupSelectionAction(
     case OmniboxPopupSelection::FOCUSED_BUTTON_HEADER: {
       DCHECK(match.suggestion_group_id.has_value());
 
-      omnibox::SuggestionGroupVisibility new_value =
-          result().IsSuggestionGroupHidden(GetPrefService(),
-                                           match.suggestion_group_id.value())
-              ? omnibox::SuggestionGroupVisibility::SHOWN
-              : omnibox::SuggestionGroupVisibility::HIDDEN;
-      omnibox::SetSuggestionGroupVisibility(
-          GetPrefService(), match.suggestion_group_id.value(), new_value);
+      const bool current_visibility = result().IsSuggestionGroupHidden(
+          GetPrefService(), match.suggestion_group_id.value());
+      result().SetSuggestionGroupHidden(GetPrefService(),
+                                        match.suggestion_group_id.value(),
+                                        !current_visibility);
       break;
     }
     case OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH:
@@ -2217,8 +2241,10 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
   std::u16string keyword;
   base::TrimWhitespace(new_text.substr(0, space_position), base::TRIM_LEADING,
                        &keyword);
-  return !keyword.empty() && !autocomplete_controller()->keyword_provider()->
-      GetKeywordForText(keyword).empty();
+  return !keyword.empty() && !autocomplete_controller()
+                                  ->keyword_provider()
+                                  ->GetKeywordForText(keyword)
+                                  .empty();
 }
 
 //  static

@@ -79,7 +79,7 @@ shared_library("qt5_shim") {
 }
 
 component("qt") {
-  visibility = [ "//ui/views/linux_ui:linux_ui_factory" ]
+  visibility = [ "//ui/linux:linux_ui_factory" ]
 
   defines = [ "IS_QT_IMPL" ]
 
@@ -89,15 +89,16 @@ component("qt") {
     ":qt_interface",
     "//base",
     "//printing/buildflags",
-    "//skia",
     "//ui/base/ime/linux",
     "//ui/color",
     "//ui/color:mixers",
     "//ui/gfx",
+    "//ui/linux:linux_ui_impl",
     "//ui/native_theme",
     "//ui/shell_dialogs",
     "//ui/views",
   ]
+  public_deps = [ "//skia" ]
 
   sources = [
     "qt_ui.cc",

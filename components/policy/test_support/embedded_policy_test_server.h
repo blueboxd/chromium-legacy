@@ -68,7 +68,7 @@ class EmbeddedPolicyTestServer {
   virtual ~EmbeddedPolicyTestServer();
 
   // Initializes and waits until the server is ready to accept requests.
-  bool Start();
+  virtual bool Start();
 
   ClientStorage* client_storage() const { return client_storage_.get(); }
 
@@ -90,7 +90,7 @@ class EmbeddedPolicyTestServer {
   void ResetPolicyStorage();
   void ResetClientStorage();
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Updates policy selected by |type| and optional |entity_id|. The
   // |raw_policy| is served via an external endpoint. This does not trigger
   // policy invalidation, hence test authors must manually trigger a policy
@@ -98,13 +98,14 @@ class EmbeddedPolicyTestServer {
   void UpdateExternalPolicy(const std::string& type,
                             const std::string& entity_id,
                             const std::string& raw_policy);
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
- private:
+ protected:
   // Default request handler.
-  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+  virtual std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request);
 
+ private:
   // Request handler for external policy data.
   std::unique_ptr<net::test_server::HttpResponse>
   HandleExternalPolicyDataRequest(const GURL& request);

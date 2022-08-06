@@ -5,11 +5,13 @@
 /**
  * @fileoverview Handles automation events on the currently focused node.
  */
-import {BaseAutomationHandler} from '/chromevox/background/base_automation_handler.js';
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
-import {CursorRange} from '/common/cursors/range.js';
+import {CursorRange} from '../../common/cursors/range.js';
+import {ChromeVoxEvent} from '../common/custom_automation_event.js';
+
+import {BaseAutomationHandler} from './base_automation_handler.js';
+import {ChromeVoxState} from './chromevox_state.js';
+import {Output} from './output/output.js';
+import {OutputEventType} from './output/output_types.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -117,7 +119,8 @@ export class FocusAutomationHandler extends BaseAutomationHandler {
     // allow interruption of this announcement which can occur in a slew of
     // events (e.g. typing).
     new Output()
-        .withInitialSpeechProperties({doNotInterrupt: true})
+        .withInitialSpeechProperties(
+            new TtsSpeechProperties({doNotInterrupt: true}))
         .formatForSpeech('@hint_details')
         .go();
   }

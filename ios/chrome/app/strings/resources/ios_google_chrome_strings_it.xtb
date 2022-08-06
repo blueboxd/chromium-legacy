@@ -39,7 +39,6 @@
 <translation id="3196546062792660320">Chrome ti fa risparmiare tempo portando i tuoi account sul Web. Puoi aggiungere o rimuovere account nelle Impostazioni.</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3345341804167540816">Utilizza Chrome ovunque</translation>
-<translation id="3428998300753080128">Accedi a questo sito, al tuo Account Google e a Chrome.</translation>
 <translation id="3522659714780527202">Per visualizzare le tue schede su tutti i dispositivi su cui utilizzi Chrome, attiva la sincronizzazione</translation>
 <translation id="3533694711092285624">Nessuna password salvata. Chrome può controllare le password quando le salvi.</translation>
 <translation id="3641179212828090796">Usa la password salvata in Chrome per eseguire l'accesso più rapidamente</translation>
@@ -52,12 +51,12 @@
 <translation id="3988789688219830639">Google Chrome non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e report sugli arresti anomali.</translation>
 <translation id="417201473131094001">Non supportata su Chrome Canary</translation>
-<translation id="4214277427269650960">Accedi a questo sito e a Chrome. Puoi attivare la sincronizzazione in un secondo momento.</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> stava usando Chrome e ha lasciato preferiti, password e altre impostazioni su questo dispositivo.</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4249068189593983585">Suggerimento per Chrome. Per vedere più opzioni sulla scheda, tocca e tieni premuto il pulsante Mostra schede della barra degli strumenti, che si trova nella parte inferiore o superiore della schermata.</translation>
 <translation id="4523886039239821078">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Disinstallali.</translation>
 <translation id="4633328489441962921">Chrome non può controllare la disponibilità di aggiornamenti</translation>
+<translation id="4636900170638246267">Accedi a questo sito e a Chrome.</translation>
 <translation id="4698415050768537821">Chrome non ha potuto controllare tutte le password. Riprova domani oppure <ph name="BEGIN_LINK" />controlla le password nel tuo Account Google<ph name="END_LINK" />.</translation>
 <translation id="4802922164792993118">Suggerimento per Chrome. Accedi più velocemente selezionando la password salvata nella parte superiore della tastiera.</translation>
 <translation id="4819268619367838612">Per contribuire a migliorare l'app, Chrome invia a Google dati sull'utilizzo e sugli arresti anomali. <ph name="BEGIN_LINK" />Gestisci<ph name="END_LINK" /></translation>
@@ -109,6 +108,7 @@
 <translation id="766361182512894255">La tua password è stata compromessa a causa di una violazione dei dati. Chrome consiglia di cambiare subito la password.</translation>
 <translation id="7693590760643069321">Ora puoi usare Chrome ogni volta che tocchi i link in messaggi, documenti e altre app.</translation>
 <translation id="7698568245838009292">Chrome vorrebbe accedere alla fotocamera</translation>
+<translation id="7754633291442704733">La tua organizzazione <ph name="DOMAIN" /> avrà accesso ai dati, ai preferiti, alla cronologia, alle password e ad altre impostazioni di Chrome memorizzate in questo account. Quando esci, i dati verranno cancellati da questo dispositivo.  Tuttavia, i tuoi dati rimarranno memorizzati nel tuo Account Google gestito e saranno disponibili per la tua organizzazione. La tua organizzazione può anche impostare criteri relativi agli utenti specifici per l'account, in grado di modificare il comportamento di Chrome.</translation>
 <translation id="7780154209050837198">Accedi con il tuo Account Google a Chrome per usare al meglio questo browser.</translation>
 <translation id="7855730255114109580">Google Chrome è aggiornato</translation>
 <translation id="8022947259858476807">Usa Chrome per impostazione predefinita per aprire link, eseguire ricerche dai widget e compilare automaticamente le password in altre app</translation>

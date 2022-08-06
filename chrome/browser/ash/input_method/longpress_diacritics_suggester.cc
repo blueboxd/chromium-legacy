@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/ui/assistive_delegate.h"
@@ -94,10 +95,18 @@ void LongpressDiacriticsSuggester::OnExternalSuggestionsUpdated(
 SuggestionStatus LongpressDiacriticsSuggester::HandleKeyEvent(
     const ui::KeyEvent& event) {
   ui::DomCode code = event.code();
+  // The diacritic suggester is not set up.
   if (focused_context_id_ == absl::nullopt ||
       displayed_window_base_character_ == absl::nullopt ||
-      !GetCurrentShownDiacritics().size())
+      !GetCurrentShownDiacritics().size()) {
     return SuggestionStatus::kNotHandled;
+  }
+  // The diacritic suggester is displaying, but its just the repeat key of the
+  // base character (probably because user is still holding down the key).
+  if (*displayed_window_base_character_ == event.GetCharacter() &&
+      event.is_repeat()) {
+    return SuggestionStatus::kNotHandled;
+  }
 
   size_t new_index = 0;
 
@@ -133,6 +142,26 @@ SuggestionStatus LongpressDiacriticsSuggester::HandleKeyEvent(
       highlighted_index_ = new_index;
       return SuggestionStatus::kBrowsing;
     default:
+      size_t key_number = 0;
+      // If the key value is a number then accept the corresponding suggestion.
+      if (base::StringToSizeT(std::u16string(1, event.GetCharacter()),
+                              &key_number)) {
+        // Ignore 0 values, make sure the key numbers are valid.
+        if (1 <= key_number && key_number <= 9 &&
+            key_number <= GetCurrentShownDiacritics().size()) {
+          // The "key" char value starts from 1.
+          // The actual index of the suggestions start at 0.
+          size_t index_to_accept = key_number - 1;
+          if (AcceptSuggestion(index_to_accept)) {
+            return SuggestionStatus::kAccept;
+          }
+        }
+      }
+
+      // Dismiss on any unexpected key events.
+      DismissSuggestion();
+      // NotHandled is passed so that the IME will let the key event pass
+      // through.
       return SuggestionStatus::kNotHandled;
   }
 }

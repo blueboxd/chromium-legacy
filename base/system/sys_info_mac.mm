@@ -59,9 +59,9 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
   if (@available(macOS 10.10, *)) {
     NSOperatingSystemVersion version =
         [[NSProcessInfo processInfo] operatingSystemVersion];
-    *major_version = version.majorVersion;
-    *minor_version = version.minorVersion;
-    *bugfix_version = version.patchVersion;
+    *major_version = static_cast<int32_t>(version.majorVersion);
+    *minor_version = static_cast<int32_t>(version.minorVersion);
+    *bugfix_version = static_cast<int32_t>(version.patchVersion);
   } else {
     Gestalt(gestaltSystemVersionMajor,
             reinterpret_cast<SInt32*>(major_version));

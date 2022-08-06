@@ -22,6 +22,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -52,16 +53,17 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
 namespace content {
 
 // Version number of the database.
-const int AttributionStorageSql::kCurrentVersionNumber = 34;
+const int AttributionStorageSql::kCurrentVersionNumber = 35;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 34;
+const int AttributionStorageSql::kCompatibleVersionNumber = 35;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -372,6 +374,49 @@ base::FilePath DatabasePath(const base::FilePath& user_data_directory) {
   return user_data_directory.Append(kDatabasePath);
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DestinationLimitResult {
+  kAllowedByPendingAllowedByUnexpired = 0,
+  kAllowedByPendingDroppedByUnexpired = 1,
+  kDroppedByPendingAllowedByUnexpired = 2,
+  kDroppedByPendingDroppedByUnexpired = 3,
+  kError = 4,
+
+  kMaxValue = kError,
+};
+
+DestinationLimitResult GetDestinationLimitResult(
+    RateLimitResult pending_sources_limit,
+    RateLimitResult unexpired_sources_limit) {
+  switch (pending_sources_limit) {
+    case RateLimitResult::kAllowed: {
+      switch (unexpired_sources_limit) {
+        case RateLimitResult::kAllowed:
+          return DestinationLimitResult::kAllowedByPendingAllowedByUnexpired;
+        case RateLimitResult::kNotAllowed:
+          return DestinationLimitResult::kAllowedByPendingDroppedByUnexpired;
+        case RateLimitResult::kError:
+          return DestinationLimitResult::kError;
+      }
+    }
+    case RateLimitResult::kNotAllowed: {
+      switch (unexpired_sources_limit) {
+        case RateLimitResult::kAllowed:
+          // Unexpired sources limit is stricter than pending sources limit.
+          NOTREACHED();
+          return DestinationLimitResult::kDroppedByPendingAllowedByUnexpired;
+        case RateLimitResult::kNotAllowed:
+          return DestinationLimitResult::kDroppedByPendingDroppedByUnexpired;
+        case RateLimitResult::kError:
+          return DestinationLimitResult::kError;
+      }
+    }
+    case RateLimitResult::kError:
+      return DestinationLimitResult::kError;
+  }
+}
+
 }  // namespace
 
 // static
@@ -393,8 +438,8 @@ AttributionStorageSql::AttributionStorageSql(
     std::unique_ptr<AttributionStorageDelegate> delegate)
     : path_to_database_(g_run_in_memory_ ? base::FilePath(kInMemoryPath)
                                          : DatabasePath(path_to_database)),
-      rate_limit_table_(delegate.get()),
-      delegate_(std::move(delegate)) {
+      delegate_(std::move(delegate)),
+      rate_limit_table_(delegate_.get()) {
   DCHECK(delegate_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -503,9 +548,26 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
         StorableSource::Result::kInsufficientSourceCapacity);
   }
 
-  if (!HasCapacityForUniqueDestinationLimitForPendingSource(source)) {
-    return StoreSourceResult(
-        StorableSource::Result::kInsufficientUniqueDestinationCapacity);
+  RateLimitResult unexpired_sources_destination_limit =
+      rate_limit_table_.SourceAllowedForDestinationLimit(db_.get(), source);
+  RateLimitResult pending_sources_destination_limit =
+      HasCapacityForUniqueDestinationLimitForPendingSource(source);
+
+  // For now we only record metrics on this limit to measure how it performs
+  // compared to the pending sources limit.
+  base::UmaHistogramEnumeration(
+      "Conversions.UniqueDestinationLimitForUnexpiredSourcesResult",
+      GetDestinationLimitResult(pending_sources_destination_limit,
+                                unexpired_sources_destination_limit));
+
+  switch (pending_sources_destination_limit) {
+    case RateLimitResult::kAllowed:
+      break;
+    case RateLimitResult::kNotAllowed:
+      return StoreSourceResult(
+          StorableSource::Result::kInsufficientUniqueDestinationCapacity);
+    case RateLimitResult::kError:
+      return StoreSourceResult(StorableSource::Result::kInternalError);
   }
 
   switch (rate_limit_table_.SourceAllowedForReportingOriginLimit(db_.get(),
@@ -1320,17 +1382,16 @@ AttributionStorageSql::GetEventLevelReportsInternal(base::Time max_report_time,
   return reports;
 }
 
-absl::optional<base::Time> AttributionStorageSql::GetNextReportTime() {
+absl::optional<base::Time> AttributionStorageSql::GetNextReportTime(
+    base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return absl::nullopt;
 
-  base::Time now = base::Time::Now();
-
   absl::optional<base::Time> next_event_level_report_time =
-      GetNextEventLevelReportTime(now);
+      GetNextEventLevelReportTime(time);
   absl::optional<base::Time> next_aggregatable_report_time =
-      GetNextAggregatableAttributionReportTime(now);
+      GetNextAggregatableAttributionReportTime(time);
 
   return AttributionReport::MinReportTime(next_event_level_report_time,
                                           next_aggregatable_report_time);
@@ -1584,7 +1645,7 @@ AttributionStorageSql::AdjustOfflineEventLevelReportTimes(
 void AttributionStorageSql::ClearData(
     base::Time delete_begin,
     base::Time delete_end,
-    base::RepeatingCallback<bool(const url::Origin&)> filter,
+    StoragePartition::StorageKeyMatcherFunction filter,
     bool delete_rate_limit_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
@@ -1626,9 +1687,12 @@ void AttributionStorageSql::ClearData(
   int num_reports_deleted = 0;
   while (statement.Step()) {
     if (filter.is_null() ||
-        filter.Run(DeserializeOrigin(statement.ColumnString(0))) ||
-        filter.Run(DeserializeOrigin(statement.ColumnString(1))) ||
-        filter.Run(DeserializeOrigin(statement.ColumnString(2)))) {
+        filter.Run(
+            blink::StorageKey(DeserializeOrigin(statement.ColumnString(0)))) ||
+        filter.Run(
+            blink::StorageKey(DeserializeOrigin(statement.ColumnString(1)))) ||
+        filter.Run(
+            blink::StorageKey(DeserializeOrigin(statement.ColumnString(2))))) {
       source_ids_to_delete.emplace_back(statement.ColumnInt64(3));
       if (statement.GetColumnType(4) != sql::ColumnType::kNull) {
         if (!DeleteReportInternal(AttributionReport::EventLevelData::Id(
@@ -2282,9 +2346,9 @@ void AttributionStorageSql::DatabaseErrorCallback(int extended_error,
   db_init_status_ = DbStatus::kClosed;
 }
 
-bool AttributionStorageSql::
-    HasCapacityForUniqueDestinationLimitForPendingSource(
-        const StorableSource& source) {
+RateLimitResult
+AttributionStorageSql::HasCapacityForUniqueDestinationLimitForPendingSource(
+    const StorableSource& source) {
   const int max = delegate_->GetMaxDestinationsPerSourceSiteReportingOrigin();
   // TODO(apaseltiner): We could just make
   // `GetMaxDestinationsPerSourceSiteReportingOrigin()` return `size_t`, but it
@@ -2299,7 +2363,7 @@ bool AttributionStorageSql::
   static constexpr char kSelectSourcesSql[] =
       "SELECT destination_site FROM sources "
       DCHECK_SQL_INDEXED_BY("active_unattributed_sources_by_site_reporting_origin")
-      "WHERE source_site=? AND reporting_origin=? "
+      "WHERE source_site=? AND reporting_origin=? AND expiry_time>? "
       "AND event_level_active=1 AND num_attributions=0 AND "
       "aggregatable_active=1 AND aggregatable_budget_consumed=0";
   sql::Statement statement(
@@ -2307,6 +2371,7 @@ bool AttributionStorageSql::
   statement.BindString(0, source.common_info().ImpressionSite().Serialize());
   statement.BindString(1, SerializePotentiallyTrustworthyOrigin(
                               source.common_info().reporting_origin()));
+  statement.BindTime(2, source.common_info().impression_time());
 
   base::flat_set<std::string> destinations;
   while (statement.Step()) {
@@ -2314,15 +2379,16 @@ bool AttributionStorageSql::
 
     // The destination isn't new, so it doesn't change the count.
     if (destination == serialized_conversion_destination)
-      return true;
+      return RateLimitResult::kAllowed;
 
     destinations.insert(std::move(destination));
 
     if (destinations.size() == static_cast<size_t>(max))
-      return false;
+      return RateLimitResult::kNotAllowed;
   }
 
-  return statement.Succeeded();
+  return statement.Succeeded() ? RateLimitResult::kAllowed
+                               : RateLimitResult::kError;
 }
 
 bool AttributionStorageSql::DeleteSources(
@@ -2361,7 +2427,7 @@ bool AttributionStorageSql::DeleteSources(
 bool AttributionStorageSql::ClearAggregatableAttributionsForOriginsInRange(
     base::Time delete_begin,
     base::Time delete_end,
-    base::RepeatingCallback<bool(const url::Origin&)> filter,
+    StoragePartition::StorageKeyMatcherFunction filter,
     std::vector<StoredSource::Id>& source_ids_to_delete) {
   DCHECK_LE(delete_begin, delete_end);
 
@@ -2386,9 +2452,12 @@ bool AttributionStorageSql::ClearAggregatableAttributionsForOriginsInRange(
 
   while (statement.Step()) {
     if (filter.is_null() ||
-        filter.Run(DeserializeOrigin(statement.ColumnString(0))) ||
-        filter.Run(DeserializeOrigin(statement.ColumnString(1))) ||
-        filter.Run(DeserializeOrigin(statement.ColumnString(2)))) {
+        filter.Run(
+            blink::StorageKey(DeserializeOrigin(statement.ColumnString(0)))) ||
+        filter.Run(
+            blink::StorageKey(DeserializeOrigin(statement.ColumnString(1)))) ||
+        filter.Run(
+            blink::StorageKey(DeserializeOrigin(statement.ColumnString(2))))) {
       source_ids_to_delete.emplace_back(statement.ColumnInt64(3));
       if (statement.GetColumnType(4) != sql::ColumnType::kNull &&
           !DeleteReportInternal(

@@ -153,12 +153,6 @@ WorkerThreadScheduler::CompositorTaskRunner() {
   return compositor_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerThreadScheduler::NonWakingTaskRunner() {
-  NOTREACHED() << "Not implemented";
-  return nullptr;
-}
-
 bool WorkerThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   DCHECK(initialized_);
   return idle_helper_.CanExceedIdleDeadlineIfRequired();
@@ -182,7 +176,7 @@ void WorkerThreadScheduler::RemoveTaskObserver(
 
 void WorkerThreadScheduler::Shutdown() {
   DCHECK(initialized_);
-  ThreadSchedulerImpl::Shutdown();
+  ThreadSchedulerBase::Shutdown();
   idle_helper_.Shutdown();
   GetHelper().Shutdown();
 }
@@ -207,7 +201,7 @@ void WorkerThreadScheduler::OnTaskCompleted(
     NonMainThreadTaskQueue* task_queue,
     const base::sequence_manager::Task& task,
     TaskQueue::TaskTiming* task_timing,
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   PerformMicrotaskCheckpoint();
 
   task_timing->RecordTaskEnd(lazy_now);

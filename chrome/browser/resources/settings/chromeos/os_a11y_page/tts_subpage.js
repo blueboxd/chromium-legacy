@@ -8,12 +8,12 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import '../../controls/settings_slider.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -38,8 +38,10 @@ import {TtsSubpageBrowserProxy, TtsSubpageBrowserProxyImpl} from './tts_subpage_
  */
 const SettingsTtsSubpageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -288,7 +290,7 @@ class SettingsTtsSubpageElement extends SettingsTtsSubpageElementBase {
           language: voice.displayLanguage,
           code: voice.languageCode,
           preferred: false,
-          voices: []
+          voices: [],
         };
       }
       // Each voice gets a unique ID from its name and extension.

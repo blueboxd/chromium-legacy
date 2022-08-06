@@ -18,17 +18,26 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
+#include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "content/browser/aggregation_service/aggregatable_report.h"
+#include "content/browser/aggregation_service/aggregation_service_storage.h"
+#include "content/browser/aggregation_service/proto/aggregatable_report.pb.h"
 #include "content/browser/aggregation_service/public_key.h"
+#include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/statement_id.h"
 #include "sql/transaction.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -41,22 +50,70 @@ constexpr base::FilePath::CharType kDatabasePath[] =
 //
 // Version 1 - https://crrev.com/c/3038364
 //             https://crrev.com/c/3462368
-constexpr int kCurrentVersionNumber = 1;
+// Version 2 - https://crrev.com/c/3733377 (adding report_requests table)
+constexpr int kCurrentVersionNumber = 2;
 
 // Earliest version which can use a `kCurrentVersionNumber` database
 // without failing.
-constexpr int kCompatibleVersionNumber = 1;
+constexpr int kCompatibleVersionNumber = 2;
 
 // Latest version of the database that cannot be upgraded to
 // `kCurrentVersionNumber` without razing the database.
 constexpr int kDeprecatedVersionNumber = 0;
 
+// All columns in this table except `report_time` are designed to be "const".
+// `request_id` uses AUTOINCREMENT to ensure that IDs aren't reused over the
+// lifetime of the DB.
+// `report_time` is when the request should be assembled and sent
+// `creation_time` is when the request was stored in the database and will be
+// used for data deletion.
+// `reporting_origin` should match the corresponding proto field, but is
+// maintained separately for data deletion.
+// `request_proto` is a serialized AggregatableReportRequest proto.
+static constexpr char kReportRequestsCreateTableSql[] =
+    // clang-format off
+    "CREATE TABLE IF NOT EXISTS report_requests("
+        "request_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+        "report_time INTEGER NOT NULL,"
+        "creation_time INTEGER NOT NULL,"
+        "reporting_origin TEXT NOT NULL,"
+        "request_proto BLOB NOT NULL)";
+// clang-format on
+
+// Used to optimize report request lookup by report_time.
+static constexpr char kReportTimeIndexSql[] =
+    "CREATE INDEX IF NOT EXISTS report_time_idx ON "
+    "report_requests(report_time)";
+
+// Will be used to optimize report request lookup by creation_time for data
+// clearing, see crbug.com/1340053.
+static constexpr char kCreationTimeIndexSql[] =
+    "CREATE INDEX IF NOT EXISTS creation_time_idx ON "
+    "report_requests(creation_time)";
+
 bool UpgradeAggregationServiceStorageSqlSchema(sql::Database& db,
                                                sql::MetaTable& meta_table) {
-  // Placeholder for database migration logic.
-  NOTREACHED();
+  if (meta_table.GetVersionNumber() != 1)
+    return false;  // Only one migration is supported.
 
-  return true;
+  // == Migrate from version 1 to 2 ==
+  // Simply create the new empty table.
+
+  sql::Transaction transaction(&db);
+  if (!transaction.Begin())
+    return false;
+
+  if (!db.Execute(kReportRequestsCreateTableSql))
+    return false;
+
+  if (!db.Execute(kReportTimeIndexSql))
+    return false;
+
+  if (!db.Execute(kCreationTimeIndexSql))
+    return false;
+
+  meta_table.SetVersionNumber(kCurrentVersionNumber);
+  return transaction.Commit();
 }
 
 void RecordInitializationStatus(
@@ -194,23 +251,9 @@ void AggregationServiceStorageSql::ClearPublicKeys(const GURL& url) {
 void AggregationServiceStorageSql::ClearPublicKeysFetchedBetween(
     base::Time delete_begin,
     base::Time delete_end) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
-    return;
-
-  // Treat null times as unbounded lower or upper range. This is used by
-  // browsing data remover.
-  if (delete_begin.is_null())
-    delete_begin = base::Time::Min();
-
-  if (delete_end.is_null())
-    delete_end = base::Time::Max();
-
-  if (delete_begin.is_min() && delete_end.is_max()) {
-    ClearAllPublicKeys();
-    return;
-  }
+  DCHECK(!delete_begin.is_null());
+  DCHECK(!delete_end.is_null());
+  DCHECK(!delete_begin.is_min() || !delete_end.is_max());
 
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
@@ -362,6 +405,241 @@ void AggregationServiceStorageSql::ClearAllPublicKeys() {
   transaction.Commit();
 }
 
+void AggregationServiceStorageSql::StoreRequest(
+    AggregatableReportRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Force the creation of the database if it doesn't exist, as we need to
+  // persist the public keys.
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kCreateIfAbsent))
+    return;
+
+  static constexpr char kStoreRequestSql[] =
+      "INSERT INTO report_requests("
+      "report_time,creation_time,reporting_origin,request_proto) "
+      "VALUES(?,?,?,?)";
+
+  sql::Statement store_request_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kStoreRequestSql));
+
+  const AggregatableReportSharedInfo& shared_info = request.shared_info();
+
+  store_request_statement.BindTime(0, shared_info.scheduled_report_time);
+  store_request_statement.BindTime(1, clock_.Now());
+  store_request_statement.BindString(2,
+                                     shared_info.reporting_origin.Serialize());
+
+  std::vector<uint8_t> serialized_request = request.Serialize();
+
+  // While an empty vector can be a valid proto serialization, report requests
+  // should always be non-empty.
+  DCHECK(!serialized_request.empty());
+  store_request_statement.BindBlob(3, serialized_request);
+
+  store_request_statement.Run();
+}
+
+void AggregationServiceStorageSql::DeleteRequest(
+    AggregationServiceStorage::RequestId request_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return;
+
+  DeleteRequestImpl(request_id);
+}
+
+bool AggregationServiceStorageSql::DeleteRequestImpl(RequestId request_id) {
+  static constexpr char kDeleteRequestSql[] =
+      "DELETE FROM report_requests WHERE request_id=?";
+
+  sql::Statement delete_request_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteRequestSql));
+
+  delete_request_statement.BindInt64(0, request_id.value());
+
+  return delete_request_statement.Run();
+}
+
+absl::optional<base::Time> AggregationServiceStorageSql::NextReportTimeAfter(
+    base::Time strictly_after_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return absl::nullopt;
+
+  return NextReportTimeAfterImpl(strictly_after_time);
+}
+
+absl::optional<base::Time>
+AggregationServiceStorageSql::NextReportTimeAfterImpl(
+    base::Time strictly_after_time) {
+  static constexpr char kGetRequestsSql[] =
+      "SELECT MIN(report_time) FROM report_requests WHERE report_time>?";
+
+  sql::Statement get_requests_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kGetRequestsSql));
+
+  get_requests_statement.BindTime(0, strictly_after_time);
+
+  if (get_requests_statement.Step() &&
+      get_requests_statement.GetColumnType(0) != sql::ColumnType::kNull) {
+    return get_requests_statement.ColumnTime(0);
+  }
+  return absl::nullopt;
+}
+
+std::vector<AggregationServiceStorage::RequestAndId>
+AggregationServiceStorageSql::GetRequestsReportingOnOrBefore(
+    base::Time not_after_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return {};
+
+  static constexpr char kGetRequestsSql[] =
+      "SELECT request_id,report_time,request_proto FROM report_requests "
+      "WHERE report_time<=? ORDER BY report_time";
+
+  sql::Statement get_requests_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kGetRequestsSql));
+  get_requests_statement.BindTime(0, not_after_time);
+
+  // Partial results are not returned in case of any error.
+  // TODO(crbug.com/1340046): Limit the total number of results that can be
+  // returned in one query.
+  std::vector<AggregationServiceStorage::RequestAndId> result;
+  while (get_requests_statement.Step()) {
+    absl::optional<AggregatableReportRequest> parsed_request =
+        AggregatableReportRequest::Deserialize(
+            get_requests_statement.ColumnBlob(2));
+    if (!parsed_request)
+      return {};
+
+    result.push_back(AggregationServiceStorage::RequestAndId{
+        .request = std::move(parsed_request.value()),
+        .id = AggregationServiceStorage::RequestId(
+            get_requests_statement.ColumnInt64(0))});
+  }
+
+  if (!get_requests_statement.Succeeded())
+    return {};
+
+  return result;
+}
+
+absl::optional<base::Time>
+AggregationServiceStorageSql::AdjustOfflineReportTimes(
+    base::Time now,
+    base::TimeDelta min_delay,
+    base::TimeDelta max_delay) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK_GE(min_delay, base::TimeDelta());
+  DCHECK_GE(max_delay, base::TimeDelta());
+  DCHECK_LE(min_delay, max_delay);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return absl::nullopt;
+
+  // Set the report time for all reports that should have been sent before `now`
+  // to `now` + a random number of microseconds between `min_delay` and
+  // `max_delay`, both inclusive. We use RANDOM, instead of a C++ method to
+  // avoid having to pull all reports into memory and update them one by one. We
+  // use ABS because RANDOM may return a negative integer. We add 1 to the
+  // difference between `max_delay` and `min_delay` to ensure that the range of
+  // generated values is inclusive. If `max_delay == min_delay`, we take the
+  // remainder modulo 1, which is always 0.
+  static constexpr char kAdjustOfflineReportTimesSql[] =
+      "UPDATE report_requests SET report_time=?+ABS(RANDOM()%?)"
+      "WHERE report_time<?";
+
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kAdjustOfflineReportTimesSql));
+  statement.BindTime(0, now + min_delay);
+  statement.BindInt64(1, 1 + (max_delay - min_delay).InMicroseconds());
+  statement.BindTime(2, now);
+
+  statement.Run();
+
+  return NextReportTimeAfterImpl(base::Time::Min());
+}
+
+void AggregationServiceStorageSql::ClearDataBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    StoragePartition::StorageKeyMatcherFunction filter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return;
+
+  // Treat null times as unbounded lower or upper range. This is used by
+  // browsing data remover.
+  if (delete_begin.is_null())
+    delete_begin = base::Time::Min();
+
+  if (delete_end.is_null())
+    delete_end = base::Time::Max();
+
+  if (delete_begin.is_min() && delete_end.is_max()) {
+    ClearAllPublicKeys();
+
+    if (filter.is_null()) {
+      ClearAllRequests();
+      return;
+    }
+  } else {
+    ClearPublicKeysFetchedBetween(delete_begin, delete_end);
+  }
+
+  ClearRequestsStoredBetween(delete_begin, delete_end, filter);
+}
+
+void AggregationServiceStorageSql::ClearRequestsStoredBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    StoragePartition::StorageKeyMatcherFunction filter) {
+  DCHECK(!delete_begin.is_null());
+  DCHECK(!delete_end.is_null());
+  DCHECK(!delete_begin.is_min() || !delete_end.is_max() || !filter.is_null());
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  static constexpr char kSelectRequestsToDeleteSql[] =
+      "SELECT request_id,reporting_origin FROM report_requests "
+      "WHERE creation_time BETWEEN ? AND ?";
+  sql::Statement select_requests_to_delete_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kSelectRequestsToDeleteSql));
+  select_requests_to_delete_statement.BindTime(0, delete_begin);
+  select_requests_to_delete_statement.BindTime(1, delete_end);
+
+  while (select_requests_to_delete_statement.Step()) {
+    url::Origin reporting_origin = url::Origin::Create(
+        GURL(select_requests_to_delete_statement.ColumnString(1)));
+    if (filter.is_null() || filter.Run(blink::StorageKey(reporting_origin))) {
+      if (!DeleteRequestImpl(
+              RequestId(select_requests_to_delete_statement.ColumnInt64(0)))) {
+        return;
+      }
+    }
+  }
+
+  if (!select_requests_to_delete_statement.Succeeded())
+    return;
+
+  transaction.Commit();
+}
+
+void AggregationServiceStorageSql::ClearAllRequests() {
+  static constexpr char kClearAllRequests[] = "DELETE FROM report_requests";
+  sql::Statement select_requests_to_delete_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kClearAllRequests));
+
+  select_requests_to_delete_statement.Run();
+}
+
 void AggregationServiceStorageSql::HandleInitializationFailure(
     const InitStatus status) {
   RecordInitializationStatus(status);
@@ -439,21 +717,27 @@ bool AggregationServiceStorageSql::InitializeSchema(bool db_empty) {
     return true;
 
   if (current_version <= kDeprecatedVersionNumber ||
-      meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
-    // The database version is either deprecated or is too new to be used. For
-    // the second case, the DB will never work until Chrome is re-upgraded.
-    // Assume the user will continue using this Chrome version and raze the DB
-    // to get aggregation service storage working.
+      meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber ||
+      !UpgradeAggregationServiceStorageSqlSchema(db_, meta_table_)) {
+    // The database version is either deprecated, the version is too new to be
+    // used, or the attempt to upgrade failed. In the second case (version too
+    // new), the DB will never work until Chrome is re-upgraded. Assume the user
+    // will continue using this Chrome version and raze the DB to get
+    // aggregation service storage working.
     db_.Raze();
     meta_table_.Reset();
     return CreateSchema();
   }
 
-  return UpgradeAggregationServiceStorageSqlSchema(db_, meta_table_);
+  return true;  // Upgrade was successful.
 }
 
 bool AggregationServiceStorageSql::CreateSchema() {
   base::ElapsedThreadTimer timer;
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return false;
 
   // All of the columns in this table are designed to be "const".
   // `url` is the helper server url.
@@ -505,6 +789,16 @@ bool AggregationServiceStorageSql::CreateSchema() {
   if (!db_.Execute(kKeysTableSql))
     return false;
 
+  // See constant definitions above for documentation.
+  if (!db_.Execute(kReportRequestsCreateTableSql))
+    return false;
+
+  if (!db_.Execute(kReportTimeIndexSql))
+    return false;
+
+  if (!db_.Execute(kCreationTimeIndexSql))
+    return false;
+
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber)) {
     return false;
@@ -514,7 +808,7 @@ bool AggregationServiceStorageSql::CreateSchema() {
       "PrivacySandbox.AggregationService.Storage.Sql.CreationTime",
       timer.Elapsed());
 
-  return true;
+  return transaction.Commit();
 }
 
 void AggregationServiceStorageSql::DatabaseErrorCallback(int extended_error,

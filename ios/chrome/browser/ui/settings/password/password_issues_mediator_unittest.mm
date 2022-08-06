@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -62,7 +63,7 @@ scoped_refptr<TestPasswordStore> CreateAndUseTestPasswordStore(
 // consumer methods are called correctly.
 @interface FakePasswordIssuesConsumer : NSObject <PasswordIssuesConsumer>
 
-@property(nonatomic) NSArray<id<PasswordIssue>>* passwords;
+@property(nonatomic) NSArray<PasswordIssue*>* passwords;
 
 @property(nonatomic, assign) BOOL passwordIssuesListChangedWasCalled;
 
@@ -70,7 +71,7 @@ scoped_refptr<TestPasswordStore> CreateAndUseTestPasswordStore(
 
 @implementation FakePasswordIssuesConsumer
 
-- (void)setPasswordIssues:(NSArray<id<PasswordIssue>>*)passwords {
+- (void)setPasswordIssues:(NSArray<PasswordIssue*>*)passwords {
   _passwords = passwords;
   _passwordIssuesListChangedWasCalled = YES;
 }
@@ -153,7 +154,7 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordIssuesChanged) {
 
   EXPECT_EQ(1u, [[consumer() passwords] count]);
 
-  id<PasswordIssue> password = [[consumer() passwords] objectAtIndex:0];
+  PasswordIssue* password = [[consumer() passwords] objectAtIndex:0];
 
   EXPECT_NSEQ(@"alice", password.username);
   EXPECT_NSEQ(@"example.com", password.website);
@@ -167,7 +168,7 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordDeletion) {
   EXPECT_EQ(1u, [[consumer() passwords] count]);
 
   auto password = store()->stored_passwords().at(kExampleCom).at(0);
-  [mediator() deletePassword:password];
+  [mediator() deleteCredential:password_manager::CredentialUIEntry(password)];
   RunUntilIdle();
   EXPECT_EQ(0u, [[consumer() passwords] count]);
 }

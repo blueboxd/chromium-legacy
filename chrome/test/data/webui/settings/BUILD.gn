@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -34,8 +35,10 @@ preprocessed_files = [
 if (!is_chromeos_ash) {
   preprocessed_files += [
     "test_languages_browser_proxy.ts",
-    "languages_page_tests.ts",
+    "spell_check_page_tests.ts",
     "languages_page_metrics_test_browser.ts",
+    "translate_page_metrics_test_browser.ts",
+    "spell_check_page_metrics_test_browser.ts",
   ]
 }
 
@@ -69,8 +72,6 @@ non_preprocessed_files = [
   "fake_settings_private.ts",
   "help_page_test.ts",
   "idle_load_tests.ts",
-  "multi_store_exception_entry_test.ts",
-  "multi_store_password_ui_entry_test.ts",
   "on_startup_page_tests.ts",
   "passwords_and_autofill_fake_data.ts",
   "passwords_device_section_test.ts",
@@ -117,6 +118,7 @@ non_preprocessed_files = [
   "site_settings_page_test.ts",
   "startup_urls_page_test.ts",
   "sync_test_util.ts",
+  "test_autofill_assistant_browser_proxy.ts",
   "test_clear_browsing_data_browser_proxy.ts",
   "test_extension_control_browser_proxy.ts",
   "test_hats_browser_proxy.ts",
@@ -156,27 +158,33 @@ if (is_chromeos_ash) {
 } else {
   non_preprocessed_files += [
     "fake_language_settings_private.ts",
-    "languages_subpage_details_tests.ts",
-    "languages_subpage_tests.ts",
+    "translate_page_tests.ts",
+    "languages_page_tests.ts",
     "languages_tests.ts",
     "metrics_reporting_tests.ts",
     "people_page_manage_profile_test.ts",
     "relaunch_confirmation_dialog_test.ts",
+    "test_languages_settings_metrics_proxy.ts",
   ]
 }
 
-if (is_win && is_chrome_branded) {
-  non_preprocessed_files += [
-    "chrome_cleanup_page_test.ts",
-    "incompatible_applications_page_test.ts",
-    "safety_check_chrome_cleaner_test.ts",
-    "test_chrome_cleanup_proxy.ts",
-  ]
+if (is_win) {
+  non_preprocessed_files += [ "passkeys_subpage_test.ts" ]
+
+  if (is_chrome_branded) {
+    non_preprocessed_files += [
+      "chrome_cleanup_page_test.ts",
+      "incompatible_applications_page_test.ts",
+      "safety_check_chrome_cleaner_test.ts",
+      "test_chrome_cleanup_proxy.ts",
+    ]
+  }
 }
 
 preprocessed_folder = "$target_gen_dir/preprocessed"
 
 preprocess_if_expr("preprocess") {
+  defines = chrome_grit_defines
   in_folder = "./"
   out_folder = preprocessed_folder
   in_files = preprocessed_files

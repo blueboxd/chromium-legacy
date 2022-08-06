@@ -175,6 +175,7 @@ chrome.fileManagerPrivate.DriveSyncErrorType = {
   DELETE_WITHOUT_PERMISSION: 'delete_without_permission',
   SERVICE_UNAVAILABLE: 'service_unavailable',
   NO_SERVER_SPACE: 'no_server_space',
+  NO_SERVER_SPACE_ORGANIZATION: 'no_server_space_organization',
   NO_LOCAL_SPACE: 'no_local_space',
   MISC: 'misc',
 };
@@ -346,6 +347,12 @@ chrome.fileManagerPrivate.VmType = {
   ARCVM: 'arcvm',
 };
 
+/** @enum {string} */
+chrome.fileManagerPrivate.UserType = {
+  UNMANAGED: 'kUnmanaged',
+  ORGANIZATION: 'kOrganization'
+};
+
 /**
  * @typedef {{
  *   appId: string,
@@ -411,6 +418,17 @@ chrome.fileManagerPrivate.EntryProperties;
  * }}
  */
 chrome.fileManagerPrivate.MountPointSizeStats;
+
+/**
+ * @typedef {{
+ *   userType: !chrome.fileManagerPrivate.UserType,
+ *   usedUserBytes: number,
+ *   totalUserBytes: number,
+ *   organizationLimitExceeded: boolean,
+ *   organizationName: string
+ * }}
+ */
+chrome.fileManagerPrivate.DriveQuotaMetadata;
 
 /**
  * @typedef {{
@@ -708,7 +726,6 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
  * @typedef {{
  *   destinationFolder: (DirectoryEntry|undefined),
  *   password: (string|undefined),
- *   restorePaths: (Array<string>|undefined),
  * }}
  */
 chrome.fileManagerPrivate.IOTaskParams;
@@ -964,6 +981,13 @@ chrome.fileManagerPrivate.getDisallowedTransfers = function(
 chrome.fileManagerPrivate.getDlpMetadata = function(entries, callback) {};
 
 /**
+ * Shows a modal containing Data Leak Prevention (DLP) Restriction Details.
+ * @param {string} sourceUrl Source URL of the Entry for which the details
+ *     should be shown.
+ */
+chrome.fileManagerPrivate.showDlpRestrictionDetails = function(sourceUrl) {};
+
+/**
  * Starts to copy an entry. If the source is a directory, the copy is done
  * recursively. |entry| Entry of the source entry to be copied. |parent| Entry
  * of the destination directory. |newName| Name of the new entry. It must not
@@ -994,6 +1018,14 @@ chrome.fileManagerPrivate.cancelCopy = function(copyId, callback) {};
  *     not be determined.
  */
 chrome.fileManagerPrivate.getSizeStats = function(volumeId, callback) {};
+
+/**
+ * Retrieves drive quota metadata.
+ * @param {function((!chrome.fileManagerPrivate.DriveQuotaMetadata|undefined))}
+ *     callback Name/value pairs of drive quota metadata. Will be undefined if
+ *     quota metadata could not be determined.
+ */
+chrome.fileManagerPrivate.getDriveQuotaMetadata = function(callback) {};
 
 /**
  * Formats a mounted volume. |volumeId| ID of the volume to be formatted.

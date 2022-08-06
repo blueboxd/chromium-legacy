@@ -6,14 +6,10 @@
 
 #include <string>
 
-#include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/test/test_app_list_color_provider.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -26,24 +22,18 @@
 namespace app_list {
 namespace {
 
-using base::test::ScopedFeatureList;
 using ::file_manager::file_tasks::FileTasksObserver;
 using ::testing::UnorderedElementsAre;
 
 MATCHER_P(Title, title, "") {
-  return base::UTF16ToUTF8(arg->title()) == title;
+  return arg->title() == title;
 }
 
 }  // namespace
 
-// Parameterized by feature ProductivityLauncher.
-class ZeroStateFileProviderTest : public testing::Test,
-                                  public ::testing::WithParamInterface<bool> {
+class ZeroStateFileProviderTest : public testing::Test {
  protected:
-  ZeroStateFileProviderTest() {
-    feature_list_.InitWithFeatureState(ash::features::kProductivityLauncher,
-                                       GetParam());
-  }
+  ZeroStateFileProviderTest() = default;
   ~ZeroStateFileProviderTest() override = default;
 
   void SetUp() override {
@@ -87,17 +77,12 @@ class ZeroStateFileProviderTest : public testing::Test,
   }
 
   const SearchProvider::Results& LastResults() {
-    if (app_list_features::IsCategoricalSearchEnabled()) {
-      return search_controller_.last_results();
-    }
-
-    return provider_->results();
+    return search_controller_.last_results();
   }
 
   void Wait() { task_environment_.RunUntilIdle(); }
 
   content::BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<Profile> profile_;
   TestSearchController search_controller_;
@@ -105,26 +90,18 @@ class ZeroStateFileProviderTest : public testing::Test,
   std::unique_ptr<ash::TestAppListColorProvider> app_list_color_provider_;
 };
 
-INSTANTIATE_TEST_SUITE_P(ProductivityLauncher,
-                         ZeroStateFileProviderTest,
-                         testing::Bool());
-
-TEST_P(ZeroStateFileProviderTest, NoResultsWithQuery) {
+TEST_F(ZeroStateFileProviderTest, NoResultsWithQuery) {
   StartSearch(u"query");
   Wait();
   EXPECT_TRUE(LastResults().empty());
 }
 
-TEST_P(ZeroStateFileProviderTest, ResultsProvided) {
-  // Disable flag.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {}, {app_list_features::kEnableSuggestedLocalFiles});
-
+TEST_F(ZeroStateFileProviderTest, ResultsProvided) {
   WriteFile("exists_1.txt");
   WriteFile("exists_2.png");
   WriteFile("exists_3.pdf");
 
+  // Results are only added if they have been opened at least once.
   provider_->OnFilesOpened(
       {OpenEvent("exists_1.txt"), OpenEvent("exists_2.png")});
   provider_->OnFilesOpened({OpenEvent("nonexistant.txt")});
@@ -132,16 +109,11 @@ TEST_P(ZeroStateFileProviderTest, ResultsProvided) {
   StartZeroStateSearch();
   Wait();
 
-  EXPECT_THAT(LastResults(), UnorderedElementsAre(Title("exists_1.txt"),
-                                                  Title("exists_2.png")));
+  EXPECT_THAT(LastResults(), UnorderedElementsAre(Title(u"exists_1.txt"),
+                                                  Title(u"exists_2.png")));
 }
 
-TEST_P(ZeroStateFileProviderTest, OldFilesNotReturned) {
-  // Disable flag.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {}, {app_list_features::kEnableSuggestedLocalFiles});
-
+TEST_F(ZeroStateFileProviderTest, OldFilesNotReturned) {
   WriteFile("new.txt");
   WriteFile("old.png");
   auto now = base::Time::Now();
@@ -152,7 +124,7 @@ TEST_P(ZeroStateFileProviderTest, OldFilesNotReturned) {
   StartZeroStateSearch();
   Wait();
 
-  EXPECT_THAT(LastResults(), UnorderedElementsAre(Title("new.txt")));
+  EXPECT_THAT(LastResults(), UnorderedElementsAre(Title(u"new.txt")));
 }
 
 }  // namespace app_list

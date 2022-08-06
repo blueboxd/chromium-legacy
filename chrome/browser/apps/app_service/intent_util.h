@@ -49,7 +49,7 @@ class Extension;
 namespace apps_util {
 
 // Creates a file filter.
-apps::mojom::IntentFilterPtr CreateFileFilter(
+apps::IntentFilterPtr CreateFileFilter(
     const std::vector<std::string>& intent_actions,
     const std::vector<std::string>& mime_types,
     const std::vector<std::string>& file_extensions,
@@ -123,7 +123,9 @@ apps::mojom::IntentFilterPtr CreateLockScreenFilterMojom();
 // Create an intent struct with filesystem:// type URLs from the file paths and
 // mime types of a list of files. This util has to live under chrome/ because it
 // uses fileapis and cannot be included in components/.
-apps::mojom::IntentPtr CreateShareIntentFromFiles(
+// TODO(crbug.com/1253219): Use FilePaths in intents to avoid dependency on
+// File Manager.
+apps::IntentPtr CreateShareIntentFromFiles(
     Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types);
@@ -132,7 +134,7 @@ apps::mojom::IntentPtr CreateShareIntentFromFiles(
 // mime types of a list of files, and the share text and title. This util has to
 // live under chrome/ because it uses fileapis and cannot be included in
 // components/.
-apps::mojom::IntentPtr CreateShareIntentFromFiles(
+apps::IntentPtr CreateShareIntentFromFiles(
     Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types,
@@ -158,12 +160,12 @@ arc::mojom::IntentInfoPtr ConvertAppServiceToArcIntent(
 // nullptr if |arc_action| is an action which is not supported by App Service.
 const char* ConvertArcToAppServiceIntentAction(const std::string& arc_action);
 
-// Convert an apps::mojom::Intent struct to a string to call the LaunchIntent
+// Converts an apps::Intent struct to a string to call the LaunchIntent
 // interface from arc::mojom::AppInstance. If |intent| has |ui_bypassed|, |url|
 // or |data|, returns an empty string as these intents cannot be represented in
 // string form.
 std::string CreateLaunchIntent(const std::string& package_name,
-                               const apps::mojom::IntentPtr& intent);
+                               const apps::IntentPtr& intent);
 
 // Convert between App Service and ARC IntentFilters.
 arc::IntentFilter ConvertAppServiceToArcIntentFilter(
@@ -216,6 +218,11 @@ apps::mojom::IntentPtr ConvertCrosapiToAppServiceIntent(
     const crosapi::mojom::IntentPtr& crosapi_intent,
     Profile* profile);
 
+crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(
+    std::vector<base::FilePath> file_paths);
+
+// TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+// interface.
 crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(
     const apps::mojom::FilePathsPtr& file_paths);
 #endif

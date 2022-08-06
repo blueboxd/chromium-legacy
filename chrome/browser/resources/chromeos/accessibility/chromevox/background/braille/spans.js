@@ -7,6 +7,10 @@
  * and selections.
  */
 
+import {Spannable} from '../../common/spannable.js';
+
+import {LibLouis} from './liblouis.js';
+
 /** Attached to the value region of a braille spannable. */
 export class ValueSpan {
   /** @param {number} offset The offset of the span into the value. */

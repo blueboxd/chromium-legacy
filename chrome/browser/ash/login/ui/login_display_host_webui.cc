@@ -20,7 +20,6 @@
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
-#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -121,9 +120,6 @@ namespace {
 
 // Maximum delay for startup sound after 'loginPromptVisible' signal.
 const int kStartupSoundMaxDelayMs = 4000;
-
-// URL which corresponds to the login WebUI.
-const char kLoginURL[] = "chrome://oobe/login";
 
 // URL which corresponds to the OOBE WebUI.
 const char kOobeURL[] = "chrome://oobe/oobe";
@@ -466,12 +462,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
 
-  auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
-  // MultiUserWindowManagerHelper instance might be null if no user is logged
-  // in - or in a unit test.
-  if (window_manager)
-    window_manager->RemoveObserver(this);
-
   ResetKeyboardOverscrollBehavior();
 
   views::FocusManager::set_arrow_key_traversal_enabled(false);
@@ -488,10 +478,8 @@ LoginDisplay* LoginDisplayHostWebUI::GetLoginDisplay() {
 }
 
 ExistingUserController* LoginDisplayHostWebUI::GetExistingUserController() {
-  if (!existing_user_controller_) {
-    LOG(WARNING) << "Triggered crbug/1307919 in WebUI host";
+  if (!existing_user_controller_)
     CreateExistingUserController();
-  }
   return existing_user_controller_.get();
 }
 
@@ -600,16 +588,6 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   finalize_animation_type_ = ANIMATION_WORKSPACE;
 
   VLOG(1) << "Login WebUI >> sign in";
-
-  // TODO(crbug.com/784495): Make sure this is ported to views.
-  if (!login_window_) {
-    TRACE_EVENT_NESTABLE_ASYNC_INSTANT0(
-        "ui", "StartSignInScreen",
-        TRACE_ID_WITH_SCOPE(kShowLoginWebUIid, TRACE_ID_GLOBAL(1)));
-    BootTimesRecorder::Get()->RecordCurrentStats("login-start-signin-screen");
-    CHECK(base::FeatureList::IsEnabled(features::kOobeLoginUrl));
-    LoadURL(GURL(kLoginURL));
-  }
 
   DVLOG(1) << "Starting sign in screen";
   CreateExistingUserController();
@@ -797,10 +775,7 @@ void LoginDisplayHostWebUI::OnWidgetBoundsChanged(views::Widget* widget,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostWebUI, MultiUserWindowManagerObserver:
-void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
-  ShutdownDisplayHost();
-}
+// LoginDisplayHostWebUI, OobeUI::Observer
 
 void LoginDisplayHostWebUI::OnCurrentScreenChanged(OobeScreenId current_screen,
                                                    OobeScreenId new_screen) {

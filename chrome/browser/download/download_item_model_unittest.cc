@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/enterprise/common/download_item_reroute_info.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -790,12 +792,8 @@ TEST_F(DownloadItemModelTest, InterruptedBubbleUIInfo) {
                 base::UTF16ToUTF8(bubble_ui_info.warning_summary));
       EXPECT_EQ(test_case.expected_icon_model_override,
                 bubble_ui_info.icon_model_override);
-      if (!test_case.expected_primary_button_command.has_value()) {
-        EXPECT_FALSE(bubble_ui_info.has_primary_button);
-      } else {
-        EXPECT_EQ(test_case.expected_primary_button_command.value(),
-                  bubble_ui_info.primary_button_command);
-      }
+      EXPECT_EQ(test_case.expected_primary_button_command,
+                bubble_ui_info.primary_button_command);
       EXPECT_EQ(ui::kColorAlertHighSeverity, bubble_ui_info.secondary_color);
       EXPECT_FALSE(bubble_ui_info.has_progress_bar);
     }
@@ -844,18 +842,104 @@ TEST_F(DownloadItemModelTest, InterruptedBubbleUIInfo_BubbleV2Off) {
                 base::UTF16ToUTF8(bubble_ui_info.warning_summary));
       EXPECT_EQ(test_case.expected_icon_model_override,
                 bubble_ui_info.icon_model_override);
-      if (!test_case.expected_primary_button_command.has_value()) {
-        EXPECT_FALSE(bubble_ui_info.has_primary_button);
-      } else {
-        EXPECT_EQ(test_case.expected_primary_button_command.value(),
-                  bubble_ui_info.primary_button_command);
-      }
+      EXPECT_EQ(test_case.expected_primary_button_command,
+                bubble_ui_info.primary_button_command);
       EXPECT_EQ(ui::kColorAlertHighSeverity, bubble_ui_info.secondary_color);
       EXPECT_FALSE(bubble_ui_info.has_progress_bar);
     }
   }
 }
+
+TEST_F(DownloadItemModelTest, ShouldShowInBubble) {
+  auto in_progress = DownloadItem::IN_PROGRESS;
+  auto canceled = DownloadItem::CANCELLED;
+  auto never = absl::optional<base::Time>();
+  auto two_mins_ago = base::Time::Now() - base::Minutes(2);
+  auto ten_mins_ago = base::Time::Now() - base::Minutes(10);
+  auto dangerous_file = download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
+  auto not_dangerous = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+
+  const struct TestCase {
+    DownloadItem::DownloadState state;
+    download::DownloadDangerType danger_type;
+    absl::optional<base::Time> shown_time;
+    bool expected_should_show;
+  } kTestCases[] = {
+      {in_progress, not_dangerous, two_mins_ago, true},
+      {in_progress, not_dangerous, ten_mins_ago, true},
+      {in_progress, dangerous_file, never, true},
+      {in_progress, dangerous_file, two_mins_ago, true},
+      {in_progress, dangerous_file, ten_mins_ago, false},
+      {canceled, dangerous_file, two_mins_ago, false},
+      {canceled, dangerous_file, ten_mins_ago, false},
+      {canceled, not_dangerous, two_mins_ago, true},
+      {canceled, not_dangerous, ten_mins_ago, true},
+  };
+
+  SetIsBubbleV2Enabled(true);
+  SetupDownloadItemDefaults();
+  for (const auto& test_case : kTestCases) {
+    EXPECT_CALL(item(), GetState()).WillRepeatedly(Return(test_case.state));
+    EXPECT_CALL(item(), GetDangerType())
+        .WillRepeatedly(Return(test_case.danger_type));
+    model().SetEphemeralWarningUiShownTime(test_case.shown_time);
+
+    EXPECT_EQ(test_case.expected_should_show, model().ShouldShowInBubble());
+  }
+}
+
+TEST_F(DownloadItemModelTest, GetBubbleStatusMessageWithBytes) {
+  auto compare_results = [](std::u16string actual, std::vector<int> expected) {
+    EXPECT_EQ(actual.length(), expected.size());
+    for (auto it = expected.begin(); it < expected.end(); it++) {
+      int index = std::distance(expected.begin(), it);
+      EXPECT_EQ(actual[index], expected[index]);
+    }
+  };
+
+  base::i18n::SetRTLForTesting(true);
+
+  // Arabic
+  auto* arabic_bytes = L"5 \x062A";
+  auto* arabic_status = L"\x0645";
+  std::u16string arabic =
+      DownloadUIModel::BubbleStatusTextBuilder::GetBubbleStatusMessageWithBytes(
+          base::WideToUTF16(arabic_bytes), base::WideToUTF16(arabic_status),
+          false);
+  std::vector<int> expected_arabic =
+#if BUILDFLAG(IS_MAC)
+      {8207, 8235, 53, 32, 1578, 32, 8226, 32, 1605, 8236, 8207};
+#elif BUILDFLAG(IS_POSIX)
+      {8207, 8235, 8207, 53, 32, 1578, 32, 8226, 32, 1605, 8236, 8207};
+#else
+      {8235, 53, 32, 1578, 32, 8226, 32, 1605, 8236};
 #endif
+  compare_results(arabic, expected_arabic);
+
+  // Hebrew
+  auto* hebrew_status = L"\x05D0";
+  std::u16string hebrew = DownloadUIModel::BubbleStatusTextBuilder ::
+      GetBubbleStatusMessageWithBytes(u"5 MB", base::WideToUTF16(hebrew_status),
+                                      false);
+  std::vector<int> expected_hebrew =
+#if BUILDFLAG(IS_MAC)
+      {8207, 8235, 8234, 53, 32, 77, 66, 8236, 32, 8226, 32, 1488, 8236, 8207};
+#elif BUILDFLAG(IS_POSIX)
+      {8207, 8235, 8207, 8234, 53,   32,   77,  66,
+       8236, 32,   8226, 32,   1488, 8236, 8207};
+#else
+      {8235, 8234, 53, 32, 77, 66, 8236, 32, 8226, 32, 1488, 8236};
+#endif
+  compare_results(hebrew, expected_hebrew);
+
+  // English
+  base::i18n::SetRTLForTesting(false);
+  std::u16string english = DownloadUIModel::BubbleStatusTextBuilder ::
+      GetBubbleStatusMessageWithBytes(u"5 MB", u"A", false);
+  std::vector<int> expected_english = {53, 32, 77, 66, 32, 8226, 32, 65};
+  compare_results(english, expected_english);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(DownloadItemModelTest, ShouldShowInShelf) {
   SetupDownloadItemDefaults();

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ash/login/test/offline_login_test_mixin.h"
 
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
@@ -76,9 +76,8 @@ void OfflineLoginTestMixin::PrepareOfflineLogin() {
 }
 
 void OfflineLoginTestMixin::GoOffline() {
-  network_state_test_helper_ =
-      std::make_unique<chromeos::NetworkStateTestHelper>(
-          false /*use_default_devices_and_services*/);
+  network_state_test_helper_ = std::make_unique<NetworkStateTestHelper>(
+      false /*use_default_devices_and_services*/);
   network_state_test_helper_->ClearServices();
   // Notify NetworkStateInformer explicitly
   if (LoginDisplayHost::default_host() &&

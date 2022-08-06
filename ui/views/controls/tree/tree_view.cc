@@ -204,6 +204,10 @@ void TreeView::StartEditing(TreeModelNode* node) {
     editor_->set_controller(this);
   }
   editor_->SetText(selected_node_->model_node()->GetTitle());
+  // TODO(crbug.com/1345828): Investigate whether accessible name should stay in
+  // sync during editing.
+  editor_->SetAccessibleName(
+      selected_node_->model_node()->GetAccessibleTitle());
   LayoutEditor();
   editor_->SetVisible(true);
   SchedulePaintForNode(selected_node_);
@@ -245,6 +249,7 @@ void TreeView::CommitEdit() {
   DCHECK(selected_node_);
   const bool editor_has_focus = editor_->HasFocus();
   model_->SetTitle(GetSelectedNode(), editor_->GetText());
+  editor_->SetAccessibleName(GetSelectedNode()->GetAccessibleTitle());
   CancelEdit();
   if (editor_has_focus)
     RequestFocus();
@@ -646,30 +651,35 @@ void TreeView::OnDidChangeFocus(View* focused_before, View* focused_now) {
   CommitEdit();
 }
 
-int TreeView::GetRowCount() {
-  int row_count = root_.NumExpandedNodes();
+size_t TreeView::GetRowCount() {
+  size_t row_count = root_.NumExpandedNodes();
   if (!root_shown_)
     row_count--;
   return row_count;
 }
 
-int TreeView::GetSelectedRow() {
+absl::optional<size_t> TreeView::GetSelectedRow() {
   // Type-ahead searches should be relative to the active node, so return the
   // row of the active node for |PrefixSelector|.
   ui::TreeModelNode* model_node = GetActiveNode();
-  return model_node ? GetRowForNode(model_node) : -1;
+  if (!model_node)
+    return absl::nullopt;
+  const int row = GetRowForNode(model_node);
+  return (row == -1) ? absl::nullopt
+                     : absl::make_optional(static_cast<size_t>(row));
 }
 
-void TreeView::SetSelectedRow(int row) {
+void TreeView::SetSelectedRow(absl::optional<size_t> row) {
   // Type-ahead manipulates selection because active node is synced to selected
   // node, so call SetSelectedNode() instead of SetActiveNode().
   // TODO(crbug.com/1080944): Decouple active node from selected node by adding
   // new keyboard affordances.
-  SetSelectedNode(GetNodeForRow(row));
+  SetSelectedNode(
+      GetNodeForRow(row.has_value() ? static_cast<int>(row.value()) : -1));
 }
 
-std::u16string TreeView::GetTextForRow(int row) {
-  return GetNodeForRow(row)->GetTitle();
+std::u16string TreeView::GetTextForRow(size_t row) {
+  return GetNodeForRow(static_cast<int>(row))->GetTitle();
 }
 
 gfx::Point TreeView::GetKeyboardContextMenuLocation() {
@@ -966,12 +976,12 @@ void TreeView::PopulateAccessibilityData(InternalNode* node,
 
     // Per the ARIA Spec, aria-posinset and aria-setsize are 1-based
     // not 0-based.
-    int pos_in_parent = node->parent()->GetIndexOf(node) + 1;
-    int sibling_size = static_cast<int>(node->parent()->children().size());
+    size_t pos_in_parent = node->parent()->GetIndexOf(node).value() + 1;
+    size_t sibling_size = node->parent()->children().size();
     data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
-                          int32_t{pos_in_parent});
+                          static_cast<int32_t>(pos_in_parent));
     data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                          int32_t{sibling_size});
+                          static_cast<int32_t>(sibling_size));
   }
 
   int ignored_depth;
@@ -1003,7 +1013,7 @@ void TreeView::UpdatePreferredSize() {
   preferred_size_.SetSize(
       root_.GetMaxWidth(this, text_offset_, root_shown_ ? 1 : 0) +
           kTextHorizontalPadding * 2,
-      row_height_ * GetRowCount());
+      row_height_ * base::checked_cast<int>(GetRowCount()));
 
   // When the editor is visible, more space is needed beyond the regular row,
   // such as for drawing the focus ring.
@@ -1173,9 +1183,9 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
 void TreeView::PaintNodeIcon(gfx::Canvas* canvas,
                              InternalNode* node,
                              const gfx::Rect& bounds) {
-  int icon_index = model_->GetIconIndex(node->model_node());
+  absl::optional<size_t> icon_index = model_->GetIconIndex(node->model_node());
   int icon_x = kArrowRegionSize + kImagePadding;
-  if (icon_index == -1) {
+  if (!icon_index.has_value()) {
     // Flip just the |bounds| region of |canvas|.
     gfx::ScopedCanvas scoped_canvas(canvas);
     canvas->Translate(gfx::Vector2d(bounds.x(), 0));
@@ -1188,7 +1198,7 @@ void TreeView::PaintNodeIcon(gfx::Canvas* canvas,
                  gfx::Rect(0, bounds.y(), bounds.width(), bounds.height()));
   } else {
     const gfx::ImageSkia& icon =
-        icons_[icon_index].Rasterize(GetColorProvider());
+        icons_[icon_index.value()].Rasterize(GetColorProvider());
     icon_x += (open_icon_.Size().width() - icon.width()) / 2;
     if (base::i18n::IsRTL())
       icon_x = bounds.width() - icon_x - icon.width();
@@ -1211,7 +1221,8 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
     LoadChildren(parent_internal_node);
   }
   size_t index =
-      model_->GetIndexOf(parent_internal_node->model_node(), model_node);
+      model_->GetIndexOf(parent_internal_node->model_node(), model_node)
+          .value();
   return parent_internal_node->children()[index].get();
 }
 
@@ -1297,11 +1308,13 @@ int TreeView::GetRowForInternalNode(InternalNode* node, int* depth) {
   int row = -1;
   const InternalNode* tmp_node = node;
   while (tmp_node->parent()) {
-    size_t index_in_parent = tmp_node->parent()->GetIndexOf(tmp_node);
+    size_t index_in_parent = tmp_node->parent()->GetIndexOf(tmp_node).value();
     (*depth)++;
     row++;  // For node.
-    for (size_t i = 0; i < index_in_parent; ++i)
-      row += tmp_node->parent()->children()[i]->NumExpandedNodes();
+    for (size_t i = 0; i < index_in_parent; ++i) {
+      row += static_cast<int>(
+          tmp_node->parent()->children()[i]->NumExpandedNodes());
+    }
     tmp_node = tmp_node->parent();
   }
   if (root_shown_) {
@@ -1363,10 +1376,11 @@ void TreeView::IncrementSelection(IncrementType type) {
     if (root_.children().empty())
       return;
     if (type == IncrementType::kPrevious) {
-      int row_count = GetRowCount();
+      size_t row_count = GetRowCount();
       int depth = 0;
       DCHECK(row_count);
-      InternalNode* node = GetNodeByRow(row_count - 1, &depth);
+      InternalNode* node =
+          GetNodeByRow(static_cast<int>(row_count - 1), &depth);
       SetSelectedNode(node->model_node());
     } else if (root_shown_) {
       SetSelectedNode(root_.model_node());
@@ -1379,7 +1393,8 @@ void TreeView::IncrementSelection(IncrementType type) {
   int depth = 0;
   int delta = type == IncrementType::kPrevious ? -1 : 1;
   int row = GetRowForInternalNode(active_node_, &depth);
-  int new_row = base::clamp(row + delta, 0, GetRowCount() - 1);
+  int new_row =
+      base::clamp(row + delta, 0, base::checked_cast<int>(GetRowCount()) - 1);
   if (new_row == row)
     return;  // At the end/beginning.
   SetSelectedNode(GetNodeByRow(new_row, &depth)->model_node());
@@ -1472,8 +1487,8 @@ void TreeView::InternalNode::Reset(ui::TreeModelNode* node) {
   accessibility_view_ = nullptr;
 }
 
-int TreeView::InternalNode::NumExpandedNodes() const {
-  int result = 1;  // For this.
+size_t TreeView::InternalNode::NumExpandedNodes() const {
+  size_t result = 1;  // For this.
   if (!is_expanded_)
     return result;
   for (const auto& child : children())

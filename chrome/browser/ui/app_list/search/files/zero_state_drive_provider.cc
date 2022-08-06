@@ -48,6 +48,11 @@ constexpr char kSchema[] = "zero_state_drive://";
 // ItemSuggestCache.
 constexpr base::TimeDelta kFirstUpdateDelay = base::Seconds(10);
 
+// The minimum number of results required to keep using the short delay. This
+// means that results are refreshed more often if there are enough high-quality
+// results returned.
+constexpr size_t kShortDelayQuota = 3u;
+
 // Outcome of a call to DriverZeroStateProvider::StartZeroState. These values
 // persist to logs. Entries should not be renumbered and numeric values should
 // never be reused.
@@ -84,6 +89,11 @@ void LogStatus(Status status) {
 void LogLatency(base::TimeDelta latency) {
   base::UmaHistogramTimes("Apps.AppList.DriveZeroStateProvider.Latency",
                           latency);
+}
+
+void SetUseLongDelay(Profile* profile, bool use_long_delay) {
+  profile->GetPrefs()->SetBoolean(
+      chromeos::prefs::kLauncherUseLongContinueDelay, use_long_delay);
 }
 
 // Given an absolute path representing a file in the user's Drive, returns a
@@ -147,16 +157,11 @@ ZeroStateDriveProvider::ZeroStateDriveProvider(
           profile,
           std::move(url_loader_factory),
           base::BindRepeating(&ZeroStateDriveProvider::OnCacheUpdated,
-                              base::Unretained(this)),
-          base::Minutes(base::GetFieldTrialParamByFeatureAsInt(
-              ash::features::kProductivityLauncher,
-              "itemsuggest_query_cooldown",
-              10))),
+                              base::Unretained(this))),
       max_last_modified_time_(base::Days(base::GetFieldTrialParamByFeatureAsInt(
           ash::features::kProductivityLauncher,
           "max_last_modified_time",
-          8))),
-      enabled_(ash::features::IsProductivityLauncherEnabled()) {
+          8))) {
   DCHECK(profile_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
@@ -191,7 +196,7 @@ void ZeroStateDriveProvider::OnFileSystemMounted() {
       ash::features::kProductivityLauncher,
       "itemsuggest_query_on_filesystem_mounted", true);
 
-  if (kUpdateCache && enabled_) {
+  if (kUpdateCache) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ZeroStateDriveProvider::MaybeUpdateCache,
@@ -257,11 +262,6 @@ void ZeroStateDriveProvider::StartZeroState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClearResultsSilently();
 
-  if (!enabled_)
-    return;
-
-  // TODO(crbug.com/1034842): Add query latency metrics.
-
   // Exit if drive fs isn't mounted, as we launch results via drive fs.
   if (!drive_service_ || !drive_service_->IsMounted()) {
     LogStatus(Status::kDriveFSNotMounted);
@@ -280,6 +280,12 @@ void ZeroStateDriveProvider::StartZeroState() {
   cache_results_ = item_suggest_cache_.GetResults();
   if (!cache_results_) {
     LogStatus(Status::kNoResults);
+    return;
+  } else if (cache_results_->results.empty()) {
+    LogStatus(Status::kNoResults);
+    // An empty but non-null value indicates that the cache was updated
+    // successfully, and no results were returned.
+    SetUseLongDelay(profile_, true);
     return;
   }
 
@@ -357,6 +363,11 @@ void ZeroStateDriveProvider::SetSearchResults(
 
   cache_results_.reset();
 
+  // If there aren't enough results, use a long delay and vice versa. Note that
+  // the delay is only updated if cache results are non-null, indicating that
+  // the cache has been updated.
+  SetUseLongDelay(profile_, provider_results.size() < kShortDelayQuota);
+
   SwapResults(&provider_results);
 
   LogStatus(Status::kOk);
@@ -383,9 +394,6 @@ void ZeroStateDriveProvider::OnCacheUpdated() {
 }
 
 void ZeroStateDriveProvider::MaybeUpdateCache() {
-  if (!enabled_)
-    return;
-
   if (base::Time::Now() - kFirstUpdateDelay > construction_time_) {
     item_suggest_cache_.UpdateCache();
   }

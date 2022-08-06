@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -110,7 +108,8 @@ const CGFloat kVerticalPadding = 16;
 
 - (void)useScaledFont:(BOOL)useScaledFont {
   MaybeSetUILabelScaledFont(useScaledFont, _textLabel,
-                            [[MDCTypography fontLoader] mediumFontOfSize:14]);
+                            [UIFont systemFontOfSize:14
+                                              weight:UIFontWeightMedium]);
 }
 
 + (UIColor*)defaultTextColorForState:(UIControlState)state {

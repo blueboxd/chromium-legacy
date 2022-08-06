@@ -9,6 +9,7 @@
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
@@ -17,6 +18,8 @@
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/chromeos/styles/cros_styles.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
@@ -125,145 +128,76 @@ SkColor AshColorProvider::GetSecondToneColor(SkColor color_of_first_tone) {
 }
 
 SkColor AshColorProvider::GetShieldLayerColor(ShieldLayerType type) const {
-  return GetShieldLayerColorImpl(type, /*inverted=*/false);
-}
-
-SkColor AshColorProvider::GetBaseLayerColor(BaseLayerType type) const {
-  return GetBaseLayerColorImpl(type, /*inverted=*/false);
-}
-
-SkColor AshColorProvider::GetControlsLayerColor(ControlsLayerType type) const {
-  return GetControlsLayerColorImpl(type, IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
-  return GetContentLayerColorImpl(type, IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetActiveDialogTitleBarColor() const {
-  return cros_styles::ResolveColor(cros_styles::ColorName::kDialogTitleBarColor,
-                                   IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetInactiveDialogTitleBarColor() const {
-  // TODO(wenbojie): Use a different inactive color in future.
-  return GetActiveDialogTitleBarColor();
-}
-
-std::pair<SkColor, float> AshColorProvider::GetInkDropBaseColorAndOpacity(
-    SkColor background_color) const {
-  if (background_color == gfx::kPlaceholderColor)
-    background_color = GetBackgroundColor();
-
-  const bool is_dark = color_utils::IsDark(background_color);
-  const SkColor base_color = is_dark ? SK_ColorWHITE : SK_ColorBLACK;
-  const float opacity = is_dark ? kLightInkDropOpacity : kDarkInkDropOpacity;
-  return std::make_pair(base_color, opacity);
-}
-
-std::pair<SkColor, float>
-AshColorProvider::GetInvertedInkDropBaseColorAndOpacity(
-    SkColor background_color) const {
-  if (background_color == gfx::kPlaceholderColor)
-    background_color = GetBackgroundColor();
-
-  const bool is_light = !color_utils::IsDark(background_color);
-  const SkColor base_color = is_light ? SK_ColorWHITE : SK_ColorBLACK;
-  const float opacity = is_light ? kLightInkDropOpacity : kDarkInkDropOpacity;
-  return std::make_pair(base_color, opacity);
-}
-
-SkColor AshColorProvider::GetInvertedShieldLayerColor(
-    ShieldLayerType type) const {
-  return GetShieldLayerColorImpl(type, /*inverted=*/true);
-}
-
-SkColor AshColorProvider::GetInvertedBaseLayerColor(BaseLayerType type) const {
-  return GetBaseLayerColorImpl(type, /*inverted=*/true);
-}
-
-SkColor AshColorProvider::GetInvertedContentLayerColor(
-    ContentLayerType type) const {
-  return GetContentLayerColorImpl(type, !IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetBackgroundColor() const {
-  return GetBackgroundThemedColorImpl(GetBackgroundDefaultColor(),
-                                      IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetInvertedBackgroundColor() const {
-  return GetBackgroundThemedColorImpl(GetInvertedBackgroundDefaultColor(),
-                                      !IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetBackgroundColorInMode(bool use_dark_color) const {
-  return cros_styles::ResolveColor(cros_styles::ColorName::kBgColor,
-                                   use_dark_color);
-}
-
-SkColor AshColorProvider::GetShieldLayerColorImpl(ShieldLayerType type,
-                                                  bool inverted) const {
   constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60,
                              kAlpha80, kAlpha90, kAlpha95};
   DCHECK_LT(static_cast<size_t>(type), std::size(kAlphas));
-  return SkColorSetA(
-      inverted ? GetInvertedBackgroundColor() : GetBackgroundColor(),
-      kAlphas[static_cast<int>(type)]);
+  return SkColorSetA(GetBackgroundColor(), kAlphas[static_cast<int>(type)]);
 }
 
-SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
-                                                bool inverted) const {
-  constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80,
-                             kAlpha90, kAlpha95, 0xFF};
-  DCHECK_LT(static_cast<size_t>(type), std::size(kAlphas));
-  return SkColorSetA(
-      inverted ? GetInvertedBackgroundColor() : GetBackgroundColor(),
-      kAlphas[static_cast<int>(type)]);
-}
-
-SkColor AshColorProvider::GetControlsLayerColorImpl(ControlsLayerType type,
-                                                    bool use_dark_color) const {
+SkColor AshColorProvider::GetBaseLayerColor(BaseLayerType type) const {
+  // TODO(minch): Get all the colors from `GetColorProvider` as
+  // `kInvertedTransparent80`.
+  const auto color = GetBackgroundColor();
   switch (type) {
-    case ControlsLayerType::kHairlineBorderColor:
-      return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x24)
-                            : SkColorSetA(SK_ColorBLACK, 0x24);
-    case ControlsLayerType::kControlBackgroundColorActive:
-      return use_dark_color ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
-    case ControlsLayerType::kControlBackgroundColorInactive:
-      return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x1A)
-                            : SkColorSetA(SK_ColorBLACK, 0x0D);
-    case ControlsLayerType::kControlBackgroundColorAlert:
-      return use_dark_color ? gfx::kGoogleRed300 : gfx::kGoogleRed600;
-    case ControlsLayerType::kControlBackgroundColorWarning:
-      return use_dark_color ? gfx::kGoogleYellow300 : gfx::kGoogleYellow600;
-    case ControlsLayerType::kControlBackgroundColorPositive:
-      return use_dark_color ? gfx::kGoogleGreen300 : gfx::kGoogleGreen600;
-    case ControlsLayerType::kFocusAuraColor:
-      return use_dark_color ? SkColorSetA(gfx::kGoogleBlue300, 0x3D)
-                            : SkColorSetA(gfx::kGoogleBlue600, 0x3D);
-    case ControlsLayerType::kFocusRingColor:
-      return use_dark_color ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
-    case ControlsLayerType::kHighlightColor1:
-    case ControlsLayerType::kHighlightColor3:
-      return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x14)
-                            : SkColorSetA(SK_ColorWHITE, 0x4C);
-    case ControlsLayerType::kBorderColor1:
-      return use_dark_color ? GetBaseLayerColor(BaseLayerType::kTransparent80)
-                            : SkColorSetA(SK_ColorBLACK, 0x0F);
-    case ControlsLayerType::kHighlightColor2:
-      return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x0F)
-                            : SkColorSetA(SK_ColorWHITE, 0x33);
-    case ControlsLayerType::kBorderColor2:
-      return use_dark_color ? GetBaseLayerColor(BaseLayerType::kTransparent60)
-                            : SkColorSetA(SK_ColorBLACK, 0x0F);
-    case ControlsLayerType::kBorderColor3:
-      return SkColorSetA(SK_ColorBLACK, 0x0F);
+    case BaseLayerType::kTransparent20:
+      return SkColorSetA(color, kAlpha20);
+    case BaseLayerType::kTransparent40:
+      return SkColorSetA(color, kAlpha40);
+    case BaseLayerType::kTransparent60:
+      return SkColorSetA(color, kAlpha60);
+    case BaseLayerType::kTransparent80:
+      return SkColorSetA(color, kAlpha80);
+    case BaseLayerType::kInvertedTransparent80:
+      return GetColorProvider()->GetColor(kColorAshInvertedShieldAndBase80);
+    case BaseLayerType::kTransparent90:
+      return SkColorSetA(color, kAlpha90);
+    case BaseLayerType::kTransparent95:
+      return SkColorSetA(color, kAlpha95);
+    case BaseLayerType::kOpaque:
+      return SkColorSetA(color, SK_AlphaOPAQUE);
   }
 }
 
-SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
-                                                   bool use_dark_color) const {
+SkColor AshColorProvider::GetControlsLayerColor(ControlsLayerType type) const {
+  // TODO(crbug.com/1292244): Delete this function after all callers migrate.
+  auto* color_provider = GetColorProvider();
+  DCHECK(color_provider);
+
+  switch (type) {
+    case ControlsLayerType::kHairlineBorderColor:
+      return color_provider->GetColor(kColorAshHairlineBorderColor);
+    case ControlsLayerType::kControlBackgroundColorActive:
+      return color_provider->GetColor(kColorAshControlBackgroundColorActive);
+    case ControlsLayerType::kControlBackgroundColorInactive:
+      return color_provider->GetColor(kColorAshControlBackgroundColorInactive);
+    case ControlsLayerType::kControlBackgroundColorAlert:
+      return color_provider->GetColor(kColorAshControlBackgroundColorAlert);
+    case ControlsLayerType::kControlBackgroundColorWarning:
+      return color_provider->GetColor(kColorAshControlBackgroundColorWarning);
+    case ControlsLayerType::kControlBackgroundColorPositive:
+      return color_provider->GetColor(kColorAshControlBackgroundColorPositive);
+    case ControlsLayerType::kFocusAuraColor:
+      return color_provider->GetColor(kColorAshFocusAuraColor);
+    case ControlsLayerType::kFocusRingColor:
+      return color_provider->GetColor(ui::kColorAshFocusRing);
+    case ControlsLayerType::kHighlightColor1:
+      return color_provider->GetColor(ui::kColorHighlightBorderHighlight1);
+    case ControlsLayerType::kHighlightColor2:
+      return color_provider->GetColor(ui::kColorHighlightBorderHighlight2);
+    case ControlsLayerType::kHighlightColor3:
+      return color_provider->GetColor(ui::kColorHighlightBorderHighlight3);
+    case ControlsLayerType::kBorderColor1:
+      return color_provider->GetColor(ui::kColorHighlightBorderBorder1);
+    case ControlsLayerType::kBorderColor2:
+      return color_provider->GetColor(ui::kColorHighlightBorderBorder2);
+    case ControlsLayerType::kBorderColor3:
+      return color_provider->GetColor(ui::kColorHighlightBorderBorder3);
+  }
+}
+
+SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
+  bool use_dark_color = IsDarkModeEnabled();
+  auto* color_provider = GetColorProvider();
   switch (type) {
     case ContentLayerType::kSeparatorColor:
     case ContentLayerType::kShelfHandleColor:
@@ -294,15 +228,13 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return SkColorSetA(
           use_dark_color ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600, 0x4C);
     case ContentLayerType::kSwitchTrackColorActive:
-      return GetSecondToneColor(GetContentLayerColorImpl(
-          ContentLayerType::kSwitchKnobColorActive, use_dark_color));
+      return color_provider->GetColor(kColorAshSwitchTrackColorActive);
     case ContentLayerType::kButtonLabelColorPrimary:
     case ContentLayerType::kButtonIconColorPrimary:
     case ContentLayerType::kBatteryBadgeColor:
       return use_dark_color ? gfx::kGoogleGrey900 : gfx::kGoogleGrey200;
     case ContentLayerType::kAppStateIndicatorColorInactive:
-      return GetDisabledColor(GetContentLayerColorImpl(
-          ContentLayerType::kAppStateIndicatorColor, use_dark_color));
+      return color_provider->GetColor(kColorAshAppStateIndicatorColorInactive);
     case ContentLayerType::kCurrentDeskColor:
       return use_dark_color ? SK_ColorWHITE : SK_ColorBLACK;
     case ContentLayerType::kSwitchAccessInnerStrokeColor:
@@ -313,24 +245,51 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x0D)
                             : SkColorSetA(SK_ColorBLACK, 0x14);
     case ContentLayerType::kAppStateIndicatorColor:
+      return color_provider->GetColor(kColorAshAppStateIndicatorColor);
     case ContentLayerType::kButtonIconColor:
     case ContentLayerType::kButtonLabelColor:
       return use_dark_color ? gfx::kGoogleGrey200 : gfx::kGoogleGrey900;
     case ContentLayerType::kBatterySystemInfoBackgroundColor:
       return use_dark_color ? gfx::kGoogleGreen300 : gfx::kGoogleGreen600;
     case ContentLayerType::kBatterySystemInfoIconColor:
+    case ContentLayerType::kInvertedTextColorPrimary:
+    case ContentLayerType::kInvertedButtonLabelColor:
       return use_dark_color ? gfx::kGoogleGrey900 : gfx::kGoogleGrey200;
+    case ContentLayerType::kTextColorSuggestion:
+      return use_dark_color ? gfx::kGoogleGrey500 : gfx::kGoogleGrey600;
     default:
       return ResolveColor(type, use_dark_color);
   }
 }
 
-SkColor AshColorProvider::GetBackgroundDefaultColor() const {
-  return GetBackgroundColorInMode(IsDarkModeEnabled());
+SkColor AshColorProvider::GetActiveDialogTitleBarColor() const {
+  return cros_styles::ResolveColor(cros_styles::ColorName::kDialogTitleBarColor,
+                                   IsDarkModeEnabled());
 }
 
-SkColor AshColorProvider::GetInvertedBackgroundDefaultColor() const {
-  return GetBackgroundColorInMode(!IsDarkModeEnabled());
+SkColor AshColorProvider::GetInactiveDialogTitleBarColor() const {
+  // TODO(wenbojie): Use a different inactive color in future.
+  return GetActiveDialogTitleBarColor();
+}
+
+std::pair<SkColor, float> AshColorProvider::GetInkDropBaseColorAndOpacity(
+    SkColor background_color) const {
+  if (background_color == gfx::kPlaceholderColor)
+    background_color = GetBackgroundColor();
+
+  const bool is_dark = color_utils::IsDark(background_color);
+  const SkColor base_color = is_dark ? SK_ColorWHITE : SK_ColorBLACK;
+  const float opacity = is_dark ? kLightInkDropOpacity : kDarkInkDropOpacity;
+  return std::make_pair(base_color, opacity);
+}
+
+SkColor AshColorProvider::GetBackgroundColor() const {
+  return GetBackgroundThemedColorImpl(GetBackgroundDefaultColor(),
+                                      IsDarkModeEnabled());
+}
+
+SkColor AshColorProvider::GetBackgroundDefaultColor() const {
+  return IsDarkModeEnabled() ? gfx::kGoogleGrey900 : SK_ColorWHITE;
 }
 
 SkColor AshColorProvider::GetBackgroundThemedColorImpl(
@@ -358,6 +317,12 @@ SkColor AshColorProvider::GetBackgroundThemedColorImpl(
                   use_dark_color ? kDarkBackgroundBlendAlpha
                                  : kLightBackgroundBlendAlpha),
       muted_color);
+}
+
+ui::ColorProvider* AshColorProvider::GetColorProvider() const {
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  return ui::ColorProviderManager::Get().GetColorProviderFor(
+      native_theme->GetColorProviderKey(nullptr));
 }
 
 }  // namespace ash

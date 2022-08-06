@@ -10,7 +10,7 @@
 
 import '//resources/cr_elements/shared_style_css.m.js';
 import '../controls/settings_slider.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './live_caption_section.js';
 
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -51,15 +51,15 @@ class SettingsCaptionsElement extends SettingsCaptionsElementBase {
           return [
             {
               value: 100,  // Default
-              name: loadTimeData.getString('captionsOpacityOpaque')
+              name: loadTimeData.getString('captionsOpacityOpaque'),
             },
             {
               value: 50,
-              name: loadTimeData.getString('captionsOpacitySemiTransparent')
+              name: loadTimeData.getString('captionsOpacitySemiTransparent'),
             },
             {
               value: 0,
-              name: loadTimeData.getString('captionsOpacityTransparent')
+              name: loadTimeData.getString('captionsOpacityTransparent'),
             },
           ];
         },
@@ -76,35 +76,35 @@ class SettingsCaptionsElement extends SettingsCaptionsElementBase {
             {value: '', name: loadTimeData.getString('captionsDefaultSetting')},
             {
               value: '0,0,0',
-              name: loadTimeData.getString('captionsColorBlack')
+              name: loadTimeData.getString('captionsColorBlack'),
             },
             {
               value: '255,255,255',
-              name: loadTimeData.getString('captionsColorWhite')
+              name: loadTimeData.getString('captionsColorWhite'),
             },
             {
               value: '255,0,0',
-              name: loadTimeData.getString('captionsColorRed')
+              name: loadTimeData.getString('captionsColorRed'),
             },
             {
               value: '0,255,0',
-              name: loadTimeData.getString('captionsColorGreen')
+              name: loadTimeData.getString('captionsColorGreen'),
             },
             {
               value: '0,0,255',
-              name: loadTimeData.getString('captionsColorBlue')
+              name: loadTimeData.getString('captionsColorBlue'),
             },
             {
               value: '255,255,0',
-              name: loadTimeData.getString('captionsColorYellow')
+              name: loadTimeData.getString('captionsColorYellow'),
             },
             {
               value: '0,255,255',
-              name: loadTimeData.getString('captionsColorCyan')
+              name: loadTimeData.getString('captionsColorCyan'),
             },
             {
               value: '255,0,255',
-              name: loadTimeData.getString('captionsColorMagenta')
+              name: loadTimeData.getString('captionsColorMagenta'),
             },
           ];
         },
@@ -125,15 +125,15 @@ class SettingsCaptionsElement extends SettingsCaptionsElementBase {
           return [
             {
               value: 100,  // Default
-              name: loadTimeData.getString('captionsOpacityOpaque')
+              name: loadTimeData.getString('captionsOpacityOpaque'),
             },
             {
               value: 50,
-              name: loadTimeData.getString('captionsOpacitySemiTransparent')
+              name: loadTimeData.getString('captionsOpacitySemiTransparent'),
             },
             {
               value: 10,
-              name: loadTimeData.getString('captionsOpacityTransparent')
+              name: loadTimeData.getString('captionsOpacityTransparent'),
             },
           ];
         },
@@ -150,20 +150,20 @@ class SettingsCaptionsElement extends SettingsCaptionsElementBase {
             {value: '', name: loadTimeData.getString('captionsTextShadowNone')},
             {
               value: '-2px -2px 4px rgba(0, 0, 0, 0.5)',
-              name: loadTimeData.getString('captionsTextShadowRaised')
+              name: loadTimeData.getString('captionsTextShadowRaised'),
             },
             {
               value: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-              name: loadTimeData.getString('captionsTextShadowDepressed')
+              name: loadTimeData.getString('captionsTextShadowDepressed'),
             },
             {
               value: '-1px 0px 0px black, ' +
                   '0px -1px 0px black, 1px 0px 0px black, 0px  1px 0px black',
-              name: loadTimeData.getString('captionsTextShadowUniform')
+              name: loadTimeData.getString('captionsTextShadowUniform'),
             },
             {
               value: '0px 0px 2px rgba(0, 0, 0, 0.5), 2px 2px 2px black',
-              name: loadTimeData.getString('captionsTextShadowDropShadow')
+              name: loadTimeData.getString('captionsTextShadowDropShadow'),
             },
           ];
         },
@@ -181,7 +181,7 @@ class SettingsCaptionsElement extends SettingsCaptionsElementBase {
             {value: '50%', name: loadTimeData.getString('small')},
             {
               value: '',
-              name: loadTimeData.getString('medium')
+              name: loadTimeData.getString('medium'),
             },  // Default = 100%
             {value: '150%', name: loadTimeData.getString('large')},
             {value: '200%', name: loadTimeData.getString('veryLarge')},

@@ -38,7 +38,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.FirstDrawDetector;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -523,7 +522,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private void updateTopControlsProperties() {
         // If the Start surface is enabled, it will handle the margins and positioning of the tab
         // switcher. So, we shouldn't do it here.
-        if (ReturnToChromeUtil.isStartSurfaceEnabled(mContext)) {
+        if (ReturnToChromeUtil.isStartSurfaceEnabled(mContext)
+                && !ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(mContext)) {
             mContainerViewModel.set(TOP_MARGIN, 0);
             mContainerViewModel.set(SHADOW_TOP_OFFSET, 0);
             return;
@@ -640,6 +640,15 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     @Override
+    public void prepareHideTabSwitcherView() {
+        if (mTabGridDialogController != null) {
+            // Don't wait until switcher container view hides.
+            // Hide dialog before GTS hides.
+            mTabGridDialogController.hideDialog(false);
+        }
+    }
+
+    @Override
     public void hideTabSwitcherView(boolean animate) {
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(false);
@@ -720,7 +729,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             // the scrolling request is already processed in TabModelObserver#restoreCompleted.
             // Therefore, we only need to handle the case with isTabStateInitialized() here.
             setInitialScrollIndexOffset();
-        } else if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+        } else if (ChromeFeatureList.sInstantStart.isEnabled()) {
             List<PseudoTab> allTabs;
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 allTabs = PseudoTab.getAllPseudoTabsFromStateFile(mContext);

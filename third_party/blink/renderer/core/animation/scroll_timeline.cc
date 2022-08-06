@@ -44,13 +44,13 @@ ScrollOrientation ToPhysicalScrollOrientation(
     const LayoutBox& source_box) {
   bool is_horizontal = source_box.IsHorizontalWritingMode();
   switch (direction) {
-    case ScrollTimeline::kBlock:
+    case ScrollTimeline::ScrollDirection::kBlock:
       return is_horizontal ? kVerticalScroll : kHorizontalScroll;
-    case ScrollTimeline::kInline:
+    case ScrollTimeline::ScrollDirection::kInline:
       return is_horizontal ? kHorizontalScroll : kVerticalScroll;
-    case ScrollTimeline::kHorizontal:
+    case ScrollTimeline::ScrollDirection::kHorizontal:
       return kHorizontalScroll;
-    case ScrollTimeline::kVertical:
+    case ScrollTimeline::ScrollDirection::kVertical:
       return kVerticalScroll;
   }
 }
@@ -85,28 +85,37 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
   if (document.InQuirksMode())
     document.UpdateStyleAndLayoutTree();
 
-  return MakeGarbageCollected<ScrollTimeline>(
-      &document, ReferenceType::kSource,
-      source.value_or(document.ScrollingElementNoLayout()), orientation);
+  return Create(&document, source.value_or(document.ScrollingElementNoLayout()),
+                orientation);
+}
+
+ScrollTimeline* ScrollTimeline::Create(Document* document,
+                                       Element* source,
+                                       ScrollDirection orientation) {
+  ScrollTimeline* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
+      document, ReferenceType::kSource, source, orientation);
+  scroll_timeline->SnapshotState();
+
+  return scroll_timeline;
 }
 
 bool ScrollTimeline::StringToScrollDirection(
     String scroll_direction,
     ScrollTimeline::ScrollDirection& result) {
   if (scroll_direction == "block") {
-    result = ScrollTimeline::kBlock;
+    result = ScrollDirection::kBlock;
     return true;
   }
   if (scroll_direction == "inline") {
-    result = ScrollTimeline::kInline;
+    result = ScrollDirection::kInline;
     return true;
   }
   if (scroll_direction == "horizontal") {
-    result = ScrollTimeline::kHorizontal;
+    result = ScrollDirection::kHorizontal;
     return true;
   }
   if (scroll_direction == "vertical") {
-    result = ScrollTimeline::kVertical;
+    result = ScrollDirection::kVertical;
     return true;
   }
   return false;
@@ -121,7 +130,6 @@ ScrollTimeline::ScrollTimeline(Document* document,
       reference_element_(reference),
       orientation_(orientation) {
   UpdateResolvedSource();
-  SnapshotState();
 }
 
 bool ScrollTimeline::IsActive() const {
@@ -157,8 +165,8 @@ V8CSSNumberish* ScrollTimeline::ConvertTimeToProgress(
 }
 
 V8CSSNumberish* ScrollTimeline::currentTime() {
-  // time returns either in milliseconds or a 0 to 100 value representing the
-  // progress of the timeline
+  // Compute time as a percentage based on the relative scroll position, where
+  // the start offset corresponds to 0% and the end to 100%.
   auto current_time = timeline_state_snapshotted_.current_time;
 
   if (current_time) {
@@ -218,39 +226,33 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() {
   // use that everywhere.
   current_offset = std::abs(current_offset);
 
-  // TODO(crbug.com/1329159): Override in ViewTimeline to compute offsets
-  // corresponding to the 'cover' range.
-  double start_offset = GetStartOffset(scrollable_area, physical_orientation);
-  double end_offset = GetEndOffset(scrollable_area, physical_orientation);
+  absl::optional<ScrollOffsets> scroll_offsets =
+      CalculateOffsets(scrollable_area, physical_orientation);
+  DCHECK(scroll_offsets);
 
   // TODO(crbug.com/1338167): Update once
   // github.com/w3c/csswg-drafts/issues/7401 is resolved.
-  double progress =
-      (end_offset == start_offset)
-          ? 1
-          : (current_offset - start_offset) / (end_offset - start_offset);
+  double progress = (scroll_offsets->start == scroll_offsets->end)
+                        ? 1
+                        : (current_offset - scroll_offsets->start) /
+                              (scroll_offsets->end - scroll_offsets->start);
 
   base::TimeDelta duration = base::Seconds(GetDuration()->InSecondsF());
   absl::optional<base::TimeDelta> calculated_current_time =
       base::Milliseconds(progress * duration.InMillisecondsF());
 
-  return {TimelinePhase::kActive, calculated_current_time,
-          absl::make_optional<ScrollOffsets>(start_offset, end_offset)};
+  return {TimelinePhase::kActive, calculated_current_time, scroll_offsets};
 }
 
-double ScrollTimeline::GetStartOffset(
-    PaintLayerScrollableArea* scrollable_area,
-    ScrollOrientation physical_orientation) const {
-  return 0;
-}
-
-double ScrollTimeline::GetEndOffset(
+absl::optional<ScrollOffsets> ScrollTimeline::CalculateOffsets(
     PaintLayerScrollableArea* scrollable_area,
     ScrollOrientation physical_orientation) const {
   ScrollOffset scroll_dimensions = scrollable_area->MaximumScrollOffset() -
                                    scrollable_area->MinimumScrollOffset();
-  return physical_orientation == kHorizontalScroll ? scroll_dimensions.x()
-                                                   : scroll_dimensions.y();
+  double end_offset = physical_orientation == kHorizontalScroll
+                          ? scroll_dimensions.x()
+                          : scroll_dimensions.y();
+  return absl::make_optional<ScrollOffsets>(0, end_offset);
 }
 
 // Scroll-linked animations are initialized with the start time of zero.
@@ -333,13 +335,11 @@ Element* ScrollTimeline::SourceInternal() const {
   if (!layout_box)
     return nullptr;
 
-  // TODO(crbug.com/1329159): Consider Using cached AncestorScrollContainerLayer
-  // for efficiency.
-  const LayoutBox* scrollport_layout_box = layout_box->EnclosingScrollportBox();
-  if (!scrollport_layout_box)
-    return layout_box->GetDocument().ScrollingElementNoLayout();
+  const LayoutBox* scroll_container = layout_box->ContainingScrollContainer();
+  if (!scroll_container)
+    return scroll_container->GetDocument().ScrollingElementNoLayout();
 
-  Node* node = scrollport_layout_box->GetNode();
+  Node* node = scroll_container->GetNode();
   if (node->IsElementNode())
     return DynamicTo<Element>(node);
   if (node->IsDocumentNode())
@@ -351,13 +351,13 @@ Element* ScrollTimeline::SourceInternal() const {
 
 String ScrollTimeline::orientation() {
   switch (orientation_) {
-    case kBlock:
+    case ScrollDirection::kBlock:
       return "block";
-    case kInline:
+    case ScrollDirection::kInline:
       return "inline";
-    case kHorizontal:
+    case ScrollDirection::kHorizontal:
       return "horizontal";
-    case kVertical:
+    case ScrollDirection::kVertical:
       return "vertical";
     default:
       NOTREACHED();

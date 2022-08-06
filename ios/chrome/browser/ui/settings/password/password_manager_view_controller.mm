@@ -110,41 +110,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOnDeviceEncryptionOptedInLearnMore,
 };
 
-std::vector<password_manager::CredentialUIEntry> CopyOf(
-    const std::vector<password_manager::PasswordForm>& password_list) {
-  std::vector<password_manager::CredentialUIEntry> credentials;
-  for (const auto& form : password_list) {
-    credentials.push_back(password_manager::CredentialUIEntry(form));
-  }
-  return credentials;
-}
-
-bool ArePasswordsListsEqual(
-    const std::vector<password_manager::PasswordForm>& lhs,
-    const std::vector<password_manager::PasswordForm>& rhs) {
-  if (lhs.size() != rhs.size())
-    return false;
-
-  for (size_t i = 0; i < lhs.size(); i++) {
-    if (CreateSortKey(lhs[i]) != CreateSortKey(rhs[i]))
-      return false;
-  }
-  return true;
-}
-
-void RemoveFormsToBeDeleted(
-    std::vector<password_manager::PasswordForm>& forms,
-    const std::vector<password_manager::PasswordForm>& to_delete) {
-  std::unordered_set<std::string> sort_keys_to_delete;
-  base::ranges::for_each(to_delete, [&sort_keys_to_delete](const auto& form) {
-    sort_keys_to_delete.insert(CreateSortKey(form));
-  });
-  base::EraseIf(forms, [&sort_keys_to_delete](const auto& form) {
-    return sort_keys_to_delete.find(CreateSortKey(form)) !=
-           sort_keys_to_delete.end();
-  });
-}
-
 // Return if the feature flag for the favicon is enabled.
 // TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
 // removed.
@@ -153,18 +118,25 @@ bool IsFaviconEnabled() {
       password_manager::features::kEnableFaviconForPasswords);
 }
 
+// Returns true if settings (e.g., "Offer To Save Passwords") should be visible
+// in this UI, or false if they should be behind a link to a submenu.
+bool ShouldShowSettingsUI() {
+  return !base::FeatureList::IsEnabled(
+      password_manager::features::kIOSPasswordUISplit);
+}
+
 }  // namespace
 
 // TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
 // removed.
 @interface LegacyPasswordFormContentItem : TableViewDetailTextItem
-@property(nonatomic) password_manager::PasswordForm form;
+@property(nonatomic) password_manager::CredentialUIEntry credential;
 @end
 @implementation LegacyPasswordFormContentItem
 @end
 
 @interface PasswordFormContentItem : TableViewURLItem
-@property(nonatomic) password_manager::PasswordForm form;
+@property(nonatomic) password_manager::CredentialUIEntry credential;
 @end
 @implementation PasswordFormContentItem
 @end
@@ -245,9 +217,9 @@ bool IsFaviconEnabled() {
   // The link to set up on device encryption.
   TableViewTextItem* _setUpOnDeviceEncryptionItem;
   // The list of the user's saved passwords.
-  std::vector<password_manager::PasswordForm> _savedForms;
+  std::vector<password_manager::CredentialUIEntry> _passwords;
   // The list of the user's blocked sites.
-  std::vector<password_manager::PasswordForm> _blockedForms;
+  std::vector<password_manager::CredentialUIEntry> _blockedSites;
   // The browser where the screen is being displayed.
   Browser* _browser;
   // The current Chrome browser state.
@@ -260,7 +232,7 @@ bool IsFaviconEnabled() {
   BOOL _exportReady;
   // Boolean indicating if password forms have been received for the first time.
   // Used to show a loading indicator while waiting for the store response.
-  BOOL _didReceiveSavedForms;
+  BOOL _didReceivePasswords;
   // Alert informing the user that passwords are being prepared for
   // export.
   UIAlertController* _preparingPasswordsAlert;
@@ -289,7 +261,7 @@ bool IsFaviconEnabled() {
 @property(assign) NSInteger compromisedPasswordsCount;
 
 // Stores the most recently created or updated password form.
-@property(nonatomic, assign) absl::optional<password_manager::PasswordForm>
+@property(nonatomic, assign) absl::optional<password_manager::CredentialUIEntry>
     mostRecentlyUpdatedPassword;
 
 // Stores the PasswordFormContentItem which has form attribute's username and
@@ -312,6 +284,11 @@ bool IsFaviconEnabled() {
 
 // Return YES if the search bar should be enabled.
 @property(nonatomic, assign) BOOL shouldEnableSearchBar;
+
+// Keep track of how many passwords have been loaded for the logs and how many
+// of them are favicons with an image (not monogram string).
+@property(nonatomic, strong)
+    NSMutableDictionary<NSString*, NSNumber*>* passwordsLoadedWithFavicons;
 
 @end
 
@@ -367,14 +344,22 @@ bool IsFaviconEnabled() {
 }
 
 - (void)setMostRecentlyUpdatedPasswordDetails:
-    (const password_manager::PasswordForm&)password {
-  self.mostRecentlyUpdatedPassword = password;
+    (const password_manager::CredentialUIEntry&)credential {
+  self.mostRecentlyUpdatedPassword = credential;
 }
 
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  // Configure this now, rather than at initialization, because the superclass
+  // viewDidLoad will wipe out our value if we set it too early.
+  if (!ShouldShowSettingsUI()) {
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeAlways;
+  }
+
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kPasswordsTableViewId;
 
@@ -433,8 +418,12 @@ bool IsFaviconEnabled() {
 
   [self loadModel];
 
-  if (!_didReceiveSavedForms) {
+  if (!_didReceivePasswords) {
     [self showLoadingSpinnerBackground];
+  }
+
+  if (!self.passwordsLoadedWithFavicons) {
+    self.passwordsLoadedWithFavicons = [[NSMutableDictionary alloc] init];
   }
 }
 
@@ -455,6 +444,11 @@ bool IsFaviconEnabled() {
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
+
+  // Record favicons metrics only if the feature is enabled.
+  if (IsFaviconEnabled()) {
+    [self logMetricsForFavicons];
+  }
 
   // Restore to default origin offset for cancel button proxy style.
   UIBarButtonItem* cancelButton = [UIBarButtonItem
@@ -498,42 +492,40 @@ bool IsFaviconEnabled() {
 - (void)loadModel {
   [super loadModel];
 
-  if (!_didReceiveSavedForms) {
+  if (!_didReceivePasswords) {
     return;
   }
 
   TableViewModel* model = self.tableViewModel;
 
-  // Save passwords switch and manage account message. Only show this section
-  // when the searchController is not active.
-  if (!self.navigationItem.searchController.active) {
-    [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+  if (ShouldShowSettingsUI()) {
+    // Save passwords switch and manage account message. Only show this section
+    // when the searchController is not active.
+    if (!self.navigationItem.searchController.active) {
+      [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
-    if (_browserState->GetPrefs()->IsManagedPreference(
-            password_manager::prefs::kCredentialsEnableService)) {
-      // TODO(crbug.com/1082827): observe the managing status of the pref.
-      // Show managed settings UI when the pref is managed by the policy.
-      _managedSavePasswordItem = [self managedSavePasswordItem];
-      [model addItem:_managedSavePasswordItem
-          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-    } else {
-      _savePasswordsItem = [self savePasswordsItem];
-      [model addItem:_savePasswordsItem
-          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+      if (_browserState->GetPrefs()->IsManagedPreference(
+              password_manager::prefs::kCredentialsEnableService)) {
+        // TODO(crbug.com/1082827): observe the managing status of the pref.
+        // Show managed settings UI when the pref is managed by the policy.
+        _managedSavePasswordItem = [self managedSavePasswordItem];
+        [model addItem:_managedSavePasswordItem
+            toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+      } else {
+        _savePasswordsItem = [self savePasswordsItem];
+        [model addItem:_savePasswordsItem
+            toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+      }
     }
 
-    _manageAccountLinkItem = [self manageAccountLinkItem];
-    [model setHeader:_manageAccountLinkItem
-        forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    // Passwords in other apps.
+    [model addSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+    if (!_passwordsInOtherAppsItem) {
+      _passwordsInOtherAppsItem = [self passwordsInOtherAppsItem];
+    }
+    [model addItem:_passwordsInOtherAppsItem
+        toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
   }
-
-  // Passwords in other apps.
-  [model addSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
-  if (!_passwordsInOtherAppsItem) {
-    _passwordsInOtherAppsItem = [self passwordsInOtherAppsItem];
-  }
-  [model addItem:_passwordsInOtherAppsItem
-      toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
 
   // Password check.
   [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
@@ -563,7 +555,7 @@ bool IsFaviconEnabled() {
                                               UITableViewRowAnimationNone];
 
   // Saved passwords.
-  if (!_savedForms.empty()) {
+  if (!_passwords.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
     TableViewTextHeaderFooterItem* headerItem =
         [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
@@ -574,7 +566,7 @@ bool IsFaviconEnabled() {
   }
 
   // Blocked passwords.
-  if (!_blockedForms.empty()) {
+  if (!_blockedSites.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierBlocked];
     TableViewTextHeaderFooterItem* headerItem =
         [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
@@ -589,6 +581,12 @@ bool IsFaviconEnabled() {
   _exportPasswordsItem = [self exportPasswordsItem];
   [model addItem:_exportPasswordsItem
       toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+
+  // Add the descriptive text at the top of the screen. Do this at the end to
+  // ensure the section to which it's being attached already exists.
+  _manageAccountLinkItem = [self manageAccountLinkItem];
+  [model setHeader:_manageAccountLinkItem
+      forSectionWithIdentifier:[self sectionForManageAccountLinkHeader]];
 
   [self filterItems:self.searchTerm];
 }
@@ -610,6 +608,11 @@ bool IsFaviconEnabled() {
                                           withRowAnimation:
                                               (UITableViewRowAnimation)
                                                   rowAnimation {
+  // Ignore these updates if this surface is not being used as the settings UI.
+  // This ensures the related content is never added (or re-added) to the menu.
+  if (!ShouldShowSettingsUI()) {
+    return;
+  }
   OnDeviceEncryptionState oldState = self.onDeviceEncryptionStateInModel;
   OnDeviceEncryptionState newState = [self.delegate onDeviceEncryptionState];
   if (newState == oldState) {
@@ -690,7 +693,7 @@ bool IsFaviconEnabled() {
 }
 
 - (BOOL)editButtonEnabled {
-  return !_savedForms.empty() || !_blockedForms.empty();
+  return !_passwords.empty() || !_blockedSites.empty();
 }
 
 - (BOOL)shouldHideToolbar {
@@ -740,34 +743,46 @@ bool IsFaviconEnabled() {
 }
 
 #pragma mark - Items
+- (PasswordSectionIdentifier)sectionForManageAccountLinkHeader {
+  // When settings are shown on this page, the Save Passwords Switch is the
+  // first section, so it should host the page's header text. When settings are
+  // absent, this needs to move down to the Password Check section instead.
+  return ShouldShowSettingsUI() ? SectionIdentifierSavePasswordsSwitch
+                                : SectionIdentifierPasswordCheck;
+}
 
 - (TableViewLinkHeaderFooterItem*)manageAccountLinkItem {
-  TableViewLinkHeaderFooterItem* footerItem =
+  TableViewLinkHeaderFooterItem* header =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeLinkHeader];
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::
               kIOSEnablePasswordManagerBrandingUpdate)) {
-    footerItem.text =
-        l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER);
+    if ([self.delegate isSyncingPasswords]) {
+      header.text =
+          l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER);
 
-    footerItem.urls = @[ [[CrURL alloc]
-        initWithGURL:
-            google_util::AppendGoogleLocaleParam(
-                GURL(password_manager::kPasswordManagerHelpCenteriOSURL),
-                GetApplicationContext()->GetApplicationLocale())] ];
+      header.urls = @[ [[CrURL alloc]
+          initWithGURL:
+              google_util::AppendGoogleLocaleParam(
+                  GURL(password_manager::kPasswordManagerHelpCenteriOSURL),
+                  GetApplicationContext()->GetApplicationLocale())] ];
+    } else {
+      header.text =
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_HEADER_NOT_SYNCING);
+      header.urls = @[];
+    }
   } else {
-    footerItem.text =
-        l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT);
+    header.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT);
 
-    footerItem.urls = @[ [[CrURL alloc]
+    header.urls = @[ [[CrURL alloc]
         initWithGURL:
             google_util::AppendGoogleLocaleParam(
                 GURL(password_manager::kPasswordManagerAccountDashboardURL),
                 GetApplicationContext()->GetApplicationLocale())] ];
   }
 
-  return footerItem;
+  return header;
 }
 
 - (TableViewSwitchItem*)savePasswordsItem {
@@ -907,19 +922,20 @@ bool IsFaviconEnabled() {
 - (PasswordFormContentItem*)
     savedFormItemWithText:(NSString*)text
             andDetailText:(NSString*)detailText
-                  forForm:(const password_manager::PasswordForm&)form {
+            forCredential:
+                (const password_manager::CredentialUIEntry&)credential {
   PasswordFormContentItem* passwordItem =
       [[PasswordFormContentItem alloc] initWithType:ItemTypeSavedPassword];
   passwordItem.title = text;
-  passwordItem.form = form;
+  passwordItem.credential = credential;
   passwordItem.detailText = detailText;
-  passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(form.url)];
+  passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(credential.url)];
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   if (self.mostRecentlyUpdatedPassword) {
-    if (self.mostRecentlyUpdatedPassword->username_value ==
-            form.username_value &&
-        self.mostRecentlyUpdatedPassword->signon_realm == form.signon_realm) {
+    if (self.mostRecentlyUpdatedPassword->username == credential.username &&
+        self.mostRecentlyUpdatedPassword->signon_realm ==
+            credential.signon_realm) {
       self.mostRecentlyUpdatedItem = passwordItem;
       self.mostRecentlyUpdatedPassword = absl::nullopt;
     }
@@ -927,12 +943,12 @@ bool IsFaviconEnabled() {
   return passwordItem;
 }
 
-- (PasswordFormContentItem*)blockedFormItemForForm:
-    (const password_manager::PasswordForm&)form {
+- (PasswordFormContentItem*)blockedSiteItem:
+    (const password_manager::CredentialUIEntry&)credential {
   PasswordFormContentItem* passwordItem =
       [[PasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
-  passwordItem.form = form;
-  passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(form.url)];
+  passwordItem.credential = credential;
+  passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(credential.url)];
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   return passwordItem;
@@ -941,20 +957,21 @@ bool IsFaviconEnabled() {
 - (LegacyPasswordFormContentItem*)
     legacySavedFormItemWithText:(NSString*)text
                   andDetailText:(NSString*)detailText
-                        forForm:(const password_manager::PasswordForm&)form {
+                  forCredential:
+                      (const password_manager::CredentialUIEntry&)credential {
   DCHECK(!IsFaviconEnabled());
   LegacyPasswordFormContentItem* passwordItem =
       [[LegacyPasswordFormContentItem alloc]
           initWithType:ItemTypeSavedPassword];
   passwordItem.text = text;
-  passwordItem.form = form;
+  passwordItem.credential = credential;
   passwordItem.detailText = detailText;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   if (self.mostRecentlyUpdatedPassword) {
-    if (self.mostRecentlyUpdatedPassword->username_value ==
-            form.username_value &&
-        self.mostRecentlyUpdatedPassword->signon_realm == form.signon_realm) {
+    if (self.mostRecentlyUpdatedPassword->username == credential.username &&
+        self.mostRecentlyUpdatedPassword->signon_realm ==
+            credential.signon_realm) {
       self.legacyMostRecentlyUpdatedItem = passwordItem;
       self.mostRecentlyUpdatedPassword = absl::nullopt;
     }
@@ -964,12 +981,13 @@ bool IsFaviconEnabled() {
 
 - (LegacyPasswordFormContentItem*)
     legacyBlockedFormItemWithText:(NSString*)text
-                          forForm:(const password_manager::PasswordForm&)form {
+                    forCredential:
+                        (const password_manager::CredentialUIEntry&)credential {
   DCHECK(!IsFaviconEnabled());
   LegacyPasswordFormContentItem* passwordItem =
       [[LegacyPasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
   passwordItem.text = text;
-  passwordItem.form = form;
+  passwordItem.credential = credential;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   return passwordItem;
@@ -1086,25 +1104,23 @@ bool IsFaviconEnabled() {
   _passwordCheckState = state;
 }
 
-- (void)setPasswordsForms:
-            (std::vector<password_manager::PasswordForm>)savedForms
-             blockedForms:
-                 (std::vector<password_manager::PasswordForm>)blockedForms {
-  if (!_didReceiveSavedForms) {
-    _blockedForms = std::move(blockedForms);
-    _savedForms = std::move(savedForms);
-    _didReceiveSavedForms = YES;
+- (void)setPasswords:(std::vector<password_manager::CredentialUIEntry>)passwords
+        blockedSites:
+            (std::vector<password_manager::CredentialUIEntry>)blockedSites {
+  if (!_didReceivePasswords) {
+    _blockedSites = std::move(blockedSites);
+    _passwords = std::move(passwords);
+    _didReceivePasswords = YES;
     [self hideLoadingSpinnerBackground];
     [self updateUIForEditState];
     [self reloadData];
   } else {
-    if (ArePasswordsListsEqual(_savedForms, savedForms) &&
-        ArePasswordsListsEqual(_blockedForms, blockedForms)) {
+    if (_passwords == passwords && _blockedSites == blockedSites) {
       return;
     }
 
-    _blockedForms = std::move(blockedForms);
-    _savedForms = std::move(savedForms);
+    _blockedSites = std::move(blockedSites);
+    _passwords = std::move(passwords);
     TableViewModel* model = self.tableViewModel;
     NSMutableIndexSet* sectionsToUpdate = [NSMutableIndexSet indexSet];
 
@@ -1116,8 +1132,8 @@ bool IsFaviconEnabled() {
       PasswordSectionIdentifier section = sections[i];
       bool hasSection = [model hasSectionForSectionIdentifier:section];
       bool needsSection = section == SectionIdentifierBlocked
-                              ? !_blockedForms.empty()
-                              : !_savedForms.empty();
+                              ? !_blockedSites.empty()
+                              : !_passwords.empty();
 
       // If section exists but it shouldn't - gracefully remove it with
       // animation.
@@ -1146,7 +1162,7 @@ bool IsFaviconEnabled() {
       [self.tableView reloadSections:sectionsToUpdate
                     withRowAnimation:UITableViewRowAnimationAutomatic];
       [self scrollToLastUpdatedItem];
-    } else if (_savedForms.empty() && _blockedForms.empty()) {
+    } else if (_passwords.empty() && _blockedSites.empty()) {
       [self setEditing:NO animated:YES];
     }
   }
@@ -1207,52 +1223,63 @@ bool IsFaviconEnabled() {
   TableViewModel* model = self.tableViewModel;
   [self.tableView
       performBatchUpdates:^{
-        // Add "Save Password Switch" section.
-        [model insertSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
-                                   atIndex:0];
-        [model setHeader:_manageAccountLinkItem
-            forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:0]
-                      withRowAnimation:UITableViewRowAnimationTop];
-        if (_savePasswordsItem) {
-          [model addItem:_savePasswordsItem
-              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-        } else {
-          [model addItem:_managedSavePasswordItem
-              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        int sectionIndex = 0;
+        NSMutableArray<NSIndexPath*>* rowsIndexPaths =
+            [[NSMutableArray alloc] init];
+
+        if (ShouldShowSettingsUI()) {
+          // Add "Save Password Switch" section.
+          [model
+              insertSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
+                                  atIndex:sectionIndex];
+          [self.tableView
+                insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+              withRowAnimation:UITableViewRowAnimationTop];
+          if (_savePasswordsItem) {
+            [model addItem:_savePasswordsItem
+                toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+          } else {
+            [model addItem:_managedSavePasswordItem
+                toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+          }
+          NSInteger switchSection = [model
+              sectionForSectionIdentifier:SectionIdentifierSavePasswordsSwitch];
+          [rowsIndexPaths
+              addObject:[NSIndexPath indexPathForRow:0
+                                           inSection:switchSection]];
+          sectionIndex++;
+
+          // Add "Password in other app" section.
+          [model
+              insertSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps
+                                  atIndex:sectionIndex];
+          NSInteger otherAppSection =
+              [model sectionForSectionIdentifier:
+                         SectionIdentifierPasswordsInOtherApps];
+
+          [self.tableView
+                insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+              withRowAnimation:UITableViewRowAnimationTop];
+          [model addItem:_passwordsInOtherAppsItem
+              toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+          [rowsIndexPaths
+              addObject:[NSIndexPath indexPathForRow:0
+                                           inSection:otherAppSection]];
+
+          [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
+                                withRowAnimation:UITableViewRowAnimationTop];
+          sectionIndex++;
         }
-        NSInteger switchSection = [model
-            sectionForSectionIdentifier:SectionIdentifierSavePasswordsSwitch];
-        NSMutableArray<NSIndexPath*>* rowsIndexPaths = [NSMutableArray
-            arrayWithObjects:[NSIndexPath indexPathForRow:0
-                                                inSection:switchSection],
-                             nil];
-
-        // Add "Password in other app" section.
-        [model insertSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps
-                                   atIndex:1];
-        NSInteger otherAppSection = [model
-            sectionForSectionIdentifier:SectionIdentifierPasswordsInOtherApps];
-
-        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:1]
-                      withRowAnimation:UITableViewRowAnimationTop];
-        [model addItem:_passwordsInOtherAppsItem
-            toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
-        [rowsIndexPaths
-            addObject:[NSIndexPath indexPathForRow:0
-                                         inSection:otherAppSection]];
-
-        [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
-                              withRowAnimation:UITableViewRowAnimationTop];
 
         // Add "Password check" section.
         [model insertSectionWithIdentifier:SectionIdentifierPasswordCheck
-                                   atIndex:2];
+                                   atIndex:sectionIndex];
         NSInteger checkSection =
             [model sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
 
-        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:2]
-                      withRowAnimation:UITableViewRowAnimationTop];
+        [self.tableView
+              insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+            withRowAnimation:UITableViewRowAnimationTop];
         [model addItem:_passwordProblemsItem
             toSectionWithIdentifier:SectionIdentifierPasswordCheck];
         [model addItem:_checkForProblemsItem
@@ -1261,6 +1288,9 @@ bool IsFaviconEnabled() {
                                                      inSection:checkSection]];
         [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:1
                                                      inSection:checkSection]];
+
+        [model setHeader:_manageAccountLinkItem
+            forSectionWithIdentifier:[self sectionForManageAccountLinkHeader]];
 
         [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
                               withRowAnimation:UITableViewRowAnimationTop];
@@ -1390,13 +1420,13 @@ bool IsFaviconEnabled() {
 - (void)filterItems:(NSString*)searchTerm {
   TableViewModel* model = self.tableViewModel;
 
-  if (!_savedForms.empty()) {
+  if (!_passwords.empty()) {
     [model deleteAllItemsFromSectionWithIdentifier:
                SectionIdentifierSavedPasswords];
-    for (const auto& form : _savedForms) {
-      NSString* text = base::SysUTF8ToNSString(
-          password_manager::GetShownOriginAndLinkUrl(form).first);
-      NSString* detailText = base::SysUTF16ToNSString(form.username_value);
+    for (const auto& credential : _passwords) {
+      NSString* text =
+          base::SysUTF8ToNSString(password_manager::GetShownOrigin(credential));
+      NSString* detailText = base::SysUTF16ToNSString(credential.username);
       bool hidden =
           searchTerm.length > 0 &&
           ![text localizedCaseInsensitiveContainsString:searchTerm] &&
@@ -1406,27 +1436,27 @@ bool IsFaviconEnabled() {
       [model addItem:(IsFaviconEnabled()
                           ? [self savedFormItemWithText:text
                                           andDetailText:detailText
-                                                forForm:form]
+                                          forCredential:credential]
                           : [self legacySavedFormItemWithText:text
                                                 andDetailText:detailText
-                                                      forForm:form])
+                                                forCredential:credential])
           toSectionWithIdentifier:SectionIdentifierSavedPasswords];
     }
   }
 
-  if (!_blockedForms.empty()) {
+  if (!_blockedSites.empty()) {
     [model deleteAllItemsFromSectionWithIdentifier:SectionIdentifierBlocked];
-    for (const auto& form : _blockedForms) {
-      NSString* text = base::SysUTF8ToNSString(
-          password_manager::GetShownOriginAndLinkUrl(form).first);
+    for (const auto& credential : _blockedSites) {
+      NSString* text =
+          base::SysUTF8ToNSString(password_manager::GetShownOrigin(credential));
       bool hidden = searchTerm.length > 0 &&
                     ![text localizedCaseInsensitiveContainsString:searchTerm];
       if (hidden)
         continue;
       [model addItem:(IsFaviconEnabled()
-                          ? [self blockedFormItemForForm:form]
+                          ? [self blockedSiteItem:credential]
                           : [self legacyBlockedFormItemWithText:text
-                                                        forForm:form])
+                                                  forCredential:credential])
           toSectionWithIdentifier:SectionIdentifierBlocked];
     }
   }
@@ -1437,7 +1467,7 @@ bool IsFaviconEnabled() {
 - (void)updateLastCheckTimestampWithState:(PasswordCheckUIState)state
                                 fromState:(PasswordCheckUIState)oldState
                                    update:(BOOL)update {
-  if (!_didReceiveSavedForms) {
+  if (!_didReceivePasswords) {
     return;
   }
 
@@ -1605,7 +1635,7 @@ bool IsFaviconEnabled() {
 - (void)updateExportPasswordsButton {
   if (!_exportPasswordsItem)
     return;
-  if (!_savedForms.empty() &&
+  if (!_passwords.empty() &&
       self.passwordExporter.exportState == ExportState::IDLE) {
     _exportReady = YES;
     if (!self.editing) {
@@ -1656,7 +1686,7 @@ bool IsFaviconEnabled() {
                   return;
                 }
                 [strongSelf.passwordExporter
-                    startExportFlow:CopyOf(strongSelf->_savedForms)];
+                    startExportFlow:strongSelf->_passwords];
               }];
 
   [exportConfirmation addAction:exportAction];
@@ -1684,26 +1714,37 @@ bool IsFaviconEnabled() {
 }
 
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
-  std::vector<password_manager::PasswordForm> passwordsToDelete;
-  std::vector<password_manager::PasswordForm> blockedToDelete;
+  std::vector<password_manager::CredentialUIEntry> credentialsToDelete;
 
   for (NSIndexPath* indexPath in indexPaths) {
-    password_manager::PasswordForm form =
+    password_manager::CredentialUIEntry credential =
         IsFaviconEnabled()
             ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
                   [self.tableViewModel itemAtIndexPath:indexPath])
-                  .form
+                  .credential
             : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
                   [self.tableViewModel itemAtIndexPath:indexPath])
-                  .form;
+                  .credential;
     // Only form items are editable.
     NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-    BOOL blocked = (itemType == ItemTypeBlocked);
-    blocked ? blockedToDelete.push_back(form)
-            : passwordsToDelete.push_back(form);
+
+    auto removeCredential =
+        [](std::vector<password_manager::CredentialUIEntry>& credentials,
+           const password_manager::CredentialUIEntry& credential) {
+          auto iterator =
+              std::find(credentials.begin(), credentials.end(), credential);
+          if (iterator != credentials.end())
+            credentials.erase(iterator);
+        };
+    
+    if (itemType == ItemTypeBlocked) {
+      removeCredential(_blockedSites, credential);
+    } else {
+      removeCredential(_passwords, credential);
+    }
+    
+    credentialsToDelete.push_back(std::move(credential));
   }
-  RemoveFormsToBeDeleted(_savedForms, passwordsToDelete);
-  RemoveFormsToBeDeleted(_blockedForms, blockedToDelete);
 
   // Remove empty sections.
   __weak PasswordManagerViewController* weakSelf = self;
@@ -1721,11 +1762,11 @@ bool IsFaviconEnabled() {
         // Delete in reverse order of section indexes (bottom up of section
         // displayed), so that indexes in model matches those in the view.  if
         // we don't we'll cause a crash.
-        if (strongSelf->_blockedForms.empty()) {
+        if (strongSelf->_blockedSites.empty()) {
           [self clearSectionWithIdentifier:SectionIdentifierBlocked
                           withRowAnimation:UITableViewRowAnimationAutomatic];
         }
-        if (strongSelf->_savedForms.empty()) {
+        if (strongSelf->_passwords.empty()) {
           [strongSelf
               clearSectionWithIdentifier:SectionIdentifierSavedPasswords
                         withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -1736,18 +1777,13 @@ bool IsFaviconEnabled() {
         if (!strongSelf)
           return;
         // If both lists are empty, exit editing mode.
-        if (strongSelf->_savedForms.empty() &&
-            strongSelf->_blockedForms.empty())
+        if (strongSelf->_passwords.empty() && strongSelf->_blockedSites.empty())
           [strongSelf setEditing:NO animated:YES];
         [strongSelf updateUIForEditState];
         [strongSelf updateExportPasswordsButton];
       }];
 
-  passwordsToDelete.insert(passwordsToDelete.end(),
-                           std::make_move_iterator(blockedToDelete.begin()),
-                           std::make_move_iterator(blockedToDelete.end()));
-
-  [self.delegate deletePasswordForms:passwordsToDelete];
+  [self.delegate deleteCredentials:credentialsToDelete];
 }
 
 - (void)showPasswordIssuesPage {
@@ -1794,6 +1830,31 @@ bool IsFaviconEnabled() {
   }
 }
 
+// Logs metrics related to favicons for the Password Manager.
+- (void)logMetricsForFavicons {
+  // Log the number of passwords with a favicon loaded.
+  base::UmaHistogramCounts10000(
+      "IOS.PasswordManager.PasswordsWithFavicons.Count",
+      self.passwordsLoadedWithFavicons.count);
+
+  if (self.passwordsLoadedWithFavicons.count == 0)
+    return;
+
+  int count = 0;
+  NSNumber* yesAsNSNumber = [NSNumber numberWithBool:YES];
+  for (NSNumber* value in self.passwordsLoadedWithFavicons.allValues) {
+    if (value == yesAsNSNumber)
+      count++;
+  }
+  // Log the number of favicons loaded (image, not monogram string).
+  base::UmaHistogramCounts10000("IOS.PasswordManager.Favicons.Count", count);
+  // Log % of passwords that have a favicon that is an image.
+  float percentage =
+      ((float)count / (float)self.passwordsLoadedWithFavicons.count) * 100.0f;
+  base::UmaHistogramPercentage("IOS.PasswordManager.Favicons.Percentage",
+                               percentage);
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -1819,29 +1880,30 @@ bool IsFaviconEnabled() {
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
                 [model sectionIdentifierForSectionIndex:indexPath.section]);
-      password_manager::PasswordForm form =
+      password_manager::CredentialUIEntry credential =
           IsFaviconEnabled()
               ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
                     [model itemAtIndexPath:indexPath])
-                    .form
+                    .credential
               : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
                     [model itemAtIndexPath:indexPath])
-                    .form;
-      [self.handler showDetailedViewForForm:form];
+                    .credential;
+      [self.handler showDetailedViewForCredential:credential];
       break;
     }
     case ItemTypeBlocked: {
       DCHECK_EQ(SectionIdentifierBlocked,
                 [model sectionIdentifierForSectionIndex:indexPath.section]);
-      password_manager::PasswordForm form =
+      password_manager::CredentialUIEntry credential =
           IsFaviconEnabled()
               ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
                     [model itemAtIndexPath:indexPath])
-                    .form
+                    .credential
               : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
                     [model itemAtIndexPath:indexPath])
-                    .form;
-      [self.handler showDetailedViewForForm:form];
+
+                    .credential;
+      [self.handler showDetailedViewForCredential:credential];
       break;
     }
     case ItemTypeExportPasswordsButton:
@@ -1915,16 +1977,16 @@ bool IsFaviconEnabled() {
 - (UIView*)tableView:(UITableView*)tableView
     viewForHeaderInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForHeaderInSection:section];
-  switch ([self.tableViewModel sectionIdentifierForSectionIndex:section]) {
-    case SectionIdentifierSavePasswordsSwitch: {
-      TableViewLinkHeaderFooterView* linkView =
-          base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
-      linkView.delegate = self;
-      break;
-    }
-    default:
-      break;
+
+  if ([self.tableViewModel sectionIdentifierForSectionIndex:section] ==
+      [self sectionForManageAccountLinkHeader]) {
+    // This is the text at the top of the page with a link. Attach as a delegate
+    // to ensure clicks on the link are handled.
+    TableViewLinkHeaderFooterView* linkView =
+        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+    linkView.delegate = self;
   }
+
   return view;
 }
 
@@ -2015,6 +2077,13 @@ bool IsFaviconEnabled() {
            if ([URLCell.cellUniqueIdentifier isEqualToString:itemIdentifier]) {
              DCHECK(attributes);
              [URLCell.faviconView configureWithAttributes:attributes];
+
+             // Value is YES if the favicon is an image not a monogram string.
+             // Storing as the value as an NSNumber object because values in an
+             // NSDictionary must be objects.
+             [self.passwordsLoadedWithFavicons
+                 setValue:(attributes.faviconImage != nil ? @YES : @NO)
+                   forKey:itemIdentifier];
            }
          }];
 }

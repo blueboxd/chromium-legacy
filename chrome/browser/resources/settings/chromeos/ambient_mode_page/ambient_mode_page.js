@@ -14,7 +14,7 @@ import './topic_source_list.js';
 import '../../prefs/prefs.js';
 import '../../controls/settings_radio_group.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -41,8 +41,11 @@ import {AmbientModeTemperatureUnit, AmbientModeTopicSource, TopicSourceItem} fro
  */
 const SettingsAmbientModePageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, PrefsBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      PrefsBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -86,7 +89,7 @@ class SettingsAmbientModePageElement extends
         type: Array,
         value: [
           AmbientModeTopicSource.GOOGLE_PHOTOS,
-          AmbientModeTopicSource.ART_GALLERY
+          AmbientModeTopicSource.ART_GALLERY,
         ],
       },
 
@@ -103,7 +106,7 @@ class SettingsAmbientModePageElement extends
       selectedTemperatureUnit_: {
         type: AmbientModeTemperatureUnit,
         value: AmbientModeTemperatureUnit.UNKNOWN,
-        observer: 'onSelectedTemperatureUnitChanged_'
+        observer: 'onSelectedTemperatureUnitChanged_',
       },
 
       /**
@@ -129,7 +132,7 @@ class SettingsAmbientModePageElement extends
       disableSettings_: {
         type: Boolean,
         computed: 'computeDisableSettings_(prefs.settings.ambient_mode.*)',
-      }
+      },
     };
   }
 

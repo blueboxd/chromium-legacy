@@ -27,8 +27,8 @@
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/navigation_entry.h"
 
@@ -49,10 +49,16 @@ void OnWebAppInstallShowInstallDialog(
     case WebAppInstallFlow::kInstallSite:
       web_app_info->user_display_mode = UserDisplayMode::kStandalone;
       if (base::FeatureList::IsEnabled(
-              features::kDesktopPWAsDetailedInstallDialog)) {
+              webapps::features::kDesktopPWAsDetailedInstallDialog) &&
+          webapps::AppBannerManager::FromWebContents(initiator_web_contents)
+              ->screenshots()
+              .size()) {
         chrome::ShowWebAppDetailedInstallDialog(
             initiator_web_contents, std::move(web_app_info),
-            std::move(web_app_acceptance_callback), iph_state);
+            std::move(web_app_acceptance_callback),
+            webapps::AppBannerManager::FromWebContents(initiator_web_contents)
+                ->screenshots(),
+            iph_state);
         return;
       } else {
         chrome::ShowPWAInstallBubble(

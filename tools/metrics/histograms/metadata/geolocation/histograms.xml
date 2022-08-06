@@ -34,6 +34,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="Geolocation.Header.LocationAge" units="seconds"
     expires_after="M85">
+  <obsolete>
+    Code for recording this histogram was removed in July 2022. Recording this
+    long-expired histogram was slowing down navigations.
+  </obsolete>
   <owner>kcarattini@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -45,6 +49,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Geolocation.Header.PermissionState"
     enum="GeolocationHeaderPermissionState" expires_after="M85">
+  <obsolete>
+    Code for recording this histogram was removed in July 2022. Recording this
+    long-expired histogram was slowing down navigations.
+  </obsolete>
   <owner>kcarattini@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -56,6 +64,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="Geolocation.Header.TimeListening" units="ms"
     expires_after="M85">
+  <obsolete>
+    Code for recording this histogram was removed in July 2022. Recording this
+    long-expired histogram was slowing down navigations.
+  </obsolete>
   <owner>kcarattini@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -205,6 +217,16 @@ chromium-metrics-reviews@google.com.
     duration. This means no position was received within the allowed time from
     the browser process due to e.g. a slow network or an unresponsive system
     location provider.
+  </summary>
+</histogram>
+
+<histogram name="Geolocation.WifiDataProviderCommon.WifiScanTaskTime"
+    units="ms" expires_after="2023-07-15">
+  <owner>reillyg@chromium.org</owner>
+  <owner>deviceapi-team@google.com</owner>
+  <summary>
+    Records the time taken on Windows, macOS and Linux to query the operating
+    system for nearby access points.
   </summary>
 </histogram>
 

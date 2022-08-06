@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 
 #import <MaterialComponents/MaterialActivityIndicator.h>
-#import <MaterialComponents/MaterialTypography.h>
 
 #include "base/check.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -88,7 +87,7 @@ const CGFloat kHorizontalPadding = 16;
     [verticalCenteringView addSubview:_errorImageView];
 
     _textLabel = [[UILabel alloc] init];
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:16];
+    _textLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
     _textLabel.numberOfLines = 0;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     // The label's position will be centered with Auto Layout but this ensures

@@ -11,7 +11,7 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_favicon.js';
 import './passwords_shared.css.js';
 
@@ -25,10 +25,26 @@ import {getTemplate} from './password_list_item.html.js';
 import {PasswordViewPageInteractions, PasswordViewPageUrlParams, recordPasswordViewInteraction} from './password_view.js';
 import {ShowPasswordMixin, ShowPasswordMixinInterface} from './show_password_mixin.js';
 
+
+declare global {
+  interface HTMLElementEventMap {
+    [PASSWORD_MORE_ACTIONS_CLICKED_EVENT_NAME]: PasswordMoreActionsClickedEvent;
+    [PASSWORD_VIEW_PAGE_CLICKED_EVENT_NAME]: PasswordViewPageClickedEvent;
+  }
+}
+
+export type PasswordViewPageClickedEvent = CustomEvent<PasswordListItemElement>;
+
+export const PASSWORD_VIEW_PAGE_CLICKED_EVENT_NAME =
+    'password-view-page-clicked';
+
 export type PasswordMoreActionsClickedEvent = CustomEvent<{
   target: HTMLElement,
   listItem: PasswordListItemElement,
 }>;
+
+export const PASSWORD_MORE_ACTIONS_CLICKED_EVENT_NAME =
+    'password-more-actions-clicked';
 
 export interface PasswordListItemElement {
   $: {
@@ -86,6 +102,11 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
   private shouldShowSubpageButton_: boolean;
   shouldHideActionButtons: boolean;
 
+  override focus() {
+    this.shouldShowSubpageButton_ ? this.$.seePasswordDetails.focus() :
+                                    super.focus();
+  }
+
   private computeShouldShowSubpageButton_(): boolean {
     return !this.shouldHideActionButtons && this.isPasswordViewPageEnabled_;
   }
@@ -109,18 +130,15 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
       return;
     }
     const params = new URLSearchParams();
-    if (this.entry.deviceId !== null) {
-      params.set(
-          PasswordViewPageUrlParams.DEVICE_ID, this.entry.deviceId.toString());
-    }
-    if (this.entry.accountId !== null) {
-      params.set(
-          PasswordViewPageUrlParams.ACCOUNT_ID,
-          this.entry.accountId.toString());
-    }
+    params.set(PasswordViewPageUrlParams.ID, this.entry.id.toString());
     recordPasswordViewInteraction(
         PasswordViewPageInteractions.CREDENTIAL_ROW_CLICKED);
     Router.getInstance().navigateTo(routes.PASSWORD_VIEW, params);
+    this.dispatchEvent(new CustomEvent(PASSWORD_VIEW_PAGE_CLICKED_EVENT_NAME, {
+      bubbles: true,
+      composed: true,
+      detail: this,
+    }));
   }
 
   private onPasswordMoreActionsButtonTap_() {

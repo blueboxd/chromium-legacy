@@ -157,6 +157,27 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::SavedTabGroup::SavedTabGroupColor color) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SavedTabGroup, SavedTabGroupColor,
+                     SAVED_TAB_GROUP_COLOR_UNSPECIFIED,
+                     SAVED_TAB_GROUP_COLOR_ORANGE);
+  switch (color) {
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_UNSPECIFIED);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_GREY);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_BLUE);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_RED);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_YELLOW);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_GREEN);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_PINK);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_PURPLE);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_CYAN);
+    ENUM_CASE(sync_pb::SavedTabGroup, SAVED_TAB_GROUP_COLOR_ORANGE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::SearchEngineSpecifics::ActiveStatus is_active) {
   ASSERT_ENUM_BOUNDS(sync_pb::SearchEngineSpecifics, ActiveStatus,
                      ACTIVE_STATUS_UNSPECIFIED, ACTIVE_STATUS_FALSE);
@@ -719,19 +740,6 @@ const char* ProtoEnumToString(
               WEB_AND_APP_ACTIVITY);
     ENUM_CASE(sync_pb::UserConsentTypes::AssistantActivityControlConsent,
               DEVICE_APPS);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* ProtoEnumToString(
-    sync_pb::WebauthnCredentialSpecifics::PaymentsSupport payments_support) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WebauthnCredentialSpecifics, PaymentsSupport,
-                     NONE, FIRST_AND_THIRD_PARTY);
-  switch (payments_support) {
-    ENUM_CASE(sync_pb::WebauthnCredentialSpecifics, NONE);
-    ENUM_CASE(sync_pb::WebauthnCredentialSpecifics, FIRST_PARTY);
-    ENUM_CASE(sync_pb::WebauthnCredentialSpecifics, FIRST_AND_THIRD_PARTY);
   }
   NOTREACHED();
   return "";

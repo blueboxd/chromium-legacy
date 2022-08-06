@@ -155,8 +155,9 @@ TEST_F(DevicePolicyDecoderTest, DecodeJsonStringAndNormalizeInvalidValue) {
   std::string localized_error = l10n_util::GetStringFUTF8(
       IDS_POLICY_PROTO_PARSING_ERROR, base::UTF8ToUTF16(error));
   EXPECT_EQ(
-      "Policy parsing error: Invalid policy value: The value type doesn't "
-      "match the schema type. (at url)",
+      "Policy parsing error: Invalid policy value: "
+      "Policy type mismatch: expected: \"string\", actual: \"integer\". (at "
+      "url)",
       localized_error);
 }
 
@@ -406,6 +407,21 @@ TEST_F(DevicePolicyDecoderTest, DecodeDeviceEncryptedReportingPipelineEnabled) {
   DecodeDevicePolicyTestHelper(device_policy,
                                key::kDeviceEncryptedReportingPipelineEnabled,
                                std::move(prompt_value));
+}
+
+TEST_F(DevicePolicyDecoderTest, DecodeDeviceAutofillSAMLUsername) {
+  em::ChromeDeviceSettingsProto device_policy;
+
+  DecodeUnsetDevicePolicyTestHelper(device_policy,
+                                    key::kDeviceAutofillSAMLUsername);
+
+  base::Value autofill_saml_username_value("login_hint");
+  device_policy.mutable_saml_settings()
+      ->set_url_parameter_to_autofill_saml_username(
+          autofill_saml_username_value.GetString());
+
+  DecodeDevicePolicyTestHelper(device_policy, key::kDeviceAutofillSAMLUsername,
+                               std::move(autofill_saml_username_value));
 }
 
 }  // namespace policy

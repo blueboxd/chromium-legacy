@@ -58,6 +58,7 @@ struct RequestMetadata {
   ContentOrder content_order = ContentOrder::kUnspecified;
   bool notice_card_acknowledged = false;
   bool autoplay_enabled = false;
+  TabGroupEnabledState tab_group_enabled_state = TabGroupEnabledState::kNone;
   int followed_from_web_page_menu_count = 0;
   std::vector<feedwire::InfoCardTrackingState> info_card_tracking_states;
 };
@@ -70,8 +71,10 @@ struct PersistentMetricsData {
   base::TimeDelta accumulated_time_spent_in_feed;
 };
 
-base::Value PersistentMetricsDataToValue(const PersistentMetricsData& data);
-PersistentMetricsData PersistentMetricsDataFromValue(const base::Value& value);
+base::Value::Dict PersistentMetricsDataToDict(
+    const PersistentMetricsData& data);
+PersistentMetricsData PersistentMetricsDataFromDict(
+    const base::Value::Dict& dict);
 
 class LoadLatencyTimes {
  public:

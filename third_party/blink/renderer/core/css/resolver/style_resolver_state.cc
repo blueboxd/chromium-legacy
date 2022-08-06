@@ -69,27 +69,24 @@ StyleResolverState::StyleResolverState(
                                   : element.ParentOrShadowHostElement()),
       originating_element_style_(style_request.originating_element_style),
       is_for_highlight_(IsHighlightPseudoElement(style_request.pseudo_id)),
-      is_for_custom_highlight_(style_request.pseudo_id ==
-                               PseudoId::kPseudoIdHighlight),
+      uses_highlight_pseudo_inheritance_(
+          ::blink::UsesHighlightPseudoInheritance(style_request.pseudo_id)),
       can_cache_base_style_(blink::CanCacheBaseStyle(style_request)) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
-  if (!parent_style_) {
-    parent_style_ = element_context_.ParentStyle();
+  if (UsesHighlightPseudoInheritance()) {
+    DCHECK(originating_element_style_);
+  } else {
+    if (!parent_style_)
+      parent_style_ = element_context_.ParentStyle();
+    if (!layout_parent_style_)
+      layout_parent_style_ = element_context_.LayoutParentStyle();
   }
-
-  if (!layout_parent_style_)
-    layout_parent_style_ = element_context_.LayoutParentStyle();
 
   if (!layout_parent_style_)
     layout_parent_style_ = parent_style_;
 
   DCHECK(document.IsActive());
-
-  if ((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-       is_for_highlight_) ||
-      is_for_custom_highlight_)
-    DCHECK(originating_element_style_);
 }
 
 StyleResolverState::~StyleResolverState() {
@@ -100,10 +97,7 @@ StyleResolverState::~StyleResolverState() {
 
 bool StyleResolverState::IsInheritedForUnset(
     const CSSProperty& property) const {
-  return property.IsInherited() ||
-         (is_for_highlight_ &&
-          (RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-           is_for_custom_highlight_));
+  return property.IsInherited() || UsesHighlightPseudoInheritance();
 }
 
 void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {

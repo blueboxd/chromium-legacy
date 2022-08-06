@@ -778,7 +778,8 @@ TEST_F(UiControllerTest, SetTtsMessageReEnablesTtsButtonWithNonStickyStateExp) {
           /* onboarding_shown= */ false, /* is_direct_action= */ false,
           /* initial_url= */ "http://a.example.com/path",
           /* is_in_chrome_triggered= */ false,
-          /* is_externally_triggered = */ false));
+          /* is_externally_triggered= */ false,
+          /* skip_autofill_assistant_onboarding = */ false));
   EXPECT_CALL(mock_execution_delegate_, GetTriggerContext())
       .WillRepeatedly(Return(&trigger_context));
   ui_controller_->OnStart(trigger_context);
@@ -935,6 +936,41 @@ TEST_F(UiControllerTest, ShouldPromptActionExpandSheet) {
 
   ui_controller_->SetExpandSheetForPromptAction(true);
   EXPECT_TRUE(ui_controller_->ShouldPromptActionExpandSheet());
+}
+
+TEST_F(UiControllerTest, ShowQrCodeScanUi) {
+  EXPECT_CALL(mock_observer_, OnQrCodeScanUiChanged(NotNull()));
+
+  ui_controller_->ShowQrCodeScanUi(
+      std::make_unique<PromptQrCodeScanProto>(PromptQrCodeScanProto()),
+      base::DoNothing());
+}
+
+TEST_F(UiControllerTest, ClearQrCodeScanUi) {
+  EXPECT_CALL(mock_observer_, OnQrCodeScanUiChanged(nullptr));
+
+  ui_controller_->ClearQrCodeScanUi();
+}
+
+TEST_F(UiControllerTest, OnQrCodeScanFinished) {
+  base::MockCallback<base::OnceCallback<void(
+      const ClientStatus&, const absl::optional<ValueProto>&)>>
+      callback;
+  EXPECT_CALL(callback, Run)
+      .WillOnce([&](const ClientStatus& client_status,
+                    const absl::optional<ValueProto>& value) {
+        EXPECT_TRUE(client_status.ok());
+        EXPECT_EQ(value->strings().values(0),
+                  std::string("QR_CODE_SCAN_RESULT"));
+      });
+
+  ui_controller_->ShowQrCodeScanUi(
+      std::make_unique<PromptQrCodeScanProto>(PromptQrCodeScanProto()),
+      callback.Get());
+  ui_controller_->OnQrCodeScanFinished(
+      ClientStatus(ACTION_APPLIED),
+      SimpleValue(std::string("QR_CODE_SCAN_RESULT"),
+                  /* is_client_side_only= */ true));
 }
 
 TEST_F(UiControllerTest, SetGenericUi) {

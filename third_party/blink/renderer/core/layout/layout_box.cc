@@ -799,6 +799,14 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   if (IsCustomItem())
     GetCustomLayoutChild()->styleMap()->UpdateStyle(GetDocument(), StyleRef());
 
+  if (diff.NeedsPaintInvalidation()) {
+    if (const AtomicString& old_anchor_scroll =
+            old_style ? old_style->AnchorScroll() : g_null_atom;
+        StyleRef().AnchorScroll() != old_anchor_scroll) {
+      SetNeedsPaintPropertyUpdate();
+    }
+  }
+
   // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
   DCHECK(!IsInline() || IsAtomicInlineLevel());
 }
@@ -987,8 +995,10 @@ void LayoutBox::UpdateFromStyle() {
                                ShouldApplyPaintContainment()) &&
                               RespectsCSSOverflow();
   if (should_clip_overflow != HasNonVisibleOverflow()) {
-    if (GetScrollableArea())
+    if (GetScrollableArea()) {
       GetScrollableArea()->InvalidateAllStickyConstraints();
+      GetScrollableArea()->InvalidateAllAnchorPositionedLayers();
+    }
     // The overflow clip paint property depends on whether overflow clip is
     // present so we need to update paint properties if this changes.
     SetNeedsPaintPropertyUpdate();
@@ -1265,7 +1275,7 @@ void LayoutBox::UpdateAfterLayout() {
 
 bool LayoutBox::ShouldUseAutoIntrinsicSize() const {
   DisplayLockContext* context = GetDisplayLockContext();
-  return context && context->IsAuto() && context->IsLocked();
+  return context && context->IsLocked();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
@@ -2490,9 +2500,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
   if (!MayIntersect(result, hit_test_location, accumulated_offset))
     return false;
 
-  bool should_hit_test_self = IsInSelfHitTestingPhase(phase);
-
-  if (should_hit_test_self &&
+  if (phase == HitTestPhase::kForeground && !HasSelfPaintingLayer() &&
       HitTestOverflowControl(result, hit_test_location, accumulated_offset))
     return true;
 
@@ -2525,7 +2533,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     return false;
 
   // Now hit test ourselves.
-  if (should_hit_test_self &&
+  if (IsInSelfHitTestingPhase(phase) &&
       VisibleToHitTestRequest(result.GetHitTestRequest())) {
     PhysicalRect bounds_rect;
     if (UNLIKELY(result.GetHitTestRequest().IsHitTestVisualOverflow())) {
@@ -2906,7 +2914,10 @@ PhysicalRect LayoutBox::OverflowClipRect(
 
     // Videos need to be pre-snapped so that they line up with the
     // display_rect and can enable hardware overlays.
-    if (IsVideo())
+    // Embedded objects are always sized to fit the content rect, but they
+    // could overflow by 1px due to pre-snapping. Adjust clip rect to
+    // match pre-snapped box as a special case.
+    if (IsVideo() || IsLayoutEmbeddedContent())
       clip_rect = LayoutReplaced::PreSnappedRectForPersistentSizing(clip_rect);
 
     if (HasNonVisibleOverflow()) {
@@ -3151,43 +3162,6 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
       LayoutUnit(logical_height_length.Value()));
 }
 
-void LayoutBox::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
-                                   TransformState& transform_state,
-                                   MapCoordinatesFlags mode) const {
-  NOT_DESTROYED();
-  bool is_fixed_pos = StyleRef().GetPosition() == EPosition::kFixed;
-
-  // If this box has a transform or contains paint, it acts as a fixed position
-  // container for fixed descendants, and may itself also be fixed position. So
-  // propagate 'fixed' up only if this box is fixed position.
-  if (CanContainFixedPositionObjects() && !is_fixed_pos)
-    mode &= ~kIsFixed;
-  else if (is_fixed_pos)
-    mode |= kIsFixed;
-
-  LayoutBoxModelObject::MapLocalToAncestor(ancestor, transform_state, mode);
-}
-
-void LayoutBox::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
-                                   TransformState& transform_state,
-                                   MapCoordinatesFlags mode) const {
-  NOT_DESTROYED();
-  if (this == ancestor)
-    return;
-
-  bool is_fixed_pos = StyleRef().GetPosition() == EPosition::kFixed;
-
-  // If this box has a transform or contains paint, it acts as a fixed position
-  // container for fixed descendants, and may itself also be fixed position. So
-  // propagate 'fixed' up only if this box is fixed position.
-  if (CanContainFixedPositionObjects() && !is_fixed_pos)
-    mode &= ~kIsFixed;
-  else if (is_fixed_pos)
-    mode |= kIsFixed;
-
-  LayoutBoxModelObject::MapAncestorToLocal(ancestor, transform_state, mode);
-}
-
 PhysicalOffset LayoutBox::OffsetFromContainerInternal(
     const LayoutObject* o,
     bool ignore_scroll_offset) const {
@@ -3206,6 +3180,13 @@ PhysicalOffset LayoutBox::OffsetFromContainerInternal(
   if (IsOutOfFlowPositioned() && o->IsLayoutInline() &&
       o->CanContainOutOfFlowPositionedElement(StyleRef().GetPosition())) {
     offset += To<LayoutInline>(o)->OffsetForInFlowPositionedInline(*this);
+  }
+
+  if (AnchorScrollObject()) {
+    LayoutBox::AnchorScrollData data =
+        To<LayoutBox>(this)->ComputeAnchorScrollData();
+    offset -=
+        PhysicalOffset::FromVector2dFFloor(data.accumulated_scroll_offset);
   }
 
   return offset;
@@ -3845,16 +3826,11 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     return true;
   }
 
-  if (auto* layout_view = DynamicTo<LayoutView>(container)) {
-    bool use_fixed_position_adjustment =
-        position == EPosition::kFixed && container == ancestor;
-    return layout_view->MapToVisualRectInAncestorSpaceInternal(
-        ancestor, transform_state, use_fixed_position_adjustment ? kIsFixed : 0,
-        visual_rect_flags);
-  } else {
-    return container->MapToVisualRectInAncestorSpaceInternal(
-        ancestor, transform_state, visual_rect_flags);
-  }
+  if (IsFixedPositioned() && container == ancestor && container->IsLayoutView())
+    transform_state.Move(To<LayoutView>(container)->OffsetForFixedPosition());
+
+  return container->MapToVisualRectInAncestorSpaceInternal(
+      ancestor, transform_state, visual_rect_flags);
 }
 
 void LayoutBox::InflateVisualRectForFilter(
@@ -8107,6 +8083,77 @@ BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
 
 bool LayoutBox::IsFixedToView() const {
   return IsFixedPositioned() && Container() == View();
+}
+
+PhysicalRect LayoutBox::ComputeStickyConstrainingRect() const {
+  NOT_DESTROYED();
+  DCHECK(IsScrollContainer());
+  PhysicalRect constraining_rect(OverflowClipRect(LayoutPoint()));
+  constraining_rect.Move(PhysicalOffset(-BorderLeft() + PaddingLeft(),
+                                        -BorderTop() + PaddingTop()));
+  constraining_rect.ContractEdges(LayoutUnit(), PaddingLeft() + PaddingRight(),
+                                  PaddingTop() + PaddingBottom(), LayoutUnit());
+  return constraining_rect;
+}
+
+const LayoutObject* LayoutBox::AnchorScrollObject() const {
+  if (!StyleRef().AnchorScroll())
+    return nullptr;
+
+  if (StyleRef().GetPosition() != EPosition::kAbsolute &&
+      StyleRef().GetPosition() != EPosition::kFixed) {
+    return nullptr;
+  }
+
+  NGPhysicalFragmentList containing_block_fragments =
+      ContainingBlock()->PhysicalFragments();
+  if (containing_block_fragments.IsEmpty())
+    return nullptr;
+
+  // TODO(crbug.com/1309178): Fix it when the containing block is fragmented.
+  const NGPhysicalAnchorQuery* anchor_query =
+      containing_block_fragments.front().AnchorQuery();
+  if (!anchor_query)
+    return nullptr;
+
+  if (const NGPhysicalFragment* fragment =
+          anchor_query->Fragment(StyleRef().AnchorScroll())) {
+    return fragment->GetLayoutObject();
+  }
+  return nullptr;
+}
+
+const LayoutBox* LayoutBox::AnchorScrollContainer() const {
+  if (const LayoutObject* object = AnchorScrollObject()) {
+    const LayoutBox* scroller = object->ContainingScrollContainer();
+    if (scroller != ContainingScrollContainer())
+      return scroller;
+  }
+  return nullptr;
+}
+
+LayoutBox::AnchorScrollData LayoutBox::ComputeAnchorScrollData() const {
+  if (!AnchorScrollContainer())
+    return AnchorScrollData();
+
+  const PaintLayer* inner_most_scroll_container_layer =
+      AnchorScrollContainer()->Layer();
+  const PaintLayer* outer_most_scroll_container_layer =
+      inner_most_scroll_container_layer;
+  gfx::Vector2dF accumulated_scroll_offset(0, 0);
+  gfx::Vector2d accumulated_scroll_origin(0, 0);
+  for (const PaintLayer* layer = inner_most_scroll_container_layer; layer;
+       layer = layer->ContainingScrollContainerLayer()) {
+    if (layer == Layer()->ContainingScrollContainerLayer())
+      break;
+    accumulated_scroll_offset += layer->GetScrollableArea()->GetScrollOffset();
+    accumulated_scroll_origin +=
+        layer->GetScrollableArea()->ScrollOrigin().OffsetFromOrigin();
+    outer_most_scroll_container_layer = layer;
+  }
+
+  return {inner_most_scroll_container_layer, outer_most_scroll_container_layer,
+          accumulated_scroll_offset, accumulated_scroll_origin};
 }
 
 }  // namespace blink

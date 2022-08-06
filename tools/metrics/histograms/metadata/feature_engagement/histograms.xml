@@ -240,7 +240,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -461,6 +461,18 @@ chromium-metrics-reviews@google.com.
     When {TutorialID} button is shown from an IPHLink, whether the user clicks
     to start the tutorial. Only logged on desktop platforms when the user either
     clicks or dismisses the FeaturePromo.
+  </summary>
+  <token key="TutorialID" variants="TutorialID"/>
+</histogram>
+
+<histogram name="Tutorial{TutorialID}.StartedFromWhatsNewPage"
+    enum="BooleanSuccess" expires_after="2022-12-31">
+  <owner>dpenning@chromium.org</owner>
+  <owner>dfried@chromium.org</owner>
+  <summary>
+    The count of successful starts of the tutorial when {TutorialID} button is
+    clicked on the whats new page (called by the Tutorial BrowserCommand). A
+    false value correlates to a failure to start the tutorial.
   </summary>
   <token key="TutorialID" variants="TutorialID"/>
 </histogram>

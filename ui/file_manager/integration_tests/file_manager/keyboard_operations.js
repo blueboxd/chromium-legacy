@@ -169,9 +169,7 @@ async function renameFile(appId, oldName, newName) {
   const textInput = '#file-list .table-row[renaming] input.rename';
 
   // Select the file.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('selectFile', appId, [oldName]),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, oldName);
 
   // Press Ctrl+Enter key to rename the file.
   const key = ['#file-list', 'Enter', true, false, false];
@@ -345,8 +343,9 @@ testcase.renameRemovableWithKeyboardOnFileList = async () => {
 
   // Wait for partitions to show up.
   const expectedRows = [
-    ['partition-1', '--', 'ntfs', ''], ['partition-2', '--', 'ext4', ''],
-    ['partition-3', '--', 'vfat', '']
+    ['partition-1', '--', 'ntfs', ''],
+    ['partition-2', '--', 'ext4', ''],
+    ['partition-3', '--', 'vfat', ''],
   ];
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
@@ -544,9 +543,7 @@ testcase.keyboardDisableCopyWhenDialogDisplayed = async () => {
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.hello]);
 
   // Select a file for deletion.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.hello.nameText);
   await remoteCall.waitForElement(appId, '.table-row[selected]');
 
   // Click delete button in the toolbar.

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-  'common.js', '../../common/testing/assert_additions.js',
-  '../../common/testing/e2e_test_base.js'
+  'common.js',
+  '../../common/testing/assert_additions.js',
+  '../../common/testing/e2e_test_base.js',
 ]);
 
 /**
@@ -39,6 +40,16 @@ ChromeVoxE2ETest = class extends E2ETestBase {
 
     super.testGenPreambleCommon(
         'kChromeVoxExtensionId', ChromeVoxE2ETest.prototype.failOnConsoleError);
+  }
+
+  /**@override */
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule('ChromeVox', '/chromevox/background/chromevox.js');
+    await importModule(
+        'BrailleInterface', '/chromevox/common/braille/braille_interface.js');
+    await importModule(
+        'NavBraille', '/chromevox/common/braille/nav_braille.js');
   }
 };
 

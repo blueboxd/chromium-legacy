@@ -79,6 +79,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -390,7 +391,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
         }));
     run_loop.Run();
     ui::MenuModel* menu_ptr = menu.get();
-    int index = 0;
+    size_t index = 0;
     return ui::MenuModel::GetModelAndIndexForCommandId(command_id, &menu_ptr,
                                                        &index);
   }
@@ -1603,7 +1604,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
   EXPECT_EQ(1, tab_strip->active_index());
 
   // Close the web contents.
-  tab_strip->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tab_strip->CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   // The status should now be set to closed.
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
 }
@@ -1694,10 +1695,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
       last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
   EXPECT_TRUE(extension);
   apps::AppServiceProxyFactory::GetForProfile(profile())->LaunchAppWithParams(
-      apps::AppLaunchParams(extension->id(),
-                            apps::LaunchContainer::kLaunchContainerTab,
-                            WindowOpenDisposition::NEW_WINDOW,
-                            apps::mojom::LaunchSource::kFromTest));
+      apps::AppLaunchParams(
+          extension->id(), apps::LaunchContainer::kLaunchContainerTab,
+          WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest));
 
   EXPECT_EQ(++browsers, BrowserShortcutMenuItemCount(false));
   EXPECT_EQ(++tabs, BrowserShortcutMenuItemCount(true));
@@ -2362,7 +2362,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
   app_browser->tab_strip_model()->CloseWebContentsAt(0,
-                                                     TabStripModel::CLOSE_NONE);
+                                                     TabCloseTypes::CLOSE_NONE);
   // Make sure that the app is really gone.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(id)->status);
@@ -2578,12 +2578,12 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicy) {
       ->FlushMojoCallsForTesting();
 
   // Set policy to pin the web app.
-  base::DictionaryValue entry;
-  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
-               base::Value(app_url.spec()));
-  base::ListValue policy_value;
+  base::Value::Dict entry;
+  entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, app_url.spec());
+  base::Value::List policy_value;
   policy_value.Append(std::move(entry));
-  profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps, policy_value);
+  profile()->GetPrefs()->SetList(prefs::kPolicyPinnedLauncherApps,
+                                 std::move(policy_value));
 
   // Check web app is pinned and fixed.
   ASSERT_EQ(shelf_model()->item_count(), 2);
@@ -2607,12 +2607,12 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyUpdate) {
       web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 
   // Set policy to pin the web app.
-  base::DictionaryValue entry;
-  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
-               base::Value(app_url.spec()));
-  base::ListValue policy_value;
+  base::Value::Dict entry;
+  entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, app_url.spec());
+  base::Value::List policy_value;
   policy_value.Append(std::move(entry));
-  profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps, policy_value);
+  profile()->GetPrefs()->SetList(prefs::kPolicyPinnedLauncherApps,
+                                 std::move(policy_value));
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->FlushMojoCallsForTesting();
 
@@ -2648,12 +2648,12 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyNonExistentApp) {
       web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, app_url);
 
   // Set policy to pin the non existent web app.
-  base::DictionaryValue entry;
-  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
-               base::Value(app_url.spec()));
-  base::ListValue policy_value;
+  base::Value::Dict entry;
+  entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, app_url.spec());
+  base::Value::List policy_value;
   policy_value.Append(std::move(entry));
-  profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps, policy_value);
+  profile()->GetPrefs()->SetList(prefs::kPolicyPinnedLauncherApps,
+                                 std::move(policy_value));
 
   // Check web app policy is ignored.
   EXPECT_EQ(shelf_model()->item_count(), 1);
@@ -2672,20 +2672,20 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppInstallForceList) {
   install_observer.BeginListening();
 
   {
-    base::DictionaryValue entry;
-    entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
-                 base::Value(kAppUrl));
-    base::ListValue policy_value;
+    base::Value::Dict entry;
+    entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, kAppUrl);
+    base::Value::List policy_value;
     policy_value.Append(std::move(entry));
-    profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps,
-                               std::move(policy_value));
+    profile()->GetPrefs()->SetList(prefs::kPolicyPinnedLauncherApps,
+                                   std::move(policy_value));
   }
   {
-    base::Value item(base::Value::Type::DICTIONARY);
-    item.SetKey(web_app::kUrlKey, base::Value(kAppUrl));
-    base::Value list(base::Value::Type::LIST);
+    base::Value::Dict item;
+    item.Set(web_app::kUrlKey, kAppUrl);
+    base::Value::List list;
     list.Append(std::move(item));
-    profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+    profile()->GetPrefs()->SetList(prefs::kWebAppInstallForceList,
+                                   std::move(list));
   }
 
   const web_app::AppId app_id = install_observer.Wait();
@@ -2783,10 +2783,11 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, LaunchAppFromContextMenu) {
   ASSERT_TRUE(shelf_menu_model_adapter->IsShowingMenu());
 
   // Click at the menu item whose command is ash::MENU_NEW_WINDOW.
-  event_generator.MoveMouseTo(shelf_menu_model_adapter->root_for_testing()
-                                  ->GetMenuItemByID(ash::MENU_NEW_WINDOW)
-                                  ->GetBoundsInScreen()
-                                  .CenterPoint());
+  event_generator.MoveMouseTo(
+      shelf_menu_model_adapter->root_for_testing()
+          ->GetMenuItemByID(ash::APP_CONTEXT_MENU_NEW_WINDOW)
+          ->GetBoundsInScreen()
+          .CenterPoint());
   event_generator.ClickLeftButton();
 
   // Verify that hotseat is hidden.
@@ -3056,7 +3057,7 @@ IN_PROC_BROWSER_TEST_P(PerDeskShelfAppBrowserTest, AppMenus) {
   // per-desk shelf feature is enabled or not.
   auto* model_adapter = ClickBrowserShelfButtonAndGetMenu();
   const bool is_per_desk_shelf_enabled = GetParam();
-  constexpr int kTitleAndSeparatorCount = 2;
+  constexpr size_t kTitleAndSeparatorCount = 2;
   if (is_per_desk_shelf_enabled) {
     EXPECT_EQ(2 + kTitleAndSeparatorCount,
               model_adapter->model()->GetItemCount());
@@ -3082,17 +3083,8 @@ IN_PROC_BROWSER_TEST_P(PerDeskShelfAppBrowserTest, AppMenus) {
 class FilesSystemWebAppPinnedTest : public ShelfPlatformAppBrowserTest {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {ash::features::kFilesSWA, features::kEnableAllSystemWebApps}, {});
+    scoped_feature_list_.InitAndEnableFeature(ash::features::kFilesSWA);
     ShelfPlatformAppBrowserTest::SetUp();
-  }
-
-  void WaitForSystemAppsSynchronized() {
-    base::RunLoop run_loop;
-    ash::SystemWebAppManager::Get(browser()->profile())
-        ->on_apps_synchronized()
-        .Post(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
   }
 
  private:
@@ -3101,15 +3093,17 @@ class FilesSystemWebAppPinnedTest : public ShelfPlatformAppBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FilesSystemWebAppPinnedTest, EnterpriseMigration) {
   // Setup: the customer pins Files Chrome App (ID:hhaomji...).
-  base::DictionaryValue entry;
-  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
-               base::Value(file_manager::kFileManagerAppId));
-  base::ListValue policy_value;
+  base::Value::Dict entry;
+  entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
+            file_manager::kFileManagerAppId);
+  base::Value::List policy_value;
   policy_value.Append(std::move(entry));
-  profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps, policy_value);
+  profile()->GetPrefs()->SetList(prefs::kPolicyPinnedLauncherApps,
+                                 std::move(policy_value));
 
   // Ensure shelf is updated.
-  WaitForSystemAppsSynchronized();
+  ash::SystemWebAppManager::Get(browser()->profile())
+      ->InstallSystemAppsForTesting();
   web_app::WebAppProvider::GetForTest(browser()->profile())
       ->install_manager()
       .NotifyWebAppInstalledWithOsHooks(file_manager::kFileManagerSwaAppId);

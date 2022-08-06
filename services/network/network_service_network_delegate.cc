@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/domain_reliability/monitor.h"
@@ -186,21 +187,13 @@ void NetworkServiceNetworkDelegate::OnPACScriptError(
 bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const net::URLRequest& request,
     net::CookieAccessResultList& maybe_included_cookies,
-    net::CookieAccessResultList& excluded_cookies,
-    bool allowed_from_caller) {
-  if (!allowed_from_caller) {
-    ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-                      maybe_included_cookies, excluded_cookies);
-    return false;
-  }
-
+    net::CookieAccessResultList& excluded_cookies) {
   if (!network_context_->cookie_manager()
            ->cookie_settings()
            .AnnotateAndMoveUserBlockedCookies(
                request.url(), request.site_for_cookies(),
-               request.isolation_info().top_frame_origin().has_value()
-                   ? &request.isolation_info().top_frame_origin().value()
-                   : nullptr,
+               base::OptionalOrNullptr(
+                   request.isolation_info().top_frame_origin()),
                maybe_included_cookies, excluded_cookies)) {
     // CookieSettings has already moved and annotated the cookies.
     return false;
@@ -229,10 +222,8 @@ bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     const net::URLRequest& request,
     const net::CanonicalCookie& cookie,
-    net::CookieOptions* options,
-    bool allowed_from_caller) {
+    net::CookieOptions* options) {
   bool allowed =
-      allowed_from_caller &&
       network_context_->cookie_manager()->cookie_settings().IsCookieAccessible(
           cookie, request.url(), request.site_for_cookies(),
           request.isolation_info().top_frame_origin());
@@ -289,7 +280,8 @@ bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
+                                 QueryReason::kSiteStorage);
 }
 
 void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
@@ -321,7 +313,8 @@ bool NetworkServiceNetworkDelegate::OnCanSetReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
+                                 QueryReason::kSiteStorage);
 }
 
 bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
@@ -329,7 +322,8 @@ bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
+                                 QueryReason::kSiteStorage);
 }
 
 int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(

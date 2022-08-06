@@ -647,10 +647,6 @@ body.timer-10s #open-timer-panel {
   background-image: url(/images/camera_button_timer_off.svg);
 }
 
-body.scan #open-timer-panel {
-  display: none;
-}
-
 body.grid #open-grid-panel {
   background-image: url(/images/camera_button_grid_on.svg);
 }
@@ -659,7 +655,13 @@ body.grid #open-grid-panel {
   background-image: url(/images/camera_button_grid_off.svg);
 }
 
-body.scan #open-grid-panel {
+body.scan #open-grid-panel,
+body.scan #open-timer-panel,
+body.scan #open-mirror-panel:disabled,
+body.scan #settings-photo-aspect-ratio,
+body.scan #settings-photo-resolution,
+body.scan #settings-video-resolution,
+body.scan #preview-grid {
   display: none;
 }
 
@@ -669,10 +671,6 @@ body.mirror #open-mirror-panel {
 
 #open-mirror-panel {
   background-image: url(/images/camera_button_mirror_off.svg);
-}
-
-body.scan #open-mirror-panel:disabled {
-  display: none;
 }
 
 #toggle-mic:checked {
@@ -714,6 +712,9 @@ body.should-handle-intent-result #open-settings {
   right: 0;
   top: 0;
   visibility: hidden;
+  /* Create stacking context for every view to prevent elements in former views
+  from covering latter views. */
+  z-index: 0;
 }
 
 body.view-camera #view-camera,
@@ -1251,12 +1252,6 @@ html[dir=rtl] .menu-header .icon {
   background-image: url(/images/settings_timer_duration.svg);
 }
 
-body.scan #settings-photo-aspect-ratio,
-body.scan #settings-photo-resolution,
-body.scan #settings-video-resolution {
-  display: none;
-}
-
 #settings-photo-resolution .icon,
 #settings-video-resolution .icon {
   background-image: url(/images/settings_resolution.svg);
@@ -1283,7 +1278,6 @@ body.scan #settings-video-resolution {
   align-items: center;
   display: flex;
   justify-content: center;
-  z-index: 1;
 }
 
 #view-warning {
@@ -1384,7 +1378,6 @@ body:not(.mode-switching):not(.streaming).view-expert-settings .spinner {
 
 #view-splash {
   background: no-repeat center url(/images/camera_mode_photo.svg), var(--grey-900);
-  z-index: 2;
 }
 
 .hidden {
@@ -1393,6 +1386,10 @@ body:not(.mode-switching):not(.streaming).view-expert-settings .spinner {
 
 .invisible {
   visibility: hidden;
+}
+
+.disabled {
+  opacity: 0.38;
 }
 
 .panel {

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/tpm/install_attributes.h"
 #include "base/callback_forward.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
@@ -20,8 +19,10 @@
 #include "chrome/browser/chromeos/app_mode/chrome_kiosk_external_loader_broker.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/chromeos/extensions/external_cache_delegate.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "components/account_id/account_id.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/common/extension_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -107,7 +108,11 @@ class KioskAppManager : public KioskAppManagerBase,
   static void ResetForTesting();
 
   // Registers kiosk app entries in local state.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Registers kiosk app prefs that will be attached to a user profile. It would
+  // be applied to Kiosk, because a Kiosk session has a special user profile.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static bool IsConsumerKioskEnabled();
 

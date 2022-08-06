@@ -4,7 +4,7 @@
 
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './cups_printers.js';
 
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -110,7 +110,7 @@ class OsSettingsPrintingPageElement extends OsSettingsPrintingPageElementBase {
   /** @private */
   onOpenScanningApp_() {
     this.browserProxy_.openScanningApp();
-    recordSettingChange(chromeos.settings.mojom.Setting.kScanningApp);
+    recordSettingChange(Setting.kScanningApp);
   }
 }
 

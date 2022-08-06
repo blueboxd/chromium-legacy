@@ -192,10 +192,6 @@ class ASH_EXPORT AppListControllerImpl
   AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
-  void NotifySearchResultsForLogging(
-      const std::u16string& raw_query,
-      const SearchResultIdWithPositionIndices& results,
-      int position_index) override;
   void MaybeIncreaseSuggestedContentInfoShownCount() override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowSuggestedContentInfo() const override;
@@ -254,11 +250,10 @@ class ASH_EXPORT AppListControllerImpl
   void OnWallpaperPreviewEnded() override;
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(
-      chromeos::assistant::AssistantStatus status) override;
+  void OnAssistantStatusChanged(assistant::AssistantStatus status) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
-      chromeos::assistant::AssistantAllowedState state) override;
+      assistant::AssistantAllowedState state) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -411,9 +406,6 @@ class ASH_EXPORT AppListControllerImpl
   // changes. `show_home_launcher` - whether the home launcher should be shown.
   // `animate` - whether the transition should be animated.
   void UpdateForOverviewModeChange(bool show_home_launcher, bool animate);
-
-  // Returns the length of the most recent query.
-  int GetLastQueryLength();
 
   // Shuts down the AppListControllerImpl, removing itself as an observer.
   void Shutdown();

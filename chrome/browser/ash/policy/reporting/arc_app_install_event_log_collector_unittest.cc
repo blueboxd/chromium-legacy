@@ -125,7 +125,7 @@ class ArcAppInstallEventLogCollectorTest : public testing::Test {
     arc_app_test_.SetUp(profile_.get());
 
     network_handler_test_helper_ =
-        std::make_unique<chromeos::NetworkHandlerTestHelper>();
+        std::make_unique<ash::NetworkHandlerTestHelper>();
     network_handler_test_helper_->service_test()->AddService(
         kEthernetServicePath, "eth1_guid", "eth1", shill::kTypeEthernet,
         shill::kStateOffline, true /* visible */);
@@ -180,8 +180,7 @@ class ArcAppInstallEventLogCollectorTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
-      network_handler_test_helper_;
+  std::unique_ptr<ash::NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<TestingProfile> profile_;
   FakeAppInstallEventLogCollectorDelegate delegate_;
   TestingPrefServiceSimple pref_service_;
@@ -455,6 +454,20 @@ TEST_F(ArcAppInstallEventLogCollectorTest, InstallPackages) {
   EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
 
   EXPECT_EQ(0, delegate()->add_for_all_count());
+}
+
+TEST_F(ArcAppInstallEventLogCollectorTest, OnPlayStoreLocalPolicySet) {
+  std::unique_ptr<ArcAppInstallEventLogCollector> collector =
+      std::make_unique<ArcAppInstallEventLogCollector>(delegate(), profile(),
+                                                       packages_);
+  base::Time time = base::Time::Now();
+  collector->OnPlayStoreLocalPolicySet(time, packages_);
+  ASSERT_EQ(1, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::PLAYSTORE_LOCAL_POLICY_SET,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(TimeToTimestamp(time), delegate()->requests()[0].event.timestamp());
+  EXPECT_EQ(kPackageName, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
 }
 
 }  // namespace policy

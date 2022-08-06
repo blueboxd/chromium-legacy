@@ -135,10 +135,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
       const absl::optional<LocalFrameToken>& opener_frame) override;
-  void DidChangeIframeAttributes(
-      const blink::FrameToken& child_frame_token,
-      network::mojom::blink::ContentSecurityPolicyPtr parsed_csp_attribute,
-      bool anonymous) override;
+  void DidChangeIframeAttributes(const blink::FrameToken& child_frame_token,
+                                 mojom::blink::IframeAttributesPtr) override;
   void DidChangeFramePolicy(const blink::FrameToken& child_frame_token,
                             const FramePolicy& frame_policy) override;
   void CapturePaintPreviewOfSubframe(
@@ -165,6 +163,23 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
                        const WTF::String& srcdoc_value) override;
   void ReceivedDelegatedCapability(
       blink::mojom::DelegatedCapability delegated_capability) override;
+  void CreatePortal(
+      mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal,
+      mojo::PendingAssociatedRemote<mojom::blink::PortalClient> client,
+      mojom::blink::RemoteFrameInterfacesFromRendererPtr
+          remote_frame_interfaces,
+      CreatePortalCallback callback) override;
+  void AdoptPortal(const PortalToken& portal_token,
+                   mojom::blink::RemoteFrameInterfacesFromRendererPtr
+                       remote_frame_interfaces,
+                   AdoptPortalCallback callback) override;
+  void CreateFencedFrame(
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
+      mojom::blink::FencedFrameMode,
+      mojom::blink::RemoteFrameInterfacesFromRendererPtr
+          remote_frame_interfaces,
+      const RemoteFrameToken& frame_token,
+      const base::UnguessableToken& devtools_frame_token) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

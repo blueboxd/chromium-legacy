@@ -39,6 +39,8 @@ namespace feed {
 namespace test {
 namespace {
 
+using ::feedwire::webfeed::WebFeedChangeReason;
+
 const int kTestInfoCardType1 = 101;
 const int kTestInfoCardType2 = 8888;
 const int kMinimumViewIntervalSeconds = 5 * 60;
@@ -1126,12 +1128,30 @@ TEST_F(FeedApiTest, ReportOpenInNewTabAction) {
 
   base::UserActionTester user_actions;
 
-  stream_->ReportOpenInNewTabAction(
+  stream_->ReportOpenAction(
       GURL(), surface.GetStreamType(),
-      surface.initial_state->updated_slices(1).slice().slice_id());
+      surface.initial_state->updated_slices(1).slice().slice_id(),
+      OpenActionType::kNewTab);
 
   EXPECT_EQ(1, user_actions.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
+}
+
+TEST_F(FeedApiTest, ReportOpenInNewTabInGroupAction) {
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
+                          base::DoNothing());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  base::UserActionTester user_actions;
+
+  stream_->ReportOpenAction(
+      GURL(), surface.GetStreamType(),
+      surface.initial_state->updated_slices(1).slice().slice_id(),
+      OpenActionType::kNewTabInGroup);
+
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "ContentSuggestions.Feed.CardAction.OpenInNewTabInGroup"));
 }
 
 TEST_F(FeedApiTest, HasUnreadContentAfterLoadFromNetwork) {
@@ -1238,7 +1258,8 @@ TEST_F(FeedApiTest, FollowForcesRefreshWhileSurfaceAttached_NotWorking) {
   WebFeedPageInformation page_info =
       MakeWebFeedPageInformation("http://dogs.com");
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
-  stream_->subscriptions().FollowWebFeed(page_info, callback.Bind());
+  stream_->subscriptions().FollowWebFeed(
+      page_info, WebFeedChangeReason::WEB_PAGE_MENU, callback.Bind());
 
   ASSERT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback.RunAndGetResult().request_status);
@@ -1271,7 +1292,8 @@ TEST_F(FeedApiTest, FollowForcesRefresh) {
   WebFeedPageInformation page_info =
       MakeWebFeedPageInformation("http://dogs.com");
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
-  stream_->subscriptions().FollowWebFeed(page_info, callback.Bind());
+  stream_->subscriptions().FollowWebFeed(
+      page_info, WebFeedChangeReason::WEB_PAGE_MENU, callback.Bind());
 
   ASSERT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback.RunAndGetResult().request_status);
@@ -2633,8 +2655,10 @@ TEST_F(FeedApiTest, WasUrlRecentlyNavigatedFromFeed) {
   EXPECT_FALSE(stream_->WasUrlRecentlyNavigatedFromFeed(url1));
   EXPECT_FALSE(stream_->WasUrlRecentlyNavigatedFromFeed(url2));
 
-  stream_->ReportOpenAction(url1, kForYouStream, "slice");
-  stream_->ReportOpenInNewTabAction(url2, kForYouStream, "slice");
+  stream_->ReportOpenAction(url1, kForYouStream, "slice",
+                            OpenActionType::kDefault);
+  stream_->ReportOpenAction(url2, kForYouStream, "slice",
+                            OpenActionType::kNewTab);
 
   EXPECT_TRUE(stream_->WasUrlRecentlyNavigatedFromFeed(url1));
   EXPECT_TRUE(stream_->WasUrlRecentlyNavigatedFromFeed(url2));
@@ -2647,7 +2671,8 @@ TEST_F(FeedApiTest, WasUrlRecentlyNavigatedFromFeedMaxHistory) {
     urls.emplace_back("https://someurl" + base::NumberToString(i));
 
   for (const GURL& url : urls)
-    stream_->ReportOpenAction(url, kForYouStream, "slice");
+    stream_->ReportOpenAction(url, kForYouStream, "slice",
+                              OpenActionType::kDefault);
 
   EXPECT_FALSE(stream_->WasUrlRecentlyNavigatedFromFeed(urls[0]));
   for (size_t i = 1; i < urls.size(); ++i) {
@@ -3340,7 +3365,8 @@ TEST_F(FeedApiTest, FeedCloseRefresh_Open) {
   WaitForIdleTaskQueue();
 
   // Opening should cause a refresh to be scheduled.
-  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "");
+  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "",
+                            OpenActionType::kDefault);
   EXPECT_EQ(base::Minutes(30),
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
@@ -3357,8 +3383,8 @@ TEST_F(FeedApiTest, FeedCloseRefresh_OpenInNewTab) {
   WaitForIdleTaskQueue();
 
   // Should cause a refresh to be scheduled.
-  stream_->ReportOpenInNewTabAction(GURL("http://example.com"), kForYouStream,
-                                    "");
+  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "",
+                            OpenActionType::kNewTab);
   EXPECT_EQ(base::Minutes(30),
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
@@ -3408,11 +3434,37 @@ TEST_F(FeedApiTest, FeedCloseRefresh_FeedViewed) {
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
 
-  // Only the first view should cause the schedule to be set.
+  // Only a surface's first view should cause the schedule to be set.
   refresh_scheduler_.Clear();
   stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
   // Zero means the scheudle wasn't updated.
   EXPECT_EQ(base::Seconds(0),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  task_environment_.AdvanceClock(base::Minutes(6));
+
+  // Opening another surface should cause a refresh to be scheduled.
+  refresh_scheduler_.Clear();
+  TestForYouSurface surface2(stream_.get());
+  WaitForIdleTaskQueue();
+  stream_->ReportFeedViewed(kForYouStream, surface2.GetSurfaceId());
+  // The schedule should have been updated.
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  task_environment_.AdvanceClock(base::Minutes(6));
+
+  // Leaving the surface and returning should schedule a refresh.
+  refresh_scheduler_.Clear();
+  surface.Detach();
+  WaitForIdleTaskQueue();
+  surface.Attach(stream_.get());
+  WaitForIdleTaskQueue();
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  // The schedule should have been updated.
+  EXPECT_EQ(base::Minutes(30),
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
 }
@@ -3517,7 +3569,8 @@ TEST_F(FeedApiTest, FeedCloseRefresh_RequestType) {
   WaitForIdleTaskQueue();
 
   // Opening should cause a refresh to be scheduled.
-  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "");
+  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "",
+                            OpenActionType::kDefault);
   EXPECT_EQ(base::Minutes(30),
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);

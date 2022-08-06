@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1621067168122174824">Запустить проверку зарядки</translation>
 <translation id="1631385268983122904">Пока не собирайте устройство</translation>
-<translation id="1639239467298939599">Загрузка</translation>
+<translation id="1639239467298939599">Загрузка…</translation>
 <translation id="1641857168437328880">Автоподатчик документов (односторонний)</translation>
 <translation id="1643449475550628585">Менять обои ежедневно</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1645954272419197032">Подтвердите информацию об устройстве</translation>
 <translation id="1662989795263954667">Печать прервана: нет чернил</translation>
+<translation id="1664796644829245314">Предварительный просмотр: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Встроенная VPN</translation>
 <translation id="1672499492233627739">Видеоизображение с веб-камеры</translation>
 <translation id="1676557873873341166">Запись видео…</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Видеоконференции</translation>
 <translation id="1852934301711881861">Установить Chrome OS Flex</translation>
 <translation id="1856388568474281774">Стрелка вниз</translation>
+<translation id="1858620243986915808">Прикрепить скриншот</translation>
 <translation id="1871569928317311284">Выключить тёмную тему</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Выключить тёмную тему</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Фото профиля Google</translation>
 <translation id="1979103255016296513">Истек срок изменения пароля</translation>
 <translation id="1999615961760456652">Страница входа</translation>
+<translation id="200669432486043882">Заменить файл</translation>
 <translation id="2006864819935886708">Подключение</translation>
 <translation id="2008685064673031089">Поиск простых чисел</translation>
 <translation id="2011174342667534258">Версия SDK:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2461822463642141190">Расход энергии</translation>
 <translation id="2480034874476596812">Отключить вручную</translation>
+<translation id="248546197012830854">Устройство не подключено к интернету. Подключитесь к сети Wi-Fi, чтобы посмотреть справочный контент.</translation>
 <translation id="2491955442992294626">Пока активно другое окно, проверка клавиатуры не выполняется</translation>
 <translation id="2493126929778606526">Ваши лучшие фото, отобранные автоматически</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ОБНОВИТЬ</translation>
 <translation id="3009958530611748826">Выберите папку для сохранения</translation>
 <translation id="3017079585324758401">Фон</translation>
+<translation id="302435934487327038">Установка завершена</translation>
 <translation id="3027578600144895987">Закрыть камеру</translation>
 <translation id="3031560714565892478">Это видеокамера.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> мА</translation>
 <translation id="3056720590588772262">Конечная точка</translation>
 <translation id="3069085583900247081">Проверка не пройдена</translation>
-<translation id="3076243757415932261">Проверка компонентов…</translation>
 <translation id="3083667275341675831">Диагностика соединений</translation>
 <translation id="3084958266922136097">Отключить заставку</translation>
 <translation id="3091839911843451378">Сбой: остановка работы</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Очистить историю печати? Текущие задания печати не будут удалены.</translation>
 <translation id="3383751554789092165">При необходимости измените информацию об устройстве.</translation>
 <translation id="3404249063913988450">Включить заставку</translation>
-<translation id="3404770484521709967">Установлены подходящие компоненты.</translation>
 <translation id="3413935475507503304">Чтобы выполнить обновление, нажмите "Далее".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Безопасность</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Старый пароль</translation>
 <translation id="4453205916657964690">Маска подсети</translation>
 <translation id="4454245904991689773">Место сохранения</translation>
-<translation id="4472575034687746823">Начать</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Не удалось выполнить проверку ping сетевого шлюза, не заданного по умолчанию.</translation>
 <translation id="4500213108254186382">Акселерометр крышки</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149">Отменить ремонт устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Выполняется</translation>
 <translation id="6620487321149975369">Задания печати показываются в истории до тех пор, пока вы их не удалите</translation>
+<translation id="6624819909909965616">Невозможно загрузить файл размером больше 10 МБ.</translation>
 <translation id="6643016212128521049">Удалить</translation>
+<translation id="6644568396961840069">Не удалось сохранить файл. Подключите другой внешний накопитель или повторите попытку позже.</translation>
 <translation id="6647510110698214773">Алгоритм шифрования</translation>
 <translation id="6650062777702288430">Переключение между кана и буквенно-цифровыми символами</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6692996468359469499">Получайте информацию об объектах на экране</translation>
 <translation id="6704062477274546131">Разрешение DNS</translation>
-<translation id="6721744718589119342">Мы можем запрашивать у вас дополнительные сведения или уведомлять об обновлениях по электронной почте</translation>
 <translation id="6723839937902243910">Питание</translation>
 <translation id="6723847290197874913">Подсветка клавиатуры</translation>
 <translation id="672609503628871915">Узнать, что нового</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6977381486153291903">Версия встроенного ПО</translation>
 <translation id="6995564396478647735">Убедитесь, что защита от записи включена</translation>
+<translation id="7005833343836210400">Устройство не подключено к интернету</translation>
 <translation id="7028979494427204405">Этим устройством управляет <ph name="MANAGER" />. Администратору доступна информация обо всех действиях пользователя, в том числе о посещенных веб-страницах, а также адрес электронной почты и пароли.</translation>
 <translation id="7040230719604914234">Оператор</translation>
 <translation id="7041549558901442110">Устройство не подключено.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7212734716605298123">Обновление встроенного ПО на внешних устройствах</translation>
 <translation id="7216409898977639127">Оператор сотовой связи</translation>
+<translation id="725133483556299729">Выбор адреса электронной почты</translation>
 <translation id="7271040990581020067">Сканер уже используется. Повторите попытку позже.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Выберите нужные компоненты и повторите попытку или пропустите калибровку.</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">Закрытый ключ</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
+<translation id="8018928621986160031">Сохранено (<ph name="FILE_LOCATION" />)</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Включить автоматический цветовой режим</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">Защита от записи отключена. Чтобы продолжить, включите ее.</translation>
 <translation id="8075838845814659848">Уровень заряда</translation>
 <translation id="8082366717211101304">Не удается выполнить DNS-преобразование в приложениях для Android.</translation>
-<translation id="8083281199617904460">Ремонт должен выполнять квалифицированный специалист. Прежде чем начать, замените неисправные компоненты.</translation>
 <translation id="808894953321890993">Сменить пароль</translation>
+<translation id="8094062939584182041">Разрешить Google отправлять вам сообщения об этой проблеме по электронной почте</translation>
 <translation id="8104083085214006426">Вы используете открытую небезопасную сеть.</translation>
 <translation id="8109786307828817014">Некоторые компоненты не откалиброваны. Продолжить?</translation>
 <translation id="811820734797650957">Запрос ping к шлюзу (Android)</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">Подключение</translation>
 <translation id="8221728673725659466">Калибровка завершена</translation>
 <translation id="8226628635270268143">Выберите любимые фото и альбомы</translation>
+<translation id="8227119283605456246">Прикрепить файл</translation>
 <translation id="8230672074305416752">Не удалось выполнить проверку ping сетевого шлюза, заданного по умолчанию.</translation>
 <translation id="8246209727385807362">Неизвестный оператор</translation>
 <translation id="827422111966801947">Индиго</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">Без инициализации</translation>
 <translation id="8620617069779373398">Статус роуминга</translation>
 <translation id="8655295600908251630">Канал</translation>
+<translation id="8655828773034788261">URL с общим доступом:</translation>
 <translation id="8660881923941176839">фунта</translation>
 <translation id="8662671328352114214">Присоединиться к сети <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Обновить до версии <ph name="VERSION_NUMBER" /> и перезагрузить</translation>

@@ -12,9 +12,9 @@ bool FollowProvider::GetFollowStatus(FollowWebPageURLs* follow_web_page_urls) {
   return false;
 }
 
-bool FollowProvider::GetRecommendedStatus(
+NSURL* FollowProvider::GetRecommendedSiteURL(
     FollowWebPageURLs* follow_web_page_urls) {
-  return false;
+  return nil;
 }
 
 NSArray<FollowedWebChannel*>* FollowProvider::GetFollowedWebChannels() {

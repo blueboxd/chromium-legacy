@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"
+#include "components/exo/seat.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -25,6 +26,10 @@
 namespace exo {
 
 namespace {
+
+constexpr int kTextInputSeatObserverPriority = 1;
+static_assert(Seat::IsValidObserverPriority(kTextInputSeatObserverPriority),
+              "kTextInputSeatObserverPriority is not in the valid range.");
 
 ui::InputMethod* GetInputMethod(aura::Window* window) {
   if (!window || !window->GetHost())
@@ -49,17 +54,29 @@ TextInput::TextInput(std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)) {}
 
 TextInput::~TextInput() {
-  if (input_method_)
-    Deactivate();
+  Deactivate();
 }
 
-void TextInput::Activate(Surface* surface) {
+void TextInput::Activate(Seat* seat, Surface* surface) {
   DCHECK(surface);
-  AttachInputMethod(surface->window());
+  DCHECK(seat);
+  if (surface_ == surface)
+    return;
+  DetachInputMethod();
+  surface_ = surface;
+  seat_ = seat;
+  seat_->AddObserver(this, kTextInputSeatObserverPriority);
+  if (seat_->GetFocusedSurface() == surface_)
+    AttachInputMethod();
 }
 
 void TextInput::Deactivate() {
+  if (!surface_)
+    return;
   DetachInputMethod();
+  seat_->RemoveObserver(this);
+  surface_ = nullptr;
+  seat_ = nullptr;
 }
 
 void TextInput::ShowVirtualKeyboardIfEnabled() {
@@ -106,6 +123,11 @@ void TextInput::SetSurroundingText(const std::u16string& text,
     grammar_fragment_at_cursor_utf16_ = absl::nullopt;
   }
 
+  if (pending_autocorrect_info_) {
+    autocorrect_info_ = *pending_autocorrect_info_;
+    pending_autocorrect_info_ = absl::nullopt;
+  }
+
   // TODO(b/206068262): Consider introducing an API to notify surrounding text
   // update explicitly.
   if (input_method_)
@@ -142,6 +164,15 @@ void TextInput::SetGrammarFragmentAtCursor(
   grammar_fragment_at_cursor_utf8_ = fragment;
 }
 
+void TextInput::SetAutocorrectInfo(const gfx::Range& autocorrect_range,
+                                   const gfx::Rect& autocorrect_bounds) {
+  // Since we receive the autocorrect information separately from the
+  // surrounding text information, the range and bounds may be invalid at this
+  // point, because the surrounding text this class holds is stale.
+  // Save it as the "pending" information a surrounding text update is received.
+  pending_autocorrect_info_ = {autocorrect_range, autocorrect_bounds};
+}
+
 void TextInput::SetCompositionText(const ui::CompositionText& composition) {
   composition_ = composition;
   // Identify the starting index of the current composition. If a composition
@@ -158,14 +189,12 @@ void TextInput::SetCompositionText(const ui::CompositionText& composition) {
   delegate_->SetCompositionText(composition);
 }
 
-uint32_t TextInput::ConfirmCompositionText(bool keep_selection) {
-  // TODO(b/134473433) Modify this function so that when keep_selection is
-  // true, the selection is not changed when text committed
-  if (keep_selection) {
-    NOTIMPLEMENTED_LOG_ONCE();
+size_t TextInput::ConfirmCompositionText(bool keep_selection) {
+  const size_t composition_text_length = composition_.text.length();
+  if (keep_selection && cursor_pos_.IsValid() &&
+      surrounding_text_.size() >= cursor_pos_.GetMax()) {
+    delegate_->SetCursor(surrounding_text_, cursor_pos_);
   }
-  const uint32_t composition_text_length =
-      static_cast<uint32_t>(composition_.text.length());
   delegate_->Commit(composition_.text);
   ResetCompositionTextCache();
   return composition_text_length;
@@ -192,7 +221,7 @@ void TextInput::InsertChar(const ui::KeyEvent& event) {
   // future.
   // TODO(fukino): Get rid of this, too, when the wl_keyboard::key
   // and text_input::keysym events are handled properly in Lacros.
-  if (window_ && ConsumedByIme(window_, event))
+  if (ConsumedByIme(surface_->window(), event))
     delegate_->SendKey(event);
 }
 
@@ -217,7 +246,8 @@ bool TextInput::CanComposeInline() const {
 }
 
 gfx::Rect TextInput::GetCaretBounds() const {
-  return caret_bounds_ + window_->GetBoundsInScreen().OffsetFromOrigin();
+  return caret_bounds_ +
+         surface_->window()->GetBoundsInScreen().OffsetFromOrigin();
 }
 
 gfx::Rect TextInput::GetSelectionBoundingBox() const {
@@ -268,7 +298,13 @@ bool TextInput::GetEditableSelectionRange(gfx::Range* range) const {
 bool TextInput::SetEditableSelectionRange(const gfx::Range& range) {
   if (surrounding_text_.size() < range.GetMax())
     return false;
+
+  // Send a SetCursor followed by a Commit of the current composition text, or
+  // empty string if there is no composition text. This is necessary since
+  // SetCursor only takes effect on the following Commit.
   delegate_->SetCursor(surrounding_text_, range);
+  delegate_->Commit(composition_.text);
+  ResetCompositionTextCache();
   return true;
 }
 
@@ -282,15 +318,15 @@ bool TextInput::GetTextFromRange(const gfx::Range& range,
 }
 
 void TextInput::OnInputMethodChanged() {
-  ui::InputMethod* input_method = GetInputMethod(window_);
+  DCHECK_EQ(surface_, seat_->GetFocusedSurface());
+  ui::InputMethod* input_method = GetInputMethod(surface_->window());
   if (input_method == input_method_)
     return;
   input_method_->DetachTextInputClient(this);
-  if (auto* controller = input_method_->GetVirtualKeyboardController())
-    controller->RemoveObserver(this);
+  virtual_keyboard_observation_.Reset();
   input_method_ = input_method;
   if (auto* controller = input_method_->GetVirtualKeyboardController())
-    controller->AddObserver(this);
+    virtual_keyboard_observation_.Observe(controller);
   input_method_->SetFocusedTextInputClient(this);
 }
 
@@ -314,7 +350,9 @@ void TextInput::ExtendSelectionAndDelete(size_t before, size_t after) {
                                    gfx::Range(utf16_start, utf16_end));
 }
 
-void TextInput::EnsureCaretNotInRect(const gfx::Rect& rect) {}
+void TextInput::EnsureCaretNotInRect(const gfx::Rect& rect) {
+  delegate_->OnVirtualKeyboardOccludedBoundsChanged(rect);
+}
 
 bool TextInput::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
   return false;
@@ -356,21 +394,16 @@ bool TextInput::SetCompositionFromExistingText(
 }
 
 gfx::Range TextInput::GetAutocorrectRange() const {
-  // TODO(https://crbug.com/952757): Implement this method.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Range();
+  return autocorrect_info_.range;
 }
 
 gfx::Rect TextInput::GetAutocorrectCharacterBounds() const {
-  // TODO(https://crbug.com/952757): Implement this method.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Rect();
+  return autocorrect_info_.bounds;
 }
 
-// TODO(crbug.com/1091088) Implement setAutocorrectRange
 bool TextInput::SetAutocorrectRange(const gfx::Range& range) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  delegate_->SetAutocorrectRange(surrounding_text_, range);
+  return true;
 }
 
 absl::optional<ui::GrammarFragment> TextInput::GetGrammarFragmentAtCursor()
@@ -407,21 +440,28 @@ void TextInput::OnKeyboardVisible(const gfx::Rect& keyboard_rect) {
 }
 
 void TextInput::OnKeyboardHidden() {
+  delegate_->OnVirtualKeyboardOccludedBoundsChanged({});
   delegate_->OnVirtualKeyboardVisibilityChanged(false);
 }
 
-void TextInput::AttachInputMethod(aura::Window* window) {
-  DCHECK(window);
+void TextInput::OnSurfaceFocused(Surface* gained_focus,
+                                 Surface* lost_focus,
+                                 bool has_focused_surface) {
+  DCHECK(surface_);
+  if (gained_focus == lost_focus)
+    return;
 
-  if (window_) {
-    if (window == window_)
-      return;
-    DetachInputMethod();
+  if (gained_focus == surface_) {
+    AttachInputMethod();
+  } else if (lost_focus == surface_) {
+    Deactivate();
   }
-  DCHECK(!input_method_);
+}
 
-  window_ = window;
-  input_method_ = GetInputMethod(window_);
+void TextInput::AttachInputMethod() {
+  DCHECK(!input_method_);
+  DCHECK(surface_);
+  input_method_ = GetInputMethod(surface_->window());
   if (!input_method_) {
     LOG(ERROR) << "input method not found";
     return;
@@ -430,7 +470,7 @@ void TextInput::AttachInputMethod(aura::Window* window) {
   input_mode_ = ui::TEXT_INPUT_MODE_TEXT;
   input_type_ = ui::TEXT_INPUT_TYPE_TEXT;
   if (auto* controller = input_method_->GetVirtualKeyboardController())
-    controller->AddObserver(this);
+    virtual_keyboard_observation_.Observe(controller);
   input_method_->SetFocusedTextInputClient(this);
   delegate_->Activated();
 
@@ -441,17 +481,13 @@ void TextInput::AttachInputMethod(aura::Window* window) {
 }
 
 void TextInput::DetachInputMethod() {
-  if (!input_method_) {
-    DLOG(ERROR) << "input method already detached";
+  if (!input_method_)
     return;
-  }
   input_mode_ = ui::TEXT_INPUT_MODE_DEFAULT;
   input_type_ = ui::TEXT_INPUT_TYPE_NONE;
   input_method_->DetachTextInputClient(this);
-  if (auto* controller = input_method_->GetVirtualKeyboardController())
-    controller->RemoveObserver(this);
+  virtual_keyboard_observation_.Reset();
   input_method_ = nullptr;
-  window_ = nullptr;
   delegate_->Deactivated();
 }
 

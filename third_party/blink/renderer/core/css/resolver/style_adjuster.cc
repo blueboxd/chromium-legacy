@@ -133,6 +133,38 @@ void AdjustStyleForSvgElement(const SVGElement& element, ComputedStyle& style) {
   style.SetTextUnderlinePosition(kTextUnderlinePositionAuto);
 }
 
+// Adjust style for anchor() and anchor-size() queries.
+void AdjustAnchorQueryStyles(ComputedStyle& style) {
+  if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled())
+    return;
+
+  // anchor() and anchor-size() can only be used on absolutely positioned
+  // elements.
+  if (style.GetPosition() != EPosition::kAbsolute &&
+      style.GetPosition() != EPosition::kFixed) {
+    if (style.Left().HasAnchorQueries())
+      style.SetLeft(Length::Auto());
+    if (style.Right().HasAnchorQueries())
+      style.SetRight(Length::Auto());
+    if (style.Top().HasAnchorQueries())
+      style.SetTop(Length::Auto());
+    if (style.Bottom().HasAnchorQueries())
+      style.SetBottom(Length::Auto());
+    if (style.Width().HasAnchorQueries())
+      style.SetWidth(Length::Auto());
+    if (style.MinWidth().HasAnchorQueries())
+      style.SetMinWidth(Length::Auto());
+    if (style.MaxWidth().HasAnchorQueries())
+      style.SetMaxWidth(Length::Auto());
+    if (style.Height().HasAnchorQueries())
+      style.SetHeight(Length::Auto());
+    if (style.MinHeight().HasAnchorQueries())
+      style.SetMinHeight(Length::Auto());
+    if (style.MaxHeight().HasAnchorQueries())
+      style.SetMaxHeight(Length::Auto());
+  }
+}
+
 // Returns the `<display-outside>` for a `EDisplay` value.
 // https://drafts.csswg.org/css-display-3/#propdef-display
 EDisplay DisplayOutside(EDisplay display) {
@@ -414,10 +446,6 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
       style.SetDisplay(EDisplay::kNone);
       return;
     }
-    // Frames cannot overflow (they are always the size we ask them to be).
-    // Some compositing code paths may try to draw scrollbars anyhow.
-    style.SetOverflowX(EOverflow::kVisible);
-    style.SetOverflowY(EOverflow::kVisible);
     return;
   }
 
@@ -525,14 +553,10 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
   DCHECK(style.OverflowX() != EOverflow::kVisible ||
          style.OverflowY() != EOverflow::kVisible);
 
-  if (element && element->IsReplacedElementRespectingCSSOverflow()) {
-    // Replaced elements support only 2 overflow configs: visible and clip. All
-    // values other than visible map to clip.
-    if (style.OverflowX() != EOverflow::kVisible)
-      style.SetOverflowX(EOverflow::kClip);
-    if (style.OverflowY() != EOverflow::kVisible)
-      style.SetOverflowY(EOverflow::kClip);
-  } else if (style.IsDisplayTableBox()) {
+  bool overflow_is_clip_or_visible =
+      IsOverflowClipOrVisible(style.OverflowY()) &&
+      IsOverflowClipOrVisible(style.OverflowX());
+  if (!overflow_is_clip_or_visible && style.IsDisplayTableBox()) {
     // Tables only support overflow:hidden and overflow:visible and ignore
     // anything else, see https://drafts.csswg.org/css2/visufx.html#overflow. As
     // a table is not a block container box the rules for resolving conflicting
@@ -545,7 +569,6 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
     // If we are left with conflicting overflow values for the x and y axes on a
     // table then resolve both to OverflowVisible. This is interoperable
     // behaviour but is not specced anywhere.
-    // TODO(https://crbug.com/966283): figure out how 'clip' should be handled.
     if (style.OverflowX() == EOverflow::kVisible)
       style.SetOverflowY(EOverflow::kVisible);
     else if (style.OverflowY() == EOverflow::kVisible)
@@ -716,7 +739,10 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
     element_touch_action &= ~TouchAction::kInternalPanXScrolls;
   }
 
+  // TODO(crbug.com/1346169): Full style invalidation is needed when this
+  // feature status changes at runtime as it affects the computed style.
   if (base::FeatureList::IsEnabled(blink::features::kStylusWritingToInput) &&
+      RuntimeEnabledFeatures::StylusHandwritingEnabled() &&
       (element_touch_action & TouchAction::kPan) == TouchAction::kPan &&
       IsEditableElement(element, style) &&
       !IsPasswordFieldWithUnrevealedPassword(element)) {
@@ -883,11 +909,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // The computed value of currentColor for highlight pseudos is the
   // color that would have been used if no highlights were applied,
   // i.e. the originating element's color.
-  if (((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-        state.IsForHighlight()) ||
-       state.IsForCustomHighlight()) &&
-      style.ColorIsCurrentColor() && state.OriginatingElementStyle()) {
-    style.SetColor(state.OriginatingElementStyle()->GetColor());
+  if (state.UsesHighlightPseudoInheritance() &&
+      state.OriginatingElementStyle()) {
+    const ComputedStyle* originating_style = state.OriginatingElementStyle();
+    if (style.ColorIsCurrentColor())
+      style.SetColor(originating_style->GetColor());
+    if (style.InternalVisitedColorIsCurrentColor())
+      style.SetInternalVisitedColor(originating_style->InternalVisitedColor());
   }
 
   if (style.Display() != EDisplay::kContents) {
@@ -1016,6 +1044,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       style.SetTextOverflow(text_control->ValueForTextOverflow());
     }
   }
+
+  AdjustAnchorQueryStyles(style);
 
   if (!HasFullNGFragmentationSupport()) {
     // When establishing a block fragmentation context for LayoutNG, we require

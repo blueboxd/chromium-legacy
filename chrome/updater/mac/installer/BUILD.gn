@@ -5,6 +5,7 @@
 import("//build/config/zip.gni")
 import("//chrome/updater/branding.gni")
 
+# This zip is a resource for the macOS metainstaller.
 zip("updater_zip") {
   output = "$target_gen_dir/updater.zip"
   inputs = [

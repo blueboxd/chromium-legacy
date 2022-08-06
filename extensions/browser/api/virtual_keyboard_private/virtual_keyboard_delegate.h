@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_DELEGATE_H_
 
-#include <memory>
 #include <set>
 #include <string>
 
@@ -14,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/api/virtual_keyboard.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -23,12 +23,15 @@ class VirtualKeyboardDelegate {
   virtual ~VirtualKeyboardDelegate() {}
 
   using OnKeyboardSettingsCallback =
-      base::OnceCallback<void(std::unique_ptr<base::DictionaryValue> settings)>;
+      base::OnceCallback<void(absl::optional<base::Value::Dict> settings)>;
 
   using OnSetModeCallback = base::OnceCallback<void(bool success)>;
 
   using OnGetClipboardHistoryCallback =
       base::OnceCallback<void(base::Value history)>;
+
+  using OnRestrictFeaturesCallback = base::OnceCallback<void(
+      api::virtual_keyboard::FeatureRestrictions update)>;
 
   // Fetch information about the preferred configuration of the keyboard. On
   // exit, |settings| is populated with the keyboard configuration if execution
@@ -125,9 +128,10 @@ class VirtualKeyboardDelegate {
   virtual bool DeleteClipboardItem(const std::string& clipboard_item_id) = 0;
 
   // Restricts the virtual keyboard IME features.
-  // Returns the values which were updated.
-  virtual api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
-      const api::virtual_keyboard::RestrictFeatures::Params& params) = 0;
+  // callback is called with the values which were updated.
+  virtual void RestrictFeatures(
+      const api::virtual_keyboard::RestrictFeatures::Params& params,
+      OnRestrictFeaturesCallback callback) = 0;
 };
 
 }  // namespace extensions

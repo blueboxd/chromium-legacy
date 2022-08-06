@@ -60,6 +60,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContext {
   virtual void SetGrammarFragmentAtCursor(
       const ui::GrammarFragment& fragment) = 0;
 
+  // Tells Ash about the current autocorrect information.
+  virtual void SetAutocorrectInfo(const gfx::Range& autocorrect_range,
+                                  const gfx::Rect& autocorrect_bounds) = 0;
+
   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
   // before calling DispatchKeyEvent().
   virtual void Reset() = 0;
@@ -81,6 +85,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContextDelegate {
 
   // Commits the |text| to the text input client.
   virtual void OnCommit(const std::u16string& text) = 0;
+
+  // Converts current composition text into final content.
+  virtual void OnConfirmCompositionText(bool keep_selection) = 0;
 
   // Deletes the surrounding text around selection. |before| and |after|
   // are in UTF-16 code points.
@@ -109,6 +116,14 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContextDelegate {
   // some visual indications such as underlining. All indices are measured in
   // UTF-16 code point.
   virtual void OnAddGrammarFragment(const ui::GrammarFragment& fragment) = 0;
+
+  // Sets the autocorrect range in the text input client.
+  // |range| is in UTF-16 code range.
+  virtual void OnSetAutocorrectRange(const gfx::Range& range) = 0;
+
+  // Sets the virtual keyboard's occluded bounds in screen DIP.
+  virtual void OnSetVirtualKeyboardOccludedBounds(
+      const gfx::Rect& screen_bounds) = 0;
 };
 
 }  // namespace ui

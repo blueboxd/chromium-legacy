@@ -250,6 +250,7 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
+        "app/server/win/updater_legacy_idl.h",
         "app/server/win/wrl_classes.cc",
         "device_management/dm_storage_win.cc",
         "policy/win/group_policy_manager.cc",
@@ -369,7 +370,10 @@ if (is_win || is_mac || is_linux) {
   source_set("constants_header") {
     sources = [ "constants.h" ]
 
-    deps = [ "//components/update_client" ]
+    deps = [
+      "//base",
+      "//components/update_client",
+    ]
   }
 
   source_set("constants_prod") {
@@ -445,20 +449,6 @@ if (is_win || is_mac || is_linux) {
     output = "$target_gen_dir/updater_branding.h"
   }
 
-  source_set("updater_tests_support") {
-    testonly = true
-
-    sources = [
-      "unittest_util.cc",
-      "unittest_util.h",
-    ]
-
-    deps = [
-      ":base",
-      "//base",
-    ]
-  }
-
   source_set("browser_sources") {
     sources = [
       "//chrome/updater/constants.cc",
@@ -487,6 +477,7 @@ if (is_win || is_mac || is_linux) {
     if (is_win) {
       sources += [
         "//chrome/updater/util_win.cc",
+        "//chrome/updater/win/scoped_handle.h",
         "//chrome/updater/win/user_info.cc",
         "//chrome/updater/win/user_info.h",
         "//chrome/updater/win/win_constants.cc",
@@ -605,6 +596,8 @@ if (is_win || is_mac || is_linux) {
       "test/server.cc",
       "test/server.h",
       "test_scope.h",
+      "unittest_util.cc",
+      "unittest_util.h",
       "unittest_util_unittest.cc",
       "update_service_unittest.cc",
       "update_usage_stats_task_unittest.cc",
@@ -617,7 +610,6 @@ if (is_win || is_mac || is_linux) {
       ":base",
       ":branding_header",
       ":constants_test",
-      ":updater_tests_support",
       ":version_header",
       "//base",
       "//base/test:test_support",
@@ -840,6 +832,7 @@ if (is_win || is_mac || is_linux) {
       ]
     }
     if (is_win) {
+      deps += [ "//chrome/installer/util:with_no_strings" ]
       data_deps = [
         ":test_service_files",
         "//third_party/updater:old_updater",
@@ -872,6 +865,7 @@ if (is_win || is_mac || is_linux) {
       ]
     }
     if (is_win) {
+      deps += [ "//chrome/installer/util:with_no_strings" ]
       data_deps += [
         ":test_service_files",
         "//third_party/updater:old_updater",

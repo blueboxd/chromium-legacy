@@ -18,7 +18,7 @@ import '../site_settings/settings_category_default_radio_group.js';
 import '../site_settings/site_data_details_subpage.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './privacy_guide/privacy_guide_dialog.js';
 
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
@@ -30,6 +30,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {BaseMixin} from '../base_mixin.js';
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
+import {FocusConfig} from '../focus_config.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../metrics_browser_proxy.js';
@@ -43,12 +44,10 @@ import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_
 import {getTemplate} from './privacy_page.html.js';
 import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.js';
 
-type BlockAutoplayStatus = {
-  enabled: boolean,
-  pref: chrome.settingsPrivate.PrefObject,
-};
-
-type FocusConfig = Map<string, (string|(() => void))>;
+interface BlockAutoplayStatus {
+  enabled: boolean;
+  pref: chrome.settingsPrivate.PrefObject;
+}
 
 export interface SettingsPrivacyPageElement {
   $: {
@@ -90,7 +89,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('isGuest');
-        }
+        },
       },
 
       showClearBrowsingDataDialog_: Boolean,
@@ -100,7 +99,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
-        }
+        },
       },
 
       cookieSettingDescription_: String,
@@ -109,21 +108,21 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enableBlockAutoplayContentSetting');
-        }
+        },
       },
 
       blockAutoplayStatus_: {
         type: Object,
         value() {
           return {};
-        }
+        },
       },
 
       enablePaymentHandlerContentSetting_: {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enablePaymentHandlerContentSetting');
-        }
+        },
       },
 
       enableFederatedIdentityApiContentSetting_: {
@@ -131,7 +130,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         value() {
           return loadTimeData.getBoolean(
               'enableFederatedIdentityApiContentSetting');
-        }
+        },
       },
 
       enableExperimentalWebPlatformFeatures_: {
@@ -147,7 +146,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         readOnly: true,
         value() {
           return loadTimeData.getBoolean('enableSecurityKeysSubpage');
-        }
+        },
       },
 
       enableQuietNotificationPromptsSetting_: {
@@ -269,7 +268,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: false,
       },
-      enabled: false
+      enabled: false,
     });
 
     this.addWebUIListener(

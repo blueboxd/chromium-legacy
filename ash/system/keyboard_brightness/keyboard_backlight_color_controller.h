@@ -11,6 +11,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
 #include "base/scoped_observation.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class PrefRegistrySimple;
 
@@ -34,15 +35,20 @@ class ASH_EXPORT KeyboardBacklightColorController
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Sets the keyboard backlight color.
+  // Sets the keyboard backlight color for the user with |account_id|.
   void SetBacklightColor(
-      personalization_app::mojom::BacklightColor backlight_color);
+      personalization_app::mojom::BacklightColor backlight_color,
+      const AccountId& account_id);
 
-  // Returns the currently set backlight color.
-  personalization_app::mojom::BacklightColor GetBacklightColor();
+  // Returns the currently set backlight color for user with |account_id|.
+  personalization_app::mojom::BacklightColor GetBacklightColor(
+      const AccountId& account_id);
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+  // b/239967737: |OnActiveUserPrefServiceChanged| doesn't get triggered when
+  // chrome restarts.
+  void OnUserSessionUpdated(const AccountId& account_id) override;
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
@@ -53,6 +59,19 @@ class ASH_EXPORT KeyboardBacklightColorController
   };
 
  private:
+  friend class KeyboardBacklightColorControllerTest;
+
+  // Displays the |backlight_color| on the keyboard.
+  void DisplayBacklightColor(
+      personalization_app::mojom::BacklightColor backlight_color);
+
+  // Sets the keyboard backlight color pref for user with |account_id|.
+  void SetBacklightColorPref(
+      personalization_app::mojom::BacklightColor backlight_color,
+      const AccountId& account_id);
+
+  SkColor displayed_color_for_testing_ = SK_ColorTRANSPARENT;
+
   ScopedSessionObserver scoped_session_observer_{this};
 
   base::ScopedObservation<WallpaperController, WallpaperControllerObserver>

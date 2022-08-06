@@ -26,7 +26,7 @@ void HistogramsMonitor::StartMonitoring(const std::string& query) {
   }
 }
 
-base::ListValue HistogramsMonitor::GetDiff() {
+base::Value::List HistogramsMonitor::GetDiff() {
   FetchHistograms();
   base::StatisticsRecorder::Histograms histograms =
       base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
@@ -39,9 +39,9 @@ void HistogramsMonitor::FetchHistograms() {
   HistogramSynchronizer::FetchHistograms();
 }
 
-base::ListValue HistogramsMonitor::GetDiffInternal(
+base::Value::List HistogramsMonitor::GetDiffInternal(
     const base::StatisticsRecorder::Histograms& histograms) {
-  base::ListValue histograms_list;
+  base::Value::List histograms_list;
   for (const base::HistogramBase* const histogram : histograms) {
     std::unique_ptr<base::HistogramSamples> snapshot =
         histogram->SnapshotSamples();
@@ -50,7 +50,7 @@ base::ListValue HistogramsMonitor::GetDiffInternal(
       snapshot->Subtract(*it->second.get());
     }
     if (snapshot->TotalCount() > 0) {
-      base::Value histogram_dict = snapshot->ToGraphDict(
+      base::Value::Dict histogram_dict = snapshot->ToGraphDict(
           histogram->histogram_name(), histogram->flags());
       histograms_list.Append(std::move(histogram_dict));
     }

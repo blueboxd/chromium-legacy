@@ -420,6 +420,20 @@ void WebAppSyncBridge::RemoveDisallowedLaunchProtocol(
   registrar_->NotifyWebAppProtocolSettingsChanged();
 }
 
+#if BUILDFLAG(IS_MAC)
+void WebAppSyncBridge::SetAlwaysShowToolbarInFullscreen(const AppId& app_id,
+                                                        bool show) {
+  if (!registrar_->IsInstalled(app_id))
+    return;
+  {
+    ScopedRegistryUpdate(this)
+        ->UpdateApp(app_id)
+        ->SetAlwaysShowToolbarInFullscreen(show);
+  }
+  registrar_->NotifyAlwaysShowToolbarInFullscreenChanged(app_id, show);
+}
+#endif
+
 void WebAppSyncBridge::SetAppFileHandlerApprovalState(const AppId& app_id,
                                                       ApiApprovalState state) {
   {
@@ -554,10 +568,6 @@ void WebAppSyncBridge::OnWebAppUninstallComplete(
     webapps::UninstallResultCode code) {
   base::UmaHistogramBoolean("Webapp.SyncInitiatedUninstallResult",
                             code == webapps::UninstallResultCode::kSuccess);
-  // In the case where code indicated a failure, the AppId should still be
-  // removed from the set, since uninstall failures are not yet handled, and
-  // there are no uninstall retry attempts.
-  apps_in_sync_uninstall_.erase(app);
 }
 
 void WebAppSyncBridge::ReportErrorToChangeProcessor(
@@ -680,8 +690,6 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
 
   // Initiate any uninstall actions to clean up os integration, disk data, etc.
   if (!apps_to_delete.empty()) {
-    apps_in_sync_uninstall_.insert(apps_to_delete.begin(),
-                                   apps_to_delete.end());
     command_manager_->NotifySyncSourceRemoved(apps_to_delete);
     install_delegate_->UninstallFromSync(
         apps_to_delete,
@@ -791,10 +799,6 @@ std::string WebAppSyncBridge::GetClientTag(
 std::string WebAppSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   return GetClientTag(entity_data);
-}
-
-const std::set<AppId>& WebAppSyncBridge::GetAppsInSyncUninstallForTest() {
-  return apps_in_sync_uninstall_;
 }
 
 void WebAppSyncBridge::MaybeUninstallAppsPendingUninstall() {

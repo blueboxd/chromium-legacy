@@ -312,6 +312,7 @@ void TabletModeWindowManager::OnSplitViewStateChanged(
   switch (SplitViewController::Get(primary_root)->end_reason()) {
     case SplitViewController::EndReason::kNormal:
     case SplitViewController::EndReason::kUnsnappableWindowActivated:
+    case SplitViewController::EndReason::kRootWindowDestroyed:
       break;
     case SplitViewController::EndReason::kHomeLauncherPressed:
     case SplitViewController::EndReason::kActiveUserChanged:
@@ -412,8 +413,9 @@ void TabletModeWindowManager::OnWindowBoundsChanged(
 
   // Reposition all non maximizeable windows.
   for (auto& pair : window_state_map_) {
-    TabletModeWindowState::UpdateWindowPosition(WindowState::Get(pair.first),
-                                                /*animate=*/false);
+    TabletModeWindowState::UpdateWindowPosition(
+        WindowState::Get(pair.first),
+        WindowState::BoundsChangeAnimationType::kNone);
   }
   if (session)
     session->ResumeReposition();

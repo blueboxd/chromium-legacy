@@ -4,7 +4,7 @@
 
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -16,10 +16,10 @@ import {getTemplate} from './items_to_remove_list.html.js';
  * style at front of the line. The highlightSuffix will be appended to the end
  * of line and emphasized with bold font.
  */
-export type ChromeCleanupRemovalListItem = {
-  text: string,
-  highlightSuffix: string|null,
-};
+export interface ChromeCleanupRemovalListItem {
+  text: string;
+  highlightSuffix: string|null;
+}
 
 /**
  * The default number of items to show for files, registry keys and extensions

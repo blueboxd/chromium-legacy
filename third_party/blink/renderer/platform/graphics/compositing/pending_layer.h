@@ -152,12 +152,12 @@ class PLATFORM_EXPORT PendingLayer {
       scoped_refptr<const PaintArtifact> repainted_artifact,
       cc::LayerSelection&);
 
+  SkColor4f ComputeBackgroundColor() const;
+
  private:
   PendingLayer(const PaintChunkSubset&,
                const PaintChunk& first_chunk,
                wtf_size_t first_chunk_index_in_paint_artifact);
-  gfx::RectF VisualRectForOverlapTesting(
-      const PropertyTreeState& ancestor_state) const;
   gfx::RectF MapRectKnownToBeOpaque(const PropertyTreeState&) const;
   bool MergeInternal(const PendingLayer& guest,
                      const PropertyTreeState& guest_state,

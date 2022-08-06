@@ -30,8 +30,6 @@
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/event_constants.h"
@@ -51,21 +49,12 @@ void UpdateAppRegistryCache(Profile* profile,
       block ? apps::Readiness::kDisabledByPolicy : apps::Readiness::kReady;
   app->paused = pause;
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    std::vector<apps::AppPtr> apps;
-    apps.push_back(std::move(app));
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .OnApps(std::move(apps), apps::AppType::kChromeApp,
-                false /* should_notify_initialized */);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_deltas;
-    mojom_deltas.push_back(apps::ConvertAppToMojomApp(app));
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .OnApps(std::move(mojom_deltas), apps::mojom::AppType::kChromeApp,
-                false /* should_notify_initialized */);
-  }
+  std::vector<apps::AppPtr> apps;
+  apps.push_back(std::move(app));
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .OnApps(std::move(apps), apps::AppType::kChromeApp,
+              false /* should_notify_initialized */);
 }
 
 void UpdateAppNameInRegistryCache(Profile* profile,
@@ -75,21 +64,12 @@ void UpdateAppNameInRegistryCache(Profile* profile,
       std::make_unique<apps::App>(apps::AppType::kChromeApp, app_id);
   app->name = app_name;
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    std::vector<apps::AppPtr> apps;
-    apps.push_back(std::move(app));
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .OnApps(std::move(apps), apps::AppType::kChromeApp,
-                false /* should_notify_initialized */);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_deltas;
-    mojom_deltas.push_back(apps::ConvertAppToMojomApp(app));
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .OnApps(std::move(mojom_deltas), apps::mojom::AppType::kChromeApp,
-                false /* should_notify_initialized */);
-  }
+  std::vector<apps::AppPtr> apps;
+  apps.push_back(std::move(app));
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .OnApps(std::move(apps), apps::AppType::kChromeApp,
+              false /* should_notify_initialized */);
 }
 
 ash::AppListItem* GetAppListItem(const std::string& id) {
@@ -115,11 +95,10 @@ class AppServiceAppItemBrowserTest : public extensions::PlatformAppBrowserTest {
   }
 
   std::unique_ptr<AppServiceAppItem> CreateUserInstalledChromeApp() {
-    apps::mojom::App app;
-    app.app_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    app.app_type = apps::mojom::AppType::kChromeApp;
-    app.install_reason = apps::mojom::InstallReason::kUser;
-    apps::AppUpdate app_update(/*state=*/nullptr, /*delta=*/&app,
+    auto app = std::make_unique<apps::App>(apps::AppType::kChromeApp,
+                                           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    app->install_reason = apps::InstallReason::kUser;
+    apps::AppUpdate app_update(/*state=*/nullptr, /*delta=*/app.get(),
                                EmptyAccountId());
     return std::make_unique<AppServiceAppItem>(
         profile(), /*model_updater=*/nullptr,
@@ -276,9 +255,8 @@ IN_PROC_BROWSER_TEST_P(AppServiceSystemWebAppItemBrowserTest, Activate) {
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->FlushMojoCallsForTesting();
 
-  apps::mojom::App help_app;
-  help_app.app_id = app_id;
-  apps::AppUpdate app_update(/*state=*/nullptr, /*delta=*/&help_app,
+  auto help_app = std::make_unique<apps::App>(apps::AppType::kWeb, app_id);
+  apps::AppUpdate app_update(/*state=*/nullptr, /*delta=*/help_app.get(),
                              EmptyAccountId());
   AppServiceAppItem app_item(profile, /*model_updater=*/nullptr,
                              /*sync_item=*/nullptr, app_update);

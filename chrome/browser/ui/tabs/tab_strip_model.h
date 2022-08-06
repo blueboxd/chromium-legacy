@@ -91,19 +91,6 @@ class TabGroupModelFactory {
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModel : public TabGroupController {
  public:
-  // Used to specify what should happen when the tab is closed.
-  enum CloseTypes {
-    CLOSE_NONE                     = 0,
-
-    // Indicates the tab was closed by the user. If true,
-    // WebContents::SetClosedByUserGesture(true) is invoked.
-    CLOSE_USER_GESTURE             = 1 << 0,
-
-    // If true the history is recorded so that the tab can be reopened later.
-    // You almost always want to set this.
-    CLOSE_CREATE_HISTORICAL_TAB    = 1 << 1,
-  };
-
   // Constants used when adding tabs.
   enum AddTabTypes {
     // Used to indicate nothing special should happen to the newly inserted tab.
@@ -245,9 +232,13 @@ class TabStripModel : public TabGroupController {
   Profile* profile() const { return profile_; }
 
   // Retrieve the index of the currently active WebContents. This will be
-  // ui::ListSelectionModel::kUnselectedIndex if no tab is currently selected
-  // (this happens while the tab strip is being initialized or is empty).
-  int active_index() const { return selection_model_.active(); }
+  // kNoTab if no tab is currently selected (this happens while the tab strip is
+  // being initialized or is empty).
+  int active_index() const {
+    return selection_model_.active().has_value()
+               ? static_cast<int>(selection_model_.active().value())
+               : kNoTab;
+  }
 
   // Returns true if the tabstrip is currently closing all open tabs (via a
   // call to CloseAllTabs). As tabs close, the selection in the tabstrip

@@ -31,7 +31,7 @@ group("resources") {
       "commander:resources",
       "downloads:resources",
       "feed:resources",
-      "feedback_webui:resources",
+      "feedback:resources",
       "gaia_auth_host:resources",
       "history:resources",
       "image_editor:trusted_resources",
@@ -44,6 +44,7 @@ group("resources") {
       "profile_internals:resources",
       "settings:resources",
       "side_panel:resources",
+      "side_panel/customize_chrome:resources",
       "signin:resources",
       "support_tool:resources",
       "tab_search:resources",
@@ -125,7 +126,6 @@ if (enable_js_type_check) {
         "gaia_auth_host:closure_compile",
         "image_editor:closure_compile",
         "inline_login:closure_compile",
-        "omnibox:closure_compile",
       ]
     }
     if (is_chromeos_ash) {

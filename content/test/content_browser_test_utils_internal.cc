@@ -757,6 +757,9 @@ void DevToolsInspectorLogWatcher::FlushAndStopWatching() {
   run_loop_disable_log_.Run();
 }
 
+FrameNavigateParamsCapturer::FrameNavigateParamsCapturer(WebContents* contents)
+    : WebContentsObserver(contents) {}
+
 FrameNavigateParamsCapturer::FrameNavigateParamsCapturer(FrameTreeNode* node)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(node->current_frame_host())),
@@ -767,7 +770,9 @@ FrameNavigateParamsCapturer::~FrameNavigateParamsCapturer() = default;
 void FrameNavigateParamsCapturer::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted() ||
-      navigation_handle->GetFrameTreeNodeId() != frame_tree_node_id_ ||
+      (frame_tree_node_id_.has_value() &&
+       navigation_handle->GetFrameTreeNodeId() !=
+           frame_tree_node_id_.value()) ||
       navigations_remaining_ == 0) {
     return;
   }

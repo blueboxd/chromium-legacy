@@ -1,15 +1,8 @@
-    <style include="cr-shared-style settings-page-styles cr-hidden-style iron-flex settings-shared">
+    <style include="cr-shared-style settings-page-styles cr-hidden-style iron-flex">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
         overflow: hidden;
-      }
-
-      #osSettingsBanner {
-        background-color: var(--cr-card-background-color);
-        border-radius: var(--cr-card-border-radius);
-        box-shadow: var(--cr-card-shadow);
-        margin-top: 21px;
       }
 
       :host(:not([in-search-mode])) settings-section:not([active]) {
@@ -23,20 +16,6 @@
           <settings-reset-profile-banner on-close="onResetProfileBannerClosed_">
           </settings-reset-profile-banner>
         </template>
-<if expr="chromeos_ash or chromeos_lacros">
-        <template is="dom-if" if="[[showOSSettingsBanner_]]">
-          <div id="osSettingsBanner" class="cr-row first">
-            <div class="flex cr-padded-text"
-                on-click="onOSSettingsBannerClick_">
-              $i18nRaw{osSettingsBannerText}
-            </div>
-            <cr-icon-button class="icon-clear"
-                title="$i18n{close}"
-                on-click="onOSSettingsBannerClosed_">
-            </cr-icon-button>
-          </div>
-        </template>
-</if>
         <template is="dom-if" if="[[showPage_(pageVisibility.people)]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
@@ -108,8 +87,8 @@
         </template>
       </div>
     </template>
-
-    <template is="dom-if" if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
+    <template is="dom-if"
+        if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
       <settings-idle-load id="advancedPageTemplate">
         <template>
           <div id="advancedPage" hidden$="[[!showAdvancedPage_(
@@ -117,7 +96,18 @@
               advancedToggleExpanded)]]">
             <template is="dom-if" if="[[showPage_(pageVisibility.languages)]]"
                 restamp>
-              <settings-section page-title="$i18n{languagesPageTitle}"
+<if expr="not chromeos_ash">
+              <settings-languages languages="{{languages}}" prefs="{{prefs}}"
+                  language-helper="{{languageHelper}}">
+              </settings-languages>
+</if>
+              <settings-section
+<if expr="not chromeos_ash">
+                  page-title="$i18n{languagesCardTitle}"
+</if>
+<if expr="chromeos_ash">
+                  page-title="$i18n{languagesPageTitle}"
+</if>
                   section="languages">
 <if expr="chromeos_ash">
                 <cr-link-row id="openChromeOSLanguagesSettings"
@@ -126,11 +116,36 @@
                 </cr-link-row>
 </if>
 <if expr="not chromeos_ash">
-                <settings-languages-page prefs="{{prefs}}">
+                <settings-languages-page prefs="{{prefs}}"
+                    languages="{{languages}}"
+                    language-helper="{{languageHelper}}">
                 </settings-languages-page>
 </if>
               </settings-section>
             </template>
+<if expr="not chromeos_ash">
+            <template is="dom-if" if="[[showPage_(pageVisibility.spellCheck)]]"
+                restamp>
+              <settings-section page-title="$i18n{spellCheckTitle}"
+                  section="spellCheck" nest-under-section="languages"
+                  id="spellCheckSettingsSection">
+                <settings-spell-check-page prefs="{{prefs}}"
+                    languages="{{languages}}"
+                    language-helper="{{languageHelper}}">
+                </settings-spell-check-page>
+              </settings-section>
+            </template>
+            <template is="dom-if"
+                if="[[enableDesktopDetailedLanguageSettings_]]" restamp>
+              <settings-section page-title="$i18n{translatePageTitle}"
+                  section="translate" nest-under-section="languages">
+                <settings-translate-page prefs="{{prefs}}"
+                    languages="{{languages}}"
+                    language-helper="{{languageHelper}}">
+                </settings-translate-page>
+              </settings-section>
+            </template>
+</if>
             <template is="dom-if" if="[[showPage_(pageVisibility.downloads)]]"
                 restamp>
               <settings-section page-title="$i18n{downloadsPageTitle}"

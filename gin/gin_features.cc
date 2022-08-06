@@ -34,6 +34,8 @@ const base::Feature kV8OptimizeJavascript{"V8OptimizeJavascript",
 // Enables flushing of JS bytecode in V8.
 const base::Feature kV8FlushBytecode{"V8FlushBytecode",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+const base::FeatureParam<int> kV8FlushBytecodeOldAge{
+    &kV8FlushBytecode, "V8FlushBytecodeOldAge", 5};
 
 // Enables flushing of baseline code in V8.
 const base::Feature kV8FlushBaselineCode{"V8FlushBaselineCode",
@@ -87,7 +89,9 @@ const base::Feature kV8ConcurrentSparkplug{"V8ConcurrentSparkplug",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kV8ConcurrentSparkplugMaxThreads{
     &kV8ConcurrentSparkplug, "V8ConcurrentSparkplugMaxThreads", 0};
-
+const base::Feature kV8ConcurrentSparkplugHighPriorityThreads{
+    "V8ConcurrentSparkplugHighPriorityThreads",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 // Makes sure the experimental Sparkplug compiler is only enabled if short
 // builtin calls are enabled too.
 const base::Feature kV8SparkplugNeedsShortBuiltinCalls{
@@ -126,11 +130,5 @@ const base::Feature kV8SlowHistogramsSparkplugAndroid{
     "V8SlowHistogramsSparkplugAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kV8SlowHistogramsScriptAblation{
     "V8SlowHistogramsScriptAblation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the experimental V8 sandbox. This is called V8VirtualMemoryCage
-// instead of V8Sandbox for historical reasons.
-// TODO(1218005) remove this once the finch trial has ended.
-const base::Feature kV8VirtualMemoryCage{"V8VirtualMemoryCage",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

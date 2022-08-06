@@ -16,6 +16,8 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.graphics.Bitmap;
 
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,13 +29,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.Robolectric;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.common.ContextMenuDataMediaType;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserverJni;
@@ -42,6 +42,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.favicon.LargeIconBridgeJni;
+import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -55,6 +56,9 @@ public class ContextMenuHeaderMediatorTest {
     public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule
     public JniMocker mocker = new JniMocker();
+    @Rule
+    public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
+            new ActivityScenarioRule<>(TestActivity.class);
 
     @Mock
     PerformanceHintsObserver.Natives mMockPerformanceHintsObserverJni;
@@ -73,8 +77,7 @@ public class ContextMenuHeaderMediatorTest {
 
     @Before
     public void setUpTest() {
-        mActivity = Robolectric.setupActivity(Activity.class);
-        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
+        mActivityScenarioRule.getScenario().onActivity((activity) -> mActivity = activity);
         MockitoAnnotations.initMocks(this);
         mocker.mock(PerformanceHintsObserverJni.TEST_HOOKS, mMockPerformanceHintsObserverJni);
         mocker.mock(LargeIconBridgeJni.TEST_HOOKS, mMockLargeIconBridgeJni);

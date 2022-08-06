@@ -11,6 +11,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/app_mode/app_session.h"
+#include "chrome/browser/chromeos/app_mode/app_session_browser_window_handler.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -98,12 +99,12 @@ TEST_F(AppSessionTest, WebKioskTracksBrowserCreation) {
 
   WebKioskTracksBrowserCreationTest();
 
-  const base::Value* value = local_state()->GetDictionary(prefs::kKioskMetrics);
-  ASSERT_TRUE(value);
-  const base::Value* sessions_list =
-      value->FindListKey(kKioskSessionLastDayList);
+  const base::Value::Dict& dict =
+      local_state()->GetValueDict(prefs::kKioskMetrics);
+  const base::Value::List* sessions_list =
+      dict.FindList(kKioskSessionLastDayList);
   ASSERT_TRUE(sessions_list);
-  EXPECT_EQ(1, sessions_list->GetIfList()->size());
+  EXPECT_EQ(1, sessions_list->size());
 
   histogram.ExpectBucketCount(kKioskSessionStateHistogram,
                               KioskSessionState::kWebStarted, 1);
@@ -114,6 +115,11 @@ TEST_F(AppSessionTest, WebKioskTracksBrowserCreation) {
   histogram.ExpectTotalCount(kKioskSessionDurationNormalHistogram, 1);
   histogram.ExpectTotalCount(kKioskSessionDurationInDaysNormalHistogram, 0);
   histogram.ExpectTotalCount(kKioskSessionCountPerDayHistogram, 1);
+
+  histogram.ExpectBucketCount(kKioskNewBrowserWindowHistogram,
+                              KioskBrowserWindowType::kOther, 1);
+  histogram.ExpectBucketCount(kKioskNewBrowserWindowHistogram,
+                              KioskBrowserWindowType::kSettingsPage, 0);
 }
 
 // Check that sessions list in local_state contains only sessions within the
@@ -146,15 +152,15 @@ TEST_F(AppSessionTest, WebKioskLastDaySessions) {
 
   WebKioskTracksBrowserCreationTest();
 
-  const base::Value* value = local_state()->GetDictionary(prefs::kKioskMetrics);
-  ASSERT_TRUE(value);
-  const base::Value* sessions_list =
-      value->FindListKey(kKioskSessionLastDayList);
+  const base::Value::Dict& dict =
+      local_state()->GetValueDict(prefs::kKioskMetrics);
+  const base::Value::List* sessions_list =
+      dict.FindList(kKioskSessionLastDayList);
   ASSERT_TRUE(sessions_list);
   // There should be only two kiosk sessions on the list:
   // the one that happened right before the current one and the current one.
-  EXPECT_EQ(2, sessions_list->GetIfList()->size());
-  for (const auto& time : *sessions_list->GetIfList()) {
+  EXPECT_EQ(2, sessions_list->size());
+  for (const auto& time : *sessions_list) {
     EXPECT_LE(base::Time::Now() - base::ValueToTime(time).value(),
               base::Days(1));
   }

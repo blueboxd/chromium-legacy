@@ -7,10 +7,10 @@ import {$} from 'chrome://resources/js/util.m.js';
 
 type Process = [number, string, boolean];
 
-type ProcessList = {
-  message: string,
-  processes: Process[],
-};
+interface ProcessList {
+  message: string;
+  processes: Process[];
+}
 
 function requestProcessList() {
   sendWithPromise('requestProcessList').then(onProcessListReceived);
@@ -58,7 +58,9 @@ function onProcessListReceived(data: ProcessList) {
 
   // Heading.
   addListRow(table, 'th', [
-    null, document.createTextNode('Process ID'), document.createTextNode('Name')
+    null,
+    document.createTextNode('Process ID'),
+    document.createTextNode('Name'),
   ]);
 
   for (const proc of processes) {

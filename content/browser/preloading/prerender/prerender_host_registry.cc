@@ -15,6 +15,7 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "build/build_config.h"
+#include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -73,7 +75,8 @@ void PrerenderHostRegistry::RemoveObserver(Observer* observer) {
 
 int PrerenderHostRegistry::CreateAndStartHost(
     const PrerenderAttributes& attributes,
-    WebContents& web_contents) {
+    WebContents& web_contents,
+    PreloadingAttempt* attempt) {
   std::string recorded_url =
       attributes.initiator_origin.has_value()
           ? attributes.initiator_origin.value().GetURL().spec()
@@ -95,6 +98,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     WebContentsDelegate* web_contents_delegate = web_contents.GetDelegate();
     if (!web_contents_delegate ||
         !web_contents_delegate->IsPrerender2Supported(web_contents)) {
+      if (attempt)
+        attempt->SetEligibility(PreloadingEligibility::kPreloadingDisabled);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -103,6 +108,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
       RecordPrerenderHostFinalStatus(
           PrerenderHost::FinalStatus::kTriggerBackgrounded, attributes,
           ukm::kInvalidSourceId);
+      if (attempt)
+        attempt->SetEligibility(PreloadingEligibility::kHidden);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -112,6 +119,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     if (!DeviceHasEnoughMemoryForPrerender()) {
       RecordPrerenderHostFinalStatus(PrerenderHost::FinalStatus::kLowEndDevice,
                                      attributes, ukm::kInvalidSourceId);
+      if (attempt)
+        attempt->SetEligibility(PreloadingEligibility::kLowMemory);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -125,26 +134,56 @@ int PrerenderHostRegistry::CreateAndStartHost(
       RecordPrerenderHostFinalStatus(
           PrerenderHost::FinalStatus::kCrossOriginNavigation, attributes,
           ukm::kInvalidSourceId);
+      if (attempt)
+        attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
+    // Once all eligibility checks are completed, set the status to kEligible.
+    if (attempt)
+      attempt->SetEligibility(PreloadingEligibility::kEligible);
+
+    // Check for the HoldbackStatus after checking the eligibility.
+    if (base::FeatureList::IsEnabled(features::kPrerender2Holdback)) {
+      if (attempt)
+        attempt->SetHoldbackStatus(PreloadingHoldbackStatus::kHoldback);
+      return RenderFrameHost::kNoFrameTreeNodeId;
+    }
+    if (attempt)
+      attempt->SetHoldbackStatus(PreloadingHoldbackStatus::kAllowed);
+
     // Ignore prerendering requests for the same URL.
     for (auto& iter : prerender_host_by_frame_tree_node_id_) {
-      if (iter.second->GetInitialUrl() == attributes.prerendering_url)
+      if (iter.second->GetInitialUrl() == attributes.prerendering_url) {
+        if (attempt) {
+          attempt->SetTriggeringOutcome(
+              PreloadingTriggeringOutcome::kDuplicate);
+        }
+
         return RenderFrameHost::kNoFrameTreeNodeId;
+      }
     }
 
     // TODO(crbug.com/1197133): Cancel the started prerender and start a new
     // one if the score of the new candidate is higher than the started one's.
     if (!IsAllowedToStartPrerenderingForTrigger(attributes.trigger_type)) {
+      if (attempt) {
+        // The reason we don't consider limit exceeded as an ineligibility
+        // reason is because we can't replicate the behavior in our other
+        // experiment groups for analysis. To prevent this we set
+        // TriggeringOutcome to kFailure and look into the failure reason to
+        // learn more.
+        attempt->SetTriggeringOutcome(PreloadingTriggeringOutcome::kFailure);
+      }
       RecordPrerenderHostFinalStatus(
           PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded,
           attributes, ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
+    auto* attempt_impl = static_cast<PreloadingAttemptImpl*>(attempt);
     auto prerender_host =
-        std::make_unique<PrerenderHost>(attributes, web_contents);
+        std::make_unique<PrerenderHost>(attributes, web_contents, attempt_impl);
     frame_tree_node_id = prerender_host->frame_tree_node_id();
 
     CHECK(!base::Contains(prerender_host_by_frame_tree_node_id_,
@@ -162,6 +201,18 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // kStartFailed.
     CancelHost(frame_tree_node_id, PrerenderHost::FinalStatus::kDestroyed);
     return RenderFrameHost::kNoFrameTreeNodeId;
+  }
+
+  // Check the current memory usage and destroy a prerendering if the entire
+  // browser uses excessive memory. This occurs asynchronously.
+  switch (attributes.trigger_type) {
+    case PrerenderTriggerType::kSpeculationRule:
+      DestroyWhenUsingExcessiveMemory(frame_tree_node_id);
+      break;
+    case PrerenderTriggerType::kEmbedder:
+      // We don't check the memory usage for embedder triggered prerenderings
+      // for now.
+      break;
   }
 
   RecordPrerenderTriggered(attributes.initiator_ukm_id);
@@ -480,16 +531,7 @@ const std::string& PrerenderHostRegistry::GetPrerenderEmbedderHistogramSuffix(
 
 bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
     PrerenderTriggerType trigger_type) {
-  // Currently the number prerenders is limited to two per WebContentsImpl.
-  const size_t kMaxNumOfRunningPrerenders = 2;
-
-  if (prerender_host_by_frame_tree_node_id_.size() ==
-      kMaxNumOfRunningPrerenders)
-    return false;
-
   int trigger_type_count = 0;
-  DCHECK_LT(prerender_host_by_frame_tree_node_id_.size(),
-            kMaxNumOfRunningPrerenders);
   for (const auto& host_by_id : prerender_host_by_frame_tree_node_id_) {
     if (host_by_id.second->trigger_type() == trigger_type)
       ++trigger_type_count;
@@ -497,12 +539,67 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
 
   switch (trigger_type) {
     case PrerenderTriggerType::kSpeculationRule:
-      // Speculation Rules trigger is allowed to start only one prerender.
-      return trigger_type_count < 1;
+      // The number of prerenders triggered by speculation rules is limited to a
+      // Finch config param.
+      return trigger_type_count <
+             base::GetFieldTrialParamByFeatureAsInt(
+                 blink::features::kPrerender2,
+                 blink::features::kPrerender2MaxNumOfRunningSpeculationRules,
+                 1);
     case PrerenderTriggerType::kEmbedder:
-      // Embedder triggers are allowed to start at most 2 concurrent
-      // prerenders.
+      // Currently the number of prerenders triggered by an embedder is limited
+      // to two.
       return trigger_type_count < 2;
+  }
+}
+
+void PrerenderHostRegistry::DestroyWhenUsingExcessiveMemory(
+    int frame_tree_node_id) {
+  if (!base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls))
+    return;
+
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestPrivateMemoryFootprint(
+          base::kNullProcessId,
+          base::BindOnce(&PrerenderHostRegistry::DidReceiveMemoryDump,
+                         weak_factory_.GetWeakPtr(), frame_tree_node_id));
+}
+
+void PrerenderHostRegistry::DidReceiveMemoryDump(
+    int frame_tree_node_id,
+    bool success,
+    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
+  DCHECK(
+      base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls));
+  // Stop a prerendering when we can't get the current memory usage.
+  if (!success) {
+    CancelHost(frame_tree_node_id,
+               PrerenderHost::FinalStatus::kFailToGetMemoryUsage);
+    return;
+  }
+
+  int64_t private_footprint_total_kb = 0;
+  for (const auto& pmd : dump->process_dumps()) {
+    private_footprint_total_kb += pmd.os_dump().private_footprint_kb;
+  }
+
+  // TODO(crbug.com/1273341): Finalize the threshold after the experiment
+  // completes. The default acceptable percent is 20% of the system memory.
+  int acceptable_percent_of_system_memory =
+      base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kPrerender2MemoryControls,
+          blink::features::
+              kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName,
+          20);
+
+  // When the current memory usage is higher than
+  // `acceptable_percent_of_system_memory` % of the system memory, cancel a
+  // prerendering with `frame_tree_node_id`.
+  if (private_footprint_total_kb * 1024 >=
+      acceptable_percent_of_system_memory * 0.01 *
+          base::SysInfo::AmountOfPhysicalMemory()) {
+    CancelHost(frame_tree_node_id,
+               PrerenderHost::FinalStatus::kMemoryLimitExceeded);
   }
 }
 

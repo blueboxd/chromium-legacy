@@ -56,6 +56,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/features.h"
@@ -75,17 +76,20 @@ using base::Time;
 namespace net {
 
 static constexpr int kMinutesInTwelveHours = 12 * 60;
+static constexpr int kMinutesInTwentyFourHours = 24 * 60;
 
 namespace {
 
 // Determine the cookie domain to use for setting the specified cookie.
 bool GetCookieDomain(const GURL& url,
                      const ParsedCookie& pc,
+                     CookieInclusionStatus& status,
                      std::string* result) {
   std::string domain_string;
   if (pc.HasDomain())
     domain_string = pc.Domain();
-  return cookie_util::GetCookieDomainWithString(url, domain_string, result);
+  return cookie_util::GetCookieDomainWithString(url, domain_string, status,
+                                                result);
 }
 
 // Compares cookies using name, domain and path, so that "equivalent" cookies
@@ -303,32 +307,6 @@ void ApplySameSiteCookieWarningToStatus(
   status->MaybeClearSameSiteWarning();
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SameSiteNonePartyContextType {
-  // SameSite=None was required in order for the cookie to be included.
-  kSameSiteNoneRequired = 0,
-  // The cookie would have been included if it were SameParty (using only the
-  // top frame and resource URL).
-  kSamePartyTopResource = 1,
-  // The cookie would have been included if it were SameParty (using the
-  // resource URL and all frame ancestors).
-  kSamePartyAncestors = 2,
-  // The cookie would have been included if it were SameSite=Lax.
-  kSameSiteLax = 3,
-  // The cookie would have been included if it were SameSite=Strict.
-  kSameSiteStrict = 4,
-  kMaxValue = kSameSiteStrict
-};
-
-void RecordSameSiteNoneReadContextMetric(SameSiteNonePartyContextType type) {
-  UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteNone.PartyContext.Read", type);
-}
-
-void RecordSameSiteNoneWriteContextMetric(SameSiteNonePartyContextType type) {
-  UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteNone.PartyContext.Write", type);
-}
-
 // Converts CookieSameSite to CookieSameSiteForMetrics by adding 1 to it.
 CookieSameSiteForMetrics CookieSameSiteToCookieSameSiteForMetrics(
     CookieSameSite enum_in) {
@@ -364,9 +342,8 @@ bool HasValidHostPrefixAttributes(const GURL& url,
 // TODO(crbug.com/1296161): Determine if we need to delete this function.
 bool HasValidAttributesForPartitioned(const GURL& url,
                                       bool secure,
-                                      const std::string& path,
                                       bool is_same_party) {
-  return url.SchemeIsCryptographic() && secure && path == "/" && !is_same_party;
+  return url.SchemeIsCryptographic() && secure && !is_same_party;
 }
 
 }  // namespace
@@ -491,18 +468,32 @@ Time CanonicalCookie::ParseExpiration(const ParsedCookie& pc,
       base::TimeDelta clock_skew = (current - server_time);
       // Record the magnitude (absolute value) of the skew in minutes.
       int clock_skew_magnitude = clock_skew.magnitude().InMinutes();
+      // Determine the new expiry with clock skew factored in.
+      Time adjusted_expiry = parsed_expiry + (current - server_time);
       if (clock_skew.is_positive() || clock_skew.is_zero()) {
         UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ClockSkew.AddMinutes",
                                     clock_skew_magnitude, 1,
                                     kMinutesInTwelveHours, 100);
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ClockSkew.AddMinutes12To24Hours",
+                                    clock_skew_magnitude, kMinutesInTwelveHours,
+                                    kMinutesInTwentyFourHours, 100);
+        // Also record the range of minutes added that allowed the cookie to
+        // avoid expiring immediately.
+        if (parsed_expiry <= Time::Now() && adjusted_expiry > Time::Now()) {
+          UMA_HISTOGRAM_CUSTOM_COUNTS(
+              "Cookie.ClockSkew.WithoutAddMinutesExpires", clock_skew_magnitude,
+              1, kMinutesInTwentyFourHours, 100);
+        }
       } else if (clock_skew.is_negative()) {
         // These histograms only support positive numbers, so negative skews
         // will be converted to positive (via magnitude) before recording.
         UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ClockSkew.SubtractMinutes",
                                     clock_skew_magnitude, 1,
                                     kMinutesInTwelveHours, 100);
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Cookie.ClockSkew.SubtractMinutes12To24Hours", clock_skew_magnitude,
+            kMinutesInTwelveHours, kMinutesInTwentyFourHours, 100);
       }
-      Time adjusted_expiry = parsed_expiry + (current - server_time);
       // Record if we were going to expire the cookie before we added the clock
       // skew.
       UMA_HISTOGRAM_BOOLEAN(
@@ -577,7 +568,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
                             !base::IsStringASCII(parsed_cookie.Domain()));
 
   std::string cookie_domain;
-  if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
+  if (!GetCookieDomain(url, parsed_cookie, *status, &cookie_domain)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed to get a valid cookie domain";
     status->AddExclusionReason(CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
@@ -598,6 +589,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   CookiePrefix prefix = GetCookiePrefix(parsed_cookie.Name());
   bool is_cookie_prefix_valid = IsCookiePrefixValid(prefix, url, parsed_cookie);
   RecordCookiePrefixMetrics(prefix, is_cookie_prefix_valid);
+
+  if (parsed_cookie.Name() == "") {
+    is_cookie_prefix_valid = !HasHiddenPrefixName(parsed_cookie.Value());
+  }
+
   if (!is_cookie_prefix_valid) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
@@ -755,7 +751,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
   } else if (!cookie_util::GetCookieDomainWithString(url, domain_attribute,
-                                                     &cookie_domain)) {
+                                                     *status, &cookie_domain)) {
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
   }
@@ -809,11 +805,16 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
         net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX);
   }
 
+  if (name == "" && HasHiddenPrefixName(value)) {
+    status->AddExclusionReason(
+        net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX);
+  }
+
   if (!IsCookieSamePartyValid(same_party, secure, same_site)) {
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
   }
-  if (!IsCookiePartitionedValid(url, secure, cookie_path,
+  if (!IsCookiePartitionedValid(url, secure,
                                 /*is_partitioned=*/partition_key.has_value(),
                                 /*is_same_party=*/same_party,
                                 /*partition_has_nonce=*/
@@ -1143,47 +1144,6 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     UMA_HISTOGRAM_ENUMERATION("Cookie.IncludedRequestEffectiveSameSite",
                               effective_same_site,
                               CookieEffectiveSameSite::COUNT);
-
-    if (SameSite() == CookieSameSite::NO_RESTRICTION) {
-      SamePartyContext::Type top_resource =
-          options.same_party_context().top_resource_for_metrics_only();
-      SamePartyContext::Type ancestors =
-          options.same_party_context().ancestors_for_metrics_only();
-
-      if (top_resource == SamePartyContext::Type::kCrossParty) {
-        status.AddWarningReason(
-            CookieInclusionStatus::WARN_SAMESITE_NONE_REQUIRED);
-        RecordSameSiteNoneReadContextMetric(
-            SameSiteNonePartyContextType::kSameSiteNoneRequired);
-      } else if (ancestors == SamePartyContext::Type::kCrossParty) {
-        status.AddWarningReason(
-            CookieInclusionStatus::
-                WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_TOP_RESOURCE);
-        RecordSameSiteNoneReadContextMetric(
-            SameSiteNonePartyContextType::kSamePartyTopResource);
-      } else if (cookie_inclusion_context <
-                 CookieOptions::SameSiteCookieContext::ContextType::
-                     SAME_SITE_LAX) {
-        status.AddWarningReason(
-            CookieInclusionStatus::
-                WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_ANCESTORS);
-        RecordSameSiteNoneReadContextMetric(
-            SameSiteNonePartyContextType::kSamePartyAncestors);
-      } else if (cookie_inclusion_context <
-                 CookieOptions::SameSiteCookieContext::ContextType::
-                     SAME_SITE_STRICT) {
-        status.AddWarningReason(
-            CookieInclusionStatus::WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_LAX);
-        RecordSameSiteNoneReadContextMetric(
-            SameSiteNonePartyContextType::kSameSiteLax);
-      } else {
-        status.AddWarningReason(
-            CookieInclusionStatus::
-                WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_STRICT);
-        RecordSameSiteNoneReadContextMetric(
-            SameSiteNonePartyContextType::kSameSiteStrict);
-      }
-    }
   }
 
   using ContextRedirectTypeBug1221316 = CookieOptions::SameSiteCookieContext::
@@ -1386,42 +1346,6 @@ CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
     UMA_HISTOGRAM_ENUMERATION("Cookie.IncludedResponseEffectiveSameSite",
                               access_result.effective_same_site,
                               CookieEffectiveSameSite::COUNT);
-
-    if (SameSite() == CookieSameSite::NO_RESTRICTION) {
-      SamePartyContext::Type top_resource =
-          options.same_party_context().top_resource_for_metrics_only();
-      SamePartyContext::Type ancestors =
-          options.same_party_context().ancestors_for_metrics_only();
-
-      if (top_resource == SamePartyContext::Type::kCrossParty) {
-        access_result.status.AddWarningReason(
-            CookieInclusionStatus::WARN_SAMESITE_NONE_REQUIRED);
-        RecordSameSiteNoneWriteContextMetric(
-            SameSiteNonePartyContextType::kSameSiteNoneRequired);
-      } else if (ancestors == SamePartyContext::Type::kCrossParty) {
-        access_result.status.AddWarningReason(
-            CookieInclusionStatus::
-                WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_TOP_RESOURCE);
-        RecordSameSiteNoneWriteContextMetric(
-            SameSiteNonePartyContextType::kSamePartyTopResource);
-      } else if (cookie_inclusion_context <
-                 CookieOptions::SameSiteCookieContext::ContextType::
-                     SAME_SITE_LAX) {
-        access_result.status.AddWarningReason(
-            CookieInclusionStatus::
-                WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_ANCESTORS);
-        RecordSameSiteNoneWriteContextMetric(
-            SameSiteNonePartyContextType::kSamePartyAncestors);
-      } else {
-        // NB: unlike when sending a cookie, there's no distinction between
-        // SameSite=Lax and SameSite=Strict when setting a cookie.
-        access_result.status.AddWarningReason(
-            CookieInclusionStatus::
-                WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_STRICT);
-        RecordSameSiteNoneWriteContextMetric(
-            SameSiteNonePartyContextType::kSameSiteStrict);
-      }
-    }
   }
 
   using ContextRedirectTypeBug1221316 = CookieOptions::SameSiteCookieContext::
@@ -1527,13 +1451,16 @@ bool CanonicalCookie::IsCanonicalForFromStorage() const {
       break;
   }
 
+  if (name_ == "" && HasHiddenPrefixName(value_))
+    return false;
+
   if (!IsCookieSamePartyValid(same_party_, secure_, same_site_))
     return false;
 
   if (IsPartitioned()) {
     if (CookiePartitionKey::HasNonce(partition_key_))
       return true;
-    if (!secure_ || path_ != "/" || same_party_) {
+    if (!secure_ || same_party_) {
       return false;
     }
   }
@@ -1650,6 +1577,40 @@ CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite(
   }
 }
 
+// static
+bool CanonicalCookie::HasHiddenPrefixName(
+    const base::StringPiece cookie_value) {
+  // Skip BWS as defined by HTTPSEM as SP or HTAB (0x20 or 0x9).
+  base::StringPiece value_without_BWS =
+      base::TrimString(cookie_value, " \t", base::TRIM_LEADING);
+
+  const base::StringPiece host_prefix = "__Host-";
+
+  // Compare the value to the host_prefix.
+  if (base::StartsWith(value_without_BWS, host_prefix)) {
+    // The prefix matches, now check if the value string contains a subsequent
+    // '='.
+    if (value_without_BWS.find_first_of('=', host_prefix.size()) !=
+        base::StringPiece::npos) {
+      // This value contains a hidden prefix name.
+      return true;
+    }
+    return false;
+  }
+
+  // Do a similar check for the secure prefix
+  const base::StringPiece secure_prefix = "__Secure-";
+
+  if (base::StartsWith(value_without_BWS, secure_prefix)) {
+    if (value_without_BWS.find_first_of('=', secure_prefix.size()) !=
+        base::StringPiece::npos) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {
   return (base::Time::Now() - creation_date_) <= age_threshold;
 }
@@ -1678,7 +1639,6 @@ bool CanonicalCookie::IsCookiePartitionedValid(
     bool partition_has_nonce) {
   return IsCookiePartitionedValid(
       url, /*secure=*/parsed_cookie.IsSecure(),
-      parsed_cookie.HasPath() ? parsed_cookie.Path() : "",
       /*is_partitioned=*/parsed_cookie.IsPartitioned(),
       /*is_same_party=*/parsed_cookie.IsSameParty(), partition_has_nonce);
 }
@@ -1686,7 +1646,6 @@ bool CanonicalCookie::IsCookiePartitionedValid(
 // static
 bool CanonicalCookie::IsCookiePartitionedValid(const GURL& url,
                                                bool secure,
-                                               const std::string& path,
                                                bool is_partitioned,
                                                bool is_same_party,
                                                bool partition_has_nonce) {
@@ -1694,10 +1653,9 @@ bool CanonicalCookie::IsCookiePartitionedValid(const GURL& url,
     return true;
   if (partition_has_nonce)
     return true;
-  bool result =
-      HasValidAttributesForPartitioned(url, secure, path, is_same_party);
+  bool result = HasValidAttributesForPartitioned(url, secure, is_same_party);
   DLOG_IF(WARNING, !result)
-      << "CanonicalCookie has invalid Partitioned attribute ";
+      << "CanonicalCookie has invalid Partitioned attribute";
   return result;
 }
 

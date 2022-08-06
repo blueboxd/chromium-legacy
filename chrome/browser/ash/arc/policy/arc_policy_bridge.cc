@@ -637,6 +637,15 @@ void ArcPolicyBridge::ReportDPCVersion(const std::string& version) {
     observer.OnReportDPCVersion(version);
 }
 
+void ArcPolicyBridge::ReportPlayStoreLocalPolicySet(
+    base::Time time,
+    const std::vector<std::string>& package_names) {
+  const std::set<std::string> packages_set(package_names.begin(),
+                                           package_names.end());
+  for (Observer& observer : observers_)
+    observer.OnPlayStoreLocalPolicySet(time, packages_set);
+}
+
 void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
@@ -703,7 +712,7 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
 void ArcPolicyBridge::OnReportComplianceParse(
     base::OnceCallback<void(const std::string&)> callback,
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.value) {
+  if (!result.has_value()) {
     // TODO(poromov@): Report to histogram.
     DLOG(ERROR) << "Can't parse policy compliance report";
     std::move(callback).Run(kPolicyCompliantJson);
@@ -716,10 +725,10 @@ void ArcPolicyBridge::OnReportComplianceParse(
       prefs::kArcPolicyComplianceReported, true);
 
   const base::DictionaryValue* dict = nullptr;
-  if (result.value->GetAsDictionary(&dict)) {
+  if (result->GetAsDictionary(&dict)) {
     UpdateComplianceReportMetrics(dict);
     for (Observer& observer : observers_) {
-      observer.OnComplianceReportReceived(&result.value.value());
+      observer.OnComplianceReportReceived(&*result);
     }
   }
 }

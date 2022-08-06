@@ -50,11 +50,11 @@ class IOSNTPTilesInternalsMessageHandlerBridge
   PrefService* GetPrefs() override;
   using MessageCallback =
       base::RepeatingCallback<void(const base::Value::List&)>;
-  void RegisterMessageCallback(const std::string& message,
+  void RegisterMessageCallback(base::StringPiece message,
                                MessageCallback callback) override;
-  void CallJavascriptFunctionVector(
-      const std::string& name,
-      const std::vector<const base::Value*>& values) override;
+  void CallJavascriptFunctionSpan(
+      base::StringPiece name,
+      base::span<const base::ValueView> values) override;
 
   ntp_tiles::NTPTilesInternalsMessageHandler handler_;
 };
@@ -95,14 +95,14 @@ PrefService* IOSNTPTilesInternalsMessageHandlerBridge::GetPrefs() {
 }
 
 void IOSNTPTilesInternalsMessageHandlerBridge::RegisterMessageCallback(
-    const std::string& message,
+    base::StringPiece message,
     MessageCallback callback) {
   web_ui()->RegisterMessageCallback(message, std::move(callback));
 }
 
-void IOSNTPTilesInternalsMessageHandlerBridge::CallJavascriptFunctionVector(
-    const std::string& name,
-    const std::vector<const base::Value*>& values) {
+void IOSNTPTilesInternalsMessageHandlerBridge::CallJavascriptFunctionSpan(
+    base::StringPiece name,
+    base::span<const base::ValueView> values) {
   web_ui()->CallJavascriptFunction(name, values);
 }
 

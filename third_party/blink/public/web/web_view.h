@@ -97,10 +97,15 @@ class WebView {
   // as appropriate. It is legal to modify settings before completing
   // initialization.
   //
+  // The WebView is kept alive as long as the `page_handle` mojo interface
+  // is alive. The WebView will be destroyed when that interface closes, if
+  // a client wishes to close the WebView synchronously it can call `Close`
+  // directly.
+  //
   // clients may be null, but should both be null or not together.
   // |is_hidden| defines the initial visibility of the page.
   // |is_prerendering| defines whether the page is being prerendered by the
-  // Prerender2 feature (see content/browser/prerender/README.md).
+  // Prerender2 feature (see content/browser/preloading/prerender/README.md).
   // [is_inside_portal] defines whether the page is inside_portal.
   // [is_fenced_frame] defines whether the page is for a fenced frame.
   // |compositing_enabled| dictates whether accelerated compositing should be
@@ -137,7 +142,7 @@ class WebView {
       const SessionStorageNamespaceId& session_storage_namespace_id,
       absl::optional<SkColor> page_base_background_color);
 
-  // Destroys the WebView.
+  // Destroys the WebView synchronously.
   virtual void Close() = 0;
 
   // Called to inform WebViewImpl that a local main frame has been attached.

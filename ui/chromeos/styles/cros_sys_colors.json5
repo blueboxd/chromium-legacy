@@ -18,7 +18,8 @@
     /* Primary */
     primary: {
       light: '$cros.ref.primary40',
-      dark:  '$cros.ref.primary80',
+      dark: '$cros.ref.primary80',
+      generate_per_mode: true,
     },
     'on-primary': {
       light: '$cros.ref.primary100',
@@ -37,6 +38,7 @@
     secondary: {
       light: '$cros.ref.secondary40',
       dark:  '$cros.ref.secondary80',
+      generate_per_mode: true,
     },
     'on-secondary': {
       light: '$cros.ref.secondary100',
@@ -121,12 +123,33 @@
     'app-base-elevated': {
       light: '$cros.ref.neutralvariant100',
       dark:  'blend(rgba($black.rgb, 0.4), $cros.ref.neutral10)',
+      generate_per_mode: true,
     },
 
     /* Surfaces */
+    surface: {
+      light: '$cros.ref.neutral99',
+      dark: '$cros.ref.neutral10',
+    },
     surface1: {
-      light: 'blend(rgba($cros.ref.primary10.rgb, 0.05), blend(rgba($cros.ref.neutral50.rgb, 0.02), $cros.ref.neutral99))',
+      light: 'blend(rgba($cros.ref.primary40.rgb, 0.05), blend(rgba($cros.ref.neutral50.rgb, 0.02), $cros.ref.neutral99))',
       dark: 'blend(rgba($cros.ref.primary80.rgb, 0.05), blend(rgba($cros.ref.neutral80.rgb, 0.02), $cros.ref.neutral10))',
+    },
+    surface2: {
+      light: 'blend(rgba($cros.ref.primary40.rgb, 0.08), blend(rgba($cros.ref.neutral50.rgb, 0.02), $cros.ref.neutral99))',
+      dark: 'blend(rgba($cros.ref.primary80.rgb, 0.08), blend(rgba($cros.ref.neutral80.rgb, 0.02), $cros.ref.neutral10))',
+    },
+    surface3: {
+      light: 'blend(rgba($cros.ref.primary40.rgb, 0.11), blend(rgba($cros.ref.neutral50.rgb, 0.02), $cros.ref.neutral99))',
+      dark: 'blend(rgba($cros.ref.primary80.rgb, 0.11), blend(rgba($cros.ref.neutral80.rgb, 0.02), $cros.ref.neutral10))',
+    },
+    surface4: {
+      light: 'blend(rgba($cros.ref.primary40.rgb, 0.12), blend(rgba($cros.ref.neutral50.rgb, 0.02), $cros.ref.neutral99))',
+      dark: 'blend(rgba($cros.ref.primary80.rgb, 0.12), blend(rgba($cros.ref.neutral80.rgb, 0.02), $cros.ref.neutral10))',
+    },
+    surface5: {
+      light: 'blend(rgba($cros.ref.primary40.rgb, 0.14), blend(rgba($cros.ref.neutral50.rgb, 0.02), $cros.ref.neutral99))',
+      dark: 'blend(rgba($cros.ref.primary80.rgb, 0.14), blend(rgba($cros.ref.neutral80.rgb, 0.02), $cros.ref.neutral10))',
     },
     scrim: {
       light: 'rgba($cros.ref.neutralvariant60.rgb, 0.6)',
@@ -149,6 +172,7 @@
     'on-surface': {
       light: '$cros.ref.neutral10',
       dark: '$cros.ref.neutral90',
+      generate_per_mode: true,
     },
     'on-surface-bodytext': {
       light: '$cros.ref.neutral40',

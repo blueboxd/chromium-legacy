@@ -21,20 +21,17 @@
 
 namespace {
 
-void ScaleToRoundedRectWithHeightInsets(apps::mojom::Rect* rect,
+void ScaleToRoundedRectWithHeightInsets(absl::optional<gfx::Rect>& rect,
                                         double scale_factor,
                                         int height) {
-  if (rect == nullptr)
+  if (!rect.has_value())
     return;
 
-  gfx::Rect bounds = gfx::Rect(rect->x, rect->y, rect->width, rect->height);
+  gfx::Rect bounds =
+      gfx::Rect(rect->x(), rect->y(), rect->width(), rect->height());
   if (height)
     bounds.Inset(gfx::Insets::TLBR(height, 0, 0, 0));
-  auto res_rect = gfx::ScaleToRoundedRect(bounds, scale_factor);
-  rect->x = res_rect.x();
-  rect->y = res_rect.y();
-  rect->width = res_rect.width();
-  rect->height = res_rect.height();
+  rect = gfx::ScaleToRoundedRect(bounds, scale_factor);
 }
 
 }  // namespace
@@ -44,12 +41,6 @@ namespace full_restore {
 
 bool IsArcGhostWindowEnabled() {
   if (!exo::WMHelper::HasInstance()) {
-    return false;
-  }
-
-  // Returens false if the feature not enabled on ARC P specifically.
-  if (!arc::IsArcVmEnabled() &&
-      !base::FeatureList::IsEnabled(features::kArcPiGhostWindow)) {
     return false;
   }
 
@@ -73,8 +64,7 @@ absl::optional<double> GetDisplayScaleFactor(int64_t display_id) {
   return absl::nullopt;
 }
 
-apps::mojom::WindowInfoPtr HandleArcWindowInfo(
-    apps::mojom::WindowInfoPtr window_info) {
+apps::WindowInfoPtr HandleArcWindowInfo(apps::WindowInfoPtr window_info) {
   // Remove ARC bounds info if the ghost window disabled. The bounds will
   // be controlled by ARC.
   if (!IsArcGhostWindowEnabled()) {
@@ -99,8 +89,8 @@ apps::mojom::WindowInfoPtr HandleArcWindowInfo(
             views::CaptionButtonLayoutSize::kNonBrowserCaption)
             .height();
   }
-  ScaleToRoundedRectWithHeightInsets(
-      window_info->bounds.get(), scale_factor.value(), extra_caption_height);
+  ScaleToRoundedRectWithHeightInsets(window_info->bounds, scale_factor.value(),
+                                     extra_caption_height);
   return window_info;
 }
 

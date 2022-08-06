@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/color/color_id.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/metadata/view_factory.h"
@@ -43,7 +45,7 @@ class VIEWS_EXPORT Combobox : public View,
  public:
   METADATA_HEADER(Combobox);
 
-  using MenuSelectionAtCallback = base::RepeatingCallback<bool(int index)>;
+  using MenuSelectionAtCallback = base::RepeatingCallback<bool(size_t index)>;
 
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
@@ -71,11 +73,19 @@ class VIEWS_EXPORT Combobox : public View,
     callback_ = std::move(callback);
   }
 
+  // Set menu model.
+  void SetMenuModel(std::unique_ptr<ui::MenuModel> menu_model) {
+    menu_model_ = std::move(menu_model);
+  }
+
   // Gets/Sets the selected index.
-  int GetSelectedIndex() const { return selected_index_; }
-  void SetSelectedIndex(int index);
+  absl::optional<size_t> GetSelectedIndex() const { return selected_index_; }
+  void SetSelectedIndex(absl::optional<size_t> index);
   [[nodiscard]] base::CallbackListSubscription AddSelectedIndexChangedCallback(
       views::PropertyChangedCallback callback);
+
+  // Called when there has been a selection from the menu.
+  void MenuSelectionAt(size_t index);
 
   // Looks for the first occurrence of |value| in |model()|. If found, selects
   // the found index and returns true. Otherwise simply noops and returns false.
@@ -102,6 +112,7 @@ class VIEWS_EXPORT Combobox : public View,
   bool GetInvalid() const { return invalid_; }
 
   void SetBorderColorId(ui::ColorId color_id);
+  void SetBackgroundColorId(ui::ColorId color_id);
 
   // Sets whether there should be ink drop highlighting on hover/press.
   void SetEventHighlighting(bool should_highlight);
@@ -134,10 +145,10 @@ class VIEWS_EXPORT Combobox : public View,
   void OnThemeChanged() override;
 
   // Overridden from PrefixDelegate:
-  int GetRowCount() override;
-  int GetSelectedRow() override;
-  void SetSelectedRow(int row) override;
-  std::u16string GetTextForRow(int row) override;
+  size_t GetRowCount() override;
+  absl::optional<size_t> GetSelectedRow() override;
+  void SetSelectedRow(absl::optional<size_t> row) override;
+  std::u16string GetTextForRow(size_t row) override;
 
  protected:
   // Overridden from ComboboxModelObserver:
@@ -150,8 +161,6 @@ class VIEWS_EXPORT Combobox : public View,
 
  private:
   friend class test::ComboboxTestApi;
-
-  class ComboboxMenuModel;
 
   // Updates the border according to the current node_data.
   void UpdateBorder();
@@ -170,9 +179,6 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Cleans up after the menu as closed
   void OnMenuClosed(Button::ButtonState original_button_state);
-
-  // Called when there has been a selection from the menu.
-  void MenuSelectionAt(int index);
 
   // Called when the selection is changed by the user.
   void OnPerformAction();
@@ -215,8 +221,8 @@ class VIEWS_EXPORT Combobox : public View,
   // will updated based on the selection.
   MenuSelectionAtCallback menu_selection_at_callback_;
 
-  // The current selected index; -1 and means no selection.
-  int selected_index_ = -1;
+  // The current selected index; nullopt means no selection.
+  absl::optional<size_t> selected_index_ = absl::nullopt;
 
   // True when the selection is visually denoted as invalid.
   bool invalid_ = false;
@@ -270,7 +276,7 @@ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Combobox, View)
 VIEW_BUILDER_PROPERTY(base::RepeatingClosure, Callback)
 VIEW_BUILDER_PROPERTY(std::unique_ptr<ui::ComboboxModel>, OwnedModel)
 VIEW_BUILDER_PROPERTY(ui::ComboboxModel*, Model)
-VIEW_BUILDER_PROPERTY(int, SelectedIndex)
+VIEW_BUILDER_PROPERTY(absl::optional<size_t>, SelectedIndex)
 VIEW_BUILDER_PROPERTY(bool, Invalid)
 VIEW_BUILDER_PROPERTY(bool, SizeToLargestLabel)
 VIEW_BUILDER_PROPERTY(std::u16string, AccessibleName)

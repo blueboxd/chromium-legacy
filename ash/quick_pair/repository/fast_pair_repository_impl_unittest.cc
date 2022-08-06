@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -51,6 +52,9 @@ const std::vector<uint8_t> kAccountKey2{0x11, 0x11, 0x22, 0x22, 0x33, 0x33,
                                         0x77, 0x77, 0x88, 0x88};
 const std::vector<uint8_t> kFilterBytes1{0x0A, 0x42, 0x88, 0x10};
 const uint8_t salt = 0xC7;
+
+const char kSavedDeviceGetDevicesResultMetricName[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.GetSavedDevices.Result";
 
 }  // namespace
 
@@ -166,10 +170,13 @@ class FastPairRepositoryImplTest : public AshTestBase {
     devices_ = devices;
   }
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  protected:
   std::unique_ptr<FastPairRepositoryImpl> fast_pair_repository_;
   nearby::fastpair::OptInStatus status_;
   std::vector<nearby::fastpair::FastPairDevice> devices_;
+  base::HistogramTester histogram_tester_;
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> adapter_;
   testing::NiceMock<device::MockBluetoothDevice> ble_bluetooth_device_;
   testing::NiceMock<device::MockBluetoothDevice> classic_bluetooth_device_;
@@ -348,6 +355,8 @@ TEST_F(FastPairRepositoryImplTest, DeleteAssociatedDeviceByAccountKey_Valid) {
   fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
+  ASSERT_TRUE(
+      saved_device_registry_->IsAccountKeySavedToRegistry(kAccountKey1));
 
   base::MockCallback<base::OnceCallback<void(bool)>> callback;
   EXPECT_CALL(callback, Run(testing::Eq(true))).Times(1);
@@ -356,6 +365,8 @@ TEST_F(FastPairRepositoryImplTest, DeleteAssociatedDeviceByAccountKey_Valid) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(footprints_fetcher_->ContainsKey(kAccountKey1));
+  ASSERT_FALSE(
+      saved_device_registry_->IsAccountKeySavedToRegistry(kAccountKey1));
 }
 
 TEST_F(FastPairRepositoryImplTest, FetchDeviceImages) {
@@ -489,6 +500,10 @@ TEST_F(FastPairRepositoryImplTest, UpdateOptInStatus_OptedInUpdateFailed) {
 }
 
 TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedIn) {
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 0);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
   fast_pair_repository_->UpdateOptInStatus(
       nearby::fastpair::OptInStatus::STATUS_OPTED_IN, base::DoNothing());
   base::RunLoop().RunUntilIdle();
@@ -511,9 +526,17 @@ TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedIn) {
 
   EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_OPTED_IN, status_);
   EXPECT_EQ(1u, devices_.size());
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 1);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
 }
 
 TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedOut) {
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 0);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
   fast_pair_repository_->UpdateOptInStatus(
       nearby::fastpair::OptInStatus::STATUS_OPTED_OUT, base::DoNothing());
   base::RunLoop().RunUntilIdle();
@@ -524,9 +547,17 @@ TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedOut) {
 
   EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_OPTED_OUT, status_);
   EXPECT_EQ(0u, devices_.size());
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 1);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
 }
 
 TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptStatusUnknown) {
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 0);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
   fast_pair_repository_->UpdateOptInStatus(
       nearby::fastpair::OptInStatus::STATUS_UNKNOWN, base::DoNothing());
   base::RunLoop().RunUntilIdle();
@@ -537,9 +568,17 @@ TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptStatusUnknown) {
 
   EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_UNKNOWN, status_);
   EXPECT_EQ(0u, devices_.size());
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 1);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
 }
 
 TEST_F(FastPairRepositoryImplTest, GetSavedDevices_MissingResponse) {
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 0);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 0);
   footprints_fetcher_->SetGetUserDevicesResponse(absl::nullopt);
   fast_pair_repository_->GetSavedDevices(
       base::BindOnce(&FastPairRepositoryImplTest::GetSavedDevicesCallback,
@@ -548,6 +587,10 @@ TEST_F(FastPairRepositoryImplTest, GetSavedDevices_MissingResponse) {
 
   EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_UNKNOWN, status_);
   EXPECT_EQ(0u, devices_.size());
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/true, 0);
+  histogram_tester().ExpectBucketCount(kSavedDeviceGetDevicesResultMetricName,
+                                       /*success=*/false, 1);
 }
 
 TEST_F(FastPairRepositoryImplTest, IsAccountKeyPairedLocally) {

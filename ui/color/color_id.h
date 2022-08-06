@@ -136,6 +136,7 @@
   E_CPONLY(kColorShadowValueKeyShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueKeyShadowElevationThree) \
   E_CPONLY(kColorSidePanelComboboxBorder) \
+  E_CPONLY(kColorSidePanelComboboxBackground) \
   E_CPONLY(kColorSliderThumb) \
   E_CPONLY(kColorSliderThumbMinimal) \
   E_CPONLY(kColorSliderTrack) \
@@ -209,13 +210,6 @@
   \
   E_CPONLY(kColorAshOnboardingFocusRing) \
   \
-  E_CPONLY(kColorAshSystemUIBorderColor1) \
-  E_CPONLY(kColorAshSystemUIBorderColor2) \
-  E_CPONLY(kColorAshSystemUIBorderColor3) \
-  E_CPONLY(kColorAshSystemUIHighlightColor1) \
-  E_CPONLY(kColorAshSystemUIHighlightColor2) \
-  E_CPONLY(kColorAshSystemUIHighlightColor3) \
-  \
   /* TODO(crbug/1319917): Remove these when dark light mode is launched. */ \
   E_CPONLY(kColorAshSystemUILightBorderColor1) \
   E_CPONLY(kColorAshSystemUILightBorderColor2) \
@@ -226,6 +220,13 @@
   E_CPONLY(kColorAshSystemUIMenuIcon) \
   E_CPONLY(kColorAshSystemUIMenuItemBackgroundSelected) \
   E_CPONLY(kColorAshSystemUIMenuSeparator) \
+  \
+  E_CPONLY(kColorHighlightBorderBorder1) \
+  E_CPONLY(kColorHighlightBorderBorder2) \
+  E_CPONLY(kColorHighlightBorderBorder3) \
+  E_CPONLY(kColorHighlightBorderHighlight1) \
+  E_CPONLY(kColorHighlightBorderHighlight2) \
+  E_CPONLY(kColorHighlightBorderHighlight3) \
   \
   E_CPONLY(kColorNativeColor1) \
   E_CPONLY(kColorNativeColor1Shade1) \
@@ -317,6 +318,8 @@ enum ColorIds : ColorId {
 };
 // clang-format on
 
+// Note that this second include is not redundant. The second inclusion of the
+// .inc file serves to undefine the macros the first inclusion defined.
 #include "ui/color/color_id_macros.inc"
 
 }  // namespace ui

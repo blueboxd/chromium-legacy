@@ -7,9 +7,11 @@
 
 #include <atomic>
 
+#include "ipcz/fragment_ref.h"
 #include "ipcz/link_side.h"
 #include "ipcz/link_type.h"
 #include "ipcz/router_link.h"
+#include "ipcz/router_link_state.h"
 #include "ipcz/sublink_id.h"
 #include "util/ref_counted.h"
 
@@ -35,9 +37,11 @@ class RemoteRouterLink : public RouterLink {
   // using `sublink` specifically. `side` is the side of this link on which
   // this RemoteRouterLink falls (side A or B), and `type` indicates what type
   // of link it is -- which for remote links must be either kCentral,
-  // kPeripheralInward, or kPeripheralOutward.
+  // kPeripheralInward, or kPeripheralOutward. If the link is kCentral, a
+  // non-null `link_state` must be provided for the link's RouterLinkState.
   static Ref<RemoteRouterLink> Create(Ref<NodeLink> node_link,
                                       SublinkId sublink,
+                                      FragmentRef<RouterLinkState> link_state,
                                       LinkType type,
                                       LinkSide side);
 
@@ -46,25 +50,66 @@ class RemoteRouterLink : public RouterLink {
 
   // RouterLink:
   LinkType GetType() const override;
-  bool HasLocalPeer(const Router& router) override;
-  bool IsRemoteLinkTo(const NodeLink& node_link, SublinkId sublink) override;
+  RouterLinkState* GetLinkState() const override;
+  Ref<Router> GetLocalPeer() override;
+  RemoteRouterLink* AsRemoteRouterLink() override;
   void AcceptParcel(Parcel& parcel) override;
   void AcceptRouteClosure(SequenceNumber sequence_length) override;
+  void AcceptRouteDisconnected() override;
+  void MarkSideStable() override;
+  bool TryLockForBypass(const NodeName& bypass_request_source) override;
+  bool TryLockForClosure() override;
+  void Unlock() override;
+  bool FlushOtherSideIfWaiting() override;
+  bool CanNodeRequestBypass(const NodeName& bypass_request_source) override;
+  void BypassPeer(const NodeName& bypass_target_node,
+                  SublinkId bypass_request_sublink) override;
+  void StopProxying(SequenceNumber inbound_sequence_length,
+                    SequenceNumber outbound_sequence_length) override;
+  void ProxyWillStop(SequenceNumber inbound_sequence_length) override;
+  void BypassPeerWithLink(SublinkId new_sublink,
+                          FragmentRef<RouterLinkState> new_link_state,
+                          SequenceNumber inbound_sequence_length) override;
+  void StopProxyingToLocalPeer(
+      SequenceNumber outbound_sequence_length) override;
   void Deactivate() override;
   std::string Describe() const override;
 
  private:
   RemoteRouterLink(Ref<NodeLink> node_link,
                    SublinkId sublink,
+                   FragmentRef<RouterLinkState> link_state,
                    LinkType type,
                    LinkSide side);
 
   ~RemoteRouterLink() override;
 
+  // Sets this link's RouterLinkState. `state` must be pending or addressable
+  // and this must be a central link.
+  void SetLinkState(FragmentRef<RouterLinkState> state);
+
   const Ref<NodeLink> node_link_;
   const SublinkId sublink_;
   const LinkType type_;
   const LinkSide side_;
+
+  // Local atomic cache of whether this side of the link is marked stable. If
+  // MarkSideStable() is called when no RouterLinkState is present, this will be
+  // used to remember it once a RouterLinkState is finally established.
+  std::atomic<bool> side_is_stable_{false};
+
+  // A reference to the shared memory Fragment containing the RouterLinkState
+  // shared by both ends of this RouterLink. Only used by central links. Once
+  // this is set to a non-null fragment and that fragment is addressable by this
+  // link's node, `link_state_` is also updated to cache a pointer to this
+  // fragment's mapped memory.
+  FragmentRef<RouterLinkState> link_state_fragment_;
+
+  // Cached address of the shared RouterLinkState referenced by
+  // `link_state_fragment_`. Once this is set to a non-null value it retains
+  // that value indefinitely, so any non-null value loaded from this field is
+  // safe to dereference for the duration of the RemoteRouterLink's lifetime.
+  std::atomic<RouterLinkState*> link_state_{nullptr};
 };
 
 }  // namespace ipcz

@@ -4,7 +4,7 @@
 
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
@@ -22,7 +22,6 @@ enum PiiRadioButtons {
   INCLUDE_ALL = 'include-all',
   INCLUDE_NONE = 'include-none',
   INCLUDE_SOME = 'include-some',
-  UNSELECTED = 'unselected',
 }
 
 const PIISelectionElementBase = SupportToolPageMixin(PolymerElement);
@@ -40,7 +39,7 @@ export class PIISelectionElement extends PIISelectionElementBase {
     return {
       selectAll_: {
         type: Boolean,
-        value: false,
+        value: true,
       },
       detectedPIIItems_: {
         type: Array,
@@ -53,12 +52,12 @@ export class PIISelectionElement extends PIISelectionElementBase {
       },
       selectedRadioButton_: {
         type: String,
-        value: PiiRadioButtons.UNSELECTED,
+        value: PiiRadioButtons.INCLUDE_ALL,
       },
       showPIISelection_: {
         type: Boolean,
         value: false,
-      }
+      },
     };
   }
 
@@ -99,10 +98,6 @@ export class PIISelectionElement extends PIISelectionElementBase {
 
   private onSelectedRadioButtonChanged_(event: CustomEvent<{value: string}>) {
     this.selectedRadioButton_ = event.detail.value;
-    // this.selectedRadioButton_ is initialized as PiiRadioButtons.UNSELECTED by
-    // default and this value is not reachable once user modifies the value by
-    // selecting it in UI as it's not exposed in the UI. that's why we don't
-    // handle it in the if-else condition below.
     if (this.selectedRadioButton_ === PiiRadioButtons.INCLUDE_ALL) {
       this.setSelectAll_(true);
     } else if (this.selectedRadioButton_ === PiiRadioButtons.INCLUDE_NONE) {
@@ -116,8 +111,7 @@ export class PIISelectionElement extends PIISelectionElementBase {
     return (selectedButton === PiiRadioButtons.INCLUDE_NONE);
   }
 
-  private getPiiItemAriaDescription_(description: string, count: number):
-      string {
+  private getPiiItemAriaLabel_(description: string, count: number): string {
     return 'More info for ' + description + ' ' + count;
   }
 }

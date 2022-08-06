@@ -68,12 +68,23 @@ class CORE_EXPORT DocumentTransition
                       ExceptionState&);
   void abandon(ScriptState*, ExceptionState&);
 
+  ScriptPromise prepare(ScriptState*, ExceptionState&);
+  ScriptPromise prepare(ScriptState*,
+                        V8DocumentTransitionCallback* callback,
+                        ExceptionState&);
+  ScriptPromise finished() const;
+
   // This uses std::move semantics to take the request from this object.
   std::unique_ptr<DocumentTransitionRequest> TakePendingRequest();
 
   // Returns true if this object needs to create an EffectNode for the shared
   // element transition.
   bool NeedsSharedElementEffectNode(const LayoutObject& object) const;
+
+  // Returns true if this object is painted via pseudo elements. Note that this
+  // is different from NeedsSharedElementFromEffectNode() since the root may not
+  // be a shared element, but require an effect node.
+  bool IsRepresentedViaPseudoElements(const LayoutObject& object) const;
 
   // Updates an effect node. This effect populates the shared element id and the
   // shared element resource id. The return value is a result of updating the
@@ -103,7 +114,7 @@ class CORE_EXPORT DocumentTransition
 
   // Returns the UA style sheet for the pseudo element tree generated during a
   // transition.
-  const String& UAStyleSheet() const;
+  String UAStyleSheet() const;
 
   // Used by web tests to retain the pseudo-element tree after a
   // DocumentTransition finishes. This is used to capture a static version of
@@ -159,6 +170,11 @@ class CORE_EXPORT DocumentTransition
   void ResetTransitionState(bool abort_style_tracker = true);
   void ResetScriptState(const char* abort_message);
 
+  // A common helper for start() and prepare() calls.
+  bool InitiateTransition(ScriptState*,
+                          V8DocumentTransitionCallback* callback,
+                          ExceptionState&);
+
   Member<Document> document_;
 
   State state_ = State::kIdle;
@@ -177,7 +193,10 @@ class CORE_EXPORT DocumentTransition
 
   // The following promise is provided to script and resolved when all
   // animations from the start phase finish.
-  Member<ScriptPromiseResolver> start_promise_resolver_;
+  Member<ScriptPromiseResolver> finished_promise_resolver_;
+  // The following promise is provided to script and resolved after the prepare
+  // callback finishes.
+  Member<ScriptPromiseResolver> prepare_promise_resolver_;
 
   // Created conditionally if renderer based SharedElementTransitions is
   // enabled.

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_coordinator.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
@@ -109,16 +110,13 @@ class CastDialogViewTest : public ChromeViewsTestBase {
   }
 
   void InitializeDialogWithModel(const CastDialogModel& model) {
-    EXPECT_CALL(controller_, AddObserver(_))
-        .WillOnce(
-            WithArg<0>(Invoke([this](CastDialogController::Observer* observer) {
-              dialog_ = static_cast<CastDialogView*>(observer);
-            })));
-    CastDialogView::ShowDialog(anchor_widget_->GetContentsView(),
-                               views::BubbleBorder::TOP_RIGHT, &controller_,
-                               &profile_, base::Time::Now(),
-                               MediaRouterDialogActivationLocation::PAGE);
+    EXPECT_CALL(controller_, AddObserver(_));
+    cast_dialog_coordinator_.Show(anchor_widget_->GetContentsView(),
+                                  views::BubbleBorder::TOP_RIGHT, &controller_,
+                                  &profile_, base::Time::Now(),
+                                  MediaRouterDialogActivationLocation::PAGE);
 
+    dialog_ = cast_dialog_coordinator_.GetCastDialogView();
     dialog_->OnModelUpdated(model);
   }
 
@@ -156,29 +154,10 @@ class CastDialogViewTest : public ChromeViewsTestBase {
 
   std::unique_ptr<views::Widget> anchor_widget_;
   NiceMock<MockCastDialogController> controller_;
+  CastDialogCoordinator cast_dialog_coordinator_;
   raw_ptr<CastDialogView> dialog_ = nullptr;
   TestingProfile profile_;
 };
-
-TEST_F(CastDialogViewTest, ShowAndHideDialog) {
-  EXPECT_FALSE(CastDialogView::IsShowing());
-  EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
-
-  EXPECT_CALL(controller_, AddObserver(_));
-  CastDialogView::ShowDialog(anchor_widget_->GetContentsView(),
-                             views::BubbleBorder::TOP_RIGHT, &controller_,
-                             &profile_, base::Time::Now(),
-                             MediaRouterDialogActivationLocation::PAGE);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(CastDialogView::IsShowing());
-  EXPECT_NE(nullptr, CastDialogView::GetCurrentDialogWidget());
-
-  EXPECT_CALL(controller_, RemoveObserver(_));
-  CastDialogView::HideDialog();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(CastDialogView::IsShowing());
-  EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
-}
 
 TEST_F(CastDialogViewTest, PopulateDialog) {
   CastDialogModel model = CreateModelWithSinks({CreateAvailableSink()});
@@ -232,7 +211,7 @@ TEST_F(CastDialogViewTest, ShowSourcesMenu) {
   views::test::ButtonTestApi(sources_button()).NotifyClick(CreateMouseEvent());
   // The items should be "tab" (includes tab mirroring and presentation) and
   // "desktop".
-  EXPECT_EQ(2, sources_menu_model()->GetItemCount());
+  EXPECT_EQ(2u, sources_menu_model()->GetItemCount());
   EXPECT_EQ(CastDialogView::kTab, sources_menu_model()->GetCommandIdAt(0));
   EXPECT_EQ(CastDialogView::kDesktop, sources_menu_model()->GetCommandIdAt(1));
 
@@ -250,7 +229,7 @@ TEST_F(CastDialogViewTest, CastAlternativeSources) {
   // Press the button to show the sources menu.
   views::test::ButtonTestApi(sources_button()).NotifyClick(CreateMouseEvent());
   // There should be two sources: tab and desktop.
-  ASSERT_EQ(2, sources_menu_model()->GetItemCount());
+  ASSERT_EQ(2u, sources_menu_model()->GetItemCount());
 
   EXPECT_CALL(controller_, StartCasting(model.media_sinks()[0].id, TAB_MIRROR));
   sources_menu_model()->ActivatedAt(0);

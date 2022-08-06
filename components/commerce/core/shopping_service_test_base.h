@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/web_wrapper.h"
@@ -15,6 +17,7 @@
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using optimization_guide::OptimizationGuideDecision;
@@ -26,6 +29,14 @@ class TestingPrefServiceSimple;
 
 namespace bookmarks {
 class BookmarkModel;
+}
+
+namespace network {
+class TestURLLoaderFactory;
+}
+
+namespace signin {
+class IdentityTestEnvironment;
 }
 
 namespace commerce {
@@ -115,10 +126,15 @@ class ShoppingServiceTestBase : public testing::Test {
 
   void TestBody() override;
 
+  void TearDown() override;
+
   // A direct proxies to the same methods in the ShoppingService class.
   void DidNavigatePrimaryMainFrame(WebWrapper* web);
+  void DidFinishLoad(WebWrapper* web);
   void DidNavigateAway(WebWrapper* web, const GURL& url);
   void WebWrapperDestroyed(WebWrapper* web);
+  static void MergeProductInfoData(ProductInfo* info,
+                                   const base::Value::Dict& on_page_data_map);
 
   // Get the count of the number of tabs a particular URL is open in from the
   // product info cache.
@@ -128,13 +144,24 @@ class ShoppingServiceTestBase : public testing::Test {
   const ProductInfo* GetFromProductInfoCache(const GURL& url);
 
  protected:
+  base::test::TaskEnvironment task_environment_;
+
+  // Used primarily for decoding JSON for the mock javascript execution.
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
 
   std::unique_ptr<MockOptGuideDecider> opt_guide_;
 
-  std::unique_ptr<ShoppingService> shopping_service_;
-
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+
+  base::test::ScopedFeatureList test_features_;
+
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
+
+  std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
+
+  std::unique_ptr<ShoppingService> shopping_service_;
 };
 
 }  // namespace commerce

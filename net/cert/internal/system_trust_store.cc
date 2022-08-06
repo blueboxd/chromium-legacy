@@ -28,10 +28,10 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "net/cert/internal/cert_errors.h"
-#include "net/cert/internal/parsed_certificate.h"
-#include "net/cert/internal/trust_store_collection.h"
-#include "net/cert/internal/trust_store_in_memory.h"
+#include "net/cert/pki/cert_errors.h"
+#include "net/cert/pki/parsed_certificate.h"
+#include "net/cert/pki/trust_store_collection.h"
+#include "net/cert/pki/trust_store_in_memory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 
@@ -341,18 +341,23 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStoreChromeRoot(
 #endif  // CHROME_ROOT_STORE_SUPPORTED
 
 void InitializeTrustStoreMacCache() {
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   if (base::FeatureList::IsEnabled(net::features::kChromeRootStoreUsed)) {
     base::ThreadPool::PostTask(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&InitializeTrustCacheForCRSOnWorkerThread));
-  } else if (base::FeatureList::IsEnabled(
-                 net::features::kCertVerifierBuiltinFeature)) {
+    return;
+  }
+#endif  // CHROME_ROOT_STORE_SUPPORTED
+  if (base::FeatureList::IsEnabled(
+          net::features::kCertVerifierBuiltinFeature)) {
     base::ThreadPool::PostTask(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(
             &SystemTrustStoreMac::InitializeTrustCacheOnWorkerThread));
+    return;
   }
 }
 

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {metrics} from '../../common/js/metrics.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+
 import {DirectoryModel} from './directory_model.js';
 import {FileSelectionHandler} from './file_selection.js';
 import {SpinnerController} from './spinner_controller.js';
@@ -76,6 +79,14 @@ export class ScanController {
           'scan-started', this.directoryModel_.getCurrentDirName());
     }
 
+    const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+    if (volumeInfo &&
+        (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+         volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MY_FILES)) {
+      metrics.startInterval(
+          `DirectoryListLoad.${VolumeManagerCommon.RootType.MY_FILES}`);
+    }
+
     this.listContainer_.startBatchUpdates();
     this.scanInProgress_ = true;
 
@@ -113,6 +124,21 @@ export class ScanController {
 
     this.scanInProgress_ = false;
     this.listContainer_.endBatchUpdates();
+
+    // TODO(crbug.com/1290197): Currently we only care about the load time for
+    // local files, filter out all the other root types.
+    if (this.directoryModel_.getCurrentDirEntry()) {
+      const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+      if (volumeInfo &&
+          (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+           volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MY_FILES)) {
+        const metricName =
+            `DirectoryListLoad.${VolumeManagerCommon.RootType.MY_FILES}`;
+        metrics.recordDirectoryListLoadWithTolerance(
+            metricName, this.directoryModel_.getFileList().length,
+            [10, 100, 1000], /*tolerance=*/ 0.2);
+      }
+    }
   }
 
   /**

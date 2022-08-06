@@ -78,6 +78,10 @@ void WaylandProxyImpl::ScheduleDisplayFlush() {
   connection_->ScheduleFlush();
 }
 
+void WaylandProxyImpl::FlushForTesting() {
+  connection_->Flush();
+}
+
 ui::PlatformWindowType WaylandProxyImpl::GetWindowType(
     gfx::AcceleratedWidget widget) {
   auto* window = connection_->wayland_window_manager()->GetWindow(widget);
@@ -88,13 +92,13 @@ ui::PlatformWindowType WaylandProxyImpl::GetWindowType(
 bool WaylandProxyImpl::WindowHasPointerFocus(gfx::AcceleratedWidget widget) {
   auto* window = connection_->wayland_window_manager()->GetWindow(widget);
   DCHECK(window);
-  return window->has_pointer_focus();
+  return window->HasPointerFocus();
 }
 
 bool WaylandProxyImpl::WindowHasKeyboardFocus(gfx::AcceleratedWidget widget) {
   auto* window = connection_->wayland_window_manager()->GetWindow(widget);
   DCHECK(window);
-  return window->has_keyboard_focus();
+  return window->HasKeyboardFocus();
 }
 
 void WaylandProxyImpl::OnWindowAdded(ui::WaylandWindow* window) {

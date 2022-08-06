@@ -59,9 +59,6 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
-#include "chrome/browser/ui/views/location_bar/permission_quiet_chip.h"
-#include "chrome/browser/ui/views/location_bar/permission_request_chip.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -70,6 +67,9 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/permissions/permission_chip.h"
+#include "chrome/browser/ui/views/permissions/permission_quiet_chip.h"
+#include "chrome/browser/ui/views/permissions/permission_request_chip.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -246,7 +246,7 @@ void LocationBarView::Init() {
         label->SetElideBehavior(gfx::NO_ELIDE);
         label->SetAutoColorReadabilityEnabled(false);
         label->SetBackground(views::CreateSolidBackground(
-            color_provider->GetColor(kColorOmniboxBackground)));
+            color_provider->GetColor(kColorLocationBarBackground)));
         label->SetEnabledColor(color_provider->GetColor(kColorOmniboxText));
         label->SetVisible(false);
         return label;
@@ -265,8 +265,14 @@ void LocationBarView::Init() {
         std::u16string(), ChromeTextContext::CONTEXT_OMNIBOX_DEEMPHASIZED,
         views::style::STYLE_LINK);
     omnibox_additional_text_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    int left_margin =
+        OmniboxFieldTrial::kRichAutocompletionAdditionalTextWithParenthesis
+                .Get()
+            ? 10
+            : 0;
     omnibox_additional_text_view->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 10, 0, 0)));
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, left_margin, 0, 0)));
+    omnibox_additional_text_view->SetFontList(font_list);
     omnibox_additional_text_view->SetVisible(false);
     omnibox_additional_text_view_ =
         AddChildView(std::move(omnibox_additional_text_view));
@@ -301,7 +307,7 @@ void LocationBarView::Init() {
     // TODO(crbug.com/1318890): Improve the ordering heuristics for page action
     // icons and determine a way to handle simultaneous icon animations.
     if (side_search::IsDSESupportEnabled(profile_) &&
-        browser_->is_type_normal()) {
+        side_search::IsEnabledForBrowser(browser_)) {
       params.types_enabled.push_back(PageActionIconType::kSideSearch);
     }
     params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
@@ -309,10 +315,7 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kQRCodeGenerator);
     if (base::FeatureList::IsEnabled(kWebOTPCrossDevice))
       params.types_enabled.push_back(PageActionIconType::kSmsRemoteFetcher);
-    if (!base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableToolbarStatusChip)) {
-      params.types_enabled.push_back(PageActionIconType::kManagePasswords);
-    }
+    params.types_enabled.push_back(PageActionIconType::kManagePasswords);
     if (!apps::features::LinkCapturingUiUpdateEnabled())
       params.types_enabled.push_back(PageActionIconType::kIntentPicker);
     params.types_enabled.push_back(PageActionIconType::kPwaInstall);
@@ -330,20 +333,17 @@ void LocationBarView::Init() {
   }
   // Add icons only when feature is not enabled. Otherwise icons will
   // be added to the ToolbarPageActionIconContainerView.
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    params.types_enabled.push_back(PageActionIconType::kSaveCard);
-    params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
-    params.types_enabled.push_back(
-        PageActionIconType::kVirtualCardManualFallback);
-    params.types_enabled.push_back(PageActionIconType::kVirtualCardEnroll);
+  params.types_enabled.push_back(PageActionIconType::kSaveCard);
+  params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
+  params.types_enabled.push_back(
+      PageActionIconType::kVirtualCardManualFallback);
+  params.types_enabled.push_back(PageActionIconType::kVirtualCardEnroll);
 
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillAddressProfileSavePrompt)) {
-      // TODO(crbug.com/1167060): Place this in the proper order upon having
-      // final mocks.
-      params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
-    }
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillAddressProfileSavePrompt)) {
+    // TODO(crbug.com/1167060): Place this in the proper order upon having
+    // final mocks.
+    params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
   }
   if (browser_) {
     if (sharing_hub::HasPageAction(profile_, is_popup_mode_))
@@ -439,11 +439,18 @@ void LocationBarView::SetOmniboxAdditionalText(const std::u16string& text) {
   DCHECK(OmniboxFieldTrial::IsRichAutocompletionEnabled() || text.empty());
   if (!OmniboxFieldTrial::RichAutocompletionShowAdditionalText())
     return;
-  auto wrapped_text =
-      text.empty()
-          ? text
-          // TODO(pkasting): This should use a localizable string constant.
-          : u"(" + text + u")";
+
+  // TODO(pkasting): This should use a localizable string constant.
+  // TODO(manukh): '-' separator doesn't play nice with RTL; results in
+  //  'input[autocompletion] URL -'.
+  std::u16string wrapped_text;
+  if (!text.empty()) {
+    wrapped_text =
+        OmniboxFieldTrial::kRichAutocompletionAdditionalTextWithParenthesis
+                .Get()
+            ? u"(" + text + u")"
+            : u" - " + text;
+  }
   SetOmniboxAdjacentText(omnibox_additional_text_view_, wrapped_text);
 }
 
@@ -873,7 +880,7 @@ SkColor LocationBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
 }
 
 SkColor LocationBarView::GetIconLabelBubbleBackgroundColor() const {
-  return GetColorProvider()->GetColor(kColorOmniboxBackground);
+  return GetColorProvider()->GetColor(kColorLocationBarBackground);
 }
 
 bool LocationBarView::ShouldHideContentSettingImage() {
@@ -981,9 +988,10 @@ void LocationBarView::RefreshBackground() {
     background_color = border_color =
         color_provider->GetColor(kColorOmniboxResultsBackground);
   } else {
-    const SkColor normal = color_provider->GetColor(kColorOmniboxBackground);
+    const SkColor normal =
+        color_provider->GetColor(kColorLocationBarBackground);
     const SkColor hovered =
-        color_provider->GetColor(kColorOmniboxBackgroundHovered);
+        color_provider->GetColor(kColorLocationBarBackgroundHovered);
     const double opacity = hover_animation_.GetCurrentValue();
     background_color = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
     border_color = color_provider->GetColor(kColorLocationBarBorder);

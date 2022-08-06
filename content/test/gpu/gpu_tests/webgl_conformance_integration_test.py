@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import fnmatch
 import logging
 import os
 import re
 import sys
-import typing
+from typing import Any, List, Optional, Tuple
 import unittest
 
 from gpu_tests import common_browser_args as cba
@@ -63,9 +64,26 @@ extension_harness_additional_script = r"""
   window.onload = function() { window._loaded = true; }
 """
 
+# For whatever reason, these tests don't like being run in parallel, so run them
+# serially.
+SERIAL_TESTS = {
+    # crbug.com/1347970.
+    'conformance/textures/misc/texture-video-transparent.html',
+}
+
+SERIAL_TEST_GLOBS = {
+    # crbug.com/1345466. Can be removed once OpenGL is no longer used on Mac.
+    'deqp/functional/gles3/transformfeedback/*',
+    # crbug.com/1345782. Can be removed once OpenGL is no longer used on Mac.
+    'deqp/functional/gles3/texturefiltering/*',
+    'deqp/functional/gles3/texturespecification/*',
+    # crbug.com/1347970. Flaking for unknown reasons on Metal backend.
+    'deqp/functional/gles3/textureshadow/*',
+}
+
 
 # cmp no longer exists in Python 3
-def cmp(a: typing.Any, b: typing.Any) -> int:
+def cmp(a: Any, b: Any) -> int:
   return int(a > b) - int(a < b)
 
 
@@ -100,6 +118,13 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def Name(cls) -> str:
     return 'webgl_conformance'
 
+  def CanRunInParallel(self) -> bool:
+    name = self.shortName()
+    for glob in SERIAL_TEST_GLOBS:
+      if fnmatch.fnmatch(name, glob):
+        return False
+    return name not in SERIAL_TESTS
+
   @classmethod
   def AddCommandlineArgs(cls, parser: ct.CmdArgParser) -> None:
     super(WebGLConformanceIntegrationTest, cls).AddCommandlineArgs(parser)
@@ -117,6 +142,16 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                       help='Whether to enable Metal debug layers')
 
   @classmethod
+  def SetClassVariablesFromOptions(cls, options: ct.ParsedCmdArgs):
+    """Sets class member variables from parsed command line options.
+
+    This was historically done once in GenerateGpuTests, but that relied on the
+    process always being the same, which is not the case if running tests in
+    parallel.
+    """
+    cls._webgl_version = int(options.webgl_conformance_version.split('.')[0])
+
+  @classmethod
   def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
     #
     # Conformance tests
@@ -124,9 +159,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     test_paths = cls._ParseTests('00_test_list.txt',
                                  options.webgl_conformance_version,
                                  (options.webgl2_only == 'true'), None)
-    cls._webgl_version = [
-        int(x) for x in options.webgl_conformance_version.split('.')
-    ][0]
+    cls.SetClassVariablesFromOptions(options)
     for test_path in test_paths:
       test_path_with_args = test_path
       if cls._webgl_version > 1:
@@ -159,7 +192,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                           ])
 
   @classmethod
-  def _GetExtensionList(cls) -> typing.List[str]:
+  def _GetExtensionList(cls) -> List[str]:
     if cls._webgl_version == 1:
       return [
           'ANGLE_instanced_arrays',
@@ -373,8 +406,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return timeout
 
   @classmethod
-  def GenerateBrowserArgs(cls, additional_args: typing.List[str]
-                          ) -> typing.List[str]:
+  def GenerateBrowserArgs(cls, additional_args: List[str]) -> List[str]:
     """Adds default arguments to |additional_args|.
 
     See the parent class' method documentation for additional information.
@@ -400,6 +432,12 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         # Force-enable SharedArrayBuffer to be able to test its
         # support in WEBGL_multi_draw.
         '--enable-blink-features=SharedArrayBuffer',
+        # When running tests in parallel, windows can be treated as occluded if
+        # a newly opened window fully covers a previous one, which can cause
+        # issues in a few tests. This is practically only an issue on Windows
+        # since Linux/Mac stagger new windows, but pass in on all platforms
+        # since it could technically be hit on any platform.
+        '--disable-backgrounding-occluded-windows',
     ])
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but
@@ -432,6 +470,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def SetUpProcess(cls) -> None:
     super(WebGLConformanceIntegrationTest, cls).SetUpProcess()
+    cls.SetClassVariablesFromOptions(cls.child.context.finder_options)
     cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     # By setting multiple server directories, the root of the server
@@ -456,10 +495,9 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _ParseTests(cls, path: str, version: str, webgl2_only: bool,
-                  folder_min_version: typing.Optional[str]) -> typing.List[str]:
-    def _ParseTestNameAndVersions(
-        line: str
-    ) -> typing.Tuple[str, typing.Optional[str], typing.Optional[str]]:
+                  folder_min_version: Optional[str]) -> List[str]:
+    def _ParseTestNameAndVersions(line: str
+                                  ) -> Tuple[str, Optional[str], Optional[str]]:
       """Parses any min/max versions and the test name on the given line.
 
       Args:
@@ -528,7 +566,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return test_paths
 
   @classmethod
-  def GetPlatformTags(cls, browser: ct.Browser) -> typing.List[str]:
+  def GetPlatformTags(cls, browser: ct.Browser) -> List[str]:
     tags = super(WebGLConformanceIntegrationTest, cls).GetPlatformTags(browser)
     tags.append('webgl-version-%d' % cls._webgl_version)
 
@@ -568,7 +606,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return tags
 
   @classmethod
-  def ExpectationsFiles(cls) -> typing.List[str]:
+  def ExpectationsFiles(cls) -> List[str]:
     assert cls._webgl_version == 1 or cls._webgl_version == 2
     if cls._webgl_version == 1:
       file_name = 'webgl_conformance_expectations.txt'
@@ -595,7 +633,7 @@ def _GetExtensionHarnessScript() -> str:
   return conformance_harness_script + extension_harness_additional_script
 
 
-def load_tests(loader: unittest.TestLoader, tests: typing.Any,
-               pattern: typing.Any) -> unittest.TestSuite:
+def load_tests(loader: unittest.TestLoader, tests: Any,
+               pattern: Any) -> unittest.TestSuite:
   del loader, tests, pattern  # Unused.
   return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

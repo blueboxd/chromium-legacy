@@ -52,14 +52,9 @@ import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.components.webauthn.AuthenticatorImpl;
 import org.chromium.components.webauthn.Fido2Api;
 import org.chromium.components.webauthn.Fido2ApiCallHelper;
-import org.chromium.components.webauthn.Fido2ApiHandler;
 import org.chromium.components.webauthn.Fido2CredentialRequest;
-import org.chromium.components.webauthn.FidoErrorResponseCallback;
-import org.chromium.components.webauthn.GetAssertionResponseCallback;
 import org.chromium.components.webauthn.InternalAuthenticator;
 import org.chromium.components.webauthn.InternalAuthenticatorJni;
-import org.chromium.components.webauthn.IsUvpaaResponseCallback;
-import org.chromium.components.webauthn.MakeCredentialResponseCallback;
 import org.chromium.components.webauthn.WebAuthnBrowserBridge;
 import org.chromium.components.webauthn.WebAuthnCredentialDetails;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -74,6 +69,7 @@ import org.chromium.url.Origin;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -103,6 +99,7 @@ public class Fido2CredentialRequestTest {
     private EmbeddedTestServer mTestServer;
     private MockAuthenticatorRenderFrameHost mFrameHost;
     private MockBrowserBridge mMockBrowserBridge;
+    private MockFido2ApiCallHelper mFido2ApiCallHelper;
     private Origin mOrigin;
     private InternalAuthenticator.Natives mTestAuthenticatorImplJni;
     private Fido2CredentialRequest mRequest;
@@ -187,12 +184,18 @@ public class Fido2CredentialRequestTest {
     }
 
     private static class MockFido2ApiCallHelper extends Fido2ApiCallHelper {
+        private WebAuthnCredentialDetails mReturnedCredentialDetails;
+
         @Override
         public void invokeFido2GetCredentials(String relyingPartyId, int supportLevel,
                 OnSuccessListener<List<WebAuthnCredentialDetails>> successCallback,
                 OnFailureListener failureCallback) {
-            WebAuthnCredentialDetails credential = Fido2ApiTestHelper.getCredentialDetails();
-            successCallback.onSuccess(Arrays.asList(new WebAuthnCredentialDetails[] {credential}));
+            successCallback.onSuccess(
+                    Arrays.asList(new WebAuthnCredentialDetails[] {mReturnedCredentialDetails}));
+        }
+
+        public void setReturnedCredentialDetails(WebAuthnCredentialDetails details) {
+            mReturnedCredentialDetails = details;
         }
     }
 
@@ -245,42 +248,6 @@ public class Fido2CredentialRequestTest {
 
         private void unblock() {
             mDone.open();
-        }
-    }
-
-    private static class MockFido2ApiHandler extends Fido2ApiHandler {
-        private Fido2CredentialRequest mRequest;
-
-        MockFido2ApiHandler(Fido2CredentialRequest request) {
-            mRequest = request;
-        }
-
-        @Override
-        protected void makeCredential(PublicKeyCredentialCreationOptions options,
-                WebAuthenticationDelegate.IntentSender intentSender, RenderFrameHost frameHost,
-                Origin origin, @WebAuthenticationDelegate.Support int supportLevel,
-                MakeCredentialResponseCallback callback, FidoErrorResponseCallback errorCallback) {
-            mRequest.handleMakeCredentialRequest(
-                    options, frameHost, origin, callback, errorCallback);
-        }
-
-        @Override
-        protected void getAssertion(PublicKeyCredentialRequestOptions options,
-                WebAuthenticationDelegate.IntentSender intentSender, RenderFrameHost frameHost,
-                Origin origin, PaymentOptions payment,
-                @WebAuthenticationDelegate.Support int supportLevel,
-                GetAssertionResponseCallback callback, FidoErrorResponseCallback errorCallback) {
-            mRequest.handleGetAssertionRequest(
-                    options, frameHost, origin, payment, callback, errorCallback);
-        }
-
-        @Override
-        protected void isUserVerifyingPlatformAuthenticatorAvailable(
-                WebAuthenticationDelegate.IntentSender intentSender, RenderFrameHost frameHost,
-                @WebAuthenticationDelegate.Support int supportLevel,
-                IsUvpaaResponseCallback callback) {
-            mRequest.handleIsUserVerifyingPlatformAuthenticatorAvailableRequest(
-                    frameHost, callback);
         }
     }
 
@@ -453,9 +420,11 @@ public class Fido2CredentialRequestTest {
         mRequestOptions = Fido2ApiTestHelper.createDefaultGetAssertionOptions();
         mRequest = new Fido2CredentialRequest(
                 mIntentSender, WebAuthenticationDelegate.Support.BROWSER);
-        Fido2ApiHandler.overrideInstanceForTesting(new MockFido2ApiHandler(mRequest));
+        AuthenticatorImpl.overrideFido2CredentialRequestForTesting(mRequest);
 
-        Fido2ApiCallHelper.overrideInstanceForTesting(new MockFido2ApiCallHelper());
+        mFido2ApiCallHelper = new MockFido2ApiCallHelper();
+        mFido2ApiCallHelper.setReturnedCredentialDetails(Fido2ApiTestHelper.getCredentialDetails());
+        Fido2ApiCallHelper.overrideInstanceForTesting(mFido2ApiCallHelper);
 
         mMockBrowserBridge = new MockBrowserBridge();
         mRequest.overrideBrowserBridgeForTesting(mMockBrowserBridge);
@@ -470,7 +439,7 @@ public class Fido2CredentialRequestTest {
     private boolean gmsVersionSupported() {
         if (PackageUtils.getPackageVersion(
                     ContextUtils.getApplicationContext(), GOOGLE_PLAY_SERVICES_PACKAGE)
-                >= Fido2ApiHandler.GMSCORE_MIN_VERSION) {
+                >= AuthenticatorImpl.GMSCORE_MIN_VERSION) {
             return true;
         }
         return false;
@@ -1326,6 +1295,30 @@ public class Fido2CredentialRequestTest {
         mMockBrowserBridge.setSelectedCredentialId(new byte[0]);
         mMockBrowserBridge.setExpectedCredentialDetailsList(Arrays.asList(
                 new WebAuthnCredentialDetails[] {Fido2ApiTestHelper.getCredentialDetails()}));
+        mRequestOptions.allowCredentials = new PublicKeyCredentialDescriptor[0];
+        mRequestOptions.isConditional = true;
+
+        mRequest.handleGetAssertionRequest(mRequestOptions, mFrameHost, mOrigin, /*payment=*/null,
+                (responseStatus, response)
+                        -> mCallback.onSignResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        mCallback.blockUntilCalled();
+        Assert.assertEquals(
+                Integer.valueOf(AuthenticatorStatus.UNKNOWN_ERROR), mCallback.getStatus());
+        Assert.assertNull(mCallback.getGetAssertionResponse());
+        Fido2ApiTestHelper.verifyRespondedBeforeTimeout(mStartTimeMs);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetAssertion_conditionalUiNondiscoverableCredential_failure() {
+        mIntentSender.setNextResultIntent(Fido2ApiTestHelper.createSuccessfulGetAssertionIntent());
+        WebAuthnCredentialDetails nonDiscoverableCredDetails =
+                Fido2ApiTestHelper.getCredentialDetails();
+        nonDiscoverableCredDetails.mIsDiscoverable = false;
+        mFido2ApiCallHelper.setReturnedCredentialDetails(nonDiscoverableCredDetails);
+        mMockBrowserBridge.setExpectedCredentialDetailsList(new ArrayList<>());
+
         mRequestOptions.allowCredentials = new PublicKeyCredentialDescriptor[0];
         mRequestOptions.isConditional = true;
 

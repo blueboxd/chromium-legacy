@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -13,8 +14,8 @@
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -55,6 +56,9 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
 
   TestPersonalDataManager* personal_data() { return &personal_data_; }
 
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::SYSTEM_TIME};
@@ -62,7 +66,6 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   TestAutofillClient autofill_client_;
   scoped_refptr<AutofillWebDataService> database_;
   TestPersonalDataManager personal_data_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -341,11 +344,180 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_LocalCard) {
   EXPECT_TRUE(real_card_suggestion.custom_icon.IsEmpty());
 }
 
+// Credit card name field suggestion with metadata for virtual cards in Autofill
+// popup.
+TEST_F(AutofillSuggestionGeneratorTest,
+       CreateCreditCardSuggestion_PopupWithMetadata_VirtualCardNameField) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableVirtualCardMetadata);
+
+  // Create a server card.
+  CreditCard server_card = test::GetMaskedServerCard();
+  server_card.set_server_id("server_id1");
+  server_card.set_guid("00000000-0000-0000-0000-000000000001");
+  test::SetCreditCardInfo(&server_card, "Mojo Jojo", "4111111111111111", "04",
+                          test::NextYear().c_str(), "1");
+  server_card.SetNetworkForMaskedCard(kVisaCard);
+
+  // Name field suggestion for virtual cards.
+  Suggestion virtual_card_name_field_suggestion =
+      suggestion_generator()->CreateCreditCardSuggestion(
+          server_card, AutofillType(CREDIT_CARD_NAME_FULL),
+          /*prefix_matched_suggestion=*/false, /*virtual_card_option=*/true,
+          "");
+
+  // "Virtual card" text is prefixed to the name.
+  EXPECT_EQ(virtual_card_name_field_suggestion.main_text.value,
+            u"Virtual card");
+  EXPECT_EQ(virtual_card_name_field_suggestion.minor_text.value, u"Mojo Jojo");
+
+#if BUILDFLAG(IS_ANDROID)
+  // For Android, the label is "Network ....1234".
+  EXPECT_EQ(virtual_card_name_field_suggestion.label,
+            base::StrCat({u"Visa  ", internal::GetObfuscatedStringForCardDigits(
+                                         u"1111", 4)}));
+#elif BUILDFLAG(IS_IOS)
+  // For IOS, the label is "....1234".
+  EXPECT_EQ(virtual_card_name_field_suggestion.label,
+            internal::GetObfuscatedStringForCardDigits(u"1111", 4));
+#else
+  // For Desktop, the label is the descriptive expiration date formatted as
+  // "Network ....1234, expires on mm/yy".
+  EXPECT_EQ(
+      virtual_card_name_field_suggestion.label,
+      base::StrCat({u"Visa  ",
+                    internal::GetObfuscatedStringForCardDigits(u"1111", 4),
+                    u", expires on 04/",
+                    base::UTF8ToUTF16(test::NextYear().substr(2))}));
+#endif
+}
+
+// Credit card number field suggestion with metadata for virtual cards in
+// Autofill popup.
+TEST_F(AutofillSuggestionGeneratorTest,
+       CreateCreditCardSuggestion_PopupWithMetadata_VirtualCardNumberField) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableVirtualCardMetadata);
+
+  // Create a server card.
+  CreditCard server_card = test::GetMaskedServerCard();
+  server_card.set_server_id("server_id1");
+  server_card.set_guid("00000000-0000-0000-0000-000000000001");
+  test::SetCreditCardInfo(&server_card, "Mojo Jojo", "4111111111111111", "04",
+                          test::NextYear().c_str(), "1");
+  server_card.SetNetworkForMaskedCard(kVisaCard);
+
+  // Card number field suggestion for virtual cards.
+  Suggestion virtual_card_number_field_suggestion =
+      suggestion_generator()->CreateCreditCardSuggestion(
+          server_card, AutofillType(CREDIT_CARD_NUMBER),
+          /*prefix_matched_suggestion=*/false, /*virtual_card_option=*/true,
+          "");
+
+  // Only card number is displayed on the first line.
+  EXPECT_EQ(virtual_card_number_field_suggestion.main_text.value,
+            base::StrCat({u"Visa  ", internal::GetObfuscatedStringForCardDigits(
+                                         u"1111", 4)}));
+  EXPECT_EQ(virtual_card_number_field_suggestion.minor_text.value, u"");
+
+  // "Virtual card" is the label.
+  EXPECT_EQ(virtual_card_number_field_suggestion.label, u"Virtual card");
+}
+
+// Credit card name field suggestion with metadata for non-virtual cards in
+// Autofill popup.
+TEST_F(AutofillSuggestionGeneratorTest,
+       CreateCreditCardSuggestion_PopupWithMetadata_NonVirtualCardNameField) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableVirtualCardMetadata);
+
+  // Create a server card.
+  CreditCard server_card = test::GetMaskedServerCard();
+  server_card.set_server_id("server_id1");
+  server_card.set_guid("00000000-0000-0000-0000-000000000001");
+  test::SetCreditCardInfo(&server_card, "Mojo Jojo", "4111111111111111", "04",
+                          test::NextYear().c_str(), "1");
+  server_card.SetNetworkForMaskedCard(kVisaCard);
+
+  // Name field suggestion for non-virtual cards.
+  Suggestion real_card_name_field_suggestion =
+      suggestion_generator()->CreateCreditCardSuggestion(
+          server_card, AutofillType(CREDIT_CARD_NAME_FULL),
+          /*prefix_matched_suggestion=*/false, /*virtual_card_option=*/false,
+          "");
+
+  // Only the name is displayed on the first line.
+  EXPECT_EQ(real_card_name_field_suggestion.main_text.value, u"Mojo Jojo");
+  EXPECT_EQ(real_card_name_field_suggestion.minor_text.value, u"");
+
+#if BUILDFLAG(IS_ANDROID)
+  // For Android, the label is "Network ....1234".
+  EXPECT_EQ(real_card_name_field_suggestion.label,
+            base::StrCat({u"Visa  ", internal::GetObfuscatedStringForCardDigits(
+                                         u"1111", 4)}));
+#elif BUILDFLAG(IS_IOS)
+  // For IOS, the label is "....1234".
+  EXPECT_EQ(real_card_name_field_suggestion.label,
+            internal::GetObfuscatedStringForCardDigits(u"1111", 4));
+#else
+  // For Desktop, the label is the descriptive expiration date formatted as
+  // "Network ....1234, expires on mm/yy".
+  EXPECT_EQ(
+      real_card_name_field_suggestion.label,
+      base::StrCat({u"Visa  ",
+                    internal::GetObfuscatedStringForCardDigits(u"1111", 4),
+                    u", expires on 04/",
+                    base::UTF8ToUTF16(test::NextYear().substr(2))}));
+#endif
+}
+
+// Credit card number field suggestion with metadata for non-virtual cards in
+// Autofill popup.
+TEST_F(AutofillSuggestionGeneratorTest,
+       CreateCreditCardSuggestion_PopupWithMetadata_NonVirtualCardNumberField) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableVirtualCardMetadata);
+
+  // Create a server card.
+  CreditCard server_card = test::GetMaskedServerCard();
+  server_card.set_server_id("server_id1");
+  server_card.set_guid("00000000-0000-0000-0000-000000000001");
+  test::SetCreditCardInfo(&server_card, "Mojo Jojo", "4111111111111111", "04",
+                          test::NextYear().c_str(), "1");
+  server_card.SetNetworkForMaskedCard(kVisaCard);
+
+  // Card number field suggestion for non-virtual cards.
+  Suggestion real_card_number_field_suggestion =
+      suggestion_generator()->CreateCreditCardSuggestion(
+          server_card, AutofillType(CREDIT_CARD_NUMBER),
+          /*prefix_matched_suggestion=*/false, /*virtual_card_option=*/false,
+          "");
+
+  // Only the card number is displayed on the first line.
+  EXPECT_EQ(real_card_number_field_suggestion.main_text.value,
+            base::StrCat({u"Visa  ", internal::GetObfuscatedStringForCardDigits(
+                                         u"1111", 4)}));
+  EXPECT_EQ(real_card_number_field_suggestion.minor_text.value, u"");
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  // For mobile devices, the label is the expiration date formatted as mm/yy.
+  EXPECT_EQ(
+      real_card_number_field_suggestion.label,
+      base::StrCat({u"04/", base::UTF8ToUTF16(test::NextYear().substr(2))}));
+#else
+  // For Desktop, the label is the descriptive expiration date formatted as
+  // "Expires on mm/yy".
+  EXPECT_EQ(real_card_number_field_suggestion.label,
+            base::StrCat({u"Expires on 04/",
+                          base::UTF8ToUTF16(test::NextYear().substr(2))}));
+#endif
+}
+
 TEST_F(AutofillSuggestionGeneratorTest, ShouldShowVirtualCardOption) {
   // Create a complete form.
   FormData credit_card_form;
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
-  TestFormStructure form_structure(credit_card_form);
+  FormStructure form_structure(credit_card_form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
   // Clear the heuristic types, and instead set the appropriate server types.
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -353,7 +525,8 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldShowVirtualCardOption) {
     heuristic_types.push_back(UNKNOWN_TYPE);
     server_types.push_back(form_structure.field(i)->heuristic_type());
   }
-  form_structure.SetFieldTypes(heuristic_types, server_types);
+  FormStructureTestApi(&form_structure)
+      .SetFieldTypes(heuristic_types, server_types);
 
   // Create a server card.
   CreditCard server_card = test::GetMaskedServerCard();
@@ -426,26 +599,28 @@ TEST_F(AutofillSuggestionGeneratorTest,
   std::vector<Suggestion> promo_code_suggestions =
       AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
           promo_code_offers);
-  EXPECT_TRUE(promo_code_suggestions.size() == 3);
+  EXPECT_TRUE(promo_code_suggestions.size() == 4);
 
   EXPECT_EQ(promo_code_suggestions[0].main_text.value, u"test_promo_code_1");
   EXPECT_EQ(promo_code_suggestions[0].label, u"test_value_prop_text_1");
-  EXPECT_EQ(absl::get<std::string>(promo_code_suggestions[0].payload), "1");
+  EXPECT_EQ(promo_code_suggestions[0].GetPayload<std::string>(), "1");
   EXPECT_EQ(promo_code_suggestions[0].frontend_id,
             POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
 
   EXPECT_EQ(promo_code_suggestions[1].main_text.value, u"test_promo_code_2");
   EXPECT_EQ(promo_code_suggestions[1].label, u"test_value_prop_text_2");
-  EXPECT_EQ(absl::get<std::string>(promo_code_suggestions[1].payload), "2");
+  EXPECT_EQ(promo_code_suggestions[1].GetPayload<std::string>(), "2");
   EXPECT_EQ(promo_code_suggestions[1].frontend_id,
             POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
 
-  EXPECT_EQ(promo_code_suggestions[2].main_text.value,
+  EXPECT_EQ(promo_code_suggestions[2].frontend_id, POPUP_ITEM_ID_SEPARATOR);
+
+  EXPECT_EQ(promo_code_suggestions[3].main_text.value,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_PROMO_CODE_SUGGESTIONS_FOOTER_TEXT));
-  EXPECT_EQ(absl::get<GURL>(promo_code_suggestions[2].payload),
+  EXPECT_EQ(promo_code_suggestions[3].GetPayload<GURL>(),
             offer1.GetOfferDetailsUrl().spec());
-  EXPECT_EQ(promo_code_suggestions[2].frontend_id,
+  EXPECT_EQ(promo_code_suggestions[3].frontend_id,
             POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS);
 }
 

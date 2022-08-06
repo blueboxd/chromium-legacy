@@ -353,10 +353,38 @@ class COMPONENT_EXPORT(CICERONE) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::GetVshSessionResponse>
           callback) = 0;
 
+  // Attaches a USB device to a LXD container.
+  // |callback| is called when the method completes.
+  virtual void AttachUsbToContainer(
+      const vm_tools::cicerone::AttachUsbToContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::AttachUsbToContainerResponse>
+          callback) = 0;
+
+  // Detaches a USB device from a LXD container.
+  // |callback| is called when the method completes.
+  virtual void DetachUsbFromContainer(
+      const vm_tools::cicerone::DetachUsbFromContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::DetachUsbFromContainerResponse>
+          callback) = 0;
+
   // Send signal with files user has selected in SelectFile dialog. This is sent
   // in response to VmApplicationsServiceProvider::SelectFile().
   virtual void FileSelected(
       const vm_tools::cicerone::FileSelectedSignal& signal) = 0;
+
+  // Lists the containers Cicerone knows about.
+  // |callback| is called when the method completes.
+  virtual void ListRunningContainers(
+      const vm_tools::cicerone::ListRunningContainersRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ListRunningContainersResponse>
+          callback) = 0;
+
+  // Queries Garcon for info about the current session.
+  // |callback| is called when the method completes.
+  virtual void GetGarconSessionInfo(
+      const vm_tools::cicerone::GetGarconSessionInfoRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::GetGarconSessionInfoResponse>
+          callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-

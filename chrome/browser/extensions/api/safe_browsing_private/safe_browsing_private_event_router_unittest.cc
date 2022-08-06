@@ -48,11 +48,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
@@ -873,8 +873,8 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordBreach) {
   validator.ExpectPasswordBreachEvent(
       "SAFETY_CHECK",
       {
-          {"https://first.example.com/", u"first_user_name"},
-          {"https://second.example.com/", u"second_user_name"},
+          {"https://first.example.com/", u"*****"},
+          {"https://second.example.com/", u"*****@gmail.com"},
       },
       profile_->GetProfileUserName());
 
@@ -882,7 +882,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordBreach) {
       "SAFETY_CHECK",
       {
           {GURL("https://first.example.com"), u"first_user_name"},
-          {GURL("https://second.example.com"), u"second_user_name"},
+          {GURL("https://second.example.com"), u"second_user_name@gmail.com"},
       });
 }
 
@@ -934,7 +934,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   validator.ExpectPasswordBreachEvent(
       "SAFETY_CHECK",
       {
-          {"https://secondexample.com/", u"second_user_name"},
+          {"https://secondexample.com/", u"*****"},
       },
       profile_->GetProfileUserName());
 

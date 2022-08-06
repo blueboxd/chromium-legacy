@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/crash/core/app/crash_reporter_client.h"
+#include "third_party/abseil-cpp/absl/base/internal/raw_logging.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/annotation_list.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
@@ -44,9 +45,24 @@
 #include "components/crash/core/app/crash_export_thunks.h"
 #endif
 
+#if !BUILDFLAG(IS_IOS)
+#include "components/crash/core/common/crash_key.h"  // nogncheck
+#endif
+
 namespace crash_reporter {
 
 namespace {
+
+void AbslAbortHook(const char* file,
+                   int line,
+                   const char* buf_start,
+                   const char* prefix_end,
+                   const char* buf_end) {
+  // This simulates that a CHECK(false) was done at file:line instead of here.
+  // This is used instead of IMMEDIATE_CRASH() to give better error messages
+  // locally (printed stack for one).
+  logging::CheckError::Check(file, line, "false").stream() << prefix_end;
+}
 
 base::FilePath* g_database_path;
 
@@ -72,19 +88,10 @@ bool LogMessageHandler(int severity,
   }
   base::AutoReset<bool> guard(&guarded, true);
 
-  // Only log last path component.  This matches logging.cc.
-  if (file) {
-    const char* slash = strrchr(file, '/');
-    if (slash) {
-      file = slash + 1;
-    }
-  }
-
   CHECK_LE(message_start, string.size());
-  std::string message = base::StringPrintf("%s:%d: %s", file, line,
-                                           string.c_str() + message_start);
   static crashpad::StringAnnotation<512> crash_key("LOG_FATAL");
-  crash_key.Set(message);
+  crash_key.Set(logging::LogMessage::BuildCrashString(
+      file, line, string.c_str() + message_start));
 
   // Rather than including the code to force the crash here, allow the caller to
   // do it.
@@ -160,7 +167,16 @@ bool InitializeCrashpadImpl(bool initial_client,
   }
 #endif  // BUILDFLAG(IS_APPLE)
 
+// TODO(pbos): Remove this exception for iOS once it's 100% on Crashpad and
+// depending on //components/crash/core/common:crash_key_lib does not cause a
+// forbidden dependency through crash_key_breakpad_ios.mm depending on
+// //components/previous_session_info. As of writing this //base crash keys are
+// set up in //ios/chrome/browser/crash_report/crash_helper.mm.
+#if BUILDFLAG(IS_IOS)
   crashpad::AnnotationList::Register();
+#else
+  InitializeCrashKeys();
+#endif  // BUILDFLAG(IS_IOS)
 
 #if !BUILDFLAG(IS_IOS)
   static crashpad::StringAnnotation<24> ptype_key("ptype");
@@ -190,6 +206,12 @@ bool InitializeCrashpadImpl(bool initial_client,
   // preferable to having all occurrences show up in DumpWithoutCrashing() at
   // the same file and line.
   base::debug::SetDumpWithoutCrashingFunction(DumpWithoutCrashing);
+
+  // TODO(pbos): Update this to not rely on a _internal namespace once there's
+  // a public API in absl::.
+  // Note: If this fails to compile because of an absl roll, this is fair to
+  // remove if you file a crbug.com/new and assign it to pbos@.
+  absl::raw_log_internal::RegisterAbortHook(&AbslAbortHook);
 
 #if BUILDFLAG(IS_APPLE)
   // On Mac, we only want the browser to initialize the database, but not the

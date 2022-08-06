@@ -135,6 +135,22 @@ goma = struct(
     ),
 )
 
+reclient = struct(
+    instance = struct(
+        DEFAULT_TRUSTED = "rbe-chromium-trusted",
+        TEST_TRUSTED = "rbe-chromium-trusted-test",
+        DEFAULT_UNTRUSTED = "rbe-chromium-untrusted",
+        TEST_UNTRUSTED = "rbe-chromium-untrusted-test",
+    ),
+    jobs = struct(
+        DEFAULT = 250,
+        LOW_JOBS_FOR_CI = 80,
+        HIGH_JOBS_FOR_CI = 500,
+        LOW_JOBS_FOR_CQ = 150,
+        HIGH_JOBS_FOR_CQ = 300,
+    ),
+)
+
 def _rotation(name):
     return branches.value({branches.MAIN: [name]})
 
@@ -142,6 +158,7 @@ def _rotation(name):
 # Arbitrary elements can't be added, new rotations must be added in SoM code
 sheriff_rotations = struct(
     ANDROID = _rotation("android"),
+    ANGLE = _rotation("angle"),
     CHROMIUM = _rotation("chromium"),
     FUCHSIA = _rotation("fuchsia"),
     CHROMIUM_CLANG = _rotation("chromium.clang"),
@@ -168,8 +185,10 @@ xcode = struct(
     x13main = xcode_enum("13c100"),
     # A newer Xcode 13 version used on beta bots.
     x13betabots = xcode_enum("13f17a"),
+    # Xcode14 beta 4 will be used to build Main iOS
+    x14main = xcode_enum("14a5284g"),
     # A newer Xcode 14 version used on beta bots.
-    x14betabots = xcode_enum("14a5270f"),
+    x14betabots = xcode_enum("14a5284g"),
     # in use by ios-webkit-tot
     x13wk = xcode_enum("13a1030dwk"),
 )

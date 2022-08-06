@@ -108,7 +108,9 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
   ~WebGPUSwapBufferProviderForTests() override { *alive_ = false; }
 
   WGPUTexture GetNewTexture(const gfx::Size& size) {
-    client_->texture = WebGPUSwapBufferProvider::GetNewTexture(size);
+    // The alpha type is an optimization hint so just pass in opaque here.
+    client_->texture =
+        WebGPUSwapBufferProvider::GetNewTexture(size, kOpaque_SkAlphaType);
     return client_->texture;
   }
 
@@ -544,6 +546,21 @@ TEST_F(WebGPUSwapBufferProviderTest, ReserveTextureDescriptorForReflection) {
                                                      &release_callback));
   EXPECT_EQ(kOtherSize, resource.size);
   std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
+}
+
+// Ensures that requests for zero size textures (width == 0 or height == 0) do
+// not attempt to reserve a texture.
+TEST_F(WebGPUSwapBufferProviderTest, VerifyZeroSizeRejects) {
+  const gfx::Size kZeroSize(0, 0);
+  const gfx::Size kZeroWidth(0, 10);
+  const gfx::Size kZeroHeight(10, 0);
+
+  // None of these calls should result in ReserveTexture being called
+  EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_, _)).Times(0);
+
+  EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroSize));
+  EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroWidth));
+  EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroHeight));
 }
 
 }  // namespace blink

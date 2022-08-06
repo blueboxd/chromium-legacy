@@ -455,14 +455,6 @@ void Compositor::SetScaleAndSize(float scale,
   bool device_scale_factor_changed = device_scale_factor_ != scale;
   device_scale_factor_ = scale;
 
-#if DCHECK_IS_ON()
-  if (size_ != size_in_pixel && local_surface_id.is_valid()) {
-    // A new LocalSurfaceId must be set when the compositor size changes.
-    DCHECK_NE(local_surface_id, host_->local_surface_id_from_parent());
-    DCHECK_NE(local_surface_id, host_->local_surface_id_from_parent());
-  }
-#endif  // DECHECK_IS_ON()
-
   // cc requires the size to be non-empty (meaning DCHECKs if size is empty).
   if (!size_in_pixel.IsEmpty()) {
     bool size_changed = size_ != size_in_pixel;
@@ -666,8 +658,8 @@ ThroughputTracker Compositor::RequestNewThroughputTracker() {
                            weak_ptr_factory_.GetWeakPtr());
 }
 
-uint32_t Compositor::GetAverageThroughput() const {
-  return host_->GetAverageThroughput();
+double Compositor::GetPercentDroppedFrames() const {
+  return host_->GetPercentDroppedFrames();
 }
 
 std::unique_ptr<cc::EventsMetricsManager::ScopedMonitor>
@@ -737,7 +729,7 @@ void Compositor::DidCommit(base::TimeTicks, base::TimeTicks) {
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
 Compositor::GetBeginMainFrameMetrics() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   auto metrics_data = std::make_unique<cc::BeginMainFrameMetrics>();
   metrics_data->should_measure_smoothness = true;
   return metrics_data;

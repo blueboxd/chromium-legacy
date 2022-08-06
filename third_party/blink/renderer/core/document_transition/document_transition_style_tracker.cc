@@ -39,8 +39,9 @@ namespace {
 
 const char* kElementSetModificationError =
     "The element set cannot be modified at this transition state.";
-const char* kPaintContainmentNotSatisfied =
-    "Dropping element from transition. Shared element must contain paint";
+const char* kContainmentNotSatisfied =
+    "Dropping element from transition. Shared element must contain paint or "
+    "layout";
 const char* kDuplicateTagBaseError =
     "Unexpected duplicate page transition tag: ";
 
@@ -59,7 +60,7 @@ const String& AnimationUAStyles() {
 }
 
 absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
-                                              const gfx::Rect& target_rect,
+                                              const LayoutRect& target_rect,
                                               float device_pixel_ratio) {
   if (reference_rect.IsEmpty()) {
     DCHECK(target_rect.IsEmpty());
@@ -70,19 +71,21 @@ absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
   // space. Note that this currently relies on the fact that object-view-box
   // scales its parameters from CSS to layout space. However, that's a bug.
   // TODO(crbug.com/1324618): Fix this when the object-view-box bug is fixed.
-  gfx::Rect reference_bounding_rect = gfx::ToEnclosingRect(gfx::ScaleRect(
-      static_cast<gfx::RectF>(reference_rect), 1.0 / device_pixel_ratio));
+  reference_rect.Scale(1.f / device_pixel_ratio);
+  LayoutRect reference_layout_rect = reference_rect.ToLayoutRect();
 
-  if (reference_bounding_rect == target_rect)
+  if (reference_layout_rect == target_rect)
     return absl::nullopt;
 
-  int top_offset = target_rect.y() - reference_bounding_rect.y();
-  int right_offset = reference_bounding_rect.right() - target_rect.right();
-  int bottom_offset = reference_bounding_rect.bottom() - target_rect.bottom();
-  int left_offset = target_rect.x() - reference_bounding_rect.x();
+  float top_offset = (target_rect.Y() - reference_layout_rect.Y()).ToFloat();
+  float right_offset =
+      (reference_layout_rect.MaxX() - target_rect.MaxX()).ToFloat();
+  float bottom_offset =
+      (reference_layout_rect.MaxY() - target_rect.MaxY()).ToFloat();
+  float left_offset = (target_rect.X() - reference_layout_rect.X()).ToFloat();
 
-  return String::Format("inset(%dpx %dpx %dpx %dpx)", top_offset, right_offset,
-                        bottom_offset, left_offset);
+  return String::Format("inset(%.3fpx %.3fpx %.3fpx %.3fpx)", top_offset,
+                        right_offset, bottom_offset, left_offset);
 }
 
 // TODO(vmpstr): This could be optimized by caching values for individual layout
@@ -348,6 +351,8 @@ bool DocumentTransitionStyleTracker::Capture() {
   // Now we know that we can start a transition. Update the state and populate
   // `element_data_map_`.
   state_ = State::kCapturing;
+  InvalidateHitTestingCache();
+
   captured_tag_count_ = transition_tags.size() + OldRootDataTagSize();
 
   element_data_map_.ReserveCapacityForSize(captured_tag_count_);
@@ -398,6 +403,10 @@ void DocumentTransitionStyleTracker::CaptureResolved() {
   DCHECK_EQ(state_, State::kCapturing);
 
   state_ = State::kCaptured;
+  // TODO(crbug.com/1347473): We should also suppress hit testing at this point,
+  // since we're about to start painting the element as a captured snapshot, but
+  // we still haven't given script chance to modify the DOM to the new state.
+  InvalidateHitTestingCache();
 
   // Since the elements will be unset, we need to invalidate their style first.
   // TODO(vmpstr): We don't have to invalidate the pseudo styles at this point,
@@ -431,6 +440,8 @@ bool DocumentTransitionStyleTracker::Start() {
     return false;
 
   state_ = State::kStarted;
+  InvalidateHitTestingCache();
+
   HeapHashMap<Member<Element>, viz::SharedElementResourceId>
       element_snapshot_ids;
   bool found_new_tags = false;
@@ -522,6 +533,7 @@ void DocumentTransitionStyleTracker::Abort() {
 
 void DocumentTransitionStyleTracker::EndTransition() {
   state_ = State::kFinished;
+  InvalidateHitTestingCache();
 
   // We need a style invalidation to remove the pseudo element tree. This needs
   // to be done before we clear the data, since we need to invalidate the shared
@@ -665,7 +677,8 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
     // TODO(khushalsagar) : Switch paint containment and disallow fragmentation
     // to implicit constraints. See crbug.com/1277121.
     auto* layout_object = element_data->target_element->GetLayoutObject();
-    if (!layout_object || !layout_object->ShouldApplyPaintContainment()) {
+    if (!layout_object || (!layout_object->ShouldApplyPaintContainment() &&
+                           !layout_object->ShouldApplyLayoutContainment())) {
       element_data->target_element = nullptr;
 
       // If we had a valid |target_element| there must be an associated snapshot
@@ -830,10 +843,12 @@ void DocumentTransitionStyleTracker::VerifySharedElements() {
 
     // TODO(vmpstr): Should this work for replaced elements as well?
     if (object) {
-      if (object->ShouldApplyPaintContainment())
+      if (object->ShouldApplyPaintContainment() ||
+          object->ShouldApplyLayoutContainment()) {
         continue;
+      }
 
-      AddConsoleError(kPaintContainmentNotSatisfied,
+      AddConsoleError(kContainmentNotSatisfied,
                       {DOMNodeIds::IdForNode(active_element)});
     }
 
@@ -842,6 +857,7 @@ void DocumentTransitionStyleTracker::VerifySharedElements() {
     // support nulls as a valid active element.
 
     // Invalidate the element since we should no longer be compositing it.
+    // TODO(vmpstr): Should we abort the transition instead?0
     auto* box = active_element->GetLayoutBox();
     if (box && box->HasSelfPaintingLayer())
       box->SetNeedsPaintPropertyUpdate();
@@ -966,7 +982,18 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     builder.Append(")");
   };
 
-  auto add_animation = [&builder, &append_selector](
+  auto add_plus_lighter = [&builder, &append_selector](const String& tag) {
+    append_selector("html::page-transition-image-wrapper", tag);
+    builder.Append("{ isolation: isolate; }");
+
+    append_selector("html::page-transition-incoming-image", tag);
+    builder.Append("{ mix-blend-mode: plus-lighter; }");
+
+    append_selector("html::page-transition-outgoing-image", tag);
+    builder.Append("{ mix-blend-mode: plus-lighter; }");
+  };
+
+  auto add_animation = [&builder, &append_selector, &add_plus_lighter](
                            const String& tag,
                            const TransformationMatrix& source_matrix,
                            const LayoutSize& source_size) {
@@ -976,8 +1003,8 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
         R"CSS({
           from {
            transform: %s;
-           width: %dpx;
-           height: %dpx;
+           width: %.3fpx;
+           height: %.3fpx;
           }
         })CSS",
         ComputedStyleUtils::ValueForTransformationMatrix(source_matrix, 1,
@@ -985,12 +1012,14 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
             ->CssText()
             .Utf8()
             .c_str(),
-        source_size.Width().ToInt(), source_size.Height().ToInt());
+        source_size.Width().ToFloat(), source_size.Height().ToFloat());
 
     append_selector("html::page-transition-container", tag);
     builder.Append("{ animation: page-transition-container-anim-");
     builder.Append(tag);
     builder.Append(" 0.25s both }");
+
+    add_plus_lighter(tag);
   };
 
   // SUBTLETY AHEAD!
@@ -1023,8 +1052,9 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
 
   for (auto& root_tag : AllRootTags()) {
     // This is case 3 above.
-    if (old_root_data_ && old_root_data_->tags.Contains(root_tag) &&
-        element_data_map_.Contains(root_tag)) {
+    bool tag_is_old_root =
+        old_root_data_ && old_root_data_->tags.Contains(root_tag);
+    if (tag_is_old_root && element_data_map_.Contains(root_tag)) {
       DCHECK(
           element_data_map_.find(root_tag)->value->new_snapshot_id.IsValid());
       continue;
@@ -1040,6 +1070,11 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
           right: 0;
           bottom: 0;
         })CSS");
+
+    bool tag_is_new_root =
+        new_root_data_ && new_root_data_->tags.Contains(root_tag);
+    if (tag_is_old_root && tag_is_new_root)
+      add_plus_lighter(root_tag);
   }
 
   float device_pixel_ratio = document_->DevicePixelRatio();
@@ -1057,9 +1092,6 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     // `element_data_map_`. This is case 1 above.
     DCHECK(!tag_is_old_root || !tag_is_new_root);
 
-    gfx::Rect border_box_in_css_space = gfx::Rect(
-        gfx::Size(element_data->border_box_size_in_css_space.Width().ToInt(),
-                  element_data->border_box_size_in_css_space.Height().ToInt()));
     std::ostringstream writing_mode_stream;
     writing_mode_stream << element_data->container_writing_mode;
 
@@ -1071,12 +1103,13 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
                       document_transition_tag);
       builder.AppendFormat(
           R"CSS({
-            width: %dpx;
-            height: %dpx;
+            width: %.3fpx;
+            height: %.3fpx;
             transform: %s;
             writing-mode: %s;
           })CSS",
-          border_box_in_css_space.width(), border_box_in_css_space.height(),
+          element_data->border_box_size_in_css_space.Width().ToFloat(),
+          element_data->border_box_size_in_css_space.Height().ToFloat(),
           ComputedStyleUtils::ValueForTransformationMatrix(
               element_data->viewport_matrix, 1, false)
               ->CssText()
@@ -1088,7 +1121,8 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
       // (not a new root).
       absl::optional<String> incoming_inset = ComputeInsetDifference(
           element_data->visual_overflow_rect_in_layout_space,
-          border_box_in_css_space, device_pixel_ratio);
+          LayoutRect(LayoutPoint(), element_data->border_box_size_in_css_space),
+          device_pixel_ratio);
       if (incoming_inset) {
         append_selector("html::page-transition-incoming-image",
                         document_transition_tag);
@@ -1103,13 +1137,11 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     // Outgoing inset only makes sense if the tag is an old shared element (not
     // an old root).
     if (!tag_is_old_root) {
-      gfx::Rect cached_border_box_in_css_space = gfx::Rect(gfx::Size(
-          element_data->cached_border_box_size_in_css_space.Width().ToInt(),
-          element_data->cached_border_box_size_in_css_space.Height().ToInt()));
-
       absl::optional<String> outgoing_inset = ComputeInsetDifference(
           element_data->cached_visual_overflow_rect_in_layout_space,
-          cached_border_box_in_css_space, device_pixel_ratio);
+          LayoutRect(LayoutPoint(),
+                     element_data->cached_border_box_size_in_css_space),
+          device_pixel_ratio);
       if (outgoing_inset) {
         append_selector("html::page-transition-outgoing-image",
                         document_transition_tag);
@@ -1163,6 +1195,17 @@ void DocumentTransitionStyleTracker::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(element_data_map_);
   visitor->Trace(pending_shared_element_tags_);
+}
+
+void DocumentTransitionStyleTracker::InvalidateHitTestingCache() {
+  // Hit-testing data is cached based on the current DOM version. Normally, this
+  // version is incremented any time there is a DOM modification or an attribute
+  // change to some element (which can result in a new style). However, with
+  // shared element transitions, we dynamically create and destroy hit-testable
+  // pseudo elements based on the current state. This means that we have to
+  // manually modify the DOM tree version since there is no other mechanism that
+  // will do it.
+  document_->IncDOMTreeVersion();
 }
 
 void DocumentTransitionStyleTracker::ElementData::Trace(

@@ -7,8 +7,8 @@
 #include "base/metrics/metrics_hashes.h"
 #include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/internal/execution/processing/query_processor.h"
-#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
+#include "components/segmentation_platform/public/proto/aggregation.pb.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -221,6 +221,34 @@ TEST_F(MetadataUtilsTest, MetadataSqlFeatureValidation) {
   // Sql feature with a bind value of type unknown is invalid.
   bind_value->set_param_type(proto::SqlFeature::BindValue::UNKNOWN);
   EXPECT_EQ(metadata_utils::ValidationResult::kFeatureBindValuesInvalid,
+            metadata_utils::ValidateMetadataSqlFeature(sql_feature));
+}
+
+TEST_F(MetadataUtilsTest, MetadataSqlFeatureTensorLengthValidation) {
+  // The number of "?" in the query string should be equal to the total of
+  // bind_value's tensor_length.
+  proto::SqlFeature sql_feature;
+  sql_feature.set_sql("one bind_value ? ? ?");
+
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureBindValuesInvalid,
+            metadata_utils::ValidateMetadataSqlFeature(sql_feature));
+
+  // Add a bind_value with tensor length of 1.
+  auto* bind_value = sql_feature.add_bind_values();
+  bind_value->set_param_type(proto::SqlFeature::BindValue::BOOL);
+  auto* custom_input = bind_value->mutable_value();
+  custom_input->set_tensor_length(1);
+  custom_input->add_default_value(0);
+
+  // Add a bind_value with tensor length of 2.
+  auto* bind_value2 = sql_feature.add_bind_values();
+  bind_value2->set_param_type(proto::SqlFeature::BindValue::BOOL);
+  auto* custom_input2 = bind_value2->mutable_value();
+  custom_input2->set_tensor_length(2);
+  custom_input2->add_default_value(0);
+  custom_input2->add_default_value(0);
+
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadataSqlFeature(sql_feature));
 }
 

@@ -59,17 +59,6 @@ int NextPowerOf2(int64_t value) {
   return AutoEnrollmentClient::kMaximumPower + 1;
 }
 
-// Sets or clears a value in a dictionary.
-void UpdateDict(base::Value* dict,
-                const char* pref_path,
-                bool set_or_clear,
-                std::unique_ptr<base::Value> value) {
-  if (set_or_clear)
-    dict->SetPath(pref_path, base::Value::FromUniquePtrValue(std::move(value)));
-  else
-    dict->RemoveKey(pref_path);
-}
-
 // Provides device identifier for Forced Re-Enrollment (FRE), where the
 // server-backed state key is used. It will set the identifier for the
 // DeviceAutoEnrollmentRequest.
@@ -688,36 +677,31 @@ class AutoEnrollmentClientImpl::ServerStateRetriever {
       return;
     }
 
-    AutoEnrollmentStateMessageProcessor::ParsedResponse parsed_response =
-        std::move(parsed_response_result.value());
-    {
-      DictionaryPrefUpdate dict(local_state_, prefs::kServerBackedDeviceState);
-      UpdateDict(
-          dict.Get(), kDeviceStateManagementDomain,
-          parsed_response.management_domain.has_value(),
-          std::make_unique<base::Value>(
-              parsed_response.management_domain.value_or(std::string())));
+    AutoEnrollmentStateMessageProcessor::ParsedResponse& parsed_response =
+        *parsed_response_result;
 
-      UpdateDict(dict.Get(), kDeviceStateMode,
-                 !parsed_response.restore_mode.empty(),
-                 std::make_unique<base::Value>(parsed_response.restore_mode));
+    base::Value::Dict state;
+    if (parsed_response.management_domain.has_value())
+      state.Set(kDeviceStateManagementDomain,
+                *parsed_response.management_domain);
 
-      UpdateDict(dict.Get(), kDeviceStateDisabledMessage,
-                 parsed_response.disabled_message.has_value(),
-                 std::make_unique<base::Value>(
-                     parsed_response.disabled_message.value_or(std::string())));
+    if (!parsed_response.restore_mode.empty())
+      state.Set(kDeviceStateMode, parsed_response.restore_mode);
 
-      UpdateDict(
-          dict.Get(), kDeviceStatePackagedLicense,
-          parsed_response.is_license_packaged_with_device.has_value(),
-          std::make_unique<base::Value>(
-              parsed_response.is_license_packaged_with_device.value_or(false)));
+    if (parsed_response.disabled_message.has_value())
+      state.Set(kDeviceStateDisabledMessage, *parsed_response.disabled_message);
 
-      UpdateDict(dict.Get(), kDeviceStateLicenseType,
-                 parsed_response.license_type.has_value(),
-                 std::make_unique<base::Value>(
-                     parsed_response.license_type.value_or(std::string())));
-    }
+    if (parsed_response.is_license_packaged_with_device.has_value())
+      state.Set(kDeviceStatePackagedLicense,
+                *parsed_response.is_license_packaged_with_device);
+
+    if (parsed_response.license_type.has_value())
+      state.Set(kDeviceStateLicenseType, *parsed_response.license_type);
+
+    local_state_->SetDict(prefs::kServerBackedDeviceState, std::move(state));
+
+    // TODO(https://crbug.com/1344737) This seems unnecessary (we are not
+    // shutting down, for instance).
     local_state_->CommitPendingWrite();
 
     device_state_available_ = true;
@@ -803,11 +787,11 @@ void AutoEnrollmentClientImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 AutoEnrollmentClientImpl::AutoEnrollmentClientImpl(
     ProgressCallback callback,
     std::unique_ptr<ServerStateAvailabilityRequester>
-        server_state_avalability_requester,
+        server_state_availability_requester,
     std::unique_ptr<ServerStateRetriever> server_state_retriever)
     : progress_callback_(std::move(callback)),
-      server_state_avalability_requester_(
-          std::move(server_state_avalability_requester)),
+      server_state_availability_requester_(
+          std::move(server_state_availability_requester)),
       server_state_retriever_(std::move(server_state_retriever)) {
   DCHECK(progress_callback_);
 }
@@ -868,14 +852,14 @@ void AutoEnrollmentClientImpl::RequestServerStateAvailability() {
          state_ == State::kRequestServerStateAvailabilityServerError);
   state_ = State::kRequestingServerStateAvailability;
 
-  if (server_state_avalability_requester_->GetServerStateIfObtained()) {
+  if (server_state_availability_requester_->GetServerStateIfObtained()) {
     OnServerStateAvailabilityCompleted(ServerStateAvailabilityResult::kSuccess);
     return;
   }
 
   ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
-  server_state_avalability_requester_->Start(base::BindOnce(
+  server_state_availability_requester_->Start(base::BindOnce(
       &AutoEnrollmentClientImpl::OnServerStateAvailabilityCompleted,
       base::Unretained(this)));
 }
@@ -886,8 +870,8 @@ void AutoEnrollmentClientImpl::OnServerStateAvailabilityCompleted(
 
   switch (result) {
     case ServerStateAvailabilityResult::kSuccess:
-      DCHECK(server_state_avalability_requester_->GetServerStateIfObtained());
-      if (server_state_avalability_requester_->GetServerStateIfObtained()
+      DCHECK(server_state_availability_requester_->GetServerStateIfObtained());
+      if (server_state_availability_requester_->GetServerStateIfObtained()
               .value()) {
         state_ = State::kRequestServerStateAvailabilitySuccess;
         RequestStateRetrieval();
@@ -909,7 +893,7 @@ void AutoEnrollmentClientImpl::OnServerStateAvailabilityCompleted(
       Retry();
       break;
     case ServerStateAvailabilityResult::kPsmInternalError:
-      DCHECK(!server_state_avalability_requester_->GetServerStateIfObtained());
+      DCHECK(!server_state_availability_requester_->GetServerStateIfObtained());
       state_ = State::kFinished;
       ReportFinished();
       break;
@@ -920,9 +904,9 @@ void AutoEnrollmentClientImpl::RequestStateRetrieval() {
   DCHECK(state_ == State::kRequestServerStateAvailabilitySuccess ||
          state_ == State::kRequestStateRetrievalConnectionError ||
          state_ == State::kRequestStateRetrievalServerError);
-  DCHECK(server_state_avalability_requester_->GetServerStateIfObtained());
+  DCHECK(server_state_availability_requester_->GetServerStateIfObtained());
   DCHECK(
-      server_state_avalability_requester_->GetServerStateIfObtained().value());
+      server_state_availability_requester_->GetServerStateIfObtained().value());
   DCHECK(!server_state_retriever_->GetAutoEnrollmentStateIfObtained());
   state_ = State::kRequestingStateRetrieval;
 

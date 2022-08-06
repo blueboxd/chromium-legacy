@@ -150,6 +150,12 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         }
 
         @Override
+        public Promise<Void> addTrustedRecoveryMethod(
+                CoreAccountInfo accountInfo, byte[] publicKey, int methodTypeHint) {
+            return Promise.fulfilled(null);
+        }
+
+        @Override
         public Promise<PendingIntent> createRecoverabilityDegradedIntent(
                 CoreAccountInfo accountInfo) {
             Context context = InstrumentationRegistry.getContext();
@@ -223,7 +229,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      */
     public CoreAccountInfo addAccount(String accountName) {
         CoreAccountInfo coreAccountInfo = mSigninTestRule.addAccountAndWaitForSeeding(accountName);
-        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.isSyncFeatureEnabled());
         return coreAccountInfo;
     }
 
@@ -299,7 +305,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     public void signOut() {
         mSigninTestRule.signOut();
         Assert.assertNull(mSigninTestRule.getPrimaryAccount(ConsentLevel.SYNC));
-        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.isSyncFeatureEnabled());
     }
 
     public void clearServerData() {
@@ -311,7 +317,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         // tests do.
         SyncTestUtil.triggerSync();
         CriteriaHelper.pollUiThread(() -> {
-            return !SyncService.get().isSyncRequested();
+            return !SyncService.get().isSyncFeatureEnabled();
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 

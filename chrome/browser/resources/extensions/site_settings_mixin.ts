@@ -23,6 +23,8 @@ export interface SiteSettingsDelegate {
   removeUserSpecifiedSites(
       siteSet: chrome.developerPrivate.UserSiteSet,
       hosts: string[]): Promise<void>;
+  getUserAndExtensionSitesByEtld():
+      Promise<chrome.developerPrivate.SiteGroup[]>;
   getUserSiteSettingsChangedTarget():
       ChromeEvent<(settings: chrome.developerPrivate.UserSiteSettings) => void>;
 }
@@ -65,7 +67,7 @@ export const SiteSettingsMixin = dedupingMixin(
 
         private onUserSiteSettingsChanged_({
           permittedSites,
-          restrictedSites
+          restrictedSites,
         }: chrome.developerPrivate.UserSiteSettings) {
           this.permittedSites = permittedSites;
           this.restrictedSites = restrictedSites;

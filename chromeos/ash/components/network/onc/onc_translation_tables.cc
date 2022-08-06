@@ -8,14 +8,13 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/tether_constants.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/tether_constants.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
-namespace onc {
+namespace ash::onc {
 
 // CertificatePattern is converted with function CreateUIData(...) to UIData
 // stored in Shill.
@@ -372,11 +371,11 @@ const StringTranslationEntry kVPNTypeTable[] = {
     {nullptr}};
 
 const StringTranslationEntry kWiFiSecurityTable[] = {
-    {::onc::wifi::kSecurityNone, shill::kSecurityNone},
-    {::onc::wifi::kWEP_PSK, shill::kSecurityWep},
-    {::onc::wifi::kWPA_PSK, shill::kSecurityPsk},
-    {::onc::wifi::kWPA_EAP, shill::kSecurity8021x},
-    {::onc::wifi::kWEP_8021X, shill::kSecurityWep},
+    {::onc::wifi::kSecurityNone, shill::kSecurityClassNone},
+    {::onc::wifi::kWEP_PSK, shill::kSecurityClassWep},
+    {::onc::wifi::kWPA_PSK, shill::kSecurityClassPsk},
+    {::onc::wifi::kWPA_EAP, shill::kSecurityClass8021x},
+    {::onc::wifi::kWEP_8021X, shill::kSecurityClassWep},
     {nullptr}};
 
 const StringTranslationEntry kEAPOuterTable[] = {
@@ -556,5 +555,4 @@ bool TranslateStringToONC(const StringTranslationEntry table[],
   return false;
 }
 
-}  // namespace onc
-}  // namespace chromeos
+}  // namespace ash::onc

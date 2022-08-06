@@ -281,7 +281,6 @@ void ContentAnalysisDelegate::CreateForWebContents(
   // If the UI is enabled, create the modal dialog.
   if (show_ui) {
     ContentAnalysisDelegate* delegate_ptr = delegate.get();
-
     int files_count = delegate_ptr->data_.paths.size();
 
     // This dialog is owned by the constrained_window code.
@@ -341,6 +340,10 @@ ContentAnalysisDelegate::ContentAnalysisDelegate(
 void ContentAnalysisDelegate::StringRequestCallback(
     BinaryUploadService::Result result,
     enterprise_connectors::ContentAnalysisResponse response) {
+  // Remember to send an ack for this response.
+  if (result == safe_browsing::BinaryUploadService::Result::SUCCESS)
+    request_tokens_.push_back(response.request_token());
+
   int64_t content_size = 0;
   for (const std::string& entry : data_.text)
     content_size += entry.size();
@@ -379,6 +382,9 @@ void ContentAnalysisDelegate::StringRequestCallback(
 
 void ContentAnalysisDelegate::FilesRequestCallback(
     std::vector<RequestHandlerResult> results) {
+  // Remember to send acks for any responses.
+  files_request_handler_->AppendRequestTokensTo(&request_tokens_);
+
   // No reporting here, because the MultiFileRequestHandler does that.
   DCHECK_EQ(results.size(), result_.paths_results.size());
   for (size_t index = 0; index < results.size(); ++index) {
@@ -399,9 +405,29 @@ ContentAnalysisDelegate::GetFilesRequestHandlerForTesting() {
   return files_request_handler_.get();
 }
 
+bool ContentAnalysisDelegate::ShowFinalResultInDialog() {
+  if (!dialog_)
+    return false;
+
+  dialog_->ShowResult(final_result_);
+  return true;
+}
+
+bool ContentAnalysisDelegate::CancelDialog() {
+  if (!dialog_)
+    return false;
+
+  dialog_->CancelDialog();
+  return true;
+}
+
 void ContentAnalysisDelegate::PageRequestCallback(
     BinaryUploadService::Result result,
     enterprise_connectors::ContentAnalysisResponse response) {
+  // Remember to send an ack for this response.
+  if (result == safe_browsing::BinaryUploadService::Result::SUCCESS)
+    request_tokens_.push_back(response.request_token());
+
   RecordDeepScanMetrics(access_point_,
                         base::TimeTicks::Now() - upload_start_time_,
                         page_size_bytes_, result, response);
@@ -553,11 +579,11 @@ void ContentAnalysisDelegate::UploadPageForDeepScanning(
 }
 
 bool ContentAnalysisDelegate::UpdateDialog() {
-  if (!dialog_)
-    return false;
-
-  dialog_->ShowResult(final_result_);
-  return true;
+  // Only show final result UI in the case of a cloud analysis.
+  // In the local case, the local agent does that.
+  return data_.settings.cloud_or_local_settings.is_cloud_analysis()
+             ? ShowFinalResultInDialog()
+             : CancelDialog();
 }
 
 void ContentAnalysisDelegate::MaybeCompleteScanRequest() {
@@ -565,6 +591,8 @@ void ContentAnalysisDelegate::MaybeCompleteScanRequest() {
       !page_request_complete_) {
     return;
   }
+
+  AckAllRequests();
 
   // If showing the warning message, wait before running the callback. The
   // callback will be called either in BypassWarnings or Cancel.
@@ -589,6 +617,27 @@ void ContentAnalysisDelegate::UpdateFinalResult(
   if (result < final_result_) {
     final_result_ = result;
     final_result_tag_ = tag;
+  }
+}
+
+void ContentAnalysisDelegate::AckAllRequests() {
+  BinaryUploadService* upload_service = GetBinaryUploadService();
+  if (!upload_service)
+    return;
+
+  // Calculate overall status for all requests.
+  // TODO(b/240629222): Calculate status based on final_result_.
+  // However, final_result_ does not take info account timeout and I think
+  // the enum values of ContentAnalysisAcknowledgement::Status are not
+  // right.
+  auto status = ContentAnalysisAcknowledgement::SUCCESS;
+
+  for (auto& token : request_tokens_) {
+    auto ack = std::make_unique<safe_browsing::BinaryUploadService::Ack>(
+        data_.settings.cloud_or_local_settings);
+    ack->set_request_token(token);
+    ack->set_status(status);
+    upload_service->MaybeAcknowledge(std::move(ack));
   }
 }
 

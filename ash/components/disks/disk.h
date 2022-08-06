@@ -10,7 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 
 namespace ash {
 namespace disks {
@@ -159,7 +159,7 @@ class COMPONENT_EXPORT(ASH_DISKS) Disk {
   std::string product_name_;
   std::string fs_uuid_;
   std::string storage_device_path_;
-  DeviceType device_type_ = DEVICE_TYPE_UNKNOWN;
+  DeviceType device_type_ = DeviceType::kUnknown;
   int bus_number_ = 0;
   int device_number_ = 0;
   uint64_t total_size_in_bytes_ = 0;

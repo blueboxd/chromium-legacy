@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_container.h"
+#include "chrome/browser/ui/views/tabs/tab_container_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
@@ -69,6 +70,7 @@ class ListSelectionModel;
 class TabStrip : public views::View,
                  public views::ViewObserver,
                  public views::WidgetObserver,
+                 public TabContainerController,
                  public TabSlotController,
                  public BrowserRootView::DropTarget {
  public:
@@ -96,6 +98,12 @@ class TabStrip : public views::View,
 
   // Sets |background_offset_| and schedules a paint.
   void SetBackgroundOffset(int background_offset);
+
+  // Scroll the tabstrip towards the trailing tabs by an offset
+  void ScrollTowardsTrailingTabs(int offset);
+
+  // Scroll the tabstrip towards the leading tabs by an offset
+  void ScrollTowardsLeadingTabs(int offset);
 
   // Returns true if the specified rect (in TabStrip coordinates) intersects
   // the window caption area of the browser window.
@@ -184,11 +192,8 @@ class TabStrip : public views::View,
 
   // Returns the TabGroupHeader with ID |id|.
   TabGroupHeader* group_header(const tab_groups::TabGroupId& id) const {
-    return tab_container_->group_views().at(id).get()->header();
+    return tab_container_->GetGroupViews().at(id).get()->header();
   }
-
-  // Returns the active index, or kNoTab if no tab is active.
-  int GetActiveIndex() const;
 
   // Returns the index of the specified view in the model coordinate system, or
   // -1 if view is closing or not a tab.
@@ -199,9 +204,6 @@ class TabStrip : public views::View,
 
   // Cover method for TabStripController::GetCount.
   int GetModelCount() const;
-
-  // Cover method for TabStripController::IsValidIndex.
-  bool IsValidModelIndex(int model_index) const;
 
   TabStripController* controller() const { return controller_.get(); }
 
@@ -238,6 +240,19 @@ class TabStrip : public views::View,
   // on drop.
   bool WantsToReceiveAllDragEvents() const;
 
+  // TabContainerController:
+  bool IsValidModelIndex(int index) const override;
+  int GetActiveIndex() const override;
+  void OnDropIndexUpdate(int index, bool drop_before) override;
+  absl::optional<int> GetFirstTabInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  gfx::Range ListTabsInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  bool CanExtendDragHandle() const override;
+
+  // TabContainerController AND TabSlotController:
+  bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override;
+
   // TabSlotController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   Tab* tab_at(int index) const override;
@@ -255,6 +270,8 @@ class TabStrip : public views::View,
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin =
           ToggleTabGroupCollapsedStateOrigin::kImplicitAction) override;
+  void NotifyTabGroupEditorBubbleOpened() override;
+  void NotifyTabGroupEditorBubbleClosed() override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override;
@@ -298,7 +315,6 @@ class TabStrip : public views::View,
       const tab_groups::TabGroupId& group) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group) const override;
-  bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override;
   SkColor GetPaintedGroupColor(
       const tab_groups::TabGroupColorId& color_id) const override;
   void ShiftGroupLeft(const tab_groups::TabGroupId& group) override;
@@ -394,7 +410,7 @@ class TabStrip : public views::View,
 
   // Retrieves the ideal bounds for the Tab at the specified index.
   const gfx::Rect& ideal_bounds(int tab_data_index) const {
-    return tab_container_->tabs_view_model()->ideal_bounds(tab_data_index);
+    return tab_container_->GetTabsViewModel()->ideal_bounds(tab_data_index);
   }
 
   // Retrieves the ideal bounds for the Tab Group Header at the specified group.

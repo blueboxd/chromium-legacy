@@ -220,6 +220,7 @@ void WebApkInstaller::OnInstallFinished(
 void WebApkInstaller::StoreUpdateRequestToFile(
     const base::FilePath& update_request_path,
     const webapps::ShortcutInfo& shortcut_info,
+    const GURL& app_key,
     const std::string& primary_icon_data,
     bool is_primary_icon_maskable,
     const std::string& splash_icon_data,
@@ -233,12 +234,12 @@ void WebApkInstaller::StoreUpdateRequestToFile(
     base::OnceCallback<void(bool)> callback) {
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&webapps::StoreUpdateRequestToFileInBackground,
-                     update_request_path, shortcut_info, primary_icon_data,
-                     is_primary_icon_maskable, splash_icon_data, package_name,
-                     version, std::move(icon_url_to_murmur2_hash),
-                     is_manifest_stale, is_app_identity_update_supported,
-                     std::move(update_reasons)),
+      base::BindOnce(
+          &webapps::StoreUpdateRequestToFileInBackground, update_request_path,
+          shortcut_info, app_key, primary_icon_data, is_primary_icon_maskable,
+          splash_icon_data, package_name, version,
+          std::move(icon_url_to_murmur2_hash), is_manifest_stale,
+          is_app_identity_update_supported, std::move(update_reasons)),
       std::move(callback));
 }
 
@@ -652,10 +653,10 @@ void WebApkInstaller::OnGotIconMurmur2Hashes(
   // Using empty string for |primary_icon_data| and |splash_icon_data| here
   // because in WebApk installs, we are using the icon data from |hashes|.
   webapps::BuildProto(
-      *install_shortcut_info_, std::string() /* primary_icon_data */,
-      is_primary_icon_maskable_, std::string() /* splash_icon_data */,
-      "" /* package_name */, "" /* version */, std::move(*hashes),
-      false /* is_manifest_stale */,
+      *install_shortcut_info_, install_shortcut_info_->manifest_id,
+      std::string() /* primary_icon_data */, is_primary_icon_maskable_,
+      std::string() /* splash_icon_data */, "" /* package_name */,
+      "" /* version */, std::move(*hashes), false /* is_manifest_stale */,
       false /* is_app_identity_update_supported */,
       base::BindOnce(&WebApkInstaller::SendRequest,
                      weak_ptr_factory_.GetWeakPtr(),

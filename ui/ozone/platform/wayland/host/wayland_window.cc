@@ -25,6 +25,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -194,14 +195,22 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
   return preferred_output_id;
 }
 
-void WaylandWindow::SetPointerFocus(bool focus) {
-  has_pointer_focus_ = focus;
-
+void WaylandWindow::OnPointerFocusChanged(bool focused) {
   // Whenever the window gets the pointer focus back, the cursor shape must be
   // updated. Otherwise, it is invalidated upon wl_pointer::leave and is not
   // restored by the Wayland compositor.
-  if (has_pointer_focus_ && cursor_)
+  if (focused && cursor_)
     UpdateCursorShape(cursor_);
+}
+
+bool WaylandWindow::HasPointerFocus() const {
+  return this == connection_->wayland_window_manager()
+                     ->GetCurrentPointerFocusedWindow();
+}
+
+bool WaylandWindow::HasKeyboardFocus() const {
+  return this == connection_->wayland_window_manager()
+                     ->GetCurrentKeyboardFocusedWindow();
 }
 
 void WaylandWindow::RemoveEnteredOutput(uint32_t output_id) {
@@ -293,11 +302,12 @@ void WaylandWindow::SetBoundsInPixels(const gfx::Rect& bounds_px) {
   gfx::Rect adjusted_bounds_px = AdjustBoundsToConstraintsPx(bounds_px);
   if (bounds_px_ == adjusted_bounds_px)
     return;
+  bool origin_changed = bounds_px_.origin() != adjusted_bounds_px.origin();
   bounds_px_ = adjusted_bounds_px;
 
   if (update_visual_size_immediately_for_testing_)
     UpdateVisualSize(bounds_px.size(), window_scale());
-  delegate_->OnBoundsChanged(bounds_px_);
+  delegate_->OnBoundsChanged({origin_changed});
 }
 
 gfx::Rect WaylandWindow::GetBoundsInPixels() const {
@@ -438,15 +448,7 @@ bool WaylandWindow::ShouldUpdateWindowShape() const {
 }
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
-  if (event->IsMouseEvent() || event->IsPinchEvent())
-    return has_pointer_focus_;
-  if (event->IsKeyEvent())
-    return has_keyboard_focus_;
-  if (event->IsTouchEvent())
-    return has_touch_focus_;
-  if (event->IsScrollEvent())
-    return has_pointer_focus_;
-  return false;
+  return CanAcceptEvent(*event);
 }
 
 uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
@@ -480,8 +482,12 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
     event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
         event->AsLocatedEvent()->location_f(), window_scale(), window_scale()));
 
-    if (send_to_grabber)
-      return event_grabber->DispatchEventToDelegate(event);
+    if (send_to_grabber) {
+      event_grabber->DispatchEventToDelegate(event);
+      // The event should be handled by the grabber, so don't send to next
+      // dispacher.
+      return POST_DISPATCH_STOP_PROPAGATION;
+    }
   }
 
   // Dispatch all keyboard events to the root window.
@@ -493,7 +499,11 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
 
 // EventTarget:
 bool WaylandWindow::CanAcceptEvent(const Event& event) {
-  return true;
+#if DCHECK_IS_ON()
+  if (!disable_null_target_dcheck_for_test_)
+    DCHECK(event.target());
+#endif
+  return this == event.target();
 }
 
 EventTarget* WaylandWindow::GetParentTarget() {
@@ -559,10 +569,6 @@ void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px,
 
 void WaylandWindow::OnCloseRequest() {
   delegate_->OnCloseRequest();
-}
-
-absl::optional<std::vector<gfx::Rect>> WaylandWindow::GetWindowShape() const {
-  return absl::nullopt;
 }
 
 void WaylandWindow::OnDragEnter(const gfx::PointF& point,
@@ -864,7 +870,7 @@ bool WaylandWindow::CommitOverlays(
             gfx::RectF(visual_size), gfx::RectF(),
             root_surface()->use_blending(), gfx::Rect(),
             root_surface()->opacity(), gfx::OverlayPriorityHint::kNone,
-            rounded_clip_bounds, gfx::ColorSpace(), absl::nullopt),
+            rounded_clip_bounds, gfx::ColorSpace::CreateSRGB(), absl::nullopt),
         nullptr, root_surface()->buffer_id(), buffer_scale);
   }
 
@@ -942,7 +948,7 @@ void WaylandWindow::ProcessPendingBoundsDip(uint32_t serial) {
     // window has been applied.
     SetWindowGeometry(pending_bounds_dip_);
     AckConfigure(serial);
-    connection()->ScheduleFlush();
+    root_surface()->Commit();
   } else if (!pending_configures_.empty() &&
              pending_bounds_dip_.size() ==
                  pending_configures_.back().bounds_dip.size()) {

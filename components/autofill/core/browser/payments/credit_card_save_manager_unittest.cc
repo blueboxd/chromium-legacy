@@ -998,7 +998,8 @@ TEST_F(CreditCardSaveManagerTest,
   CreateTestCreditCardFormData(&credit_card_form,
                                CreditCardFormOptions().with_split_names(true));
   // Use the two same forms for FormsSeen to mock the dynamic change forms.
-  FormsSeen(std::vector<FormData>(2, credit_card_form));
+  FormsSeen({credit_card_form});
+  FormsSeen({credit_card_form});
 
   // Edit the data, and submit.
   credit_card_form.fields[0].value = u"Jane";
@@ -1030,7 +1031,8 @@ TEST_F(CreditCardSaveManagerTest,
   CreateTestCreditCardFormData(&credit_card_form,
                                CreditCardFormOptions().with_split_names(true));
   // Use the two same forms for FormsSeen to mock the dynamic change forms.
-  FormsSeen(std::vector<FormData>(2, credit_card_form));
+  FormsSeen({credit_card_form});
+  FormsSeen({credit_card_form});
 
   // Edit the data, and submit.
   credit_card_form.fields[0].value = u"Jane";
@@ -1072,7 +1074,8 @@ TEST_F(
   CreateTestCreditCardFormData(&credit_card_form,
                                CreditCardFormOptions().with_split_names(true));
   // Use the two same forms for FormsSeen to mock the dynamic change forms.
-  FormsSeen(std::vector<FormData>(2, credit_card_form));
+  FormsSeen({credit_card_form});
+  FormsSeen({credit_card_form});
 
   // Edit the data, and submit.
   credit_card_form.fields[0].value = u"Jane";
@@ -1110,7 +1113,8 @@ TEST_F(CreditCardSaveManagerTest,
   CreateTestCreditCardFormData(&credit_card_form,
                                CreditCardFormOptions().with_split_names(true));
   // Use the two same forms for FormsSeen to mock the dynamic change forms.
-  FormsSeen(std::vector<FormData>(2, credit_card_form));
+  FormsSeen({credit_card_form});
+  FormsSeen({credit_card_form});
 
   // Edit the data, and submit.
   credit_card_form.fields[0].value = u"Jane";
@@ -1975,6 +1979,40 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
+  std::vector<const char*> active_experiments_in_request =
+      payments_client_->active_experiments_in_request();
+  EXPECT_THAT(active_experiments_in_request,
+              testing::Not(testing::Contains(
+                  testing::StrEq("AutofillSaveCardUiExperiment"))));
+}
+
+TEST_F(
+    CreditCardSaveManagerTest,
+    AttemptToOfferCardUploadSave_SaveCardUiExperimentEnabledWithoutAddedInOutgoingRequest) {
+  // Setting the flag and params for the save card ui experiment with value 3 as
+  // we are not getting the updated/experimental TOS for that experiment arm.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kAutofillSaveCardUiExperiment,
+      {{"autofill_save_card_ui_experiment_selector_in_number", "3"}});
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = u"Jane Doe";
+  credit_card_form.fields[1].value = u"4111111111111111";
+  credit_card_form.fields[2].value = ASCIIToUTF16(test::NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(test::NextYear());
+  credit_card_form.fields[4].value = u"123";
+  FormSubmitted(credit_card_form);
+
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Confirm that active experiments vector has the correct value.
   std::vector<const char*> active_experiments_in_request =
       payments_client_->active_experiments_in_request();
   EXPECT_THAT(active_experiments_in_request,

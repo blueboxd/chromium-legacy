@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_coordinator.h"
 #include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -43,27 +44,6 @@ using ::ui::mojom::DragOperation;
 base::OnceClosure& GetOnVisibleCallbackForTesting() {
   static base::NoDestructor<base::OnceClosure> callback;
   return *callback;
-}
-
-// TODO(crbug.com/1279986): Remove ExtensionMenuView once tabbed menu is rolled
-// out.
-bool IsExtensionsMenuShowing() {
-  return base::FeatureList::IsEnabled(
-             extensions_features::kExtensionsMenuAccessControl)
-             ? ExtensionsTabbedMenuView::IsShowing()
-             : ExtensionsMenuView::IsShowing();
-}
-
-// Hides the currently-showing ExtensionsMenuView or ExtensionsTabbedMenuView,
-// if any exists.
-// TODO(crbug.com/1279986): Remove ExtensionMenuView once tabbed menu is rolled
-// out.
-void HideExtensionsMenu() {
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kExtensionsMenuAccessControl))
-    ExtensionsTabbedMenuView::Hide();
-  else
-    ExtensionsMenuView::Hide();
 }
 
 }  // namespace
@@ -93,6 +73,14 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
     : ToolbarIconContainerView(/*uses_highlight=*/true),
       browser_(browser),
       model_(ToolbarActionsModel::Get(browser_->profile())),
+      extensions_tabbed_menu_coordinator_(
+          base::FeatureList::IsEnabled(
+              extensions_features::kExtensionsMenuAccessControl)
+              ? std::make_unique<ExtensionsTabbedMenuCoordinator>(
+                    browser,
+                    this,
+                    CanShowIconInToolbar())
+              : nullptr),
       extensions_button_(
           base::FeatureList::IsEnabled(
               extensions_features::kExtensionsMenuAccessControl)
@@ -100,7 +88,8 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
               : new ExtensionsToolbarButton(
                     browser,
                     this,
-                    ExtensionsToolbarButton::ButtonType::kExtensions)),
+                    ExtensionsToolbarButton::ButtonType::kExtensions,
+                    extensions_tabbed_menu_coordinator_.get())),
       extensions_controls_(
           base::FeatureList::IsEnabled(
               extensions_features::kExtensionsMenuAccessControl)
@@ -108,11 +97,13 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
                     std::make_unique<ExtensionsToolbarButton>(
                         browser,
                         this,
-                        ExtensionsToolbarButton::ButtonType::kExtensions),
+                        ExtensionsToolbarButton::ButtonType::kExtensions,
+                        extensions_tabbed_menu_coordinator_.get()),
                     std::make_unique<ExtensionsToolbarButton>(
                         browser,
                         this,
-                        ExtensionsToolbarButton::ButtonType::kSiteAccess),
+                        ExtensionsToolbarButton::ButtonType::kSiteAccess,
+                        extensions_tabbed_menu_coordinator_.get()),
                     std::make_unique<ExtensionsRequestAccessButton>(browser_))
               : nullptr),
       display_mode_(display_mode) {
@@ -226,6 +217,21 @@ ExtensionsToolbarContainer::GetAnchoredWidgetForExtensionForTesting(
                              return info.extension_id == extension_id;
                            });
   return iter == anchored_widgets_.end() ? nullptr : iter->widget.get();
+}
+
+bool ExtensionsToolbarContainer::IsExtensionsMenuShowing() const {
+  return base::FeatureList::IsEnabled(
+             extensions_features::kExtensionsMenuAccessControl)
+             ? extensions_tabbed_menu_coordinator_->IsShowing()
+             : ExtensionsMenuView::IsShowing();
+}
+
+void ExtensionsToolbarContainer::HideExtensionsMenu() {
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kExtensionsMenuAccessControl))
+    extensions_tabbed_menu_coordinator_->Hide();
+  else
+    ExtensionsMenuView::Hide();
 }
 
 bool ExtensionsToolbarContainer::ShouldForceVisibility(
@@ -538,7 +544,7 @@ void ExtensionsToolbarContainer::OnToolbarPinnedActionsChanged() {
   drop_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void ExtensionsToolbarContainer::UserPermissionsSettingsChanged(
+void ExtensionsToolbarContainer::OnUserPermissionsSettingsChanged(
     const extensions::PermissionsManager::UserPermissionsSettings& settings) {
   UpdateControlsVisibility();
 }
@@ -552,7 +558,7 @@ void ExtensionsToolbarContainer::ReorderViews() {
     ReorderChildView(GetViewForId(drop_info_->action_id), drop_info_->index);
 
   // The extension button is always last.
-  ReorderChildView(main_item(), -1);
+  ReorderChildView(main_item(), children().size());
 }
 
 void ExtensionsToolbarContainer::CreateActions() {
@@ -695,16 +701,16 @@ int ExtensionsToolbarContainer::OnDragUpdated(
   // to display the dragged extension before. We also mirror the event.x() so
   // that our calculations are consistent with left-to-right.
   const int offset_into_icon_area = GetMirroredXInView(event.x());
-  const int before_icon_unclamped = WidthToIconCount(offset_into_icon_area);
+  const size_t before_icon_unclamped = WidthToIconCount(offset_into_icon_area);
 
-  int visible_icons = model_->pinned_action_ids().size();
+  const size_t visible_icons = model_->pinned_action_ids().size();
 
   // Because the user can drag outside the container bounds, we need to clamp
   // to the valid range. Note that the maximum allowable value is
   // |visible_icons|, not (|visible_icons| - 1), because we represent the
   // dragged extension being past the last icon as being "before the (last + 1)
   // icon".
-  before_icon = base::clamp(before_icon_unclamped, 0, visible_icons);
+  before_icon = std::min(before_icon_unclamped, visible_icons);
 
   if (!drop_info_.get() || drop_info_->index != before_icon) {
     drop_info_ = std::make_unique<DropInfo>(data.id(), before_icon);

@@ -191,26 +191,26 @@ function getTextColor(params: MostVisitedParams, isTitle: boolean): string {
   return c;
 }
 
-type MostVisitedParams = {
-  c?: string,
-  dummy?: string,
-  fs?: string,
-  f?: string,
-  ntl?: string,
-  pos?: string,
-  rid?: string,
-  ta?: string,
-  tf?: string,
-};
+interface MostVisitedParams {
+  c?: string;
+  dummy?: string;
+  fs?: string;
+  f?: string;
+  ntl?: string;
+  pos?: string;
+  rid?: string;
+  ta?: string;
+  tf?: string;
+}
 
-type MostVisitedStyles = {
-  color: string,
-  fontFamily: string,
-  fontSize: number,
-  numTitleLines?: number,
-  textAlign?: string,
-  textFadePos?: number,
-};
+interface MostVisitedStyles {
+  color: string;
+  fontFamily: string;
+  fontSize: number;
+  numTitleLines?: number;
+  textAlign?: string;
+  textFadePos?: number;
+}
 
 /**
  * Decodes most visited styles from URL parameters.
@@ -229,7 +229,7 @@ function getMostVisitedStyles(
   const styles: MostVisitedStyles = {
     color: getTextColor(params, isTitle),  // Handles 'c' in params.
     fontFamily: '',
-    fontSize: 11
+    fontSize: 11,
   };
   if ('f' in params && /^[-0-9a-zA-Z ,]+$/.test(params.f!)) {
     styles.fontFamily = params.f!;

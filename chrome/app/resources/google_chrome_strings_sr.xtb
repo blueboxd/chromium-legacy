@@ -14,8 +14,6 @@
 <translation id="1142745911746664600">Не можете да ажурирате Chrome</translation>
 <translation id="1152920704813762236">О Chrome ОС-у</translation>
 <translation id="1154147086299354128">&amp;Отвори у Chrome-у</translation>
-<translation id="1178374936842835197">Ако се подешавање не приказује на овој страници, погледајте у <ph name="LINK_BEGIN" />
-        Chrome OS Flex подешавањима<ph name="LINK_END" /></translation>
 <translation id="1203500561924088507">Хвала вам на инсталацији. Потребно је да рестартујете прегледач пре него што почнете да користите <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1278833599417554002">Поново покрени да би се &amp;Chrome ажурирао</translation>
 <translation id="1302523850133262269">Сачекајте да Chrome инсталира најновија ажурирања система.</translation>
@@ -70,6 +68,7 @@
 <translation id="2139300032719313227">Рестартујте Chrome ОС</translation>
 <translation id="2151406531797534936">Поново покрените Chrome</translation>
 <translation id="2174917724755363426">Инсталација није довршена. Желите стварно да је откажете?</translation>
+<translation id="223889379102603431">Информације о томе како Chrome управља сертификатима основног нивоа</translation>
 <translation id="2258103955319320201">Да бисте приступали Chrome прегледачу на свим уређајима, пријавите се, па укључите синхронизацију</translation>
 <translation id="2290014774651636340">Недостају шифре за Google API. Неке функције Google Chrome-а ће бити онемогућене.</translation>
 <translation id="2290095356545025170">Да ли стварно желите да деинсталирате Google Chrome?</translation>
@@ -82,6 +81,7 @@
 <translation id="2401189691232800402">Систем Chrome ОС</translation>
 <translation id="2467438592969358367">Google Chrome жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2494974097748878569">Google помоћник у Chrome-у</translation>
 <translation id="2534507159460261402">Google Pay (копирано у Chrome)</translation>
 <translation id="2559253115192232574">Сајт који касније посетите може да затражи од Chrome-а приступ вашим интересовањима да би персонализовао огласе који вам се приказују. Chrome може да дели највише 3 интересовања.</translation>
 <translation id="2563121210305478421">Желите поново да покренете Chrome?</translation>
@@ -122,7 +122,6 @@
 <translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="3100998948628680988">Дајте назив Chrome профилу</translation>
-<translation id="3103390129666310801">Да бисте проверили да ли је уређај ажуриран, идите у <ph name="LINK_BEGIN" />Подешавања Chrome OS Flex-а<ph name="LINK_END" /></translation>
 <translation id="3114643501466072395">Да бисте проверили да ли су остале лозинке безбедне од упада у податке и других безбедносних проблема, <ph name="BEGIN_LINK" />пријавите се у Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Промене ће ступити на снагу када следећи пут поново покренете Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
@@ -213,7 +212,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">Да бисте добијали будућа Google Chrome ажурирања, треба вам macOS 10.13 или новија верзија. Овај рачунар користи ОС X 10.11.</translation>
 <translation id="5098668839038261629">Када је ово укључено, бићете и одјављени из Chrome-а</translation>
-<translation id="5112116809696021727">Да бисте проверили да ли је уређај ажуриран, идите у <ph name="LINK_BEGIN" />Подешавања Chrome ОС-а<ph name="LINK_END" /></translation>
 <translation id="5132929315877954718">Откријте одличне апликације, игре, додатке и теме за Google Chrome.</translation>
 <translation id="5139423532931106058">Прилагодите Chrome профил</translation>
 <translation id="5163087008893166964">Добро дошли у Chrome; отворен је нови прозор прегледача</translation>
@@ -253,8 +251,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5940385492829620908">Веб, обележивачи и други Chrome садржај се овде уживо приказују.</translation>
 <translation id="5941711191222866238">Умањи</translation>
 <translation id="5941830788786076944">Подесите Google Chrome као подразумевани прегледач</translation>
-<translation id="5959292945051687759">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
-      подешавањима Chrome ОС-а<ph name="LINK_END" /></translation>
 <translation id="6003112304606738118">Преузима се... Још <ph name="HOURS" /> ч</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6070348360322141662">Google Chrome ће шифровати податке ради додатне сигурности</translation>
@@ -282,6 +278,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6739177684496155661">Желите да наставите на новом Chrome профилу?</translation>
 <translation id="6750954913813541382">Да би исправио правописне грешке, Chrome Google-у шаље текст који уносите у прегледач</translation>
 <translation id="677276454032249905">Желите ли ипак да затворите Chrome?</translation>
+<translation id="6785872064505734160">Google помоћник у Chrome-у може да довршава радње за вас на веб-сајтовима</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6881299373831449287">Ажурирамо Chrome</translation>
 <translation id="6885412569789873916">Chrome апликације за бета канал</translation>
@@ -354,6 +351,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8129812357326543296">О &amp;Google Chrome-у</translation>
 <translation id="813913629614996137">Покреће се…</translation>
 <translation id="8255190535488645436">Google Chrome користи камеру и микрофон.</translation>
+<translation id="8270775718612349140">Сертификати којима управља Chrome</translation>
 <translation id="8286862437124483331">Google Chrome покушава да прикаже лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="828798499196665338">Родитељ је искључио „Дозволе за сајтове, апликације и додатке“ за Chrome. Омогућавање ове ставке (<ph name="EXTENSION_TYPE_PARAMETER" />) није дозвољено.</translation>
 <translation id="8290100596633877290">Опа! Google Chrome је отказао. Желите ли да га одмах поново покренете?</translation>

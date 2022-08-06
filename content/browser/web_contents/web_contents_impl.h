@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -136,6 +137,7 @@ class WebContentsView;
 struct AXEventNotificationDetails;
 struct LoadNotificationDetails;
 struct MHTMLGenerationParams;
+class PreloadingAttempt;
 
 namespace mojom {
 class CreateNewWindowParams;
@@ -324,6 +326,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // human-readable name.
   std::string GetTitleForMediaControls();
 
+  // Returns true if this WebContents is in fullscreen (or pending fullscreen)
+  // on the specified display ID.
+  bool IsFullscreenOnDisplay(int64_t display_id) const;
+
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
   void SetDelegate(WebContentsDelegate* delegate) override;
@@ -413,9 +419,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   Visibility GetVisibility() override;
   bool NeedToFireBeforeUnloadOrUnloadEvents() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
-  void AttachInnerWebContents(std::unique_ptr<WebContents> inner_web_contents,
-                              RenderFrameHost* render_frame_host,
-                              bool is_full_page) override;
+  void AttachInnerWebContents(
+      std::unique_ptr<WebContents> inner_web_contents,
+      RenderFrameHost* render_frame_host,
+      mojo::PendingAssociatedRemote<blink::mojom::RemoteFrame> remote_frame,
+      mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>
+          remote_frame_host_receiver,
+      bool is_full_page) override;
   bool IsInnerWebContentsForGuest() override;
   bool IsPortal() override;
   WebContentsImpl* GetPortalHostWebContents() override;
@@ -661,7 +671,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
   void DidCallFocus() override;
-  RenderFrameHostImpl* GetFocusedFrameIncludingInnerFrameTrees() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view,
@@ -849,6 +858,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       PrerenderTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
+      PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) override;
 
@@ -885,7 +895,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                AllowServiceWorkerResult allowed) override;
   void OnCookiesAccessed(NavigationHandle*,
                          const CookieAccessDetails& details) override;
-  void RegisterExistingOriginToPreventOptInIsolation(
+  void RegisterExistingOriginAsHavingDefaultIsolation(
       const url::Origin& origin,
       NavigationRequest* navigation_request_to_exclude) override;
 
@@ -1170,6 +1180,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Sets the spatial navigation state.
   void SetSpatialNavigationDisabled(bool disabled);
+
+  // Sets the Stylus handwriting feature status. This status is updated to web
+  // preferences.
+  void SetStylusHandwritingEnabled(bool enabled);
 
   // Called when a file selection is to be done.
   void RunFileChooser(
@@ -2195,6 +2209,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   bool is_spatial_navigation_disabled_ = false;
 
+  bool stylus_handwriting_enabled_ = false;
+
   bool is_currently_audible_ = false;
   bool was_ever_audible_ = false;
 
@@ -2323,16 +2339,14 @@ class CONTENT_EXPORT WebContentsImpl::FriendWrapper {
   FriendWrapper& operator=(const FriendWrapper&) = delete;
 
  private:
-  friend class TestNavigationObserver;
-  friend class WebContentsAddedObserver;
-  friend class ContentBrowserConsistencyChecker;
-  friend class CreateAndLoadWebContentsObserver;
+  friend base::CallbackListSubscription RegisterWebContentsCreationCallback(
+      base::RepeatingCallback<void(WebContents*)>);
 
   FriendWrapper();  // Not instantiable.
 
-  // Adds/removes a callback called on creation of each new WebContents.
-  static void AddCreatedCallbackForTesting(const CreatedCallback& callback);
-  static void RemoveCreatedCallbackForTesting(const CreatedCallback& callback);
+  // Adds a callback called on creation of each new WebContents.
+  static base::CallbackListSubscription AddCreatedCallbackForTesting(
+      const CreatedCallback& callback);
 };
 
 }  // namespace content

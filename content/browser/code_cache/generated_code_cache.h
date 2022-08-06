@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "content/browser/code_cache/simple_lru_cache_index.h"
+#include "content/browser/code_cache/simple_lru_cache.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "net/base/io_buffer.h"
@@ -68,7 +68,8 @@ class CONTENT_EXPORT GeneratedCodeCache {
   };
 
   // Used for collecting statistics about cache behaviour.
-  enum CacheEntryStatus {
+  // Since it's uploaded to UMA, its values must never change.
+  enum CacheEntryStatus : uint8_t {
     kHit,
     kMiss,
     kClear,
@@ -131,6 +132,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
                               const net::NetworkIsolationKey& nik,
                               base::Time time,
                               base::OnceClosure callback);
+
+  // Clears the in-memory cache.
+  void ClearInMemoryCache();
 
   const base::FilePath& path() const { return path_; }
 
@@ -235,9 +239,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
   CodeCacheType cache_type_;
 
   // A hypothetical memory-backed code cache. Used to collect UMAs.
-  SimpleLruCacheIndex lru_cache_index_{kLruCacheCapacity};
+  SimpleLruCache lru_cache_;
   base::RepeatingTimer histograms_timer_;
-  static const int64_t kLruCacheCapacity = 50 * 1024 * 1024;
+  static constexpr int64_t kLruCacheCapacity = 50 * 1024 * 1024;
 
   base::WeakPtrFactory<GeneratedCodeCache> weak_ptr_factory_{this};
 };

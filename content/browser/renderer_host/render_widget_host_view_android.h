@@ -143,6 +143,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   bool RequestStartStylusWriting() override;
+  void OnEditElementFocusedForStylusWriting(
+      const gfx::Rect& focused_edit_bounds,
+      const gfx::Rect& caret_bounds) override;
   void RenderProcessGone() override;
   void ShowWithVisibility(PageVisibilityState page_visibility) final;
   void Destroy() override;
@@ -297,12 +300,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DismissTextHandles();
   void SetTextHandlesTemporarilyHidden(bool hide_handles);
   void SelectAroundCaretAck(blink::mojom::SelectAroundCaretResultPtr result);
-
-  // TODO(ericrk): Ideally we'd remove |root_scroll_offset| from this function
-  // once we have a reliable way to get it through RenderFrameMetadata.
-  void FrameTokenChangedForSynchronousCompositor(
-      uint32_t frame_token,
-      const gfx::PointF& root_scroll_offset);
 
   void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
 
@@ -546,7 +543,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   const bool using_browser_compositor_;
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;
-  uint32_t sync_compositor_last_frame_token_ = 0u;
 
   raw_ptr<SynchronousCompositorClient> synchronous_compositor_client_;
 
@@ -603,16 +599,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Widget anymore associated with it. See https://crbug.com/419087.
   bool renderer_widget_created_ = false;
 
-  // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
-  // into DevTools capture logic.
-  // TODO(ericrk): Make this more robust.
-  bool in_sync_copy_contents_ = false;
-
   // Whether swipe-to-move-cursor gesture is activated.
   bool swipe_to_move_cursor_activated_ = false;
-
-  // A cached copy of the most up to date RenderFrameMetadata.
-  absl::optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
   raw_ptr<WebContentsAccessibilityAndroid> web_contents_accessibility_ =
       nullptr;

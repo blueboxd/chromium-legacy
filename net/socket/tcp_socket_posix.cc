@@ -182,8 +182,7 @@ int TCPSocketPosix::Open(AddressFamily family) {
   return rv;
 }
 
-int TCPSocketPosix::BindToNetwork(
-    NetworkChangeNotifier::NetworkHandle network) {
+int TCPSocketPosix::BindToNetwork(handles::NetworkHandle network) {
   DCHECK(IsValid());
   DCHECK(!IsConnected());
 #if BUILDFLAG(IS_ANDROID)
@@ -498,14 +497,6 @@ void TCPSocketPosix::EndLoggingMultipleConnectAttempts(int net_error) {
   } else {
     NOTREACHED();
   }
-}
-
-int TCPSocketPosix::OpenAndReleaseSocketDescriptor(AddressFamily family,
-                                                   SocketDescriptor* out) {
-  std::unique_ptr<SocketPosix> new_socket = std::make_unique<SocketPosix>();
-  int rv = new_socket->Open(ConvertAddressFamily(family));
-  *out = new_socket->ReleaseConnectedSocket();
-  return rv;
 }
 
 SocketDescriptor TCPSocketPosix::ReleaseSocketDescriptorForTesting() {

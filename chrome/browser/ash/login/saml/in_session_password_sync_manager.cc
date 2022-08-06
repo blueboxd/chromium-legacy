@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/components/login/auth/extended_authenticator.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_switches.h"
 #include "base/callback.h"
@@ -194,9 +194,10 @@ void InSessionPasswordSyncManager::CheckCredentials(
     PasswordChangedCallback callback) {
   user_context_ = user_context;
   password_changed_callback_ = std::move(callback);
-  content::StoragePartition* signin_partition = login::GetSigninPartition();
-  if (!signin_partition) {
-    LOG(ERROR) << "The sign-in partition is not available yet";
+  content::StoragePartition* lock_screen_partition =
+      login::GetLockScreenPartition();
+  if (!lock_screen_partition) {
+    LOG(ERROR) << "The lock screen partition is not available yet";
     OnCookiesTransfered();
     return;
   }
@@ -211,7 +212,7 @@ void InSessionPasswordSyncManager::CheckCredentials(
   }
 
   ProfileAuthData::Transfer(
-      signin_partition, primary_profile_->GetDefaultStoragePartition(),
+      lock_screen_partition, primary_profile_->GetDefaultStoragePartition(),
       false /*transfer_auth_cookies_on_first_login*/,
       transfer_saml_auth_cookies_on_subsequent_login,
       base::BindOnce(&InSessionPasswordSyncManager::OnCookiesTransfered,
@@ -281,6 +282,7 @@ void InSessionPasswordSyncManager::DismissDialog() {
 void InSessionPasswordSyncManager::ResetDialog() {
   DCHECK(lock_screen_start_reauth_dialog_);
   lock_screen_start_reauth_dialog_.reset();
+  OnReauthDialogClosedForTesting();  // IN-TEST
 }
 
 int InSessionPasswordSyncManager::GetDialogWidth() {
@@ -298,12 +300,30 @@ bool InSessionPasswordSyncManager::IsReauthDialogLoadedForTesting(
   return false;
 }
 
+bool InSessionPasswordSyncManager::IsReauthDialogClosedForTesting(
+    base::OnceClosure callback) {
+  if (!is_dialog_loaded_for_testing_)
+    return true;
+  DCHECK(!on_dialog_closed_callback_for_testing_);
+  on_dialog_closed_callback_for_testing_ = std::move(callback);
+  return false;
+}
+
 void InSessionPasswordSyncManager::OnReauthDialogReadyForTesting() {
   if (is_dialog_loaded_for_testing_)
     return;
   is_dialog_loaded_for_testing_ = true;
   if (on_dialog_loaded_callback_for_testing_) {
     std::move(on_dialog_loaded_callback_for_testing_).Run();
+  }
+}
+
+void InSessionPasswordSyncManager::OnReauthDialogClosedForTesting() {
+  if (!is_dialog_loaded_for_testing_)
+    return;
+  is_dialog_loaded_for_testing_ = false;
+  if (on_dialog_closed_callback_for_testing_) {
+    std::move(on_dialog_closed_callback_for_testing_).Run();
   }
 }
 

@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/core/dom/toggle_data.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
@@ -98,6 +99,7 @@ class ElementSuperRareData : public GarbageCollected<ElementSuperRareData> {
     }
     return accessible_node_;
   }
+  void ClearAccessibleNode() { accessible_node_.Clear(); }
 
   DisplayLockContext* EnsureDisplayLockContext(Element* element) {
     if (!display_lock_context_) {
@@ -118,6 +120,7 @@ class ElementSuperRareData : public GarbageCollected<ElementSuperRareData> {
   ContainerQueryData* GetContainerQueryData() const {
     return container_query_data_;
   }
+  void ClearContainerQueryData() { container_query_data_ = nullptr; }
 
   // Returns the crop-ID if one was set, or nullptr otherwise.
   const RegionCaptureCropId* GetRegionCaptureCropId() const {
@@ -162,9 +165,18 @@ class ElementSuperRareData : public GarbageCollected<ElementSuperRareData> {
   PopupData& EnsurePopupData();
   void RemovePopupData();
 
+  ToggleData* GetToggleData() const { return toggle_data_.get(); }
+  ToggleData& EnsureToggleData();
+
   FocusgroupFlags GetFocusgroupFlags() const { return focusgroup_flags_; }
 
   void SetFocusgroupFlags(FocusgroupFlags flags) { focusgroup_flags_ = flags; }
+  bool AffectedBySubjectHas() const {
+    return has_invalidation_flags_.affected_by_subject_has;
+  }
+  void SetAffectedBySubjectHas() {
+    has_invalidation_flags_.affected_by_subject_has = true;
+  }
   bool AffectedByNonSubjectHas() const {
     return has_invalidation_flags_.affected_by_non_subject_has;
   }
@@ -251,6 +263,7 @@ class ElementSuperRareData : public GarbageCollected<ElementSuperRareData> {
   AtomicString is_value_;
   Member<ResizeObserverSize> last_intrinsic_size_;
   Member<PopupData> popup_data_;
+  std::unique_ptr<ToggleData> toggle_data_;
   FocusgroupFlags focusgroup_flags_ = FocusgroupFlags::kNone;
   HasInvalidationFlags has_invalidation_flags_;
 };
@@ -421,6 +434,12 @@ class ElementRareData final : public NodeRareData {
   void SetScrollbarPseudoElementStylesDependOnFontMetrics(bool value) {
     scrollbar_pseudo_element_styles_depend_on_font_metrics_ = value;
   }
+  bool AffectedBySubjectHas() const {
+    return super_rare_data_ ? super_rare_data_->AffectedBySubjectHas() : false;
+  }
+  void SetAffectedBySubjectHas() {
+    EnsureSuperRareData().SetAffectedBySubjectHas();
+  }
   bool AffectedByNonSubjectHas() const {
     return super_rare_data_ ? super_rare_data_->AffectedByNonSubjectHas()
                             : false;
@@ -504,6 +523,10 @@ class ElementRareData final : public NodeRareData {
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
     return EnsureSuperRareData().EnsureAccessibleNode(owner_element);
   }
+  void ClearAccessibleNode() {
+    if (super_rare_data_)
+      super_rare_data_->ClearAccessibleNode();
+  }
 
   AttrNodeList& EnsureAttrNodeList();
   AttrNodeList* GetAttrNodeList() { return attr_node_list_.Get(); }
@@ -541,6 +564,13 @@ class ElementRareData final : public NodeRareData {
   PopupData& EnsurePopupData();
   void RemovePopupData();
 
+  ToggleData* GetToggleData() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetToggleData();
+    return nullptr;
+  }
+  ToggleData& EnsureToggleData();
+
   DisplayLockContext* EnsureDisplayLockContext(Element* element) {
     return EnsureSuperRareData().EnsureDisplayLockContext(element);
   }
@@ -557,6 +587,10 @@ class ElementRareData final : public NodeRareData {
     if (super_rare_data_)
       return super_rare_data_->GetContainerQueryData();
     return nullptr;
+  }
+  void ClearContainerQueryData() {
+    if (super_rare_data_)
+      super_rare_data_->ClearContainerQueryData();
   }
 
   ContainerQueryEvaluator* GetContainerQueryEvaluator() const {

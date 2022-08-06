@@ -74,10 +74,13 @@ enum class LaunchContainer {
 };
 
 // The window information to launch an app.
-struct WindowInfo {
+struct COMPONENT_EXPORT(APP_TYPES) WindowInfo {
+  WindowInfo() = default;
+  explicit WindowInfo(int64_t display_id);
+
   int32_t window_id = -1;
   int32_t state = 0;
-  int32_t display_id = -1;
+  int64_t display_id = -1;
   absl::optional<gfx::Rect> bounds;
 };
 
@@ -88,6 +91,18 @@ using WindowInfoPtr = std::unique_ptr<WindowInfo>;
 COMPONENT_EXPORT(APP_TYPES)
 LaunchSource ConvertMojomLaunchSourceToLaunchSource(
     apps::mojom::LaunchSource mojom_launch_source);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::LaunchSource ConvertLaunchSourceToMojomLaunchSource(
+    LaunchSource launch_source);
+
+COMPONENT_EXPORT(APP_TYPES)
+WindowInfoPtr ConvertMojomWindowInfoToWindowInfo(
+    const apps::mojom::WindowInfoPtr& mojom_window_info);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::WindowInfoPtr ConvertWindowInfoToMojomWindowInfo(
+    const WindowInfoPtr& mojom_window_info);
 
 }  // namespace apps
 

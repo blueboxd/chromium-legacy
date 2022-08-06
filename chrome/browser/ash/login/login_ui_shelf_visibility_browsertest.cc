@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
@@ -182,14 +183,6 @@ IN_PROC_BROWSER_TEST_F(SamlInterstitialTest, AppsGuestButton) {
   EXPECT_TRUE(LoginScreenTestApi::IsGuestButtonShown());
 }
 
-namespace {
-
-// This is the constant that exists on the server side. It corresponds to
-// the type of enrollment license.
-constexpr char kKioskSkuName[] = "GOOGLE.CHROME_KIOSK_ANNUAL";
-
-}  // namespace
-
 class KioskSkuVisibilityTest : public LoginUIShelfVisibilityTest {
  public:
   KioskSkuVisibilityTest() {
@@ -227,11 +220,11 @@ IN_PROC_BROWSER_TEST_F(KioskSkuVisibilityTest, WithoutKioskSku) {
 // instruction bubble is hidden too without kiosk apps.
 IN_PROC_BROWSER_TEST_F(KioskSkuVisibilityTest, WithoutApps) {
   policy_helper()->device_policy()->policy_data().set_license_sku(
-      kKioskSkuName);
+      policy::kKioskSkuName);
   policy_helper()->RefreshPolicyAndWaitUntilDeviceCloudPolicyUpdated();
 
   EXPECT_TRUE(LoginScreenTestApi::IsLoginShelfShown());
-  EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_TRUE(LoginScreenTestApi::IsGuestButtonShown());
   EXPECT_FALSE(LoginScreenTestApi::IsAddUserButtonShown());
   EXPECT_FALSE(LoginScreenTestApi::IsKioskInstructionBubbleShown());
 }
@@ -240,13 +233,13 @@ IN_PROC_BROWSER_TEST_F(KioskSkuVisibilityTest, WithoutApps) {
 // instruction bubble is shown with kiosk apps.
 IN_PROC_BROWSER_TEST_F(KioskSkuVisibilityTest, WithApps) {
   policy_helper()->device_policy()->policy_data().set_license_sku(
-      kKioskSkuName);
+      policy::kKioskSkuName);
   KioskAppsMixin::AppendKioskAccount(
       &policy_helper()->device_policy()->payload());
   policy_helper()->RefreshPolicyAndWaitUntilDeviceCloudPolicyUpdated();
 
   EXPECT_TRUE(LoginScreenTestApi::IsLoginShelfShown());
-  EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_TRUE(LoginScreenTestApi::IsGuestButtonShown());
   EXPECT_FALSE(LoginScreenTestApi::IsAddUserButtonShown());
   EXPECT_TRUE(LoginScreenTestApi::IsKioskInstructionBubbleShown());
 }

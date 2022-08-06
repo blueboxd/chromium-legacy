@@ -88,11 +88,11 @@ export class TrustedAppRequestHandler extends RequestHandler {
       }
       return this.browserProxy_.startProjectorSession(storageDir[0]);
     });
-    this.registerMethod('getOAuthTokenForAccount', (account) => {
-      if (!account || account.length != 1) {
-        return {};
+    this.registerMethod('getOAuthTokenForAccount', (args) => {
+      if (!args || args.length != 1) {
+        return Promise.reject('Incorrect args for getOAuthTokenForAccount');
       }
-      return this.browserProxy_.getOAuthTokenForAccount(account[0]);
+      return this.browserProxy_.getOAuthTokenForAccount(args[0]);
     });
     this.registerMethod('onError', (msg) => {
       this.browserProxy_.onError(msg);
@@ -101,7 +101,7 @@ export class TrustedAppRequestHandler extends RequestHandler {
       if (!values || values.length != 5) {
         return {
           success: false,
-          error: 'INVALID_ARGUMENTS'
+          error: 'INVALID_ARGUMENTS',
         };
       }
       return this.browserProxy_.sendXhr(
@@ -131,8 +131,11 @@ export class TrustedAppRequestHandler extends RequestHandler {
     this.registerMethod('openFeedbackDialog', (args) => {
       return this.browserProxy_.openFeedbackDialog();
     });
-    this.registerMethod('getScreencast', (args) => {
-      return this.browserProxy_.getScreencast(args[0]);
+    this.registerMethod('getVideo', (args) => {
+      if (!args || args.length != 2) {
+        return Promise.reject('Incorrect args for getVideo');
+      }
+      return this.browserProxy_.getVideo(args[0], args[1]);
     });
   }
 }

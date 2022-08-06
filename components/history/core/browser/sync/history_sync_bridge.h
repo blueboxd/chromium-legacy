@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/history/core/browser/history_backend_observer.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/sync/history_backend_for_sync.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
@@ -24,6 +25,7 @@ class ModelTypeChangeProcessor;
 namespace history {
 
 class HistorySyncMetadataDatabase;
+class VisitIDRemapper;
 
 class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
                           public HistoryBackendObserver {
@@ -56,9 +58,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
 
   // HistoryBackendObserver:
   void OnURLVisited(HistoryBackend* history_backend,
-                    ui::PageTransition transition,
-                    const URLRow& row,
-                    base::Time visit_time) override;
+                    const URLRow& url_row,
+                    const VisitRow& visit_row) override;
   void OnURLsModified(HistoryBackend* history_backend,
                       const URLRows& changed_urls,
                       bool is_from_expiration) override;
@@ -81,12 +82,19 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
 
   // Adds visit(s) corresponding to the `specifics` to the HistoryBackend.
   // Returns true on success, or false in case of backend errors.
-  bool AddEntityInBackend(const sync_pb::HistorySpecifics& specifics);
+  bool AddEntityInBackend(VisitIDRemapper* id_remapper,
+                          const sync_pb::HistorySpecifics& specifics);
 
   // Updates the visit(s) corresponding to the `specifics` in the
   // HistoryBackend. Returns true on success, or false in case of errors (most
   // commonly, because no matching entry exists in the backend).
-  bool UpdateEntityInBackend(const sync_pb::HistorySpecifics& specifics);
+  bool UpdateEntityInBackend(VisitIDRemapper* id_remapper,
+                             const sync_pb::HistorySpecifics& specifics);
+
+  // Untracks all entities from the processor, and clears their (persisted)
+  // metadata, except for entities that are "unsynced", i.e. that are waiting to
+  // be committed.
+  void UntrackAndClearMetadataForSyncedEntities();
 
   // Returns the cache GUID of the Sync client on this device. Must only be
   // called after `change_processor()->IsTrackingMetadata()` returns true

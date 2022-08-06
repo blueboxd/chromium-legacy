@@ -33,7 +33,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -116,6 +115,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX)
@@ -1901,18 +1901,16 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerLaunchHandlerBrowserTest,
     }
   )";
 
-  // Deprecated launch_handler syntax.
   OverrideManifest(kManifestTemplate, {kInstallableIconList, R"({
-    "route_to": "existing-client",
-    "navigate_existing_client": "never"
+    "client_mode": "focus-existing"
   })"});
   AppId app_id = InstallWebApp();
   EXPECT_EQ(GetProvider().registrar().GetAppById(app_id)->launch_handler(),
-            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientRetain}));
+            (LaunchHandler{LaunchHandler::ClientMode::kFocusExisting}));
 
   // New launch_handler syntax.
   OverrideManifest(kManifestTemplate, {kInstallableIconList, R"({
-    "route_to": "existing-client-navigate"
+    "client_mode": "navigate-existing"
   })"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
             ManifestUpdateResult::kAppUpdated);
@@ -1925,7 +1923,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerLaunchHandlerBrowserTest,
                                  {{128, kAll}, kInstallableIconTopLeftColor},
                                  {{256, kAll}, kInstallableIconTopLeftColor}});
   EXPECT_EQ(GetProvider().registrar().GetAppById(app_id)->launch_handler(),
-            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientNavigate}));
+            (LaunchHandler{LaunchHandler::ClientMode::kNavigateExisting}));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2301,7 +2299,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   // Make sure that blocking the permission also unregisters the MIME type on
   // Linux.
   SetUpdateMimeInfoDatabaseOnLinuxCallbackForTesting(base::BindLambdaForTesting(
-      [](base::FilePath filename, std::string file_contents) {
+      [](base::FilePath filename, std::string xdg_command,
+         std::string file_contents) {
         EXPECT_TRUE(file_contents.empty());
         return true;
       }));

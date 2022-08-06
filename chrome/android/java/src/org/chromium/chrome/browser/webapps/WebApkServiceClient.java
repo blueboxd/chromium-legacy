@@ -32,8 +32,6 @@ import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
 import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappPermissionManager;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.PermissionStatus;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
@@ -182,10 +180,7 @@ public class WebApkServiceClient {
                     Log.w(TAG, "String (%s) could not be parsed as Origin.", originString);
                     return;
                 }
-                if (BuildInfo.isAtLeastT()
-                        && CachedFeatureFlags.isEnabled(
-                                ChromeFeatureList
-                                        .TRUSTED_WEB_ACTIVITY_NOTIFICATION_PERMISSION_DELEGATION)) {
+                if (BuildInfo.isAtLeastT()) {
                     InstalledWebappPermissionManager.get().updatePermission(
                             origin, webApkPackage, ContentSettingsType.NOTIFICATIONS, settingValue);
                 }

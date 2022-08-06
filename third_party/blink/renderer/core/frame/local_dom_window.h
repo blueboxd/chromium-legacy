@@ -158,6 +158,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const KURL& BaseURL() const final;
   KURL CompleteURL(const String&) const final;
   void DisableEval(const String& error_message) final;
+  void SetWasmEvalErrorMessage(const String& error_message) final;
   String UserAgent() const final;
   UserAgentMetadata GetUserAgentMetadata() const final;
   HttpsState GetHttpsState() const final;
@@ -190,6 +191,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void SetIsInBackForwardCache(bool) final;
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
+
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetAgentGroupSchedulerCompositorTaskRunner() final;
 
   // UseCounter orverrides:
   void CountUse(mojom::WebFeature feature) final;
@@ -398,10 +402,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void EnqueueDocumentEvent(Event&, TaskType);
   void EnqueueNonPersistedPageshowEvent();
   void EnqueueHashchangeEvent(const String& old_url, const String& new_url);
-  void EnqueuePopstateEvent(scoped_refptr<SerializedScriptValue>);
+  void DispatchPopstateEvent(scoped_refptr<SerializedScriptValue>);
   void DispatchWindowLoadEvent();
   void DocumentWasClosed();
-  void StatePopped(scoped_refptr<SerializedScriptValue>);
 
   void AcceptLanguagesChanged();
 
@@ -438,7 +441,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   bool CrossOriginIsolatedCapability() const override;
-  bool DirectSocketCapability() const override;
+  bool IsolatedApplicationCapability() const override;
 
   // These delegate to the document_.
   ukm::UkmRecorder* UkmRecorder() override;
@@ -466,7 +469,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void DidBufferLoadWhileInBackForwardCache(size_t num_bytes);
 
   // Whether the window is anonymous or not.
-  bool isAnonymouslyFramed() const;
+  bool anonymouslyFramed() const;
 
   bool IsInFencedFrame() const override;
 
@@ -530,8 +533,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   String status_;
   String default_status_;
-
-  scoped_refptr<SerializedScriptValue> pending_state_object_;
 
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;
 

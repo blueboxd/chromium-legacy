@@ -35,22 +35,9 @@
 #include "media/mojo/services/media_service.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(USE_OZONE)
-#include "chromecast/browser/webview/js_channel_service.h"
-#include "chromecast/common/mojom/js_channel.mojom.h"
-#endif
-
 #if !BUILDFLAG(IS_ANDROID)
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/guest_view/extensions_guest_view.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#endif
 
 namespace chromecast {
 namespace shell {
@@ -90,13 +77,13 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
-  registry->AddInterface(
+  registry->AddInterface<media::mojom::MediaCaps>(
       base::BindRepeating(
           &media::MediaCapsImpl::AddReceiver,
           base::Unretained(cast_browser_main_parts_->media_caps())),
       base::ThreadTaskRunnerHandle::Get());
 
-  registry->AddInterface(
+  registry->AddInterface<metrics::mojom::MetricsHelper>(
       base::BindRepeating(
           &metrics::MetricsHelperImpl::AddReceiver,
           base::Unretained(cast_browser_main_parts_->metrics_helper())),
@@ -107,22 +94,11 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
     memory_pressure_controller_.reset(new MemoryPressureControllerImpl());
   }
 
-  registry->AddInterface(
+  registry->AddInterface<mojom::MemoryPressureController>(
       base::BindRepeating(&MemoryPressureControllerImpl::AddReceiver,
                           base::Unretained(memory_pressure_controller_.get())),
       base::ThreadTaskRunnerHandle::Get());
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-  associated_registry->AddInterface(base::BindRepeating(
-      &extensions::EventRouter::BindForRenderer, render_process_host->GetID()));
-  associated_registry->AddInterface(
-      base::BindRepeating(&extensions::ExtensionsGuestView::CreateForComponents,
-                          render_process_host->GetID()));
-  associated_registry->AddInterface(
-      base::BindRepeating(&extensions::ExtensionsGuestView::CreateForExtensions,
-                          render_process_host->GetID()));
-#endif
 }
 
 void CastContentBrowserClient::BindMediaServiceReceiver(
@@ -230,20 +206,6 @@ void CastContentBrowserClient::BindGpuHostReceiver(
 void CastContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
-
-void CastContentBrowserClient::BindHostReceiverForRenderer(
-    content::RenderProcessHost* render_process_host,
-    mojo::GenericPendingReceiver receiver) {
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(USE_OZONE)
-  if (auto r = receiver.As<::chromecast::mojom::JsChannelBindingProvider>()) {
-    JsChannelService::Create(render_process_host, std::move(r),
-                             base::ThreadTaskRunnerHandle::Get());
-    return;
-  }
-#endif
-  ContentBrowserClient::BindHostReceiverForRenderer(render_process_host,
-                                                    std::move(receiver));
-}
 
 }  // namespace shell
 }  // namespace chromecast

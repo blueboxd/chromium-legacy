@@ -10,36 +10,36 @@ import {NamedDestinationMessageData, SaveRequestType} from './constants.js';
 import {PdfPluginElement} from './internal_plugin.js';
 import {PinchPhase, Viewport} from './viewport.js';
 
-export type MessageData = {
-  type: string,
-  messageId?: string,
-};
+export interface MessageData {
+  type: string;
+  messageId?: string;
+}
 
-export type SaveAttachmentMessageData = {
-  type: string,
-  dataToSave: ArrayBuffer,
-  messageId: string,
-};
+export interface SaveAttachmentMessageData {
+  type: string;
+  dataToSave: ArrayBuffer;
+  messageId: string;
+}
 
-type SaveDataMessageData = {
-  dataToSave: ArrayBuffer,
-  token: string,
-  fileName: string,
-};
+interface SaveDataMessageData {
+  dataToSave: ArrayBuffer;
+  token: string;
+  fileName: string;
+}
 
-export type PrintPreviewParams = {
-  type: string,
-  url: string,
-  grayscale: boolean,
-  modifiable: boolean,
-  pageNumbers: number[],
-};
+export interface PrintPreviewParams {
+  type: string;
+  url: string;
+  grayscale: boolean;
+  modifiable: boolean;
+  pageNumbers: number[];
+}
 
-type ThumbnailMessageData = {
-  imageData: ArrayBuffer,
-  width: number,
-  height: number,
-};
+interface ThumbnailMessageData {
+  imageData: ArrayBuffer;
+  width: number;
+  height: number;
+}
 
 /**
  * Creates a cryptographically secure pseudorandom 128-bit token.
@@ -194,7 +194,7 @@ export class PluginController implements ContentController {
         layoutOptions: layoutOptions,
         xOffset: position.x,
         yOffset: position.y,
-        pinchPhase: pinchPhase
+        pinchPhase: pinchPhase,
       });
     }
   }
@@ -222,7 +222,7 @@ export class PluginController implements ContentController {
       pinchX: pinchCenter.x,
       pinchY: pinchCenter.y,
       pinchVectorX: pinchVector.x,
-      pinchVectorY: pinchVector.y
+      pinchVectorY: pinchVector.y,
     });
   }
 
@@ -304,7 +304,7 @@ export class PluginController implements ContentController {
       pageCount:
           (printPreviewParams.modifiable ?
                printPreviewParams.pageNumbers.length :
-               0)
+               0),
     });
   }
 

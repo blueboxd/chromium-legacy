@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
-#include "chrome/browser/themes/increased_contrast_theme_supplier.h"
 #include "chrome/browser/themes/test/theme_service_changed_waiter.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -52,9 +51,9 @@
 #include "ui/views/views_features.h"
 
 #if BUILDFLAG(IS_LINUX)
+#include "ui/linux/linux_ui.h"
+#include "ui/linux/linux_ui_factory.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/linux_ui/linux_ui_factory.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -198,14 +197,14 @@ class ColorProviderTest
     static bool initialized_mixers = false;
     if (!initialized_mixers) {
 #if BUILDFLAG(IS_LINUX)
-      // Ensures LinuxUI is configured on supported linux platforms.
+      // Ensures LinuxUi is configured on supported linux platforms.
       // Initializing the toolkit also adds the native toolkit ColorMixers.
       ui::OzonePlatform::InitParams ozone_params;
       ozone_params.single_process = true;
       ui::OzonePlatform::InitializeForUI(ozone_params);
-      auto linux_ui = CreateLinuxUi();
+      auto linux_ui = ui::CreateLinuxUi();
       ASSERT_TRUE(linux_ui);
-      views::LinuxUI::SetInstance(std::move(linux_ui));
+      ui::LinuxUi::SetInstance(std::move(linux_ui));
 #endif  // BUILDFLAG(IS_LINUX)
 
       // Add the Chrome ColorMixers after native ColorMixers.
@@ -215,7 +214,7 @@ class ColorProviderTest
       initialized_mixers = true;
     }
 #if BUILDFLAG(IS_LINUX)
-    views::LinuxUI::instance()->SetUseSystemThemeCallback(base::BindRepeating(
+    ui::LinuxUi::instance()->SetUseSystemThemeCallback(base::BindRepeating(
         [](bool use_system_theme, aura::Window* window) {
           return use_system_theme;
         },
@@ -232,7 +231,7 @@ class ColorProviderTest
     native_theme_ = ui::NativeTheme::GetInstanceForNativeUi();
 #if BUILDFLAG(IS_LINUX)
     if (system_theme == SystemTheme::kCustom) {
-      const auto* linux_ui = views::LinuxUI::instance();
+      const auto* linux_ui = ui::LinuxUi::instance();
       native_theme_ = linux_ui->GetNativeTheme(nullptr);
     }
 #endif
@@ -598,20 +597,25 @@ TEST_P(ColorProviderTest, OmniboxContrast) {
       {kColorOmniboxBubbleOutline, kColorOmniboxResultsBackground},
       {kColorOmniboxBubbleOutlineExperimentalKeywordMode,
        kColorOmniboxResultsBackground},
-      {kColorOmniboxSecurityChipDefault, kColorOmniboxBackground},
-      {kColorOmniboxSecurityChipDefault, kColorOmniboxBackgroundHovered},
-      {kColorOmniboxSecurityChipSecure, kColorOmniboxBackground},
-      {kColorOmniboxSecurityChipSecure, kColorOmniboxBackgroundHovered},
-      {kColorOmniboxSecurityChipDangerous, kColorOmniboxBackground},
-      {kColorOmniboxSecurityChipDangerous, kColorOmniboxBackgroundHovered},
-      {kColorOmniboxKeywordSelected, kColorOmniboxBackground},
-      {kColorOmniboxKeywordSelected, kColorOmniboxBackgroundHovered},
-      {kColorOmniboxText, kColorOmniboxBackground},
-      {kColorOmniboxText, kColorOmniboxBackgroundHovered},
+      {kColorOmniboxSecurityChipDefault, kColorToolbarBackgroundSubtleEmphasis},
+      {kColorOmniboxSecurityChipDefault,
+       kColorToolbarBackgroundSubtleEmphasisHovered},
+      {kColorOmniboxSecurityChipSecure, kColorToolbarBackgroundSubtleEmphasis},
+      {kColorOmniboxSecurityChipSecure,
+       kColorToolbarBackgroundSubtleEmphasisHovered},
+      {kColorOmniboxSecurityChipDangerous,
+       kColorToolbarBackgroundSubtleEmphasis},
+      {kColorOmniboxSecurityChipDangerous,
+       kColorToolbarBackgroundSubtleEmphasisHovered},
+      {kColorOmniboxKeywordSelected, kColorToolbarBackgroundSubtleEmphasis},
+      {kColorOmniboxKeywordSelected,
+       kColorToolbarBackgroundSubtleEmphasisHovered},
+      {kColorOmniboxText, kColorToolbarBackgroundSubtleEmphasis},
+      {kColorOmniboxText, kColorToolbarBackgroundSubtleEmphasisHovered},
       {kColorOmniboxText, kColorOmniboxResultsBackground},
       {kColorOmniboxText, kColorOmniboxResultsBackgroundHovered},
-      {kColorOmniboxTextDimmed, kColorOmniboxBackground},
-      {kColorOmniboxTextDimmed, kColorOmniboxBackgroundHovered},
+      {kColorOmniboxTextDimmed, kColorToolbarBackgroundSubtleEmphasis},
+      {kColorOmniboxTextDimmed, kColorToolbarBackgroundSubtleEmphasisHovered},
   };
   auto check_sufficient_contrast =
       [&](ui::ColorId id1, ui::ColorId id2,
@@ -638,28 +642,6 @@ TEST_P(ColorProviderTest, OmniboxContrast) {
                               color_utils::kMinimumVisibleContrastRatio);
   }
 #endif
-}
-
-TEST_F(ThemeServiceTest, NativeIncreasedContrastChanged) {
-  theme_service_->UseDefaultTheme();
-
-  test_native_theme_.SetUserHasContrastPreference(true);
-  theme_service_->OnNativeThemeUpdated(&test_native_theme_);
-  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
-  bool using_increased_contrast =
-      theme_service_->GetThemeSupplier() &&
-      theme_service_->GetThemeSupplier()->get_theme_type() ==
-          ui::ColorProviderManager::ThemeInitializerSupplier::ThemeType::
-              kIncreasedContrast;
-  bool expecting_increased_contrast =
-      theme_service_->theme_helper_for_testing()
-          .ShouldUseIncreasedContrastThemeSupplier(&test_native_theme_);
-  EXPECT_EQ(using_increased_contrast, expecting_increased_contrast);
-
-  test_native_theme_.SetUserHasContrastPreference(false);
-  theme_service_->OnNativeThemeUpdated(&test_native_theme_);
-  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
-  EXPECT_EQ(theme_service_->GetThemeSupplier(), nullptr);
 }
 
 // Sets and unsets themes using the BrowserThemeColor policy.

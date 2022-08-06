@@ -5,13 +5,10 @@
 #ifndef ASH_TEST_ASH_TEST_UI_STABILIZER_H_
 #define ASH_TEST_ASH_TEST_UI_STABILIZER_H_
 
+#include "ash/test/ash_pixel_test_init_params.h"
 #include "ash/wallpaper/test_wallpaper_controller_client.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/icu_test_util.h"
-
-namespace base::subtle {
-class ScopedTimeClockOverrides;
-}  // namespace base::subtle
 
 namespace gfx {
 class Size;
@@ -22,7 +19,7 @@ namespace ash {
 // A test helper class that sets up the system UI for pixel tests.
 class AshTestUiStabilizer {
  public:
-  AshTestUiStabilizer();
+  explicit AshTestUiStabilizer(const pixel_test::InitParams& params);
   AshTestUiStabilizer(const AshTestUiStabilizer&) = delete;
   AshTestUiStabilizer& operator=(const AshTestUiStabilizer&) = delete;
   ~AshTestUiStabilizer();
@@ -30,11 +27,6 @@ class AshTestUiStabilizer {
   // Makes the variable UI components (such as the battery view and wallpaper)
   // constant to avoid flakiness in pixel tests.
   void StabilizeUi(const gfx::Size& wallpaper_size);
-
-  // Overrides the current time. It ensures that `Time::Now()` is constant.
-  void OverrideTime();
-
-  const AccountId& account_id() const { return account_id_; }
 
  private:
   // Ensures that the system UI is under the dark mode if the dark/light feature
@@ -48,21 +40,11 @@ class AshTestUiStabilizer {
   // change during pixel tests.
   void SetBatteryState();
 
+  const pixel_test::InitParams params_;
+
   // Used for setting the locale and the time zone.
   const base::test::ScopedRestoreICUDefaultLocale scoped_locale_;
   const base::test::ScopedRestoreDefaultTimezone time_zone_;
-
-  // Overrides the current time.
-  std::unique_ptr<base::subtle::ScopedTimeClockOverrides> time_override_;
-
-  const AccountId account_id_;
-
-  // The temporary data directories for wallpaper setting.
-  base::ScopedTempDir user_data_dir_;
-  base::ScopedTempDir online_wallpaper_dir_;
-  base::ScopedTempDir custom_wallpaper_dir_;
-
-  TestWallpaperControllerClient client_;
 };
 
 }  // namespace ash

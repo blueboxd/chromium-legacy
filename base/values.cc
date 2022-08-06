@@ -4,13 +4,6 @@
 
 #include "base/values.h"
 
-// values.h is a widely included header and its size has significant impact on
-// build time. Try not to raise this limit unless absolutely necessary. See
-// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#ifndef NACL_TC_REV
-#pragma clang max_tokens_here 470000
-#endif
-
 #include <algorithm>
 #include <cmath>
 #include <ostream>
@@ -140,6 +133,42 @@ std::string DebugStringImpl(ValueView value) {
 
 }  // namespace
 
+// A helper used to provide templated functions for cloning to Value, and
+// ValueView. This private class is used so the cloning method may have access
+// to the special private constructors in Value, created specifically for
+// cloning.
+class Value::CloningHelper {
+ public:
+  // This set of overloads are used to unwrap the reference wrappers, which are
+  // presented when cloning a ValueView.
+  template <typename T>
+  static const T& UnwrapReference(std::reference_wrapper<const T> value) {
+    return value.get();
+  }
+
+  template <typename T>
+  static const T& UnwrapReference(const T& value) {
+    return value;
+  }
+
+  // Returns a new Value object using the contents of the |storage| variant.
+  template <typename Storage>
+  static Value Clone(const Storage& storage) {
+    return absl::visit(
+        [](const auto& member) {
+          const auto& value = UnwrapReference(member);
+          using T = std::decay_t<decltype(value)>;
+          if constexpr (std::is_same_v<T, Value::Dict> ||
+                        std::is_same_v<T, Value::List>) {
+            return Value(value.Clone());
+          } else {
+            return Value(value);
+          }
+        },
+        storage);
+  }
+};
+
 // static
 Value Value::FromUniquePtrValue(std::unique_ptr<Value> val) {
   return std::move(*val);
@@ -223,24 +252,17 @@ Value::Value(const std::vector<char>& value)
     : data_(absl::in_place_type_t<BlobStorage>(), value.begin(), value.end()) {}
 
 Value::Value(base::span<const uint8_t> value)
-    : data_(absl::in_place_type_t<BlobStorage>(), value.begin(), value.end()) {}
+    : data_(absl::in_place_type_t<BlobStorage>(), value.size()) {
+  // This is 100x faster than using the "range" constructor for a 512k blob:
+  // crbug.com/1343636
+  std::copy(value.begin(), value.end(), absl::get<BlobStorage>(data_).data());
+}
 
 Value::Value(BlobStorage&& value) noexcept : data_(std::move(value)) {}
 
 Value::Value(Dict&& value) noexcept : data_(std::move(value)) {}
 
 Value::Value(List&& value) noexcept : data_(std::move(value)) {}
-
-Value::Value(span<const Value> value) : data_(absl::in_place_type_t<List>()) {
-  list().reserve(value.size());
-  for (const auto& val : value)
-    list().emplace_back(val.Clone());
-}
-
-Value::Value(ListStorage&& value) noexcept
-    : data_(absl::in_place_type_t<List>()) {
-  list() = std::move(value);
-}
 
 Value::Value(const LegacyDictStorage& storage)
     : data_(absl::in_place_type_t<Dict>()) {
@@ -269,16 +291,7 @@ Value::DoubleStorage::DoubleStorage(double v) : v_(bit_cast<decltype(v_)>(v)) {
 }
 
 Value Value::Clone() const {
-  return absl::visit(
-      [](const auto& member) {
-        using T = std::decay_t<decltype(member)>;
-        if constexpr (std::is_same_v<T, Dict> || std::is_same_v<T, List>) {
-          return Value(member.Clone());
-        } else {
-          return Value(member);
-        }
-      },
-      data_);
+  return CloningHelper::Clone(data_);
 }
 
 Value::~Value() = default;
@@ -915,6 +928,22 @@ Value::List::const_iterator Value::List::erase(const_iterator pos) {
                         base::to_address(storage_.end()));
 }
 
+Value::List::iterator Value::List::erase(iterator first, iterator last) {
+  auto next_it = storage_.erase(storage_.begin() + (first - begin()),
+                                storage_.begin() + (last - begin()));
+  return iterator(base::to_address(storage_.begin()), base::to_address(next_it),
+                  base::to_address(storage_.end()));
+}
+
+Value::List::const_iterator Value::List::erase(const_iterator first,
+                                               const_iterator last) {
+  auto next_it = storage_.erase(storage_.begin() + (first - begin()),
+                                storage_.begin() + (last - begin()));
+  return const_iterator(base::to_address(storage_.begin()),
+                        base::to_address(next_it),
+                        base::to_address(storage_.end()));
+}
+
 Value::List Value::List::Clone() const {
   return List(storage_);
 }
@@ -1225,10 +1254,6 @@ std::string* Value::FindStringPath(StringPiece path) {
   return GetDict().FindStringByDottedPath(path);
 }
 
-const Value::BlobStorage* Value::FindBlobPath(StringPiece path) const {
-  return GetDict().FindBlobByDottedPath(path);
-}
-
 const Value* Value::FindDictPath(StringPiece path) const {
   return FindPathOfType(path, Type::DICTIONARY);
 }
@@ -1390,22 +1415,6 @@ void Value::MergeDictionary(const Value* dictionary) {
   return GetDict().Merge(dictionary->GetDict().Clone());
 }
 
-bool Value::GetAsList(ListValue** out_value) {
-  if (out_value && is_list()) {
-    *out_value = static_cast<ListValue*>(this);
-    return true;
-  }
-  return is_list();
-}
-
-bool Value::GetAsList(const ListValue** out_value) const {
-  if (out_value && is_list()) {
-    *out_value = static_cast<const ListValue*>(this);
-    return true;
-  }
-  return is_list();
-}
-
 bool Value::GetAsDictionary(DictionaryValue** out_value) {
   if (out_value && is_dict()) {
     *out_value = static_cast<DictionaryValue*>(this);
@@ -1472,11 +1481,6 @@ bool operator==(const Value& lhs, const Value::Dict& rhs) {
 
 bool operator==(const Value& lhs, const Value::List& rhs) {
   return lhs.is_list() && lhs.GetList() == rhs;
-}
-
-bool Value::Equals(const Value* other) const {
-  DCHECK(other);
-  return *this == *other;
 }
 
 size_t Value::EstimateMemoryUsage() const {
@@ -1584,10 +1588,6 @@ Value* DictionaryValue::SetInteger(StringPiece path, int in_value) {
   return Set(path, std::make_unique<Value>(in_value));
 }
 
-Value* DictionaryValue::SetDouble(StringPiece path, double in_value) {
-  return Set(path, std::make_unique<Value>(in_value));
-}
-
 Value* DictionaryValue::SetString(StringPiece path, StringPiece in_value) {
   return Set(path, std::make_unique<Value>(in_value));
 }
@@ -1652,18 +1652,6 @@ bool DictionaryValue::GetString(StringPiece path,
   return is_string;
 }
 
-bool DictionaryValue::GetString(StringPiece path,
-                                std::u16string* out_value) const {
-  const Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  const bool is_string = value->is_string();
-  if (is_string && out_value)
-    *out_value = UTF8ToUTF16(value->GetString());
-  return is_string;
-}
-
 bool DictionaryValue::GetDictionary(StringPiece path,
                                     const DictionaryValue** out_value) const {
   const Value* value;
@@ -1701,45 +1689,6 @@ bool DictionaryValue::GetList(StringPiece path, ListValue** out_value) {
                                  const_cast<const ListValue**>(out_value));
 }
 
-bool DictionaryValue::GetDictionaryWithoutPathExpansion(
-    StringPiece key,
-    const DictionaryValue** out_value) const {
-  const Value* value = FindKey(key);
-  if (!value || !value->is_dict())
-    return false;
-
-  if (out_value)
-    *out_value = static_cast<const DictionaryValue*>(value);
-
-  return true;
-}
-
-bool DictionaryValue::GetDictionaryWithoutPathExpansion(
-    StringPiece key,
-    DictionaryValue** out_value) {
-  return as_const(*this).GetDictionaryWithoutPathExpansion(
-      key, const_cast<const DictionaryValue**>(out_value));
-}
-
-bool DictionaryValue::GetListWithoutPathExpansion(
-    StringPiece key,
-    const ListValue** out_value) const {
-  const Value* value = FindKey(key);
-  if (!value || !value->is_list())
-    return false;
-
-  if (out_value)
-    *out_value = static_cast<const ListValue*>(value);
-
-  return true;
-}
-
-bool DictionaryValue::GetListWithoutPathExpansion(StringPiece key,
-                                                  ListValue** out_value) {
-  return as_const(*this).GetListWithoutPathExpansion(
-      key, const_cast<const ListValue**>(out_value));
-}
-
 std::unique_ptr<DictionaryValue> DictionaryValue::DeepCopyWithoutEmptyChildren()
     const {
   std::unique_ptr<DictionaryValue> copy =
@@ -1761,10 +1710,6 @@ DictionaryValue::Iterator::Iterator(const Iterator& other) = default;
 
 DictionaryValue::Iterator::~Iterator() = default;
 
-DictionaryValue* DictionaryValue::DeepCopy() const {
-  return new DictionaryValue(dict());
-}
-
 std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
   return std::make_unique<DictionaryValue>(dict());
 }
@@ -1773,35 +1718,13 @@ std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
 
 // static
 std::unique_ptr<ListValue> ListValue::From(std::unique_ptr<Value> value) {
-  ListValue* out;
-  if (value && value->GetAsList(&out)) {
-    std::ignore = value.release();
-    return WrapUnique(out);
-  }
+  if (value && value->is_list())
+    return WrapUnique(static_cast<ListValue*>(value.release()));
+
   return nullptr;
 }
 
 ListValue::ListValue() : Value(Type::LIST) {}
-
-bool ListValue::GetDictionary(size_t index,
-                              const DictionaryValue** out_value) const {
-  const auto& list = GetListDeprecated();
-  if (list.size() <= index)
-    return false;
-  const base::Value& value = list[index];
-  if (!value.is_dict())
-    return false;
-
-  if (out_value)
-    *out_value = static_cast<const DictionaryValue*>(&value);
-
-  return true;
-}
-
-bool ListValue::GetDictionary(size_t index, DictionaryValue** out_value) {
-  return as_const(*this).GetDictionary(
-      index, const_cast<const DictionaryValue**>(out_value));
-}
 
 void ListValue::Append(base::Value::Dict in_dict) {
   list().emplace_back(std::move(in_dict));
@@ -1819,6 +1742,10 @@ void ListValue::Swap(ListValue* other) {
 ValueView::ValueView(const Value& value)
     : data_view_(
           value.Visit([](const auto& member) { return ViewType(member); })) {}
+
+Value ValueView::ToValue() const {
+  return Value::CloningHelper::Clone(data_view_);
+}
 
 ValueSerializer::~ValueSerializer() = default;
 

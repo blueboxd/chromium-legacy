@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/common/password_manager_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 namespace password_manager::features {
@@ -94,6 +95,11 @@ const base::Feature kIOSEnablePasswordManagerBrandingUpdate{
 // Password Manager view.
 const base::Feature kIOSPasswordUISplit = {"IOSPasswordUISplit",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables password saving and filling in cross-origin iframes on IOS.
+const base::Feature kIOSPasswordManagerCrossOriginIframeSupport = {
+    "IOSPasswordManagerCrossOriginIframeSupport",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // IS_IOS
 
 // Enables (un)muting compromised passwords from bulk leak check in settings.
@@ -153,11 +159,6 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordReuseDetectionEnabled = {
     "PasswordReuseDetectionEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables a revised opt-in flow for the account-scoped password storage.
-const base::Feature kPasswordsAccountStorageRevisedOptInFlow = {
-    "PasswordsAccountStorageRevisedOptInFlow",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables password scripts fetching for the |PasswordChangeInSettings| feature.
 const base::Feature kPasswordScriptsFetching = {
     "PasswordScriptsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -171,8 +172,16 @@ const base::Feature kRecoverFromNeverSaveAndroid = {
 const base::Feature kSecondaryServerFieldPredictions = {
     "SecondaryServerFieldPredictions", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the password strength indicator.
+const base::Feature kPasswordStrengthIndicator = {
+    "PasswordStrengthIndicator", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-// Enables biometric authentication in settings
+// Enables biometric authentication before form filling.
+const base::Feature kBiometricAuthenticationForFilling = {
+    "BiometricAuthenticationForFilling", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables biometric authentication in settings.
 const base::Feature kEnableBiometricAuthenticationInSettings = {
     "EnableBiometricAuthenticationInSettings",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -197,9 +206,7 @@ const base::Feature kSyncUndecryptablePasswordsLinux = {
 // TouchToFill
 const base::Feature kTouchToFillPasswordSubmission = {
     "TouchToFillPasswordSubmission", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
-#if BUILDFLAG(IS_ANDROID)
 // Enables the intent fetching for the credential manager in Google Mobile
 // Services. It does not enable launching the credential manager.
 const base::Feature kUnifiedCredentialManagerDryRun = {
@@ -220,26 +227,19 @@ const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly{
 
 const base::Feature kPasswordEditDialogWithDetails{
     "PasswordEditDialogWithDetails", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kShowUPMErrorNotification{
+    "ShowUpmErrorNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kUnifiedPasswordManagerDesktop = {
     "UnifiedPasswordManagerDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables support of sending votes on username first flow. The votes are sent
-// on single username forms and are based on user interaction with the save
-// prompt.
-// TODO(crbug.com/959776): Clean up code 2-3 milestones after the launch.
-const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables support of filling and saving on username first flow.
-// TODO(crbug.com/959776): Clean up code 2-3 milestones after the launch.
-const base::Feature kUsernameFirstFlowFilling = {
-    "UsernameFirstFlowFilling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables support of sending additional votes on username first flow. The votes
 // are sent on single password forms and contain information about preceding
 // single username forms.
+// TODO(crbug.com/959776): Clean up if the main crowdsourcing is good enough and
+// we don't need additional signals.
 const base::Feature kUsernameFirstFlowFallbackCrowdsourcing = {
     "UsernameFirstFlowFallbackCrowdsourcing",
     base::FEATURE_DISABLED_BY_DEFAULT};

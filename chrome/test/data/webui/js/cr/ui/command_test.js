@@ -4,7 +4,7 @@
 
 // clang-format off
 import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../../chai_assert.js';
 
@@ -39,7 +39,7 @@ function createEvent(key, code, keyCode) {
     altKey: false,
     ctrlKey: true,
     metaKey: false,
-    shiftKey: false
+    shiftKey: false,
   };
 }
 

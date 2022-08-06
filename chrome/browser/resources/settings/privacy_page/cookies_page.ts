@@ -14,7 +14,7 @@ import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import '../controls/settings_toggle_button.js';
 import '../icons.html.js';
 import '../prefs/prefs.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_settings/site_list.js';
 import './collapse_radio_button.js';
 import './do_not_track_toggle.js';
@@ -28,6 +28,7 @@ import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resource
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
+import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
@@ -50,8 +51,6 @@ enum NetworkPredictionOptions {
   EXTENDED = 3,
   DEFAULT = 1,
 }
-
-type FocusConfig = Map<string, (string|(() => void))>;
 
 export interface SettingsCookiesPageElement {
   $: {
@@ -241,7 +240,7 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         'blockAllPref_',
         Object.assign(this.getPref('generated.cookie_primary_setting'), {
           controlledBy: sessionOnlyPref.controlledBy,
-          controlledByName: sessionOnlyPref.controlledByName
+          controlledByName: sessionOnlyPref.controlledByName,
         }));
   }
 

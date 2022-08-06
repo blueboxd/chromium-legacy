@@ -56,18 +56,7 @@ size_t CountDuplicateClientTags(const EntityMetadataMap& metadata_map) {
 ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     ModelType type,
     const base::RepeatingClosure& dump_stack)
-    : ClientTagBasedModelTypeProcessor(type,
-                                       dump_stack,
-                                       CommitOnlyTypes().Has(type)) {}
-
-ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
-    ModelType type,
-    const base::RepeatingClosure& dump_stack,
-    bool commit_only)
-    : type_(type),
-      bridge_(nullptr),
-      dump_stack_(dump_stack),
-      commit_only_(commit_only) {
+    : type_(type), bridge_(nullptr), dump_stack_(dump_stack) {
   ResetState(CLEAR_METADATA);
 }
 
@@ -125,7 +114,7 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     // types exactly once as an upgrade flow.
     // TODO(crbug.com/872360): This DCHECK can currently trigger if the user's
     // persisted Sync metadata is in an inconsistent state.
-    DCHECK(commit_only_ || batch->TakeAllMetadata().empty())
+    DCHECK(CommitOnlyTypes().Has(type_) || batch->TakeAllMetadata().empty())
         << ModelTypeToDebugString(type_);
   }
 
@@ -162,7 +151,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     model_type_state.set_cache_guid(activation_request_.cache_guid);
     model_type_state.set_authenticated_account_id(
         activation_request_.authenticated_account_id.ToString());
-    if (commit_only_) {
+    if (CommitOnlyTypes().Has(type_)) {
       // For commit-only types, no updates are expected and hence we can
       // consider initial_sync_done(), reflecting that sync is enabled.
       model_type_state.set_initial_sync_done(true);
@@ -523,6 +512,18 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
   entity_tracker_->RemoveEntityForClientTagHash(client_tag_hash);
 }
 
+std::vector<std::string>
+ClientTagBasedModelTypeProcessor::GetAllTrackedStorageKeys() const {
+  std::vector<std::string> storage_keys;
+  if (entity_tracker_) {
+    for (const ProcessorEntity* entity :
+         entity_tracker_->GetAllEntitiesIncludingTombstones()) {
+      storage_keys.push_back(entity->storage_key());
+    }
+  }
+  return storage_keys;
+}
+
 bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
     const std::string& storage_key) {
   if (!entity_tracker_) {
@@ -653,9 +654,23 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
       continue;
     }
 
-    entity->ReceiveCommitResponse(data, commit_only_);
+    // TODO(crbug.com/1299874): remove once test flakiness investigation
+    // complete.
+#if DCHECK_IS_ON()
+    if (!CommitOnlyTypes().Has(type_) &&
+        data.response_version <= entity->metadata().server_version()) {
+      DLOG(ERROR) << data.response_version << " vs "
+                  << entity->metadata().server_version() << " for "
+                  << ModelTypeToDebugString(type_) << ", last updated from: ";
+      entity->PrintLastServerVersionUpdateStackTrace();
+      ReportError(ModelError(
+          FROM_HERE, "Received an update with unexpected server version"));
+      return;
+    }
+#endif
+    entity->ReceiveCommitResponse(data, CommitOnlyTypes().Has(type_));
 
-    if (commit_only_) {
+    if (CommitOnlyTypes().Has(type_)) {
       if (!entity->IsUnsynced()) {
         entity_change_list.push_back(
             EntityChange::CreateDelete(entity->storage_key()));
@@ -1110,8 +1125,7 @@ void ClientTagBasedModelTypeProcessor::GetAllNodesForDebugging(
 void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     AllNodesCallback callback,
     std::unique_ptr<DataBatch> batch) {
-  std::unique_ptr<base::ListValue> all_nodes =
-      std::make_unique<base::ListValue>();
+  base::Value::List all_nodes;
   std::string type_string = ModelTypeToDebugString(type_);
 
   while (batch->HasNext()) {
@@ -1133,13 +1147,14 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
           ClientTagHash::FromHashed(metadata.client_tag_hash());
     }
 
-    std::unique_ptr<base::DictionaryValue> node = data->ToDictionaryValue();
-    node->SetStringKey("modelType", type_string);
+    base::Value::Dict node = data->ToDictionaryValue();
+    node.Set("modelType", type_string);
     // Copy the whole metadata message into the dictionary (if existing).
     if (entity != nullptr) {
-      node->Set("metadata", EntityMetadataToValue(entity->metadata()));
+      node.Set("metadata", base::Value::FromUniquePtrValue(
+                               EntityMetadataToValue(entity->metadata())));
     }
-    all_nodes->Append(base::Value::FromUniquePtrValue(std::move(node)));
+    all_nodes.Append(std::move(node));
   }
 
   // Create a permanent folder for this data type. Since sync server no longer
@@ -1155,7 +1170,7 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
   rootnode.Set("IS_DIR", true);
   rootnode.Set("modelType", type_string);
   rootnode.Set("NON_UNIQUE_NAME", type_string);
-  all_nodes->Append(base::Value(std::move(rootnode)));
+  all_nodes.Append(std::move(rootnode));
 
   std::move(callback).Run(type_, std::move(all_nodes));
 }

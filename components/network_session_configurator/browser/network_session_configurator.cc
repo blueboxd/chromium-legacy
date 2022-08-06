@@ -31,7 +31,7 @@
 #include "net/quic/set_quic_flag.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
-#include "net/third_party/quiche/overrides/quiche_platform_impl/quic_flags_impl.h"
+#include "net/third_party/quiche/src/quiche/common/platform/api/quiche_flags.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_tag.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
@@ -481,7 +481,7 @@ quic::ParsedQuicVersionVector GetQuicVersions(
   quic::ParsedQuicVersionVector trial_versions =
       quic::ParseQuicVersionVectorString(trial_versions_str);
   const bool obsolete_versions_allowed = base::EqualsCaseInsensitiveASCII(
-      GetVariationParam(quic_trial_params, "obsolete_versions_allowed"),
+      GetVariationParam(quic_trial_params, "obsolete_versions_allowed2"),
       "true");
   if (!obsolete_versions_allowed) {
     quic::ParsedQuicVersionVector filtered_versions;

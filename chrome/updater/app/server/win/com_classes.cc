@@ -32,8 +32,23 @@
 namespace updater {
 
 namespace {
+
 // Maximum string length for COM strings.
 constexpr size_t kMaxStringLen = 0x4000;  // 16KB.
+
+HRESULT IsCOMCallerAllowed() {
+  if (GetUpdaterScope() == UpdaterScope::kUser)
+    return S_OK;
+
+  bool is_com_caller_admin = false;
+  if (HRESULT hr = IsCOMCallerAdmin(is_com_caller_admin); FAILED(hr)) {
+    LOG(ERROR) << __func__ << ": IsCOMCallerAdmin failed: " << std::hex << hr;
+    return hr;
+  }
+
+  return is_com_caller_admin ? S_OK : E_ACCESSDENIED;
+}
+
 }  // namespace
 
 STDMETHODIMP UpdateStateImpl::get_state(LONG* state) {
@@ -106,6 +121,10 @@ STDMETHODIMP CompleteStatusImpl::get_statusMessage(BSTR* message) {
   DCHECK(message);
   *message = base::win::ScopedBstr(message_).Release();
   return S_OK;
+}
+
+HRESULT UpdaterImpl::RuntimeClassInitialize() {
+  return IsCOMCallerAllowed();
 }
 
 HRESULT UpdaterImpl::GetVersion(BSTR* version) {
@@ -198,8 +217,8 @@ HRESULT UpdaterImpl::RegisterApp(const wchar_t* app_id,
                           base::BindOnce(&IUpdaterRegisterAppCallback::Run,
                                          callback, response.status_code),
                           base::BindOnce([](HRESULT hr) {
-                            DVLOG(2) << "UpdaterImpl::RegisterApp "
-                                     << "callback returned " << std::hex << hr;
+                            VLOG(2) << "UpdaterImpl::RegisterApp "
+                                    << "callback returned " << std::hex << hr;
                           }));
                     },
                     task_runner, callback));
@@ -264,8 +283,8 @@ class StateChangeCallbackFilter {
         base::BindOnce(&IUpdaterObserver::OnStateChange, observer_,
                        Microsoft::WRL::Make<UpdateStateImpl>(update_state)),
         base::BindOnce([](HRESULT hr) {
-          DVLOG(4) << "IUpdaterObserver::OnStateChange returned " << std::hex
-                   << hr;
+          VLOG(4) << "IUpdaterObserver::OnStateChange returned " << std::hex
+                  << hr;
         }));
   }
 
@@ -328,8 +347,8 @@ HRESULT UpdaterImpl::Update(const wchar_t* app_id,
                               Microsoft::WRL::Make<CompleteStatusImpl>(
                                   static_cast<int>(result), L"")),
                           base::BindOnce([](HRESULT hr) {
-                            DVLOG(2) << "UpdaterImpl::Update "
-                                     << "callback returned " << std::hex << hr;
+                            VLOG(2) << "UpdaterImpl::Update "
+                                    << "callback returned " << std::hex << hr;
                           }));
                     },
                     task_runner, observer));
@@ -373,8 +392,8 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
                               Microsoft::WRL::Make<CompleteStatusImpl>(
                                   static_cast<int>(result), L"")),
                           base::BindOnce([](HRESULT hr) {
-                            DVLOG(2) << "UpdaterImpl::UpdateAll "
-                                     << "callback returned " << std::hex << hr;
+                            VLOG(2) << "UpdaterImpl::UpdateAll "
+                                    << "callback returned " << std::hex << hr;
                           }));
                     },
                     task_runner, observer));
@@ -508,6 +527,8 @@ HRESULT UpdaterImpl::RunInstaller(const wchar_t* app_id,
                                   const wchar_t* install_data,
                                   const wchar_t* install_settings,
                                   IUpdaterObserver* observer) {
+  VLOG(1) << __func__;
+
   for (const wchar_t* str :
        {app_id, installer_path, install_args, install_data, install_settings}) {
     if (wcsnlen_s(str, kMaxStringLen) >= kMaxStringLen) {
@@ -579,8 +600,8 @@ HRESULT UpdaterImpl::RunInstaller(const wchar_t* app_id,
                               Microsoft::WRL::Make<CompleteStatusImpl>(
                                   static_cast<int>(result), L"")),
                           base::BindOnce([](HRESULT hr) {
-                            DVLOG(2) << "UpdaterImpl::RunInstaller "
-                                     << "callback returned " << std::hex << hr;
+                            VLOG(2) << "UpdaterImpl::RunInstaller "
+                                    << "callback returned " << std::hex << hr;
                           }));
                     },
                     task_runner, observer));
@@ -590,6 +611,10 @@ HRESULT UpdaterImpl::RunInstaller(const wchar_t* app_id,
           install_settings_str, IUpdaterObserverPtr(observer)));
 
   return S_OK;
+}
+
+HRESULT UpdaterInternalImpl::RuntimeClassInitialize() {
+  return IsCOMCallerAllowed();
 }
 
 // See the comment for the UpdaterImpl::Update.
@@ -615,8 +640,8 @@ HRESULT UpdaterInternalImpl::Run(IUpdaterInternalCallback* callback) {
                       base::BindOnce(&IUpdaterInternalCallback::Run, callback,
                                      0),
                       base::BindOnce([](HRESULT hr) {
-                        DVLOG(2) << "UpdaterInternalImpl::Run "
-                                 << "callback returned " << std::hex << hr;
+                        VLOG(2) << "UpdaterInternalImpl::Run "
+                                << "callback returned " << std::hex << hr;
                       }));
                 },
                 task_runner, callback));
@@ -652,7 +677,7 @@ HRESULT UpdaterInternalImpl::InitializeUpdateService(
                       base::BindOnce(&IUpdaterInternalCallback::Run, callback,
                                      0),
                       base::BindOnce([](HRESULT hr) {
-                        DVLOG(2)
+                        VLOG(2)
                             << "UpdaterInternalImpl::InitializeUpdateService "
                             << "callback returned " << std::hex << hr;
                       }));

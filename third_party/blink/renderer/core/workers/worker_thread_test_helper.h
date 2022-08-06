@@ -83,6 +83,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       const KURL& script_url,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override {
@@ -92,6 +93,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       const KURL& module_url_record,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
@@ -105,7 +107,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   // Returns a token uniquely identifying this fake worker.
   WorkerToken GetWorkerToken() const final { return token_; }
   bool CrossOriginIsolatedCapability() const final { return false; }
-  bool DirectSocketCapability() const final { return false; }
+  bool IsolatedApplicationCapability() const final { return false; }
   ExecutionContextToken GetExecutionContextToken() const final {
     return token_;
   }

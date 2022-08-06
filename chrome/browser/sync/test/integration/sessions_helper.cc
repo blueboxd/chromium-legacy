@@ -24,12 +24,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/sync/test/fake_server/fake_server.h"
-#include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/navigation_entry.h"
@@ -157,7 +156,7 @@ bool OpenTabFromSourceIndex(int browser_index,
 void CloseTab(int browser_index, int tab_index) {
   TabStripModel* tab_strip =
       test()->GetBrowser(browser_index)->tab_strip_model();
-  tab_strip->CloseWebContentsAt(tab_index, TabStripModel::CLOSE_USER_GESTURE);
+  tab_strip->CloseWebContentsAt(tab_index, TabCloseTypes::CLOSE_USER_GESTURE);
 }
 
 void MoveTab(int from_browser_index, int to_browser_index, int tab_index) {

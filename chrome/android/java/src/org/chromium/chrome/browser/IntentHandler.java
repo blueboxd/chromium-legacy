@@ -46,11 +46,14 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.renderer_host.ChromeNavigationUIData;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.translate.TranslateIntentHandler;
 import org.chromium.chrome.browser.webapps.WebappActivity;
+import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -108,6 +111,12 @@ public class IntentHandler {
     public static final String EXTRA_PAGE_TRANSITION_TYPE = "com.google.chrome.transition_type";
 
     /**
+     * Transition bookmark id is only set internally by a first-party app and has to be signed.
+     */
+    public static final String EXTRA_PAGE_TRANSITION_BOOKMARK_ID =
+            "com.google.chrome.transition_bookmark_id";
+
+    /**
      * The original intent of the given intent before it was modified.
      */
     public static final String EXTRA_ORIGINAL_INTENT = "com.android.chrome.original_intent";
@@ -154,6 +163,21 @@ public class IntentHandler {
      */
     public static final String EXTRA_REFERRER_POLICY =
             "android.support.browser.extra.referrer_policy";
+
+    /**
+     * Extra specifying additional urls that should each be opened in a new tab. If
+     * EXTRA_OPEN_ADDITIONAL_URLS_IN_TAB_GROUP is present and true, these will be opened in a tab
+     * group.
+     */
+    public static final String EXTRA_ADDITIONAL_URLS =
+            "org.chromium.chrome.browser.additional_urls";
+
+    /**
+     * Extra specifying that additional urls opened should be part of a tab group parented to the
+     * root url of the intent. Only valid if EXTRA_ADDITIONAL_URLS is present.
+     */
+    public static final String EXTRA_OPEN_ADDITIONAL_URLS_IN_TAB_GROUP =
+            "org.chromium.chrome.browser.open_additional_urls_in_tab_group";
 
     /**
      * Key to associate a timestamp with an intent.
@@ -1530,8 +1554,8 @@ public class IntentHandler {
         String headers = getExtraHeadersFromIntent(intent);
         headers = maybeAddAdditionalContentHeaders(intent, url, headers);
 
-        // Handle post data case.
         if (IntentHandler.wasIntentSenderChrome(intent)) {
+            // Handle post data case.
             String postDataType =
                     IntentUtils.safeGetStringExtra(intent, IntentHandler.EXTRA_POST_DATA_TYPE);
             byte[] postData =
@@ -1547,6 +1571,17 @@ public class IntentHandler {
                 }
 
                 loadUrlParams.setPostData(ResourceRequestBody.createFromBytes(postData));
+            }
+
+            // Attach bookmark id to the params if it's present in the intent.
+            String bookmarkIdString = IntentUtils.safeGetStringExtra(
+                    intent, IntentHandler.EXTRA_PAGE_TRANSITION_BOOKMARK_ID);
+            if (!TextUtils.isEmpty(bookmarkIdString)) {
+                BookmarkId bookmarkId = BookmarkId.getBookmarkIdFromString(bookmarkIdString);
+                ChromeNavigationUIData navData = new ChromeNavigationUIData();
+                navData.setBookmarkId(
+                        bookmarkId.getType() == BookmarkType.NORMAL ? bookmarkId.getId() : -1);
+                loadUrlParams.setNavigationUIDataSupplier(navData::createUnownedNativeCopy);
             }
         }
         loadUrlParams.setVerbatimHeaders(headers);

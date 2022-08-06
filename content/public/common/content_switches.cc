@@ -27,6 +27,10 @@ const char kAllowLoopbackInPeerConnection[] =
 // This is used in blimp to emulate android fonts on linux.
 const char kAndroidFontsPath[]          = "android-fonts-path";
 
+// Causes the Attribution Report API to run without delays or noise.
+const char kAttributionReportingDebugMode[] =
+    "attribution-reporting-debug-mode";
+
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 
@@ -51,9 +55,6 @@ const char kBrowserTest[] = "browser-test";
 const char kChangeStackGuardOnFork[] = "change-stack-guard-on-fork";
 const char kChangeStackGuardOnForkEnabled[] = "enable";
 const char kChangeStackGuardOnForkDisabled[] = "disable";
-
-// Causes the Conversion Measurement API to run without delays or noise.
-const char kConversionsDebugMode[] = "conversions-debug-mode";
 
 // Enables gating of getDisplayMedia by the display-capture permissions-policy.
 // This switch supports the shipping of display-capture, as it allows admins to
@@ -571,9 +572,6 @@ const char kNoUnsandboxedZygote[] = "no-unsandboxed-zygote";
 // zygote to work.
 const char kNoZygote[] = "no-zygote";
 
-// Number of worker threads used to rasterize content.
-const char kNumRasterThreads[]              = "num-raster-threads";
-
 // Overrides the language detection result determined based on the page
 // contents.
 const char kOverrideLanguageDetection[] = "override-language-detection";
@@ -640,10 +638,15 @@ const char kPullToRefresh[] = "pull-to-refresh";
 // the debounce mechanimsm.
 const char kQuotaChangeEventInterval[] = "quota-change-event-interval";
 
-// Reduce the minor version number in the User-Agent string.  This flag
+// Reduce the minor version number in the User-Agent string. This flag
 // implements phase 4 of User-Agent reduction:
 // https://blog.chromium.org/2021/09/user-agent-reduction-origin-trial-and-dates.html.
 const char kReduceUserAgentMinorVersion[] = "reduce-user-agent-minor-version";
+
+// Reduce the platform and oscpu in the desktop User-Agent string. This flag
+// implements phase 5 of User-Agent reduction:
+// https://blog.chromium.org/2021/09/user-agent-reduction-origin-trial-and-dates.html.
+const char kReduceUserAgentPlatformOsCpu[] = "reduce-user-agent-platform-oscpu";
 
 // Register Pepper plugins (see pepper_plugin_list.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
@@ -779,6 +782,11 @@ const char kTouchEventFeatureDetectionDisabled[] = "disabled";
 // Accepts specified file URL of a trustable WebBundle file. This flag
 // should be used only for testing purpose.
 const char kTrustableWebBundleFileUrl[] = "trustable-web-bundles-file-url";
+
+// Accepts a number representing the time-ticks value at the Unix epoch.
+// Since different processes can produce a different value for this due to
+// system clock changes, this allows synchronizing them to a single value.
+const char kTimeTicksAtUnixEpoch[] = "time-ticks-at-unix-epoch";
 
 // Replaces the existing codecs supported in peer connection with a single fake
 // codec entry that create a fake video encoder and decoder.

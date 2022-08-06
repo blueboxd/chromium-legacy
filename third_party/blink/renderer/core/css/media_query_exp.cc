@@ -54,8 +54,11 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
                                          CSSValueID ident) {
   if (media_feature == media_feature_names::kDisplayModeMediaFeature) {
     return ident == CSSValueID::kFullscreen ||
+           ident == CSSValueID::kBorderless ||
            ident == CSSValueID::kStandalone ||
-           ident == CSSValueID::kMinimalUi || ident == CSSValueID::kBrowser;
+           ident == CSSValueID::kMinimalUi ||
+           ident == CSSValueID::kWindowControlsOverlay ||
+           ident == CSSValueID::kBrowser;
   }
 
   if (media_feature == media_feature_names::kOrientationMediaFeature)
@@ -535,7 +538,9 @@ unsigned MediaQueryExpValue::GetUnitFlags() const {
 
   if (length_type_flags.test(CSSPrimitiveValue::kUnitTypeFontSize) ||
       length_type_flags.test(CSSPrimitiveValue::kUnitTypeFontXSize) ||
-      length_type_flags.test(CSSPrimitiveValue::kUnitTypeZeroCharacterWidth)) {
+      length_type_flags.test(CSSPrimitiveValue::kUnitTypeZeroCharacterWidth) ||
+      length_type_flags.test(
+          CSSPrimitiveValue::kUnitTypeIdeographicFullWidth)) {
     unit_flags |= UnitFlags::kFontRelative;
   }
 

@@ -1919,13 +1919,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool CanRenderBorderImage() const;
 
-  void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
-                          TransformState&,
-                          MapCoordinatesFlags) const override;
-  void MapAncestorToLocal(const LayoutBoxModelObject*,
-                          TransformState&,
-                          MapCoordinatesFlags) const override;
-
   LayoutBlock* PercentHeightContainer() const {
     NOT_DESTROYED();
     return rare_data_ ? rare_data_->percent_height_container_ : nullptr;
@@ -2130,6 +2123,29 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return false;
   }
+
+  // See StickyPositionScrollingConstraints::constraining_rect.
+  PhysicalRect ComputeStickyConstrainingRect() const;
+
+  // Returns the LayoutObject of the anchor element specified by the CSS
+  // 'anchor-scroll' property. Returns nullptr if the anchor query is invalid.
+  const LayoutObject* AnchorScrollObject() const;
+
+  // If the AnchorScrollObject() is non-null and in a different scroll
+  // container, returns that container, so that at paint time, we can apply an
+  // offset to this element when the returned scroll container is scrolled.
+  // Returns nullptr otherwise.
+  const LayoutBox* AnchorScrollContainer() const;
+
+  struct AnchorScrollData {
+    const PaintLayer* inner_most_scroll_container_layer = nullptr;
+    const PaintLayer* outer_most_scroll_container_layer = nullptr;
+    gfx::Vector2dF accumulated_scroll_offset;
+    gfx::Vector2d accumulated_scroll_origin;
+
+    STACK_ALLOCATED();
+  };
+  AnchorScrollData ComputeAnchorScrollData() const;
 
  protected:
   ~LayoutBox() override;

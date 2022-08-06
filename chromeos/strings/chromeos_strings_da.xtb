@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Kør opladningstest</translation>
 <translation id="1631385268983122904">Du skal ikke samle enheden endnu.</translation>
-<translation id="1639239467298939599">Indlæser...</translation>
+<translation id="1639239467298939599">Indlæser</translation>
 <translation id="1641857168437328880">Dokumentindføring (én side)</translation>
 <translation id="1643449475550628585">Skift baggrundsbillede dagligt</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1645954272419197032">Bekræft enhedsoplysninger</translation>
 <translation id="1662989795263954667">Stoppet – Mangler blæk</translation>
+<translation id="1664796644829245314">Se forhåndsvisning af <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Indbygget VPN</translation>
 <translation id="1672499492233627739">Videofeed fra webcam</translation>
 <translation id="1676557873873341166">Optager video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videomøder</translation>
 <translation id="1852934301711881861">Installer ChromeOS Flex</translation>
 <translation id="1856388568474281774">Pil ned</translation>
+<translation id="1858620243986915808">Vedhæft screenshot</translation>
 <translation id="1871569928317311284">Deaktiver Mørkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Deaktiver mørk tilstand</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google-profilbillede</translation>
 <translation id="1979103255016296513">Adgangskoden mangler at blive ændret</translation>
 <translation id="1999615961760456652">Loginportal</translation>
+<translation id="200669432486043882">Erstat fil</translation>
 <translation id="2006864819935886708">Forbindelse</translation>
 <translation id="2008685064673031089">Prime-søgning</translation>
 <translation id="2011174342667534258">SDK-version:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Aktuel</translation>
 <translation id="2480034874476596812">Deaktiver manuelt</translation>
+<translation id="248546197012830854">Enheden er offline. Opret forbindelse til et Wi-Fi-netværk for at se hjælpeindhold.</translation>
 <translation id="2491955442992294626">Taster testes ikke, når du bruger et andet vindue</translation>
 <translation id="2493126929778606526">Dine bedste billeder udvælges automatisk</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">OPDATER</translation>
 <translation id="3009958530611748826">Vælg en mappe, du vil gemme i</translation>
 <translation id="3017079585324758401">Baggrund</translation>
+<translation id="302435934487327038">Installationen er gennemført</translation>
 <translation id="3027578600144895987">Luk kamera</translation>
 <translation id="3031560714565892478">Enheden er et videokamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Slutpunkt</translation>
 <translation id="3069085583900247081">Testen mislykkedes</translation>
-<translation id="3076243757415932261">Validerer komponenter...</translation>
 <translation id="3083667275341675831">Diagnosticering af forbindelse</translation>
 <translation id="3084958266922136097">Deaktiver Pauseskærm</translation>
 <translation id="3091839911843451378">Handlingen mislykkedes – Stoppede</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Er du sikker på, at du vil rydde hele udskriftshistorikken? Dine igangværende udskriftsjobs ryddes ikke.</translation>
 <translation id="3383751554789092165">Skift enhedsoplysninger efter behov.</translation>
 <translation id="3404249063913988450">Aktivér Pauseskærm</translation>
-<translation id="3404770484521709967">Komponenterne er installeret korrekt.</translation>
 <translation id="3413935475507503304">Klik på Næste for at fortsætte med opdateringen.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Sikkerhed</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Gammel adgangskode</translation>
 <translation id="4453205916657964690">Undernetmaske</translation>
 <translation id="4454245904991689773">Scan til</translation>
-<translation id="4472575034687746823">Kom godt i gang</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kunne ikke pinge gatewayen for det netværk, der ikke er angivet som standardnetværk</translation>
 <translation id="4500213108254186382">Lågaccelerometer</translation>
@@ -659,14 +661,15 @@
 <translation id="6611280807952151149">Afslut reparation af <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Kører</translation>
 <translation id="6620487321149975369">Udskriftsjobs vises i historikken, medmindre de fjernes manuelt</translation>
+<translation id="6624819909909965616">Det er ikke muligt at uploade filer, der er større end 10 MB</translation>
 <translation id="6643016212128521049">Ryd</translation>
+<translation id="6644568396961840069">Filen kunne ikke gemmes. Prøv at tilslutte en anden ekstern lagerenhed, eller prøv igen senere.</translation>
 <translation id="6647510110698214773">Algoritme til kryptering</translation>
 <translation id="6650062777702288430">Skift mellem kana og alfanumerisk</translation>
 <translation id="6657585470893396449">Adgangskode</translation>
 <translation id="6659594942844771486">Fane</translation>
 <translation id="6692996468359469499">Få oplysninger om det, du har markeret</translation>
 <translation id="6704062477274546131">DNS-udførelse</translation>
-<translation id="6721744718589119342">Vi sender dig muligvis en mail med en opdatering eller anmodning om flere oplysninger</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6723847290197874913">Tastaturlys</translation>
 <translation id="672609503628871915">Se de nye funktioner</translation>
@@ -694,6 +697,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Firmwarerevision</translation>
 <translation id="6995564396478647735">Sørg for, at Skrivebeskyttet er slået til</translation>
+<translation id="7005833343836210400">Enheden er offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> administrerer denne enhed og har adgang til al brugeraktivitet, bl.a. besøgte websider, adgangskoder og mails.</translation>
 <translation id="7040230719604914234">Udbyder</translation>
 <translation id="7041549558901442110">Enheden er ikke tilsluttet.</translation>
@@ -719,6 +723,7 @@
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7212734716605298123">Opdateringer af firmware på eksterne enheder</translation>
 <translation id="7216409898977639127">Mobilselskab</translation>
+<translation id="725133483556299729">Vælg mailadresse</translation>
 <translation id="7271040990581020067">Scanneren bruges i øjeblikket. Prøv igen senere.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Vælg 1 eller flere komponenter, og prøv igen, eller spring kalibreringen over</translation>
@@ -796,6 +801,7 @@
 <translation id="7978412674231730200">Privat nøgle</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
+<translation id="8018928621986160031">Gemt i "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Download mislykkedes</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktivér tilstanden med automatisk farve</translation>
@@ -804,8 +810,8 @@
 <translation id="8063022551652308521">Skrivebeskyttet er stadig slået fra. Du skal slå Skrivebeskyttet til for at fortsætte.</translation>
 <translation id="8075838845814659848">Resterende batteriniveau</translation>
 <translation id="8082366717211101304">Der kan ikke udføres DNS-oversættelse fra Android-apps</translation>
-<translation id="8083281199617904460">Denne reparationsproces er beregnet til en tekniker med speciale i reparation. Start først processen, når de komponenter, der ikke fungerer, er blevet udskiftet.</translation>
 <translation id="808894953321890993">Skift adgangskode</translation>
+<translation id="8094062939584182041">Giv Google tilladelse til at kontakte dig via mail vedrørende dette problem</translation>
 <translation id="8104083085214006426">Du bruger et åbent og usikkert netværk</translation>
 <translation id="8109786307828817014">Vil du fortsætte på trods af mislykkede kalibreringer?</translation>
 <translation id="811820734797650957">(Android) Gatewayen kan pinges</translation>
@@ -820,6 +826,7 @@
 <translation id="8217675307824400706">Få forbindelse</translation>
 <translation id="8221728673725659466">Kalibreringen er gennemført</translation>
 <translation id="8226628635270268143">Vælg dine foretrukne billeder og album</translation>
+<translation id="8227119283605456246">Vedhæft fil</translation>
 <translation id="8230672074305416752">Kunne ikke pinge standardnetværkets gateway</translation>
 <translation id="8246209727385807362">Ukendt mobilselskab</translation>
 <translation id="827422111966801947">Indigoblå</translation>
@@ -864,6 +871,7 @@
 <translation id="8576249514688522074">Ikke startet</translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Del webadresse:</translation>
 <translation id="8660881923941176839">pund</translation>
 <translation id="8662671328352114214">Opret forbindelse til <ph name="TYPE" />-netværk</translation>
 <translation id="8671972493856476349">Opdater til <ph name="VERSION_NUMBER" />, og genstart</translation>

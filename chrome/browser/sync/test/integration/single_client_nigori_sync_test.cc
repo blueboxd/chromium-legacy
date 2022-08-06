@@ -53,6 +53,7 @@
 #include "crypto/ec_private_key.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
@@ -542,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(
   passwords_helper::InjectEncryptedServerPassword(
       password_form, kDefaultKeyParams.password,
       kDefaultKeyParams.derivation_params, GetFakeServer());
-  SetupSyncNoWaitingForCompletion();
+  ASSERT_TRUE(SetupSync(NO_WAITING));
 
   EXPECT_TRUE(PassphraseRequiredChecker(GetSyncService(0)).Wait());
   EXPECT_TRUE(GetSyncService(0)->GetUserSettings()->SetDecryptionPassphrase(
@@ -693,7 +694,9 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        PRE_ShouldCompleteKeystoreInitializationAfterRestart) {
   GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::THROTTLED);
-  ASSERT_TRUE(SetupSync());
+
+  // Do not wait for commits due to commit error.
+  ASSERT_TRUE(SetupSync(WAIT_FOR_SYNC_SETUP_TO_COMPLETE));
 
   sync_pb::NigoriSpecifics specifics;
   ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
@@ -742,6 +745,8 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
 
   void SetUpOnMainThread() override {
     SyncTest::SetUpOnMainThread();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
 
     security_domains_server_ =
         std::make_unique<syncer::FakeSecurityDomainsServer>(
@@ -979,6 +984,39 @@ IN_PROC_BROWSER_TEST_F(
                   .Wait());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
+                       ShouldAcceptEncryptionKeysFromSubFrameIfSyncEnabled) {
+  // Mimic the account being already using a trusted vault passphrase.
+  SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
+                        GetFakeServer());
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Mimic opening a page that embeds the retrieval page as a cross-origin
+  // iframe.
+  chrome::AddTabAt(
+      GetBrowser(0),
+      embedded_test_server()->GetURL(
+          "foo.com", base::StringPrintf(
+                         "/sync/encryption_keys_retrieval_with_iframe.html?%s",
+                         GaiaUrls::GetInstance()
+                             ->signin_chrome_sync_keys_retrieval_url()
+                             .spec()
+                             .c_str())),
+      /*index=*/0,
+      /*foreground=*/true);
+
+  // Wait until the keys-missing error gets resolved.
+  EXPECT_TRUE(PasswordSyncActiveChecker(GetSyncService(0)).Wait());
+  EXPECT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+}
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                        PRE_ShouldAcceptEncryptionKeysFromTheWebBeforeSignIn) {

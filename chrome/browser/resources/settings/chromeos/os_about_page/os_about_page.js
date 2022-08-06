@@ -13,7 +13,7 @@ import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_section.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_page_styles.css.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../os_icons.js';
 import '../os_reset_page/os_powerwash_dialog.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
@@ -25,13 +25,12 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
-import '../../constants/setting.mojom-lite.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {parseHtmlSubset} from 'chrome://resources/js/parse_html_subset.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement, TemplateInstanceBase, Templatizer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {LifetimeBrowserProxyImpl} from '../../lifetime_browser_proxy.js';
@@ -44,6 +43,7 @@ import {MainPageBehavior, MainPageBehaviorInterface} from '../os_settings_page/m
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, RegulatoryInfo, TPMFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent} from './about_page_browser_proxy.js';
+import {getTemplate} from './os_about_page.html.js';
 
 /**
  * @constructor
@@ -71,7 +71,7 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -93,7 +93,7 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
           progress: 0,
           rollback: false,
           powerwash: false,
-          status: UpdateStatus.UPDATED
+          status: UpdateStatus.UPDATED,
         },
       },
 
@@ -143,6 +143,12 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
 
       /** @private */
       hasEndOfLife_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @private */
+      hasDeferredUpdate_: {
         type: Boolean,
         value: false,
       },
@@ -377,6 +383,7 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
       this.showUpdateWarningDialog_ = true;
       this.updateInfo_ = {version: event.version, size: event.size};
     }
+    this.hasDeferredUpdate_ = (event.status === UpdateStatus.DEFERRED);
     this.currentUpdateStatusEvent_ = event;
   }
 
@@ -403,14 +410,14 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
   /** @private */
   onDiagnosticsClick_() {
     this.aboutBrowserProxy_.openDiagnostics();
-    recordSettingChange(chromeos.settings.mojom.Setting.kDiagnostics);
+    recordSettingChange(Setting.kDiagnostics);
   }
 
   /** @private */
   onFirmwareUpdatesClick_() {
     assert(this.showFirmwareUpdatesApp_);
     this.aboutBrowserProxy_.openFirmwareUpdatesPage();
-    recordSettingChange(chromeos.settings.mojom.Setting.kFirmwareUpdates);
+    recordSettingChange(Setting.kFirmwareUpdates);
   }
 
   /** @private */
@@ -516,8 +523,8 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
             substitutions: [
               this.i18nAdvanced(
                   browserChannelToI18nId(this.targetChannel_, this.isLts_)),
-              progressPercent
-            ]
+              progressPercent,
+            ],
           });
         }
         if (this.currentUpdateStatusEvent_.rollback) {
@@ -542,6 +549,8 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
         return this.i18nAdvanced('aboutUpgradeDownloadError');
       case UpdateStatus.DISABLED_BY_ADMIN:
         return this.i18nAdvanced('aboutUpgradeAdministrator');
+      case UpdateStatus.DEFERRED:
+        return this.i18nAdvanced('aboutUpgradeNotUpToDate');
       default:
         function formatMessage(msg) {
           return parseHtmlSubset('<b>' + msg + '</b>', ['br', 'pre'])
@@ -582,6 +591,8 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
       case UpdateStatus.NEARLY_UPDATED:
         // TODO(crbug.com/986596): Don't use browser icons here. Fork them.
         return 'settings:check-circle';
+      case UpdateStatus.DEFERRED:
+        return 'cr:warning';
       default:
         return null;
     }
@@ -670,6 +681,18 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
     this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
     this.aboutBrowserProxy_.requestUpdate();
     this.$.updateStatusMessageInner.focus();
+  }
+
+  /** @private */
+  onApplyDeferredUpdateClick_() {
+    this.aboutBrowserProxy_.applyDeferredUpdate();
+    this.$.updateStatusMessageInner.focus();
+  }
+
+  /** @private */
+  onApplyAndSetAutoUpdateClick_() {
+    this.aboutBrowserProxy_.setConsumerAutoUpdate(true);
+    this.onApplyDeferredUpdateClick_();
   }
 
   /**
@@ -778,6 +801,16 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
   /** @private */
   onReportIssueClick_() {
     this.aboutBrowserProxy_.openFeedbackDialog();
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getReportIssueLabel_() {
+    return loadTimeData.getBoolean('isOsFeedbackEnabled') ?
+        this.i18nAdvanced('aboutSendFeedback') :
+        this.i18nAdvanced('aboutReportAnIssue');
   }
   // </if>
 

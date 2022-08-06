@@ -181,8 +181,6 @@ void DialMediaRouteProvider::TerminateRoute(const std::string& route_id,
         MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
     std::move(callback).Run("Activity not found",
                             mojom::RouteRequestResultCode::ROUTE_NOT_FOUND);
-    DialMediaRouteProviderMetrics::RecordTerminateRouteResult(
-        DialTerminateRouteResult::kRouteNotFound);
     return;
   }
 
@@ -197,8 +195,6 @@ void DialMediaRouteProvider::TerminateRoute(const std::string& route_id,
                       MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
     std::move(callback).Run("Sink not found",
                             mojom::RouteRequestResultCode::SINK_NOT_FOUND);
-    DialMediaRouteProviderMetrics::RecordTerminateRouteResult(
-        DialTerminateRouteResult::kSinkNotFound);
     return;
   }
 
@@ -216,19 +212,19 @@ void DialMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
 void DialMediaRouteProvider::HandleParsedRouteMessage(
     const MediaRoute::Id& route_id,
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.value) {
+  if (!result.has_value()) {
     logger_->LogError(
         mojom::LogCategory::kRoute, kLoggerComponent,
-        base::StrCat({"Failed to parse the route message. ", *result.error}),
+        base::StrCat({"Failed to parse the route message. ", result.error()}),
         "", MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
         MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
-    ReportParseError(DialParseMessageResult::kParseError, *result.error);
+    ReportParseError(DialParseMessageResult::kParseError, result.error());
     return;
   }
 
   std::string error;
   std::unique_ptr<DialInternalMessage> internal_message =
-      DialInternalMessage::From(std::move(*result.value), &error);
+      DialInternalMessage::From(std::move(*result), &error);
   if (!internal_message) {
     logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
                       base::StrCat({"Invalid route message. ", error}), "",
@@ -469,16 +465,12 @@ void DialMediaRouteProvider::HandleStopAppResult(
     mojom::RouteRequestResultCode result_code) {
   switch (result_code) {
     case mojom::RouteRequestResultCode::OK:
-      DialMediaRouteProviderMetrics::RecordTerminateRouteResult(
-          DialTerminateRouteResult::kSuccess);
       logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
                        "Successfully terminated route.", "",
                        MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
                        MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
       break;
     case mojom::RouteRequestResultCode::ROUTE_ALREADY_TERMINATED:
-      DialMediaRouteProviderMetrics::RecordTerminateRouteResult(
-          DialTerminateRouteResult::kRouteAlreadyTerminated);
       logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
                        "Tried to stop a session that no longer exists.", "",
                        MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
@@ -489,8 +481,6 @@ void DialMediaRouteProvider::HandleStopAppResult(
       // controller with the OnPresentationConnectionStateChanged() call
       // below. This results in a local MediaRoute that is not associated with a
       // PresentationConnection.
-      DialMediaRouteProviderMetrics::RecordTerminateRouteResult(
-          DialTerminateRouteResult::kStopAppFailed);
       logger_->LogError(
           mojom::LogCategory::kRoute, kLoggerComponent,
           base::StringPrintf(

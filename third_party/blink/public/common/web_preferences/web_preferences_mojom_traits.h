@@ -428,6 +428,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.record_whole_document;
   }
 
+  static bool stylus_handwriting_enabled(
+      const blink::web_pref::WebPreferences& r) {
+    return r.stylus_handwriting_enabled;
+  }
+
   static bool cookie_enabled(const blink::web_pref::WebPreferences& r) {
     return r.cookie_enabled;
   }
@@ -489,11 +494,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static const std::string& text_track_window_color(
       const blink::web_pref::WebPreferences& r) {
     return r.text_track_window_color;
-  }
-
-  static const std::string& text_track_window_padding(
-      const blink::web_pref::WebPreferences& r) {
-    return r.text_track_window_padding;
   }
 
   static const std::string& text_track_window_radius(
@@ -751,6 +751,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static bool webxr_immersive_ar_allowed(
       const blink::web_pref::WebPreferences& r) {
     return r.webxr_immersive_ar_allowed;
+  }
+
+  static bool renderer_wide_named_frame_lookup(
+      const blink::web_pref::WebPreferences& r) {
+    return r.renderer_wide_named_frame_lookup;
   }
 
   static bool Read(blink::mojom::WebPreferencesDataView r,

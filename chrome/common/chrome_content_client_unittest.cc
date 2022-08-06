@@ -30,7 +30,7 @@
 
 namespace chrome_common {
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 TEST(ChromeContentClientTest, FindMostRecent) {
   std::vector<std::unique_ptr<content::PepperPluginInfo>> version_vector;
   // Test an empty vector.
@@ -96,7 +96,7 @@ TEST(ChromeContentClientTest, FindMostRecent) {
   most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
   EXPECT_STREQ("system_flash", most_recent->name.c_str());
 }
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 TEST(ChromeContentClientTest, AdditionalSchemes) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -122,6 +122,7 @@ TEST(ChromeContentClientTest, AdditionalSchemes) {
     "chrome://foo/",
     "chrome-untrusted://foo/",
     "chrome-search://foo/",
+    "isolated-app://foo/",
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     "chrome-extension://foo/",
 #endif

@@ -4904,8 +4904,10 @@ class DeclarativeNetRequestAllowAllRequestsBrowserTest
   };
 };
 
+// TODO(crbug.com/1345215): Re-enable this test. It was disabled because of
+// flakiness.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
-                       Test1) {
+                       DISABLED_Test1) {
   std::vector<RuleData> rule_data = {
       {1, 4, "allowAllRequests", "page_with_two_frames\\.html", true,
        std::vector<std::string>({"main_frame"})},
@@ -4967,8 +4969,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
           {requests[1], requests[2], requests[3], requests[4], requests[5]});
 }
 
+// TODO(crbug.com/1345215): Re-enable this test. It was disabled because of
+// flakiness.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
-                       Test4) {
+                       DISABLED_Test4) {
   std::vector<RuleData> rule_data = {
       {1, 6, "allowAllRequests", "page_with_two_frames\\.html", true,
        std::vector<std::string>({"main_frame"})},
@@ -5018,8 +5022,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
           {}, true);
 }
 
+// TODO(crbug.com/1344372): Re-enable this test on MAC
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_TestPostNavigationNotMatched DISABLED_TestPostNavigationNotMatched
+#else
+#define MAYBE_TestPostNavigationNotMatched TestPostNavigationNotMatched
+#endif
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
-                       TestPostNavigationNotMatched) {
+                       MAYBE_TestPostNavigationNotMatched) {
   std::vector<RuleData> rule_data = {
       {1, 6, "allowAllRequests", "page_with_two_frames\\.html", true,
        std::vector<std::string>({"main_frame"}),

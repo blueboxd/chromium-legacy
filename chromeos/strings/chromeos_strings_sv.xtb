@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1621067168122174824">Kör laddningstest</translation>
 <translation id="1631385268983122904">Sätt inte tillbaka batteriet i enheten än</translation>
-<translation id="1639239467298939599">Läser in</translation>
+<translation id="1639239467298939599">Profilen läses in</translation>
 <translation id="1641857168437328880">Dokumentmatare (ensidig)</translation>
 <translation id="1643449475550628585">Byt bakgrundsbild varje dag</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1645954272419197032">Bekräfta enhetsinformation</translation>
 <translation id="1662989795263954667">Har stoppats – slut på bläck</translation>
+<translation id="1664796644829245314">Förhandsgranska <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Inbyggt VPN</translation>
 <translation id="1672499492233627739">Videoflöde från webbkameran</translation>
 <translation id="1676557873873341166">Spelar in video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferenser</translation>
 <translation id="1852934301711881861">Installera ChromeOS Flex</translation>
 <translation id="1856388568474281774">Nedåtpiltangenten</translation>
+<translation id="1858620243986915808">Bifoga skärmbild</translation>
 <translation id="1871569928317311284">Inaktivera mörkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Inaktivera mörkt läge</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Profilbild på Google</translation>
 <translation id="1979103255016296513">Tiden för att ändra lösenordet har gått ut</translation>
 <translation id="1999615961760456652">Infångstportal</translation>
+<translation id="200669432486043882">Ersätt fil</translation>
 <translation id="2006864819935886708">Anslutning</translation>
 <translation id="2008685064673031089">Primtalssökning</translation>
 <translation id="2011174342667534258">SDK-version:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2461822463642141190">Nuvarande</translation>
 <translation id="2480034874476596812">Stäng av manuellt</translation>
+<translation id="248546197012830854">Enheten är offline. Anslut till ett wifi-nätverk för att se hjälpinnehåll.</translation>
 <translation id="2491955442992294626">Inga tangenter testas när du använder ett annat fönster</translation>
 <translation id="2493126929778606526">Dina bästa bilder, utvalda automatiskt</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">UPPDATERA</translation>
 <translation id="3009958530611748826">Välj vilken mapp du vill spara i</translation>
 <translation id="3017079585324758401">Bakgrund</translation>
+<translation id="302435934487327038">Installationen är slutförd</translation>
 <translation id="3027578600144895987">Stäng kameran</translation>
 <translation id="3031560714565892478">Enheten är en videokamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Slutpunkt</translation>
 <translation id="3069085583900247081">Testet misslyckades</translation>
-<translation id="3076243757415932261">Validerar komponenter …</translation>
 <translation id="3083667275341675831">Anslutningsdiagnostik</translation>
 <translation id="3084958266922136097">Inaktivera skärmsläckare</translation>
 <translation id="3091839911843451378">Misslyckades – skrivaren har stannat</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Vill du rensa all utskriftshistorik? De pågående utskriftsjobben rensas inte.</translation>
 <translation id="3383751554789092165">Ändra enhetsinformation efter behov.</translation>
 <translation id="3404249063913988450">Aktivera skärmsläckare</translation>
-<translation id="3404770484521709967">Komponenterna har installerats korrekt.</translation>
 <translation id="3413935475507503304">Klicka på Nästa om du vill fortsätta med uppdateringen.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Säkerhet</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Gammalt lösenord</translation>
 <translation id="4453205916657964690">Delnätsmask</translation>
 <translation id="4454245904991689773">Skanningar sparas i</translation>
-<translation id="4472575034687746823">Kom igång</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Det gick inte att pinga gateway för nätverket som inte är standard</translation>
 <translation id="4500213108254186382">Accelerometer i lock</translation>
@@ -660,14 +662,15 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6611280807952151149">Avsluta reparationen av <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Körs</translation>
 <translation id="6620487321149975369">Utskriftsjobb visas i historiken såvida de inte tas bort manuellt</translation>
+<translation id="6624819909909965616">Det går inte att ladda upp en fil som är större än 10 MB</translation>
 <translation id="6643016212128521049">Rensa</translation>
+<translation id="6644568396961840069">Det gick inte att spara filen. Testa att ansluta ett annat externt lagringsutrymme eller försök igen senare.</translation>
 <translation id="6647510110698214773">Krypteringsalgoritm</translation>
 <translation id="6650062777702288430">Tangenten som byter mellan kana/alfanumeriska tecken</translation>
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="6692996468359469499">Få information utifrån det du markerar</translation>
 <translation id="6704062477274546131">DNS-matchning</translation>
-<translation id="6721744718589119342">Det kan hända att vi kontaktar dig via e-post för mer information eller uppdateringar</translation>
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6723847290197874913">Tangentbordets bakgrundsbelysning</translation>
 <translation id="672609503628871915">Kolla nyheterna</translation>
@@ -695,6 +698,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Revision av firmware</translation>
 <translation id="6995564396478647735">Kontrollera att skrivskyddet är aktiverat</translation>
+<translation id="7005833343836210400">Enheten är offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> hanterar den här enheten och har tillgång till all användaraktivitet, inklusive besökta webbsidor, lösenord och e-post.</translation>
 <translation id="7040230719604914234">Operatör</translation>
 <translation id="7041549558901442110">Enheten är inte ansluten.</translation>
@@ -720,6 +724,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7212734716605298123">Firmware-uppdateringar för externa enheter</translation>
 <translation id="7216409898977639127">Mobiloperatör</translation>
+<translation id="725133483556299729">Välj e-postadress</translation>
 <translation id="7271040990581020067">Skannern används för närvarande. Försök igen senare.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Välj minst en komponent och försök igen, eller hoppa över kalibrering</translation>
@@ -797,6 +802,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7978412674231730200">Privat nyckel</translation>
 <translation id="7982789257301363584">Nätverk</translation>
 <translation id="7994702968232966508">EAP-metod</translation>
+<translation id="8018928621986160031">Sparades i <ph name="FILE_LOCATION" /></translation>
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktivera automatiskt färgläge</translation>
@@ -805,8 +811,8 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="8063022551652308521">Skrivskyddet är fortfarande inaktiverat. Aktivera skrivskyddet för att fortsätta.</translation>
 <translation id="8075838845814659848">Batteritid som återstår</translation>
 <translation id="8082366717211101304">Det gick inte att matcha DNS från Android-appar</translation>
-<translation id="8083281199617904460">Den här reparationsprocessen är avsedd för utbildade reparationstekniker. Starta den endast när komponenterna som inte fungerar har bytts ut.</translation>
 <translation id="808894953321890993">Ändra lösenord</translation>
+<translation id="8094062939584182041">Tillåt att Google skickar e-post till dig om det här problemet</translation>
 <translation id="8104083085214006426">Du använder ett öppet och osäkert nätverk</translation>
 <translation id="8109786307828817014">Vill du fortsätta med misslyckade kalibreringar?</translation>
 <translation id="811820734797650957">(Android) Gateway går att pinga</translation>
@@ -821,6 +827,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="8217675307824400706">Anslutning</translation>
 <translation id="8221728673725659466">Kalibrering slutförd</translation>
 <translation id="8226628635270268143">Välj favoritfoton och favoritalbum</translation>
+<translation id="8227119283605456246">Bifoga fil</translation>
 <translation id="8230672074305416752">Det gick inte att pinga standardnätverkets gateway</translation>
 <translation id="8246209727385807362">Okänd operatör</translation>
 <translation id="827422111966801947">Indigoblå</translation>
@@ -865,6 +872,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="8576249514688522074">Inte initierat</translation>
 <translation id="8620617069779373398">Dirigeringsstatus</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Dela webbadress:</translation>
 <translation id="8660881923941176839">pund</translation>
 <translation id="8662671328352114214">Anslut till <ph name="TYPE" />-nätverket</translation>
 <translation id="8671972493856476349">Uppdatera till version <ph name="VERSION_NUMBER" /> och starta om enheten</translation>

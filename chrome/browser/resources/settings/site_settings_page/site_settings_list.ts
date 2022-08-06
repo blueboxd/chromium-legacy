@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import '../icons.html.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../i18n_setup.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -15,6 +15,7 @@ import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js
 import {DomRepeatEvent, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
+import {FocusConfig} from '../focus_config.js';
 import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {Route, Router} from '../router.js';
 import {ContentSetting, ContentSettingsTypes, NotificationSetting} from '../site_settings/constants.js';
@@ -22,18 +23,16 @@ import {SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '
 
 import {getTemplate} from './site_settings_list.html.js';
 
-export type CategoryListItem = {
-  route: Route,
-  id: ContentSettingsTypes,
-  label: string,
-  icon?: string,
-  enabledLabel?: string,
-  disabledLabel?: string,
-  otherLabel?: string,
-  shouldShow?: () => boolean,
-};
-
-type FocusConfig = Map<string, (string|(() => void))>;
+export interface CategoryListItem {
+  route: Route;
+  id: ContentSettingsTypes;
+  label: string;
+  icon?: string;
+  enabledLabel?: string;
+  disabledLabel?: string;
+  otherLabel?: string;
+  shouldShow?: () => boolean;
+}
 
 export function defaultSettingLabel(
     setting: string, enabled: string, disabled: string,
@@ -78,7 +77,7 @@ class SettingsSiteSettingsListElement extends
       // The prefs object is only populated for the instance of this element
       // which contains the notifications link row, avoiding non-actionable
       // firing of the observer.
-      'updateNotificationsLabel_(prefs.generated.notification.*)'
+      'updateNotificationsLabel_(prefs.generated.notification.*)',
     ];
   }
 

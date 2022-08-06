@@ -94,6 +94,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".ChromeSurvey"/>
   <variant name=".DownloadProgress"/>
   <variant name=".ExternalNavigation"/>
+  <variant name=".FramebustBlocked"/>
   <variant name=".GeneratedPasswordSaved"/>
   <variant name=".InstallableAmbientBadge"/>
   <variant name=".InstantApps"/>
@@ -111,6 +112,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".SendTabToSelf"/>
   <variant name=".SharedHighlighting"/>
   <variant name=".SyncError"/>
+  <variant name=".TailoredSecurityDisabled"/>
   <variant name=".TailoredSecurityEnabled"/>
   <variant name=".Translate"/>
   <variant name=".UpdatePassword"/>
@@ -158,7 +160,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Android.ActivityStop.NumberOfTabsUsed" units="count"
-    expires_after="2022-11-06">
+    expires_after="2023-01-15">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -587,7 +589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskCanceled"
-    enum="BackgroundTaskId" expires_after="2022-11-13">
+    enum="BackgroundTaskId" expires_after="2023-01-15">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>Records that a specific background task has been canceled.</summary>
@@ -616,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskExpired"
-    enum="BackgroundTaskId" expires_after="2022-11-13">
+    enum="BackgroundTaskId" expires_after="2023-01-15">
   <owner>fgorski@chromium.org</owner>
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -638,7 +640,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative"
-    enum="BackgroundTaskId" expires_after="2022-11-13">
+    enum="BackgroundTaskId" expires_after="2023-01-15">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -687,14 +689,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStarted"
-    enum="BackgroundTaskId" expires_after="2022-11-13">
+    enum="BackgroundTaskId" expires_after="2023-01-15">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>Records that a specific background task has been started.</summary>
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStopped"
-    enum="BackgroundTaskId" expires_after="2022-11-13">
+    enum="BackgroundTaskId" expires_after="2023-01-15">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -1357,7 +1359,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.DistanceDip"
-    units="dp" expires_after="2022-11-13">
+    units="dp" expires_after="2023-01-15">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1371,7 +1373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.Duration"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1403,7 +1405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.TargetType"
-    enum="AndroidDragTargetType" expires_after="2022-11-13">
+    enum="AndroidDragTargetType" expires_after="2023-01-15">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1484,7 +1486,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.Size" units="KB"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1495,7 +1497,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.UriCreatedInterval" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1610,7 +1612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencyFailure2"
-    units="microseconds" expires_after="2022-11-13">
+    units="microseconds" expires_after="2023-01-15">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1624,7 +1626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencySuccess2"
-    units="microseconds" expires_after="2022-11-13">
+    units="microseconds" expires_after="2023-01-15">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1653,7 +1655,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.FetchAllFontFiles.Time" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1698,7 +1700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.MatchLocalFontByUniqueName.Time" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1752,7 +1754,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.HistoryPage.ClearBrowsingData.PerProfileType"
-    enum="BrowserProfileType" expires_after="2022-11-06">
+    enum="BrowserProfileType" expires_after="2023-01-15">
   <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1962,7 +1964,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Jank.AsyncTaskGetOnUiThreadStatus"
-    enum="AsyncTaskStatus" expires_after="2022-11-13">
+    enum="AsyncTaskStatus" expires_after="2023-01-15">
   <owner>smaier@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
@@ -2667,6 +2669,29 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Android.Omnibox.SuggestionView.CreatedType"
+    enum="OmniboxSuggestionUiType" expires_after="2023-07-01">
+  <owner>ender@google.com</owner>
+  <owner>gangwu@chromium.org</owner>
+  <owner>rongtan@chromium.org</owner>
+  <summary>
+    Records the type of suggestion that was reused with the help of
+    RecyclerView.
+
+    This histogram drives OmniboxSuggestionsDropdown optimization, helping us
+    find the balance between the volume of suggestions and amount of memory we
+    delegate to re-use the pre-constructed suggestion views.
+
+    Along with the Android.Omnibox.SuggestionView.ReusedType, the two histograms
+    paint the picture of which suggestions need to be created more often than
+    others vs which suggestions have more capacity than is actually needed.
+    Higher reuse means lower latency at the expense of slight increase of memory
+    consumption.
+
+    This histogram is related to Android.Omnibox.SuggestionView.ReusedType.
+  </summary>
+</histogram>
+
 <histogram name="Android.Omnibox.SuggestionView.CreateTime"
     units="microseconds" expires_after="2022-06-19">
   <obsolete>
@@ -2744,6 +2769,29 @@ chromium-metrics-reviews@google.com.
     This histogram is related to Android.Omnibox.SuggestionList.LayoutTime2,
     Android.Omnibox.SuggestionList.MeasureTime2,
     Android.Omnibox.SuggestionView.CreateTime2.
+  </summary>
+</histogram>
+
+<histogram name="Android.Omnibox.SuggestionView.ReusedType"
+    enum="OmniboxSuggestionUiType" expires_after="2023-07-01">
+  <owner>ender@google.com</owner>
+  <owner>gangwu@chromium.org</owner>
+  <owner>rongtan@chromium.org</owner>
+  <summary>
+    Records the type of suggestion that was reused with the help of
+    RecyclerView.
+
+    This histogram drives OmniboxSuggestionsDropdown optimization, helping us
+    find the balance between the volume of suggestions and amount of memory we
+    delegate to re-use the pre-constructed suggestion views.
+
+    Along with the Android.Omnibox.SuggestionView.CreatedType, the two
+    histograms paint the picture of which suggestions need to be created more
+    often than others vs which suggestions have more capacity than is actually
+    needed. Higher reuse means lower latency at the expense of slight increase
+    of memory consumption.
+
+    This histogram is related to Android.Omnibox.SuggestionView.CreatedType.
   </summary>
 </histogram>
 
@@ -3149,7 +3197,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.Rotation.BeginToRendererFrameActivation" units="ms"
     expires_after="2022-12-25">
   <owner>jonross@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     Measures the amount of time from when Android begins notifying the Browser
     process of a rotation, to when the Renderer successfully submits and
@@ -3442,8 +3490,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.IncognitoClickedIsEmpty" enum="Boolean"
-    expires_after="2022-09-01">
-  <owner>sideyilmaz@chromium.org</owner>
+    expires_after="2023-02-02">
+  <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
     Emitted every time a user uses Incognito button on Tab Switcher. Records
@@ -3661,15 +3709,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Callback.Counts" enum="WebViewCallbackType"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the invocation count of WebView callbacks.</summary>
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.CPSDirectorySize" units="KB"
-    expires_after="2022-07-01">
-  <owner>nator@chromium.org</owner>
+    expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3679,8 +3726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.CUSDirectorySize" units="KB"
-    expires_after="2022-07-01">
-  <owner>nator@chromium.org</owner>
+    expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3690,8 +3736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.GetFilesDuration" units="ms"
-    expires_after="2022-11-13">
-  <owner>nator@chromium.org</owner>
+    expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3702,8 +3747,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.GetFilesResult"
-    enum="WebViewComponentUpdaterGetFilesResult" expires_after="2022-11-13">
-  <owner>nator@chromium.org</owner>
+    enum="WebViewComponentUpdaterGetFilesResult" expires_after="2023-01-15">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3714,8 +3758,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.SafeModeActionExecuted"
-    enum="Boolean" expires_after="2022-07-01">
-  <owner>nator@chromium.org</owner>
+    enum="Boolean" expires_after="2023-02-01">
+  <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Whether a SafeMode action was executed by Component Updater services. This
@@ -3725,8 +3769,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UnexpectedExit"
-    enum="Boolean" expires_after="2022-11-13">
-  <owner>nator@chromium.org</owner>
+    enum="Boolean" expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3737,8 +3780,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
-    expires_after="2022-11-13">
-  <owner>nator@chromium.org</owner>
+    expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3748,8 +3790,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobFilesChanged"
-    units="count" expires_after="2022-07-01">
-  <owner>nator@chromium.org</owner>
+    units="count" expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4091,7 +4132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Gfx.HardwareDrawType"
-    enum="WebViewDrawAndSubmissionType" expires_after="2022-11-13">
+    enum="WebViewDrawAndSubmissionType" expires_after="2023-01-15">
   <owner>vasilyt@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -4103,7 +4144,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.InputStreamTime" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>
@@ -4128,7 +4169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.ParseStatus"
-    enum="AppPackageNameAllowlistParseStatus" expires_after="2022-07-01">
+    enum="AppPackageNameAllowlistParseStatus" expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4141,7 +4182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.RecordStatus"
-    enum="AppPackageNameLoggingRuleStatus" expires_after="2022-11-13">
+    enum="AppPackageNameLoggingRuleStatus" expires_after="2023-01-15">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4155,7 +4196,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4168,7 +4209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.ThrottleStatus"
-    enum="Boolean" expires_after="2022-05-30">
+    enum="Boolean" expires_after="2023-02-01">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4185,6 +4226,33 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the mixed content mode set when an app uses the
     WebSettings.setMixedContentMode API.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Nonembedded.FirstServiceInProcess"
+    enum="WebViewNonembeddedService" expires_after="2022-12-11">
+  <owner>hazems@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the first nonembedded WebView Service to run in the nonembedded
+    &quot;:webview_service&quot; process. This excludes ContentProviders because
+    they are always created during the process startup. This is recorded when
+    the service is created (when `onCreate` is called). Also see
+    &quot;Android.WebView.Nonembedded.IsFreshServiceProcessLaunched&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Nonembedded.IsFreshServiceProcessLaunched"
+    enum="Boolean" expires_after="2022-12-11">
+  <owner>hazems@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Captures if the service is the first service to be created in the process or
+    not. It helps to see how often the nonembedded &quot;:webview_service&quot;
+    process is reused for multiple services. This excludes ContentProviders
+    because they are always created during the process startup. This is recorded
+    when any nonembedded service is created (when `onCreate` is called). Also
+    see &quot;Android.WebView.Nonembedded.FirstServiceInProcess&quot;.
   </summary>
 </histogram>
 
@@ -4230,7 +4298,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.RetrieveMetricsTaskStatus"
     enum="AndroidWebViewNonEmbeddedMetricsRetrieveMetricsTaskStatus"
-    expires_after="2022-06-07">
+    expires_after="2023-07-01">
   <owner>hazems@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -4452,7 +4520,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SecureCookieAction" enum="SecureCookieAction"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4586,7 +4654,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.UniversalAccess.OriginUrlMismatchInHistoryUtil"
-    enum="BooleanAllowed" expires_after="2022-11-06">
+    enum="BooleanAllowed" expires_after="2023-01-15">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4605,6 +4673,16 @@ chromium-metrics-reviews@google.com.
     Records when we allow a cross origin push state from a file URL solely
     because AllowUniversalAccessFromFileURLs is enabled. This is logged from the
     implementation of the frame renderer.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.VariationsHeaderLength" units="bytes"
+    expires_after="2023-07-22">
+  <owner>cduvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the length of the WebView variations header. Recorded every time
+    WebViewCompat.getVariationsHeader() is called.
   </summary>
 </histogram>
 

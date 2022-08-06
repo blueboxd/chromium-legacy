@@ -85,6 +85,14 @@ DEFAULT_SIZES_XORG = ("1600x1200,1600x900,1440x900,1366x768,1360x768,1280x1024,"
                       "800x600,1680x1050,1920x1080,1920x1200,2560x1440,"
                       "2560x1600,3840x2160,3840x2560")
 
+# Decides number of monitors and their resolution that should be run for the
+# wayland session.
+WAYLAND_DESKTOP_SIZES_ENV = "CHROME_REMOTE_DESKTOP_WAYLAND_DESKTOP_SIZES"
+
+# Default wayland monitor size if `CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES`
+# env variable is not set.
+DEFAULT_WAYLAND_DESKTOP_SIZES = "1280x720"
+
 SCRIPT_PATH = os.path.abspath(sys.argv[0])
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
@@ -169,7 +177,7 @@ RUNTIME_DIR_TEMPLATE = "/run/user/%s"
 g_desktop = None
 g_host_hash = hashlib.md5(socket.gethostname().encode()).hexdigest()
 
-def gen_xorg_config(sizes):
+def gen_xorg_config():
   return (
       # This causes X to load the default GLX module, even if a proprietary one
       # is installed in a different directory.
@@ -206,16 +214,6 @@ def gen_xorg_config(sizes):
       '\n'
       'Section "Monitor"\n'
       '  Identifier "Chrome Remote Desktop Monitor"\n'
-      # The horizontal sync rate was calculated from the vertical refresh rate
-      # and the modline template:
-      # (33000 (vert total) * 0.1 Hz = 3.3 kHz)
-      '  HorizSync   3.3\n' # kHz
-      # The vertical refresh rate was chosen both to be low enough to have an
-      # acceptable dot clock at high resolutions, and then bumped down a little
-      # more so that in the unlikely event that a low refresh rate would break
-      # something, it would break obviously.
-      '  VertRefresh 0.1\n' # Hz
-      '{modelines}'
       'EndSection\n'
       '\n'
       'Section "Screen"\n'
@@ -226,7 +224,6 @@ def gen_xorg_config(sizes):
       '  SubSection "Display"\n'
       '    Viewport 0 0\n'
       '    Depth 24\n'
-      '    Modes {modes}\n'
       '  EndSubSection\n'
       'EndSection\n'
       '\n'
@@ -235,21 +232,6 @@ def gen_xorg_config(sizes):
       '  Screen       "Chrome Remote Desktop Screen"\n'
       '  InputDevice  "Chrome Remote Desktop Input"\n'
       'EndSection\n'.format(
-          # This Modeline template allows resolutions up to the dummy driver's
-          # max supported resolution of 32767x32767 without additional
-          # calculation while meeting the driver's dot clock requirements. Note
-          # that VP8 (and thus the amount of video RAM chosen) only support a
-          # maximum resolution of 16384x16384.
-          # 32767x32767 should be possible if we switch fully to VP9 and
-          # increase the video RAM to 4GiB.
-          # The dot clock was calculated to match the VirtRefresh chosen above.
-          # (33000 * 33000 * 0.1 Hz = 108.9 MHz)
-          # Changes this line require matching changes to HorizSync and
-          # VertRefresh.
-          modelines="".join(
-              '  Modeline "{0}x{1}" 108.9 {0} 32998 32999 33000 '
-              '{1} 32998 32999 33000\n'.format(w, h) for w, h in sizes),
-          modes=" ".join('"{0}x{1}"'.format(w, h) for w, h in sizes),
           video_ram=XORG_DUMMY_VIDEO_RAM))
 
 
@@ -877,10 +859,23 @@ class WaylandDesktop(Desktop):
       return False
     return True
 
-  def _gnome_shell_cmd(self, screen_width=1280, screen_height=720):
-    return ["gnome-shell", "--wayland", "--headless", "--virtual-monitor",
-            "%sx%s" % (screen_width, screen_height), "--wayland-display",
-            self._wayland_socket, "--no-x11", "--replace"]
+  def _gnome_shell_cmd(self):
+    wayland_desktop_sizes = os.environ.get(
+      WAYLAND_DESKTOP_SIZES_ENV, DEFAULT_WAYLAND_DESKTOP_SIZES)
+    gnome_shell_cmd = [
+      "gnome-shell", "--wayland", "--headless", "--wayland-display",
+      self._wayland_socket, "--no-x11", "--replace"]
+    try:
+      for resolution in wayland_desktop_sizes.strip().split(","):
+        width, height = re.split("x|X", resolution.strip())
+        gnome_shell_cmd.extend(["--virtual-monitor", "%sx%s" %
+                               (width.strip(), height.strip())])
+    except Exception as exc:
+      logging.error("Expected one or more comma separated resolutions in "
+                    "width1xheight1[,width2xheight2] format, got: %s" %
+                    wayland_desktop_sizes)
+      raise exc
+    return gnome_shell_cmd
 
   def _launch_server(self, *args, **kwargs):
     if not self._is_gnome_shell_present():
@@ -1102,12 +1097,11 @@ class XDesktop(Desktop):
     with tempfile.NamedTemporaryFile(
         prefix="chrome_remote_desktop_",
         suffix=".conf", delete=False) as config_file:
-      config_file.write(gen_xorg_config(self.sizes).encode())
+      config_file.write(gen_xorg_config().encode())
 
-    # We can't support exact resize with the current Xorg dummy driver.
-    self.server_supports_exact_resize = False
-    # But dummy does support RandR 1.0.
+    self.server_supports_exact_resize = True
     self.server_supports_randr = True
+    self.randr_add_sizes = True
     self.xorg_conf = config_file.name
 
     xorg_binary = "/usr/lib/xorg/Xorg";
@@ -1211,7 +1205,8 @@ class XDesktop(Desktop):
                 str(height), "0", "0", "0"]
         subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL)
-        args = ["xrandr", "--addmode", "screen", label]
+        output_name = "DUMMY0" if USE_XORG_ENV_VAR in os.environ else "screen"
+        args = ["xrandr", "--addmode", output_name, label]
         subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL)
 
@@ -1231,15 +1226,20 @@ class XDesktop(Desktop):
     subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
 
-    # Monitor for any automatic resolution changes from the desktop
-    # environment.
-    args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
-            str(initial_size[1])]
+    if USE_XORG_ENV_VAR not in os.environ:
+      # Monitor for any automatic resolution changes from the desktop
+      # environment. This is needed only for Xvfb sessions because Xvfb sets
+      # the first mode to be the maximum supported resolution, and some
+      # desktop-environments would mistakenly set this as the preferred mode,
+      # leading to a huge desktop with tiny text. With Xorg, the modes are
+      # all reasonably sized, so the problem doesn't occur.
+      args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
+              str(initial_size[1])]
 
-    # It is not necessary to wait() on the process here, as this script's main
-    # loop will reap the exit-codes of all child processes.
-    subprocess.Popen(args, env=self.child_env, stdout=subprocess.DEVNULL,
-                     stderr=subprocess.DEVNULL)
+      # It is not necessary to wait() on the process here, as this script's main
+      # loop will reap the exit-codes of all child processes.
+      subprocess.Popen(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL)
 
   def launch_desktop_session(self):
     # Start desktop session.

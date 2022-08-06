@@ -13,6 +13,7 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -491,14 +492,13 @@ void HoldingSpaceItemChipView::OnSecondaryActionPressed() {
   if (delegate())
     delegate()->OnHoldingSpaceItemViewSecondaryActionPressed(this);
 
-  // Pause.
-  if (secondary_action_pause_->GetVisible()) {
-    HoldingSpaceController::Get()->client()->PauseItems({item()});
-    return;
-  }
-
-  // Resume.
-  HoldingSpaceController::Get()->client()->ResumeItems({item()});
+  // Pause/Resume.
+  const HoldingSpaceCommandId command_id =
+      secondary_action_pause_->GetVisible()
+          ? HoldingSpaceCommandId::kPauseItem
+          : HoldingSpaceCommandId::kResumeItem;
+  if (!holding_space_util::ExecuteInProgressCommand(item(), command_id))
+    NOTREACHED();
 }
 
 void HoldingSpaceItemChipView::UpdateImage() {
@@ -639,10 +639,14 @@ void HoldingSpaceItemChipView::UpdateSecondaryAction() {
   if (!item())
     return;
 
-  // NOTE: Only download type items currently support secondary actions.
+  // NOTE: Only in-progress items currently support secondary actions.
   const bool has_secondary_action =
       !checkmark()->GetVisible() && !item()->progress().IsComplete() &&
-      HoldingSpaceItem::IsDownload(item()->type()) && IsMouseHovered();
+      (holding_space_util::SupportsInProgressCommand(
+           item(), HoldingSpaceCommandId::kPauseItem) ||
+       holding_space_util::SupportsInProgressCommand(
+           item(), HoldingSpaceCommandId::kResumeItem)) &&
+      IsMouseHovered();
 
   if (!has_secondary_action) {
     secondary_action_container_->SetVisible(false);
@@ -651,7 +655,8 @@ void HoldingSpaceItemChipView::UpdateSecondaryAction() {
   }
 
   // Pause/resume.
-  const bool is_item_paused = item()->IsPaused();
+  const bool is_item_paused = holding_space_util::SupportsInProgressCommand(
+      item(), HoldingSpaceCommandId::kResumeItem);
   secondary_action_pause_->SetVisible(!is_item_paused);
   secondary_action_resume_->SetVisible(is_item_paused);
 

@@ -193,8 +193,7 @@ AssistiveSuggester::~AssistiveSuggester() = default;
 bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
   return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled() ||
          IsMultiWordSuggestEnabled() || IsEnhancedEmojiSuggestEnabled() ||
-         base::FeatureList::IsEnabled(
-             features::kDiacriticsOnPhysicalKeyboardLongpress);
+         IsDiacriticsOnPhysicalKeyboardLongpressEnabled();
 }
 
 void AssistiveSuggester::FetchEnabledSuggestionsFromBrowserContextThen(
@@ -227,6 +226,14 @@ bool AssistiveSuggester::IsMultiWordSuggestEnabled() {
 bool AssistiveSuggester::IsExpandedMultiWordSuggestEnabled() {
   return IsMultiWordSuggestEnabled() &&
          base::FeatureList::IsEnabled(features::kAssistMultiWordExpanded);
+}
+
+bool AssistiveSuggester::IsDiacriticsOnPhysicalKeyboardLongpressEnabled() {
+  return base::FeatureList::IsEnabled(
+             features::kDiacriticsOnPhysicalKeyboardLongpress) &&
+         IsUsEnglishEngine(active_engine_id_) &&
+         IsDiacriticsOnLongpressPrefEnabled(profile_->GetPrefs(),
+                                            active_engine_id_);
 }
 
 DisabledReason AssistiveSuggester::GetDisabledReasonForPersonalInfo(
@@ -370,7 +377,15 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
     SuggestionStatus status = current_suggester_->HandleKeyEvent(event);
     switch (status) {
       case SuggestionStatus::kAccept:
-        RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
+        // Handle a race condition where the current suggester_ is set to
+        // nullptr by a simultaneous event (such as a key event causing a
+        // onBlur() event).
+        // TODO(b/240534923): Figure out how to record metrics when
+        // current_suggester_ is set to nullptr prematurely by a different
+        // event.
+        if (current_suggester_) {
+          RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
+        }
         current_suggester_ = nullptr;
         return true;
       case SuggestionStatus::kDismiss:
@@ -383,13 +398,10 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  // Diacritics is only enabled for US English Engine.
-  if (IsUsEnglishEngine(active_engine_id_)) {
+  if (IsDiacriticsOnPhysicalKeyboardLongpressEnabled()) {
     // Longpress diacritics behaviour overrides the longpress to repeat key
     // behaviour for alphabetical keys.
-    if (base::FeatureList::IsEnabled(
-            features::kDiacriticsOnPhysicalKeyboardLongpress) &&
-        event.is_repeat() &&
+    if (event.is_repeat() &&
         kDefaultLongpressEnabledKeys.contains(event.GetCharacter())) {
       return true;  // Do not propagate this event.
     }
@@ -402,8 +414,7 @@ void AssistiveSuggester::HandleLongpressEnabledKeyEvent(
     const ui::KeyEvent& event) {
   if (const char c = event.GetCharacter();
       kDefaultLongpressEnabledKeys.contains(c) &&
-      base::FeatureList::IsEnabled(
-          features::kDiacriticsOnPhysicalKeyboardLongpress)) {
+      IsDiacriticsOnPhysicalKeyboardLongpressEnabled()) {
     // Process longpress keydown event.
     if (current_longpress_char_ == absl::nullopt &&
         event.type() == ui::EventType::ET_KEY_PRESSED) {
@@ -599,8 +610,15 @@ bool AssistiveSuggester::TrySuggestWithSurroundingText(
 
 void AssistiveSuggester::AcceptSuggestion(size_t index) {
   if (current_suggester_ && current_suggester_->AcceptSuggestion(index)) {
-    RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
-    current_suggester_ = nullptr;
+    // Handle a race condition where the current suggester_ is set to nullptr by
+    // a simultaneous event (such as a mouse click causing a onBlur()
+    // event).
+    // TODO(b/240534923): Figure out how to record metrics when
+    // current_suggester_ is set to nullptr prematurely by a different event.
+    if (current_suggester_) {
+      RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
+      current_suggester_ = nullptr;
+    }
   }
 }
 

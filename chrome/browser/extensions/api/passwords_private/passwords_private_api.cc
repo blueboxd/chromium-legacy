@@ -53,17 +53,17 @@ ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
       api::passwords_private::ChangeSavedPassword::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
-  auto new_ids = GetDelegate(browser_context())
-                     ->ChangeSavedPassword(parameters->ids, parameters->params);
-  if (new_ids.has_value()) {
+  auto new_id = GetDelegate(browser_context())
+                    ->ChangeSavedPassword(parameters->id, parameters->params);
+  if (new_id.has_value()) {
     return RespondNow(ArgumentList(
         api::passwords_private::ChangeSavedPassword::Results::Create(
-            new_ids.value())));
+            new_id.value())));
   }
   return RespondNow(Error(
       "Could not change the password. Either the password is empty, the user "
-      "is not authenticated, vector of ids is empty or no matching password "
-      "could be found at least for one of the ids."));
+      "is not authenticated or no matching password could be found for the "
+      "id."));
 }
 
 // PasswordsPrivateRemoveSavedPasswordFunction
@@ -183,8 +183,17 @@ ResponseAction PasswordsPrivateMovePasswordsToAccountFunction::Run() {
 
 // PasswordsPrivateImportPasswordsFunction
 ResponseAction PasswordsPrivateImportPasswordsFunction::Run() {
+  auto parameters =
+      api::passwords_private::ImportPasswords::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+  // TODO(crbug/1325290): Introduce callback for filling ImportResults with
+  // real data.
   GetDelegate(browser_context())->ImportPasswords(GetSenderWebContents());
-  return RespondNow(NoArguments());
+  api::passwords_private::ImportResults results;
+  results.status =
+      extensions::api::passwords_private::IMPORT_RESULTS_STATUS_SUCCESS;
+  return RespondNow(ArgumentList(
+      api::passwords_private::ImportPasswords::Results::Create(results)));
 }
 
 // PasswordsPrivateExportPasswordsFunction
@@ -254,87 +263,6 @@ ResponseAction PasswordsPrivateGetWeakCredentialsFunction::Run() {
   return RespondNow(
       ArgumentList(api::passwords_private::GetWeakCredentials::Results::Create(
           GetDelegate(browser_context())->GetWeakCredentials())));
-}
-
-// PasswordsPrivateGetPlaintextInsecurePasswordFunction:
-PasswordsPrivateGetPlaintextInsecurePasswordFunction::
-    ~PasswordsPrivateGetPlaintextInsecurePasswordFunction() = default;
-
-ResponseAction PasswordsPrivateGetPlaintextInsecurePasswordFunction::Run() {
-  auto parameters =
-      api::passwords_private::GetPlaintextInsecurePassword::Params::Create(
-          args());
-  EXTENSION_FUNCTION_VALIDATE(parameters);
-
-  GetDelegate(browser_context())
-      ->GetPlaintextInsecurePassword(
-          std::move(parameters->credential), parameters->reason,
-          GetSenderWebContents(),
-          base::BindOnce(&PasswordsPrivateGetPlaintextInsecurePasswordFunction::
-                             GotCredential,
-                         this));
-
-  // GotCredential() might respond before we reach this point.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void PasswordsPrivateGetPlaintextInsecurePasswordFunction::GotCredential(
-    absl::optional<api::passwords_private::InsecureCredential> credential) {
-  if (!credential) {
-    Respond(
-        Error("Could not obtain plaintext insecure password. Either the user "
-              "is not authenticated or no matching password could be found."));
-    return;
-  }
-
-  Respond(ArgumentList(
-      api::passwords_private::GetPlaintextInsecurePassword::Results::Create(
-          *credential)));
-}
-
-// PasswordsPrivateChangeInsecureCredentialFunction:
-PasswordsPrivateChangeInsecureCredentialFunction::
-    ~PasswordsPrivateChangeInsecureCredentialFunction() = default;
-
-ResponseAction PasswordsPrivateChangeInsecureCredentialFunction::Run() {
-  auto parameters =
-      api::passwords_private::ChangeInsecureCredential::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters);
-
-  if (parameters->new_password.empty()) {
-    return RespondNow(
-        Error("Could not change the insecure credential. The new password "
-              "can't be empty."));
-  }
-
-  if (!GetDelegate(browser_context())
-           ->ChangeInsecureCredential(parameters->credential,
-                                      parameters->new_password)) {
-    return RespondNow(Error(
-        "Could not change the insecure credential. Either the user is not "
-        "authenticated or no matching password could be found."));
-  }
-
-  return RespondNow(NoArguments());
-}
-
-// PasswordsPrivateRemoveInsecureCredentialFunction:
-PasswordsPrivateRemoveInsecureCredentialFunction::
-    ~PasswordsPrivateRemoveInsecureCredentialFunction() = default;
-
-ResponseAction PasswordsPrivateRemoveInsecureCredentialFunction::Run() {
-  auto parameters =
-      api::passwords_private::RemoveInsecureCredential::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters);
-
-  if (!GetDelegate(browser_context())
-           ->RemoveInsecureCredential(parameters->credential)) {
-    return RespondNow(
-        Error("Could not remove the insecure credential. Probably no matching "
-              "password could be found."));
-  }
-
-  return RespondNow(NoArguments());
 }
 
 // PasswordsPrivateMuteInsecureCredentialFunction:

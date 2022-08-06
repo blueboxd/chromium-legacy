@@ -1,0 +1,35 @@
+<style include="settings-shared">
+  h2 {
+    padding-inline-start: var(--cr-section-padding);
+  }
+
+  .settings-box,
+  settings-toggle-button,
+  cr-link-row {
+    margin-inline-end: var(--cr-section-padding);
+    margin-inline-start: var(--cr-section-indent-padding);
+    padding-inline-end: 0;
+    padding-inline-start: 0;
+  }
+</style>
+
+<settings-toggle-button
+    pref="{{prefs.settings.a11y.mono_audio}}"
+    label="$i18n{monoAudioLabel}"
+    sub-label="$i18n{monoAudioDescription}"
+    deep-link-focus-id$="[[Setting.kMonoAudio]]">
+</settings-toggle-button>
+<div class="settings-box">
+  <div class="start settings-box-text" id="startupSoundEnabledLabel">
+    $i18n{startupSoundLabel}
+  </div>
+  <cr-toggle id="startupSoundEnabled"
+      aria-labelledby="startupSoundEnabledLabel"
+      deep-link-focus-id$="[[Setting.kStartupSound]]"
+      on-change="toggleStartupSoundEnabled_">
+  </cr-toggle>
+</div>
+
+<template is="dom-if" if="[[!isKioskModeActive_]]">
+  <settings-captions prefs="{{prefs}}"></settings-captions>
+</template>

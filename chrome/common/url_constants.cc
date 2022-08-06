@@ -83,6 +83,8 @@ const char kChromeOsHelpViaWebUIURL[] =
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+const char kIsolatedAppScheme[] = "isolated-app";
+
 const char kChromeNativeScheme[] = "chrome-native";
 
 const char kChromeSearchLocalNtpHost[] = "local-ntp";
@@ -308,6 +310,13 @@ const char kEnhancedPlaybackNotificationLearnMoreURL[] =
     "https://support.google.com/chrome/?p=mobile_protected_content";
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+const char kChromeOSDefaultMailtoHandler[] =
+    "https://mail.google.com/mail/?extsrc=mailto&amp;url=%s";
+const char kChromeOSDefaultWebcalHandler[] =
+    "https://www.google.com/calendar/render?cid=%s";
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kAccountManagerLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=google_accounts";
@@ -483,6 +492,13 @@ const char kPhoneHubPermissionLearnMoreURL[] =
     BUILDFLAG(IS_FUCHSIA)
 const char kChromeAppsDeprecationLearnMoreURL[] =
     "https://support.google.com/chrome/?p=chrome_app_deprecation";
+#endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+// TODO(b/1339340): add help center link when help center link is created.
+const char kChromeRootStoreSettingsHelpCenterURL[] =
+    "https://chromium.googlesource.com/chromium/src/+/main/net/data/ssl/"
+    "chrome_root_store/root_store.md";
 #endif
 
 }  // namespace chrome

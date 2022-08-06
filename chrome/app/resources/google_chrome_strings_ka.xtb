@@ -14,8 +14,6 @@
 <translation id="1142745911746664600">Chrome-ის განახლება ვერ მოხერხდა</translation>
 <translation id="1152920704813762236">ChromeOS-ის შესახებ</translation>
 <translation id="1154147086299354128">Chrome-ში &amp;გახსნა</translation>
-<translation id="1178374936842835197">თუ პარამეტრი ამ გვერდზე არ გამოჩნდება, ცადეთ მისი პოვნა <ph name="LINK_BEGIN" />
-        ChromeOS Flex-ის პარამეტრებში<ph name="LINK_END" /></translation>
 <translation id="1203500561924088507">გმადლობთ დაინსტალირებისთვის. <ph name="BUNDLE_NAME" />-ის გამოყენებამდე თქვენი ბრაუზერი უნდა გადატვირთოთ.</translation>
 <translation id="1278833599417554002">ხელახლა გაშვება &amp;Chrome-ის გასაახლებლად</translation>
 <translation id="1302523850133262269">დაელოდეთ, სანამ Chrome დააინსტალირებს სისტემის უახლეს განახლებებს.</translation>
@@ -69,6 +67,7 @@
 <translation id="2139300032719313227">გადატვირთეთ ChromeOS</translation>
 <translation id="2151406531797534936">გთხოვთ, ახლავე გადატვირთოთ Chrome</translation>
 <translation id="2174917724755363426">ინსტალაცია არ დასრულებულა. ნამდვილად გსურთ გაუქმება?</translation>
+<translation id="223889379102603431">ინფორმაცია Chrome-ის მიერ თავისი ძირეული სერტიფიკატების მართვის შესახებ</translation>
 <translation id="2258103955319320201">Chrome ბრაუზერში თქვენს კონტენტზე თქვენი ნებისმიერი მოწყობილობიდან წვდომისთვის შედით სისტემაში, შემდეგ კი ჩართეთ სინქრონიზაცია</translation>
 <translation id="2290014774651636340">Google API გასაღები გამოტოვებულია. Google Chrome-ის ზოგიერთი ფუნქცია გამორთული იქნება.</translation>
 <translation id="2290095356545025170">ნამდვილად გსურთ მოახდინოთ Google Chrome-ის დეინსტალაცია?</translation>
@@ -81,6 +80,7 @@
 <translation id="2401189691232800402">ChromeOS სისტემა</translation>
 <translation id="2467438592969358367">Google Chrome ითხოვს თქვენი პაროლების ექსპორტირებას. აღნიშნულის დასაშვებად აკრიფეთ თქვენი Windows-ის პაროლი.</translation>
 <translation id="2485422356828889247">დეინსტალაცია</translation>
+<translation id="2494974097748878569">Google ასისტენტი Chrome-ში</translation>
 <translation id="2534507159460261402">Google Pay (Chrome-ში კოპირებული)</translation>
 <translation id="2559253115192232574">მოგვიანებით, თქვენ მიერ მონახულებულ საიტს საშუალება ექნება, Chrome-ს სთხოვოს თქვენი ინტერესების ჩვენება, თქვენთვის ხილული რეკლამის პერსონალიზების მიზნით. Chrome-ს შეუძლია 3-მდე ინტერესის გაზიარება.</translation>
 <translation id="2563121210305478421">გსურთ Chrome-ის ხელახლა გაშვება?</translation>
@@ -121,7 +121,6 @@
 <translation id="3080151273017101988">გაგრძელება გაშვებული ფონური პროგრამებით Google Chrome-ის დახურვისას</translation>
 <translation id="3089968997497233615">ხელმისაწვდომია Google Chrome-ის უფრო ახალი და უსაფრთხო ვერსია.</translation>
 <translation id="3100998948628680988">დაასათაურეთ თქვენი Chrome პროფილი</translation>
-<translation id="3103390129666310801">თქვენი მოწყობილობის განახლების სტატუსის სანახავად გადადით <ph name="LINK_BEGIN" />ChromeOS Flex-ის პარამეტრებზე<ph name="LINK_END" /></translation>
 <translation id="3114643501466072395"><ph name="BEGIN_LINK" />შედით Chrome-ში<ph name="END_LINK" />, რომ შეამოწმოთ, შეეხო თუ არა პერსონალურ მონაცემთა გაჟონვის შემთხვევები და უსაფრთხოებასთან დაკავშირებული პრობლემები თქვენს სხვა პაროლებს.</translation>
 <translation id="3140883423282498090">თქვენი ცვლილებები Google Chrome.ის გადატვირთვის შემდეგ შევა ძალაში.</translation>
 <translation id="3149510190863420837">Chrome-ის პროგრამები</translation>
@@ -212,7 +211,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">Google Chrome-ის მომავალი განახლებების მისაღებად დაგჭირდებათ macOS 10.13 ან უფრო ახალი ვერსია. ეს კომპიუტერი იყენებს OS X 10.11-ს.</translation>
 <translation id="5098668839038261629">როცა ეს ფუნქცია ჩართულია, თქვენ, ასევე, გახვალთ Chrome-იდან</translation>
-<translation id="5112116809696021727">თქვენი მოწყობილობის განახლების სტატუსის სანახავად გადადით <ph name="LINK_BEGIN" />ChromeOS-ის პარამეტრებზე<ph name="LINK_END" /></translation>
 <translation id="5132929315877954718">აღმოაჩინეთ დიდებული აპები, თამაშები, გაფართოებები და თემები Google Chrome-ისთვის.</translation>
 <translation id="5139423532931106058">თქვენი Chrome პროფილის მორგება</translation>
 <translation id="5163087008893166964">მოგესალმებით Chrome-ში; გახსნილია ბრაუზერის ახალი ფანჯარა</translation>
@@ -252,7 +250,6 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="5940385492829620908">თქვენი ვები, სანიშნეები და Chrome-ის სხვა მასალა არის აქ.</translation>
 <translation id="5941711191222866238">ჩაკეცვა</translation>
 <translation id="5941830788786076944">Google Chrome გახდეს ნაგულისხმევი ბრაუზერი</translation>
-<translation id="5959292945051687759">თუ პარამეტრი ამ გვერდზე არ გამოჩნდება, ცადეთ მისი პოვნა <ph name="LINK_BEGIN" />ChromeOS-ის პარამეტრებში<ph name="LINK_END" /></translation>
 <translation id="6003112304606738118">მიმდინარეობს ჩამოტვირთვა… დარჩენილია <ph name="HOURS" /> საათი</translation>
 <translation id="6040143037577758943">დახურვა</translation>
 <translation id="6070348360322141662">დამატებითი უსაფრთხოებისთვის, Google Chrome თქვენს მონაცემებს დაშიფრავს</translation>
@@ -280,6 +277,7 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="6739177684496155661">გსურთ ახალ Chrome პროფილში გაგრძელება?</translation>
 <translation id="6750954913813541382">მართლწერის შეცდომების შესასწორებლად Chrome უგზავნის Google-ს თქვენ მიერ ბრაუზერში აკრეფილ ტექსტს</translation>
 <translation id="677276454032249905">მაინც გსურთ Chrome-იდან გასვლა?</translation>
+<translation id="6785872064505734160">Google ასისტენტს Chrome-ში გახსნილ სხვადასხვა ვებსაიტზე შეუძლია გარკვეული მოქმედების შესრულება თქვენ ნაცვლად</translation>
 <translation id="683440813066116847">შიდა წესი Google Chrome Canary-ისთვის mDNS ტრაფიკის დასაშვებად.</translation>
 <translation id="6881299373831449287">მიმდინარეობს Chrome-ის განახლება</translation>
 <translation id="6885412569789873916">Chrome Beta აპები</translation>
@@ -352,6 +350,7 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="8129812357326543296">&amp;Google Chrome-ის შესახებ</translation>
 <translation id="813913629614996137">მიმდინარეობს ინიცირება…</translation>
 <translation id="8255190535488645436">Google Chrome იყენებს თქვენს კამერასა და მიკროფონს.</translation>
+<translation id="8270775718612349140">Chrome-ის მიერ მართული სერტიფიკატები</translation>
 <translation id="8286862437124483331">Google Chrome ცდილობს პაროლების ჩვენებას. აკრიფეთ თქვენი Windows-ის პაროლი, რათა დაუშვათ ეს.</translation>
 <translation id="828798499196665338">თქვენმა მშობელმა გამორთო „ნებართვები საიტებისთვის, აპებისა და გაფართოებებისთვის“ Chrome-ისთვის. ეს <ph name="EXTENSION_TYPE_PARAMETER" /> ვერ ჩაირთვება.</translation>
 <translation id="8290100596633877290">Google Chrome-ში შეცდომაა. გადავტვირთოთ?</translation>

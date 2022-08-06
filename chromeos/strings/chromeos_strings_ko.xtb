@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1645954272419197032">기기 정보를 확인하세요</translation>
 <translation id="1662989795263954667">중지됨 - 잉크 부족</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> 미리보기</translation>
 <translation id="1668469839109562275">기본 제공 VPN</translation>
 <translation id="1672499492233627739">웹캠 동영상 피드</translation>
 <translation id="1676557873873341166">동영상 촬영 중</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">화상 회의</translation>
 <translation id="1852934301711881861">ChromeOS Flex 설치</translation>
 <translation id="1856388568474281774">아래쪽 화살표</translation>
+<translation id="1858620243986915808">스크린샷 첨부</translation>
 <translation id="1871569928317311284">어두운 테마 사용 중지</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">어두운 모드 사용 중지</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google 프로필 사진</translation>
 <translation id="1979103255016296513">비밀번호 변경 기한 지남</translation>
 <translation id="1999615961760456652">종속 포털</translation>
+<translation id="200669432486043882">파일 바꾸기</translation>
 <translation id="2006864819935886708">연결</translation>
 <translation id="2008685064673031089">Prime 검색</translation>
 <translation id="2011174342667534258">SDK 버전:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">유형</translation>
 <translation id="2461822463642141190">현재</translation>
 <translation id="2480034874476596812">수동으로 사용 중지</translation>
+<translation id="248546197012830854">기기가 오프라인 상태입니다. 도움말 콘텐츠를 보려면 Wi-Fi 네트워크에 연결하세요.</translation>
 <translation id="2491955442992294626">다른 창을 사용 중일 때는 키가 테스트되지 않습니다.</translation>
 <translation id="2493126929778606526">가장 잘 나온 사진이 자동으로 선별됩니다.</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" />, <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">새로고침</translation>
 <translation id="3009958530611748826">저장 폴더 선택</translation>
 <translation id="3017079585324758401">배경</translation>
+<translation id="302435934487327038">설치 완료</translation>
 <translation id="3027578600144895987">카메라 종료</translation>
 <translation id="3031560714565892478">비디오 카메라 기기입니다.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">엔드포인트</translation>
 <translation id="3069085583900247081">테스트 실패</translation>
-<translation id="3076243757415932261">구성요소 확인 중...</translation>
 <translation id="3083667275341675831">연결 진단</translation>
 <translation id="3084958266922136097">화면 보호기 사용 중지</translation>
 <translation id="3091839911843451378">실패 - 중지됨</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">모든 인쇄 기록을 삭제하시겠습니까? 진행 중인 인쇄 작업은 삭제되지 않습니다.</translation>
 <translation id="3383751554789092165">필요하면 기기 정보를 변경합니다.</translation>
 <translation id="3404249063913988450">화면 보호기 사용</translation>
-<translation id="3404770484521709967">구성요소가 제대로 설치되었습니다.</translation>
 <translation id="3413935475507503304">업데이트를 계속하려면 다음을 클릭하세요.</translation>
 <translation id="3434107140712555581">배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">보안</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">이전 비밀번호</translation>
 <translation id="4453205916657964690">서브넷 마스크</translation>
 <translation id="4454245904991689773">스캔 파일 저장 위치</translation>
-<translation id="4472575034687746823">시작하기</translation>
 <translation id="4479639480957787382">이더넷</translation>
 <translation id="4483049906298469269">기본이 아닌 네트워크 게이트웨이를 핑할 수 없습니다.</translation>
 <translation id="4500213108254186382">리드 가속도계</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> 수리 종료</translation>
 <translation id="6618744767048954150">실행 중</translation>
 <translation id="6620487321149975369">수동으로 삭제하지 않으면 인쇄 작업이 기록에 나타납니다.</translation>
+<translation id="6624819909909965616">10MB를 초과하는 파일은 업로드할 수 없습니다.</translation>
 <translation id="6643016212128521049">삭제</translation>
+<translation id="6644568396961840069">파일을 저장할 수 없습니다. 다른 외부 저장소에 연결해 보거나 나중에 다시 시도해 주세요.</translation>
 <translation id="6647510110698214773">암호화 알고리즘</translation>
 <translation id="6650062777702288430">가나/영숫자 전환</translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="6659594942844771486">탭</translation>
 <translation id="6692996468359469499">선택 항목과 관련된 정보 얻기</translation>
 <translation id="6704062477274546131">DNS 변환</translation>
-<translation id="6721744718589119342">이메일로 추가 정보나 새로운 소식을 전송하도록 허용</translation>
 <translation id="6723839937902243910">전원</translation>
 <translation id="6723847290197874913">키보드 백라이트</translation>
 <translation id="672609503628871915">새로운 기능 알아보기</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">확인</translation>
 <translation id="6977381486153291903">펌웨어 버전</translation>
 <translation id="6995564396478647735">쓰기 방지가 사용 설정되어 있는지 확인</translation>
+<translation id="7005833343836210400">기기가 오프라인 상태입니다.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" />에서 이 기기를 관리하고 방문한 웹페이지, 비밀번호, 이메일을 비롯한 모든 사용자 활동에 액세스합니다.</translation>
 <translation id="7040230719604914234">운영자</translation>
 <translation id="7041549558901442110">기기가 연결되어 있지 않습니다.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7212734716605298123">외부 기기 펌웨어 업데이트</translation>
 <translation id="7216409898977639127">이동통신사</translation>
+<translation id="725133483556299729">이메일 선택</translation>
 <translation id="7271040990581020067">현재 스캐너를 사용하고 있습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">구성요소를 1개 이상 선택 후 다시 시도하거나 보정을 건너뛰세요.</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">비공개 키</translation>
 <translation id="7982789257301363584">네트워크</translation>
 <translation id="7994702968232966508">EAP 방식</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />"에 저장됨</translation>
 <translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">색상 자동조절 사용</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">쓰기 방지가 여전히 사용 중지되어 있습니다. 계속하려면 쓰기 방지를 사용 설정하세요.</translation>
 <translation id="8075838845814659848">배터리 잔량</translation>
 <translation id="8082366717211101304">Android 앱에서 DNS를 변환할 수 없습니다.</translation>
-<translation id="8083281199617904460">전문 기술자가 수리해야 합니다. 반드시 고장 난 구성요소를 교체한 후 시작하세요.</translation>
 <translation id="808894953321890993">비밀번호 변경</translation>
+<translation id="8094062939584182041">Google에서 이 문제에 관한 이메일을 보내도록 허용</translation>
 <translation id="8104083085214006426">안전하지 않은 개방형 네트워크를 사용하고 있습니다.</translation>
 <translation id="8109786307828817014">보정에 실패해도 계속할까요?</translation>
 <translation id="811820734797650957">(Android) 핑할 수 있는 게이트웨이</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">연결</translation>
 <translation id="8221728673725659466">보정 완료</translation>
 <translation id="8226628635270268143">좋아하는 사진 및 앨범을 선택합니다.</translation>
+<translation id="8227119283605456246">파일 첨부</translation>
 <translation id="8230672074305416752">기본 네트워크 게이트웨이를 핑할 수 없습니다.</translation>
 <translation id="8246209727385807362">알 수 없는 이동통신사</translation>
 <translation id="827422111966801947">인디고</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">초기화되지 않음</translation>
 <translation id="8620617069779373398">로밍 상태</translation>
 <translation id="8655295600908251630">채널</translation>
+<translation id="8655828773034788261">공유 URL:</translation>
 <translation id="8660881923941176839">파운드</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> 네트워크에 연결</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" />로 업데이트 및 다시 시작</translation>

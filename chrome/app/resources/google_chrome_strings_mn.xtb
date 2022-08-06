@@ -14,8 +14,6 @@
 <translation id="1142745911746664600">Chrome-г шинэчлэх боломжгүй байна</translation>
 <translation id="1152920704813762236">ChromeOS-н тухай</translation>
 <translation id="1154147086299354128">&amp;Chrome-д нээх</translation>
-<translation id="1178374936842835197">Хэрэв тохиргоог энэ хуудсанд харуулахгүй байвал <ph name="LINK_BEGIN" />
-        ChromeOS Flex-н тохиргооноосоо<ph name="LINK_END" /> хайна уу</translation>
 <translation id="1203500561924088507">Суулгасанд баярлалаа. Та <ph name="BUNDLE_NAME" />-г ашиглахаасаа өмнө хөтчөө дахин эхлүүлэх ёстой.</translation>
 <translation id="1278833599417554002">&amp;Chrome-г шинэчлэхийн тулд дахин ачаалах</translation>
 <translation id="1302523850133262269">Chrome-оос хамгийн сүүлийн үеийн системийн шинэчлэлтүүдийг суулгаж байгаа тул түр хүлээнэ үү.</translation>
@@ -70,6 +68,7 @@
 <translation id="2139300032719313227">ChromeOS-г дахин эхлүүлнэ үү</translation>
 <translation id="2151406531797534936">Chrome-г одоо дахин эхлүүлнэ үү</translation>
 <translation id="2174917724755363426">Суулгаж дуусаагүй байна. Та цуцлахдаа итгэлтэй байна уу?</translation>
+<translation id="223889379102603431">Chrome өөрийн үндсэн гэрчилгээг хэрхэн удирддаг тухай мэдээлэл</translation>
 <translation id="2258103955319320201">Та бүх төхөөрөмж дээрээ Chrome хөтчийн зүйлсдээ хандахын тулд нэвтэрч, дараа нь синк хийхийг асаана уу</translation>
 <translation id="2290014774651636340">Google-ийн API түлхүүр байхгүй байна. Google Chrome-ийн зарим функц идэвхгүй болно.</translation>
 <translation id="2290095356545025170">Та Google Chrome-ыг устгах гэж байгаадаа итгэлтэй байна уу?</translation>
@@ -82,6 +81,7 @@
 <translation id="2401189691232800402">ChromeOS систем</translation>
 <translation id="2467438592969358367">Google Chrome таны нууц үгийг экспортлох хүсэлтэй байна. Үүнийг зөвшөөрч байгаа бол Windows-н нууц үгээ оруулна уу.</translation>
 <translation id="2485422356828889247">Устгах</translation>
+<translation id="2494974097748878569">Chrome-н Google Туслах</translation>
 <translation id="2534507159460261402">Google Pay (Chrome-д хуулсан)</translation>
 <translation id="2559253115192232574">Дараа нь таны зочилсон сайт таны хардаг зарыг хувийн болгохын тулд Chrome-с таны сонирхлыг харахыг хүсэх боломжтой. Chrome 3 хүртэлх сонирхол хуваалцах боломжтой.</translation>
 <translation id="2563121210305478421">Chrome-г дахин эхлүүлэх үү?</translation>
@@ -122,7 +122,6 @@
 <translation id="3080151273017101988">Google Chrome хаагдсан үед үндсэн аппликйешнуудыг үргэлжлүүлэн ажиллуул</translation>
 <translation id="3089968997497233615">Google Chrome-ийн шинэ, илүү аюулгүй хувилбар бэлэн боллоо.</translation>
 <translation id="3100998948628680988">Chrome-н профайлаа нэрлэнэ үү</translation>
-<translation id="3103390129666310801">Таны төхөөрөмж шинэчлэгдсэн эсэхийг харахын тулд <ph name="LINK_BEGIN" />ChromeOS Flex-н тохиргоо<ph name="LINK_END" /> руу очно уу</translation>
 <translation id="3114643501466072395">Бусад нууц үгэндээ өгөгдлийн зөрчил болон аюулгүй байдлын өөр асуудал байхгүй болохыг шалгахын тулд <ph name="BEGIN_LINK" />Chrome-д нэвтэрнэ үү<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Таны оруулсан өөрчлөлт дараа дахин Google Chrome-г ашиглах үед идэвхжинэ.</translation>
 <translation id="3149510190863420837">Chrome Аппликейшнууд</translation>
@@ -213,7 +212,6 @@
 <translation id="4990567037958725628">Google Chrome цайвар шаргал өнгө</translation>
 <translation id="5037581483200764584">Google Chrome-н цаашдын шинэчлэлтийг авахын тулд танд macOS 10.13 эсвэл түүнээс хойших хувилбар хэрэгтэй болно. Энэ компьютер OS X 10.11 хувилбарыг ашиглаж байна.</translation>
 <translation id="5098668839038261629">Асаалттай үед таныг мөн Chrome-с гаргана</translation>
-<translation id="5112116809696021727">Таны төхөөрөмж шинэчлэгдсэн эсэхийг харахын тулд <ph name="LINK_BEGIN" />ChromeOS-н тохиргоо<ph name="LINK_END" /> руу очно уу</translation>
 <translation id="5132929315877954718">Google Кромын шилдэг апп, тоглоом, өргөтгөл болон загварыг ашиглах боломжтой.</translation>
 <translation id="5139423532931106058">Chrome-н профайлаа өөрчлөх</translation>
 <translation id="5163087008893166964">Chrome-д тавтай морилно уу; хөтчийн шинэ цонхыг нээсэн</translation>
@@ -253,8 +251,6 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="5940385492829620908">Таны веб, хавчуурга, болон Chrome-ийн бусад зүйлс энд хадгалагддаг.</translation>
 <translation id="5941711191222866238">Багасгах</translation>
 <translation id="5941830788786076944">Google Chrome-ыг анхдагч веб хөтөчөө болгоно уу</translation>
-<translation id="5959292945051687759">Хэрэв тохиргоог энэ хуудсанд харуулахгүй байвал <ph name="LINK_BEGIN" />
-        ChromeOS-н тохиргооноосоо<ph name="LINK_END" /> хайна уу</translation>
 <translation id="6003112304606738118">Татаж байна... <ph name="HOURS" /> цаг үлдсэн</translation>
 <translation id="6040143037577758943">Хаах</translation>
 <translation id="6070348360322141662">Таны аюулгүй байдлыг сайжруулахын тулд Google Chrome таны өгөгдлийг шифрлэнэ</translation>
@@ -282,6 +278,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="6739177684496155661">Chrome-н шинэ профайлд үргэлжлүүлэх үү?</translation>
 <translation id="6750954913813541382">Зөв бичгийн алдааг засахын тулд Chrome таны хөтөч дээр бичсэн текстийг Google-д илгээдэг</translation>
 <translation id="677276454032249905">Chrome-с ямар ч үед гарах уу?</translation>
+<translation id="6785872064505734160">Chrome-н Google Туслах нь вебсайт дээрх үйлдлүүдийг танд зориулан гүйцээх боломжтой</translation>
 <translation id="683440813066116847">mDNS-ийг зөвшөөрөх Google Chrome Canary-ийн гадаад дүрэм.</translation>
 <translation id="6881299373831449287">Chrome-г шинэчилж байна</translation>
 <translation id="6885412569789873916">Chrome Бета Апп</translation>
@@ -354,6 +351,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="8129812357326543296">Google Chrome-ийн тухай</translation>
 <translation id="813913629614996137">Эхлүүлж байна…</translation>
 <translation id="8255190535488645436">Google Chrome нь таны камер болон микрофоныг ашиглаж байна.</translation>
+<translation id="8270775718612349140">Chrome-н удирддаг гэрчилгээ</translation>
 <translation id="8286862437124483331">Google Chrome нь нууц үгийг харуулахыг оролдож байна. Үүнийг зөвшөөрөхийн тулд Windows-ийн нууц үгээ бичиж оруулна уу.</translation>
 <translation id="828798499196665338">Таны эцэг эх Chrome-н "Сайтууд, аппууд болон өргөтгөлүүдийн зөвшөөрөл"-ийг унтраасан байна. Энэ <ph name="EXTENSION_TYPE_PARAMETER" />-г идэвхжүүлэхийг зөвшөөрдөггүй.</translation>
 <translation id="8290100596633877290">Өө! Google Chrome гэмтсэн байна. Дахин эхлүүлэх үү?</translation>

@@ -100,9 +100,8 @@ class ChromeSearchResult {
   const Actions& actions() const { return metadata_->actions; }
   double display_score() const { return metadata_->display_score; }
   bool is_recommendation() const { return metadata_->is_recommendation; }
-  const absl::optional<GURL>& query_url() const { return metadata_->query_url; }
-  const absl::optional<std::string>& equivalent_result_id() const {
-    return metadata_->equivalent_result_id;
+  bool skip_update_animation() const {
+    return metadata_->skip_update_animation;
   }
   const IconInfo& icon() const { return metadata_->icon; }
   const gfx::ImageSkia& chip_icon() const { return metadata_->chip_icon; }
@@ -136,7 +135,7 @@ class ChromeSearchResult {
   void SetActions(const Actions& actions);
   void SetIsOmniboxSearch(bool is_omnibox_search);
   void SetIsRecommendation(bool is_recommendation);
-  void SetEquivalentResultId(const std::string& equivalent_result_id);
+  void SetSkipUpdateAnimation(bool skip_update_animation);
   void SetIcon(const IconInfo& icon);
   void SetIconDimension(const int dimension);
   void SetChipIcon(const gfx::ImageSkia& icon);

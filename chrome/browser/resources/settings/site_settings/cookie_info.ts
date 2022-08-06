@@ -6,19 +6,19 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format on
 
-export type CookieDetails = {
-  hasChildren: boolean,
-  id: string,
-  idPath: string,
-  title: string,
-  totalUsage: string,
-  type: string,
-};
+export interface CookieDetails {
+  hasChildren: boolean;
+  id: string;
+  idPath: string;
+  title: string;
+  totalUsage: string;
+  type: string;
+}
 
-export type CookieDataForDisplay = {
-  content: string,
-  label: string,
-};
+export interface CookieDataForDisplay {
+  content: string;
+  label: string;
+}
 
 // This structure maps the various cookie type names from C++ (hence the
 // underscores) to arrays of the different types of data each has, along with
@@ -29,27 +29,34 @@ export type CookieDataForDisplay = {
 // 3) What user friendly label to prefix the data with.
 export const cookieInfo: {[key: string]: string[][]} = {
   'cookie': [
-    ['name', 'cookieName'], ['content', 'cookieContent'],
-    ['domain', 'cookieDomain'], ['path', 'cookiePath'],
+    ['name', 'cookieName'],
+    ['content', 'cookieContent'],
+    ['domain', 'cookieDomain'],
+    ['path', 'cookiePath'],
     ['sendfor', 'cookieSendFor'],
     ['accessibleToScript', 'cookieAccessibleToScript'],
-    ['created', 'cookieCreated'], ['expires', 'cookieExpires']
+    ['created', 'cookieCreated'],
+    ['expires', 'cookieExpires'],
   ],
   'database': [
-    ['origin', 'databaseOrigin'], ['size', 'localStorageSize'],
-    ['modified', 'localStorageLastModified']
+    ['origin', 'databaseOrigin'],
+    ['size', 'localStorageSize'],
+    ['modified', 'localStorageLastModified'],
   ],
   'local_storage': [
-    ['origin', 'localStorageOrigin'], ['size', 'localStorageSize'],
-    ['modified', 'localStorageLastModified']
+    ['origin', 'localStorageOrigin'],
+    ['size', 'localStorageSize'],
+    ['modified', 'localStorageLastModified'],
   ],
   'indexed_db': [
-    ['origin', 'indexedDbOrigin'], ['size', 'indexedDbSize'],
-    ['modified', 'indexedDbLastModified']
+    ['origin', 'indexedDbOrigin'],
+    ['size', 'indexedDbSize'],
+    ['modified', 'indexedDbLastModified'],
   ],
   'file_system': [
-    ['origin', 'fileSystemOrigin'], ['persistent', 'fileSystemPersistentUsage'],
-    ['temporary', 'fileSystemTemporaryUsage']
+    ['origin', 'fileSystemOrigin'],
+    ['persistent', 'fileSystemPersistentUsage'],
+    ['temporary', 'fileSystemTemporaryUsage'],
   ],
   'quota': [['origin', 'quotaOrigin'], ['totalUsage', 'quotaSize']],
   'service_worker':
@@ -57,14 +64,11 @@ export const cookieInfo: {[key: string]: string[][]} = {
   'shared_worker':
       [['worker', 'sharedWorkerWorker'], ['name', 'sharedWorkerName']],
   'cache_storage': [
-    ['origin', 'cacheStorageOrigin'], ['size', 'cacheStorageSize'],
-    ['modified', 'cacheStorageLastModified']
+    ['origin', 'cacheStorageOrigin'],
+    ['size', 'cacheStorageSize'],
+    ['modified', 'cacheStorageLastModified'],
   ],
   'flash_lso': [['domain', 'cookieDomain']],
-  'media_license': [
-    ['origin', 'mediaLicenseOrigin'], ['size', 'mediaLicenseSize'],
-    ['modified', 'mediaLicenseLastModified']
-  ],
 };
 
 /**

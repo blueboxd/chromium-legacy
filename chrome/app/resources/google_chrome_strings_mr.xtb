@@ -13,8 +13,6 @@
 <translation id="1142745911746664600">Chrome अपडेट करू शकत नाही</translation>
 <translation id="1152920704813762236">ChromeOS बद्दल</translation>
 <translation id="1154147086299354128">Chrome मध्‍ये &amp;उघडा</translation>
-<translation id="1178374936842835197">या पेजवर सेटिंग दिसत नसल्यास, तुमची <ph name="LINK_BEGIN" />
-        ChromeOS Flex सेटिंग्ज<ph name="LINK_END" /> यामध्ये पहा</translation>
 <translation id="1203500561924088507">इंस्टॉल केल्याबद्दल धन्यवाद. तुम्ही <ph name="BUNDLE_NAME" /> वापरण्यापूर्वी तुमचा ब्राउझर रीस्टार्ट करणे आवश्यक आहे.</translation>
 <translation id="1278833599417554002">&amp;Chrome अपडेट करण्यासाठी पुन्हा लाँच करा</translation>
 <translation id="1302523850133262269">कृपया Chrome नवीनतम सिस्टम अपडेट इंस्टॉल करताना प्रतीक्षा करा.</translation>
@@ -69,6 +67,7 @@
 <translation id="2139300032719313227">ChromeOS रीस्टार्ट करा</translation>
 <translation id="2151406531797534936">कृपया आता Chrome रीस्टार्ट करा</translation>
 <translation id="2174917724755363426">इंस्टॉलेशन पूर्ण झाले नाही. तुम्हाला नक्की रद्द करायचे आहे का?</translation>
+<translation id="223889379102603431">Chrome त्याची रूट सर्टिफिकेट कशी व्यवस्थापित करते याबद्दल माहिती</translation>
 <translation id="2258103955319320201">तुमच्या Chrome ब्राउझरवरील आशय तुमच्या सर्व डिव्हाइसवर अ‍ॅक्सेस करण्यासाठी साइन इन करा, त्यानंतर सिंक सुरू करा</translation>
 <translation id="2290014774651636340">Google API की गहाळ आहेत. Google Chrome ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="2290095356545025170">तुमची खात्री आहे की तुम्ही Google Chrome अनइंस्टॉल करू इच्छिता?</translation>
@@ -81,6 +80,7 @@
 <translation id="2401189691232800402">ChromeOS सिस्टीम</translation>
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
+<translation id="2494974097748878569">Chrome मधील Google असिस्टंट</translation>
 <translation id="2534507159460261402">Google Pay (Chrome वर कॉपी केले)</translation>
 <translation id="2559253115192232574">त्यानंतर, तुम्ही पाहता त्या जाहिराती पर्सनलाइझ करण्यासाठी तुम्ही भेट देता ती साइट Chrome कडे तुमची स्वारस्ये पाहण्याची अनुमती मागू शकते. Chrome कमाल तीन स्वारस्ये शेअर करू शकते.</translation>
 <translation id="2563121210305478421">Chrome पुन्हा लाँच करायचे का?</translation>
@@ -121,7 +121,6 @@
 <translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत ॲप्लिकेशन चालणे सुरू ठेवा</translation>
 <translation id="3089968997497233615">Google Chrome ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="3100998948628680988">तुमच्या Chrome प्रोफाइलला नाव द्या</translation>
-<translation id="3103390129666310801">तुमचे डिव्हाइस अप टू डेट आहे का हे पाहण्यासाठी, <ph name="LINK_BEGIN" />ChromeOS Flex सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
 <translation id="3114643501466072395">तुमचे इतर पासवर्ड डेटा भंग आणि इतर सुरक्षा समस्यांपासून सुरक्षित आहेत हे तपासण्यासाठी, <ph name="BEGIN_LINK" />Chrome मध्ये साइन इन करा<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">पुढील वेळी तुम्ही Google Chrome पुन्हा लाँच केल्यानंतर तुमचे बदल प्रभावी होतील.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
@@ -212,7 +211,6 @@
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
 <translation id="5037581483200764584">भविष्यातील Google Chrome अपडेट मिळवण्यासाठी, तुमच्याकडे macOS 10.13 किंवा त्यानंतरची आवृत्ती असणे आवश्यक आहे. हा कॉंप्युटर OS X 10.11 ही आवृत्ती वापरत आहे.</translation>
 <translation id="5098668839038261629">सुरू केलेले असेल, तेव्हा तुम्हाला Chrome मधूनदेखील साइन आउट केले जाईल</translation>
-<translation id="5112116809696021727">तुमचे डिव्हाइस अप टू डेट आहे का हे पाहण्यासाठी, <ph name="LINK_BEGIN" />ChromeOS सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
 <translation id="5139423532931106058">तुमची Chrome प्रोफाइल कस्टमाइझ करा</translation>
 <translation id="5163087008893166964">Chrome मध्ये स्वागत आहे; नवीन ब्राउझर विंडो उघडली</translation>
@@ -251,8 +249,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="5940385492829620908">तुमचे वेब, बुकमार्क आणि अन्य Chrome आशय येथे थेट आहे.</translation>
 <translation id="5941711191222866238">कमी करा</translation>
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
-<translation id="5959292945051687759">या पेजवर एखादे सेटिंग दिसत नसल्यास, तुमची <ph name="LINK_BEGIN" />
-        ChromeOS सेटिंग्ज<ph name="LINK_END" /> यामध्ये पहा</translation>
 <translation id="6003112304606738118">डाउनलोड करत आहे... <ph name="HOURS" /> तास शिल्लक आहे(आहेत)</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6070348360322141662">अतिरिक्त सुरक्षिततेसाठी, Google Chrome तुमचा डेटा एंक्रिप्ट करेल</translation>
@@ -280,6 +276,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6739177684496155661">नवीन Chrome प्रोफाइलमध्ये सुरू ठेवायचे आहे का?</translation>
 <translation id="6750954913813541382">शब्दलेखनाच्या चुकांमध्ये सुधारणा करण्यासाठी, तुम्ही ब्राउझरमध्ये टाइप करता तो मजकूर Chrome Google ला पाठवते</translation>
 <translation id="677276454032249905">तरीही Chrome बंद करायचे?</translation>
+<translation id="6785872064505734160">Chrome मधील Google Assistant तुमच्यासाठी सर्व वेबसाइटवर कृती पूर्ण करू शकतो</translation>
 <translation id="683440813066116847">mDNS रहदारीस अनुमती देण्यासाठी Google Chrome कॅनरी साठी अंतर्गामी नियम.</translation>
 <translation id="6881299373831449287">Chrome अपडेट करत आहे</translation>
 <translation id="6885412569789873916">Chrome बीटा ॲप</translation>
@@ -352,6 +349,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8129812357326543296">&amp;Google Chrome विषयी</translation>
 <translation id="813913629614996137">सुरू करत आहे…</translation>
 <translation id="8255190535488645436">Google Chrome तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>
+<translation id="8270775718612349140">Chrome द्वारे व्यवस्थापित केलेली सर्टिफिकेट</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="828798499196665338">तुमच्या पालकांनी Chrome साठी "साइट, अ‍ॅप्स आणि एक्स्टेंशनकरिता परवानग्या" सुरू केल्या आहेत. हे <ph name="EXTENSION_TYPE_PARAMETER" /> सुरू करण्यास अनुमती नाही.</translation>
 <translation id="8290100596633877290">अरेरे! Google Chrome क्रॅश झाला. त्वरित पुन्हा लाँच करायचा?</translation>

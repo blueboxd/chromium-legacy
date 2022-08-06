@@ -5,11 +5,12 @@
 module wl.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 import "ui/gfx/mojom/gpu_fence_handle.mojom";
 import "ui/gfx/mojom/overlay_transform.mojom";
 import "ui/gfx/mojom/overlay_priority_hint.mojom";
 import "ui/gfx/mojom/rrect_f.mojom";
-import "skia/public/mojom/skcolor.mojom";
+import "skia/public/mojom/skcolor4f.mojom";
 
 // This is not a mirror of ui::OverlayPlane, it only contains things that are
 // useful to ozone/wayland.
@@ -17,6 +18,9 @@ struct WaylandOverlayConfig {
   // Specifies the stacking order of this overlay plane, relative to primary
   // plane.
   int32 z_order;
+
+  // Specifies the color space data of the wayland config.
+  gfx.mojom.ColorSpace color_space;
 
   // Specifies how the buffer is to be transformed during composition.
   gfx.mojom.OverlayTransform transform;
@@ -64,5 +68,5 @@ struct WaylandOverlayConfig {
   gfx.mojom.RRectF rounded_clip_bounds;
 
   // Optional: background color of this overlay plane.
-  skia.mojom.SkColor? background_color;
+  skia.mojom.SkColor4f? background_color;
 };

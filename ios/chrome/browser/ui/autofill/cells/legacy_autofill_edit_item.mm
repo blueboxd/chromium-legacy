@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -171,11 +169,12 @@ const CGFloat kLabelAndFieldGap = 5;
 
 - (void)updateWithFontScaling:(BOOL)withFontScaling {
   MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
-                            [[MDCTypography fontLoader] mediumFontOfSize:14]);
+                            [UIFont systemFontOfSize:14
+                                              weight:UIFontWeightMedium]);
   self.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
-  MaybeSetUITextFieldScaledFont(
-      withFontScaling, self.textField,
-      [[MDCTypography fontLoader] lightFontOfSize:16]);
+  MaybeSetUITextFieldScaledFont(withFontScaling, self.textField,
+                                [UIFont systemFontOfSize:16
+                                                  weight:UIFontWeightLight]);
   self.textField.textColor = [UIColor colorNamed:kTextSecondaryColor];
 }
 

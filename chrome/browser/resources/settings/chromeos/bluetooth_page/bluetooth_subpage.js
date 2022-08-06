@@ -15,13 +15,13 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './bluetooth_device_list_item.js';
 
 import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics, recordUserInitiatedReconnectionAttemptDuration} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js';
 import {CrScrollableBehavior, CrScrollableBehaviorInterface} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.js';
 import {flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
@@ -48,8 +48,11 @@ const MAX_NUMBER_DEVICE_SHOWN = 50;
  */
 const SettingsBluetoothSubpageElementBase = mixinBehaviors(
     [
-      I18nBehavior, CrScrollableBehavior, DeepLinkingBehavior,
-      ListPropertyUpdateBehavior, RouteObserverBehavior
+      I18nBehavior,
+      CrScrollableBehavior,
+      DeepLinkingBehavior,
+      ListPropertyUpdateBehavior,
+      RouteObserverBehavior,
     ],
     PolymerElement);
 
@@ -673,7 +676,7 @@ class SettingsBluetoothSubpageElement extends
   refreshBluetoothList_() {
     const filter = {
       filterType: chrome.bluetooth.FilterType.KNOWN,
-      limit: MAX_NUMBER_DEVICE_SHOWN
+      limit: MAX_NUMBER_DEVICE_SHOWN,
     };
     this.bluetooth.getDevices(filter, devices => {
       this.deviceList_ = this.sortDevices_(devices);

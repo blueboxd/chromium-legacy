@@ -11,14 +11,15 @@
 
 #include "base/barrier_callback.h"
 #include "base/callback.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/password_manager/android/password_manager_lifecycle_helper_impl.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_api_error_codes.h"
@@ -52,7 +53,6 @@ constexpr base::TimeDelta kAsyncTaskTimeout = base::Seconds(30);
 constexpr char kUPMActiveHistogram[] =
     "PasswordManager.UnifiedPasswordManager.ActiveStatus";
 
-using autofill::MatchesPattern;
 using base::UTF8ToUTF16;
 using password_manager::GetExpressionForFederatedMatching;
 using password_manager::GetRegexForPSLFederatedMatching;
@@ -87,6 +87,14 @@ std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
   return form.signon_realm;
 }
 
+bool MatchesRegexWithCache(base::StringPiece16 input,
+                           base::StringPiece16 regex) {
+  static base::NoDestructor<autofill::AutofillRegexCache> cache(
+      autofill::ThreadSafe(true));
+  const icu::RegexPattern* regex_pattern = cache->GetRegexPattern(regex);
+  return autofill::MatchesRegex(input, *regex_pattern);
+}
+
 bool MatchesIncludedPSLAndFederation(const PasswordForm& retrieved_login,
                                      const PasswordFormDigest& form_to_match,
                                      bool include_psl) {
@@ -101,19 +109,20 @@ bool MatchesIncludedPSLAndFederation(const PasswordForm& retrieved_login,
   if (include_psl) {
     const std::u16string psl_regex =
         UTF8ToUTF16(GetRegexForPSLMatching(form_to_match.signon_realm));
-    if (MatchesPattern(retrieved_login_signon_realm, psl_regex))
+    if (MatchesRegexWithCache(retrieved_login_signon_realm, psl_regex))
       return true;
     if (include_federated) {
       const std::u16string psl_federated_regex = UTF8ToUTF16(
           GetRegexForPSLFederatedMatching(form_to_match.signon_realm));
-      if (MatchesPattern(retrieved_login_signon_realm, psl_federated_regex))
+      if (MatchesRegexWithCache(retrieved_login_signon_realm,
+                                psl_federated_regex))
         return true;
     }
   } else if (include_federated) {
     const std::u16string federated_regex =
         UTF8ToUTF16("^" + GetExpressionForFederatedMatching(form_to_match.url));
     return include_federated &&
-           MatchesPattern(retrieved_login_signon_realm, federated_regex);
+           MatchesRegexWithCache(retrieved_login_signon_realm, federated_regex);
   }
   return false;
 }
@@ -226,9 +235,10 @@ void LogUPMActiveStatus(syncer::SyncService* sync_service, PrefService* prefs) {
                                 UnifiedPasswordManagerActiveStatus::kActive);
 }
 
-bool IsUnrecoverableError(AndroidBackendAPIErrorCode api_error_code) {
+bool IsUnrecoverableBackendError(AndroidBackendAPIErrorCode api_error_code) {
   switch (api_error_code) {
     case AndroidBackendAPIErrorCode::kDeveloperError:
+    case AndroidBackendAPIErrorCode::kBadRequest:
       return false;
     default:
       return true;
@@ -245,10 +255,15 @@ PasswordStoreBackendError BackendErrorFromAndroidBackendError(
   if (!error.api_error_code.has_value())
     return PasswordStoreBackendError::kUnrecoverable;
 
-  return IsUnrecoverableError(static_cast<AndroidBackendAPIErrorCode>(
+  return IsUnrecoverableBackendError(static_cast<AndroidBackendAPIErrorCode>(
              error.api_error_code.value()))
              ? PasswordStoreBackendError::kUnrecoverable
              : PasswordStoreBackendError::kRecoverable;
+}
+
+bool IsUnenrolledFromUPM(const PrefService* prefs) {
+  return prefs->GetBoolean(
+      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
 }
 
 }  // namespace
@@ -292,33 +307,34 @@ class PasswordStoreAndroidBackend::ClearAllLocalPasswordsMetricRecorder {
   PasswordStoreBackendMetricsRecorder metrics_recorder_;
 };
 
-PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler() = default;
-
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     LoginsOrErrorReply callback,
-    PasswordStoreBackendMetricsRecorder metrics_recorder)
+    PasswordStoreBackendMetricsRecorder metrics_recorder,
+    bool is_unenrolled_from_upm)
     : success_callback_(std::move(callback)),
-      metrics_recorder_(std::move(metrics_recorder)) {}
+      metrics_recorder_(std::move(metrics_recorder)),
+      is_unenrolled_from_upm_(is_unenrolled_from_upm) {}
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     PasswordChangesOrErrorReply callback,
-    PasswordStoreBackendMetricsRecorder metrics_recorder)
+    PasswordStoreBackendMetricsRecorder metrics_recorder,
+    bool is_unenrolled_from_upm)
     : success_callback_(std::move(callback)),
-      metrics_recorder_(std::move(metrics_recorder)) {}
+      metrics_recorder_(std::move(metrics_recorder)),
+      is_unenrolled_from_upm_(is_unenrolled_from_upm) {}
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
-    JobReturnHandler&&) = default;
-PasswordStoreAndroidBackend::JobReturnHandler&
-
-PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler::operator=(
     JobReturnHandler&&) = default;
 
 PasswordStoreAndroidBackend::JobReturnHandler::~JobReturnHandler() = default;
 
 void PasswordStoreAndroidBackend::JobReturnHandler::RecordMetrics(
     absl::optional<AndroidBackendError> error) const {
-  metrics_recorder_.RecordMetrics(GetSuccessStatusFromError(error),
-                                  std::move(error));
+  if (is_unenrolled_from_upm_)
+    metrics_recorder_.RecordMetricsForUnenrolledClients(error);
+
+  SuccessStatus sucess_status = GetSuccessStatusFromError(error);
+  metrics_recorder_.RecordMetrics(sucess_status, std::move(error));
 }
 
 base::TimeDelta
@@ -369,11 +385,8 @@ void PasswordStoreAndroidBackend::InitBackend(
   lifecycle_helper_->RegisterObserver(base::BindRepeating(
       &PasswordStoreAndroidBackend::OnForegroundSessionStart,
       base::Unretained(this)));
-
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PasswordStoreAndroidBackend::Subscribe,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(completion)));
+  // TODO(https://crbug.com/1229650): Create subscription before completion.
+  std::move(completion).Run(/*success=*/true);
 }
 
 void PasswordStoreAndroidBackend::Shutdown(
@@ -682,14 +695,21 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
     // If the user is experiencing an error unresolvable by Chrome or by the
     // user, unenroll the user from the UPM experience.
     int api_error = error.api_error_code.value();
-    if (IsUnrecoverableError(
+    if (password_manager::IsUnrecoverableBackendError(
             static_cast<AndroidBackendAPIErrorCode>(api_error))) {
       if (!prefs_->GetBoolean(
               prefs::kUnenrolledFromGoogleMobileServicesDueToErrors)) {
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kShowUPMErrorNotification)) {
+          bridge_->ShowErrorNotification();
+        }
         base::UmaHistogramBoolean(
             "PasswordManager.UnenrolledFromUPMDueToErrors", true);
         prefs_->SetBoolean(
             prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, true);
+        prefs_->SetInteger(
+            prefs::kUnenrolledFromGoogleMobileServicesAfterApiErrorCode,
+            api_error);
         LOG(ERROR) << "Unenrolled from UPM due to error with code: "
                    << api_error;
       }
@@ -720,51 +740,17 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
   }
 }
 
-void PasswordStoreAndroidBackend::OnSubscribed(
-    PasswordStoreAndroidBackendBridge::JobId job_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  absl::optional<JobReturnHandler> reply = GetAndEraseJob(job_id);
-  if (!reply.has_value())
-    return;  // Task was cleaned up after returning from backgrounding.
-
-  reply->RecordMetrics(absl::nullopt);
-  // Without error, report a success back. The result can be omitted.
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
-                                LoginsResult()));
-}
-
-void PasswordStoreAndroidBackend::OnSubscribeFailed(
-    PasswordStoreAndroidBackendBridge::JobId job_id,
-    AndroidBackendError error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  absl::optional<JobReturnHandler> reply = GetAndEraseJob(job_id);
-  if (!reply.has_value())
-    return;  // Task was cleaned up after returning from backgrounding.
-
-  if (error.api_error_code.has_value() && sync_service_) {
-    DCHECK_EQ(AndroidBackendErrorType::kExternalError, error.type);
-    RecordApiErrorInCombinationWithSyncStatus(error.api_error_code.value(),
-                                              sync_service_->GetAuthError());
-  }
-  PasswordStoreBackendError reported_error =
-      BackendErrorFromAndroidBackendError(error);
-  reply->RecordMetrics(std::move(error));
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
-                                reported_error));
-}
-
 template <typename Callback>
 void PasswordStoreAndroidBackend::QueueNewJob(JobId job_id,
                                               Callback callback,
                                               MetricInfix metric_infix) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   request_for_job_.emplace(
-      job_id,
-      JobReturnHandler(std::move(callback), PasswordStoreBackendMetricsRecorder(
-                                                BackendInfix("AndroidBackend"),
-                                                std::move(metric_infix))));
+      job_id, JobReturnHandler(
+                  std::move(callback),
+                  PasswordStoreBackendMetricsRecorder(
+                      BackendInfix("AndroidBackend"), std::move(metric_infix)),
+                  IsUnenrolledFromUPM(prefs_)));
 }
 
 absl::optional<PasswordStoreAndroidBackend::JobReturnHandler>
@@ -776,20 +762,6 @@ PasswordStoreAndroidBackend::GetAndEraseJob(JobId job_id) {
   JobReturnHandler reply = std::move(iter->second);
   request_for_job_.erase(iter);
   return reply;
-}
-
-void PasswordStoreAndroidBackend::Subscribe(
-    base::OnceCallback<void(bool)> completion) {
-  // TODO(https://crbug.com/1229650): Once subscribe API exists, ensure this
-  // call repeats for sync changes.
-  JobId job_id =
-      bridge_->Subscribe(GetAccount(GetSyncingAccount(sync_service_)));
-  auto is_success = [](LoginsResultOrError logins_or_error) -> bool {
-    // Fake subscribe are successful if they have any result and no error.
-    return absl::holds_alternative<LoginsResult>(logins_or_error);
-  };
-  QueueNewJob(job_id, base::BindOnce(is_success).Then(std::move(completion)),
-              MetricInfix("InitialListAsync"));
 }
 
 void PasswordStoreAndroidBackend::GetLoginsAsync(const PasswordFormDigest& form,

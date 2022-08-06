@@ -13,7 +13,6 @@
 #include "base/containers/queue.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/webid/fedcm_metrics.h"
 #include "content/browser/webid/idp_network_request_manager.h"
 #include "content/common/content_export.h"
@@ -107,9 +106,9 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       IdentityProviderMetadata idp_metadata,
       IdpNetworkRequestManager::FetchStatus status,
       IdpNetworkRequestManager::AccountList accounts);
-  void OnAccountSelected(const std::string& account_id,
-                         bool is_sign_in,
-                         bool should_embargo);
+  void OnAccountSelected(const std::string& account_id, bool is_sign_in);
+  void OnDialogDismissed(
+      IdentityRequestDialogController::DismissReason dismiss_reason);
   void CompleteTokenRequest(IdpNetworkRequestManager::FetchStatus status,
                             const std::string& token);
   void OnTokenResponseReceived(IdpNetworkRequestManager::FetchStatus status,
@@ -118,7 +117,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   void OnLogoutCompleted();
   void CompleteRequest(blink::mojom::FederatedAuthRequestResult,
                        const std::string& token,
-                       bool should_call_callback);
+                       bool should_delay_callback);
   void CompleteLogoutRequest(blink::mojom::LogoutRpsStatus);
 
   void CleanUp();
@@ -197,13 +196,10 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   // The account that was selected by the user. This is only applicable to the
   // mediation flow.
   std::string account_id_;
-  // Used by revocation.
-  std::string hint_;
   base::TimeTicks start_time_;
   base::TimeTicks show_accounts_dialog_time_;
   base::TimeTicks select_account_time_;
   base::TimeTicks token_response_time_;
-  base::DelayTimer delay_timer_;
   base::TimeDelta token_request_delay_;
   bool errors_logged_to_console_{false};
   RequestTokenCallback auth_request_callback_;

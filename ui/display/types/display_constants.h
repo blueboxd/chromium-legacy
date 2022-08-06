@@ -117,6 +117,33 @@ enum PrivacyScreenState {
   kPrivacyScreenStateLast = kNotSupported,
 };
 
+// The requested state for refresh rate throttling.
+enum RefreshRateThrottleState {
+  kRefreshRateThrottleEnabled,
+  kRefreshRateThrottleDisabled,
+};
+
+// Whether a configuration should be seamless or full. Full configuration may
+// result in visible artifacts such as blanking to achieve the specified
+// configuration. Seamless configuration requests will fail if the system cannot
+// achieve it without visible artifacts.
+enum ConfigurationType {
+  kConfigurationTypeFull,
+  kConfigurationTypeSeamless,
+};
+
+// A flag to allow ui/display and ozone to adjust the behavior of display
+// configurations.
+enum ModesetFlag {
+  // At least one of kTestModeset and kCommitModeset must be set.
+  kTestModeset = 1 << 0,
+  kCommitModeset = 1 << 1,
+  // When |kSeamlessModeset| is set, the commit (or test) will succeed only if
+  // the submitted configuration can be completed without visual artifacts such
+  // as blanking.
+  kSeamlessModeset = 1 << 2,
+};
+
 // Defines the float values closest to repeating decimal scale factors.
 constexpr float kDsf_1_777 = 1.77777779102325439453125f;
 constexpr float kDsf_2_252 = 2.2522523403167724609375f;

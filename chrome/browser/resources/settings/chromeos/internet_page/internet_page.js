@@ -10,7 +10,7 @@
 
 import 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_setup_icons.m.js';
 import 'chrome://resources/cr_components/chromeos/network/sim_lock_dialogs.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/icons.m.js';
@@ -20,7 +20,7 @@ import '../os_settings_icons_css.js';
 import '../../prefs/prefs.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './cellular_setup_dialog.js';
 import './internet_detail_menu.js';
 import './internet_detail_page.js';
@@ -68,8 +68,11 @@ const ESIM_PROFILE_LIMIT = 5;
  */
 const SettingsInternetPageElementBase = mixinBehaviors(
     [
-      NetworkListenerBehavior, DeepLinkingBehavior, I18nBehavior,
-      RouteObserverBehavior, WebUIListenerBehavior
+      NetworkListenerBehavior,
+      DeepLinkingBehavior,
+      I18nBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -171,7 +174,7 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
         type: Array,
         value() {
           return [];
-        }
+        },
       },
 
       /** @private {boolean} */

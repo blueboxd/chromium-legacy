@@ -34,12 +34,12 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/ev_root_ca_metadata.h"
-#include "net/cert/internal/extended_key_usage.h"
-#include "net/cert/internal/parse_certificate.h"
-#include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert/ocsp_revocation_status.h"
 #include "net/cert/pem.h"
+#include "net/cert/pki/extended_key_usage.h"
+#include "net/cert/pki/parse_certificate.h"
+#include "net/cert/pki/signature_algorithm.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -240,9 +240,14 @@ const std::vector<CertVerifyProcType> kAllCertVerifiers = {
     CERT_VERIFY_PROC_IOS
 #elif BUILDFLAG(IS_MAC)
     CERT_VERIFY_PROC_MAC, CERT_VERIFY_PROC_BUILTIN,
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
     CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
+#endif
 #elif BUILDFLAG(IS_WIN)
-    CERT_VERIFY_PROC_WIN, CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
+    CERT_VERIFY_PROC_WIN,
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+    CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
+#endif
 #elif BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     CERT_VERIFY_PROC_BUILTIN
 #else

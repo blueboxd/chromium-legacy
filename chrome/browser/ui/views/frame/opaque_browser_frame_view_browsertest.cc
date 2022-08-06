@@ -37,7 +37,7 @@
 #include "ui/views/view_utils.h"
 
 #if BUILDFLAG(IS_LINUX)
-#include "ui/views/linux_ui/linux_ui.h"
+#include "ui/linux/linux_ui.h"
 #endif
 
 // Tests web-app windows that use the OpaqueBrowserFrameView implementation
@@ -58,7 +58,7 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     SetThemeMode(ThemeMode::kDefault);
 #if BUILDFLAG(IS_LINUX)
-    views::LinuxUI::instance()->SetUseSystemThemeCallback(
+    ui::LinuxUi::instance()->SetUseSystemThemeCallback(
         base::BindRepeating([](aura::Window* window) { return false; }));
 #endif
   }

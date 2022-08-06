@@ -5,8 +5,6 @@
 #ifndef MEDIA_MOJO_MOJOM_CDM_CAPABILITY_MOJOM_TRAITS_H_
 #define MEDIA_MOJO_MOJOM_CDM_CAPABILITY_MOJOM_TRAITS_H_
 
-#include <vector>
-
 #include "base/containers/flat_set.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/content_decryption_module.h"
@@ -18,8 +16,24 @@
 namespace mojo {
 
 template <>
+struct StructTraits<media::mojom::VideoCodecInfoDataView,
+                    media::VideoCodecInfo> {
+  static const base::flat_set<media::VideoCodecProfile>& supported_profiles(
+      const media::VideoCodecInfo& input) {
+    return input.supported_profiles;
+  }
+
+  static const bool& supports_clear_lead(const media::VideoCodecInfo& input) {
+    return input.supports_clear_lead;
+  }
+
+  static bool Read(media::mojom::VideoCodecInfoDataView input,
+                   media::VideoCodecInfo* output);
+};
+
+template <>
 struct StructTraits<media::mojom::CdmCapabilityDataView, media::CdmCapability> {
-  static const std::vector<media::AudioCodec>& audio_codecs(
+  static const base::flat_set<media::AudioCodec>& audio_codecs(
       const media::CdmCapability& input) {
     return input.audio_codecs;
   }

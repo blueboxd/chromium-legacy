@@ -191,7 +191,7 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_EQ(sync_token, resource->GetSyncToken());
 
   // Resource updated after draw.
-  provider->Canvas()->clear(SK_ColorWHITE);
+  provider->Canvas()->clear(SkColors::kWhite);
   auto new_resource = provider->ProduceCanvasResource();
   EXPECT_NE(resource, new_resource);
   EXPECT_NE(sync_token, new_resource->GetSyncToken());
@@ -205,7 +205,7 @@ TEST_F(CanvasResourceProviderTest,
   resource = nullptr;
   std::move(release_callback).Run(sync_token, false);
 
-  provider->Canvas()->clear(SK_ColorBLACK);
+  provider->Canvas()->clear(SkColors::kBlack);
   auto resource_again = provider->ProduceCanvasResource();
   EXPECT_EQ(resource_ptr, resource_again);
   EXPECT_NE(sync_token, resource_again->GetSyncToken());
@@ -237,7 +237,7 @@ TEST_F(CanvasResourceProviderTest,
             image->GetMailboxHolder().mailbox);
 
   // Resource updated after draw.
-  provider->Canvas()->clear(SK_ColorWHITE);
+  provider->Canvas()->clear(SkColors::kWhite);
   provider->FlushCanvas();
   new_image = provider->Snapshot();
   EXPECT_NE(new_image->GetMailboxHolder().mailbox,
@@ -246,7 +246,7 @@ TEST_F(CanvasResourceProviderTest,
   // Resource recycled.
   auto original_mailbox = image->GetMailboxHolder().mailbox;
   image.reset();
-  provider->Canvas()->clear(SK_ColorBLACK);
+  provider->Canvas()->clear(SkColors::kBlack);
   provider->FlushCanvas();
   EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailboxHolder().mailbox);
 }
@@ -303,8 +303,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
 
   MockCanvasResourceDispatcherClient client;
   CanvasResourceDispatcher resource_dispatcher(
-      &client, 1 /* client_id */, 1 /* sink_id */,
-      1 /* placeholder_canvas_id */, kSize);
+      &client, base::ThreadTaskRunnerHandle::Get(), 1 /* client_id */,
+      1 /* sink_id */, 1 /* placeholder_canvas_id */, kSize);
 
   auto provider = CanvasResourceProvider::CreateSharedBitmapProvider(
       kInfo, cc::PaintFlags::FilterQuality::kLow,
@@ -532,10 +532,10 @@ TEST_F(CanvasResourceProviderTest, FlushForImage) {
 
   EXPECT_TRUE(dst_canvas->IsCachingImage(src_content_id));
 
-  src_provider->Canvas()->clear(
-      SK_ColorWHITE);  // Modify the canvas to trigger OnFlushForImage
-  src_provider
-      ->ProduceCanvasResource();  // So that all the cached draws are executed
+  // Modify the canvas to trigger OnFlushForImage
+  src_provider->Canvas()->clear(SkColors::kWhite);
+  // So that all the cached draws are executed
+  src_provider->ProduceCanvasResource();
 
   // The paint canvas may have moved
   dst_canvas = static_cast<MemoryManagedPaintCanvas*>(dst_provider->Canvas());

@@ -172,9 +172,12 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isChildAccount", profile()->IsChild());
 
   // Personalization hub is only enabled for regular (non-guest) users.
+  // b/238455906 also call |!features::IsGuestModeActive()| since this
+  // additionally checks for enterprise managed guest users.
   html_source->AddBoolean("isPersonalizationHubEnabled",
                           ash::features::IsPersonalizationHubEnabled() &&
-                              profile()->IsRegularProfile());
+                              profile()->IsRegularProfile() &&
+                              !features::IsGuestModeActive());
 
   // Add the System Web App resources for Settings.
   html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
@@ -255,8 +258,12 @@ void MainSection::AddChromeOSUserStrings(
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
                                  base::ASCIIToUTF16(primary_user_email)));
   html_source->AddString(
-      "sublableWithEmail",
+      "sublabelWithEmail",
       l10n_util::GetStringFUTF16(IDS_BLUETOOTH_SAVED_DEVICES_SUBTITLE,
+                                 base::ASCIIToUTF16(primary_user_email)));
+  html_source->AddString(
+      "noDevicesWithEmail",
+      l10n_util::GetStringFUTF16(IDS_BLUETOOTH_NO_SAVED_DEVICES_LABEL,
                                  base::ASCIIToUTF16(primary_user_email)));
 }
 

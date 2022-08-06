@@ -88,7 +88,6 @@ extern const char kSystemGestureStartHeight[];
 extern const char kBottomSystemGestureStartHeight[];
 extern const char kBackGestureHorizontalThreshold[];
 extern const char kEnableTopDragGesture[];
-extern const char kEnableRoundedWindowCorners[];
 extern const char kManagedMode[];
 
 // Background color used when Chromium hasn't rendered anything yet.
@@ -106,9 +105,6 @@ extern const char kDisableMojoRenderer[];
 extern const char kForceUpdateRemoteUrl[];
 
 extern const char kSysInfoFilePath[];
-
-// Extension switches.
-extern const char kExtensionsDir[];
 
 // Switches for Cast browser decoupling.
 extern const char kDeferFeatureList[];

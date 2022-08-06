@@ -5,11 +5,14 @@
 /**
  * @fileoverview Puts text on a braille display.
  */
-import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
-import {BrailleTranslatorManager} from '/chromevox/background/braille/braille_translator_manager.js';
-import {ExpandingBrailleTranslator} from '/chromevox/background/braille/expanding_braille_translator.js';
-import {PanStrategy} from '/chromevox/background/braille/pan_strategy.js';
-import {ValueSpan} from '/chromevox/background/braille/spans.js';
+import {BrailleDisplayState, BrailleKeyCommand, BrailleKeyEvent} from '../../common/braille/braille_key_types.js';
+import {NavBraille} from '../../common/braille/nav_braille.js';
+
+import {BrailleCaptionsBackground} from './braille_captions_background.js';
+import {BrailleTranslatorManager} from './braille_translator_manager.js';
+import {ExpandingBrailleTranslator} from './expanding_braille_translator.js';
+import {PanStrategy} from './pan_strategy.js';
+import {ValueSpan} from './spans.js';
 
 export class BrailleDisplayManager {
   /**
@@ -36,7 +39,7 @@ export class BrailleDisplayManager {
     this.displayState_ = {
       available: false,
       textRowCount: 0,
-      textColumnCount: 0
+      textColumnCount: 0,
     };
 
     /** @private {!ExpandingBrailleTranslator.ExpansionType} valueExpansion */
@@ -232,7 +235,7 @@ export class BrailleDisplayManager {
     this.realDisplayState_ = {
       available: newState.available,
       textRowCount: newState.textRowCount || 0,
-      textColumnCount: newState.textColumnCount || 0
+      textColumnCount: newState.textColumnCount || 0,
     };
     if (newState.available) {
       // Update the dimensions of the virtual braille captions display to those
@@ -264,7 +267,7 @@ export class BrailleDisplayManager {
    */
   refresh_() {
     if (this.blinkerId_ !== undefined) {
-      window.clearInterval(this.blinkerId_);
+      clearInterval(this.blinkerId_);
     }
 
     // If there's no cursor, don't schedule blinking.
@@ -277,7 +280,7 @@ export class BrailleDisplayManager {
     }
 
     let showCursor = false;
-    this.blinkerId_ = window.setInterval(() => {
+    this.blinkerId_ = setInterval(() => {
       this.refreshInternal_(showCursor);
       showCursor = !showCursor;
     }, BrailleDisplayManager.CURSOR_BLINK_TIME_MS);

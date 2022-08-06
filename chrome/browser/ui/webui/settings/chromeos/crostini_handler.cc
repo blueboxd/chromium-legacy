@@ -15,17 +15,18 @@
 #include "chrome/browser/ash/crostini/crostini_installer.h"
 #include "chrome/browser/ash/crostini/crostini_port_forwarder.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_types.mojom.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -242,28 +243,27 @@ void CrostiniHandler::HandleRequestRemoveCrostini(
 
 namespace {
 
-base::Value CrostiniDiskInfoToValue(
+base::Value::Dict CrostiniDiskInfoToValue(
     std::unique_ptr<crostini::CrostiniDiskInfo> disk_info) {
-  base::Value disk_value(base::Value::Type::DICTIONARY);
+  base::Value::Dict disk_value;
   if (!disk_info) {
-    disk_value.SetBoolKey("succeeded", false);
+    disk_value.Set("succeeded", false);
     return disk_value;
   }
-  disk_value.SetBoolKey("succeeded", true);
-  disk_value.SetBoolKey("canResize", disk_info->can_resize);
-  disk_value.SetBoolKey("isUserChosenSize", disk_info->is_user_chosen_size);
-  disk_value.SetBoolKey("isLowSpaceAvailable",
-                        disk_info->is_low_space_available);
-  disk_value.SetIntKey("defaultIndex", disk_info->default_index);
-  base::Value ticks(base::Value::Type::LIST);
+  disk_value.Set("succeeded", true);
+  disk_value.Set("canResize", disk_info->can_resize);
+  disk_value.Set("isUserChosenSize", disk_info->is_user_chosen_size);
+  disk_value.Set("isLowSpaceAvailable", disk_info->is_low_space_available);
+  disk_value.Set("defaultIndex", disk_info->default_index);
+  base::Value::List ticks;
   for (const auto& tick : disk_info->ticks) {
-    base::Value t(base::Value::Type::DICTIONARY);
-    t.SetDoubleKey("value", static_cast<double>(tick->value));
-    t.SetStringKey("ariaValue", tick->aria_value);
-    t.SetStringKey("label", tick->label);
+    base::Value::Dict t;
+    t.Set("value", static_cast<double>(tick->value));
+    t.Set("ariaValue", tick->aria_value);
+    t.Set("label", tick->label);
     ticks.Append(std::move(t));
   }
-  disk_value.SetKey("ticks", std::move(ticks));
+  disk_value.Set("ticks", std::move(ticks));
   return disk_value;
 }
 }  // namespace
@@ -404,8 +404,8 @@ void CrostiniHandler::OnCanDisableArcAdbSideloading(
       power_manager::REQUEST_RESTART_FOR_USER, "disable adb sideloading");
 }
 
-void CrostiniHandler::LaunchTerminal(apps::mojom::IntentPtr intent) {
-  crostini::LaunchTerminalWithIntent(
+void CrostiniHandler::LaunchTerminal(apps::IntentPtr intent) {
+  guest_os::LaunchTerminalWithIntent(
       profile_, display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       std::move(intent), base::DoNothing());
 }
@@ -478,7 +478,8 @@ void CrostiniHandler::HandleCrostiniContainerUpgradeAvailableRequest(
   OnContainerOsReleaseChanged(crostini::DefaultContainerId(), can_upgrade);
 }
 
-void CrostiniHandler::OnActivePortsChanged(const base::ListValue& activePorts) {
+void CrostiniHandler::OnActivePortsChanged(
+    const base::Value::List& activePorts) {
   // Other side listens with cr.addWebUIListener
   FireWebUIListener("crostini-port-forwarder-active-ports-changed",
                     activePorts);
@@ -714,7 +715,7 @@ void CrostiniHandler::HandleCreateContainer(const base::Value::List& args) {
   crostini::CrostiniManager::GetForProfile(profile_)
       ->RestartCrostiniWithOptions(container_id, std::move(options),
                                    base::DoNothing());
-  apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
+  auto intent = std::make_unique<apps::Intent>(apps_util::kIntentActionView);
   intent->extras = container_id.ToMap();
 
   // The Terminal will be added as an observer to the above restart.
@@ -780,8 +781,7 @@ void CrostiniHandler::HandleRequestContainerInfo(
     container_info_list.Append(std::move(container_info_value));
   }
 
-  FireWebUIListener("crostini-container-info",
-                    base::Value(std::move(container_info_list)));
+  FireWebUIListener("crostini-container-info", container_info_list);
 }
 
 void CrostiniHandler::HandleSetContainerBadgeColor(

@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
-#include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -190,10 +189,6 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   if (image_painted)
     MarkFirstImagePaint();
   fmp_detector_->NotifyPaint();
-  if (auto* local_frame = DynamicTo<LocalFrame>(GetFrame()->Top())) {
-    if (auto* mf_checker = local_frame->View()->GetMobileFriendlinessChecker())
-      mf_checker->NotifyPaint();
-  }
 
   if (is_first_paint)
     GetFrame()->OnFirstPaint(text_painted, image_painted);
@@ -241,6 +236,11 @@ void PaintTiming::SetFirstPaint(base::TimeTicks stamp) {
 
   first_paint_ = stamp;
   RegisterNotifyPresentationTime(PaintEvent::kFirstPaint);
+
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->GetDocument()) {
+    frame->GetDocument()->MarkFirstPaint();
+  }
 }
 
 void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {

@@ -28,8 +28,8 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -636,7 +636,7 @@ void CertProvisioningSchedulerImpl::WaitForInternetConnection() {
 }
 
 void CertProvisioningSchedulerImpl::OnNetworkChange(
-    const chromeos::NetworkState* network) {
+    const NetworkState* network) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If waiting for connection and some network becomes online, try to continue.
@@ -655,14 +655,14 @@ void CertProvisioningSchedulerImpl::OnNetworkChange(
 }
 
 void CertProvisioningSchedulerImpl::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
+    const NetworkState* network) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   OnNetworkChange(network);
 }
 
 void CertProvisioningSchedulerImpl::NetworkConnectionStateChanged(
-    const chromeos::NetworkState* network) {
+    const NetworkState* network) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   OnNetworkChange(network);

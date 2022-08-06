@@ -30,10 +30,15 @@ source_set("ntp") {
 
 source_set("features") {
   sources = [
-    "features.cc",
     "features.h",
+    "features.mm",
   ]
-  deps = [ "//base" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    "//base",
+    "//ios/chrome/app:buildflags",
+    "//ios/chrome/browser:utils",
+  ]
 }
 
 source_set("unit_tests") {

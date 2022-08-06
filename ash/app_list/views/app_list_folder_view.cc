@@ -129,7 +129,7 @@ class BackgroundAnimation : public AppListFolderView::Animation,
         background_view_(background_view),
         shadow_(folder_view->shadow()) {
     background_view_observer_.Observe(background_view_);
-    shadow_->shadow_layer()->SetVisible(true);
+    shadow_->GetLayer()->SetVisible(true);
   }
 
   BackgroundAnimation(const BackgroundAnimation&) = delete;
@@ -137,7 +137,7 @@ class BackgroundAnimation : public AppListFolderView::Animation,
 
   ~BackgroundAnimation() override {
     if (!show_)
-      shadow_->shadow_layer()->SetVisible(false);
+      shadow_->GetLayer()->SetVisible(false);
   }
 
  private:
@@ -705,9 +705,10 @@ AppListFolderView::AppListFolderView(AppListFolderController* folder_controller,
     CreatePagedAppsGrid(contents_view);
 
   // Create a shadow under `background_view_`.
-  shadow_ = std::make_unique<SystemShadow>(SystemShadow::Type::kElevation8);
-  background_view_->AddLayerBeneathView(shadow_->layer());
-  shadow_->shadow_layer()->SetVisible(false);
+  shadow_ = SystemShadow::CreateShadowOnNinePatchLayer(
+      SystemShadow::Type::kElevation8);
+  background_view_->AddLayerBeneathView(shadow_->GetLayer());
+  shadow_->GetLayer()->SetVisible(false);
 
   AppListModelProvider::Get()->AddObserver(this);
 }
@@ -719,7 +720,7 @@ void AppListFolderView::CreatePagedAppsGrid(ContentsView* contents_view) {
   PagedAppsGridView* items_grid_view =
       contents_container_->AddChildView(std::make_unique<PagedAppsGridView>(
           contents_view, a11y_announcer_, this, /*folder_controller=*/nullptr,
-          /*container_delegate=*/this, /*focus_delegate=*/nullptr));
+          /*container_delegate=*/this, /*keyboard_controller=*/nullptr));
   contents_container_->layer()->SetMasksToBounds(true);
   items_grid_view_ = items_grid_view;
 
@@ -784,7 +785,7 @@ void AppListFolderView::CreateScrollableAppsGrid() {
   auto* items_grid_view =
       scroll_contents->AddChildView(std::make_unique<ScrollableAppsGridView>(
           a11y_announcer_, view_delegate_, this, scroll_view_,
-          /*folder_controller=*/nullptr, /*focus_delegate=*/nullptr));
+          /*folder_controller=*/nullptr, /*keyboard_controller=*/nullptr));
   items_grid_view_ = items_grid_view;
   items_grid_view->Init();
   items_grid_view->SetMaxColumns(kMaxFolderColumns);
@@ -1099,6 +1100,10 @@ void AppListFolderView::UpdatePreferredBounds() {
                                    folder_item_icon_bounds_.x() -
                                    folder_item_icon_bounds_.width());
   }
+}
+
+void AppListFolderView::UpdateShadowForVirtualKeyboard() {
+  shadow_->SetContentBounds(background_view_->layer()->bounds());
 }
 
 int AppListFolderView::GetYOffsetForFolder() {

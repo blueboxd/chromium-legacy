@@ -33,6 +33,7 @@
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
@@ -45,6 +46,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using QueryReason = content_settings::CookieSettings::QueryReason;
 using ::testing::_;
 using ::testing::MockFunction;
 using ::testing::Return;
@@ -530,18 +532,18 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
 
   GURL host_ending_with_dot("http://example.com./");
 
-  EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(host_ending_with_dot,
-                                                         host_ending_with_dot));
+  EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
+      host_ending_with_dot, host_ending_with_dot, QueryReason::kSetting));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), ContentSettingsType::COOKIES,
       CONTENT_SETTING_DEFAULT);
-  EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(host_ending_with_dot,
-                                                         host_ending_with_dot));
+  EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
+      host_ending_with_dot, host_ending_with_dot, QueryReason::kSetting));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), ContentSettingsType::COOKIES,
       CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(cookie_settings->IsFullCookieAccessAllowed(
-      host_ending_with_dot, host_ending_with_dot));
+      host_ending_with_dot, host_ending_with_dot, QueryReason::kSetting));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -1099,10 +1101,10 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 
   HostContentSettingsMapFactory::GetForProfile(&profile);
 
-  const base::Value* all_settings_dictionary =
-      prefs->Get(GetPrefName(ContentSettingsType::COOKIES));
-  EXPECT_FALSE(all_settings_dictionary->FindDictKey("[*.]\xC4\x87ira.com,*"));
-  EXPECT_TRUE(all_settings_dictionary->FindDictKey("[*.]xn--ira-ppa.com,*"));
+  const base::Value::Dict& all_settings_dictionary =
+      prefs->GetValueDict(GetPrefName(ContentSettingsType::COOKIES));
+  EXPECT_FALSE(all_settings_dictionary.FindDict("[*.]\xC4\x87ira.com,*"));
+  EXPECT_TRUE(all_settings_dictionary.FindDict("[*.]xn--ira-ppa.com,*"));
 }
 
 // If both Unicode and its punycode pattern exist, make sure we don't touch the
@@ -1125,10 +1127,10 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   // Initialize the content map.
   HostContentSettingsMapFactory::GetForProfile(&profile);
 
-  const base::Value* content_setting_prefs =
-      profile.GetPrefs()->Get(GetPrefName(ContentSettingsType::COOKIES));
+  const base::Value& content_setting_prefs =
+      profile.GetPrefs()->GetValue(GetPrefName(ContentSettingsType::COOKIES));
   std::string prefs_as_json;
-  base::JSONWriter::Write(*content_setting_prefs, &prefs_as_json);
+  base::JSONWriter::Write(content_setting_prefs, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}",
                prefs_as_json.c_str());
 }
@@ -1370,9 +1372,10 @@ TEST_F(HostContentSettingsMapTest, GuestProfile) {
             host_content_settings_map->GetContentSetting(
                 host, host, ContentSettingsType::COOKIES));
 
-  const base::Value* all_settings_dictionary =
-      profile->GetPrefs()->Get(GetPrefName(ContentSettingsType::COOKIES));
-  EXPECT_TRUE(all_settings_dictionary->DictEmpty());
+  const base::Value::Dict& all_settings_dictionary =
+      profile->GetPrefs()->GetValueDict(
+          GetPrefName(ContentSettingsType::COOKIES));
+  EXPECT_TRUE(all_settings_dictionary.empty());
 }
 
 // Default settings should not be modifiable for Guest profile (there is no UI
@@ -1810,7 +1813,8 @@ TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
 
-  // Testing case: WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE.
+  // Testing case:
+  //   WebsiteSettingsInfo::REQUESTING_ORIGIN_WITH_TOP_ORIGIN_EXCEPTIONS_SCOPE.
   host_content_settings_map->SetContentSettingDefaultScope(
       primary_url, secondary_url, ContentSettingsType::COOKIES,
       CONTENT_SETTING_ALLOW);
@@ -1824,35 +1828,11 @@ TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
             ContentSettingsPattern::FromURL(primary_url));
   EXPECT_EQ(settings[0].secondary_pattern, ContentSettingsPattern::Wildcard());
 
-  // Testing case: WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE.
-  host_content_settings_map->SetContentSettingDefaultScope(
-      primary_url, secondary_url, ContentSettingsType::JAVASCRIPT,
-      CONTENT_SETTING_ALLOW);
-
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::JAVASCRIPT, &settings);
-
-  EXPECT_EQ(settings[0].primary_pattern,
-            ContentSettingsPattern::FromURLNoWildcard(primary_url));
-  EXPECT_EQ(settings[0].secondary_pattern, ContentSettingsPattern::Wildcard());
-
-  // Testing case: WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE.
-  host_content_settings_map->SetContentSettingDefaultScope(
-      primary_url, secondary_url, ContentSettingsType::NOTIFICATIONS,
-      CONTENT_SETTING_ALLOW);
-
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::NOTIFICATIONS, &settings);
-
-  EXPECT_EQ(settings[0].primary_pattern,
-            ContentSettingsPattern::FromURLNoWildcard(primary_url));
-  EXPECT_EQ(settings[0].secondary_pattern, ContentSettingsPattern::Wildcard());
-
-  // Testing case:
-  // WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE.
+  // Testing cases:
+  //   WebsiteSettingsInfo::REQUESTING_AND_TOP_ORIGIN_SCOPE,
   host_content_settings_map->SetContentSettingDefaultScope(
       primary_url, secondary_url, ContentSettingsType::STORAGE_ACCESS,
-      CONTENT_SETTING_ASK);
+      CONTENT_SETTING_ALLOW);
 
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::STORAGE_ACCESS, &settings);
@@ -1861,6 +1841,27 @@ TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
             ContentSettingsPattern::FromURLNoWildcard(primary_url));
   EXPECT_EQ(settings[0].secondary_pattern,
             ContentSettingsPattern::FromURLNoWildcard(secondary_url));
+
+  // Testing cases:
+  //   WebsiteSettingsInfo::TOP_ORIGIN_WITH_RESOURCE_EXCEPTIONS_SCOPE,
+  //   WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+  //   WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
+  //   WebsiteSettingsInfo::GENERIC_SINGLE_ORIGIN_SCOPE.
+  for (const auto& kContentSetting :
+       {ContentSettingsType::JAVASCRIPT, ContentSettingsType::NOTIFICATIONS,
+        ContentSettingsType::GEOLOCATION,
+        ContentSettingsType::FEDERATED_IDENTITY_API}) {
+    host_content_settings_map->SetContentSettingDefaultScope(
+        primary_url, secondary_url, kContentSetting, CONTENT_SETTING_ALLOW);
+
+    host_content_settings_map->GetSettingsForOneType(kContentSetting,
+                                                     &settings);
+
+    EXPECT_EQ(settings[0].primary_pattern,
+              ContentSettingsPattern::FromURLNoWildcard(primary_url));
+    EXPECT_EQ(settings[0].secondary_pattern,
+              ContentSettingsPattern::Wildcard());
+  }
 }
 
 // Tests if changing a settings in incognito mode does not affects the regular

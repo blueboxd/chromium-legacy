@@ -79,24 +79,25 @@ class TestFontSelector : public FontSelector {
   void ReportFontLookupByUniqueOrFamilyName(
       const AtomicString& name,
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data) override {}
+      scoped_refptr<SimpleFontData> resulting_font_data) override {}
   void ReportFontLookupByUniqueNameOnly(
       const AtomicString& name,
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data,
+      scoped_refptr<SimpleFontData> resulting_font_data,
       bool is_loading_fallback = false) override {}
   void ReportFontLookupByFallbackCharacter(
       UChar32 hint,
       FontFallbackPriority fallback_priority,
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data) override {}
+      scoped_refptr<SimpleFontData> resulting_font_data) override {}
   void ReportLastResortFallbackFontLookup(
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data) override {}
+      scoped_refptr<SimpleFontData> resulting_font_data) override {}
   void ReportNotDefGlyph() const override {}
   void ReportEmojiSegmentGlyphCoverage(unsigned, unsigned) override {}
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
   FontFaceCache* GetFontFaceCache() override { return nullptr; }
+  bool IsContextThread() const override { return true; }
 
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override {}
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}
@@ -134,7 +135,8 @@ Font CreateTestFont(const AtomicString& family_name,
 Font CreateTestFont(const AtomicString& family_name,
                     const String& font_path,
                     float size,
-                    const FontDescription::VariantLigatures* ligatures) {
+                    const FontDescription::VariantLigatures* ligatures,
+                    void (*init_font_description)(FontDescription*)) {
   FontFamily family;
   family.SetFamily(family_name, FontFamily::Type::kFamilyName);
 
@@ -144,6 +146,8 @@ Font CreateTestFont(const AtomicString& family_name,
   font_description.SetComputedSize(size);
   if (ligatures)
     font_description.SetVariantLigatures(*ligatures);
+  if (init_font_description)
+    (*init_font_description)(&font_description);
 
   return Font(font_description, TestFontSelector::Create(font_path));
 }

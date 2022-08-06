@@ -16,9 +16,9 @@
 
 namespace blink {
 
+class Document;
 class LocalFrameView;
-class LayoutObject;
-
+class TransformPaintPropertyNodeOrAlias;
 struct ViewportDescription;
 
 // Calculates the mobile usability of current page, especially friendliness on
@@ -30,43 +30,90 @@ class CORE_EXPORT MobileFriendlinessChecker
  public:
   explicit MobileFriendlinessChecker(LocalFrameView& frame_view);
   virtual ~MobileFriendlinessChecker();
+  static MobileFriendlinessChecker* From(const Document&);
 
   // LocalFrameView::LifecycleNotificationObserver implementation
   void DidFinishLifecycleUpdate(const LocalFrameView&) override;
+  void NotifyInitialScaleUpdated();
 
-  void NotifyPaint();
+  void NotifyPaintBegin();
+  void NotifyPaintEnd();
   void WillBeRemovedFromFrame();
   void NotifyViewportUpdated(const ViewportDescription&);
-  void NotifyInvalidatePaint(const LayoutObject& object);
+  void NotifyPaintTextFragment(
+      const PhysicalRect& paint_rect,
+      int font_size,
+      const TransformPaintPropertyNodeOrAlias& current_transform);
+  void NotifyPaintReplaced(
+      const PhysicalRect& paint_rect,
+      const TransformPaintPropertyNodeOrAlias& current_transform);
 
   void Trace(Visitor* visitor) const override;
-  struct TextAreaWithFontSize {
+
+  struct AreaSizes {
     double small_font_area = 0;
     double total_text_area = 0;
+    double content_beyond_viewport_area = 0;
+    int TextContentsOutsideViewportPercentage(double viewport_area) const;
     int SmallTextRatio() const;
+  };
+
+  class PaintScope final {
+    STACK_ALLOCATED();
+
+   public:
+    explicit PaintScope(MobileFriendlinessChecker& mfc) : mfc_(mfc) {
+      mfc_.NotifyPaintBegin();
+    }
+    ~PaintScope() { mfc_.NotifyPaintEnd(); }
+
+   private:
+    MobileFriendlinessChecker& mfc_;
+  };
+
+  class IgnoreBeyondViewportScope final {
+    STACK_ALLOCATED();
+
+   public:
+    explicit IgnoreBeyondViewportScope(MobileFriendlinessChecker& mfc)
+        : mfc_(mfc) {
+      mfc_.ignore_beyond_viewport_scope_count_++;
+    }
+    ~IgnoreBeyondViewportScope() { mfc_.ignore_beyond_viewport_scope_count_--; }
+
+   private:
+    MobileFriendlinessChecker& mfc_;
   };
 
  private:
   void Activate(TimerBase*);
 
-  // Returns the percentage of the width of the content that overflows the
-  // viewport.
-  // Returns 0 if all content fits in the viewport.
-  int ComputeContentOutsideViewport();
-
   // Returns percentage value [0-100] of bad tap targets in the area of the
   // first page. Returns kTimeBudgetExceeded if the time limit is exceeded.
   int ComputeBadTapTargetsRatio();
 
+  void UpdateTextAreaSizes(const PhysicalRect& text_rect, int font_size);
+  void UpdateBeyondViewportAreaSizes(
+      const PhysicalRect& paint_rect,
+      const TransformPaintPropertyNodeOrAlias& current_transform);
+
  private:
   Member<LocalFrameView> frame_view_;
+  const TransformPaintPropertyNodeOrAlias* viewport_transform_ = nullptr;
+  const TransformPaintPropertyNodeOrAlias* previous_transform_ = nullptr;
+  float current_x_offset_ = 0.0;
+  float viewport_width_ = 0.0;
   HeapTaskRunnerTimer<MobileFriendlinessChecker> timer_;
+  double viewport_scalar_;
+  double initial_scale_ = 1.0;
   base::TimeTicks last_evaluated_;
-  TextAreaWithFontSize text_area_sizes_;
+  AreaSizes area_sizes_;
   bool viewport_device_width_ = false;
   bool allow_user_zoom_ = true;
   int viewport_initial_scale_x10_ = -1;
   int viewport_hardcoded_width_ = -1;
+  int ignore_beyond_viewport_scope_count_ = 0;
+  bool is_painting_ = false;
 };
 
 }  // namespace blink

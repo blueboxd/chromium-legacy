@@ -80,6 +80,7 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"cancelButtonLabel", IDS_SHIMLESS_RMA_CANCEL_BUTTON},
       {"retryButtonLabel", IDS_SHIMLESS_RMA_RETRY_BUTTON},
       {"tryAgainButtonLabel", IDS_SHIMLESS_RMA_TRY_AGAIN_BUTTON},
+      {"doneButtonLabel", IDS_SHIMLESS_RMA_DONE_BUTTON},
       // Exit dialog
       {"exitDialogTitleText", IDS_SHIMLESS_RMA_EXIT_DIALOG_TITLE},
       {"exitDialogDescriptionText", IDS_SHIMLESS_RMA_EXIT_DIALOG_DESCRIPTION},
@@ -240,6 +241,8 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_REPAIR_COMPLETED_CUTOFF_COUNTDOWN_DESCRIPTION},
       {"repairCompletedBatteryCutoffShutdownButton",
        IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_SHUTDOWN_BUTTON},
+      {"rmaLogsSaveSuccessText", IDS_SHIMLESS_RMA_LOGS_SAVE_SUCCESS},
+      {"rmaLogsSaveFailText", IDS_SHIMLESS_RMA_LOGS_SAVE_FAIL},
       // Powerwash dialog
       {"powerwashDialogTitle", IDS_SHIMLESS_RMA_POWERWASH_DIALOG_TITLE},
       {"powerwashDialogShutdownDescription",
@@ -288,7 +291,10 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"confirmDeviceInfoSkuWarning",
        IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_WARNING},
       // Firmware reimaging page
-      {"firmwareUpdatePageTitleText", IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_TITLE},
+      {"firmwareUpdateInstallImageTitleText",
+       IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_INSTALL_IMAGE_TITLE},
+      {"firmwareUpdateInstallCompleteTitleText",
+       IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_INSTALL_COMPLETE_TITLE},
       {"firmwareUpdateWaitForUsbText", IDS_SHIMLESS_RMA_FIRMWARE_WAIT_FOR_USB},
       {"firmwareUpdateFileNotFoundText",
        IDS_SHIMLESS_RMA_FIRMWARE_FILE_NOT_FOUND},

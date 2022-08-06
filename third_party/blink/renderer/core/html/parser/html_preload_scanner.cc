@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
@@ -69,6 +70,7 @@
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script_type_names.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
@@ -287,6 +289,7 @@ class TokenPreloadScanner::StartTagScanner {
 
     bool is_module = (type_attribute_value_ == script_type_names::kModule);
     bool is_script = Match(tag_impl_, html_names::kScriptTag);
+    bool is_img = Match(tag_impl_, html_names::kImgTag);
     if ((is_script && is_module) || IsLinkRelModulePreload()) {
       is_module = true;
       request->SetScriptType(mojom::blink::ScriptType::kModule);
@@ -319,7 +322,7 @@ class TokenPreloadScanner::StartTagScanner {
     }
     request->SetRenderBlockingBehavior(render_blocking_behavior);
 
-    if (type == ResourceType::kImage && Match(tag_impl_, html_names::kImgTag) &&
+    if (type == ResourceType::kImage && is_img &&
         IsLazyLoadImageDeferable(document_parameters)) {
       return nullptr;
     }
@@ -337,6 +340,12 @@ class TokenPreloadScanner::StartTagScanner {
 
     if (scanner_type_ == ScannerType::kInsertion)
       request->SetFromInsertionScanner(true);
+
+    if (attributionsrc_attr_set_ &&
+        document_parameters.can_register_attribution) {
+      DCHECK(is_script || is_img);
+      request->SetAttributionReportingEligibleImgOrScript(true);
+    }
 
     return request;
   }
@@ -379,6 +388,8 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
                Match(attribute_name, html_names::kBlockingAttr)) {
       blocking_attribute_value_ = attribute_value;
+    } else if (Match(attribute_name, html_names::kAttributionsrcAttr)) {
+      attributionsrc_attr_set_ = true;
     }
   }
 
@@ -418,6 +429,8 @@ class TokenPreloadScanner::StartTagScanner {
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       height_attr_dimension_type_ =
           HTMLImageElement::GetAttributeLazyLoadDimensionType(attribute_value);
+    } else if (Match(attribute_name, html_names::kAttributionsrcAttr)) {
+      attributionsrc_attr_set_ = true;
     }
   }
 
@@ -763,6 +776,7 @@ class TokenPreloadScanner::StartTagScanner {
   // For explanation, see TokenPreloadScanner's declaration.
   bool priority_hints_origin_trial_enabled_;
   const HashSet<String>* disabled_image_types_;
+  bool attributionsrc_attr_set_ = false;
 };
 
 TokenPreloadScanner::TokenPreloadScanner(
@@ -796,10 +810,10 @@ TokenPreloadScanner::~TokenPreloadScanner() = default;
 void TokenPreloadScanner::Scan(const HTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
-                               AcceptCHValues& accept_ch_values,
+                               MetaCHValues& meta_ch_values,
                                absl::optional<ViewportDescription>* viewport,
                                bool* is_csp_meta_tag) {
-  ScanCommon(token, source, requests, accept_ch_values, viewport,
+  ScanCommon(token, source, requests, meta_ch_values, viewport,
              is_csp_meta_tag);
 }
 
@@ -840,7 +854,7 @@ static void HandleMetaReferrer(const String& attribute_value,
 
 void TokenPreloadScanner::HandleMetaNameAttribute(
     const HTMLToken& token,
-    AcceptCHValues& accept_ch_values,
+    MetaCHValues& meta_ch_values,
     absl::optional<ViewportDescription>* viewport) {
   const HTMLToken::Attribute* name_attribute =
       token.GetAttributeItem(html_names::kNameAttr);
@@ -864,22 +878,13 @@ void TokenPreloadScanner::HandleMetaNameAttribute(
     HandleMetaReferrer(content_attribute_value, document_parameters_.get(),
                        &css_scanner_);
   }
-
-  if (EqualIgnoringASCIICase(name_attribute_value, http_names::kAcceptCH) &&
-      RuntimeEnabledFeatures::ClientHintsMetaNameAcceptCHEnabled()) {
-    accept_ch_values.push_back(
-        AcceptCHValue{.value = content_attribute->GetValue(),
-                      .is_http_equiv = false,
-                      .is_preload_or_sync_parser =
-                          scanner_type_ == ScannerType::kMainDocument});
-  }
 }
 
 void TokenPreloadScanner::ScanCommon(
     const HTMLToken& token,
     const SegmentedString& source,
     PreloadRequestStream& requests,
-    AcceptCHValues& accept_ch_values,
+    MetaCHValues& meta_ch_values,
     absl::optional<ViewportDescription>* viewport,
     bool* is_csp_meta_tag) {
   if (!document_parameters_->do_html_preload_scanning)
@@ -973,17 +978,30 @@ void TokenPreloadScanner::ScanCommon(
             const HTMLToken::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {
-              accept_ch_values.push_back(AcceptCHValue{
-                  .value = content_attribute->GetValue(),
-                  .is_http_equiv = true,
-                  .is_preload_or_sync_parser =
-                      scanner_type_ == ScannerType::kMainDocument});
+              meta_ch_values.push_back(
+                  MetaCHValue{.value = content_attribute->GetValue(),
+                              .type = network::MetaCHType::HttpEquivAcceptCH,
+                              .is_doc_preloader =
+                                  scanner_type_ == ScannerType::kMainDocument});
+            }
+          } else if (EqualIgnoringASCIICase(equiv_attribute_value,
+                                            http_names::kDelegateCH) &&
+                     RuntimeEnabledFeatures::
+                         ClientHintsMetaEquivDelegateCHEnabled()) {
+            const HTMLToken::Attribute* content_attribute =
+                token.GetAttributeItem(html_names::kContentAttr);
+            if (content_attribute) {
+              meta_ch_values.push_back(
+                  MetaCHValue{.value = content_attribute->GetValue(),
+                              .type = network::MetaCHType::HttpEquivDelegateCH,
+                              .is_doc_preloader =
+                                  scanner_type_ == ScannerType::kMainDocument});
             }
           }
           return;
         }
 
-        HandleMetaNameAttribute(token, accept_ch_values, viewport);
+        HandleMetaNameAttribute(token, meta_ch_values, viewport);
       }
 
       if (Match(tag_impl, html_names::kBodyTag)) {
@@ -1117,7 +1135,7 @@ std::unique_ptr<PendingPreloadData> HTMLPreloadScanner::Scan(
           AttemptStaticStringCreation(token_.GetName(), kLikely8Bit));
     bool seen_csp_meta_tag = false;
     scanner_.Scan(token_, source_, pending_data->requests,
-                  pending_data->accept_ch_values, &pending_data->viewport,
+                  pending_data->meta_ch_values, &pending_data->viewport,
                   &seen_csp_meta_tag);
     if (script_token_scanner_)
       script_token_scanner_->ScanToken(token_);
@@ -1173,6 +1191,12 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   }
   probe::GetDisabledImageTypes(document->GetExecutionContext(),
                                &disabled_image_types);
+
+  can_register_attribution =
+      CanRegisterAttributionInContext(document->Loader()->GetFrame(),
+                                      /*element=*/nullptr,
+                                      /*request_id=*/absl::nullopt,
+                                      /*log_issues=*/false);
 }
 
 }  // namespace blink

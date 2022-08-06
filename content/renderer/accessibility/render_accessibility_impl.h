@@ -12,12 +12,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/render_accessibility.mojom.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "ui/accessibility/ax_event.h"
@@ -118,7 +118,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   void HitTest(const gfx::Point& point,
                ax::mojom::Event event_to_fire,
                int request_id,
-               mojom::RenderAccessibility::HitTestCallback callback);
+               blink::mojom::RenderAccessibility::HitTestCallback callback);
   void PerformAction(const ui::AXActionData& data);
   void Reset(int32_t reset_token);
 
@@ -216,10 +216,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   void Scroll(const ui::AXActionTarget* target,
               ax::mojom::Action scroll_action);
-
-  // Whether an event should mark its associated object dirty.
-  bool ShouldSerializeNodeForEvent(const blink::WebAXObject& obj,
-                                   const ui::AXEvent& event) const;
 
   // If we are calling this from a task, scheduling is allowed even if there is
   // a running task

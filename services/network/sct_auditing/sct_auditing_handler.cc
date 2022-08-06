@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
@@ -54,10 +55,16 @@ const char kReporterKeyKey[] = "reporter_key";
 const char kBackoffEntryKey[] = "backoff_entry";
 const char kReportKey[] = "report";
 const char kSCTHashdanceMetadataKey[] = "sct_metadata";
+const char kAlreadyCountedKey[] = "counted_towards_report_limit";
 
 void RecordPopularSCTSkippedMetrics(bool popular_sct_skipped) {
   base::UmaHistogramBoolean("Security.SCTAuditing.OptOut.PopularSCTSkipped",
                             popular_sct_skipped);
+}
+
+void RecordReportDroppedDueToLogNotFound(bool report_dropped) {
+  base::UmaHistogramBoolean(
+      "Security.SCTAuditing.OptOut.DroppedDueToLogNotFound", report_dropped);
 }
 
 }  // namespace
@@ -153,7 +160,23 @@ void SCTAuditingHandler::MaybeEnqueueReport(
     auto log = std::find_if(logs.begin(), logs.end(), [&sct](const auto& log) {
       return log->id == sct->log_id;
     });
-    CHECK(log != logs.end());
+    // It's possible that log entry metadata may not exist for a few reasons:
+    //
+    // 1) The PKI Metadata component has not yet been loaded and no log list
+    //    has been set.
+    // 2) The PKI Metadata component was updated sometime between the SCTs
+    //    being validated and MaybeEnqueueReport() being called.
+    // 3) The log is actually unknown. (This last case should not happen as the
+    //    SCTs should not have been considered valid.)
+    //
+    // In particular, (1) can occur for a short duration at browser startup, so
+    // handle this gracefully and drop the report.
+    if (log == logs.end()) {
+      RecordReportDroppedDueToLogNotFound(true);
+      return;
+    }
+    RecordReportDroppedDueToLogNotFound(false);
+
     sct_metadata->log_id = log->get()->id;
     sct_metadata->log_mmd = log->get()->mmd;
     sct_metadata->certificate_expiry =
@@ -192,6 +215,8 @@ bool SCTAuditingHandler::SerializeData(std::string* output) {
         net::BackoffEntrySerializer::SerializeToValue(
             *reporter->backoff_entry(), base::Time::Now());
     report_entry.Set(kBackoffEntryKey, std::move(backoff_entry_value));
+    report_entry.Set(kAlreadyCountedKey,
+                     reporter->counted_towards_report_limit());
 
     std::string serialized_report;
     reporter->report()->SerializeToString(&serialized_report);
@@ -226,6 +251,8 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
     const absl::optional<base::Value> sct_metadata_value =
         entry_dict->Extract(kSCTHashdanceMetadataKey);
     const base::Value* backoff_entry_value = entry_dict->Find(kBackoffEntryKey);
+    const absl::optional<bool> counted_towards_report_limit =
+        entry_dict->FindBool(kAlreadyCountedKey);
 
     if (!reporter_key_string || !report_string || !backoff_entry_value) {
       continue;
@@ -274,7 +301,8 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
     }
 
     AddReporter(cache_key, std::move(audit_report), std::move(sct_metadata),
-                std::move(backoff_entry));
+                std::move(backoff_entry),
+                counted_towards_report_limit.value_or(false));
     ++num_reporters_deserialized;
   }
   base::UmaHistogramCounts100("Security.SCTAuditing.NumPersistedReportsLoaded",
@@ -296,7 +324,8 @@ void SCTAuditingHandler::AddReporter(
     net::HashValue reporter_key,
     std::unique_ptr<sct_auditing::SCTClientReport> report,
     absl::optional<SCTAuditingReporter::SCTHashdanceMetadata> sct_metadata,
-    std::unique_ptr<net::BackoffEntry> backoff_entry) {
+    std::unique_ptr<net::BackoffEntry> backoff_entry,
+    bool already_counted) {
   DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
   if (mode_ == mojom::SCTAuditingMode::kDisabled) {
     return;
@@ -312,7 +341,7 @@ void SCTAuditingHandler::AddReporter(
       base::BindRepeating(&SCTAuditingHandler::OnReporterStateUpdated,
                           GetWeakPtr()),
       base::BindOnce(&SCTAuditingHandler::OnReporterFinished, GetWeakPtr()),
-      std::move(backoff_entry));
+      std::move(backoff_entry), already_counted);
   reporter->Start();
   pending_reporters_.Put(reporter->key(), std::move(reporter));
 
@@ -336,12 +365,6 @@ void SCTAuditingHandler::OnReportsLoadedFromDisk(
   DeserializeData(serialized);
 }
 
-void SCTAuditingHandler::OnWriteFinished(base::OnceClosure callback,
-                                         bool /*unused*/) {
-  DCHECK(background_runner_->RunsTasksInCurrentSequence());
-  foreground_runner_->PostTask(FROM_HERE, std::move(callback));
-}
-
 void SCTAuditingHandler::ClearPendingReports(base::OnceClosure callback) {
   DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
   // Delete any outstanding Reporters. This will delete any extant URLLoader
@@ -353,8 +376,18 @@ void SCTAuditingHandler::ClearPendingReports(base::OnceClosure callback) {
   if (writer_) {
     writer_->RegisterOnNextWriteCallbacks(
         base::OnceClosure(),
-        base::BindOnce(&SCTAuditingHandler::OnWriteFinished,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+        // The callback set by NetworkContext is a BarrierClosure that does not
+        // take any arguments. The ImportantFileWriter runs its callbacks on the
+        // background sequence. This addresses both issues by setting up the
+        // `after_write_callback` to post back to the foreground task runner and
+        // adapts the type signatures to drop the unused bool.
+        base::BindPostTask(
+            foreground_runner_,
+            base::BindOnce(
+                [](base::OnceCallback<void()> cb, bool /* unused */) {
+                  return std::move(cb).Run();
+                },
+                std::move(callback))));
     auto data = std::make_unique<std::string>();
     SerializeData(data.get());
     writer_->WriteNow(std::move(data));

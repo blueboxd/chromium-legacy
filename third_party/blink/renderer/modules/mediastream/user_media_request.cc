@@ -308,7 +308,7 @@ MediaConstraints ParseOptions(
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
     UserMediaController* controller,
-    UserMediaRequest::MediaType media_type,
+    UserMediaRequestType media_type,
     const MediaStreamConstraints* options,
     Callbacks* callbacks,
     MediaErrorState& error_state,
@@ -321,8 +321,7 @@ UserMediaRequest* UserMediaRequest::Create(
   if (error_state.HadException())
     return nullptr;
 
-  if (media_type == UserMediaRequest::MediaType::kUserMedia &&
-      !video.IsNull()) {
+  if (media_type == UserMediaRequestType::kUserMedia && !video.IsNull()) {
     if (video.Basic().pan.HasMandatory()) {
       error_state.ThrowTypeError("Mandatory pan constraint is not supported");
       return nullptr;
@@ -335,7 +334,8 @@ UserMediaRequest* UserMediaRequest::Create(
       error_state.ThrowTypeError("Mandatory zoom constraint is not supported");
       return nullptr;
     }
-  } else if (media_type == UserMediaRequest::MediaType::kDisplayMedia) {
+  } else if (media_type == UserMediaRequestType::kDisplayMedia ||
+             media_type == UserMediaRequestType::kDisplayMediaSet) {
     // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
     // MediaDevices Additions
     // The user agent MUST reject audio-only requests.
@@ -351,6 +351,16 @@ UserMediaRequest* UserMediaRequest::Create(
     // either a dictionary value or a value of true.
     // 4. If requestedMediaTypes is the empty set, set requestedMediaTypes to a
     // set containing "video".
+    if (media_type == UserMediaRequestType::kDisplayMediaSet) {
+      if (!audio.IsNull()) {
+        error_state.ThrowTypeError("Audio requests are not supported");
+        return nullptr;
+      } else if (options->preferCurrentTab()) {
+        error_state.ThrowTypeError("preferCurrentTab is not supported");
+        return nullptr;
+      }
+    }
+
     if ((!audio.IsNull() && !audio.Advanced().IsEmpty()) ||
         (!video.IsNull() && !video.Advanced().IsEmpty())) {
       error_state.ThrowTypeError("Advanced constraints are not supported");
@@ -393,7 +403,8 @@ UserMediaRequest* UserMediaRequest::Create(
 
   UserMediaRequest* const result = MakeGarbageCollected<UserMediaRequest>(
       context, controller, media_type, audio, video,
-      options->preferCurrentTab(), callbacks, surface);
+      options->preferCurrentTab(), options->autoSelectAllScreens(), callbacks,
+      surface);
 
   // The default is to include.
   // Note that this option is no-op if audio is not requested.
@@ -409,16 +420,18 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& audio,
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
-      nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
-      /*should_prefer_current_tab=*/false, nullptr, IdentifiableSurface());
+      nullptr, nullptr, UserMediaRequestType::kUserMedia, audio, video,
+      /*should_prefer_current_tab=*/false, /*auto_select_all_screens=*/false,
+      nullptr, IdentifiableSurface());
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    UserMediaController* controller,
-                                   UserMediaRequest::MediaType media_type,
+                                   UserMediaRequestType media_type,
                                    MediaConstraints audio,
                                    MediaConstraints video,
                                    bool should_prefer_current_tab,
+                                   bool auto_select_all_screens,
                                    Callbacks* callbacks,
                                    IdentifiableSurface surface)
     : ExecutionContextLifecycleObserver(context),
@@ -426,6 +439,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       audio_(audio),
       video_(video),
       should_prefer_current_tab_(should_prefer_current_tab),
+      auto_select_all_screens_(auto_select_all_screens),
       should_disable_hardware_noise_suppression_(
           RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
               context)),
@@ -440,7 +454,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
 
 UserMediaRequest::~UserMediaRequest() = default;
 
-UserMediaRequest::MediaType UserMediaRequest::MediaRequestType() const {
+UserMediaRequestType UserMediaRequest::MediaRequestType() const {
   return media_type_;
 }
 

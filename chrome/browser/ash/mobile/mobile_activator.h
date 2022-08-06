@@ -15,12 +15,9 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/network/network_handler_callbacks.h"
-// TODO(https://crbug.com/1164001): restore network_state.h as forward
-// declaration after it is moved to ash.
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_handler_callbacks.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 
 namespace base {
 class DictionaryValue;
@@ -28,6 +25,7 @@ class DictionaryValue;
 
 namespace ash {
 
+class NetworkState;
 class TestMobileActivator;
 
 // This class performs mobile plan activation process.
@@ -258,7 +256,7 @@ class MobileActivator : public NetworkStateHandlerObserver {
   base::Time cellular_plan_payment_time_;
 
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   base::ObserverList<Observer>::Unchecked observers_;

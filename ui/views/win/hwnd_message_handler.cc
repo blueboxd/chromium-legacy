@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/win/dark_mode_support.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -191,7 +192,7 @@ LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
 BOOL CALLBACK EnumChildWindowsForRedraw(HWND hwnd, LPARAM lparam) {
   DWORD process_id;
   GetWindowThreadProcessId(hwnd, &process_id);
-  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
+  UINT flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
   if (process_id == GetCurrentProcessId())
     flags |= RDW_UPDATENOW;
   RedrawWindow(hwnd, nullptr, nullptr, flags);
@@ -671,7 +672,7 @@ void HWNDMessageHandler::Show(ui::WindowShowState show_state,
     return;
   }
 
-  DWORD native_show_state;
+  int native_show_state;
   if (show_state == ui::SHOW_STATE_MAXIMIZED &&
       !pixel_restore_bounds.IsEmpty()) {
     WINDOWPLACEMENT placement = {0};
@@ -919,7 +920,7 @@ void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
 
 bool HWNDMessageHandler::SetTitle(const std::u16string& title) {
   std::wstring current_title;
-  size_t len_with_null = GetWindowTextLength(hwnd()) + 1;
+  auto len_with_null = static_cast<size_t>(GetWindowTextLength(hwnd())) + 1;
   if (len_with_null == 1 && title.length() == 0)
     return false;
   if (len_with_null - 1 == title.length() &&
@@ -1015,7 +1016,7 @@ void HWNDMessageHandler::SetAspectRatio(float aspect_ratio) {
 void HWNDMessageHandler::SizeConstraintsChanged() {
   LONG style = GetWindowLong(hwnd(), GWL_STYLE);
   // Ignore if this is not a standard window.
-  if (style & (WS_POPUP | WS_CHILD))
+  if (style & static_cast<LONG>(WS_POPUP | WS_CHILD))
     return;
 
   // Windows cannot have WS_THICKFRAME set if translucent.
@@ -1463,7 +1464,7 @@ void HWNDMessageHandler::RestoreEnabledIfNecessary() {
 
 void HWNDMessageHandler::ExecuteSystemMenuCommand(int command) {
   if (command)
-    SendMessage(hwnd(), WM_SYSCOMMAND, command, 0);
+    SendMessage(hwnd(), WM_SYSCOMMAND, static_cast<WPARAM>(command), 0);
 }
 
 void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
@@ -1705,6 +1706,8 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   }
 
   fullscreen_handler_->set_hwnd(hwnd());
+
+  base::win::AllowDarkModeForWindow(hwnd(), true);
 
   // This message initializes the window so that focus border are shown for
   // windows.
@@ -2746,7 +2749,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
     return;
   }
 
-  if (delegate_->HandleCommand(notification_code))
+  if (delegate_->HandleCommand(static_cast<int>(notification_code)))
     return;
 
   bool is_mouse_menu = (notification_code & sc_mask) == SC_MOUSEMENU;
@@ -2786,7 +2789,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   }
 
   // Handle touch events only on Aura for now.
-  size_t num_points = LOWORD(w_param);
+  WORD num_points = LOWORD(w_param);
   std::unique_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
                                    num_points, input.get(),
@@ -2819,7 +2822,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       last_touch_or_pen_message_time_ = ::GetMessageTime();
 
       gfx::Point touch_point(point.x, point.y);
-      size_t touch_id = id_generator_.GetGeneratedID(input[i].dwID);
+      auto touch_id = static_cast<ui::PointerId>(
+          id_generator_.GetGeneratedID(input[i].dwID));
 
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
@@ -2857,7 +2861,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       // Log that we've hit this code. When usage drops off, we can remove
       // this "workaround". See https://crbug.com/811273
       UMA_HISTOGRAM_BOOLEAN("TouchScreen.MissedTOUCHEVENTF_UP", true);
-      size_t touch_id = id_generator_.GetGeneratedID(touch_number);
+      auto touch_id = static_cast<ui::PointerId>(
+          id_generator_.GetGeneratedID(touch_number));
       touch_ids_.erase(touch_number);
       GenerateTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), touch_id,
                          event_time, &touch_events);
@@ -2888,7 +2893,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         (window_pos->flags & (SWP_NOZORDER | SWP_NOACTIVATE))) {
       // Just sizing/moving the window; ignore.
       window_pos->flags |= SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW;
-      window_pos->flags &= ~(SWP_SHOWWINDOW | SWP_HIDEWINDOW);
+      window_pos->flags &=
+          static_cast<unsigned int>(~(SWP_SHOWWINDOW | SWP_HIDEWINDOW));
     }
   } else if (!GetParent(hwnd())) {
     RECT window_rect;
@@ -2971,7 +2977,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         window_pos->cy = new_window_rect.height();
         // WARNING!  Don't set SWP_FRAMECHANGED here, it breaks moving the child
         // HWNDs for some reason.
-        window_pos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
+        window_pos->flags &= static_cast<unsigned int>(
+            ~(SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW));
         window_pos->flags |= SWP_NOCOPYBITS;
 
         // Now ignore all immediately-following SetWindowPos() changes.  Windows
@@ -3020,7 +3027,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
   if (ScopedFullscreenVisibility::IsHiddenForFullscreen(hwnd())) {
     // Prevent the window from being made visible if we've been asked to do so.
     // See comment in header as to why we might want this.
-    window_pos->flags &= ~SWP_SHOWWINDOW;
+    window_pos->flags &= static_cast<unsigned int>(~SWP_SHOWWINDOW);
   }
 
   if (window_pos->flags & SWP_HIDEWINDOW)
@@ -3150,8 +3157,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     // expect screen coordinates.
     POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param);
     MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
-    w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
-                          MAKELPARAM(screen_point.x, screen_point.y));
+    w_param = static_cast<WPARAM>(SendMessage(
+        hwnd(), WM_NCHITTEST, 0, MAKELPARAM(screen_point.x, screen_point.y)));
     if (w_param == HTCAPTION || w_param == HTSYSMENU) {
       ShowSystemMenuAtScreenPixelLocation(hwnd(), gfx::Point(screen_point));
       return 0;
@@ -3232,6 +3239,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   bool handled = false;
 
   if (event.type() == ui::ET_MOUSE_DRAGGED) {
+    constexpr int kMaxDragEventsToIgnore00Move = 6;
     POINT point;
     point.x = event.x();
     point.y = event.y();
@@ -3239,25 +3247,22 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     num_drag_events_after_press_++;
     // Windows sometimes sends spurious WM_MOUSEMOVEs at 0,0. If this happens
     // after a mouse down on a tab, it can cause a detach of the tab to 0,0.
-    // In general, it would cause weird behavior while dragging, so ignore
-    // these events if they're fairly far from the cursor.
-    if (point.x == 0 && point.y == 0) {
+    // A past study indicated that most of the spurious moves are among the
+    // first 6 moves after a press, and there's a very long tail.
+    // If we get kMaxDragEventsToIgnore00Move mouse move events before the
+    // spurious 0,0 move event, the user is probably really dragging, and we
+    // want to allow moves to 0,0.
+    if (point.x == 0 && point.y == 0 &&
+        num_drag_events_after_press_ <= kMaxDragEventsToIgnore00Move) {
       POINT cursor_pos;
       ::GetCursorPos(&cursor_pos);
-      constexpr int kMinSpuriousDistance = 200;
-      constexpr int kMaxDragEvents = 10;
+
+      // This constant tries to balance between detecting valid moves to 0,0
+      // and avoiding the detach bug happening to tabs near 0,0.
+      constexpr int kMinSpuriousDistance = 30;
       auto distance = sqrt(pow(static_cast<float>(abs(cursor_pos.x)), 2) +
                            pow(static_cast<float>(abs(cursor_pos.y)), 2));
-      // TODO(crbug.com/1270828): If this stat shows that
-      // `num_drag_events_after_press_` is predominantly less than some small
-      // number, add a check for that below and reduce kMinSpurious distance
-      // to something like 20 or 30 to reduce the chance of one of the first
-      // tab or two being detached incorrectly. Also fix the comment above the
-      // declaration of `num_drag_events_after_press_` to reflect this.
       if (distance > kMinSpuriousDistance) {
-        base::UmaHistogramExactLinear("Windows.DragEventsAfterPress",
-                                      num_drag_events_after_press_,
-                                      kMaxDragEvents + 1);
         SetMsgHandled(true);
         return 0;
       }
@@ -3350,7 +3355,8 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
   gfx::Point touch_point = gfx::Point(client_point.x, client_point.y);
   ui::EventType event_type = GetTouchEventType(pointer_flags);
   const base::TimeTicks event_time = ui::EventTimeForNow();
-  size_t mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
+  auto mapped_pointer_id =
+      static_cast<ui::PointerId>(id_generator_.GetGeneratedID(pointer_id));
 
   // The pressure from POINTER_TOUCH_INFO is normalized to a range between 0
   // and 1024, but we define the pressure of the range of [0,1].
@@ -3361,7 +3367,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
   float radius_y =
       (pointer_touch_info.rcContact.bottom - pointer_touch_info.rcContact.top) /
       2.0;
-  int rotation_angle = pointer_touch_info.orientation;
+  auto rotation_angle = static_cast<int>(pointer_touch_info.orientation);
   rotation_angle %= 180;
   if (rotation_angle < 0)
     rotation_angle += 180;
@@ -3522,7 +3528,7 @@ void HWNDMessageHandler::UpdateDwmFrame() {
 
 void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
                                             const gfx::Point& point,
-                                            size_t id,
+                                            ui::PointerId id,
                                             base::TimeTicks time_stamp,
                                             TouchEvents* touch_events) {
   ui::TouchEvent event(event_type, point, time_stamp,

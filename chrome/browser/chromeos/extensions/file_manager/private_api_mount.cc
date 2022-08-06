@@ -27,7 +27,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "components/drive/event_logger.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/cpp/unzip.h"
@@ -124,11 +124,11 @@ void FileManagerPrivateAddMountFunction::OnEncodingDetected(
 void FileManagerPrivateAddMountFunction::FinishMounting() {
   DiskMountManager* const disk_mount_manager = DiskMountManager::GetInstance();
   DCHECK(disk_mount_manager);
-  disk_mount_manager->MountPath(
-      path_.AsUTF8Unsafe(), std::move(extension_),
-      path_.BaseName().AsUTF8Unsafe(), std::move(options_),
-      chromeos::MOUNT_TYPE_ARCHIVE, chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
-      base::DoNothing());
+  disk_mount_manager->MountPath(path_.AsUTF8Unsafe(), std::move(extension_),
+                                path_.BaseName().AsUTF8Unsafe(),
+                                std::move(options_), ash::MountType::kArchive,
+                                chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+                                base::DoNothing());
 }
 
 FileManagerPrivateCancelMountingFunction::
@@ -169,7 +169,7 @@ FileManagerPrivateCancelMountingFunction::Run() {
 
 void FileManagerPrivateCancelMountingFunction::OnCancelled(
     chromeos::MountError error) {
-  if (error == chromeos::MOUNT_ERROR_NONE) {
+  if (error == chromeos::MountError::kNone) {
     Respond(NoArguments());
   } else {
     Respond(Error(file_manager_private::ToString(
@@ -194,10 +194,13 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
   VolumeManager* const volume_manager = VolumeManager::Get(profile);
   DCHECK(volume_manager);
 
+  std::string volume_id = params->volume_id;
+  volume_manager->ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(&volume_id);
+
   const base::WeakPtr<Volume> volume =
-      volume_manager->FindVolumeById(params->volume_id);
+      volume_manager->FindVolumeById(volume_id);
   if (!volume) {
-    LOG(ERROR) << "Cannot find volume " << Redact(params->volume_id);
+    LOG(ERROR) << "Cannot find volume " << Redact(volume_id);
     return RespondNow(Error(file_manager_private::ToString(
         api::file_manager_private::
             MOUNT_COMPLETED_STATUS_ERROR_PATH_NOT_MOUNTED)));
@@ -259,7 +262,7 @@ void FileManagerPrivateRemoveMountFunction::OnSshFsUnmounted(bool ok) {
 
 void FileManagerPrivateRemoveMountFunction::OnDiskUnmounted(
     chromeos::MountError error) {
-  if (error == chromeos::MOUNT_ERROR_NONE) {
+  if (error == chromeos::MountError::kNone) {
     Respond(NoArguments());
   } else {
     Respond(Error(file_manager_private::ToString(

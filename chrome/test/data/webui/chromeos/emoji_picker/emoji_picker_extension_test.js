@@ -42,10 +42,11 @@ suite('emoji-picker-extension', () => {
     EmojiPicker.configs = () => ({
       'dataUrls': {
         'emoji': [
-            '/emoji_test_ordering_start.json',
-            '/emoji_test_ordering_remaining.json'
+          '/emoji_test_ordering_start.json',
+          '/emoji_test_ordering_remaining.json',
         ],
         'emoticon': ['/emoticon_test_ordering.json'],
+        'symbol': ['/symbol_test_ordering.json'],
       },
     });
 
@@ -251,8 +252,10 @@ suite('emoji-picker-extension', () => {
         assert(recentEmoticonButton);
 
         const recentlyUsedEmoticons =
-            findInEmojiPicker(emoticonHistoryGroupSelector
-                ).shadowRoot.querySelectorAll('.emoji-button');
+            findInEmojiPicker(
+                emoticonHistoryGroupSelector,
+                )
+                .shadowRoot.querySelectorAll('.emoji-button');
         assertEquals(1, recentlyUsedEmoticons.length);
       });
 
@@ -266,7 +269,7 @@ suite('emoji-picker-extension', () => {
             'emoji-search', 'emoji-category-button:last-of-type',
             'cr-icon-button');
 
-        const emoticonTestGroupId = '10';
+        const emoticonTestGroupId = '20';
         emojiPicker.scrollToGroup(emoticonTestGroupId);
 
         await waitForCondition(
@@ -277,7 +280,7 @@ suite('emoji-picker-extension', () => {
       'Scrolling to an emoticon group should activate the corresponding ' +
           'subcategory tab.',
       async () => {
-        const emoticonTestGroupId = '10';
+        const emoticonTestGroupId = '20';
         emojiPicker.scrollToGroup(emoticonTestGroupId);
         const emoticonTabButton = await waitForCondition(
             () => findInEmojiPicker(
@@ -291,7 +294,7 @@ suite('emoji-picker-extension', () => {
   test('Scrolling to an emoticon group should update chevrons.', async () => {
     const leftChevron = findInEmojiPicker('#left-chevron');
     const rightChevron = findInEmojiPicker('#right-chevron');
-    const emoticonTestGroupId = '15';
+    const emoticonTestGroupId = '25';
 
     emojiPicker.scrollToGroup(emoticonTestGroupId);
     // when scrolling to the next page, the chevron display needs to be updated.

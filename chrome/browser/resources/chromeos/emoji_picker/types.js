@@ -8,7 +8,7 @@
 export let CategoryData;
 
 /**
- * @typedef {{string: string, name: string, keywords: !Array<!string>}} Emoji
+ * @typedef {{string: string, name: string, keywords: ?Array<!string>}} Emoji
  */
 export let Emoji;
 
@@ -53,5 +53,6 @@ export let EmojiGroupElement;
  */
 export const CategoryEnum = {
   EMOJI: 'emoji',
-  EMOTICON: 'emoticon'
+  EMOTICON: 'emoticon',
+  SYMBOL: 'symbol',
 };

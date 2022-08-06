@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/legacy_card_unmask_prompt_view_bridge.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #import "base/bind.h"
 #import "base/location.h"
 #import "base/mac/foundation_util.h"
@@ -46,6 +44,44 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
+@interface LegacyCardUnmaskPromptViewController
+    : CollectionViewController <UIAdaptivePresentationControllerDelegate,
+                                UITextFieldDelegate> {
+  UIBarButtonItem* _cancelButton;
+  UIBarButtonItem* _verifyButton;
+  CVCItem* _CVCItem;
+  StatusItem* _statusItem;
+
+  // Owns `self`.
+  autofill::LegacyCardUnmaskPromptViewBridge* _bridge;  // weak
+}
+
+// Designated initializer. `bridge` must not be null.
+- (instancetype)initWithBridge:
+    (autofill::LegacyCardUnmaskPromptViewBridge*)bridge
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
+    NS_UNAVAILABLE;
+
+// Shows the form that allows the user to input their CVC.
+- (void)showCVCInputForm;
+
+// Shows the form that allows the user to input their CVC along with the
+// supplied error message.
+- (void)showCVCInputFormWithError:(NSString*)errorMessage;
+
+// Shows a progress spinner with a "verifying" message.
+- (void)showSpinner;
+
+// Shows a checkmark image and a "success" message.
+- (void)showSuccess;
+
+// Shows an error image and the provided message.
+- (void)showError:(NSString*)errorMessage;
+
+@end
+
 namespace autofill {
 
 #pragma mark LegacyCardUnmaskPromptViewBridge
@@ -65,11 +101,21 @@ LegacyCardUnmaskPromptViewBridge::~LegacyCardUnmaskPromptViewBridge() {
 }
 
 void LegacyCardUnmaskPromptViewBridge::Show() {
-  view_controller_ =
+  card_view_controller_ =
       [[LegacyCardUnmaskPromptViewController alloc] initWithBridge:this];
+
+  view_controller_ = [[UINavigationController alloc]
+      initWithRootViewController:card_view_controller_];
   [view_controller_ setModalPresentationStyle:UIModalPresentationFormSheet];
   [view_controller_
       setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+  // This will notify the prompt vc when its navigation vc is dismissed,
+  // so `this` can be released and `controller_` notified that the prompt
+  // was dismissed.
+  view_controller_.presentationController.delegate =
+      static_cast<id<UIAdaptivePresentationControllerDelegate>>(
+          card_view_controller_);
+
   [base_view_controller_ presentViewController:view_controller_
                                       animated:YES
                                     completion:nil];
@@ -81,14 +127,14 @@ void LegacyCardUnmaskPromptViewBridge::ControllerGone() {
 }
 
 void LegacyCardUnmaskPromptViewBridge::DisableAndWaitForVerification() {
-  [view_controller_ showSpinner];
+  [card_view_controller_ showSpinner];
 }
 
 void LegacyCardUnmaskPromptViewBridge::GotVerificationResult(
     const std::u16string& error_message,
     bool allow_retry) {
   if (error_message.empty()) {
-    [view_controller_ showSuccess];
+    [card_view_controller_ showSuccess];
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&LegacyCardUnmaskPromptViewBridge::PerformClose,
@@ -96,10 +142,10 @@ void LegacyCardUnmaskPromptViewBridge::GotVerificationResult(
         controller_->GetSuccessMessageDuration());
   } else {
     if (allow_retry) {
-      [view_controller_
+      [card_view_controller_
           showCVCInputFormWithError:base::SysUTF16ToNSString(error_message)];
     } else {
-      [view_controller_ showError:base::SysUTF16ToNSString(error_message)];
+      [card_view_controller_ showError:base::SysUTF16ToNSString(error_message)];
     }
   }
 }
@@ -111,12 +157,17 @@ CardUnmaskPromptController* LegacyCardUnmaskPromptViewBridge::GetController() {
 void LegacyCardUnmaskPromptViewBridge::PerformClose() {
   base::WeakPtr<LegacyCardUnmaskPromptViewBridge> weak_this =
       weak_ptr_factory_.GetWeakPtr();
-  [view_controller_ dismissViewControllerAnimated:YES
-                                       completion:^{
-                                         if (weak_this) {
-                                           weak_this->DeleteSelf();
-                                         }
-                                       }];
+  [view_controller_
+      dismissViewControllerAnimated:YES
+                         completion:^{
+                           if (weak_this) {
+                             weak_this->NavigationControllerDismissed();
+                           }
+                         }];
+}
+
+void LegacyCardUnmaskPromptViewBridge::NavigationControllerDismissed() {
+  DeleteSelf();
 }
 
 void LegacyCardUnmaskPromptViewBridge::DeleteSelf() {
@@ -125,18 +176,6 @@ void LegacyCardUnmaskPromptViewBridge::DeleteSelf() {
 
 }  // namespace autofill
 
-@interface LegacyCardUnmaskPromptViewController () <UITextFieldDelegate> {
-  UIBarButtonItem* _cancelButton;
-  UIBarButtonItem* _verifyButton;
-  CVCItem* _CVCItem;
-  StatusItem* _statusItem;
-
-  // Owns `self`.
-  autofill::LegacyCardUnmaskPromptViewBridge* _bridge;  // weak
-}
-
-@end
-
 @implementation LegacyCardUnmaskPromptViewController
 
 - (instancetype)initWithBridge:
@@ -144,7 +183,7 @@ void LegacyCardUnmaskPromptViewBridge::DeleteSelf() {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   DCHECK(bridge);
   self = [super initWithLayout:layout
-                         style:CollectionViewControllerStyleAppBar];
+                         style:CollectionViewControllerStyleDefault];
   if (self) {
     _bridge = bridge;
     self.title =
@@ -520,4 +559,11 @@ void LegacyCardUnmaskPromptViewBridge::DeleteSelf() {
   }
 }
 
+#pragma mark - UIAdaptivePresentationControllerDelegate
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Notify bridge that UI was dismissed.
+  _bridge->NavigationControllerDismissed();
+  _bridge = nullptr;
+}
 @end

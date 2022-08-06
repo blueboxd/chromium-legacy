@@ -45,6 +45,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/user_manager/user.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -458,6 +459,8 @@ class LoginAuthUserView::FingerprintView : public views::View {
     can_use_pin_ = value;
     label_->SetTextBasedOnState(state_, can_use_pin_);
   }
+
+  void ResetUIState() { DisplayCurrentState(); }
 
   void NotifyFingerprintAuthResult(bool success) {
     reset_state_.Stop();
@@ -1079,7 +1082,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       callbacks.on_remove_warning_shown, callbacks.on_remove);
   user_view_ = user_view.get();
 
-  const LoginPalette palette = CreateDefaultLoginPalette();
+  const LoginPalette palette = CreateDefaultLoginPalette(GetColorProvider());
 
   auto password_view = std::make_unique<LoginPasswordView>(palette);
   password_view_ = password_view.get();
@@ -1633,6 +1636,7 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
                             user.basic_user_info.account_id;
   user_view_->UpdateForUser(user, true /*animate*/);
   if (user_changed) {
+    pin_input_view_->Reset();
     password_view_->Reset();
     password_view_->SetDisplayPasswordButtonVisible(
         user.show_display_password_button);
@@ -1648,6 +1652,16 @@ void LoginAuthUserView::SetFingerprintState(FingerprintState state) {
   } else {
     DCHECK(fingerprint_view_);
     fingerprint_view_->SetState(state);
+  }
+}
+
+void LoginAuthUserView::ResetFingerprintUIState() {
+  if (smart_lock_ui_revamp_enabled_) {
+    DCHECK(fingerprint_auth_factor_model_);
+    fingerprint_auth_factor_model_->ResetUIState();
+  } else {
+    DCHECK(fingerprint_view_);
+    fingerprint_view_->ResetUIState();
   }
 }
 
@@ -1712,13 +1726,18 @@ void LoginAuthUserView::OnGestureEvent(ui::GestureEvent* event) {
 
 void LoginAuthUserView::OnThemeChanged() {
   NonAccessibleView::OnThemeChanged();
-  const LoginPalette palette = CreateDefaultLoginPalette();
+  const LoginPalette palette = CreateDefaultLoginPalette(GetColorProvider());
   password_view_->UpdatePalette(palette);
   pin_input_view_->UpdatePalette(palette);
   pin_view_->UpdatePalette(palette);
 }
 
 void LoginAuthUserView::OnAuthSubmit(const std::u16string& password) {
+  LOG(WARNING) << "crbug.com/1339004 : AuthSubmit "
+               << password_view_->IsReadOnly() << " / "
+               << pin_input_view_->IsReadOnly() << " /  "
+               << HasAuthMethod(AUTH_TAP);
+
   // Pressing enter when the password field is empty and tap-to-unlock is
   // enabled should attempt unlock.
   if (HasAuthMethod(AUTH_TAP) && password.empty()) {
@@ -1738,11 +1757,14 @@ void LoginAuthUserView::OnAuthSubmit(const std::u16string& password) {
 }
 
 void LoginAuthUserView::OnAuthComplete(absl::optional<bool> auth_success) {
+  bool failed = !auth_success.value_or(false);
+  LOG(WARNING) << "crbug.com/1339004 : OnAuthComplete " << failed;
+
   // Clear the password only if auth fails. Make sure to keep the password
   // view disabled even if auth succeededs, as if the user submits a password
   // while animating the next lock screen will not work as expected. See
   // https://crbug.com/808486.
-  if (!auth_success.has_value() || !auth_success.value()) {
+  if (failed) {
     password_view_->Reset();
     password_view_->SetReadOnly(false);
     pin_input_view_->Reset();

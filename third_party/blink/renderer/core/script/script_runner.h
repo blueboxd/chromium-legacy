@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -48,10 +49,49 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
   ScriptRunner(const ScriptRunner&) = delete;
   ScriptRunner& operator=(const ScriptRunner&) = delete;
 
-  void QueueScriptForExecution(PendingScript*);
+  // Delays script evaluation after `ScriptRunnerDelayer::Activate()` until
+  // `ScriptRunnerDelayer::Deactivate()`.
+  //
+  // Each `DelayReason` value represents one reason to delay, and there should
+  // be at most one active `ScriptRunnerDelayer` for each `ScriptRunnerDelayer`
+  // for each `ScriptRunner`.
+  //
+  // Each script can choose to wait or not to wait for each `DelayReason` (See
+  // `DetermineDelayReasonsToWait()`), and are evaluated after all of its
+  // relevant `ScriptRunnerDelayer`s are deactivated.
+  //
+  // This can be spec-conformant (pretending that the loading of async scripts
+  // are not completed until `ScriptRunnerDelayer`s are deactivated), but be
+  // careful to avoid deadlocks and infinite delays.
+  //
+  // Currently this only affects async scripts and not in-order scripts.
+  enum class DelayReason : uint8_t {
+    // Script is loaded. Should be enabled for all scripts.
+    kLoad = 1 << 0,
+    // Milestone is reached as defined by https://crbug.com/1340837.
+    kMilestone = 1 << 1,
+    // Delay async scripts until force-deferred scripts are evaluated
+    // https://crbug.com/1339112.
+    kForceDefer = 1 << 2,
+
+    kTest1 = 1 << 6,
+    kTest2 = 1 << 7,
+  };
+  using DelayReasons = std::underlying_type<DelayReason>::type;
+
+  void QueueScriptForExecution(
+      PendingScript*,
+      absl::optional<DelayReasons> delay_reason_override_for_test =
+          absl::nullopt);
 
   void SetTaskRunnerForTesting(base::SingleThreadTaskRunner* task_runner) {
     task_runner_ = task_runner;
+  }
+
+  // Returns true until all force in-order scripts are evaluated.
+  // pending_force_in_order_scripts_ can be empty a little earlier than that.
+  bool HasForceInOrderScripts() const {
+    return pending_force_in_order_scripts_count_ > 0;
   }
 
   void Trace(Visitor*) const override;
@@ -60,18 +100,56 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
   // PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
 
+  void ExecuteForceInOrderPendingScript(PendingScript*);
+  void ExecuteParserBlockingScriptsBlockedByForceInOrder();
+
  private:
   // Execute the given pending script.
   void ExecutePendingScript(PendingScript*);
+
+  friend class ScriptRunnerDelayer;
+  void AddDelayReason(DelayReason);
+  void RemoveDelayReason(DelayReason);
+  DelayReasons DetermineDelayReasonsToWait(PendingScript*);
+  void RemoveDelayReasonFromScript(PendingScript*, DelayReason);
 
   Member<Document> document_;
 
   // https://html.spec.whatwg.org/C/#list-of-scripts-that-will-execute-in-order-as-soon-as-possible
   HeapDeque<Member<PendingScript>> pending_in_order_scripts_;
   // https://html.spec.whatwg.org/C/#set-of-scripts-that-will-execute-as-soon-as-possible
-  HeapHashSet<Member<PendingScript>> pending_async_scripts_;
+  // The value represents the `DelayReason`s that the script is waiting for
+  // before its evaluation.
+  HeapHashMap<Member<PendingScript>, DelayReasons> pending_async_scripts_;
+
+  HeapDeque<Member<PendingScript>> pending_force_in_order_scripts_;
+  // The number of force in-order scripts that aren't yet evaluated. This is
+  // different from pending_force_in_order_scripts_.size() == the number of
+  // force in-order scripts that aren't yet scheduled to evaluate.
+  wtf_size_t pending_force_in_order_scripts_count_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DelayReasons active_delay_reasons_ = 0;
+};
+
+class CORE_EXPORT ScriptRunnerDelayer final
+    : public GarbageCollected<ScriptRunnerDelayer> {
+ public:
+  ScriptRunnerDelayer(ScriptRunner*, ScriptRunner::DelayReason);
+  ~ScriptRunnerDelayer() = default;
+  void Activate();
+  void Deactivate();
+
+  ScriptRunnerDelayer(const ScriptRunnerDelayer&) = delete;
+  ScriptRunnerDelayer& operator=(const ScriptRunnerDelayer&) = delete;
+
+  void Trace(Visitor*) const;
+
+ private:
+  WeakMember<ScriptRunner> script_runner_;
+  const ScriptRunner::DelayReason delay_reason_;
+  bool activated_ = false;
 };
 
 }  // namespace blink

@@ -44,6 +44,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
+#import "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -73,6 +74,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
+#import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
@@ -169,8 +171,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   fre_field_trial::RegisterLocalStatePrefs(registry);
+  trending_queries_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
+      registry);
+  segmentation_platform::SegmentationPlatformService::RegisterLocalStatePrefs(
       registry);
 
   // Preferences related to the browser state manager.
@@ -199,6 +204,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kInvalidatorSavedInvalidations);
   registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
+  registry->RegisterListPref(prefs::kIosPromosManagerActivePromos);
+  registry->RegisterDictionaryPref(prefs::kIosPromosManagerImpressionHistory);
 
   registry->RegisterBooleanPref(enterprise_reporting::kCloudReportingEnabled,
                                 false);
@@ -258,6 +265,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   prerender_prefs::RegisterNetworkPredictionPrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
   safe_browsing::RegisterProfilePrefs(registry);
+  segmentation_platform::SegmentationPlatformService::RegisterProfilePrefs(
+      registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
@@ -358,6 +367,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       policy::policy_prefs::kUserPolicyNotificationWasShown, false);
 
   registry->RegisterIntegerPref(kAccountIdMigrationState, 0);
+
+  registry->RegisterIntegerPref(prefs::kIosShareChromeCount, 0,
+                                PrefRegistry::LOSSY_PREF);
+  registry->RegisterTimePref(prefs::kIosShareChromeLastShare, base::Time(),
+                             PrefRegistry::LOSSY_PREF);
 }
 
 // This method should be periodically pruned of year+ old migrations.

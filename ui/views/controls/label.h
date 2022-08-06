@@ -193,8 +193,8 @@ class VIEWS_EXPORT Label : public View,
 
   // If multi-line, a non-zero value will cap the number of lines rendered, and
   // elide the rest (currently only ELIDE_TAIL supported). See gfx::RenderText.
-  int GetMaxLines() const;
-  void SetMaxLines(int max_lines);
+  size_t GetMaxLines() const;
+  void SetMaxLines(size_t max_lines);
 
   // If single-line, a non-zero value will help determine the amount of space
   // needed *after* elision, which may be less than the passed |max_width|.
@@ -309,6 +309,8 @@ class VIEWS_EXPORT Label : public View,
   // View:
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
   gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
@@ -407,6 +409,10 @@ class VIEWS_EXPORT Label : public View,
   // Get the text size for the current layout.
   gfx::Size GetTextSize() const;
 
+  // Get the text size that ignores the current layout and respects
+  // `available_size`.
+  gfx::Size GetBoundedTextSize(const SizeBounds& available_size) const;
+
   // Returns the appropriate foreground color to use given the proposed
   // |foreground| and |background| colors.
   SkColor GetForegroundColor(SkColor foreground, SkColor background) const;
@@ -475,7 +481,7 @@ class VIEWS_EXPORT Label : public View,
   bool auto_color_readability_enabled_ = true;
   // TODO(mukai): remove |multi_line_| when all RenderText can render multiline.
   bool multi_line_ = false;
-  int max_lines_ = 0;
+  size_t max_lines_ = 0;
   std::u16string tooltip_text_;
   bool handles_tooltips_ = true;
   // Whether to collapse the label when it's not visible.

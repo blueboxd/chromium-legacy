@@ -37,6 +37,7 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/privacy_budget/privacy_budget_settings_provider.h"
 #include "chrome/common/profiler/thread_profiler.h"
+#include "chrome/common/profiler/unwind_util.h"
 #include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -71,6 +72,7 @@
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill_assistant/content/renderer/autofill_assistant_agent.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/content_capture/renderer/content_capture_sender.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -168,7 +170,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/renderer/sandbox_status_extension_android.h"
-#include "components/commerce/core/commerce_feature_list.h"
 #else
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -591,14 +592,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
   SandboxStatusExtension::Create(render_frame);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
   SyncEncryptionKeysExtension::Create(render_frame);
-#endif
 
   if (render_frame->IsMainFrame())
     new webapps::WebPageMetadataAgent(render_frame);
 
-#if !BUILDFLAG(IS_ANDROID)
   const bool search_result_extractor_enabled =
       render_frame->IsMainFrame() &&
       history_clusters::GetConfig().is_journeys_enabled_no_locale_check &&
@@ -607,7 +605,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (search_result_extractor_enabled) {
     continuous_search::SearchResultExtractorImpl::Create(render_frame);
   }
-#endif
 
   new NetErrorHelper(render_frame);
 
@@ -670,9 +667,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  associated_interfaces->AddInterface(base::BindRepeating(
-      &extensions::MimeHandlerViewContainerManager::BindReceiver,
-      render_frame->GetRoutingID()));
+  associated_interfaces
+      ->AddInterface<extensions::mojom::MimeHandlerViewContainerManager>(
+          base::BindRepeating(
+              &extensions::MimeHandlerViewContainerManager::BindReceiver,
+              render_frame->GetRoutingID()));
 #endif
 
   // Owned by |render_frame|.
@@ -711,7 +710,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 // frame that is the main frame as well, so we should check if |render_frame|
 // is the fenced frame.
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule) &&
+  if (command_line->HasSwitch(commerce::switches::kEnableChromeCart) &&
 #else
   if (base::FeatureList::IsEnabled(commerce::kCommerceHintAndroid) &&
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -735,13 +734,16 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(IS_WIN)
   if (render_frame->IsMainFrame()) {
-    associated_interfaces->AddInterface(base::BindRepeating(
-        &RenderFrameFontFamilyAccessor::Bind, render_frame));
+    associated_interfaces
+        ->AddInterface<chrome::mojom::RenderFrameFontFamilyAccessor>(
+            base::BindRepeating(&RenderFrameFontFamilyAccessor::Bind,
+                                render_frame));
   }
 #endif
 }
 
-void ChromeContentRendererClient::WebViewCreated(blink::WebView* web_view) {
+void ChromeContentRendererClient::WebViewCreated(blink::WebView* web_view,
+                                                 bool was_created_by_renderer) {
   new prerender::NoStatePrefetchClient(web_view);
 }
 
@@ -1345,9 +1347,13 @@ void ChromeContentRendererClient::PostCompositorThreadCreated(
       base::BindOnce(&ThreadProfiler::StartOnChildThread,
                      metrics::CallStackProfileParams::Thread::kCompositor));
   // Enable stack sampling for tracing.
+  // We pass in CreateCoreUnwindersFactory here since it lives in the chrome/
+  // layer while TracingSamplerProfiler is outside of chrome/.
   compositor_thread_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+      base::BindOnce(&tracing::TracingSamplerProfiler::
+                         CreateOnChildThreadWithCustomUnwinders,
+                     base::BindRepeating(&CreateCoreUnwindersFactory)));
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

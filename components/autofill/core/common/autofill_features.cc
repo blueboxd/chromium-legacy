@@ -95,7 +95,7 @@ const base::Feature kAutofillInferCountryCallingCode{
 // determine the address requirements.
 // TODO(crbug.com/1297032): Cleanup when launched.
 const base::Feature kAutofillComplementCountryCodeOnImport{
-    "AutofillComplementCountryCodeOnImport", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillComplementCountryCodeOnImport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, label inference considers strings entirely made up of  '(', ')'
 // and '-' as valid labels.
@@ -274,7 +274,7 @@ const base::Feature kAutofillEnableProfileDeduplication{
 // TODO(crbug.com/1098943): Remove once launched.
 const base::Feature kAutofillEnableSupportForMoreStructureInNames{
     "AutofillEnableSupportForMoreStructureInNames",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls if Autofill supports new structure in addresses.
 // TODO(crbug.com/1098943): Remove once launched.
@@ -338,23 +338,12 @@ const base::Feature kAutofillTypeSpecificPopupWidth{
 const base::Feature kAutofillFixFillableFieldTypes{
     "AutofillFixFillableFieldTypes", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Lookups for field classifications are gated on either Autofill for addresses
-// or payments being enabled. As a consequence, if both are disabled, the
-// password manager does not get server-side field classifications anymore
-// and its performance is reduced. When this feature is enabled, Autofill parse
-// forms and perform server lookups even if only the password manager is
-// enabled.
-// TODO(crbug.com/1293341): Remove once launched.
-const base::Feature kAutofillFixServerQueriesIfPasswordManagerIsEnabled{
-    "AutofillFixServerQueriesIfPasswordManagerIsEnabled",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, the Autofill popup ignores second clicks for a certain period
 // (kAutofillIgnoreEarlyClicksOnPopupDuration) after the Autofill popup was
 // shown. This is to prevent double clicks accidentally accepting suggestions.
 // TODO(crbug/1279268): Remove once launched.
 const base::Feature kAutofillIgnoreEarlyClicksOnPopup{
-    "AutofillIgnoreEarlyClicksOnPopup", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillIgnoreEarlyClicksOnPopup", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The duration for which clicks on the just-shown Autofill popup should be
 // ignored if AutofillIgnoreEarlyClicksOnPopup is enabled.
@@ -447,6 +436,13 @@ const base::FeatureParam<std::string> kAutofillParsingPatternActiveSource{
 // TODO(crbug/1150895): Cleanup when launched.
 const base::Feature kAutofillPageLanguageDetection{
     "AutofillPageLanguageDetection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, AutofillManager::ParseForm() isn't called synchronously.
+// Instead, all incoming events parse the form asynchronously and proceed
+// afterwards.
+// TODO(crbug.com/1309848) Remove once launched.
+const base::Feature kAutofillParseAsync{"AutofillParseAsync",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If the feature is enabled, FormTracker's probable-form-submission detection
 // is disabled and replaced with browser-side detection.
@@ -550,6 +546,7 @@ const base::Feature kAutofillSilentProfileUpdateForInsufficientImport{
 
 // Controls whether inferred label is considered for comparing in
 // FormFieldData.SimilarFieldAs.
+// TODO(crbug.com/1211834): The experiment seems dead; remove?
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 

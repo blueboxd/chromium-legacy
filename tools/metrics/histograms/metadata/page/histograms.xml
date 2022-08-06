@@ -36,6 +36,7 @@ chromium-metrics-reviews@google.com.
   <variant name="document"/>
   <variant name="embed"/>
   <variant name="empty"/>
+  <variant name="fencedframe"/>
   <variant name="font"/>
   <variant name="frame"/>
   <variant name="iframe"/>
@@ -95,7 +96,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.BackForwardCache.Event"
-    enum="PageLoadBackForwardCacheEvent" expires_after="2022-11-13">
+    enum="PageLoadBackForwardCacheEvent" expires_after="2023-01-15">
   <owner>altimin@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
@@ -157,7 +158,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.Ads.AllPages.NonAdNetworkBytes" units="KB"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -726,7 +727,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.FromGoogleSearch.FromSidePanel.InteractiveTiming.FirstInputDelay4"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>tluk@chromium.org</owner>
   <owner>chrome-cros@chromium.org</owner>
   <summary>
@@ -756,7 +757,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.FromGoogleSearch.FromSidePanel.PaintTiming.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>tluk@chromium.org</owner>
   <owner>chrome-cros@chromium.org</owner>
   <summary>
@@ -1267,6 +1268,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="PageLoad.Experimental.AbortTiming.Background"
     units="ms" expires_after="2022-08-28">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -1278,6 +1282,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="PageLoad.Experimental.AbortTiming.Close"
     units="ms" expires_after="2021-08-09">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
@@ -1289,6 +1296,9 @@ chromium-metrics-reviews@google.com.
 <histogram base="true"
     name="PageLoad.Experimental.AbortTiming.ForwardBackNavigation" units="ms"
     expires_after="2021-08-09">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
@@ -1299,6 +1309,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="PageLoad.Experimental.AbortTiming.NewNavigation"
     units="ms" expires_after="2021-10-17">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
@@ -1309,6 +1322,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="PageLoad.Experimental.AbortTiming.Other"
     units="ms" expires_after="M81">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
@@ -1319,6 +1335,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="PageLoad.Experimental.AbortTiming.Reload"
     units="ms" expires_after="2021-12-12">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
@@ -1329,6 +1348,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="PageLoad.Experimental.AbortTiming.Stop" units="ms"
     expires_after="2021-10-10">
+  <obsolete>
+    This experimental metric has been removed from the code.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
@@ -1740,8 +1762,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Experimental.PageVisitFinalStatus"
-    enum="PageVisitFinalStatus" expires_after="2022-08-30">
-  <owner>npm@chromium.org</owner>
+    enum="PageVisitFinalStatus" expires_after="2023-07-22">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Determines the final status for this page load. That is, records whether the
@@ -1776,7 +1798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Experimental.PaintTiming.InputToFirstContentfulPaint"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>sullivan@chromium.org</owner>
   <summary>
     The time between the OS-level input event that initiated a navigation, and
@@ -2223,7 +2245,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.PageType" enum="PageLoadTrackerPageType"
-    expires_after="2022-09-01">
+    expires_after="2022-12-01">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -2234,7 +2256,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Internal.PaintTiming.LargestContentfulPaint.ContentType"
-    enum="LargestContentType" expires_after="2022-11-13">
+    enum="LargestContentType" expires_after="2023-01-15">
   <owner>npm@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -2284,7 +2306,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"
     units="ms" expires_after="2022-11-13">
   <owner>jonross@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     'Swap time' is the timestamp of the renderer submitting a CompositorFrame,
     and 'Presentation time' is the timestamp of the frame becoming visible on
@@ -2304,7 +2326,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="PageLoad.Internal.Renderer.PresentationTime.Valid"
     enum="Boolean" expires_after="2022-11-13">
   <owner>jonross@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     This boolean keeps track of whether a valid presentation-timestamp was
     received or not. This is reported only for compositor-frames that report a
@@ -2316,13 +2338,48 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.LayoutInstability.CumulativeShiftScore"
-    units="scorex10" expires_after="never">
-<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
+<histogram name="PageLoad.Internal.SuppressedEventsCountBeforePaint"
+    units="count" expires_after="2023-01-01">
+  <owner>mehdika@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
+  <summary>
+    Measures the number of events observed before the first paint. This metric
+    is emitted for every committed page load, immediately after the first paint
+    is complete. When the DropInputEventsBeforeFirstPaint feature is enabled
+    these events will be dropped as the user may not have seen the content they
+    are interacting with yet. Since there is a delay from the first paint
+    presentation to when the notification about it is received the user may have
+    actually seen the first paint for some of these events. If many events are
+    being dropped we may need to revisit this experiment or improve the
+    measurement to only those after the first paint.
+  </summary>
+</histogram>
 
+<histogram name="PageLoad.Internal.SuppressedEventsTimingBeforePaint"
+    units="ms" expires_after="2023-01-01">
+  <owner>mehdika@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
+  <summary>
+    Measures time difference between first paint and last event dropped by
+    DropInputEventsBeforeFirstPaint feature. This metric is emitted for every
+    committed page load, immediately after the first paint is complete. When the
+    DropInputEventsBeforeFirstPaint feature is enabled events observed before
+    the first paint will be dropped as the user may not have seen the content
+    they are interacting with yet. Since there is a delay from the first paint
+    presentation to when the notification about it is received the user may have
+    actually seen the first paint for some of these events. If this time
+    difference is long enough to affect user experience we may need to revisit
+    this experiment. We are logging 0 timestamp if there is no suppressed event
+    or the most recent suppressed event is before the first paint time so that
+    we have a count of the number of times the behavior was good to compare the
+    size of the bad cases to.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.LayoutInstability.CumulativeShiftScore"
+    units="scorex10" expires_after="2023-07-13">
   <owner>bmcquade@chromium.org</owner>
   <owner>skobes@chromium.org</owner>
-  <owner>chrome-analysis-team@google.com</owner>
   <summary>
     Measures the cumulative layout shift score (bit.ly/lsm-explainer) that has
     occurred on the page (including all subframes). Higher values correspond to
@@ -2330,9 +2387,6 @@ chromium-metrics-reviews@google.com.
     such as when the page is being navigated away from or when a tab is being
     closed. Stable since M79; previous versions are expermental and subject to
     fluctuation between releases.
-
-    This histogram is of special interest to the chrome-analysis-team@. Do not
-    change its semantics or retire it without talking to them first.
 
     Bucketing for this histogram should be kept in sync with bucketing for
     PageLoad.LayoutInstability.CumulativeShiftScore.AfterBackForwardCacheRestore.
@@ -2599,7 +2653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2023-07-21">
   <owner>sullivan@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -2624,7 +2678,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.PaintTiming.NavigationToFirstPaint.AfterBackForwardCacheRestore"
-    units="ms" expires_after="2022-11-13">
+    units="ms" expires_after="2023-01-15">
   <owner>altimin@chromium.org</owner>
   <owner>djw@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>

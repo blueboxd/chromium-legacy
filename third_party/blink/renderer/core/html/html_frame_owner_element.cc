@@ -27,6 +27,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -135,6 +136,21 @@ enum class AutomaticLazyLoadFrame {
   kMaxValue = kTargetFramesFound,
 };
 
+int GetLazyAdsSkipFrameCount() {
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kAutomaticLazyFrameLoadingToAds));
+  static const int skip_frame_count = features::kSkipFrameCountForLazyAds.Get();
+  return skip_frame_count;
+}
+
+int GetLazyEmbedsSkipFrameCount() {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAutomaticLazyFrameLoadingToEmbeds));
+  static const int skip_frame_count =
+      features::kSkipFrameCountForLazyEmbeds.Get();
+  return skip_frame_count;
+}
+
 bool CheckAndRecordIfShouldLazilyLoadFrame(const Document& document,
                                            bool is_loading_attr_lazy,
                                            bool is_eligible_for_lazy_embeds,
@@ -199,12 +215,16 @@ bool CheckAndRecordIfShouldLazilyLoadFrame(const Document& document,
 
   if (is_eligible_for_lazy_embeds &&
       base::FeatureList::IsEnabled(
-          features::kAutomaticLazyFrameLoadingToEmbeds)) {
+          features::kAutomaticLazyFrameLoadingToEmbeds) &&
+      document.GetImmediateChildFrameCreationCount() >
+          GetLazyEmbedsSkipFrameCount()) {
     return true;
   }
 
   if (is_eligible_for_lazy_ads &&
-      base::FeatureList::IsEnabled(features::kAutomaticLazyFrameLoadingToAds)) {
+      base::FeatureList::IsEnabled(features::kAutomaticLazyFrameLoadingToAds) &&
+      document.GetImmediateChildFrameCreationCount() >
+          GetLazyAdsSkipFrameCount()) {
     return true;
   }
 
@@ -296,37 +316,20 @@ bool IsEligibleForLazyEmbeds(const KURL& url, const Document& document) {
   return false;
 }
 
-// If kAutomaticLazyFrameLoadingToAds is enabled, calculate the timeout in
-// advance from the field trial param, otherwise return 0;
-base::TimeDelta CalculateTimeoutMs(const base::Feature& feature) {
-  static constexpr base::TimeDelta kDefaultTimeout{base::Milliseconds(0)};
-  if (!base::FeatureList::IsEnabled(feature))
-    return kDefaultTimeout;
-
-  const String timeout =
-      base::GetFieldTrialParamValueByFeature(feature, "timeout").c_str();
-  if (timeout.IsEmpty())
-    return kDefaultTimeout;
-
-  bool success;
-  const int timeout_ms = timeout.ToInt(&success);
-  DCHECK(success);
-
-  return base::Milliseconds(timeout_ms);
-}
-
 const base::TimeDelta GetLazyEmbedsTimeoutMs() {
-  DEFINE_STATIC_LOCAL(
-      base::TimeDelta, timeoutMs,
-      (CalculateTimeoutMs(features::kAutomaticLazyFrameLoadingToEmbeds)));
-  return timeoutMs;
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAutomaticLazyFrameLoadingToEmbeds));
+  static const base::TimeDelta timeout_ms =
+      base::Milliseconds(features::kTimeoutMillisForLazyEmbeds.Get());
+  return timeout_ms;
 }
 
 const base::TimeDelta GetLazyAdsTimeoutMs() {
-  DEFINE_STATIC_LOCAL(
-      base::TimeDelta, timeoutMs,
-      (CalculateTimeoutMs(features::kAutomaticLazyFrameLoadingToAds)));
-  return timeoutMs;
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kAutomaticLazyFrameLoadingToAds));
+  static const base::TimeDelta timeout_ms =
+      base::Milliseconds(features::kTimeoutMillisForLazyAds.Get());
+  return timeout_ms;
 }
 
 }  // namespace
@@ -355,10 +358,9 @@ void HTMLFrameOwnerElement::PluginDisposeSuspendScope::
 HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
                                              Document& document)
     : HTMLElement(tag_name, document),
-      content_frame_(nullptr),
-      embedded_content_view_(nullptr),
-      should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)),
-      is_swapping_frames_(false) {}
+      should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)) {
+  document.IncrementImmediateChildFrameCreationCount();
+}
 
 LayoutEmbeddedContent* HTMLFrameOwnerElement::GetLayoutEmbeddedContent() const {
   // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
@@ -912,11 +914,7 @@ bool HTMLFrameOwnerElement::IsAdRelated() const {
   if (!content_frame_)
     return false;
 
-  return content_frame_->IsAdSubframe();
-}
-
-void HTMLFrameOwnerElement::LoadIfLazyAfterTimeout() {
-  LoadImmediatelyIfLazy();
+  return content_frame_->IsAdFrame();
 }
 
 bool HTMLFrameOwnerElement::IsEligibleForLazyAds(const KURL& url) {
@@ -956,8 +954,9 @@ void HTMLFrameOwnerElement::MaybeSetTimeoutToStartFrameLoading(
       .GetTaskRunner(TaskType::kInternalLoading)
       ->PostDelayedTask(
           FROM_HERE,
-          WTF::Bind(&HTMLFrameOwnerElement::LoadIfLazyAfterTimeout,
-                    WrapWeakPersistent(this)),
+          WTF::Bind(
+              base::IgnoreResult(&HTMLFrameOwnerElement::LoadImmediatelyIfLazy),
+              WrapWeakPersistent(this)),
           timeout_ms);
 }
 

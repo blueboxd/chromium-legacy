@@ -398,8 +398,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
     // values we gave it. So if the id we doesn't exist in our internal
     // dictionary then something is wrong.
     EXPECT_TRUE(prefs_->GetDictionary(info.extension_id, &pref))
-        << "Got back ID (" << info.extension_id.c_str()
-        << ") we weren't expecting";
+        << "Got back ID (" << info.extension_id << ") we weren't expecting";
 
     EXPECT_TRUE(info.path.IsAbsolute());
     if (!fake_base_path_.empty())
@@ -439,8 +438,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
     // values we gave it. So if the id we doesn't exist in our internal
     // dictionary then something is wrong.
     EXPECT_TRUE(prefs_->GetDictionary(info.extension_id, &pref))
-        << L"Got back ID (" << info.extension_id.c_str()
-        << ") we weren't expecting";
+        << "Got back ID (" << info.extension_id << ") we weren't expecting";
     EXPECT_EQ(ManifestLocation::kExternalPrefDownload, info.download_location);
 
     if (pref) {
@@ -690,13 +688,10 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     ASSERT_FALSE(IsBlocked(extension_id));
   }
 
-  const base::Value* GetExtensionPref(const std::string& extension_id) {
-    const base::Value* dict =
-        profile()->GetPrefs()->GetDictionary(pref_names::kExtensions);
-    if (!dict) {
-      return nullptr;
-    }
-    const base::Value* pref = dict->FindDictKey(extension_id);
+  const base::Value::Dict* GetExtensionPref(const std::string& extension_id) {
+    const base::Value::Dict& dict =
+        profile()->GetPrefs()->GetValueDict(pref_names::kExtensions);
+    const base::Value::Dict* pref = dict.FindDict(extension_id);
     if (!pref) {
       return nullptr;
     }
@@ -705,17 +700,17 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
 
   bool IsPrefExist(const std::string& extension_id,
                    const std::string& pref_path) {
-    const base::Value* pref = GetExtensionPref(extension_id);
-    return pref && pref->FindBoolPath(pref_path).has_value();
+    const base::Value::Dict* pref = GetExtensionPref(extension_id);
+    return pref && pref->FindBoolByDottedPath(pref_path).has_value();
   }
 
   bool DoesIntegerPrefExist(const std::string& extension_id,
                             const std::string& pref_path) {
-    const base::Value* pref = GetExtensionPref(extension_id);
+    const base::Value::Dict* pref = GetExtensionPref(extension_id);
     if (!pref) {
       return false;
     }
-    return pref->FindIntPath(pref_path).has_value();
+    return pref->FindIntByDottedPath(pref_path).has_value();
   }
 
   void SetPref(const std::string& extension_id,
@@ -1861,7 +1856,7 @@ TEST_F(ExtensionServiceTest,
   };
 
   auto get_active_permissions = [prefs, id]() {
-    return prefs->GetActivePermissions(id);
+    return prefs->GetDesiredActivePermissions(id);
   };
 
   APIPermissionSet tabs_permission_set;
@@ -4376,7 +4371,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
   GrantAllOptionalPermissions(ext2_forced);
 
   std::unique_ptr<const PermissionSet> active_permissions =
-      ExtensionPrefs::Get(profile())->GetActivePermissions(ext1);
+      ExtensionPrefs::Get(profile())->GetDesiredActivePermissions(ext1);
   EXPECT_TRUE(
       active_permissions->HasAPIPermission(APIPermissionID::kDownloads));
 
@@ -4391,7 +4386,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
   // 'ext1' should still be enabled, but with 'downloads' permission revoked.
   EXPECT_TRUE(registry->enabled_extensions().GetByID(ext1));
   active_permissions =
-      ExtensionPrefs::Get(profile())->GetActivePermissions(ext1);
+      ExtensionPrefs::Get(profile())->GetDesiredActivePermissions(ext1);
   EXPECT_FALSE(
       active_permissions->HasAPIPermission(APIPermissionID::kDownloads));
 
@@ -4933,6 +4928,29 @@ TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
   TerminateExtension(good_crx);
   UninstallExtension(good_crx);
   EXPECT_EQ(UnloadedExtensionReason::TERMINATE, unloaded_reason());
+}
+
+TEST_F(ExtensionServiceTest, UninstallBlockedExtension) {
+  InitializeEmptyExtensionService();
+
+  MockExtensionRegistryObserver observer;
+  registry()->AddObserver(&observer);
+
+  ASSERT_TRUE(observer.last_extension_installed.empty());
+  InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+  ASSERT_EQ(good_crx, observer.last_extension_installed);
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+
+  BlockAllExtensions();
+  EXPECT_EQ(UnloadedExtensionReason::LOCK_ALL, unloaded_reason());
+  EXPECT_EQ(1u, registry()->blocked_extensions().size());
+
+  ASSERT_TRUE(observer.last_extension_uninstalled.empty());
+  UninstallExtension(good_crx);
+  ASSERT_EQ(good_crx, observer.last_extension_uninstalled);
+  EXPECT_EQ(0u, registry()->blocked_extensions().size());
+
+  registry()->RemoveObserver(&observer);
 }
 
 // An extension disabled because of unsupported requirements should re-enabled

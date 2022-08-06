@@ -74,6 +74,7 @@ class Action {
   virtual bool RewriteEvent(const ui::Event& origin,
                             const gfx::RectF& content_bounds,
                             const bool is_mouse_locked,
+                            const gfx::Transform* rotation_transform,
                             std::list<ui::TouchEvent>& touch_events,
                             bool& keep_original_event) = 0;
   // Get the UI location in the content view.
@@ -93,6 +94,7 @@ class Action {
   void BindPending();
   // Cancel |pending_binding_|.
   void CancelPendingBind(const gfx::RectF& content_bounds);
+  void ResetPendingBind();
 
   // Restore the input binding back to the original binding.
   void RestoreToDefault(const gfx::RectF& content_bounds);
@@ -135,7 +137,8 @@ class Action {
   explicit Action(aura::Window* window);
 
   absl::optional<gfx::PointF> CalculateTouchPosition(
-      const gfx::RectF& content_bounds);
+      const gfx::RectF& content_bounds,
+      const gfx::Transform* rotation_transform);
   bool IsRepeatedKeyEvent(const ui::KeyEvent& key_event);
   // Verify the key release event. If it is verified, it continues to simulate
   // the touch event. Otherwise, consider it as discard.

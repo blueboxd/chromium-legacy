@@ -64,11 +64,6 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
                           snapped_replaced_rect);
   }
 
-  // Since we may have changed the location of the replaced content, we need to
-  // notify PaintArtifactCompositor.
-  if (layout_video_.GetFrameView())
-    layout_video_.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
-
   // Video frames are only painted in software for printing or capturing node
   // images via web APIs.
   bool force_software_video_paint =

@@ -18,7 +18,7 @@ import './passwords_deletion_dialog.js';
 import './installed_app_checkbox.js';
 import '../controls/settings_checkbox.js';
 import '../icons.html.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
@@ -129,7 +129,7 @@ export class SettingsClearBrowsingDataDialogElement extends
         // Will be filled as results are reported.
         value() {
           return {};
-        }
+        },
       },
 
       /**
@@ -437,7 +437,8 @@ export class SettingsClearBrowsingDataDialogElement extends
     }
     const haveInstalledApps = this.installedApps_.length > 0;
     chrome.send('metricsHandler:recordBooleanHistogram', [
-      'History.ClearBrowsingData.InstalledAppsDialogShown', haveInstalledApps
+      'History.ClearBrowsingData.InstalledAppsDialogShown',
+      haveInstalledApps,
     ]);
     return haveInstalledApps;
   }

@@ -148,7 +148,7 @@ void ProjectorControllerImpl::StartProjectorSession(
 void ProjectorControllerImpl::CreateScreencastContainerFolder(
     CreateScreencastContainerFolderCallback callback) {
   base::FilePath mounted_path;
-  if (!client_->GetDriveFsMountPointPath(&mounted_path)) {
+  if (!client_->GetBaseStoragePath(&mounted_path)) {
     LOG(ERROR) << "Failed to get DriveFs mounted point path.";
     ProjectorUiController::ShowSaveFailureNotification();
     std::move(callback).Run(base::FilePath());
@@ -291,6 +291,16 @@ void ProjectorControllerImpl::OnUndoRedoAvailabilityChanged(
 
 void ProjectorControllerImpl::OnCanvasInitialized(bool success) {
   ui_controller_->OnCanvasInitialized(success);
+  if (on_canvas_initialized_callback_for_test_)
+    std::move(on_canvas_initialized_callback_for_test_).Run();
+}
+
+bool ProjectorControllerImpl::GetAnnotatorAvailability() {
+  return ui_controller_->GetAnnotatorAvailability();
+}
+
+void ProjectorControllerImpl::ToggleAnnotationTray() {
+  return ui_controller_->ToggleAnnotationTray();
 }
 
 void ProjectorControllerImpl::OnRecordingStarted(aura::Window* current_root,

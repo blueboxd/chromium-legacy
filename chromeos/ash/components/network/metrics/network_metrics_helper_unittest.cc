@@ -10,15 +10,15 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_ui_data.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_ui_data.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -458,9 +458,9 @@ TEST_F(NetworkMetricsHelperTest, WifiOpen) {
   shill_service_client_->AddService(kTestServicePath, kTestGuid, kTestName,
                                     shill::kTypeWifi, shill::kStateIdle,
                                     /*visible=*/true);
-  shill_service_client_->SetServiceProperty(kTestServicePath,
-                                            shill::kSecurityClassProperty,
-                                            base::Value(shill::kSecurityNone));
+  shill_service_client_->SetServiceProperty(
+      kTestServicePath, shill::kSecurityClassProperty,
+      base::Value(shill::kSecurityClassNone));
   base::RunLoop().RunUntilIdle();
 
   NetworkMetricsHelper::LogAllConnectionResult(kTestGuid,
@@ -491,9 +491,9 @@ TEST_F(NetworkMetricsHelperTest, WifiPasswordProtected) {
   shill_service_client_->AddService(kTestServicePath, kTestGuid, kTestName,
                                     shill::kTypeWifi, shill::kStateIdle,
                                     /*visible=*/true);
-  shill_service_client_->SetServiceProperty(kTestServicePath,
-                                            shill::kSecurityClassProperty,
-                                            base::Value(shill::kSecurityPsk));
+  shill_service_client_->SetServiceProperty(
+      kTestServicePath, shill::kSecurityClassProperty,
+      base::Value(shill::kSecurityClassPsk));
   base::RunLoop().RunUntilIdle();
 
   NetworkMetricsHelper::LogAllConnectionResult(kTestGuid,
@@ -524,9 +524,9 @@ TEST_F(NetworkMetricsHelperTest, EthernetNoEap) {
   shill_service_client_->AddService(kTestServicePath, kTestGuid, kTestName,
                                     shill::kTypeEthernet, shill::kStateIdle,
                                     /*visible=*/true);
-  shill_service_client_->SetServiceProperty(kTestServicePath,
-                                            shill::kSecurityClassProperty,
-                                            base::Value(shill::kSecurityNone));
+  shill_service_client_->SetServiceProperty(
+      kTestServicePath, shill::kSecurityClassProperty,
+      base::Value(shill::kSecurityClassNone));
   base::RunLoop().RunUntilIdle();
 
   NetworkMetricsHelper::LogAllConnectionResult(kTestGuid,
@@ -568,9 +568,9 @@ TEST_F(NetworkMetricsHelperTest, EthernetEap) {
   shill_service_client_->SetServiceProperty(
       kTestServicePath, shill::kStateProperty, base::Value(shill::kStateReady));
 
-  shill_service_client_->SetServiceProperty(kTestServicePath,
-                                            shill::kSecurityClassProperty,
-                                            base::Value(shill::kSecurity8021x));
+  shill_service_client_->SetServiceProperty(
+      kTestServicePath, shill::kSecurityClassProperty,
+      base::Value(shill::kSecurityClass8021x));
 
   device_test->SetDeviceProperty(kTestDevicePath,
                                  shill::kEapAuthenticationCompletedProperty,
@@ -608,4 +608,4 @@ TEST_F(NetworkMetricsHelperTest, EthernetEap) {
                                       0);
 }
 
-}  // namespace chromeos
+}  // namespace ash

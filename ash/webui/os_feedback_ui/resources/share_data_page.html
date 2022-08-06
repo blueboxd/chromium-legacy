@@ -1,15 +1,10 @@
 <style include="os-feedback-shared">
-  #legalHelpPageUrl,
-  #privacyPolicyUrl,
-  #termsOfServiceUrl {
-    text-decoration: none;
-  }
-
   #privacyNote {
-    font-size: 12px;
-    line-height: 20px;
+    color: var(--cros-color-secondary);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
     margin-bottom: 0;
-    margin-top: 20px;
     text-align: justify;
     text-justify: inter-word;
   }
@@ -28,13 +23,14 @@
 
   .card-frame {
     align-items: center;
-    border: 1px solid var(--google-grey-200);
+    border: 1px solid var(--cros-separator-color);
     border-radius: 4px;
     display: flex;
   }
 
   #screenshotContainer {
     align-items: center;
+    box-sizing: border-box;
     height: 48px;
     margin-inline-end: 12px;
     width: 50%;
@@ -42,6 +38,7 @@
 
   #screenshotCheckLabel {
     flex: 1;
+    margin-inline-end: 12px;
   }
 
   #screenshotContainer > button {
@@ -49,8 +46,9 @@
   }
 
   #screenshotImage {
+    border-radius: 0 4px 4px 0;
     display: block;
-    height: auto;
+    height: 48px;
     transition: all 250ms ease;
     width: 68px;
   }
@@ -64,38 +62,31 @@
     top: auto;
   }
 
-  cr-dialog::part(dialog) {
-    --cr-dialog-body-padding-horizontal: 0px;
-    --cr-dialog-title-slot-padding-start: 0px;
-    --cr-icon-button-margin-end: 20px;
-    width: 590px;
-  }
-
-  .image-preview {
-    height: auto;
-    max-height: 600px;
-    width: 580px;
-  }
-
   #addFileContainer {
     align-items: center;
+    box-sizing: border-box;
     height: 48px;
     margin-inline-start: 12px;
     width: 50%;
   }
 
   #userEmail {
-    height: 72px;
-    margin-bottom: 24px;
+    height: 70px;
+  }
+
+  .md-select {
+    --md-select-side-padding: 16px;
+    height: 32px;
+    width: 248px;
   }
 
   #shareDiagnosticData {
     height: 96px;
-    margin-bottom: 24px;
   }
 
   #pageUrl {
     display: flex;
+    margin-bottom: 8px;
     white-space: nowrap;
   }
 
@@ -106,6 +97,38 @@
 
   .disabled-input-text {
     color: var(--cros-text-color-disabled);
+  }
+
+  #screenshotCheckbox {
+    margin-inline-end: 10px;
+    margin-inline-start: 12px;
+  }
+
+  #screenshotCheckLabel {
+    font-weight: 400;
+  }
+
+  #imageButton {
+    background: none;
+    border: none;
+    height: 48px;
+    padding: 0;
+    width: 68px;
+  }
+
+  #sysInfoContainer,
+  #userConsent {
+    display: flex;
+    margin-bottom: 24px;
+  }
+
+  h2 {
+    margin: 0 0 8px 0;
+  }
+
+  label {
+    color: var(--cros-text-color-primary);
+    line-height: 20px;
   }
 </style>
 <div id="container">
@@ -119,13 +142,12 @@
       <div id="attachFilesContainer">
         <!-- Attach a screenshot -->
         <div id="screenshotContainer" class="card-frame">
-          <input id="screenshotCheckbox" type="checkbox"
-              aria-labelledby="screenshotCheckLabel"
+          <cr-checkbox id="screenshotCheckbox"
               disabled="[[!hasScreenshot_(screenshotUrl)]]">
+          </cr-checkbox>
           <label id="screenshotCheckLabel">[[i18n('attachScreenshotLabel')]]</label>
           <button id="imageButton" on-click="handleScreenshotClick_">
-            <img id="screenshotImage" aria-label="$i18n{screenshotA11y}"
-              src="[[screenshotUrl]]">
+            <img id="screenshotImage" src="[[screenshotUrl]]">
            </button>
         </div>
         <!-- Attach a file -->
@@ -138,24 +160,28 @@
     <div id="userEmail" class="text-field-container"
         hidden$="[[!hasEmail_(feedbackContext)]]">
       <h2 id="userEmailLabel">[[i18n('userEmailLabel')]]</h2>
-      <select id="userEmailDropDown" aria-labelledby="userEmailLabel">
-        <option value$="[[feedbackContext.email]]">[[feedbackContext.email]]</option>
-        <option value="" id="anonymousUser">[[i18n('anonymousUser')]]</option>
+      <select id="userEmailDropDown" class="md-select"
+          aria-label="[[i18n('userEmailAriaLabel')]]">
+        <option value$="[[feedbackContext.email]]"
+            class="email-dropdown">
+          [[feedbackContext.email]]
+        </option>
+        <option value="" id="anonymousUser" class="email-dropdown">
+          [[i18n('anonymousUser')]]
+        </option>
       </select>
     </div>
     <!-- User consent -->
     <div id="userConsent" class="checkbox-field-container">
-      <input id="userConsentCheckbox" type="checkbox"
-          aria-labelledby="userConsentLabel">
+      <cr-checkbox id="userConsentCheckbox" aria-labelledby="userConsentLabel"></cr-checkbox>
       <label id="userConsentLabel">[[i18n('userConsentLabel')]]</label>
     </div>
     <!-- Diagnostic data -->
     <div id="shareDiagnosticData">
       <h2 id="shareDiagnosticDataLabel">[[i18n('shareDiagnosticDataLabel')]]</h2>
       <!-- URL -->
-      <div id="pageUrl" class="checkbox-field-container">
-        <input id="pageUrlCheckbox" type="checkbox" aria-labelledby="pageUrlLabel"
-            checked>
+      <div id="pageUrl" class="checkbox-field-container" hidden="[[!feedbackContext.pageUrl.url]]">
+        <cr-checkbox id="pageUrlCheckbox" aria-labelledby="pageUrlLabel" checked></cr-checkbox>
         <label id="pageUrlLabel">[[i18n('sharePageUrlLabel')]]&nbsp;</label>
         <a href="[[feedbackContext.pageUrl.url]]" class="overflow-text" id="pageUrlText" target="_blank">
           [[feedbackContext.pageUrl.url]]
@@ -166,8 +192,8 @@
       </div>
       <!-- System Information -->
       <div id="sysInfoContainer" class="checkbox-field-container">
-        <input id="sysInfoCheckbox" type="checkbox" aria-labelledby="sysInfoCheckboxLabel"
-            checked>
+        <cr-checkbox id="sysInfoCheckbox" aria-labelledby="sysInfoCheckboxLabel" checked>
+        </cr-checkbox>
         <label id="sysInfoCheckboxLabel" inner-h-t-m-l="[[sysInfoCheckboxLabel_]]"></label>
       </div>
     </div>

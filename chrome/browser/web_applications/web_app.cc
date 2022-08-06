@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_sources.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/sync/base/time.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
@@ -433,6 +434,10 @@ bool WebApp::RemoveInstallUrlForSource(WebAppManagement::Type type,
   return removed;
 }
 
+void WebApp::SetAlwaysShowToolbarInFullscreen(bool show) {
+  always_show_toolbar_in_fullscreen_ = show;
+}
+
 WebApp::ClientData::ClientData() = default;
 
 WebApp::ClientData::~ClientData() = default;
@@ -557,7 +562,8 @@ bool WebApp::operator==(const WebApp& other) const {
         app.app_size_in_bytes_,
         app.data_size_in_bytes_,
         app.management_to_external_config_map_,
-        app.tab_strip_
+        app.tab_strip_,
+        app.always_show_toolbar_in_fullscreen_
         // clang-format on
     );
   };
@@ -742,7 +748,7 @@ base::Value WebApp::AsDebugValue() const {
     base::Value& launch_handler_json = *root.SetKey(
         "launch_handler", base::Value(base::Value::Type::DICTIONARY));
     launch_handler_json.SetStringKey(
-        "route_to", ConvertToString(launch_handler_->route_to));
+        "client_mode", ConvertToString(launch_handler_->client_mode));
   } else {
     root.SetKey("launch_handler", base::Value());
   }
@@ -867,6 +873,9 @@ base::Value WebApp::AsDebugValue() const {
   } else {
     root.SetKey("tab_strip", base::Value());
   }
+
+  root.SetBoolKey("always_show_toolbar_in_fullscreen",
+                  always_show_toolbar_in_fullscreen_);
 
   return root;
 }

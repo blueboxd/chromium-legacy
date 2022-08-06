@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -27,7 +25,7 @@ const CGFloat kIconSize = 56;
 @synthesize countLabel = _countLabel;
 
 - (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
+  self = [super initWithFrame:frame placeholder:NO];
   if (self) {
     _iconView = [[UIImageView alloc] initWithFrame:self.bounds];
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -113,7 +111,10 @@ const CGFloat kIconSize = 56;
       [_countLabel.heightAnchor
           constraintEqualToAnchor:_countLabel.widthAnchor],
     ]];
-    _countLabel.font = [MDCTypography captionFont];
+    const CGFloat kCaptionFontSize = 12.0;
+    const UIFontWeight kCaptionFontWeight = UIFontWeightRegular;
+    _countLabel.font = [UIFont systemFontOfSize:kCaptionFontSize
+                                         weight:kCaptionFontWeight];
     AddSameCenterConstraints(_countLabel, _countContainer);
   }
   return _countLabel;

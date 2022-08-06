@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1621067168122174824">Lancer le test de recharge</translation>
 <translation id="1631385268983122904">Ne réassemblez pas encore l'appareil</translation>
-<translation id="1639239467298939599">Chargement en cours</translation>
+<translation id="1639239467298939599">Chargement en cours…</translation>
 <translation id="1641857168437328880">Chargeur de document (recto)</translation>
 <translation id="1643449475550628585">Modifier le fond d'écran tous les jours</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1645954272419197032">Confirmer les informations concernant l'appareil</translation>
 <translation id="1662989795263954667">Tâche suspendue - À court d'encre</translation>
+<translation id="1664796644829245314">Prévisualiser : <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN intégré</translation>
 <translation id="1672499492233627739">Flux vidéo de la webcam</translation>
 <translation id="1676557873873341166">Enregistrement vidéo…</translation>
@@ -116,8 +117,9 @@
 <translation id="1827738518074806965">Galerie d'art</translation>
 <translation id="1840835860961531162">Désactiver la protection en écriture</translation>
 <translation id="1851218745569890714">Visioconférence</translation>
-<translation id="1852934301711881861">Installer Chrome OS Flex</translation>
+<translation id="1852934301711881861">Installer ChromeOS Flex</translation>
 <translation id="1856388568474281774">Flèche vers le bas</translation>
+<translation id="1858620243986915808">Joindre une capture d'écran</translation>
 <translation id="1871569928317311284">Annuler le thème sombre</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Annuler le mode sombre</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Photo du profil Google</translation>
 <translation id="1979103255016296513">Mot de passe à modifier</translation>
 <translation id="1999615961760456652">Portail captif</translation>
+<translation id="200669432486043882">Remplacer un fichier</translation>
 <translation id="2006864819935886708">Connectivité</translation>
 <translation id="2008685064673031089">Recherche de nombres premiers</translation>
 <translation id="2011174342667534258">Version du SDK :</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Consommation actuelle</translation>
 <translation id="2480034874476596812">Manuellement</translation>
+<translation id="248546197012830854">L'appareil est hors connexion. Connectez-vous au réseau Wi-Fi pour afficher le contenu d'aide.</translation>
 <translation id="2491955442992294626">Les touches ne sont pas testées lorsque vous utilisez une autre fenêtre</translation>
 <translation id="2493126929778606526">Vos plus belles photos sélectionnées automatiquement</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ACTUALISER</translation>
 <translation id="3009958530611748826">Sélectionner un dossier de destination</translation>
 <translation id="3017079585324758401">Arrière-plan</translation>
+<translation id="302435934487327038">Installation terminée</translation>
 <translation id="3027578600144895987">Fermer la caméra</translation>
 <translation id="3031560714565892478">L'appareil est une caméra.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Point de terminaison</translation>
 <translation id="3069085583900247081">Échec du test</translation>
-<translation id="3076243757415932261">Validation des composants…</translation>
 <translation id="3083667275341675831">Diagnostic de connectivité</translation>
 <translation id="3084958266922136097">Désactiver l'économiseur d'écran</translation>
 <translation id="3091839911843451378">Échec – Imprimante à l'arrêt</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Voulez-vous vraiment effacer tout l'historique des impressions ? Vos tâches d'impression en cours ne seront pas supprimées de cet historique.</translation>
 <translation id="3383751554789092165">Modifiez les informations concernant l'appareil si nécessaire.</translation>
 <translation id="3404249063913988450">Activer l'économiseur d'écran</translation>
-<translation id="3404770484521709967">Les composants sont installés correctement.</translation>
 <translation id="3413935475507503304">Pour lancer la mise à jour, cliquez sur "Suivant".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Sécurité</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Ancien mot de passe</translation>
 <translation id="4453205916657964690">Masque de sous-réseau</translation>
 <translation id="4454245904991689773">Enregistrer dans</translation>
-<translation id="4472575034687746823">Premiers pas</translation>
 <translation id="4479639480957787382">Ethernet </translation>
 <translation id="4483049906298469269">Impossible de pinguer la passerelle du réseau non défini par défaut</translation>
 <translation id="4500213108254186382">Accéléromètre (couvercle)</translation>
@@ -660,14 +662,15 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="6611280807952151149">Quitter la réparation du <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">En cours</translation>
 <translation id="6620487321149975369">Les tâches d'impression seront incluses dans l'historique, sauf si vous les supprimez manuellement</translation>
+<translation id="6624819909909965616">Impossible d'importer un fichier de plus de 10 Mo</translation>
 <translation id="6643016212128521049">Effacer</translation>
+<translation id="6644568396961840069">Impossible d'enregistrer le fichier. Essayez de brancher un autre périphérique de stockage externe ou réessayez plus tard.</translation>
 <translation id="6647510110698214773">Algorithme de chiffrement</translation>
 <translation id="6650062777702288430">Bascule kana/alphanumérique</translation>
 <translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="6692996468359469499">Obtenir des informations sur votre sélection</translation>
 <translation id="6704062477274546131">Résolution DNS</translation>
-<translation id="6721744718589119342">Nous pourrons vous demander plus d'informations ou vous en envoyer par e-mail</translation>
 <translation id="6723839937902243910">Alimentation</translation>
 <translation id="6723847290197874913">Rétroéclairage du clavier</translation>
 <translation id="672609503628871915">Voir les nouveautés</translation>
@@ -695,6 +698,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Version du micrologiciel</translation>
 <translation id="6995564396478647735">Vérifier que la protection en écriture est activée</translation>
+<translation id="7005833343836210400">L'appareil est hors connexion</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> gère cet appareil et a accès à toutes les activités des utilisateurs, y compris les pages Web consultées, les mots de passe et la messagerie.</translation>
 <translation id="7040230719604914234">Opérateur</translation>
 <translation id="7041549558901442110">L'appareil n'est pas connecté.</translation>
@@ -720,6 +724,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7212734716605298123">Mises à jour du micrologiciel pour les appareils externes</translation>
 <translation id="7216409898977639127">Opérateur de téléphonie mobile</translation>
+<translation id="725133483556299729">Sélectionnez une adresse e-mail</translation>
 <translation id="7271040990581020067">Le scanner est en cours d'utilisation. Réessayez plus tard.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Sélectionnez 1 ou plusieurs composants, puis réessayez ou passez le calibrage</translation>
@@ -797,6 +802,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="7978412674231730200">Clé privée</translation>
 <translation id="7982789257301363584">Réseau</translation>
 <translation id="7994702968232966508">Méthode EAP</translation>
+<translation id="8018928621986160031">Enregistré dans "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Activer le mode couleur auto</translation>
@@ -805,8 +811,8 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8063022551652308521">La protection en écriture est toujours désactivée. Pour continuer, activez-la.</translation>
 <translation id="8075838845814659848">Niveau de charge</translation>
 <translation id="8082366717211101304">Impossible de résoudre le DNS depuis les applis Android</translation>
-<translation id="8083281199617904460">Ce processus de réparation est destiné à guider les réparateurs qualifiés. Ne commencez qu'après avoir remplacé les composants défectueux.</translation>
 <translation id="808894953321890993">Modifier le mot de passe</translation>
+<translation id="8094062939584182041">Autoriser Google à vous informer de ce problème par e-mail</translation>
 <translation id="8104083085214006426">Vous utilisez un réseau ouvert et non sécurisé</translation>
 <translation id="8109786307828817014">Continuer malgré les échecs de calibrage ?</translation>
 <translation id="811820734797650957">(Android) Pinguer la passerelle</translation>
@@ -821,6 +827,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8217675307824400706">Se connecter</translation>
 <translation id="8221728673725659466">Calibrage terminé</translation>
 <translation id="8226628635270268143">Choisir vos photos et vos albums préférés</translation>
+<translation id="8227119283605456246">Joindre un fichier</translation>
 <translation id="8230672074305416752">Impossible de pinguer la passerelle du réseau par défaut</translation>
 <translation id="8246209727385807362">Opérateur inconnu</translation>
 <translation id="827422111966801947">Indigo</translation>
@@ -865,6 +872,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8576249514688522074">Non initialisé</translation>
 <translation id="8620617069779373398">État d'itinérance</translation>
 <translation id="8655295600908251630">Version</translation>
+<translation id="8655828773034788261">Partager l'URL :</translation>
 <translation id="8660881923941176839">livres</translation>
 <translation id="8662671328352114214">Rejoindre le réseau <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Installer <ph name="VERSION_NUMBER" /> et redémarrer</translation>

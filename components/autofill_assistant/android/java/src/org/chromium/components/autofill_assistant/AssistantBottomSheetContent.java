@@ -12,9 +12,9 @@ import android.widget.ScrollView;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 /**
  * The {@link BottomSheetContent} for the Autofill Assistant. It supports notifying the
@@ -28,9 +28,10 @@ public class AssistantBottomSheetContent implements BottomSheetContent {
     private ScrollView mContentScrollableView;
     private Supplier<AssistantBottomBarDelegate> mBottomBarDelegateSupplier;
     private boolean mPeekModeDisabled;
-    private BottomSheetController mController;
     @Nullable
     private Callback<Integer> mOffsetController;
+    private final ObservableSupplierImpl<Boolean> mBackPressStateChangedSupplier =
+            new ObservableSupplierImpl<>();
 
     public AssistantBottomSheetContent(
             Context context, Supplier<AssistantBottomBarDelegate> supplier) {
@@ -39,6 +40,8 @@ public class AssistantBottomSheetContent implements BottomSheetContent {
         mContentView = new SizeListenableLinearLayout(context);
         mContentView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mContentView.setTag(
+                AutofillAssistantPublicTags.AUTOFILL_ASSISTANT_BOTTOM_SHEET_CONTENT_TAG);
         mBottomBarDelegateSupplier = supplier;
     }
 
@@ -55,6 +58,15 @@ public class AssistantBottomSheetContent implements BottomSheetContent {
 
     public void setDelegate(Supplier<AssistantBottomBarDelegate> supplier) {
         mBottomBarDelegateSupplier = supplier;
+    }
+
+    /**
+     * Initialize or update back press handling behavior by sheet content ahead-of-time. If never
+     * invoked after content initialization, it will be assumed that sheet content will not handle a
+     * back press.
+     */
+    public void setHandleBackPress(boolean handleBackPress) {
+        mBackPressStateChangedSupplier.set(handleBackPress);
     }
 
     public void setPeekModeDisabled(boolean disabled) {
@@ -154,6 +166,18 @@ public class AssistantBottomSheetContent implements BottomSheetContent {
         }
 
         return bottomBarDelegate.onBackButtonPressed();
+    }
+
+    @Override
+    public ObservableSupplierImpl<Boolean> getBackPressStateChangedSupplier() {
+        return mBackPressStateChangedSupplier;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mBottomBarDelegateSupplier.get() != null) {
+            mBottomBarDelegateSupplier.get().onBackButtonPressed();
+        }
     }
 
     @Override

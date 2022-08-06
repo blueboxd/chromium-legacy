@@ -50,8 +50,8 @@ void xdg_output_manager_get_xdg_output(wl_client* client,
   if (handler) {
     wl_resource_set_implementation(resource, &xdg_output_implementation,
                                    handler, nullptr);
+    handler->OnXdgOutputCreated(resource);
   }
-  handler->OnXdgOutputCreated(resource);
 }
 
 const struct zxdg_output_manager_v1_interface

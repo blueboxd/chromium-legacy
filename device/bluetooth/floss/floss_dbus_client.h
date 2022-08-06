@@ -9,19 +9,18 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/logging.h"
+#include "base/types/expected.h"
+#include "dbus/bus.h"
+#include "dbus/message.h"
+#include "dbus/object_proxy.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace dbus {
-class Bus;
-class Response;
-class ErrorResponse;
-}  // namespace dbus
-
 namespace floss {
 
-extern int kDBusTimeoutMs;
+extern DEVICE_BLUETOOTH_EXPORT int kDBusTimeoutMs;
 
 // TODO(b/189499077) - Expose via floss package
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterService[];
@@ -87,7 +86,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnHciEnabledChanged[];
 }  // namespace manager
 
 // BluetoothDevice structure for DBus apis.
-struct FlossDeviceId {
+struct DEVICE_BLUETOOTH_EXPORT FlossDeviceId {
   std::string address;
   std::string name;
 
@@ -98,11 +97,22 @@ struct FlossDeviceId {
   friend std::ostream& operator<<(std::ostream& os, const FlossDeviceId& id) {
     return os << "FlossDeviceId(" << id.address << ", " << id.name << ")";
   }
+
+  static const char kDeviceIdNameKey[];
+  static const char kDeviceIdAddressKey[];
 };
 
 // Represents an error sent through DBus.
-struct Error {
+//
+// In a D-Bus message, error contains 2 parts: error name and error message.
+// This is a structure to hold these error info and provides a utility for human
+// readable representation.
+struct DEVICE_BLUETOOTH_EXPORT Error {
   Error(const std::string& name, const std::string& message);
+
+  // Presents the error as "<error name>: <error message>".
+  friend std::ostream& operator<<(std::ostream& os, const Error& error);
+  std::string ToString();
 
   std::string name;
   std::string message;
@@ -113,10 +123,16 @@ struct Error {
 // Needs to be exported because there are template instantiations using this.
 struct DEVICE_BLUETOOTH_EXPORT Void {};
 
+// Represents the result of D-Bus method call. A Floss method call returns
+// either a data or a D-Bus error.
 template <typename T>
-using ResponseCallback =
-    base::OnceCallback<void(const absl::optional<T>& ret,
-                            const absl::optional<Error>& err)>;
+using DBusResult = base::expected<T, Error>;
+
+// A callback of Floss API method call. This encapsulates RPC-level status
+// (in Floss case D-Bus status and return data parsing) so that each return can
+// be either "ok" (contains T) or "error" (contains error name and message).
+template <typename T>
+using ResponseCallback = base::OnceCallback<void(DBusResult<T>)>;
 
 // A Weakly Owned ResponseCallback<T>. The main usecase for this is to have
 // a weak pointer available for |PostDelayedTask|, where deleting the main
@@ -133,9 +149,9 @@ class WeaklyOwnedCallback {
 
   // If the callback hasn't been executed, run it and return true. Otherwise
   // false.
-  bool Run(const absl::optional<T>& ret, const absl::optional<Error>& err) {
+  bool Run(DBusResult<T> ret) {
     if (cb_) {
-      std::move(cb_).Run(ret, err);
+      std::move(cb_).Run(std::move(ret));
       return true;
     }
 
@@ -155,6 +171,9 @@ class WeaklyOwnedCallback {
 // can enforce the proper ordering of initialization and shutdowns.
 class FlossDBusClient {
  public:
+  // Error: DBus error.
+  static const char DEVICE_BLUETOOTH_EXPORT kErrorDBus[];
+
   // Error: No response from bus.
   static const char DEVICE_BLUETOOTH_EXPORT kErrorNoResponse[];
 
@@ -163,6 +182,90 @@ class FlossDBusClient {
 
   // Error: Invalid return.
   static const char DEVICE_BLUETOOTH_EXPORT kErrorInvalidReturn[];
+
+  // Generalized DBus serialization (used for generalized method call
+  // invocation).
+  template <typename T>
+  static void DEVICE_BLUETOOTH_EXPORT
+  WriteDBusParam(dbus::MessageWriter* writer, const T& data);
+
+  // Base case for variadic write.
+  static void DEVICE_BLUETOOTH_EXPORT
+  WriteAllDBusParams(dbus::MessageWriter* writer) {}
+
+  // Variadic write method that expands to multiple WriteDBusParam calls.
+  template <typename T, typename... Args>
+  static void DEVICE_BLUETOOTH_EXPORT
+  WriteAllDBusParams(dbus::MessageWriter* writer,
+                     const T& first,
+                     const Args&... args) {
+    WriteDBusParam(writer, first);
+    WriteAllDBusParams(writer, args...);
+  }
+
+  // Generalized DBus deserialization (used for generalized method call returns
+  // and can be used for exported methods as well). Implement for each type that
+  // you want deserialized.
+  template <typename T>
+  static bool DEVICE_BLUETOOTH_EXPORT ReadDBusParam(dbus::MessageReader* reader,
+                                                    T* value);
+
+  // Container type needs to be explicitly listed here.
+  template <typename T>
+  static bool DEVICE_BLUETOOTH_EXPORT ReadDBusParam(dbus::MessageReader* reader,
+                                                    std::vector<T>* value);
+
+  // Base case for variadic read.
+  static bool DEVICE_BLUETOOTH_EXPORT
+  ReadAllDBusParams(dbus::MessageReader* reader) {
+    return true;
+  }
+
+  // Variadic read method that expands to multiple ReadDBusParam calls.
+  // Individual calls to |ReadDBusParam| must succeed before the next call is
+  // done.
+  template <typename T, typename... Args>
+  static bool DEVICE_BLUETOOTH_EXPORT
+  ReadAllDBusParams(dbus::MessageReader* reader, T* first, Args*... args) {
+    return ReadDBusParam(reader, first) && ReadAllDBusParams(reader, args...);
+  }
+
+  template <typename R, typename... Args>
+  void CallMethod(ResponseCallback<R> callback,
+                  dbus::Bus* bus,
+                  const std::string& service_name,
+                  const std::string& interface_name,
+                  const dbus::ObjectPath& object_path,
+                  const char* method_name,
+                  Args... args) {
+    if (bus == nullptr) {
+      LOG(ERROR) << "D-Bus is not initialized, cannot call method "
+                 << method_name << " on " << object_path.value();
+      std::move(callback).Run(base::unexpected(
+          Error(std::string(kErrorDBus), "DBus not initialized")));
+      return;
+    }
+
+    dbus::ObjectProxy* object_proxy =
+        bus->GetObjectProxy(service_name, object_path);
+    if (!object_proxy) {
+      LOG(ERROR) << "Object proxy does not exist when trying to call "
+                 << method_name;
+      std::move(callback).Run(base::unexpected(
+          Error(std::string(kErrorDBus), "Invalid object proxy")));
+      return;
+    }
+
+    dbus::MethodCall method_call(interface_name, method_name);
+    dbus::MessageWriter writer(&method_call);
+
+    FlossDBusClient::WriteAllDBusParams(&writer, args...);
+
+    object_proxy->CallMethodWithErrorResponse(
+        &method_call, kDBusTimeoutMs,
+        base::BindOnce(&FlossDBusClient::DefaultResponseWithCallback<R>,
+                       base::Unretained(this), std::move(callback)));
+  }
 
   FlossDBusClient(const FlossDBusClient&) = delete;
   FlossDBusClient& operator=(const FlossDBusClient&) = delete;
@@ -187,9 +290,10 @@ class FlossDBusClient {
   // Default handler that runs |callback| with the callback with an optional
   // return and optional error.
   template <typename T>
-  void DefaultResponseWithCallback(ResponseCallback<T> callback,
-                                   dbus::Response* response,
-                                   dbus::ErrorResponse* error_response);
+  void DEVICE_BLUETOOTH_EXPORT
+  DefaultResponseWithCallback(ResponseCallback<T> callback,
+                              dbus::Response* response,
+                              dbus::ErrorResponse* error_response);
 
   // Default handler for a response. It will either log the error response or
   // print |caller| to VLOG. |caller| should be the name of the DBus method that

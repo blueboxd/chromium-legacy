@@ -243,6 +243,17 @@ class WebAppBrowserTest_WindowControlsOverlay : public WebAppBrowserTest {
       features::kWebAppWindowControlsOverlay};
 };
 
+// A dedicated test fixture for Borderless, which requires a command
+// line switch to enable manifest parsing.
+class WebAppBrowserTest_Borderless : public WebAppBrowserTest {
+ public:
+  WebAppBrowserTest_Borderless() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kWebAppBorderless};
+};
+
 // A dedicated test fixture for tabbed display override, which requires a
 // command line switch to enable manifest parsing.
 class WebAppBrowserTest_Tabbed : public WebAppBrowserTest {
@@ -934,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PopOutDisabledInIncognito) {
       std::make_unique<AppMenuModel>(nullptr, incognito_browser);
   app_menu_model->Init();
   ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
+  size_t index = 0;
   ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
       IDC_OPEN_IN_PWA_WINDOW, &model, &index));
   EXPECT_FALSE(model->IsEnabledAt(index));
@@ -968,7 +979,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MAYBE_UninstallMenuOption) {
       /*provider=*/nullptr, app_browser);
   app_menu_model->Init();
   ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
+  size_t index = 0;
   const bool found = app_menu_model->GetModelAndIndexForCommandId(
       WebAppMenuModel::kUninstallAppCommandId, &model, &index);
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1494,7 +1505,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallToShelfContainsAppName) {
   auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser());
   app_menu_model->Init();
   ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
+  size_t index = 0;
   EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(IDC_INSTALL_PWA,
                                                            &model, &index));
   EXPECT_EQ(app_menu_model.get(), model);
@@ -1822,6 +1833,26 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_WindowControlsOverlay,
             app_browser->app_controller()->AppUsesWindowControlsOverlay());
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Borderless,
+                       DISABLE_POSIX(Borderless)) {
+  GURL test_url = https_server()->GetURL(
+      "/banners/"
+      "manifest_test_page.html?manifest=manifest_borderless.json");
+  NavigateToURLAndWait(browser(), test_url);
+
+  const AppId app_id = test::InstallPwaForCurrentUrl(browser());
+  auto* provider = WebAppProvider::GetForTest(profile());
+
+  std::vector<DisplayMode> app_display_mode_override =
+      provider->registrar().GetAppDisplayModeOverride(app_id);
+
+  ASSERT_EQ(1u, app_display_mode_override.size());
+  EXPECT_EQ(DisplayMode::kBorderless, app_display_mode_override[0]);
+
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+  EXPECT_TRUE(app_browser->app_controller()->AppUsesBorderlessMode());
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Tabbed,
                        DISABLE_POSIX(TabbedDisplayOverride)) {
   GURL test_url = https_server()->GetURL(
@@ -1877,7 +1908,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_NoDestroyProfile, Shutdown) {
   const AppId app_id = InstallPWA(app_url);
   apps::AppLaunchParams params(
       app_id, apps::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW, apps::mojom::LaunchSource::kFromTest);
+      WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest);
 
   BrowserHandler handler(nullptr, std::string());
   handler.Close();

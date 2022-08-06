@@ -39,7 +39,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
@@ -103,14 +102,6 @@ absl::optional<base::FilePath> GetProductVersionPath(UpdaterScope scope) {
   absl::optional<base::FilePath> product_path = GetProductPath(scope);
   return product_path ? product_path->AppendASCII(kUpdaterVersion)
                       : product_path;
-}
-
-std::wstring GetAppClientsKey(const std::wstring& id) {
-  return base::StrCat({CLIENTS_KEY, id});
-}
-
-std::wstring GetAppClientStateKey(const std::string& id) {
-  return base::StrCat({CLIENT_STATE_KEY, base::ASCIIToWide(id)});
 }
 
 bool RegKeyExists(HKEY root, const std::wstring& path) {
@@ -223,8 +214,7 @@ void CheckInstallation(UpdaterScope scope,
       EXPECT_EQ(ERROR_SUCCESS,
                 base::win::RegKey(
                     root,
-                    base::StrCat({CLIENTS_KEY,
-                                  L"{430FD4D0-B729-4F61-AA34-91526481799D}"})
+                    GetAppClientsKey(L"{430FD4D0-B729-4F61-AA34-91526481799D}")
                         .c_str(),
                     Wow6432(KEY_READ))
                     .ReadValue(kRegValuePV, &pv));
@@ -655,24 +645,22 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
     Microsoft::WRL::ComPtr<IUpdater> updater;
     EXPECT_HRESULT_SUCCEEDED(updater_server.As(&updater));
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     Microsoft::WRL::ComPtr<IUnknown> updater_legacy_server;
-    EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(
+    ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
         scope == UpdaterScope::kSystem ? __uuidof(GoogleUpdate3WebSystemClass)
                                        : __uuidof(GoogleUpdate3WebUserClass),
         nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_legacy_server)));
     Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
-    EXPECT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
+    ASSERT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
     Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
     Microsoft::WRL::ComPtr<IDispatch> dispatch;
-    EXPECT_HRESULT_SUCCEEDED(google_update->createAppBundleWeb(&dispatch));
+    ASSERT_HRESULT_SUCCEEDED(google_update->createAppBundleWeb(&dispatch));
     EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   }
 
   // IUpdaterInternal.
   Microsoft::WRL::ComPtr<IUnknown> updater_internal_server;
-  EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(
+  ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
       scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
                                      : __uuidof(UpdaterInternalUserClass),
       nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
@@ -680,23 +668,22 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
   EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
 }
 
-HRESULT InitializeBundle(UpdaterScope scope,
-                         Microsoft::WRL::ComPtr<IAppBundleWeb>& bundle_web) {
+void InitializeBundle(UpdaterScope scope,
+                      Microsoft::WRL::ComPtr<IAppBundleWeb>& bundle_web) {
   Microsoft::WRL::ComPtr<IGoogleUpdate3Web> update3web;
-  EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(
+  ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
       scope == UpdaterScope::kSystem ? __uuidof(GoogleUpdate3WebSystemClass)
                                      : __uuidof(GoogleUpdate3WebUserClass),
       nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&update3web)));
 
   Microsoft::WRL::ComPtr<IAppBundleWeb> bundle;
   Microsoft::WRL::ComPtr<IDispatch> dispatch;
-  EXPECT_HRESULT_SUCCEEDED(update3web->createAppBundleWeb(&dispatch));
-  EXPECT_HRESULT_SUCCEEDED(dispatch.As(&bundle));
+  ASSERT_HRESULT_SUCCEEDED(update3web->createAppBundleWeb(&dispatch));
+  ASSERT_HRESULT_SUCCEEDED(dispatch.As(&bundle));
 
   EXPECT_HRESULT_SUCCEEDED(bundle->initialize());
 
   bundle_web = bundle;
-  return S_OK;
 }
 
 HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
@@ -863,7 +850,7 @@ HRESULT DoUpdate(UpdaterScope scope,
                  int expected_final_state,
                  HRESULT expected_error_code) {
   Microsoft::WRL::ComPtr<IAppBundleWeb> bundle;
-  EXPECT_HRESULT_SUCCEEDED(InitializeBundle(scope, bundle));
+  InitializeBundle(scope, bundle);
   EXPECT_HRESULT_SUCCEEDED(bundle->createInstalledApp(appid.Get()));
   EXPECT_HRESULT_SUCCEEDED(bundle->checkForUpdate());
   return DoLoopUntilDone(bundle, expected_final_state, expected_error_code);
@@ -878,20 +865,26 @@ void ExpectLegacyUpdate3WebSucceeds(UpdaterScope scope,
                expected_final_state, expected_error_code));
 }
 
-void SetFcLaunchCmd(const std::wstring& id) {
-  base::win::RegKey key;
-  ASSERT_EQ(key.Create(HKEY_LOCAL_MACHINE, GetAppClientsKey(id).c_str(),
-                       Wow6432(KEY_WRITE)),
-            ERROR_SUCCESS);
-  EXPECT_EQ(key.WriteValue(L"fc", L"fc /?"), ERROR_SUCCESS);
+void SetupLaunchCommandElevated(const std::wstring& app_id,
+                                const std::wstring& command_id,
+                                const std::wstring& command_parameters,
+                                base::ScopedTempDir& temp_dir) {
+  base::CommandLine cmd_exe_command_line(base::CommandLine::NO_PROGRAM);
+  SetupCmdExe(UpdaterScope::kSystem, cmd_exe_command_line, temp_dir);
+  EXPECT_EQ(
+      CreateAppClientKey(UpdaterScope::kSystem, app_id)
+          .WriteValue(command_id.c_str(),
+                      base::StrCat({cmd_exe_command_line.GetCommandLineString(),
+                                    command_parameters.c_str()})
+                          .c_str()),
+      ERROR_SUCCESS);
 }
 
-void DeleteFcLaunchCmd(const std::wstring& id) {
-  base::win::RegKey key;
-  ASSERT_EQ(key.Create(HKEY_LOCAL_MACHINE, GetAppClientsKey(id).c_str(),
-                       Wow6432(KEY_WRITE)),
+void DeleteLaunchCommandElevated(const std::wstring& app_id,
+                                 const std::wstring& command_id) {
+  EXPECT_EQ(CreateAppClientKey(UpdaterScope::kSystem, app_id)
+                .DeleteValue(command_id.c_str()),
             ERROR_SUCCESS);
-  EXPECT_EQ(key.DeleteValue(L"fc"), ERROR_SUCCESS);
 }
 
 void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope) {
@@ -900,30 +893,33 @@ void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope) {
     return;
 
   Microsoft::WRL::ComPtr<IProcessLauncher> process_launcher;
-  EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(__uuidof(ProcessLauncherClass),
+  ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(__uuidof(ProcessLauncherClass),
                                               nullptr, CLSCTX_LOCAL_SERVER,
                                               IID_PPV_ARGS(&process_launcher)));
-  EXPECT_TRUE(process_launcher);
 
-  const wchar_t* const kAppId1 = L"{831EF4D0-B729-4F61-AA34-91526481799D}";
+  constexpr wchar_t kAppId1[] = L"{831EF4D0-B729-4F61-AA34-91526481799D}";
+  constexpr wchar_t kCommandId[] = L"CmdExit0";
   ULONG_PTR proc_handle = 0;
   DWORD caller_proc_id = ::GetCurrentProcessId();
 
   // Succeeds when the command is present in the registry.
-  SetFcLaunchCmd(kAppId1);
+  base::ScopedTempDir temp_dir;
+  SetupLaunchCommandElevated(kAppId1, kCommandId, L" /c \"exit 5420\"",
+                             temp_dir);
   EXPECT_HRESULT_SUCCEEDED(process_launcher->LaunchCmdElevated(
-      kAppId1, _T("fc"), caller_proc_id, &proc_handle));
+      kAppId1, kCommandId, caller_proc_id, &proc_handle));
   EXPECT_NE(static_cast<ULONG_PTR>(0), proc_handle);
 
-  HANDLE handle = reinterpret_cast<HANDLE>(proc_handle);
-  EXPECT_NE(WAIT_FAILED, ::WaitForSingleObject(handle, 10000));
-  EXPECT_TRUE(::CloseHandle(handle));
-  DeleteFcLaunchCmd(kAppId1);
+  base::Process process = base::Process(reinterpret_cast<HANDLE>(proc_handle));
+  int exit_code = 0;
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
+  EXPECT_EQ(exit_code, 5420);
 
-  // Returns HRESULT_FROM_WIN32(ERROR_NOT_FOUND) when the command is missing in
-  // the registry.
-  EXPECT_EQ(HRESULT_FROM_WIN32(ERROR_NOT_FOUND),
-            process_launcher->LaunchCmdElevated(kAppId1, _T("fc"),
+  DeleteLaunchCommandElevated(kAppId1, kCommandId);
+
+  EXPECT_EQ(HRESULT_FROM_WIN32(ERROR_BAD_COMMAND),
+            process_launcher->LaunchCmdElevated(kAppId1, kCommandId,
                                                 caller_proc_id, &proc_handle));
   EXPECT_EQ(static_cast<ULONG_PTR>(0), proc_handle);
 }
@@ -943,7 +939,7 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
   SetupAppCommand(scope, appid, commandid, temp_dir);
 
   Microsoft::WRL::ComPtr<IAppBundleWeb> bundle;
-  ASSERT_HRESULT_SUCCEEDED(InitializeBundle(scope, bundle));
+  InitializeBundle(scope, bundle);
   ASSERT_HRESULT_SUCCEEDED(
       bundle->createInstalledApp(base::win::ScopedBstr(appid).Get()));
 
@@ -1002,6 +998,72 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
             static_cast<DWORD>(expected_exit_code));
 
   DeleteAppClientKey(scope, appid);
+}
+
+namespace {
+
+void ExpectPolicyStatusValues(
+    Microsoft::WRL::ComPtr<IPolicyStatusValue> policy_status_value,
+    const std::wstring& expected_source,
+    const std::wstring& expected_value,
+    VARIANT_BOOL expected_has_conflict) {
+  base::win::ScopedBstr source;
+  base::win::ScopedBstr value;
+  VARIANT_BOOL has_conflict = VARIANT_FALSE;
+
+  ASSERT_NE(policy_status_value.Get(), nullptr);
+  EXPECT_HRESULT_SUCCEEDED(policy_status_value->get_source(source.Receive()));
+  EXPECT_EQ(source.Get(), expected_source);
+  EXPECT_HRESULT_SUCCEEDED(policy_status_value->get_value(value.Receive()));
+  EXPECT_EQ(value.Get(), expected_value);
+  EXPECT_HRESULT_SUCCEEDED(policy_status_value->get_hasConflict(&has_conflict));
+  EXPECT_EQ(has_conflict, expected_has_conflict);
+}
+
+}  // namespace
+
+void ExpectLegacyPolicyStatusSucceeds(UpdaterScope scope) {
+  Microsoft::WRL::ComPtr<IUnknown> policy_status_server;
+  ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
+      scope == UpdaterScope::kSystem ? __uuidof(PolicyStatusSystemClass)
+                                     : __uuidof(PolicyStatusUserClass),
+      nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&policy_status_server)));
+  Microsoft::WRL::ComPtr<IPolicyStatus2> policy_status2;
+  ASSERT_HRESULT_SUCCEEDED(policy_status_server.As(&policy_status2));
+
+  base::win::ScopedBstr updater_version;
+  ASSERT_HRESULT_SUCCEEDED(
+      policy_status2->get_updaterVersion(updater_version.Receive()));
+  EXPECT_STREQ(updater_version.Get(), kUpdaterVersionUtf16);
+
+  DATE last_checked = 0;
+  EXPECT_HRESULT_SUCCEEDED(policy_status2->get_lastCheckedTime(&last_checked));
+  EXPECT_GT(static_cast<int>(last_checked), 0);
+
+  Microsoft::WRL::ComPtr<IPolicyStatusValue> policy_status_value;
+  ASSERT_HRESULT_SUCCEEDED(
+      policy_status2->get_lastCheckPeriodMinutes(&policy_status_value));
+  ExpectPolicyStatusValues(policy_status_value, L"default", L"14430",
+                           VARIANT_FALSE);
+
+  const base::win::ScopedBstr test_app(L"test1");
+  policy_status_value.Reset();
+  ASSERT_HRESULT_SUCCEEDED(policy_status2->get_effectivePolicyForAppInstalls(
+      test_app.Get(), &policy_status_value));
+  ExpectPolicyStatusValues(policy_status_value, L"default", L"1",
+                           VARIANT_FALSE);
+
+  policy_status_value.Reset();
+  ASSERT_HRESULT_SUCCEEDED(policy_status2->get_effectivePolicyForAppUpdates(
+      test_app.Get(), &policy_status_value));
+  ExpectPolicyStatusValues(policy_status_value, L"default", L"1",
+                           VARIANT_FALSE);
+
+  policy_status_value.Reset();
+  ASSERT_HRESULT_SUCCEEDED(policy_status2->get_isRollbackToTargetVersionAllowed(
+      test_app.Get(), &policy_status_value));
+  ExpectPolicyStatusValues(policy_status_value, L"default", L"false",
+                           VARIANT_FALSE);
 }
 
 int RunVPythonCommand(const base::CommandLine& command_line) {
@@ -1162,12 +1224,9 @@ void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope) {
 
 void InstallApp(UpdaterScope scope, const std::string& app_id) {
   base::win::RegKey key;
-  ASSERT_EQ(
-      key.Create(
-          UpdaterScopeToHKeyRoot(scope),
-          base::StrCat({CLIENTS_KEY, base::SysUTF8ToWide(app_id)}).c_str(),
-          Wow6432(KEY_WRITE)),
-      ERROR_SUCCESS);
+  ASSERT_EQ(key.Create(UpdaterScopeToHKeyRoot(scope),
+                       GetAppClientsKey(app_id).c_str(), Wow6432(KEY_WRITE)),
+            ERROR_SUCCESS);
   RegisterApp(scope, app_id);
 }
 
@@ -1195,7 +1254,7 @@ void RunOfflineInstall(UpdaterScope scope) {
       "        <actions>"
       "          <action event=\"install\" needsadmin=\"false\""
       "            run=\"reg.exe\""
-      "            arguments=\"ADD HKCU\\%ls /t REG_DWORD /v %ls /d 123 /f\"/>"
+      "            arguments=\"ADD %s\\%ls /t REG_DWORD /v %ls /d 123 /f\"/>"
       "        </actions>"
       "      </manifest>"
       "    </updatecheck>"
@@ -1205,7 +1264,10 @@ void RunOfflineInstall(UpdaterScope scope) {
       "  </app>"
       "</response>";
 
-  DeleteRegKey(HKEY_CURRENT_USER, kTestRegKey);
+  HKEY key_hive =
+      scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  DeleteRegKey(key_hive, kTestRegKey);
 
   wchar_t reg_exe_path[MAX_PATH] = {0};
   DWORD size = ExpandEnvironmentStrings(L"%SystemRoot%\\System32\\reg.exe",
@@ -1224,7 +1286,9 @@ void RunOfflineInstall(UpdaterScope scope) {
   int64_t exe_size = 0;
   EXPECT_TRUE(base::GetFileSize(exe_path, &exe_size));
   const std::string manifest =
-      base::StringPrintf(kManifestFormat, exe_size, kTestRegKey, kTestRegValue);
+      base::StringPrintf(kManifestFormat, exe_size,
+                         scope == UpdaterScope::kSystem ? "HKLM" : "HKCU",
+                         kTestRegKey, kTestRegValue);
   EXPECT_TRUE(base::WriteFile(manifest_path, manifest));
 
   // Copy app installer.
@@ -1255,8 +1319,9 @@ void RunOfflineInstall(UpdaterScope scope) {
   EXPECT_TRUE(process.IsValid());
 
   // Dismiss the installation completion dialog, then wait for the process exit.
-  WaitFor(base::BindRepeating(
-      [](const wchar_t* test_key_name, const wchar_t* test_value_name) {
+  EXPECT_TRUE(WaitFor(base::BindRepeating(
+      [](HKEY key_hive, const wchar_t* test_key_name,
+         const wchar_t* test_value_name) {
         // Enumerate the top-level dialogs to find the setup dialog.
         WindowEnumerator(
             ::GetDesktopWindow(), base::BindRepeating([](HWND hwnd) {
@@ -1290,14 +1355,14 @@ void RunOfflineInstall(UpdaterScope scope) {
         // Wait for the app installer writes the expected reg value.
         base::win::RegKey key;
         DWORD value = 0;
-        return (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, test_key_name,
-                                          Wow6432(KEY_QUERY_VALUE)) &&
+        return (ERROR_SUCCESS ==
+                    key.Open(key_hive, test_key_name, KEY_QUERY_VALUE) &&
                 ERROR_SUCCESS == key.ReadValueDW(test_value_name, &value) &&
                 value == 123);
       },
-      kTestRegKey, kTestRegValue));
+      key_hive, kTestRegKey, kTestRegValue)));
 
-  DeleteRegKey(HKEY_CURRENT_USER, kTestRegKey);
+  DeleteRegKey(key_hive, kTestRegKey);
 }
 
 }  // namespace test

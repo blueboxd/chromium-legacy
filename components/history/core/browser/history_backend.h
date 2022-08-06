@@ -469,6 +469,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   std::vector<AnnotatedVisit> ToAnnotatedVisits(
       const std::vector<VisitID>& visit_ids);
 
+  // Utility method to Construct `ClusterVisit`s.
+  std::vector<ClusterVisit> ToClusterVisits(
+      const std::vector<VisitID>& visit_ids);
+
   // Returns the time of the most recent clustered visits; i.e. the boundary
   // until which visits have been clustered. It's possible for there to be
   // unclustered visits older than this boundary, since synced visits older than
@@ -517,9 +521,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool GetVisitsForURL(URLID id, VisitVector* visits);
 
   // Fetches up to `max_visits` most recent visits for the passed URL.
-  bool GetMostRecentVisitsForURL(URLID id,
-                                 int max_visits,
-                                 VisitVector* visits) override;
+  bool GetMostRecentVisitsForURL(URLID id, int max_visits, VisitVector* visits);
 
   // For each element in `urls`, updates the pre-existing URLRow in the database
   // with the same ID; or ignores the element if no such row exists. Returns the
@@ -530,6 +532,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool AddVisits(const GURL& url,
                  const std::vector<VisitInfo>& visits,
                  VisitSource visit_source);
+
+  // Searches for a visit with the given `originator_visit_id` coming from
+  // another device (identified by `originator_cache_guid`). If found, returns
+  // true and writes the visit into `visit_row`; otherwise returns false.
+  bool GetForeignVisit(const std::string& originator_cache_guid,
+                       VisitID originator_visit_id,
+                       VisitRow* visit_row) override;
 
   // Adds a visit coming from another device. The visit's ID must be 0 (unset),
   // and its originator_cache_guid must be populated.
@@ -543,8 +552,15 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // have the visit duration populated), and the visit's ID must be 0 (unset),
   // because for incoming remote visits, the local visit ID isn't know. The
   // visit will be identified via its timestamp and originator_cache_guid
-  // instead.
-  bool UpdateSyncedVisit(const VisitRow& visit) override;
+  // instead. Returns the local VisitID of the updated visit, or 0 if no
+  // matching visit was found.
+  VisitID UpdateSyncedVisit(const VisitRow& visit) override;
+
+  // Updates the `referring_visit` and `opener_visit` fields for the visit with
+  // the given `visit_id`. Used by Sync to re-map originator IDs to local IDs.
+  bool UpdateVisitReferrerOpenerIDs(VisitID visit_id,
+                                    VisitID referrer_id,
+                                    VisitID opener_id) override;
 
   bool RemoveVisits(const VisitVector& visits);
 
@@ -800,9 +816,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // HistoryBackendNotifier:
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url) override;
-  void NotifyURLVisited(ui::PageTransition transition,
-                        const URLRow& row,
-                        base::Time visit_time) override;
+  void NotifyURLVisited(const URLRow& url_row,
+                        const VisitRow& visit_row) override;
   void NotifyURLsModified(const URLRows& changed_urls,
                           bool is_from_expiration) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;

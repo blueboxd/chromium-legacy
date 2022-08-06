@@ -94,7 +94,7 @@ void SendAxisStopEvents(struct wl_resource* resource, uint32_t time) {
 }
 
 ACTION_P(CloneEvent, ptr) {
-  *ptr = Event::Clone(*arg0);
+  *ptr = arg0->Clone();
 }
 
 TEST_P(WaylandPointerTest, Enter) {
@@ -140,6 +140,7 @@ TEST_P(WaylandPointerTest, Leave) {
   wl_pointer_send_button(pointer_->resource(), 4, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
   EXPECT_CALL(delegate_, DispatchEvent(_)).Times(2);
+  EXPECT_CALL(other_delegate, DispatchEvent(_)).Times(2);
 
   // Do an extra Sync() here so that we process the second enter event before we
   // destroy |other_window|.
@@ -148,7 +149,7 @@ TEST_P(WaylandPointerTest, Leave) {
 
 ACTION_P3(CloneEventAndCheckCapture, window, result, ptr) {
   ASSERT_TRUE(window->HasCapture() == result);
-  *ptr = Event::Clone(*arg0);
+  *ptr = arg0->Clone();
 }
 
 TEST_P(WaylandPointerTest, Motion) {

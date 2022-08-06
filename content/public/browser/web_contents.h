@@ -39,6 +39,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/blink/public/mojom/media/capture_handle_config.mojom-forward.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
@@ -100,6 +101,7 @@ class WebContentsDelegate;
 class WebUI;
 struct DropData;
 struct MHTMLGenerationParams;
+class PreloadingAttempt;
 
 // WebContents is the core class in content/. A WebContents renders web content
 // (usually HTML) in a rectangular area.
@@ -775,6 +777,9 @@ class WebContents : public PageNavigator,
   virtual void AttachInnerWebContents(
       std::unique_ptr<WebContents> inner_web_contents,
       RenderFrameHost* render_frame_host,
+      mojo::PendingAssociatedRemote<blink::mojom::RemoteFrame> remote_frame,
+      mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>
+          remote_frame_host_receiver,
       bool is_full_page) = 0;
 
   // Returns whether this WebContents is an inner WebContents for a guest.
@@ -1090,10 +1095,9 @@ class WebContents : public PageNavigator,
   // be called with the bitmaps received from the renderer.
   // If |is_favicon| is true, the cookies are not sent and not accepted during
   // download.
-  // Bitmaps with pixel sizes larger than |max_bitmap_size| are filtered out
-  // from the bitmap results. If there are no bitmap results <=
-  // |max_bitmap_size|, the smallest bitmap is resized to |max_bitmap_size| and
-  // is the only result. A |max_bitmap_size| of 0 means unlimited.
+  // If there are no bitmap results <= |max_bitmap_size|, the smallest bitmap
+  // is resized to |max_bitmap_size| and is the only result.
+  // A |max_bitmap_size| of 0 means unlimited.
   // For vector images, |preferred_size| will serve as a viewport into which
   // the image will be rendered. This would usually be the dimensions of the
   // rectangle where the bitmap will be rendered. If |preferred_size| is empty,
@@ -1340,17 +1344,19 @@ class WebContents : public PageNavigator,
   // destruction. If the prerendering failed to start (e.g. if prerendering is
   // disabled, failure happened or because this URL is already being
   // prerendered), this function returns a nullptr.
-  // `url_match_predicate` allows embedders to define their own predicates for
-  // matching same-origin URLs during prerendering activation; it would be
-  // useful if embedders want Prerender2 to ignore some parameter mismatches.
-  // Note that if the mismatched prerender URL will be activated due to the
-  // predicate returning true, the last committed URL in the prerendered
-  // RenderFrameHost will be activated.
+  // PreloadingAttempt helps us to log various metrics associated with
+  // particular prerendering attempt. `url_match_predicate` allows embedders to
+  // define their own predicates for matching same-origin URLs during
+  // prerendering activation; it would be useful if embedders want Prerender2 to
+  // ignore some parameter mismatches. Note that if the mismatched prerender URL
+  // will be activated due to the predicate returning true, the last committed
+  // URL in the prerendered RenderFrameHost will be activated.
   virtual std::unique_ptr<PrerenderHandle> StartPrerendering(
       const GURL& prerendering_url,
       PrerenderTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
+      PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) = 0;
 

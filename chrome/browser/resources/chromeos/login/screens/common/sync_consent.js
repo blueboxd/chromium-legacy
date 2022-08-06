@@ -46,11 +46,6 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
   static get properties() {
     return {
       /**
-       * Flag that determines whether current account type is supervised or not.
-       */
-      isChildAccount_: Boolean,
-
-      /**
        * Indicates whether user is minor mode user (e.g. under age of 18).
        * @private
        */
@@ -71,7 +66,7 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
       optInButtonTextKey_: {
         type: String,
         computed: 'getOptInButtonTextKey_(isMinorMode_)',
-      }
+      },
     };
   }
 
@@ -79,7 +74,6 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
     super();
     this.UI_STEPS = SyncUIState;
 
-    this.isChildAccount_ = false;
     this.isMinorMode_ = false;
     this.isArcRestricted_ = false;
   }
@@ -98,20 +92,11 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
    * @param {Object} data Screen init payload.
    */
   onBeforeShow(data) {
-    this.setIsChildAccount(data['isChildAccount']);
     this.isArcRestricted_ = data['isArcRestricted'];
   }
 
   defaultUIStep() {
     return SyncUIState.LOADING;
-  }
-
-  /**
-   * Set flag isChildAccount_ value.
-   * @param is_child_account Boolean
-   */
-  setIsChildAccount(is_child_account) {
-    this.isChildAccount_ = is_child_account;
   }
 
   /** @override */
@@ -156,9 +141,11 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
   onSettingsSaveAndContinue_(e, opted_in) {
     assert(e.composedPath());
     chrome.send('login.SyncConsentScreen.continue', [
-      opted_in, this.$.reviewSettingsBox.checked, this.getConsentDescription_(),
+      opted_in,
+      this.$.reviewSettingsBox.checked,
+      this.getConsentDescription_(),
       this.getConsentConfirmation_(
-          /** @type {!Array<!HTMLElement>} */ (e.composedPath()))
+          /** @type {!Array<!HTMLElement>} */ (e.composedPath())),
     ]);
   }
 

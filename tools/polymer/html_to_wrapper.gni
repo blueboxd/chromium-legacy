@@ -18,6 +18,10 @@ template("html_to_wrapper") {
 
     wrapper_extension = ".ts"
 
+    if (defined(invoker.use_js) && invoker.use_js) {
+      wrapper_extension = ".js"
+    }
+
     in_folder = "."
     if (defined(invoker.in_folder)) {
       in_folder = invoker.in_folder
@@ -53,8 +57,15 @@ template("html_to_wrapper") {
       ]
     }
 
+    if (defined(invoker.use_js) && invoker.use_js) {
+      args += [ "--use_js" ]
+    }
+
     if (defined(invoker.minify) && invoker.minify) {
       args += [ "--minify" ]
+
+      # Declare additional dependency.
+      inputs += [ "//tools/polymer/html_minifier.js" ]
     }
   }
 }

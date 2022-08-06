@@ -55,6 +55,13 @@ class DownloadUIModel {
     // Returns a string indicating the status of a completed download.
     virtual std::u16string GetCompletedStatusText() const = 0;
 
+    // Returns a string representation of the current download progress sizes.
+    // If the total size of the download is known, this string looks like:
+    // "100/200 MB" where the numerator is the transferred size and the
+    // denominator is the total size. If the total isn't known, returns the
+    // transferred size as a string (e.g.: "100 MB").
+    virtual std::u16string GetProgressSizesString() const = 0;
+
     // Returns a string indicating the status of an interrupted download.
     virtual std::u16string GetInterruptedStatusText(
         offline_items_collection::FailState fail_state) const;
@@ -72,6 +79,7 @@ class DownloadUIModel {
    public:
     std::u16string GetInProgressStatusText() const override;
     std::u16string GetCompletedStatusText() const override;
+    std::u16string GetProgressSizesString() const override;
   };
 
   // Used in Download bubble.
@@ -81,8 +89,16 @@ class DownloadUIModel {
     std::u16string GetCompletedStatusText() const override;
     std::u16string GetInterruptedStatusText(
         offline_items_collection::FailState fail_state) const override;
+    std::u16string GetProgressSizesString() const override;
 
    private:
+    FRIEND_TEST_ALL_PREFIXES(DownloadItemModelTest,
+                             GetBubbleStatusMessageWithBytes);
+
+    static std::u16string GetBubbleStatusMessageWithBytes(
+        const std::u16string& bytes_substring,
+        const std::u16string& detail_message,
+        bool is_active);
     std::u16string GetBubbleWarningStatusText() const;
   };
 
@@ -96,6 +112,15 @@ class DownloadUIModel {
       SubpageButton(DownloadCommands::Command command,
                     std::u16string label,
                     bool is_prominent);
+    };
+
+    struct QuickAction {
+      DownloadCommands::Command command;
+      std::u16string hover_text;
+      raw_ptr<const gfx::VectorIcon> icon = nullptr;
+      QuickAction(DownloadCommands::Command command,
+                  const std::u16string& hover_text,
+                  const gfx::VectorIcon* icon);
     };
 
     // has a progress bar and a cancel button.
@@ -116,9 +141,11 @@ class DownloadUIModel {
     bool has_checkbox = false;
     std::u16string checkbox_label;
 
-    // Label and commands for the primary button
-    bool has_primary_button = false;
-    DownloadCommands::Command primary_button_command;
+    // The command for the primary button
+    absl::optional<DownloadCommands::Command> primary_button_command;
+
+    // List of quick actions
+    std::vector<QuickAction> quick_actions;
 
     // Subpage buttons
     std::vector<SubpageButton> subpage_buttons;
@@ -138,6 +165,9 @@ class DownloadUIModel {
                                    DownloadCommands::Command command,
                                    bool is_prominent);
     BubbleUIInfo& SetProgressBarLooping();
+    BubbleUIInfo& AddQuickAction(DownloadCommands::Command command,
+                                 const std::u16string& label,
+                                 const gfx::VectorIcon* icon);
   };
 #endif
 
@@ -268,9 +298,6 @@ class DownloadUIModel {
   // Returns |true| if this download should be displayed in the downloads shelf.
   virtual bool ShouldShowInShelf() const;
 
-  // Returns |true| if this download should be displayed in the download bubble.
-  virtual bool ShouldShowInBubble() const;
-
   // Change whether the download should be displayed on the downloads
   // shelf. Setting this is only effective if the download hasn't already been
   // displayed in the shelf.
@@ -297,6 +324,13 @@ class DownloadUIModel {
 
   // Change what's returned by WasUIWarningShown().
   virtual void SetWasUIWarningShown(bool was_ui_warning_shown);
+
+  // If this is an ephemeral warning, returns when the bubble first displayed
+  // the warning. If the warning has not yet shown (or this isn't an ephemeral
+  // warning), it returns no value. This does not persist across restarts.
+  virtual absl::optional<base::Time> GetEphemeralWarningUiShownTime() const;
+
+  virtual void SetEphemeralWarningUiShownTime(absl::optional<base::Time> time);
 
   // Returns |true| if opening in the browser is preferred for this download. If
   // |false|, the download should be opened with the system default application.
@@ -332,7 +366,8 @@ class DownloadUIModel {
 
   // Returns the DownloadItem if this is a regular download, or nullptr
   // otherwise.
-  virtual download::DownloadItem* download();
+  virtual const download::DownloadItem* GetDownloadItem() const;
+  download::DownloadItem* GetDownloadItem();
 
   // Returns the display name for the web drive where the file is rerouted to.
   virtual std::u16string GetWebDriveName() const;
@@ -459,6 +494,14 @@ class DownloadUIModel {
   BubbleUIInfo GetBubbleUIInfoForInterrupted(
       offline_items_collection::FailState fail_state) const;
   BubbleUIInfo GetBubbleUIInfoForInProgressOrComplete() const;
+
+  // Returns |true| if this download should be displayed in the download bubble.
+  virtual bool ShouldShowInBubble() const;
+
+  // Ephemeral warnings are ones that are quickly removed from the bubble if the
+  // user has not acted on them, and later deleted altogether. Is this that kind
+  // of warning?
+  virtual bool IsEphemeralWarning() const;
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -484,6 +527,11 @@ class DownloadUIModel {
 
   raw_ptr<Delegate> delegate_ = nullptr;
 
+#if !BUILDFLAG(IS_ANDROID)
+  // Returns whether the DownloadBubbleV2 functionality is enabled.
+  bool IsBubbleV2Enabled() const;
+#endif
+
  private:
   friend class DownloadItemModelTest;
 
@@ -496,8 +544,6 @@ class DownloadUIModel {
   // Setting an override for whether the DownloadBubbleV2 functionality is
   // enabled.
   void set_is_bubble_v2_enabled_for_testing(bool is_enabled);
-  // Returns whether the DownloadBubbleV2 functionality is enabled.
-  bool IsBubbleV2Enabled() const;
 #endif
 
   // Unowned Clock to override the time of "Now".

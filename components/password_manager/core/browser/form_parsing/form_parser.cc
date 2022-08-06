@@ -85,24 +85,24 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
 
 // Returns true if the |str| contains words related to CVC fields.
 bool StringMatchesCVC(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kCardCvcRe);
+  return autofill::MatchesRegex<autofill::kCardCvcRe>(str);
 }
 
 // Returns true if the |str| contains words related to SSN fields.
 bool StringMatchesSSN(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kSocialSecurityRe);
+  return autofill::MatchesRegex<autofill::kSocialSecurityRe>(str);
 }
 
 // Returns true if the |str| contains words related to one time password fields.
 bool StringMatchesOTP(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kOneTimePwdRe);
+  return autofill::MatchesRegex<autofill::kOneTimePwdRe>(str);
 }
 
 // Returns true if the |str| consists of one repeated non alphanumeric symbol.
 // This is likely a result of website modifying the value, and such value should
 // not be saved.
 bool StringMatchesHiddenValue(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kHiddenValueRe);
+  return autofill::MatchesRegex<autofill::kHiddenValueRe>(str);
 }
 
 // TODO(crbug.com/860700): Remove name and attribute checking once server-side
@@ -331,15 +331,12 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         }
         break;
       case CredentialFieldType::kSingleUsername:
-        if (base::FeatureList::IsEnabled(
-                password_manager::features::kUsernameFirstFlowFilling)) {
-          processed_field = FindField(processed_fields, prediction);
-          if (processed_field) {
-            result->username = processed_field->field;
-            result->is_single_username = true;
-            result->ClearAllPasswordFields();
-            return;
-          }
+        processed_field = FindField(processed_fields, prediction);
+        if (processed_field) {
+          result->username = processed_field->field;
+          result->is_single_username = true;
+          result->ClearAllPasswordFields();
+          return;
         }
         break;
       case CredentialFieldType::kCurrentPassword:
@@ -423,6 +420,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
     if (!current_field)
       continue;
     if (prediction.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
+        prediction.type == autofill::CREDIT_CARD_NUMBER ||
         prediction.type == autofill::NOT_PASSWORD) {
       current_field->server_hints_not_password = true;
     } else if (prediction.type == autofill::NOT_USERNAME) {

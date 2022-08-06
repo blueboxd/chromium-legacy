@@ -23,6 +23,12 @@ class NativeDisplayObserver;
 
 namespace test {
 
+constexpr char kTestModesetStr[] = "test-modeset";
+constexpr char kCommitModesetStr[] = "commit-modeset";
+constexpr char kSeamlessModesetStr[] = "seamless-modeset";
+constexpr char kModesetOutcomeFailure[] = "outcome: failure";
+constexpr char kModesetOutcomeSuccess[] = "outcome: success";
+
 class TestNativeDisplayDelegate : public NativeDisplayDelegate {
  public:
   // Ownership of |log| remains with the caller.
@@ -76,7 +82,8 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void GetDisplays(GetDisplaysCallback callback) override;
   void Configure(
       const std::vector<display::DisplayConfigurationParams>& config_requests,
-      ConfigureCallback callback) override;
+      ConfigureCallback callback,
+      uint32_t modeset_flag) override;
   void GetHDCPState(const DisplaySnapshot& output,
                     GetHDCPStateCallback callback) override;
   void SetHDCPState(const DisplaySnapshot& output,

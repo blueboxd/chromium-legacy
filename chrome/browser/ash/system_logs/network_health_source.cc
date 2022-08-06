@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/net/network_health/network_health_service.h"
-#include "chromeos/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_event_log.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace system_logs {
@@ -29,7 +29,7 @@ std::string FormatNetworkHealth(
 
   for (const auto& net : network_health->networks) {
     if (scrub) {
-      output << "Name: " << chromeos::NetworkGuidId(net->guid.value_or("N/A"))
+      output << "Name: " << ash::NetworkGuidId(net->guid.value_or("N/A"))
              << "\n";
     } else {
       output << "Name: " << net->name.value_or("N/A") << "\n";

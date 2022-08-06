@@ -1,0 +1,17 @@
+# TODO(crbug.com/1326993)
+-All/RenderFrameHostImplBrowsingContextStateNameTest.BlockNameUpdateForBackForwardCache/NewBrowsingContextStateOnBrowsingContextGroupSwap_EnableFrameNameUpdateOnNonCurrentRenderFrameHost
+
+# TODO(crbug.com/1296333)
+-WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
+
+# TODO(crbug.com/1338951)
+-WebRtcCaptureFromElementBrowserTest.VerifyCanvasWebGLCaptureColor
+
+# TODO(crbug.com/1347608)
+-SecurityExploitBrowserTest.PostMessageSourceOrigin
+
+# TODO(crbug.com/1349961)
+-PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadCredentialled/7
+
+# TODO(crbug.com/1349978)
+-PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadHasNoSameSiteCookies/7

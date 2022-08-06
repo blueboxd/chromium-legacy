@@ -27,6 +27,7 @@
 <translation id="1199355487114804640">Play/Pause</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1204296502688602597">DNS latency</translation>
+<translation id="1207734034680156868">Suggestions are based on your description</translation>
 <translation id="123124571410524056">Portal suspected</translation>
 <translation id="1236400083787698183">Before restarting, Powerwash your device. If your device has a lid, wait until Powerwash completes before closing the lid. Powerwash may take up to a minute to complete.</translation>
 <translation id="1238612778414822719">HTTPS latency</translation>
@@ -92,6 +93,7 @@
 <translation id="1644574205037202324">History</translation>
 <translation id="1645954272419197032">Please confirm device information</translation>
 <translation id="1662989795263954667">Stopped – out of ink</translation>
+<translation id="1664796644829245314">Preview <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Built-in VPN</translation>
 <translation id="1672499492233627739">Webcam video feed</translation>
 <translation id="1676557873873341166">Taking video</translation>
@@ -118,6 +120,7 @@
 <translation id="1851218745569890714">Video conferencing</translation>
 <translation id="1852934301711881861">Install Chrome OS Flex</translation>
 <translation id="1856388568474281774">Down arrow</translation>
+<translation id="1858620243986915808">Attach screenshot</translation>
 <translation id="1871569928317311284">Turn Dark theme off</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Turn dark mode off</translation>
@@ -132,6 +135,7 @@
 <translation id="1977994649430373166">Google profile photo</translation>
 <translation id="1979103255016296513">Password change overdue</translation>
 <translation id="1999615961760456652">Captive portal</translation>
+<translation id="200669432486043882">Replace file</translation>
 <translation id="2006864819935886708">Connectivity</translation>
 <translation id="2008685064673031089">Prime search</translation>
 <translation id="2011174342667534258">SDK version:</translation>
@@ -194,6 +198,7 @@
 <translation id="2448312741937722512">Types</translation>
 <translation id="2461822463642141190">Current</translation>
 <translation id="2480034874476596812">Manually turn off</translation>
+<translation id="248546197012830854">Device is offline. Connect to Wi-Fi network to see help content.</translation>
 <translation id="2491955442992294626">Keys aren't tested when you're using another window</translation>
 <translation id="2493126929778606526">Your best photos, selected automatically</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +237,12 @@
 <translation id="3008341117444806826">REFRESH</translation>
 <translation id="3009958530611748826">Select a folder to save to</translation>
 <translation id="3017079585324758401">Background</translation>
+<translation id="302435934487327038">Installation complete</translation>
 <translation id="3027578600144895987">Close the camera</translation>
 <translation id="3031560714565892478">Device is a video camera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">Endpoint</translation>
 <translation id="3069085583900247081">Test failed</translation>
-<translation id="3076243757415932261">Validating components…</translation>
 <translation id="3083667275341675831">Connectivity diagnostics</translation>
 <translation id="3084958266922136097">Disable screensaver</translation>
 <translation id="3091839911843451378">Failed – Stopped</translation>
@@ -272,7 +277,6 @@
 <translation id="3369013195428705271">Are you sure you want to clear all print history? Your ongoing print jobs will not be cleared.</translation>
 <translation id="3383751554789092165">Change device information as needed.</translation>
 <translation id="3404249063913988450">Enable screensaver</translation>
-<translation id="3404770484521709967">Components are installed correctly.</translation>
 <translation id="3413935475507503304">To proceed with the update, click Next.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Security</translation>
@@ -392,7 +396,6 @@
 <translation id="445059817448385655">Old password</translation>
 <translation id="4453205916657964690">Subnet mask</translation>
 <translation id="4454245904991689773">Scan to</translation>
-<translation id="4472575034687746823">Get started</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Failed to ping the non-default network gateway</translation>
 <translation id="4500213108254186382">Lid accelerometer</translation>
@@ -660,14 +663,15 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6611280807952151149">Exit <ph name="DEVICE_TYPE" /> repair</translation>
 <translation id="6618744767048954150">Running</translation>
 <translation id="6620487321149975369">Print jobs will appear in history unless they are removed manually</translation>
+<translation id="6624819909909965616">Can't upload file larger than 10 MB</translation>
 <translation id="6643016212128521049">Clear</translation>
+<translation id="6644568396961840069">File couldn't be saved. Try plugging in a different external storage, or try again later.</translation>
 <translation id="6647510110698214773">Encryption algorithm</translation>
 <translation id="6650062777702288430">Kana/alphanumeric switch</translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6692996468359469499">Get info related to your selection</translation>
 <translation id="6704062477274546131">DNS resolution</translation>
-<translation id="6721744718589119342">We may email you for more information or updates</translation>
 <translation id="6723839937902243910">Power</translation>
 <translation id="6723847290197874913">Keyboard backlight</translation>
 <translation id="672609503628871915">See what's new</translation>
@@ -695,6 +699,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Firmware revision</translation>
 <translation id="6995564396478647735">Make sure that Write Protect is on</translation>
+<translation id="7005833343836210400">Device is offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Device is not connected.</translation>
@@ -720,6 +725,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7212734716605298123">Firmware updates for external devices</translation>
 <translation id="7216409898977639127">Mobile provider</translation>
+<translation id="725133483556299729">Select email</translation>
 <translation id="7271040990581020067">Scanner is currently in use. Try again later.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Select one or more components and try again, or skip calibration</translation>
@@ -797,6 +803,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="7994702968232966508">EAP method</translation>
+<translation id="8018928621986160031">Saved to '<ph name="FILE_LOCATION" />'</translation>
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Enable auto colour mode</translation>
@@ -805,8 +812,8 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8063022551652308521">Write Protect is still turned off. To proceed, turn on Write Protect.</translation>
 <translation id="8075838845814659848">Remaining charge</translation>
 <translation id="8082366717211101304">Can't resolve DNS from Android apps</translation>
-<translation id="8083281199617904460">This repair process is intended for a trained repair technician. Start only after replacing the malfunctioning components.</translation>
 <translation id="808894953321890993">Change password</translation>
+<translation id="8094062939584182041">Allow Google to email you about this issue</translation>
 <translation id="8104083085214006426">You are using an open and unsecure network</translation>
 <translation id="8109786307828817014">Proceed with failed calibrations?</translation>
 <translation id="811820734797650957">(Android) Gateway can be pinged</translation>
@@ -821,6 +828,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8217675307824400706">Get connected</translation>
 <translation id="8221728673725659466">Calibration complete</translation>
 <translation id="8226628635270268143">Choose your favourite photos and albums</translation>
+<translation id="8227119283605456246">Attach file</translation>
 <translation id="8230672074305416752">Failed to ping the default network gateway</translation>
 <translation id="8246209727385807362">Unknown operator</translation>
 <translation id="827422111966801947">Indigo</translation>
@@ -865,6 +873,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8576249514688522074">Uninitialised</translation>
 <translation id="8620617069779373398">Roaming status</translation>
 <translation id="8655295600908251630">Channel</translation>
+<translation id="8655828773034788261">Share URL:</translation>
 <translation id="8660881923941176839">pounds</translation>
 <translation id="8662671328352114214">Join <ph name="TYPE" /> network</translation>
 <translation id="8671972493856476349">Update to <ph name="VERSION_NUMBER" /> and restart</translation>

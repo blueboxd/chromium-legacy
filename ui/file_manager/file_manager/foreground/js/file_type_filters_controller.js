@@ -29,24 +29,24 @@ export class FileTypeFiltersController {
     this.filterTypeToTranslationKeyMap_ = new Map([
       [
         chrome.fileManagerPrivate.RecentFileType.ALL,
-        'MEDIA_VIEW_ALL_ROOT_LABEL'
+        'MEDIA_VIEW_ALL_ROOT_LABEL',
       ],
       [
         chrome.fileManagerPrivate.RecentFileType.AUDIO,
-        'MEDIA_VIEW_AUDIO_ROOT_LABEL'
+        'MEDIA_VIEW_AUDIO_ROOT_LABEL',
       ],
       [
         chrome.fileManagerPrivate.RecentFileType.IMAGE,
-        'MEDIA_VIEW_IMAGES_ROOT_LABEL'
+        'MEDIA_VIEW_IMAGES_ROOT_LABEL',
       ],
       [
         chrome.fileManagerPrivate.RecentFileType.VIDEO,
-        'MEDIA_VIEW_VIDEOS_ROOT_LABEL'
+        'MEDIA_VIEW_VIDEOS_ROOT_LABEL',
       ],
       [
         chrome.fileManagerPrivate.RecentFileType.DOCUMENT,
         'MEDIA_VIEW_DOCUMENTS_ROOT_LABEL',
-      ]
+      ],
     ]);
 
     /**
@@ -249,9 +249,8 @@ export class FileTypeFiltersController {
     if (isButtonActive) {
       this.allFilterButton_.focus();
     }
-    // Refresh current directory with the updated Recent setting.
-    // We don't need to invalidate the cached metadata for this rescan.
-    this.directoryModel_.rescan(false);
+    // Clear and scan the current directory with the updated Recent setting.
+    this.directoryModel_.clearCurrentDirAndScan();
     this.speakA11yMessage(currentFilter, newFilter);
     this.recordFileTypeFilterUMA_(newFilter);
   }

@@ -176,9 +176,11 @@ NSPoint clickedLocation;
   BOOL _isEnforcingNeverMadeVisible;
   BOOL _preventKeyWindow;
   BOOL _isAddingChildWindow;
+  BOOL _isTooltip;
 }
 @synthesize bridgedNativeWidgetId = _bridgedNativeWidgetId;
 @synthesize bridge = _bridge;
+@synthesize isTooltip = _isTooltip;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
@@ -309,6 +311,10 @@ NSPoint clickedLocation;
   return obj;
 }
 
+- (NSAccessibilityRole)accessibilityRole {
+  return _isTooltip ? NSAccessibilityHelpTagRole : [super accessibilityRole];
+}
+
 // NSWindow overrides.
 
 + (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle {
@@ -398,9 +404,11 @@ NSPoint clickedLocation;
 
   // Draggable regions only respond to left-click dragging, but the system will
   // still suppress right-clicks in a draggable region. Forwarding right-clicks
-  // allows the underlying views to respond to right-click to potentially bring
-  // up a frame context menu.
-  if (type == NSEventTypeRightMouseDown) {
+  // and ctrl+left-clicks allows the underlying views to respond to right-click
+  // to potentially bring up a frame context menu.
+  if (type == NSEventTypeRightMouseDown ||
+      (type == NSEventTypeLeftMouseDown &&
+       ([event modifierFlags] & NSEventModifierFlagControl))) {
     if ([[self contentView] hitTest:event.locationInWindow] == nil) {
       [[self contentView] rightMouseDown:event];
       return;

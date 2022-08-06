@@ -31,6 +31,7 @@ ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
         'TextEditHandler', '/chromevox/background/editing/editing.js');
     await importModule(
         'TtsBackground', '/chromevox/background/tts_background.js');
+    await importModule('KeyCode', '/common/key_code.js');
   }
 
   press(keyCode, modifiers) {
@@ -125,9 +126,9 @@ AX_TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', async function() {
           }
 
           input.value = 'text2';
-          window.clearInterval(timer);
+          clearInterval(timer);
         }
-        timer = window.setInterval(poll, 200);
+        timer = setInterval(poll, 200);
       </script>
     `);
   const input = root.find({role: RoleType.TEXT_FIELD});
@@ -629,11 +630,12 @@ AX_TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', async function() {
     {speech: ['s'], braille: [lineText, {startIndex: 5, endIndex: 5}]},
     {speech: [' '], braille: [lineText, {startIndex: 6, endIndex: 6}]},
     {speech: ['a'], braille: [lineText, {startIndex: 7, endIndex: 7}]},
-    {speech: [' '], braille: [lineText, {startIndex: 8, endIndex: 8}]}, {
+    {speech: [' '], braille: [lineText, {startIndex: 8, endIndex: 8}]},
+    {
       speech: ['cat', 'Image'],
-      braille: [lineOnCatText, {startIndex: 9, endIndex: 9}]
+      braille: [lineOnCatText, {startIndex: 9, endIndex: 9}],
     },
-    {speech: [' '], braille: [lineText, {startIndex: 12, endIndex: 12}]}
+    {speech: [' '], braille: [lineText, {startIndex: 12, endIndex: 12}]},
   ];
 
   for (const item of moves) {
@@ -1463,8 +1465,6 @@ AX_TEST_F('ChromeVoxEditingTest', 'InputEvents', async function() {
   const input = await this.focusFirstTextField(root);
 
   // EventType.TEXT_SELECTION_CHANGED fires on focus as well.
-  //
-  // TODO(nektar): Deprecate and remove TEXT_SELECTION_CHANGED.
   event = await this.waitForEditableEvent();
   assertEquals(EventType.TEXT_SELECTION_CHANGED, event.type);
   assertEquals(input, event.target);
@@ -1472,27 +1472,27 @@ AX_TEST_F('ChromeVoxEditingTest', 'InputEvents', async function() {
 
   this.press(KeyCode.A)();
 
-  event = await this.waitForEditableEvent();
-  assertEquals(EventType.VALUE_IN_TEXT_FIELD_CHANGED, event.type);
-  assertEquals(input, event.target);
-  assertEquals('a', input.value);
-
-  // We deliberately used EventType.TEXT_SELECTION_CHANGED instead of
+  // We deliberately use EventType.TEXT_SELECTION_CHANGED instead of
   // EventType.DOCUMENT_SELECTION_CHANGED for text fields.
   event = await this.waitForEditableEvent();
   assertEquals(EventType.TEXT_SELECTION_CHANGED, event.type);
   assertEquals(input, event.target);
   assertEquals('a', input.value);
 
+  event = await this.waitForEditableEvent();
+  assertEquals(EventType.VALUE_IN_TEXT_FIELD_CHANGED, event.type);
+  assertEquals(input, event.target);
+  assertEquals('a', input.value);
+
   this.press(KeyCode.B)();
 
   event = await this.waitForEditableEvent();
-  assertEquals(EventType.VALUE_IN_TEXT_FIELD_CHANGED, event.type);
+  assertEquals(EventType.TEXT_SELECTION_CHANGED, event.type);
   assertEquals(input, event.target);
   assertEquals('ab', input.value);
 
   event = await this.waitForEditableEvent();
-  assertEquals(EventType.TEXT_SELECTION_CHANGED, event.type);
+  assertEquals(EventType.VALUE_IN_TEXT_FIELD_CHANGED, event.type);
   assertEquals(input, event.target);
   assertEquals('ab', input.value);
 });
@@ -1944,12 +1944,12 @@ AX_TEST_F(
       const ctrlDown = () => chrome.accessibilityPrivate.sendSyntheticKeyEvent({
         type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
         keyCode: KeyCode.DOWN,
-        modifiers: {ctrl: true}
+        modifiers: {ctrl: true},
       });
       const ctrlUp = () => chrome.accessibilityPrivate.sendSyntheticKeyEvent({
         type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
         keyCode: KeyCode.UP,
-        modifiers: {ctrl: true}
+        modifiers: {ctrl: true},
       });
 
       mockFeedback.expectSpeech('Text area')
@@ -2091,7 +2091,7 @@ AX_TEST_F(
 
         11000000 /* cursor _ */,
 
-        101011 /* ed contraction */
+        101011, /* ed contraction */
       ]);
 
       this.press(KeyCode.HOME)();
@@ -2106,7 +2106,7 @@ AX_TEST_F(
 
         0 /* space */,
 
-        101011 /* ed contraction */
+        101011, /* ed contraction */
       ]);
     });
 

@@ -3715,6 +3715,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Ash_Clipboard_CopiedItem">
+  <owner>ckincaid@chromium.org</owner>
+  <owner>multipaste@google.com</owner>
+  <description>Emitted when a user copies data to their clipboard.</description>
+</action>
+
+<action name="Ash_Clipboard_PastedItem">
+  <owner>ckincaid@chromium.org</owner>
+  <owner>multipaste@google.com</owner>
+  <description>
+    Emitted when a user pastes data from their clipboard through standard
+    mechanisms, i.e., not using the clipboard history menu.
+  </description>
+</action>
+
 <action name="Ash_ClipboardHistory_PastedItem1">
   <owner>ckincaid@chromium.org</owner>
   <owner>multipaste@google.com</owner>
@@ -5472,6 +5487,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ChromeOS.SystemTray.Network.SettingsButtonPressed">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>tjohnsonkanu@chromium.org</owner>
+  <owner>chadduffin@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <description>
+    Recorded when a user clicks on the settings button in Network view within
+    systems tray.
+  </description>
+</action>
+
 <action name="ClearAuthenticationCache">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -6182,6 +6208,15 @@ should be able to be added at any place in this file.
   <owner>feed@chromium.org</owner>
   <description>
     The user selected the 'open in new tab' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.OpenInNewTabInGroup">
+  <owner>jianli@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'open in new tab in group' option for a Feed card.
   </description>
 </action>
 
@@ -7946,6 +7981,16 @@ should be able to be added at any place in this file.
     permissions section of an extension's context menu, where &quot;{site}&quot;
     is the domain of the current page. This is recorded for both keyboard and
     mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.Hosts.PermissionsPageClicked">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;Permissions page&quot; option in the runtime host
+    permissions section of an extension's context menu. This is recorded for
+    both keyboard and mouse activations.
   </description>
 </action>
 
@@ -15472,6 +15517,120 @@ should be able to be added at any place in this file.
   <owner>juanmojica@google.com</owner>
   <owner>schechter@google.com</owner>
   <description>The Lens side panel went from hidden to showing.</description>
+</action>
+
+<action name="LensUnifiedSidePanel.HideSidePanel">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>The side panel is hidden when lens was an entry.</description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensEntryHidden">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    The lens entry was hidden in the side panel. User navigated to a different
+    entry in the side panel.
+  </description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensEntryShown">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>The lens entry was shown in the side panel.</description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensQuery">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>The user issued a Lens query.</description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensQuery_Followup">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>The user issued a follow Lens query.</description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensQuery_New">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>The user issued a new Lens query.</description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensQuery_SidePanelClosed">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    Lens query was issued when the side panel is closed. So opening side panel
+    and focusing on lens.
+  </description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensQuery_SidePanelOpenLens">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    Lens query was issued when the side panel is open and lens is focused.
+  </description>
+</action>
+
+<action name="LensUnifiedSidePanel.LensQuery_SidePanelOpenNonLens">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    Lens query was issued when the side panel is open. So focusing on the lens
+    entry in the side panel.
+  </description>
+</action>
+
+<action name="LensUnifiedSidePanel.LoadResultsInNewTab">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    The side panel button to expand results to new tab was clicked.
+  </description>
+</action>
+
+<action name="LensUnifiedSidePanel.ResultLinkClick">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    The user clicked a result link in the Lens entry in the side panel.
+  </description>
 </action>
 
 <action name="LinkNavigationOpenedInForegroundTab">
@@ -27739,6 +27898,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="SidePanel.Assistant.Shown">
+  <owner>brunobraga@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the assistant side panel entry is shown.
+  </description>
+</action>
+
 <action name="SidePanel.Bookmarks.FolderClose">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -27763,10 +27930,40 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.Bookmarks.Shown">
+  <owner>johntlee@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the bookmarks side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.Feed.Shown">
+  <owner>jianli@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>Recorded when the feed side panel entry is shown.</description>
+</action>
+
 <action name="SidePanel.Hide">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>The user closed the side panel.</description>
+</action>
+
+<action name="SidePanel.HistoryClusters.Shown">
+  <owner>mfacey@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the history clusters side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.ReadAnything.Shown">
+  <owner>abigailbklein@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the read anything side panel entry is shown.
+  </description>
 </action>
 
 <action name="SidePanel.ReadingList.AddCurrentPage">
@@ -27785,10 +27982,34 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.ReadingList.Shown">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the reading list side panel entry is shown.
+  </description>
+</action>
+
 <action name="SidePanel.Show">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>The user opened the side panel.</description>
+</action>
+
+<action name="SidePanel.SideSearch.Shown">
+  <owner>tluk@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the side search side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.UserNotes.Shown">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the user notes side panel entry is shown.
+  </description>
 </action>
 
 <action name="Signin_Abort_Signin">
@@ -32978,6 +33199,57 @@ should be able to be added at any place in this file.
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <description>The user set a web app to open in an app window.</description>
+</action>
+
+<action name="WebAppDetailedInstallAccepted">
+  <owner>dmurph@gchromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user accepted an installation of a web app in the detailed installation
+    dialog (with screenshots, etc).
+  </description>
+</action>
+
+<action name="WebAppDetailedInstallCancelled">
+  <owner>dmurph@gchromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user cancelled an installation of a web app in the detailed installation
+    dialog (with screenshots, etc).
+  </description>
+</action>
+
+<action name="WebAppDetailedInstallShown">
+  <owner>dmurph@gchromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user was shown the detailed installation dialog for a web app (with
+    screenshots, etc).
+  </description>
+</action>
+
+<action name="WebAppInstallAccepted">
+  <owner>dmurph@gchromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user accepted an installation of a web app in the installation dialog.
+  </description>
+</action>
+
+<action name="WebAppInstallCancelled">
+  <owner>dmurph@gchromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user cancelled an installation of a web app in the installation dialog.
+  </description>
+</action>
+
+<action name="WebAppInstallShown">
+  <owner>dmurph@gchromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user was shown the installation dialog for a web app.
+  </description>
 </action>
 
 <action name="WebappMenuOpenInChrome">

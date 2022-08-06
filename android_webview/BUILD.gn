@@ -669,6 +669,7 @@ android_library("browser_java") {
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
     "//components/safe_browsing/android:safe_browsing_java",
+    "//components/stylus_handwriting/android:java",
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations:variations_java",
     "//components/variations/android:variations_java",
@@ -811,6 +812,7 @@ android_library("common_java") {
     "//services/network/public:features_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/blink/public/common:common_java",
+    "//third_party/blink/renderer/platform/scheduler:blink_scheduler_java",
   ]
   srcjar_deps = [
     ":common_java_features_srcjar",
@@ -1136,6 +1138,7 @@ grit("generate_components_resources") {
     "//components/flags_ui/resources:build_ts",
     "//components/resources:about_credits",
     "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
+    "//components/security_interstitials/content/resources:build_ts",
   ]
 
   if (safe_browsing_mode != 0) {

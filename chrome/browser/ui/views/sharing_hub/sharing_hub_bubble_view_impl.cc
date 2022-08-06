@@ -6,7 +6,7 @@
 
 #include "chrome/browser/share/share_metrics.h"
 #include "chrome/browser/sharing_hub/sharing_hub_model.h"
-#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller_desktop_impl.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/sharing_hub/preview_view.h"
@@ -35,21 +35,24 @@ constexpr int kMaximumButtons = 10;
 // with arrow keys possible.
 constexpr int kActionButtonGroup = 0;
 
+constexpr int kInterItemPadding = 4;
+
 }  // namespace
 
-SharingHubBubbleViewImpl::SharingHubBubbleViewImpl(views::View* anchor_view,
-                                                   share::ShareAttempt attempt)
+SharingHubBubbleViewImpl::SharingHubBubbleViewImpl(
+    views::View* anchor_view,
+    share::ShareAttempt attempt,
+    SharingHubBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, attempt.web_contents.get()),
       attempt_(attempt) {
+  DCHECK(anchor_view);
+  DCHECK(controller);
+
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
   SetEnableArrowKeyTraversal(true);
 
-  SharingHubBubbleControllerDesktopImpl* controller =
-      static_cast<SharingHubBubbleControllerDesktopImpl*>(
-          SharingHubBubbleController::CreateOrGetFromWebContents(
-              attempt.web_contents.get()));
   controller_ = controller->GetWeakPtr();
 }
 
@@ -126,8 +129,9 @@ const views::View* SharingHubBubbleViewImpl::GetButtonContainerForTesting()
 void SharingHubBubbleViewImpl::Init() {
   const int kPadding = 8;
   set_margins(gfx::Insets::TLBR(kPadding, 0, kPadding, 0));
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>());
-  layout->SetOrientation(views::BoxLayout::Orientation::kVertical);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      kInterItemPadding));
   if (controller_->ShouldUsePreview()) {
     auto* preview = AddChildView(std::make_unique<PreviewView>(attempt_));
     preview->TakeCallbackSubscription(
@@ -150,7 +154,8 @@ void SharingHubBubbleViewImpl::PopulateScrollView(
   auto* action_list_view =
       scroll_view_->SetContents(std::make_unique<views::View>());
   action_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      kInterItemPadding));
 
   for (const auto& action : first_party_actions) {
     auto* view = action_list_view->AddChildView(
@@ -158,18 +163,14 @@ void SharingHubBubbleViewImpl::PopulateScrollView(
     view->SetGroup(kActionButtonGroup);
   }
 
-  auto* separator =
-      action_list_view->AddChildView(std::make_unique<views::Separator>());
-  constexpr int kIndent = 12;
-  constexpr int kPadding = 4;
-  separator->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets::TLBR(kPadding, 0, kPadding, 0)));
+  action_list_view->AddChildView(std::make_unique<views::Separator>());
 
-  constexpr int kLabelLineHeight = 32;
+  constexpr int kIndent = 12;
+  constexpr int kLabelLineHeight = 40;
 
   auto* share_link_label =
       new views::Label(l10n_util::GetStringUTF16(IDS_SHARING_HUB_SHARE_LABEL),
-                       views::style::CONTEXT_DIALOG_TITLE);
+                       views::style::CONTEXT_DIALOG_BODY_TEXT);
   share_link_label->SetLineHeight(kLabelLineHeight);
   share_link_label->SetMultiLine(true);
   share_link_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);

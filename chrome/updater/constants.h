@@ -5,6 +5,7 @@
 #ifndef CHROME_UPDATER_CONSTANTS_H_
 #define CHROME_UPDATER_CONSTANTS_H_
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/update_client/update_client_errors.h"
 
@@ -152,6 +153,11 @@ extern const char kAppVersionSwitch[];
 // to Omaha 4.
 extern const char kHealthCheckSwitch[];
 
+// Specifies the enterprise request argument. On Windows, the request may
+// be from legacy updaters which pass the argument in the format of
+// `/enterprise`. Manual argument parsing is needed for that scenario.
+extern const char kEnterpriseSwitch[];
+
 // Specifies the handoff request argument. On Windows, the request may
 // be from legacy updaters which pass the argument in the format of
 // `/handoff <install-args-details>`. Manual argument parsing is needed for that
@@ -195,11 +201,11 @@ extern const char kDevOverrideKeyOverinstallTimeout[];
 extern const char kDevOverrideFileName[];
 
 // Timing constants.
-#if BUILDFLAG(IS_WIN)
-// How long to wait for an application installer (such as
-// chrome_installer.exe) to complete.
-constexpr int kWaitForAppInstallerSec = 60;
+// How long to wait for an application installer (such as chrome_installer.exe)
+// to complete.
+constexpr base::TimeDelta kWaitForAppInstaller = base::Minutes(15);
 
+#if BUILDFLAG(IS_WIN)
 // How often the installer progress from registry is sampled. This value may
 // be changed to provide a smoother progress experience (crbug.com/1067475).
 constexpr int kWaitForInstallerProgressSec = 1;
@@ -345,6 +351,8 @@ constexpr int kPolicyEnabled = 1;
 constexpr int kPolicyEnabledMachineOnly = 4;
 constexpr int kPolicyManualUpdatesOnly = 2;
 constexpr int kPolicyAutomaticUpdatesOnly = 3;
+constexpr int kPolicyForceInstallMachine = 5;
+constexpr int kPolicyForceInstallUser = 6;
 
 constexpr bool kInstallPolicyDefault = kPolicyEnabled;
 constexpr bool kUpdatePolicyDefault = kPolicyEnabled;

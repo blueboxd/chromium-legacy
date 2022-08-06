@@ -19,7 +19,6 @@
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -75,6 +75,10 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -144,6 +148,7 @@ class BrowserTabStripController::TabContextMenuContents
 
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     auto* browser = controller_->browser_view_->browser();
     auto* system_app = browser->app_controller()
                            ? browser->app_controller()->system_app()
@@ -152,6 +157,7 @@ class BrowserTabStripController::TabContextMenuContents
                           browser->profile(), command_id)) {
       return false;
     }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     int browser_cmd;
     return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
@@ -331,8 +337,8 @@ void BrowserTabStripController::CloseTab(int model_index) {
   hover_tab_selector_.CancelTabTransition();
 
   model_->CloseWebContentsAt(model_index,
-                             TabStripModel::CLOSE_USER_GESTURE |
-                             TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+                             TabCloseTypes::CLOSE_USER_GESTURE |
+                                 TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
 
   // Try to show reading list IPH if needed.
   if (tabstrip_->GetTabCount() >= 7) {
@@ -647,11 +653,11 @@ void BrowserTabStripController::OnTabStripModelChanged(
     // It's possible for |new_contents| to be null when the final tab in a tab
     // strip is closed.
     content::WebContents* new_contents = selection.new_contents;
-    int index = selection.new_model.active();
-    if (new_contents && index != TabStripModel::kNoTab) {
+    absl::optional<size_t> index = selection.new_model.active();
+    if (new_contents && index.has_value()) {
       TabUIHelper::FromWebContents(new_contents)
           ->set_was_active_at_least_once();
-      SetTabDataAt(new_contents, index);
+      SetTabDataAt(new_contents, index.value());
     }
   }
 

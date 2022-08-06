@@ -21,7 +21,6 @@ namespace web_app {
 constexpr const base::Feature* kPreinstalledAppInstallFeatures[] = {
     &kMigrateDefaultChromeAppToWebAppsGSuite,
     &kMigrateDefaultChromeAppToWebAppsNonGSuite,
-    &kDefaultCalculatorWebApp,
 #if BUILDFLAG(IS_CHROMEOS)
     &kCursiveStylusPreinstall,
     &kCursiveManagedStylusPreinstall,
@@ -54,11 +53,6 @@ const base::Feature kMigrateDefaultChromeAppToWebAppsNonGSuite{
     "MigrateDefaultChromeAppToWebAppsNonGSuite",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables installing the PWA version of the chrome os calculator instead of the
-// deprecated chrome app.
-const base::Feature kDefaultCalculatorWebApp{"DefaultCalculatorWebApp",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_CHROMEOS)
 // Whether to allow the MigrateDefaultChromeAppToWebAppsGSuite and
 // MigrateDefaultChromeAppToWebAppsNonGSuite flags for managed users.
@@ -72,7 +66,7 @@ const base::Feature kDefaultCalculatorWebApp{"DefaultCalculatorWebApp",
 // users.
 const base::Feature kAllowDefaultWebAppMigrationForChromeOsManagedUsers{
     "AllowDefaultWebAppMigrationForChromeOsManagedUsers",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables installing the Cursive app on devices with a built-in stylus-capable
 // screen.

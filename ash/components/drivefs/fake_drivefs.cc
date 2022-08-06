@@ -23,8 +23,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/fake_cros_disks_client.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -267,10 +267,7 @@ FakeDriveFs::~FakeDriveFs() = default;
 
 void FakeDriveFs::RegisterMountingForAccountId(
     base::RepeatingCallback<std::string()> account_id_getter) {
-  chromeos::DBusThreadManager* dbus_thread_manager =
-      chromeos::DBusThreadManager::Get();
-  static_cast<chromeos::FakeCrosDisksClient*>(
-      dbus_thread_manager->GetCrosDisksClient())
+  static_cast<chromeos::FakeCrosDisksClient*>(chromeos::CrosDisksClient::Get())
       ->AddCustomMountPointCallback(base::BindRepeating(&MaybeMountDriveFs));
 
   GetRegisteredFakeDriveFsIntances().emplace_back(std::move(account_id_getter),
@@ -535,6 +532,19 @@ void FakeDriveFs::GetQuotaUsage(
                           mojom::QuotaUsage::New());
 }
 
+void FakeDriveFs::GetPooledQuotaUsage(
+    drivefs::mojom::DriveFs::GetPooledQuotaUsageCallback callback) {
+  auto usage = mojom::PooledQuotaUsage::New();
+
+  usage->user_type = mojom::UserType::kUnmanaged;
+  usage->used_user_bytes = 1 * 1024 * 1024;
+  usage->total_user_bytes = 2 * 1024 * 1024;
+  usage->organization_limit_exceeded = false;
+  usage->organization_name = "Test Organization";
+
+  std::move(callback).Run(drive::FileError::FILE_ERROR_OK, std::move(usage));
+}
+
 void FakeDriveFs::ToggleMirroring(
     bool enabled,
     drivefs::mojom::DriveFs::ToggleMirroringCallback callback) {
@@ -554,11 +564,6 @@ void FakeDriveFs::ToggleSyncForPath(
     syncing_paths_.erase(element);
   }
   std::move(callback).Run(drive::FileError::FILE_ERROR_OK);
-}
-
-void FakeDriveFs::GetSyncingPaths(
-    drivefs::mojom::DriveFs::GetSyncingPathsCallback callback) {
-  std::move(callback).Run(drive::FILE_ERROR_OK, syncing_paths_);
 }
 
 void FakeDriveFs::PollHostedFilePinStates() {}

@@ -120,6 +120,7 @@ bool VisitDatabase::InitVisitTable() {
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "url INTEGER NOT NULL,"  // key of the URL this corresponds to
             "visit_time INTEGER NOT NULL,"
+            // Although NULLable, our code writes 0 to visits without referrers.
             "from_visit INTEGER,"
             "transition INTEGER DEFAULT 0 NOT NULL,"
             "segment_id INTEGER,"
@@ -127,14 +128,27 @@ bool VisitDatabase::InitVisitTable() {
             // longer used and should NOT be read or written from any longer.
             "visit_duration INTEGER DEFAULT 0 NOT NULL,"
             "incremented_omnibox_typed_score BOOLEAN DEFAULT FALSE NOT NULL,"
+            // Although NULLable, our code writes 0 to visits without openers.
             "opener_visit INTEGER,"
-            // These four fields are non-null only for remote visits synced to
-            // the local machine. The `originator_cache_guid` is the unique
-            // identifier for the originator machine the visit was originally
-            // made on, and `originator_visit_id` is the `id` of the visit row
-            // as originally assigned by AUTOINCREMENT on the originator.
-            // The tuple of (`originator_cache_guid`, `origin_visit_id`) is
-            // globally unique.
+            // For remote visits synced onto our local machine:
+            //  - `originator_cache_guid` is the unique identifier for the
+            //    machine the visit was originally made on (called the
+            //    "originator" below).
+            //  - `originator_visit_id` is the `id` of the visit row as
+            //    originally assigned by AUTOINCREMENT on the originator.
+            //  - The tuple of (`originator_cache_guid`, `originator_visit_id`)
+            //    is globally unique.
+            //  - `originator_from_visit` and `originator_opener_visit` refer to
+            //    `originator_visit_id`, NOT the local visit IDs.
+            //  - The `from_visit` and `opener_visit` columns are remapped to
+            //    local IDs.
+            // For local visits:
+            //  - Although NULLable, local visits always write an empty string
+            //    and 0s to these columns for implementation simplicity and
+            //    consistency with C++ types. It's harmless, because NULL is
+            //    interpreted that way upon reading anyways.
+            //  - NULL values in the database can occur in the wild for old
+            //    database versions that were migrated, but this is harmless.
             "originator_cache_guid TEXT,"
             "originator_visit_id INTEGER,"
             "originator_from_visit INTEGER,"
@@ -169,6 +183,18 @@ bool VisitDatabase::InitVisitTable() {
   if (!GetDB().Execute("CREATE INDEX IF NOT EXISTS visits_time_index ON "
                        "visits (visit_time)"))
     return false;
+
+  // Create an index over originator visit IDs so that Sync can efficiently
+  // re-map them into local IDs.
+  // Note: Some tests manually create older versions of the DB where the
+  // `originator_visit_id` column doesn't exist yet. In those cases, don't try
+  // creating an index (which would fail).
+  if (GetDB().DoesColumnExist("visits", "originator_visit_id")) {
+    if (!GetDB().Execute(
+            "CREATE INDEX IF NOT EXISTS visits_originator_id_index ON visits "
+            "(originator_visit_id)"))
+      return false;
+  }
 
   return true;
 }
@@ -259,6 +285,8 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
       "originator_cache_guid,originator_visit_id,originator_from_visit,"
       "originator_opener_visit) "
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
+  // Although some columns are NULLable, we never write NULL. We write 0 or ""
+  // instead for simplicity. See the CREATE TABLE comments for details.
   statement.BindInt64(0, visit->url_id);
   statement.BindInt64(1, visit->visit_time.ToInternalValue());
   statement.BindInt64(2, visit->referring_visit);
@@ -366,6 +394,24 @@ bool VisitDatabase::GetLastRowForVisitByVisitTime(base::Time visit_time,
   return true;
 }
 
+bool VisitDatabase::GetRowForForeignVisit(
+    const std::string& originator_cache_guid,
+    VisitID originator_visit_id,
+    VisitRow* out_visit) {
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT" HISTORY_VISIT_ROW_FIELDS
+      "FROM visits WHERE originator_cache_guid=? and originator_visit_id=?"));
+  statement.BindString(0, originator_cache_guid);
+  statement.BindInt64(1, originator_visit_id);
+
+  if (!statement.Step())
+    return false;
+
+  FillVisitRow(statement, out_visit);
+  return true;
+}
+
 bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
   // Don't store inconsistent data to the database.
   DCHECK_NE(visit.visit_id, visit.referring_visit);
@@ -379,6 +425,8 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
       "visit_duration=?,incremented_omnibox_typed_score=?,opener_visit=?,"
       "originator_cache_guid=?,originator_visit_id=? "
       "WHERE id=?"));
+  // Although some columns are NULLable, we never write NULL. We write 0 or ""
+  // instead for simplicity. See the CREATE TABLE comments for details.
   statement.BindInt64(0, visit.url_id);
   statement.BindInt64(1, visit.visit_time.ToInternalValue());
   statement.BindInt64(2, visit.referring_visit);

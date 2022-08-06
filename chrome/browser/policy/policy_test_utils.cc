@@ -7,7 +7,9 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,11 +18,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_constants.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/network_service_util.h"
@@ -53,12 +55,6 @@ void PolicyTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
 }
 
-void PolicyTest::SetUpCommandLine(base::CommandLine* command_line) {
-  variations::testing::VariationParamsManager::AppendVariationParams(
-      "ReportCertificateErrors", "ShowAndPossiblySend",
-      {{"sendingThreshold", "1.0"}}, command_line);
-}
-
 void PolicyTest::UpdateProviderPolicy(const PolicyMap& policy) {
   PolicyMap policy_with_defaults = policy.Clone();
 #if BUILDFLAG(IS_CHROMEOS)
@@ -66,8 +62,6 @@ void PolicyTest::UpdateProviderPolicy(const PolicyMap& policy) {
 #endif
   provider_.UpdateChromePolicy(policy_with_defaults);
   DCHECK(base::CurrentThread::Get());
-  base::RunLoop loop;
-  loop.RunUntilIdle();
 }
 
 // static
@@ -108,5 +102,13 @@ void PolicyTest::FlushBlocklistPolicy() {
   content::RunAllTasksUntilIdle();
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 }
+
+PolicyTestAppTerminationObserver::PolicyTestAppTerminationObserver() {
+  terminating_subscription_ = browser_shutdown::AddAppTerminatingCallback(
+      base::BindOnce(&PolicyTestAppTerminationObserver::OnAppTerminating,
+                     base::Unretained(this)));
+}
+
+PolicyTestAppTerminationObserver::~PolicyTestAppTerminationObserver() = default;
 
 }  // namespace policy

@@ -140,17 +140,20 @@ TestRunner::~TestRunner() {
     ::TerminateProcess(target_process_.Get(), 0);
 }
 
-bool TestRunner::AddRule(TargetPolicy::SubSystem subsystem,
-                         TargetPolicy::Semantics semantics,
+bool TestRunner::AddRule(SubSystem subsystem,
+                         Semantics semantics,
                          const wchar_t* pattern) {
   if (!is_init_)
     return false;
 
-  return (SBOX_ALL_OK == policy_->AddRule(subsystem, semantics, pattern));
+  if (policy_->GetConfig()->IsConfigured())
+    return false;
+
+  return (SBOX_ALL_OK ==
+          policy_->GetConfig()->AddRule(subsystem, semantics, pattern));
 }
 
-bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
-                              const wchar_t* pattern) {
+bool TestRunner::AddRuleSys32(Semantics semantics, const wchar_t* pattern) {
   if (!is_init_)
     return false;
 
@@ -158,7 +161,7 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
   if (win32_path.empty())
     return false;
 
-  if (!AddRule(TargetPolicy::SUBSYS_FILES, semantics, win32_path.c_str()))
+  if (!AddRule(SubSystem::kFiles, semantics, win32_path.c_str()))
     return false;
 
   if (!base::win::OSInfo::GetInstance()->IsWowX86OnAMD64())
@@ -168,15 +171,14 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
   if (win32_path.empty())
     return false;
 
-  return AddRule(TargetPolicy::SUBSYS_FILES, semantics, win32_path.c_str());
+  return AddRule(SubSystem::kFiles, semantics, win32_path.c_str());
 }
 
-bool TestRunner::AddFsRule(TargetPolicy::Semantics semantics,
-                           const wchar_t* pattern) {
+bool TestRunner::AddFsRule(Semantics semantics, const wchar_t* pattern) {
   if (!is_init_)
     return false;
 
-  return AddRule(TargetPolicy::SUBSYS_FILES, semantics, pattern);
+  return AddRule(SubSystem::kFiles, semantics, pattern);
 }
 
 int TestRunner::RunTest(const wchar_t* command) {

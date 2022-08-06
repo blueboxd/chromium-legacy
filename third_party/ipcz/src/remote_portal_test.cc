@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "ipcz/ipcz.h"
+#include "reference_drivers/blob.h"
 #include "test/multinode_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/strings/str_cat.h"
 
 namespace ipcz {
 namespace {
@@ -49,6 +51,7 @@ MULTINODE_TEST_NODE(RemotePortalTestNode, PortalTransferClient) {
   EXPECT_NE(IPCZ_INVALID_HANDLE, p);
 
   VerifyEndToEnd(p);
+  WaitForDirectRemoteLink(p);
   CloseAll({p, b});
 }
 
@@ -59,6 +62,7 @@ TEST_P(RemotePortalTest, PortalTransfer) {
   EXPECT_EQ(IPCZ_RESULT_OK, Put(c, kTestMessage1, {&p, 1}));
 
   VerifyEndToEnd(q);
+  WaitForDirectRemoteLink(q);
   CloseAll({q, c});
 }
 
@@ -80,6 +84,7 @@ MULTINODE_TEST_NODE(RemotePortalTestNode, MultipleHopsClient1) {
     EXPECT_EQ(kTestMessage1, message);
   }
 
+  WaitForDirectRemoteLink(q);
   PingPong(b);
   CloseAll({q, b});
 }
@@ -100,6 +105,7 @@ MULTINODE_TEST_NODE(RemotePortalTestNode, MultipleHopsClient2) {
     EXPECT_EQ(kTestMessage2, message);
   }
 
+  WaitForDirectRemoteLink(p);
   PingPong(b);
   CloseAll({p, b});
 }
@@ -117,7 +123,7 @@ TEST_P(RemotePortalTest, MultipleHops) {
   CloseAll({c1, c2});
 }
 
-constexpr size_t kTransferBackAndForthNumIterations = 1;
+constexpr size_t kTransferBackAndForthNumIterations = 100;
 
 MULTINODE_TEST_NODE(RemotePortalTestNode, TransferBackAndForthClient) {
   IpczHandle b = ConnectToBroker();
@@ -149,7 +155,141 @@ TEST_P(RemotePortalTest, TransferBackAndForth) {
   }
 
   VerifyEndToEndLocal(q, p);
+  WaitForDirectLocalLink(q, p);
   CloseAll({q, p, c});
+}
+
+constexpr size_t kHugeNumberOfPortalsCount = 1000;
+
+MULTINODE_TEST_NODE(RemotePortalTestNode, HugeNumberOfPortalsClient) {
+  IpczHandle b = ConnectToBroker();
+  IpczHandle other_client;
+  EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(b, nullptr, {&other_client, 1}));
+
+  std::vector<IpczHandle> portals(kHugeNumberOfPortalsCount);
+  for (auto& portal : portals) {
+    EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(b, nullptr, {&portal, 1}));
+    EXPECT_EQ(IPCZ_RESULT_OK, Put(other_client, "", {&portal, 1}));
+  }
+
+  for (size_t i = 0; i < kHugeNumberOfPortalsCount; ++i) {
+    EXPECT_EQ(IPCZ_RESULT_OK,
+              WaitToGet(other_client, nullptr, {&portals[i], 1}));
+
+    IpczDriverHandle blob = reference_drivers::Blob::ReleaseAsHandle(
+        MakeRefCounted<reference_drivers::Blob>(absl::StrCat(absl::Dec(i))));
+    IpczHandle box;
+    EXPECT_EQ(IPCZ_RESULT_OK,
+              ipcz().Box(node(), blob, IPCZ_NO_FLAGS, nullptr, &box));
+    EXPECT_EQ(IPCZ_RESULT_OK, Put(portals[i], "", {&box, 1}));
+  }
+
+  for (size_t i = 0; i < kHugeNumberOfPortalsCount; ++i) {
+    IpczHandle box;
+    EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(portals[i], nullptr, {&box, 1}));
+
+    IpczDriverHandle blob;
+    EXPECT_EQ(IPCZ_RESULT_OK, ipcz().Unbox(box, IPCZ_NO_FLAGS, nullptr, &blob));
+    EXPECT_EQ(absl::StrCat(absl::Dec(i)),
+              reference_drivers::Blob::TakeFromHandle(blob)->message());
+  }
+
+  EXPECT_EQ(IPCZ_RESULT_OK, Put(b, "", {&other_client, 1}));
+  EXPECT_EQ(IPCZ_RESULT_OK, WaitForConditionFlags(b, IPCZ_TRAP_PEER_CLOSED));
+  CloseAll(portals);
+  Close(b);
+}
+
+TEST_P(RemotePortalTest, HugeNumberOfPortals) {
+  // Opens a very large number of portals, and sends them all to client nodes.
+  // The client nodes exchange these portals with each other and transmit
+  // parcels over them, with and without driver objects. This exercises
+  // NodeLinkMemory allocations and related synchronization around e.g.
+  // delegated allocation and driver object relaying.
+
+  IpczHandle c1 = SpawnTestNode<HugeNumberOfPortalsClient>();
+  IpczHandle c2 = SpawnTestNode<HugeNumberOfPortalsClient>();
+  auto [q, p] = OpenPortals();
+  EXPECT_EQ(IPCZ_RESULT_OK, Put(c1, "", {&q, 1}));
+  EXPECT_EQ(IPCZ_RESULT_OK, Put(c2, "", {&p, 1}));
+  for (size_t i = 0; i < kHugeNumberOfPortalsCount; ++i) {
+    auto [a, b] = OpenPortals();
+    EXPECT_EQ(IPCZ_RESULT_OK, Put(c1, "", {&a, 1}));
+    EXPECT_EQ(IPCZ_RESULT_OK, Put(c2, "", {&b, 1}));
+  }
+
+  EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(c1, nullptr, {&q, 1}));
+  EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(c2, nullptr, {&p, 1}));
+  WaitForDirectLocalLink(q, p);
+  CloseAll({c1, c2, q, p});
+}
+
+constexpr size_t kRouteExpansionStressTestNumIterations = 100;
+
+MULTINODE_TEST_NODE(RemotePortalTestNode, RoutingStressTestClient) {
+  // Each client only expects portals from the broker and bounces them back.
+  IpczHandle b = ConnectToBroker();
+  for (size_t i = 0; i < kRouteExpansionStressTestNumIterations; ++i) {
+    IpczHandle p;
+    EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(b, nullptr, {&p, 1}));
+    EXPECT_EQ(IPCZ_RESULT_OK, Put(b, "", {&p, 1}));
+  }
+  EXPECT_EQ(IPCZ_RESULT_OK, WaitForConditionFlags(b, IPCZ_TRAP_PEER_CLOSED));
+  Close(b);
+}
+
+TEST_P(RemotePortalTest, RoutingStressTest) {
+  // This test spawns a bunch of nodes and bounces two portals back and forth
+  // among them over a large number of iterations, then waits for all the
+  // intermediate routers to be removed. Every iteration also sends a message
+  // from each end of the pipe to exercise parcel routing, including with
+  // driver objects attached.
+
+  constexpr size_t kNumClientPairs = 3;
+  std::pair<IpczHandle, IpczHandle> client_pairs[kNumClientPairs];
+  for (auto& pair : client_pairs) {
+    pair = std::make_pair(SpawnTestNode<RoutingStressTestClient>(),
+                          SpawnTestNode<RoutingStressTestClient>());
+  }
+
+  auto [a, b] = OpenPortals();
+  for (size_t j = 0; j < kRouteExpansionStressTestNumIterations; ++j) {
+    IpczDriverHandle blob = reference_drivers::Blob::ReleaseAsHandle(
+        MakeRefCounted<reference_drivers::Blob>(absl::StrCat(absl::Dec(j))));
+    IpczHandle box;
+    EXPECT_EQ(IPCZ_RESULT_OK,
+              ipcz().Box(node(), blob, IPCZ_NO_FLAGS, nullptr, &box));
+    EXPECT_EQ(IPCZ_RESULT_OK,
+              Put(a, absl::StrCat("a", absl::Dec(j)), {&box, 1}));
+    EXPECT_EQ(IPCZ_RESULT_OK, Put(b, absl::StrCat("b", absl::Dec(j))));
+    for (auto& pair : client_pairs) {
+      EXPECT_EQ(IPCZ_RESULT_OK, Put(pair.first, "", {&a, 1}));
+      EXPECT_EQ(IPCZ_RESULT_OK, Put(pair.second, "", {&b, 1}));
+      EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(pair.first, nullptr, {&a, 1}));
+      EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(pair.second, nullptr, {&b, 1}));
+    }
+  }
+
+  WaitForDirectLocalLink(a, b);
+
+  for (size_t i = 0; i < kRouteExpansionStressTestNumIterations; ++i) {
+    std::string message;
+    IpczHandle box;
+    EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(a, &message));
+    EXPECT_EQ(absl::StrCat("b", absl::Dec(i)), message);
+    EXPECT_EQ(IPCZ_RESULT_OK, WaitToGet(b, &message, {&box, 1}));
+    EXPECT_EQ(absl::StrCat("a", absl::Dec(i)), message);
+
+    IpczDriverHandle blob;
+    EXPECT_EQ(IPCZ_RESULT_OK, ipcz().Unbox(box, IPCZ_NO_FLAGS, nullptr, &blob));
+    EXPECT_EQ(absl::StrCat(absl::Dec(i)),
+              reference_drivers::Blob::TakeFromHandle(blob)->message());
+  }
+
+  for (auto& pair : client_pairs) {
+    CloseAll({pair.first, pair.second});
+  }
+  CloseAll({a, b});
 }
 
 MULTINODE_TEST_NODE(RemotePortalTestNode, DisconnectThroughProxyClient1) {
@@ -195,7 +335,12 @@ MULTINODE_TEST_NODE(RemotePortalTestNode, DisconnectThroughProxyClient3) {
   CloseAll({p, b});
 }
 
-TEST_P(RemotePortalTest, DisconnectThroughProxy) {
+#if BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_DisconnectThroughProxy DISABLED_DisconnectThroughProxy
+#else
+#define MAYBE_DisconnectThroughProxy DisconnectThroughProxy
+#endif
+TEST_P(RemotePortalTest, MAYBE_DisconnectThroughProxy) {
   // Exercises node disconnection. Namely if portals on nodes 1 and 3 are
   // connected via proxy on node 2, and node 3 disappears, node 1's portal
   // should observe peer closure.

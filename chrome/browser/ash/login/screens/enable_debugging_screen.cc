@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
 
 #include "base/check.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_web_dialog.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -12,9 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,32 +28,23 @@ namespace {
 
 constexpr char kUserActionCancel[] = "cancel";
 constexpr char kUserActionDone[] = "done";
+constexpr char kUserActionSetup[] = "setup";
 constexpr char kUserActionLearnMore[] = "learnMore";
 constexpr char kUserActionRemoveRootFSProtection[] = "removeRootFSProtection";
 
 }  // namespace
 
 EnableDebuggingScreen::EnableDebuggingScreen(
-    EnableDebuggingScreenView* view,
+    base::WeakPtr<EnableDebuggingScreenView> view,
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(EnableDebuggingScreenView::kScreenId,
                  OobeScreenPriority::SCREEN_DEVICE_DEVELOPER_MODIFICATION),
-      view_(view),
+      view_(std::move(view)),
       exit_callback_(exit_callback) {
   DCHECK(view_);
-  if (view_)
-    view_->SetDelegate(this);
 }
 
-EnableDebuggingScreen::~EnableDebuggingScreen() {
-  if (view_)
-    view_->SetDelegate(nullptr);
-}
-
-void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {
-  if (view_ == view)
-    view_ = nullptr;
-}
+EnableDebuggingScreen::~EnableDebuggingScreen() = default;
 
 void EnableDebuggingScreen::ShowImpl() {
   if (view_) {
@@ -62,22 +53,29 @@ void EnableDebuggingScreen::ShowImpl() {
   }
 }
 
-void EnableDebuggingScreen::HideImpl() {
-  if (view_)
-    view_->Hide();
-}
+void EnableDebuggingScreen::HideImpl() {}
 
-void EnableDebuggingScreen::OnUserActionDeprecated(
-    const std::string& action_id) {
+void EnableDebuggingScreen::OnUserAction(const base::Value::List& args) {
+  const std::string& action_id = args[0].GetString();
   if (action_id == kUserActionCancel || action_id == kUserActionDone) {
     exit_callback_.Run();
-  } else if (action_id == kUserActionLearnMore) {
-    HandleLearnMore();
-  } else if (action_id == kUserActionRemoveRootFSProtection) {
-    HandleRemoveRootFSProtection();
-  } else {
-    BaseScreen::OnUserActionDeprecated(action_id);
+    return;
   }
+  if (action_id == kUserActionLearnMore) {
+    HandleLearnMore();
+    return;
+  }
+  if (action_id == kUserActionRemoveRootFSProtection) {
+    HandleRemoveRootFSProtection();
+    return;
+  }
+  if (action_id == kUserActionSetup) {
+    CHECK_EQ(args.size(), 2);
+    const std::string& password = args[1].GetString();
+    HandleSetup(password);
+    return;
+  }
+  BaseScreen::OnUserAction(args);
 }
 
 void EnableDebuggingScreen::HandleLearnMore() {
@@ -96,9 +94,7 @@ void EnableDebuggingScreen::HandleLearnMore() {
 
 void EnableDebuggingScreen::HandleRemoveRootFSProtection() {
   UpdateUIState(EnableDebuggingScreenView::UI_STATE_WAIT);
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->RemoveRootfsVerification(
+  DebugDaemonClient::Get()->RemoveRootfsVerification(
       base::BindOnce(&EnableDebuggingScreen::OnRemoveRootfsVerification,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -137,9 +133,7 @@ void EnableDebuggingScreen::OnCryptohomeDaemonAvailabilityChecked(
     return;
   }
 
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->WaitForServiceToBeAvailable(base::BindOnce(
+  DebugDaemonClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
       &EnableDebuggingScreen::OnDebugDaemonServiceAvailabilityChecked,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -155,9 +149,7 @@ void EnableDebuggingScreen::OnDebugDaemonServiceAvailabilityChecked(
   }
 
   // Check the status of debugging features.
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->QueryDebuggingFeatures(
+  DebugDaemonClient::Get()->QueryDebuggingFeatures(
       base::BindOnce(&EnableDebuggingScreen::OnQueryDebuggingFeatures,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -188,9 +180,7 @@ void EnableDebuggingScreen::OnQueryDebuggingFeatures(bool success,
 
 void EnableDebuggingScreen::HandleSetup(const std::string& password) {
   UpdateUIState(EnableDebuggingScreenView::UI_STATE_WAIT);
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->EnableDebuggingFeatures(
+  DebugDaemonClient::Get()->EnableDebuggingFeatures(
       password,
       base::BindOnce(&EnableDebuggingScreen::OnEnableDebuggingFeatures,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -214,7 +204,8 @@ void EnableDebuggingScreen::UpdateUIState(
     prefs->ClearPref(prefs::kDebuggingFeaturesRequested);
     prefs->CommitPendingWrite();
   }
-  view_->UpdateUIState(state);
+  if (view_)
+    view_->UpdateUIState(state);
 }
 
 }  // namespace ash

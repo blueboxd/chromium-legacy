@@ -1038,6 +1038,48 @@ TEST_F(SplitViewControllerTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// Verify that disconnecting a display while dragging the split view divider in
+// it in tablet mode won't lead to a crash. Regression test for
+// https://crbug.com/1316892.
+TEST_F(SplitViewControllerTest,
+       DisplayDisconnectionWhileDraggingSplitDividerInTabletMode) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  UpdateDisplay("800x600,800x600");
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(EnterOverview());
+
+  // Turn off the display mirror mode.
+  Shell::Get()->display_manager()->SetMirrorMode(display::MirrorMode::kOff,
+                                                 absl::nullopt);
+
+  // Create a window on the secondary display.
+  std::unique_ptr<aura::Window> w(
+      CreateTestWindowInShellWithBounds(gfx::Rect(900, 0, 100, 100)));
+
+  // Snap the window on the second display.
+  auto* split_view_controller = SplitViewController::Get(w->GetRootWindow());
+  split_view_controller->SnapWindow(w.get(), SplitViewController::LEFT);
+  auto* split_view_divider = split_view_controller->split_view_divider();
+  ASSERT_TRUE(split_view_divider);
+
+  auto* event_generator = GetEventGenerator();
+  const gfx::Point divider_center_pointer =
+      split_view_divider->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint();
+  event_generator->PressTouch(divider_center_pointer);
+
+  // Drag the split view divider without releasing the drag.
+  const gfx::Vector2d delta(100, 0);
+  event_generator->MoveTouch(divider_center_pointer + delta);
+
+  // Now disconnect the second display, verify there's no crash.
+  UpdateDisplay("800x600");
+  base::RunLoop().RunUntilIdle();
+}
+
 // Tests that the bounds of the snapped windows and divider are adjusted when
 // the screen display configuration changes.
 TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
@@ -3043,7 +3085,7 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
 
   // Test the functionalities in tablet mode.
   // Sending WM_EVENT_SNAP_SECONDARY to |window1| will snap to left.
-  WMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
+  WindowSnapWMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
@@ -3054,7 +3096,7 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
 
   // Sending WM_EVENT_SNAP_SECONDARY to |window1| will snap to right.
-  WMEvent wm_right_snap_event(WM_EVENT_SNAP_SECONDARY);
+  WindowSnapWMEvent wm_right_snap_event(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(window1.get())->OnWMEvent(&wm_right_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
@@ -3172,7 +3214,7 @@ TEST_F(SplitViewControllerTest, WMSnapEventDeviceOrientationMetricsInTablet) {
 
   // 1. Test landscape orientation.
   // Snap |window1| to the left to enter split view overview in tablet mode.
-  WMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
+  WindowSnapWMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -3215,8 +3257,8 @@ TEST_F(SplitViewControllerTest,
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
-  const WMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
-  const WMEvent wm_right_snap_event(WM_EVENT_SNAP_SECONDARY);
+  const WindowSnapWMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent wm_right_snap_event(WM_EVENT_SNAP_SECONDARY);
   const WMEvent fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
 
   // 1. Test portrait orientation.

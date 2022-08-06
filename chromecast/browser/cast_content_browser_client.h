@@ -80,7 +80,6 @@ class VideoResolutionPolicy;
 }
 
 namespace shell {
-class AccessibilityServiceImpl;
 class CastBrowserMainParts;
 class CastNetworkContexts;
 
@@ -117,8 +116,7 @@ class CastContentBrowserClient
       media::VideoPlaneController* video_plane_controller,
       CastWindowManager* window_manager,
       CastWebService* web_service,
-      DisplaySettingsManager* display_settings_manager,
-      AccessibilityServiceImpl* accessibility_service);
+      DisplaySettingsManager* display_settings_manager);
 
   virtual media::VideoModeSwitcher* GetVideoModeSwitcher();
 
@@ -268,12 +266,6 @@ class CastContentBrowserClient
   bool ShouldAllowInsecurePrivateNetworkRequests(
       content::BrowserContext* browser_context,
       const url::Origin& origin) override;
-  // New Mojo bindings should be added to
-  // cast_content_browser_client_receiver_bindings.cc, so that they go through
-  // security review.
-  void BindHostReceiverForRenderer(
-      content::RenderProcessHost* render_process_host,
-      mojo::GenericPendingReceiver receiver) override;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,

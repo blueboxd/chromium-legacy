@@ -8,14 +8,10 @@
 #include <memory>
 
 #include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_registry_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
-class SystemExtensionsInstallManager;
-
-namespace content {
-class RenderProcessHost;
-}
 
 namespace ash {
 
@@ -41,16 +37,26 @@ class SystemExtensionsProvider : public KeyedService {
   SystemExtensionsProvider& operator=(const SystemExtensionsProvider&) = delete;
   ~SystemExtensionsProvider() override;
 
+  SystemExtensionsRegistry& registry() { return registry_manager_->registry(); }
+
+  SystemExtensionsRegistryManager& registry_manager() {
+    return *registry_manager_;
+  }
+
   SystemExtensionsInstallManager& install_manager() {
     return *install_manager_;
   }
 
-  // Called when a service worker will be started to enable blink runtime
-  // features based on system extension type.
-  void WillStartServiceWorker(const GURL& script_url,
-                              content::RenderProcessHost* render_process_host);
+  // Called when a service worker will be started to enable Blink runtime
+  // features based on system extension type. Currently System Extensions run on
+  // chrome-untrusted:// which is process isolated, so this method should be
+  // called.
+  void UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
+      const GURL& script_url,
+      std::vector<std::string>& out_forced_enabled_runtime_features);
 
  private:
+  std::unique_ptr<SystemExtensionsRegistryManager> registry_manager_;
   std::unique_ptr<SystemExtensionsInstallManager> install_manager_;
 };
 

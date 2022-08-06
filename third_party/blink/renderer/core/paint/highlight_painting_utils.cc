@@ -209,11 +209,11 @@ Color HighlightColor(const Document& document,
                                                    pseudo_argument);
 
   mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
-  if (pseudo_style && (!StyleResolver::UsesHighlightPseudoInheritance(pseudo) ||
+  if (pseudo_style && (!UsesHighlightPseudoInheritance(pseudo) ||
                        !UseUaHighlightColors(pseudo, *pseudo_style))) {
     if (!document.InForcedColorsMode() ||
         pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
-      if (pseudo_style->ColorIsCurrentColor()) {
+      if (pseudo_style->VisitedDependentColorIsCurrentColor()) {
         if (RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled())
           return previous_layer_color;
         else
@@ -240,7 +240,7 @@ scoped_refptr<const ComputedStyle> HighlightPaintingUtils::HighlightPseudoStyle(
     const ComputedStyle& style,
     PseudoId pseudo,
     const AtomicString& pseudo_argument) {
-  if (!StyleResolver::UsesHighlightPseudoInheritance(pseudo)) {
+  if (!UsesHighlightPseudoInheritance(pseudo)) {
     return HighlightPseudoStyleWithOriginatingInheritance(node, pseudo,
                                                           pseudo_argument);
   }
@@ -281,14 +281,14 @@ Color HighlightPaintingUtils::HighlightBackgroundColor(
       HighlightPseudoStyle(node, style, pseudo, pseudo_argument);
 
   mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
-  if (pseudo_style && (!StyleResolver::UsesHighlightPseudoInheritance(pseudo) ||
+  if (pseudo_style && (!UsesHighlightPseudoInheritance(pseudo) ||
                        !UseUaHighlightColors(pseudo, *pseudo_style))) {
     if (!document.InForcedColorsMode() ||
         pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
       Color highlight_color =
           pseudo_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
       if (pseudo_style->IsBackgroundColorCurrentColor() &&
-          pseudo_style->ColorIsCurrentColor()) {
+          pseudo_style->VisitedDependentColorIsCurrentColor()) {
         if (RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled() &&
             previous_layer_color.has_value()) {
           highlight_color = previous_layer_color.value();

@@ -178,6 +178,7 @@ class BASE_EXPORT SequenceManagerImpl
   void AttachToMessagePump();
 #endif
   bool IsIdleForTesting() override;
+  void EnableMessagePumpTimeKeeperMetrics(const char* thread_name);
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();
@@ -378,8 +379,9 @@ class BASE_EXPORT SequenceManagerImpl
   std::unique_ptr<trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResultForTracing(internal::WorkQueue* selected_work_queue,
                                       bool force_verbose) const;
-  Value AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
-                                  bool force_verbose) const;
+  Value::Dict AsValueWithSelectorResult(
+      internal::WorkQueue* selected_work_queue,
+      bool force_verbose) const;
 
   // Used in construction of TaskQueueImpl to obtain an AtomicFlag which it can
   // use to request reload by ReloadEmptyWorkQueues. The lifetime of

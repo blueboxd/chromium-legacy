@@ -21,6 +21,7 @@
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
+#include "components/payments/core/pre_purchase_query.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/payment_app_provider_util.h"
 #include "content/public/browser/web_contents.h"
@@ -139,6 +140,8 @@ void ServiceWorkerPaymentApp::ValidateCanMakePayment(
   if (!payment_app_provider)
     return;
 
+  base::UmaHistogramEnumeration("PaymentRequest.PrePurchaseQuery",
+                                PrePurchaseQuery::kServiceWorkerEvent);
   payment_app_provider->CanMakePayment(
       stored_payment_app_info_->registration_id,
       url::Origin::Create(stored_payment_app_info_->scope),
@@ -378,12 +381,6 @@ void ServiceWorkerPaymentApp::OnPaymentAppResponse(
 
 bool ServiceWorkerPaymentApp::IsCompleteForPayment() const {
   return true;
-}
-
-uint32_t ServiceWorkerPaymentApp::GetCompletenessScore() const {
-  // Return max value to ensure that SW payment app always score higher than
-  // autofill.
-  return std::numeric_limits<uint32_t>::max();
 }
 
 bool ServiceWorkerPaymentApp::CanPreselect() const {

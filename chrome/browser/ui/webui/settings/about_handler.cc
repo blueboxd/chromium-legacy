@@ -41,6 +41,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -67,11 +68,11 @@
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/version/version_loader.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -250,6 +251,9 @@ std::string UpdateStatusToString(VersionUpdater::Status status) {
     case VersionUpdater::NEED_PERMISSION_TO_UPDATE:
       status_str = "need_permission_to_update";
       break;
+    case VersionUpdater::DEFERRED:
+      status_str = "deferred";
+      break;
   }
 
   return status_str;
@@ -307,6 +311,10 @@ void AboutHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setChannel", base::BindRepeating(&AboutHandler::HandleSetChannel,
                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "applyDeferredUpdate",
+      base::BindRepeating(&AboutHandler::HandleApplyDeferredUpdate,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestUpdate", base::BindRepeating(&AboutHandler::HandleRequestUpdate,
                                            base::Unretained(this)));
@@ -479,8 +487,7 @@ void AboutHandler::HandleCheckInternetConnection(
 
   chromeos::NetworkStateHandler* network_state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
-  const chromeos::NetworkState* network =
-      network_state_handler->DefaultNetwork();
+  const ash::NetworkState* network = network_state_handler->DefaultNetwork();
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(network && network->IsOnline()));
 }
@@ -490,8 +497,7 @@ void AboutHandler::HandleLaunchReleaseNotes(const base::Value::List& args) {
   // We can always show the release notes since the Help app caches it, or can
   // show an appropriate error state (e.g. No internet connection).
   base::RecordAction(base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
-  chrome::LaunchReleaseNotes(profile_,
-                             apps::mojom::LaunchSource::kFromOtherApp);
+  chrome::LaunchReleaseNotes(profile_, apps::LaunchSource::kFromOtherApp);
 }
 
 void AboutHandler::HandleOpenOsHelpPage(const base::Value::List& args) {
@@ -604,6 +610,10 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
   channel_info->SetBoolKey("isLts", is_lts);
 
   ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
+}
+
+void AboutHandler::HandleApplyDeferredUpdate(const base::Value::List& args) {
+  version_updater_->ApplyDeferredUpdate();
 }
 
 void AboutHandler::HandleRequestUpdate(const base::Value::List& args) {

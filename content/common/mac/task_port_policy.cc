@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 
 extern "C" {
-int csr_check(uint32_t op);
 int __sandbox_ms(const char* policy, int op, void* arg);
 }
 
@@ -71,20 +70,6 @@ MachTaskPortPolicy GetMachTaskPortPolicy() {
     policy.csr_kernel_debugger_errno = errno;
   }
   return policy;
-}
-
-std::string ParseBootArgs(base::StringPiece input) {
-  std::vector<base::StringPiece> collect_args;
-  std::vector<base::StringPiece> all_args = base::SplitStringPiece(
-      input, " \t", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  for (const auto arg : all_args) {
-    // Match "amfi=" or "amfi_get_out_of_my_way=".
-    if (base::StartsWith(arg, "amfi") ||
-        base::StartsWith(arg, "ipc_control_port_options=")) {
-      collect_args.push_back(arg);
-    }
-  }
-  return base::JoinString(collect_args, " ");
 }
 
 }  // namespace content

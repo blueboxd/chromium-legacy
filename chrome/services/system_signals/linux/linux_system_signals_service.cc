@@ -4,16 +4,28 @@
 
 #include "chrome/services/system_signals/linux/linux_system_signals_service.h"
 
+#include <utility>
+
+#include "components/device_signals/core/common/common_types.h"
+#include "components/device_signals/core/system_signals/file_system_service.h"
+#include "components/device_signals/core/system_signals/linux/linux_platform_delegate.h"
+#include "components/device_signals/core/system_signals/platform_delegate.h"
+
 namespace system_signals {
 
-LinuxSystemSignalsService::LinuxSystemSignalsService() = default;
-LinuxSystemSignalsService::~LinuxSystemSignalsService() = default;
+LinuxSystemSignalsService::LinuxSystemSignalsService(
+    mojo::PendingReceiver<device_signals::mojom::SystemSignalsService> receiver)
+    : LinuxSystemSignalsService(
+          std::move(receiver),
+          device_signals::FileSystemService::Create(
+              std::make_unique<device_signals::LinuxPlatformDelegate>())) {}
 
-void LinuxSystemSignalsService::GetBinarySignals(
-    std::vector<device_signals::mojom::BinarySignalsRequestPtr> requests,
-    GetBinarySignalsCallback callback) {
-  // TODO(b/231326345): Implement this.
-  std::move(callback).Run({});
-}
+LinuxSystemSignalsService::LinuxSystemSignalsService(
+    mojo::PendingReceiver<device_signals::mojom::SystemSignalsService> receiver,
+    std::unique_ptr<device_signals::FileSystemService> file_system_service)
+    : BaseSystemSignalsService(std::move(receiver),
+                               std::move(file_system_service)) {}
+
+LinuxSystemSignalsService::~LinuxSystemSignalsService() = default;
 
 }  // namespace system_signals

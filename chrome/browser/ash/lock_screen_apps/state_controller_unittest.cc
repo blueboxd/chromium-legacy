@@ -41,7 +41,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -345,7 +344,8 @@ class TestAppWindow : public content::WebContentsObserver {
 
     extensions::AppWindow::CreateParams params;
     params.hidden = !shown;
-    window_->Init(GURL(), new extensions::AppWindowContentsImpl(window_),
+    window_->Init(GURL(),
+                  std::make_unique<extensions::AppWindowContentsImpl>(window_),
                   web_contents_->GetPrimaryMainFrame(), params);
     Observe(window_->web_contents());
   }
@@ -394,9 +394,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   ~LockScreenAppStateTest() override = default;
 
   void SetUp() override {
-    // Need to initialize DBusThreadManager before ArcSessionManager's
-    // constructor calls DBusThreadManager::Get().
-    chromeos::DBusThreadManager::Initialize();
     ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
@@ -462,7 +459,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
     command_line_.reset();
     ash::ConciergeClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   TestingProfile* CreateProfile() override {
@@ -1382,8 +1378,10 @@ TEST_F(LockScreenAppStateTest, TakeFocus) {
                                       true /* enable_app_launch */));
 
   auto regular_app_window = std::make_unique<TestAppWindow>(
-      profile(), new extensions::AppWindow(
-                     profile(), new ChromeAppDelegate(profile(), true), app()));
+      profile(),
+      new extensions::AppWindow(
+          profile(), std::make_unique<ChromeAppDelegate>(profile(), true),
+          app()));
   EXPECT_FALSE(state_controller()->HandleTakeFocus(
       regular_app_window->window()->web_contents(), true));
   EXPECT_TRUE(focus_cycler_delegate()->lock_screen_app_focused());

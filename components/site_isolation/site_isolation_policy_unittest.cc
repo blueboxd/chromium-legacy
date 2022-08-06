@@ -13,7 +13,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_field_trial_list_resetter.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -692,8 +691,9 @@ INSTANTIATE_TEST_SUITE_P(
 // or disabled state.
 class PasswordSiteIsolationFieldTrialTest : public BaseSiteIsolationTest {
  public:
-  explicit PasswordSiteIsolationFieldTrialTest(bool should_enable)
-      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {
+  explicit PasswordSiteIsolationFieldTrialTest(bool should_enable) {
+    empty_feature_scope_.InitWithEmptyFeatureAndFieldTrialLists();
+
     const std::string kTrialName = "PasswordSiteIsolation";
     const std::string kGroupName = "FooGroup";  // unused
     scoped_refptr<base::FieldTrial> trial =
@@ -728,12 +728,20 @@ class PasswordSiteIsolationFieldTrialTest : public BaseSiteIsolationTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableLowEndDeviceMode);
     EXPECT_EQ(512, base::SysInfo::AmountOfPhysicalMemoryMB());
+    SiteIsolationPolicy::SetDisallowMemoryThresholdCachingForTesting(true);
+  }
+
+  void TearDown() override {
+    SiteIsolationPolicy::SetDisallowMemoryThresholdCachingForTesting(false);
   }
 
  protected:
-  base::test::ScopedFieldTrialListResetter trial_list_resetter_;
+  // |empty_feature_scope_| is used to prepare an environment with empty
+  // features and field trial lists.
+  base::test::ScopedFeatureList empty_feature_scope_;
+  // |feature_list_| is used to enable and disable features for
+  // PasswordSiteIsolationFieldTrialTest.
   base::test::ScopedFeatureList feature_list_;
-  base::FieldTrialList field_trial_list_;
 };
 
 class EnabledPasswordSiteIsolationFieldTrialTest
@@ -900,8 +908,9 @@ TEST_F(DisabledPasswordSiteIsolationFieldTrialTest,
 // or disabled state.
 class StrictOriginIsolationFieldTrialTest : public BaseSiteIsolationTest {
  public:
-  explicit StrictOriginIsolationFieldTrialTest(bool should_enable)
-      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {
+  explicit StrictOriginIsolationFieldTrialTest(bool should_enable) {
+    empty_feature_scope_.InitWithEmptyFeatureAndFieldTrialLists();
+
     const std::string kTrialName = "StrictOriginIsolation";
     const std::string kGroupName = "FooGroup";  // unused
     scoped_refptr<base::FieldTrial> trial =
@@ -936,12 +945,20 @@ class StrictOriginIsolationFieldTrialTest : public BaseSiteIsolationTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableLowEndDeviceMode);
     EXPECT_EQ(512, base::SysInfo::AmountOfPhysicalMemoryMB());
+    SiteIsolationPolicy::SetDisallowMemoryThresholdCachingForTesting(true);
+  }
+
+  void TearDown() override {
+    SiteIsolationPolicy::SetDisallowMemoryThresholdCachingForTesting(false);
   }
 
  protected:
-  base::test::ScopedFieldTrialListResetter trial_list_resetter_;
+  // |empty_feature_scope_| is used to prepare an environment with empty
+  // features and field trial lists.
+  base::test::ScopedFeatureList empty_feature_scope_;
+  // |feature_list_| is used to enable and disable features for
+  // StrictOriginIsolationFieldTrialTest.
   base::test::ScopedFeatureList feature_list_;
-  base::FieldTrialList field_trial_list_;
 };
 
 class EnabledStrictOriginIsolationFieldTrialTest

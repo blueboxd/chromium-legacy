@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/profiles/dice_web_signin_interception_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/profile_customization_bubble_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_coordinator.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -121,9 +122,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBubbleInteractiveUiTest,
                        InterceptionBubbleFocus) {
   // Create the inteerception bubble, owned by the view hierarchy.
   DiceWebSigninInterceptionBubbleView* bubble =
-      new DiceWebSigninInterceptionBubbleView(
-          browser()->profile(), GetAvatarButton(), GetTestBubbleParameters(),
-          base::DoNothing());
+      new DiceWebSigninInterceptionBubbleView(browser(), GetAvatarButton(),
+                                              GetTestBubbleParameters(),
+                                              base::DoNothing());
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(bubble);
   widget->Show();
   // The bubble takes focus when it is displayed.
@@ -146,8 +147,9 @@ class ProfileMenuInteractiveUiTest : public ProfileBubbleInteractiveUiTest {
   }
 
   ProfileMenuViewBase* profile_menu_view() {
-    return static_cast<ProfileMenuViewBase*>(
-        ProfileMenuViewBase::GetBubbleForTesting());
+    auto* coordinator = ProfileMenuCoordinator::FromBrowser(browser());
+    return coordinator ? coordinator->GetProfileMenuViewBaseForTesting()
+                       : nullptr;
   }
 };
 

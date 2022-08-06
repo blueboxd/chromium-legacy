@@ -45,6 +45,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
@@ -119,7 +120,9 @@ class TestAppWindow : public content::WebContentsObserver {
                 const extensions::Extension* extension,
                 std::unique_ptr<content::WebContents> contents) {
     window_ = new extensions::AppWindow(
-        profile, new ChromeAppDelegate(profile, false), extension);
+        profile,
+        std::make_unique<ChromeAppDelegate>(profile, /*keep_alive=*/false),
+        extension);
     window_->SetAppWindowContentsForTesting(
         std::make_unique<extensions::TestAppWindowContents>(
             std::move(contents)));

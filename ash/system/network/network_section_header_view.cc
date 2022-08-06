@@ -14,11 +14,12 @@
 #include "ash/style/icon_button.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_toggle_button.h"
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -96,7 +97,7 @@ bool IsESimSupported() {
   // Check both the SIM slot infos and the number of EUICCs because the former
   // comes from Shill and the latter from Hermes, and so there may be instances
   // where one may be true while they other isn't.
-  if (chromeos::HermesManagerClient::Get()->GetAvailableEuiccs().empty())
+  if (HermesManagerClient::Get()->GetAvailableEuiccs().empty())
     return false;
 
   for (const auto& sim_info : *cellular_device->sim_infos) {
@@ -309,6 +310,7 @@ int MobileSectionHeaderView::UpdateToggleAndGetStatusMessage(
 }
 
 void MobileSectionHeaderView::OnToggleToggled(bool is_on) {
+  RecordNetworkTypeToggled(NetworkType::kMobile, is_on);
   DeviceStateType cellular_state =
       model()->GetDeviceState(NetworkType::kCellular);
 
@@ -463,6 +465,7 @@ const char* WifiSectionHeaderView::GetClassName() const {
 }
 
 void WifiSectionHeaderView::OnToggleToggled(bool is_on) {
+  RecordNetworkTypeToggled(NetworkType::kWiFi, is_on);
   model()->SetNetworkTypeEnabledState(NetworkType::kWiFi, is_on);
 }
 

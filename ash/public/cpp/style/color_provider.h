@@ -39,6 +39,7 @@ class ASH_PUBLIC_EXPORT ColorProvider {
     kTransparent40,
     kTransparent60,
     kTransparent80,
+    kInvertedTransparent80,
     kTransparent90,
     kTransparent95,
 
@@ -69,11 +70,14 @@ class ASH_PUBLIC_EXPORT ColorProvider {
     kSeparatorColor,
 
     kTextColorPrimary,
+    // Inverted `kTextColorPrimary` on current color mode.
+    kInvertedTextColorPrimary,
     kTextColorSecondary,
     kTextColorAlert,
     kTextColorWarning,
     kTextColorPositive,
     kTextColorURL,
+    kTextColorSuggestion,
 
     kIconColorPrimary,
     kIconColorSecondary,
@@ -89,6 +93,8 @@ class ASH_PUBLIC_EXPORT ColorProvider {
 
     // The default color for button labels.
     kButtonLabelColor,
+    // Inverted `kButtonLabelColor` on current color mode.
+    kInvertedButtonLabelColor,
     kButtonLabelColorPrimary,
 
     // Color for blue button labels, e.g, 'Retry' button of the system toast.
@@ -162,13 +168,10 @@ class ASH_PUBLIC_EXPORT ColorProvider {
   // Gets the ink drop base color and opacity. Since the inkdrop ripple and
   // highlight have the same opacity, we are keeping only one opacity here. The
   // base color will be gotten based on current color mode, which will be WHITE
-  // in dark mode and BLACK in light mode. Some parts of the UI use inverted
-  // ink drop colors which will be BLACK in dark mode and WHITE in light mode.
-  // Please provide `background_color` if different base color needed on current
-  // color mode. See more details of IsDarkModeEnabled for current color mode.
+  // in dark mode and BLACK in light mode. Please provide `background_color` if
+  // different base color needed on current color mode. See more details of
+  // IsDarkModeEnabled for current color mode.
   virtual std::pair<SkColor, float> GetInkDropBaseColorAndOpacity(
-      SkColor background_color = gfx::kPlaceholderColor) const = 0;
-  virtual std::pair<SkColor, float> GetInvertedInkDropBaseColorAndOpacity(
       SkColor background_color = gfx::kPlaceholderColor) const = 0;
 
  protected:

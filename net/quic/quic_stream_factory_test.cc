@@ -237,7 +237,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
             base::Unretained(this))),
         quic_params_(context_.params()) {
     FLAGS_quic_enable_http3_grease_randomness = false;
-    FLAGS_quic_enable_chaos_protection = false;
     quic_params_->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency;
     context_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
@@ -256,7 +255,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
 
   void SetIetfConnectionMigrationFlagsAndConnectionOptions() {
     FLAGS_quic_reloadable_flag_quic_connection_migration_use_new_cid_v2 = true;
-    quic_params_->connection_options.push_back(quic::kRVCM);
   }
 
   void InitializeConnectionMigrationV2Test(
@@ -1326,7 +1324,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
 
   for (const auto& network_isolation_key :
        {kNetworkIsolationKey1, kNetworkIsolationKey2, NetworkIsolationKey()}) {
-    SCOPED_TRACE(network_isolation_key.ToString());
+    SCOPED_TRACE(network_isolation_key.ToDebugString());
 
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -6745,8 +6743,9 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
 // This test verifies that the connection will not attempt connection migration
 // (send connectivity probes on alternate path) when path degrading is detected
 // and handshake is not confirmed.
+// TODO(crbug.com/1347664): This test is failing on various platforms.
 TEST_P(QuicStreamFactoryTest,
-       NoMigrationOnPathDegradingBeforeHandshakeConfirmed) {
+       DISABLED_NoMigrationOnPathDegradingBeforeHandshakeConfirmed) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -6798,13 +6797,16 @@ TEST_P(QuicStreamFactoryTest,
 // This test verifies that if a connection is closed with
 // QUIC_NETWORK_IDLE_TIMEOUT before handshake is completed and there is no
 // alternate network, no new connection will be created.
-TEST_P(QuicStreamFactoryTest, NoAlternateNetworkBeforeHandshakeOnIdleTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_NoAlternateNetworkBeforeHandshakeOnIdleTimeout) {
   TestNoAlternateNetworkBeforeHandshake(quic::QUIC_NETWORK_IDLE_TIMEOUT);
 }
 
 // This test verifies that if a connection is closed with QUIC_HANDSHAKE_TIMEOUT
 // and there is no alternate network, no new connection will be created.
-TEST_P(QuicStreamFactoryTest, NoAlternateNetworkOnHandshakeTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest, DISABLED_NoAlternateNetworkOnHandshakeTimeout) {
   TestNoAlternateNetworkBeforeHandshake(quic::QUIC_HANDSHAKE_TIMEOUT);
 }
 
@@ -6876,12 +6878,15 @@ void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, NewConnectionBeforeHandshakeAfterIdleTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_NewConnectionBeforeHandshakeAfterIdleTimeout) {
   TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QUIC_NETWORK_IDLE_TIMEOUT);
 }
 
-TEST_P(QuicStreamFactoryTest, NewConnectionAfterHandshakeTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest, DISABLED_NewConnectionAfterHandshakeTimeout) {
   TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QUIC_HANDSHAKE_TIMEOUT);
 }
@@ -7138,8 +7143,9 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 // Test that if the original connection is closed with QUIC_PACKET_WRITE_ERROR
 // before handshake is confirmed and new connection before handshake is turned
 // on, a new connection will be retried on the alternate network.
+// TODO(crbug.com/1347664): This test is failing on various platforms.
 TEST_P(QuicStreamFactoryTest,
-       RetryConnectionOnWriteErrorBeforeHandshakeConfirmed) {
+       DISABLED_RetryConnectionOnWriteErrorBeforeHandshakeConfirmed) {
   quic_params_->retry_on_alternate_network_before_handshake = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -8321,7 +8327,9 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsAsyncAsync) {
 
 // Verifies that a connection is closed when connection migration is triggered
 // on network being disconnected and the handshake is not confirmed.
-TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_NoMigrationBeforeHandshakeOnNetworkDisconnected) {
   if (!version_.UsesHttp3())
     return;
   InitializeConnectionMigrationV2Test(
@@ -10924,6 +10932,13 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
       quic::test::TestConnectionId(12345678);
   MaybeMakeNewConnectionIdAvailableToSession(cid_on_new_path, session);
 
+  NetErrorDetails details;
+  EXPECT_FALSE(details.quic_connection_migration_attempted);
+  EXPECT_FALSE(details.quic_connection_migration_successful);
+  session->PopulateNetErrorDetails(&details);
+  EXPECT_FALSE(details.quic_connection_migration_attempted);
+  EXPECT_FALSE(details.quic_connection_migration_successful);
+
   // Send GET request on stream.
   HttpResponseInfo response;
   HttpRequestHeaders request_headers;
@@ -10982,7 +10997,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
 
   const uint8_t kTestIpAddress[] = {1, 2, 3, 4};
   const uint16_t kTestPort = 123;
-  session->Migrate(NetworkChangeNotifier::kInvalidNetworkHandle,
+  session->Migrate(handles::kInvalidNetworkHandle,
                    IPEndPoint(IPAddress(kTestIpAddress), kTestPort), true);
 
   session->GetDefaultSocket()->GetPeerAddress(&ip);
@@ -10993,6 +11008,10 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(scheme_host_port_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  session->PopulateNetErrorDetails(&details);
+  EXPECT_TRUE(details.quic_connection_migration_attempted);
+  EXPECT_TRUE(details.quic_connection_migration_successful);
 
   // Run the message loop so that data queued in the new socket is read by the
   // packet reader.
@@ -11009,6 +11028,124 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, ServerMigrationNonMigratableStream) {
+  quic_params_->allow_server_migration = true;
+  SetIetfConnectionMigrationFlagsAndConnectionOptions();
+  Initialize();
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  client_maker_.set_save_packet_frames(true);
+
+  int packet_num = 1;
+  MockQuicData socket_data(version_);
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
+  if (VersionUsesHttp3(version_.transport_version)) {
+    socket_data.AddWrite(SYNCHRONOUS,
+                         ConstructInitialSettingsPacket(packet_num++));
+  }
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructGetRequestPacket(packet_num++,
+                                GetNthClientInitiatedBidirectionalStreamId(0),
+                                true, true));
+  if (VersionUsesHttp3(version_.transport_version)) {
+    socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(0)));
+  }
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRstPacket(packet_num++, quic::QUIC_STREAM_CANCELLED));
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                scheme_host_port_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+                /*use_dns_aliases=*/true, /*require_dns_https_alpn=*/false,
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  stream->RegisterRequest(&request_info);
+  EXPECT_EQ(OK, stream->InitializeStream(true, DEFAULT_PRIORITY, net_log_,
+                                         CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(scheme_host_port_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(scheme_host_port_));
+  quic::QuicConnectionId cid_on_new_path =
+      quic::test::TestConnectionId(12345678);
+  MaybeMakeNewConnectionIdAvailableToSession(cid_on_new_path, session);
+
+  // Disable connection migration on the request streams.
+  QuicChromiumClientStream* chrome_stream =
+      static_cast<QuicChromiumClientStream*>(
+          quic::test::QuicSessionPeer::GetStream(
+              session, GetNthClientInitiatedBidirectionalStreamId(0)));
+  EXPECT_TRUE(chrome_stream);
+  chrome_stream->DisableConnectionMigrationToCellularNetwork();
+
+  NetErrorDetails details;
+  EXPECT_FALSE(details.quic_connection_migration_attempted);
+  EXPECT_FALSE(details.quic_connection_migration_successful);
+  session->PopulateNetErrorDetails(&details);
+  EXPECT_FALSE(details.quic_connection_migration_attempted);
+  EXPECT_FALSE(details.quic_connection_migration_successful);
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // The specific network isn't important, we just want something !=
+  // handles::kInvalidNetworkHandle to specify a non-default network.
+  constexpr handles::NetworkHandle kNonDefaultNetwork = 1;
+  constexpr uint8_t kTestIpAddress[] = {1, 2, 3, 4};
+  constexpr uint16_t kTestPort = 123;
+  session->Migrate(kNonDefaultNetwork,
+                   IPEndPoint(IPAddress(kTestIpAddress), kTestPort), true);
+
+  // The session should exist but no longer be active since its only stream has
+  // been reset.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(scheme_host_port_));
+
+  session->PopulateNetErrorDetails(&details);
+  EXPECT_TRUE(details.quic_connection_migration_attempted);
+  EXPECT_FALSE(details.quic_connection_migration_successful);
+
+  // Run the message loop so that data queued due to the reset is read by the
+  // packet reader.
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the request failed since connection the stream couldn't be
+  // migrated.
+  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(nullptr, response.headers);
+
+  stream.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv4) {
@@ -12328,9 +12465,8 @@ class QuicStreamFactoryWithDestinationTest
   }
 
   void AddHangingSocketData() {
-    std::unique_ptr<SequencedSocketData> sequenced_socket_data(
-        new SequencedSocketData(base::make_span(&hanging_read_, 1),
-                                base::span<MockWrite>()));
+    auto sequenced_socket_data = std::make_unique<SequencedSocketData>(
+        base::make_span(&hanging_read_, 1), base::span<MockWrite>());
     socket_factory_->AddSocketDataProvider(sequenced_socket_data.get());
     sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
   }
@@ -12790,6 +12926,8 @@ TEST_P(QuicStreamFactoryTest, ConfigConnectionOptions) {
 
   Initialize();
 
+  // RVCM will be default enabled as a connection option.
+  quic_params_->connection_options.push_back(quic::kRVCM);
   const quic::QuicConfig* config =
       QuicStreamFactoryPeer::GetConfig(factory_.get());
   EXPECT_EQ(quic_params_->connection_options, config->SendConnectionOptions());

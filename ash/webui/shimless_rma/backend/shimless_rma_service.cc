@@ -23,12 +23,13 @@
 #include "base/logging.h"
 #include "chromeos/ash/components/dbus/rmad/rmad.pb.h"
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/version/version_loader.h"
 #include "components/qr_code_generator/qr_code_generator.h"
 
 using chromeos::network_config::mojom::ConnectionStateType;
@@ -55,8 +56,7 @@ mojom::State RmadStateToMojo(rmad::RmadState::StateCase rmadState) {
 bool HaveAllowedNetworkConnection() {
   chromeos::NetworkStateHandler* network_state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
-  const chromeos::NetworkState* network =
-      network_state_handler->DefaultNetwork();
+  const NetworkState* network = network_state_handler->DefaultNetwork();
   // TODO(gavindodd): Confirm that metered networks should be excluded. This
   // should only be true for cellular networks which are already blocked.
   const bool metered = network_state_handler->default_network_is_metered();
@@ -168,10 +168,9 @@ void ShimlessRmaService::TransitionPreviousState(
 void ShimlessRmaService::AbortRma(AbortRmaCallback callback) {
   RmadClient::Get()->AbortRma(base::BindOnce(
       &ShimlessRmaService::OnAbortRmaResponse, weak_ptr_factory_.GetWeakPtr(),
-      std::move(callback), /*reboot=*/false));
+      std::move(callback), /*reboot=*/true));
 }
 
-// TODO(gavindodd): Work out how to catch the restart in tests and add unit test
 void ShimlessRmaService::CriticalErrorExitToLogin(
     CriticalErrorExitToLoginCallback callback) {
   if (!critical_error_occurred_) {
@@ -183,7 +182,6 @@ void ShimlessRmaService::CriticalErrorExitToLogin(
       std::move(callback), /*reboot=*/false));
 }
 
-// TODO(gavindodd): Work out how to catch the reboot in tests and add unit test
 void ShimlessRmaService::CriticalErrorReboot(
     CriticalErrorRebootCallback callback) {
   if (!critical_error_occurred_) {
@@ -207,6 +205,16 @@ void ShimlessRmaService::BeginFinalization(BeginFinalizationCallback callback) {
       rmad::WelcomeState::RMAD_CHOICE_FINALIZE_REPAIR);
 
   if (!HaveAllowedNetworkConnection()) {
+    // Enable WiFi on the device.
+    chromeos::NetworkStateHandler* network_state_handler =
+        chromeos::NetworkHandler::Get()->network_state_handler();
+    if (!network_state_handler->IsTechnologyEnabled(
+            chromeos::NetworkTypePattern::WiFi())) {
+      network_state_handler->SetTechnologyEnabled(
+          chromeos::NetworkTypePattern::WiFi(), /*enabled=*/true,
+          network_handler::ErrorCallback());
+    }
+
     user_has_seen_network_page_ = true;
     mojo_state_ = mojom::State::kConfigureNetwork;
     std::move(callback).Run(
@@ -1374,6 +1382,8 @@ void ShimlessRmaService::OnOsUpdateStatusCallback(
       case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
       case update_engine::Operation::UPDATED_NEED_REBOOT:
       case update_engine::Operation::VERIFYING:
+      case update_engine::Operation::CLEANUP_PREVIOUS_UPDATE:
+      case update_engine::Operation::UPDATED_BUT_DEFERRED:
         break;
       // Added to avoid lint error
       case update_engine::Operation::Operation_INT_MIN_SENTINEL_DO_NOT_USE_:
@@ -1397,6 +1407,11 @@ void ShimlessRmaService::OsUpdateOrNextRmadStateCallback(
                           /*can_exit=*/true, /*can_go_back=*/true,
                           rmad::RmadErrorCode::RMAD_ERROR_OK));
   }
+}
+
+void ShimlessRmaService::SetCriticalErrorOccurredForTest(
+    bool critical_error_occurred) {
+  critical_error_occurred_ = critical_error_occurred;
 }
 
 }  // namespace shimless_rma

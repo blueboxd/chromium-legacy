@@ -15,22 +15,20 @@ import '../controls/extension_controlled_indicator.js';
 import '../i18n_setup.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
-import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from '../search_engines_page/search_engines_browser_proxy.js';
 
 import {getTemplate} from './search_page.html.js';
 
-const SettingsSearchPageElementBase = BaseMixin(I18nMixin(PolymerElement));
+const SettingsSearchPageElementBase = BaseMixin(PolymerElement);
 
 export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
   static get is() {
@@ -52,7 +50,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
         type: Array,
         value() {
           return [];
-        }
+        },
       },
 
       /** Filter applied to search engines. */
@@ -60,22 +58,10 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
 
       focusConfig_: Object,
 
-      isActiveSearchEnginesFlagEnabled_: {
-        type: Boolean,
-        value: () =>
-            loadTimeData.getBoolean('isActiveSearchEnginesFlagEnabled'),
-      },
-
-      searchEnginesPageTitle_: {
-        type: String,
-        computed: 'computeSearchEnginesPageTitle_()',
-      },
     };
   }
 
   prefs: Object;
-  private searchEnginesPageTitle_: String;
-  private isActiveSearchEnginesFlagEnabled_: boolean;
   private searchEngines_: SearchEngine[];
   private searchEnginesFilter_: string;
   private focusConfig_: Map<string, string>|null;
@@ -109,7 +95,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
     this.dispatchEvent(new CustomEvent('refresh-pref', {
       bubbles: true,
       composed: true,
-      detail: 'default_search_provider.enabled'
+      detail: 'default_search_provider.enabled',
     }));
   }
 
@@ -126,12 +112,6 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
   private isDefaultSearchEngineEnforced_(
       pref: chrome.settingsPrivate.PrefObject): boolean {
     return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
-  }
-
-  private computeSearchEnginesPageTitle_(): String {
-    return this.isActiveSearchEnginesFlagEnabled_ ?
-        this.i18n('searchEnginesManageSiteSearch') :
-        this.i18n('searchEnginesManage');
   }
 }
 

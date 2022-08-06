@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">வரலாறு</translation>
 <translation id="1645954272419197032">சாதனத் தகவலை உறுதிப்படுத்துதல்</translation>
 <translation id="1662989795263954667">பிரிண்டரில் மை தீர்ந்துவிட்டதால் அச்சிட முடியவில்லை</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> இன் மாதிரிக்காட்சியைக் காட்டும்</translation>
 <translation id="1668469839109562275">உள்ளமைந்த VPN</translation>
 <translation id="1672499492233627739">வெப்கேம் வீடியோ ஊட்டம்</translation>
 <translation id="1676557873873341166">வீடியோவை எடுக்கிறது</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">வீடியோ கான்ஃபிரன்ஸ்</translation>
 <translation id="1852934301711881861">ChromeOS Flexஸை நிறுவு</translation>
 <translation id="1856388568474281774">கீழ்நோக்கிய அம்புக்குறி</translation>
+<translation id="1858620243986915808">ஸ்கிரீன்ஷாட்டை இணைக்கும்</translation>
 <translation id="1871569928317311284">டார்க் தீமினை முடக்குதல்</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">டார்க் பயன்முறையை முடக்குதல்</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google சுயவிவரப் படம்</translation>
 <translation id="1979103255016296513">கடவுச்சொல்லை மாற்ற வேண்டும்</translation>
 <translation id="1999615961760456652">கேப்டிவ் போர்டல்</translation>
+<translation id="200669432486043882">ஃபைலை இடமாற்று</translation>
 <translation id="2006864819935886708">இணைப்பு</translation>
 <translation id="2008685064673031089">முதன்மைத் தேடல்</translation>
 <translation id="2011174342667534258">SDK பதிப்பு:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">வகை</translation>
 <translation id="2461822463642141190">தற்போதைய மின் உபயோகம்</translation>
 <translation id="2480034874476596812">நேரடியாக முடக்கு</translation>
+<translation id="248546197012830854">சாதனம் ஆஃப்லைனில் உள்ளது. உதவி உள்ளடக்கத்தைப் பார்க்க வைஃபை நெட்வொர்க்குடன் இணைக்கவும்.</translation>
 <translation id="2491955442992294626">வேறொரு சாளரத்தைப் பயன்படுத்தும்போது, விசைகள் சோதனை செய்யப்படாது</translation>
 <translation id="2493126929778606526">தானாகத் தேர்ந்தெடுக்கப்பட்ட உங்களின் சிறந்த படங்கள்</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">புதுப்பி</translation>
 <translation id="3009958530611748826">சேமிப்பதற்கான ஃபோல்டரைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="3017079585324758401">பின்புலம்</translation>
+<translation id="302435934487327038">நிறுவப்பட்டது</translation>
 <translation id="3027578600144895987">கேமராவை மூடும்</translation>
 <translation id="3031560714565892478">சாதனம் ஒரு வீடியோ கேமரா.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">எண்ட்பாயிண்ட்</translation>
 <translation id="3069085583900247081">சோதனை தோல்வியடைந்தது</translation>
-<translation id="3076243757415932261">காம்பனென்ட்களைச் சரிபார்க்கிறது...</translation>
 <translation id="3083667275341675831">இணைப்புநிலையைக் கண்டறிதல்</translation>
 <translation id="3084958266922136097">ஸ்கிரீன் சேவரை முடக்குதல்</translation>
 <translation id="3091839911843451378">பிரிண்டர் நிறுத்தப்பட்டதால் அச்சிட முடியவில்லை</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">இதுவரையிலான அச்சுப் பணிகள் அனைத்தையும் அழிக்கவா? செயல்பாட்டில் இருக்கும் அச்சுப் பணிகள் அழிக்கப்படாது.</translation>
 <translation id="3383751554789092165">தேவைக்கேற்ப சாதனத் தகவலை மாற்றவும்.</translation>
 <translation id="3404249063913988450">ஸ்கிரீன் சேவரை இயக்குதல்</translation>
-<translation id="3404770484521709967">காம்பனென்ட்கள் சரியாக நிறுவப்பட்டுள்ளன.</translation>
 <translation id="3413935475507503304">புதுப்பிப்பைத் தொடர, அடுத்து என்பதைக் கிளிக் செய்யவும்.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">பாதுகாப்பு</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">தற்போதைய கடவுச்சொல்</translation>
 <translation id="4453205916657964690">சப்நெட் மாஸ்க்</translation>
 <translation id="4454245904991689773">இதில் சேமி</translation>
-<translation id="4472575034687746823">தொடங்குக</translation>
 <translation id="4479639480957787382">ஈத்தர்நெட்</translation>
 <translation id="4483049906298469269">இயல்புநிலையற்ற நெட்வொர்க் கேட்வேயைப் பிங் செய்ய முடியவில்லை</translation>
 <translation id="4500213108254186382">லிட் ஆக்சலரோமீட்டர்</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> ரிப்பேரில் இருந்து வெளியேறு</translation>
 <translation id="6618744767048954150">சோதனை செய்கிறது</translation>
 <translation id="6620487321149975369">பிரிண்ட்டிங் பணிகளை நீங்களாகவே அகற்றும் வரை அவை வரலாற்றில் காட்டப்படும்</translation>
+<translation id="6624819909909965616">10 மெ.பை.க்கும் அதிக அளவுள்ள ஃபைலைப் பதிவேற்ற முடியாது</translation>
 <translation id="6643016212128521049">அழி</translation>
+<translation id="6644568396961840069">ஃபைலைச் சேமிக்க முடியவில்லை. வேறொரு வெளிப்புறச் சேமிப்பகத்தைப் பயன்படுத்தவும் அல்லது பிறகு முயலவும்.</translation>
 <translation id="6647510110698214773">என்க்ரிப்ஷன் அல்காரிதம்</translation>
 <translation id="6650062777702288430">கானா/எண்ணெழுத்து ஸ்விட்ச்</translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
 <translation id="6659594942844771486">உலாவிப் பக்கம்</translation>
 <translation id="6692996468359469499">திரையில் நீங்கள் தேர்ந்தெடுத்தது தொடர்பாக தகவல்களைப் பெறவும்</translation>
 <translation id="6704062477274546131">DNS ரெசல்யூஷன்</translation>
-<translation id="6721744718589119342">கூடுதல் தகவல்களைப் பெறுவதற்காகவோ அறிவிப்புகளை வழங்குவதற்காகவோ நாங்கள் உங்களுக்கு மின்னஞ்சல் அனுப்பலாம்</translation>
 <translation id="6723839937902243910">ஆற்றல்</translation>
 <translation id="6723847290197874913">கீபோர்டு பேக்லைட்</translation>
 <translation id="672609503628871915">புதியதைப் பார்க்கவும்</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">சரி</translation>
 <translation id="6977381486153291903">நிலைபொருள் பதிப்பு</translation>
 <translation id="6995564396478647735">திருத்துவதைத் தடுக்கும் அம்சம் இயக்கப்பட்டிருப்பதை உறுதிசெய்துகொள்ளுங்கள்</translation>
+<translation id="7005833343836210400">சாதனம் ஆஃப்லைனில் உள்ளது</translation>
 <translation id="7028979494427204405">இந்தச் சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கிறது. பார்வையிட்ட இணையப்பக்கங்கள், கடவுச்சொற்கள், மின்னஞ்சல் உட்பட பயனரின் செயல்பாடு அனைத்திற்குமான அணுகலும் இதற்கு உள்ளது.</translation>
 <translation id="7040230719604914234">ஆபரேட்டர்</translation>
 <translation id="7041549558901442110">சாதனம் இணைக்கப்படவில்லை.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">புதுப்பி</translation>
 <translation id="7212734716605298123">வெளிப்புறச் சாதனங்களுக்கான நிலைபொருள் புதுப்பிப்புகள்</translation>
 <translation id="7216409898977639127">செல்லுலார் வழங்குநர்</translation>
+<translation id="725133483556299729">மின்னஞ்சல் முகவரியைத் தேர்ந்தெடுக்கும்</translation>
 <translation id="7271040990581020067">ஸ்கேனர் தற்போது உபயோகத்தில் உள்ளது. பிறகு முயலவும்.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">1 அல்லது அதற்கு மேற்பட்ட காம்பனென்ட்டுகளைத் தேர்ந்தெடுத்து மீண்டும் முயற்சிக்கவும் அல்லது சரிசெய்தலைத் தவிர்க்கவும்</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">தனிப்பட்ட விசை</translation>
 <translation id="7982789257301363584">நெட்வொர்க்</translation>
 <translation id="7994702968232966508">EAP முறை</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" இல் சேமிக்கப்பட்டது</translation>
 <translation id="802154636333426148">பதிவிறக்க முடியவில்லை</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">தன்னியக்க வண்ணப் பயன்முறையை இயக்கும்</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">திருத்துவதைத் தடுக்கும் அம்சம் முடக்கப்பட்டுள்ளது. தொடர, திருத்துவதைத் தடுக்கும் அம்சத்தை இயக்கவும்.</translation>
 <translation id="8075838845814659848">மீதமுள்ள சார்ஜ்</translation>
 <translation id="8082366717211101304">Android ஆப்ஸில் இருந்து DNS கோரிக்கையைத் தீர்க்க முடியவில்லை</translation>
-<translation id="8083281199617904460">இந்த ரிப்பேர் வழிமுறைகள், பயிற்சி பெற்ற ரிப்பேர் டெக்னீஷியனுக்கானது. சரியாகச் செயல்படாத காம்பனென்ட்களை மாற்றிய பிறகே தொடங்கவும்.</translation>
 <translation id="808894953321890993">கடவுச்சொல்லை மாற்று</translation>
+<translation id="8094062939584182041">இந்தச் சிக்கல் குறித்து எனக்கு மின்னஞ்சல் அனுப்ப Googleளை அனுமதி</translation>
 <translation id="8104083085214006426">பொதுவான, பாதுகாப்பற்ற நெட்வொர்க்கைப் பயன்படுத்துகிறீர்கள்</translation>
 <translation id="8109786307828817014">சரிசெய்யப்படாத காம்பனென்ட்டுகளுடன் தொடரவா?</translation>
 <translation id="811820734797650957">(Android) கேட்வேயைத் தொடர்புகொள்வது</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">இணையத்துடன் இணைத்திடுங்கள்</translation>
 <translation id="8221728673725659466">சரிசெய்தல் நிறைவடைந்தது</translation>
 <translation id="8226628635270268143">உங்களுக்குப் பிடித்த படங்களையும் ஆல்பங்களையும் தேர்வுசெய்க</translation>
+<translation id="8227119283605456246">ஃபைலை இணை</translation>
 <translation id="8230672074305416752">இயல்புநிலை நெட்வொர்க் கேட்வேயைப் பிங் செய்ய முடியவில்லை</translation>
 <translation id="8246209727385807362">அறியப்படாத தொலைத்தொடர்பு நிறுவனம்</translation>
 <translation id="827422111966801947">இண்டிகோ</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">ஆரம்பிக்கப்படவில்லை</translation>
 <translation id="8620617069779373398">ரோமிங் நிலை</translation>
 <translation id="8655295600908251630">சேனல்</translation>
+<translation id="8655828773034788261">இந்த URLலைப் பகிர்:</translation>
 <translation id="8660881923941176839">பவுண்டுகள்</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> நெட்வொர்க்கில் சேர்தல்</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> பதிப்பிற்குப் புதுப்பித்து மீண்டும் தொடங்கு</translation>

@@ -44,7 +44,8 @@ ci.builder(
             "gclient_apply_config": ["android"],
         },
     },
-    schedule = "with 6h interval",
+    # Every 6 hours starting at 5am UTC.
+    schedule = "0 5/6 * * * *",
     triggered_by = [],
 )
 
@@ -110,6 +111,8 @@ ci.builder(
             "tools/android/avd/proto/creation/generic_playstore_android31.textpb",
             "tools/android/avd/proto/creation/generic_android32_foldable.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android32_foldable.textpb",
+            "tools/android/avd/proto/creation/generic_android33.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android33.textpb",
         ],
     },
     # Triggered manually through the scheduler UI

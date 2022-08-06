@@ -10,9 +10,8 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "chromeos/dbus/arc/arc_data_snapshotd_client.h"
-#include "chromeos/dbus/arc/fake_arc_data_snapshotd_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/ash/components/dbus/arc/arc_data_snapshotd_client.h"
+#include "chromeos/ash/components/dbus/arc/fake_arc_data_snapshotd_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -92,20 +91,17 @@ void RunAll(ArcDataSnapshotdBridge* bridge, bool expected_result) {
 class ArcDataSnapshotdBridgeTest : public testing::Test {
  protected:
   ArcDataSnapshotdBridgeTest() {
-    chromeos::DBusThreadManager::Initialize();
-    EXPECT_TRUE(chromeos::DBusThreadManager::Get()->IsUsingFakes());
-    chromeos::ArcDataSnapshotdClient::InitializeFake();
+    ash::ArcDataSnapshotdClient::InitializeFake();
   }
 
   ~ArcDataSnapshotdBridgeTest() override {
-    chromeos::ArcDataSnapshotdClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    ash::ArcDataSnapshotdClient::Shutdown();
   }
 
-  chromeos::FakeArcDataSnapshotdClient* dbus_client() {
-    auto* client = chromeos::ArcDataSnapshotdClient::Get();
+  ash::FakeArcDataSnapshotdClient* dbus_client() {
+    auto* client = ash::ArcDataSnapshotdClient::Get();
     DCHECK(client);
-    return static_cast<chromeos::FakeArcDataSnapshotdClient*>(client);
+    return static_cast<ash::FakeArcDataSnapshotdClient*>(client);
   }
 
   void FastForwardAttempt() {

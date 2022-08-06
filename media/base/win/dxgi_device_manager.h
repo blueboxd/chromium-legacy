@@ -11,6 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
 #include "media/base/win/mf_util_export.h"
 
 namespace media {
@@ -67,6 +69,8 @@ class MF_UTIL_EXPORT DXGIDeviceManager
 
   Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> GetMFDXGIDeviceManager();
 
+  void OnGpuInfoUpdate(CHROME_LUID luid);
+
  protected:
   friend class base::RefCountedThreadSafe<DXGIDeviceManager>;
   DXGIDeviceManager(
@@ -78,6 +82,8 @@ class MF_UTIL_EXPORT DXGIDeviceManager
   Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mf_dxgi_device_manager_;
   UINT d3d_device_reset_token_ = 0;
   CHROME_LUID luid_ = {0, 0};
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace media

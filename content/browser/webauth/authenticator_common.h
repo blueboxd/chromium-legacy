@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
@@ -22,11 +21,8 @@
 #include "content/public/browser/web_authentication_request_proxy.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
-#include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
-#include "device/fido/fido_constants.h"
-#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/make_credential_request_handler.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -89,6 +85,9 @@ class CONTENT_EXPORT AuthenticatorCommon {
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       blink::mojom::Authenticator::
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback);
+  void IsConditionalMediationAvailable(
+      blink::mojom::Authenticator::IsConditionalMediationAvailableCallback
+          callback);
   void Cancel();
 
   void Cleanup();
@@ -155,13 +154,13 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // start a request.
   void OnLargeBlobCompressed(
       uint64_t original_size,
-      data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result);
+      base::expected<mojo_base::BigBuffer, std::string> result);
 
   // Callback to handle the large blob being uncompressed before completing a
   // request.
   void OnLargeBlobUncompressed(
       device::AuthenticatorGetAssertionResponse response,
-      data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result);
+      base::expected<mojo_base::BigBuffer, std::string> result);
 
   // Callback to handle the async response from a U2fDevice.
   void OnRegisterResponse(
@@ -265,10 +264,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
   blink::mojom::Authenticator::GetAssertionCallback
       get_assertion_response_callback_;
   std::string client_data_json_;
-  // maybe_show_account_picker_ is true iff a non conditional UI GetAssertion is
-  // currently pending and the request did not list any credential IDs in the
-  // allow list.
-  bool maybe_show_account_picker_ = false;
   bool disable_ui_ = false;
   url::Origin caller_origin_;
   std::string relying_party_id_;
@@ -288,6 +283,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
   data_decoder::DataDecoder data_decoder_;
   bool enable_request_proxy_api_ = false;
+  bool discoverable_credential_request_ = false;
 
   base::flat_set<RequestExtension> requested_extensions_;
 

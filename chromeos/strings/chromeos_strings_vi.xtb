@@ -27,6 +27,7 @@
 <translation id="1199355487114804640">Phát/tạm dừng</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1204296502688602597">Độ trễ DNS</translation>
+<translation id="1207734034680156868">Nội dung đề xuất được đưa ra dựa trên nội dung mô tả của bạn</translation>
 <translation id="123124571410524056">Nghi là có cổng</translation>
 <translation id="1236400083787698183">Trước khi bắt đầu, hãy thực hiện chức năng Powerwash cho thiết bị. Nếu thiết bị có nắp, hãy đợi cho đến khi quá trình Powerwash hoàn tất trước khi đóng nắp. Quá trình Powerwash có thể mất tối đa một phút để hoàn tất.</translation>
 <translation id="1238612778414822719">Độ trễ HTTPS</translation>
@@ -92,6 +93,7 @@
 <translation id="1644574205037202324">Nhật ký</translation>
 <translation id="1645954272419197032">Vui lòng xác nhận thông tin thiết bị</translation>
 <translation id="1662989795263954667">Đã dừng – Hết mực</translation>
+<translation id="1664796644829245314">Xem trước <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN tích hợp sẵn</translation>
 <translation id="1672499492233627739">Nguồn cấp dữ liệu video webcam</translation>
 <translation id="1676557873873341166">Đang quay video</translation>
@@ -118,6 +120,7 @@
 <translation id="1851218745569890714">Hội nghị truyền hình</translation>
 <translation id="1852934301711881861">Cài đặt ChromeOS Flex</translation>
 <translation id="1856388568474281774">Mũi tên xuống</translation>
+<translation id="1858620243986915808">Đính kèm ảnh chụp màn hình</translation>
 <translation id="1871569928317311284">Tắt giao diện tối</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Tắt chế độ tối</translation>
@@ -132,6 +135,7 @@
 <translation id="1977994649430373166">Ảnh hồ sơ trên Google</translation>
 <translation id="1979103255016296513">Đã quá hạn thay đổi mật khẩu</translation>
 <translation id="1999615961760456652">Trang xác thực</translation>
+<translation id="200669432486043882">Thay thế tệp</translation>
 <translation id="2006864819935886708">Kết nối</translation>
 <translation id="2008685064673031089">Tìm kiếm quan trọng</translation>
 <translation id="2011174342667534258">Phiên bản SDK:</translation>
@@ -194,6 +198,7 @@
 <translation id="2448312741937722512">Loại</translation>
 <translation id="2461822463642141190">Hiện tại</translation>
 <translation id="2480034874476596812">Tắt theo cách thủ công</translation>
+<translation id="248546197012830854">Thiết bị hiện không có kết nối mạng. Hãy kết nối với mạng Wi-Fi để xem nội dung trợ giúp.</translation>
 <translation id="2491955442992294626">Không thể thử phím khi bạn đang dùng một cửa sổ khác</translation>
 <translation id="2493126929778606526">Những ảnh đẹp nhất của bạn được chọn tự động</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +237,12 @@
 <translation id="3008341117444806826">LÀM MỚI</translation>
 <translation id="3009958530611748826">Chọn một thư mục để lưu</translation>
 <translation id="3017079585324758401">Nền</translation>
+<translation id="302435934487327038">Quá trình cài đặt đã hoàn tất</translation>
 <translation id="3027578600144895987">Tắt máy ảnh</translation>
 <translation id="3031560714565892478">Thiết bị là máy quay video.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Điểm cuối</translation>
 <translation id="3069085583900247081">Không kiểm tra được</translation>
-<translation id="3076243757415932261">Đang xác thực các thành phần...</translation>
 <translation id="3083667275341675831">Chẩn đoán kết nối</translation>
 <translation id="3084958266922136097">Tắt trình bảo vệ màn hình</translation>
 <translation id="3091839911843451378">Không thành công – Đã dừng</translation>
@@ -272,7 +277,6 @@
 <translation id="3369013195428705271">Bạn có chắc chắn muốn xóa toàn bộ lịch sử in không? Các lệnh in đang thực hiện sẽ không bị xóa.</translation>
 <translation id="3383751554789092165">Thay đổi thông tin thiết bị nếu cần.</translation>
 <translation id="3404249063913988450">Bật trình bảo vệ màn hình</translation>
-<translation id="3404770484521709967">Đã cài đặt các thành phần đúng cách.</translation>
 <translation id="3413935475507503304">Để tiếp tục cập nhật, hãy nhấp vào Tiếp theo.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Bảo mật</translation>
@@ -392,7 +396,6 @@
 <translation id="445059817448385655">Mật khẩu cũ</translation>
 <translation id="4453205916657964690">Mặt nạ mạng con</translation>
 <translation id="4454245904991689773">Lưu bản quét vào</translation>
-<translation id="4472575034687746823">Bắt đầu</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Không ping được cổng của mạng không phải mạng mặc định</translation>
 <translation id="4500213108254186382">Gia tốc kế ở nắp</translation>
@@ -660,14 +663,15 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6611280807952151149">Thoát khỏi việc sửa <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Đang chạy</translation>
 <translation id="6620487321149975369">Lệnh in sẽ xuất hiện trong lịch sử in trừ phi bạn tự xóa</translation>
+<translation id="6624819909909965616">Không thể tải tệp lên nếu tệp lớn hơn 10 MB</translation>
 <translation id="6643016212128521049">Xóa</translation>
+<translation id="6644568396961840069">Không thể lưu tệp. Hãy thử sử dụng một bộ nhớ ngoài khác hoặc thử lại sau.</translation>
 <translation id="6647510110698214773">Thuật toán mã hoá</translation>
 <translation id="6650062777702288430">Chuyển sang bàn phím Kana/ký tự chữ-số</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6659594942844771486">Thẻ</translation>
 <translation id="6692996468359469499">Nhận thông tin liên quan đến lựa chọn của bạn</translation>
 <translation id="6704062477274546131">Phân giải DNS</translation>
-<translation id="6721744718589119342">Chúng tôi có thể gửi email cho bạn để hỏi thêm thông tin hoặc để cập nhật thông tin cho bạn</translation>
 <translation id="6723839937902243910">Nguồn</translation>
 <translation id="6723847290197874913">Đèn nền bàn phím</translation>
 <translation id="672609503628871915">Xem tính năng mới</translation>
@@ -695,6 +699,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Hiệu chỉnh chương trình cơ sở</translation>
 <translation id="6995564396478647735">Hãy đảm bảo rằng bạn đã bật tính năng Chống ghi</translation>
+<translation id="7005833343836210400">Thiết bị hiện không có kết nối mạng</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> quản lý thiết bị này và có quyền truy cập vào tất cả hoạt động của người dùng, bao gồm cả các trang web đã truy cập, mật khẩu và email.</translation>
 <translation id="7040230719604914234">Nhà mạng</translation>
 <translation id="7041549558901442110">Thiết bị chưa được kết nối.</translation>
@@ -720,6 +725,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7212734716605298123">Cập nhật chương trình cơ sở cho thiết bị bên ngoài</translation>
 <translation id="7216409898977639127">Nhà cung cấp dịch vụ di động</translation>
+<translation id="725133483556299729">Chọn email</translation>
 <translation id="7271040990581020067">Máy quét đang được sử dụng. Hãy thử lại sau.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Hãy chọn ít nhất 1 thành phần rồi thử lại, hoặc bỏ qua việc hiệu chỉnh</translation>
@@ -797,6 +803,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7978412674231730200">Khoá cá nhân</translation>
 <translation id="7982789257301363584">Mạng</translation>
 <translation id="7994702968232966508">Phương pháp EAP</translation>
+<translation id="8018928621986160031">Đã lưu vào "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Bật chế độ màu tự động</translation>
@@ -805,8 +812,8 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8063022551652308521">Tính năng Chống ghi vẫn đang tắt. Để tiếp tục, vui lòng bật tính năng Chống ghi.</translation>
 <translation id="8075838845814659848">Mức pin còn lại</translation>
 <translation id="8082366717211101304">Không thể phân giải DNS từ các ứng dụng Android</translation>
-<translation id="8083281199617904460">Đây là quy trình sửa chữa dành cho kỹ thuật viên đã qua đào tạo. Chỉ bắt đầu quy trình này sau khi đã thay thế các thành phần bị trục trặc.</translation>
 <translation id="808894953321890993">Đổi mật khẩu</translation>
+<translation id="8094062939584182041">Cho phép Google gửi email về vấn đề này cho bạn</translation>
 <translation id="8104083085214006426">Bạn đang dùng mạng mở và không an toàn</translation>
 <translation id="8109786307828817014">Tiếp tục kể cả khi có thành phần không hiệu chỉnh được?</translation>
 <translation id="811820734797650957">(Android) Có thể ping cổng vào</translation>
@@ -821,6 +828,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8217675307824400706">Kết nối</translation>
 <translation id="8221728673725659466">Hiệu chỉnh xong</translation>
 <translation id="8226628635270268143">Chọn ảnh và album bạn yêu thích</translation>
+<translation id="8227119283605456246">Đính kèm tệp</translation>
 <translation id="8230672074305416752">Không ping được cổng của mạng mặc định</translation>
 <translation id="8246209727385807362">Nhà cung cấp dịch vụ không xác định</translation>
 <translation id="827422111966801947">Màu chàm</translation>
@@ -865,6 +873,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8576249514688522074">Chưa khởi chạy</translation>
 <translation id="8620617069779373398">Trạng thái chuyển vùng</translation>
 <translation id="8655295600908251630">Kênh</translation>
+<translation id="8655828773034788261">Chia sẻ URL:</translation>
 <translation id="8660881923941176839">pao</translation>
 <translation id="8662671328352114214">Kết nối mạng <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Cập nhật lên <ph name="VERSION_NUMBER" /> rồi khởi động lại</translation>

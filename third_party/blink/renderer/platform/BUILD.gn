@@ -781,6 +781,8 @@ component("platform") {
     "graphics/color_space_gamut.h",
     "graphics/color_space_profile_data.cc",
     "graphics/color_space_profile_data.h",
+    "graphics/compositing/adjust_mask_layer_geometry.cc",
+    "graphics/compositing/adjust_mask_layer_geometry.h",
     "graphics/compositing/chunk_to_layer_mapper.cc",
     "graphics/compositing/chunk_to_layer_mapper.h",
     "graphics/compositing/content_layer_client_impl.cc",
@@ -1467,6 +1469,8 @@ component("platform") {
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",
     "webrtc/webrtc_video_utils.h",
+    "widget/compositing/categorized_worker_pool.cc",
+    "widget/compositing/categorized_worker_pool.h",
     "widget/compositing/layer_tree_settings.cc",
     "widget/compositing/layer_tree_settings.h",
     "widget/compositing/layer_tree_view.cc",
@@ -1943,15 +1947,13 @@ test("blink_platform_unittests") {
   deps = [ ":blink_platform_unittests_sources" ]
 
   if (is_fuchsia) {
+    use_cfv1 = false
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
+
     # Oilpan reuses V8's v8::PageAllocator which generally requires JIT
     # permissions.
-    # TODO(https://crbug.com/1287051): Requires fuchsia.sys.Launcher.
-    use_cfv2 = false
-    additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
-
-    # Use the following when switching to CFv2:
-    # test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
   }
 
   if (is_android) {
@@ -2176,6 +2178,7 @@ source_set("blink_platform_unittests_sources") {
     "weborigin/security_policy_test.cc",
     "webrtc/convert_to_webrtc_video_frame_buffer_test.cc",
     "webrtc/webrtc_video_frame_adapter_test.cc",
+    "widget/compositing/categorized_worker_pool_unittest.cc",
     "widget/compositing/layer_tree_settings_unittest.cc",
     "widget/compositing/layer_tree_view_unittest.cc",
     "widget/compositing/render_frame_metadata_observer_impl_unittest.cc",
@@ -2243,7 +2246,6 @@ source_set("blink_platform_unittests_sources") {
     "//services/viz/public/mojom",
     "//skia",
     "//skia:skcms",
-    "//skia:test_fonts",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party:freetype_harfbuzz",
@@ -2279,6 +2281,12 @@ source_set("blink_platform_unittests_sources") {
   defines = [ "INSIDE_BLINK" ]
   if (use_minikin_hyphenation) {
     defines += [ "USE_MINIKIN_HYPHENATION" ]
+  }
+
+  if (is_fuchsia) {
+    deps += [ "//skia:test_fonts_cfv2" ]
+  } else {
+    deps += [ "//skia:test_fonts" ]
   }
 }
 
@@ -2393,7 +2401,6 @@ test("blink_fuzzer_unittests") {
     ":test_support",
     "//base/test:test_support",
     "//mojo/core/embedder:embedder",
-    "//skia:test_fonts",
     "//third_party/blink/public:test_support",
   ]
 
@@ -2406,9 +2413,13 @@ test("blink_fuzzer_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv2 = false
+    use_cfv1 = false
+    deps += [ "//skia:test_fonts_cfv2" ]
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
     additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
+        [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
+  } else {
+    deps += [ "//skia:test_fonts" ]
   }
 }
 
@@ -2459,7 +2470,10 @@ fuzzer_test("open_type_math_support_fuzzer") {
     ":blink_fuzzer_test_support",
     ":platform",
   ]
-  seed_corpus = "//third_party/blink/web_tests/external/wpt/fonts/math"
+  seed_corpuses = [
+    "//third_party/blink/web_tests/external/wpt/fonts/math",
+    "//testing/libfuzzer/fuzzers/woff2_corpus",
+  ]
 }
 
 # Fuzzer for blink::StretchyOperatorShaper
@@ -2469,7 +2483,10 @@ fuzzer_test("stretchy_operator_shaper_fuzzer") {
     ":blink_fuzzer_test_support",
     ":platform",
   ]
-  seed_corpus = "//third_party/blink/web_tests/external/wpt/fonts/math"
+  seed_corpuses = [
+    "//third_party/blink/web_tests/external/wpt/fonts/math",
+    "//testing/libfuzzer/fuzzers/woff2_corpus",
+  ]
 }
 
 # Fuzzer for blink::MHTMLParser.

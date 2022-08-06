@@ -8,16 +8,16 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/hermes/hermes_clients.h"
 #include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/network/network_profile_handler.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -188,4 +188,4 @@ void NetworkTestHelperBase::AddDefaultProfiles() {
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -78,7 +78,7 @@ class InternalsUIHandler : public content::WebUIMessageHandler,
   void OnJavascriptDisallowed() override;
 
   // LogReceiver implementation.
-  void LogEntry(const base::Value& entry) override;
+  void LogEntry(const base::Value::Dict& entry) override;
 
   void StartSubscription();
   void EndSubscription();
@@ -86,6 +86,7 @@ class InternalsUIHandler : public content::WebUIMessageHandler,
   // JavaScript call handler.
   void OnLoaded(const base::Value::List& args);
   void OnResetCache(const base::Value::List& args);
+  void OnResetUpmEviction(const base::Value::List& args);
 
   void OnResetCacheDone(const std::string& message);
 

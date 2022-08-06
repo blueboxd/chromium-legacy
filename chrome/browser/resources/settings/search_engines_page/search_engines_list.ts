@@ -7,7 +7,7 @@
  * list of search engines.
  */
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 import './search_engine_entry.js';
 
@@ -28,11 +28,6 @@ export class SettingsSearchEnginesListElement extends PolymerElement {
   static get properties() {
     return {
       engines: Array,
-
-      /**
-       * Whether the active search engines feature flag is enabled.
-       */
-      isActiveSearchEnginesFlagEnabled: Boolean,
 
       showShortcut: {
         type: Boolean,
@@ -112,8 +107,8 @@ export class SettingsSearchEnginesListElement extends PolymerElement {
   showShortcut: boolean;
   showQueryUrl: boolean;
   collapseList: boolean;
-  nameColumnHeader: String;
-  expandListText: String;
+  nameColumnHeader: string;
+  expandListText: string;
   private lastFocused_: HTMLElement;
   private listBlurred_: boolean;
 

@@ -145,6 +145,7 @@ class MODULES_EXPORT UserMediaProcessor
                            TiltConstraintRequestPanTiltZoomPermission);
   FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
                            ZoomConstraintRequestPanTiltZoomPermission);
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest, MultiDeviceOnStreamGenerated);
   class RequestInfo;
   using LocalStreamSources = HeapVector<Member<MediaStreamSource>>;
 
@@ -161,7 +162,7 @@ class MODULES_EXPORT UserMediaProcessor
   void GotAllVideoInputFormatsForDevice(
       UserMediaRequest* user_media_request,
       const String& label,
-      const String& device_id,
+      const Vector<String>& device_ids,
       const Vector<media::VideoCaptureFormat>& formats);
 
   gfx::Size GetScreenSize();

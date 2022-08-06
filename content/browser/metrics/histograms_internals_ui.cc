@@ -99,13 +99,12 @@ void HistogramsMessageHandler::HandleRequestHistograms(
   for (base::HistogramBase* histogram :
        base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
            base::StatisticsRecorder::GetHistograms(), params.query))) {
-    base::Value histogram_dict = histogram->ToGraphDict();
-    if (!histogram_dict.DictEmpty())
+    base::Value::Dict histogram_dict = histogram->ToGraphDict();
+    if (!histogram_dict.empty())
       histograms_list.Append(std::move(histogram_dict));
   }
 
-  ResolveJavascriptCallback(base::Value(params.callback_id),
-                            base::Value(std::move(histograms_list)));
+  ResolveJavascriptCallback(base::Value(params.callback_id), histograms_list);
 }
 
 void HistogramsMessageHandler::HandleStartMoninoring(
@@ -118,7 +117,7 @@ void HistogramsMessageHandler::HandleStartMoninoring(
 
 void HistogramsMessageHandler::HandleFetchDiff(const base::Value::List& args) {
   JsParams params = AllowJavascriptAndUnpackParams(args);
-  base::ListValue histograms_list = histogram_monitor_.GetDiff();
+  base::Value::List histograms_list = histogram_monitor_.GetDiff();
   ResolveJavascriptCallback(base::Value(params.callback_id),
                             std::move(histograms_list));
 }

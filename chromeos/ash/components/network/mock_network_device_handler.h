@@ -11,12 +11,12 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/values.h"
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/ash/components/network/network_device_handler.h"
+#include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
+namespace ash {
 
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
     : public NetworkDeviceHandler {
@@ -82,6 +82,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
                void(const std::string& enabled));
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_MOCK_NETWORK_DEVICE_HANDLER_H_

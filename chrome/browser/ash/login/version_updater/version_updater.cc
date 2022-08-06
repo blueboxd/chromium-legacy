@@ -18,7 +18,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
-#include "chromeos/network/network_state.h"
+#include "chromeos/ash/components/network/network_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -237,9 +237,11 @@ void VersionUpdater::UpdateStatusChanged(
       if (!ignore_idle_status_)
         exit_update = true;
       break;
+    case update_engine::Operation::CLEANUP_PREVIOUS_UPDATE:
     case update_engine::Operation::DISABLED:
     case update_engine::Operation::ERROR:
     case update_engine::Operation::REPORTING_ERROR_EVENT:
+    case update_engine::Operation::UPDATED_BUT_DEFERRED:
       break;
     default:
       NOTREACHED();

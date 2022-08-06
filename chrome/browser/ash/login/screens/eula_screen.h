@@ -28,8 +28,11 @@ class EulaScreen : public BaseScreen {
     ALREADY_ACCEPTED,
     // Eula already accepted, skip screen (demo mode)
     ALREADY_ACCEPTED_DEMO_MODE,
-    // The usage did not accept EULA - they clicked back button instead.
+    // The user did not accept EULA - they clicked back button instead.
     BACK,
+    // The user did not accept EULA - they clicked back button instead (demo
+    // mode).
+    BACK_DEMO_MODE,
     // Eula screen is skipped.
     NOT_APPLICABLE,
   };
@@ -77,7 +80,7 @@ class EulaScreen : public BaseScreen {
 
  private:
   // BaseScreen:
-  bool MaybeSkip(WizardContext* context) override;
+  bool MaybeSkip(WizardContext& context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserActionDeprecated(const std::string& action_id) override;

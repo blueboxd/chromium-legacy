@@ -376,8 +376,7 @@ class AlternatingCriticalCHRequestHandler {
 
 }  // namespace
 
-class ClientHintsBrowserTest : public policy::PolicyTest,
-                               public testing::WithParamInterface<bool> {
+class ClientHintsBrowserTest : public policy::PolicyTest {
  public:
   ClientHintsBrowserTest()
       : http_server_(net::EmbeddedTestServer::TYPE_HTTP),
@@ -430,8 +429,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     accept_ch_url_ = https_server_.GetURL("/accept_ch.html");
     http_equiv_accept_ch_url_ =
         https_server_.GetURL("/http_equiv_accept_ch.html");
-    meta_name_accept_ch_url_ =
-        https_server_.GetURL("/meta_name_accept_ch.html");
+    meta_equiv_delegate_ch_url_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch.html");
 
     without_accept_ch_url_ = https_server_.GetURL("/without_accept_ch.html");
     EXPECT_TRUE(without_accept_ch_url_.SchemeIsHTTPOrHTTPS());
@@ -450,52 +449,52 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
         https_server_.GetURL("/accept_ch_with_iframe.html");
     http_equiv_accept_ch_with_iframe_url_ =
         https_server_.GetURL("/http_equiv_accept_ch_with_iframe.html");
-    meta_name_accept_ch_with_iframe_url_ =
-        https_server_.GetURL("/meta_name_accept_ch_with_iframe.html");
+    meta_equiv_delegate_ch_with_iframe_url_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_with_iframe.html");
     accept_ch_with_subresource_url_ =
         https_server_.GetURL("/accept_ch_with_subresource.html");
     http_equiv_accept_ch_with_subresource_url_ =
         https_server_.GetURL("/http_equiv_accept_ch_with_subresource.html");
-    meta_name_accept_ch_with_subresource_url_ =
-        https_server_.GetURL("/meta_name_accept_ch_with_subresource.html");
+    meta_equiv_delegate_ch_with_subresource_url_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_with_subresource.html");
     accept_ch_with_subresource_iframe_url_ =
         https_server_.GetURL("/accept_ch_with_subresource_iframe.html");
     http_equiv_accept_ch_with_subresource_iframe_url_ = https_server_.GetURL(
         "/http_equiv_accept_ch_with_subresource_iframe."
         "html");
-    meta_name_accept_ch_with_subresource_iframe_url_ = https_server_.GetURL(
-        "/meta_name_accept_ch_with_subresource_iframe."
+    meta_equiv_delegate_ch_with_subresource_iframe_url_ = https_server_.GetURL(
+        "/meta_equiv_delegate_ch_with_subresource_iframe."
         "html");
     accept_ch_img_localhost_ =
         https_server_.GetURL("/accept_ch_img_localhost.html");
     http_equiv_accept_ch_img_localhost_ =
         https_server_.GetURL("/http_equiv_accept_ch_img_localhost.html");
-    meta_name_accept_ch_img_localhost_ =
-        https_server_.GetURL("/meta_name_accept_ch_img_localhost.html");
+    meta_equiv_delegate_ch_img_localhost_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_img_localhost.html");
 
     redirect_url_ = https_cross_origin_server_.GetURL("/redirect.html");
 
     accept_ch_empty_ = https_server_.GetURL("/accept_ch_empty.html");
     http_equiv_accept_ch_injection_ =
         https_server_.GetURL("/http_equiv_accept_ch_injection.html");
-    meta_name_accept_ch_injection_ =
-        https_server_.GetURL("/meta_name_accept_ch_injection.html");
+    meta_equiv_delegate_ch_injection_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_injection.html");
     http_equiv_accept_ch_delegation_foo_ =
         https_server_.GetURL("/http_equiv_accept_ch_delegation_foo.html");
-    meta_name_accept_ch_delegation_foo_ =
-        https_server_.GetURL("/meta_name_accept_ch_delegation_foo.html");
+    meta_equiv_delegate_ch_delegation_foo_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_delegation_foo.html");
     http_equiv_accept_ch_delegation_bar_ =
         https_server_.GetURL("/http_equiv_accept_ch_delegation_bar.html");
-    meta_name_accept_ch_delegation_bar_ =
-        https_server_.GetURL("/meta_name_accept_ch_delegation_bar.html");
+    meta_equiv_delegate_ch_delegation_bar_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_delegation_bar.html");
     http_equiv_accept_ch_delegation_merge_ =
         https_server_.GetURL("/http_equiv_accept_ch_delegation_merge.html");
-    meta_name_accept_ch_delegation_merge_ =
-        https_server_.GetURL("/meta_name_accept_ch_delegation_merge.html");
+    meta_equiv_delegate_ch_delegation_merge_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_delegation_merge.html");
     http_equiv_accept_ch_merge_ =
         https_server_.GetURL("/http_equiv_accept_ch_merge.html");
-    meta_name_accept_ch_merge_ =
-        https_server_.GetURL("/meta_name_accept_ch_merge.html");
+    meta_equiv_delegate_ch_merge_ =
+        https_server_.GetURL("/meta_equiv_delegate_ch_merge.html");
 
     without_accept_ch_cross_origin_ =
         https_cross_origin_server_.GetURL("/without_accept_ch.html");
@@ -510,8 +509,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
         "UserAgentClientHint,CriticalClientHint,"
-        "AcceptCHFrame,PrefersColorSchemeClientHintHeader,"
-        "ViewportHeightClientHintHeader",
+        "AcceptCHFrame,PrefersColorSchemeClientHintHeader",
         "");
     return feature_list;
   }
@@ -587,8 +585,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   const GURL& http_equiv_accept_ch_url() const {
     return http_equiv_accept_ch_url_;
   }
-  const GURL& meta_name_accept_ch_url() const {
-    return meta_name_accept_ch_url_;
+  const GURL& meta_equiv_delegate_ch_url() const {
+    return meta_equiv_delegate_ch_url_;
   }
 
   // A URL whose response headers do not include the Accept-CH header.
@@ -621,8 +619,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   const GURL& http_equiv_accept_ch_with_iframe_url() const {
     return http_equiv_accept_ch_with_iframe_url_;
   }
-  const GURL& meta_name_accept_ch_with_iframe_url() const {
-    return meta_name_accept_ch_with_iframe_url_;
+  const GURL& meta_equiv_delegate_ch_with_iframe_url() const {
+    return meta_equiv_delegate_ch_with_iframe_url_;
   }
 
   // A URL whose response does not include the Accept-CH header. The response
@@ -633,8 +631,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   const GURL& http_equiv_accept_ch_with_subresource_url() const {
     return http_equiv_accept_ch_with_subresource_url_;
   }
-  const GURL& meta_name_accept_ch_with_subresource_url() const {
-    return meta_name_accept_ch_with_subresource_url_;
+  const GURL& meta_equiv_delegate_ch_with_subresource_url() const {
+    return meta_equiv_delegate_ch_with_subresource_url_;
   }
 
   // A URL whose response does not include the Accept-CH header. The response
@@ -646,8 +644,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   const GURL& http_equiv_accept_ch_with_subresource_iframe_url() const {
     return http_equiv_accept_ch_with_subresource_iframe_url_;
   }
-  const GURL& meta_name_accept_ch_with_subresource_iframe_url() const {
-    return meta_name_accept_ch_with_subresource_iframe_url_;
+  const GURL& meta_equiv_delegate_ch_with_subresource_iframe_url() const {
+    return meta_equiv_delegate_ch_with_subresource_iframe_url_;
   }
 
   // A URL whose response includes only Accept-CH header. Navigating to
@@ -659,8 +657,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   const GURL& http_equiv_accept_ch_img_localhost() const {
     return http_equiv_accept_ch_img_localhost_;
   }
-  const GURL& meta_name_accept_ch_img_localhost() const {
-    return meta_name_accept_ch_img_localhost_;
+  const GURL& meta_equiv_delegate_ch_img_localhost() const {
+    return meta_equiv_delegate_ch_img_localhost_;
   }
 
   const GURL& redirect_url() const { return redirect_url_; }
@@ -672,40 +670,40 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   const GURL& http_equiv_accept_ch_injection() const {
     return http_equiv_accept_ch_injection_;
   }
-  const GURL& meta_name_accept_ch_injection() const {
-    return meta_name_accept_ch_injection_;
+  const GURL& meta_equiv_delegate_ch_injection() const {
+    return meta_equiv_delegate_ch_injection_;
   }
 
   // A page where hints are delegated to the third-party site `foo.com`.
   const GURL& http_equiv_accept_ch_delegation_foo() const {
     return http_equiv_accept_ch_delegation_foo_;
   }
-  const GURL& meta_name_accept_ch_delegation_foo() const {
-    return meta_name_accept_ch_delegation_foo_;
+  const GURL& meta_equiv_delegate_ch_delegation_foo() const {
+    return meta_equiv_delegate_ch_delegation_foo_;
   }
 
   // A page where hints are delegated to the third-party site `bar.com`.
   const GURL& http_equiv_accept_ch_delegation_bar() const {
     return http_equiv_accept_ch_delegation_bar_;
   }
-  const GURL& meta_name_accept_ch_delegation_bar() const {
-    return meta_name_accept_ch_delegation_bar_;
+  const GURL& meta_equiv_delegate_ch_delegation_bar() const {
+    return meta_equiv_delegate_ch_delegation_bar_;
   }
 
   // A page where hints are delegated to the third-party sites in HTTP and HTML.
   const GURL& http_equiv_accept_ch_delegation_merge() const {
     return http_equiv_accept_ch_delegation_merge_;
   }
-  const GURL& meta_name_accept_ch_delegation_merge() const {
-    return meta_name_accept_ch_delegation_merge_;
+  const GURL& meta_equiv_delegate_ch_delegation_merge() const {
+    return meta_equiv_delegate_ch_delegation_merge_;
   }
 
   // A page where some hints are in accept-ch header, some in http-equiv.
   const GURL& http_equiv_accept_ch_merge() const {
     return http_equiv_accept_ch_merge_;
   }
-  const GURL& meta_name_accept_ch_merge() const {
-    return meta_name_accept_ch_merge_;
+  const GURL& meta_equiv_delegate_ch_merge() const {
+    return meta_equiv_delegate_ch_merge_;
   }
 
   const GURL& without_accept_ch_cross_origin() {
@@ -785,7 +783,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 
   std::string intercept_iframe_resource_;
   bool intercept_to_http_equiv_iframe_ = false;
-  bool intercept_to_meta_name_iframe_ = false;
+  bool intercept_to_meta_delegate_iframe_ = false;
   mutable base::Lock count_headers_lock_;
 
   Profile* GenerateNewProfile() {
@@ -843,14 +841,13 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     }
 
     const std::string iframe_url =
-        intercept_to_meta_name_iframe_
-            ? https_cross_origin_server_.GetURL("/meta_name_accept_ch.html")
+        intercept_to_meta_delegate_iframe_
+            ? https_cross_origin_server_.GetURL("/meta_equiv_delegate_ch.html")
                   .spec()
-            : intercept_to_http_equiv_iframe_
-                  ? https_cross_origin_server_
-                        .GetURL("/http_equiv_accept_ch.html")
-                        .spec()
-                  : https_cross_origin_server_.GetURL("/accept_ch.html").spec();
+        : intercept_to_http_equiv_iframe_
+            ? https_cross_origin_server_.GetURL("/http_equiv_accept_ch.html")
+                  .spec()
+            : https_cross_origin_server_.GetURL("/accept_ch.html").spec();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
@@ -952,6 +949,12 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 #endif
         main_frame_viewport_width_observed_ = value;
 
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-viewport-height")->second, &value));
+        EXPECT_TRUE(IsSimilarToIntABNF(
+            request.headers.find("sec-ch-viewport-height")->second));
+        EXPECT_LT(0.0, value);
+
         VerifyNetworkQualityClientHints(request);
       }
     }
@@ -1032,6 +1035,12 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
           EXPECT_EQ(main_frame_viewport_width_observed_, value);
         }
 #endif
+
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-viewport-height")->second, &value));
+        EXPECT_TRUE(IsSimilarToIntABNF(
+            request.headers.find("sec-ch-viewport-height")->second));
+        EXPECT_LT(0.0, value);
 
         VerifyNetworkQualityClientHints(request);
       }
@@ -1162,35 +1171,35 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   net::EmbeddedTestServer http2_server_;
   GURL accept_ch_url_;
   GURL http_equiv_accept_ch_url_;
-  GURL meta_name_accept_ch_url_;
+  GURL meta_equiv_delegate_ch_url_;
   GURL without_accept_ch_url_;
   GURL without_accept_ch_local_url_;
   GURL accept_ch_with_iframe_url_;
   GURL http_equiv_accept_ch_with_iframe_url_;
-  GURL meta_name_accept_ch_with_iframe_url_;
+  GURL meta_equiv_delegate_ch_with_iframe_url_;
   GURL accept_ch_with_subresource_url_;
   GURL http_equiv_accept_ch_with_subresource_url_;
-  GURL meta_name_accept_ch_with_subresource_url_;
+  GURL meta_equiv_delegate_ch_with_subresource_url_;
   GURL accept_ch_with_subresource_iframe_url_;
   GURL http_equiv_accept_ch_with_subresource_iframe_url_;
-  GURL meta_name_accept_ch_with_subresource_iframe_url_;
+  GURL meta_equiv_delegate_ch_with_subresource_iframe_url_;
   GURL without_accept_ch_img_foo_com_;
   GURL without_accept_ch_img_localhost_;
   GURL accept_ch_img_localhost_;
   GURL http_equiv_accept_ch_img_localhost_;
-  GURL meta_name_accept_ch_img_localhost_;
+  GURL meta_equiv_delegate_ch_img_localhost_;
   GURL redirect_url_;
   GURL accept_ch_empty_;
   GURL http_equiv_accept_ch_injection_;
-  GURL meta_name_accept_ch_injection_;
+  GURL meta_equiv_delegate_ch_injection_;
   GURL http_equiv_accept_ch_delegation_foo_;
-  GURL meta_name_accept_ch_delegation_foo_;
+  GURL meta_equiv_delegate_ch_delegation_foo_;
   GURL http_equiv_accept_ch_delegation_bar_;
-  GURL meta_name_accept_ch_delegation_bar_;
+  GURL meta_equiv_delegate_ch_delegation_bar_;
   GURL http_equiv_accept_ch_delegation_merge_;
-  GURL meta_name_accept_ch_delegation_merge_;
+  GURL meta_equiv_delegate_ch_delegation_merge_;
   GURL http_equiv_accept_ch_merge_;
-  GURL meta_name_accept_ch_merge_;
+  GURL meta_equiv_delegate_ch_merge_;
   GURL without_accept_ch_cross_origin_;
 
   std::string main_frame_ua_observed_;
@@ -1227,11 +1236,16 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   net::EffectiveConnectionType expected_ect = net::EFFECTIVE_CONNECTION_TYPE_2G;
 };
 
-// True if testing for http-equiv correctness. When set to true, the tests
-// use webpages that may contain the http-equiv Accept-CH header. When set to
-// false, the tests use webpages that set the headers in the HTTP response
-// headers.
-INSTANTIATE_TEST_SUITE_P(All, ClientHintsBrowserTest, testing::Bool());
+// When a test needs to verify all three types of meta tags, they can use this
+// test and read the param to verify behavior of all three.
+class ClientHintsBrowserTestForMetaTagTypes
+    : public ClientHintsBrowserTest,
+      public testing::WithParamInterface<network::MetaCHType> {};
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ClientHintsBrowserTestForMetaTagTypes,
+    testing::Values(network::MetaCHType::HttpEquivAcceptCH,
+                    network::MetaCHType::HttpEquivDelegateCH));
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
   for (const auto& elem : network::GetClientHintToNameMap()) {
@@ -1263,8 +1277,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, HttpEquivWorks) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 }
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MetaNameWorks) {
-  const GURL gurl = meta_name_accept_ch_img_localhost();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MetaDelegateWorks) {
+  const GURL gurl = meta_equiv_delegate_ch_img_localhost();
   base::HistogramTester histogram_tester;
 
   SetClientHintExpectationsOnMainFrame(false);
@@ -1278,47 +1292,34 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MetaNameWorks) {
 // the browser receives the mojo notification from the renderer and persists the
 // client hints to the disk --- unless it's using http-equiv which shouldn't
 // persist.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps_HttpEquiv) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsHttps) {
   base::HistogramTester histogram_tester;
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_url() : accept_ch_url();
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), accept_ch_url()));
 
-  if (GetParam())
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
-  else
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
-
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
   content::FetchHistogramsFromChildProcesses();
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  if (GetParam()) {
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
-  } else {
-    // client_hints_url() sets the expected number of client hints.
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                        expected_client_hints_number, 1);
-  }
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps_MetaName) {
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       ClientHintsHttps) {
   base::HistogramTester histogram_tester;
-  const GURL gurl = GetParam() ? meta_name_accept_ch_url() : accept_ch_url();
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_url();
+      break;
+  }
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
 
-  if (GetParam())
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
-  else
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
-
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
   content::FetchHistogramsFromChildProcesses();
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  if (GetParam()) {
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
-  } else {
-    // client_hints_url() sets the expected number of client hints.
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                        expected_client_hints_number, 1);
-  }
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsAlps) {
@@ -1808,11 +1809,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, InjectAcceptCH_HttpEquiv) {
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, InjectAcceptCH_MetaName) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, InjectAcceptCH_MetaDelegate) {
   // Go to page where hints are injected via javascript into an named meta
   // tag. It shouldn't get hints itself (due to first visit),
   // but subresources should get all the client hints.
-  GURL gurl = meta_name_accept_ch_injection();
+  GURL gurl = meta_equiv_delegate_ch_injection();
   SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(false);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
@@ -1836,9 +1837,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_HttpEquiv) {
             third_party_client_hints_count_seen_on_unique_request());
 }
 
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_MetaName) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_MetaDelegate) {
   // Go to a page which delegates hints to `foo.com`.
-  GURL gurl = meta_name_accept_ch_delegation_foo();
+  GURL gurl = meta_equiv_delegate_ch_delegation_foo();
   SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
@@ -1862,9 +1863,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_HttpEquiv) {
             third_party_client_hints_count_seen_on_unique_request());
 }
 
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_MetaName) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_MetaDelegate) {
   // Go to a page which delegates hints to `bar.com`.
-  GURL gurl = meta_name_accept_ch_delegation_bar();
+  GURL gurl = meta_equiv_delegate_ch_delegation_bar();
   SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
@@ -1890,9 +1891,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_HttpEquiv) {
             third_party_client_hints_count_seen_on_unique_request());
 }
 
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_MetaName) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_MetaDelegate) {
   // Go to a page which delegates hints in HTTP and HTML.
-  GURL gurl = meta_name_accept_ch_delegation_merge();
+  GURL gurl = meta_equiv_delegate_ch_delegation_merge();
   SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
@@ -1914,11 +1915,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH_HttpEquiv) {
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH_MetaName) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH_MetaDelegate) {
   // Go to page where some hints are enabled by headers, some by
   // http-equiv. It shouldn't get hints itself (due to first visit),
   // but subresources should get all the client hints.
-  GURL gurl = meta_name_accept_ch_merge();
+  GURL gurl = meta_equiv_delegate_ch_merge();
   SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
@@ -1974,15 +1975,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, OffTheRecordIndependent2) {
 }
 
 // Only default client hints should be delegated to third party subresources.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, Default_HttpEquiv) {
-  GURL gurl;
-  unsigned update_event_count = 0;
-  if (GetParam()) {
-    gurl = http_equiv_accept_ch_img_localhost();
-  } else {
-    gurl = accept_ch_img_localhost();
-    update_event_count = 1;
-  }
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, Default) {
+  GURL gurl = accept_ch_img_localhost();
+  unsigned update_event_count = 1;
+  gurl = accept_ch_img_localhost();
 
   base::HistogramTester histogram_tester;
 
@@ -2007,14 +2003,16 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, Default_HttpEquiv) {
   // the `Sec-CH-UA/-Platform/-Mobile))` hints sent every request.
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, Default_MetaName) {
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes, Default) {
   GURL gurl;
   unsigned update_event_count = 0;
-  if (GetParam()) {
-    gurl = meta_name_accept_ch_img_localhost();
-  } else {
-    gurl = accept_ch_img_localhost();
-    update_event_count = 1;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_img_localhost();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_img_localhost();
+      break;
   }
 
   base::HistogramTester histogram_tester;
@@ -2073,13 +2071,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 // persistence of client hints.
 // Verify that the request from the cross origin iframe is not honored, and
 // client hints preference is not persisted.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestIframe_HttpEquivCrossOrigin) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_iframe_url()
-                               : accept_ch_with_iframe_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       DisregardPersistenceRequestIframe_CrossOrigin) {
+  const GURL gurl = accept_ch_with_iframe_url();
 
   intercept_iframe_resource_ = gurl.path();
-  intercept_to_http_equiv_iframe_ = GetParam();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2102,13 +2098,20 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestIframe_MetaNameCrossOrigin) {
-  const GURL gurl = GetParam() ? meta_name_accept_ch_with_iframe_url()
-                               : accept_ch_with_iframe_url();
-
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       DisregardPersistenceRequestIframe) {
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_with_iframe_url();
+      intercept_to_http_equiv_iframe_ = true;
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_with_iframe_url();
+      intercept_to_meta_delegate_iframe_ = true;
+      break;
+  }
   intercept_iframe_resource_ = gurl.path();
-  intercept_to_meta_name_iframe_ = GetParam();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2136,10 +2139,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 // A subresource loaded by the webpage requests persistence of client hints.
 // Verify that the request from the subresource is not honored, and client hints
 // preference is not persisted.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestSubresource_HttpEquiv) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_subresource_url()
-                               : accept_ch_with_subresource_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       DisregardPersistenceRequestSubresource) {
+  const GURL gurl = accept_ch_with_subresource_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2161,10 +2163,17 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // client hints from accept_ch() should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestSubresource_MetaName) {
-  const GURL gurl = GetParam() ? meta_name_accept_ch_with_subresource_url()
-                               : accept_ch_with_subresource_url();
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       DisregardPersistenceRequestSubresource) {
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_with_subresource_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_with_subresource_url();
+      break;
+  }
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2191,11 +2200,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 // A subresource loaded by the webpage in an iframe requests persistence of
 // client hints. Verify that the request from the subresource in the iframe
 // is not honored, and client hints preference is not persisted.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestSubresourceIframe_HttpEquiv) {
-  const GURL gurl = GetParam()
-                        ? http_equiv_accept_ch_with_subresource_iframe_url()
-                        : accept_ch_with_subresource_iframe_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       DisregardPersistenceRequestSubresourceIframe) {
+  const GURL gurl = accept_ch_with_subresource_iframe_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2218,11 +2225,17 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // http_equiv_accept_ch_url() should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestSubresourceIframe_MetaName) {
-  const GURL gurl = GetParam()
-                        ? meta_name_accept_ch_with_subresource_iframe_url()
-                        : accept_ch_with_subresource_iframe_url();
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       DisregardPersistenceRequestSubresourceIframe) {
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_with_subresource_iframe_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_with_subresource_iframe_url();
+      break;
+  }
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2239,10 +2252,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  // `gurl` loads accept_ch() or
-  // meta_name_accept_ch_url() as a subresource in an iframe.
-  // The request to persist client hints from accept_ch() or
-  // meta_name_accept_ch_url() should be disregarded.
+  // `gurl` loads accept_ch() or meta_equiv_delegate_ch_url() as a subresource
+  // in an iframe. The request to persist client hints  should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 }
 
@@ -2260,9 +2271,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, NoClientHintsHttps) {
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 }
 
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsFollowedByNoClientHint_HttpEquiv) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_url() : accept_ch_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       ClientHintsFollowedByNoClientHint) {
+  const GURL gurl = accept_ch_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2276,30 +2287,23 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // headers and not http-equiv.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
 
-  if (GetParam())
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
-  else
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   base::RunLoop().RunUntilIdle();
 
-  if (GetParam()) {
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
-  } else {
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                        expected_client_hints_number, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
 
-    // Clients hints preferences for one origin should be persisted.
-    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
-                                &host_settings);
-    EXPECT_EQ(1u, host_settings.size());
-  }
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
+                              &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
 
-  SetClientHintExpectationsOnMainFrame(!GetParam());
-  SetClientHintExpectationsOnSubresources(!GetParam());
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), without_accept_ch_url()));
 
   // The user agent hint is attached to all three requests:
@@ -2310,12 +2314,20 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
-  EXPECT_EQ(GetParam() ? 0 : expected_client_hints_number * 2,
+  EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsFollowedByNoClientHint_MetaName) {
-  const GURL gurl = GetParam() ? meta_name_accept_ch_url() : accept_ch_url();
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       ClientHintsFollowedByNoClientHint) {
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_url();
+      break;
+  }
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2329,30 +2341,22 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // headers and not http-equiv.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
 
-  if (GetParam())
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
-  else
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   base::RunLoop().RunUntilIdle();
 
-  if (GetParam()) {
-    histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
-  } else {
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                        expected_client_hints_number, 1);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
 
-    // Clients hints preferences for one origin should be persisted.
-    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
-                                &host_settings);
-    EXPECT_EQ(1u, host_settings.size());
-  }
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
 
-  SetClientHintExpectationsOnMainFrame(!GetParam());
-  SetClientHintExpectationsOnSubresources(!GetParam());
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), without_accept_ch_url()));
 
   // The user agent hint is attached to all three requests:
@@ -2363,8 +2367,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
-  EXPECT_EQ(GetParam() ? 0 : expected_client_hints_number * 2,
-            count_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_client_hints_headers_seen());
 }
 
 // The test first fetches a page that sets Accept-CH. Next, it fetches a URL
@@ -2502,16 +2505,15 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
 // Ensure that when JavaScript is blocked, client hint preferences are not
 // persisted.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsNotPersistedJavaScriptBlocked_HttpEquiv) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       ClientHintsNotPersistedJavaScriptBlocked) {
   ContentSettingsForOneType host_settings;
 
   // Start a navigation. This navigation makes it possible to block JavaScript
   // later.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), without_accept_ch_url()));
 
-  const GURL gurl =
-      GetParam() ? http_equiv_accept_ch_with_iframe_url() : accept_ch_url();
+  const GURL gurl = accept_ch_url();
 
   // Block JavaScript: Client hint preferences should not be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2538,16 +2540,23 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->ClearSettingsForOneType(ContentSettingsType::JAVASCRIPT);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsNotPersistedJavaScriptBlocked_MetaName) {
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       ClientHintsNotPersistedJavaScriptBlocked) {
   ContentSettingsForOneType host_settings;
 
   // Start a navigation. This navigation makes it possible to block JavaScript
   // later.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), without_accept_ch_url()));
 
-  const GURL gurl =
-      GetParam() ? meta_name_accept_ch_with_iframe_url() : accept_ch_url();
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_with_iframe_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_with_iframe_url();
+      break;
+  }
 
   // Block JavaScript: Client hint preferences should not be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2667,7 +2676,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
 // Test that if the content settings are malformed, then the browser does not
 // crash.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsMalformedContentSettings) {
   ContentSettingsForOneType client_hints_settings;
   HostContentSettingsMap* host_content_settings_map =
@@ -2696,9 +2705,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Ensure that when JavaScript is blocked, client hints requested using
 // Accept-CH are not attached to the request headers for subresources.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsScriptNotAllowed_HttpEquiv) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_url() : accept_ch_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsScriptNotAllowed) {
+  const GURL gurl = accept_ch_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2767,9 +2775,17 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->ClearSettingsForOneType(ContentSettingsType::JAVASCRIPT);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsScriptNotAllowed_MetaName) {
-  const GURL gurl = GetParam() ? meta_name_accept_ch_url() : accept_ch_url();
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       ClientHintsScriptNotAllowed) {
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_url();
+      break;
+  }
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2841,10 +2857,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Ensure that when the cookies is blocked, client hints are attached to the
 // request headers.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsCookiesNotAllowed_HttpEquiv) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_img_localhost()
-                               : accept_ch_img_localhost();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsCookiesNotAllowed) {
+  const GURL gurl = accept_ch_img_localhost();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -2876,10 +2890,17 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->ClearSettingsForOneType(ContentSettingsType::COOKIES);
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsCookiesNotAllowed_MetaName) {
-  const GURL gurl = GetParam() ? meta_name_accept_ch_img_localhost()
-                               : accept_ch_img_localhost();
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
+                       ClientHintsCookiesNotAllowed) {
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_img_localhost();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_img_localhost();
+      break;
+  }
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -3005,9 +3026,7 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,PrefersColorSchemeClientHintHeader,"
-        "ViewportHeightClientHintHeader",
-        "");
+        "UserAgentClientHint,PrefersColorSchemeClientHintHeader", "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
@@ -3057,30 +3076,37 @@ IN_PROC_BROWSER_TEST_F(ClientHintsWebHoldbackBrowserTest,
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }
 
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UseCounter_HttpEquiv) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UseCounter) {
   auto web_feature_waiter =
       std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
           chrome_test_utils::GetActiveWebContents(this));
 
   web_feature_waiter->AddWebFeatureExpectation(
       blink::mojom::WebFeature::kClientHintsUAFullVersion);
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_url() : accept_ch_url();
+  const GURL gurl = accept_ch_url();
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
 
   web_feature_waiter->Wait();
 }
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UseCounter_MetaName) {
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes, UseCounter) {
   auto web_feature_waiter =
       std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
           chrome_test_utils::GetActiveWebContents(this));
 
   web_feature_waiter->AddWebFeatureExpectation(
       blink::mojom::WebFeature::kClientHintsUAFullVersion);
-  const GURL gurl = GetParam() ? meta_name_accept_ch_url() : accept_ch_url();
+  GURL gurl;
+  switch (GetParam()) {
+    case network::MetaCHType::HttpEquivAcceptCH:
+      gurl = http_equiv_accept_ch_url();
+      break;
+    case network::MetaCHType::HttpEquivDelegateCH:
+      gurl = meta_equiv_delegate_ch_url();
+      break;
+  }
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
-
   web_feature_waiter->Wait();
 }
 

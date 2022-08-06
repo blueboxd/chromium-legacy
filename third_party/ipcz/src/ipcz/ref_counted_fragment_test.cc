@@ -7,6 +7,7 @@
 #include <atomic>
 #include <tuple>
 
+#include "ipcz/driver_memory.h"
 #include "ipcz/fragment.h"
 #include "ipcz/fragment_ref.h"
 #include "ipcz/node.h"
@@ -160,15 +161,16 @@ TEST_F(RefCountedFragmentTest, Move) {
 TEST_F(RefCountedFragmentTest, Free) {
   auto node = MakeRefCounted<Node>(Node::Type::kNormal, kTestDriver,
                                    IPCZ_INVALID_DRIVER_HANDLE);
-  auto memory = NodeLinkMemory::Allocate(std::move(node)).node_link_memory;
+  DriverMemoryWithMapping buffer = NodeLinkMemory::AllocateMemory(kTestDriver);
+  auto memory =
+      NodeLinkMemory::Create(std::move(node), std::move(buffer.mapping));
 
   // Allocate a ton of fragments and let them be released by FragmentRef on
   // destruction. If the fragments aren't freed properly, allocations will fail
   // and so will the test.
   constexpr size_t kNumAllocations = 100000;
   for (size_t i = 0; i < kNumAllocations; ++i) {
-    Fragment fragment =
-        memory->buffer_pool().AllocateFragment(sizeof(TestObject));
+    Fragment fragment = memory->AllocateFragment(sizeof(TestObject));
     EXPECT_TRUE(fragment.is_addressable());
     FragmentRef<TestObject> ref(RefCountedFragment::kAdoptExistingRef, memory,
                                 fragment);

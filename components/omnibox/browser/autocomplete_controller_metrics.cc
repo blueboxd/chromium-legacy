@@ -41,11 +41,11 @@ void AutocompleteControllerMetrics::OnUpdateResult(
     // Log changed or removed matches. Don't log for matches appended to the
     // bottom since that's less disruptive.
     if (i >= new_result.size() || last_result[i] != new_result[i]) {
-      LogSuggestionChangedMetrics(i);
+      LogSuggestionChangeIndexMetrics(i);
       any_match_changed_or_removed = true;
     }
   }
-  LogAnySuggestionChangedMetrics(any_match_changed_or_removed);
+  LogSuggestionChangeInAnyPositionMetrics(any_match_changed_or_removed);
 
   // Log suggestion finalization times.
 
@@ -53,7 +53,7 @@ void AutocompleteControllerMetrics::OnUpdateResult(
   // logging as soon as the final update occurs, while `OnStop()` handles the
   // case where the final update never occurs because of interruptions.
   // TODO(manukh): Consider adding this filter to the above metrics as well.
-  if (!controller_.input().want_asynchronous_matches())
+  if (controller_.input().omit_asynchronous_matches())
     return;
   // E.g., suggestion deletion can call `OnUpdateResult()` after the controller
   // is done and finalization metrics have been logged. They shouldn't be
@@ -144,30 +144,27 @@ void AutocompleteControllerMetrics::LogAsyncAutocompletionTimeMetrics(
     base::UmaHistogramTimes(name_prefix + ".Interrupted", elapsed_time);
 }
 
-void AutocompleteControllerMetrics::LogSuggestionChangedMetrics(
+void AutocompleteControllerMetrics::LogSuggestionChangeIndexMetrics(
     size_t change_index) const {
+  std::string name = "Omnibox.MatchStability.MatchChangeIndex";
+  size_t max = AutocompleteResult::kMaxAutocompletePositionValue;
   // These metrics are logged up to about 50 times per omnibox keystroke, so use
   // UMA macros for efficiency.
-  if (controller_.in_start()) {
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        "Omnibox.CrossInputMatchStability.MatchChange", change_index,
-        AutocompleteResult::kMaxAutocompletePositionValue);
-  } else {
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        "Omnibox.MatchStability.AsyncMatchChange2", change_index,
-        AutocompleteResult::kMaxAutocompletePositionValue);
-  }
+  if (controller_.in_start())
+    UMA_HISTOGRAM_EXACT_LINEAR(name + ".CrossInput", change_index, max);
+  else
+    UMA_HISTOGRAM_EXACT_LINEAR(name + ".Async", change_index, max);
+  UMA_HISTOGRAM_EXACT_LINEAR(name, change_index, max);
 }
 
-void AutocompleteControllerMetrics::LogAnySuggestionChangedMetrics(
+void AutocompleteControllerMetrics::LogSuggestionChangeInAnyPositionMetrics(
     bool changed) const {
-  // These metrics are logged up to about 5 times per omnibox keystroke, so use
-  // UMA macros for efficiency.
-  if (controller_.in_start()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition", changed);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition", changed);
-  }
+  std::string name = "Omnibox.MatchStability.MatchChangeInAnyPosition";
+  // These metrics are logged up to about 5 times per omnibox keystroke, so
+  // use UMA macros for efficiency.
+  if (controller_.in_start())
+    UMA_HISTOGRAM_BOOLEAN(name + ".CrossInput", changed);
+  else
+    UMA_HISTOGRAM_BOOLEAN(name + ".Async", changed);
+  UMA_HISTOGRAM_BOOLEAN(name, changed);
 }

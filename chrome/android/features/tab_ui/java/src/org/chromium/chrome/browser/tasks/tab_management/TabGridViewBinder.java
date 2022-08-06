@@ -112,7 +112,6 @@ class TabGridViewBinder {
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             updateColor(view, model.get(TabProperties.IS_INCOGNITO),
                     model.get(TabProperties.IS_SELECTED));
-            updateThumbnail(view, model);
             updateFavicon(view, model);
             if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()) {
                 ChipView pageInfoButton = (ChipView) view.fastFindViewById(R.id.page_info_button);
@@ -129,18 +128,16 @@ class TabGridViewBinder {
             updateThumbnail(view, model);
         } else if (TabProperties.CONTENT_DESCRIPTION_STRING == propertyKey) {
             view.setContentDescription(model.get(TabProperties.CONTENT_DESCRIPTION_STRING));
-        } else if (TabProperties.GRID_CARD_HEIGHT == propertyKey) {
-            view.setMinimumHeight(model.get(TabProperties.GRID_CARD_HEIGHT));
-            view.getLayoutParams().height = model.get(TabProperties.GRID_CARD_HEIGHT);
+        } else if (TabProperties.GRID_CARD_SIZE == propertyKey) {
+            final Size cardSize = model.get(TabProperties.GRID_CARD_SIZE);
+            view.setMinimumHeight(cardSize.getHeight());
+            view.setMinimumWidth(cardSize.getWidth());
+            view.getLayoutParams().height = cardSize.getHeight();
+            view.getLayoutParams().width = cardSize.getWidth();
             view.setLayoutParams(view.getLayoutParams());
             TabGridThumbnailView thumbnail =
                     (TabGridThumbnailView) view.fastFindViewById(R.id.tab_thumbnail);
             thumbnail.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-            updateThumbnail(view, model);
-        } else if (TabProperties.GRID_CARD_WIDTH == propertyKey) {
-            view.setMinimumWidth(model.get(TabProperties.GRID_CARD_WIDTH));
-            view.getLayoutParams().width = model.get(TabProperties.GRID_CARD_WIDTH);
-            view.setLayoutParams(view.getLayoutParams());
             updateThumbnail(view, model);
         }
     }
@@ -243,11 +240,11 @@ class TabGridViewBinder {
                             // TODO(crbug.com/1337117): add logging for when
                             // couponPersistedTabData is not null
                             if (couponPersistedTabData == null
-                                    || couponPersistedTabData.getCoupon() == null) {
+                                    || couponPersistedTabData.getCouponAnnotationText() == null) {
                                 couponCardView.setVisibility(View.GONE);
                             } else {
                                 couponCardView.setCouponString(
-                                        couponPersistedTabData.getCoupon().couponName);
+                                        couponPersistedTabData.getCouponAnnotationText());
                                 couponCardView.setVisibility(View.VISIBLE);
                             }
                         });
@@ -370,16 +367,20 @@ class TabGridViewBinder {
         thumbnail.setColorThumbnailPlaceHolder(
                 model.get(TabProperties.IS_INCOGNITO), model.get(TabProperties.IS_SELECTED));
 
+        final Size cardSize = model.get(TabProperties.GRID_CARD_SIZE);
         final Size thumbnailSize =
                 TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(view.getContext())
-                ? TabUtils.deriveThumbnailSize(model.get(TabProperties.GRID_CARD_WIDTH),
-                        model.get(TabProperties.GRID_CARD_HEIGHT), view.getContext())
+                        && cardSize != null
+                ? TabUtils.deriveThumbnailSize(cardSize, view.getContext())
                 : null;
         Callback<Bitmap> callback = result -> {
             if (result != null) {
-                if (TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(view.getContext())) {
+                if (TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(view.getContext())
+                        && model.get(TabProperties.GRID_CARD_SIZE) != null) {
                     // Adjust bitmap to thumbnail.
-                    updateThumbnailMatrix(thumbnail, result, thumbnailSize);
+                    Size destSize = TabUtils.deriveThumbnailSize(
+                            model.get(TabProperties.GRID_CARD_SIZE), view.getContext());
+                    updateThumbnailMatrix(thumbnail, result, destSize);
                 } else {
                     thumbnail.setScaleType(ScaleType.FIT_CENTER);
                     thumbnail.setAdjustViewBounds(true);
@@ -403,8 +404,8 @@ class TabGridViewBinder {
      */
     private static void updateThumbnailMatrix(
             TabGridThumbnailView thumbnail, Bitmap source, Size destinationSize) {
-        int newWidth = destinationSize.getWidth();
-        int newHeight = destinationSize.getHeight();
+        int newWidth = destinationSize == null ? 0 : destinationSize.getWidth();
+        int newHeight = destinationSize == null ? 0 : destinationSize.getHeight();
         if (newWidth <= 0 || newHeight <= 0
                 || (newWidth == source.getWidth() && newHeight == source.getHeight())) {
             thumbnail.setScaleType(ScaleType.FIT_CENTER);

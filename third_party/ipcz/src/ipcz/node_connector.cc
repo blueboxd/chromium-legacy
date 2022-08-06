@@ -11,6 +11,7 @@
 #include "ipcz/driver_transport.h"
 #include "ipcz/ipcz.h"
 #include "ipcz/link_side.h"
+#include "ipcz/link_type.h"
 #include "ipcz/node_link.h"
 #include "ipcz/node_link_memory.h"
 #include "ipcz/portal.h"
@@ -37,8 +38,9 @@ class NodeConnectorForBrokerToNonBroker : public NodeConnector {
                       flags,
                       std::move(waiting_portals),
                       std::move(callback)),
-        link_memory_allocation_(NodeLinkMemory::Allocate(node_)) {
-    ABSL_ASSERT(link_memory_allocation_.node_link_memory);
+        link_memory_allocation_(
+            NodeLinkMemory::AllocateMemory(node_->driver())) {
+    ABSL_ASSERT(link_memory_allocation_.mapping.is_valid());
   }
 
   ~NodeConnectorForBrokerToNonBroker() override = default;
@@ -58,7 +60,7 @@ class NodeConnectorForBrokerToNonBroker : public NodeConnector {
     connect.params().num_initial_portals =
         checked_cast<uint32_t>(num_portals());
     connect.params().buffer = connect.AppendDriverObject(
-        link_memory_allocation_.primary_buffer_memory.TakeDriverObject());
+        link_memory_allocation_.memory.TakeDriverObject());
     return IPCZ_RESULT_OK == transport_->Transmit(connect);
   }
 
@@ -70,10 +72,11 @@ class NodeConnectorForBrokerToNonBroker : public NodeConnector {
              << new_remote_node_name_.ToString();
 
     AcceptConnection(
-        NodeLink::Create(node_, LinkSide::kA, broker_name_,
-                         new_remote_node_name_, Node::Type::kNormal,
-                         connect.params().protocol_version, transport_,
-                         std::move(link_memory_allocation_.node_link_memory)),
+        NodeLink::CreateActive(
+            node_, LinkSide::kA, broker_name_, new_remote_node_name_,
+            Node::Type::kNormal, connect.params().protocol_version, transport_,
+            NodeLinkMemory::Create(node_,
+                                   std::move(link_memory_allocation_.mapping))),
         LinkSide::kA, connect.params().num_initial_portals);
     return true;
   }
@@ -81,7 +84,7 @@ class NodeConnectorForBrokerToNonBroker : public NodeConnector {
  private:
   const NodeName broker_name_{node_->GetAssignedName()};
   const NodeName new_remote_node_name_{node_->GenerateRandomName()};
-  NodeLinkMemory::Allocation link_memory_allocation_;
+  DriverMemoryWithMapping link_memory_allocation_;
 };
 
 class NodeConnectorForNonBrokerToBroker : public NodeConnector {
@@ -122,16 +125,16 @@ class NodeConnectorForNonBrokerToBroker : public NodeConnector {
       return false;
     }
 
-    auto new_link = NodeLink::Create(
+    auto new_link = NodeLink::CreateActive(
         node_, LinkSide::kB, connect.params().receiver_name,
         connect.params().broker_name, Node::Type::kBroker,
         connect.params().protocol_version, transport_,
-        NodeLinkMemory::Adopt(node_, std::move(buffer_memory)));
+        NodeLinkMemory::Create(node_, buffer_memory.Map()));
     node_->SetAssignedName(connect.params().receiver_name);
     node_->SetBrokerLink(new_link);
-
-    // TODO: Support delegated allocation of shared memory.
-    ABSL_ASSERT((flags_ & IPCZ_CONNECT_NODE_TO_ALLOCATION_DELEGATE) == 0);
+    if ((flags_ & IPCZ_CONNECT_NODE_TO_ALLOCATION_DELEGATE) != 0) {
+      node_->SetAllocationDelegate(new_link);
+    }
 
     AcceptConnection(std::move(new_link), LinkSide::kB,
                      connect.params().num_initial_portals);
@@ -262,8 +265,14 @@ void NodeConnector::EstablishWaitingPortals(Ref<NodeLink> to_link,
       std::min(max_valid_portals, waiting_portals_.size());
   for (size_t i = 0; i < num_valid_portals; ++i) {
     const Ref<Router> router = waiting_portals_[i]->router();
-    router->SetOutwardLink(to_link->AddRemoteRouterLink(
-        SublinkId(i), LinkType::kCentral, link_side, router));
+    Ref<RouterLink> link = to_link->AddRemoteRouterLink(
+        SublinkId(i), to_link->memory().GetInitialRouterLinkState(i),
+        LinkType::kCentral, link_side, router);
+    if (link) {
+      router->SetOutwardLink(std::move(link));
+    } else {
+      router->AcceptRouteDisconnectedFrom(LinkType::kCentral);
+    }
   }
 
   // Elicit immediate peer closure on any surplus portals that were established

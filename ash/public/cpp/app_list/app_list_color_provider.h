@@ -32,6 +32,8 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   virtual SkColor GetSearchBoxTextColor(SkColor default_color) const = 0;
   virtual SkColor GetSearchBoxSecondaryTextColor(
       SkColor default_color) const = 0;
+  virtual SkColor GetSearchBoxSuggestionTextColor(
+      SkColor default_color) const = 0;
   virtual SkColor GetSuggestionChipBackgroundColor() const = 0;
   virtual SkColor GetSuggestionChipTextColor() const = 0;
   virtual SkColor GetAppListItemTextColor(bool is_in_folder) const = 0;
@@ -45,6 +47,7 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   virtual SkColor GetFolderHintTextColor() const = 0;
   virtual SkColor GetFolderNameBorderColor(bool active) const = 0;
   virtual SkColor GetFolderNameSelectionColor() const = 0;
+  virtual SkColor GetFolderNotificationBadgeColor() const = 0;
   virtual SkColor GetContentsBackgroundColor() const = 0;
   virtual SkColor GetGridBackgroundCardActiveColor() const = 0;
   virtual SkColor GetGridBackgroundCardInactiveColor() const = 0;
@@ -53,10 +56,6 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   virtual SkColor GetInkDropBaseColor(
       SkColor bg_color = gfx::kPlaceholderColor) const = 0;
   virtual float GetInkDropOpacity(
-      SkColor bg_color = gfx::kPlaceholderColor) const = 0;
-  virtual SkColor GetInvertedInkDropBaseColor(
-      SkColor bg_color = gfx::kPlaceholderColor) const = 0;
-  virtual float GetInvertedInkDropOpacity(
       SkColor bg_color = gfx::kPlaceholderColor) const = 0;
   virtual SkColor GetSearchResultViewHighlightColor() const = 0;
   virtual SkColor GetTextColorURL() const = 0;

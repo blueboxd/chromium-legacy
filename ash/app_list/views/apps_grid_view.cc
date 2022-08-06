@@ -23,19 +23,15 @@
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/app_list/views/app_list_folder_controller.h"
-#include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
+#include "ash/app_list/views/app_list_keyboard_controller.h"
 #include "ash/app_list/views/app_list_view_util.h"
 #include "ash/app_list/views/apps_grid_context_menu.h"
-#include "ash/app_list/views/apps_grid_view_focus_delegate.h"
+#include "ash/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ash/app_list/views/ghost_image_view.h"
 #include "ash/app_list/views/pulsing_block_view.h"
-#include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -43,34 +39,22 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
-#include "base/guid.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/bounds_animator.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -150,10 +134,9 @@ constexpr int AppsGridView::kDefaultAnimationDuration;
 
 AppsGridView::VisibleItemIndexRange::VisibleItemIndexRange() = default;
 
-AppsGridView::VisibleItemIndexRange::VisibleItemIndexRange(
-    int input_first_index,
-    int input_last_index)
-    : first_index(input_first_index), last_index(input_last_index) {}
+AppsGridView::VisibleItemIndexRange::VisibleItemIndexRange(size_t first_index,
+                                                           size_t last_index)
+    : first_index(first_index), last_index(last_index) {}
 
 AppsGridView::VisibleItemIndexRange::~VisibleItemIndexRange() = default;
 
@@ -278,12 +261,12 @@ AppsGridView::AppsGridView(AppListA11yAnnouncer* a11y_announcer,
                            AppListViewDelegate* app_list_view_delegate,
                            AppsGridViewFolderDelegate* folder_delegate,
                            AppListFolderController* folder_controller,
-                           AppsGridViewFocusDelegate* focus_delegate)
+                           AppListKeyboardController* keyboard_controller)
     : folder_delegate_(folder_delegate),
       folder_controller_(folder_controller),
       a11y_announcer_(a11y_announcer),
       app_list_view_delegate_(app_list_view_delegate),
-      focus_delegate_(focus_delegate) {
+      keyboard_controller_(keyboard_controller) {
   DCHECK(a11y_announcer_);
   DCHECK(app_list_view_delegate_);
   // Top-level grids must have a folder controller.
@@ -347,6 +330,7 @@ AppsGridView::~AppsGridView() {
   MaybeAbortWholeGridAnimation();
 
   view_model_.Clear();
+  pulsing_blocks_model_.Clear();
   RemoveAllChildViews();
 
   // `OnBoundsAnimatorDone`, which uses `bounds_animator_`, is called on
@@ -781,10 +765,9 @@ AppListItemView* AppsGridView::GetItemViewForItem(const std::string& item_id) {
   return GetItemViewAt(GetModelIndexOfItem(item));
 }
 
-AppListItemView* AppsGridView::GetItemViewAt(int index) const {
-  if (index < 0 || static_cast<size_t>(index) >= view_model_.view_size())
-    return nullptr;
-  return view_model_.view_at(index);
+AppListItemView* AppsGridView::GetItemViewAt(size_t index) const {
+  return (index < view_model_.view_size()) ? view_model_.view_at(index)
+                                           : nullptr;
 }
 
 void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
@@ -1161,7 +1144,7 @@ AppListItemView* AppsGridView::MaybeSwapPlaceholderAsset(size_t index) {
   const bool is_syncing =
       model_ && model_->status() == AppListModelStatus::kStatusSyncing;
   const bool should_animate_placeholder_swap =
-      ash::features::IsLauncherPulsingBlocksRefreshEnabled() &&
+      ash::features::IsProductivityLauncherEnabled() &&
       pulsing_blocks_model_.view_size() > 0 && is_syncing &&
       placeholder_in_view_index;
 
@@ -1272,7 +1255,7 @@ AppListItemView* AppsGridView::GetViewAtIndex(const GridIndex& index) const {
   if (!IsValidIndex(index))
     return nullptr;
 
-  const int model_index = view_structure_.GetModelIndexFromIndex(index);
+  const size_t model_index = view_structure_.GetModelIndexFromIndex(index);
   return GetItemViewAt(model_index);
 }
 
@@ -1881,8 +1864,8 @@ bool AppsGridView::HandleVerticalFocusMovement(bool arrow_up) {
 
   if (target_page < 0) {
     // Move focus up outside the apps grid if target page is negative.
-    if (focus_delegate_ &&
-        focus_delegate_->MoveFocusUpFromAppsGrid(target_col)) {
+    if (keyboard_controller_ &&
+        keyboard_controller_->MoveFocusUpFromAppsGrid(target_col)) {
       // The delegate handled the focus move.
       return true;
     }
@@ -2127,17 +2110,30 @@ views::AnimationBuilder AppsGridView::FadeInVisibleItemsForReorder(
   const absl::optional<VisibleItemIndexRange> range =
       GetVisibleItemIndexRange();
 
-  // TODO(https://crbug.com/1289411): handle the case that `range` is null.
-  DCHECK(range);
+  views::AnimationBuilder animation_builder;
+
+  // No items to be sorted are visible - return an empty animation builder that
+  // ends immediately.
+  if (!range) {
+    animation_builder
+        .OnEnded(base::BindOnce(&AppsGridView::OnFadeInAnimationEnded,
+                                weak_factory_.GetWeakPtr(), done_callback,
+                                /*abort=*/true))
+        .OnAborted(base::BindOnce(&AppsGridView::OnFadeInAnimationEnded,
+                                  weak_factory_.GetWeakPtr(), done_callback,
+                                  /*abort=*/true))
+        .Once()
+        .SetDuration(base::TimeDelta());
+    return animation_builder;
+  }
 
   // Only show the visible items during animation to reduce the cost of painting
   // that is triggered by view bounds changes due to reorder.
-  for (int visible_view_index = range->first_index;
+  for (size_t visible_view_index = range->first_index;
        visible_view_index <= range->last_index; ++visible_view_index) {
     view_model_.view_at(visible_view_index)->SetVisible(true);
   }
 
-  views::AnimationBuilder animation_builder;
   grid_animation_abort_handle_ = animation_builder.GetAbortHandle();
   animation_builder
       .OnEnded(base::BindOnce(&AppsGridView::OnFadeInAnimationEnded,
@@ -2160,7 +2156,7 @@ views::AnimationBuilder AppsGridView::FadeInVisibleItemsForReorder(
   // The row of the first visible item.
   const int base_row = range->first_index / cols_;
 
-  for (int visible_view_index = range->first_index;
+  for (size_t visible_view_index = range->first_index;
        visible_view_index <= range->last_index; ++visible_view_index) {
     // Calculate translate offset for each view. NOTE: The items on the
     // different rows have different fade in offsets. The ratio between the
@@ -2217,7 +2213,7 @@ void AppsGridView::SlideVisibleItemsForHideContinueSection(int base_offset) {
       .SetDuration(base::Milliseconds(300));
 
   // Animate each row of app icons with a different offset.
-  for (int item_index = range->first_index; item_index <= range->last_index;
+  for (size_t item_index = range->first_index; item_index <= range->last_index;
        ++item_index) {
     const int row_index = item_index / cols_;
 
@@ -2247,18 +2243,7 @@ void AppsGridView::OnHideContinueSectionAnimationEnded() {
 
 bool AppsGridView::IsAnimationRunningForTest() {
   return bounds_animator_->IsAnimating() ||
-         bounds_animation_for_cardified_state_in_progress_ > 0;
-}
-
-void AppsGridView::CancelAnimationsForTest() {
-  bounds_animator_->Cancel();
-  drag_icon_proxy_.reset();
-
-  const size_t total_views = view_model_.view_size();
-  for (size_t i = 0; i < total_views; ++i) {
-    if (view_model_.view_at(i)->layer())
-      view_model_.view_at(i)->layer()->CompleteAllAnimations();
-  }
+         bounds_animation_for_cardified_state_in_progress_;
 }
 
 bool AppsGridView::FireFolderItemReparentTimerForTest() {
@@ -2527,7 +2512,7 @@ void AppsGridView::CancelContextMenusOnCurrentPage() {
     GetItemViewAt(i)->CancelContextMenu();
 }
 
-void AppsGridView::DeleteItemViewAtIndex(int index) {
+void AppsGridView::DeleteItemViewAtIndex(size_t index) {
   AppListItemView* item_view = GetItemViewAt(index);
   view_model_.Remove(index);
   view_structure_.Remove(item_view);
@@ -2636,8 +2621,8 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     // The item is updated in the item list but the view_model is not updated,
     // so get current model index by looking up view_model and predict the
     // target model index based on its current item index.
-    int from_model_index = GetModelIndexOfItem(item);
-    int to_model_index = GetTargetModelIndexFromItemIndex(to_index);
+    size_t from_model_index = GetModelIndexOfItem(item);
+    size_t to_model_index = GetTargetModelIndexFromItemIndex(to_index);
     view_model_.Move(from_model_index, to_model_index);
     items_container_->ReorderChildView(view_model_.view_at(to_model_index),
                                        to_model_index);
@@ -3018,21 +3003,21 @@ bool AppsGridView::IsValidReorderTargetIndex(const GridIndex& index) const {
   return view_structure_.IsValidReorderTargetIndex(index);
 }
 
-int AppsGridView::GetModelIndexOfItem(const AppListItem* item) const {
+size_t AppsGridView::GetModelIndexOfItem(const AppListItem* item) const {
   const auto& entries = view_model_.entries();
   const auto iter =
       std::find_if(entries.begin(), entries.end(), [item](const auto& entry) {
         return static_cast<AppListItemView*>(entry.view)->item() == item;
       });
-  return std::distance(entries.begin(), iter);
+  return static_cast<size_t>(std::distance(entries.begin(), iter));
 }
 
-int AppsGridView::GetTargetModelIndexFromItemIndex(size_t item_index) {
+size_t AppsGridView::GetTargetModelIndexFromItemIndex(size_t item_index) {
   if (folder_delegate_)
     return item_index;
 
   CHECK(item_index <= item_list_->item_count());
-  int target_model_index = 0;
+  size_t target_model_index = 0;
   for (size_t i = 0; i < item_index; ++i) {
     if (!item_list_->item_at(i)->is_page_break())
       ++target_model_index;

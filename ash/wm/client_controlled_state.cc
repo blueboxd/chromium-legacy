@@ -78,10 +78,11 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
     bool was_pinned = window_state->IsPinned();
     bool was_trusted_pinned = window_state->IsTrustedPinned();
 
-    set_next_bounds_change_animation_type(kAnimationCrossFade);
+    set_next_bounds_change_animation_type(
+        WindowState::BoundsChangeAnimationType::kCrossFade);
     EnterNextState(window_state, next_state_type);
 
-    VLOG(1) << "Processing Pinned Transtion: event=" << event_type
+    VLOG(1) << "Processing Pinned Transition: event=" << event_type
             << ", state=" << old_state_type << "=>" << next_state_type
             << ", pinned=" << was_pinned << "=>" << window_state->IsPinned()
             << ", trusted pinned=" << was_trusted_pinned << "=>"
@@ -101,6 +102,9 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
       UpdateWindowForTransitionEvents(window_state, next_state, event_type);
       break;
     }
+    case WM_EVENT_FLOAT:
+      // TODO(crbug.com/1346061): Implement this.
+      break;
     case WM_EVENT_RESTORE:
       UpdateWindowForTransitionEvents(
           window_state, window_state->GetRestoreWindowState(), event_type);
@@ -212,19 +216,22 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
       const gfx::Rect& bounds = set_bounds_event->requested_bounds();
       if (set_bounds_locally_) {
         switch (next_bounds_change_animation_type_) {
-          case kAnimationNone:
+          case WindowState::BoundsChangeAnimationType::kNone:
             window_state->SetBoundsDirect(bounds);
             break;
-          case kAnimationCrossFade:
+          case WindowState::BoundsChangeAnimationType::kCrossFade:
             window_state->SetBoundsDirectCrossFade(bounds);
             break;
-          case kAnimationAnimated:
+          case WindowState::BoundsChangeAnimationType::kAnimate:
             window_state->SetBoundsDirectAnimated(
                 bounds, bounds_change_animation_duration_);
             break;
+          case WindowState::BoundsChangeAnimationType::kAnimateZero:
+            NOTREACHED();
+            break;
         }
-        next_bounds_change_animation_type_ = kAnimationNone;
-
+        next_bounds_change_animation_type_ =
+            WindowState::BoundsChangeAnimationType::kNone;
       } else if (!window_state->IsPinned()) {
         // TODO(oshima): Define behavior for pinned app.
         bounds_change_animation_duration_ = set_bounds_event->duration();

@@ -59,6 +59,7 @@
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "skia/public/mojom/tile_mode_mojom_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkString.h"
@@ -187,7 +188,7 @@ TEST_F(StructTraitsTest, FilterOperationBlur) {
 
 TEST_F(StructTraitsTest, FilterOperationDropShadow) {
   cc::FilterOperation input = cc::FilterOperation::CreateDropShadowFilter(
-      gfx::Point(4, 4), 4.0f, SkColorSetARGB(255, 40, 0, 0));
+      gfx::Point(4, 4), 4.0f, SkColor4f{0.15f, 0.0f, 0.0f, 1.0f});
 
   cc::FilterOperation output;
   mojo::test::SerializeAndDeserialize<mojom::FilterOperation>(input, output);
@@ -676,7 +677,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
   const bool may_contain_video = true;
   const bool is_resourceless_software_draw_with_scroll_or_animation = true;
-  const uint32_t root_background_color = 1337;
+  const SkColor4f root_background_color = {0.0f, 0.02f, 0.224f, 0.0f};
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
@@ -1017,15 +1018,19 @@ TEST_F(StructTraitsTest, QuadListBasic) {
                             vertex_opacity, y_flipped, nearest_neighbor,
                             secure_output_only, protected_video_type);
 
+  // Create a stream video TextureDrawQuad.
   const gfx::Rect rect6(321, 765, 11109, 151413);
   const bool needs_blending6 = false;
   const ResourceId resource_id6(1234);
   const gfx::Size resource_size_in_pixels(1234, 5678);
-  StreamVideoDrawQuad* stream_video_draw_quad =
-      render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
-  stream_video_draw_quad->SetNew(sqs, rect6, rect6, needs_blending6,
-                                 resource_id6, resource_size_in_pixels,
-                                 uv_top_left, uv_bottom_right);
+  const float stream_draw_quad_opacity[] = {1, 1, 1, 1};
+  TextureDrawQuad* stream_video_draw_quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  stream_video_draw_quad->SetAll(
+      sqs, rect6, rect6, needs_blending6, resource_id6, resource_size_in_pixels,
+      false, uv_top_left, uv_bottom_right, SkColors::kTransparent,
+      stream_draw_quad_opacity, false, false, false, protected_video_type);
+  stream_video_draw_quad->is_stream_video = true;
 
   std::unique_ptr<CompositorRenderPass> output;
   mojo::test::SerializeAndDeserialize<mojom::CompositorRenderPass>(render_pass,
@@ -1101,8 +1106,9 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(nearest_neighbor, out_texture_draw_quad->nearest_neighbor);
   EXPECT_EQ(secure_output_only, out_texture_draw_quad->secure_output_only);
 
-  const StreamVideoDrawQuad* out_stream_video_draw_quad =
-      StreamVideoDrawQuad::MaterialCast(output->quad_list.ElementAt(5));
+  const TextureDrawQuad* out_stream_video_draw_quad =
+      TextureDrawQuad::MaterialCast(output->quad_list.ElementAt(5));
+  EXPECT_TRUE(out_stream_video_draw_quad->is_stream_video);
   EXPECT_EQ(rect6, out_stream_video_draw_quad->rect);
   EXPECT_EQ(rect6, out_stream_video_draw_quad->visible_rect);
   EXPECT_EQ(needs_blending6, out_stream_video_draw_quad->needs_blending);

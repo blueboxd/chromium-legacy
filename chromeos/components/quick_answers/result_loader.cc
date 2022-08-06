@@ -26,17 +26,30 @@ constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
             sender: "ChromeOS Quick Answers"
             description:
               "ChromeOS requests quick answers based on the currently selected "
-              "text."
+              "text to look up a translation, dictionary definition, "
+              "or unit conversion."
             trigger:
               "Right click to trigger context menu."
+            data: "Currently selected text, device language and "
+                  "source language of the selected text "
+                  "is sent to Google API only for translation."
             destination: GOOGLE_OWNED_SERVICE
           }
           policy: {
             cookies_allowed: YES
+            cookies_store: "system"
             setting:
               "Quick Answers can be enabled/disabled in Chrome Settings and is "
               "subject to eligibility requirements. The user may also "
               "separately opt out of sharing screen context with Assistant."
+            chrome_policy {
+                QuickAnswersEnabled {
+                    QuickAnswersEnabled: false
+                }
+                QuickAnswersTranslationEnabled {
+                    QuickAnswersTranslationEnabled: true
+                }
+            }
           })");
 
 }  // namespace
@@ -96,8 +109,13 @@ void ResultLoader::OnSimpleURLLoaderComplete(
 
   if (!response_body || loader_->NetError() != net::OK ||
       !loader_->ResponseInfo() || !loader_->ResponseInfo()->headers) {
+    int response_code = -1;
+    if (loader_->ResponseInfo() && loader_->ResponseInfo()->headers) {
+      response_code = loader_->ResponseInfo()->headers->response_code();
+    }
     RecordLoadingStatus(LoadStatus::kNetworkError, duration);
-    RecordNetworkError(preprocessed_output.intent_info.intent_type);
+    RecordNetworkError(preprocessed_output.intent_info.intent_type,
+                       response_code);
     delegate_->OnNetworkError();
     return;
   }

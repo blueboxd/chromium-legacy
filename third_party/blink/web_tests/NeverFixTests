@@ -25,9 +25,6 @@
 # Perf tests are really slow in debug builds and there are few benefits in running them.
 [ Debug ] http/tests/perf/* [ Skip ]
 
-# Not intended to be run as a test.
-fast/harness/results.html [ Skip ]
-
 # Chrome Win/Linux doesn't support emacs key-bindings.
 [ Win ] editing/pasteboard/emacs-cntl-y-001.html [ Skip ]
 [ Linux ] editing/pasteboard/emacs-cntl-y-001.html [ Skip ]
@@ -147,9 +144,9 @@ external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-ma
 external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 [ Linux ] virtual/threaded/external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
 
-# These tests require command line arguments so only virtual/conversions-debug-mode version is run.
+# These tests require command line arguments so only virtual/attribution-reporting-debug-mode version is run.
 wpt_internal/attribution-reporting/* [ Skip ]
-virtual/conversions-debug-mode/wpt_internal/attribution-reporting/* [ Pass ]
+virtual/attribution-reporting-debug-mode/wpt_internal/attribution-reporting/* [ Pass ]
 
 # This test requires a compositor to pass as root scrollbar scrolling is always
 # done on the compositor thread.
@@ -962,12 +959,6 @@ external/wpt/css/css-backgrounds/css3-border-image-repeat-repeat.html [ Skip ]
 external/wpt/css/css-backgrounds/css3-border-image-repeat-stretch.html [ Skip ]
 external/wpt/css/css-backgrounds/first-letter-space-not-selected.html [ Skip ]
 
-# The ic unit isn't supported. https://crbug.com/778495
-external/wpt/css/css-values/ic-unit-001.html [ Skip ]
-external/wpt/css/css-values/ic-unit-002.html [ Skip ]
-external/wpt/css/css-values/ic-unit-003.html [ Skip ]
-external/wpt/css/css-values/ic-unit-004.html [ Skip ]
-
 # lab() and lch() aren't supported.
 external/wpt/css/css-color/lab-001.html [ Skip ]
 external/wpt/css/css-color/lab-002.html [ Skip ]
@@ -1405,6 +1396,8 @@ external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.large-manual.
 external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.rtl-manual.worker.js [ Skip ]
 external/wpt/html/canvas/offscreen/text/2d.text.draw.kern.consistent-manual.worker.js [ Skip ]
 external/wpt/html/canvas/offscreen/text/2d.text.draw.stroke.basic-manual.worker.js [ Skip ]
+external/wpt/html/canvas/element/manual/drawing-text-to-the-canvas/canvas.2d.disconnected.html [ Skip ]
+
 external/wpt/orientation-event/motion/page-visibility-manual.https.html [ Skip ]
 external/wpt/orientation-event/motion/t025-manual.https.html [ Skip ]
 external/wpt/orientation-event/motion/t028-manual.https.html [ Skip ]
@@ -1969,3 +1962,18 @@ virtual/origin-agent-cluster-default/wpt_internal/origin-agent-cluster-default/*
 
 # Skip manual tests, see crbug/1114920
 external/wpt/html/semantics/forms/the-input-element/disabled-click-picker-manual.html [ Skip ]
+
+# First party DevTools issues only work in the first-party-sets virtual suite
+crbug.com/1179186 http/tests/inspector-protocol/network/blocked-cookie-same-party-issue.js [ Skip ]
+crbug.com/1179186 http/tests/inspector-protocol/network/blocked-setcookie-same-party-cross-party-issue.js [ Skip ]
+crbug.com/1179186 virtual/first-party-sets/http/tests/inspector-protocol/network/blocked-cookie-same-party-issue.js [ Pass ]
+crbug.com/1179186 virtual/first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-party-cross-party-issue.js [ Pass ]
+
+# This test passes only when the JXL feature is enabled.
+crbug.com/1161994 http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Skip ]
+crbug.com/1161994 virtual/jxl-enabled/http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Pass ]
+
+# These tests require the mparch based fenced frames.
+crbug.com/1260483 http/tests/inspector-protocol/fenced-frame/* [ Skip ]
+crbug.com/1260483 virtual/fenced-frame-mparch/http/tests/inspector-protocol/fenced-frame/* [ Pass ]
+

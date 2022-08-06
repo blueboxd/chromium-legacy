@@ -11,15 +11,15 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
+#include "components/exo/security_delegate.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
+#include "components/exo/test/test_security_delegate.h"
 #include "components/exo/xdg_shell_surface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
-
-#include "base/logging.h"
 
 namespace {
 
@@ -31,6 +31,7 @@ struct Holder {
                          std::unique_ptr<exo::Surface>,
                          std::unique_ptr<exo::SubSurface>>>
       sub_surfaces;
+  std::unique_ptr<exo::SecurityDelegate> security_delegate_;
 
   void AddRootSurface(const gfx::Size& size,
                       absl::optional<gfx::BufferFormat> buffer_format) {
@@ -82,6 +83,11 @@ struct Holder {
       }
     }
     root_surface = nullptr;
+  }
+
+  exo::SecurityDelegate* CreateTestSecurityDelegate() {
+    security_delegate_ = std::make_unique<exo::test::TestSecurityDelegate>();
+    return security_delegate_.get();
   }
 };
 
@@ -208,6 +214,13 @@ ShellSurfaceBuilder& ShellSurfaceBuilder::SetCentered() {
   return *this;
 }
 
+ShellSurfaceBuilder& ShellSurfaceBuilder::SetSecurityDelegate(
+    SecurityDelegate* security_delegate) {
+  DCHECK(!built_);
+  security_delegate_ = security_delegate;
+  return *this;
+}
+
 ShellSurfaceBuilder& ShellSurfaceBuilder::SetParent(ShellSurface* parent) {
   DCHECK(!built_);
   parent_shell_surface_ = parent;
@@ -218,6 +231,12 @@ ShellSurfaceBuilder& ShellSurfaceBuilder::SetAsPopup() {
   DCHECK(!built_);
   popup_ = true;
   return *this;
+}
+
+ShellSurfaceBuilder& ShellSurfaceBuilder::SetAsMenu() {
+  DCHECK(!built_);
+  menu_ = true;
+  return SetAsPopup();
 }
 
 ShellSurfaceBuilder& ShellSurfaceBuilder::SetWindowState(
@@ -272,6 +291,8 @@ std::unique_ptr<ShellSurface> ShellSurfaceBuilder::BuildShellSurface() {
     shell_surface->SetParent(parent_shell_surface_);
   if (popup_)
     shell_surface->SetPopup();
+  if (menu_)
+    shell_surface->SetMenu();
 
   SetCommonPropertiesAndCommitIfNecessary(shell_surface.get());
 
@@ -380,6 +401,14 @@ void ShellSurfaceBuilder::SetCommonPropertiesAndCommitIfNecessary(
 
   if (system_modal_) {
     shell_surface->SetSystemModal(true);
+  }
+
+  if (security_delegate_) {
+    shell_surface->SetSecurityDelegate(security_delegate_);
+  } else {
+    auto* holder =
+        shell_surface->host_window()->GetProperty(kBuilderResourceHolderKey);
+    shell_surface->SetSecurityDelegate(holder->CreateTestSecurityDelegate());
   }
 
   if (commit_on_build_) {

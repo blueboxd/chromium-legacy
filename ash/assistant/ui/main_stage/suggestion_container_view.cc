@@ -72,7 +72,6 @@ class SuggestionChipAnimator : public ElementAnimator {
         layer()->GetAnimator(), CreateAnimateInAnimation(), observer,
         base::BindRepeating<void(const std::string&, int)>(
             base::UmaHistogramPercentage, kAssistantSuggestionChipHistogram));
-    ElementAnimator::view()->SetVisible(true);
   }
 
   void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
@@ -80,7 +79,6 @@ class SuggestionChipAnimator : public ElementAnimator {
         layer()->GetAnimator(), CreateAnimateOutAnimation(), observer,
         base::BindRepeating<void(const std::string&, int)>(
             base::UmaHistogramPercentage, kAssistantSuggestionChipHistogram));
-    ElementAnimator::view()->SetVisible(false);
   }
 
   void FadeOut(ui::CallbackLayerAnimationObserver* observer) override {
@@ -249,6 +247,12 @@ void SuggestionContainerView::OnUiVisibilityChanged(
   // we need to center align our content.
   layout_manager_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
+}
+
+void SuggestionContainerView::InitializeUIForBubbleView() {
+  OnConversationStartersChanged(AssistantSuggestionsController::Get()
+                                    ->GetModel()
+                                    ->GetConversationStarters());
 }
 
 void SuggestionContainerView::OnButtonPressed(SuggestionChipView* chip_view) {

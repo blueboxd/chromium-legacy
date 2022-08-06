@@ -306,8 +306,6 @@ component("gfx") {
     sources += [
       "platform_font_skia.cc",
       "platform_font_skia.h",
-      "skia_font_delegate.cc",
-      "skia_font_delegate.h",
     ]
   }
 
@@ -367,6 +365,7 @@ component("gfx") {
   if (is_win) {
     libs = [
       "setupapi.lib",
+      "dwmapi.lib",
       "dwrite.lib",
     ]
     deps += [ "//components/crash/core/common" ]
@@ -382,6 +381,9 @@ component("gfx") {
   }
 
   # Linux.
+  if (is_linux) {
+    deps += [ "//ui/linux:linux_ui" ]
+  }
   if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
   }
@@ -419,6 +421,8 @@ component("color_space") {
     "color_transform.h",
     "display_color_spaces.cc",
     "display_color_spaces.h",
+    "hdr_metadata.cc",
+    "hdr_metadata.h",
     "hdr_static_metadata.cc",
     "hdr_static_metadata.h",
     "icc_profile.cc",
@@ -543,8 +547,6 @@ source_set("memory_buffer_sources") {
     "gpu_fence.h",
     "gpu_fence_handle.cc",
     "gpu_fence_handle.h",
-    "hdr_metadata.cc",
-    "hdr_metadata.h",
     "native_pixmap.h",
     "overlay_priority_hint.h",
     "overlay_transform.h",
@@ -670,27 +672,6 @@ static_library("test_support") {
   }
 }
 
-if (is_mac) {
-  component("gfx_io_surface_hdr_metadata") {
-    sources = [
-      "mac/io_surface_hdr_metadata.cc",
-      "mac/io_surface_hdr_metadata.h",
-    ]
-    defines = [ "IS_GFX_IO_SURFACE_HDR_METADATA_IMPL" ]
-
-    # This is a separate component from the other sources because it depends on
-    # the mojo serialize and deserialize methods.
-    deps = [
-      ":gfx",
-      "//ui/gfx/mojom:mojom",
-    ]
-    frameworks = [
-      "CoreFoundation.framework",
-      "IOSurface.framework",
-    ]
-  }
-}
-
 test("gfx_unittests") {
   sources = [
     "animation/keyframe/keyframe_animation_unittest.cc",
@@ -711,11 +692,11 @@ test("gfx_unittests") {
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
   ]
+  if (is_linux) {
+    sources += [ "font_render_params_linux_unittest.cc" ]
+  }
   if (is_linux || is_chromeos) {
-    sources += [
-      "font_fallback_linux_unittest.cc",
-      "font_render_params_linux_unittest.cc",
-    ]
+    sources += [ "font_fallback_linux_unittest.cc" ]
   }
   if (is_mac) {
     sources += [
@@ -850,10 +831,6 @@ test("gfx_unittests") {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   }
 
-  if (is_mac) {
-    deps += [ ":gfx_io_surface_hdr_metadata" ]
-  }
-
   if (is_android) {
     deps += [ "//ui/android:ui_java" ]
   }
@@ -904,6 +881,10 @@ test("gfx_unittests") {
     ]
   }
 
+  if (is_linux) {
+    deps += [ "//ui/linux:test_support" ]
+  }
+
   if (is_linux || is_chromeos) {
     sources += [
       "linux/fontconfig_util_unittest.cc",
@@ -913,11 +894,10 @@ test("gfx_unittests") {
   }
 
   if (is_fuchsia) {
-    # TODO(https://crbug.com/1287051): fuchsia.sys.Launcher is used to launch
-    # fuchsia-pkg://fuchsia.com/fonts#meta/fonts.cmx with specific test
-    # args.
-    use_cfv2 = false
-    deps += [ "//skia:test_fonts" ]
+    use_cfv1 = false
+    deps += [ "//skia:test_fonts_cfv2" ]
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
   }
 }
 

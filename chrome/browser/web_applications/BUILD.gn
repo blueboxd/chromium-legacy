@@ -87,8 +87,6 @@ source_set("web_applications") {
     "policy/web_app_policy_constants.h",
     "policy/web_app_policy_manager.cc",
     "policy/web_app_policy_manager.h",
-    "policy/web_app_settings_policy_handler.cc",
-    "policy/web_app_settings_policy_handler.h",
     "preinstalled_app_install_features.cc",
     "preinstalled_app_install_features.h",
     "preinstalled_web_app_config_utils.cc",
@@ -170,6 +168,7 @@ source_set("web_applications") {
     "web_app_registrar.h",
     "web_app_registry_update.cc",
     "web_app_registry_update.h",
+    "web_app_sources.h",
     "web_app_sync_bridge.cc",
     "web_app_sync_bridge.h",
     "web_app_sync_install_delegate.h",
@@ -242,6 +241,13 @@ source_set("web_applications") {
       "url_handler_launch_params.h",
       "url_handler_prefs.cc",
       "url_handler_prefs.h",
+    ]
+  }
+
+  if (!is_android && !is_chromeos) {
+    sources += [
+      "policy/web_app_settings_policy_handler.cc",
+      "policy/web_app_settings_policy_handler.h",
     ]
   }
 
@@ -340,6 +346,8 @@ source_set("web_applications") {
         "preinstalled_web_apps/google_chat.h",
         "preinstalled_web_apps/google_meet.cc",
         "preinstalled_web_apps/google_meet.h",
+        "preinstalled_web_apps/messages_dogfood.cc",
+        "preinstalled_web_apps/messages_dogfood.h",
       ]
     }
 
@@ -446,7 +454,6 @@ source_set("web_applications_test_support") {
     "//chrome/app:command_ids",
     "//chrome/app/theme:chrome_unscaled_resources_grit",
     "//chrome/browser",
-    "//chrome/browser/ash/system_web_apps",
     "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
@@ -466,7 +473,10 @@ source_set("web_applications_test_support") {
   ]
 
   if (is_chromeos_ash) {
-    deps += [ "//ash/constants" ]
+    deps += [
+      "//ash/constants",
+      "//chrome/browser/ash/system_web_apps",
+    ]
   }
 }
 
@@ -496,7 +506,6 @@ source_set("web_applications_unit_tests") {
     "preinstalled_web_apps/preinstalled_web_app_definition_utils_unittest.cc",
     "test/web_app_test.h",
     "web_app_command_manager_unittest.cc",
-    "web_app_constants_unittest.cc",
     "web_app_data_retriever_unittest.cc",
     "web_app_database_unittest.cc",
     "web_app_helpers_unittest.cc",
@@ -547,9 +556,12 @@ source_set("web_applications_unit_tests") {
   if (is_win || is_mac || is_linux) {
     sources += [
       "os_integration/url_handler_manager_impl_unittest.cc",
-      "policy/web_app_settings_policy_handler_unittest.cc",
       "url_handler_prefs_unittest.cc",
     ]
+  }
+
+  if (!is_android && !is_chromeos) {
+    sources += [ "policy/web_app_settings_policy_handler_unittest.cc" ]
   }
 
   deps = [
@@ -662,8 +674,6 @@ source_set("web_applications_browser_tests") {
     "//base",
     "//chrome/app:command_ids",
     "//chrome/browser/apps/app_service:test_support",
-    "//chrome/browser/ash/system_web_apps/test_support",
-    "//chrome/browser/ash/system_web_apps/test_support:test_support_ui",
     "//chrome/browser/profiles:profile",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
@@ -674,6 +684,13 @@ source_set("web_applications_browser_tests") {
     "//ui/events/devices:test_support",
     "//url",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chrome/browser/ash/system_web_apps/test_support",
+      "//chrome/browser/ash/system_web_apps/test_support:test_support_ui",
+    ]
+  }
 }
 
 group("browser_tests") {

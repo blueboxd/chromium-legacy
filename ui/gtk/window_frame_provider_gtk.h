@@ -7,12 +7,12 @@
 
 #include "base/containers/flat_map.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/linux_ui/window_frame_provider.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/linux/window_frame_provider.h"
 
 namespace gtk {
 
-class WindowFrameProviderGtk : public views::WindowFrameProvider {
+class WindowFrameProviderGtk : public ui::WindowFrameProvider {
  public:
   explicit WindowFrameProviderGtk(bool solid_frame);
 
@@ -21,7 +21,7 @@ class WindowFrameProviderGtk : public views::WindowFrameProvider {
 
   ~WindowFrameProviderGtk() override;
 
-  // views::WindowFrameProvider:
+  // ui::WindowFrameProvider:
   int GetTopCornerRadiusDip() override;
   gfx::Insets GetFrameThicknessDip() override;
   void PaintWindowFrame(gfx::Canvas* canvas,

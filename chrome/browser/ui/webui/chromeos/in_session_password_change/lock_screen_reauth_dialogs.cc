@@ -31,8 +31,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -127,9 +127,8 @@ void LockScreenStartReauthDialog::OnProfileCreated(
     Profile* profile,
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    profile_ = profile;
-    g_dialog->ShowSystemDialogForBrowserContext(
-        profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
+    profile_ = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+    g_dialog->ShowSystemDialogForBrowserContext(profile_);
     const NetworkStateInformer::State state = network_state_informer_->state();
     // Show network or captive portal screen if needed.
     // TODO(crbug.com/1237407): Handle other states in NetworkStateInformer

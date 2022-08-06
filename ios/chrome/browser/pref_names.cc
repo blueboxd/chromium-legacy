@@ -89,6 +89,13 @@ const char kIosBookmarkSigninPromoDisplayedCount[] =
 const char kIosDiscoverFeedLastRefreshTime[] =
     "ios.discover_feed.last_refresh_time";
 
+// List preference maintaining the list of active promo campaigns.
+const char kIosPromosManagerActivePromos[] = "ios.promos_manager.active_promos";
+
+// Dictionary preference containing the promo impression history.
+const char kIosPromosManagerImpressionHistory[] =
+    "ios.promos_manager.impression_history";
+
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in settings view.
 const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
@@ -97,6 +104,12 @@ const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
 // in the settings view.
 const char kIosSettingsSigninPromoDisplayedCount[] =
     "ios.settings.signin_promo_displayed_count";
+
+// The count of how many times the user has shared the app.
+const char kIosShareChromeCount[] = "ios.share_chrome.count";
+
+// Preference to store the last time the user shared the chrome app.
+const char kIosShareChromeLastShare[] = "ios.share_chrome.last_share";
 
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in the ntp feed top section.

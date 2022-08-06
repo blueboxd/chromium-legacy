@@ -12,8 +12,6 @@
 <translation id="1142745911746664600">Не вдається оновити Chrome</translation>
 <translation id="1152920704813762236">Про ОС Chrome</translation>
 <translation id="1154147086299354128">&amp;Відкрити в Chrome</translation>
-<translation id="1178374936842835197">Якщо налаштування не з’явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
-        налаштуваннях ОС Chrome Flex<ph name="LINK_END" /></translation>
 <translation id="1203500561924088507">Дякуємо за встановлення. Щоб почати використовувати пакет <ph name="BUNDLE_NAME" />, потрібно перезапустити веб-переглядач.</translation>
 <translation id="1278833599417554002">Перезапустити, щоб оновити &amp;Chrome</translation>
 <translation id="1302523850133262269">Зачекайте, доки Chrome установить найновіші оновлення системи.</translation>
@@ -66,6 +64,7 @@
 <translation id="2139300032719313227">Перезапустіть ОС Chrome</translation>
 <translation id="2151406531797534936">Перезапустіть Chrome</translation>
 <translation id="2174917724755363426">Встановлення не завершено. Скасувати його?</translation>
+<translation id="223889379102603431">Інформація про те, як Chrome керує кореневими сертифікатами</translation>
 <translation id="2258103955319320201">Щоб мати доступ до своїх даних у веб-переглядачі Chrome на всіх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
 <translation id="2290014774651636340">Ключі API Google відсутні. Деякі функції Google Chrome буде вимкнено.</translation>
 <translation id="2290095356545025170">Ви дійсно хочете видалити Google Chrome?</translation>
@@ -78,6 +77,7 @@
 <translation id="2401189691232800402">ОС Chrome</translation>
 <translation id="2467438592969358367">Google Chrome хоче експортувати ваші паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="2485422356828889247">Видалити</translation>
+<translation id="2494974097748878569">Google Асистент у Chrome</translation>
 <translation id="2534507159460261402">Google Pay (скопійовано в Chrome)</translation>
 <translation id="2559253115192232574">Коли ви пізніше відвідаєте якийсь сайт, він може запитати в Chrome про ваші інтереси, щоб персоналізувати для вас оголошення. Chrome може надати доступ до інформації про щонайбільше 3 інтереси.</translation>
 <translation id="2563121210305478421">Перезапустити Chrome?</translation>
@@ -118,7 +118,6 @@
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="3100998948628680988">Додайте назву свого профілю Chrome</translation>
-<translation id="3103390129666310801">Щоб дізнатися, чи пристрій використовує актуальну версію операційної системи, перейдіть у <ph name="LINK_BEGIN" />налаштування ОС Chrome Flex<ph name="LINK_END" /></translation>
 <translation id="3114643501466072395">Щоб перевірити, чи відомі порушення безпеки даних або інші проблеми не заторкнули інші ваші паролі, <ph name="BEGIN_LINK" />увійдіть у Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Ваші зміни почнуть діяти після наступного перезапуску Google Chrome.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
@@ -209,7 +208,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">Щоб отримувати майбутні оновлення Google Chrome, потрібна операційна система macOS 10.13 або новішої версії. На цьому комп’ютері встановлено OS X 10.11.</translation>
 <translation id="5098668839038261629">Якщо перемикач увімкнено, ви також автоматично вийдете зі свого облікового запису в Chrome</translation>
-<translation id="5112116809696021727">Щоб дізнатися, чи використовує пристрій актуальну версію операційної системи, перейдіть у <ph name="LINK_BEGIN" />налаштування ОС Chrome<ph name="LINK_END" /></translation>
 <translation id="5132929315877954718">Знаходьте чудові додатки, ігри, розширення й теми для Google Chrome.</translation>
 <translation id="5139423532931106058">Налаштувати профіль Chrome</translation>
 <translation id="5163087008893166964">Вітаємо в Chrome! Відкрито нове вікно веб-переглядача</translation>
@@ -245,8 +243,6 @@
 <translation id="5940385492829620908">Тут містяться ваші веб-сторінки, закладки та інші дані Chrome.</translation>
 <translation id="5941711191222866238">Згорнути</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
-<translation id="5959292945051687759">Якщо налаштування немає на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
-      налаштуваннях ОС Chrome<ph name="LINK_END" /></translation>
 <translation id="6003112304606738118">Завантаження… Залишилося: <ph name="HOURS" /> год.</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6070348360322141662">Щоб підвищити безпеку, Google Chrome шифруватиме ваші дані</translation>
@@ -274,6 +270,7 @@
 <translation id="6739177684496155661">Продовжити в новому профілі Chrome?</translation>
 <translation id="6750954913813541382">Щоб виправляти орфографічні помилки, Chrome надсилає в Google текст, який ви вводите у веб-переглядачі</translation>
 <translation id="677276454032249905">Усе одно вийти з Chrome?</translation>
+<translation id="6785872064505734160">Google Асистент може завершувати дії на різних веб-сайтах у Chrome</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="6881299373831449287">Оновлення Chrome</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
@@ -346,6 +343,7 @@
 <translation id="8129812357326543296">Про &amp;Google Chrome</translation>
 <translation id="813913629614996137">Ініціалізація...</translation>
 <translation id="8255190535488645436">Google Chrome використовує вашу камеру та мікрофон.</translation>
+<translation id="8270775718612349140">Сертифікати, якими керує Chrome</translation>
 <translation id="8286862437124483331">Google Chrome намагається показати паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="828798499196665338">Хтось із твоїх батьків вимкнув "Дозволи для сайтів, додатків і розширень" у Chrome. Вмикати це <ph name="EXTENSION_TYPE_PARAMETER" /> заборонено.</translation>
 <translation id="8290100596633877290">Відбулося аварійне завершення роботи Google Chrome. Перезапустити зараз?</translation>

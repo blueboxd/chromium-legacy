@@ -29,7 +29,6 @@ class DragHandle;
 class FocusCycler;
 class HotseatWidget;
 class LoginShelfView;
-class LoginShelfGestureController;
 class Shelf;
 class ShelfLayoutManager;
 class ShelfNavigationWidget;
@@ -60,8 +59,6 @@ class ASH_EXPORT ShelfWidget : public SessionObserver,
 
   // Clean up prior to deletion.
   void Shutdown();
-
-  void OnTabletModeChanged();
 
   ShelfBackgroundType GetBackgroundType() const;
 
@@ -101,7 +98,9 @@ class ASH_EXPORT ShelfWidget : public SessionObserver,
   ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
   // Fetch the LoginShelfView instance.
-  LoginShelfView* login_shelf_view() { return login_shelf_view_; }
+  // TODO(https://crbug.com/1343114): remove this method after the login shelf
+  // is moved to its own widget.
+  LoginShelfView* GetLoginShelfView();
 
   void set_default_last_focusable_child(bool default_last_focusable_child);
 
@@ -151,15 +150,6 @@ class ASH_EXPORT ShelfWidget : public SessionObserver,
   base::ScopedClosureRunner ForceShowHotseatInTabletMode();
   bool IsHotseatForcedShowInTabletMode() const;
 
-  // Creates a login shelf gesture controller (which enabled login shelf gesture
-  // detection). See ash/public/cpp/login_screen.h for more info.
-  bool SetLoginShelfSwipeHandler(const std::u16string& nudge_text,
-                                 const base::RepeatingClosure& fling_callback,
-                                 base::OnceClosure exit_callback);
-
-  // Resets a previously create login shelf gesture controller, if any.
-  void ClearLoginShelfSwipeHandler();
-
   // Gets the layer used to draw the shelf background.
   ui::Layer* GetOpaqueBackground();
 
@@ -183,22 +173,15 @@ class ASH_EXPORT ShelfWidget : public SessionObserver,
   // Sets opacity of login shelf buttons to be consistent with shelf icons.
   void SetLoginShelfButtonOpacity(float target_opacity);
 
-  // Handles shelf widget gesture events for login shelf, if login shelf view is
-  // visible. Returns whether the gesture was handled (the gesture will not be
-  // handled if the login shelf view is hidden).
-  bool HandleLoginShelfGestureEvent(const ui::GestureEvent& event_in_screen);
-
   // Internal implementation detail. Do not expose outside of tests.
+  ui::Layer* GetDelegateViewOpaqueBackgroundLayerForTesting();
+
   ShelfView* shelf_view_for_testing() const {
     return hotseat_widget()->GetShelfView();
   }
 
   ShelfBackgroundAnimator* background_animator_for_testing() {
     return &background_animator_;
-  }
-
-  LoginShelfGestureController* login_shelf_gesture_controller_for_testing() {
-    return login_shelf_gesture_controller_.get();
   }
 
   HotseatTransitionAnimator* hotseat_transition_animator() {
@@ -242,10 +225,6 @@ class ASH_EXPORT ShelfWidget : public SessionObserver,
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.
   LoginShelfView* login_shelf_view_;
-
-  // Used to handle gestures on login shelf - created only if
-  // SetLoginShelfSwipeHandler() gets called.
-  std::unique_ptr<LoginShelfGestureController> login_shelf_gesture_controller_;
 
   ScopedSessionObserver scoped_session_observer_;
 

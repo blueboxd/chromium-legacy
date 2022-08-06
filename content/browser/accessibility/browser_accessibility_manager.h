@@ -21,9 +21,9 @@
 #include "cc/base/rtree.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/content_export.h"
-#include "content/common/render_accessibility.mojom-forward.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom-forward.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
@@ -212,11 +212,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // If this tree has a parent tree, return the parent node in that tree.
   BrowserAccessibility* GetParentNodeFromParentTree() const;
 
-  // Refreshes a parent node in a parent tree when it needs to be informed that
-  // this tree is ready or being destroyed. For example, an iframe object
-  // in a parent tree may need to link or unlink to this manager.
-  void ParentConnectionChanged(BrowserAccessibility* parent);
-
   // In general, there is only a single node with the role of kRootWebArea,
   // but if a popup is opened, a second nested "root" is created in the same
   // tree as the "true" root. This will keep track of the nested root node.
@@ -224,6 +219,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   // Get the AXTreeData for this frame.
   const ui::AXTreeData& GetTreeData() const;
+
+  std::string ToString() const override;
 
   // Called to notify the accessibility manager that its associated native
   // view got focused.
@@ -338,7 +335,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   // Called when the renderer process updates the location of accessibility
   // objects. Calls SendLocationChangeEvents(), which can be overridden.
-  void OnLocationChanges(const std::vector<mojom::LocationChangesPtr>& changes);
+  void OnLocationChanges(
+      const std::vector<blink::mojom::LocationChangesPtr>& changes);
 
   // Called when a new find in page result is received. We hold on to this
   // information and don't activate it until the user requests it.
@@ -567,6 +565,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   BrowserAccessibility* ApproximateHitTest(
       const gfx::Point& blink_screen_point) const;
 
+  // Detaches this instance from its parent manager. Useful during
+  // deconstruction.
+  void DetachFromParentManager();
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
                            TestShouldFireEventForNode);
@@ -579,7 +581,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // their location has changed. This is called by OnLocationChanges
   // after it's updated the internal data structure.
   virtual void SendLocationChangeEvents(
-      const std::vector<mojom::LocationChangesPtr>& changes);
+      const std::vector<blink::mojom::LocationChangesPtr>& changes);
 
   // Given the data from an atomic update, collect the nodes that need updating
   // assuming that this platform is one where plain text node content is
@@ -605,6 +607,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // Interstitial page, like an SSL warning.
   // If so we need to suppress any events.
   bool hidden_by_interstitial_page_ = false;
+
+  // If the load complete event is suppressed due to CanFireEvents() returning
+  // false, this is set to true and the event will be fired later.
+  bool defer_load_complete_event_ = false;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
 
@@ -685,6 +691,23 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   void BuildAXTreeHitTestCacheInternal(
       const BrowserAccessibility* node,
       std::vector<const BrowserAccessibility*>* storage);
+
+  // Add parent connection if missing (!connected_to_parent_tree_node_). If the
+  // root's parent is in another accessibility tree but it wasn't previously
+  // connected, post the proper notifications on the parent.
+  void EnsureParentConnectionIfNotRootManager();
+
+  // Refreshes a parent node in a parent tree when it needs to be informed that
+  // this tree is ready or being destroyed. For example, an iframe object
+  // in a parent tree may need to link or unlink to this manager.
+  void ParentConnectionChanged(BrowserAccessibility* parent);
+
+  // If this BrowserAccessibilityManager is a child frame or guest frame,
+  // returns the BrowserAccessibilityManager from the parent document in the
+  // frame tree. If the current frame is not connected to its parent frame yet,
+  // or if it got disconnected after being reparented, return nullptr to
+  // indicate that we don't have access to the parent manager yet.
+  BrowserAccessibilityManager* GetParentManager() const;
 
   // Performs hit testing on the AXTree using the cache from
   // BuildAXTreeHitTestCache. This requires BuildAXTreeHitTestCache to be

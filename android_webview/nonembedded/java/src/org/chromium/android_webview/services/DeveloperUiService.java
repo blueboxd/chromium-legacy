@@ -29,6 +29,8 @@ import org.chromium.android_webview.common.Flag;
 import org.chromium.android_webview.common.FlagOverrideHelper;
 import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
+import org.chromium.android_webview.common.services.ServiceHelper;
+import org.chromium.android_webview.services.ServicesStatsHelper.NonembeddedService;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -105,6 +107,20 @@ public final class DeveloperUiService extends Service {
         }
     };
 
+    @Override
+    public void onCreate() {
+        ServicesStatsHelper.recordServiceLaunch(NonembeddedService.DEVELOPER_UI_SERVICE);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        final int mode = super.onStartCommand(intent, flags, startId);
+        // Service is always expected to run in foreground, so mark as such when it is started.
+        // Subsequent calls will simply replace the foreground service notification.
+        markAsForegroundService();
+        return mode;
+    }
+
     /**
      * Static method to fetch the flag overrides. If this returns an empty map, this will
      * asynchronously restart the Service to disable developer mode.
@@ -146,7 +162,7 @@ public final class DeveloperUiService extends Service {
             public void onServiceDisconnected(ComponentName name) {}
         };
         Intent intent = new Intent(context, DeveloperUiService.class);
-        if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+        if (!ServiceHelper.bindService(context, intent, connection, Context.BIND_AUTO_CREATE)) {
             Log.e(TAG, "Failed to bind to Developer UI service");
         }
     }
@@ -286,7 +302,6 @@ public final class DeveloperUiService extends Service {
             } else {
                 startService(intent);
             }
-            markAsForegroundService();
 
             ComponentName developerModeState =
                     new ComponentName(this, DeveloperModeUtils.DEVELOPER_MODE_STATE_COMPONENT);

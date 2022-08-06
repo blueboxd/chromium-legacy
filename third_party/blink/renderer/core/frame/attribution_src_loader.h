@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
@@ -31,11 +30,6 @@ struct Impression;
 class CORE_EXPORT AttributionSrcLoader
     : public GarbageCollected<AttributionSrcLoader> {
  public:
-  enum class RegisterContext {
-    kAttributionSrc,
-    kResource,
-  };
-
   static constexpr const char* kAttributionEligibleEventSource = "event-source";
   static constexpr const char* kAttributionEligibleNavigationSource =
       "navigation-source";
@@ -84,37 +78,27 @@ class CORE_EXPORT AttributionSrcLoader
 
   // Returns whether the attribution is allowed to be registered. Devtool issue
   // might be reported if it's not allowed.
-  bool UrlCanRegisterAttribution(RegisterContext context,
-                                 const KURL& url,
+  bool UrlCanRegisterAttribution(const KURL& url,
                                  HTMLElement* element,
                                  absl::optional<uint64_t> request_id);
-
-  void RegisterTrigger(
-      mojom::blink::AttributionTriggerDataPtr trigger_data) const;
 
   ResourceClient* CreateAndSendRequest(const KURL& src_url,
                                        HTMLElement* element,
                                        SrcType src_type,
                                        bool associated_with_navigation);
 
-  void LogAuditIssue(AttributionReportingIssueType issue_type,
-                     const absl::optional<String>& string,
-                     HTMLElement* element,
-                     absl::optional<uint64_t> request_id);
-
   const Member<LocalFrame> local_frame_;
   size_t num_resource_clients_ = 0;
 };
 
-// Returns whether attribution is allowed, and logs devtools issues if
-// registration was attempted in a context is not allowed and `log_issues` is
-// set. `element` may be null.
+// Returns whether attribution is allowed, and logs DevTools issues if
+// registration was attempted in a context that is not allowed.
+// `element` may be null.
 CORE_EXPORT bool CanRegisterAttributionInContext(
     LocalFrame* frame,
     HTMLElement* element,
     absl::optional<uint64_t> request_id,
-    AttributionSrcLoader::RegisterContext context,
-    bool log_issues);
+    bool log_issues = true);
 
 }  // namespace blink
 

@@ -35,21 +35,21 @@ class MountPointTest : public testing::Test {
 
 TEST_F(MountPointTest, Mount) {
   EXPECT_CALL(disk_mount_manager_,
-              MountPath(kSourcePath, "", "", _, MOUNT_TYPE_DEVICE,
+              MountPath(kSourcePath, "", "", _, MountType::kDevice,
                         MOUNT_ACCESS_MODE_READ_WRITE, _))
       .WillOnce(RunOnceCallback<6>(
-          MOUNT_ERROR_NONE, DiskMountManager::MountPointInfo(
-                                kSourcePath, kMountPath, MOUNT_TYPE_DEVICE,
-                                MOUNT_CONDITION_NONE)));
+          MountError::kNone, DiskMountManager::MountPointInfo(
+                                 kSourcePath, kMountPath, MountType::kDevice,
+                                 MOUNT_CONDITION_NONE)));
   EXPECT_CALL(disk_mount_manager_, UnmountPath(kMountPath, _)).Times(1);
 
   base::RunLoop run_loop;
   MountPoint::Mount(&disk_mount_manager_, kSourcePath, "", "", {},
-                    MOUNT_TYPE_DEVICE, MOUNT_ACCESS_MODE_READ_WRITE,
+                    MountType::kDevice, MOUNT_ACCESS_MODE_READ_WRITE,
                     base::BindLambdaForTesting(
                         [&run_loop](MountError mount_error,
                                     std::unique_ptr<MountPoint> mount) {
-                          EXPECT_EQ(MOUNT_ERROR_NONE, mount_error);
+                          EXPECT_EQ(MountError::kNone, mount_error);
                           EXPECT_EQ(kMountPath, mount->mount_path().value());
                           run_loop.Quit();
                         }));
@@ -58,21 +58,21 @@ TEST_F(MountPointTest, Mount) {
 
 TEST_F(MountPointTest, MountFailure) {
   EXPECT_CALL(disk_mount_manager_,
-              MountPath(kSourcePath, "", "", _, MOUNT_TYPE_DEVICE,
+              MountPath(kSourcePath, "", "", _, MountType::kDevice,
                         MOUNT_ACCESS_MODE_READ_WRITE, _))
       .WillOnce(RunOnceCallback<6>(
-          MOUNT_ERROR_UNKNOWN, DiskMountManager::MountPointInfo(
-                                   kSourcePath, kMountPath, MOUNT_TYPE_DEVICE,
-                                   MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM)));
+          MountError::kUnknown, DiskMountManager::MountPointInfo(
+                                    kSourcePath, kMountPath, MountType::kDevice,
+                                    MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM)));
   EXPECT_CALL(disk_mount_manager_, UnmountPath(_, _)).Times(0);
 
   base::RunLoop run_loop;
   MountPoint::Mount(&disk_mount_manager_, kSourcePath, "", "", {},
-                    MOUNT_TYPE_DEVICE, MOUNT_ACCESS_MODE_READ_WRITE,
+                    MountType::kDevice, MOUNT_ACCESS_MODE_READ_WRITE,
                     base::BindLambdaForTesting(
                         [&run_loop](MountError mount_error,
                                     std::unique_ptr<MountPoint> mount) {
-                          EXPECT_EQ(MOUNT_ERROR_UNKNOWN, mount_error);
+                          EXPECT_EQ(MountError::kUnknown, mount_error);
                           EXPECT_FALSE(mount);
                           run_loop.Quit();
                         }));
@@ -81,12 +81,12 @@ TEST_F(MountPointTest, MountFailure) {
 
 TEST_F(MountPointTest, Unmount) {
   EXPECT_CALL(disk_mount_manager_, UnmountPath(kMountPath, _))
-      .WillOnce(base::test::RunOnceCallback<1>(MOUNT_ERROR_INTERNAL));
+      .WillOnce(base::test::RunOnceCallback<1>(MountError::kInternal));
 
   base::RunLoop run_loop;
   MountPoint mount_point(base::FilePath(kMountPath), &disk_mount_manager_);
   mount_point.Unmount(base::BindLambdaForTesting([&run_loop](MountError error) {
-    EXPECT_EQ(MOUNT_ERROR_INTERNAL, error);
+    EXPECT_EQ(MountError::kInternal, error);
     run_loop.Quit();
   }));
   run_loop.Run();
@@ -105,7 +105,7 @@ TEST_F(MountPointTest, UnmountThenDestory) {
           [this, &run_loop](DiskMountManager::UnmountPathCallback callback) {
             task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE,
-                base::BindOnce(std::move(callback), MOUNT_ERROR_INTERNAL));
+                base::BindOnce(std::move(callback), MountError::kInternal));
             task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE, run_loop.QuitClosure());
           }));

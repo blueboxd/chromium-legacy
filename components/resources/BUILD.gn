@@ -49,6 +49,7 @@ grit("components_resources") {
   deps = [
     ":about_credits",
     "//components/flags_ui/resources:build_ts",
+    "//components/security_interstitials/content/resources:build_ts",
   ]
 
   if (!is_ios) {
@@ -72,7 +73,7 @@ grit("dev_ui_components_resources") {
 
   deps = [
     "//components/local_state:build",
-    "//components/policy/resources/webui:web_components",
+    "//components/policy/resources/webui:html_wrapper_files",
   ]
   output_dir = "$root_gen_dir/components"
 }

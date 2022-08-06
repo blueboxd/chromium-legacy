@@ -20,9 +20,8 @@
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/arc/fake_arc_data_snapshotd_client.h"
 #include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
-#include "chromeos/dbus/arc/fake_arc_data_snapshotd_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -163,10 +162,7 @@ class FakeSnapshotSessionController : public SnapshotSessionController {
 class ArcDataSnapshotdManagerBasicTest : public testing::Test {
  protected:
   ArcDataSnapshotdManagerBasicTest() {
-    // Initialize fake D-Bus client.
-    chromeos::DBusThreadManager::Initialize();
-    EXPECT_TRUE(chromeos::DBusThreadManager::Get()->IsUsingFakes());
-    chromeos::ArcDataSnapshotdClient::InitializeFake();
+    ash::ArcDataSnapshotdClient::InitializeFake();
 
     fake_user_manager_ = new user_manager::FakeUserManager();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -193,8 +189,7 @@ class ArcDataSnapshotdManagerBasicTest : public testing::Test {
   }
 
   ~ArcDataSnapshotdManagerBasicTest() override {
-    chromeos::ArcDataSnapshotdClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    ash::ArcDataSnapshotdClient::Shutdown();
   }
 
   void ExpectStartDaemon(bool success,
@@ -220,8 +215,8 @@ class ArcDataSnapshotdManagerBasicTest : public testing::Test {
   }
 
   void SetDBusClientAvailability(bool is_available) {
-    auto* client = static_cast<chromeos::FakeArcDataSnapshotdClient*>(
-        chromeos::ArcDataSnapshotdClient::Get());
+    auto* client = static_cast<ash::FakeArcDataSnapshotdClient*>(
+        ash::ArcDataSnapshotdClient::Get());
     DCHECK(client);
     client->set_available(is_available);
   }
@@ -276,6 +271,7 @@ class ArcDataSnapshotdManagerBasicTest : public testing::Test {
   }
 
   void LogoutPublicSession() {
+    user_manager()->LogoutAllUsers();
     auto account_id = AccountId::FromUserEmail(kPublicAccountEmail);
     user_manager()->RemoveUserFromList(account_id);
   }
@@ -313,22 +309,22 @@ class ArcDataSnapshotdManagerBasicTest : public testing::Test {
     return session_controller_;
   }
 
-  chromeos::FakeArcDataSnapshotdClient* client() const {
-    return static_cast<chromeos::FakeArcDataSnapshotdClient*>(
-        chromeos::ArcDataSnapshotdClient::Get());
+  ash::FakeArcDataSnapshotdClient* client() const {
+    return static_cast<ash::FakeArcDataSnapshotdClient*>(
+        ash::ArcDataSnapshotdClient::Get());
   }
 
  protected:
   std::unique_ptr<ArcDataSnapshotdManager::Delegate> MakeDelegate() {
     auto delegate = std::make_unique<FakeDelegate>();
     delegate_ = delegate.get();
-    return std::move(delegate);
+    return delegate;
   }
 
   std::unique_ptr<ArcAppsTracker> MakeAppsTracker() {
     auto apps_tracker = std::make_unique<FakeAppsTracker>();
     apps_tracker_ = apps_tracker.get();
-    return std::move(apps_tracker);
+    return apps_tracker;
   }
 
   std::unique_ptr<FakeSnapshotSessionController> MakeSessionController() {

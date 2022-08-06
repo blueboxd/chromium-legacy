@@ -26,16 +26,20 @@ class HistoryBackendForSync {
   virtual bool GetURLByID(URLID url_id, URLRow* url_row) = 0;
   virtual bool GetLastVisitByTime(base::Time visit_time,
                                   VisitRow* visit_row) = 0;
-  virtual bool GetMostRecentVisitsForURL(URLID id,
-                                         int max_visits,
-                                         VisitVector* visits) = 0;
   virtual VisitVector GetRedirectChain(VisitRow visit) = 0;
+
+  virtual bool GetForeignVisit(const std::string& originator_cache_guid,
+                               VisitID originator_visit_id,
+                               VisitRow* visit_row) = 0;
 
   virtual VisitID AddSyncedVisit(const GURL& url,
                                  const std::u16string& title,
                                  bool hidden,
                                  const VisitRow& visit) = 0;
-  virtual bool UpdateSyncedVisit(const VisitRow& visit) = 0;
+  virtual VisitID UpdateSyncedVisit(const VisitRow& visit) = 0;
+  virtual bool UpdateVisitReferrerOpenerIDs(VisitID visit_id,
+                                            VisitID referrer_id,
+                                            VisitID opener_id) = 0;
 
   virtual void AddObserver(HistoryBackendObserver* observer) = 0;
   virtual void RemoveObserver(HistoryBackendObserver* observer) = 0;

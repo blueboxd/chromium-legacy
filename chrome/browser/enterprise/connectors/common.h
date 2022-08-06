@@ -38,9 +38,13 @@ using TriggeredRule = ContentAnalysisResponse::Result::TriggeredRule;
 
 // Keys used to read a connector's policy values.
 constexpr char kKeyServiceProvider[] = "service_provider";
+constexpr char kKeyLinuxVerification[] = "verification.linux";
+constexpr char kKeyMacVerification[] = "verification.mac";
+constexpr char kKeyWindowsVerification[] = "verification.windows";
 constexpr char kKeyEnable[] = "enable";
 constexpr char kKeyDisable[] = "disable";
 constexpr char kKeyUrlList[] = "url_list";
+constexpr char kKeySourceDestinationList[] = "source_destination_list";
 constexpr char kKeyTags[] = "tags";
 constexpr char kKeyBlockUntilVerdict[] = "block_until_verdict";
 constexpr char kKeyBlockPasswordProtected[] = "block_password_protected";
@@ -77,6 +81,7 @@ struct ReportingSettings {
   ReportingSettings();
   ReportingSettings(GURL url, const std::string& dm_token, bool per_profile);
   ReportingSettings(ReportingSettings&&);
+  ReportingSettings(const ReportingSettings&);
   ReportingSettings& operator=(ReportingSettings&&);
   ~ReportingSettings();
 
@@ -248,6 +253,14 @@ void ShowDownloadReviewDialog(const std::u16string& filename,
                               download::DownloadDangerType danger_type,
                               base::OnceClosure keep_closure,
                               base::OnceClosure discard_closure);
+
+// Returns true if `result` as returned by FileAnalysisRequest is considered a
+// a failed result when attempting a cloud-based content analysis.
+bool CloudResultIsFailure(safe_browsing::BinaryUploadService::Result result);
+
+// Returns true if `result` as returned by FileAnalysisRequest is considered a
+// a failed result when attempting a local content analysis.
+bool LocalResultIsFailure(safe_browsing::BinaryUploadService::Result result);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // Returns the single main profile, or nullptr if none is found.

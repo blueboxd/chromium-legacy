@@ -230,6 +230,10 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kCredentialsEnableService, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+#if BUILDFLAG(IS_IOS)
+  registry->RegisterBooleanPref(prefs::kCredentialProviderEnabledOnStartup,
+                                false);
+#endif
   registry->RegisterBooleanPref(
       prefs::kCredentialsEnableAutosignin, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
@@ -282,6 +286,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPasswordsPrefWithNewLabelUsed, false);
   registry->RegisterBooleanPref(
       prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, false);
+  registry->RegisterIntegerPref(
+      prefs::kUnenrolledFromGoogleMobileServicesAfterApiErrorCode, 0);
 #endif
   // Preferences for |PasswordChangeSuccessTracker|.
   registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);
@@ -448,7 +454,7 @@ void PasswordManager::UpdateFormManagers() {
   for (PasswordManagerDriver* driver : drivers) {
     // GetPasswordAutofillManager() is returning nullptr in iOS Chrome, since
     // PasswordAutofillManager is not instantiated on iOS Chrome.
-    // See //ios/chrome/browser/passwords/ios_chrome_password_manager_driver.mm
+    // See //components/password_manager/ios/ios_password_manager_driver.mm
     if (driver->GetPasswordAutofillManager()) {
       driver->GetPasswordAutofillManager()->DeleteFillData();
     }

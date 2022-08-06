@@ -22,6 +22,19 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="SidePanelEntry">
+  <variant name="AboutThisSite"/>
+  <variant name="Assistant"/>
+  <variant name="Bookmarks"/>
+  <variant name="Feed"/>
+  <variant name="HistoryClusters"/>
+  <variant name="Lens"/>
+  <variant name="ReadAnything"/>
+  <variant name="ReadingList"/>
+  <variant name="SideSearch"/>
+  <variant name="UserNotes"/>
+</variants>
+
 <variants name="TabSwitchingType">
   <variant name=".NoSavedFrames"
       summary="The time from the input timestamp on a tab switch, until the
@@ -72,8 +85,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ChromeOS.HatsSatisfaction{Survey}" units="score"
-    expires_after="2022-08-01">
+    expires_after="2023-01-01">
   <owner>aalsum@chromium.org</owner>
+  <owner>jackshira@google.org</owner>
   <owner>cros-telemetry@google.com</owner>
   <summary>
     Records the overall satisfaction score for HaTS, to be analyzed against
@@ -139,6 +153,45 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Browser.MainThreadsCongestion{Phase}" units="janks"
+    expires_after="2023-01-15">
+<!-- on probation: expected to graduate as a go/chrome-browser-guiding-metrics -->
+
+  <owner>etienneb@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    This metric is emitted every 30 seconds after main message loop start, when
+    there is user activity. Each 30 second duration is divided into 100ms
+    intervals. This metric counts the number of these intervals that were
+    &quot;congested&quot;. An interval is congested if during it the UI or IO
+    thread executes an &quot;important&quot; task that was queued more than 100
+    ms ago, or a non-important task or a native event handler that started
+    executing more than 100 ms ago. See
+    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
+    for more details.
+
+    This metrics graduated from
+    Browser.Responsiveness.JankyIntervalsPerThirtySeconds(1,2,3) and their
+    history might be useful to understand how we got here.
+
+    Suffixed phases can be useful as diagnosis metrics: {Phase}
+  </summary>
+  <token key="Phase">
+    <variant name=""
+        summary="Default view, includes all congested intervals after
+                 OnFirstIdle()."/>
+    <variant name=".Initial" summary="The first interval after OnFirstIdle()."/>
+    <variant name=".Periodic" summary="All intervals but .Initial"/>
+    <variant name=".RunningOnly"
+        summary="Diagnostic metric which ignores queuing congestion."/>
+    <variant name=".RunningOnly.Initial"
+        summary="The first interval, before first idle and ignoring queuing
+                 congestion."/>
+    <variant name=".RunningOnly.Periodic"
+        summary="All RunningOnly intervals but the first one."/>
+  </token>
+</histogram>
+
 <histogram name="Browser.PaintPreview.Capture.CompressedOnDiskSize" units="KB"
     expires_after="2022-12-11">
   <owner>ckitagawa@chromium.org</owner>
@@ -182,7 +235,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartedCorrectly"
-    enum="BooleanSuccess" expires_after="2022-11-13">
+    enum="BooleanSuccess" expires_after="2023-01-15">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -255,7 +308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.HadCapture" enum="Boolean"
-    expires_after="2022-10-23">
+    expires_after="2022-12-18">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -290,7 +343,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Browser.PaintPreview.TabbedPlayer.UpTime{TabbedPaintPreviewPlayerUptime}"
-    units="ms" expires_after="2022-08-07">
+    units="ms" expires_after="2022-12-18">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -317,7 +370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabService.DiskUsageAtStartup" units="KB"
-    expires_after="2022-08-07">
+    expires_after="2022-12-18">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -383,8 +436,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds3{Phase}"
-    units="janks" expires_after="2022-09-05">
-<!-- on probation: expected to graduate as a go/chrome-browser-guiding-metrics -->
+    units="janks" expires_after="M108">
+<!-- to graduate as Browser.MainThreadsCongestion as a go/chrome-browser-guiding-metrics) -->
 
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
@@ -413,8 +466,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds{Phase}"
-    units="janks" expires_after="never">
-<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
+    units="janks" expires_after="M108">
+<!-- to be replaced by Browser.MainThreadsCongestion as a go/chrome-browser-guiding-metrics) -->
 
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
@@ -488,7 +541,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
     units="microseconds" expires_after="2023-01-01">
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
     The time it takes for the browser to request a tab to be visible. Note that
@@ -736,7 +789,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.LabeledInTaskManager"
-    enum="BooleanLabeledRendererTask" expires_after="2022-11-06">
+    enum="BooleanLabeledRendererTask" expires_after="2023-01-15">
   <owner>creis@chromium.org</owner>
   <owner>avi@chromium.org</owner>
   <summary>
@@ -766,7 +819,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.SpareProcessMaybeTakeAction"
-    enum="SpareProcessMaybeTakeAction" expires_after="2022-11-13">
+    enum="SpareProcessMaybeTakeAction" expires_after="2023-01-15">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -777,7 +830,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BrowserRenderProcessHost.SuspendedChild.KernelExecutionRecorded"
-    enum="BooleanRecorded" expires_after="2022-11-20">
+    enum="BooleanRecorded" expires_after="never">
+<!-- expires-never: For monitoring stability regressions. -->
+
   <owner>wfh@chromium.org</owner>
   <owner>chrome-stability-core@google.com</owner>
   <summary>
@@ -788,21 +843,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="BrowserRenderProcessHost.SuspendedChild.NtStatus"
-    enum="NTSTATUS" expires_after="2022-09-01">
-  <owner>wfh@chromium.org</owner>
-  <owner>chrome-stability-core@google.com</owner>
-  <summary>
-    The result of calling base::win::GetLastNtStatus() when a failure was
-    obtained when trying to obtain the user and kernel execution times for a
-    suspended child renderer process. This is recorded after process creation
-    but before process resumption. It is only recorded for failures to obtain
-    the user and kernel execution times. This is only recorded on Windows.
-  </summary>
-</histogram>
-
 <histogram name="BrowserRenderProcessHost.SuspendedChild.UserExecutionRecorded"
-    enum="BooleanRecorded" expires_after="2022-09-01">
+    enum="BooleanRecorded" expires_after="never">
+<!-- expires-never: For monitoring stability regressions. -->
+
   <owner>wfh@chromium.org</owner>
   <owner>chrome-stability-core@google.com</owner>
   <summary>
@@ -810,19 +854,6 @@ chromium-metrics-reviews@google.com.
     process. This is recorded after process creation but before process
     resumption. This is recorded for every sandboxed Renderer process launched
     on Windows only.
-  </summary>
-</histogram>
-
-<histogram name="BrowserRenderProcessHost.SuspendedChild.Win32Error"
-    enum="WinGetLastError" expires_after="2022-09-01">
-  <owner>wfh@chromium.org</owner>
-  <owner>chrome-stability-core@google.com</owner>
-  <summary>
-    The result of calling GetLastError when a failure was obtained when trying
-    to obtain the user and kernel execution times for a suspended child renderer
-    process. This is recorded after process creation but before process
-    resumption. It is only recorded for failures to obtain the user and kernel
-    execution times. This is only recorded on Windows.
   </summary>
 </histogram>
 
@@ -1131,6 +1162,31 @@ chromium-metrics-reviews@google.com.
     Logs the UI location from which the side panel is triggered to be opened.
     Recorded when the side panel is shown and a trigger is provided.
   </summary>
+</histogram>
+
+<histogram name="SidePanel.{SidePanelEntry}.ShownDuration" units="ms"
+    expires_after="2023-06-04">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records how long the {SidePanelEntry} side panel entry was open for (capped
+    at 1 hour). This is recorded in SidePanelEntry::OnEntryHidden when the entry
+    is hidden (ie. switching entries or the side panel closing).
+  </summary>
+  <token key="SidePanelEntry" variants="SidePanelEntry"/>
+</histogram>
+
+<histogram name="SidePanel.{SidePanelEntry}.ShowTriggered"
+    enum="SidePanelOpenTrigger" expires_after="2023-06-04">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records how a side panel entry is triggered to be shown. (i.e. by toolbar
+    button, by commbobox selection). This is recorded when a new side panel
+    entry is triggered to be shown regardless any side panel entry is currently
+    open.
+  </summary>
+  <token key="SidePanelEntry" variants="SidePanelEntry"/>
 </histogram>
 
 </histograms>

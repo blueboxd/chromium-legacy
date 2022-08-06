@@ -280,9 +280,8 @@ def _check_expectations(host, port, path, test_expectations, options):
     failures.extend(_check_directory_glob(host, port, path, expectations))
     failures.extend(_check_not_slow_and_timeout(host, port, path, expectations))
     failures.extend(_check_never_fix_tests(host, port, path, expectations))
-    if path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-        failures.extend(_check_non_wpt_in_android_override(
-            host, port, path, expectations))
+    failures.extend(
+        _check_stable_webexposed_not_disabled(host, path, expectations))
     # TODO(crbug.com/1080691): Change this to failures once
     # wpt_expectations_updater is fixed.
     warnings.extend(
@@ -290,14 +289,21 @@ def _check_expectations(host, port, path, test_expectations, options):
     return failures, warnings
 
 
-def _check_non_wpt_in_android_override(host, port, path, expectations):
+def _check_stable_webexposed_not_disabled(host, path, expectations):
+    if not host.filesystem.basename(path) == "TestExpectations":
+        return []
+
     failures = []
+
     for exp in expectations:
-        if exp.test and not port.is_wpt_test(exp.test):
-            error = "{}:{} Expectation '{}' is for a non WPT test".format(
-                host.filesystem.basename(path), exp.lineno, exp.to_string())
+        if exp.test.startswith("virtual/stable/webexposed") \
+                and exp.results != set([ResultType.Pass]) and not exp.is_default_pass:
+            error = "{}:{} {}: test should not be disabled " \
+                    "because it protects against API changes.".format(
+                        host.filesystem.basename(path), exp.lineno, exp.to_string())
             failures.append(error)
             _log.error(error)
+
     return failures
 
 

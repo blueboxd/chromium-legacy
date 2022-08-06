@@ -27,6 +27,7 @@
 <translation id="1199355487114804640">प्ले/पज</translation>
 <translation id="1201402288615127009">अर्को</translation>
 <translation id="1204296502688602597">DNS को विलम्बता</translation>
+<translation id="1207734034680156868">सुझावहरू तपाईंको वर्णनमा आधारित हुन्छन्</translation>
 <translation id="123124571410524056">पोर्टलका कारणले हुन सक्छ</translation>
 <translation id="1236400083787698183">आफ्नो डिभाइस रिस्टार्ट गर्नुअघि सो डिभाइस पावरवास गर्नुहोस्। तपाईंको डिभाइसको कभर छ भने पावरवास गर्ने कार्य पूरा भएपछि मात्र उक्त कभर लगाउनुहोस्। पावरवास गर्ने कार्य पूरा हुन एक मिनेटसम्म लाग्न सक्छ।</translation>
 <translation id="1238612778414822719">HTTPS को विलम्बता</translation>
@@ -92,6 +93,7 @@
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645954272419197032">कृपया डिभाइससम्बन्धी जानकारी पुष्टि गर्नुहोस्</translation>
 <translation id="1662989795263954667">रोकियो - प्रिन्टरको मसी सकियो</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> प्रिभ्यू गर्नुहोस्</translation>
 <translation id="1668469839109562275">अन्तर्निर्मित VPN</translation>
 <translation id="1672499492233627739">वेबक्याम भिडियो फिड</translation>
 <translation id="1676557873873341166">भिडियो खिचिँदै छ</translation>
@@ -118,6 +120,7 @@
 <translation id="1851218745569890714">भिडियो कन्फ्रेन्स</translation>
 <translation id="1852934301711881861">ChromeOS Flex इन्स्टल गर्नुहोस्</translation>
 <translation id="1856388568474281774">डाउन एरो</translation>
+<translation id="1858620243986915808">स्क्रिनसट एट्याच गर्नुहोस्</translation>
 <translation id="1871569928317311284">अँध्यारो थिम अफ गर्नुहोस्‌</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">अँध्यारो मोड अफ गर्नुहोस्</translation>
@@ -132,6 +135,7 @@
 <translation id="1977994649430373166">Google प्रोफाइल फोटो</translation>
 <translation id="1979103255016296513">पासवर्ड परिवर्तन गर्न ढिला भइसकेको छ</translation>
 <translation id="1999615961760456652">क्याप्टिभ पोर्टल</translation>
+<translation id="200669432486043882">फाइल बदल्नुहोस्</translation>
 <translation id="2006864819935886708">कनेक्टिभिटी</translation>
 <translation id="2008685064673031089">प्राइम सर्च</translation>
 <translation id="2011174342667534258">SDK को संस्करण:</translation>
@@ -194,6 +198,7 @@
 <translation id="2448312741937722512">प्रकार</translation>
 <translation id="2461822463642141190">हालको</translation>
 <translation id="2480034874476596812">म्यानुअल रूपमा अफ गरियोस्</translation>
+<translation id="248546197012830854">डिभाइस अफलाइन छ। मद्दतसम्बन्धी सामग्री हेर्न Wi-Fi नेटवर्कमा कनेक्ट गर्नुहोस्।</translation>
 <translation id="2491955442992294626">तपाईंले अर्को विन्डो प्रयोग गरिरहेका बेला कीहरू परीक्षण गरिँदैन</translation>
 <translation id="2493126929778606526">स्वतः चयन गरिएका तपाईंका उत्कृष्ट फोटोहरू</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +237,12 @@
 <translation id="3008341117444806826">पुनः ताजा गर्नुहोस्</translation>
 <translation id="3009958530611748826">सुरक्षित गर्न कुनै फोल्डर चयन गर्नुहोस्</translation>
 <translation id="3017079585324758401">पृष्ठभूमि</translation>
+<translation id="302435934487327038">इन्स्टल गर्ने प्रक्रिया पूरा भयो</translation>
 <translation id="3027578600144895987">क्यामेरा बन्द गर्नुहोस्</translation>
 <translation id="3031560714565892478">यो डिभाइस भिडियो क्यामेरा हो।</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">इन्डपोइन्ट</translation>
 <translation id="3069085583900247081">परीक्षण गर्न सकिएन</translation>
-<translation id="3076243757415932261">कम्पोनेन्टहरू पुष्टि गरिँदै छ...</translation>
 <translation id="3083667275341675831">कनेक्टिभिटी डाइगोनेस्टिक्स</translation>
 <translation id="3084958266922136097">स्क्रिन सेभर असक्षम पार्नुहोस्</translation>
 <translation id="3091839911843451378">प्रिन्ट गर्न सकिएन - प्रिन्ट गर्दा गर्दै रोकियो</translation>
@@ -272,7 +277,6 @@
 <translation id="3369013195428705271">आफूले गरेका प्रिन्टको सबै इतिहास मेटाउन खोज्नुभएकै हो? भइरहेका प्रिन्टिङ कार्यहरू मेटाइने छैनन्।</translation>
 <translation id="3383751554789092165">डिभाइससम्बन्धी जानकारी आवश्यकताअनुसार परिवर्तन गर्नुहोस्।</translation>
 <translation id="3404249063913988450">स्क्रिन सेभर सक्षम पार्नुहोस्</translation>
-<translation id="3404770484521709967">कम्पोनेन्टहरू सही तरिकाले इन्स्टल गरिएका छन्।</translation>
 <translation id="3413935475507503304">तपाईं यो अपडेट प्राप्त गर्न चाहनुहुन्छ भने अर्को नामक बटन क्लिक गर्नुहोस्।</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">सुरक्षा</translation>
@@ -392,7 +396,6 @@
 <translation id="445059817448385655">पुरानो पासवर्ड</translation>
 <translation id="4453205916657964690">सबनेट मास्क</translation>
 <translation id="4454245904991689773">स्क्यान गरेर यहाँ सेभ गर्नुहोस्</translation>
-<translation id="4472575034687746823">सुरु गर्नुहोस्</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4483049906298469269">नेटवर्कको डिफल्ट गेटवेका रूपमा सेट नगरिएको यस गेटवेलाई पिङ गर्न सकिएन</translation>
 <translation id="4500213108254186382">लिड एक्सेलेरोमिटर</translation>
@@ -659,14 +662,15 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> मर्मत गर्ने प्रक्रियाबाट बाहिरिनुहोस्</translation>
 <translation id="6618744767048954150">जाँच हुँदै छ</translation>
 <translation id="6620487321149975369">तपाईंले प्रिन्टसम्बन्धी कार्यहरू नहटाउँदासम्म ती कार्यहरू इतिहासमा देखिने छन्</translation>
+<translation id="6624819909909965616">१० एम.बि. भन्दा ठुलो फाइल अपलोड गर्न मिल्दैन।</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
+<translation id="6644568396961840069">फाइल सेभ गर्न सकिएन। अर्कै बाह्य भण्डारण घुसाई हेर्नुहोस् वा पछि फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="6647510110698214773">इन्क्रिप्सनसम्बन्धी एल्गोरिदम</translation>
 <translation id="6650062777702288430">काना र अङ्क तथा अक्षरमिश्रित वर्णहरू अदलबदल गर्ने की</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">ब्राउजर ट्याब</translation>
 <translation id="6692996468359469499">आफ्नो चयनसँग सम्बन्धित जानकारी प्राप्त गर्नुहोस्</translation>
 <translation id="6704062477274546131">DNS रिजोल्युसन</translation>
-<translation id="6721744718589119342">हामी तपाईंलाई इमेल पठाएर थप जानकारी वा अद्यावधिक सूचना माग्न सक्छौँ</translation>
 <translation id="6723839937902243910">पावर</translation>
 <translation id="6723847290197874913">किबोर्डको ब्याकलाइट</translation>
 <translation id="672609503628871915">नयाँ के छ हेर्नुहोस्</translation>
@@ -694,6 +698,7 @@
 <translation id="6965382102122355670">ठिक छ</translation>
 <translation id="6977381486153291903">फर्मवेयरको पुनरावृत्ति</translation>
 <translation id="6995564396478647735">राइट प्रोटेक्ट अन छ भन्ने कुरा सुनिश्चित गर्नुहोस्</translation>
+<translation id="7005833343836210400">डिभाइस अफलाइन छ</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> ले यो डिभाइस व्यवस्थापन गर्छ र यसले हेरिएका वेबपेज, पासवर्ड र इमेललगायत प्रयोगकर्ताले गर्ने सबै क्रियाकलाप हेर्न सक्छ।</translation>
 <translation id="7040230719604914234">सेवा प्रदायक</translation>
 <translation id="7041549558901442110">डिभाइस कनेक्ट गरिएको छैन।</translation>
@@ -719,6 +724,7 @@
 <translation id="7180611975245234373">ताजा गर्नुहोस्</translation>
 <translation id="7212734716605298123">बाह्य डिभाइसहरूका लागि फर्मवेयरसम्बन्धी अपडेटहरू</translation>
 <translation id="7216409898977639127">सेलुलर प्रदायक</translation>
+<translation id="725133483556299729">इमेल चयन गर्नुहोस्</translation>
 <translation id="7271040990581020067">स्क्यानर हाल प्रयोग भइरहेको छ। पछि फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">१ वा सोभन्दा बढी कम्पोनेन्ट चयन गरेर फेरि प्रयास गर्नुहोस् वा क्यालिब्रेट नगरिकन अगाडि बढ्नुहोस्</translation>
@@ -796,6 +802,7 @@
 <translation id="7978412674231730200">निजी कुञ्जी</translation>
 <translation id="7982789257301363584">सञ्जाल</translation>
 <translation id="7994702968232966508">EAP विधि</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" मा सेभ गरियो</translation>
 <translation id="802154636333426148">डाउनलोड गर्न सकिएन</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">स्वतः रङ समायोजन गर्ने मोड अन गर्नुहोस्</translation>
@@ -804,8 +811,8 @@
 <translation id="8063022551652308521">राइट प्रोटेक्ट अझै अफ छ। अघि बढ्न राइट प्रोटेक्ट अन गर्नुहोस्।</translation>
 <translation id="8075838845814659848">बाँकी ब्याट्री</translation>
 <translation id="8082366717211101304">Android एपहरूबाट DNS समाधान गर्न सकिएन</translation>
-<translation id="8083281199617904460">यो मर्मत प्रक्रिया तालिम प्राप्त मर्मत प्राविधिकका लागि तयार पारिएको हो। खराब कम्पोनेन्टहरू बदलेपछि मात्र उक्त प्रक्रिया सुरु गर्नुहोस्।</translation>
 <translation id="808894953321890993">पासवर्ड परिवर्तन गर्नुहोस्‌</translation>
+<translation id="8094062939584182041">Google लाई तपाईंलाई यो समस्याका बारेमा इमेल पठाउने अनुमति दिनुहोस्</translation>
 <translation id="8104083085214006426">तपाईं खुला र असुरक्षित नेटवर्क प्रयोग गर्दै हुनुहुन्छ</translation>
 <translation id="8109786307828817014">क्यालिब्रेट नगरिकन अगाडि बढ्ने हो?</translation>
 <translation id="811820734797650957">(Android) गेटवे पिङ गर्न सकिन्छ</translation>
@@ -820,6 +827,7 @@
 <translation id="8217675307824400706">कनेक्ट गर्नुहोस्</translation>
 <translation id="8221728673725659466">क्यालिब्रेट गर्ने कार्य पूरा भयो</translation>
 <translation id="8226628635270268143">आफूलाई मन पर्ने फोटो र एल्बमहरू छनौट गर्नुहोस्</translation>
+<translation id="8227119283605456246">फाइल समावेश गर्नुहोस्</translation>
 <translation id="8230672074305416752">डिफल्ट नेटवर्कको गेटवे पिङ गर्न सकिएन</translation>
 <translation id="8246209727385807362">अज्ञात सेवा प्रदायक</translation>
 <translation id="827422111966801947">इन्डिगो</translation>
@@ -864,6 +872,7 @@
 <translation id="8576249514688522074">सुरु गरिएको छैन</translation>
 <translation id="8620617069779373398">रोमिङको स्थिति</translation>
 <translation id="8655295600908251630">च्यानल</translation>
+<translation id="8655828773034788261">URL सेयर गर्नुहोस्:</translation>
 <translation id="8660881923941176839">पाउन्ड</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> नेटवर्कमा सामेल हुनुहोस्</translation>
 <translation id="8671972493856476349">अपडेट गरी <ph name="VERSION_NUMBER" /> बनाउनुहोस् र रिस्टार्ट गर्नुहोस्</translation>

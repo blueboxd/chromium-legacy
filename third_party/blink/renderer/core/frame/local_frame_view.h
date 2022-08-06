@@ -31,9 +31,9 @@
 #include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
@@ -115,7 +115,6 @@ class RootFrameViewport;
 class ScrollableArea;
 class Scrollbar;
 class ScrollingCoordinator;
-class ScrollingCoordinatorContext;
 class TransformState;
 class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
@@ -126,6 +125,7 @@ struct PhysicalOffset;
 struct PhysicalRect;
 
 enum class PaintBenchmarkMode;
+enum class PaintArtifactCompositorUpdateReason;
 
 typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
@@ -248,7 +248,8 @@ class CORE_EXPORT LocalFrameView final
 
   void ForceUpdateViewportIntersections();
 
-  void SetPaintArtifactCompositorNeedsUpdate();
+  void SetPaintArtifactCompositorNeedsUpdate(
+      PaintArtifactCompositorUpdateReason);
 
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
@@ -331,6 +332,9 @@ class CORE_EXPORT LocalFrameView final
   void UpdateDocumentAnnotatedRegions() const;
 
   void DidAttachDocument();
+
+  void ClearRootScroller();
+  void InitializeRootScroller();
 
   void AddPartToUpdate(LayoutEmbeddedObject&);
 
@@ -724,9 +728,8 @@ class CORE_EXPORT LocalFrameView final
   cc::Layer* RootCcLayer();
   const cc::Layer* RootCcLayer() const;
 
-  ScrollingCoordinatorContext* GetScrollingContext() const;
   cc::AnimationHost* GetCompositorAnimationHost() const;
-  cc::AnimationTimeline* GetCompositorAnimationTimeline() const;
+  cc::AnimationTimeline* GetScrollAnimationTimeline() const;
 
   LayoutShiftTracker& GetLayoutShiftTracker() { return *layout_shift_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
@@ -742,6 +745,7 @@ class CORE_EXPORT LocalFrameView final
   // features::kLocalFrameRootPrePostFCPMetrics is enabled, creating it if
   // necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
+  void ResetUkmAggregatorForTesting();
 
   // Report the First Contentful Paint signal to the LocalFrameView.
   // This causes Deferred Commits to be restarted and tells the UKM
@@ -966,16 +970,16 @@ class CORE_EXPORT LocalFrameView final
                                Vector<AnnotatedRegionValue>&) const;
 
   void ForAllChildViewsAndPlugins(
-      absl::FunctionRef<void(EmbeddedContentView&)>);
-  void ForAllChildLocalFrameViews(absl::FunctionRef<void(LocalFrameView&)>);
+      base::FunctionRef<void(EmbeddedContentView&)>);
+  void ForAllChildLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
   enum TraversalOrder { kPreOrder, kPostOrder };
   void ForAllNonThrottledLocalFrameViews(
-      absl::FunctionRef<void(LocalFrameView&)>,
+      base::FunctionRef<void(LocalFrameView&)>,
       TraversalOrder = kPreOrder);
-  void ForAllThrottledLocalFrameViews(absl::FunctionRef<void(LocalFrameView&)>);
+  void ForAllThrottledLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
-  void ForAllRemoteFrameViews(absl::FunctionRef<void(RemoteFrameView&)>);
+  void ForAllRemoteFrameViews(base::FunctionRef<void(RemoteFrameView&)>);
 
   bool UpdateViewportIntersectionsForSubtree(
       unsigned parent_flags,
@@ -1154,9 +1158,6 @@ class CORE_EXPORT LocalFrameView final
 
   LifecycleData lifecycle_data_;
 
-  // Lazily created, but should only be created on a local frame root's view.
-  mutable std::unique_ptr<ScrollingCoordinatorContext> scrolling_context_;
-
   // For testing.
   bool is_tracking_raster_invalidations_ = false;
 
@@ -1179,7 +1180,7 @@ class CORE_EXPORT LocalFrameView final
   Member<LayoutShiftTracker> layout_shift_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
 
-  // This will be nullptr iff !frame_->IsMainFrame().
+  // Non-null in the outermost main frame of an ordinary page only.
   Member<MobileFriendlinessChecker> mobile_friendliness_checker_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;

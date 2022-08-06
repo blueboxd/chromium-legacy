@@ -257,9 +257,14 @@ AXNodeData::AXNodeData(AXNodeData&& other) {
   html_attributes.swap(other.html_attributes);
   child_ids.swap(other.child_ids);
   relative_bounds = other.relative_bounds;
+
+  other.id = kInvalidAXNodeID;
+  other.role = ax::mojom::Role::kUnknown;
+  other.state = 0U;
+  other.actions = 0ULL;
 }
 
-AXNodeData& AXNodeData::operator=(AXNodeData other) {
+AXNodeData& AXNodeData::operator=(const AXNodeData& other) {
   id = other.id;
   role = other.role;
   state = other.state;
@@ -456,6 +461,12 @@ bool AXNodeData::GetHtmlAttribute(const char* attribute,
     }
   }
   return false;
+}
+
+std::u16string AXNodeData::GetHtmlAttribute(const char* attribute) const {
+  std::u16string value_utf16;
+  GetHtmlAttribute(attribute, &value_utf16);
+  return value_utf16;
 }
 
 bool AXNodeData::GetHtmlAttribute(const char* attribute,

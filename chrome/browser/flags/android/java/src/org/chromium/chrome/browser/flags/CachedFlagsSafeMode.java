@@ -42,6 +42,9 @@ class CachedFlagsSafeMode {
     @VisibleForTesting
     static final String PREF_SAFE_VALUES_VERSION = "Chrome.Flags.SafeValuesVersion";
 
+    private Boolean mSafeModeExperimentForcedForTesting;
+    private Boolean mSafeModeExperimentEnabled;
+
     // These values are persisted to logs. Entries should not be renumbered and numeric values
     // should never be reused.
     @VisibleForTesting
@@ -264,29 +267,129 @@ class CachedFlagsSafeMode {
         TraceEvent.end("writeSafeValues");
     }
 
-    Boolean isEnabled(String featureName, String preferenceName) {
-        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
-        return null;
+    Boolean isEnabled(String featureName, String preferenceName, boolean defaultValue) {
+        if (!isSafeModeExperimentEnabled()) return null;
+
+        switch (mBehavior.get()) {
+            case Behavior.NOT_ENGAGED_BELOW_THRESHOLD:
+                return null;
+            case Behavior.ENGAGED_WITH_SAFE_VALUES:
+                SharedPreferences prefs = getSafeValuePreferences();
+                if (!prefs.contains(preferenceName)) {
+                    return null;
+                }
+                return prefs.getBoolean(preferenceName, false);
+            case Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES:
+            case Behavior.ENGAGED_WITHOUT_SAFE_VALUES:
+                return defaultValue;
+            default:
+                assert false;
+                return null;
+        }
     }
 
     Boolean getBooleanFieldTrialParam(String preferenceName, boolean defaultValue) {
-        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
-        return null;
+        if (!isSafeModeExperimentEnabled()) return null;
+
+        switch (mBehavior.get()) {
+            case Behavior.NOT_ENGAGED_BELOW_THRESHOLD:
+                return null;
+            case Behavior.ENGAGED_WITH_SAFE_VALUES:
+                SharedPreferences prefs = getSafeValuePreferences();
+                if (!prefs.contains(preferenceName)) {
+                    return null;
+                }
+                return prefs.getBoolean(preferenceName, false);
+            case Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES:
+            case Behavior.ENGAGED_WITHOUT_SAFE_VALUES:
+                return defaultValue;
+            default:
+                assert false;
+                return null;
+        }
     }
 
     Integer getIntFieldTrialParam(String preferenceName, int defaultValue) {
-        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
-        return null;
+        if (!isSafeModeExperimentEnabled()) return null;
+
+        switch (mBehavior.get()) {
+            case Behavior.NOT_ENGAGED_BELOW_THRESHOLD:
+                return null;
+            case Behavior.ENGAGED_WITH_SAFE_VALUES:
+                SharedPreferences prefs = getSafeValuePreferences();
+                if (!prefs.contains(preferenceName)) {
+                    return null;
+                }
+                return prefs.getInt(preferenceName, 0);
+            case Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES:
+            case Behavior.ENGAGED_WITHOUT_SAFE_VALUES:
+                return defaultValue;
+            default:
+                assert false;
+                return null;
+        }
     }
 
     Double getDoubleFieldTrialParam(String preferenceName, double defaultValue) {
-        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
-        return null;
+        if (!isSafeModeExperimentEnabled()) return null;
+
+        switch (mBehavior.get()) {
+            case Behavior.NOT_ENGAGED_BELOW_THRESHOLD:
+                return null;
+            case Behavior.ENGAGED_WITH_SAFE_VALUES:
+                SharedPreferences prefs = getSafeValuePreferences();
+                if (!prefs.contains(preferenceName)) {
+                    return null;
+                }
+                long ieee754LongValue = prefs.getLong(preferenceName, 0L);
+                return Double.longBitsToDouble(ieee754LongValue);
+            case Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES:
+            case Behavior.ENGAGED_WITHOUT_SAFE_VALUES:
+                return defaultValue;
+            default:
+                assert false;
+                return null;
+        }
     }
 
     String getStringFieldTrialParam(String preferenceName, String defaultValue) {
-        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
-        return null;
+        if (!isSafeModeExperimentEnabled()) return null;
+
+        switch (mBehavior.get()) {
+            case Behavior.NOT_ENGAGED_BELOW_THRESHOLD:
+                return null;
+            case Behavior.ENGAGED_WITH_SAFE_VALUES:
+                SharedPreferences prefs = getSafeValuePreferences();
+                if (!prefs.contains(preferenceName)) {
+                    return null;
+                }
+                return prefs.getString(preferenceName, null);
+            case Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES:
+            case Behavior.ENGAGED_WITHOUT_SAFE_VALUES:
+                return defaultValue;
+            default:
+                assert false;
+                return null;
+        }
+    }
+
+    void cacheSafeModeForCachedFlagsEnabled() {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FLAGS_SAFE_MODE_ENABLED,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.SAFE_MODE_FOR_CACHED_FLAGS));
+    }
+
+    private boolean isSafeModeExperimentEnabled() {
+        if (mSafeModeExperimentForcedForTesting != null) {
+            return mSafeModeExperimentForcedForTesting;
+        }
+
+        if (mSafeModeExperimentEnabled == null) {
+            mSafeModeExperimentEnabled = SharedPreferencesManager.getInstance().readBoolean(
+                    ChromePreferenceKeys.FLAGS_SAFE_MODE_ENABLED, false);
+        }
+
+        return mSafeModeExperimentEnabled;
     }
 
     @Behavior
@@ -298,10 +401,15 @@ class CachedFlagsSafeMode {
         mBehavior.set(Behavior.UNKNOWN);
         mStartCheckpointWritten.set(false);
         mEndCheckpointWritten.set(false);
+        mSafeModeExperimentEnabled = null;
     }
 
     @SuppressLint({"ApplySharedPref"})
     static void clearDiskForTesting() {
         getSafeValuePreferences().edit().clear().commit();
+    }
+
+    void setExperimentEnabledForTesting(Boolean value) {
+        mSafeModeExperimentForcedForTesting = value;
     }
 }

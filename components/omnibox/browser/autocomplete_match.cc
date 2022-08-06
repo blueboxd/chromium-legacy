@@ -46,8 +46,8 @@ namespace {
 
 bool IsTrivialClassification(const ACMatchClassifications& classifications) {
   return classifications.empty() ||
-      ((classifications.size() == 1) &&
-       (classifications.back().style == ACMatchClassification::NONE));
+         ((classifications.size() == 1) &&
+          (classifications.back().style == ACMatchClassification::NONE));
 }
 
 // Returns true if one of the |terms_prefixed_by_http_or_https| matches the
@@ -90,6 +90,31 @@ bool RichAutocompletionApplicable(bool enabled_all_providers,
   return (enabled_all_providers ||
           (shortcut_provider && enabled_shortcut_provider)) &&
          input_text.size() >= min_char;
+}
+
+// Gives a basis for match comparison that prefers some providers over others
+// while remaining neutral with a default score of zero for most providers.
+int GetDeduplicationProviderPreferenceScore(AutocompleteProvider::Type type) {
+  const static std::unordered_map<AutocompleteProvider::Type, int>
+      provider_preference = {
+          {// Prefer live document suggestions. We check provider type instead
+           // of match type in order to distinguish live suggestions from the
+           // document provider from stale suggestions from the shortcuts
+           // providers, because the latter omits changing metadata such as last
+           // access date.
+           AutocompleteProvider::TYPE_DOCUMENT, 2},
+          {// Prefer bookmark suggestions, as 1) their titles may be explicitly
+           // set, and 2) they may display enhanced information such as the
+           // bookmark folders path.
+           AutocompleteProvider::TYPE_BOOKMARK, 1},
+          {// Prefer non-fuzzy matches over fuzzy matches.
+           AutocompleteProvider::TYPE_HISTORY_FUZZY, -1},
+      };
+  const auto it = provider_preference.find(type);
+  if (it == provider_preference.end()) {
+    return 0;
+  }
+  return it->second;
 }
 
 }  // namespace
@@ -416,7 +441,6 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::TAB_SEARCH_DEPRECATED:
     case Type::TILE_NAVSUGGEST:
     case Type::OPEN_TAB:
-    case Type::HISTORY_CLUSTER:
       return omnibox::kPageIcon;
 
     case Type::SEARCH_SUGGEST: {
@@ -475,6 +499,9 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
         default:
           return omnibox::kPageIcon;
       }
+
+    case Type::HISTORY_CLUSTER:
+      return omnibox::kJourneysIcon;
 
     case Type::NUM_TYPES:
       // TODO(https://crbug.com/1024114): Replace with NOTREACHED() once fixed.
@@ -540,26 +567,13 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
       return false;
   }
 
-  // Prefer some providers over others.
-  const std::vector<AutocompleteProvider::Type> preferred_providers = {
-      // Prefer live document suggestions. We check provider type instead of
-      // match type in order to distinguish live suggestions from the document
-      // provider from stale suggestions from the shortcuts providers, because
-      // the latter omits changing metadata such as last access date.
-      AutocompleteProvider::TYPE_DOCUMENT,
-      // Prefer bookmark suggestions, as 1) their titles may be explicitly set,
-      // and 2) they may display enhanced information such as the bookmark
-      // folders path.
-      AutocompleteProvider::TYPE_BOOKMARK,
-  };
-
-  if (match1.provider->type() != match2.provider->type()) {
-    for (const auto& preferred_provider : preferred_providers) {
-      if (match1.provider->type() == preferred_provider)
-        return true;
-      if (match2.provider->type() == preferred_provider)
-        return false;
-    }
+  // Prefer some providers above others according to score (default is zero).
+  const int match1_score =
+      GetDeduplicationProviderPreferenceScore(match1.provider->type());
+  const int match2_score =
+      GetDeduplicationProviderPreferenceScore(match2.provider->type());
+  if (match1_score != match2_score) {
+    return match1_score > match2_score;
   }
 
   // By default, simply prefer the more relevant match.
@@ -610,7 +624,8 @@ void AutocompleteMatch::ClassifyLocationInString(
   // Classifying an empty match makes no sense and will lead to validation
   // errors later.
   DCHECK_GT(match_length, 0U);
-  classification->push_back(ACMatchClassification(match_location,
+  classification->push_back(ACMatchClassification(
+      match_location,
       (style | ACMatchClassification::MATCH) & ~ACMatchClassification::DIM));
 
   // Mark post-match portion of string (if any).
@@ -622,7 +637,7 @@ void AutocompleteMatch::ClassifyLocationInString(
 
 // static
 AutocompleteMatch::ACMatchClassifications
-    AutocompleteMatch::MergeClassifications(
+AutocompleteMatch::MergeClassifications(
     const ACMatchClassifications& classifications1,
     const ACMatchClassifications& classifications2) {
   // We must return the empty vector only if both inputs are truly empty.
@@ -636,12 +651,14 @@ AutocompleteMatch::ACMatchClassifications
   ACMatchClassifications output;
   for (auto i = classifications1.begin(), j = classifications2.begin();
        i != classifications1.end();) {
-    AutocompleteMatch::AddLastClassificationIfNecessary(&output,
-        std::max(i->offset, j->offset), i->style | j->style);
-    const size_t next_i_offset = (i + 1) == classifications1.end() ?
-        static_cast<size_t>(-1) : (i + 1)->offset;
-    const size_t next_j_offset = (j + 1) == classifications2.end() ?
-        static_cast<size_t>(-1) : (j + 1)->offset;
+    AutocompleteMatch::AddLastClassificationIfNecessary(
+        &output, std::max(i->offset, j->offset), i->style | j->style);
+    const size_t next_i_offset = (i + 1) == classifications1.end()
+                                     ? static_cast<size_t>(-1)
+                                     : (i + 1)->offset;
+    const size_t next_j_offset = (j + 1) == classifications2.end()
+                                     ? static_cast<size_t>(-1)
+                                     : (j + 1)->offset;
     if (next_i_offset >= next_j_offset)
       ++j;
     if (next_j_offset >= next_i_offset)
@@ -669,9 +686,9 @@ std::string AutocompleteMatch::ClassificationsToString(
 ACMatchClassifications AutocompleteMatch::ClassificationsFromString(
     const std::string& serialized_classifications) {
   ACMatchClassifications classifications;
-  std::vector<base::StringPiece> tokens = base::SplitStringPiece(
-      serialized_classifications, ",", base::KEEP_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
+  std::vector<base::StringPiece> tokens =
+      base::SplitStringPiece(serialized_classifications, ",",
+                             base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   DCHECK(!(tokens.size() & 1));  // The number of tokens should be even.
   for (size_t i = 0; i < tokens.size(); i += 2) {
     int classification_offset = 0;
@@ -681,8 +698,8 @@ ACMatchClassifications AutocompleteMatch::ClassificationsFromString(
       NOTREACHED();
       return classifications;
     }
-    classifications.push_back(ACMatchClassification(classification_offset,
-                                                    classification_style));
+    classifications.push_back(
+        ACMatchClassification(classification_offset, classification_style));
   }
   return classifications;
 }
@@ -789,12 +806,27 @@ const TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
   const TemplateURL* template_url =
       keyword.empty() ? nullptr
                       : template_url_service->GetTemplateURLForKeyword(keyword);
-  return (template_url || host.empty()) ?
-      template_url : template_url_service->GetTemplateURLForHost(host);
+  return (template_url || host.empty())
+             ? template_url
+             : template_url_service->GetTemplateURLForHost(host);
 }
 
 // static
 GURL AutocompleteMatch::GURLToStrippedGURL(
+    const GURL& url,
+    const AutocompleteInput& input,
+    const TemplateURLService* template_url_service,
+    const std::u16string& keyword) {
+  static const bool optimize =
+      base::FeatureList::IsEnabled(omnibox::kStrippedGurlOptimization);
+  return optimize ? GURLToStrippedGURLOptimized(url, input,
+                                                template_url_service, keyword)
+                  : GURLToStrippedGURLControl(url, input, template_url_service,
+                                              keyword);
+}
+
+// static
+GURL AutocompleteMatch::GURLToStrippedGURLControl(
     const GURL& url,
     const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
@@ -822,9 +854,8 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
           template_url_service->search_terms_data())) {
     std::u16string search_terms;
     if (template_url->ExtractSearchTermsFromURL(
-        stripped_destination_url,
-        template_url_service->search_terms_data(),
-        &search_terms)) {
+            stripped_destination_url, template_url_service->search_terms_data(),
+            &search_terms)) {
       stripped_destination_url =
           GURL(template_url->url_ref().ReplaceSearchTerms(
               TemplateURLRef::SearchTermsArgs(search_terms),
@@ -852,8 +883,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   // specify one of the two.
   if (stripped_destination_url.SchemeIs(url::kHttpsScheme) &&
       (input.terms_prefixed_by_http_or_https().empty() ||
-       !WordMatchesURLContent(
-           input.terms_prefixed_by_http_or_https(), url))) {
+       !WordMatchesURLContent(input.terms_prefixed_by_http_or_https(), url))) {
     replacements.SetSchemeStr(url::kHttpScheme);
     needs_replacement = true;
   }
@@ -864,8 +894,91 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   }
 
   if (needs_replacement)
-    stripped_destination_url = stripped_destination_url.ReplaceComponents(
-        replacements);
+    stripped_destination_url =
+        stripped_destination_url.ReplaceComponents(replacements);
+  return stripped_destination_url;
+}
+
+// static
+GURL AutocompleteMatch::GURLToStrippedGURLOptimized(
+    const GURL& url,
+    const AutocompleteInput& input,
+    const TemplateURLService* template_url_service,
+    const std::u16string& keyword) {
+  if (!url.is_valid())
+    return url;
+
+  // Special-case canonicalizing Docs URLs. This logic is self-contained and
+  // will not participate in the TemplateURL canonicalization.
+  GURL docs_url = DocumentProvider::GetURLForDeduping(url);
+  if (docs_url.is_valid())
+    return docs_url;
+
+  GURL stripped_destination_url = url;
+
+  // If the destination URL looks like it was generated from a TemplateURL,
+  // remove all substitutions other than the search terms.  This allows us
+  // to eliminate cases like past search URLs from history that differ only
+  // by some obscure query param from each other or from the search/keyword
+  // provider matches.
+  const TemplateURL* template_url = GetTemplateURLWithKeyword(
+      template_url_service, keyword, stripped_destination_url.host());
+  if (template_url != nullptr &&
+      template_url->SupportsReplacement(
+          template_url_service->search_terms_data())) {
+    static base::LRUCache<std::pair<const TemplateURL*, GURL>, GURL>
+        template_cache(30);
+    const std::pair<const TemplateURL*, GURL> cache_key = {template_url, url};
+    const auto& cached = template_cache.Get(cache_key);
+    if (cached != template_cache.end()) {
+      stripped_destination_url = cached->second;
+    } else {
+      std::u16string search_terms;
+      if (template_url->ExtractSearchTermsFromURL(
+              stripped_destination_url,
+              template_url_service->search_terms_data(), &search_terms)) {
+        stripped_destination_url =
+            GURL(template_url->url_ref().ReplaceSearchTerms(
+                TemplateURLRef::SearchTermsArgs(search_terms),
+                template_url_service->search_terms_data()));
+        template_cache.Put(cache_key, stripped_destination_url);
+      }
+    }
+  }
+
+  // |replacements| keeps all the substitutions we're going to make to
+  // from {destination_url} to {stripped_destination_url}.  |need_replacement|
+  // is a helper variable that helps us keep track of whether we need
+  // to apply the replacement.
+  bool needs_replacement = false;
+  GURL::Replacements replacements;
+
+  // Remove the www. prefix from the host.
+  static const char prefix[] = "www.";
+  static const size_t prefix_len = std::size(prefix) - 1;
+  std::string host = stripped_destination_url.host();
+  if (host.compare(0, prefix_len, prefix) == 0 && host.length() > prefix_len) {
+    replacements.SetHostStr(base::StringPiece(host).substr(prefix_len));
+    needs_replacement = true;
+  }
+
+  // Replace https protocol with http, as long as the user didn't explicitly
+  // specify one of the two.
+  if (stripped_destination_url.SchemeIs(url::kHttpsScheme) &&
+      (input.terms_prefixed_by_http_or_https().empty() ||
+       !WordMatchesURLContent(input.terms_prefixed_by_http_or_https(), url))) {
+    replacements.SetSchemeStr(url::kHttpScheme);
+    needs_replacement = true;
+  }
+
+  if (!input.parts().ref.is_nonempty() && url.has_ref()) {
+    replacements.ClearRef();
+    needs_replacement = true;
+  }
+
+  if (needs_replacement)
+    stripped_destination_url =
+        stripped_destination_url.ReplaceComponents(replacements);
   return stripped_destination_url;
 }
 
@@ -946,15 +1059,26 @@ void AutocompleteMatch::LogSearchEngineUsed(
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service) {
-  // Other than document suggestions, computing |stripped_destination_url| will
+  // Other than document suggestions, computing `stripped_destination_url` will
   // have the same result during a match's lifecycle, so it's safe to skip
-  // re-computing it if it's already computed. Document suggestions'
-  // |stripped_url|s are pre-computed by the document provider, and overwriting
-  // them here would prevent potential deduping.
+  // re-computing it if it's already computed. Document provider and history
+  // quick provider document suggestions' `stripped_url`s are pre-computed by
+  // the document provider, and overwriting them here would be wasteful and, in
+  // the case of the document provider, prevent potential deduping.
   if (stripped_destination_url.is_empty()) {
     stripped_destination_url = GURLToStrippedGURL(
         destination_url, input, template_url_service, keyword);
   }
+}
+
+bool AutocompleteMatch::IsDocumentSuggestion() {
+  const GURL docs_url = DocumentProvider::GetURLForDeduping(destination_url);
+  // May as well set `stripped_destination_url` to avoid duplicate computation
+  // later in `ComputeStrippedDestinationURL()`. Additionally tracking if the
+  // suggestion is not a doc would add more clutter than benefit.
+  if (docs_url.is_valid())
+    stripped_destination_url = docs_url;
+  return docs_url.is_valid();
 }
 
 void AutocompleteMatch::GetKeywordUIState(
@@ -985,10 +1109,10 @@ std::u16string AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
 TemplateURL* AutocompleteMatch::GetTemplateURL(
     TemplateURLService* template_url_service,
     bool allow_fallback_to_destination_host) const {
-  return GetTemplateURLWithKeyword(
-      template_url_service, keyword,
-      allow_fallback_to_destination_host ?
-          destination_url.host() : std::string());
+  return GetTemplateURLWithKeyword(template_url_service, keyword,
+                                   allow_fallback_to_destination_host
+                                       ? destination_url.host()
+                                       : std::string());
 }
 
 GURL AutocompleteMatch::ImageUrl() const {
@@ -1102,8 +1226,8 @@ bool AutocompleteMatch::IsVerbatimType() const {
        provider != nullptr &&
        provider->type() == AutocompleteProvider::TYPE_SEARCH);
   return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
-      type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
-      is_keyword_verbatim_match;
+         type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+         is_keyword_verbatim_match;
 }
 
 bool AutocompleteMatch::IsSearchProviderSearchSuggestion() const {
@@ -1476,8 +1600,8 @@ void AutocompleteMatch::ValidateClassifications(
         << ". Provider: " << provider_name << ".";
     DCHECK_LT(i->offset, text.length())
         << " Classification of [" << i->offset << "," << text.length()
-        << "] is out of bounds for \"" << text << "\". Provider: "
-        << provider_name << ".";
+        << "] is out of bounds for \"" << text
+        << "\". Provider: " << provider_name << ".";
     last_offset = i->offset;
   }
 }

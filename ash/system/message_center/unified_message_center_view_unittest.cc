@@ -41,12 +41,6 @@ namespace {
 
 constexpr int kDefaultMaxHeight = 500;
 
-class DummyEvent : public ui::Event {
- public:
-  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-  ~DummyEvent() override = default;
-};
-
 class TestUnifiedMessageCenterView : public UnifiedMessageCenterView {
  public:
   explicit TestUnifiedMessageCenterView(UnifiedSystemTrayModel* model)
@@ -119,7 +113,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     message_center::RichNotificationData data;
     data.pinned = pinned;
     MessageCenter::Get()->AddNotification(std::make_unique<Notification>(
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"test title",
+        message_center::NOTIFICATION_TYPE_SIMPLE, id, u"test title",
         u"test message", ui::ImageModel(),
         std::u16string() /* display_source */, GURL(),
         message_center::NotifierId(), data,
@@ -902,6 +896,26 @@ TEST_P(UnifiedMessageCenterViewTest, CollapseAndExpand_NoNotifications) {
   // Same with setting it back to the expanded state.
   message_center_view()->SetExpanded();
   EXPECT_FALSE(message_center_view()->GetVisible());
+}
+
+TEST_P(UnifiedMessageCenterViewTest, ClearAllButtonHeight) {
+  std::string id0 = AddNotification(false /* pinned */);
+  std::string id1 = AddNotification(false /* pinned */);
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
+
+  // Get ClearAll Button height.
+  const int previous_button_height =
+      GetNotificationBarClearAllButton()->height();
+
+  // Remove a notification.
+  MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+
+  // ClearAll Button height should remain the same.
+  EXPECT_EQ(previous_button_height,
+            GetNotificationBarClearAllButton()->height());
 }
 
 }  // namespace ash

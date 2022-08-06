@@ -8,7 +8,9 @@
 #include "content/public/browser/webui_config_map.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/webui/chromeos/notification_tester/notification_tester_ui.h"
 #if !defined(OFFICIAL_BUILD)
+#include "ash/webui/facial_ml_app_ui/facial_ml_app_ui.h"
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -17,8 +19,10 @@ namespace {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void RegisterAshChromeWebUIConfigs() {
   // Add `WebUIConfig`s for Ash ChromeOS to the list here.
-#if !defined(OFFICIAL_BUILD)
   auto& map = content::WebUIConfigMap::GetInstance();
+  map.AddWebUIConfig(std::make_unique<chromeos::NotificationTesterUIConfig>());
+#if !defined(OFFICIAL_BUILD)
+  map.AddWebUIConfig(std::make_unique<ash::FacialMLAppUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::SampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)
 }

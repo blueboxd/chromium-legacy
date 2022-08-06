@@ -577,11 +577,6 @@ INSTANTIATE_TEST_SUITE_P(
         AutofillPhoneFieldFillerTestCase{HTML_TYPE_TEL_LOCAL_SUFFIX,
                                          /*field_max_length=*/0, u"4578",
                                          u"+15145554578"},
-        // Filling a phone type field with a max length of 3 should fill only
-        // the prefix.
-        AutofillPhoneFieldFillerTestCase{HTML_TYPE_TEL_LOCAL,
-                                         /*field_max_length=*/3, u"555",
-                                         u"+15145554578"},
         // TODO(crbug.com/581485): There should be a test case where the full
         // number is requested (HTML_TYPE_TEL) but a field_max_length of 3 would
         // fill the prefix.
@@ -2253,7 +2248,6 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCVC) {
 }
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualCVCAmericanExpress) {
-  const char kAmericanExpressCard[] = "americanExpressCC";
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
@@ -2274,7 +2268,6 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCardNumber) {
   field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
   field.set_credit_card_number_offset(50);
   field.form_control_type = "text";
-  const char kMasterCard[] = "masterCardCC";
 
   CreditCard card = test::GetVirtualCard();
   card.SetNumber(u"5454545454545454");

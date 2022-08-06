@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FocusHandler} from '/accessibility_common/dictation/focus_handler.js';
-import {InputController} from '/accessibility_common/dictation/input_controller.js';
-import {HiddenMacroManager} from '/accessibility_common/dictation/macros/hidden_macro_manager.js';
-import {Macro} from '/accessibility_common/dictation/macros/macro.js';
-import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
-import {MetricsUtils} from '/accessibility_common/dictation/metrics_utils.js';
-import {SpeechParser} from '/accessibility_common/dictation/parse/speech_parser.js';
-import {HintContext, UIController, UIState} from '/accessibility_common/dictation/ui_controller.js';
+import {FocusHandler} from './focus_handler.js';
+import {InputController} from './input_controller.js';
+import {LocaleInfo} from './locale_info.js';
+import {HiddenMacroManager} from './macros/hidden_macro_manager.js';
+import {Macro} from './macros/macro.js';
+import {MacroName} from './macros/macro_names.js';
+import {MetricsUtils} from './metrics_utils.js';
+import {SpeechParser} from './parse/speech_parser.js';
+import {HintContext, UIController, UIState} from './ui_controller.js';
 
 const ErrorEvent = chrome.speechRecognitionPrivate.SpeechRecognitionErrorEvent;
 const ResultEvent =
@@ -33,9 +34,6 @@ export class Dictation {
 
     /** @private {HiddenMacroManager} */
     this.hiddenMacroManager_ = null;
-
-    /** @private {string} */
-    this.localePref_ = '';
 
     /**
      * Whether or not Dictation is active.
@@ -86,9 +84,7 @@ export class Dictation {
         () => this.stopDictation_(/*notify=*/ true), this.focusHandler_);
     this.uiController_ = new UIController();
     this.speechParser_ = new SpeechParser(this.inputController_);
-    if (this.localePref_) {
-      this.propagateLocale_(this.localePref_);
-    }
+    this.speechParser_.refresh();
     this.hiddenMacroManager_ = new HiddenMacroManager(this.inputController_);
 
     // Set default speech recognition properties. Locale will be updated when
@@ -149,7 +145,9 @@ export class Dictation {
   startDictation_() {
     this.active_ = true;
     this.startTone_.play();
-    this.setStopTimeout_(Dictation.Timeouts.NO_FOCUSED_IME_MS);
+    this.setStopTimeout_(
+        Dictation.Timeouts.NO_FOCUSED_IME_MS,
+        'Dictation stopped automatically: No focused IME');
     this.inputController_.connect(() => this.maybeStartSpeechRecognition_());
   }
 
@@ -210,14 +208,20 @@ export class Dictation {
   /**
    * Sets the timeout to stop Dictation.
    * @param {number} durationMs
+   * @param {string=} debugInfo Optional debugging information for why Dictation
+   *     stopped automatically.
    * @private
    */
-  setStopTimeout_(durationMs) {
+  setStopTimeout_(durationMs, debugInfo) {
     if (this.stopTimeoutId_ !== null) {
       clearTimeout(this.stopTimeoutId_);
     }
-    this.stopTimeoutId_ =
-        setTimeout(() => this.stopDictation_(/*notify=*/ true), durationMs);
+    this.stopTimeoutId_ = setTimeout(() => {
+      this.stopDictation_(/*notify=*/ true);
+      if (debugInfo) {
+        console.log(debugInfo);
+      }
+    }, durationMs);
   }
 
   /**
@@ -302,7 +306,7 @@ export class Dictation {
     this.clearInterimText_();
 
     // Record metrics.
-    this.metricsUtils_ = new MetricsUtils(type, this.localePref_);
+    this.metricsUtils_ = new MetricsUtils(type, LocaleInfo.locale);
     this.metricsUtils_.recordSpeechRecognitionStarted();
 
     this.uiController_.setState(
@@ -348,8 +352,8 @@ export class Dictation {
           if (pref.value) {
             const locale = /** @type {string} */ (pref.value);
             this.speechRecognitionOptions_.locale = locale;
-            this.localePref_ = locale;
-            this.propagateLocale_(locale);
+            LocaleInfo.locale = locale;
+            this.speechParser_.refresh();
           }
           break;
         case Dictation.SPOKEN_FEEDBACK_PREF:
@@ -430,7 +434,7 @@ export class Dictation {
     // TODO(crbug.com/1288964): Finalize string and internationalization.
     this.uiController_.setState(UIState.MACRO_FAIL, {
       text: `Failed to run command: ${transcript}`,
-      context: HintContext.STANDBY
+      context: HintContext.STANDBY,
     });
   }
 
@@ -479,7 +483,7 @@ export class Dictation {
   }
 
   /**
-   * @param {!MacroName} Name The macro to run.
+   * @param {!MacroName} name The macro to run.
    * @param {string} arg
    */
   runHiddenMacroWithStringArgForTesting(name, arg) {
@@ -494,15 +498,6 @@ export class Dictation {
   runHiddenMacroWithTwoStringArgsForTesting(name, arg1, arg2) {
     this.hiddenMacroManager_.runMacroWithTwoStringArgsForTesting(
         name, arg1, arg2);
-  }
-
-  /**
-   * @param {string} locale
-   * @private
-   */
-  propagateLocale_(locale) {
-    this.speechParser_.initialize(locale);
-    this.inputController_.setLocale(locale);
   }
 }
 

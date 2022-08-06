@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 
 namespace file_manager {
 
@@ -25,7 +25,7 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
                  const std::string& source_format,
                  const std::string& mount_label,
                  const std::vector<std::string>& mount_options,
-                 chromeos::MountType type,
+                 ash::MountType type,
                  chromeos::MountAccessMode access_mode);
     MountRequest(const MountRequest& other);
     ~MountRequest();
@@ -34,7 +34,7 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
     std::string source_format;
     std::string mount_label;
     std::vector<std::string> mount_options;
-    chromeos::MountType type;
+    ash::MountType type;
     chromeos::MountAccessMode access_mode;
   };
 
@@ -67,7 +67,7 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
 
   // Fails a future unmount request for |mount_path| with |error_code|.
   void FailUnmountRequest(const std::string& mount_path,
-                          chromeos::MountError error_code);
+                          ash::MountError error_code);
 
   // DiskMountManager overrides.
   void AddObserver(Observer* observer) override;
@@ -82,7 +82,7 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
                  const std::string& source_format,
                  const std::string& mount_label,
                  const std::vector<std::string>& mount_options,
-                 chromeos::MountType type,
+                 ash::MountType type,
                  chromeos::MountAccessMode access_mode,
                  MountPathCallback) override;
   // In order to simulate asynchronous invocation of callbacks after unmount
@@ -118,7 +118,7 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
   std::vector<MountRequest> mount_requests_;
   std::vector<std::string> unmount_requests_;
   std::vector<RemountAllRequest> remount_all_requests_;
-  std::map<std::string, chromeos::MountError> unmount_errors_;
+  std::map<std::string, ash::MountError> unmount_errors_;
 };
 
 }  // namespace file_manager

@@ -43,6 +43,8 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -54,6 +56,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
+#include "ash/style/system_shadow.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/layer_animation_stopped_waiter.h"
 #include "ash/utility/haptics_tracking_test_input_controller.h"
@@ -1453,6 +1456,47 @@ TEST_P(AppsGridViewClamshellTest, RemoveItemsInFolderShouldUpdateBounds) {
 }
 
 TEST_P(AppsGridViewClamshellTest, AddItemsToFolderShouldUpdateBounds) {
+  // Populate two folders with different number of apps.
+  AppListFolderItem* folder_1 = model_->CreateAndPopulateFolderWithApps(2);
+  model_->CreateAndPopulateFolderWithApps(4);
+
+  // Record the bounds of the folder view with 4 items in it.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  test_api_->PressItemAt(1);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect two_rows_folder_view = items_grid_view->GetBoundsInScreen();
+  app_list_folder_view()->CloseFolderPage();
+
+  // Record the bounds of the folder view with 2 items in it and keep the folder
+  // view open for further testing.
+  test_api_->PressItemAt(0);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect one_row_folder_view = items_grid_view->GetBoundsInScreen();
+  EXPECT_NE(one_row_folder_view.size(), two_rows_folder_view.size());
+
+  // Add an item to the folder so that there are two rows in the folder view.
+  model_->AddItemToFolder(model_->CreateItem("Extra 1"), folder_1->id());
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  items_grid_view->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            two_rows_folder_view.size());
+  app_list_folder_view()->CloseFolderPage();
+
+  // Create a folder with a full page of apps. Add an item to the folder should
+  // not change the size of the folder view.
+  AppListFolderItem* folder_full =
+      model_->CreateAndPopulateFolderWithApps(kMaxItemsPerFolderPage);
+  test_api_->PressItemAt(2);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect full_folder_view = items_grid_view->GetBoundsInScreen();
+
+  model_->AddItemToFolder(model_->CreateItem("Extra 2"), folder_full->id());
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            full_folder_view.size());
+  app_list_folder_view()->CloseFolderPage();
+}
+
+TEST_P(AppsGridViewClamshellAndTabletTest, AddItemsToFolderShouldUpdateBounds) {
   // Populate two folders with different number of apps.
   AppListFolderItem* folder_1 = model_->CreateAndPopulateFolderWithApps(2);
   model_->CreateAndPopulateFolderWithApps(4);
@@ -5777,6 +5821,215 @@ TEST_F(AppsGridViewTest, PulsingBlocksShowDuringAppListSync) {
   model_->SetStatus(AppListModelStatus::kStatusNormal);
   UpdateLayout();
   EXPECT_EQ(0u, GetPulsingBlocksModel().view_size());
+}
+
+// Tests that the pulsing blocks animation runs with the productivity launcher.
+TEST_P(AppsGridViewClamshellAndTabletTest,
+       PulsingBlocksAnimationOnFiringAnimationTimer) {
+  model_->PopulateApps(3);
+  UpdateLayout();
+  EXPECT_EQ(0u, GetPulsingBlocksModel().view_size());
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // For scrolling app list, the "page size" is very large, so cap the number of
+  // pulsing blocks to the size of the tablet mode page (~20 items).
+  const size_t tiles_per_page =
+      SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
+  model_->SetStatus(AppListModelStatus::kStatusSyncing);
+  UpdateLayout();
+  ASSERT_EQ(tiles_per_page - 3, GetPulsingBlocksModel().view_size());
+
+  PulsingBlockView* pulsing_block_view = GetPulsingBlocksModel().view_at(0);
+
+  EXPECT_FALSE(pulsing_block_view->IsAnimating());
+  EXPECT_TRUE(pulsing_block_view->FireAnimationTimerForTest());
+  EXPECT_TRUE(pulsing_block_view->IsAnimating());
+
+  // Set the model status as normal to avoid the test hanging due to the
+  // pulsing blocks animation.
+  model_->SetStatus(AppListModelStatus::kStatusNormal);
+  EXPECT_EQ(0u, GetPulsingBlocksModel().view_size());
+}
+
+// Verify that as new app items get synced into the app list, newer items slowly
+// fade in place of a placeholder.
+TEST_F(AppsGridViewBubbleTest, AppIconSubtitutesPulsingBlockView) {
+  model_->PopulateApps(3);
+  UpdateLayout();
+  EXPECT_EQ(0u, GetPulsingBlocksModel().view_size());
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // For scrolling app list, the "page size" is very large, so cap the number of
+  // pulsing blocks to the size of the tablet mode page (~20 items).
+  const size_t tiles_per_page =
+      SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
+  model_->SetStatus(AppListModelStatus::kStatusSyncing);
+  UpdateLayout();
+  ASSERT_EQ(tiles_per_page - 3, GetPulsingBlocksModel().view_size());
+
+  PulsingBlockView* pulsing_block_view = GetPulsingBlocksModel().view_at(0);
+
+  EXPECT_TRUE(pulsing_block_view->FireAnimationTimerForTest());
+  EXPECT_TRUE(pulsing_block_view->IsAnimating());
+
+  gfx::Rect placeholder_bounds = pulsing_block_view->GetBoundsInScreen();
+
+  // Add another app to simulate a synced app.
+  model_->PopulateApps(1);
+  UpdateLayout();
+
+  // The number of pulsing blocks will be decreased by one in order for the
+  // incoming app to fade in its place.
+  ASSERT_EQ(tiles_per_page - 4, GetPulsingBlocksModel().view_size());
+
+  AppListItemView* item_view = GetItemViewInTopLevelGrid(3);
+
+  ASSERT_TRUE(item_view->layer());
+  EXPECT_TRUE(item_view->layer()->GetAnimator()->is_animating());
+  EXPECT_EQ(1.0f, item_view->layer()->GetTargetOpacity());
+
+  LayerAnimationStoppedWaiter animation_waiter;
+  animation_waiter.Wait(item_view->layer());
+
+  // The new item should be placed at the first placeholder bounds.
+  EXPECT_EQ(placeholder_bounds, item_view->GetBoundsInScreen());
+
+  // Set the model status as normal to avoid the test hanging due to the
+  // pulsing blocks animation.
+  model_->SetStatus(AppListModelStatus::kStatusNormal);
+  EXPECT_EQ(0u, GetPulsingBlocksModel().view_size());
+}
+
+// Tests that right clicking an app will remove focus from other apps within the
+// apps grid. See https://crbug.com/1146365.
+TEST_P(AppsGridViewClamshellTest, VerifyFocusRemovedWhenLeftClickingOtherApp) {
+  model_->PopulateApps(3);
+  UpdateLayout();
+
+  views::View* first_app = test_api_->GetViewAtModelIndex(0);
+  views::View* last_app = test_api_->GetViewAtModelIndex(2);
+
+  // Move focus to the last app
+  last_app->RequestFocus();
+  ASSERT_TRUE(last_app->HasFocus());
+
+  SimulateRightClickOrLongPressAt(first_app->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(last_app->HasFocus());
+}
+
+// Tests that right clicking an app will remove focus from the title name of a
+// folder. See https://crbug.com/1146365.
+TEST_P(AppsGridViewClamshellTest,
+       VerifyFocusRemovedWhenLeftClickingOtherAppForFolder) {
+  // Create a folder with a couple items.
+  model_->CreateAndPopulateFolderWithApps(2);
+  UpdateLayout();
+
+  // Open the folder item.
+  test_api_->PressItemAt(0);
+  ASSERT_TRUE(folder_apps_grid_view());
+
+  // Force focus on the title name of the folder.
+  app_list_folder_view()->FocusNameInput();
+  ASSERT_TRUE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Right click on another element.
+  AppListItemView* const item_view =
+      GetItemViewInAppsGridAt(0, folder_apps_grid_view());
+  SimulateRightClickOrLongPressAt(item_view->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+}
+
+// Tests that right clicking an app will remove focus from other apps within the
+// apps grid. See https://crbug.com/1146365.
+TEST_P(AppsGridViewClamshellTest, FocusNotRestoredIfNoViewWasFocused) {
+  // Create a folder with a couple items.
+  model_->CreateAndPopulateFolderWithApps(2);
+  UpdateLayout();
+
+  // Open the folder item.
+  test_api_->PressItemAt(0);
+  ASSERT_TRUE(folder_apps_grid_view());
+
+  // Force focus on the title name of the folder.
+  app_list_folder_view()->FocusNameInput();
+  ASSERT_TRUE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Press Enter, the title should not have focus.
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_RETURN);
+  ASSERT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Right click on another element.
+  AppListItemView* const item_view =
+      GetItemViewInAppsGridAt(0, folder_apps_grid_view());
+  SimulateRightClickOrLongPressAt(item_view->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Exit context menu. The focus should not get restored to the text.
+  item_view->CancelContextMenu();
+  EXPECT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+}
+
+TEST_P(AppsGridViewTabletTest, ChangeFolderNameShouldUpdateShadows) {
+  SetVirtualKeyboardEnabled(true);
+
+  const int kMaxAppsInGrid = test_api_->TilesPerPage(0);
+  model_->PopulateApps(kMaxAppsInGrid - 1);
+  UpdateLayout();
+
+  // Create a folder on the second row with kMaxItemsInFolder to be big enough
+  // to displace the apps grid bounds on keyboard shown. Open the folder.
+  model_->CreateAndPopulateFolderWithApps(kMaxItemsInFolder);
+  test_api_->PressItemAt(kMaxAppsInGrid - 1);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect initial_folder_bounds =
+      folder_apps_grid_view()->GetBoundsInScreen();
+  gfx::Rect initial_shadow =
+      app_list_folder_view()->shadow()->GetContentBounds();
+  views::View::ConvertRectToScreen(app_list_folder_view(), &initial_shadow);
+
+  // Show the virtual keyboard. The grid view should displace with the folder
+  // and shadow bounds.
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->ShowKeyboard(false);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect folder_bounds_with_keyboard =
+      folder_apps_grid_view()->GetBoundsInScreen();
+  gfx::Rect shadow_with_keyboard =
+      app_list_folder_view()->shadow()->GetContentBounds();
+  views::View::ConvertRectToScreen(app_list_folder_view(),
+                                   &shadow_with_keyboard);
+
+  EXPECT_NE(initial_folder_bounds, folder_bounds_with_keyboard);
+  EXPECT_NE(initial_shadow, shadow_with_keyboard);
+
+  // Start typing to change the folder name. The folder and shadow bounds must
+  // stay unchanged from previous step.
+  views::Textfield* folder_header =
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest();
+  folder_header->RequestFocus();
+  ASSERT_TRUE(folder_header->HasFocus());
+  const std::u16string folder_name = folder_header->GetText();
+
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_A);
+  // Force app list to Update Layout to catch potential crashes.
+  UpdateLayout();
+
+  EXPECT_NE(folder_name, folder_header->GetText());
+
+  gfx::Rect folder_bounds_after_type =
+      folder_apps_grid_view()->GetBoundsInScreen();
+  gfx::Rect shadow_after_type =
+      app_list_folder_view()->shadow()->GetContentBounds();
+  views::View::ConvertRectToScreen(app_list_folder_view(), &shadow_after_type);
+
+  EXPECT_EQ(folder_bounds_with_keyboard, folder_bounds_after_type);
+  EXPECT_EQ(shadow_with_keyboard, shadow_after_type);
 }
 
 }  // namespace test

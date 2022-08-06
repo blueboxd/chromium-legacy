@@ -57,10 +57,11 @@ document.head.appendChild($_documentContainer.content);"""
 
 
 def _parse_style_line(line, metadata):
-  if not metadata['include']:
-    include_match = re.search(_INCLUDE_REGEX, line)
-    if include_match:
-      metadata['include'] = line[include_match.end():]
+  include_match = re.search(_INCLUDE_REGEX, line)
+  if include_match:
+    assert not metadata[
+        'include'], f'Found multiple "{_INCLUDE_REGEX}" lines. Only one should exist.'
+    metadata['include'] = line[include_match.end():]
 
   import_match = re.search(_IMPORT_REGEX, line)
   if import_match:
@@ -147,11 +148,12 @@ def main(argv):
   parser.add_argument('--out_folder', required=True)
   parser.add_argument('--in_files', required=True, nargs="*")
   parser.add_argument('--minify', action='store_true')
+  parser.add_argument('--use_js', action='store_true')
   args = parser.parse_args(argv)
 
   in_folder = path.normpath(path.join(_CWD, args.in_folder))
   out_folder = path.normpath(path.join(_CWD, args.out_folder))
-  extension = '.ts'
+  extension = '.js' if args.use_js else '.ts'
 
   # The folder to be used to read the CSS files to be wrapped.
   wrapper_in_folder = in_folder
@@ -217,6 +219,12 @@ def main(argv):
     makedirs(out_folder_for_file, exist_ok=True)
     with io.open(path.join(out_folder, in_file) + extension, mode='wb') as f:
       f.write(wrapper.encode('utf-8'))
+
+  if args.minify:
+    # Delete the temporary folder that was holding minified CSS files, no
+    # longer needed.
+    shutil.rmtree(tmp_out_dir)
+
   return
 
 

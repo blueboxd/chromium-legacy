@@ -19,8 +19,6 @@
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -210,17 +208,6 @@ bool ParseSourceRegistrationHeader(
   if (!object)
     return false;
 
-  String event_id_string;
-  if (!object->GetString("source_event_id", &event_id_string))
-    return false;
-  bool event_id_is_valid = false;
-  uint64_t event_id = event_id_string.ToUInt64Strict(&event_id_is_valid);
-
-  // For source registrations where there is no mechanism to raise an error,
-  // such as on an img element, it is more useful to log the source with
-  // default data so that a reporting origin can learn the failure mode.
-  source_data.source_event_id = event_id_is_valid ? event_id : 0;
-
   String destination_string;
   if (!object->GetString("destination", &destination_string))
     return false;
@@ -230,26 +217,32 @@ bool ParseSourceRegistrationHeader(
     return false;
   source_data.destination = std::move(destination);
 
-  // Treat invalid expiry, priority, and debug key as if they were not set.
-  String priority_string;
-  if (object->GetString("priority", &priority_string)) {
-    bool priority_is_valid = false;
-    int64_t priority = priority_string.ToInt64Strict(&priority_is_valid);
-    if (priority_is_valid)
+  // Treat invalid source_event_id, expiry, priority, and debug key as if they
+  // were not set.
+
+  if (String s; object->GetString("source_event_id", &s)) {
+    bool valid = false;
+    uint64_t source_event_id = s.ToUInt64Strict(&valid);
+    if (valid)
+      source_data.source_event_id = source_event_id;
+  }
+
+  if (String s; object->GetString("priority", &s)) {
+    bool valid = false;
+    int64_t priority = s.ToInt64Strict(&valid);
+    if (valid)
       source_data.priority = priority;
   }
 
-  String expiry_string;
-  if (object->GetString("expiry", &expiry_string)) {
-    bool expiry_is_valid = false;
-    int64_t expiry = expiry_string.ToInt64Strict(&expiry_is_valid);
-    if (expiry_is_valid)
-      source_data.expiry = base::Seconds(expiry);
+  if (String s; object->GetString("expiry", &s)) {
+    bool valid = false;
+    int64_t seconds = s.ToInt64Strict(&valid);
+    if (valid)
+      source_data.expiry = base::Seconds(seconds);
   }
 
-  String debug_key_string;
-  if (object->GetString("debug_key", &debug_key_string))
-    source_data.debug_key = ParseDebugKey(debug_key_string);
+  if (String s; object->GetString("debug_key", &s))
+    source_data.debug_key = ParseDebugKey(s);
 
   source_data.filter_data = mojom::blink::AttributionFilterData::New();
   if (!ParseAttributionFilterData(object->Get("filter_data"),
@@ -311,20 +304,18 @@ bool ParseEventTriggerData(
     event_trigger->data = trigger_data_is_valid ? trigger_data_value : 0;
 
     // Treat invalid priority and deduplication key as if they were not set.
-    String priority_string;
-    if (object_val->GetString("priority", &priority_string)) {
-      bool priority_is_valid = false;
-      int64_t priority = priority_string.ToInt64Strict(&priority_is_valid);
-      if (priority_is_valid)
+
+    if (String s; object_val->GetString("priority", &s)) {
+      bool valid = false;
+      int64_t priority = s.ToInt64Strict(&valid);
+      if (valid)
         event_trigger->priority = priority;
     }
 
-    // Treat invalid priority and deduplication_key as if they were not set.
-    String dedup_key_string;
-    if (object_val->GetString("deduplication_key", &dedup_key_string)) {
-      bool dedup_key_is_valid = false;
-      uint64_t dedup_key = dedup_key_string.ToUInt64Strict(&dedup_key_is_valid);
-      if (dedup_key_is_valid) {
+    if (String s; object_val->GetString("deduplication_key", &s)) {
+      bool valid = false;
+      uint64_t dedup_key = s.ToUInt64Strict(&valid);
+      if (valid) {
         event_trigger->dedup_key =
             mojom::blink::AttributionTriggerDedupKey::New(dedup_key);
       }
@@ -510,30 +501,10 @@ bool ParseTriggerRegistrationHeader(
     return false;
   }
 
-  String debug_key_string;
-  if (object->GetString("debug_key", &debug_key_string))
-    trigger_data.debug_key = ParseDebugKey(debug_key_string);
+  if (String s; object->GetString("debug_key", &s))
+    trigger_data.debug_key = ParseDebugKey(s);
 
   return true;
-}
-
-mojom::blink::AttributionTriggerDataPtr ParseAttributionTriggerData(
-    const ResourceResponse& response) {
-  auto trigger_data = mojom::blink::AttributionTriggerData::New();
-
-  // Verify the current url is trustworthy and capable of registering triggers.
-  scoped_refptr<const SecurityOrigin> reporting_origin =
-      SecurityOrigin::Create(response.CurrentRequestUrl());
-  if (!reporting_origin->IsPotentiallyTrustworthy())
-    return nullptr;
-  trigger_data->reporting_origin = std::move(reporting_origin);
-
-  const AtomicString& trigger_json = response.HttpHeaderField(
-      http_names::kAttributionReportingRegisterTrigger);
-  if (!ParseTriggerRegistrationHeader(trigger_json, *trigger_data))
-    return nullptr;
-
-  return trigger_data;
 }
 
 }  // namespace blink::attribution_response_parsing

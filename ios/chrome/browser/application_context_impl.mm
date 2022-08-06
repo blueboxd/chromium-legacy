@@ -58,6 +58,8 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
+#import "ios/chrome/browser/promos_manager/features.h"
+#import "ios/chrome/browser/promos_manager/promos_manager.h"
 #include "ios/chrome/browser/segmentation_platform/otr_web_state_observer.h"
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/common/channel_info.h"
@@ -165,6 +167,11 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Destroy the segmentation OTR observer before
+  // `chrome_browser_state_manager_`.
+  segmentation_otr_web_state_observer_->TearDown();
+
   // We need to destroy the MetricsServicesManager and NetworkTimeTracker before
   // the IO thread gets destroyed, since the destructor can call the URLFetcher
   // destructor, which does a PostDelayedTask operation on the IO thread. (The
@@ -452,6 +459,14 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
     }
   }
   return browser_policy_connector_.get();
+}
+
+PromosManager* ApplicationContextImpl::GetPromosManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (IsFullscreenPromosManagerEnabled() && !promos_manager_) {
+    promos_manager_ = std::make_unique<PromosManager>();
+  }
+  return promos_manager_.get();
 }
 
 breadcrumbs::BreadcrumbPersistentStorageManager*

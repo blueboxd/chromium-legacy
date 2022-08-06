@@ -8,10 +8,10 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/send_tab_to_self/manage_account_devices_link_view.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_bubble_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -26,7 +26,7 @@ SendTabToSelfPromoBubbleView::SendTabToSelfPromoBubbleView(
     views::View* anchor_view,
     content::WebContents* web_contents,
     bool show_signin_button)
-    : LocationBarBubbleDelegateView(anchor_view, web_contents),
+    : SendTabToSelfBubbleView(anchor_view, web_contents),
       controller_(SendTabToSelfBubbleController::CreateOrGetFromWebContents(
                       web_contents)
                       ->AsWeakPtr()) {
@@ -45,9 +45,11 @@ SendTabToSelfPromoBubbleView::SendTabToSelfPromoBubbleView(
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
+  const std::u16string label_text = l10n_util::GetStringUTF16(
+      show_signin_button ? IDS_SEND_TAB_TO_SELF_SIGN_IN_PROMO_LABEL
+                         : IDS_SEND_TAB_TO_SELF_NO_TARGET_DEVICE_LABEL);
   auto* label = AddChildView(std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF_PROMO_LABEL),
-      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+      label_text, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label->SetProperty(

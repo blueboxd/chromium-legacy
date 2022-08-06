@@ -10,6 +10,7 @@ import './create_new_folder.js';
 import './crostini.js';
 import './directory_tree.js';
 import './directory_tree_context_menu.js';
+import './dlp.js';
 import './drive_specific.js';
 import './file_dialog.js';
 import './file_display.js';
@@ -68,15 +69,6 @@ export {FILE_MANAGER_EXTENSIONS_ID};
  * @type {!RemoteCallFilesApp}
  */
 export let remoteCall;
-
-/**
- * Extension ID of Audio Player.
- * @type {string}
- * @const
- */
-export const AUDIO_PLAYER_APP_ID = 'cjbfomnbifhcdnihkgipgfcihmgjfhbf';
-
-export const audioPlayerApp = new RemoteCall(AUDIO_PLAYER_APP_ID);
 
 /**
  * Opens a Files app's main window.
@@ -367,7 +359,7 @@ window.addEventListener('load', () => {
       };
       // Run the test.
       chrome.test.runTests([testCase[testCaseSymbol]]);
-    }
+    },
   ];
   steps.shift()();
 });
@@ -381,8 +373,7 @@ window.addEventListener('load', () => {
  * @return {Promise} Promise fulfilled on success.
  */
 export async function createShortcut(appId, directoryName) {
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [directoryName]));
+  await remoteCall.waitUntilSelected(appId, directoryName);
 
   await remoteCall.waitForElement(appId, ['.table-row[selected]']);
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

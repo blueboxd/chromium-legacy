@@ -49,6 +49,10 @@ class StorageHandler : public DevToolsDomainHandler,
       const std::string& origin,
       const std::string& storage_types,
       std::unique_ptr<ClearDataForOriginCallback> callback) override;
+  void ClearDataForStorageKey(
+      const std::string& storage_key,
+      const std::string& storage_types,
+      std::unique_ptr<ClearDataForStorageKeyCallback> callback) override;
   void GetUsageAndQuota(
       const String& origin,
       std::unique_ptr<GetUsageAndQuotaCallback> callback) override;
@@ -78,7 +82,10 @@ class StorageHandler : public DevToolsDomainHandler,
   Response TrackCacheStorageForOrigin(const std::string& origin) override;
   Response UntrackCacheStorageForOrigin(const std::string& origin) override;
   Response TrackIndexedDBForOrigin(const std::string& origin) override;
+  Response TrackIndexedDBForStorageKey(const std::string& storage_key) override;
   Response UntrackIndexedDBForOrigin(const std::string& origin) override;
+  Response UntrackIndexedDBForStorageKey(
+      const std::string& storage_key) override;
 
   void GetTrustTokens(
       std::unique_ptr<GetTrustTokensCallback> callback) override;
@@ -113,8 +120,10 @@ class StorageHandler : public DevToolsDomainHandler,
   void NotifyCacheStorageListChanged(const std::string& origin);
   void NotifyCacheStorageContentChanged(const std::string& origin,
                                         const std::string& name);
-  void NotifyIndexedDBListChanged(const std::string& origin);
+  void NotifyIndexedDBListChanged(const std::string& origin,
+                                  const std::string& storage_key);
   void NotifyIndexedDBContentChanged(const std::string& origin,
+                                     const std::string& storage_key,
                                      const std::u16string& database_name,
                                      const std::u16string& object_store_name);
 

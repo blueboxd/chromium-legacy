@@ -89,7 +89,7 @@ class TestSyncService : public SyncService {
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTimeForDebugging() const override;
   SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const override;
-  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() override;
+  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() const override;
   void GetEntityCountsForDebugging(
       base::OnceCallback<void(const std::vector<TypeEntitiesCount>&)> callback)
       const override;
@@ -99,8 +99,7 @@ class TestSyncService : public SyncService {
   void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
   void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void GetAllNodesForDebugging(
-      base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
-      override;
+      base::OnceCallback<void(base::Value::List)> callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void AddTrustedVaultDecryptionKeysFromWeb(
       const std::string& gaia_id,

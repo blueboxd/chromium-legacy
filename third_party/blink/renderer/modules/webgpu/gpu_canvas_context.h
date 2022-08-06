@@ -31,7 +31,6 @@ class GPUCanvasContext : public CanvasRenderingContext,
 
  public:
   class Factory : public CanvasRenderingContextFactory {
-
    public:
     Factory() = default;
 
@@ -59,6 +58,7 @@ class GPUCanvasContext : public CanvasRenderingContext,
   // CanvasRenderingContext implementation
   V8RenderingContext* AsV8RenderingContext() final;
   V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
+  SkColorInfo CanvasRenderingContextSkColorInfo() const override;
   // Produces a snapshot of the current contents of the swap chain if possible.
   // If that texture has already been sent to the compositor, will produce a
   // snapshot of the just released texture associated to this gpu context.
@@ -69,6 +69,11 @@ class GPUCanvasContext : public CanvasRenderingContext,
   // be webgpu compatible. Returns true on success.
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer) final;
+  bool CopyRenderingResultsToVideoFrame(
+      WebGraphicsContext3DVideoFramePool* frame_pool,
+      SourceDrawingBuffer src_buffer,
+      const gfx::ColorSpace& dst_color_space,
+      VideoFrameCopyCompletedCallback callback) override;
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }

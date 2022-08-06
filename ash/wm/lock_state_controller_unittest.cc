@@ -54,7 +54,7 @@ bool cursor_visible() {
   return Shell::Get()->cursor_manager()->IsCursorVisible();
 }
 
-void CheckCalledCallback(bool* flag) {
+void CheckCalledCallback(bool* flag, bool aborted) {
   if (flag)
     (*flag) = true;
 }
@@ -309,8 +309,8 @@ class LockStateControllerTest : public PowerButtonTestBase {
   }
 
   void SuccessfulAuthentication(bool* call_flag) {
-    base::OnceClosure closure = base::BindOnce(&CheckCalledCallback, call_flag);
-    lock_state_controller_->OnLockScreenHide(std::move(closure));
+    auto callback = base::BindOnce(&CheckCalledCallback, call_flag);
+    lock_state_controller_->OnLockScreenHide(std::move(callback));
   }
 
   bool IsDefaultValueLoginShutdownTimestamp() {

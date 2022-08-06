@@ -9,7 +9,6 @@
 #include "chromecast/browser/webui/cast_webui_message_handler.h"
 #include "chromecast/browser/webui/constants.h"
 #include "chromecast/cast_core/runtime/browser/grpc_resource_data_source.h"
-#include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -39,15 +38,13 @@ constexpr const char kContentSecurityPolicyOverride[] =
 
 namespace chromecast {
 
-#if !BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 // static
-std::unique_ptr<CastCoreWebUI> CastCoreWebUI::Create(
+std::unique_ptr<GrpcWebUIController> GrpcWebUIController::Create(
     content::WebUI* webui,
     const std::string host,
     cast::v2::CoreApplicationServiceStub* core_app_service_stub) {
-  return std::make_unique<CastCoreWebUI>(webui, host, core_app_service_stub);
+  return std::make_unique<GrpcWebUIController>(webui, host, core_app_service_stub);
 }
-#endif
 
 GrpcWebUIController::GrpcWebUIController(
     content::WebUI* webui,
@@ -84,50 +81,50 @@ content::BrowserContext* GrpcWebUIController::browser_context() const {
   return browser_context_;
 }
 
-void GrpcWebUIController::StartPingNotify(const base::ListValue* args) {
+void GrpcWebUIController::StartPingNotify(const base::Value::List& args) {
   CallJavascriptFunction(kJSPingNotifyCallback, {});
 }
 
-void GrpcWebUIController::StopPingNotify(const base::ListValue* args) {
+void GrpcWebUIController::StopPingNotify(const base::Value::List& args) {
   CallJavascriptFunction(kJSEurekaInfoChangedCallback, {});
 }
 
-void GrpcWebUIController::SetOobeFinished(const base::ListValue* args) {}
+void GrpcWebUIController::SetOobeFinished(const base::Value::List& args) {}
 
-void GrpcWebUIController::RecordAction(const base::ListValue* args) {}
+void GrpcWebUIController::RecordAction(const base::Value::List& args) {}
 
-void GrpcWebUIController::LaunchTutorial(const base::ListValue* args) {}
+void GrpcWebUIController::LaunchTutorial(const base::Value::List& args) {}
 
-void GrpcWebUIController::GetQRCode(const base::ListValue* args) {}
+void GrpcWebUIController::GetQRCode(const base::Value::List& args) {}
 
 void GrpcWebUIController::RegisterMessageCallbacks() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kFuncStartPingNotify,
       base::BindRepeating(&GrpcWebUIController::StartPingNotify,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kFuncStopPingNotify,
       base::BindRepeating(&GrpcWebUIController::StopPingNotify,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kFuncSetOobeFinished,
       base::BindRepeating(&GrpcWebUIController::SetOobeFinished,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kFuncRecordAction, base::BindRepeating(&GrpcWebUIController::RecordAction,
                                              base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kFuncLaunchTutorial,
       base::BindRepeating(&GrpcWebUIController::LaunchTutorial,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kFuncGetQRCode, base::BindRepeating(&GrpcWebUIController::GetQRCode,
                                           base::Unretained(this)));
 }
 
 void GrpcWebUIController::CallJavascriptFunction(
-    const std::string& function,
-    std::vector<base::Value> args) {
+    base::StringPiece function,
+    base::span<const base::ValueView> args) {
   message_handler_->CallJavascriptFunction(function, std::move(args));
 }
 

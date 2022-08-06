@@ -21,13 +21,15 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.test.core.app.ActivityScenario;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
@@ -50,6 +52,7 @@ import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
+import org.chromium.url.ShadowGURL;
 
 import java.util.Collections;
 
@@ -58,6 +61,7 @@ import java.util.Collections;
  * sheet.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Config(shadows = {ShadowGURL.class})
 public class AccountSelectionViewTest {
     private static final GURL TEST_PROFILE_PIC = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
 
@@ -67,11 +71,14 @@ public class AccountSelectionViewTest {
             new Account("", "", "No Subject", "", TEST_PROFILE_PIC, true);
     private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC, true);
 
+    @Rule
+    public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
+            new ActivityScenarioRule<>(TestActivity.class);
+
     @Mock
     private Callback<Account> mAccountCallback;
     private Runnable mAutoSignInCancelCallback;
 
-    private ActivityScenario<TestActivity> mActivityScenario;
     private Resources mResources;
     private PropertyModel mModel;
     private ModelList mSheetAccountItems;
@@ -81,9 +88,7 @@ public class AccountSelectionViewTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        mActivityScenario = ActivityScenario.launch(TestActivity.class);
-
-        mActivityScenario.onActivity(activity -> {
+        mActivityScenarioRule.getScenario().onActivity(activity -> {
             mModel = new PropertyModel.Builder(AccountSelectionProperties.ItemProperties.ALL_KEYS)
                              .build();
             mSheetAccountItems = new ModelList();
@@ -304,8 +309,8 @@ public class AccountSelectionViewTest {
         DataSharingConsentProperties.Properties properties =
                 new DataSharingConsentProperties.Properties();
         properties.mIdpForDisplay = idpEtldPlusOne;
-        properties.mTermsOfServiceUrl = "https://rp.com/tos";
-        properties.mPrivacyPolicyUrl = "https://rp.com/privacy";
+        properties.mTermsOfServiceUrl = new GURL("https://www.one.com/");
+        properties.mPrivacyPolicyUrl = new GURL("https://www.two.com/");
 
         return new PropertyModel.Builder(DataSharingConsentProperties.ALL_KEYS)
                 .with(DataSharingConsentProperties.PROPERTIES, properties)

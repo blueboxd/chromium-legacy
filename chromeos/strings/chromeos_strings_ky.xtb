@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Таржымал</translation>
 <translation id="1645954272419197032">Түзмөк тууралуу маалыматты ырастаңыз</translation>
 <translation id="1662989795263954667">Токтоду – Сыя түгөнүп калды</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> алдын ала көрүү</translation>
 <translation id="1668469839109562275">Камтылган VPN</translation>
 <translation id="1672499492233627739">Веб-камерадагы видео түрмөк</translation>
 <translation id="1676557873873341166">Видео жаздырылууда</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Видео конференция</translation>
 <translation id="1852934301711881861">ChromeOS Flex'ти орнотуу</translation>
 <translation id="1856388568474281774">Ылдый жебе</translation>
+<translation id="1858620243986915808">Скриншотту тиркөө</translation>
 <translation id="1871569928317311284">Караңгы теманы өчүрүү</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Караңгы теманы өчүрүү</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google профилиңиздин сүрөтү</translation>
 <translation id="1979103255016296513">Сырсөздү өзгөртүү мөөнөтү бүттү</translation>
 <translation id="1999615961760456652">Кирүү бети</translation>
+<translation id="200669432486043882">Файлды алмаштыруу</translation>
 <translation id="2006864819935886708">Байланыш</translation>
 <translation id="2008685064673031089">Баштапкы издөө</translation>
 <translation id="2011174342667534258">Иштеп чыгуучунун топтомунун версиясы:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Түрү</translation>
 <translation id="2461822463642141190">Учурда</translation>
 <translation id="2480034874476596812">Кол менен өчүрүү</translation>
+<translation id="248546197012830854">Түзмөк офлайн режиминде. Жардам берүү бөлүмүнө өтүү үчүн Wi-Fi тармагына туташыңыз.</translation>
 <translation id="2491955442992294626">Башка терезени колдонуп жатканда баскычтар сыналбайт</translation>
 <translation id="2493126929778606526">Автоматтык түрдө тандалган мыкты сүрөттөрүңүз</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ЖАҢЫРТУУ</translation>
 <translation id="3009958530611748826">Скандалган нерселерди сактоо үчүн папка тандаңыз</translation>
 <translation id="3017079585324758401">Фон</translation>
+<translation id="302435934487327038">Орнотулду</translation>
 <translation id="3027578600144895987">Камераны жабуу</translation>
 <translation id="3031560714565892478">Түзмөк — видео камера.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />мА</translation>
 <translation id="3056720590588772262">Аяктоо чекити</translation>
 <translation id="3069085583900247081">Сыналган жок</translation>
-<translation id="3076243757415932261">Курамдык бөлүктөр текшерилүүдө...</translation>
 <translation id="3083667275341675831">Байланыштагы мүчүлүштүктөрдү аныктоо</translation>
 <translation id="3084958266922136097">Көшөгөнү өчүрүү</translation>
 <translation id="3091839911843451378">Басылып чыгарылган жок - Принтер токтоп калды</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Басып чыгаруу тарыхын өчүрөсүзбү? Учурда басылып жаткан документтериңиз өчүрүлбөйт.</translation>
 <translation id="3383751554789092165">Зарыл болгондо түзмөк тууралуу маалыматты өзгөртүңүз.</translation>
 <translation id="3404249063913988450">Көшөгөнү иштетүү</translation>
-<translation id="3404770484521709967">Курамдык бөлүктөр туура орнотулду.</translation>
 <translation id="3413935475507503304">Жаңыртуу үчүн "Кийинки" баскычын басыңыз.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Коопсуздук</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Эски сырсөз</translation>
 <translation id="4453205916657964690">Көмөкчү тармактын маскасы</translation>
 <translation id="4454245904991689773">Төмөнкүгө скандоо:</translation>
-<translation id="4472575034687746823">Баштоо</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Демейкиден башка тармактын шлюзуна ping сурамы жөнөтүлгөн жок</translation>
 <translation id="4500213108254186382">Капкактын акселерометри</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> түзмөгүн оңдоодон чыгуу</translation>
 <translation id="6618744767048954150">Иштеп жатат</translation>
 <translation id="6620487321149975369">Басып чыгаруу тапшырмаларын кол менен өчүрмөйүнчө, алар таржымалда сакталат</translation>
+<translation id="6624819909909965616">10 Мб ашуун файлды жүктөөгө болбойт</translation>
 <translation id="6643016212128521049">Тазалоо</translation>
+<translation id="6644568396961840069">Файл сакталган жок. Башка тышкы сактагычты сайып көрүңүз же кийинчерээк кайталаңыз.</translation>
 <translation id="6647510110698214773">Шифрлөөнүн алгоритми</translation>
 <translation id="6650062777702288430">Кана/сандар менен тамгалар которгучу</translation>
 <translation id="6657585470893396449">Сырсөз</translation>
 <translation id="6659594942844771486">Өтмөк</translation>
 <translation id="6692996468359469499">Сиз тандаган нерсеге тиешелүү маалыматты алуу</translation>
 <translation id="6704062477274546131">DNS дааналыгы</translation>
-<translation id="6721744718589119342">Кошумча маалыматтар менен соңку жаңылыктарды электрондук кат аркылуу кабарлап турабыз</translation>
 <translation id="6723839937902243910">Кубат</translation>
 <translation id="6723847290197874913">Баскычтоптун жарыгы</translation>
 <translation id="672609503628871915">Эмне жаңылык бар</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Орнотулган программаны оңдоо</translation>
 <translation id="6995564396478647735">Жазуудан коргоонун күйгүзүлгөнүн текшериңиз</translation>
+<translation id="7005833343836210400">Түзмөк офлайн режиминде</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> бул түзмөктү башкарып, андагы колдонуучунун бардык аракеттерине, анын ичинде баш баккан веб-барактарга, сырсөздөргө жана электрондук каттарга кирүү мүмкүнчүлүгү бар.</translation>
 <translation id="7040230719604914234">Оператор</translation>
 <translation id="7041549558901442110">Түзмөк туташкан жок.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">Жаңылоо</translation>
 <translation id="7212734716605298123">Тышкы түзмөктөр үчүн орнотулган программанын жаңыртуулары</translation>
 <translation id="7216409898977639127">Интернет провайдери</translation>
+<translation id="725133483556299729">Электрондук почта дарегин тандоо</translation>
 <translation id="7271040990581020067">Сканер учурда колдонулуп жатат. Кийинчерээк кайталаңыз.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">1 же бир нече курамдык бөлүктү тандап, кайталап көрүңүз же калибрлөөнү өткөрүп жибериңиз</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">Жеке ачкыч</translation>
 <translation id="7982789257301363584">Тармак</translation>
 <translation id="7994702968232966508">EAP ыкмасы</translation>
+<translation id="8018928621986160031">Төмөнкүгө сакталды: "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Жүктөлүп алынбай калды</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Авто түс режимин иштетүү</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">Жазуудан коргоо дагы эле өчүк. Улантуу үчүн аны күйгүзүңүз.</translation>
 <translation id="8075838845814659848">Батареянын кубаты</translation>
 <translation id="8082366717211101304">Android колдонмолорунан DNS чечилбей жатат</translation>
-<translation id="8083281199617904460">Муну оңдоо боюнча адис техник аткарышы керек. Туура иштебеген курамдык бөлүктөр алмаштырылгандан кийин гана оңдоп баштаңыз.</translation>
 <translation id="808894953321890993">Сызсөздү өзгөртүү</translation>
+<translation id="8094062939584182041">Google'га бул маселе жөнүндө сизге электрондук кат жөнөтүүгө уруксат берүү</translation>
 <translation id="8104083085214006426">Ачык жана кооптуу тармакты колдонуп жатасыз</translation>
 <translation id="8109786307828817014">Курамдык бөлүктөр калибрленсинби?</translation>
 <translation id="811820734797650957">(Android) Шлюздун байланышын текшерүүгө болот</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">Туташыңыз</translation>
 <translation id="8221728673725659466">Калибрдөө аяктады</translation>
 <translation id="8226628635270268143">Сүйүктүү сүрөттөр менен альбомдорду тандоо</translation>
+<translation id="8227119283605456246">Файл тиркөө</translation>
 <translation id="8230672074305416752">Демейки тармактын шлюзуна ping сурамы жөнөтүлгөн жок</translation>
 <translation id="8246209727385807362">Белгисиз байланыш оператору</translation>
 <translation id="827422111966801947">Индиго</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">Аныкталбаган</translation>
 <translation id="8620617069779373398">Роуминг статусу</translation>
 <translation id="8655295600908251630">Канал</translation>
+<translation id="8655828773034788261">URL дарегин бөлүшүү:</translation>
 <translation id="8660881923941176839">фунт</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> тармагына кошулуу</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> версиясына жаңыртуу жана өчүрүп күйгүзүү</translation>

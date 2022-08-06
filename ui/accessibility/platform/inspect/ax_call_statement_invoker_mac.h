@@ -12,6 +12,7 @@
 
 namespace ui {
 
+class AXElementWrapper;
 class AXPropertyNode;
 
 // Optional tri-state id object.
@@ -46,7 +47,7 @@ class AX_EXPORT AXCallStatementInvoker final {
 
   // Invokes a property node for a given AXElement.
   AXOptionalNSObject InvokeForAXElement(
-      const id target,
+      const AXElementWrapper& ax_element,
       const AXPropertyNode& property_node) const;
 
   // Invokes a property node for a given AXTextMarkerRange.
@@ -65,7 +66,7 @@ class AX_EXPORT AXCallStatementInvoker final {
 
   // Invokes setAccessibilityFocused method.
   AXOptionalNSObject InvokeSetAccessibilityFocused(
-      const id target,
+      const AXElementWrapper& ax_element,
       const AXPropertyNode& property_node) const;
 
   // Returns a parameterized attribute parameter by a property node representing

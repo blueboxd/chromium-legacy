@@ -61,7 +61,7 @@ absl::optional<std::string> GetIntentConditionValueByType(
       return intent->url.has_value()
                  ? absl::optional<std::string>(intent->url->host())
                  : absl::nullopt;
-    case apps::mojom::ConditionType::kPattern:
+    case apps::mojom::ConditionType::kPath:
       return intent->url.has_value()
                  ? absl::optional<std::string>(intent->url->path())
                  : absl::nullopt;
@@ -124,6 +124,23 @@ apps::IntentPtr MakeShareIntent(const std::vector<GURL>& filesystem_urls,
   }
   if (!title.empty()) {
     intent->share_title = title;
+  }
+  return intent;
+}
+
+apps::IntentPtr MakeShareIntent(const GURL& filesystem_url,
+                                const std::string& mime_type,
+                                const GURL& drive_share_url,
+                                bool is_directory) {
+  auto intent = std::make_unique<apps::Intent>(kIntentActionSend);
+  if (!is_directory) {
+    intent->mime_type = mime_type;
+    intent->files = std::vector<apps::IntentFilePtr>{};
+    auto file = std::make_unique<apps::IntentFile>(filesystem_url);
+    intent->files.push_back(std::move(file));
+  }
+  if (!drive_share_url.is_empty()) {
+    intent->drive_share_url = drive_share_url;
   }
   return intent;
 }
@@ -274,8 +291,6 @@ apps::mojom::IntentPtr CreateIntentForActivity(const std::string& activity,
 bool ConditionValueMatches(const std::string& value,
                            const apps::ConditionValuePtr& condition_value) {
   switch (condition_value->match_type) {
-    // Fallthrough as kNone and kLiteral has same matching type.
-    case apps::PatternMatchType::kNone:
     case apps::PatternMatchType::kLiteral:
       return value == condition_value->value;
     case apps::PatternMatchType::kPrefix:
@@ -302,8 +317,6 @@ bool ConditionValueMatches(
     const std::string& value,
     const apps::mojom::ConditionValuePtr& condition_value) {
   switch (condition_value->match_type) {
-    // Fallthrough as kNone and kLiteral has same matching type.
-    case apps::mojom::PatternMatchType::kNone:
     case apps::mojom::PatternMatchType::kLiteral:
       return value == condition_value->value;
     case apps::mojom::PatternMatchType::kPrefix:
@@ -330,7 +343,6 @@ bool FileMatchesConditionValue(
     const apps::mojom::IntentFilePtr& file,
     const apps::mojom::ConditionValuePtr& condition_value) {
   switch (condition_value->match_type) {
-    case apps::mojom::PatternMatchType::kNone:
     case apps::mojom::PatternMatchType::kLiteral:
     case apps::mojom::PatternMatchType::kPrefix:
     case apps::mojom::PatternMatchType::kSuffix:

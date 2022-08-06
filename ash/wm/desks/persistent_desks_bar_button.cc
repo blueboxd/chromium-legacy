@@ -7,7 +7,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/tray/tray_popup_utils.h"
+#include "ash/style/style_util.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/persistent_desks_bar_context_menu.h"
@@ -43,8 +43,12 @@ const char* PersistentDesksBarDeskButton::GetClassName() const {
 }
 
 void PersistentDesksBarDeskButton::OnButtonPressed() {
-  DesksController::Get()->ActivateDesk(desk_,
-                                       DesksSwitchSource::kPersistentDesksBar);
+  // If there is an ongoing desk activation, do nothing.
+  DesksController* desks_controller = DesksController::Get();
+  if (!desks_controller->AreDesksBeingModified()) {
+    desks_controller->ActivateDesk(desk_,
+                                   DesksSwitchSource::kPersistentDesksBar);
+  }
 }
 
 void PersistentDesksBarDeskButton::OnThemeChanged() {
@@ -77,7 +81,7 @@ PersistentDesksBarCircularButton::PersistentDesksBarCircularButton(
   // Keeping the same inkdrop and highlight as the buttons inside the system
   // tray menu for now since specs are not ready.
   // TODO(minch): Update once the specs are ready and need to be updated.
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
+  StyleUtil::SetUpInkDropForButton(this);
   views::InstallCircleHighlightPathGenerator(this);
 }
 

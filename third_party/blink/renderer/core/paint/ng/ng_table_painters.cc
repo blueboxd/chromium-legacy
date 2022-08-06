@@ -487,8 +487,12 @@ bool IsStartRowFragmented(const NGPhysicalBoxFragment& section) {
   for (const auto& child : section.Children()) {
     if (!child->IsTableNGRow())
       continue;
-    return !To<NGPhysicalBoxFragment>(*child).IsFirstForNode();
+
+    const auto* prev_break_token =
+        FindPreviousBreakToken(To<NGPhysicalBoxFragment>(*child));
+    return prev_break_token && !prev_break_token->IsRepeated();
   }
+
   return false;
 }
 
@@ -499,7 +503,8 @@ bool IsEndRowFragmented(const NGPhysicalBoxFragment& section) {
     if (!child->IsTableNGRow())
       continue;
     return child->BreakToken() &&
-           !To<NGBlockBreakToken>(child->BreakToken())->IsAtBlockEnd();
+           !To<NGBlockBreakToken>(child->BreakToken())->IsAtBlockEnd() &&
+           !To<NGBlockBreakToken>(child->BreakToken())->IsRepeated();
   }
   return false;
 }
@@ -574,10 +579,13 @@ void NGTablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
       const wtf_size_t fragment_table_row =
           table_row - *section_start_row_index;
 
-      // Check if we've exhausted the rows in this section. Store the final row
-      // which we painted.
+      // Check if we've exhausted the rows in this section.
       if (fragment_table_row >= section_row_offsets.size()) {
-        previous_painted_row_index = table_row - 1;
+        // Store the final row which we painted (if it wasn't fragmented).
+        if (is_end_row_fragmented)
+          previous_painted_row_index = absl::nullopt;
+        else
+          previous_painted_row_index = table_row - 1;
         break;
       }
 

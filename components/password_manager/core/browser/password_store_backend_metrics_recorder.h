@@ -47,6 +47,11 @@ class PasswordStoreBackendMetricsRecorder {
       SuccessStatus success_status,
       absl::optional<ErrorFromPasswordStoreOrAndroidBackend> error) const;
 
+  // Records success, error and API error metrics from clients unenrolled from
+  // the UPM experiment after experiencing errors in the android backend.
+  void RecordMetricsForUnenrolledClients(
+      const absl::optional<AndroidBackendError>& error) const;
+
   // Returns the delta between creating this recorder and calling this method.
   base::TimeDelta GetElapsedTimeSinceCreation() const;
 
@@ -85,6 +90,12 @@ class PasswordStoreBackendMetricsRecorder {
   // - "PasswordManager.PasswordStoreAndroidBackend.APIError"
   // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.APIError"
   void RecordApiErrorCode(int api_error_code) const;
+
+  // Records the following metrics:
+  // - "PasswordManager.PasswordStoreAndroidBackend.ConnectionResultCode"
+  // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>
+  //        .ConnectionResultCode"
+  void RecordConnectionResultCode(int connection_result_code) const;
 
   std::string GetBackendMetricName() const;
   std::string BuildMetricName(base::StringPiece suffix) const;

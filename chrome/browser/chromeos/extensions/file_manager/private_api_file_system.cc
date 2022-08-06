@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -648,14 +649,26 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
     return RespondNow(
         Error("GetSizeStats: volume with ID * not found", params->volume_id));
 
-  // For fusebox volumes, get the underlying (aka original) volume.
+  // For fusebox volumes, get the underlying (aka regular) volume.
   const auto fusebox = base::StringPiece(file_manager::util::kFuseBox);
   if (base::StartsWith(volume->file_system_type(), fusebox)) {
-    auto volume_id = params->volume_id.substr(fusebox.length());
+    std::string volume_id = params->volume_id;
+
+    if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
+      volume_id = volume_id.substr(fusebox.length());
+    } else if (volume->type() == file_manager::VOLUME_TYPE_PROVIDED) {
+      // NB: FileManagerPrivate.GetSizeStats is not called by files app JS
+      // because regular PROVIDED volumes do not support size stats.
+      volume_manager->ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(&volume_id);
+    } else {
+      // TODO(crbug.com/1292825): add VOLUME_TYPE_DOCUMENTS_PROVIDER.
+    }
+
     volume = volume_manager->FindVolumeById(volume_id);
-    if (!volume.get())
+    if (!volume.get()) {
       return RespondNow(
           Error("GetSizeStats: volume with ID * not found", volume_id));
+    }
   }
 
   if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
@@ -766,6 +779,46 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
   sizes->SetDoubleKey("remainingSize", static_cast<double>(*remaining_size));
 
   Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(sizes))));
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetDriveQuotaMetadataFunction::Run() {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (!integration_service) {
+    return RespondNow(Error("Drive not available"));
+  }
+  integration_service->GetPooledQuotaUsage(base::BindOnce(
+      &FileManagerPrivateGetDriveQuotaMetadataFunction::OnGetDriveQuotaMetadata,
+      this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateGetDriveQuotaMetadataFunction::OnGetDriveQuotaMetadata(
+    drive::FileError error,
+    drivefs::mojom::PooledQuotaUsagePtr usage) {
+  if (error != drive::FileError::FILE_ERROR_OK) {
+    Respond(NoArguments());
+    return;
+  }
+
+  api::file_manager_private::DriveQuotaMetadata quotaMetadata;
+
+  quotaMetadata.user_type =
+      usage->user_type == drivefs::mojom::UserType::kUnmanaged
+          ? api::file_manager_private::UserType::USER_TYPE_KUNMANAGED
+          : api::file_manager_private::UserType::USER_TYPE_KORGANIZATION;
+  quotaMetadata.used_user_bytes = static_cast<double>(usage->used_user_bytes);
+  quotaMetadata.total_user_bytes = static_cast<double>(usage->total_user_bytes);
+  quotaMetadata.organization_limit_exceeded =
+      usage->organization_limit_exceeded;
+  quotaMetadata.organization_name = usage->organization_name;
+
+  Respond(ArgumentList(
+      api::file_manager_private::GetDriveQuotaMetadata::Results::Create(
+          quotaMetadata)));
 }
 
 ExtensionFunction::ResponseAction
@@ -1062,6 +1115,35 @@ void FileManagerPrivateInternalGetDlpMetadataFunction::OnGetDlpMetadata(
   Respond(ArgumentList(
       api::file_manager_private_internal::GetDlpMetadata::Results::Create(
           converted_list)));
+}
+
+FileManagerPrivateShowDlpRestrictionDetailsFunction::
+    FileManagerPrivateShowDlpRestrictionDetailsFunction() = default;
+
+FileManagerPrivateShowDlpRestrictionDetailsFunction::
+    ~FileManagerPrivateShowDlpRestrictionDetailsFunction() = default;
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateShowDlpRestrictionDetailsFunction::Run() {
+  if (!base::FeatureList::IsEnabled(
+          features::kDataLeakPreventionFilesRestriction)) {
+    return RespondNow(NoArguments());
+  }
+
+  policy::DlpRulesManager* rules_manager =
+      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+  if (!rules_manager || !rules_manager->IsFilesPolicyEnabled()) {
+    return RespondNow(NoArguments());
+  }
+
+  using extensions::api::file_manager_private::ShowDlpRestrictionDetails::
+      Params;
+  const std::unique_ptr<Params> params(Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // TODO(crbug.com/1346254): Show the modal.
+
+  return RespondNow(NoArguments());
 }
 
 FileManagerPrivateInternalStartCopyFunction::
@@ -1459,18 +1541,17 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  base::Value::Dict result;
   for (const auto& hash : hashes) {
-    result->SetKey(hash, base::ListValue());
+    result.Set(hash, base::Value(base::Value::List()));
   }
 
   for (const auto& hashAndPath : search_results) {
-    DCHECK(result->FindKey(hashAndPath.hash));
-    base::ListValue* list;
-    result->GetListWithoutPathExpansion(hashAndPath.hash, &list);
+    base::Value::List* list = result.FindList(hashAndPath.hash);
+    DCHECK(list);
     list->Append(hashAndPath.path.value());
   }
-  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  Respond(OneArgument(base::Value(std::move(result))));
 }
 
 FileManagerPrivateSearchFilesFunction::FileManagerPrivateSearchFilesFunction() =
@@ -1625,14 +1706,6 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
     }
   }
 
-  std::vector<std::string> restore_paths;
-  if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash) &&
-      params->params.restore_paths) {
-    for (const auto& path : *params->params.restore_paths) {
-      restore_paths.emplace_back(path);
-    }
-  }
-
   std::unique_ptr<file_manager::io_task::IOTask> task;
   switch (type.value()) {
     case file_manager::io_task::OperationType::kCopy:
@@ -1662,12 +1735,8 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       }
     case file_manager::io_task::OperationType::kRestore:
       if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
-        if (source_urls.size() != restore_paths.size()) {
-          return RespondNow(Error("Invalid number of restore paths"));
-        }
         task = std::make_unique<file_manager::io_task::RestoreIOTask>(
-            std::move(source_urls), std::move(restore_paths), profile,
-            file_system_context,
+            std::move(source_urls), profile, file_system_context,
             /*base_path=*/base::FilePath());
         break;
       } else {

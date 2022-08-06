@@ -11,12 +11,12 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/device_state.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 bool ManagedState::Matches(const NetworkTypePattern& pattern) const {
   return pattern.MatchesType(type());
@@ -155,4 +155,4 @@ bool ManagedState::GetUInt32Value(const std::string& key,
   return true;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -85,6 +85,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Cancels locking and reverts lock animation.
   void CancelLockAnimation();
 
+  // Cancels unlock animation.
+  void CancelUnlockAnimation();
+
   // Returns true if we are within cancellable shutdown timeframe.
   bool CanCancelShutdownAnimation();
 
@@ -98,7 +101,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Called when ScreenLocker is ready to close, but not yet destroyed.
   // Can be used to display "hiding" animations on unlock.
   // |callback| will be called when all animations are done.
-  void OnLockScreenHide(base::OnceClosure callback);
+  void OnLockScreenHide(SessionStateAnimator::AnimationCallback callback);
 
   // Sets up the callback that should be called once lock animation is finished.
   // Callback is guaranteed to be called once and then discarded.
@@ -144,8 +147,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
                         bool request_lock_on_completion);
   void StartPostLockAnimation();
   // This method calls |callback| when animation completes.
-  void StartUnlockAnimationBeforeUIDestroyed(base::OnceClosure callback);
-  void StartUnlockAnimationAfterUIDestroyed();
+  void StartUnlockAnimationBeforeLockUIDestroyed(base::OnceClosure callback);
+  void StartUnlockAnimationAfterLockUIDestroyed();
 
   // These methods are called when corresponding animation completes.
   void LockAnimationCancelled(bool aborted);
@@ -167,6 +170,14 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
       SessionStateAnimator::AnimationSpeed speed,
       SessionStateAnimator::AnimationSequence* animation_sequence);
 
+  // Passed as a callback to the animation sequence that runs as part of
+  // StartUnlockAnimationBeforeLockUIDestroyed. The callback will be invoked
+  // after the animations complete, it will then check if the power button was
+  // pressed at all during the unlock animation, and if so, immediately revert
+  // the animations and notify ScreenLocker that the unlock process is to be
+  // aborted.
+  void OnUnlockAnimationBeforeLockUIDestroyedFinished();
+
   // Notifies observers.
   void OnLockStateEvent(LockStateObserver::EventType event);
 
@@ -187,6 +198,13 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   // Indicates that controller displays lock animation.
   bool animating_lock_ = false;
+
+  // Indicates that controller displays unlock animation.
+  bool animating_unlock_ = false;
+
+  // Indicates that the power button has been pressed during the unlock
+  // animation
+  bool pb_pressed_during_unlock_ = false;
 
   // Indicates whether post lock animation should be immediate.
   bool post_lock_immediate_animation_ = false;
@@ -213,6 +231,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   base::OneShotTimer real_shutdown_timer_;
 
   base::OnceClosure lock_screen_displayed_callback_;
+
+  base::OnceCallback<void(bool)> start_unlock_callback_;
 
   ScopedSessionObserver scoped_session_observer_;
 

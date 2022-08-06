@@ -15,12 +15,6 @@
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/web_common.h"
 
-namespace base {
-namespace trace_event {
-class BlameContext;
-}  // namespace trace_event
-}  // namespace base
-
 namespace blink {
 class Thread;
 }  // namespace blink
@@ -58,9 +52,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   // Returns main thread scheduler for the main thread of the current process.
   static WebThreadScheduler* MainThreadScheduler();
-
-  // Returns the default task runner.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
 
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner();
@@ -113,35 +104,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   virtual void PauseTimersForAndroidWebView();
   virtual void ResumeTimersForAndroidWebView();
 #endif  // BUILDFLAG(IS_ANDROID)
-
-  // RAII handle for pausing the renderer. Renderer is paused while
-  // at least one pause handle exists.
-  class BLINK_PLATFORM_EXPORT RendererPauseHandle {
-   public:
-    RendererPauseHandle() = default;
-    RendererPauseHandle(const RendererPauseHandle&) = delete;
-    RendererPauseHandle& operator=(const RendererPauseHandle&) = delete;
-    virtual ~RendererPauseHandle() = default;
-  };
-
-  // Tells the scheduler that the renderer process should be paused.
-  // Pausing means that all javascript callbacks should not fire.
-  // https://html.spec.whatwg.org/#pause
-  //
-  // Renderer will be resumed when the handle is destroyed.
-  // Handle should be destroyed before the renderer.
-  [[nodiscard]] virtual std::unique_ptr<RendererPauseHandle> PauseRenderer();
-
-  // Returns true if the scheduler has reason to believe that high priority work
-  // may soon arrive on the main thread, e.g., if gesture events were observed
-  // recently.
-  // Must be called from the main thread.
-  virtual bool IsHighPriorityWorkAnticipated();
-
-  // Sets the default blame context to which top level work should be
-  // attributed in this renderer. |blame_context| must outlive this scheduler.
-  virtual void SetTopLevelBlameContext(
-      base::trace_event::BlameContext* blame_context);
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.

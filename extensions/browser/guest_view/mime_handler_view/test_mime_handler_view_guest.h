@@ -13,6 +13,10 @@ namespace content {
 class MessageLoopRunner;
 }  // namespace content
 
+namespace guest_view {
+class TestGuestViewManager;
+}  // namespace guest_view
+
 namespace extensions {
 
 // TestMimeHandlerViewGuest is used instead of its base class,
@@ -22,6 +26,11 @@ class TestMimeHandlerViewGuest : public MimeHandlerViewGuest {
  public:
   TestMimeHandlerViewGuest(const TestMimeHandlerViewGuest&) = delete;
   TestMimeHandlerViewGuest& operator=(const TestMimeHandlerViewGuest&) = delete;
+
+  // Have `manager` create TestMimeHandlerViewGuests in place of
+  // MimeHandlerViewGuests.
+  static void RegisterTestGuestViewType(
+      guest_view::TestGuestViewManager* manager);
 
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
 
@@ -37,7 +46,7 @@ class TestMimeHandlerViewGuest : public MimeHandlerViewGuest {
   void WaitForGuestAttached();
 
   // MimeHandlerViewGuest override:
-  void CreateWebContents(const base::DictionaryValue& create_params,
+  void CreateWebContents(const base::Value::Dict& create_params,
                          WebContentsCreatedCallback callback) override;
   void DidAttachToEmbedder() override;
 
@@ -47,9 +56,8 @@ class TestMimeHandlerViewGuest : public MimeHandlerViewGuest {
 
   // Used to call MimeHandlerViewGuest::CreateWebContents using a scoped_ptr for
   // |create_params|.
-  void CallBaseCreateWebContents(
-      std::unique_ptr<base::DictionaryValue> create_params,
-      WebContentsCreatedCallback callback);
+  void CallBaseCreateWebContents(base::Value::Dict create_params,
+                                 WebContentsCreatedCallback callback);
 
   // A value in milliseconds that the next creation of a guest's WebContents
   // will be delayed. After this creation is delayed, |delay_| will be reset to

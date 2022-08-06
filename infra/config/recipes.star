@@ -147,6 +147,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium_polymorphic/launcher",
+)
+
+build_recipe(
     name = "recipe:chromium_3pp",
 )
 
@@ -219,6 +223,11 @@ build_recipe(
 
 build_recipe(
     name = "recipe:requires_testing_checker",
+)
+
+build_recipe(
+    name = "recipe:reviver/chromium/runner",
+    bootstrappable = POLYMORPHIC,
 )
 
 build_recipe(

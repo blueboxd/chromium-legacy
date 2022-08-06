@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -343,6 +343,52 @@ class UnitTest(unittest.TestCase):
               'Specifying test cases is not supported in multiple swarming '
               'shards environment.', ctx.message))
       self.assertEqual(ctx.exception.code, 2)
+
+  @mock.patch('os.getenv', side_effect=[1, 0])
+  def test_no_retries_when_repeat(self, _):
+    cmd = [
+        '--app',
+        './foo-Runner.app',
+        '--xcode-path',
+        'some/Xcode.app',
+        '--test-cases',
+        'SomeClass.SomeTestCase',
+        '--isolated-script-test-repeat',
+        '20',
+
+        # Required
+        '--xcode-build-version',
+        '123abc',
+        '--out-dir',
+        'some/dir',
+    ]
+    runner = run.Runner()
+    runner.parse_args(cmd)
+    self.assertEqual(0, runner.args.retries)
+
+  @mock.patch('os.getenv', side_effect=[1, 0])
+  def test_override_retries_when_repeat(self, _):
+    cmd = [
+        '--app',
+        './foo-Runner.app',
+        '--xcode-path',
+        'some/Xcode.app',
+        '--test-cases',
+        'SomeClass.SomeTestCase',
+        '--isolated-script-test-repeat',
+        '20',
+        '--retries',
+        '3',
+
+        # Required
+        '--xcode-build-version',
+        '123abc',
+        '--out-dir',
+        'some/dir',
+    ]
+    runner = run.Runner()
+    runner.parse_args(cmd)
+    self.assertEqual(0, runner.args.retries)
 
 
 class RunnerInstallXcodeTest(test_runner_test.TestCase):

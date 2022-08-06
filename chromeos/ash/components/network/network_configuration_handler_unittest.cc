@@ -18,16 +18,16 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/network_configuration_observer.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/shill_property_util.h"
+#include "chromeos/ash/components/network/tether_constants.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/shill_property_util.h"
-#include "chromeos/network/tether_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -761,7 +761,8 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Updated) {
       network_configuration_observer->HasUpdatedConfiguration(service_path));
 
   base::Value properties(base::Value::Type::DICTIONARY);
-  properties.SetKey(shill::kSecurityProperty, base::Value(shill::kSecurityPsk));
+  properties.SetKey(shill::kSecurityClassProperty,
+                    base::Value(shill::kSecurityClassPsk));
   properties.SetKey(shill::kPassphraseProperty, base::Value("secret"));
 
   network_configuration_handler_->SetShillProperties(

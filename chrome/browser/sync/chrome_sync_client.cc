@@ -127,6 +127,8 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/printing/oauth2/authorization_zones_manager.h"
+#include "chrome/browser/ash/printing/oauth2/authorization_zones_manager_factory.h"
 #include "chrome/browser/ash/printing/printers_sync_bridge.h"
 #include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
@@ -248,19 +250,21 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
       account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
 
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+
 #if BUILDFLAG(IS_ANDROID)
-  trusted_vault_client_ = std::make_unique<TrustedVaultClientAndroid>();
+  trusted_vault_client_ = std::make_unique<TrustedVaultClientAndroid>(
+      /*gaia_account_info_by_gaia_id_cb=*/base::BindRepeating(
+          [](signin::IdentityManager* identity_manager,
+             const std::string& gaia_id) -> CoreAccountInfo {
+            return identity_manager->FindExtendedAccountInfoByGaiaId(gaia_id);
+          },
+          identity_manager));
 #else
-  // TODO(crbug.com/1113597): consider destroying/notifying
-  // |trusted_vault_client_| upon IdentityManager shutdown, to avoid its usages
-  // afterwards. This can be done by tranferring |trusted_vault_client_|
-  // ownership to SyncServiceImpl and acting on
-  // SyncServiceImpl::Shutdown() or by handling
-  // IdentityManagerFactory::Observer::IdentityManagerShutdown().
   trusted_vault_client_ =
       std::make_unique<syncer::StandaloneTrustedVaultClient>(
-          profile_->GetPath().Append(kTrustedVaultFilename),
-          IdentityManagerFactory::GetForProfile(profile_),
+          profile_->GetPath().Append(kTrustedVaultFilename), identity_manager,
           profile_->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess());
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -507,6 +511,18 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       syncer::WORKSPACE_DESK,
       std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
           workspace_desk_delegate)));
+
+  if (chromeos::features::IsOAuthIppEnabled()) {
+    syncer::ModelTypeControllerDelegate*
+        printers_authorization_servers_delegate =
+            GetControllerDelegateForModelType(
+                syncer::PRINTERS_AUTHORIZATION_SERVERS)
+                .get();
+    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+        syncer::PRINTERS_AUTHORIZATION_SERVERS,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            printers_authorization_servers_delegate)));
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return controllers;
@@ -604,6 +620,12 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetSyncBridge()
           ->change_processor()
           ->GetControllerDelegate();
+    case syncer::PRINTERS_AUTHORIZATION_SERVERS:
+      return ash::printing::oauth2::AuthorizationZonesManagerFactory::
+          GetForBrowserContext(profile_)
+              ->GetModelTypeSyncBridge()
+              ->change_processor()
+              ->GetControllerDelegate();
     case syncer::WIFI_CONFIGURATIONS:
       return WifiConfigurationSyncServiceFactory::GetForProfile(profile_,
                                                                 /*create=*/true)

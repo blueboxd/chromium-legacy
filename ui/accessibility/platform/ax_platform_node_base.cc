@@ -825,10 +825,6 @@ bool AXPlatformNodeBase::IsPlatformDocument() const {
   return delegate_ && delegate_->IsPlatformDocument();
 }
 
-bool AXPlatformNodeBase::IsPlatformDocumentWithContent() const {
-  return delegate_ && delegate_->IsPlatformDocumentWithContent();
-}
-
 bool AXPlatformNodeBase::IsStructuredAnnotation() const {
   // The node represents a structured annotation if it can trace back to a
   // target node that is being annotated.
@@ -1263,11 +1259,13 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
       case ax::mojom::DescriptionFrom::kPopupElement:
         // The following types of markup are mapped to "tooltip":
         // * The title attribute.
-        // * A related popup=hint related via togglepopup/showpopup/hidepopup.
+        // * A related popup=hint related via popuptoggletarget /
+        // popupshowtarget / popuphidetarget.
         // * A tooltip related via aria-describedby (see kRelatedElement above).
         from = "tooltip";
         break;
       case ax::mojom::DescriptionFrom::kNone:
+      case ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty:
         NOTREACHED();
     }
     DCHECK(!from.empty());

@@ -425,7 +425,6 @@ void AXRelationCache::UpdateAriaOwnsWithCleanLayout(AXObject* owner,
       } else if (child) {
         // Invalid owns relation: repair the parent that was set above.
         object_cache_->RestoreParentOrPrune(child);
-        DCHECK_NE(child->CachedParentObject(), owner);
       }
     }
   }
@@ -533,7 +532,7 @@ void AXRelationCache::UpdateRelatedTree(Node* node, AXObject* obj) {
   DCHECK(node);
   if (obj)
     DCHECK(!obj->IsDetached());
-  AXObject* obj_for_node = object_cache_->GetWithoutInvalidation(node);
+  AXObject* obj_for_node = object_cache_->SafeGet(node);
   DCHECK(!obj || obj_for_node == obj)
       << "Object and node did not match:"
       << "\n* node = " << node << "\n* obj = " << obj->ToString(true, true)

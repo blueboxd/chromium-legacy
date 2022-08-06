@@ -52,6 +52,10 @@ namespace ash {
 class ApkWebAppService;
 }
 
+namespace extensions {
+class AutotestPrivateGetLacrosInfoFunction;
+}
+
 namespace policy {
 class CloudPolicyCore;
 }
@@ -203,7 +207,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                                      const gfx::Rect& bounds,
                                      const ui::WindowShowState show_state,
                                      int32_t active_tab_index,
-                                     const std::string& app_name);
+                                     const std::string& app_name,
+                                     int32_t restore_window_id);
 
   // Initialize resources and start Lacros. This class provides two approaches
   // to fulfill different requirements.
@@ -287,9 +292,14 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
     // Set true if Lacros uses resource file sharing.
     bool enable_resource_file_sharing = false;
+
+    // Any addiniotal  args to start lacros with.
+    std::vector<std::string> lacros_additional_args;
   };
 
  protected:
+  // NOTE: You may have to update tests if you make changes to State, as state_
+  // is exposed via autotest_private.
   enum class State {
     // Lacros is not initialized yet.
     // Lacros-chrome loading depends on user type, so it needs to wait
@@ -346,6 +356,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // installation when lacros-chrome starts at arbitrary points of time, so it
   // needs to be kept alive.
   friend class ash::ApkWebAppService;
+  // Only for exposing state_ to Tast tests.
+  friend class extensions::AutotestPrivateGetLacrosInfoFunction;
 
   // Holds the data for restoring a window from the desk template.
   // The request to restore a window may come when the browser service is not
@@ -355,7 +367,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                             const gfx::Rect& bounds,
                             ui::WindowShowState show_state,
                             int32_t active_tab_index,
-                            const std::string& app_name);
+                            const std::string& app_name,
+                            int32_t restore_window_id);
     RestoreFromDeskTemplate(const RestoreFromDeskTemplate&) = delete;
     RestoreFromDeskTemplate& operator=(const RestoreFromDeskTemplate&) = delete;
     RestoreFromDeskTemplate(RestoreFromDeskTemplate&&);
@@ -367,6 +380,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     int32_t active_tab_index;
     // An non-empty |app_name| indicates that it's an app type browser window.
     std::string app_name;
+    int32_t restore_window_id;
   };
 
   // Returns true if the binary is ready to launch or already launched.
@@ -465,6 +479,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // shutdown window.
   void OnMojoDisconnected();
 
+  // This may be called synchronously by the BrowserManager following a
+  // Terminate() signal during shutdown, or following a call to
+  // OnMojoDisconnected(). This posts a shutdown blocking task that waits for
+  // lacros-chrome to cleanly exit for `timeout` duration before forcefully
+  // killing the process.
+  void HandleLacrosChromeTermination(base::TimeDelta timeout);
+
   // Called when lacros-chrome is terminated and successfully wait(2)ed.
   void OnLacrosChromeTerminated();
 
@@ -532,6 +553,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Creates windows from template data.
   void RestoreWindowsFromTemplate();
 
+  // NOTE: The state is exposed to tests via autotest_private.
   State state_ = State::NOT_INITIALIZED;
 
   std::unique_ptr<crosapi::BrowserLoader> browser_loader_;

@@ -10,7 +10,7 @@
 #include "ash/components/disks/disk_mount_manager.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 
 namespace file_manager {
 
@@ -57,10 +57,10 @@ class FuseBoxMounter {
   base::WeakPtr<FuseBoxMounter> GetWeakPtr();
 
   // Mount response.
-  void MountResponse(chromeos::MountError error, const FuseBoxMountInfo& info);
+  void MountResponse(ash::MountError error, const FuseBoxMountInfo& info);
 
   // Unmount response.
-  void UnmountResponse(chromeos::MountError error);
+  void UnmountResponse(ash::MountError error);
 
  private:
   // Cros-disks fusebox mountpoint URI.

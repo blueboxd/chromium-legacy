@@ -33,7 +33,6 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 class ChromeContentBrowserClientParts;
@@ -234,6 +233,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url) override;
   bool IsIsolatedAppsDeveloperModeAllowed(
       content::BrowserContext* context) override;
+  bool IsGetDisplayMediaSetSelectAllScreensAllowed(
+      content::BrowserContext* context,
+      const url::Origin& origin) override;
   bool IsFileAccessAllowed(const base::FilePath& path,
                            const base::FilePath& absolute_path,
                            const base::FilePath& profile_path) override;
@@ -255,10 +257,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const absl::optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context) override;
-  void WillStartServiceWorker(
+  void UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
       content::BrowserContext* context,
       const GURL& script_url,
-      content::RenderProcessHost* render_process_host) override;
+      std::vector<std::string>& out_forced_enabled_runtime_features) override;
   bool AllowSharedWorker(const GURL& worker_url,
                          const net::SiteForCookies& site_for_cookies,
                          const absl::optional<url::Origin>& top_frame_origin,
@@ -490,6 +492,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::CommitDeferringCondition::NavigationType type) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
+  std::unique_ptr<media::ScreenEnumerator> CreateScreenEnumerator()
+      const override;
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void CreateMediaRemoter(
       content::RenderFrameHost* render_frame_host,
@@ -733,12 +737,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               size_t data_size_in_bytes,
                               std::u16string& replacement_data) override;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  bool ShouldAllowPluginCreation(
-      const url::Origin& embedder_origin,
-      const content::PepperPluginInfo& plugin_info) override;
-#endif
-
 #if BUILDFLAG(ENABLE_VR)
   content::XrIntegrationClient* GetXrIntegrationClient() override;
 #endif
@@ -791,7 +789,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool IsFindInPageDisabledForOrigin(const url::Origin& origin) override;
   bool WillProvidePublicFirstPartySets() override;
-  base::Value::Dict GetFirstPartySetsOverrides() override;
 
   bool ShouldPreconnectNavigation(
       content::BrowserContext* browser_context) override;
@@ -826,8 +823,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   friend class DisableWebRtcEncryptionFlagTest;
   friend class InProcessBrowserTest;
 
-  // Initializes |network_contexts_parent_directory_| on the UI thread.
-  void InitNetworkContextsParentDirectory();
+  // Initializes `network_contexts_parent_directory_` and
+  // `safe_browsing_service_` on the UI thread.
+  void InitOnUIThread();
 
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(

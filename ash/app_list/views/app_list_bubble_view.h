@@ -7,10 +7,11 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_view_provider.h"
 #include "ash/app_list/views/app_list_folder_controller.h"
+#include "ash/app_list/views/search_box_view_delegate.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/search_box/search_box_view_delegate.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/view.h"
@@ -99,9 +100,9 @@ class ASH_EXPORT AppListBubbleView : public views::View,
   void Layout() override;
 
   // SearchBoxViewDelegate:
-  void QueryChanged(SearchBoxViewBase* sender) override;
+  void QueryChanged(const std::u16string& trimmed_query,
+                    bool initiated_by_user) override;
   void AssistantButtonPressed() override;
-  void BackButtonPressed() override {}
   void CloseButtonPressed() override;
   void ActiveChanged(SearchBoxViewBase* sender) override {}
   void OnSearchBoxKeyEvent(ui::KeyEvent* event) override;
@@ -114,6 +115,24 @@ class ASH_EXPORT AppListBubbleView : public views::View,
   void ShowApps(AppListItemView* folder_item_view, bool select_folder) override;
   void ReparentFolderItemTransit(AppListFolderItem* folder_item) override;
   void ReparentDragEnded() override;
+
+  // Initialize Assistant UIs for bubble view. Assistant UIs
+  // (AppListAssistantMainStage, SuggestionContainerView) expect that their
+  // OnUiVisibilityChanged methods get called via value update in
+  // AssistantUiModel.
+  //
+  // But it does not happen for bubble view as AppListBubblePresenter have an
+  // async call for OnZeroStateSearchDone. AppListBubbleView is instantiated
+  // after the async call and those UIs will miss the event.
+  //
+  // This is a helper method to manually trigger the UI initialization.
+  //
+  // This method is designed to be explicitly called from AppListBubblePresenter
+  // (i.e. instead of doing this in the constructor of AppListBubbleView) to
+  // make the intention clear.
+  //
+  // TODO(b/239754561): Clean up: refactor Assistant UI initialization
+  void InitializeUIForBubbleView();
 
   AppListBubblePage current_page_for_test() { return current_page_; }
   ViewShadow* view_shadow_for_test() { return view_shadow_.get(); }

@@ -6,9 +6,9 @@
 #define CHROMECAST_CAST_CORE_RUNTIME_BROWSER_GRPC_WEBUI_CONTROLLER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "third_party/cast_core/public/src/proto/v2/core_application_service.castcore.pb.h"
@@ -51,20 +51,17 @@ class GrpcWebUIController : public content::WebUIController {
  private:
   content::WebContents* const web_contents_;
   content::BrowserContext* const browser_context_;
-  void AddWebviewSupport();
-  void OnWebUIReady(const base::ListValue* args);
-  void InvokeCallback(const std::string& message, const base::ListValue* args);
   void RegisterMessageCallbacks();
 
   // Callbacks from javascript
-  void StartPingNotify(const base::ListValue* args);
-  void StopPingNotify(const base::ListValue* args);
-  void SetOobeFinished(const base::ListValue* args);
-  void RecordAction(const base::ListValue* args);
-  void LaunchTutorial(const base::ListValue* args);
-  void GetQRCode(const base::ListValue* args);
-  void CallJavascriptFunction(const std::string& function,
-                              std::vector<base::Value> args);
+  void StartPingNotify(const base::Value::List& args);
+  void StopPingNotify(const base::Value::List& args);
+  void SetOobeFinished(const base::Value::List& args);
+  void RecordAction(const base::Value::List& args);
+  void LaunchTutorial(const base::Value::List& args);
+  void GetQRCode(const base::Value::List& args);
+  void CallJavascriptFunction(base::StringPiece function,
+                              base::span<const base::ValueView> args);
 
   // Pointer to the generic message handler owned by the ctor provided|webui|.
   // The message handler is guaranteed to outlive GrpcWebUIController since

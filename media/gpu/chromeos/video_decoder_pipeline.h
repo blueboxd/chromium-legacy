@@ -115,6 +115,10 @@ class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
   // AMD). Default implementation returns false.
   virtual bool NeedsTranscryption();
 
+  // Set the DMA coherency of the video decoder buffers. Only relevant for
+  // V4L2.
+  virtual void SetDmaIncoherentV4L2(bool incoherent) {}
+
  protected:
   const std::unique_ptr<MediaLog> media_log_;
 
@@ -154,6 +158,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   VideoDecoderType GetDecoderType() const override;
   bool IsPlatformDecoder() const override;
   int GetMaxDecodeRequests() const override;
+  bool FramesHoldExternalResources() const override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   void Initialize(const VideoDecoderConfig& config,

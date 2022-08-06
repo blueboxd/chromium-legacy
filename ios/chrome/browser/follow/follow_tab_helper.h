@@ -9,13 +9,19 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "ios/web/public/web_state_observer.h"
-#import "ios/web/public/web_state_user_data.h"
+#include "ios/web/public/web_state_user_data.h"
+
+namespace history {
+struct DailyVisitsResult;
+}
 
 namespace web {
 class WebState;
 }
 
+class GURL;
 @class FollowWebPageURLs;
 @protocol FollowIPHPresenter;
 @protocol FollowMenuUpdater;
@@ -29,27 +35,27 @@ class FollowTabHelper : public web::WebStateObserver,
 
   ~FollowTabHelper() override;
 
-  // Creates the TabHelper and attaches to |web_state|. |web_state| must not be
+  // Creates the TabHelper and attaches to `web_state`. `web_state` must not be
   // null.
   static void CreateForWebState(web::WebState* web_state);
 
-  // Sets the presenter for follow in-product help (IPH). |presenter| is not
+  // Sets the presenter for follow in-product help (IPH). `presenter` is not
   // retained by this tab helper.
   void set_follow_iph_presenter(id<FollowIPHPresenter> presenter) {
     follow_iph_presenter_ = presenter;
   }
 
-  // Sets the value of shoud_update_follow_item_.
+  // Sets the value of `shoud_update_follow_item_`.
   void set_should_update_follow_item(bool shoud_update_follow_item) {
     should_update_follow_item_ = shoud_update_follow_item;
   }
 
-  // Sets the follow meue updater. |follow_menu_updater| is not retained by this
+  // Sets the follow menu updater. `follow_menu_updater` is not retained by this
   // tab helper.
-  void set_follow_menu_updater(id<FollowMenuUpdater> follow_menu_updater);
+  void SetFollowMenuUpdater(id<FollowMenuUpdater> follow_menu_updater);
 
-  // Removes the follow meue updater.
-  void remove_follow_menu_updater();
+  // Removes the follow menu updater.
+  void RemoveFollowMenuUpdater();
 
  private:
   friend class web::WebStateUserData<FollowTabHelper>;
@@ -67,15 +73,33 @@ class FollowTabHelper : public web::WebStateObserver,
       web::PageLoadCompletionStatus load_completion_status) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
-  // Helper functions.
+  // Invoked asynchronously after fetching the `web_page_urls` from the
+  // successfully loaded page at `url`. The initial time of the page load
+  // is recorded in `page_load_time` and can be used to limit the delay
+  // before displaying UI.
+  void OnSuccessfulPageLoad(const GURL& url,
+                            base::Time page_load_time,
+                            FollowWebPageURLs* web_page_urls);
+
+  // Invoked with daily visit from history `result`. The initial time of the
+  // page load is recorded in `page_load_time` and can be used to limit the
+  // delay before displaying UI.
+  void OnDailyVisitQueryResult(base::Time page_load_time,
+                               history::DailyVisitsResult result);
+
+  // Updates follow menu item. `web_page_urls` is the page url object used to
+  // check follow status.
   void UpdateFollowMenuItem(FollowWebPageURLs* web_page_urls);
+
+  // Presents the Follow in-product help (IPH).
+  void PresentFollowIPH();
 
   web::WebState* web_state_ = nullptr;
 
   // Presenter for follow in-product help (IPH).
   __weak id<FollowIPHPresenter> follow_iph_presenter_ = nil;
 
-  // Manages this object as an observer of |web_state_|.
+  // Manages this object as an observer of `web_state_`.
   base::ScopedObservation<web::WebState, web::WebStateObserver>
       web_state_observation_{this};
 
@@ -87,7 +111,12 @@ class FollowTabHelper : public web::WebStateObserver,
   // Used to update the follow menu item.
   __weak id<FollowMenuUpdater> follow_menu_updater_ = nil;
 
-  base::WeakPtrFactory<FollowTabHelper> weak_ptr_factory_;
+  // The recommended url of the current website. Nil if
+  // the site is not recommended.
+  NSURL* recommended_url_ = nil;
+
+  base::CancelableTaskTracker history_task_tracker_;
+  base::WeakPtrFactory<FollowTabHelper> weak_ptr_factory_{this};
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

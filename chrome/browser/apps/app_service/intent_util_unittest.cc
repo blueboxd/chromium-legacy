@@ -10,8 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/arc/mojom/intent_common.mojom.h"
-#include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/values.h"
@@ -35,12 +33,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/crosapi/mojom/app_service_types.mojom.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/mojom/intent_common.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/crosapi/mojom/app_service_types.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "net/base/filename_util.h"
@@ -62,6 +65,7 @@ using apps::PatternMatchType;
 
 class IntentUtilsTest : public testing::Test {
  protected:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   arc::mojom::IntentInfoPtr CreateArcIntent() {
     arc::mojom::IntentInfoPtr arc_intent = arc::mojom::IntentInfo::New();
     arc_intent->action = "android.intent.action.PROCESS_TEXT";
@@ -133,8 +137,10 @@ class IntentUtilsTest : public testing::Test {
 
     return true;
   }
+#endif
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(IntentUtilsTest, CreateIntentForActivity) {
   const std::string& activity_name = "com.android.vending.AssetBrowserActivity";
   const std::string& start_type = "initialStart";
@@ -147,8 +153,12 @@ TEST_F(IntentUtilsTest, CreateIntentForActivity) {
   ASSERT_TRUE(intent);
   ASSERT_TRUE(arc_intent);
 
-  // TODO(crbug.com/1253250): Modify CreateLaunchIntent to use the non mojom
-  // intent to verity intent_str, done in CreateIntentForActivityMojom.
+  std::string intent_str =
+      "#Intent;action=android.intent.action.MAIN;category=android.intent."
+      "category.LAUNCHER;launchFlags=0x10200000;component=com.android.vending/"
+      ".AssetBrowserActivity;S.org.chromium.arc.start_type=initialStart;end";
+  EXPECT_EQ(intent_str,
+            apps_util::CreateLaunchIntent("com.android.vending", intent));
 
   EXPECT_EQ(arc::kIntentActionMain, arc_intent->action);
 
@@ -182,8 +192,9 @@ TEST_F(IntentUtilsTest, CreateIntentForActivityMojom) {
       "#Intent;action=android.intent.action.MAIN;category=android.intent."
       "category.LAUNCHER;launchFlags=0x10200000;component=com.android.vending/"
       ".AssetBrowserActivity;S.org.chromium.arc.start_type=initialStart;end";
-  EXPECT_EQ(intent_str,
-            apps_util::CreateLaunchIntent("com.android.vending", intent));
+  EXPECT_EQ(intent_str, apps_util::CreateLaunchIntent(
+                            "com.android.vending",
+                            apps::ConvertMojomIntentToIntent(intent)));
 
   EXPECT_EQ(arc::kIntentActionMain, arc_intent->action);
 
@@ -201,8 +212,7 @@ TEST_F(IntentUtilsTest, CreateIntentForActivityMojom) {
 }
 
 TEST_F(IntentUtilsTest, CreateShareIntentFromText) {
-  apps::mojom::IntentPtr intent =
-      apps_util::CreateShareIntentFromText("text", "title");
+  apps::IntentPtr intent = apps_util::MakeShareIntent("text", "title");
   std::string intent_str =
       "#Intent;action=android.intent.action.SEND;launchFlags=0x10200000;"
       "component=com.android.vending/;type=text/"
@@ -211,6 +221,7 @@ TEST_F(IntentUtilsTest, CreateShareIntentFromText) {
   EXPECT_EQ(intent_str,
             apps_util::CreateLaunchIntent("com.android.vending", intent));
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_WebApp_HasUrlFilter) {
   auto web_app = web_app::test::CreateWebApp();
@@ -233,7 +244,7 @@ TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_WebApp_HasUrlFilter) {
     EXPECT_EQ(condition.condition_type, ConditionType::kAction);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
-              PatternMatchType::kNone);
+              PatternMatchType::kLiteral);
     EXPECT_EQ(condition.condition_values[0]->value,
               apps_util::kIntentActionView);
   }
@@ -243,7 +254,7 @@ TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_WebApp_HasUrlFilter) {
     EXPECT_EQ(condition.condition_type, ConditionType::kScheme);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
-              PatternMatchType::kNone);
+              PatternMatchType::kLiteral);
     EXPECT_EQ(condition.condition_values[0]->value, scope.scheme());
   }
 
@@ -252,13 +263,13 @@ TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_WebApp_HasUrlFilter) {
     EXPECT_EQ(condition.condition_type, ConditionType::kHost);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
-              PatternMatchType::kNone);
+              PatternMatchType::kLiteral);
     EXPECT_EQ(condition.condition_values[0]->value, scope.host());
   }
 
   {
     const Condition& condition = *filter->conditions[3];
-    EXPECT_EQ(condition.condition_type, ConditionType::kPattern);
+    EXPECT_EQ(condition.condition_type, ConditionType::kPath);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
               PatternMatchType::kPrefix);
@@ -289,7 +300,7 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_WebApp_HasUrlFilter) {
     EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kAction);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
-              apps::mojom::PatternMatchType::kNone);
+              apps::mojom::PatternMatchType::kLiteral);
     EXPECT_EQ(condition.condition_values[0]->value,
               apps_util::kIntentActionView);
   }
@@ -299,7 +310,7 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_WebApp_HasUrlFilter) {
     EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kScheme);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
-              apps::mojom::PatternMatchType::kNone);
+              apps::mojom::PatternMatchType::kLiteral);
     EXPECT_EQ(condition.condition_values[0]->value, scope.scheme());
   }
 
@@ -308,13 +319,13 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_WebApp_HasUrlFilter) {
     EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kHost);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
-              apps::mojom::PatternMatchType::kNone);
+              apps::mojom::PatternMatchType::kLiteral);
     EXPECT_EQ(condition.condition_values[0]->value, scope.host());
   }
 
   {
     const apps::mojom::Condition& condition = *filter->conditions[3];
-    EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kPattern);
+    EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kPath);
     ASSERT_EQ(condition.condition_values.size(), 1U);
     EXPECT_EQ(condition.condition_values[0]->match_type,
               apps::mojom::PatternMatchType::kPrefix);
@@ -637,6 +648,7 @@ TEST_F(IntentUtilsTest, CreateChromeAppIntentFilters_FileHandlers) {
   EXPECT_EQ(file_cond2.condition_values[1]->value, "txt");
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(IntentUtilsTest, CreateIntentFiltersForChromeApp_NoteTaking) {
   const std::string note_action_handler =
       extensions::api::app_runtime::ToString(
@@ -719,7 +731,9 @@ TEST_F(IntentUtilsTest, CreateChromeAppIntentFilters_NoteTaking) {
       apps::ConvertIntentToMojomIntent(apps_util::CreateCreateNoteIntent()),
       filter));
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(IntentUtilsTest, CreateIntentFiltersForExtension_FileHandlers) {
   // Foo extension provides file_browser_handlers for html and anything.
   extensions::ExtensionBuilder foo_ext;
@@ -899,7 +913,9 @@ TEST_F(IntentUtilsTest, CreateExtensionIntentFilters_FileHandlers) {
   EXPECT_EQ(file_cond2.condition_values[1]->value,
             R"(filesystem:chrome://file-manager/.*\..*)");
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Converting an Arc Intent filter for a URL view intent filter should add a
 // condition covering every possible path.
 TEST_F(IntentUtilsTest, ConvertArcIntentFilter_AddsMissingPath) {
@@ -987,7 +1003,7 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_ConvertsSimpleGlobToPrefix) {
       apps_util::CreateIntentFilterForArc(filter_with_path);
 
   for (auto& condition : app_service_filter->conditions) {
-    if (condition->condition_type == apps::ConditionType::kPattern) {
+    if (condition->condition_type == apps::ConditionType::kPath) {
       EXPECT_EQ(4u, condition->condition_values.size());
       EXPECT_EQ(apps::ConditionValue("/foo", apps::PatternMatchType::kPrefix),
                 *condition->condition_values[0]);
@@ -1029,7 +1045,7 @@ TEST_F(IntentUtilsTest,
       apps_util::ConvertArcToAppServiceIntentFilter(filter_with_path);
 
   for (auto& condition : app_service_filter->conditions) {
-    if (condition->condition_type == apps::mojom::ConditionType::kPattern) {
+    if (condition->condition_type == apps::mojom::ConditionType::kPath) {
       EXPECT_EQ(4u, condition->condition_values.size());
       EXPECT_EQ(apps_util::MakeConditionValue(
                     "/foo", apps::mojom::PatternMatchType::kPrefix),
@@ -1141,7 +1157,7 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_WildcardHostPatternMatchType) {
                 apps::PatternMatchType::kSuffix);
       // Check non-wildcard host
       EXPECT_EQ(condition->condition_values[1]->match_type,
-                apps::PatternMatchType::kNone);
+                apps::PatternMatchType::kLiteral);
     }
   }
 }
@@ -1280,10 +1296,11 @@ TEST_F(IntentUtilsTest,
       // Check non-wildcard host
       EXPECT_EQ(condition->condition_values[1]->match_type,
                 ConvertPatternMatchTypeToMojomPatternMatchType(
-                    apps::PatternMatchType::kNone));
+                    apps::PatternMatchType::kLiteral));
     }
   }
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
 TEST_F(IntentUtilsTest, CrosapiIntentConversion) {
@@ -1330,7 +1347,7 @@ TEST_F(IntentUtilsTest, CrosapiIntentConversionMojom) {
       apps_util::ConvertCrosapiToAppServiceIntent(crosapi_intent, nullptr);
   EXPECT_EQ(original_intent, converted_intent);
 }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class IntentUtilsFileTest : public ::testing::Test {
@@ -1471,6 +1488,25 @@ TEST_F(IntentUtilsFileTest, ConvertFileSchemeMojom) {
 }
 
 TEST_F(IntentUtilsFileTest, CrosapiIntentToAppService) {
+  const std::string path = "Documents/foo.txt";
+  std::vector<base::FilePath> file_paths;
+  file_paths.push_back(base::FilePath(fs_root_).Append(path));
+  auto crosapi_intent =
+      apps_util::CreateCrosapiIntentForViewFiles(std::move(file_paths));
+
+  auto app_service_intent =
+      apps_util::ConvertCrosapiToAppServiceIntent(crosapi_intent, GetProfile());
+  EXPECT_EQ(app_service_intent->action, crosapi_intent->action);
+  EXPECT_EQ(app_service_intent->mime_type, crosapi_intent->mime_type);
+  ASSERT_TRUE(crosapi_intent->files.has_value());
+  ASSERT_EQ(crosapi_intent->files.value().size(), 1U);
+  EXPECT_EQ(
+      app_service_intent->files.value()[0]->url,
+      ToGURL(base::FilePath(storage::kExternalDir).Append(mount_name_), path));
+}
+
+// TODO(crbug.com/1253250): Will be removed soon.
+TEST_F(IntentUtilsFileTest, CrosapiIntentToAppServiceMojom) {
   const std::string path = "Documents/foo.txt";
   auto file_path = base::FilePath(fs_root_).Append(path);
   auto file_paths = apps::mojom::FilePaths::New();

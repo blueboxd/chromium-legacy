@@ -7,14 +7,14 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {DomIf, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, PasswordsSectionElement, PaymentsManagerImpl, SettingsAutofillSectionElement, SettingsPaymentsSectionElement} from 'chrome://settings/lazy_load.js';
 import {buildRouter, Router, routes} from 'chrome://settings/settings.js';
-import {CrSettingsPrefs, MultiStoreExceptionEntry, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutofillPageElement, SettingsPluralStringProxyImpl, SettingsPrefsElement} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutofillPageElement, SettingsPluralStringProxyImpl, SettingsPrefsElement} from 'chrome://settings/settings.js';
 import {SettingsRoutes} from 'chrome://settings/settings_routes.js';
 import {assertDeepEquals, assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
 import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {FakeSettingsPrivate} from './fake_settings_private.js';
-import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createMultiStorePasswordEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
+import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
 import {makeCompromisedCredential} from './passwords_and_autofill_fake_data.js';
 import {TestOpenWindowProxy} from './test_open_window_proxy.js';
 import {PasswordManagerExpectations,TestPasswordManagerProxy} from './test_password_manager_proxy.js';
@@ -80,7 +80,7 @@ suite('PasswordsAndForms', function() {
                            key: 'payments.can_make_payment_enabled',
                            type: chrome.settingsPrivate.PrefType.BOOLEAN,
                            value: true,
-                         }
+                         },
                        ]) as unknown as typeof chrome.settingsPrivate);
 
       CrSettingsPrefs.initialized.then(function() {
@@ -194,14 +194,14 @@ suite('PasswordsAndForms', function() {
 
       const list = [
         createPasswordEntry({url: 'one.com', username: 'user1', id: 0}),
-        createPasswordEntry({url: 'two.com', username: 'user1', id: 1})
+        createPasswordEntry({url: 'two.com', username: 'user1', id: 1}),
       ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener!(list);
       flush();
 
       assertDeepEquals(
-          list.map(entry => new MultiStorePasswordUiEntry(entry)),
+          list,
           element.shadowRoot!
               .querySelector<PasswordsSectionElement>(
                   '#passwordSection')!.savedPasswords);
@@ -222,13 +222,13 @@ suite('PasswordsAndForms', function() {
 
       const list = [
         createExceptionEntry({url: 'one.com', id: 0}),
-        createExceptionEntry({url: 'two.com', id: 1})
+        createExceptionEntry({url: 'two.com', id: 1}),
       ];
       passwordManager.lastCallback.addExceptionListChangedListener!(list);
       flush();
 
       assertDeepEquals(
-          list.map(entry => new MultiStoreExceptionEntry(entry)),
+          list,
           element.shadowRoot!
               .querySelector<PasswordsSectionElement>(
                   '#passwordSection')!.passwordExceptions);
@@ -375,8 +375,7 @@ suite('PasswordsUITest', function() {
     const subpage =
         autofillSection.shadowRoot!.querySelector('settings-subpage');
 
-    autofillSection.credential =
-        createMultiStorePasswordEntry({url: SHOWN_URL, deviceId: 1});
+    autofillSection.credential = createPasswordEntry({url: SHOWN_URL, id: 1});
     flush();
 
     assertTrue(!!subpage);

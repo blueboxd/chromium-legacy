@@ -254,20 +254,6 @@ void PrePaintTreeWalk::InvalidatePaintForHitTesting(
       object, PaintInvalidationReason::kHitTest);
 }
 
-void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
-    const LayoutObject& object,
-    PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (!object.HasLayer())
-    return;
-
-  PaintLayer* paint_layer = To<LayoutBoxModelObject>(object).Layer();
-  paint_layer->UpdateAncestorScrollContainerLayer(
-      context.ancestor_scroll_container_paint_layer);
-
-  if (object.IsScrollContainer())
-    context.ancestor_scroll_container_paint_layer = paint_layer;
-}
-
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
@@ -499,10 +485,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     if (!pre_paint_info->fragment_data)
       return;
   }
-
-  // This must happen before updatePropertiesForSelf, because the latter reads
-  // some of the state computed here.
-  UpdateAuxiliaryObjectProperties(object, context);
 
   absl::optional<PaintPropertyTreeBuilder> property_tree_builder;
   if (context.tree_builder_context) {
@@ -939,20 +921,27 @@ void PrePaintTreeWalk::WalkLayoutObjectChildren(
     }
 
     if (box_fragment) {
-      NGPrePaintInfo pre_paint_info(
-          *box_fragment, paint_offset, fragmentainer_idx, is_first_for_node,
-          is_last_for_node, is_inside_fragment_child,
-          context.current_container.IsInFragmentationContext());
+      const ContainingFragment* container_for_child =
+          &context.current_container;
+      bool is_in_different_fragmentation_context = false;
       if (oof_containing_fragment_info &&
           context.current_container.fragmentation_nesting_level !=
               oof_containing_fragment_info->fragmentation_nesting_level) {
         // We're walking an out-of-flow positioned descendant that isn't in the
-        // same fragmentation context as parent_object. Update the context, so
-        // that we create FragmentData objects correctly both for the descendant
-        // and all its descendants.
+        // same fragmentation context as parent_object. We need to update the
+        // context, so that we create FragmentData objects correctly both for
+        // the descendant and all its descendants.
+        container_for_child = oof_containing_fragment_info;
+        is_in_different_fragmentation_context = true;
+      }
+      NGPrePaintInfo pre_paint_info(
+          *box_fragment, paint_offset, fragmentainer_idx, is_first_for_node,
+          is_last_for_node, is_inside_fragment_child,
+          container_for_child->IsInFragmentationContext());
+      if (is_in_different_fragmentation_context) {
         PrePaintTreeWalkContext oof_context(
             context, NeedsTreeBuilderContextUpdate(*child, context));
-        oof_context.current_container = *oof_containing_fragment_info;
+        oof_context.current_container = *container_for_child;
         Walk(*child, oof_context, &pre_paint_info);
       } else {
         Walk(*child, context, &pre_paint_info);

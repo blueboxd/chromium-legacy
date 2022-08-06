@@ -3044,6 +3044,60 @@
       }
     ]
   },
+  "KerberosDomainAutocomplete": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "kerberos.domain_autocomplete": {
+            "default_value": "",
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "KerberosDomainAutocomplete": "kerberos-domain.com"
+        },
+        "prefs": {
+          "kerberos.domain_autocomplete": {
+            "value": "kerberos-domain.com",
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "KerberosDefaultConfiguration": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "kerberos.default_configuration": {
+            "default_value": "[libdefaults]\n  default_tgs_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96\n  default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96\n  permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96\n  forwardable = true\n",
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "KerberosDefaultConfiguration": "custom-config"
+        },
+        "prefs": {
+          "kerberos.default_configuration": {
+            "value": "custom-config",
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
   "PromptForDownloadLocation": {
     "os": [
       "win",
@@ -6287,6 +6341,8 @@
   },
   "MaxConnectionsPerProxy": {
     "os": [
+      "chromeos_ash",
+      "chromeos_lacros",
       "win",
       "linux",
       "mac"
@@ -6644,7 +6700,7 @@
       }
     ]
   },
-  "BuiltInDnsClientEnabled": {
+  "BuiltInDnsClientEnabled.FeatureDisabledByDefault": {
     "os": [
       "linux"
     ],
@@ -7169,6 +7225,38 @@
         },
         "prefs": {
           "ssl.cecpq2_enabled": {
+            "value": false,
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "EncryptedClientHelloEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "ssl.ech_enabled": {
+            "default_value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "EncryptedClientHelloEnabled": false
+        },
+        "prefs": {
+          "ssl.ech_enabled": {
             "value": false,
             "location": "local_state"
           }
@@ -9273,11 +9361,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "settings.a11y.enable_menu": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "ShowAccessibilityOptionsInSystemTrayMenu": true
         },
         "prefs": {
-          "settings.a11y.enable_menu": {}
+          "settings.a11y.enable_menu": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowAccessibilityOptionsInSystemTrayMenu": false
+        },
+        "prefs": {
+          "settings.a11y.enable_menu": {
+            "value": false
+          }
         }
       }
     ]
@@ -9622,11 +9730,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "settings.a11y.virtual_keyboard": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "VirtualKeyboardEnabled": true
         },
         "prefs": {
-          "settings.a11y.virtual_keyboard": {}
+          "settings.a11y.virtual_keyboard": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "VirtualKeyboardEnabled": false
+        },
+        "prefs": {
+          "settings.a11y.virtual_keyboard": {
+            "value": false
+          }
         }
       }
     ]
@@ -11733,7 +11861,7 @@
         "policies": {},
         "prefs": {
           "power.adaptive_charging_enabled": {
-            "default_value": true
+            "value": false
           }
         }
       },
@@ -12364,6 +12492,48 @@
   },
   "AllowKioskAppControlChromeVersion": {
     "reason_for_missing_test": "This policy has no pref as it is only directly read by the update engine daemon."
+  },
+  "NewWindowsInKioskAllowed": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default value (no policies set)",
+        "policies": { },
+        "prefs": {
+          "new_windows_in_kiosk_allowed": {
+            "location": "user_profile",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Check true policy value",
+        "policies": {
+          "NewWindowsInKioskAllowed": true
+        },
+        "prefs": {
+          "new_windows_in_kiosk_allowed": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check false policy value",
+        "policies": {
+          "NewWindowsInKioskAllowed": false
+        },
+        "prefs": {
+          "new_windows_in_kiosk_allowed": {
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      }
+    ]
   },
   "LoginAuthenticationBehavior": {
     "reason_for_missing_test": "Maps into CrosSettings"
@@ -13105,9 +13275,6 @@
   "DeviceCrostiniArcAdbSideloadingAllowed": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
-  "DeviceSamlLoginAuthenticationType": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
-  },
   "DeviceScheduledUpdateCheck": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
@@ -13346,19 +13513,7 @@
     ]
   },
   "ExtensionInstallEventLoggingEnabled": {
-    "os": [
-      "chromeos_ash"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "ExtensionInstallEventLoggingEnabled": true
-        },
-        "prefs": {
-          "extensions.install.event_logging_enabled": {}
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "UsageTimeLimit": {
     "os": [
@@ -15404,6 +15559,46 @@
       }
     ]
   },
+  "OnFileAttachedEnterpriseConnector.LocalProvider": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "OnFileAttachedEnterpriseConnector": [
+            {
+              "service_provider": "local_user_agent",
+              "verification": {
+                "linux": ["key"],
+                "mac": ["key"],
+                "windows": ["key"]
+              },
+              "enable": [
+                {
+                  "url_list": [
+                    "*"
+                  ],
+                  "tags": [
+                    "dlp"
+                  ]
+                }
+              ],
+              "disable": [],
+              "block_until_verdict": 1,
+              "block_password_protected": false,
+              "block_large_files": false
+            }
+          ]
+        },
+        "prefs": {
+          "enterprise_connectors.on_file_attached": {}
+        }
+      }
+    ]
+  },
   "OnFileDownloadedEnterpriseConnector": {
     "os": [
       "win",
@@ -15450,6 +15645,46 @@
               "block_until_verdict": 1,
               "block_password_protected": false,
               "block_large_files": true
+            }
+          ]
+        },
+        "prefs": {
+          "enterprise_connectors.on_file_downloaded": {}
+        }
+      }
+    ]
+  },
+  "OnFileDownloadedEnterpriseConnector.LocalProvider": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "OnFileDownloadedEnterpriseConnector": [
+            {
+              "service_provider": "local_user_agent",
+              "verification": {
+                "linux": ["key"],
+                "mac": ["key"],
+                "windows": ["key"]
+              },
+              "enable": [
+                {
+                  "url_list": [
+                    "*"
+                  ],
+                  "tags": [
+                    "dlp"
+                  ]
+                }
+              ],
+              "disable": [],
+              "block_until_verdict": 1,
+              "block_password_protected": false,
+              "block_large_files": false
             }
           ]
         },
@@ -15512,6 +15747,46 @@
       }
     ]
   },
+  "OnBulkDataEntryEnterpriseConnector.LocalProvider": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "OnBulkDataEntryEnterpriseConnector": [
+            {
+              "service_provider": "local_user_agent",
+              "verification": {
+                "linux": ["key"],
+                "mac": ["key"],
+                "windows": ["key"]
+              },
+              "enable": [
+                {
+                  "url_list": [
+                    "*"
+                  ],
+                  "tags": [
+                    "dlp"
+                  ]
+                }
+              ],
+              "disable": [],
+              "block_until_verdict": 1,
+              "block_password_protected": false,
+              "block_large_files": false
+            }
+          ]
+        },
+        "prefs": {
+          "enterprise_connectors.on_bulk_data_entry": {}
+        }
+      }
+    ]
+  },
   "OnPrintEnterpriseConnector": {
     "os": [
       "win",
@@ -15534,6 +15809,39 @@
                 { "url_list": ["*.us.com"], "tags": ["malware"] }
               ],
               "block_until_verdict": 0,
+              "block_large_files": false
+            }
+          ]
+        },
+        "prefs": {
+          "enterprise_connectors.on_print": {}
+        }
+      }
+    ]
+  },
+  "OnPrintEnterpriseConnector.LocalProvider": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "OnPrintEnterpriseConnector": [
+            {
+              "service_provider": "local_user_agent",
+              "verification": {
+                "linux": ["key"],
+                "mac": ["key"],
+                "windows": ["key"]
+              },
+              "enable": [
+                { "url_list": ["*"], "tags": ["dlp"] }
+              ],
+              "disable": [],
+              "block_until_verdict": 1,
+              "block_password_protected": false,
               "block_large_files": false
             }
           ]
@@ -15576,7 +15884,7 @@
                           "file_system_type": "MY_FILES"
                         },
                         {
-                          "file_system_type": "SAMBA"
+                          "file_system_type": "SMB"
                         }
                       ],
                       "destinations": [{
@@ -15599,7 +15907,7 @@
                           "file_system_type": "ARC"
                         },
                         {
-                          "file_system_type": "SAMBA"
+                          "file_system_type": "SMB"
                         },
                         {
                           "file_system_type": "MY_FILES"
@@ -16949,7 +17257,9 @@
     "os": [
       "win",
       "linux",
-      "mac"
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
     ],
     "can_be_recommended": false,
     "policy_pref_mapping_tests": [
@@ -17952,7 +18262,7 @@
         "policies": {},
         "prefs": {
           "ash.projector.allow_by_policy": {
-            "default_value": false
+            "default_value": true
           }
         }
       },
@@ -18054,7 +18364,7 @@
         "prefs": {
           "first_party_sets.overrides": {
             "default_value": {},
-            "location": "local_state"
+            "location": "user_profile"
           }
         }
       },
@@ -18064,7 +18374,7 @@
         "prefs": {
           "first_party_sets.overrides": {
             "default_value": {},
-            "location": "local_state"
+            "location": "user_profile"
           }
         }
       },
@@ -18079,7 +18389,7 @@
         "prefs": {
           "first_party_sets.overrides": {
             "default_value": {},
-            "location": "local_state"
+            "location": "user_profile"
           }
         }
       },
@@ -18104,7 +18414,7 @@
         "prefs": {
           "first_party_sets.overrides": {
             "default_value": {},
-            "location": "local_state"
+            "location": "user_profile"
           }
         }
       },
@@ -18142,7 +18452,7 @@
                 }
               ]
             },
-            "location": "local_state"
+            "location": "user_profile"
           }
         }
       }
@@ -18599,6 +18909,46 @@
     }
   ]
   },
+  "EnterpriseProfileCreationKeepBrowsingData": {
+    "os":  [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "profile.enterprise_profile_creation.keep_existing_data_by_default": {
+            "default_value": false,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": { "EnterpriseProfileCreationKeepBrowsingData": true },
+        "prefs": {
+          "profile.enterprise_profile_creation.keep_existing_data_by_default": {
+            "value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": { "EnterpriseProfileCreationKeepBrowsingData": false },
+        "prefs": {
+          "profile.enterprise_profile_creation.keep_existing_data_by_default": {
+            "value": false,
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
   "OsColorMode": {
     "os": [
       "chromeos_ash"
@@ -18730,6 +19080,53 @@
         "prefs": {
           "policy.web_sql_non_secure_context_enabled": {
             "value": true
+          }
+        }
+      }
+    ]
+  },
+  "IdleProfileCloseTimeout": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "IdleProfileCloseTimeout": 5
+        },
+        "prefs": {
+          "idle_profile_close_timeout": {
+            "value": 5
+          }
+        }
+      }
+    ]
+  },
+  "DeviceAutofillSAMLUsername": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "saml.UrlParameterToAutofillSAMLUsername": {
+            "default_value": "",
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
+        "policies": {
+          "DeviceAutofillSAMLUsername": "login_hint"
+        },
+        "prefs": {
+          "saml.UrlParameterToAutofillSAMLUsername": {
+            "value": "login_hint",
+            "location": "local_state"
           }
         }
       }

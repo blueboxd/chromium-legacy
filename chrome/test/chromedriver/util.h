@@ -11,7 +11,6 @@
 
 namespace base {
 class FilePath;
-class ListValue;
 }
 
 struct Session;
@@ -22,11 +21,10 @@ class WebView;
 std::string GenerateId();
 
 // Send a sequence of key strokes to the active Element in window.
-Status SendKeysOnWindow(
-    WebView* web_view,
-    const base::ListValue* key_list,
-    bool release_modifiers,
-    int* sticky_modifiers);
+Status SendKeysOnWindow(WebView* web_view,
+                        const base::Value::List* key_list,
+                        bool release_modifiers,
+                        int* sticky_modifiers);
 
 // Decodes the given base64-encoded string, after removing any newlines,
 // which are required in some base64 standards. Returns true on success.
@@ -89,7 +87,7 @@ bool GetOptionalDictionary(const base::DictionaryValue* dict,
                            bool* has_value = nullptr);
 bool GetOptionalList(const base::DictionaryValue* dict,
                      base::StringPiece path,
-                     const base::ListValue** out_value,
+                     const base::Value::List** out_value,
                      bool* has_value = nullptr);
 // Handles "safe integer" mentioned in W3C spec,
 // https://www.w3.org/TR/webdriver/#dfn-maximum-safe-integer.

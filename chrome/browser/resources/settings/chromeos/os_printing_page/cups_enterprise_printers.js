@@ -12,9 +12,9 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import './cups_printers_entry.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
-import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -48,8 +48,9 @@ function moveEntryInPrinters(printerArr, fromIndex, toIndex) {
  */
 const SettingsCupsEnterprisePrintersElementBase = mixinBehaviors(
     [
-      CupsPrintersEntryListBehavior, ListPropertyUpdateBehavior,
-      WebUIListenerBehavior
+      CupsPrintersEntryListBehavior,
+      ListPropertyUpdateBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 

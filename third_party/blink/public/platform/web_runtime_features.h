@@ -80,6 +80,7 @@ class WebRuntimeFeatures {
   EnableAccessibilityUseAXPositionForDocumentMarkers(bool);
   BLINK_PLATFORM_EXPORT static void EnableAdTagging(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackgroundFetch(bool);
+  BLINK_PLATFORM_EXPORT static void EnableBatchFetchRequests(bool);
   BLINK_PLATFORM_EXPORT static void EnableBrowserVerifiedUserActivationKeyboard(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableBrowserVerifiedUserActivationMouse(
@@ -99,6 +100,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableDecodeJpeg420ImagesToYUV(bool);
   BLINK_PLATFORM_EXPORT static void EnableDecodeLossyWebPImagesToYUV(bool);
   BLINK_PLATFORM_EXPORT static void EnableDevicePosture(bool enable);
+  BLINK_PLATFORM_EXPORT static void EnableDocumentPictureInPictureAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemoveMobileViewportDoubleTap(
       bool enable);
   BLINK_PLATFORM_EXPORT static void EnableZeroCopyTabCapture(bool enable);
@@ -138,13 +140,11 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePermissionsAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnablePictureInPicture(bool);
   BLINK_PLATFORM_EXPORT static void EnablePictureInPictureAPI(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePictureInPictureV2(bool);
   BLINK_PLATFORM_EXPORT static void EnablePointerLockOptions(bool);
   BLINK_PLATFORM_EXPORT static void EnablePortals(bool);
   BLINK_PLATFORM_EXPORT static bool IsPortalsEnabled();
   BLINK_PLATFORM_EXPORT static void EnablePreciseMemoryInfo(bool);
   BLINK_PLATFORM_EXPORT static void EnablePrerender2(bool);
-  BLINK_PLATFORM_EXPORT static bool IsPrerender2Enabled();
   BLINK_PLATFORM_EXPORT static void EnablePrerender2RelatedFeatures(bool);
   BLINK_PLATFORM_EXPORT static void EnablePresentationAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnablePushMessaging(bool);
@@ -243,6 +243,9 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebAuthenticationRemoteDesktopSupport(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableWebHIDOnServiceWorkers(bool enable);
+  BLINK_PLATFORM_EXPORT static void EnableGetDisplayMediaSet(bool);
+  BLINK_PLATFORM_EXPORT static void
+  EnableGetDisplayMediaSetAutoSelectAllScreens(bool);
 
  private:
   WebRuntimeFeatures();

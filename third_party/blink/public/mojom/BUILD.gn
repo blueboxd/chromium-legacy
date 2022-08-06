@@ -33,7 +33,6 @@ mojom("mojom_platform") {
     "badging/badging.mojom",
     "browser_interface_broker.mojom",
     "browsing_topics/browsing_topics.mojom",
-    "buckets/bucket_manager_host.mojom",
     "cache_storage/cache_storage.mojom",
     "choosers/color_chooser.mojom",
     "choosers/date_time_chooser.mojom",
@@ -44,7 +43,7 @@ mojom("mojom_platform") {
     "clipboard/clipboard.mojom",
     "close_watcher/close_listener.mojom",
     "commit_result/commit_result.mojom",
-    "compute_pressure/compute_pressure.mojom",
+    "compute_pressure/pressure_service.mojom",
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
     "conversions/attribution_data_host.mojom",
@@ -98,6 +97,7 @@ mojom("mojom_platform") {
     "input/pointer_lock_context.mojom",
     "input/pointer_lock_result.mojom",
     "input/scroll_direction.mojom",
+    "input/stylus_writing_gesture.mojom",
     "input/touch_event.mojom",
     "interest_group/ad_auction_service.mojom",
     "interest_group/interest_group_types.mojom",
@@ -123,6 +123,7 @@ mojom("mojom_platform") {
     "manifest/capture_links.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
+    "manifest/manifest_launch_handler.mojom",
     "manifest/manifest_manager.mojom",
     "manifest/manifest_observer.mojom",
     "media/capture_handle_config.mojom",
@@ -164,6 +165,7 @@ mojom("mojom_platform") {
     "push_messaging/push_messaging_status.mojom",
     "quota/quota_manager_host.mojom",
     "quota/quota_types.mojom",
+    "render_accessibility.mojom",
     "renderer_preference_watcher.mojom",
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
@@ -179,6 +181,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_container_type.mojom",
     "service_worker/service_worker_error_type.mojom",
     "service_worker/service_worker_event_status.mojom",
+    "service_worker/service_worker_fetch_handler_type.mojom",
     "service_worker/service_worker_fetch_response_callback.mojom",
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_state.mojom",
@@ -266,6 +269,7 @@ mojom("mojom_platform") {
     "//third_party/blink/public/mojom/service_worker:storage",
     "//third_party/blink/public/mojom/tokens",
     "//third_party/blink/public/mojom/usb",
+    "//ui/accessibility/mojom",
     "//ui/base/cursor/mojom",
     "//ui/base/dragdrop/mojom",
     "//ui/base/ime/mojom",
@@ -286,6 +290,7 @@ mojom("mojom_platform") {
       "//services/network/public/mojom:cookies_mojom",
       "//services/network/public/mojom:mojom_network_param",
       "//services/network/public/mojom:mojom_schemeful_site",
+      "//ui/accessibility:ax_enums_mojo",
       "//ui/latency/mojom",
     ]
   } else {
@@ -1003,6 +1008,7 @@ mojom("mojom_core") {
     "frame/media_player_action.mojom",
     "frame/pending_beacon.mojom",
     "frame/policy_container.mojom",
+    "frame/remote_frame.mojom",
     "frame/reporting_observer.mojom",
     "frame/sudden_termination_disabler_type.mojom",
     "frame/text_autosizer_page_info.mojom",
@@ -1201,7 +1207,10 @@ mojom("mojom_core") {
 # to a type in renderer/modules. This also means these interfaces are not
 # available from renderer/platform or renderer/core.
 mojom("mojom_modules") {
-  sources = [ "indexeddb/indexeddb.mojom" ]
+  sources = [
+    "buckets/bucket_manager_host.mojom",
+    "indexeddb/indexeddb.mojom",
+  ]
 
   public_deps = [
     ":android_mojo_bindings",

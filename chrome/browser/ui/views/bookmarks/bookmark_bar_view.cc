@@ -306,9 +306,17 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
   BookmarkFolderButton(const BookmarkFolderButton&) = delete;
   BookmarkFolderButton& operator=(const BookmarkFolderButton&) = delete;
 
+  // Returns an accessible name for the folder. If the folder is unnamed, it
+  // will use a default, otherwise it will use the user-supplied folder name.
+  std::u16string GetAccessibleName() const {
+    return GetText().empty()
+               ? l10n_util::GetStringUTF16(IDS_UNNAMED_BOOKMARK_FOLDER)
+               : GetText();
+  }
+
   std::u16string GetTooltipText(const gfx::Point& p) const override {
     return label()->GetPreferredSize().width() > label()->size().width()
-               ? GetText()
+               ? GetAccessibleName()
                : std::u16string();
   }
 
@@ -325,6 +333,7 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     BookmarkMenuButtonBase::GetAccessibleNodeData(node_data);
+    node_data->SetName(GetAccessibleName());
     node_data->AddStringAttribute(
         ax::mojom::StringAttribute::kRoleDescription,
         l10n_util::GetStringUTF8(
@@ -592,11 +601,11 @@ MenuButton* BookmarkBarView::GetMenuButtonForNode(const BookmarkNode* node) {
     return overflow_button_;
   // TODO: add logic to handle saved groups node(crbug.com/1223929 and
   // crbug.com/1223919)
-  int index = bookmark_model_->bookmark_bar_node()->GetIndexOf(node);
-  if (index == -1 || !node->is_folder())
+  absl::optional<size_t> index =
+      bookmark_model_->bookmark_bar_node()->GetIndexOf(node);
+  if (!index.has_value() || !node->is_folder())
     return nullptr;
-  return static_cast<MenuButton*>(
-      bookmark_buttons_[static_cast<size_t>(index)]);
+  return static_cast<MenuButton*>(bookmark_buttons_[index.value()]);
 }
 
 void BookmarkBarView::GetAnchorPositionForButton(
@@ -1539,7 +1548,7 @@ std::unique_ptr<MenuButton> BookmarkBarView::CreateOverflowButton() {
 
 std::unique_ptr<views::View> BookmarkBarView::CreateBookmarkButton(
     const BookmarkNode* node) {
-  int index = node->parent()->GetIndexOf(node);
+  size_t index = node->parent()->GetIndexOf(node).value();
   std::unique_ptr<views::LabelButton> button;
   if (node->is_url()) {
     button = std::make_unique<BookmarkButton>(
@@ -1693,11 +1702,10 @@ void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
     // We only care about nodes on the bookmark bar.
     return;
   }
-  int index = model->bookmark_bar_node()->GetIndexOf(node);
-  DCHECK_NE(-1, index);
-  if (static_cast<size_t>(index) >= bookmark_buttons_.size())
+  size_t index = model->bookmark_bar_node()->GetIndexOf(node).value();
+  if (index >= bookmark_buttons_.size())
     return;  // Buttons are created as needed.
-  views::LabelButton* button = bookmark_buttons_[static_cast<size_t>(index)];
+  views::LabelButton* button = bookmark_buttons_[index];
   const int old_pref_width = button->GetPreferredSize().width();
   ConfigureButton(node, button);
   if (old_pref_width != button->GetPreferredSize().width())
@@ -1903,7 +1911,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
     parent_on_bb = parent;
   }
   if (parent_on_bb) {
-    size_t index = static_cast<size_t>(bbn->GetIndexOf(parent_on_bb));
+    size_t index = bbn->GetIndexOf(parent_on_bb).value();
     if (index >= GetFirstHiddenNodeIndex()) {
       // Node is hidden, animate the overflow button.
       throbbing_view_ = overflow_button_;
@@ -1930,7 +1938,7 @@ views::Button* BookmarkBarView::DetermineViewToThrobFromRemove(
   while (old_node && old_node != bbn) {
     const BookmarkNode* old_parent = old_node->parent();
     if (old_parent == bbn) {
-      old_index_on_bb = static_cast<size_t>(bbn->GetIndexOf(old_node));
+      old_index_on_bb = bbn->GetIndexOf(old_node).value();
       break;
     }
     old_node = old_parent;
@@ -2054,8 +2062,8 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(
   DCHECK_EQ(*i++, overflow_button_);
   DCHECK_EQ(*i++, other_bookmarks_button_);
 #endif
-  AddChildViewAt(std::move(bookmark_button), GetIndexOf(saved_tab_group_bar_) +
-                                                 1 + static_cast<int>(index));
+  AddChildViewAt(std::move(bookmark_button),
+                 GetIndexOf(saved_tab_group_bar_).value() + 1 + index);
 }
 
 size_t BookmarkBarView::GetIndexForButton(views::View* button) {

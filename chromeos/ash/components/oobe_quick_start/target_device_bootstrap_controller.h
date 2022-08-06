@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chromeos/ash/components/oobe_quick_start/connectivity/target_device_connection_broker.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace ash::quick_start {
 
@@ -23,13 +24,29 @@ class TargetDeviceBootstrapController
   TargetDeviceBootstrapController(TargetDeviceBootstrapController&) = delete;
   TargetDeviceBootstrapController& operator=(TargetDeviceBootstrapController&) =
       delete;
-  ~TargetDeviceBootstrapController();
+  ~TargetDeviceBootstrapController() override;
+
+  enum class Step {
+    NONE,
+    ERROR,
+    ADVERTISING,
+  };
+
+  enum class ErrorCode {
+    START_ADVERTISING_FAILED,
+  };
+
+  using Payload = absl::variant<absl::monostate, ErrorCode>;
 
   struct Status {
-    // TBD.
+    Status();
+    ~Status();
+    Step step = Step::NONE;
+    Payload payload;
   };
 
   class Observer : public base::CheckedObserver {
+   public:
     virtual void OnStatusChanged(const Status& status) = 0;
 
    protected:
@@ -47,14 +64,33 @@ class TargetDeviceBootstrapController
   void StartAdvertising();
   void StopAdvertising();
 
+  // TargetDeviceConnectionBroker::ConnectionLifecycleListener:
+  void OnIncomingConnectionInitiated(
+      const std::string& source_device_id,
+      base::WeakPtr<TargetDeviceConnectionBroker::IncomingConnection>
+          connection) override;
+  void OnConnectionAccepted(
+      const std::string& source_device_id,
+      base::WeakPtr<TargetDeviceConnectionBroker::AcceptedConnection>
+          connection) override;
+  void OnConnectionRejected(const std::string& source_device_id) override;
+  void OnConnectionClosed(const std::string& source_device_id) override;
+
  private:
+  void NotifyObservers();
+  void OnStartAdvertisingResult(bool success);
+  void OnStopAdvertising();
   std::unique_ptr<TargetDeviceConnectionBroker> connection_broker_;
 
   // TODO: Should we enforce one observer at a time here too?
   base::ObserverList<Observer> observers_;
 
+  Status status_;
+
   base::WeakPtrFactory<TargetDeviceBootstrapController>
       weak_ptr_factory_for_clients_{this};
+
+  base::WeakPtrFactory<TargetDeviceBootstrapController> weak_ptr_factory_{this};
 };
 
 }  // namespace ash::quick_start

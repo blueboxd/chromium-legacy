@@ -9,7 +9,6 @@
 
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -113,9 +113,9 @@ void PeripheralDataAccessHandler::HandleGetPolicyState(
                                      ? local_state_pref_name
                                      : cros_setting_pref_name;
 
-  base::Value response(base::Value::Type::DICTIONARY);
-  response.SetKey("prefName", base::Value(pref_name));
-  response.SetKey("isUserConfigurable", base::Value(is_user_configurable_));
+  base::Value::Dict response;
+  response.Set("prefName", pref_name);
+  response.Set("isUserConfigurable", is_user_configurable_);
   ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 

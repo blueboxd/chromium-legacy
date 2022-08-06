@@ -543,7 +543,7 @@ TEST_F(AppListControllerImplTest, MAYBE_CloseNotificationWithAppListShown) {
   const std::string notification_title("title");
   message_center::MessageCenter::Get()->AddNotification(
       std::make_unique<message_center::Notification>(
-          message_center::NOTIFICATION_TYPE_BASE_FORMAT, notification_id,
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           base::UTF8ToUTF16(notification_title), u"test message",
           ui::ImageModel(), std::u16string() /* display_source */, GURL(),
           message_center::NotifierId(), message_center::RichNotificationData(),
@@ -758,13 +758,8 @@ class AppListControllerImplTestWithNotificationBadging
     AppListControllerImpl* controller = Shell::Get()->app_list_controller();
     AccountId account_id = AccountId::FromUserEmail("test@gmail.com");
 
-    apps::mojom::App test_app;
-    test_app.app_id = app_id;
-    if (app_has_badge)
-      test_app.has_badge = apps::mojom::OptionalBool::kTrue;
-    else
-      test_app.has_badge = apps::mojom::OptionalBool::kFalse;
-
+    apps::App test_app(apps::AppType::kArc, app_id);
+    test_app.has_badge = app_has_badge;
     apps::AppUpdate test_update(nullptr, /*delta=*/&test_app, account_id);
     controller->badge_controller_for_test()->OnAppUpdate(test_update);
   }
@@ -791,6 +786,63 @@ TEST_F(AppListControllerImplTestWithNotificationBadging,
 
   UpdateAppHasBadge(app_id, /*app_has_badge=*/false);
   EXPECT_FALSE(item_view->IsNotificationIndicatorShownForTest());
+}
+
+TEST_F(AppListControllerImplTestWithNotificationBadging,
+       NotificationBadgeUpdateForFolderTest) {
+  std::string folder_id = "folder_1";
+  AppListModel* model = GetAppListModel();
+  model->CreateFolderItem(folder_id);
+  model->AddItemToFolder(std::make_unique<AppListItem>("app_1"), folder_id);
+  model->AddItemToFolder(std::make_unique<AppListItem>("app_2"), folder_id);
+
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
+
+  test::AppsGridViewTestApi apps_grid_view_test_api(GetAppsGridView());
+  const AppListItemView* folder_view =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 0));
+  ASSERT_TRUE(folder_view);
+
+  EXPECT_FALSE(folder_view->IsNotificationIndicatorShownForTest());
+
+  UpdateAppHasBadge("app_1", /*app_has_badge=*/true);
+  EXPECT_TRUE(folder_view->IsNotificationIndicatorShownForTest());
+
+  UpdateAppHasBadge("app_2", /*app_has_badge=*/true);
+  EXPECT_TRUE(folder_view->IsNotificationIndicatorShownForTest());
+
+  UpdateAppHasBadge("app_1", /*app_has_badge=*/false);
+  EXPECT_TRUE(folder_view->IsNotificationIndicatorShownForTest());
+
+  UpdateAppHasBadge("app_2", /*app_has_badge=*/false);
+  EXPECT_FALSE(folder_view->IsNotificationIndicatorShownForTest());
+}
+
+TEST_F(AppListControllerImplTestWithNotificationBadging,
+       NotificationBadgeUpdateAfterAddingRemovingAppTest) {
+  std::string folder_id = "folder_1";
+  AppListModel* model = GetAppListModel();
+  model->CreateFolderItem(folder_id);
+  AppListItem* app = model->AddItem(std::make_unique<AppListItem>("app_1"));
+  model->AddItemToFolder(std::make_unique<AppListItem>("app_2"), folder_id);
+
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
+
+  test::AppsGridViewTestApi apps_grid_view_test_api(GetAppsGridView());
+  const AppListItemView* folder_view =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 0));
+  ASSERT_TRUE(folder_view);
+
+  EXPECT_FALSE(folder_view->IsNotificationIndicatorShownForTest());
+
+  UpdateAppHasBadge("app_1", /*app_has_badge=*/true);
+  EXPECT_FALSE(folder_view->IsNotificationIndicatorShownForTest());
+
+  model->MoveItemToFolder(app, folder_id);
+  EXPECT_TRUE(folder_view->IsNotificationIndicatorShownForTest());
+
+  model->MoveItemToRootAt(app, model->FindFolderItem(folder_id)->position());
+  EXPECT_FALSE(folder_view->IsNotificationIndicatorShownForTest());
 }
 
 // Verifies that the pinned app should still show after canceling the drag from
@@ -1723,9 +1775,9 @@ class AppListControllerWithAssistantTest
 
     assistant_test_api_->SetAssistantEnabled(true);
     assistant_test_api_->GetAssistantState()->NotifyFeatureAllowed(
-        chromeos::assistant::AssistantAllowedState::ALLOWED);
+        assistant::AssistantAllowedState::ALLOWED);
     assistant_test_api_->GetAssistantState()->NotifyStatusChanged(
-        chromeos::assistant::AssistantStatus::READY);
+        assistant::AssistantStatus::READY);
     assistant_test_api_->WaitUntilIdle();
   }
 

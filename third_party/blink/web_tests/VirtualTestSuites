@@ -8,10 +8,10 @@
     ]
   },
   {
-    "prefix": "disable-accept-language-header",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/navigation/language"],
-    "args": ["--disable-features=AcceptLanguageHeader"]
+    "prefix": "pna-permission",
+    "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
+    "bases": ["external/wpt/fetch/private-network-access"],
+    "args": ["--enable-features=PrivateNetworkAccessPermissionPrompt"]
   },
   {
     "prefix": "gpu",
@@ -62,10 +62,10 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "conversions-debug-mode",
+    "prefix": "attribution-reporting-debug-mode",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/attribution-reporting"],
-    "args": ["--conversions-debug-mode"]
+    "args": ["--attribution-reporting-debug-mode"]
   },
   {
     "prefix": "composite-relative-keyframes",
@@ -270,14 +270,6 @@
     "args": ["--disable-features=SchemefulSameSite"]
   },
   {
-    "prefix": "layout_ng_table_frag",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/css/css-break/table",
-              "external/wpt/css/css-multicol/table",
-              "fragmentation"],
-    "args": ["--enable-blink-features=LayoutNGTableFragmentation"]
-  },
-  {
     "prefix": "layout_ng_printing",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["printing"],
@@ -337,7 +329,7 @@
     "prefix": "percent-based-scrolling",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["fast/scrolling/scrollbars"],
-    "args": ["--enable-features=PercentBasedScrolling",
+    "args": ["--enable-features=WindowsScrollingPersonality",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",
              "--disable-features=CompositorThreadedScrollbarScrolling"]
@@ -348,7 +340,7 @@
     "bases": ["fast/events/wheel",
               "fast/scrolling",
               "virtual/percent-based-scrolling"],
-    "args": ["--enable-features=PercentBasedScrolling"]
+    "args": ["--enable-features=WindowsScrollingPersonality"]
   },
   {
     "prefix": "compositor-threaded-percent-based-scrolling",
@@ -356,7 +348,7 @@
     "bases": ["fast/events/wheel",
               "fast/scrolling",
               "virtual/percent-based-scrolling"],
-    "args": ["--enable-features=PercentBasedScrolling",
+    "args": ["--enable-features=WindowsScrollingPersonality",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"]
   },
@@ -365,7 +357,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["fast/scrolling/scrollbars/dsf-ready",
               "virtual/percent-based-scrolling"],
-    "args": ["--enable-features=PercentBasedScrolling",
+    "args": ["--enable-features=WindowsScrollingPersonality",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",
              "--force-device-scale-factor=2"]
@@ -644,6 +636,16 @@
     "args": ["--enable-blink-features=CSSModules", "--js-flags=--harmony-import-assertions"]
   },
   {
+    "prefix": "css-trigonometric-functions-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/css/css-values/sin-cos-tan-serialize.html",
+      "external/wpt/css/css-values/sin-cos-tan-computed.html",
+      "external/wpt/css/css-values/sin-cos-tan-invalid.html"
+    ],
+    "args": ["--disable-blink-features=CSSTrigonometricFunctions"]
+  },
+  {
     "prefix": "import-assertions",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/import-assertions"],
@@ -826,6 +828,7 @@
     "prefix": "third-party-storage-partitioning",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "wpt_internal/file-system-api",
       "wpt_internal/storage/quota/partitioned-webkitTemporaryStorage-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
@@ -842,7 +845,8 @@
       "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html",
       "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html",
       "external/wpt/IndexedDB",
-      "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html"
+      "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html",
+      "fast/filesystem"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
   },
@@ -915,7 +919,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["fast/scrolling/scrollbars"],
     "args": ["--enable-features=ScrollUnification",
-             "--enable-features=PercentBasedScrolling",
+             "--enable-features=WindowsScrollingPersonality",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",
              "--disable-features=CompositorThreadedScrollbarScrolling"]
@@ -990,6 +994,7 @@
     "prefix": "force-renderer-accessibility",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["accessibility/accessibility-beforematch-marker-crash.html",
+              "accessibility/accessibility-node-appendChild-crash.html",
               "accessibility/details-summary-crash.html",
               "accessibility/slot-poison.html",
               "accessibility/virtual-node-child-removal.html",
@@ -999,22 +1004,9 @@
               "accessibility/virtual-node-removed-from-document.html",
               "accessibility/virtual-node-repair-document.html",
               "dom/legacy_dom_conformance/html/level2/core/createAttributeNS06.html",
-              "external/wpt/accessibility/crashtests/aria-hidden-with-select.html",
-              "external/wpt/accessibility/crashtests/aria-owns-destroyed-by-content-replacement.html",
-              "external/wpt/accessibility/crashtests/aria-owns-reparent.html",
-              "external/wpt/accessibility/crashtests/bdo-table-cell.html",
-              "external/wpt/accessibility/crashtests/content-visibility-generated-content-removal.html",
-              "external/wpt/accessibility/crashtests/included-descendant-dom-removal.html",
-              "external/wpt/accessibility/crashtests/included-descendant-layout-removal.html",
-              "external/wpt/accessibility/crashtests/img-map-pseudo.html",
-              "external/wpt/accessibility/crashtests/input-time-datalist.html",
-              "external/wpt/accessibility/crashtests/map-inside-map.html",
-              "external/wpt/accessibility/crashtests/map-inside-map-2.html",
-              "external/wpt/accessibility/crashtests/move-owned-inside-another-owned.html",
-              "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",
-              "external/wpt/accessibility/crashtests/validation-message.html",
-              "external/wpt/accessibility/crashtests/displaylocked-serialize.html",
+              "external/wpt/accessibility/",
               "external/wpt/dom/ranges/Range-deleteContents.html",
+              "external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-initially-empty-is-updated.html",
               "editing/text-iterator/auto-expand-details.html",
               "editing/text-iterator/auto-expand-details-shadowdom.html"],
     "args": ["--force-renderer-accessibility"]
@@ -1034,6 +1026,17 @@
     "args": ["--enable-features=DocumentTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
+  },
+  {
+    "prefix": "document-transition-wide-gamut",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/document-transition",
+              "document-transition",
+              "inspector-protocol/css/css-get-styles-for-document-transition.js"],
+    "args": ["--enable-features=DocumentTransition",
+             "--enable-threaded-compositing",
+             "--enable-gpu-rasterization",
+             "--force-color-profile=display-p3-d65"]
   },
   {
     "prefix": "popup-disabled",
@@ -1074,6 +1077,7 @@
       "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js",
       "http/tests/inspector-protocol/target/target-auction-worklet.js",
       "http/tests/inspector-protocol/timeline/auction-worklet.js",
+      "http/tests/inspector-protocol/timeline/auction-worklet-network.js",
       "http/tests/inspector-protocol/timeline/auction-worklet-frame.js",
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
@@ -1095,6 +1099,24 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
     "args": ["--enable-features=AutomaticLazyFrameLoadingToAds:timeout/1000"]
+  },
+  {
+    "prefix": "async-script-scheduling-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/async-script-scheduling"],
+    "args": ["--disable-features=DelayAsyncScriptExecution"]
+  },
+  {
+    "prefix": "async-script-scheduling-finished-parsing",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/async-script-scheduling"],
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_type/finished_parsing"]
+  },
+  {
+    "prefix": "async-script-scheduling-first-paint-or-finished-parsing",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/async-script-scheduling"],
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_type/first_paint_or_finished_parsing"]
   },
   {
     "prefix": "initially-invisible-images-lcp",
@@ -1123,7 +1145,8 @@
     "prefix": "shared-storage-fenced-frame-mparch",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "wpt_internal/shared_storage"
+      "wpt_internal/shared_storage",
+      "external/wpt/shared-storage"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride"]
   },
@@ -1131,7 +1154,8 @@
     "prefix": "shared-storage-fenced-frame-shadow-dom",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "wpt_internal/shared_storage"
+      "wpt_internal/shared_storage",
+      "external/wpt/shared-storage"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride"]
   },
@@ -1162,7 +1186,7 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies", "--force-renderer-accessibility"]
   },
   {
     "prefix": "disable-custom-element-default-style",
@@ -1175,12 +1199,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/api/cors/cors-preflight.any.js"],
     "args": ["--enable-features=CorsNonWildcardRequestHeadersSupport"]
-  },
-  {
-    "prefix": "enable-experimental-async-stack-tagging-api",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["inspector-protocol/runtime"],
-    "args": ["--js-flags=--experimental-async-stack-tagging-api"]
   },
   {
     "prefix": "system-color-picker-appearance",
@@ -1227,8 +1245,8 @@
     "prefix": "document-pip",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--enable-features=PictureInPictureV2",
-             "--enable-blink-features=PictureInPictureV2"]
+    "args": ["--enable-features=DocumentPictureInPictureAPI",
+             "--enable-blink-features=DocumentPictureInPictureAPI"]
   },
   {
     "prefix": "origin-agent-cluster-default",
@@ -1265,6 +1283,18 @@
     ]
   },
   {
+    "prefix": "force-defer-script",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/defer-script/"],
+    "args": ["--enable-features=ForceDeferScriptIntervention"]
+  },
+  {
+    "prefix": "force-in-order-script",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/in-order-script-scheduling"],
+    "args": ["--enable-features=ForceInOrderScript"]
+  },
+  {
     "prefix": "threaded-preload-scanner",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -1279,5 +1309,25 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "external/wpt/html/cross-origin-opener-policy/tentative/restrict-properties" ],
     "args": [ "--enable-features=CoopRestrictProperties" ]
+  },
+  {
+    "prefix": "prefetch",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/speculation-rules/prefetch",
+      "http/tests/inspector-protocol/prefetch"
+    ],
+    "args": [
+      "--enable-blink-features=SpeculationRulesPrefetchProxy",
+      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
+      "--bypass-prefetch-proxy-for-host=not-web-platform.test",
+      "--isolated-prerender-allow-all-domains"
+    ]
+  },
+  {
+    "prefix": "cookie-reject-domain-non-ascii",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "http/tests/inspector-protocol/issues/cookie-domain-non-ascii.js" ],
+    "args": ["--enable-features=CookieDomainRejectNonASCII"]
   }
 ]

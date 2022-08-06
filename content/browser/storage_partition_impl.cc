@@ -44,6 +44,7 @@
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
@@ -59,7 +60,6 @@
 #include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
-#include "content/browser/compute_pressure/compute_pressure_manager.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -67,7 +67,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/font_access/font_access_manager.h"
-#include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/gpu/gpu_disk_cache_factory.h"
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
@@ -79,6 +79,8 @@
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
+#include "content/browser/private_aggregation/private_aggregation_features.h"
+#include "content/browser/private_aggregation/private_aggregation_manager_impl.h"
 #include "content/browser/push_messaging/push_messaging_context.h"
 #include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -300,10 +302,10 @@ void PerformQuotaManagerStorageCleanup(
       quota_storage_type, std::move(quota_client_types), std::move(callback));
 }
 
-void ClearedShaderCache(base::OnceClosure callback) {
+void ClearedGpuCache(base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&ClearedShaderCache, std::move(callback)));
+        FROM_HERE, base::BindOnce(&ClearedGpuCache, std::move(callback)));
     return;
   }
   std::move(callback).Run();
@@ -312,7 +314,7 @@ void ClearedShaderCache(base::OnceClosure callback) {
 void OnLocalStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    StoragePartition::OriginMatcherFunction origin_matcher,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     bool perform_storage_cleanup,
     const base::Time delete_begin,
     const base::Time delete_end,
@@ -330,8 +332,9 @@ void OnLocalStorageUsageInfo(
   base::RepeatingClosure barrier =
       base::BarrierClosure(infos.size(), std::move(done_callback));
   for (const StorageUsageInfo& info : infos) {
-    if (origin_matcher &&
-        !origin_matcher.Run(info.origin, special_storage_policy.get())) {
+    if (storage_key_matcher &&
+        !storage_key_matcher.Run(blink::StorageKey(info.origin),
+                                 special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
@@ -351,7 +354,7 @@ void OnLocalStorageUsageInfo(
 void OnSessionStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    StoragePartition::OriginMatcherFunction origin_matcher,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     bool perform_storage_cleanup,
     base::OnceClosure callback,
     const std::vector<SessionStorageUsageInfo>& infos) {
@@ -368,11 +371,9 @@ void OnSessionStorageUsageInfo(
       base::BarrierClosure(infos.size(), std::move(done_callback));
 
   for (const SessionStorageUsageInfo& info : infos) {
-    if (origin_matcher &&
-        !origin_matcher.Run(
-            // TODO(https://crbug.com/1199077): Pass the real StorageKey
-            // when StoragePartitionImpl is converted.
-            info.storage_key.origin(), special_storage_policy.get())) {
+    if (storage_key_matcher &&
+        !storage_key_matcher.Run(info.storage_key,
+                                 special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
@@ -383,7 +384,7 @@ void OnSessionStorageUsageInfo(
 void ClearLocalStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    StoragePartition::OriginMatcherFunction origin_matcher,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     const blink::StorageKey& storage_key,
     bool perform_storage_cleanup,
     const base::Time begin,
@@ -393,8 +394,8 @@ void ClearLocalStorageOnUIThread(
 
   if (!storage_key.origin().opaque()) {
     bool can_delete =
-        !origin_matcher ||
-        origin_matcher.Run(storage_key.origin(), special_storage_policy.get());
+        !storage_key_matcher ||
+        storage_key_matcher.Run(storage_key, special_storage_policy.get());
     if (can_delete) {
       dom_storage_context->DeleteLocalStorage(storage_key, std::move(callback));
     } else {
@@ -405,21 +406,22 @@ void ClearLocalStorageOnUIThread(
 
   dom_storage_context->GetLocalStorageUsage(
       base::BindOnce(&OnLocalStorageUsageInfo, dom_storage_context,
-                     special_storage_policy, std::move(origin_matcher),
+                     special_storage_policy, std::move(storage_key_matcher),
                      perform_storage_cleanup, begin, end, std::move(callback)));
 }
 
 void ClearSessionStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    StoragePartition::OriginMatcherFunction origin_matcher,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     bool perform_storage_cleanup,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  dom_storage_context->GetSessionStorageUsage(base::BindOnce(
-      &OnSessionStorageUsageInfo, dom_storage_context, special_storage_policy,
-      std::move(origin_matcher), perform_storage_cleanup, std::move(callback)));
+  dom_storage_context->GetSessionStorageUsage(
+      base::BindOnce(&OnSessionStorageUsageInfo, dom_storage_context,
+                     special_storage_policy, std::move(storage_key_matcher),
+                     perform_storage_cleanup, std::move(callback)));
 }
 
 BrowserContext* GetBrowserContextFromStoragePartition(
@@ -722,38 +724,39 @@ void FinishGenerateNegotiateAuthToken(
 // surface to something simple and generic. It is designed to be used by
 // callsites in ClearDataImpl.
 //
-// Precondition: `matcher_func` and `storage_key`'s origin cannot both be set.
-// If both `matcher_func` and `storage_key`'s origin are null/empty, should
-// return a null callback that indicates all origins should match. This is an
-// optimization for backends to efficiently clear all data.
+// Precondition: `storage_key_matcher` and `storage_key` cannot both be set.
+// If both `storage_key_matcher` and `storage_key` are null/empty, this should
+// return a null callback that indicates all StorageKeys should match. This is
+// an optimization for backends to efficiently clear all data.
 //
 // TODO(csharrison, mek): Right now, the only storage backend that uses this is
 // is for conversion measurement. We should consider moving some of the
 // backends to use this if they can, and additionally we should consider
 // rethinking this approach if / when storage backends move out of process
 // (see crbug.com/1016065 for initial work here).
-base::RepeatingCallback<bool(const url::Origin&)> CreateGenericOriginMatcher(
+StoragePartition::StorageKeyMatcherFunction CreateGenericStorageKeyMatcher(
     const blink::StorageKey& storage_key,
-    StoragePartition::OriginMatcherFunction matcher_func,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     scoped_refptr<storage::SpecialStoragePolicy> policy) {
   const bool storage_key_origin_empty = storage_key.origin().opaque();
-  DCHECK(storage_key_origin_empty || matcher_func.is_null());
+  DCHECK(storage_key_origin_empty || storage_key_matcher.is_null());
 
-  if (storage_key_origin_empty && matcher_func.is_null())
+  if (storage_key_origin_empty && storage_key_matcher.is_null())
     return base::NullCallback();
 
-  if (matcher_func) {
+  if (storage_key_matcher) {
     return base::BindRepeating(
-        [](StoragePartition::OriginMatcherFunction matcher_func,
+        [](StoragePartition::StorageKeyPolicyMatcherFunction
+               storage_key_matcher,
            scoped_refptr<storage::SpecialStoragePolicy> policy,
-           const url::Origin& origin) -> bool {
-          return matcher_func.Run(origin, policy.get());
+           const blink::StorageKey& storage_key) -> bool {
+          return storage_key_matcher.Run(storage_key, policy.get());
         },
-        std::move(matcher_func), std::move(policy));
+        std::move(storage_key_matcher), std::move(policy));
   }
   DCHECK(!storage_key_origin_empty);
-  return base::BindRepeating(std::equal_to<const url::Origin&>(),
-                             storage_key.origin());
+  return base::BindRepeating(std::equal_to<const blink::StorageKey&>(),
+                             storage_key);
 }
 
 void ClearPluginPrivateDataOnFileTaskRunner(
@@ -782,9 +785,8 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     : public network::SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForBrowserProcess(
-      StoragePartitionImpl* storage_partition,
-      bool corb_enabled)
-      : storage_partition_(storage_partition), corb_enabled_(corb_enabled) {}
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
 
   URLLoaderFactoryForBrowserProcess(const URLLoaderFactoryForBrowserProcess&) =
       delete;
@@ -804,8 +806,7 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!storage_partition_)
       return;
-    storage_partition_
-        ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
+    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()
         ->CreateLoaderAndStart(std::move(receiver), request_id, options,
                                url_request, std::move(client),
                                traffic_annotation);
@@ -815,9 +816,8 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
       override {
     if (!storage_partition_)
       return;
-    storage_partition_
-        ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
-        ->Clone(std::move(receiver));
+    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()->Clone(
+        std::move(receiver));
   }
 
   // SharedURLLoaderFactory implementation:
@@ -834,7 +834,6 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
   ~URLLoaderFactoryForBrowserProcess() override = default;
 
   raw_ptr<StoragePartitionImpl> storage_partition_;
-  const bool corb_enabled_;
 };
 
 // Static.
@@ -913,14 +912,14 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       const base::Time end,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
-      StoragePartition::OriginMatcherFunction origin_matcher,
+      StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
       bool perform_storage_cleanup);
 
   void ClearBucketsOnIOThread(
       storage::QuotaManager* quota_manager,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
-      StoragePartition::OriginMatcherFunction origin_matcher,
+      StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
       bool perform_storage_cleanup,
       base::OnceClosure callback,
       const std::set<storage::BucketLocator>& buckets,
@@ -961,7 +960,7 @@ class StoragePartitionImpl::DataDeletionHelper {
 
   void ClearDataOnUIThread(
       const blink::StorageKey& storage_key,
-      OriginMatcherFunction origin_matcher,
+      StorageKeyPolicyMatcherFunction storage_key_matcher,
       CookieDeletionFilterPtr cookie_deletion_filter,
       const base::FilePath& path,
       DOMStorageContextWrapper* dom_storage_context,
@@ -971,7 +970,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       network::mojom::CookieManager* cookie_manager,
       InterestGroupManagerImpl* interest_group_manager,
       AttributionManager* attribution_manager,
-      AggregationServiceImpl* aggregation_service,
+      AggregationService* aggregation_service,
       storage::SharedStorageManager* shared_storage_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
@@ -984,7 +983,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       const blink::StorageKey& storage_key,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
-      StoragePartition::OriginMatcherFunction origin_matcher,
+      StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
       bool perform_storage_cleanup,
       base::OnceClosure callback);
 
@@ -998,12 +997,13 @@ class StoragePartitionImpl::DataDeletionHelper {
     kQuota = 3,
     kLocalStorage = 4,
     kSessionStorage = 5,
-    kShaderCache = 6,
+    kShaderCache = 6,  // Deprecated in favor of using kGpuCache.
     kPluginPrivate = 7,
     kConversions = 8,
     kAggregationService = 9,
     kSharedStorage = 10,
-    kMaxValue = kSharedStorage,
+    kGpuCache = 11,
+    kMaxValue = kGpuCache,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
@@ -1030,7 +1030,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
     const base::Time end,
     const blink::StorageKey& storage_key,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    StoragePartition::OriginMatcherFunction origin_matcher,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     bool perform_storage_cleanup,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1042,7 +1042,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
                                         : absl::make_optional(storage_key),
           std::move(callback));
   helper->ClearDataOnIOThread(quota_manager, begin, end, special_storage_policy,
-                              std::move(origin_matcher),
+                              std::move(storage_key_matcher),
                               perform_storage_cleanup);
 }
 
@@ -1105,9 +1105,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_->Shutdown();
-  }
-  if (shared_url_loader_factory_for_browser_process_with_corb_) {
-    shared_url_loader_factory_for_browser_process_with_corb_->Shutdown();
   }
 
   scoped_refptr<storage::DatabaseTracker> database_tracker(
@@ -1300,8 +1297,8 @@ void StoragePartitionImpl::Initialize(
           ? fallback_for_blob_urls->GetBlobUrlRegistry()->AsWeakPtr()
           : nullptr);
 
-  blob_registry_ = BlobRegistryWrapper::Create(
-      blob_context, filesystem_context_, blob_url_registry_->AsWeakPtr());
+  blob_registry_ = BlobRegistryWrapper::Create(blob_context,
+                                               blob_url_registry_->AsWeakPtr());
 
   prefetch_url_loader_service_ =
       std::make_unique<PrefetchURLLoaderService>(browser_context_);
@@ -1314,7 +1311,7 @@ void StoragePartitionImpl::Initialize(
   // behavior when restoring the state fails.
   cookie_store_manager_->LoadAllSubscriptions(base::DoNothing());
 
-  bucket_manager_ = std::make_unique<BucketManager>(quota_manager_proxy);
+  bucket_manager_ = std::make_unique<BucketManager>(this);
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory() &&
@@ -1369,7 +1366,6 @@ void StoragePartitionImpl::Initialize(
   }
 
   font_access_manager_ = FontAccessManager::Create();
-  compute_pressure_manager_ = ComputePressureManager::Create();
 
   if (base::FeatureList::IsEnabled(kPrivacySandboxAggregationService)) {
     aggregation_service_ =
@@ -1388,6 +1384,12 @@ void StoragePartitionImpl::Initialize(
                        : path.Append(storage::kSharedStoragePath);
     shared_storage_manager_ = std::make_unique<storage::SharedStorageManager>(
         shared_storage_path, special_storage_policy_);
+  }
+
+  if (base::FeatureList::IsEnabled(kPrivateAggregationApi)) {
+    private_aggregation_manager_ =
+        std::make_unique<PrivateAggregationManagerImpl>(is_in_memory(), path,
+                                                        this);
   }
 }
 
@@ -1424,19 +1426,9 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   DCHECK(initialized_);
   if (!shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_ =
-        new URLLoaderFactoryForBrowserProcess(this, false /* corb_enabled */);
+        new URLLoaderFactoryForBrowserProcess(this);
   }
   return shared_url_loader_factory_for_browser_process_;
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() {
-  DCHECK(initialized_);
-  if (!shared_url_loader_factory_for_browser_process_with_corb_) {
-    shared_url_loader_factory_for_browser_process_with_corb_ =
-        new URLLoaderFactoryForBrowserProcess(this, true /* corb_enabled */);
-  }
-  return shared_url_loader_factory_for_browser_process_with_corb_;
 }
 
 std::unique_ptr<network::PendingSharedURLLoaderFactory>
@@ -1478,17 +1470,22 @@ void StoragePartitionImpl::CreateRestrictedCookieManager(
   }
 }
 
-void StoragePartitionImpl::CreateHasTrustTokensAnswerer(
-    mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
+void StoragePartitionImpl::CreateTrustTokenQueryAnswerer(
+    mojo::PendingReceiver<network::mojom::TrustTokenQueryAnswerer> receiver,
     const url::Origin& top_frame_origin) {
   DCHECK(initialized_);
-  GetNetworkContext()->GetHasTrustTokensAnswerer(std::move(receiver),
-                                                 top_frame_origin);
+  GetNetworkContext()->GetTrustTokenQueryAnswerer(std::move(receiver),
+                                                  top_frame_origin);
 }
 
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
   DCHECK(initialized_);
   return quota_manager_.get();
+}
+
+storage::QuotaManagerProxy* StoragePartitionImpl::GetQuotaManagerProxy() {
+  DCHECK(initialized_);
+  return quota_manager_->proxy();
 }
 
 BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
@@ -1687,11 +1684,6 @@ StoragePartitionImpl::GetBrowsingTopicsSiteDataManager() {
   return browsing_topics_site_data_manager_.get();
 }
 
-ComputePressureManager* StoragePartitionImpl::GetComputePressureManager() {
-  DCHECK(initialized_);
-  return compute_pressure_manager_.get();
-}
-
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
   DCHECK(initialized_);
   return content_index_context_.get();
@@ -1702,7 +1694,7 @@ NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
   return native_io_context_.get();
 }
 
-AggregationServiceImpl* StoragePartitionImpl::GetAggregationService() {
+AggregationService* StoragePartitionImpl::GetAggregationService() {
   DCHECK(initialized_);
   return aggregation_service_.get();
 }
@@ -1730,6 +1722,12 @@ StoragePartitionImpl::GetProtoDatabaseProviderForTesting() {
 
 storage::SharedStorageManager* StoragePartitionImpl::GetSharedStorageManager() {
   return shared_storage_manager_.get();
+}
+
+PrivateAggregationManagerImpl*
+StoragePartitionImpl::GetPrivateAggregationManager() {
+  DCHECK(initialized_);
+  return private_aggregation_manager_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(
@@ -2174,18 +2172,20 @@ void StoragePartitionImpl::ClearDataImpl(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,
     const blink::StorageKey& storage_key,
-    OriginMatcherFunction origin_matcher,
+    StorageKeyPolicyMatcherFunction storage_key_matcher,
     CookieDeletionFilterPtr cookie_deletion_filter,
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(storage_key.origin().opaque() || storage_key_matcher.is_null());
 
   for (auto& observer : data_removal_observers_) {
-    auto filter = CreateGenericOriginMatcher(storage_key, origin_matcher,
-                                             special_storage_policy_);
-    observer.OnOriginDataCleared(remove_mask, std::move(filter), begin, end);
+    auto filter = CreateGenericStorageKeyMatcher(
+        storage_key, storage_key_matcher, special_storage_policy_);
+    observer.OnStorageKeyDataCleared(remove_mask, std::move(filter), begin,
+                                     end);
   }
 
   DataDeletionHelper* helper = new DataDeletionHelper(
@@ -2196,12 +2196,13 @@ void StoragePartitionImpl::ClearDataImpl(
   // DataDeletionHelper::DecrementTaskCount().
   deletion_helpers_running_++;
   helper->ClearDataOnUIThread(
-      storage_key, std::move(origin_matcher), std::move(cookie_deletion_filter),
-      GetPath(), dom_storage_context_.get(), quota_manager_.get(),
-      special_storage_policy_.get(), filesystem_context_.get(),
-      GetCookieManagerForBrowserProcess(), interest_group_manager_.get(),
-      attribution_manager_.get(), aggregation_service_.get(),
-      shared_storage_manager_.get(), perform_storage_cleanup, begin, end);
+      storage_key, std::move(storage_key_matcher),
+      std::move(cookie_deletion_filter), GetPath(), dom_storage_context_.get(),
+      quota_manager_.get(), special_storage_policy_.get(),
+      filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
+      interest_group_manager_.get(), attribution_manager_.get(),
+      aggregation_service_.get(), shared_storage_manager_.get(),
+      perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -2236,7 +2237,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     const base::Time begin,
     const base::Time end,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    StoragePartition::OriginMatcherFunction origin_matcher,
+    StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     bool perform_storage_cleanup) {
   IncrementTaskCountOnIO();
   base::RepeatingClosure decrement_callback = base::BindRepeating(
@@ -2252,7 +2253,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         blink::mojom::StorageType::kPersistent, begin, end,
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearBucketsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, origin_matcher,
+                       special_storage_policy, storage_key_matcher,
                        perform_storage_cleanup, decrement_callback));
   }
 
@@ -2263,7 +2264,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         blink::mojom::StorageType::kTemporary, begin, end,
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearBucketsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, origin_matcher,
+                       special_storage_policy, storage_key_matcher,
                        perform_storage_cleanup, decrement_callback));
   }
 
@@ -2274,7 +2275,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         blink::mojom::StorageType::kSyncable, begin, end,
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearBucketsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, std::move(origin_matcher),
+                       special_storage_policy, std::move(storage_key_matcher),
                        perform_storage_cleanup, decrement_callback));
   }
 
@@ -2286,7 +2287,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
         storage::QuotaManager* quota_manager,
         const scoped_refptr<storage::SpecialStoragePolicy>&
             special_storage_policy,
-        StoragePartition::OriginMatcherFunction origin_matcher,
+        StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
         bool perform_storage_cleanup,
         base::OnceClosure callback,
         const std::set<storage::BucketLocator>& buckets,
@@ -2320,8 +2321,9 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
     if (storage_key_.has_value() && bucket.storage_key != *storage_key_)
       continue;
 
-    if (origin_matcher && !origin_matcher.Run(bucket.storage_key.origin(),
-                                              special_storage_policy.get())) {
+    if (storage_key_matcher &&
+        !storage_key_matcher.Run(bucket.storage_key,
+                                 special_storage_policy.get())) {
       continue;
     }
 
@@ -2391,7 +2393,7 @@ void StoragePartitionImpl::DataDeletionHelper::RecordUnfinishedSubTasks() {
 
 void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const blink::StorageKey& storage_key,
-    OriginMatcherFunction origin_matcher,
+    StorageKeyPolicyMatcherFunction storage_key_matcher,
     CookieDeletionFilterPtr cookie_deletion_filter,
     const base::FilePath& path,
     DOMStorageContextWrapper* dom_storage_context,
@@ -2401,7 +2403,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     network::mojom::CookieManager* cookie_manager,
     InterestGroupManagerImpl* interest_group_manager,
     AttributionManager* attribution_manager,
-    AggregationServiceImpl* aggregation_service,
+    AggregationService* aggregation_service,
     storage::SharedStorageManager* shared_storage_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
@@ -2409,9 +2411,9 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   DCHECK_NE(remove_mask_, 0u);
   DCHECK(callback_);
 
-  // Only one of `storage_key`'s origin and `origin_matcher` can be set.
+  // Only one of `storage_key`'s origin and `storage_key_matcher` can be set.
   const bool storage_key_origin_empty = storage_key.origin().opaque();
-  DCHECK(storage_key_origin_empty || origin_matcher.is_null());
+  DCHECK(storage_key_origin_empty || storage_key_matcher.is_null());
 
   GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE,
@@ -2451,8 +2453,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   if (remove_mask_ & REMOVE_DATA_MASK_INTEREST_GROUPS) {
     if (interest_group_manager) {
       interest_group_manager->DeleteInterestGroupData(
-          CreateGenericOriginMatcher(storage_key, origin_matcher,
-                                     storage_policy_ref));
+          CreateGenericStorageKeyMatcher(storage_key, storage_key_matcher,
+                                         storage_policy_ref));
     }
   }
 
@@ -2472,7 +2474,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         base::BindOnce(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
                        base::Unretained(this),
                        base::WrapRefCounted(quota_manager), begin, end,
-                       storage_key, storage_policy_ref, origin_matcher,
+                       storage_key, storage_policy_ref, storage_key_matcher,
                        perform_storage_cleanup,
                        CreateTaskCompletionClosure(TracingDataType::kQuota)));
   }
@@ -2480,7 +2482,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   if (remove_mask_ & REMOVE_DATA_MASK_LOCAL_STORAGE) {
     ClearLocalStorageOnUIThread(
         base::WrapRefCounted(dom_storage_context), storage_policy_ref,
-        origin_matcher, storage_key, perform_storage_cleanup, begin, end,
+        storage_key_matcher, storage_key, perform_storage_cleanup, begin, end,
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             CreateTaskCompletionClosure(TracingDataType::kLocalStorage)));
 
@@ -2492,28 +2494,27 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       // callback. Figure out why.
       ClearSessionStorageOnUIThread(
           base::WrapRefCounted(dom_storage_context), storage_policy_ref,
-          origin_matcher, perform_storage_cleanup,
+          storage_key_matcher, perform_storage_cleanup,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               CreateTaskCompletionClosure(TracingDataType::kSessionStorage)));
     }
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
-    gpu::ShaderCacheFactory* shader_cache_factory =
-        GetShaderCacheFactorySingleton();
+    gpu::GpuDiskCacheFactory* gpu_cache_factory =
+        GetGpuDiskCacheFactorySingleton();
     // May be null in tests where it is difficult to plumb through a test
     // storage partition.
-    if (shader_cache_factory) {
-      shader_cache_factory->ClearByPath(
+    if (gpu_cache_factory) {
+      gpu_cache_factory->ClearByPath(
           path, begin, end,
-          base::BindOnce(
-              &ClearedShaderCache,
-              CreateTaskCompletionClosure(TracingDataType::kShaderCache)));
+          base::BindOnce(&ClearedGpuCache, CreateTaskCompletionClosure(
+                                               TracingDataType::kGpuCache)));
     }
   }
 
-  auto filter = CreateGenericOriginMatcher(storage_key, origin_matcher,
-                                           storage_policy_ref);
+  auto filter = CreateGenericStorageKeyMatcher(storage_key, storage_key_matcher,
+                                               storage_policy_ref);
 
   // It is not expected to only delete internal attribution reporting data.
   DCHECK(!(remove_mask_ & REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_INTERNAL) ||
@@ -2536,7 +2537,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     // TODO(crbug.com/1286173): Consider adding aggregation service origins to
     // `CookiesTreeModel`.
     aggregation_service->ClearData(
-        begin, end,
+        begin, end, filter,
         CreateTaskCompletionClosure(TracingDataType::kAggregationService));
   }
 
@@ -2564,8 +2565,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         CreateTaskCompletionClosure(TracingDataType::kSharedStorage));
 
     shared_storage_manager->PurgeMatchingOrigins(
-        origin_matcher, begin, end, std::move(shared_storage_purge_callback),
-        perform_storage_cleanup);
+        storage_key_matcher, begin, end,
+        std::move(shared_storage_purge_callback), perform_storage_cleanup);
   }
 }
 
@@ -2581,8 +2582,8 @@ void StoragePartitionImpl::ClearDataForOrigin(
     deletion_filter->host_name = storage_origin.host();
   ClearDataImpl(remove_mask, quota_storage_remove_mask,
                 blink::StorageKey(url::Origin::Create(storage_origin)),
-                OriginMatcherFunction(), std::move(deletion_filter), false,
-                base::Time(), base::Time::Max(), std::move(callback));
+                StorageKeyPolicyMatcherFunction(), std::move(deletion_filter),
+                false, base::Time(), base::Time::Max(), std::move(callback));
 }
 
 void StoragePartitionImpl::ClearData(uint32_t remove_mask,
@@ -2598,14 +2599,14 @@ void StoragePartitionImpl::ClearData(uint32_t remove_mask,
   bool perform_storage_cleanup =
       begin.is_null() && end.is_max() && storage_key.origin().opaque();
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_key,
-                OriginMatcherFunction(), std::move(deletion_filter),
+                StorageKeyPolicyMatcherFunction(), std::move(deletion_filter),
                 perform_storage_cleanup, begin, end, std::move(callback));
 }
 
 void StoragePartitionImpl::ClearData(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,
-    OriginMatcherFunction origin_matcher,
+    StorageKeyPolicyMatcherFunction storage_key_matcher,
     network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
     bool perform_storage_cleanup,
     const base::Time begin,
@@ -2613,8 +2614,9 @@ void StoragePartitionImpl::ClearData(
     base::OnceClosure callback) {
   DCHECK(initialized_);
   ClearDataImpl(remove_mask, quota_storage_remove_mask, blink::StorageKey(),
-                std::move(origin_matcher), std::move(cookie_deletion_filter),
-                perform_storage_cleanup, begin, end, std::move(callback));
+                std::move(storage_key_matcher),
+                std::move(cookie_deletion_filter), perform_storage_cleanup,
+                begin, end, std::move(callback));
 }
 
 void StoragePartitionImpl::ClearCodeCaches(
@@ -2639,7 +2641,6 @@ void StoragePartitionImpl::ResetURLLoaderFactories() {
   DCHECK(initialized_);
   GetNetworkContext()->ResetURLLoaderFactories();
   url_loader_factory_for_browser_process_.reset();
-  url_loader_factory_for_browser_process_with_corb_.reset();
   url_loader_factory_getter_->Initialize(this);
 }
 
@@ -2676,8 +2677,6 @@ void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
   network_context_.FlushForTesting();
   if (url_loader_factory_for_browser_process_)
     url_loader_factory_for_browser_process_.FlushForTesting();
-  if (url_loader_factory_for_browser_process_with_corb_)
-    url_loader_factory_for_browser_process_with_corb_.FlushForTesting();
   if (cookie_manager_for_browser_process_)
     cookie_manager_for_browser_process_.FlushForTesting();
 }
@@ -2813,7 +2812,7 @@ void StoragePartitionImpl::OverrideSharedStorageWorkletHostManagerForTesting(
 }
 
 void StoragePartitionImpl::OverrideAggregationServiceForTesting(
-    std::unique_ptr<AggregationServiceImpl> aggregation_service) {
+    std::unique_ptr<AggregationService> aggregation_service) {
   DCHECK(initialized_);
   aggregation_service_ = std::move(aggregation_service);
 }
@@ -2897,50 +2896,43 @@ void StoragePartitionImpl::InitNetworkContext() {
 }
 
 network::mojom::URLLoaderFactory*
-StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
-    bool corb_enabled) {
-  auto& url_loader_factory =
-      corb_enabled ? url_loader_factory_for_browser_process_with_corb_
-                   : url_loader_factory_for_browser_process_;
-  auto& is_test_url_loader_factory =
-      corb_enabled ? is_test_url_loader_factory_for_browser_process_with_corb_
-                   : is_test_url_loader_factory_for_browser_process_;
-
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   // Create the URLLoaderFactory as needed, but make sure not to reuse a
   // previously created one if the test override has changed.
-  if (url_loader_factory && url_loader_factory.is_connected() &&
-      is_test_url_loader_factory != !GetCreateURLLoaderFactoryCallback()) {
-    return url_loader_factory.get();
+  if (url_loader_factory_for_browser_process_ &&
+      url_loader_factory_for_browser_process_.is_connected() &&
+      is_test_url_loader_factory_for_browser_process_ !=
+          !GetCreateURLLoaderFactoryCallback()) {
+    return url_loader_factory_for_browser_process_.get();
   }
 
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->automatically_assign_isolation_info = true;
-  params->is_corb_enabled = corb_enabled;
-  // Corb requests are likely made on behalf of untrusted renderers.
-  if (!corb_enabled)
-    params->is_trusted = true;
+  params->is_corb_enabled = false;
+  params->is_trusted = true;
   params->url_loader_network_observer =
       CreateAuthCertObserverForServiceWorker();
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
-  url_loader_factory.reset();
+  url_loader_factory_for_browser_process_.reset();
   if (!GetCreateURLLoaderFactoryCallback()) {
     GetNetworkContext()->CreateURLLoaderFactory(
-        url_loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
-    is_test_url_loader_factory = false;
-    return url_loader_factory.get();
+        url_loader_factory_for_browser_process_.BindNewPipeAndPassReceiver(),
+        std::move(params));
+    is_test_url_loader_factory_for_browser_process_ = false;
+    return url_loader_factory_for_browser_process_.get();
   }
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
   GetNetworkContext()->CreateURLLoaderFactory(
       original_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
-  url_loader_factory.Bind(
+  url_loader_factory_for_browser_process_.Bind(
       GetCreateURLLoaderFactoryCallback().Run(std::move(original_factory)));
-  is_test_url_loader_factory = true;
-  return url_loader_factory.get();
+  is_test_url_loader_factory_for_browser_process_ = true;
+  return url_loader_factory_for_browser_process_.get();
 }
 
 void StoragePartition::SetDefaultQuotaSettingsForTesting(

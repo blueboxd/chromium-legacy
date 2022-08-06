@@ -6,23 +6,25 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/url_matcher/url_matcher.h"
 #include "url/gurl.h"
 
 namespace enterprise_connectors {
 
-ConnectorsManager::ConnectorsManager(PrefService* pref_service,
-                                     const ServiceProviderConfig* config,
-                                     bool observe_prefs)
-    : service_provider_config_(config) {
+ConnectorsManager::ConnectorsManager(
+    ExtensionInstallEventRouter extension_install_event_router,
+    PrefService* pref_service,
+    const ServiceProviderConfig* config,
+    bool observe_prefs)
+    : service_provider_config_(config),
+      extension_install_event_router_(
+          std::move(extension_install_event_router)) {
   if (observe_prefs)
     StartObservingPrefs(pref_service);
+  extension_install_event_router_.StartObserving();
 }
 
 ConnectorsManager::~ConnectorsManager() = default;
@@ -88,6 +90,30 @@ absl::optional<AnalysisSettings> ConnectorsManager::GetAnalysisSettings(
   // first one is considered for now.
   return analysis_connector_settings_[connector][0].GetAnalysisSettings(url);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+absl::optional<AnalysisSettings> ConnectorsManager::GetAnalysisSettings(
+    content::BrowserContext* context,
+    const storage::FileSystemURL& source_url,
+    const storage::FileSystemURL& destination_url,
+    AnalysisConnector connector) {
+  if (!IsConnectorEnabled(connector))
+    return absl::nullopt;
+
+  if (analysis_connector_settings_.count(connector) == 0)
+    CacheAnalysisConnectorPolicy(connector);
+
+  // If the connector is still not in memory, it means the pref is set to an
+  // empty list or that it is not a list.
+  if (analysis_connector_settings_.count(connector) == 0)
+    return absl::nullopt;
+
+  // While multiple services can be set by the connector policies, only the
+  // first one is considered for now.
+  return analysis_connector_settings_[connector][0].GetAnalysisSettings(
+      context, source_url, destination_url);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 absl::optional<AnalysisSettings>
 ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
@@ -242,7 +268,7 @@ absl::optional<GURL> ConnectorsManager::GetLearnMoreUrl(
   return absl::nullopt;
 }
 
-absl::optional<bool> ConnectorsManager::GetBypassJustificationRequired(
+bool ConnectorsManager::GetBypassJustificationRequired(
     AnalysisConnector connector,
     const std::string& tag) {
   if (IsConnectorEnabled(connector)) {
@@ -256,7 +282,7 @@ absl::optional<bool> ConnectorsManager::GetBypassJustificationRequired(
           .GetBypassJustificationRequired(tag);
     }
   }
-  return absl::nullopt;
+  return false;
 }
 
 std::vector<std::string> ConnectorsManager::GetAnalysisServiceProviderNames(
@@ -305,6 +331,9 @@ void ConnectorsManager::StartObservingPrefs(PrefService* pref_service) {
   StartObservingPref(AnalysisConnector::FILE_DOWNLOADED);
   StartObservingPref(AnalysisConnector::BULK_DATA_ENTRY);
   StartObservingPref(AnalysisConnector::PRINT);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  StartObservingPref(AnalysisConnector::FILE_TRANSFER);
+#endif
   StartObservingPref(ReportingConnector::SECURITY_EVENT);
   StartObservingPref(FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
 }

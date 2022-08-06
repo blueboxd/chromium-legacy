@@ -12,27 +12,72 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 class GURL;
 class PrefService;
 
 class PrefRegistrySimple;
 
+namespace base {
+class Value;
+}
+
 namespace bookmarks {
 class BookmarkModel;
 }  // namespace bookmarks
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace optimization_guide {
 class NewOptimizationGuideDecider;
 class OptimizationMetadata;
 }  // namespace optimization_guide
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace commerce {
+
+extern const char kOgTitle[];
+extern const char kOgImage[];
+extern const char kOgPriceCurrency[];
+extern const char kOgPriceAmount[];
+
+// The conversion multiplier to go from standard currency units to
+// micro-currency units.
+extern const long kToMicroCurrency;
+
+extern const char kImageAvailabilityHistogramName[];
+
+// The availability of the product image for an offer. This needs to be kept in
+// sync with the ProductImageAvailability enum in enums.xml.
+enum class ProductImageAvailability {
+  kServerOnly = 0,
+  kLocalOnly = 1,
+  kBothAvailable = 2,
+  kNeitherAvailable = 3,
+  kMaxValue = kNeitherAvailable,
+};
+
+// The type of fallback data can be used when generating product info.
+enum class ProductInfoFallback {
+  kTitle = 0,
+  kLeadImage = 1,
+  kFallbackImage = 2,
+  kPrice = 3,
+  kMaxValue = kPrice,
+};
 
 class ShoppingBookmarkModelObserver;
 class SubscriptionsManager;
@@ -41,6 +86,7 @@ struct CommerceSubscription;
 
 // Information returned by the product info APIs.
 struct ProductInfo {
+ public:
   ProductInfo();
   ProductInfo(const ProductInfo&);
   ProductInfo& operator=(const ProductInfo&);
@@ -48,11 +94,20 @@ struct ProductInfo {
 
   std::string title;
   GURL image_url;
-  uint64_t product_cluster_id;
-  uint64_t offer_id;
+  uint64_t product_cluster_id{0};
+  uint64_t offer_id{0};
   std::string currency_code;
-  long amount_micros;
+  long amount_micros{0};
   std::string country_code;
+
+ private:
+  friend class ShoppingService;
+
+  // This is used to track whether the server provided an image with the rest
+  // of the product info. This value being |true| does not necessarily mean an
+  // image is available in the ProductInfo struct (as it is flag gated) and is
+  // primarily used for recording metrics.
+  bool server_image_available{false};
 };
 
 // Information returned by the merchant info APIs.
@@ -82,9 +137,12 @@ using MerchantInfoCallback =
 
 class ShoppingService : public KeyedService, public base::SupportsUserData {
  public:
-  ShoppingService(bookmarks::BookmarkModel* bookmark_model,
-                  optimization_guide::NewOptimizationGuideDecider* opt_guide,
-                  PrefService* pref_service);
+  ShoppingService(
+      bookmarks::BookmarkModel* bookmark_model,
+      optimization_guide::NewOptimizationGuideDecider* opt_guide,
+      PrefService* pref_service,
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ShoppingService() override;
 
   ShoppingService(const ShoppingService&) = delete;
@@ -92,19 +150,36 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  void GetProductInfoForUrl(const GURL& url, ProductInfoCallback callback);
+  // This API retrieves the product information for the provided |url| and
+  // passes the payload back to the caller via |callback|. At minimum, this
+  // API will wait for data from the backend but may provide a "partial" result
+  // that doesn't include information from the page on-device.
+  virtual void GetProductInfoForUrl(const GURL& url,
+                                    ProductInfoCallback callback);
 
-  void GetMerchantInfoForUrl(const GURL& url, MerchantInfoCallback callback);
+  // This API returns whatever product information is currently available for
+  // the specified |url|. This method is less reliable than GetProductInfoForUrl
+  // above as it may return an empty or partial result prior to the page being
+  // processed or information being available from the backend.
+  virtual absl::optional<ProductInfo> GetAvailableProductInfoForUrl(
+      const GURL& url);
+
+  // This API fetches information about a merchant for the provided |url| and
+  // passes the payload back to the caller via |callback|. Call will run after
+  // the fetch is completed. The merchant info object will be null if there is
+  // none available.
+  virtual void GetMerchantInfoForUrl(const GURL& url,
+                                     MerchantInfoCallback callback);
 
   // Create new subscriptions in batch if needed, and will notify |callback| if
   // the operation completes successfully.
-  void Subscribe(
+  virtual void Subscribe(
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback);
 
   // Delete existing subscriptions in batch if needed, and will notify
   // |callback| if the operation completes successfully.
-  void Unsubscribe(
+  virtual void Unsubscribe(
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback);
 
@@ -125,13 +200,12 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // Typically corresponds to a user closing a tab.
   void WebWrapperDestroyed(WebWrapper* web);
 
- private:
-  // Allow tests to access private methods.
-  friend class ShoppingServiceTestBase;
-
   // A notification that a web wrapper finished a navigation in the primary
   // main frame.
   void DidNavigatePrimaryMainFrame(WebWrapper* web);
+
+  // Handle main frame navigation for the product info API.
+  void HandleDidNavigatePrimaryMainFrameForProductInfo(WebWrapper* web);
 
   // A notification that the user navigated away from the |from_url|.
   void DidNavigateAway(WebWrapper* web, const GURL& from_url);
@@ -139,6 +213,9 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // A notification that the provided web wrapper has finished loading its main
   // frame.
   void DidFinishLoad(WebWrapper* web);
+
+  // Perform any logic associated with page load for the product info API.
+  void HandleDidFinishLoadForProductInfo(WebWrapper* web);
 
   // Whether APIs like |GetProductInfoForURL| are enabled and allowed to be
   // used.
@@ -164,6 +241,21 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       ProductInfoCallback callback,
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& metadata);
+
+  // Handle the result of running the javascript fallback for product info.
+  void OnProductInfoJavascriptResult(const GURL url, base::Value result);
+
+  // Handle the result of JSON parsing obtained from running javascript on the
+  // product info page.
+  void OnProductInfoJsonSanitizationCompleted(
+      const GURL url,
+      data_decoder::DataDecoder::ValueOrError result);
+
+  // Merge shopping data from existing |info| and the result of on-page
+  // heuristics -- a JSON object holding key -> value pairs (a map) stored in
+  // |on_page_data_map|. The merged data is written to |info|.
+  static void MergeProductInfoData(ProductInfo* info,
+                                   const base::Value::Dict& on_page_data_map);
 
   void HandleOptGuideMerchantInfoResponse(
       const GURL& url,
@@ -205,6 +297,9 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       product_info_cache_;
 
   std::unique_ptr<SubscriptionsManager> subscriptions_manager_;
+
+  // Ensure certain functions are being executed on the same thread.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ShoppingService> weak_ptr_factory_;
 };

@@ -135,8 +135,7 @@ testcase.tabindexFocusDirectorySelected = async () => {
   await remoteCall.callRemoteTestUtil('foregroundFake', appId, [fakeData]);
 
   // Select the directory named 'photos'.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']));
+  await remoteCall.waitUntilSelected(appId, 'photos');
 
   await Promise.all([
 
@@ -201,7 +200,7 @@ async function tabindexFocus(
     expectedTabOrder) {
   await Promise.all([
     addEntries(['local'], BASIC_LOCAL_ENTRY_SET),
-    addEntries(['drive'], BASIC_DRIVE_ENTRY_SET)
+    addEntries(['drive'], BASIC_DRIVE_ENTRY_SET),
   ]);
 
   const selectAndCheckAndClose = async (appId) => {
@@ -243,13 +242,20 @@ async function tabindexFocus(
  */
 testcase.tabindexOpenDialogDownloads = async () => {
   const tabindexIds = [
-    'cancel-button', 'ok-button', 'directory-tree',
-    /* first breadcrumb */ 'first', 'search-button', 'view-button',
-    'sort-button', 'gear-button', 'dismiss-button', 'file-list'
+    'cancel-button',
+    'ok-button',
+    'directory-tree',
+    /* first breadcrumb */ 'first',
+    'search-button',
+    'view-button',
+    'sort-button',
+    'gear-button',
+    'dismiss-button',
+    'file-list',
   ];
   return tabindexFocus(
       {type: 'openFile'}, 'downloads', BASIC_LOCAL_ENTRY_SET, async (appId) => {
-        await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
+        await remoteCall.waitUntilSelected(appId, 'hello.txt');
         await remoteCall.isolateBannerForTesting(
             appId, 'holding-space-welcome-banner');
       }, ['#ok-button:not([disabled])'], tabindexIds);
@@ -261,13 +267,20 @@ testcase.tabindexOpenDialogDownloads = async () => {
  */
 testcase.tabindexOpenDialogDrive = async () => {
   const tabindexIds = [
-    'cancel-button', 'ok-button', 'search-button', 'view-button', 'sort-button',
-    'gear-button', 'drive-learn-more-button', 'dismiss-button',
-    'directory-tree', 'file-list'
+    'cancel-button',
+    'ok-button',
+    'search-button',
+    'view-button',
+    'sort-button',
+    'gear-button',
+    'drive-learn-more-button',
+    'dismiss-button',
+    'directory-tree',
+    'file-list',
   ];
   return tabindexFocus(
       {type: 'openFile'}, 'drive', BASIC_DRIVE_ENTRY_SET, async (appId) => {
-        await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
+        await remoteCall.waitUntilSelected(appId, 'hello.txt');
         await remoteCall.isolateBannerForTesting(appId, 'drive-welcome-banner');
       }, ['#ok-button:not([disabled])'], tabindexIds);
 };
@@ -279,14 +292,21 @@ testcase.tabindexSaveFileDialogDownloads = async () => {
   return tabindexFocus(
       {
         type: 'saveFile',
-        suggestedName: 'hoge.txt'  // Prevent showing a override prompt
+        suggestedName: 'hoge.txt',  // Prevent showing a override prompt
       },
       'downloads', BASIC_LOCAL_ENTRY_SET, null, ['#ok-button:not([disabled])'],
       [
-        'cancel-button', 'ok-button', 'directory-tree',
-        /* first breadcrumb */ 'first', 'search-button', 'view-button',
-        'sort-button', 'gear-button', 'file-list', 'new-folder-button',
-        'filename-input-textbox'
+        'cancel-button',
+        'ok-button',
+        'directory-tree',
+        /* first breadcrumb */ 'first',
+        'search-button',
+        'view-button',
+        'sort-button',
+        'gear-button',
+        'file-list',
+        'new-folder-button',
+        'filename-input-textbox',
       ]);
 };
 
@@ -298,11 +318,18 @@ testcase.tabindexSaveFileDialogDrive = async () => {
   return tabindexFocus(
       {
         type: 'saveFile',
-        suggestedName: 'hoge.txt'  // Prevent showing a override prompt
+        suggestedName: 'hoge.txt',  // Prevent showing a override prompt
       },
       'drive', BASIC_DRIVE_ENTRY_SET, null, ['#ok-button:not([disabled])'], [
-        'cancel-button', 'ok-button', 'directory-tree', 'search-button',
-        'view-button', 'sort-button', 'gear-button', 'file-list',
-        'new-folder-button', 'filename-input-textbox'
+        'cancel-button',
+        'ok-button',
+        'directory-tree',
+        'search-button',
+        'view-button',
+        'sort-button',
+        'gear-button',
+        'file-list',
+        'new-folder-button',
+        'filename-input-textbox',
       ]);
 };

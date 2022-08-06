@@ -11,10 +11,10 @@ export type RemoveVisitsRequest = Array<{
   timestamps: number[],
 }>;
 
-export type QueryResult = {
-  info: HistoryQuery,
-  value: HistoryEntry[],
-};
+export interface QueryResult {
+  info: HistoryQuery;
+  value: HistoryEntry[];
+}
 
 /**
  * @fileoverview Defines a singleton object, history.BrowserService, which
@@ -38,7 +38,7 @@ export interface BrowserService {
   otherDevicesInitialized(): void;
   queryHistoryContinuation(): Promise<QueryResult>;
   queryHistory(searchTerm: string): Promise<QueryResult>;
-  startSignInFlow(): void;
+  startTurnOnSyncFlow(): void;
 }
 
 export class BrowserServiceImpl implements BrowserService {
@@ -65,8 +65,14 @@ export class BrowserServiceImpl implements BrowserService {
   openForeignSessionTab(
       sessionTag: string, windowId: number, tabId: number, e: MouseEvent) {
     chrome.send('openForeignSession', [
-      sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey,
-      e.ctrlKey, e.metaKey, e.shiftKey
+      sessionTag,
+      String(windowId),
+      String(tabId),
+      e.button || 0,
+      e.altKey,
+      e.ctrlKey,
+      e.metaKey,
+      e.shiftKey,
     ]);
   }
 
@@ -122,8 +128,8 @@ export class BrowserServiceImpl implements BrowserService {
     return sendWithPromise('queryHistory', searchTerm, RESULTS_PER_PAGE);
   }
 
-  startSignInFlow() {
-    chrome.send('startSignInFlow');
+  startTurnOnSyncFlow() {
+    chrome.send('startTurnOnSyncFlow');
   }
 
   static getInstance(): BrowserService {

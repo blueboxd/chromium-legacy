@@ -2760,6 +2760,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_TRY_AGAIN_BUTTON" desc="Default text for Try Again button used to retry an action.">
         Try again
       </message>
+      <message name="IDS_SHIMLESS_RMA_DONE_BUTTON" desc="Default text for Done button when action is completed for closing a dialog.">
+        Done
+      </message>
       <!-- Exit dialog -->
       <message name="IDS_SHIMLESS_RMA_EXIT_DIALOG_TITLE" translateable="false" desc="Title for the exit dialog.">
         Exit repair?
@@ -2774,22 +2777,22 @@ Try tapping the mic to ask me anything.
         Confirm
       </message>
       <!-- Landing page -->
-      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" desc="Title for the landing page at the start of RMA.">
+      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" translateable="false" desc="Title for the landing page at the start of RMA.">
         <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> repair
       </message>
-      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" desc="Warning that RMA is only for qualified technicians.">
+      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" translateable="false" desc="Warning that RMA is only for qualified technicians.">
         This repair process is intended for a trained repair technician. Start only after replacing the malfunctioning components.
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" desc="Checking that device components are approved for this device.">
+      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" translateable="false" desc="Checking that device components are approved for this device.">
         Validating components...
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" desc="Successfully checked that device components are approved for this device.">
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" translateable="false" desc="Successfully checked that device components are approved for this device.">
         Components are installed correctly.
       </message>
       <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" desc="Validation check found that device components are NOT approved for this device.">
         <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> detected. If you choose to confirm this has been installed, please do so now.
       </message>
-      <message name="IDS_SHIMLESS_RMA_GET_STARTED_BUTTON_LABEL" desc="The label for the button to start the RMA process.">
+      <message name="IDS_SHIMLESS_RMA_GET_STARTED_BUTTON_LABEL" translateable="false" desc="The label for the button to start the RMA process.">
         Get started
       </message>
       <message name="IDS_SHIMLESS_RMA_UNQUALIFIED_COMPONENTS_TITLE" desc="The title for the dialog showing the list of components unqualfiied by ChromeOS.">
@@ -3010,6 +3013,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_SHUTDOWN_BUTTON" desc="Label for the button in the battery cutoff countdown dialog that shuts down the device and cuts off the battery immediately">
         Shut down
       </message>
+      <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_SUCCESS" desc="The text telling the user that saving the logs to a external USB was successful and showing them the saved file location.">
+        Saved to "<ph name="FILE_LOCATION">$1<ex>/USB/Home/MyFiles</ex></ph>"
+      </message>
+      <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_FAIL" desc="The text telling the user that saving the logs to a external USB failed. The expectation would be for the user to try a different external storage device.">
+        File couldn't be saved. Try plugging in a different external storage, or try again later.
+      </message>
       <!-- Powerwash dialog -->
       <message name="IDS_SHIMLESS_RMA_POWERWASH_DIALOG_TITLE" desc="Title for the powerwash dialog displayed on the repair complete page and on the restock page">
         Powerwash (factory reset) required
@@ -3120,8 +3129,11 @@ Try tapping the mic to ask me anything.
         DRAM part number
       </message>
       <!-- RO firmware reimaging page -->
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_TITLE" desc="The title for the page when reimaging is in progress.">
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_INSTALL_IMAGE_TITLE" desc="The title for the page when the device firmware is expected to be installed.">
         Install firmware image
+      </message>
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_INSTALL_COMPLETE_TITLE" desc="The title for the page when the device firmware installation is complete.">
+        Install complete
       </message>
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_WAIT_FOR_USB" desc="The prompt to insert a thumb drive with the recovery image for this device.">
         Insert external storage, such as a USB drive or an SD card, with the downloaded Chromebook Recovery Utility image
@@ -3403,6 +3415,15 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_FEEDBACK_HELP_LINK_LABEL" desc="The text used for the link that navigates to the feedback help webpage.">
         Tips on writing feedback
       </message>
+      <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_OFFLINE_MESSAGE" desc="The text shown when the suggested help content is unavailable because the user is offline.">
+        Device is offline. Connect to Wi-Fi network to see help content.
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_OFFLINE_ALT_TEXT" desc="The alt text for the illustration shown when the suggested help content is unavailable because the user is offline.">
+        Device is offline
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_LABEL_TOOLTIP" desc="The tooltip text shown next to the suggested help content label.">
+        Suggestions are based on your description
+      </message>
       <!-- Share Data Page -->
       <message name="IDS_FEEDBACK_TOOL_BACK_BUTTON_LABEL" desc="label for the back button to return to a prior page">
         Back
@@ -3416,10 +3437,16 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL" desc="Label for replacing a file.">
         Replace
       </message>
+      <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_ARIA_LABEL" desc="Aria Label of the replace file button">
+        Replace file
+      </message>
       <message name="IDS_FEEDBACK_TOOL_ADD_FILE_LABEL" desc="Label for the field of adding a file">
         Add file
       </message>
-      <message name="IDS_FEEDBACK_TOOL_FILE_TOO_BIG_ERROR_MESSAGE" translateable="false" desc="Error message when the upload file is larger than 10MB.">
+      <message name="IDS_FEEDBACK_TOOL_ATTACH_FILE_CHECKBOX_ARIA_LABEL" desc="Aria Label of the checkbox to select the picked file">
+        Attach file
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_FILE_TOO_BIG_ERROR_MESSAGE" desc="Error message when the upload file is larger than 10MB.">
         Can't upload file larger than 10 MB
       </message>
       <message name="IDS_FEEDBACK_TOOL_INCLUDE_SYSTEM_INFO_AND_METRICS_CHECKBOX_LABEL" desc="Checkbox for including system information and metrics on the bug report dialog box">
@@ -3430,6 +3457,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported.">
         Email
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_USER_EMAIL_ARIA_LABEL" desc="Aria Label of the e-mail dropdown listing e-mail addresses to be selected to report.">
+        Select email
       </message>
       <message name="IDS_FEEDBACK_TOOL_SEND_BUTTON_LABEL" desc="label for the send button to send feedback.">
         Send
@@ -3446,8 +3476,14 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_SCREENSHOT_LABEL" desc="Label for the screenshot field">
         Screenshot
       </message>
+      <message name="IDS_FEEDBACK_TOOL_ATTACH_SCREENSHOT_CHECKBOX_ARIA_LABEL" desc="Aria Label for the checkbox to select the screenshot">
+        Attach screenshot
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_PREVIEW_IMAGE_ARIA_LABEL" desc="Aria Label for the thumbnail of a screenshot or an image file">
+        Preview <ph name="PREVIEW_OBJECT">$1<ex>Screenshot</ex></ph>
+      </message>
       <message name="IDS_FEEDBACK_TOOL_USER_CONSENT_LABEL" desc="Label for checkbox indicating whether the user agrees to be contacted back.">
-        We may email you for more information or updates
+        Allow Google to email you about this issue
       </message>
       <!-- Confirmation Page -->
       <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE_AFTER_SENT" desc="Label showing a thank you message as the title of the confirmation page after a report has been sent.">

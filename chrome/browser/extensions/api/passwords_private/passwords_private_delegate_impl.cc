@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -177,7 +178,9 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
               base::BindRepeating(&PasswordsPrivateDelegateImpl::
                                       OnAccountStorageOptInStateChanged,
                                   base::Unretained(this)))),
-      password_check_delegate_(profile, &saved_passwords_presenter_),
+      password_check_delegate_(profile,
+                               &saved_passwords_presenter_,
+                               &credential_id_generator_),
       current_entries_initialized_(false),
       is_initialized_(false),
       web_contents_(nullptr) {
@@ -256,31 +259,23 @@ bool PasswordsPrivateDelegateImpl::AddPassword(
   return success;
 }
 
-absl::optional<api::passwords_private::CredentialIds>
-PasswordsPrivateDelegateImpl::ChangeSavedPassword(
-    const std::vector<int>& ids,
+absl::optional<int> PasswordsPrivateDelegateImpl::ChangeSavedPassword(
+    int id,
     const api::passwords_private::ChangeSavedPasswordParams& params) {
-  DCHECK(!ids.empty());
-  DCHECK_LE(ids.size(), 2u);
-  // It may have 2 elements but only if it's the same password in two stores. In
-  // this case updating only one of them is enough as
-  // |saved_passwords_presenter_| will update both of them anyway.
-  const CredentialUIEntry* entry = credential_id_generator_.TryGetKey(ids[0]);
-  if (!entry)
+  const CredentialUIEntry* original_credential =
+      credential_id_generator_.TryGetKey(id);
+  if (!original_credential)
     return absl::nullopt;
 
-  CredentialUIEntry to_edit = *entry;
-  to_edit.username = base::UTF8ToUTF16(params.username);
-  to_edit.password = base::UTF8ToUTF16(params.password);
+  CredentialUIEntry updated_credential = *original_credential;
+  updated_credential.username = base::UTF8ToUTF16(params.username);
+  updated_credential.password = base::UTF8ToUTF16(params.password);
   if (params.note) {
-    to_edit.note = password_manager::PasswordNote(
+    updated_credential.note = password_manager::PasswordNote(
         base::UTF8ToUTF16(*params.note), base::Time::Now());
   }
-  // Collect the credentials that will be edited before executing the edit
-  // process.
-  auto forms_to_edit =
-      saved_passwords_presenter_.GetCorrespondingPasswordForms(entry->key());
-  switch (saved_passwords_presenter_.EditSavedCredentials(to_edit)) {
+  switch (saved_passwords_presenter_.EditSavedCredentials(*original_credential,
+                                                          updated_credential)) {
     case password_manager::SavedPasswordsPresenter::EditResult::kSuccess:
     case password_manager::SavedPasswordsPresenter::EditResult::kNothingChanged:
       break;
@@ -289,23 +284,8 @@ PasswordsPrivateDelegateImpl::ChangeSavedPassword(
     case password_manager::SavedPasswordsPresenter::EditResult::kEmptyPassword:
       return absl::nullopt;
   }
-  api::passwords_private::CredentialIds new_ids;
-  for (auto& form : forms_to_edit) {
-    // Calculate the new IDs using the new username and password.
-    form.username_value = to_edit.username;
-    form.password_value = to_edit.password;
 
-    auto new_id = std::make_unique<int>(
-        credential_id_generator_.GenerateId(CredentialUIEntry(form)));
-
-    if (form.IsUsingProfileStore()) {
-      new_ids.device_id = std::move(new_id);
-    }
-    if (form.IsUsingAccountStore()) {
-      new_ids.account_id = std::move(new_id);
-    }
-  }
-  return new_ids;
+  return credential_id_generator_.GenerateId(updated_credential);
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPassword(
@@ -405,47 +385,34 @@ void PasswordsPrivateDelegateImpl::SetCredentials(
   current_exceptions_.clear();
 
   for (const CredentialUIEntry& credential : credentials) {
-    // TODO(crbug.com/1201643): A separate entity should be created for every
-    // store where the credential is stored. This can be removed when the UI
-    // will support the new model.
-
     int id = credential_id_generator_.GenerateId(credential);
-    for (const password_manager::PasswordForm::Store& store :
-         credential.stored_in) {
-      if (credential.blocked_by_user) {
-        api::passwords_private::ExceptionEntry current_exception_entry;
-        current_exception_entry.urls =
-            CreateUrlCollectionFromCredential(credential);
-        current_exception_entry.id = id;
-        current_exception_entry.frontend_id = id;
+    if (credential.blocked_by_user) {
+      api::passwords_private::ExceptionEntry current_exception_entry;
+      current_exception_entry.urls =
+          CreateUrlCollectionFromCredential(credential);
+      current_exception_entry.id = id;
+      current_exceptions_.push_back(std::move(current_exception_entry));
+    } else {
+      api::passwords_private::PasswordUiEntry entry;
+      entry.urls = CreateUrlCollectionFromCredential(credential);
+      entry.username = base::UTF16ToUTF8(credential.username);
+      entry.note = base::UTF16ToUTF8(credential.note.value);
+      entry.id = id;
+      entry.stored_in = StoreSetFromCredential(credential);
+      entry.is_android_credential =
+          password_manager::IsValidAndroidFacetURI(credential.signon_realm);
+      if (!credential.federation_origin.opaque()) {
+        std::u16string formatted_origin =
+            url_formatter::FormatOriginForSecurityDisplay(
+                credential.federation_origin,
+                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
-        current_exception_entry.from_account_store =
-            store == password_manager::PasswordForm::Store::kAccountStore;
-        current_exceptions_.push_back(std::move(current_exception_entry));
-      } else {
-        api::passwords_private::PasswordUiEntry entry;
-        entry.urls = CreateUrlCollectionFromCredential(credential);
-        entry.username = base::UTF16ToUTF8(credential.username);
-        entry.password_note = base::UTF16ToUTF8(credential.note.value);
-        entry.id = id;
-        entry.frontend_id = id;
-
-        if (!credential.federation_origin.opaque()) {
-          std::u16string formatted_origin =
-              url_formatter::FormatOriginForSecurityDisplay(
-                  credential.federation_origin,
-                  url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-
-          entry.federation_text =
-              std::make_unique<std::string>(l10n_util::GetStringFUTF8(
-                  IDS_PASSWORDS_VIA_FEDERATION, formatted_origin));
-        }
-
-        entry.from_account_store =
-            store == password_manager::PasswordForm::Store::kAccountStore;
-
-        current_entries_.push_back(std::move(entry));
+        entry.federation_text =
+            std::make_unique<std::string>(l10n_util::GetStringFUTF8(
+                IDS_PASSWORDS_VIA_FEDERATION, formatted_origin));
       }
+
+      current_entries_.push_back(std::move(entry));
     }
   }
 
@@ -491,7 +458,7 @@ void PasswordsPrivateDelegateImpl::MovePasswordsToAccount(
     }
 
     std::vector<password_manager::PasswordForm> corresponding_forms =
-        saved_passwords_presenter_.GetCorrespondingPasswordForms(entry->key());
+        saved_passwords_presenter_.GetCorrespondingPasswordForms(*entry);
     if (corresponding_forms.empty()) {
       continue;
     }
@@ -561,56 +528,28 @@ void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
       signin_metrics::ReauthAccessPoint::kPasswordSettings, base::DoNothing());
 }
 
-std::vector<api::passwords_private::InsecureCredential>
+std::vector<api::passwords_private::PasswordUiEntry>
 PasswordsPrivateDelegateImpl::GetCompromisedCredentials() {
   return password_check_delegate_.GetCompromisedCredentials();
 }
 
-std::vector<api::passwords_private::InsecureCredential>
+std::vector<api::passwords_private::PasswordUiEntry>
 PasswordsPrivateDelegateImpl::GetWeakCredentials() {
   return password_check_delegate_.GetWeakCredentials();
 }
 
-void PasswordsPrivateDelegateImpl::GetPlaintextInsecurePassword(
-    api::passwords_private::InsecureCredential credential,
-    api::passwords_private::PlaintextReason reason,
-    content::WebContents* web_contents,
-    PlaintextInsecurePasswordCallback callback) {
-  // TODO(crbug.com/495290): Pass the native window directly to the
-  // reauth-handling code.
-  web_contents_ = web_contents;
-  password_access_authenticator_.EnsureUserIsAuthenticated(
-      GetReauthPurpose(reason),
-      base::BindOnce(&PasswordsPrivateDelegateImpl::
-                         OnGetPlaintextInsecurePasswordAuthResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(credential),
-                     reason, std::move(callback)));
-}
-
-bool PasswordsPrivateDelegateImpl::ChangeInsecureCredential(
-    const api::passwords_private::InsecureCredential& credential,
-    base::StringPiece new_password) {
-  return password_check_delegate_.ChangeInsecureCredential(credential,
-                                                           new_password);
-}
-
-bool PasswordsPrivateDelegateImpl::RemoveInsecureCredential(
-    const api::passwords_private::InsecureCredential& credential) {
-  return password_check_delegate_.RemoveInsecureCredential(credential);
-}
-
 bool PasswordsPrivateDelegateImpl::MuteInsecureCredential(
-    const api::passwords_private::InsecureCredential& credential) {
+    const api::passwords_private::PasswordUiEntry& credential) {
   return password_check_delegate_.MuteInsecureCredential(credential);
 }
 
 bool PasswordsPrivateDelegateImpl::UnmuteInsecureCredential(
-    const api::passwords_private::InsecureCredential& credential) {
+    const api::passwords_private::PasswordUiEntry& credential) {
   return password_check_delegate_.UnmuteInsecureCredential(credential);
 }
 
 void PasswordsPrivateDelegateImpl::RecordChangePasswordFlowStarted(
-    const api::passwords_private::InsecureCredential& credential,
+    const api::passwords_private::PasswordUiEntry& credential,
     bool is_manual_flow) {
   password_check_delegate_.RecordChangePasswordFlowStarted(credential,
                                                            is_manual_flow);
@@ -636,7 +575,7 @@ PasswordsPrivateDelegateImpl::GetPasswordCheckStatus() {
 }
 
 void PasswordsPrivateDelegateImpl::StartAutomatedPasswordChange(
-    const api::passwords_private::InsecureCredential& credential,
+    const api::passwords_private::PasswordUiEntry& credential,
     StartAutomatedPasswordChangeCallback callback) {
   if (!credential.change_password_url) {
     std::move(callback).Run(false);
@@ -739,20 +678,6 @@ void PasswordsPrivateDelegateImpl::OnExportPasswordsAuthResult(
   bool accepted = password_manager_porter_->Export(web_contents);
   std::move(accepted_callback)
       .Run(accepted ? std::string() : kExportInProgress);
-}
-
-void PasswordsPrivateDelegateImpl::OnGetPlaintextInsecurePasswordAuthResult(
-    api::passwords_private::InsecureCredential credential,
-    api::passwords_private::PlaintextReason reason,
-    PlaintextInsecurePasswordCallback callback,
-    bool authenticated) {
-  if (!authenticated) {
-    std::move(callback).Run(absl::nullopt);
-    return;
-  }
-
-  std::move(callback).Run(password_check_delegate_.GetPlaintextInsecurePassword(
-      std::move(credential)));
 }
 
 void PasswordsPrivateDelegateImpl::OnAccountStorageOptInStateChanged() {

@@ -18,7 +18,7 @@ import '../../people_page/sync_controls.js';
 import '../../people_page/sync_page.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './account_manager.js';
 import './fingerprint_list.js';
 import './lock_screen.js';
@@ -26,7 +26,7 @@ import './lock_screen_password_prompt_dialog.js';
 import './users_page.js';
 import './os_sync_controls.js';
 
-import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.js';
+import {convertImageSequenceToPng} from 'chrome://resources/ash/common/cr_picture/png.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
@@ -60,8 +60,11 @@ import {LockStateBehavior, LockStateBehaviorInterface} from './lock_state_behavi
  */
 const OsSettingsPeoplePageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, RouteObserverBehavior, I18nBehavior,
-      WebUIListenerBehavior, LockStateBehavior
+      DeepLinkingBehavior,
+      RouteObserverBehavior,
+      I18nBehavior,
+      WebUIListenerBehavior,
+      LockStateBehavior,
     ],
     PolymerElement);
 

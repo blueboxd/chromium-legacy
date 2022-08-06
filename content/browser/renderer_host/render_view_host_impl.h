@@ -124,7 +124,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       RenderViewHostDelegate* delegate,
       int32_t routing_id,
       int32_t main_frame_routing_id,
-      bool swapped_out,
       bool has_initialized_audio_host,
       scoped_refptr<BrowsingContextState> main_browsing_context_state);
 
@@ -190,13 +189,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   // blink::Page's main blink::Frame is remote).
   RenderFrameHostImpl* GetMainRenderFrameHost();
 
-  // // RenderViewHost is associated with a given SiteInstanceGroup and as
+  // RenderViewHost is associated with a given SiteInstanceGroup and as
   // BrowsingContextState in non-legacy BrowsingContextState mode is tied to a
   // given BrowsingInstance, so the main BrowsingContextState stays the same
   // during the entire lifetime of a RenderViewHost: cross-SiteInstanceGroup
   // same-BrowsingInstance navigations might change the representation of the
-  // main frame in a given RenderView from RenderFrame to RenderFrameProxy and
-  // back, while cross-BrowsingInstances result in creating a new unrelated
+  // main frame in a given RenderView from RenderFrame to `blink::RemoteFrame`
+  // and back, while cross-BrowsingInstances result in creating a new unrelated
   // RenderViewHost. This is not true in the legacy BCS mode, so there the
   // |main_browsing_context_state_| is null.
   const absl::optional<base::SafeRef<BrowsingContextState>>&

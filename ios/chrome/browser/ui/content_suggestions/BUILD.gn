@@ -2,6 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("start_suggest") {
+  sources = [
+    "start_suggest_service_factory.h",
+    "start_suggest_service_factory.mm",
+    "start_suggest_service_response_bridge.h",
+    "start_suggest_service_response_bridge.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/prefs",
+    "//components/search:start_suggest",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/autocomplete",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/search_engines",
+    "//services/network/public/cpp",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("content_suggestions") {
   sources = [
     "content_suggestions_category_wrapper.h",
@@ -22,6 +44,7 @@ source_set("content_suggestions") {
     ":feature_flags",
     ":metrics",
     ":public",
+    ":start_suggest",
     "//base",
     "//components/favicon/core",
     "//components/favicon/ios",
@@ -34,6 +57,7 @@ source_set("content_suggestions") {
     "//components/prefs/ios",
     "//components/reading_list/core",
     "//components/reading_list/ios:ios",
+    "//components/search:start_suggest",
     "//components/search_engines:search_engines",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
@@ -95,6 +119,7 @@ source_set("content_suggestions") {
     "//ui/strings",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [ "//ios/third_party/material_components_ios" ]
 }
 
 source_set("metrics") {
@@ -120,22 +145,17 @@ source_set("constants") {
 
 source_set("public") {
   sources = [ "content_suggestions_menu_provider.h" ]
-  public_deps = [ "//ios/third_party/material_components_ios" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("content_suggestions_ui") {
   sources = [
-    "content_suggestions_collection_consumer.h",
     "content_suggestions_collection_controlling.h",
     "content_suggestions_collection_synchronizing.h",
-    "content_suggestions_collection_view_controller.h",
-    "content_suggestions_collection_view_controller.mm",
     "content_suggestions_commands.h",
     "content_suggestions_consumer.h",
     "content_suggestions_header_commands.h",
     "content_suggestions_header_controlling.h",
-    "content_suggestions_header_provider.h",
     "content_suggestions_header_synchronizer.h",
     "content_suggestions_header_synchronizer.mm",
     "content_suggestions_header_synchronizing.h",
@@ -144,8 +164,6 @@ source_set("content_suggestions_ui") {
     "content_suggestions_header_view_controller.h",
     "content_suggestions_header_view_controller.mm",
     "content_suggestions_header_view_controller_delegate.h",
-    "content_suggestions_layout.h",
-    "content_suggestions_layout.mm",
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
     "content_suggestions_view_controller_audience.h",
@@ -190,10 +208,7 @@ source_set("content_suggestions_ui") {
     "//ios/web/common",
     "//ui/base",
   ]
-  public_deps = [
-    ":content_suggestions_ui_util",
-    "//ios/third_party/material_components_ios",
-  ]
+  public_deps = [ ":content_suggestions_ui_util" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -229,7 +244,6 @@ source_set("content_suggestions_ui_util") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ios/components/ui_util",
-    "//ios/third_party/material_components_ios",
     "//ios/web/common",
     "//ui/base",
   ]
@@ -255,7 +269,10 @@ source_set("unit_tests") {
     "//components/favicon/core/test:test_support",
     "//components/ntp_snippets",
     "//components/ntp_tiles",
+    "//components/omnibox/browser:test_support",
     "//components/reading_list/core",
+    "//components/search",
+    "//components/search_engines",
     "//components/signin/public/identity_manager",
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser",
@@ -292,6 +309,7 @@ source_set("unit_tests") {
     "//ios/testing:block_swizzler",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/network:test_support",
     "//testing/gtest",
     "//testing/gtest",
     "//third_party/ocmock",

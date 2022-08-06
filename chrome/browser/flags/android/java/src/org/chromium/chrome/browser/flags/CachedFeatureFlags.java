@@ -51,6 +51,7 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.ANONYMOUS_UPDATE_CHECKS, true)
                     .put(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION, false)
                     .put(ChromeFeatureList.BACK_GESTURE_REFACTOR, false)
+                    .put(ChromeFeatureList.CCT_BRAND_TRANSPARENCY, false)
                     .put(ChromeFeatureList.CCT_INCOGNITO, true)
                     .put(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY, false)
                     .put(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS, true)
@@ -66,8 +67,6 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.CREATE_SAFEBROWSING_ON_STARTUP, false)
                     .put(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA, false)
                     .put(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE, true)
-                    .put(ChromeFeatureList.DYNAMIC_COLOR_ANDROID, true)
-                    .put(ChromeFeatureList.DYNAMIC_COLOR_BUTTONS_ANDROID, false)
                     .put(ChromeFeatureList.EARLY_LIBRARY_LOAD, true)
                     .put(ChromeFeatureList.ELASTIC_OVERSCROLL, true)
                     .put(ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS, true)
@@ -85,9 +84,11 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false)
                     .put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false)
                     .put(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, false)
+                    .put(ChromeFeatureList.QUERY_TILES, false)
                     .put(ChromeFeatureList.PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false)
                     .put(ChromeFeatureList.READ_LATER, false)
                     .put(ChromeFeatureList.START_SURFACE_ANDROID, false)
+                    .put(ChromeFeatureList.START_SURFACE_REFACTOR, false)
                     .put(ChromeFeatureList.STORE_HOURS, false)
                     .put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true)
                     .put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true)
@@ -99,8 +100,6 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false)
                     .put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true)
                     .put(ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW, false)
-                    .put(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_PERMISSION_DELEGATION,
-                            true)
                     .put(ChromeFeatureList.USE_CHIME_ANDROID_SDK, false)
                     .put(ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT, true)
                     .build();
@@ -176,7 +175,7 @@ public class CachedFeatureFlags {
                 return flag;
             }
 
-            flag = sSafeMode.isEnabled(featureName, preferenceName);
+            flag = sSafeMode.isEnabled(featureName, preferenceName, defaultValue);
             if (flag == null) {
                 SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
                 if (prefs.contains(preferenceName)) {
@@ -239,13 +238,9 @@ public class CachedFeatureFlags {
     /**
      * Caches flags that must take effect on startup but are set via native code.
      */
-    public static void cacheNativeFlags(List<String> featuresToCache) {
-        for (String featureName : featuresToCache) {
-            if (!sDefaults.containsKey(featureName)) {
-                throw new IllegalArgumentException(
-                        "Feature " + featureName + " has no default in CachedFeatureFlags.");
-            }
-            cacheFeature(featureName);
+    public static void cacheNativeFlags(List<CachedFlag> featuresToCache) {
+        for (CachedFlag feature : featuresToCache) {
+            feature.cacheFeature();
         }
     }
 
@@ -257,6 +252,7 @@ public class CachedFeatureFlags {
      */
     public static void cacheAdditionalNativeFlags() {
         cacheNetworkServiceWarmUpEnabled();
+        sSafeMode.cacheSafeModeForCachedFlagsEnabled();
         cacheReachedCodeProfilerTrialGroup();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
@@ -480,7 +476,7 @@ public class CachedFeatureFlags {
 
     @VisibleForTesting
     public static void resetFlagsForTesting() {
-        sValuesReturned = new ValuesReturned();
+        sValuesReturned.clearForTesting();
         sValuesOverridden.removeOverrides();
         sSafeMode.clearMemoryForTesting();
     }
@@ -507,6 +503,11 @@ public class CachedFeatureFlags {
         Map<String, Boolean> swapped = sDefaults;
         sDefaults = testDefaults;
         return swapped;
+    }
+
+    @VisibleForTesting
+    static void setSafeModeExperimentEnabledForTesting(Boolean value) {
+        sSafeMode.setExperimentEnabledForTesting(value);
     }
 
     @NativeMethods

@@ -102,7 +102,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   // Asks Wayland to create a solid color wl_buffer that is not backed by
   // anything on the gpu side. Requires surface-augmenter protocol.
-  void CreateSolidColorBuffer(SkColor color,
+  void CreateSolidColorBuffer(SkColor4f color,
                               const gfx::Size& size,
                               uint32_t buf_id);
 
@@ -123,6 +123,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                     uint32_t frame_id,
                     uint32_t buffer_id,
                     const gfx::Rect& bounds_rect,
+                    const gfx::RoundedCornersF& corners,
                     float surface_scale_factor,
                     const gfx::Rect& damage_region);
   // Send overlay configurations for a frame to a WaylandWindow identified by
@@ -216,7 +217,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                                 size_t length,
                                 gfx::Size size,
                                 uint32_t buffer_id);
-  void CreateSolidColorBufferTask(SkColor color,
+  void CreateSolidColorBufferTask(SkColor4f color,
                                   const gfx::Size& size,
                                   uint32_t buf_id);
   void CommitOverlaysTask(gfx::AcceleratedWidget widget,

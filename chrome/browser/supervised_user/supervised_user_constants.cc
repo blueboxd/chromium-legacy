@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/common/pref_names.h"
 
 namespace supervised_users {
 
@@ -25,5 +26,18 @@ const char kChromeAvatarIndex[] = "chrome-avatar-index";
 const char kChromeOSAvatarIndex[] = "chromeos-avatar-index";
 
 const char kChromeOSPasswordData[] = "chromeos-password-data";
+
+const char* const kCustodianInfoPrefs[] = {
+    prefs::kSupervisedUserCustodianName,
+    prefs::kSupervisedUserCustodianEmail,
+    prefs::kSupervisedUserCustodianObfuscatedGaiaId,
+    prefs::kSupervisedUserCustodianProfileURL,
+    prefs::kSupervisedUserCustodianProfileImageURL,
+    prefs::kSupervisedUserSecondCustodianName,
+    prefs::kSupervisedUserSecondCustodianEmail,
+    prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
+    prefs::kSupervisedUserSecondCustodianProfileURL,
+    prefs::kSupervisedUserSecondCustodianProfileImageURL,
+};
 
 }  // namespace supervised_users

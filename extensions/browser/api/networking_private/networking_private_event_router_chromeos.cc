@@ -7,12 +7,12 @@
 #include "base/json/json_writer.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_certificate_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/ash/components/network/onc/onc_translator.h"
 #include "chromeos/components/onc/onc_signature.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_context.h"
@@ -21,9 +21,9 @@
 #include "extensions/common/api/networking_private.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using chromeos::DeviceState;
+using ::ash::DeviceState;
+using ::ash::NetworkState;
 using chromeos::NetworkHandler;
-using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
 namespace extensions {
@@ -36,7 +36,7 @@ api::networking_private::CaptivePortalStatus GetCaptivePortalStatus(
     return api::networking_private::CAPTIVE_PORTAL_STATUS_UNKNOWN;
   if (!network->IsConnectedState())
     return api::networking_private::CAPTIVE_PORTAL_STATUS_OFFLINE;
-  switch (network->portal_state()) {
+  switch (network->GetPortalState()) {
     case NetworkState::PortalState::kUnknown:
       return api::networking_private::CAPTIVE_PORTAL_STATUS_UNKNOWN;
     case NetworkState::PortalState::kOnline:
@@ -54,7 +54,7 @@ api::networking_private::CaptivePortalStatus GetCaptivePortalStatus(
 
 class NetworkingPrivateEventRouterImpl
     : public NetworkingPrivateEventRouter,
-      public chromeos::NetworkStateHandlerObserver,
+      public ash::NetworkStateHandlerObserver,
       public chromeos::NetworkCertificateHandler::Observer {
  public:
   explicit NetworkingPrivateEventRouterImpl(content::BrowserContext* context);
@@ -249,7 +249,7 @@ void NetworkingPrivateEventRouterImpl::DevicePropertiesUpdated(
 
   NetworkStateHandler::NetworkStateList cellular_networks;
   NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
-      chromeos::NetworkTypePattern::Cellular(), false /* configured_only */,
+      ash::NetworkTypePattern::Cellular(), false /* configured_only */,
       true /* visible_only */, -1 /* default limit */, &cellular_networks);
   for (const NetworkState* network : cellular_networks) {
     NetworkPropertiesUpdated(network);
@@ -260,7 +260,7 @@ void NetworkingPrivateEventRouterImpl::ScanCompleted(
     const DeviceState* device) {
   // We include the scanning state for Cellular networks, so notify the UI when
   // a scan completes.
-  if (chromeos::NetworkTypePattern::Wireless().MatchesType(device->type()))
+  if (ash::NetworkTypePattern::Wireless().MatchesType(device->type()))
     DevicePropertiesUpdated(device);
 }
 

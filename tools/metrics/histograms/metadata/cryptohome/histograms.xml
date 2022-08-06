@@ -22,6 +22,18 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="CryptohomeAuthBlockTypes">
+  <variant name="ChallengeCredential"/>
+  <variant name="CryptohomeRecovery"/>
+  <variant name="DoubleWrappedCompat"/>
+  <variant name="LibScryptCompat"/>
+  <variant name="PinWeaver"/>
+  <variant name="Scrypt"/>
+  <variant name="TpmBoundToPcr"/>
+  <variant name="TpmEcc"/>
+  <variant name="TpmNotBoundToPcr"/>
+</variants>
+
 <histogram name="Cryptohome.AsyncDBusRequest" units="ms"
     expires_after="2022-01-02">
   <owner>zuan@chromium.org</owner>
@@ -356,7 +368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.Errors" enum="CryptohomeError"
-    expires_after="2022-11-27">
+    expires_after="2023-01-29">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Cryptohome errors.</summary>
@@ -448,7 +460,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Cryptohome.LECredential"
-    enum="CryptohomeLECredError" expires_after="2022-11-20">
+    enum="CryptohomeLECredError" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes name="LECredentialOps" -->
 
   <owner>pmalani@chromium.org</owner>
@@ -686,6 +698,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.TimeToCreatePersistentUser" units="ms"
+    expires_after="2023-05-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    AuthSession is a DBus API for various operations dealing with credential
+    storage, processing, and authentication. This metric records the amount of
+    time (ms) to create a persistent user. This is recorded when the AuthSession
+    is requested to create a persistent user in cryptohomed, through the DBUS
+    API.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.TimeToGenerateEccAuthValue" units="ms"
     expires_after="2022-12-04">
   <owner>yich@google.com</owner>
@@ -761,6 +786,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.TimeToUSSLoadPersisted" units="ms"
+    expires_after="2023-04-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The amount of time cryptohome spends reading persistent storage to populate
+    an encrypted USS container flatbuffer, or the time
+    UserSecretStash::LoadPersisted() takes to complete. The metric is emitted
+    during user authentication in cryptohome, when an AuthFactor must be
+    authenticated and UserSecretStash must read the corresponding USS file.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToUSSPersist" units="ms"
+    expires_after="2023-04-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The amount of time cryptohome spends writing the USS container flatbuffer to
+    persistent storage. This metric records the time UserSecretStash::Persist()
+    takes to complete. The metric is emitted when a user adds, removes or
+    updates a means of authentication or AuthFactor. Manipulating an AuthFactor
+    requires UserSecretStash to write to the corresponding USS file.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.TpmResults" enum="CryptohomeTpmResults"
     expires_after="2022-10-30">
   <owner>afakhry@chromium.org</owner>
@@ -771,7 +822,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.UserSubdirHasCorrectGroup" enum="BooleanCorrect"
-    expires_after="2022-10-03">
+    expires_after="2023-01-15">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -827,8 +878,8 @@ chromium-metrics-reviews@google.com.
     Any given ChromeOS user has some number of vault keysets to store file name
     encryption keys, depending on registered authentication factors at the time.
     This histogram records how many vault keysets with {VaultKeysetMetric} a
-    user has. Recorded once on startup, and during every call to ListKeys or
-    MassRemoveKeys through the ChromeOS cryptohome daemon.
+    user has. Recorded once per a successful preparation (mount) of the user
+    home directory by the ChromeOS cryptohome daemon.
   </summary>
   <token key="VaultKeysetMetric">
     <variant name="EmptyLabelCount"/>
@@ -841,6 +892,7 @@ chromium-metrics-reviews@google.com.
     <variant name="SmartCardCount"/>
     <variant name="SmartUnlockCount"/>
     <variant name="UnclassifedKeysetCount"/>
+    <variant name="UntypedKeysetCount"/>
   </token>
 </histogram>
 
@@ -885,6 +937,90 @@ chromium-metrics-reviews@google.com.
   <token key="Action">
     <variant name="Create" summary="created"/>
     <variant name="Derive" summary="derived"/>
+  </token>
+</histogram>
+
+<histogram name="Cryptohome.{AuthBlockType}.CredentialRevocationResult"
+    enum="CryptohomeLECredError" expires_after="2023-01-01">
+  <owner>anastasiian@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    Records the result of credentials revocation Revoke() method, which removes
+    the credential label from PinWeaver. Reported when an auth factor which uses
+    credentials revocation is deleted.
+  </summary>
+  <token key="AuthBlockType" variants="CryptohomeAuthBlockTypes"/>
+</histogram>
+
+<histogram name="Cryptohome.{AuthBlockType}.PrepareForRemovalResult"
+    enum="CryptohomeCryptoError" expires_after="2023-01-01">
+  <owner>anastasiian@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    Records the result of PrepareForRemoval() call of an auth factor. Reported
+    when an auth factor is deleted.
+  </summary>
+  <token key="AuthBlockType" variants="CryptohomeAuthBlockTypes"/>
+</histogram>
+
+<histogram name="Cryptohome.{AuthSessionFunction}.{AuthBlockType}" units="ms"
+    expires_after="2023-05-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    AuthSession is a DBus API for various operations dealing with credential
+    storage, processing, and authentication. These metrics record the time an
+    {AuthSessionFunction} takes to complete. Each function is parameterized by
+    an {AuthBlockType}, or credential backend, which significantly influences
+    results. The metric is emitted when the respective {AuthSessionFunction} is
+    requested through the DBus API.
+  </summary>
+  <token key="AuthSessionFunction">
+    <variant name="TimeToAuthSessionAddAuthFactorUSS"/>
+    <variant name="TimeToAuthSessionAddAuthFactorVK"/>
+    <variant name="TimetoAuthSessionAddCredentials"/>
+    <variant name="TimeToAuthSessionAuthenticate"/>
+    <variant name="TimeToAuthSessionAuthenticateAuthFactorUSS"/>
+    <variant name="TimeToAuthSessionAuthenticateAuthFactorVK"/>
+    <variant name="TimeToAuthSessionRemoveAuthFactorUSS"/>
+    <variant name="TimeToAuthSessionRemoveAuthFactorVK"/>
+    <variant name="TimeToAuthSessionUpdateAuthFactorUSS"/>
+    <variant name="TimeToAuthSessionUpdateAuthFactorVK"/>
+    <variant name="TimeToAuthSessionUpdateCredentials"/>
+  </token>
+  <token key="AuthBlockType">
+    <variant name="ChallengeCredential"/>
+    <variant name="CryptohomeRecovery"/>
+    <variant name="DoubleWrappedCompat"/>
+    <variant name="LibScryptCompat"/>
+    <variant name="PinWeaver"/>
+    <variant name="Scrypt"/>
+    <variant name="TpmBoundToPcr"/>
+    <variant name="TpmEcc"/>
+    <variant name="TpmNotBoundToPcr"/>
+  </token>
+</histogram>
+
+<histogram name="Cryptohome.{AuthSessionLifetime}.{Type}" units="ms"
+    expires_after="2023-05-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The amount of time an AuthSession lives for after authentication and
+    overall. This is 5 minutes by default, but can be extended through the
+    ExtendAuthSession API call. This metric is emitted when the AuthSession is
+    destroyed, by either manually invalidating through the DBus API or through
+    an automatic timeout.
+  </summary>
+  <token key="AuthSessionLifetime">
+    <variant name="AuthSessionAuthenticatedLifetime"/>
+    <variant name="AuthSessionTotalLifetime"/>
+  </token>
+  <token key="Type">
+    <variant name="Ephemeral"/>
+    <variant name="Persistent"/>
   </token>
 </histogram>
 

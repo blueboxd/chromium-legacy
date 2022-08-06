@@ -80,6 +80,9 @@ extern const base::FeatureParam<std::string> kIdentifiabilityStudyBlockedTypes;
 // bits of information. This is the number of potentially identifiable surfaces
 // that we expect will be sampled per client.
 //
+// This parameter only affects random sampling of surfaces. Setting this to 0
+// will disable random sampling.
+//
 // * For now, allow (kIdentifiabilityStudyExpectedSurfaceCount or
 // kIdentifiabilityStudyBlocks) and kIdentifiabilityStudyReidSurfaceBlocks to be
 // specified at the same time.
@@ -225,6 +228,9 @@ extern const base::FeatureParam<std::string> kIdentifiabilityStudyPerTypeCost;
 // * Specifying a surface that is blocked (either via `BlockedHashes` or
 //   `BlockedTypes`) is an error.
 //
+// * A non-empty value for this parameter enables assigned block sampling and
+//   disables random sampling.
+//
 // * For now, allow (kIdentifiabilityStudyExpectedSurfaceCount or
 // kIdentifiabilityStudyBlocks) and kIdentifiabilityStudyReidSurfaceBlocks to be
 // specified at the same time.
@@ -316,7 +322,7 @@ constexpr double kMaxProbabilityPerSurface = 0.5;
 
 // Reid Surface Blocks.
 //
-// Parameter name: "ReidSurfaceBlocks"
+// Parameter name: "ReidBlocks"
 // Parameter type: Comma separated list of blocks. Each block is a semicolon
 //                 separated list of surfaces. See examples below.
 //
@@ -332,6 +338,88 @@ constexpr double kMaxProbabilityPerSurface = 0.5;
 //     {7,8,9}.
 extern const base::FeatureParam<std::string>
     kIdentifiabilityStudyReidSurfaceBlocks;
+
+// Enable active sampling.
+//
+// Parameter name: "EnableActiveSampling"
+// Parameter type: boolean.
+//
+// Enable active sampling of supported surfaces. Whether the surfaces will
+// actually be reported depends on the other parameters.
+extern const base::FeatureParam<bool> kIdentifiabilityStudyEnableActiveSampling;
+
+// List of font families which will be actively sampled.
+//
+// Parameter name: "ActivelySampledFonts"
+// Parameter type: Comma separated list of font families.
+//
+// The Identifiability Study code will actively sample whether these font
+// families are available or not. Note that whether they will actually be
+// reported or not depends on the other parameters.
+extern const base::FeatureParam<std::string>
+    kIdentifiabilityStudyActivelySampledFonts;
+
+// Ranges for the random salts for the Reid Block hashes.
+//
+// Parameter name: "ReidBlocksSaltsRanges"
+// Parameter type: Comma separated list of salts ranges expressed as integers.
+//
+// If this parameter is specified then it must specify a max salt for each block
+// that is defined using the `ReidBlocks` parameter. The random salt used to
+// calculate the Reid hash should be a number between 0 and this parameter.
+//
+// * All max salts must be non-zero positive integers.
+//
+// * There must be exactly as many Reid salts ranges as there are Reid blocks.
+// If not, disable the Reid estimator feature.
+//
+// E.g.:
+//   * "1000,5000": Assigns max salt number for two Reid Blocks send in
+//   `ReidBlocks` parameter.
+extern const base::FeatureParam<std::string>
+    kIdentifiabilityStudyReidSurfaceBlocksSaltsRanges;
+
+// Number of reported bits for the Reid Block hashes.
+//
+// Parameter name: "ReidBlocksBits"
+// Parameter type: Comma separated list of number of bits represented as
+// integers.
+//
+// If this parameter is specified then it must specify the number of bits that
+// should be reported for each block that is defined using the `ReidBlocks`
+// parameter. The number of bits should be a number between 1 and 32.
+//
+// * All bits must be non-zero positive integers.
+//
+// * There must be exactly as many Reid numbers of bits as there are Reid
+// blocks. If not, disable the Reid estimator feature.
+//
+// E.g.:
+//   * "2,3": Assigns number of bits that should be reported from two Reid
+//   Blocks sent in the `ReidBlocks` parameter.
+extern const base::FeatureParam<std::string>
+    kIdentifiabilityStudyReidSurfaceBlocksBits;
+
+// Probabilities of reporting noise in Reid estimation.
+//
+// Parameter name: "ReidBlocksNoiseProbabilities"
+// Parameter type: Comma separated list of noise probabilities represented as
+// decimals.
+//
+// If this parameter is specified then it must specify the probability of noise
+// that should be reported for each block that is defined using the `ReidBlocks`
+// parameter. The probability should be a decimal between 0 and 1.
+//
+// * All probabilities must be positive decimals between 0 and 1.
+//
+// * There must be exactly as many Reid noise probabilities as there are Reid
+// blocks. If not, disable the Reid estimator feature.
+//
+// E.g.:
+//   * "0.1,0.05": Assigns probabilities of noise that should be reported from
+//   two Reid Blocks sent in the `ReidBlocks` parameter.
+extern const base::FeatureParam<std::string>
+    kIdentifiabilityStudyReidBlocksNoiseProbabilities;
 
 }  // namespace features
 

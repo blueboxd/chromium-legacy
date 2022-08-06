@@ -22,6 +22,8 @@
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/quota/quota_callbacks.h"
+#include "storage/browser/test/mock_quota_manager.h"
+#include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
@@ -34,10 +36,6 @@ namespace storage {
 class FileSystemContext;
 class FileSystemOperationRunner;
 class FileSystemURL;
-}
-
-namespace storage {
-class QuotaManager;
 }
 
 namespace sync_file_system {
@@ -60,11 +58,6 @@ class CannedSyncableFileSystem
   typedef base::RepeatingCallback<void(int64_t)> WriteCallback;
   typedef storage::FileSystemOperation::FileEntryList FileEntryList;
 
-  enum QuotaMode {
-    QUOTA_ENABLED,
-    QUOTA_DISABLED,
-  };
-
   CannedSyncableFileSystem(
       const GURL& origin,
       bool in_memory_file_system,
@@ -77,7 +70,7 @@ class CannedSyncableFileSystem
   ~CannedSyncableFileSystem() override;
 
   // SetUp must be called before using this instance.
-  void SetUp(QuotaMode quota_mode);
+  void SetUp();
 
   // TearDown must be called before destructing this instance.
   void TearDown();
@@ -103,7 +96,7 @@ class CannedSyncableFileSystem
   storage::FileSystemContext* file_system_context() {
     return file_system_context_.get();
   }
-  storage::QuotaManager* quota_manager() { return quota_manager_.get(); }
+  storage::MockQuotaManager* quota_manager() { return quota_manager_.get(); }
   GURL origin() const { return origin_; }
   storage::FileSystemType type() const { return type_; }
   blink::mojom::StorageType storage_type() const {
@@ -226,7 +219,8 @@ class CannedSyncableFileSystem
   base::ScopedTempDir data_dir_;
   const std::string service_name_;
 
-  scoped_refptr<storage::QuotaManager> quota_manager_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   const GURL origin_;
   const storage::FileSystemType type_;

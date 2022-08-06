@@ -5,9 +5,9 @@
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -49,9 +49,9 @@ std::string SecurityTypeStringFromMojo(
     const network_config::mojom::SecurityType& security_type) {
   switch (security_type) {
     case network_config::mojom::SecurityType::kWpaPsk:
-      return shill::kSecurityPsk;
+      return shill::kSecurityClassPsk;
     case network_config::mojom::SecurityType::kWepPsk:
-      return shill::kSecurityWep;
+      return shill::kSecurityClassWep;
     default:
       // Only PSK and WEP secured networks are supported by sync.
       return "";
@@ -62,7 +62,7 @@ std::string SecurityTypeStringFromProto(
     const sync_pb::WifiConfigurationSpecifics_SecurityType& security_type) {
   switch (security_type) {
     case sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_PSK:
-      return shill::kSecurityPsk;
+      return shill::kSecurityClassPsk;
     case sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_WEP:
       return shill::kSecurityWep;
     default:

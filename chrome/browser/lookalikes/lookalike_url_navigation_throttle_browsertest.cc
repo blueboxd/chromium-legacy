@@ -842,13 +842,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // Advance clock to force a fetch of new engaged sites list.
   test_clock()->Advance(base::Hours(1));
 
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContentsConsoleObserver console_observer(tab);
-  console_observer.SetPattern("Chrome has determined that*character-wsap.com*");
-
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  console_observer.Wait();
 
   histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
   histograms.ExpectBucketCount(
@@ -1553,6 +1547,60 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // interstitial.
   TestInterstitialNotShown(browser(),
                            embedded_test_server()->GetURL("example.net", "/"));
+}
+
+// Navigate to a URL that triggers combo squatting heuristic via the
+// hard coded brand name list. This should record metrics but shouldn't show
+// an interstitial.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       ComboSquatting_ShouldRecordMetricsWithoutUI) {
+  base::HistogramTester histograms;
+  const GURL kNavigatedUrl = GetURL("google-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+                               NavigationSuggestionEvent::kComboSquatting, 1);
+
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kComboSquatting);
+  CheckUkm({kNavigatedUrl}, "TriggeredByInitialUrl", false);
+}
+
+// Navigate to a URL that triggers combo squatting heuristic via a
+// brand name from engaged sites. This should record metrics but shouldn't show
+// an interstitial.
+IN_PROC_BROWSER_TEST_P(
+    LookalikeUrlNavigationThrottleBrowserTest,
+    ComboSquatting_EngagedSites_ShouldRecordMetricsWithoutUI) {
+  base::HistogramTester histograms;
+  SetEngagementScore(browser(), GURL("https://example.com"), kHighEngagement);
+  const GURL kNavigatedUrl = GetURL("example-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(
+      lookalikes::kHistogramName,
+      NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
+
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kComboSquattingSiteEngagement);
+  CheckUkm({kNavigatedUrl}, "TriggeredByInitialUrl", false);
+}
+
+// Combo Squatting shouldn't trigger on allowlisted sites and no
+// UKM should be recorded.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       ComboSquatting_ShouldNotTriggeredForAllowlist) {
+  const GURL kNavigatedUrl = GetURL("google-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  reputation::SetSafetyTipAllowlistPatterns({"google-login.com/"}, {}, {});
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
 }
 
 scoped_refptr<net::X509Certificate> LoadCertificate() {

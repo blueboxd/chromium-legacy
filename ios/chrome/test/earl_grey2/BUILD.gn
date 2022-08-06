@@ -163,6 +163,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/first_run:eg2_tests",
     "//ios/chrome/browser/ui/fullscreen:eg2_tests",
     "//ios/chrome/browser/ui/history:eg2_tests",
+    "//ios/chrome/browser/ui/incognito_interstitial:eg2_tests",
     "//ios/chrome/browser/ui/infobars:eg2_tests",
     "//ios/chrome/browser/ui/keyboard:eg2_tests",
     "//ios/chrome/browser/ui/link_to_text:eg2_tests",
@@ -181,6 +182,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/recent_tabs:eg2_tests",
     "//ios/chrome/browser/ui/sad_tab:eg2_tests",
     "//ios/chrome/browser/ui/safe_mode:eg2_tests",
+    "//ios/chrome/browser/ui/send_tab_to_self:eg2_tests",
     "//ios/chrome/browser/ui/settings/sync/utils:eg2_tests",
     "//ios/chrome/browser/ui/side_swipe:eg2_tests",
     "//ios/chrome/browser/ui/start_surface:eg2_tests",
@@ -193,8 +195,6 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/webui/interstitials:eg2_tests",
   ]
   data_deps = [ ":ios_chrome_eg2tests" ]
-
-  shards = 2
 }
 
 chrome_ios_eg2_test("ios_chrome_variations_smoke_eg2tests_module") {

@@ -13,10 +13,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace ash {
@@ -82,11 +82,11 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
 }
 
 void HostScanSchedulerImpl::AttemptScanIfOffline() {
-  const chromeos::NetworkTypePattern network_type_pattern =
+  const NetworkTypePattern network_type_pattern =
       switches::ShouldTetherHostScansIgnoreWiredConnections()
-          ? chromeos::NetworkTypePattern::Wireless()
-          : chromeos::NetworkTypePattern::Default();
-  const chromeos::NetworkState* first_network =
+          ? NetworkTypePattern::Wireless()
+          : NetworkTypePattern::Default();
+  const NetworkState* first_network =
       network_state_handler_->FirstNetworkByType(network_type_pattern);
   if (IsOnlineOrHasActiveTetherConnection(first_network)) {
     PA_LOG(VERBOSE) << "Skipping scan attempt because the device is already "

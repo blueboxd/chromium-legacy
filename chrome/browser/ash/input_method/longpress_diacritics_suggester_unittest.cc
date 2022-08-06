@@ -20,6 +20,8 @@ namespace {
 
 struct DiacriticsTestCase {
   char longpress_char;
+  ui::DomCode code;
+  bool is_shifted;
   std::u16string surrounding_text;
   std::u16string invalid_surrounding_text;
   std::vector<std::u16string> candidates;
@@ -34,6 +36,15 @@ const int kContextId = 24601;
 
 ui::KeyEvent CreateKeyEventFromCode(const ui::DomCode& code) {
   return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code, ui::EF_NONE,
+                      ui::DomKey::NONE, ui::EventTimeForNow());
+}
+
+ui::KeyEvent CreateRepeatKeyEventFromCode(const ui::DomCode& code,
+                                          bool shifted) {
+  int flags = ui::EF_IS_REPEAT;
+  if (shifted)
+    flags |= ui::EF_SHIFT_DOWN;
+  return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code, flags,
                       ui::DomKey::NONE, ui::EventTimeForNow());
 }
 
@@ -364,6 +375,182 @@ TEST_P(LongpressDiacriticsSuggesterTest, AcceptsOnEnterKeyPress) {
   EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
 }
 
+TEST_P(LongpressDiacriticsSuggesterTest, NotHandledOnDigit0KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT0));
+
+  EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+  EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit1KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT1));
+
+  EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+  EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+  EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+            GetParam().candidates[0]);
+  EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit2KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT2));
+
+  if (GetParam().candidates.size() < 2) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[1]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit3KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT3));
+
+  if (GetParam().candidates.size() < 3) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[2]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit4KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT4));
+
+  if (GetParam().candidates.size() < 4) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[3]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit5KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT5));
+
+  if (GetParam().candidates.size() < 5) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[4]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit6KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT6));
+
+  if (GetParam().candidates.size() < 6) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[5]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit7KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT7));
+
+  if (GetParam().candidates.size() < 7) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[6]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HandlesDigit8KeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT8));
+
+  if (GetParam().candidates.size() < 8) {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+  } else {
+    EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+    EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+    EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+              GetParam().candidates[7]);
+    EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1);
+  }
+}
+
 TEST_P(LongpressDiacriticsSuggesterTest,
        NotHandledOnEnterKeyPressIfNoHighlight) {
   FakeSuggestionHandler suggestion_handler;
@@ -378,7 +565,7 @@ TEST_P(LongpressDiacriticsSuggesterTest,
   EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
 }
 
-TEST_P(LongpressDiacriticsSuggesterTest, DismissOnEscKeyPress) {
+TEST_P(LongpressDiacriticsSuggesterTest, DismissSuggestionOnEscKeyPress) {
   FakeSuggestionHandler suggestion_handler;
   LongpressDiacriticsSuggester suggester =
       LongpressDiacriticsSuggester(&suggestion_handler);
@@ -386,10 +573,42 @@ TEST_P(LongpressDiacriticsSuggesterTest, DismissOnEscKeyPress) {
 
   suggester.TrySuggestOnLongpress(GetParam().longpress_char);
   suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ARROW_RIGHT));
-  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ESCAPE));
 
+  EXPECT_EQ(
+      suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ESCAPE)),
+      SuggestionStatus::kDismiss);
   EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
   EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, DismissSuggestionOnSecondKeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+
+  EXPECT_EQ(suggester.HandleKeyEvent(CreateKeyEventFromCode(GetParam().code)),
+            SuggestionStatus::kNotHandled);
+  EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+  EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+  EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, NoDismissSuggestionOnRepeatKeyPress) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+
+  EXPECT_EQ(suggester.HandleKeyEvent(CreateRepeatKeyEventFromCode(
+                GetParam().code, GetParam().is_shifted)),
+            SuggestionStatus::kNotHandled);
+  EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+  EXPECT_TRUE(suggestion_handler.GetShowingSuggestion());
   EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
 }
 
@@ -397,12 +616,32 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     LongpressDiacriticsSuggesterTest,
     testing::ValuesIn<DiacriticsTestCase>(
-        {{'a', u"ca", u"caf", {u"à", u"á", u"â", u"ã", u"ã", u"ä", u"å", u"ā"}},
-         {'A', u"cA", u"cAf", {u"À", u"Á", u"Â", u"Ã", u"Ä", u"Å", u"Æ", u"Ā"}},
-         {'c', u"c", u"ca", {u"ç"}},
-         {'C', u"C", u"Ca", {u"Ç"}},
-         {'e', u"soufle", u"soufles", {u"è", u"é", u"ê", u"ë", u"ē"}},
-         {'E', u"SOUFLE", u"SOUFLES", {u"È", u"É", u"Ê", u"Ë", u"Ē"}}}),
+        {{'a',
+          ui::DomCode::US_A,
+          false,
+          u"ca",
+          u"caf",
+          {u"à", u"á", u"â", u"ã", u"ã", u"ä", u"å", u"ā"}},
+         {'A',
+          ui::DomCode::US_A,
+          true,
+          u"cA",
+          u"cAf",
+          {u"À", u"Á", u"Â", u"Ã", u"Ä", u"Å", u"Æ", u"Ā"}},
+         {'c', ui::DomCode::US_C, false, u"c", u"ca", {u"ç"}},
+         {'C', ui::DomCode::US_C, true, u"C", u"Ca", {u"Ç"}},
+         {'e',
+          ui::DomCode::US_E,
+          false,
+          u"soufle",
+          u"soufles",
+          {u"è", u"é", u"ê", u"ë", u"ē"}},
+         {'E',
+          ui::DomCode::US_E,
+          true,
+          u"SOUFLE",
+          u"SOUFLES",
+          {u"È", u"É", u"Ê", u"Ë", u"Ē"}}}),
     [](const testing::TestParamInfo<
         LongpressDiacriticsSuggesterTest::ParamType>& info) {
       return std::string(1, info.param.longpress_char);

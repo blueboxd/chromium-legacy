@@ -28,6 +28,11 @@ class Server {
   fusebox::Moniker CreateMoniker(storage::FileSystemURL target);
   void DestroyMoniker(fusebox::Moniker moniker);
 
+  void RegisterFSURLPrefix(const std::string& subdir,
+                           const std::string& fs_url_prefix,
+                           bool read_only);
+  void UnregisterFSURLPrefix(const std::string& subdir);
+
   // These methods map 1:1 to the D-Bus methods implemented by
   // fusebox_service_provider.cc.
   //
@@ -73,11 +78,29 @@ class Server {
 
   // Stat returns the file or directory's metadata.
   using StatCallback = base::OnceCallback<void(base::File::Error error_code,
-                                               const base::File::Info& info)>;
+                                               const base::File::Info& info,
+                                               bool read_only)>;
   void Stat(std::string fs_url_as_string, StatCallback callback);
+
+  struct PrefixMapEntry {
+    PrefixMapEntry(std::string fs_url_prefix_arg, bool read_only_arg);
+
+    std::string fs_url_prefix;
+    bool read_only;
+  };
+
+  // Maps from a subdir to a storage::FileSystemURL prefix in string form (and
+  // other metadata). For example, the subdir could be the "foo" in the
+  // "/media/fuse/fusebox/foo/bar/baz.txt" filename, which gets mapped to
+  // "fs_url_prefix/bar/baz.txt" before that whole string is parsed as a
+  // storage::FileSystemURL.
+  //
+  // Neither subdir nor fs_url_prefix should have a trailing slash.
+  using PrefixMap = std::map<std::string, PrefixMapEntry>;
 
  private:
   fusebox::MonikerMap moniker_map_;
+  PrefixMap prefix_map_;
 };
 
 }  // namespace fusebox

@@ -33,11 +33,11 @@ export enum SupportToolPageIndex {
   DATA_EXPORT_DONE,
 }
 
-export type DataExportResult = {
-  success: boolean,
-  path: string,
-  error: string,
-};
+export interface DataExportResult {
+  success: boolean;
+  path: string;
+  error: string;
+}
 
 export interface SupportToolElement {
   $: {
@@ -78,7 +78,7 @@ export class SupportToolElement extends SupportToolElementBase {
       errorMessage_: {
         type: String,
         value: '',
-      }
+      },
     };
   }
 

@@ -11,6 +11,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 
+namespace ui {
+class ColorProvider;
+}
+
 namespace ash {
 
 // TODO(minch): AshColorProvider is not needed to be a class now.
@@ -50,42 +54,15 @@ class ASH_EXPORT AshColorProvider : public ColorProvider {
   SkColor GetInactiveDialogTitleBarColor() const override;
   std::pair<SkColor, float> GetInkDropBaseColorAndOpacity(
       SkColor background_color = gfx::kPlaceholderColor) const override;
-  std::pair<SkColor, float> GetInvertedInkDropBaseColorAndOpacity(
-      SkColor background_color = gfx::kPlaceholderColor) const override;
-
-  // Gets the color of |type| of the corresponding layer based on the current
-  // inverted color mode. For views that need LIGHT colors while DARK mode is
-  // active, and vice versa.
-  SkColor GetInvertedShieldLayerColor(ShieldLayerType type) const;
-  SkColor GetInvertedBaseLayerColor(BaseLayerType type) const;
-  SkColor GetInvertedContentLayerColor(ContentLayerType type) const;
 
   // Gets the background color that can be applied on any layer. The returned
   // color will be different based on color mode and color theme (see
   // |is_themed_|).
   SkColor GetBackgroundColor() const;
-  // Same as above, but returns the color based on the current inverted color
-  // mode and color theme.
-  SkColor GetInvertedBackgroundColor() const;
-  // Gets the background color in the desired color mode dark/light.
-  SkColor GetBackgroundColorInMode(bool use_dark_color) const;
 
  private:
-  // Gets the color of |type| of the corresponding layer. Returns color based on
-  // the current inverted color mode if |inverted| is true.
-  SkColor GetShieldLayerColorImpl(ShieldLayerType type, bool inverted) const;
-  SkColor GetBaseLayerColorImpl(BaseLayerType type, bool inverted) const;
-  // Gets the color of |type| of the corresponding layer. Returns the color on
-  // dark mode if |use_dark_color| is true.
-  SkColor GetControlsLayerColorImpl(ControlsLayerType type,
-                                    bool use_dark_color) const;
-  SkColor GetContentLayerColorImpl(ContentLayerType type,
-                                   bool use_dark_color) const;
-
   // Gets the background default color based on the current color mode.
   SkColor GetBackgroundDefaultColor() const;
-  // Gets the background default color based on the current inverted color mode.
-  SkColor GetInvertedBackgroundDefaultColor() const;
 
   // Gets the background themed color that's calculated based on the color
   // extracted from wallpaper. For dark mode, it will be dark muted wallpaper
@@ -94,6 +71,10 @@ class ASH_EXPORT AshColorProvider : public ColorProvider {
   // dark mode if |use_dark_color| is true.
   SkColor GetBackgroundThemedColorImpl(SkColor default_color,
                                        bool use_dark_color) const;
+
+  // Returns a ColorProvider for the current NativeTheme which will correctly
+  // reflect the current ColorMode.
+  ui::ColorProvider* GetColorProvider() const;
 };
 
 }  // namespace ash

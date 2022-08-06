@@ -6,6 +6,7 @@ import './os_feedback_shared_css.js';
 import './file_attachment.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -13,7 +14,8 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERMS_OF_SERVICE_URL} from './feedback_constants.js';
 import {FeedbackFlowState} from './feedback_flow.js';
-import {AttachedFile, FeedbackContext, Report} from './feedback_types.js';
+import {AttachedFile, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report} from './feedback_types.js';
+import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
  * @fileoverview
@@ -69,12 +71,25 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
      * @protected
      */
     this.privacyNote_;
+
+    /** @private {!FeedbackServiceProviderInterface} */
+    this.feedbackServiceProvider_ = getFeedbackServiceProvider();
   }
 
   ready() {
     super.ready();
     this.setPrivacyNote_();
     this.setSysInfoCheckboxLabelAndAttributes_();
+    // Set the aria description works the best for screen reader.
+    // It reads the description when the checkbox is focused, and when it is
+    // checked and unchecked.
+    this.$.screenshotCheckbox.ariaDescription =
+        this.i18n('attachScreenshotCheckboxAriaLabel');
+    this.$.imageButton.ariaLabel = this.i18n(
+        'previewImageAriaLabel', this.$.screenshotCheckLabel.textContent);
+    // The default role is combobox. Set it in JS to avoid the JSCompiler
+    // error not recognizing the role property.
+    this.$.userEmailDropDown.role = 'listbox';
 
     // Set up event listener for email change to retarget |this| to be the
     // ShareDataPageElement's context.
@@ -102,6 +117,8 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   handleScreenshotClick_() {
     this.$.screenshotDialog.showModal();
     this.$.closeDialogButton.focus();
+    this.feedbackServiceProvider_.recordPreSubmitAction(
+        FeedbackAppPreSubmitAction.kViewedScreenshot);
   }
 
   /** @protected */
@@ -130,13 +147,41 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
    * @param {!Event} e
    * @protected
    */
+  handleOpenMetricsDialog_(e) {
+    // The default behavior of clicking on an anchor tag
+    // with href="#" is a scroll to the top of the page.
+    // This link opens a dialog, so we want to prevent
+    // this default behavior.
+    e.preventDefault();
+
+    this.feedbackServiceProvider_.openMetricsDialog();
+  }
+
+  /**
+   * @param {!Event} e
+   * @protected
+   */
+  handleOpenSystemInfoDialog_(e) {
+    // The default behavior of clicking on an anchor tag
+    // with href="#" is a scroll to the top of the page.
+    // This link opens a dialog, so we want to prevent
+    // this default behavior.
+    e.preventDefault();
+
+    this.feedbackServiceProvider_.openSystemInfoDialog();
+  }
+
+  /**
+   * @param {!Event} e
+   * @protected
+   */
   handleBackButtonClicked_(e) {
     e.stopPropagation();
 
     this.dispatchEvent(new CustomEvent('go-back-click', {
       composed: true,
       bubbles: true,
-      detail: {currentState: FeedbackFlowState.SHARE_DATA}
+      detail: {currentState: FeedbackFlowState.SHARE_DATA},
     }));
   }
 
@@ -153,7 +198,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
       this.dispatchEvent(new CustomEvent('continue-click', {
         composed: true,
         bubbles: true,
-        detail: {currentState: FeedbackFlowState.SHARE_DATA, report: report}
+        detail: {currentState: FeedbackFlowState.SHARE_DATA, report: report},
       }));
     });
   }
@@ -199,7 +244,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
 
     if (this.getElement_('#pageUrlCheckbox').checked) {
       report.feedbackContext.pageUrl = {
-        url: this.getElement_('#pageUrlText').textContent.trim()
+        url: this.getElement_('#pageUrlText').textContent.trim(),
       };
     }
 
@@ -248,9 +293,15 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
         'includeSystemInfoAndMetricsCheckboxLabel', {attrs: ['id']});
 
     const sysInfoLink = this.shadowRoot.querySelector('#sysInfoLink');
+    // Setting href causes <a> tag to display as link.
     sysInfoLink.setAttribute('href', '#');
+    sysInfoLink.addEventListener(
+        'click', (e) => void this.handleOpenSystemInfoDialog_(e));
+
     const histogramsLink = this.shadowRoot.querySelector('#histogramsLink');
     histogramsLink.setAttribute('href', '#');
+    histogramsLink.addEventListener(
+        'click', (e) => void this.handleOpenMetricsDialog_(e));
   }
 }
 

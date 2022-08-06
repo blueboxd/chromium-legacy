@@ -17,9 +17,9 @@
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -28,9 +28,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/video_types.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gl_utils.h"
-#include "ui/gl/gpu_switching_manager.h"
 
 namespace viz {
 
@@ -66,21 +65,10 @@ enum DCLayerResult {
 };
 
 enum : size_t {
-  kStreamVideoResourceIndex = 0,
   kTextureResourceIndex = 0,
   kYPlaneResourceIndex = 0,
   kUVPlaneResourceIndex = 1,
 };
-
-// This returns the smallest rectangle in target space that contains the quad.
-gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
-  gfx::RectF quad_rect = cc::MathUtil::MapClippedRect(
-      quad->shared_quad_state->quad_to_target_transform,
-      gfx::RectF(quad->rect));
-  if (quad->shared_quad_state->clip_rect)
-    quad_rect.Intersect(gfx::RectF(*quad->shared_quad_state->clip_rect));
-  return quad_rect;
-}
 
 gfx::RectF GetExpandedRectWithPixelMovingFilter(
     const AggregatedRenderPassDrawQuad* rpdq,
@@ -128,7 +116,7 @@ DCLayerResult ValidateYUVQuad(
   if (processed_yuv_overlay_count >= allowed_yuv_overlay_count)
     return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
 
-  auto quad_target_rect = gfx::ToEnclosingRect(ClippedQuadRectangle(quad));
+  auto quad_target_rect = ClippedQuadRectangle(quad);
   for (const auto& filter_target_rect : backdrop_filter_rects) {
     if (filter_target_rect.Intersects(quad_target_rect))
       return DC_LAYER_FAILED_BACKDROP_FILTERS;
@@ -169,39 +157,7 @@ void FromYUVQuad(const YUVVideoDrawQuad* quad,
   }
   dc_layer->color_space = quad->video_color_space;
   dc_layer->protected_video_type = quad->protected_video_type;
-  dc_layer->hdr_metadata = quad->hdr_metadata;
-}
-
-void FromStreamVideoQuad(const StreamVideoDrawQuad* quad,
-                         const gfx::Transform& transform_to_root_target,
-                         DCLayerOverlay* dc_layer) {
-  dc_layer->resources[kStreamVideoResourceIndex] = quad->resource_id();
-  dc_layer->quad_rect = quad->rect;
-  // Quad rect is in quad content space so both quad to target, and target to
-  // root transforms must be applied to it.
-  gfx::Transform quad_to_root_transform(
-      quad->shared_quad_state->quad_to_target_transform);
-  quad_to_root_transform.ConcatTransform(transform_to_root_target);
-  // Flatten transform to 2D since DirectComposition doesn't support 3D
-  // transforms.
-  quad_to_root_transform.FlattenTo2d();
-  dc_layer->transform = quad_to_root_transform;
-
-  dc_layer->clip_rect = quad->shared_quad_state->clip_rect;
-  if (dc_layer->clip_rect) {
-    // Clip rect is in quad target space, and must be transformed to root target
-    // space.
-    gfx::RectF clip_rect =
-        gfx::RectF(dc_layer->clip_rect.value_or(gfx::Rect()));
-    transform_to_root_target.TransformRect(&clip_rect);
-    dc_layer->clip_rect = gfx::ToEnclosingRect(clip_rect);
-  }
-
-  dc_layer->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT709,
-                                          gfx::ColorSpace::TransferID::BT709);
-  // Set the protected_video_type to kHardwareProtected to signal that a DC
-  // layer is required for this quad
-  dc_layer->protected_video_type = gfx::ProtectedVideoType::kHardwareProtected;
+  dc_layer->hdr_metadata = quad->hdr_metadata.value_or(gfx::HDRMetadata());
 }
 
 DCLayerResult ValidateTextureQuad(
@@ -223,7 +179,7 @@ DCLayerResult ValidateTextureQuad(
     return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
   }
 
-  auto quad_target_rect = gfx::ToEnclosingRect(ClippedQuadRectangle(quad));
+  auto quad_target_rect = ClippedQuadRectangle(quad);
   for (const auto& filter_target_rect : backdrop_filter_rects) {
     if (filter_target_rect.Intersects(quad_target_rect))
       return DC_LAYER_FAILED_BACKDROP_FILTERS;
@@ -257,11 +213,21 @@ void FromTextureQuad(const TextureDrawQuad* quad,
   if (quad->shared_quad_state->clip_rect) {
     // Clip rect is in quad target space, and must be transformed to root target
     // space.
-    gfx::RectF clip_rect = gfx::RectF(*quad->shared_quad_state->clip_rect);
+    gfx::RectF clip_rect =
+        gfx::RectF(quad->shared_quad_state->clip_rect.value_or(gfx::Rect()));
     transform_to_root_target.TransformRect(&clip_rect);
     dc_layer->clip_rect = gfx::ToEnclosingRect(clip_rect);
   }
+
   dc_layer->color_space = gfx::ColorSpace::CreateSRGB();
+
+  // Both color space and protected_video_type are hard-coded for stream video.
+  if (quad->is_stream_video) {
+    dc_layer->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT709,
+                                            gfx::ColorSpace::TransferID::BT709);
+    dc_layer->protected_video_type =
+        gfx::ProtectedVideoType::kHardwareProtected;
+  }
 }
 
 bool IsProtectedVideo(const QuadList::ConstIterator& it) {
@@ -271,7 +237,8 @@ bool IsProtectedVideo(const QuadList::ConstIterator& it) {
                gfx::ProtectedVideoType::kHardwareProtected ||
            yuv_quad->protected_video_type ==
                gfx::ProtectedVideoType::kSoftwareProtected;
-  } else if (it->material == DrawQuad::Material::kStreamVideoContent) {
+  } else if (it->material == DrawQuad::Material::kTextureContent &&
+             TextureDrawQuad::MaterialCast(*it)->is_stream_video) {
     return true;
   } else {
     return false;
@@ -324,7 +291,7 @@ bool IsOccluded(
     }
 
     if (!has_pixel_moving_filter)
-      overlap_rect = ClippedQuadRectangle(quad);
+      overlap_rect = ClippedQuadRectangleF(quad);
 
     if (quad->material == DrawQuad::Material::kSolidColor) {
       SkColor4f color = SolidColorDrawQuad::MaterialCast(quad)->color;
@@ -394,14 +361,16 @@ void RecordDCLayerResult(DCLayerResult result, QuadList::ConstIterator it) {
       RecordVideoDCLayerResult(
           result, YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type);
       break;
-    case DrawQuad::Material::kStreamVideoContent:
-      UMA_HISTOGRAM_ENUMERATION(
-          "GPU.DirectComposition.DCLayerResult.StreamVideo", result);
+    case DrawQuad::Material::kTextureContent: {
+      if (TextureDrawQuad::MaterialCast(*it)->is_stream_video) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "GPU.DirectComposition.DCLayerResult.StreamVideo", result);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult.Texture",
+                                  result);
+      }
       break;
-    case DrawQuad::Material::kTextureContent:
-      UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult.Texture",
-                                result);
-      break;
+    }
     default:
       break;
   }
@@ -428,7 +397,6 @@ void RecordOverlayHistograms(DCLayerOverlayList* dc_layer_overlays,
 QuadList::Iterator FindAnOverlayCandidate(QuadList& quad_list) {
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     if (it->material == DrawQuad::Material::kYuvVideoContent ||
-        it->material == DrawQuad::Material::kStreamVideoContent ||
         it->material == DrawQuad::Material::kTextureContent)
       return it;
   }
@@ -440,8 +408,10 @@ QuadList::Iterator FindAnOverlayCandidateExcludingMediaFoundationVideoContent(
   QuadList::Iterator it = quad_list.end();
   for (auto quad_it = quad_list.begin(); quad_it != quad_list.end();
        ++quad_it) {
-    if (quad_it->material == DrawQuad::Material::kStreamVideoContent)
+    if (quad_it->material == DrawQuad::Material::kTextureContent &&
+        TextureDrawQuad::MaterialCast(*quad_it)->is_stream_video) {
       return quad_list.end();
+    }
     if (it == quad_list.end() &&
         (quad_it->material == DrawQuad::Material::kYuvVideoContent ||
          quad_it->material == DrawQuad::Material::kTextureContent))
@@ -469,41 +439,26 @@ DCLayerOverlayProcessor::DCLayerOverlayProcessor(
     bool skip_initialization_for_testing)
     : has_overlay_support_(skip_initialization_for_testing),
       allowed_yuv_overlay_count_(allowed_yuv_overlay_count),
-      debug_settings_(debug_settings),
-      viz_task_runner_(skip_initialization_for_testing
-                           ? nullptr
-                           : base::ThreadTaskRunnerHandle::Get()) {
+      debug_settings_(debug_settings) {
   if (!skip_initialization_for_testing) {
     UpdateHasHwOverlaySupport();
-    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+    gl::DirectCompositionOverlayCapsMonitor::GetInstance()->AddObserver(this);
   }
   allow_promotion_hinting_ = media::SupportMediaFoundationClearPlayback();
 }
 
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() {
-  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
+  gl::DirectCompositionOverlayCapsMonitor::GetInstance()->RemoveObserver(this);
 }
 
-// Called on the Viz Compositor thread
 void DCLayerOverlayProcessor::UpdateHasHwOverlaySupport() {
-  DCHECK(viz_task_runner_->BelongsToCurrentThread());
-  has_overlay_support_ = gl::AreOverlaysSupportedWin();
+  has_overlay_support_ = gl::DirectCompositionOverlaysSupported();
 }
 
-// Not on the Viz Compositor thread
-void DCLayerOverlayProcessor::OnDisplayAdded() {
-  viz_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DCLayerOverlayProcessor::UpdateHasHwOverlaySupport,
-                     base::Unretained(this)));
-}
-
-// Not on the Viz Compositor thread
-void DCLayerOverlayProcessor::OnDisplayRemoved() {
-  viz_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DCLayerOverlayProcessor::UpdateHasHwOverlaySupport,
-                     base::Unretained(this)));
+// Called on the Viz Compositor thread.
+void DCLayerOverlayProcessor::OnOverlayCapsChanged() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  UpdateHasHwOverlaySupport();
 }
 
 void DCLayerOverlayProcessor::ClearOverlayState() {
@@ -669,7 +624,6 @@ bool DCLayerOverlayProcessor::IsPreviousFrameUnderlayRect(
 }
 
 void DCLayerOverlayProcessor::RemoveClearVideoQuadCandidatesIfMoving(
-    const gfx::Transform& transform_to_root_target,
     const QuadList* quad_list,
     std::vector<size_t>* candidate_index_list) {
   // The number of frames all overlay candidates need to be stable before we
@@ -683,9 +637,7 @@ void DCLayerOverlayProcessor::RemoveClearVideoQuadCandidatesIfMoving(
     auto candidate_it = std::next(quad_list->begin(), index);
     if (IsClearVideoQuad(candidate_it)) {
       gfx::Rect quad_rectangle_in_target_space =
-          cc::MathUtil::MapEnclosingClippedRect(
-              transform_to_root_target,
-              gfx::ToEnclosingRect(ClippedQuadRectangle(*candidate_it)));
+          ClippedQuadRectangle(*candidate_it);
       current_frame_overlay_candidate_rects.push_back(
           quad_rectangle_in_target_space);
     }
@@ -726,7 +678,8 @@ void DCLayerOverlayProcessor::Process(
     gfx::Rect* damage_rect,
     SurfaceDamageRectList surface_damage_rect_list,
     DCLayerOverlayList* dc_layer_overlays,
-    bool is_video_capture_enabled) {
+    bool is_video_capture_enabled,
+    bool is_video_fullscreen_mode) {
   bool this_frame_has_occluding_damage_rect = false;
   processed_yuv_overlay_count_ = 0;
   surface_damage_rect_list_ = std::move(surface_damage_rect_list);
@@ -767,8 +720,7 @@ void DCLayerOverlayProcessor::Process(
       auto render_pass_it =
           render_pass_backdrop_filters.find(rpdq->render_pass_id);
       if (render_pass_it != render_pass_backdrop_filters.end()) {
-        backdrop_filter_rects.push_back(
-            gfx::ToEnclosingRect(ClippedQuadRectangle(rpdq)));
+        backdrop_filter_rects.push_back(ClippedQuadRectangle(rpdq));
       }
       continue;
     }
@@ -791,29 +743,21 @@ void DCLayerOverlayProcessor::Process(
             processed_yuv_overlay_count_++;
         }
         break;
-      case DrawQuad::Material::kStreamVideoContent: {
-        if (allow_promotion_hinting_) {
-          // If this quad has marked itself as wanting promotion hints then get
-          // the associated mailbox.
-          const StreamVideoDrawQuad* sv_quad =
-              StreamVideoDrawQuad::MaterialCast(*it);
-          ResourceId id = sv_quad->resource_id();
-          if (resource_provider->DoesResourceWantPromotionHint(id)) {
-            promotion_hint_mailbox = resource_provider->GetMailbox(id);
-          }
-        }
-        // Stream video quads contain Media Foundation dcomp surface which is
-        // always presented as overlay.
-        result = DC_LAYER_SUCCESS;
-      } break;
       case DrawQuad::Material::kTextureContent: {
-        result = ValidateTextureQuad(TextureDrawQuad::MaterialCast(*it),
-                                     backdrop_filter_rects, resource_provider);
+        const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(*it);
+
+        if (tex_quad->is_stream_video) {
+          // Stream video quads contain Media Foundation dcomp surface which is
+          // always presented as overlay.
+          result = DC_LAYER_SUCCESS;
+        } else {
+          result = ValidateTextureQuad(tex_quad, backdrop_filter_rects,
+                                       resource_provider);
+        }
 
         if (allow_promotion_hinting_) {
           // If this quad has marked itself as wanting promotion hints then get
           // the associated mailbox.
-          const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(*it);
           ResourceId id = tex_quad->resource_id();
           if (resource_provider->DoesResourceWantPromotionHint(id)) {
             promotion_hint_mailbox = resource_provider->GetMailbox(id);
@@ -881,9 +825,7 @@ void DCLayerOverlayProcessor::Process(
   processed_yuv_overlay_count_ = 0;
 
   if (base::FeatureList::IsEnabled(features::kDisableVideoOverlayIfMoving)) {
-    RemoveClearVideoQuadCandidatesIfMoving(
-        render_pass->transform_to_root_target, quad_list,
-        &candidate_index_list);
+    RemoveClearVideoQuadCandidatesIfMoving(quad_list, &candidate_index_list);
   }
 
   // Copy the overlay quad info to dc_layer_overlays and replace/delete overlay
@@ -912,8 +854,7 @@ void DCLayerOverlayProcessor::Process(
       continue;
     }
 
-    gfx::Rect quad_rectangle_in_target_space =
-        gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
+    gfx::Rect quad_rectangle_in_target_space = ClippedQuadRectangle(*it);
 
     // Quad is considered an "overlay" if it has no occluders.
     bool is_overlay = !IsOccluded(gfx::RectF(quad_rectangle_in_target_space),
@@ -954,7 +895,7 @@ void DCLayerOverlayProcessor::Process(
     UpdateDCLayerOverlays(display_rect, render_pass, it,
                           quad_rectangle_in_target_space, occluding_damage_rect,
                           is_overlay, &prev_it, &prev_index, damage_rect,
-                          dc_layer_overlays);
+                          dc_layer_overlays, is_video_fullscreen_mode);
   }
 
   // Update previous frame state after processing root pass. If there is no
@@ -1010,8 +951,8 @@ bool DCLayerOverlayProcessor::ShouldSkipOverlay(
   // some Intel's platforms (Icelake or above), Overlay can play HDR content by
   // supporting RGB10 format. Let overlay deal with HDR content in this
   // situation.
-  bool supports_rgb10a2_overlay =
-      gl::GetOverlaySupportFlags(DXGI_FORMAT_R10G10B10A2_UNORM) != 0;
+  bool supports_rgb10a2_overlay = gl::GetDirectCompositionOverlaySupportFlags(
+                                      DXGI_FORMAT_R10G10B10A2_UNORM) != 0;
   if (render_pass->content_color_usage == gfx::ContentColorUsage::kHDR &&
       !supports_rgb10a2_overlay) {
     // Media Foundation always uses overlays to render video, so do not skip.
@@ -1036,20 +977,18 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
     QuadList::Iterator* new_it,
     size_t* new_index,
     gfx::Rect* damage_rect,
-    DCLayerOverlayList* dc_layer_overlays) {
+    DCLayerOverlayList* dc_layer_overlays,
+    bool is_video_fullscreen_mode) {
   // Record the result first before ProcessForOverlay().
   RecordDCLayerResult(DC_LAYER_SUCCESS, it);
 
   DCLayerOverlay dc_layer;
+  dc_layer.is_video_fullscreen_mode = is_video_fullscreen_mode;
   switch (it->material) {
     case DrawQuad::Material::kYuvVideoContent:
       FromYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),
                   render_pass->transform_to_root_target, &dc_layer);
       processed_yuv_overlay_count_++;
-      break;
-    case DrawQuad::Material::kStreamVideoContent:
-      FromStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(*it),
-                          render_pass->transform_to_root_target, &dc_layer);
       break;
     case DrawQuad::Material::kTextureContent:
       FromTextureQuad(TextureDrawQuad::MaterialCast(*it),

@@ -38,6 +38,7 @@ extern const base::Feature kInferConfirmationPasswordField;
 extern const base::Feature kIOSEnablePasswordManagerBrandingUpdate;
 #if BUILDFLAG(IS_IOS)
 extern const base::Feature kIOSPasswordUISplit;
+extern const base::Feature kIOSPasswordManagerCrossOriginIframeSupport;
 #endif  // IS_IOS
 extern const base::Feature kMuteCompromisedPasswords;
 extern const base::Feature kPasswordNotes;
@@ -50,11 +51,12 @@ extern const base::Feature kPasswordChangeWellKnown;
 extern const base::Feature kPasswordDomainCapabilitiesFetching;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordReuseDetectionEnabled;
-extern const base::Feature kPasswordsAccountStorageRevisedOptInFlow;
 extern const base::Feature kPasswordScriptsFetching;
+extern const base::Feature kPasswordStrengthIndicator;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 extern const base::Feature kSecondaryServerFieldPredictions;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+extern const base::Feature kBiometricAuthenticationForFilling;
 extern const base::Feature kEnableBiometricAuthenticationInSettings;
 #endif
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
@@ -65,16 +67,13 @@ extern const base::Feature kSyncUndecryptablePasswordsLinux;
 #endif
 #if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kTouchToFillPasswordSubmission;
-#endif
-#if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kUnifiedCredentialManagerDryRun;
 extern const base::Feature kUnifiedPasswordManagerAndroid;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
 extern const base::Feature kPasswordEditDialogWithDetails;
+extern const base::Feature kShowUPMErrorNotification;
 #endif
 extern const base::Feature kUnifiedPasswordManagerDesktop;
-extern const base::Feature kUsernameFirstFlow;
-extern const base::Feature kUsernameFirstFlowFilling;
 extern const base::Feature kUsernameFirstFlowFallbackCrowdsourcing;
 
 // All features parameters are in alphabetical order.

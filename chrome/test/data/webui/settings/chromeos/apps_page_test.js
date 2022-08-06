@@ -4,7 +4,7 @@
 
 import 'chrome://os-settings/chromeos/os_settings.js';
 
-import {AndroidAppsBrowserProxyImpl, createBoolPermission, Router, routes, setAppNotificationProviderForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+import {AndroidAppsBrowserProxyImpl, createBoolPermission, Router, routes, routesMojomWebui, setAppNotificationProviderForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
@@ -26,15 +26,15 @@ function getFakePrefs() {
         key: 'arc.enabledd',
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: false,
-      }
+      },
     },
     settings: {
       restore_apps_and_pages: {
         key: 'settings.restore_apps_and_pages',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 2,
-      }
-    }
+      },
+    },
   };
 }
 
@@ -45,15 +45,15 @@ function setPrefs(restoreOption) {
         key: 'arc.enabledd',
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: false,
-      }
+      },
     },
     settings: {
       restore_apps_and_pages: {
         key: 'settings.restore_apps_and_pages',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: restoreOption,
-      }
-    }
+      },
+    },
   };
 }
 
@@ -207,7 +207,7 @@ suite('AppsPageTests', function() {
       id: id,
       title: title,
       notificationPermission: permission,
-      readiness: readiness
+      readiness: readiness,
     };
   }
 
@@ -436,7 +436,7 @@ suite('AppsPageTests', function() {
       // this route doesn't exist for tests. Add it in for testing.
       if (!routes.ANDROID_APPS_DETAILS) {
         routes.ANDROID_APPS_DETAILS = routes.APPS.createChild(
-            '/' + chromeos.settings.mojom.GOOGLE_PLAY_STORE_SUBPAGE_PATH);
+            '/' + routesMojomWebui.GOOGLE_PLAY_STORE_SUBPAGE_PATH);
       }
 
       subpage.prefs = {arc: {enabled: {value: true}}};
@@ -508,9 +508,9 @@ suite('AppsPageTests', function() {
         arc: {
           enabled: {
             value: true,
-            enforcement: chrome.settingsPrivate.Enforcement.ENFORCED
-          }
-        }
+            enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+          },
+        },
       };
       subpage.androidAppsInfo = {
         playStoreEnabled: true,

@@ -21,17 +21,16 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/disks/disk.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/image_burner/fake_image_burner_client.h"
+#include "chromeos/ash/components/dbus/image_burner/image_burner_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"  // nogncheck
-#include "chromeos/dbus/image_burner/fake_image_burner_client.h"
-#include "chromeos/dbus/image_burner/image_burner_client.h"
 #endif
 
 namespace extensions {
 namespace image_writer {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-class ImageWriterFakeImageBurnerClient
-    : public chromeos::FakeImageBurnerClient {
+class ImageWriterFakeImageBurnerClient : public ash::FakeImageBurnerClient {
  public:
   ImageWriterFakeImageBurnerClient() = default;
   ~ImageWriterFakeImageBurnerClient() override = default;
@@ -78,8 +77,7 @@ void FakeDiskMountManager::UnmountDeviceRecursively(
     const std::string& device_path,
     UnmountDeviceRecursivelyCallbackType callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), chromeos::MOUNT_ERROR_NONE));
+      FROM_HERE, base::BindOnce(std::move(callback), ash::MountError::kNone));
 }
 #endif
 
@@ -247,7 +245,7 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
           /*fake_cicerone_client=*/nullptr);
     }
     image_burner_client_ = std::make_unique<ImageWriterFakeImageBurnerClient>();
-    chromeos::ImageBurnerClient::SetInstanceForTest(image_burner_client_.get());
+    ash::ImageBurnerClient::SetInstanceForTest(image_burner_client_.get());
   }
 
   FakeDiskMountManager* disk_manager = new FakeDiskMountManager();
@@ -256,11 +254,10 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
   // Adds a disk entry for test_device_path_ with the same device and file path.
   disk_manager->CreateDiskEntryForMountDevice(
       ash::disks::DiskMountManager::MountPointInfo(
-          test_device_path_.value(), "/dummy/mount",
-          chromeos::MOUNT_TYPE_DEVICE, ash::disks::MOUNT_CONDITION_NONE),
-      "device_id", "device_label", "Vendor", "Product",
-      chromeos::DEVICE_TYPE_USB, kTestFileSize, true, true, true, false,
-      kTestFileSystemType);
+          test_device_path_.value(), "/dummy/mount", ash::MountType::kDevice,
+          ash::disks::MOUNT_CONDITION_NONE),
+      "device_id", "device_label", "Vendor", "Product", ash::DeviceType::kUSB,
+      kTestFileSize, true, true, true, false, kTestFileSystemType);
   disk_manager->SetupDefaultReplies();
 #else
   ImageWriterUtilityClient::SetFactoryForTesting(&utility_client_factory_);
@@ -269,7 +266,7 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
 
 void ImageWriterTestUtils::TearDown() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ImageBurnerClient::SetInstanceForTest(nullptr);
+  ash::ImageBurnerClient::SetInstanceForTest(nullptr);
   image_burner_client_.reset();
 
   if (chromeos::DBusThreadManager::IsInitialized()) {

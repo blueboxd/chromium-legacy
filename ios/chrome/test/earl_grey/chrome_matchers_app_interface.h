@@ -272,6 +272,9 @@
 // Returns matcher for the privacy table view.
 + (id<GREYMatcher>)settingsPrivacyTableView;
 
+// Returns matcher for the privacy safe browsing table view.
++ (id<GREYMatcher>)settingsPrivacySafeBrowsingTableView;
+
 // Returns matcher for the Content Settings button on the main Settings screen.
 + (id<GREYMatcher>)contentSettingsButton;
 
@@ -559,6 +562,34 @@
 // Returns matcher for the settings action button in the overflow menu
 // carousel.
 + (id<GREYMatcher>)settingsActionButton;
+
+#pragma mark - Promo style view controller
+
+// Returns matcher for the primary action button.
++ (id<GREYMatcher>)promoStylePrimaryActionButtonMatcher;
+
+// Returns matcher for the secondary action button.
++ (id<GREYMatcher>)promoStyleSecondaryActionButtonMatcher;
+
+#pragma mark - Incognito Interstitial
+
+// Returns a matcher for the Incognito Interstitial view controller.
++ (id<GREYMatcher>)incognitoInterstitial;
+
+// Returns a matcher for the subtitle of the Incognito Interstitial,
+// as it should appear when `URL` was given to the Interstitial.
++ (id<GREYMatcher>)incognitoInterstitialSubtitleForURL:(NSString*)url;
+
+// Returns a matcher for the primary action button in the Incognito
+// Interstitial.
++ (id<GREYMatcher>)incognitoInterstitialOpenInChromeIncognitoButton;
+
+// Returns a matcher for the secondary action button in the Incognito
+// Interstitial.
++ (id<GREYMatcher>)incognitoInterstitialOpenInChromeButton;
+
+// Returns a matcher for the Cancel button in the Incognito Interstitial.
++ (id<GREYMatcher>)incognitoInterstitialCancelButton;
 
 #pragma mark - Manual Fallback
 

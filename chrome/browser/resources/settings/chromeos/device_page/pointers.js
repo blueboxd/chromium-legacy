@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../../controls/settings_radio_group.js';
 import '../../controls/settings_slider.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -68,11 +68,11 @@ class SettingsPointersElement extends SettingsPointersElementBase {
           return [
             {
               value: false,
-              name: loadTimeData.getString('primaryMouseButtonLeft')
+              name: loadTimeData.getString('primaryMouseButtonLeft'),
             },
             {
               value: true,
-              name: loadTimeData.getString('primaryMouseButtonRight')
+              name: loadTimeData.getString('primaryMouseButtonRight'),
             },
           ];
         },

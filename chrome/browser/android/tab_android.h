@@ -35,7 +35,7 @@ class TabWebContentsDelegateAndroid;
 namespace content {
 class DevToolsAgentHost;
 class WebContents;
-}
+}  // namespace content
 
 class TabAndroid : public base::SupportsUserData {
  public:
@@ -84,6 +84,7 @@ class TabAndroid : public base::SupportsUserData {
   int GetAndroidId() const;
   bool IsNativePage() const;
   int GetLaunchType() const;
+  int GetUserAgent() const;
 
   // Return the tab title.
   std::u16string GetTitle() const;
@@ -100,6 +101,10 @@ class TabAndroid : public base::SupportsUserData {
   Profile* GetProfile() const;
   sync_sessions::SyncedTabDelegate* GetSyncedTabDelegate() const;
 
+  // Whether this tab is an incognito tab. Prefer
+  // `GetProfile()->IsOffTheRecord()` unless `web_contents()` is nullptr.
+  bool IsIncognito() const;
+
   // Delete navigation entries matching predicate from frozen state.
   void DeleteFrozenNavigationEntries(
       const WebContentsState::DeletionPredicate& predicate);
@@ -113,6 +118,8 @@ class TabAndroid : public base::SupportsUserData {
 
   bool IsCustomTab();
   bool IsHidden();
+
+  static bool isHardwareKeyboardAvailable(raw_ptr<TabAndroid> tab_android);
 
   // Observers -----------------------------------------------------------------
 

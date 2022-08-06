@@ -46,6 +46,7 @@ const char kLowboxSid[] = "lowboxSid";
 const char kPlatformMitigations[] = "platformMitigations";
 const char kPolicyRules[] = "policyRules";
 const char kProcessId[] = "processId";
+const char kTag[] = "tag";
 
 // Values in snapshots of Policies.
 const char kDisabled[] = "disabled";
@@ -310,8 +311,9 @@ std::string GetPolicyOpcode(const PolicyOpcode* opcode, bool continuation) {
 }
 
 // Uses |service| to index into |policy_rules| returning a list of opcodes.
-base::Value GetPolicyOpcodes(const PolicyGlobal* policy_rules, IpcTag service) {
-  base::Value entry(base::Value::Type::LIST);
+base::Value::List GetPolicyOpcodes(const PolicyGlobal* policy_rules,
+                                   IpcTag service) {
+  base::Value::List entry;
   PolicyBuffer* policy_buffer =
       policy_rules->entry[static_cast<size_t>(service)];
   // Build up rules and emit when we hit an action.
@@ -333,31 +335,31 @@ base::Value GetPolicyOpcodes(const PolicyGlobal* policy_rules, IpcTag service) {
   return entry;
 }
 
-base::Value GetPolicyRules(const PolicyGlobal* policy_rules) {
+base::Value::Dict GetPolicyRules(const PolicyGlobal* policy_rules) {
   DCHECK(policy_rules);
-  base::Value results(base::Value::Type::DICTIONARY);
+  base::Value::Dict results;
 
   for (size_t i = 0; i < kMaxServiceCount; i++) {
     if (!policy_rules->entry[i])
       continue;
     IpcTag service = static_cast<IpcTag>(i);
-    results.SetKey(GetIpcTagAsString(service),
-                   GetPolicyOpcodes(policy_rules, service));
+    results.Set(GetIpcTagAsString(service),
+                GetPolicyOpcodes(policy_rules, service));
   }
 
   return results;
 }
 
 // HandleMap is just wstrings, nested sets could be empty.
-base::Value GetHandlesToClose(const HandleMap& handle_map) {
-  base::Value results(base::Value::Type::DICTIONARY);
+base::Value::Dict GetHandlesToClose(const HandleMap& handle_map) {
+  base::Value::Dict results;
   for (const auto& kv : handle_map) {
-    base::Value entries(base::Value::Type::LIST);
+    base::Value::List entries;
     // kv.second may be an empty map.
     for (const auto& entry : kv.second) {
       entries.Append(base::AsStringPiece16(entry));
     }
-    results.SetKey(base::WideToUTF8(kv.first), std::move(entries));
+    results.Set(base::WideToUTF8(kv.first), std::move(entries));
   }
   return results;
 }
@@ -368,10 +370,12 @@ base::Value GetHandlesToClose(const HandleMap& handle_map) {
 // quickly in the BrokerServices tracker thread.
 PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
   DCHECK(policy);
+  ConfigBase* config = policy->config();
   // TODO(crbug/997273) Add more fields once webui plumbing is complete.
   process_id_ = base::strict_cast<uint32_t>(policy->target_->ProcessId());
   lockdown_level_ = policy->lockdown_level_;
   job_level_ = policy->job_level_;
+  tag_ = policy->tag_;
 
   // Select the final integrity level.
   if (policy->delayed_integrity_level_ == INTEGRITY_LEVEL_LAST)
@@ -394,17 +398,18 @@ PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
     app_container_type_ = policy->app_container_->GetAppContainerType();
   }
 
-  if (policy->policy_) {
-    size_t policy_mem_size = policy->policy_->data_size + sizeof(PolicyGlobal);
+  if (config->policy_) {
+    PolicyGlobal* policy_rules = config->policy_;
+    size_t policy_mem_size = policy_rules->data_size + sizeof(PolicyGlobal);
     policy_rules_.reset(
         static_cast<sandbox::PolicyGlobal*>(::operator new(policy_mem_size)));
-    memcpy(policy_rules_.get(), policy->policy_, policy_mem_size);
+    memcpy(policy_rules_.get(), policy_rules, policy_mem_size);
     // Fixup pointers (see |PolicyGlobal| in policy_low_level.h).
-    PolicyBuffer** original_entries = policy->policy_->entry;
-    PolicyBuffer** copy_base = policy_rules_->entry;
+    PolicyBuffer** original_entries = policy_rules->entry;
+    PolicyBuffer** copy_base = policy_rules->entry;
     for (size_t i = 0; i < kMaxServiceCount; i++) {
-      if (policy_rules_->entry[i]) {
-        policy_rules_->entry[i] = reinterpret_cast<PolicyBuffer*>(
+      if (policy_rules->entry[i]) {
+        policy_rules->entry[i] = reinterpret_cast<PolicyBuffer*>(
             reinterpret_cast<char*>(copy_base) +
             (reinterpret_cast<char*>(original_entries[i]) -
              reinterpret_cast<char*>(original_entries)));
@@ -423,59 +428,53 @@ const char* PolicyDiagnostic::JsonString() {
   if (json_string_)
     return json_string_->c_str();
 
-  base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey(kProcessId, base::Value(base::strict_cast<double>(process_id_)));
-  value.SetKey(kLockdownLevel,
-               base::Value(GetTokenLevelInEnglish(lockdown_level_)));
-  value.SetKey(kJobLevel, base::Value(GetJobLevelInEnglish(job_level_)));
-  value.SetKey(
-      kDesiredIntegrityLevel,
-      base::Value(GetIntegrityLevelInEnglish(desired_integrity_level_)));
-  value.SetKey(kDesiredMitigations,
-               base::Value(GetMitigationsAsHex(desired_mitigations_)));
-  value.SetKey(kPlatformMitigations,
-               base::Value(GetPlatformMitigationsAsHex(desired_mitigations_)));
-  value.SetKey(kComponentFilters,
-               base::Value(GetComponentFilterAsHex(desired_mitigations_)));
+  base::Value::Dict dict;
+  dict.Set(kProcessId, base::strict_cast<double>(process_id_));
+  dict.Set(kTag, base::Value(tag_));
+  dict.Set(kLockdownLevel, GetTokenLevelInEnglish(lockdown_level_));
+  dict.Set(kJobLevel, GetJobLevelInEnglish(job_level_));
+  dict.Set(kDesiredIntegrityLevel,
+           GetIntegrityLevelInEnglish(desired_integrity_level_));
+  dict.Set(kDesiredMitigations, GetMitigationsAsHex(desired_mitigations_));
+  dict.Set(kPlatformMitigations,
+           GetPlatformMitigationsAsHex(desired_mitigations_));
+  dict.Set(kComponentFilters, GetComponentFilterAsHex(desired_mitigations_));
 
   if (app_container_sid_) {
-    value.SetStringKey(
-        kAppContainerSid,
-        base::AsStringPiece16(GetSidAsString(*app_container_sid_)));
-    std::vector<base::Value> caps;
+    dict.Set(kAppContainerSid,
+             base::AsStringPiece16(GetSidAsString(*app_container_sid_)));
+    base::Value::List caps;
     for (const auto& sid : capabilities_) {
       auto sid_value = base::Value(base::AsStringPiece16(GetSidAsString(sid)));
-      caps.push_back(std::move(sid_value));
+      caps.Append(std::move(sid_value));
     }
     if (!caps.empty()) {
-      value.SetKey(kAppContainerCapabilities, base::Value(std::move(caps)));
+      dict.Set(kAppContainerCapabilities, std::move(caps));
     }
-    std::vector<base::Value> imp_caps;
+    base::Value::List imp_caps;
     for (const auto& sid : initial_capabilities_) {
       auto sid_value = base::Value(base::AsStringPiece16(GetSidAsString(sid)));
-      imp_caps.push_back(std::move(sid_value));
+      imp_caps.Append(std::move(sid_value));
     }
     if (!imp_caps.empty()) {
-      value.SetKey(kAppContainerInitialCapabilities,
-                   base::Value(std::move(imp_caps)));
+      dict.Set(kAppContainerInitialCapabilities, std::move(imp_caps));
     }
 
     if (app_container_type_ == AppContainerType::kLowbox)
-      value.SetStringKey(kLowboxSid, base::AsStringPiece16(
-                                         GetSidAsString(*app_container_sid_)));
+      dict.Set(kLowboxSid,
+               base::AsStringPiece16(GetSidAsString(*app_container_sid_)));
   }
 
   if (policy_rules_)
-    value.SetKey(kPolicyRules, GetPolicyRules(policy_rules_.get()));
+    dict.Set(kPolicyRules, GetPolicyRules(policy_rules_.get()));
 
-  value.SetStringKey(kDisconnectCsrss,
-                     is_csrss_connected_ ? kDisabled : kEnabled);
+  dict.Set(kDisconnectCsrss, is_csrss_connected_ ? kDisabled : kEnabled);
   if (!handles_to_close_.empty())
-    value.SetKey(kHandlesToClose, GetHandlesToClose(handles_to_close_));
+    dict.Set(kHandlesToClose, GetHandlesToClose(handles_to_close_));
 
   auto json_string = std::make_unique<std::string>();
   JSONStringValueSerializer to_json(json_string.get());
-  CHECK(to_json.Serialize(value));
+  CHECK(to_json.Serialize(dict));
   json_string_ = std::move(json_string);
   return json_string_->c_str();
 }

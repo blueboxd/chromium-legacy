@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1621067168122174824">Покрени тест пуњења</translation>
 <translation id="1631385268983122904">Још не састављајте уређај</translation>
-<translation id="1639239467298939599">Учитавање</translation>
+<translation id="1639239467298939599">Учитава се</translation>
 <translation id="1641857168437328880">Увлачење документа (једнострано)</translation>
 <translation id="1643449475550628585">Мењајте слику позадине сваког дана</translation>
 <translation id="1644574205037202324">Историја</translation>
 <translation id="1645954272419197032">Потврдите информације о уређају</translation>
 <translation id="1662989795263954667">Заустављено – нема више мастила</translation>
+<translation id="1664796644829245314">Преглед за <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Уграђени VPN</translation>
 <translation id="1672499492233627739">Видео фид веб-камере</translation>
 <translation id="1676557873873341166">Снима се видео</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Видео конференције</translation>
 <translation id="1852934301711881861">Инсталирај Chrome OS Flex</translation>
 <translation id="1856388568474281774">Стрелица надоле</translation>
+<translation id="1858620243986915808">Приложите снимак екрана</translation>
 <translation id="1871569928317311284">Искључите тамну тему</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Искључите тамни режим</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Слика Google профила</translation>
 <translation id="1979103255016296513">Рок за промену лозинке је истекао</translation>
 <translation id="1999615961760456652">Улазни портал</translation>
+<translation id="200669432486043882">Замени датотеку</translation>
 <translation id="2006864819935886708">Успостављање везе</translation>
 <translation id="2008685064673031089">Примарна претрага</translation>
 <translation id="2011174342667534258">Верзија пакета за развој софтвера:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2461822463642141190">Актуелно</translation>
 <translation id="2480034874476596812">Ручно искључивање</translation>
+<translation id="248546197012830854">Уређај је офлајн. Повежите се на WiFi мрежу да бисте видели садржај помоћи.</translation>
 <translation id="2491955442992294626">Тастери се не тестирају када користите други прозор</translation>
 <translation id="2493126929778606526">Најбоље аутоматски изабране слике</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
 <translation id="3009958530611748826">Изаберите фолдер за чување</translation>
 <translation id="3017079585324758401">Позадина</translation>
+<translation id="302435934487327038">Инсталирање је завршено</translation>
 <translation id="3027578600144895987">Затворите камеру</translation>
 <translation id="3031560714565892478">Уређај је видео камера.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Крајња тачка</translation>
 <translation id="3069085583900247081">Тест није успео</translation>
-<translation id="3076243757415932261">Валидирају се компоненте…</translation>
 <translation id="3083667275341675831">Дијагностика повезивости</translation>
 <translation id="3084958266922136097">Онемогућите чувар екрана</translation>
 <translation id="3091839911843451378">Није успело – заустављено је</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Желите ли стварно да обришете сву историју штампања? Задаци штампања који су у току се не бришу.</translation>
 <translation id="3383751554789092165">Мењајте информације о уређају према потреби.</translation>
 <translation id="3404249063913988450">Омогућите чувар екрана</translation>
-<translation id="3404770484521709967">Компоненте су правилно монтиране.</translation>
 <translation id="3413935475507503304">Да бисте наставили са ажурирањем, кликните на Даље.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Безбедност</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Стара лозинка</translation>
 <translation id="4453205916657964690">Маска подмреже</translation>
 <translation id="4454245904991689773">Скенирај у:</translation>
-<translation id="4472575034687746823">Започнимо</translation>
 <translation id="4479639480957787382">Етернет</translation>
 <translation id="4483049906298469269">Пинговање мрежног пролаза који није подразумеван није успело</translation>
 <translation id="4500213108254186382">Акцелерометар за поклопац</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149">Затвори поправку уређаја <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">У току је</translation>
 <translation id="6620487321149975369">Задаци штампања ће се појавити у историји ако их не уклоните ручно</translation>
+<translation id="6624819909909965616">Не можете да отпремите фајл већи од 10 MB</translation>
 <translation id="6643016212128521049">Обриши</translation>
+<translation id="6644568396961840069">Чување фајла није успело. Прикључите другу спољну меморију или пробајте поново касније.</translation>
 <translation id="6647510110698214773">Алгоритам шифровања</translation>
 <translation id="6650062777702288430">Прекидач за кана/алфанумеричке знакове</translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6659594942844771486">Картица</translation>
 <translation id="6692996468359469499">Пронађите информације у вези са вашим избором</translation>
 <translation id="6704062477274546131">DNS разрешавање</translation>
-<translation id="6721744718589119342">Можда ћемо вам имејлом затражити више информација или новости</translation>
 <translation id="6723839937902243910">Енергија</translation>
 <translation id="6723847290197874913">Позадинско осветљење тастатуре</translation>
 <translation id="672609503628871915">Прикажи шта је ново</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="6977381486153291903">Ревизија фирмвера</translation>
 <translation id="6995564396478647735">Уверите се да је заштита од уписивања укључена</translation>
+<translation id="7005833343836210400">Уређај је офлајн</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> управља овим уређајем и има приступ свим активностима корисника, укључујући посећене веб-странице, лозинке и имејлове.</translation>
 <translation id="7040230719604914234">Мобилни оператер</translation>
 <translation id="7041549558901442110">Уређај није повезан.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">Освежи</translation>
 <translation id="7212734716605298123">Ажурирања фирмвера за екстерне уређаје</translation>
 <translation id="7216409898977639127">Мобилни оператер</translation>
+<translation id="725133483556299729">Изаберите имејл</translation>
 <translation id="7271040990581020067">Скенер се тренутно користи. Пробајте поново касније.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Изаберите 1 или више компоненти и пробајте поново или прескочите калибрацију</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">Приватни кључ</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="7994702968232966508">EAP метод</translation>
+<translation id="8018928621986160031">Сачувано је на листи „<ph name="FILE_LOCATION" />“</translation>
 <translation id="802154636333426148">Преузимање није успело</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Омогућите режим аутоподешавања боја</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">Заштита од уписивања је и даље искључена. Да бисте наставили, укључите заштиту од уписивања.</translation>
 <translation id="8075838845814659848">Преостали ниво напуњености батерије</translation>
 <translation id="8082366717211101304">DNS не може да се разреши из Android апликација</translation>
-<translation id="8083281199617904460">Овај процес поправке смеју да обављају само обучени сервисери. Покрените га само после замене неисправних компоненти.</translation>
 <translation id="808894953321890993">Промени лозинку</translation>
+<translation id="8094062939584182041">Дозволите Google-у да вам пошаље имејл о овом проблему</translation>
 <translation id="8104083085214006426">Користите отворену и необезбеђену мрежу</translation>
 <translation id="8109786307828817014">Желите да наставите са калибрацијом која није успела?</translation>
 <translation id="811820734797650957">(Android) Мрежни пролаз може да се пингује</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">Повежите се</translation>
 <translation id="8221728673725659466">Калибрација је довршена</translation>
 <translation id="8226628635270268143">Одаберите омиљене слике и албуме</translation>
+<translation id="8227119283605456246">Приложи датотеку</translation>
 <translation id="8230672074305416752">Пинговање подразумеваног мрежног пролаза није успело</translation>
 <translation id="8246209727385807362">Непознат мобилни оператер</translation>
 <translation id="827422111966801947">Тамноплава</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">Није покренуто</translation>
 <translation id="8620617069779373398">Статус роминга</translation>
 <translation id="8655295600908251630">Канал</translation>
+<translation id="8655828773034788261">Дели URL:</translation>
 <translation id="8660881923941176839">фунте</translation>
 <translation id="8662671328352114214">Придружите се <ph name="TYPE" /> мрежи</translation>
 <translation id="8671972493856476349">Ажурирај на <ph name="VERSION_NUMBER" /> и рестартуј</translation>

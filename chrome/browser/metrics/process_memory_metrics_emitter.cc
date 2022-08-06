@@ -207,8 +207,10 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetCommandBuffer},
     {"gpu/gr_shader_cache", "Gpu.GrShaderCache", MetricSize::kSmall,
      kEffectiveSize, EmitTo::kSizeInUmaOnly, nullptr},
-    {"gpu/shared_images", "gpu::SharedImageStub", MetricSize::kSmall,
-     kEffectiveSize, EmitTo::kIgnored, nullptr},
+    // Not effective size, to account for the total footprint, a large fraction
+    // of it being claimed by renderers.
+    {"gpu/shared_images", "SharedImages", MetricSize::kLarge, kSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
     {"gpu/transfer_cache", "ServiceTransferCache", MetricSize::kCustom, kSize,
      EmitTo::kSizeInUmaOnly, nullptr, ImageSizeMetricRange},
     {"gpu/transfer_cache", "ServiceTransferCache.AvgImageSize",
@@ -264,6 +266,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      MetricSize::kLarge, "max_allocated_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.MaxCommittedSize",
      MetricSize::kLarge, "max_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator", "Malloc.CommittedSize", MetricSize::kLarge,
+     "virtual_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.Wasted", MetricSize::kLarge,
      "wasted", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.Fragmentation",
@@ -311,7 +315,10 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc/partitions/array_buffer",
      "PartitionAlloc.MaxCommittedSize.ArrayBuffer", MetricSize::kLarge,
-     "max_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
+     "max_committed", EmitTo::kSizeInUmaOnly, nullptr},
+    {"partition_alloc/partitions/array_buffer",
+     "PartitionAlloc.CommittedSize.ArrayBuffer", MetricSize::kLarge,
+     "virtual_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc/partitions/array_buffer",
      "PartitionAlloc.MaxAllocatedSize.ArrayBuffer", MetricSize::kLarge,
      "max_allocated_size", EmitTo::kSizeInUmaOnly, nullptr},
@@ -325,7 +332,10 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc/partitions/buffer",
      "PartitionAlloc.MaxCommittedSize.Buffer", MetricSize::kLarge,
-     "max_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
+     "max_committed", EmitTo::kSizeInUmaOnly, nullptr},
+    {"partition_alloc/partitions/buffer", "PartitionAlloc.CommittedSize.Buffer",
+     MetricSize::kLarge, "virtual_committed_size", EmitTo::kSizeInUmaOnly,
+     nullptr},
     {"partition_alloc/partitions/buffer",
      "PartitionAlloc.MaxAllocatedSize.Buffer", MetricSize::kLarge,
      "max_allocated_size", EmitTo::kSizeInUmaOnly, nullptr},
@@ -340,7 +350,10 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc/partitions/fast_malloc",
      "PartitionAlloc.MaxCommittedSize.FastMalloc", MetricSize::kLarge,
-     "max_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
+     "max_committed", EmitTo::kSizeInUmaOnly, nullptr},
+    {"partition_alloc/partitions/fast_malloc",
+     "PartitionAlloc.CommittedSize.FastMalloc", MetricSize::kLarge,
+     "virtual_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc/partitions/fast_malloc",
      "PartitionAlloc.MaxAllocatedSize.FastMalloc", MetricSize::kLarge,
      "max_allocated_size", EmitTo::kSizeInUmaOnly, nullptr},
@@ -359,7 +372,10 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc/partitions/layout",
      "PartitionAlloc.MaxCommittedSize.Layout", MetricSize::kLarge,
-     "max_committed_size", EmitTo::kSizeInUmaOnly, nullptr},
+     "max_committed", EmitTo::kSizeInUmaOnly, nullptr},
+    {"partition_alloc/partitions/layout", "PartitionAlloc.CommittedSize.Layout",
+     MetricSize::kLarge, "virtual_committed_size", EmitTo::kSizeInUmaOnly,
+     nullptr},
     {"partition_alloc/partitions/layout",
      "PartitionAlloc.MaxAllocatedSize.Layout", MetricSize::kLarge,
      "max_allocated_size", EmitTo::kSizeInUmaOnly, nullptr},
@@ -1234,9 +1250,6 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
       }
     }
 
-    UMA_HISTOGRAM_MEMORY_LARGE_MB(
-        "Memory.Experimental.Total2.PrivateMemoryFootprint",
-        private_footprint_total_kb / kKiB);
 #if BUILDFLAG(IS_MAC)
     // Resident set is not populated on Mac.
     DCHECK_EQ(resident_set_total_kb, 0U);

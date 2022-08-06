@@ -199,7 +199,8 @@ class PictureInPictureTestWebFrameClient
       WebMediaPlayerEncryptedMediaClient*,
       WebContentDecryptionModule*,
       const WebString& sink_id,
-      const cc::LayerTreeSettings& settings) override {
+      const cc::LayerTreeSettings& settings,
+      scoped_refptr<base::TaskRunner> compositor_worker_task_runner) override {
     return web_media_player_.release();
   }
 
@@ -536,13 +537,26 @@ TEST_F(PictureInPictureControllerTest,
   EXPECT_EQ(Service().source_bounds(), gfx::Rect(173, 173, 20, 20));
 }
 
+TEST_F(PictureInPictureControllerTest, VideoIsNotAllowedIfAutoPip) {
+  EXPECT_EQ(PictureInPictureControllerImpl::Status::kEnabled,
+            PictureInPictureControllerImpl::From(GetDocument())
+                .IsElementAllowed(*Video(), /*report_failure=*/false));
+
+  // Simulate auto-pip mode.
+  Video()->SetPersistentState(true);
+
+  EXPECT_EQ(PictureInPictureControllerImpl::Status::kAutoPipAndroid,
+            PictureInPictureControllerImpl::From(GetDocument())
+                .IsElementAllowed(*Video(), /*report_failure=*/false));
+}
+
 TEST_F(PictureInPictureControllerTest, CreateDocumentPictureInPictureWindow) {
   EXPECT_EQ(nullptr, PictureInPictureControllerImpl::From(GetDocument())
                          .pictureInPictureWindow());
 
-  // Enable the PictureInPictureV2 flag.
+  // Enable the DocumentPictureInPictureAPI flag.
   ScopedPictureInPictureAPIForTest scoped_dependency(true);
-  ScopedPictureInPictureV2ForTest scoped_feature(true);
+  ScopedDocumentPictureInPictureAPIForTest scoped_feature(true);
 
   V8TestingScope scope;
   KURL url = KURL("https://example.com/");

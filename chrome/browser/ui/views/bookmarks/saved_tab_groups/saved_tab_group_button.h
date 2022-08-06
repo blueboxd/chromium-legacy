@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group.h"
+#include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "content/public/browser/page.h"
 #include "content/public/browser/page_navigator.h"
@@ -33,7 +33,6 @@ class SavedTabGroupButton : public views::MenuButton {
       const SavedTabGroup& group,
       base::RepeatingCallback<content::PageNavigator*()> page_navigator,
       PressedCallback callback,
-      bool is_group_in_tabstrip,
       bool animations_enabled = true);
 
   SavedTabGroupButton(const SavedTabGroupButton&) = delete;

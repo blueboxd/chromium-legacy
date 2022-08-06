@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 import mock
 import unittest
 
@@ -68,12 +69,7 @@ def run_results(port, extra_skipped_tests=None):
     return test_run_results.TestRunResults(expectations, len(tests), None)
 
 
-def summarized_results(port,
-                       expected,
-                       passing,
-                       flaky,
-                       only_include_failing=False,
-                       extra_skipped_tests=None):
+def generate_results(port, expected, passing, flaky, extra_skipped_tests=None):
     test_is_slow = False
 
     all_retry_results = []
@@ -136,9 +132,19 @@ def summarized_results(port,
             get_result('failures/expected/keyboard.html', ResultType.Skip),
             expected, test_is_slow)
 
+        dummy_expected = DriverOutput(None, None, None, None)
+        dummy_actual = DriverOutput(None, None, None, None)
+        dummy_actual.image_diff_stats = {
+            'maxDifference': 20,
+            'totalPixels': 50
+        }
+        image_hash_failure = test_failures.FailureImageHashMismatch(
+            dummy_actual, dummy_expected)
+
         initial_results.add(
-            get_result('failures/expected/text.html', ResultType.Failure),
-            expected, test_is_slow)
+            test_results.TestResult('failures/expected/text.html',
+                                    failures=[image_hash_failure]), expected,
+            test_is_slow)
 
         all_retry_results = [
             run_results(port, extra_skipped_tests),
@@ -200,12 +206,36 @@ def summarized_results(port,
                 get_result('failures/expected/timeout.html',
                            ResultType.Failure), False, test_is_slow)
 
+    return initial_results, all_retry_results
+
+
+def summarized_results(port,
+                       expected,
+                       passing,
+                       flaky,
+                       only_include_failing=False,
+                       extra_skipped_tests=None):
+    initial_results, all_retry_results = generate_results(
+        port, expected, passing, flaky, extra_skipped_tests)
     return test_run_results.summarize_results(
         port,
         initial_results.expectations,
         initial_results,
         all_retry_results,
         only_include_failing=only_include_failing)
+
+
+def test_run_histories(port,
+                       expected,
+                       passing,
+                       flaky,
+                       extra_skipped_tests=None):
+    initial_results, all_retry_results = generate_results(
+        port, expected, passing, flaky, extra_skipped_tests)
+    return test_run_results.test_run_histories(port,
+                                               initial_results.expectations,
+                                               initial_results,
+                                               all_retry_results)
 
 
 class RunResultsWithSinkTest(unittest.TestCase):
@@ -335,6 +365,19 @@ class SummarizedResultsTest(unittest.TestCase):
             extra_skipped_tests=['passes/text.html'])
         actual = summary['tests']['passes']['text.html']['expected']
         self.assertEquals(sorted(list(actual.split(" "))), ['PASS', 'SKIP'])
+
+    def test_summarized_results_image_diff_stats(self):
+        self.port._options.builder_name = 'dummy builder'
+        summary = summarized_results(self.port,
+                                     expected=False,
+                                     passing=False,
+                                     flaky=False)
+        actual = summary['tests']['failures']['expected']['text.html'][
+            'image_diff_stats']
+        self.assertEqual(actual, {'maxDifference': 20, 'totalPixels': 50})
+        self.assertNotIn(
+            'image_diff_stats',
+            summary['tests']['failures']['expected']['keyboard.html'])
 
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'
@@ -612,3 +655,77 @@ class SummarizedResultsTest(unittest.TestCase):
         summary = summarized_results(
             self.port, expected=False, passing=False, flaky=False)
         self.assertEqual(summary['path_delimiter'], '/')
+
+
+def _get_all_results(run_histories, test_name):
+    return [
+        x for x in run_histories['run_histories']
+        if x['test_name'] == test_name
+    ]
+
+
+class TestRunHistoriesTests(unittest.TestCase):
+    def setUp(self):
+        host = MockHost()
+        self.port = host.port_factory.get(port_name='test')
+
+    def test_run_histories(self):
+        run_histories = test_run_histories(self.port,
+                                           expected=True,
+                                           passing=False,
+                                           flaky=False)
+        self.assertIn('run_histories', run_histories)
+        self.assertEqual(5, len(run_histories['run_histories']))
+
+    def test_expected_results(self):
+        run_histories = test_run_histories(self.port,
+                                           expected=True,
+                                           passing=False,
+                                           flaky=False)
+        passes_results = _get_all_results(run_histories, 'passes/text.html')
+        self.assertEqual(1, len(passes_results))
+        passes_result = passes_results[0]
+        self.assertEqual('PASS', passes_result['type'])
+        self.assertEqual(['PASS'], passes_result['expected_results'])
+        self.assertNotIn('failures', passes_result)
+
+        timeout_results = _get_all_results(run_histories,
+                                           'failures/expected/timeout.html')
+        self.assertEqual(1, len(timeout_results))
+        timeout_result = timeout_results[0]
+        self.assertEqual('TIMEOUT', timeout_result['type'])
+        self.assertEqual(['TIMEOUT'], timeout_result['expected_results'])
+        self.assertIn('failures', timeout_result)
+        self.assertEqual('test timed out',
+                         timeout_result['failures'][0]['message'])
+
+    def test_passing_results(self):
+        run_histories = test_run_histories(self.port,
+                                           expected=False,
+                                           passing=True,
+                                           flaky=False)
+        skip_results = _get_all_results(run_histories,
+                                        'passes/skipped/skip.html')
+        self.assertEqual(1, len(skip_results))
+        skip_result = skip_results[0]
+        self.assertEqual('SKIP', skip_result['type'])
+        self.assertEqual('crbug.com/123', skip_result['bugs'])
+
+    def test_flaky_results(self):
+        run_histories = test_run_histories(self.port,
+                                           expected=False,
+                                           passing=False,
+                                           flaky=True)
+
+        passes_results = _get_all_results(run_histories, 'passes/text.html')
+        self.assertEqual(4, len(passes_results))
+        passes_result = passes_results[0]
+        self.assertEqual('TIMEOUT', passes_result['type'])
+        self.assertEqual(['PASS'], passes_result['expected_results'])
+
+    def test_json_serializable(self):
+        run_histories = test_run_histories(self.port,
+                                           expected=False,
+                                           passing=False,
+                                           flaky=False)
+        json.dumps(run_histories)

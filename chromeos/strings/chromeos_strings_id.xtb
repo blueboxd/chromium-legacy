@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Histori</translation>
 <translation id="1645954272419197032">Konfirmasi informasi perangkat</translation>
 <translation id="1662989795263954667">Dihentikan - Tinta habis</translation>
+<translation id="1664796644829245314">Pratinjau <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN bawaan</translation>
 <translation id="1672499492233627739">Feed video webcam</translation>
 <translation id="1676557873873341166">Merekam video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Konferensi Video</translation>
 <translation id="1852934301711881861">Instal ChromeOS Flex</translation>
 <translation id="1856388568474281774">Panah bawah</translation>
+<translation id="1858620243986915808">Lampirkan screenshot</translation>
 <translation id="1871569928317311284">Nonaktifkan tema gelap</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Nonaktifkan mode gelap</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Foto profil Google</translation>
 <translation id="1979103255016296513">Perubahan sandi melewati batas waktu</translation>
 <translation id="1999615961760456652">Captive Portal</translation>
+<translation id="200669432486043882">Ganti file</translation>
 <translation id="2006864819935886708">Konektivitas</translation>
 <translation id="2008685064673031089">Penelusuran bilangan prima</translation>
 <translation id="2011174342667534258">Versi SDK:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Jenis</translation>
 <translation id="2461822463642141190">Arus</translation>
 <translation id="2480034874476596812">Nonaktifkan secara manual</translation>
+<translation id="248546197012830854">Perangkat sedang offline. Hubungkan ke jaringan Wi-Fi untuk melihat konten bantuan.</translation>
 <translation id="2491955442992294626">Tombol tidak diuji saat Anda sedang menggunakan jendela lain</translation>
 <translation id="2493126929778606526">Foto terbaik Anda, dipilih otomatis</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">PERBARUI</translation>
 <translation id="3009958530611748826">Pilih folder untuk menyimpan</translation>
 <translation id="3017079585324758401">Latar belakang</translation>
+<translation id="302435934487327038">Penginstalan selesai</translation>
 <translation id="3027578600144895987">Tutup kamera</translation>
 <translation id="3031560714565892478">Perangkat adalah kamera video.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Endpoint</translation>
 <translation id="3069085583900247081">Pengujian gagal</translation>
-<translation id="3076243757415932261">Memvalidasi komponen ...</translation>
 <translation id="3083667275341675831">Diagnostik Konektivitas</translation>
 <translation id="3084958266922136097">Nonaktifkan screen saver</translation>
 <translation id="3091839911843451378">Gagal - Berhenti</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Yakin ingin menghapus semua histori cetak? Pekerjaan cetak yang sedang berlangsung tidak akan dihapus.</translation>
 <translation id="3383751554789092165">Ubah informasi perangkat sesuai kebutuhan.</translation>
 <translation id="3404249063913988450">Aktifkan screen saver</translation>
-<translation id="3404770484521709967">Komponen diinstal dengan benar.</translation>
 <translation id="3413935475507503304">Untuk melanjutkan update, klik Berikutnya.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Keamanan</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Sandi lama</translation>
 <translation id="4453205916657964690">Subnet mask</translation>
 <translation id="4454245904991689773">Pindai ke</translation>
-<translation id="4472575034687746823">Memulai</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Gagal melakukan ping ke gateway jaringan non-default</translation>
 <translation id="4500213108254186382">Penutup Akselerometer</translation>
@@ -660,14 +662,15 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6611280807952151149">Keluar dari perbaikan <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Sedang berjalan</translation>
 <translation id="6620487321149975369">Tugas pencetakan akan muncul di histori, kecuali dihapus secara manual</translation>
+<translation id="6624819909909965616">Tidak dapat mengupload file yang lebih besar dari 10 MB</translation>
 <translation id="6643016212128521049">Hapus</translation>
+<translation id="6644568396961840069">File tidak dapat disimpan. Coba colokkan penyimpanan eksternal lain, atau coba lagi nanti.</translation>
 <translation id="6647510110698214773">Algoritme enkripsi</translation>
 <translation id="6650062777702288430">Beralih kana/alfanumerik</translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6692996468359469499">Dapatkan info terkait pilihan Anda</translation>
 <translation id="6704062477274546131">Resolusi DNS</translation>
-<translation id="6721744718589119342">Kami mungkin mengirimi Anda email untuk meminta informasi lebih lanjut atau memberikan informasi terbaru</translation>
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6723847290197874913">Lampu latar keyboard</translation>
 <translation id="672609503628871915">Lihat apa saja yang baru</translation>
@@ -695,6 +698,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6977381486153291903">Revisi firmware</translation>
 <translation id="6995564396478647735">Pastikan Proteksi Tulis aktif</translation>
+<translation id="7005833343836210400">Perangkat sedang offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> akan mengelola perangkat ini dan memiliki akses ke semua aktivitas pengguna, termasuk halaman yang dikunjungi, sandi, dan email.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Perangkat tidak terhubung.</translation>
@@ -720,6 +724,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7180611975245234373">Perbarui</translation>
 <translation id="7212734716605298123">Update firmware untuk perangkat eksternal</translation>
 <translation id="7216409898977639127">Operator seluler</translation>
+<translation id="725133483556299729">Pilih email</translation>
 <translation id="7271040990581020067">Pemindai sedang digunakan. Coba lagi nanti.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Pilih 1 atau beberapa komponen lalu coba lagi, atau lewati kalibrasi</translation>
@@ -797,6 +802,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7978412674231730200">Kunci pribadi</translation>
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="7994702968232966508">Metode EAP</translation>
+<translation id="8018928621986160031">Disimpan ke "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktifkan mode warna otomatis</translation>
@@ -805,8 +811,8 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8063022551652308521">Proteksi Tulis masih dinonaktifkan. Untuk melanjutkan, aktifkan Proteksi Tulis.</translation>
 <translation id="8075838845814659848">Sisa daya baterai</translation>
 <translation id="8082366717211101304">Tidak dapat me-resolve DNS dari aplikasi Android</translation>
-<translation id="8083281199617904460">Proses perbaikan ini ditujukan untuk teknisi perbaikan terlatih. Hanya mulai perbaikan setelah mengganti komponen yang rusak.</translation>
 <translation id="808894953321890993">Ubah sandi</translation>
+<translation id="8094062939584182041">Izinkan Google mengirim email kepada Anda tentang masalah ini</translation>
 <translation id="8104083085214006426">Anda menggunakan jaringan terbuka dan tidak aman</translation>
 <translation id="8109786307828817014">Lanjutkan dengan kalibrasi yang gagal?</translation>
 <translation id="811820734797650957">(Android) Gateway Dapat Di-ping</translation>
@@ -821,6 +827,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8217675307824400706">Hubungkan</translation>
 <translation id="8221728673725659466">Kalibrasi selesai</translation>
 <translation id="8226628635270268143">Pilih foto dan album favorit</translation>
+<translation id="8227119283605456246">Lampirkan file</translation>
 <translation id="8230672074305416752">Gagal melakukan ping ke gateway jaringan default</translation>
 <translation id="8246209727385807362">Operator tidak diketahui</translation>
 <translation id="827422111966801947">Indigo</translation>
@@ -865,6 +872,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8576249514688522074">Tidak diinisialisasi</translation>
 <translation id="8620617069779373398">Status roaming</translation>
 <translation id="8655295600908251630">Saluran</translation>
+<translation id="8655828773034788261">Bagikan URL:</translation>
 <translation id="8660881923941176839">pound</translation>
 <translation id="8662671328352114214">Bergabung dengan jaringan <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Update ke <ph name="VERSION_NUMBER" /> &amp; mulai ulang</translation>

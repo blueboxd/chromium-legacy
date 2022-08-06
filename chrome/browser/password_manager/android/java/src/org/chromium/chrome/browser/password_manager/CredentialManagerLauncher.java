@@ -20,10 +20,13 @@ public interface CredentialManagerLauncher {
      * These values are persisted to logs. Entries should not be renumbered and
      * numeric values should never be reused. They should be kept in sync with the enum values
      * in enums.xml.
+     * TODO(crbug.com/1345232): These error codes are also used by PasswordCheckup, consider moving
+     * out of this class.
      */
     @IntDef({CredentialManagerError.NO_CONTEXT, CredentialManagerError.NO_ACCOUNT_NAME,
             CredentialManagerError.API_ERROR, CredentialManagerError.UNCATEGORIZED,
-            CredentialManagerError.COUNT})
+            CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED,
+            CredentialManagerError.BACKEND_NOT_AVAILABLE, CredentialManagerError.COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CredentialManagerError {
         // There is no application context.
@@ -34,7 +37,24 @@ public interface CredentialManagerLauncher {
         int API_ERROR = 2;
         // Error is not categorized.
         int UNCATEGORIZED = 3;
-        int COUNT = 4;
+        // Operation can not be executed due to unsupported backend version.
+        int BACKEND_VERSION_NOT_SUPPORTED = 4;
+        // Backend downstream implementation is not available.
+        int BACKEND_NOT_AVAILABLE = 5;
+        int COUNT = 6;
+    }
+
+    /**
+     * Serves as a general exception for failed requests to the credential manager backend.
+     */
+    class CredentialManagerBackendException extends Exception {
+        public @CredentialManagerError int errorCode;
+
+        public CredentialManagerBackendException(
+                String message, @CredentialManagerError int error) {
+            super(message);
+            errorCode = error;
+        }
     }
 
     /**

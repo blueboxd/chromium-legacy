@@ -47,23 +47,28 @@ void NGContainerFragmentBuilder::PropagateChildData(
     LogicalOffset relative_offset,
     const NGInlineContainer<LogicalOffset>* inline_container,
     absl::optional<LayoutUnit> adjustment_for_oof_propagation) {
+  // Set the child's `anchor-name` before propagating its descendants', so
+  // that ancestors have precedence over their descendants. Descendants' anchors
+  // are propagated in |PropagateOOFPositionedInfo| below.
+  if (child.IsBox()) {
+    if (const AtomicString& anchor_name = child.Style().AnchorName();
+        !anchor_name.IsNull()) {
+      DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+      anchor_query_.Set(
+          anchor_name,
+          NGLogicalAnchorReference{
+              LogicalRect{child_offset + relative_offset,
+                          child.Size().ConvertToLogical(GetWritingMode())},
+              &child});
+    }
+  }
+
   if (adjustment_for_oof_propagation &&
       child.NeedsOOFPositionedInfoPropagation()) {
     PropagateOOFPositionedInfo(child, child_offset, relative_offset,
                                /* offset_adjustment */ LogicalOffset(),
                                inline_container,
                                *adjustment_for_oof_propagation);
-  }
-
-  if (child.IsBox()) {
-    if (const AtomicString& anchor_name = child.Style().AnchorName();
-        !anchor_name.IsNull()) {
-      DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
-      anchor_query_.anchor_references.Set(
-          anchor_name,
-          LogicalRect{child_offset + relative_offset,
-                      child.Size().ConvertToLogical(GetWritingMode())});
-    }
   }
 
   // We only need to report if inflow or floating elements depend on the
@@ -440,13 +445,8 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
   }
 
   // Collect any anchor references.
-  if (const NGPhysicalAnchorQuery* anchor_query = fragment.AnchorQuery()) {
-    for (const auto& it : anchor_query->anchor_references) {
-      LogicalRect rect = converter.ToLogical(it.value);
-      rect.offset += adjusted_offset;
-      anchor_query_.anchor_references.Set(it.key, rect);
-    }
-  }
+  if (const NGPhysicalAnchorQuery* anchor_query = fragment.AnchorQuery())
+    anchor_query_.SetFromPhysical(*anchor_query, converter, adjusted_offset);
 
   NGFragmentedOutOfFlowData* oof_data = fragment.FragmentedOutOfFlowData();
   if (!oof_data)
@@ -524,8 +524,26 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
     }
   }
 
-  if (oof_data->oof_positioned_fragmentainer_descendants.IsEmpty())
+  PropagateOOFFragmentainerDescendants(fragment, offset, relative_offset,
+                                       containing_block_adjustment,
+                                       fixedpos_containing_block);
+}
+
+void NGContainerFragmentBuilder::PropagateOOFFragmentainerDescendants(
+    const NGPhysicalFragment& fragment,
+    LogicalOffset offset,
+    LogicalOffset relative_offset,
+    LayoutUnit containing_block_adjustment,
+    const NGContainingBlock<LogicalOffset>* fixedpos_containing_block,
+    HeapVector<NGLogicalOOFNodeForFragmentation>* out_list) {
+  NGFragmentedOutOfFlowData* oof_data = fragment.FragmentedOutOfFlowData();
+  if (!oof_data || oof_data->oof_positioned_fragmentainer_descendants.IsEmpty())
     return;
+
+  const WritingModeConverter converter(GetWritingDirection(), fragment.Size());
+  const NGPhysicalBoxFragment* box_fragment =
+      DynamicTo<NGPhysicalBoxFragment>(&fragment);
+  bool is_column_spanner = box_fragment && box_fragment->IsColumnSpanAll();
 
   auto& out_of_flow_fragmentainer_descendants =
       oof_data->oof_positioned_fragmentainer_descendants;
@@ -638,28 +656,33 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
       fixedpos_containing_block_rel_offset =
           fixedpos_containing_block->RelativeOffset();
     }
+    NGLogicalOOFNodeForFragmentation oof_node(
+        descendant.Node(), static_position, new_inline_container,
+        /* needs_block_offset_adjustment */ false,
+        NGContainingBlock<LogicalOffset>(
+            containing_block_offset, containing_block_rel_offset,
+            containing_block_fragment, container_inside_column_spanner,
+            descendant.containing_block.RequiresContentBeforeBreaking()),
+        NGContainingBlock<LogicalOffset>(
+            fixedpos_containing_block_offset,
+            fixedpos_containing_block_rel_offset,
+            fixedpos_containing_block_fragment,
+            fixedpos_container_inside_column_spanner,
+            descendant.fixedpos_containing_block
+                .RequiresContentBeforeBreaking()),
+        new_fixedpos_inline_container);
 
-    AddOutOfFlowFragmentainerDescendant(
-        {descendant.Node(), static_position, new_inline_container,
-         /* needs_block_offset_adjustment */ false,
-         NGContainingBlock<LogicalOffset>(
-             containing_block_offset, containing_block_rel_offset,
-             containing_block_fragment, container_inside_column_spanner,
-             descendant.containing_block.RequiresContentBeforeBreaking()),
-         NGContainingBlock<LogicalOffset>(
-             fixedpos_containing_block_offset,
-             fixedpos_containing_block_rel_offset,
-             fixedpos_containing_block_fragment,
-             fixedpos_container_inside_column_spanner,
-             descendant.fixedpos_containing_block
-                 .RequiresContentBeforeBreaking()),
-         new_fixedpos_inline_container});
+    if (out_list) {
+      out_list->emplace_back(oof_node);
+    } else {
+      AddOutOfFlowFragmentainerDescendant(oof_node);
 
-    // Remove any descendants that were propagated to the next fragmentation
-    // context root (as a result of a column spanner).
-    if (remove_descendant) {
-      out_of_flow_fragmentainer_descendants.EraseAt(idx);
-      next_idx = idx;
+      // Remove any descendants that were propagated to the next fragmentation
+      // context root (as a result of a column spanner).
+      if (remove_descendant) {
+        out_of_flow_fragmentainer_descendants.EraseAt(idx);
+        next_idx = idx;
+      }
     }
   }
 }

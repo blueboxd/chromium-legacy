@@ -203,6 +203,8 @@ class CONTENT_EXPORT FrameTree {
 
   // A set of delegates are remembered here so that we can create
   // RenderFrameHostManagers.
+  // `dev_tools_frame_token` is the devtools token for the root `FrameTreeNode`
+  // of this new `FrameTree`.
   FrameTree(BrowserContext* browser_context,
             Delegate* delegate,
             NavigationControllerDelegate* navigation_controller_delegate,
@@ -212,7 +214,8 @@ class CONTENT_EXPORT FrameTree {
             RenderWidgetHostDelegate* render_widget_delegate,
             RenderFrameHostManager::Delegate* manager_delegate,
             PageDelegate* page_delegate,
-            Type type);
+            Type type,
+            const base::UnguessableToken& devtools_frame_token);
 
   FrameTree(const FrameTree&) = delete;
   FrameTree& operator=(const FrameTree&) = delete;
@@ -331,6 +334,8 @@ class CONTENT_EXPORT FrameTree {
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::mojom::PolicyContainerBindParamsPtr policy_container_bind_params,
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+          associated_interface_provider_receiver,
       blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
@@ -383,7 +388,6 @@ class CONTENT_EXPORT FrameTree {
   scoped_refptr<RenderViewHostImpl> CreateRenderViewHost(
       SiteInstance* site_instance,
       int32_t main_frame_routing_id,
-      bool swapped_out,
       bool renderer_initiated_creation,
       scoped_refptr<BrowsingContextState> main_browsing_context_state);
 
@@ -449,11 +453,14 @@ class CONTENT_EXPORT FrameTree {
   // identified by |group|.
   void SetPageFocus(SiteInstanceGroup* group, bool is_focused);
 
-  // Walks the current frame tree and registers any origins matching |origin|,
-  // either the last committed origin of a RenderFrameHost or the origin
-  // associated with a NavigationRequest that has been assigned to a
-  // SiteInstance, as not-opted-in for origin isolation.
-  void RegisterExistingOriginToPreventOptInIsolation(
+  // Walks the current frame tree and registers any origins matching
+  // `previously_visited_origin`, either the last committed origin of a
+  // RenderFrameHost or the origin associated with a NavigationRequest that has
+  // been assigned to a SiteInstance, as having the default origin isolation
+  // state. This is only necessary when `previously_visited_origin` is seen with
+  // an OriginAgentCluster header explicitly requesting something other than the
+  // default.
+  void RegisterExistingOriginAsHavingDefaultIsolation(
       const url::Origin& previously_visited_origin,
       NavigationRequest* navigation_request_to_exclude);
 
@@ -565,7 +572,10 @@ class CONTENT_EXPORT FrameTree {
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
   // pointer to remain valid even while the FrameTreeNode is being destroyed,
   // since it's common for a node to test whether it's the root node.
-  raw_ptr<FrameTreeNode, DanglingUntriaged> root_;
+  //
+  // TODO(crbug.com/1298696): content_browsertests breaks with MTECheckedPtr
+  // enabled. Triage.
+  raw_ptr<FrameTreeNode, DanglingUntriagedDegradeToNoOpWhenMTE> root_;
 
   int focused_frame_tree_node_id_;
 

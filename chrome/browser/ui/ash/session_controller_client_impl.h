@@ -71,7 +71,8 @@ class SessionControllerClientImpl
 
   // Calls ash SessionController to run unlock animation.
   // |animation_finished_callback| will be invoked when the animation finishes.
-  void RunUnlockAnimation(base::OnceClosure animation_finished_callback);
+  void RunUnlockAnimation(ash::SessionController::RunUnlockAnimationCallback
+                              animation_finished_callback);
 
   // Asks the session controller to show the window teleportation dialog.
   void ShowTeleportWarningDialog(
@@ -79,6 +80,7 @@ class SessionControllerClientImpl
 
   // ash::SessionControllerClient:
   void RequestLockScreen() override;
+  void RequestHideLockScreen() override;
   void RequestSignOut() override;
   void AttemptRestartChrome() override;
   void SwitchActiveUser(const AccountId& account_id) override;

@@ -9,10 +9,9 @@
 
 #include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
-#include "ash/components/login/auth/key.h"
-#include "ash/components/login/auth/saml_password_attributes.h"
+#include "ash/components/login/auth/public/key.h"
+#include "ash/components/login/auth/public/saml_password_attributes.h"
 #include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -70,12 +69,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
+#include "chromeos/ash/components/dbus/attestation/interface.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
-#include "chromeos/dbus/attestation/fake_attestation_client.h"
-#include "chromeos/dbus/attestation/interface.pb.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -316,7 +316,8 @@ class SamlTestBase : public OobeBaseTest {
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
     OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 
-    content::DOMMessageQueue message_queue;  // Start observe before SAML.
+    content::DOMMessageQueue message_queue(
+        GetLoginUI()->GetWebContents());  // Start observe before SAML.
     SetupAuthFlowChangeListener();
     LoginDisplayHost::default_host()
         ->GetOobeUI()
@@ -496,7 +497,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, SamlUI) {
                                      fake_saml_idp()->GetIdpHost());
   test::OobeJS().ExpectTrue(js);
 
-  content::DOMMessageQueue message_queue;  // Observe before 'close'.
+  content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   SetupAuthFlowChangeListener();
   // Click on 'close'.
   test::OobeJS().ClickOnPath(std::get<1>(GetParam()) ? kSamlBackButton
@@ -532,7 +533,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, IdpRequiresHttpAuth) {
       &(gaia_frame_web_contents->GetController());
 
   // Start observing before initiating SAML sign-in.
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   LoginPromptBrowserTestObserver login_prompt_observer;
   login_prompt_observer.Register(content::Source<content::NavigationController>(
       gaia_frame_navigation_controller));
@@ -676,7 +677,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedSingle) {
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
 
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   // Make sure that the password is scraped correctly.
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
@@ -1334,7 +1335,7 @@ void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
 void SAMLPolicyTest::ShowGAIALoginForm() {
   ash::LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
@@ -1359,7 +1360,7 @@ void SAMLPolicyTest::ClickBackOnSAMLInterstitialPage() {
 }
 
 void SAMLPolicyTest::ClickNextOnSAMLInterstitialPage() {
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   SetupAuthFlowChangeListener();
 
   test::OobeJS().TapOnPath({"gaia-signin", "interstitial-next"});
@@ -1383,7 +1384,7 @@ void SAMLPolicyTest::MaybeWaitForSAMLToLoad() {
   // message.
   if (test::OobeJS().GetAttributeBool("isSamlForTesting()", {"gaia-signin"}))
     return;
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   SetupAuthFlowChangeListener();
   std::string message;
   do {
@@ -1636,9 +1637,7 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
 // Tests that clicking back on the SAML page successfully closes the oobe
 // dialog. Reopens a dialog and checks that SAML IdP authentication page is
 // loaded and authenticating there is successful.
-// TODO(https://crbug.com/1102738) flaky test - partially fixed but keeping the
-// test disabled since there is still some instabillity observed under load.
-IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, DISABLED_SAMLInterstitialNext) {
+IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLInterstitialNext) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       saml_test_users::kFirstUserCorpExampleComEmail, kTestAuthSIDCookie1,

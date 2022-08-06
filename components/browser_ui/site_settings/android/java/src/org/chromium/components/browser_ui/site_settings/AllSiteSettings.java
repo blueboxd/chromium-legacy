@@ -9,7 +9,10 @@ import static org.chromium.components.browser_ui.settings.SearchUtils.handleSear
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.format.Formatter;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +31,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -58,6 +62,8 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
      * {@link UrlUtilities#getDomainAndRegistry}.
      */
     public static final String EXTRA_SELECTED_DOMAINS = "selected_domains";
+
+    public static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data_link";
 
     // The clear button displayed in the Storage view.
     private Button mClearButton;
@@ -115,15 +121,15 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
             mCategory = SiteSettingsCategory.createFromType(
                     browserContextHandle, SiteSettingsCategory.Type.ALL_SITES);
         }
-        if (!(mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
-                    || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE))) {
+        if (!(mCategory.getType() == SiteSettingsCategory.Type.ALL_SITES
+                    || mCategory.getType() == SiteSettingsCategory.Type.USE_STORAGE)) {
             throw new IllegalArgumentException("Use SingleCategorySettings instead.");
         };
 
         ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
 
         // Add custom views for Storage Preferences to bottom of the fragment.
-        if (mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
+        if (mCategory.getType() == SiteSettingsCategory.Type.USE_STORAGE) {
             inflater.inflate(R.layout.storage_preferences_view, view, true);
             mEmptyView = view.findViewById(R.id.empty_storage);
             mClearButton = view.findViewById(R.id.clear_button);
@@ -216,7 +222,7 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        SettingsUtils.addPreferencesFromResource(this, R.xml.all_site_preferences);
+        addPreferencesFromXml();
 
         String title = getArguments().getString(EXTRA_TITLE);
         if (title != null) getActivity().setTitle(title);
@@ -267,19 +273,34 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
         return false;
     }
 
+    private int getNavigationSource() {
+        return getArguments().getInt(
+                SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
+    }
+
     @Override
     public boolean onPreferenceTreeClick(Preference preference) {
+        // Store in a local variable; otherwise the linter complains.
+        final String extraKey = SettingsNavigationSource.EXTRA_KEY;
         if (preference instanceof WebsitePreference) {
             WebsitePreference website = (WebsitePreference) preference;
             website.setFragment(SingleWebsiteSettings.class.getName());
-
             // EXTRA_SITE re-uses already-fetched permissions, which we can only use if the Website
             // was populated with data for all permission types.
             website.putSiteIntoExtras(SingleWebsiteSettings.EXTRA_SITE);
-
-            int navigationSource = getArguments().getInt(
-                    SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
-            website.getExtras().putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
+            website.getExtras().putInt(extraKey, getNavigationSource());
+        } else if (preference instanceof WebsiteGroupPreference) {
+            WebsiteGroupPreference group = (WebsiteGroupPreference) preference;
+            if (group.representsOneWebsite()) {
+                group.setFragment(SingleWebsiteSettings.class.getName());
+                // EXTRA_SITE re-uses already-fetched permissions, which we can only use if the
+                // Website was populated with data for all permission types.
+                group.putSingleSiteIntoExtras(SingleWebsiteSettings.EXTRA_SITE);
+            } else {
+                group.setFragment(GroupedWebsitesSettings.class.getName());
+                group.putGroupSiteIntoExtras(GroupedWebsitesSettings.EXTRA_GROUP);
+            }
+            group.getExtras().putInt(extraKey, getNavigationSource());
         }
 
         return super.onPreferenceTreeClick(preference);
@@ -304,35 +325,65 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
         // This will remove the combo box at the top and all the sites listed below it.
         getPreferenceScreen().removeAll();
         // And this will add the filter preference back (combo box).
-        SettingsUtils.addPreferencesFromResource(this, R.xml.all_site_preferences);
+        addPreferencesFromXml();
+    }
+
+    private void addPreferencesFromXml() {
+        if (isNewAllSitesUiEnabled()) {
+            SettingsUtils.addPreferencesFromResource(this, R.xml.all_site_preferences_v2);
+            ChromeBasePreference clearBrowsingDataLink = findPreference(PREF_CLEAR_BROWSING_DATA);
+            if (!getSiteSettingsDelegate().canLaunchClearBrowsingDataDialog()) {
+                getPreferenceScreen().removePreference(clearBrowsingDataLink);
+                return;
+            }
+            SpannableString spannableString = new SpannableString(
+                    getResources().getString(R.string.clear_browsing_data_link));
+            spannableString.setSpan(new ForegroundColorSpan(getContext().getColor(
+                                            R.color.default_text_color_link_baseline)),
+                    0, spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            clearBrowsingDataLink.setSummary(spannableString);
+            clearBrowsingDataLink.setOnPreferenceClickListener(pref -> {
+                getSiteSettingsDelegate().launchClearBrowsingDataDialog(getActivity());
+                return true;
+            });
+        } else {
+            SettingsUtils.addPreferencesFromResource(this, R.xml.all_site_preferences);
+        }
     }
 
     private boolean addWebsites(Collection<Website> sites) {
         filterSelectedDomains(sites);
-
-        List<WebsitePreference> websites = new ArrayList<>();
-
-        // Find origins matching the current search.
-        for (Website site : sites) {
-            if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                websites.add(new WebsitePreference(
-                        getStyledContext(), getSiteSettingsDelegate(), site, mCategory));
+        if (isNewAllSitesUiEnabled()) {
+            List<WebsiteGroup> groups = WebsiteGroup.groupWebsites(sites);
+            List<WebsiteGroupPreference> preferences = new ArrayList<>();
+            // Find groups matching the current search.
+            for (WebsiteGroup group : groups) {
+                if (mSearch == null || mSearch.isEmpty() || group.matches(mSearch)) {
+                    preferences.add(new WebsiteGroupPreference(
+                            getStyledContext(), getSiteSettingsDelegate(), group));
+                }
             }
+            Collections.sort(preferences);
+            for (WebsiteGroupPreference preference : preferences) {
+                getPreferenceScreen().addPreference(preference);
+            }
+            return !preferences.isEmpty();
+        } else {
+            List<WebsitePreference> websites = new ArrayList<>();
+            // Find origins matching the current search.
+            for (Website site : sites) {
+                if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
+                    websites.add(new WebsitePreference(
+                            getStyledContext(), getSiteSettingsDelegate(), site, mCategory));
+                }
+            }
+            Collections.sort(websites);
+            for (WebsitePreference website : websites) {
+                getPreferenceScreen().addPreference(website);
+            }
+            mWebsites = websites;
+            return !websites.isEmpty();
         }
-
-        if (websites.size() == 0) {
-            return false;
-        }
-
-        Collections.sort(websites);
-
-        for (WebsitePreference website : websites) {
-            getPreferenceScreen().addPreference(website);
-        }
-
-        mWebsites = websites;
-
-        return websites.size() != 0;
     }
 
     private Context getStyledContext() {
@@ -350,5 +401,13 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
                 it.remove();
             }
         }
+    }
+
+    /** Returns whether the new All Sites UI should be used. */
+    private boolean isNewAllSitesUiEnabled() {
+        // Only in the "All sites" mode and with the flag enabled.
+        return mCategory.getType() == SiteSettingsCategory.Type.ALL_SITES
+                && SiteSettingsFeatureList.isEnabled(
+                        SiteSettingsFeatureList.SITE_DATA_IMPROVEMENTS);
     }
 }

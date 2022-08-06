@@ -4142,6 +4142,61 @@ TEST_F(StyleEngineContainerQueryTest,
   EXPECT_EQ(2, a->ComputedStyleRef().ZIndex());
 }
 
+// https://crbug.com/1343570
+TEST_F(StyleEngineContainerQueryTest,
+       UpdateStyleAndLayoutTreeWithUpgradeInDisplayNone) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #container {
+        container-type: inline-size;
+      }
+      #container.toggle {
+        --x:1;
+      }
+      #a {
+        display: none;
+      }
+      /* Intentionally no @container rule. */
+    </style>
+    <main id=container>
+      <div id=a></div>
+    </main>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout());
+  EXPECT_FALSE(GetStyleEngine().StyleAffectedByLayout());
+
+  Element* container = GetDocument().getElementById("container");
+  Element* a = GetDocument().getElementById("a");
+  ASSERT_TRUE(container);
+  ASSERT_TRUE(a);
+
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*a));
+  EXPECT_FALSE(GetStyleEngine().StyleAffectedByLayout());
+
+  // Mutate DOM to invalidate style recalc.
+  container->classList().Add("toggle");
+  EXPECT_EQ(Document::StyleAndLayoutTreeUpdate::kAnalyzed,
+            GetDocument().CalculateStyleAndLayoutTreeUpdate());
+
+  // Pretend something needs layout.
+  GetDocument().View()->SetNeedsLayout();
+  EXPECT_TRUE(GetDocument().View()->NeedsLayout());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*a));
+
+  // Even though style doesn't depend on layout in this case, we still need to
+  // do a layout upgrade for elements that are 1) in display:none, and 2)
+  // inside a container query container.
+  //
+  // See implementation of `NodeLayoutUpgrade::ShouldUpgrade` for more
+  // information.
+  GetDocument().UpdateStyleAndLayoutTreeForNode(a);
+  EXPECT_FALSE(GetStyleEngine().StyleAffectedByLayout());
+  EXPECT_FALSE(GetDocument().View()->NeedsLayout());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*a));
+}
+
 TEST_F(StyleEngineTest, ContainerRelativeUnitsRuntimeFlag) {
   String css = R"CSS(
     top: 1cqw;
@@ -4412,47 +4467,6 @@ TEST_F(StyleEngineTest, AtCounterStyleUseCounter) {
   GetDocument().body()->setInnerHTML("<style>@counter-style foo {}</style>");
   GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(IsUseCounted(WebFeature::kCSSAtRuleCounterStyle));
-}
-
-TEST_F(StyleEngineTest, CounterStyleDisabledInShadowDOM) {
-  ScopedCSSAtRuleCounterStyleInShadowDOMForTest
-      counter_style_in_shadow_dom_disabled(false);
-
-  GetDocument().body()->setInnerHTML(R"HTML(
-    <style>
-      @counter-style foo { symbols: A; }
-    </style>
-    <ol id="foo" style="list-style-type: foo"><li></li></ol>
-    <div id="host"></div>
-  )HTML");
-
-  Element* host = GetDocument().getElementById("host");
-  ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.setInnerHTML(R"HTML(
-    <style>
-      @counter-style bar { symbols: B; }
-    </style>
-    <ol id="foo" style="list-style-type: foo"><li></li></ol>
-    <ol id="bar" style="list-style-type: bar"><li></li></ol>
-  )HTML");
-
-  UpdateAllLifecyclePhases();
-
-  // Only @counter-style rules defined in the document scope are effective,
-  // matching the spec status as of Feb 2021.
-
-  LayoutObject* document_foo =
-      GetDocument().getElementById("foo")->firstChild()->GetLayoutObject();
-  EXPECT_EQ("A. ", GetListMarkerText(document_foo));
-
-  LayoutObject* shadow_foo =
-      shadow_root.getElementById("foo")->firstChild()->GetLayoutObject();
-  EXPECT_EQ("A. ", GetListMarkerText(shadow_foo));
-
-  LayoutObject* shadow_bar =
-      shadow_root.getElementById("bar")->firstChild()->GetLayoutObject();
-  EXPECT_EQ("1. ", GetListMarkerText(shadow_bar));
 }
 
 TEST_F(StyleEngineTest, SystemFontsObeyDefaultFontSize) {

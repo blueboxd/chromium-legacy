@@ -193,19 +193,10 @@ iron-icon[icon='personalization:checkmark'] {
   width: calc(100% - 4px);
 }
 
-cr-button {
-  border-color: var(--cros-button-stroke-color-secondary);
-  border-radius: 16px;
-}
-
 cr-button[aria-pressed=true],
 cr-button[aria-selected=true] {
   background-color: var(--cros-highlight-color);
   border: 0;
-}
-
-cr-button + cr-button {
-  margin-inline-start: 8px;
 }
 
 .preview-container {
@@ -371,4 +362,8 @@ paper-tooltip span {
   align-items: center;
   display: flex;
   font: var(--cros-body-2-font);
+}
+
+:host-context([dir=rtl]) iron-icon[icon='cr:chevron-right'] {
+  transform: scaleX(-1);
 }

@@ -43,8 +43,8 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/shared_image_backing_gl_image.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/limits.h"
 #include "media/base/mac/color_space_util_mac.h"
@@ -2058,9 +2058,9 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
     // Request new pictures.
     picture_size_ = frame.image_size;
 
-    // TODO(https://crbug.com/1210994): Remove XRGB support, and expose only
+    // TODO(https://crbug.com/1210994): Remove RGBAF16 support, and expose only
     // PIXEL_FORMAT_NV12 and PIXEL_FORMAT_YUV420P10.
-    picture_format_ = PIXEL_FORMAT_XRGB;
+    picture_format_ = PIXEL_FORMAT_RGBAF16;
     if (base::FeatureList::IsEnabled(kMultiPlaneVideoToolboxSharedImages)) {
       // TODO(https://crbug.com/1233228): The UV planes of P010 frames cannot
       // be represented in the current gfx::BufferFormat.
@@ -2110,7 +2110,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       planes.push_back(gfx::BufferPlane::Y);
       planes.push_back(gfx::BufferPlane::UV);
       break;
-    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGBAF16:
       planes.push_back(gfx::BufferPlane::DEFAULT);
       break;
     default:
@@ -2127,8 +2127,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     // TODO(https://crbug.com/1108909): BGRA is not an appropriate value for
     // these parameters.
     const viz::ResourceFormat viz_resource_format =
-        (picture_format_ == PIXEL_FORMAT_XRGB)
-            ? viz::ResourceFormat::BGRA_8888
+        (picture_format_ == PIXEL_FORMAT_RGBAF16)
+            ? viz::ResourceFormat::RGBA_F16
             : viz::GetResourceFormat(plane_buffer_format);
     const GLenum gl_format = viz::GLDataFormat(viz_resource_format);
 
@@ -2152,7 +2152,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
       gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
-      gpu::SharedImageBackingGLCommon::InitializeGLTextureParams gl_params;
+      gpu::GLTextureImageBackingHelper::InitializeGLTextureParams gl_params;
       // ANGLE-on-Metal exposes IOSurfaces via GL_TEXTURE_2D. Be robust to that.
       gl_params.target = gl_client_.supports_arb_texture_rectangle
                              ? GL_TEXTURE_RECTANGLE_ARB
@@ -2161,24 +2161,24 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       gl_params.format = gl_format;
       gl_params.type = GL_UNSIGNED_BYTE;
       gl_params.is_cleared = true;
-      gpu::SharedImageBackingGLCommon::UnpackStateAttribs gl_attribs;
+      gpu::GLTextureImageBackingHelper::UnpackStateAttribs gl_attribs;
 
-      // A GL texture id is needed to create the legacy mailbox, which requires
-      // that the GL context be made current.
-      const bool kCreateLegacyMailbox = true;
+      // Making the GL context current before performing below shared image
+      // tasks.
+      // TODO(vikassoni) : Remove if making context current is not required.
       if (!gl_client_.make_context_current.Run()) {
         DLOG(ERROR) << "Failed to make context current";
         NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
         return false;
       }
 
-      auto shared_image = std::make_unique<gpu::SharedImageBackingGLImage>(
+      auto shared_image = std::make_unique<gpu::GLImageBacking>(
           gl_image, mailbox, viz_resource_format, plane_size, color_space,
           kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage,
           gl_params, gl_attribs, gl_client_.is_passthrough);
 
       const bool success = shared_image_stub->factory()->RegisterBacking(
-          std::move(shared_image), kCreateLegacyMailbox);
+          std::move(shared_image), /*allow_legacy_mailbox=*/false);
       if (!success) {
         DLOG(ERROR) << "Failed to register shared image";
         NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);

@@ -1379,10 +1379,9 @@ TEST_P(CompositingSimTest, SafeOpaqueBackgroundColor) {
   EXPECT_EQ(opaque_color->SafeOpaqueBackgroundColor(), SkColors::kBlue);
 
   auto* opaque_image = CcLayerByDOMElementId("opaque-image");
-  EXPECT_TRUE(opaque_image->contents_opaque());
+  EXPECT_FALSE(opaque_image->contents_opaque());
   EXPECT_EQ(opaque_image->background_color(), SkColors::kTransparent);
-  // Fallback to use the viewport background.
-  EXPECT_EQ(opaque_image->SafeOpaqueBackgroundColor(), SkColors::kYellow);
+  EXPECT_EQ(opaque_image->SafeOpaqueBackgroundColor(), SkColors::kTransparent);
 
   const SkColor4f kTranslucentCyan{0.0f, 1.0f, 1.0f, 128.0f / 255.0f};
   auto* opaque_image_translucent_color =
@@ -2572,12 +2571,11 @@ TEST_P(CompositingSimTest, ForeignLayersInMovedSubsequence) {
       <div id="target" style="background: blue;">a</div>
   )HTML");
 
-  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client;
   FakeRemoteFrameHost remote_frame_host;
-  remote_frame_host.Init(remote_frame_client.GetRemoteAssociatedInterfaces());
-  WebRemoteFrameImpl* remote_frame =
-      frame_test_helpers::CreateRemote(&remote_frame_client);
-  MainFrame().FirstChild()->Swap(remote_frame);
+  WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
+  frame_test_helpers::SwapRemoteFrame(
+      MainFrame().FirstChild(), remote_frame,
+      remote_frame_host.BindNewAssociatedRemote());
 
   Compositor().BeginFrame();
 

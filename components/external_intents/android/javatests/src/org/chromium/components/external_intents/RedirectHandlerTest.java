@@ -10,7 +10,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.SystemClock;
-import android.provider.Browser;
 import android.test.mock.MockPackageManager;
 
 import androidx.test.filters.SmallTest;
@@ -33,6 +32,7 @@ import org.chromium.ui.base.PageTransition;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Unittests for tab redirect handler.
@@ -85,10 +85,12 @@ public class RedirectHandlerTest {
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false);
-        Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false, false);
+        Assert.assertTrue(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertFalse(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
         Assert.assertTrue(
@@ -108,10 +110,11 @@ public class RedirectHandlerTest {
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false);
-        Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false, true);
+        Assert.assertTrue(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertFalse(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
         Assert.assertTrue(
@@ -131,10 +134,11 @@ public class RedirectHandlerTest {
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT, false, false, 0, 1, false);
-        Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT, false, false, 0, 1, false, true);
+        Assert.assertTrue(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertFalse(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
         Assert.assertTrue(
@@ -154,10 +158,12 @@ public class RedirectHandlerTest {
         handler.updateIntent(null, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertTrue(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
         Assert.assertTrue(
@@ -177,10 +183,12 @@ public class RedirectHandlerTest {
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false);
-        Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false, false);
+        Assert.assertTrue(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertFalse(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
 
@@ -205,10 +213,10 @@ public class RedirectHandlerTest {
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false, true);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertTrue(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
         Assert.assertTrue(
@@ -228,20 +236,21 @@ public class RedirectHandlerTest {
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false);
-        Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, true, false, 0, 0, false, false);
+        Assert.assertTrue(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertFalse(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
 
         Assert.assertTrue(handler.isOnNavigation());
         Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
 
-        SystemClock.sleep(1);
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 1, false);
-        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(PageTransition.LINK, false, true,
+                SystemClock.elapsedRealtime() + 1, 1, false, true);
+        Assert.assertFalse(handler.isOnNoninitialLoadForIntentNavigationChain());
         Assert.assertTrue(handler.hasNewResolver(
                 queryIntentActivities(sMoblieYtIntent), mQueryIntentFunction));
         Assert.assertTrue(
@@ -256,44 +265,14 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    public void testIntentFromChrome() {
-        RedirectHandler handler = RedirectHandler.create();
-        Intent fooIntent = new Intent(sFooIntent);
-        fooIntent.putExtra(Browser.EXTRA_APPLICATION_ID, TEST_PACKAGE_NAME);
-        handler.updateIntent(fooIntent, false, false, false);
-        Assert.assertFalse(handler.isOnNavigation());
-
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-
-        SystemClock.sleep(1);
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false);
-        Assert.assertFalse(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"IntentHandling"})
     public void testNavigationFromUserTyping() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0, false);
+        handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0, false, false);
         Assert.assertTrue(handler.isNavigationFromUserTyping());
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false, true);
         Assert.assertTrue(handler.isNavigationFromUserTyping());
 
         Assert.assertTrue(handler.isOnNavigation());
@@ -301,38 +280,8 @@ public class RedirectHandlerTest {
 
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false);
+                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false, true);
         Assert.assertFalse(handler.isNavigationFromUserTyping());
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"IntentHandling"})
-    public void testIntentHavingChromePackageName() {
-        RedirectHandler handler = RedirectHandler.create();
-        Intent fooIntent = new Intent(sFooIntent);
-        fooIntent.setPackage(TEST_PACKAGE_NAME);
-        handler.updateIntent(fooIntent, false, false, false);
-        Assert.assertFalse(handler.isOnNavigation());
-
-        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-
-        SystemClock.sleep(1);
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false);
-        Assert.assertFalse(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
 
         Assert.assertTrue(handler.isOnNavigation());
         Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -348,11 +297,11 @@ public class RedirectHandlerTest {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
 
-        handler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, false);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, false, true);
         Assert.assertFalse(handler.shouldNotOverrideUrlLoading());
         handler.setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
 
-        handler.updateNewUrlLoading(PageTransition.LINK, true, false, 0, 0, false);
+        handler.updateNewUrlLoading(PageTransition.LINK, true, false, 0, 0, false, true);
         Assert.assertTrue(handler.shouldNotOverrideUrlLoading());
         Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
 
@@ -362,12 +311,12 @@ public class RedirectHandlerTest {
         handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
 
-        handler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, false);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, false, true);
         Assert.assertFalse(handler.shouldNotOverrideUrlLoading());
         handler.setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
 
         // Effective redirection occurred.
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1, false, true);
         Assert.assertTrue(handler.shouldNotOverrideUrlLoading());
         Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
 
@@ -376,106 +325,9 @@ public class RedirectHandlerTest {
         /////////////////////////////////////////////////////
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false);
+                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false, true);
         Assert.assertFalse(handler.shouldNotOverrideUrlLoading());
         Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"IntentHandling"})
-    public void testNavigationFromLinkWithoutUserGesture() {
-        RedirectHandler handler = RedirectHandler.create();
-        handler.updateIntent(sYtIntent, false, false, false);
-        Assert.assertFalse(handler.isOnNavigation());
-
-        long lastUserInteractionTime = SystemClock.elapsedRealtime();
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, lastUserInteractionTime, 0, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, lastUserInteractionTime, 1, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertTrue(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-
-        SystemClock.sleep(1);
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false);
-        Assert.assertFalse(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"IntentHandling"})
-    public void testNavigationFromReload() {
-        RedirectHandler handler = RedirectHandler.create();
-        handler.updateIntent(sYtIntent, false, false, false);
-        Assert.assertFalse(handler.isOnNavigation());
-
-        long lastUserInteractionTime = SystemClock.elapsedRealtime();
-        handler.updateNewUrlLoading(
-                PageTransition.RELOAD, false, false, lastUserInteractionTime, 0, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, lastUserInteractionTime, 1, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertTrue(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-
-        SystemClock.sleep(1);
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2, false);
-        Assert.assertFalse(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"IntentHandling"})
-    public void testNavigationWithForwardBack() {
-        RedirectHandler handler = RedirectHandler.create();
-        handler.updateIntent(sYtIntent, false, false, false);
-        Assert.assertFalse(handler.isOnNavigation());
-
-        long lastUserInteractionTime = SystemClock.elapsedRealtime();
-        handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK, false,
-                true, lastUserInteractionTime, 0, false);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertTrue(handler.shouldStayInApp(true));
-        Assert.assertTrue(handler.hasUserStartedNonInitialNavigation());
-
-        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1,
-                false /* isInitialNavigation */);
-        Assert.assertTrue(handler.shouldStayInApp(false));
-        Assert.assertTrue(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-        Assert.assertTrue(handler.hasUserStartedNonInitialNavigation());
-
-        SystemClock.sleep(1);
-        handler.updateNewUrlLoading(PageTransition.LINK, false, true, SystemClock.elapsedRealtime(),
-                2, false /* isInitialNavigation */);
-        Assert.assertFalse(handler.shouldStayInApp(false));
-        Assert.assertFalse(handler.shouldStayInApp(true));
-
-        Assert.assertTrue(handler.isOnNavigation());
-        Assert.assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-        Assert.assertTrue(handler.hasUserStartedNonInitialNavigation());
     }
 
     @Test
@@ -490,39 +342,10 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.isOnNavigation());
         handler.updateNewUrlLoading(PageTransition.LINK, false, true,
                 uninitializedUserInteractionTime, RedirectHandler.NO_COMMITTED_ENTRY_INDEX,
-                true /* isInitialNavigation */);
+                true /* isInitialNavigation */, true);
         Assert.assertTrue(handler.isOnNavigation());
         Assert.assertEquals(RedirectHandler.NO_COMMITTED_ENTRY_INDEX,
                 handler.getLastCommittedEntryIndexBeforeStartingNavigation());
-        Assert.assertFalse(handler.hasUserStartedNonInitialNavigation());
-    }
-
-    /**
-     * Tests that a client side redirect without a user gesture to an external application does
-     * cause us to leave Chrome, unless the app it would be launching is trusted.
-     */
-    @Test
-    @SmallTest
-    @Feature({"IntentHandling"})
-    public void testClientRedirectWithoutUserGesture() {
-        RedirectHandler handler = RedirectHandler.create();
-        handler.updateIntent(sFooIntent, false, false, false);
-        Assert.assertFalse(handler.isOnNavigation());
-        Assert.assertFalse(handler.hasUserStartedNonInitialNavigation());
-
-        // Navigation to a page that will trigger a client redirect.
-        handler.updateNewUrlLoading(PageTransition.LINK, false /* isRedirect */,
-                false /* hasUserGesture */, 0, 0, true /* isInitialNavigation */);
-        Assert.assertTrue(handler.shouldStayInApp(true));
-        Assert.assertFalse(handler.shouldStayInApp(true, true));
-        Assert.assertFalse(handler.hasUserStartedNonInitialNavigation());
-
-        // Client redirect navigation.
-        handler.updateNewUrlLoading(PageTransition.LINK | PageTransition.CLIENT_REDIRECT,
-                false /* isRedirect */, false /* hasUserGesture */, 0, 0,
-                false /* isInitialNavigation */);
-        Assert.assertTrue(handler.shouldStayInApp(true));
-        Assert.assertFalse(handler.shouldStayInApp(true, true));
         Assert.assertFalse(handler.hasUserStartedNonInitialNavigation());
     }
 
@@ -533,10 +356,30 @@ public class RedirectHandlerTest {
         int lastIndex = 1234;
         RedirectHandler handler = RedirectHandler.create();
         handler.updateNewUrlLoading(PageTransition.LINK, false /* isRedirect */,
-                false /* hasUserGesture */, 0, lastIndex, true /* isInitialNavigation */);
+                false /* hasUserGesture */, 0, lastIndex, true /* isInitialNavigation */,
+                true /* isRendererInitiated */);
         handler.clear();
         Assert.assertEquals(
                 lastIndex, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"IntentHandling"})
+    public void testNavigationChainExpired() {
+        long navigationId = 1234;
+        AtomicLong currentTime = new AtomicLong(0);
+        RedirectHandler handler = new RedirectHandler() {
+            @Override
+            public long currentRealtime() {
+                return currentTime.get();
+            }
+        };
+        handler.updateNewUrlLoading(PageTransition.LINK, false /* isRedirect */,
+                true /* hasUserGesture */, 0, 0, true /* isInitialNavigation */,
+                true /* isRendererInitiated */);
+        currentTime.set(RedirectHandler.NAVIGATION_CHAIN_TIMEOUT_MILLIS + 1);
+        Assert.assertTrue(handler.isNavigationChainExpired());
     }
 
     private static class TestPackageManager extends MockPackageManager {

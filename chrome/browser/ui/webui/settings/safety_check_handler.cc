@@ -82,6 +82,7 @@ SafetyCheckHandler::UpdateStatus ConvertToUpdateStatus(
       return SafetyCheckHandler::UpdateStatus::kUpdated;
     case VersionUpdater::UPDATING:
       return SafetyCheckHandler::UpdateStatus::kUpdating;
+    case VersionUpdater::DEFERRED:
     case VersionUpdater::NEED_PERMISSION_TO_UPDATE:
     case VersionUpdater::NEARLY_UPDATED:
       return SafetyCheckHandler::UpdateStatus::kRelaunch;
@@ -983,8 +984,7 @@ void SafetyCheckHandler::OnCredentialDone(
   }
 }
 
-void SafetyCheckHandler::OnInsecureCredentialsChanged(
-    password_manager::InsecureCredentialsManager::CredentialsView credentials) {
+void SafetyCheckHandler::OnInsecureCredentialsChanged() {
   extensions::api::passwords_private::PasswordCheckStatus status =
       passwords_delegate_->GetPasswordCheckStatus();
   // Ignore the event, unless the password check is idle with no errors.

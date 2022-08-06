@@ -10,7 +10,7 @@ import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import 'chrome://resources/js/cr/ui/focus_row.m.js';
 import 'chrome://resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -19,6 +19,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SearchResultsObserverInterface as PersonalizationSearchResultsObserverInterface, SearchResultsObserverReceiver as PersonalizationSearchResultsObserverReceiver} from '../../mojom-webui/personalization/search.mojom-webui.js';
+import {ParentResultBehavior, SearchResultsObserverInterface, SearchResultsObserverReceiver} from '../../mojom-webui/search/search.mojom-webui.js';
 import {Router} from '../../router.js';
 import {combinedSearch, SearchResult} from '../combined_search_handler.js';
 import {recordSearch} from '../metrics_recorder.js';
@@ -175,7 +176,7 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase {
   constructor() {
     super();
 
-    /** @private {?chromeos.settings.mojom.SearchResultsObserverReceiver} */
+    /** @private {?SearchResultsObserverReceiver} */
     this.settingsSearchResultObserverReceiver_ = null;
 
     /**
@@ -242,11 +243,8 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase {
 
     // Observe for availability changes of settings results.
     this.settingsSearchResultObserverReceiver_ =
-        new chromeos.settings.mojom.SearchResultsObserverReceiver(
-            /**
-             * @type {!chromeos.settings.mojom.SearchResultsObserverInterface}
-             */
-            (this));
+        new SearchResultsObserverReceiver(
+            /** @type {!SearchResultsObserverInterface} */ (this));
     getSettingsSearchHandler().observe(
         this.settingsSearchResultObserverReceiver_.$
             .bindNewPipeAndPassRemote());
@@ -266,7 +264,7 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase {
   }
 
   /**
-   * Overrides chromeos.settings.mojom.SearchResultsObserverInterface
+   * Overrides SearchResultsObserverInterface
    * Overrides PersonalizationSearchResultsObserverInterface
    */
   onSearchResultsChanged() {
@@ -325,7 +323,7 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase {
     const timeOfSearchRequest = Date.now();
     combinedSearch(
         queryMojoString16, MAX_NUM_SEARCH_RESULTS,
-        chromeos.settings.mojom.ParentResultBehavior.kAllowParentResults)
+        ParentResultBehavior.kAllowParentResults)
         .then(response => {
           const latencyMs = Date.now() - timeOfSearchRequest;
           chrome.metricsPrivate.recordTime(

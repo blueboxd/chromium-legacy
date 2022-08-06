@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-// Native headless is currently available only on Linux platform. More
-// platforms will be added soon, so avoid function level clutter by
-// ifdefing the entire file.
-#if BUILDFLAG(IS_LINUX)
-
 #include <string>
 #include <vector>
 
@@ -21,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -31,23 +25,26 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 using DevToolsProtocolTest = DevToolsProtocolTestBase;
 
 namespace {
 
-class PrintToPdfProtocolTest : public DevToolsProtocolTest {
+class PrintToPdfProtocolTest : public DevToolsProtocolTest,
+                               public testing::WithParamInterface<bool> {
  protected:
   static constexpr double kPaperWidth = 10;
   static constexpr double kPaperHeight = 15;
   static constexpr int kColorChannels = 4;
   static constexpr int kDpi = 300;
 
+  bool headless() const { return GetParam(); };
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(crbug.com/1240796): Page.printToPdf is currently available only when
-    // Chrome is running in headless mode.
     DevToolsProtocolTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("headless", "chrome");
+    if (headless())
+      command_line->AppendSwitchASCII("headless", "chrome");
   }
 
   void PreRunTestOnMainThread() override {
@@ -123,6 +120,16 @@ class PrintToPdfProtocolTest : public DevToolsProtocolTest {
   }
 
   void RendePdfPage(int page_index) {
+    absl::optional<gfx::SizeF> page_size_in_points =
+        chrome_pdf::GetPDFPageSizeByIndex(pdf_span_, page_index);
+    ASSERT_TRUE(page_size_in_points.has_value());
+
+    gfx::SizeF page_size_in_pixels =
+        gfx::ScaleSize(page_size_in_points.value(),
+                       static_cast<float>(kDpi) / printing::kPointsPerInch);
+
+    gfx::Rect page_rect(gfx::ToCeiledSize(page_size_in_pixels));
+
     constexpr chrome_pdf::RenderOptions options = {
         .stretch_to_bounds = false,
         .keep_aspect_ratio = true,
@@ -131,26 +138,16 @@ class PrintToPdfProtocolTest : public DevToolsProtocolTest {
         .render_device_type = chrome_pdf::RenderDeviceType::kPrinter,
     };
 
-    absl::optional<gfx::SizeF> page_size =
-        chrome_pdf::GetPDFPageSizeByIndex(pdf_span_, page_index);
-    ASSERT_TRUE(page_size.has_value());
+    bitmap_size_ = page_rect.size();
+    bitmap_data_.resize(kColorChannels * bitmap_size_.GetArea());
 
-    gfx::Rect rect(kPaperWidth * kDpi, kPaperHeight * kDpi);
-    printing::PdfRenderSettings settings(
-        rect, gfx::Point(), gfx::Size(kDpi, kDpi), options.autorotate,
-        options.use_color, printing::PdfRenderSettings::Mode::NORMAL);
-    std::vector<uint8_t> bitmap_data(kColorChannels *
-                                     settings.area.size().GetArea());
     ASSERT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
-        pdf_span_, page_index, bitmap_data.data(), settings.area.size(),
-        settings.dpi, options));
-
-    bitmap_data_.swap(bitmap_data);
-    bitmap_size_ = settings.area.size();
+        pdf_span_, page_index, bitmap_data_.data(), bitmap_size_,
+        gfx::Size(kDpi, kDpi), options));
   }
 
   uint32_t GetPixelRGB(int x, int y) {
-    int pixel_index =
+    size_t pixel_index =
         bitmap_size_.width() * y * kColorChannels + x * kColorChannels;
     return bitmap_data_[pixel_index + 0]           // B
            | bitmap_data_[pixel_index + 1] << 8    // G
@@ -170,7 +167,11 @@ class PrintToPdfProtocolTest : public DevToolsProtocolTest {
   gfx::Size bitmap_size_;
 };
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfBackground) {
+INSTANTIATE_TEST_SUITE_P(HeadfulOrHeadless,
+                         PrintToPdfProtocolTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PrintToPdfProtocolTest, PrintToPdfBackground) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
@@ -193,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfBackground) {
   EXPECT_EQ(GetPixelRGB(bitmap_width() / 2, bitmap_height() / 2), 0xff0000u);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfMargins) {
+IN_PROC_BROWSER_TEST_P(PrintToPdfProtocolTest, PrintToPdfMargins) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
@@ -219,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfMargins) {
   EXPECT_EQ(GetPixelRGB(bitmap_width() / 2, bitmap_height() / 2), 0xff0000u);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfHeaderFooter) {
+IN_PROC_BROWSER_TEST_P(PrintToPdfProtocolTest, PrintToPdfHeaderFooter) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
@@ -295,7 +296,11 @@ class PrintToPdfScaleTest : public PrintToPdfProtocolTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfScaleTest, PrintToPdfScaleArea) {
+INSTANTIATE_TEST_SUITE_P(HeadfulOrHeadless,
+                         PrintToPdfScaleTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PrintToPdfScaleTest, PrintToPdfScaleArea) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
@@ -324,7 +329,11 @@ class PrintToPdfPaperOrientationTest : public PrintToPdfProtocolTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfPaperOrientationTest,
+INSTANTIATE_TEST_SUITE_P(HeadfulOrHeadless,
+                         PrintToPdfPaperOrientationTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PrintToPdfPaperOrientationTest,
                        PrintToPdfPaperOrientation) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
@@ -370,7 +379,11 @@ class PrintToPdfPagesTest : public PrintToPdfProtocolTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfPageRanges) {
+INSTANTIATE_TEST_SUITE_P(HeadfulOrHeadless,
+                         PrintToPdfPagesTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PrintToPdfPagesTest, PrintToPdfPageRanges) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
@@ -410,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfPageRanges) {
               testing::Eq("Page range exceeds page count"));
 }
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfCssPageSize) {
+IN_PROC_BROWSER_TEST_P(PrintToPdfPagesTest, PrintToPdfCssPageSize) {
   NavigateToURLBlockUntilNavigationsComplete(
       "/print_to_pdf/css_page_size.html");
 
@@ -430,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfCssPageSize) {
   EXPECT_GT(pdf_num_pages_, kExpectedTotalPages);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfAsStream) {
+IN_PROC_BROWSER_TEST_P(PrintToPdfProtocolTest, PrintToPdfAsStream) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
@@ -454,6 +467,25 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfAsStream) {
   EXPECT_EQ(GetPixelRGB(bitmap_width() / 2, bitmap_height() / 2), 0xff0000u);
 }
 
-}  // namespace
+IN_PROC_BROWSER_TEST_P(PrintToPdfProtocolTest, PrintToPdfOOPIF) {
+  NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/oopif.html");
 
-#endif  // BUILDFLAG(IS_LINUX)
+  Attach();
+
+  base::Value::Dict params;
+  params.Set("printBackground", true);
+  params.Set("paperWidth", kPaperWidth);
+  params.Set("paperHeight", kPaperHeight);
+  params.Set("marginTop", 0);
+  params.Set("marginLeft", 0);
+  params.Set("marginBottom", 0);
+  params.Set("marginRight", 0);
+  PrintToPdfAndRenderPage(base::Value(std::move(params)), 0);
+
+  ASSERT_TRUE(printing::IsOopifEnabled());
+
+  // Expect red iframe pixel at 1 inch into the page.
+  EXPECT_EQ(GetPixelRGB(1 * kDpi, 1 * kDpi), 0xff0000u);
+}
+
+}  // namespace

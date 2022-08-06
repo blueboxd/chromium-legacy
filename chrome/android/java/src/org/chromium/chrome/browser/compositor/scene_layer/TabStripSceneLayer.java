@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.TintedComposito
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripScrim;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
@@ -138,19 +137,15 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 modelSelectorButton.getHeight() * mDpToPx, modelSelectorButton.isIncognito(),
                 modelSelectorButtonVisible, resourceManager);
 
-        boolean tabStripImprovementsEnabled =
-                CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS);
+        boolean tabStripImprovementsEnabled = ChromeFeatureList.sTabStripImprovements.isEnabled();
         boolean showLeftTabStripFade =
                 !tabStripImprovementsEnabled || LocalizationUtils.isLayoutRtl();
         boolean showRightTabStripFade =
                 !tabStripImprovementsEnabled || !LocalizationUtils.isLayoutRtl();
 
-        int tab_strip_fade_short =
-                CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
-                ? R.drawable.tab_strip_fade_short
-                : R.drawable.tab_strip_fade;
-        int tab_strip_fade_long =
-                CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
+        int tab_strip_fade_short = tabStripImprovementsEnabled ? R.drawable.tab_strip_fade_short
+                                                               : R.drawable.tab_strip_fade;
+        int tab_strip_fade_long = tabStripImprovementsEnabled
                 ? R.drawable.tab_strip_fade_long
                 : R.drawable.tab_strip_fade_for_model_selector;
 
@@ -187,7 +182,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                     st.getDrawX() * mDpToPx, st.getDrawY() * mDpToPx, st.getWidth() * mDpToPx,
                     st.getHeight() * mDpToPx, st.getContentOffsetX() * mDpToPx,
                     st.getCloseButton().getOpacity(), st.isLoading(),
-                    st.getLoadingSpinnerRotation(), layerTitleCache, resourceManager);
+                    st.getLoadingSpinnerRotation(), st.getBrightness(), layerTitleCache,
+                    resourceManager);
         }
     }
 
@@ -224,7 +220,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 int closeTint, int handleTint, int handleOutlineTint, boolean foreground,
                 boolean closePressed, float toolbarWidth, float x, float y, float width,
                 float height, float contentOffsetX, float closeButtonAlpha, boolean isLoading,
-                float spinnerRotation, LayerTitleCache layerTitleCache,
+                float spinnerRotation, float brightness, LayerTitleCache layerTitleCache,
                 ResourceManager resourceManager);
         void setContentTree(
                 long nativeTabStripSceneLayer, TabStripSceneLayer caller, SceneLayer contentTree);

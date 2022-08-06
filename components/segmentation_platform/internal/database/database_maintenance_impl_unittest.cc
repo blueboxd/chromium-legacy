@@ -20,10 +20,10 @@
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
 #include "components/segmentation_platform/internal/execution/default_model_manager.h"
-#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
-#include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/proto/aggregation.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
+#include "components/segmentation_platform/public/proto/types.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,11 +64,11 @@ struct SignalData {
 class TestDefaultModelManager : public DefaultModelManager {
  public:
   TestDefaultModelManager()
-      : DefaultModelManager(nullptr, std::vector<SegmentId>()) {}
+      : DefaultModelManager(nullptr, base::flat_set<SegmentId>()) {}
   ~TestDefaultModelManager() override = default;
 
   void GetAllSegmentInfoFromDefaultModel(
-      const std::vector<SegmentId>& segment_ids,
+      const base::flat_set<SegmentId>& segment_ids,
       MultipleSegmentInfoCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
@@ -76,7 +76,7 @@ class TestDefaultModelManager : public DefaultModelManager {
   }
 
   void GetAllSegmentInfoFromBothModels(
-      const std::vector<SegmentId>& segment_ids,
+      const base::flat_set<SegmentId>& segment_ids,
       SegmentInfoDatabase* segment_database,
       MultipleSegmentInfoCallback callback) override {
     segment_database->GetSegmentInfoForSegments(

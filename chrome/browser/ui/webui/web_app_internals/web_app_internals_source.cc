@@ -187,9 +187,10 @@ base::Value BuildPreinstalledWebAppConfigsJson(
 
 base::Value BuildExternallyManagedWebAppPrefsJson(Profile* profile) {
   base::Value root(base::Value::Type::DICTIONARY);
-  root.SetKey(
-      kExternallyManagedWebAppPrefs,
-      profile->GetPrefs()->GetDictionary(prefs::kWebAppsExtensionIDs)->Clone());
+  root.SetKey(kExternallyManagedWebAppPrefs,
+              base::Value(profile->GetPrefs()
+                              ->GetValueDict(prefs::kWebAppsExtensionIDs)
+                              .Clone()));
   return root;
 }
 
@@ -197,8 +198,8 @@ base::Value BuildPreinstalledAppsUninstalledByUserJson(Profile* profile) {
   base::Value::Dict root;
   root.Set(kPreinstalledAppsUninstalledByUserConfigs,
            profile->GetPrefs()
-               ->GetDictionary(prefs::kUserUninstalledPreinstalledWebAppPref)
-               ->Clone());
+               ->GetValueDict(prefs::kUserUninstalledPreinstalledWebAppPref)
+               .Clone());
   return base::Value(std::move(root));
 }
 
@@ -294,7 +295,30 @@ base::Value BuildWebAppDiskStateJson(base::FilePath root_directory,
   return root;
 }
 
-void BuildWebAppInternalsJson(
+void BuildResponse(Profile* profile,
+                   base::OnceCallback<void(base::Value root)> callback) {
+  auto* provider = web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
+  if (!provider) {
+    return std::move(callback).Run(
+        base::Value("Web app system not enabled for profile."));
+  }
+
+  provider->on_registry_ready().Post(
+      FROM_HERE,
+      base::BindOnce(&WebAppInternalsSource::BuildWebAppInternalsJson, profile,
+                     std::move(callback)));
+}
+
+void ConvertValueToJsonData(content::URLDataSource::GotDataCallback callback,
+                            base::Value value) {
+  std::string data = value.DebugString();
+  std::move(callback).Run(base::RefCountedString::TakeString(&data));
+}
+
+}  // namespace
+
+// static
+void WebAppInternalsSource::BuildWebAppInternalsJson(
     Profile* profile,
     base::OnceCallback<void(base::Value root)> callback) {
   auto* provider = web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
@@ -320,27 +344,6 @@ void BuildWebAppInternalsJson(
       std::move(callback));
 }
 
-void BuildResponse(Profile* profile,
-                   base::OnceCallback<void(base::Value root)> callback) {
-  auto* provider = web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
-  if (!provider) {
-    return std::move(callback).Run(
-        base::Value("Web app system not enabled for profile."));
-  }
-
-  provider->on_registry_ready().Post(
-      FROM_HERE,
-      base::BindOnce(&BuildWebAppInternalsJson, profile, std::move(callback)));
-}
-
-void ConvertValueToJsonData(content::URLDataSource::GotDataCallback callback,
-                            base::Value value) {
-  std::string data = value.DebugString();
-  std::move(callback).Run(base::RefCountedString::TakeString(&data));
-}
-
-}  // namespace
-
 WebAppInternalsSource::WebAppInternalsSource(Profile* profile)
     : profile_(profile) {}
 
@@ -350,7 +353,7 @@ std::string WebAppInternalsSource::GetSource() {
   return chrome::kChromeUIWebAppInternalsHost;
 }
 
-std::string WebAppInternalsSource::GetMimeType(const std::string& path) {
+std::string WebAppInternalsSource::GetMimeType(const GURL& url) {
   return "application/json";
 }
 

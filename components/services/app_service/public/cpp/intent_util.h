@@ -53,6 +53,13 @@ apps::IntentPtr MakeShareIntent(const std::vector<GURL>& filesystem_urls,
                                 const std::string& text,
                                 const std::string& title);
 
+// Creates an intent for sharing `filesystem_url`, `mime_type` and
+// `drive_share_url` for a Google Drive file.
+apps::IntentPtr MakeShareIntent(const GURL& filesystem_url,
+                                const std::string& mime_type,
+                                const GURL& drive_share_url,
+                                bool is_directory);
+
 // Creates an intent for sharing |text|, with |title|.
 apps::IntentPtr MakeShareIntent(const std::string& text,
                                 const std::string& title);
@@ -186,9 +193,13 @@ bool ExtensionMatched(const std::string& file_name,
                       const std::string& filter_extension);
 
 // Check if the intent only mean to share to Google Drive.
+// TODO(crbug.com/1253250): Remove this function after migrating to non-mojo
+// AppService.
 bool OnlyShareToDrive(const apps::mojom::IntentPtr& intent);
 
 // Check the if the intent is valid, e.g. action matches content.
+// TODO(crbug.com/1253250): Remove this function after migrating to non-mojo
+// AppService.
 bool IsIntentValid(const apps::mojom::IntentPtr& intent);
 
 // Converts |intent| to base::Value, e.g.:

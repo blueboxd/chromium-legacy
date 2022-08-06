@@ -18,7 +18,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
-#include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -33,6 +32,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller.h"
+#include "ui/views/controls/combobox/combobox_menu_model.h"
 #include "ui/views/controls/combobox/combobox_util.h"
 #include "ui/views/controls/combobox/empty_combobox_model.h"
 #include "ui/views/controls/focus_ring.h"
@@ -50,9 +50,6 @@
 namespace views {
 
 namespace {
-
-// Used to indicate that no item is currently selected by the user.
-constexpr int kNoSelection = -1;
 
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   const int style = enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
@@ -122,118 +119,7 @@ class TransparentButton : public Button {
   }
 };
 
-#if !BUILDFLAG(IS_MAC)
-// Returns the next or previous valid index (depending on |increment|'s value).
-// Skips separator or disabled indices. Returns -1 if there is no valid adjacent
-// index.
-int GetAdjacentIndex(ui::ComboboxModel* model, int increment, int index) {
-  DCHECK(increment == -1 || increment == 1);
-
-  index += increment;
-  while (index >= 0 && index < model->GetItemCount()) {
-    if (!model->IsItemSeparatorAt(index) || !model->IsItemEnabledAt(index))
-      return index;
-    index += increment;
-  }
-  return kNoSelection;
-}
-#endif
-
 }  // namespace
-
-// Adapts a ui::ComboboxModel to a ui::MenuModel.
-class Combobox::ComboboxMenuModel : public ui::MenuModel {
- public:
-  ComboboxMenuModel(Combobox* owner, ui::ComboboxModel* model)
-      : owner_(owner), model_(model) {}
-  ComboboxMenuModel(const ComboboxMenuModel&) = delete;
-  ComboboxMenuModel& operator&(const ComboboxMenuModel&) = delete;
-  ~ComboboxMenuModel() override = default;
-
- private:
-  bool UseCheckmarks() const {
-    return MenuConfig::instance().check_selected_combobox_item;
-  }
-
-  // Overridden from MenuModel:
-  bool HasIcons() const override {
-    for (int i = 0; i < GetItemCount(); ++i) {
-      if (!GetIconAt(i).IsEmpty())
-        return true;
-    }
-    return false;
-  }
-
-  int GetItemCount() const override { return model_->GetItemCount(); }
-
-  ItemType GetTypeAt(int index) const override {
-    if (model_->IsItemSeparatorAt(index))
-      return TYPE_SEPARATOR;
-    return UseCheckmarks() ? TYPE_CHECK : TYPE_COMMAND;
-  }
-
-  ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override {
-    return ui::NORMAL_SEPARATOR;
-  }
-
-  int GetCommandIdAt(int index) const override {
-    // Define the id of the first item in the menu (since it needs to be > 0)
-    constexpr int kFirstMenuItemId = 1000;
-    return index + kFirstMenuItemId;
-  }
-
-  std::u16string GetLabelAt(int index) const override {
-    // Inserting the Unicode formatting characters if necessary so that the
-    // text is displayed correctly in right-to-left UIs.
-    std::u16string text = model_->GetDropDownTextAt(index);
-    base::i18n::AdjustStringForLocaleDirection(&text);
-    return text;
-  }
-
-  std::u16string GetSecondaryLabelAt(int index) const override {
-    std::u16string text = model_->GetDropDownSecondaryTextAt(index);
-    base::i18n::AdjustStringForLocaleDirection(&text);
-    return text;
-  }
-
-  bool IsItemDynamicAt(int index) const override { return true; }
-
-  const gfx::FontList* GetLabelFontListAt(int index) const override {
-    return &owner_->GetFontList();
-  }
-
-  bool GetAcceleratorAt(int index,
-                        ui::Accelerator* accelerator) const override {
-    return false;
-  }
-
-  bool IsItemCheckedAt(int index) const override {
-    return UseCheckmarks() && index == owner_->selected_index_;
-  }
-
-  int GetGroupIdAt(int index) const override { return -1; }
-
-  ui::ImageModel GetIconAt(int index) const override {
-    return model_->GetDropDownIconAt(index);
-  }
-
-  ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
-    return nullptr;
-  }
-
-  bool IsEnabledAt(int index) const override {
-    return model_->IsItemEnabledAt(index);
-  }
-
-  void ActivatedAt(int index) override { owner_->MenuSelectionAt(index); }
-
-  void ActivatedAt(int index, int event_flags) override { ActivatedAt(index); }
-
-  MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
-
-  raw_ptr<Combobox> owner_;           // Weak. Owns this.
-  raw_ptr<ui::ComboboxModel> model_;  // Weak.
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, public:
@@ -261,6 +147,7 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
 
+  SetBackgroundColorId(ui::kColorTextfieldBackground);
   UpdateBorder();
 
   arrow_button_->SetVisible(true);
@@ -285,7 +172,7 @@ const gfx::FontList& Combobox::GetFontList() const {
   return style::GetFont(text_context_, text_style_);
 }
 
-void Combobox::SetSelectedIndex(int index) {
+void Combobox::SetSelectedIndex(absl::optional<size_t> index) {
   if (selected_index_ == index)
     return;
   // TODO(pbos): Add (D)CHECKs to validate the selected index.
@@ -304,7 +191,7 @@ base::CallbackListSubscription Combobox::AddSelectedIndexChangedCallback(
 }
 
 bool Combobox::SelectValue(const std::u16string& value) {
-  for (int i = 0; i < GetModel()->GetItemCount(); ++i) {
+  for (size_t i = 0; i < GetModel()->GetItemCount(); ++i) {
     if (value == GetModel()->GetItemAt(i)) {
       SetSelectedIndex(i);
       return true;
@@ -378,6 +265,11 @@ void Combobox::SetBorderColorId(ui::ColorId color_id) {
   UpdateBorder();
 }
 
+void Combobox::SetBackgroundColorId(ui::ColorId color_id) {
+  SetBackground(CreateThemedRoundedRectBackground(
+      color_id, FocusableBorder::kCornerRadiusDp));
+}
+
 void Combobox::SetEventHighlighting(bool should_highlight) {
   should_highlight_ = should_highlight;
   AsViewClass<TransparentButton>(arrow_button_)
@@ -399,29 +291,25 @@ bool Combobox::IsMenuRunning() const {
 
 void Combobox::OnThemeChanged() {
   View::OnThemeChanged();
-  SetBackground(
-      CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
-          GetColorProvider()->GetColor(ui::kColorTextfieldBackground),
-          FocusableBorder::kCornerRadiusDp)));
   OnContentSizeMaybeChanged();
 }
 
-int Combobox::GetRowCount() {
+size_t Combobox::GetRowCount() {
   return GetModel()->GetItemCount();
 }
 
-int Combobox::GetSelectedRow() {
+absl::optional<size_t> Combobox::GetSelectedRow() {
   return selected_index_;
 }
 
-void Combobox::SetSelectedRow(int row) {
-  int prev_index = selected_index_;
+void Combobox::SetSelectedRow(absl::optional<size_t> row) {
+  absl::optional<size_t> prev_index = selected_index_;
   SetSelectedIndex(row);
   if (selected_index_ != prev_index)
     OnPerformAction();
 }
 
-std::u16string Combobox::GetTextForRow(int row) {
+std::u16string Combobox::GetTextForRow(size_t row) {
   return GetModel()->IsItemSeparatorAt(row) ? std::u16string()
                                             : GetModel()->GetItemAt(row);
 }
@@ -462,76 +350,86 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   // TODO(oshima): handle IME.
   DCHECK_EQ(e.type(), ui::ET_KEY_PRESSED);
 
-  // TODO(pbos): Do we need to handle selected_index_ == -1 for unselected here?
-  // Ditto on handling an empty model?
-  DCHECK_GE(selected_index_, 0);
-  DCHECK_LT(selected_index_, GetModel()->GetItemCount());
-  if (selected_index_ < 0 || selected_index_ >= GetModel()->GetItemCount())
-    SetSelectedIndex(0);
+  DCHECK(selected_index_.has_value());
+  DCHECK_LT(selected_index_.value(), GetModel()->GetItemCount());
 
-  bool show_menu = false;
-  int new_index = kNoSelection;
-  switch (e.key_code()) {
 #if BUILDFLAG(IS_MAC)
-    case ui::VKEY_DOWN:
-    case ui::VKEY_UP:
-    case ui::VKEY_SPACE:
-    case ui::VKEY_HOME:
-    case ui::VKEY_END:
-      // On Mac, navigation keys should always just show the menu first.
-      show_menu = true;
-      break;
+  if (e.key_code() != ui::VKEY_DOWN && e.key_code() != ui::VKEY_UP &&
+      e.key_code() != ui::VKEY_SPACE && e.key_code() != ui::VKEY_HOME &&
+      e.key_code() != ui::VKEY_END) {
+    return false;
+  }
+  ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+  return true;
 #else
+  const auto index_at_or_after = [](ui::ComboboxModel* model,
+                                    size_t index) -> absl::optional<size_t> {
+    for (; index < model->GetItemCount(); ++index) {
+      if (!model->IsItemSeparatorAt(index) && model->IsItemEnabledAt(index))
+        return index;
+    }
+    return absl::nullopt;
+  };
+  const auto index_before = [](ui::ComboboxModel* model,
+                               size_t index) -> absl::optional<size_t> {
+    for (; index > 0; --index) {
+      const auto prev = index - 1;
+      if (!model->IsItemSeparatorAt(prev) && model->IsItemEnabledAt(prev))
+        return prev;
+    }
+    return absl::nullopt;
+  };
+
+  absl::optional<size_t> new_index;
+  switch (e.key_code()) {
     // Show the menu on F4 without modifiers.
     case ui::VKEY_F4:
       if (e.IsAltDown() || e.IsAltGrDown() || e.IsControlDown())
         return false;
-      show_menu = true;
-      break;
+      ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+      return true;
 
     // Move to the next item if any, or show the menu on Alt+Down like Windows.
     case ui::VKEY_DOWN:
-      if (e.IsAltDown())
-        show_menu = true;
-      else
-        new_index = GetAdjacentIndex(GetModel(), 1, selected_index_);
+      if (e.IsAltDown()) {
+        ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+        return true;
+      }
+      new_index = index_at_or_after(GetModel(), selected_index_.value() + 1);
       break;
 
     // Move to the end of the list.
     case ui::VKEY_END:
     case ui::VKEY_NEXT:  // Page down.
-      new_index = GetAdjacentIndex(GetModel(), -1, GetModel()->GetItemCount());
+      new_index = index_before(GetModel(), GetModel()->GetItemCount());
       break;
 
     // Move to the beginning of the list.
     case ui::VKEY_HOME:
     case ui::VKEY_PRIOR:  // Page up.
-      new_index = GetAdjacentIndex(GetModel(), 1, -1);
+      new_index = index_at_or_after(GetModel(), 0);
       break;
 
     // Move to the previous item if any.
     case ui::VKEY_UP:
-      new_index = GetAdjacentIndex(GetModel(), -1, selected_index_);
+      new_index = index_before(GetModel(), selected_index_.value());
       break;
 
     case ui::VKEY_RETURN:
     case ui::VKEY_SPACE:
-      show_menu = true;
-      break;
-#endif  // BUILDFLAG(IS_MAC)
+      ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+      return true;
+
     default:
       return false;
   }
 
-  if (show_menu) {
-    ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
-  } else if (new_index != selected_index_ && new_index != kNoSelection) {
-    DCHECK(!GetModel()->IsItemSeparatorAt(new_index));
+  if (new_index.has_value()) {
     SetSelectedIndex(new_index);
     OnPerformAction();
   }
-
   return true;
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 void Combobox::OnPaint(gfx::Canvas* canvas) {
@@ -571,14 +469,14 @@ void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 
   node_data->SetName(accessible_name_);
-  node_data->SetValue(model_->GetItemAt(selected_index_));
+  node_data->SetValue(model_->GetItemAt(selected_index_.value()));
   if (GetEnabled()) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
   }
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
-                             selected_index_);
+                             base::checked_cast<int>(selected_index_.value()));
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             model_->GetItemCount());
+                             base::checked_cast<int>(model_->GetItemCount()));
 }
 
 bool Combobox::HandleAccessibleAction(const ui::AXActionData& action_data) {
@@ -602,7 +500,7 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
   // default index.
   if (selected_index_ >= model_->GetItemCount() ||
       model_->GetItemCount() == 0 ||
-      model_->IsItemSeparatorAt(selected_index_)) {
+      model_->IsItemSeparatorAt(selected_index_.value())) {
     SetSelectedIndex(model_->GetDefaultIndex());
   }
 
@@ -646,8 +544,11 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   int y = insets.top();
   int contents_height = height() - insets.height();
 
+  DCHECK(selected_index_.has_value());
+  DCHECK_LT(selected_index_.value(), GetModel()->GetItemCount());
+
   // Draw the icon.
-  ui::ImageModel icon = GetModel()->GetIconAt(selected_index_);
+  ui::ImageModel icon = GetModel()->GetIconAt(selected_index_.value());
   if (!icon.IsEmpty()) {
     gfx::ImageSkia icon_skia = icon.Rasterize(GetColorProvider());
     int icon_y = y + (contents_height - icon_skia.height()) / 2;
@@ -660,14 +561,7 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
 
   // Draw the text.
   SkColor text_color = GetTextColorForEnableState(*this, GetEnabled());
-  // TODO(pbos): Do we need to handle selected_index_ == -1 for unselected here?
-  // Ditto on handling an empty model?
-  DCHECK_GE(selected_index_, 0);
-  DCHECK_LT(selected_index_, GetModel()->GetItemCount());
-  if (selected_index_ < 0 || selected_index_ >= GetModel()->GetItemCount())
-    SetSelectedIndex(0);
-
-  std::u16string text = GetModel()->GetItemAt(selected_index_);
+  std::u16string text = GetModel()->GetItemAt(selected_index_.value());
 
   int disclosure_arrow_offset = width() - kComboboxArrowContainerWidth;
 
@@ -748,7 +642,7 @@ void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
 }
 
-void Combobox::MenuSelectionAt(int index) {
+void Combobox::MenuSelectionAt(size_t index) {
   if (!menu_selection_at_callback_ || !menu_selection_at_callback_.Run(index)) {
     SetSelectedIndex(index);
     OnPerformAction();
@@ -769,7 +663,7 @@ gfx::Size Combobox::GetContentSize() const {
   const gfx::FontList& font_list = GetFontList();
   int height = font_list.GetHeight();
   int width = 0;
-  for (int i = 0; i < GetModel()->GetItemCount(); ++i) {
+  for (size_t i = 0; i < GetModel()->GetItemCount(); ++i) {
     if (model_->IsItemSeparatorAt(i))
       continue;
 
@@ -816,7 +710,7 @@ BEGIN_METADATA(Combobox, View)
 ADD_PROPERTY_METADATA(base::RepeatingClosure, Callback)
 ADD_PROPERTY_METADATA(std::unique_ptr<ui::ComboboxModel>, OwnedModel)
 ADD_PROPERTY_METADATA(ui::ComboboxModel*, Model)
-ADD_PROPERTY_METADATA(int, SelectedIndex)
+ADD_PROPERTY_METADATA(absl::optional<size_t>, SelectedIndex)
 ADD_PROPERTY_METADATA(bool, Invalid)
 ADD_PROPERTY_METADATA(bool, SizeToLargestLabel)
 ADD_PROPERTY_METADATA(std::u16string, AccessibleName)

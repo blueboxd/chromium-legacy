@@ -9,10 +9,11 @@ import json
 import logging
 import optparse
 
+import mozinfo
 import six
 
+from blinkpy.common import path_finder
 from blinkpy.common.html_diff import html_diff
-from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.common.unified_diff import unified_diff
 from blinkpy.web_tests.models import test_failures
@@ -21,6 +22,9 @@ from blinkpy.web_tests.models.typ_types import (
     Result,
     ResultSinkReporter,
 )
+
+path_finder.bootstrap_wpt_imports()
+from wptrunner import manifestexpected, wptmanifest
 
 _log = logging.getLogger(__name__)
 
@@ -41,6 +45,11 @@ def _html_diff(expected_text, actual_text, encoding='utf-8'):
     return six.ensure_text(diff_content, encoding)
 
 
+def _remove_query_params(test_name):
+    index = test_name.rfind('?')
+    return test_name if index == -1 else test_name[:index]
+
+
 class WPTResultsProcessor(object):
     def __init__(self,
                  host,
@@ -57,7 +66,9 @@ class WPTResultsProcessor(object):
         self.results_dir = results_dir
         self.sink = sink or ResultSinkReporter()
         self.wpt_manifest = self.port.wpt_manifest('external/wpt')
-        self.path_finder = PathFinder(self.fs)
+        self.path_finder = path_finder.PathFinder(self.fs)
+        # Provide placeholder properties until the wptreport is processed.
+        self.run_info = dict(mozinfo.info)
 
     @classmethod
     def from_options(cls, host, options):
@@ -77,12 +88,12 @@ class WPTResultsProcessor(object):
 
     def main(self, options):
         self._recreate_artifacts_dir()
-        self.process_wpt_results(options.wpt_results)
-        self._copy_results_viewer()
         if options.wpt_report:
             self.process_wpt_report(options.wpt_report)
         else:
             _log.debug('No wpt report to process')
+        self.process_wpt_results(options.wpt_results)
+        self._copy_results_viewer()
 
     @classmethod
     def parse_args(cls, argv=None):
@@ -129,8 +140,8 @@ class WPTResultsProcessor(object):
         _log.info('Recreated artifacts directory (%s)', self.artifacts_dir)
 
     def _copy_results_viewer(self):
-        source = self.fs.join(self.web_tests_dir, 'fast', 'harness',
-                              'results.html')
+        source = self.path_finder.path_from_blink_tools(
+            'blinkpy', 'web_tests', 'results.html')
         destination = self.fs.join(self.artifacts_dir, 'results.html')
         self.fs.copyfile(source, destination)
         _log.info('Copied results viewer (%s -> %s)', source, destination)
@@ -178,8 +189,13 @@ class WPTResultsProcessor(object):
             if component:
                 tests = {component: tests}
         results['tests'] = tests
-        test_names = self._extract_artifacts(results['tests'],
-                                             delim=results['path_delimiter'])
+        metadata = results.get('metadata') or {}
+        test_names = self._extract_artifacts(
+            results['tests'],
+            delim=results['path_delimiter'],
+            # Unlike the "external/wpt" prefix, this prefix does not actually
+            # exist on disk and only affects how the results are reported.
+            test_name_prefix=metadata.get('test_name_prefix', ''))
         _log.info('Extracted artifacts for %d tests', len(test_names))
 
         results_serialized = json.dumps(results)
@@ -199,7 +215,11 @@ class WPTResultsProcessor(object):
             json.dump(results, dest)
             dest.write(');')
 
-    def _extract_artifacts(self, current_node, current_path='', delim='/'):
+    def _extract_artifacts(self,
+                           current_node,
+                           current_path='',
+                           delim='/',
+                           test_name_prefix=''):
         """Recursively extract artifacts from the test results trie.
 
         The JSON results represent tests as the leaves of a trie (nested
@@ -215,10 +235,14 @@ class WPTResultsProcessor(object):
                 root directory.
             delim (str): Delimiter between components in test names. In
                 practice, the value is the POSIX directory separator.
+            test_name_prefix (str): Test name prefix to prepend to the generated
+                path when uploading results.
 
         Returns:
             list[str]: A list of test names found.
         """
+        if test_name_prefix and not test_name_prefix.endswith(delim):
+            test_name_prefix += delim
         if 'actual' in current_node:
             # Leaf node detected.
             if 'artifacts' not in current_node:
@@ -229,12 +253,15 @@ class WPTResultsProcessor(object):
             test_passed = current_node['actual'] == 'PASS'
             self._maybe_write_text_results(artifacts, current_path,
                                            test_passed)
-            self._maybe_write_screenshots(artifacts, current_path)
+            diff_stats = self._maybe_write_screenshots(artifacts, current_path)
+            if diff_stats:
+                current_node["image_diff_stats"] = diff_stats
             self._maybe_write_logs(artifacts, current_path)
-            # Required by fast/harness/results.html to show stderr.
+            # Required by blinkpy/web_tests/results.html to show stderr.
             if 'stderr' in artifacts:
                 current_node['has_stderr'] = True
-            self._add_result_to_sink(current_node, current_path)
+            self._add_result_to_sink(current_node, current_path,
+                                     test_name_prefix)
             _log.debug('Extracted artifacts for %s: %s', current_path,
                        ', '.join(artifacts) if artifacts else '(none)')
             return [current_path]
@@ -247,10 +274,11 @@ class WPTResultsProcessor(object):
                     # At the web test root, do not include a leading slash.
                     child_path = component
                 test_names.extend(
-                    self._extract_artifacts(child_node, child_path, delim))
+                    self._extract_artifacts(child_node, child_path, delim,
+                                            test_name_prefix))
             return test_names
 
-    def _locate_expected_text(self, test_name, extension='.ini'):
+    def _read_expected_metadata(self, test_name):
         """Try to locate the expected output of this test, if it exists.
 
         The expected output of a test is checked in to the source tree beside
@@ -259,19 +287,28 @@ class WPTResultsProcessor(object):
         blinkpy manifest) or ".any.js" tests (which appear in the output even
         though they do not actually run). Instead, they have corresponding
         tests like ".any.worker.html" that are covered here.
+
+        Raises:
+            ValueError: If the expected metadata was unreadable or unparsable.
         """
         # When looking into the WPT manifest, we omit "external/wpt" from the
         # web test name, since that part of the path is only relevant in
         # Chromium.
         wpt_name = self.path_finder.strip_wpt_path(test_name)
+        # TODO(crbug.com/1299650): Support virtual tests and metadata fallback.
         test_file_subpath = self.wpt_manifest.file_path_for_test_url(wpt_name)
-        if test_file_subpath:
-            expected_path = self.fs.join(self.web_tests_dir,
-                                         self.path_finder.wpt_prefix(),
-                                         test_file_subpath + extension)
-            if self.fs.exists(expected_path):
-                return expected_path
-        return ''
+        if not test_file_subpath:
+            raise ValueError('test ID did not resolve to a file')
+        metadata_root = self.path_finder.wpt_tests_dir()
+        manifest = manifestexpected.get_manifest(metadata_root,
+                                                 test_file_subpath, '/',
+                                                 self.run_info)
+        if not manifest:
+            raise ValueError('unable to read ".ini" file from disk')
+        test_manifest = manifest.get_test('/' + wpt_name)
+        if not test_manifest:
+            raise ValueError('test ID does not exist')
+        return wptmanifest.serialize(test_manifest.node)
 
     def _maybe_write_text_results(self, artifacts, test_name, test_passed):
         """Write actual, expected, and diff text outputs to disk, if possible.
@@ -301,10 +338,11 @@ class WPTResultsProcessor(object):
         )
         artifacts['actual_text'] = [actual_subpath]
 
-        expected_source_path = self._locate_expected_text(test_name)
-        if not expected_source_path:
+        try:
+            expected_text = self._read_expected_metadata(test_name)
+        except (ValueError, KeyError, wptmanifest.parser.ParseError) as error:
+            _log.error('Unable to read metadata for %s: %s', test_name, error)
             return
-        expected_text = self.fs.read_text_file(expected_source_path)
         expected_subpath = self._write_artifact(
             expected_text,
             test_name,
@@ -336,6 +374,7 @@ class WPTResultsProcessor(object):
 
     def _maybe_write_screenshots(self, artifacts, test_name):
         """Write actual, expected, and diff screenshots to disk, if possible.
+        Returns the diff stats if the screenshots are different.
 
         The raw "screenshots" artifact is a list of strings, each of which has
         the format "<url>:<base64-encoded PNG>". Each URL-PNG pair is a
@@ -351,7 +390,8 @@ class WPTResultsProcessor(object):
         if not screenshots:
             return
         for screenshot in screenshots:
-            url, printable_image = screenshot.split(':')[:2]
+            url, printable_image = screenshot.rsplit(':', 1)
+
             # The URL produced by wptrunner will have a leading "/", which we
             # trim away for easier comparison to the WPT name below.
             if url.startswith('/'):
@@ -378,20 +418,22 @@ class WPTResultsProcessor(object):
             )
             artifacts[screenshot_key] = [screenshot_subpath]
 
-        diff_bytes, error = self.port.diff_image(expected_image_bytes,
-                                                 actual_image_bytes)
-        if diff_bytes and not error:
+        diff_bytes, stats, error = self.port.diff_image(
+            expected_image_bytes, actual_image_bytes)
+        if error:
+            _log.error(
+                'Error creating diff image for %s '
+                '(error: %s, diff_bytes is None: %s)', test_name, error,
+                diff_bytes is None)
+        elif diff_bytes:
             diff_subpath = self._write_png_artifact(
                 diff_bytes,
                 test_name,
                 test_failures.FILENAME_SUFFIX_DIFF,
             )
             artifacts['image_diff'] = [diff_subpath]
-        else:
-            _log.error(
-                'Error creating diff image for %s '
-                '(error: %s, diff_bytes is None: %s)', test_name, error,
-                diff_bytes is None)
+
+        return stats
 
     def _maybe_write_logs(self, artifacts, test_name):
         """Write WPT logs to disk, if possible."""
@@ -456,11 +498,8 @@ class WPTResultsProcessor(object):
             text=False,
         )
 
-    def _remove_query_params(self, test_name):
-        index = test_name.rfind('?')
-        return test_name if index == -1 else test_name[:index]
 
-    def _add_result_to_sink(self, node, test_name):
+    def _add_result_to_sink(self, node, test_name, test_name_prefix=''):
         """Add test results to the result sink."""
         actual_statuses = node['actual'].split()
         flaky = len(set(actual_statuses)) > 1
@@ -477,7 +516,7 @@ class WPTResultsProcessor(object):
             for path in paths:
                 artifacts.AddArtifact(name, path)
         test_path = self.fs.join(self.web_tests_dir,
-                                 self._remove_query_params(test_name))
+                                 _remove_query_params(test_name))
 
         for iteration, (actual,
                         duration) in enumerate(zip(actual_statuses,
@@ -502,9 +541,12 @@ class WPTResultsProcessor(object):
                 # upload the same artifacts multiple times.
                 artifacts=(artifacts.artifacts if iteration == 0 else {}),
             )
-            self.sink.report_individual_test_result(test_name, result,
-                                                    self.results_dir, None,
-                                                    test_path)
+            self.sink.report_individual_test_result(
+                test_name_prefix=test_name_prefix,
+                result=result,
+                artifact_output_dir=self.results_dir,
+                expectations=None,
+                test_file_location=test_path)
 
     def _trim_to_regressions(self, current_node):
         """Recursively remove non-regressions from the test results trie.
@@ -548,6 +590,8 @@ class WPTResultsProcessor(object):
         artifact_path = self.fs.join(self.artifacts_dir, report_filename)
         with self.fs.open_text_file_for_writing(artifact_path) as report_file:
             json.dump(report, report_file)
+
+        self.run_info.update(report['run_info'])
         _log.info('Processed wpt report (%s -> %s)', report_path,
                   artifact_path)
         artifact = {

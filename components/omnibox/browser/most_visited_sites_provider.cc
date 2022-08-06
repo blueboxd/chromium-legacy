@@ -142,6 +142,20 @@ void MostVisitedSitesProvider::Start(const AutocompleteInput& input,
   if (!top_sites)
     return;
 
+  // If TopSites has not yet been loaded, then `OnMostVisitedUrlsAvailable` will
+  // be called asynchronously, so we need to first check that async calls are
+  // allowed for the given input.
+  if (!top_sites->loaded() && input.omit_asynchronous_matches()) {
+    return;
+  }
+
+  done_ = false;
+
+  // TODO(ender): Relocate this to StartPrefetch() when additional prefetch
+  // contexts are available.
+  // TopSites updates itself after a delay. To ensure up-to-date results,
+  // force an update now.
+  top_sites->SyncWithHistory();
   top_sites->GetMostVisitedURLs(
       base::BindRepeating(&MostVisitedSitesProvider::OnMostVisitedUrlsAvailable,
                           request_weak_ptr_factory_.GetWeakPtr()));
@@ -159,12 +173,20 @@ MostVisitedSitesProvider::MostVisitedSitesProvider(
     AutocompleteProviderListener* listener)
     : AutocompleteProvider(TYPE_MOST_VISITED_SITES), client_{client} {
   AddListener(listener);
+
+  // TopSites updates itself after a delay. To ensure up-to-date results,
+  // force an update now.
+  scoped_refptr<history::TopSites> top_sites = client_->GetTopSites();
+  if (top_sites) {
+    top_sites->SyncWithHistory();
+  }
 }
 
 MostVisitedSitesProvider::~MostVisitedSitesProvider() = default;
 
 void MostVisitedSitesProvider::OnMostVisitedUrlsAvailable(
     const history::MostVisitedURLList& urls) {
+  done_ = true;
   if (BuildTileSuggest(this, client_, urls, matches_))
     NotifyListeners(true);
 }
@@ -181,11 +203,21 @@ bool MostVisitedSitesProvider::AllowMostVisitedSitesSuggestions(
   if (client_->IsOffTheRecord())
     return false;
 
+  // This code guards cases when flag is disabled. Upon post-launch cleanup
+  // we just delete this
+  if (!base::FeatureList::IsEnabled(omnibox::kOmniboxMostVisitedTilesOnSrp) &&
+      (page_class == metrics::OmniboxEventProto::
+                         SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT)) {
+    return false;
+  }
+
   // Check whether current context is one that supports MV tiles.
   // Any context other than those listed below will be rejected.
   if (page_class != metrics::OmniboxEventProto::OTHER &&
       page_class != metrics::OmniboxEventProto::ANDROID_SEARCH_WIDGET &&
-      page_class != metrics::OmniboxEventProto::ANDROID_SHORTCUTS_WIDGET) {
+      page_class != metrics::OmniboxEventProto::ANDROID_SHORTCUTS_WIDGET &&
+      page_class != metrics::OmniboxEventProto::
+                        SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT) {
     return false;
   }
 

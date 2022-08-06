@@ -42,6 +42,8 @@ std::string DisplayModeToString(blink::mojom::DisplayMode display) {
       return "window-controls-overlay";
     case blink::mojom::DisplayMode::kTabbed:
       return "tabbed";
+    case blink::mojom::DisplayMode::kBorderless:
+      return "borderless";
   }
   return "";
 }
@@ -59,6 +61,8 @@ blink::mojom::DisplayMode DisplayModeFromString(const std::string& display) {
     return blink::mojom::DisplayMode::kWindowControlsOverlay;
   if (base::EqualsCaseInsensitiveASCII(display, "tabbed"))
     return blink::mojom::DisplayMode::kTabbed;
+  if (base::EqualsCaseInsensitiveASCII(display, "borderless"))
+    return blink::mojom::DisplayMode::kBorderless;
   return blink::mojom::DisplayMode::kUndefined;
 }
 
@@ -130,38 +134,17 @@ mojom::CaptureLinks CaptureLinksFromString(const std::string& capture_links) {
   return mojom::CaptureLinks::kUndefined;
 }
 
-bool ParsedRouteTo::operator==(const ParsedRouteTo& other) const {
-  auto AsTuple = [](const auto& item) {
-    return std::tie(item.route_to, item.legacy_existing_client_value);
-  };
-  return AsTuple(*this) == AsTuple(other);
-}
-
-bool ParsedRouteTo::operator!=(const ParsedRouteTo& other) const {
-  return !(*this == other);
-}
-
-absl::optional<ParsedRouteTo> RouteToFromString(const std::string& route_to) {
-  using RouteTo = Manifest::LaunchHandler::RouteTo;
-  if (base::EqualsCaseInsensitiveASCII(route_to, "auto"))
-    return ParsedRouteTo{.route_to = RouteTo::kAuto};
-  if (base::EqualsCaseInsensitiveASCII(route_to, "new-client"))
-    return ParsedRouteTo{.route_to = RouteTo::kNewClient};
-  if (base::EqualsCaseInsensitiveASCII(route_to, "existing-client"))
-    return ParsedRouteTo{.legacy_existing_client_value = true};
-  if (base::EqualsCaseInsensitiveASCII(route_to, "existing-client-navigate"))
-    return ParsedRouteTo{.route_to = RouteTo::kExistingClientNavigate};
-  if (base::EqualsCaseInsensitiveASCII(route_to, "existing-client-retain"))
-    return ParsedRouteTo{.route_to = RouteTo::kExistingClientRetain};
-  return absl::nullopt;
-}
-
-absl::optional<NavigateExistingClient> NavigateExistingClientFromString(
-    const std::string& navigate_existing_client) {
-  if (base::EqualsCaseInsensitiveASCII(navigate_existing_client, "always"))
-    return NavigateExistingClient::kAlways;
-  if (base::EqualsCaseInsensitiveASCII(navigate_existing_client, "never"))
-    return NavigateExistingClient::kNever;
+absl::optional<mojom::ManifestLaunchHandler::ClientMode> ClientModeFromString(
+    const std::string& client_mode) {
+  using ClientMode = Manifest::LaunchHandler::ClientMode;
+  if (base::EqualsCaseInsensitiveASCII(client_mode, "auto"))
+    return ClientMode::kAuto;
+  if (base::EqualsCaseInsensitiveASCII(client_mode, "navigate-new"))
+    return ClientMode::kNavigateNew;
+  if (base::EqualsCaseInsensitiveASCII(client_mode, "navigate-existing"))
+    return ClientMode::kNavigateExisting;
+  if (base::EqualsCaseInsensitiveASCII(client_mode, "focus-existing"))
+    return ClientMode::kFocusExisting;
   return absl::nullopt;
 }
 

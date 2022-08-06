@@ -25,6 +25,7 @@ SwitchAccessItemScanManagerTest = class extends SwitchAccessE2ETest {
         'SwitchAccessMenuAction', '/switch_access/switch_access_constants.js');
     await importModule(
         'SwitchAccessPredicate', '/switch_access/switch_access_predicate.js');
+    await importModule('KeyCode', '/common/key_code.js');
 
     BackButtonNode
         .locationForTesting = {top: 10, left: 10, width: 20, height: 20};
@@ -470,7 +471,7 @@ AX_TEST_F(
       // Fake a children changed event.
       handler.eventStack_ = [{
         type: chrome.automation.EventType.CHILDREN_CHANGED,
-        target: automationGroup
+        target: automationGroup,
       }];
       handler.handleEvent_();
 
@@ -585,7 +586,7 @@ AX_TEST_F(
       // Wait for focus to move to the password field.
       await this.untilFocusIs({
         role: chrome.automation.RoleType.TEXT_FIELD,
-        name: 'Password for stub-user@example.com'
+        name: 'Password for stub-user@example.com',
       });
 
       // The button is no longer in the tree because the screen is locked.

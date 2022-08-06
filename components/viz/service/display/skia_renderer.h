@@ -17,9 +17,12 @@
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_resource_provider_skia.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/color_conversion_sk_filter_cache.h"
+#include "ui/gfx/geometry/mask_filter_info.h"
 #include "ui/latency/latency_info.h"
 
 class SkColorFilter;
@@ -69,6 +72,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       bool create_if_necessary) override;
   void SetDelegatedInkMetadata(
       std::unique_ptr<gfx::DelegatedInkMetadata> metadata) override;
+  gfx::Rect GetCurrentFramebufferDamage() const override;
+  void Reshape(const OutputSurface::ReshapeParams& reshape_params) override;
+  void EnsureMinNumberOfBuffers(int n) override;
 
  protected:
   bool CanPartialSwap() override;
@@ -122,6 +128,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const absl::optional<gfx::Rect>& scissor_rect,
       const absl::optional<gfx::MaskFilterInfo>& mask_filter_info,
       const gfx::Transform* cdt);
+  void PrepareGradient(
+      const absl::optional<gfx::MaskFilterInfo>& mask_filter_info);
 
   // Further modify the canvas as needed to apply the effects represented by
   // |rpdq_params|. Call Prepare[Paint|Color]OrCanvasForRPDQ when possible,
@@ -215,9 +223,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                           const DrawRPDQParams* rpdq_params,
                           DrawQuadParams* params);
 
-  void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
-                           const DrawRPDQParams* rpdq_params,
-                           DrawQuadParams* params);
   void DrawTextureQuad(const TextureDrawQuad* quad,
                        const DrawRPDQParams* rpdq_params,
                        DrawQuadParams* params);
@@ -249,6 +254,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // quads. The default values perform no adjustment.
   sk_sp<SkColorFilter> GetColorSpaceConversionFilter(
       const gfx::ColorSpace& src,
+      absl::optional<gfx::HDRMetadata> src_hdr_metadata,
       const gfx::ColorSpace& dst,
       float resource_offset = 0.0f,
       float resource_multiplier = 1.0f);
@@ -280,6 +286,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     gfx::ColorSpace color_space;
     ResourceFormat format;
     gpu::Mailbox mailbox;
+    bool is_root;
   };
   base::flat_map<AggregatedRenderPassId, RenderPassBacking>
       render_pass_backings_;
@@ -425,6 +432,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool UsingSkiaForDelegatedInk() const;
   uint32_t debug_tint_modulate_count_ = 0;
   bool use_real_color_space_for_stream_video_ = false;
+
+  // Used to get mailboxes for the root render pass when
+  // capabilities().renderer_allocates_images = true.
+  std::unique_ptr<BufferQueue> buffer_queue_;
 };
 
 }  // namespace viz

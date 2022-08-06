@@ -16,6 +16,7 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
@@ -114,7 +115,8 @@ std::unique_ptr<SearchController> CreateSearchController(
   if (app_list_features::IsLauncherLacrosIntegrationEnabled()) {
     controller->AddProvider(
         omnibox_group_id,
-        std::make_unique<OmniboxLacrosProvider>(profile, list_controller));
+        std::make_unique<OmniboxLacrosProvider>(
+            profile, list_controller, crosapi::CrosapiManager::Get()));
   } else {
     controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                   profile, list_controller));
@@ -151,11 +153,7 @@ std::unique_ptr<SearchController> CreateSearchController(
             kMaxAppShortcutResults, profile, list_controller));
   }
 
-  // Enable zero-state files aka. the Continue section if:
-  // - unconditionally in the old launcher.
-  // - in the productivity launcher only if the enable_continue parameter is
-  //   true (the default).
-  if (!ash::features::IsProductivityLauncherEnabled() ||
+  if (ash::features::IsProductivityLauncherEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
           ash::features::kProductivityLauncher, "enable_continue", true)) {
     size_t zero_state_files_group_id =

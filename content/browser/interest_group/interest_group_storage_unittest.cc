@@ -32,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
 namespace content {
@@ -95,7 +96,8 @@ TEST_F(InterestGroupStorageTest, DatabaseInitialized_CreateDatabase) {
     std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
     const url::Origin test_origin =
         url::Origin::Create(GURL("https://owner.example.com"));
-    storage->LeaveInterestGroup(test_origin, "example", test_origin);
+    storage->LeaveInterestGroup(blink::InterestGroupKey(test_origin, "example"),
+                                test_origin);
   }
 
   // InterestGroupStorage creates the database if it doesn't exist.
@@ -133,7 +135,8 @@ TEST_F(InterestGroupStorageTest, DatabaseRazesOldVersion) {
     // initialization.
     const url::Origin test_origin =
         url::Origin::Create(GURL("https://owner.example.com"));
-    storage->LeaveInterestGroup(test_origin, "example", test_origin);
+    storage->LeaveInterestGroup(blink::InterestGroupKey(test_origin, "example"),
+                                test_origin);
   }
 
   {
@@ -168,7 +171,8 @@ TEST_F(InterestGroupStorageTest, DatabaseRazesNewVersion) {
     // initialization.
     const url::Origin test_origin =
         url::Origin::Create(GURL("https://owner.example.com"));
-    storage->LeaveInterestGroup(test_origin, "example", test_origin);
+    storage->LeaveInterestGroup(blink::InterestGroupKey(test_origin, "example"),
+                                test_origin);
   }
 
   {
@@ -241,7 +245,8 @@ TEST_F(InterestGroupStorageTest, JoinJoinLeave) {
   EXPECT_EQ(1u, origins.size());
   EXPECT_EQ(test_origin, origins[0]);
 
-  storage->LeaveInterestGroup(test_origin, "example", test_origin);
+  storage->LeaveInterestGroup(blink::InterestGroupKey(test_origin, "example"),
+                              test_origin);
 
   interest_groups = storage->GetInterestGroupsForOwner(test_origin);
   EXPECT_EQ(1u, interest_groups.size());
@@ -308,6 +313,7 @@ TEST_F(InterestGroupStorageTest, BidCount) {
 
   storage->JoinInterestGroup(NewInterestGroup(test_origin, "example"),
                              test_origin.GetURL());
+  blink::InterestGroupKey group_key(test_origin, "example");
 
   std::vector<url::Origin> origins = storage->GetAllInterestGroupOwners();
   EXPECT_EQ(1u, origins.size());
@@ -320,7 +326,7 @@ TEST_F(InterestGroupStorageTest, BidCount) {
   EXPECT_EQ(1, interest_groups[0].bidding_browser_signals->join_count);
   EXPECT_EQ(0, interest_groups[0].bidding_browser_signals->bid_count);
 
-  storage->RecordInterestGroupBid(test_origin, "example");
+  storage->RecordInterestGroupBids({group_key});
 
   interest_groups = storage->GetInterestGroupsForOwner(test_origin);
   EXPECT_EQ(1u, interest_groups.size());
@@ -328,7 +334,7 @@ TEST_F(InterestGroupStorageTest, BidCount) {
   EXPECT_EQ(1, interest_groups[0].bidding_browser_signals->join_count);
   EXPECT_EQ(1, interest_groups[0].bidding_browser_signals->bid_count);
 
-  storage->RecordInterestGroupBid(test_origin, "example");
+  storage->RecordInterestGroupBids({group_key});
 
   interest_groups = storage->GetInterestGroupsForOwner(test_origin);
   EXPECT_EQ(1u, interest_groups.size());
@@ -343,6 +349,7 @@ TEST_F(InterestGroupStorageTest, RecordsWins) {
   const GURL ad1_url = GURL("http://owner.example.com/ad1");
   const GURL ad2_url = GURL("http://owner.example.com/ad2");
   std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+  blink::InterestGroupKey group_key(test_origin, "example");
 
   storage->JoinInterestGroup(NewInterestGroup(test_origin, "example"),
                              test_origin.GetURL());
@@ -359,8 +366,8 @@ TEST_F(InterestGroupStorageTest, RecordsWins) {
   EXPECT_EQ(0, interest_groups[0].bidding_browser_signals->bid_count);
 
   std::string ad1_json = "{url: '" + ad1_url.spec() + "'}";
-  storage->RecordInterestGroupBid(test_origin, "example");
-  storage->RecordInterestGroupWin(test_origin, "example", ad1_json);
+  storage->RecordInterestGroupBids({group_key});
+  storage->RecordInterestGroupWin(group_key, ad1_json);
 
   interest_groups = storage->GetInterestGroupsForOwner(test_origin);
   ASSERT_EQ(1u, interest_groups.size());
@@ -371,8 +378,8 @@ TEST_F(InterestGroupStorageTest, RecordsWins) {
   // Add the second win *after* the first so we can check ordering.
   task_environment().FastForwardBy(base::Seconds(1));
   std::string ad2_json = "{url: '" + ad2_url.spec() + "'}";
-  storage->RecordInterestGroupBid(test_origin, "example");
-  storage->RecordInterestGroupWin(test_origin, "example", ad2_json);
+  storage->RecordInterestGroupBids({group_key});
+  storage->RecordInterestGroupWin(group_key, ad2_json);
 
   interest_groups = storage->GetInterestGroupsForOwner(test_origin);
   ASSERT_EQ(1u, interest_groups.size());
@@ -387,9 +394,9 @@ TEST_F(InterestGroupStorageTest, RecordsWins) {
             interest_groups[0].bidding_browser_signals->prev_wins[1]->ad_json);
 
   // Try delete
-  storage->DeleteInterestGroupData(
-      base::BindLambdaForTesting([&test_origin](const url::Origin& candidate) {
-        return candidate == test_origin;
+  storage->DeleteInterestGroupData(base::BindLambdaForTesting(
+      [&test_origin](const blink::StorageKey& candidate) {
+        return candidate == blink::StorageKey(test_origin);
       }));
 
   origins = storage->GetAllInterestGroupOwners();
@@ -770,18 +777,29 @@ TEST_F(InterestGroupStorageTest, StoresAllFields) {
       full.IsEqualForTesting(storage_interest_groups[0].interest_group));
 
   // Test update as well.
-  InterestGroup updated = full;
-  updated.bidding_url = GURL("https://full.example.com/bid2");
-  updated.bidding_wasm_helper_url = GURL("https://full.example.com/bid_wasm2");
-  updated.trusted_bidding_signals_url =
+  InterestGroupUpdate update;
+  update.bidding_url = GURL("https://full.example.com/bid2");
+  update.bidding_wasm_helper_url = GURL("https://full.example.com/bid_wasm2");
+  update.trusted_bidding_signals_url =
       GURL("https://full.example.com/signals2");
-  updated.trusted_bidding_signals_keys =
-      absl::make_optional(std::vector<std::string>{"a", "b2", "c", "d"});
-  updated.ads->emplace_back(blink::InterestGroup::Ad(
+  update.trusted_bidding_signals_keys =
+      std::vector<std::string>{"a", "b2", "c", "d"};
+  update.ads = full.ads;
+  update.ads->emplace_back(blink::InterestGroup::Ad(
       GURL("https://full.example.com/ad3"), "metadata3"));
-  updated.ad_components->emplace_back(blink::InterestGroup::Ad(
+  update.ad_components = full.ad_components;
+  update.ad_components->emplace_back(blink::InterestGroup::Ad(
       GURL("https://full.example.com/adcomponent3"), "metadata3c"));
-  storage->UpdateInterestGroup(updated);
+  storage->UpdateInterestGroup(blink::InterestGroupKey(full.owner, full.name),
+                               update);
+
+  InterestGroup updated = full;
+  updated.bidding_url = update.bidding_url;
+  updated.bidding_wasm_helper_url = update.bidding_wasm_helper_url;
+  updated.trusted_bidding_signals_url = update.trusted_bidding_signals_url;
+  updated.trusted_bidding_signals_keys = update.trusted_bidding_signals_keys;
+  updated.ads = update.ads;
+  updated.ad_components = update.ad_components;
 
   storage_interest_groups = storage->GetInterestGroupsForOwner(full_origin);
   ASSERT_EQ(1u, storage_interest_groups.size());
@@ -818,9 +836,9 @@ TEST_F(InterestGroupStorageTest, DeleteOriginDeleteAll) {
   EXPECT_THAT(joining_origins,
               UnorderedElementsAre(joining_originA, joining_originB));
 
-  storage->DeleteInterestGroupData(
-      base::BindLambdaForTesting([&owner_originA](const url::Origin& origin) {
-        return origin == owner_originA;
+  storage->DeleteInterestGroupData(base::BindLambdaForTesting(
+      [&owner_originA](const blink::StorageKey& storage_key) {
+        return storage_key == blink::StorageKey(owner_originA);
       }));
 
   origins = storage->GetAllInterestGroupOwners();
@@ -831,9 +849,9 @@ TEST_F(InterestGroupStorageTest, DeleteOriginDeleteAll) {
 
   // Delete all interest groups that joined on joining_origin A. We expect that
   // we will be left with the one that joined on joining_origin B.
-  storage->DeleteInterestGroupData(
-      base::BindLambdaForTesting([&joining_originA](const url::Origin& origin) {
-        return origin == joining_originA;
+  storage->DeleteInterestGroupData(base::BindLambdaForTesting(
+      [&joining_originA](const blink::StorageKey& storage_key) {
+        return storage_key == blink::StorageKey(joining_originA);
       }));
 
   origins = storage->GetAllInterestGroupOwners();
@@ -1468,7 +1486,8 @@ TEST_F(InterestGroupStorageTest,
       storage->GetAllInterestGroupsUnfilteredForTesting();
   EXPECT_EQ(8u, interest_groups.size());
 
-  storage->LeaveInterestGroup(cluster_origin, "cluster0", other_origin);
+  storage->LeaveInterestGroup(
+      blink::InterestGroupKey(cluster_origin, "cluster0"), other_origin);
 
   auto expected_interest_group_matcher = testing::UnorderedElementsAre(
       testing::AllOf(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/mwb_element_shared_style.css.js';
 import 'chrome://resources/cr_elements/mwb_shared_style.css.js';
@@ -113,7 +113,7 @@ export class TabSearchAppElement extends PolymerElement {
             loadTimeData.getValue('recentlyClosedDefaultItemDisplayCount'),
       },
 
-      searchResultText_: {type: String, value: ''}
+      searchResultText_: {type: String, value: ''},
     };
   }
 

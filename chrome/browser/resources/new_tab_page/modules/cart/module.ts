@@ -11,7 +11,7 @@ import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
@@ -87,7 +87,7 @@ export class ChromeCartModuleElement extends I18nMixin
         type: Boolean,
         value: () =>
             loadTimeData.getInteger('modulesCartDiscountConsentVariation') >
-            DiscountConsentVariation.STRING_CHANGE
+            DiscountConsentVariation.STRING_CHANGE,
       },
       firstThreeCartItems_:
           {type: Array, computed: 'computeFirstThreeCartItems_(cartItems)'},
@@ -96,7 +96,7 @@ export class ChromeCartModuleElement extends I18nMixin
       discountConsentVisible: {
         type: Boolean,
         reflectToAttribute: true,
-      }
+      },
     };
   }
 
@@ -343,7 +343,8 @@ export class ChromeCartModuleElement extends I18nMixin
    */
   private onLeftScrollClick_() {
     const carts = this.$.cartCarousel.querySelectorAll('.cart-container');
-    let visibleRange = 0, firstVisibleIndex = 0;
+    let visibleRange = 0;
+    let firstVisibleIndex = 0;
     for (let i = carts.length - 1; i >= 0; i--) {
       if (this.getVisibilityForIndex_(i)) {
         visibleRange += 1;
@@ -528,12 +529,12 @@ async function createCartElement(): Promise<HTMLElement|null> {
     return null;
   }
 
+  let discountedCartCount = 0;
+
   if (loadTimeData.getBoolean('ruleBasedDiscountEnabled')) {
     if (consentVisible) {
       recordOccurence('NewTabPage.Carts.DiscountConsentShow');
     }
-
-    let discountedCartCount = 0;
 
     for (let i = 0; i < carts.length; i++) {
       const cart = carts[i];
@@ -543,17 +544,27 @@ async function createCartElement(): Promise<HTMLElement|null> {
             'NewTabPage.Carts.DiscountAt', i);
       }
     }
-
-    chrome.metricsPrivate.recordSmallCount(
-        'NewTabPage.Carts.DiscountCountAtLoad', discountedCartCount);
   }
+  chrome.metricsPrivate.recordSmallCount(
+      'NewTabPage.Carts.DiscountCountAtLoad', discountedCartCount);
 
+  chrome.metricsPrivate.recordSmallCount(
+      'NewTabPage.Carts.NonDiscountCountAtLoad',
+      carts.length - discountedCartCount);
   const element = new ChromeCartModuleElement();
   if (welcomeVisible) {
     element.headerChipText = loadTimeData.getString('modulesNewTagLabel');
     element.headerDescriptionText =
         loadTimeData.getString('modulesCartWarmWelcome');
+  } else {
+    for (let i = 0; i < carts.length; i++) {
+      const images = carts[i].productImageUrls;
+      chrome.metricsPrivate.recordSmallCount(
+          'NewTabPage.Carts.CartImageCount',
+          images === undefined ? 0 : images.length);
+    }
   }
+
   element.cartItems = carts;
   element.showDiscountConsent = consentVisible;
   element.discountConsentVisible = consentVisible;

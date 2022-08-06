@@ -3,15 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include <atomic>
-#include <memory>
-
-// logging.h is a widely included header and its size has significant impact on
-// build time. Try not to raise this limit unless absolutely necessary. See
-// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#ifndef NACL_TC_REV
-#pragma clang max_tokens_here 350000
-#endif  // NACL_TC_REV
 
 #ifdef BASE_CHECK_H_
 #error "logging.h should not include check.h"
@@ -20,20 +11,23 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include <atomic>
+#include <memory>
 #include <tuple>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/debug/crash_logging.h"
-#if defined(LEAK_SANITIZER) && !BUILDFLAG(IS_NACL)
-#include "base/debug/leak_annotations.h"
-#endif  // defined(LEAK_SANITIZER) && !BUILDFLAG(IS_NACL)
 #include "base/immediate_crash.h"
 #include "base/pending_task.h"
 #include "base/strings/string_piece.h"
 #include "base/task/common/task_annotator.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
+
+#if defined(LEAK_SANITIZER) && !BUILDFLAG(IS_NACL)
+#include "base/debug/leak_annotations.h"
+#endif  // defined(LEAK_SANITIZER) && !BUILDFLAG(IS_NACL)
 
 #if BUILDFLAG(IS_WIN)
 #include <io.h>
@@ -299,8 +293,9 @@ uint64_t TickCount() {
 #if BUILDFLAG(IS_WIN)
   return GetTickCount();
 #elif BUILDFLAG(IS_FUCHSIA)
-  return zx_clock_get_monotonic() /
-         static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
+  return static_cast<uint64_t>(
+      zx_clock_get_monotonic() /
+      static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond));
 #elif BUILDFLAG(IS_APPLE)
   return mach_absolute_time();
 #elif BUILDFLAG(IS_NACL)
@@ -482,12 +477,12 @@ void WriteToFd(int fd, const char* data, size_t length) {
 
 }  // namespace
 
-#if defined(DCHECK_IS_CONFIGURABLE)
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 // In DCHECK-enabled Chrome builds, allow the meaning of LOGGING_DCHECK to be
 // determined at run-time. We default it to INFO, to avoid it triggering
 // crashes before the run-time has explicitly chosen the behaviour.
 BASE_EXPORT logging::LogSeverity LOGGING_DCHECK = LOGGING_INFO;
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 // This is never instantiated, it's just used for EAT_STREAM_PARAMETERS to have
 // an object of the correct type on the LHS of the unused part of the ternary
@@ -910,7 +905,7 @@ LogMessage::~LogMessage() {
     // Skip the final character of |str_newline|, since LogMessage() will add
     // a newline.
     const auto message = base::StringPiece(str_newline).substr(message_start_);
-    GetScopedFxLogger().LogMessage(file_, line_,
+    GetScopedFxLogger().LogMessage(file_, static_cast<uint32_t>(line_),
                                    message.substr(0, message.size() - 1),
                                    LogSeverityToFuchsiaLogSeverity(severity_));
 #endif  // BUILDFLAG(IS_FUCHSIA)
@@ -1002,8 +997,22 @@ LogMessage::~LogMessage() {
   }
 }
 
-std::string LogMessage::GetMessageWithoutPrefix() const {
-  return str().substr(message_start_);
+std::string LogMessage::BuildCrashString() const {
+  return BuildCrashString(file(), line(), str().c_str() + message_start_);
+}
+
+std::string LogMessage::BuildCrashString(const char* file,
+                                         int line,
+                                         const char* message_without_prefix) {
+  // Only log last path component.
+  if (file) {
+    const char* slash = strrchr(file, '/');
+    if (slash) {
+      file = slash + 1;
+    }
+  }
+
+  return base::StringPrintf("%s:%d: %s", file, line, message_without_prefix);
 }
 
 // writes the common header info to the stream

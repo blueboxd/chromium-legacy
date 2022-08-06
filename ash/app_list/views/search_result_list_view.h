@@ -14,7 +14,6 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view.h"
 
@@ -107,6 +106,8 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   SearchResultView* GetResultViewAt(size_t index) override;
   absl::optional<ResultsAnimationInfo> ScheduleResultAnimations(
       const ResultsAnimationInfo& aggregate_animation_info) override;
+  void AppendShownResultMetadata(
+      std::vector<SearchResultAimationMetadata>* result_metadata_) override;
   bool HasAnimatingChildView() override;
 
   // Fades the view in and animates a vertical transform based on the view's
@@ -140,10 +141,6 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   void Layout() override;
   int GetHeightForWidth(int w) const override;
   void OnThemeChanged() override;
-
-  // Logs the set of recommendations (impressions) that were shown to the user
-  // after a period of time.
-  void LogImpressions();
 
   // Returns search results specific to Assistant if any are available.
   std::vector<SearchResult*> GetAssistantResults();
@@ -192,8 +189,6 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   absl::optional<SearchResultListType> list_type_ =
       SearchResultListType::kUnified;
   views::Label* title_label_ = nullptr;  // Owned by view hierarchy.
-  // Used for logging impressions shown to users.
-  base::OneShotTimer impression_timer_;
 
   // The search result list view's location in the
   // productivity_launcher_search_view_'s list of 'search_result_list_view_'.
@@ -216,11 +211,6 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
 
   // The number of results shown by the list view.
   size_t num_results_ = 0;
-
-  // The most recent container's index within the search UI - the index
-  // indicates the number of result and title views that appear before this
-  // container.
-  int last_container_start_index_ = -1;
 };
 
 }  // namespace ash

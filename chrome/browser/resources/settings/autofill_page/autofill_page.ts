@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../prefs/prefs.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -23,7 +23,6 @@ import {routes} from '../route.js';
 import {Router} from '../router.js';
 
 import {getTemplate} from './autofill_page.html.js';
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordCheckMixin} from './password_check_mixin.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 
@@ -43,6 +42,7 @@ export class SettingsAutofillPageElement extends
   static get properties() {
     return {
       passwordFilter_: String,
+      passkeyFilter_: String,
 
       focusConfig_: {
         type: Object,
@@ -71,7 +71,7 @@ export class SettingsAutofillPageElement extends
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enablePasswordViewPage');
-        }
+        },
       },
 
       // The credential is only used to pass the credential from password-view
@@ -84,10 +84,11 @@ export class SettingsAutofillPageElement extends
   }
 
   private passwordFilter_: string;
+  private passkeyFilter_: string;
   private focusConfig_: Map<string, string>;
   private passwordManagerSubLabel_: string;
   private enablePasswordViewPage_: string;
-  credential: MultiStorePasswordUiEntry|null;
+  credential: chrome.passwordsPrivate.PasswordUiEntry|null;
 
   /**
    * Shows the manage addresses sub page.

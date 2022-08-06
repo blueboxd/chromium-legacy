@@ -8,7 +8,6 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -20,6 +19,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Browser;
+import android.transition.TransitionManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,8 +28,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.filters.SmallTest;
 
 import com.google.android.material.tabs.TabLayout;
@@ -102,8 +102,10 @@ public class HistoryUITest {
     public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule
     public JniMocker mJniMocker = new JniMocker();
+    @Rule
+    public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
+            new ActivityScenarioRule<>(TestActivity.class);
 
-    private ActivityScenario<TestActivity> mActivityScenario;
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;
     private HistoryManager mHistoryManager;
@@ -155,14 +157,14 @@ public class HistoryUITest {
         Profile.setLastUsedProfileForTesting(mProfile);
         doReturn(mPrefService).when(mUserPrefsJni).get(mProfile);
         doReturn(true).when(mPrefService).getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY);
+        doReturn(true).when(mPrefService).getBoolean(HistoryManager.HISTORY_CLUSTERS_VISIBLE_PREF);
         IdentityServicesProvider.setInstanceForTests(mIdentityService);
         doReturn(mSigninManager).when(mIdentityService).getSigninManager(mProfile);
         mJniMocker.mock(PrefChangeRegistrarJni.TEST_HOOKS, mPrefChangeRegistrarJni);
         IncognitoUtils.setEnabledForTesting(true);
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
         HistoryClustersBridge.setInstanceForTesting(mHistoryClustersBridge);
-        mActivityScenario = ActivityScenario.launch(TestActivity.class)
-                                    .onActivity(activity -> mActivity = activity);
+        mActivityScenarioRule.getScenario().onActivity(activity -> mActivity = activity);
         mHistoryManager = new HistoryManager(mActivity, true, mSnackbarManager, false,
                 /* Supplier<Tab>= */ null, false, null, mHistoryProvider);
         mHistoryClustersCoordinator = mHistoryManager.getHistoryClustersCoordinatorForTests();
@@ -272,12 +274,11 @@ public class HistoryUITest {
         toggleItemSelection(3);
 
         performMenuAction(R.id.selection_mode_open_in_incognito);
-        Intent firstIntent = shadowOf(mActivity).getNextStartedActivity();
-        Intent secondIntent = shadowOf(mActivity).getNextStartedActivity();
+        Intent intent = shadowOf(mActivity).getNextStartedActivity();
 
-        Assert.assertThat(Arrays.asList(firstIntent, secondIntent),
-                hasItems(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem1.getUrl())),
-                        allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem2.getUrl()))));
+        Assert.assertThat(intent, hasData(mItem1.getUrl()));
+        Assert.assertEquals(intent.getSerializableExtra(IntentHandler.EXTRA_ADDITIONAL_URLS),
+                Arrays.asList(mItem2.getUrl().getSpec()));
     }
 
     @Test
@@ -645,6 +646,7 @@ public class HistoryUITest {
         Assert.assertFalse(journeysTab.isSelected());
 
         toggle.selectTab(journeysTab);
+        TransitionManager.endTransitions(mHistoryManager.getView());
         ViewGroup activityContentView = mHistoryClustersCoordinator.getActivityContentView();
         Assert.assertEquals(mHistoryManager.getView().getChildAt(0), activityContentView);
         promise.fulfill(HistoryClustersResult.emptyResult());

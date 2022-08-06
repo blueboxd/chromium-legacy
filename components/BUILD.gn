@@ -193,6 +193,7 @@ test("components_unittests") {
     "//components/reputation/core:unit_tests",
     "//components/safe_browsing/core/browser:safe_browsing_metrics_collector_unittest",
     "//components/safe_search_api:unit_tests",
+    "//components/saved_tab_groups:unit_tests",
     "//components/scheduling_metrics:unit_tests",
     "//components/search:unit_tests",
     "//components/search_engines:unit_tests",
@@ -329,6 +330,7 @@ test("components_unittests") {
       "//components/certificate_transparency:unit_tests",
       "//components/content_capture/browser:unit_tests",
       "//components/content_settings/browser:unit_tests",
+      "//components/contextual_search/core/browser:unit_tests",
       "//components/continuous_search/browser:unit_tests",
       "//components/continuous_search/common:unit_tests",
       "//components/custom_handlers:unit_tests",
@@ -362,6 +364,7 @@ test("components_unittests") {
       "//components/offline_pages:unit_tests",
       "//components/optimization_guide/content/browser:unit_tests",
       "//components/optimization_guide/content/renderer:unit_tests",
+      "//components/origin_trials:unit_tests",
       "//components/page_image_annotation/content/renderer:unit_tests",
       "//components/page_image_annotation/core:unit_tests",
       "//components/page_info/core:unit_tests",
@@ -382,6 +385,7 @@ test("components_unittests") {
       "//components/policy/content:unit_tests",
       "//components/privacy_sandbox:unit_tests",
       "//components/query_tiles:unit_tests",
+      "//components/session_proto_db:unit_tests",
 
       # TODO(chromium: 1169835) components / reporting / storage / resources: unit_tests
       # can't be run on iOS until they are updated.
@@ -562,6 +566,7 @@ test("components_unittests") {
     deps += [
       "//components/account_manager_core:unit_tests",
       "//components/arc/common:unit_tests",
+      "//components/reporting/health:unit_tests",
     ]
   }
 
@@ -586,6 +591,7 @@ test("components_unittests") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/browser/print_to_pdf:unit_tests",
+      "//components/printing/common:unit_tests",
       "//components/services/print_compositor:unit_tests",
     ]
   }
@@ -900,6 +906,7 @@ if (!is_ios) {
         "//components/autofill_assistant/browser:proto",
         "//components/autofill_assistant/browser/devtools:devtools",
         "//components/autofill_assistant/browser/devtools:gen_devtools_client_api",
+        "//components/autofill_assistant/browser/public:password_change",
         "//components/autofill_assistant/browser/public:public",
         "//components/autofill_assistant/content/common",
         "//components/autofill_assistant/content/common:mojo_interfaces",
@@ -952,12 +959,12 @@ if (!is_ios) {
     }
 
     if (is_fuchsia) {
-      use_cfv2 = false
+      use_cfv1 = false
+      test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
       additional_manifest_fragments = [
-        "//build/config/fuchsia/test/font_capabilities.test-cmx",
-        "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-        "//build/config/fuchsia/test/network_capabilities.test-cmx",
-        "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
+        "//build/config/fuchsia/test/present_view.shard.test-cml",
+        "//build/config/fuchsia/test/fonts.shard.test-cml",
+        "//build/config/fuchsia/test/network.shard.test-cml",
       ]
     }
 

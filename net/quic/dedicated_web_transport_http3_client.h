@@ -68,7 +68,7 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
   void OnDatagramProcessed(absl::optional<quic::MessageStatus> status);
 
   // QuicTransportClientSession::ClientVisitor methods.
-  void OnSessionReady(const spdy::SpdyHeaderBlock&) override;
+  void OnSessionReady(const spdy::Http2HeaderBlock&) override;
   void OnSessionClosed(quic::WebTransportSessionError error_code,
                        const std::string& error_message) override;
   void OnIncomingBidirectionalStreamAvailable() override;
@@ -143,7 +143,6 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
   const raw_ptr<URLRequestContext> context_;          // Unowned.
   const raw_ptr<WebTransportClientVisitor> visitor_;  // Unowned.
 
-  const raw_ptr<ClientSocketFactory> client_socket_factory_;  // Unowned.
   const raw_ptr<QuicContext> quic_context_;                   // Unowned.
   NetLogWithSource net_log_;
   raw_ptr<base::SequencedTaskRunner> task_runner_;  // Unowned.

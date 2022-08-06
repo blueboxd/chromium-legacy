@@ -1428,6 +1428,7 @@ interface Document : Node
     getter onauxclick
     getter onbeforecopy
     getter onbeforecut
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforepaste
     getter onbeforexrselect
@@ -1495,6 +1496,7 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onprerenderingchange
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1537,6 +1539,7 @@ interface Document : Node
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
+    getter prerendering
     getter readyState
     getter referrer
     getter rootElement
@@ -1630,6 +1633,7 @@ interface Document : Node
     setter onauxclick
     setter onbeforecopy
     setter onbeforecut
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforepaste
     setter onbeforexrselect
@@ -1697,6 +1701,7 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onprerenderingchange
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -1911,6 +1916,7 @@ interface Element : Node
     method setAttributeNS
     method setAttributeNode
     method setAttributeNodeNS
+    method setHTML
     method setPointerCapture
     method toggleAttribute
     method webkitMatchesSelector
@@ -2714,6 +2720,7 @@ interface HTMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforexrselect
     getter onblur
@@ -2837,6 +2844,7 @@ interface HTMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforexrselect
     setter onblur
@@ -2995,8 +3003,6 @@ interface HTMLFormElement : HTMLElement
     getter method
     getter name
     getter noValidate
-    getter rel
-    getter relList
     getter target
     method @@iterator
     method checkValidity
@@ -3013,8 +3019,6 @@ interface HTMLFormElement : HTMLElement
     setter method
     setter name
     setter noValidate
-    setter rel
-    setter relList
     setter target
 interface HTMLFrameElement : HTMLElement
     attribute @@toStringTag
@@ -4039,6 +4043,37 @@ interface Headers
     method keys
     method set
     method values
+interface Highlight
+    attribute @@toStringTag
+    getter priority
+    getter size
+    getter type
+    method @@iterator
+    method add
+    method clear
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method has
+    method keys
+    method values
+    setter priority
+    setter type
+interface HighlightRegistry
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method clear
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method set
+    method values
 interface History
     attribute @@toStringTag
     getter length
@@ -4669,10 +4704,12 @@ interface MediaSession
     setter metadata
     setter playbackState
 interface MediaSource : EventTarget
+    static getter canConstructInDedicatedWorker
     static method isTypeSupported
     attribute @@toStringTag
     getter activeSourceBuffers
     getter duration
+    getter handle
     getter onsourceclose
     getter onsourceended
     getter onsourceopen
@@ -4688,6 +4725,9 @@ interface MediaSource : EventTarget
     setter onsourceclose
     setter onsourceended
     setter onsourceopen
+interface MediaSourceHandle
+    attribute @@toStringTag
+    method constructor
 interface MediaStream : EventTarget
     attribute @@toStringTag
     getter active
@@ -4870,6 +4910,7 @@ interface NamedNodeMap
     method setNamedItemNS
 interface NavigateEvent : Event
     attribute @@toStringTag
+    getter canIntercept
     getter canTransition
     getter destination
     getter downloadRequest
@@ -4880,7 +4921,9 @@ interface NavigateEvent : Event
     getter signal
     getter userInitiated
     method constructor
+    method intercept
     method restoreScroll
+    method scroll
     method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
@@ -5497,6 +5540,7 @@ interface PerformanceNavigation
     method toJSON
 interface PerformanceNavigationTiming : PerformanceResourceTiming
     attribute @@toStringTag
+    getter activationStart
     getter domComplete
     getter domContentLoadedEventEnd
     getter domContentLoadedEventStart
@@ -6140,6 +6184,7 @@ interface ReportingObserver
     method takeRecords
 interface Request
     attribute @@toStringTag
+    getter body
     getter bodyUsed
     getter cache
     getter credentials
@@ -6359,6 +6404,7 @@ interface SVGElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforexrselect
     getter onblur
@@ -6466,6 +6512,7 @@ interface SVGElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforexrselect
     setter onblur
@@ -7341,6 +7388,11 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
+interface Sanitizer
+    static method getDefaultConfiguration
+    attribute @@toStringTag
+    method constructor
+    method getConfiguration
 interface Scheduler
     attribute @@toStringTag
     method constructor
@@ -7895,6 +7947,13 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TransformStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method constructor
+    method enqueue
+    method error
+    method terminate
 interface TransitionEvent : Event
     attribute @@toStringTag
     getter elapsedTime
@@ -10246,6 +10305,7 @@ interface webkitURL
 [NAMESPACES]
 namespace CSS
     attribute @@toStringTag
+    getter highlights
     getter paintWorklet
     method Hz
     method Q
@@ -10334,6 +10394,7 @@ namespace CSS
     getter onanimationstart
     getter onappinstalled
     getter onauxclick
+    getter onbeforeinput
     getter onbeforeinstallprompt
     getter onbeforematch
     getter onbeforeprint
@@ -10548,6 +10609,7 @@ namespace CSS
     setter onanimationstart
     setter onappinstalled
     setter onauxclick
+    setter onbeforeinput
     setter onbeforeinstallprompt
     setter onbeforematch
     setter onbeforeprint

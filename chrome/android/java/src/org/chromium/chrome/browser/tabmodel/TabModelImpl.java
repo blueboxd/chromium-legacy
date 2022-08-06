@@ -90,7 +90,7 @@ public class TabModelImpl extends TabModelJniBridge {
         mModelDelegate = modelDelegate;
         if (supportUndo && !isIncognito()) {
             mPendingTabClosureManager = new PendingTabClosureManager(
-                    this, modelDelegate, new PendingTabClosureManager.PendingTabClosureDelegate() {
+                    this, new PendingTabClosureManager.PendingTabClosureDelegate() {
                         @Override
                         public void insertUndoneTabClosureAt(Tab tab, int insertIndex) {
                             if (mIndex >= insertIndex) mIndex++;
@@ -129,8 +129,8 @@ public class TabModelImpl extends TabModelJniBridge {
                         }
 
                         @Override
-                        public void notifyDidCloseTabs(List<Tab> tabs) {
-                            TabModelImpl.this.notifyDidCloseTabs(tabs);
+                        public void notifyOnFinishingMultipleTabClosure(List<Tab> tabs) {
+                            TabModelImpl.this.notifyOnFinishingMultipleTabClosure(tabs);
                         }
                     });
         }
@@ -151,7 +151,7 @@ public class TabModelImpl extends TabModelJniBridge {
     public void destroy() {
         commitAllTabClosures();
         for (Tab tab : mTabs) {
-            // When reparenting tabs, we skip destoying tabs that we're intentionally keeping in
+            // When reparenting tabs, we skip destroying tabs that we're intentionally keeping in
             // memory.
             if (mModelDelegate.isReparentingInProgress()
                     && mAsyncTabParamsManager.hasParamsForTabId(tab.getId())) {
@@ -162,7 +162,11 @@ public class TabModelImpl extends TabModelJniBridge {
         }
 
         if (mPendingTabClosureManager != null) {
-            mPendingTabClosureManager.destroy();
+            if (mModelDelegate.isReparentingInProgress()) {
+                mPendingTabClosureManager.destroyWhileReparentingInProgress();
+            } else {
+                mPendingTabClosureManager.destroy();
+            }
         }
         mTabs.clear();
         mObservers.clear();
@@ -409,9 +413,10 @@ public class TabModelImpl extends TabModelJniBridge {
      *                      closure even if they are not notified of a pending closure to start
      *                      with.
      * @param notifyDidCloseAlone Whether to notify observers that this tab is closing by itself for
-     *                            {@link TabModelObserver#didCloseTabs} if the closure cannot be
-     *                            undone. This should be {@code true} if closing the tab by itself,
-     *                            and {@code false} if closing as part of a multiple tab closure.
+     *                            {@link TabModelObserver#onFinishingMultipleTabClosure} if the
+     *                            closure cannot be undone. This should be {@code true} if closing
+     *                            the tab by itself, and {@code false} if closing as part of a
+     *                            multiple tab closure.
      */
     private boolean closeTab(Tab tabToClose, Tab recommendedNextTab, boolean animate,
             boolean uponExit, boolean canUndo, boolean notifyPending, boolean notifyDidCloseAlone) {
@@ -434,7 +439,7 @@ public class TabModelImpl extends TabModelJniBridge {
         }
         if (!canUndo) {
             if (notifyDidCloseAlone) {
-                notifyDidCloseTabs(Collections.singletonList(tabToClose));
+                notifyOnFinishingMultipleTabClosure(Collections.singletonList(tabToClose));
             }
             finalizeTabClosure(tabToClose, false);
         }
@@ -453,7 +458,7 @@ public class TabModelImpl extends TabModelJniBridge {
         }
         final boolean allowUndo = canUndo && supportsPendingClosures();
         if (!allowUndo) {
-            notifyDidCloseTabs(tabs);
+            notifyOnFinishingMultipleTabClosure(tabs);
         }
         for (Tab tab : tabs) {
             closeTab(tab, null, false, false, canUndo, false, false);
@@ -478,7 +483,7 @@ public class TabModelImpl extends TabModelJniBridge {
             commitAllTabClosures();
 
             for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
-            notifyDidCloseTabs(mTabs);
+            notifyOnFinishingMultipleTabClosure(mTabs);
             while (getCount() > 0) {
                 Tab tab = getTabAt(0);
                 closeTab(tab, null, true, uponExit, false, false, false);
@@ -490,7 +495,7 @@ public class TabModelImpl extends TabModelJniBridge {
         for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
         List<Tab> closedTabs = new ArrayList<>(mTabs);
         if (!supportsPendingClosures()) {
-            notifyDidCloseTabs(closedTabs);
+            notifyOnFinishingMultipleTabClosure(closedTabs);
         }
         while (getCount() > 0) {
             Tab tab = getTabAt(0);
@@ -666,7 +671,7 @@ public class TabModelImpl extends TabModelJniBridge {
     private void finalizeTabClosure(Tab tab, boolean notifyTabClosureCommitted) {
         mTabContentManager.removeTabThumbnail(tab.getId());
 
-        for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
+        for (TabModelObserver obs : mObservers) obs.onFinishingTabClosure(tab);
         if (notifyTabClosureCommitted) {
             for (TabModelObserver obs : mObservers) obs.tabClosureCommitted(tab);
         }
@@ -774,7 +779,7 @@ public class TabModelImpl extends TabModelJniBridge {
         mActive = active;
     }
 
-    private void notifyDidCloseTabs(List<Tab> tabs) {
-        for (TabModelObserver obs : mObservers) obs.didCloseTabs(tabs);
+    private void notifyOnFinishingMultipleTabClosure(List<Tab> tabs) {
+        for (TabModelObserver obs : mObservers) obs.onFinishingMultipleTabClosure(tabs);
     }
 }

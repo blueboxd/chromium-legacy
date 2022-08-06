@@ -21,13 +21,10 @@
 #include "ui/resources/grit/webui_generated_resources_map.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#include "base/feature_list.h"
 #include "chromeos/ash/grit/ash_resources.h"
 #include "chromeos/ash/grit/ash_resources_map.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "chromeos/grit/chromeos_resources_map.h"
-#include "ui/chromeos/styles/cros_styles.h"  // nogncheck
 #endif
 
 namespace content {
@@ -55,11 +52,6 @@ const std::set<int> GetContentResourceIds() {
       IDR_URL_MOJO_HTML,
       IDR_URL_MOJO_JS,
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-// TODO(abigailbklein): Remove this when ReadAnythingAppController is wired up.
-#if !BUILDFLAG(IS_ANDROID)
-      IDR_TRANSFORM_MOJO_WEBUI_JS,
-#endif
   };
 }
 
@@ -88,6 +80,7 @@ const std::set<int> GetChromeosMojoResourceIds() {
 
 const std::set<int> GetAshMojoResourceIds() {
   return std::set<int>{
+      IDR_AUTH_FACTOR_CONFIG_MOJOM_WEBUI_JS,
       IDR_CELLULAR_SETUP_MOJOM_HTML,
       IDR_CELLULAR_SETUP_MOJOM_LITE_JS,
       IDR_ESIM_MANAGER_MOJOM_HTML,
@@ -137,12 +130,6 @@ void PopulateSharedResourcesDataSource(WebUIDataSource* source) {
                kChromeosResourcesSize, source);
   AddResources(GetAshMojoResourceIds(), kAshResources, kAshResourcesSize,
                source);
-
-  source->AddString(
-      "crosColorsDebugOverrides",
-      base::FeatureList::IsEnabled(ash::features::kSemanticColorsDebugOverride)
-          ? cros_styles::kDebugOverrideCssString
-          : "");
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   source->AddString("fontFamily", webui::GetFontFamily());

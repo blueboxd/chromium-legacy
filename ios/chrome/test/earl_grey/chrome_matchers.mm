@@ -356,6 +356,10 @@ id<GREYMatcher> SettingsPrivacyTableView() {
   return [ChromeMatchersAppInterface settingsPrivacyTableView];
 }
 
+id<GREYMatcher> SettingsPrivacySafeBrowsingTableView() {
+  return [ChromeMatchersAppInterface settingsPrivacySafeBrowsingTableView];
+}
+
 id<GREYMatcher> ContentSettingsButton() {
   return [ChromeMatchersAppInterface contentSettingsButton];
 }
@@ -698,6 +702,40 @@ id<GREYMatcher> SettingsDestinationButton() {
 
 id<GREYMatcher> SettingsActionButton() {
   return [ChromeMatchersAppInterface settingsActionButton];
+}
+
+#pragma mark - Promo style view controller
+
+id<GREYMatcher> PromoStylePrimaryActionButtonMatcher() {
+  return [ChromeMatchersAppInterface promoStylePrimaryActionButtonMatcher];
+}
+
+id<GREYMatcher> PromoStyleSecondaryActionButtonMatcher() {
+  return [ChromeMatchersAppInterface promoStyleSecondaryActionButtonMatcher];
+}
+
+#pragma mark - Incognito Interstitial
+
+id<GREYMatcher> IncognitoInterstitialMatcher() {
+  return [ChromeMatchersAppInterface incognitoInterstitial];
+}
+
+id<GREYMatcher> IncognitoInterstitialSubtitleForURL(const std::string& url) {
+  return [ChromeMatchersAppInterface
+      incognitoInterstitialSubtitleForURL:base::SysUTF8ToNSString(url)];
+}
+
+id<GREYMatcher> IncognitoInterstitialOpenInChromeIncognitoButton() {
+  return [ChromeMatchersAppInterface
+      incognitoInterstitialOpenInChromeIncognitoButton];
+}
+
+id<GREYMatcher> IncognitoInterstitialOpenInChromeButton() {
+  return [ChromeMatchersAppInterface incognitoInterstitialOpenInChromeButton];
+}
+
+id<GREYMatcher> IncognitoInterstitialCancelButton() {
+  return [ChromeMatchersAppInterface incognitoInterstitialCancelButton];
 }
 
 #pragma mark - Manual Fallback

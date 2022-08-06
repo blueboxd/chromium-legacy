@@ -126,6 +126,14 @@ TEST_F(MetricsReporterTest, ScrollingSmall) {
   });
   EXPECT_EQ(want, ReportedEngagementType(kForYouStream));
   EXPECT_EQ(want, ReportedEngagementType(kCombinedStreams));
+  histogram_.ExpectTotalCount("ContentSuggestions.Feed.FollowCount.Engaged2",
+                              0);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2", 0);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2", 0);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged", 0);
 }
 
 TEST_F(MetricsReporterTest, ScrollingCanTriggerEngaged) {
@@ -138,10 +146,20 @@ TEST_F(MetricsReporterTest, ScrollingCanTriggerEngaged) {
   });
   EXPECT_EQ(want, ReportedEngagementType(kForYouStream));
   EXPECT_EQ(want, ReportedEngagementType(kCombinedStreams));
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.FollowCount.Engaged2",
+                                kSubscriptionCount, 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2", 0);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged", kSubscriptionCount,
+      1);
 }
 
 TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
-  reporter_->OpenAction(kForYouStream, 5);
+  reporter_->OpenAction(kForYouStream, 5, OpenActionType::kDefault);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -194,7 +212,7 @@ TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
 TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
   reporter_->StreamScrolled(kForYouStream, 1);
   task_environment_.FastForwardBy(base::Minutes(5) - kEpsilon);
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Minutes(5) - kEpsilon);
   reporter_->StreamScrolled(kForYouStream, 1);
 
@@ -209,10 +227,10 @@ TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
 }
 
 TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   reporter_->StreamScrolled(kForYouStream, 1);
   task_environment_.FastForwardBy(base::Minutes(5) + kEpsilon);
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   reporter_->StreamScrolled(kForYouStream, 1);
 
   std::map<FeedEngagementType, int> want({
@@ -227,9 +245,9 @@ TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
 
 TEST_F(MetricsReporterTest, InteractedWithBothFeeds) {
   reporter_->StreamScrolled(kForYouStream, 1);
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   reporter_->StreamScrolled(kWebFeedStream, 1);
-  reporter_->OpenAction(kWebFeedStream, 0);
+  reporter_->OpenAction(kWebFeedStream, 0, OpenActionType::kDefault);
 
   std::map<FeedEngagementType, int> want_1({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -247,12 +265,20 @@ TEST_F(MetricsReporterTest, InteractedWithBothFeeds) {
       {FeedEngagementType::kFeedScrolled, 1},
   });
   EXPECT_EQ(want_1c, ReportedEngagementType(kCombinedStreams));
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.FollowCount.Engaged2",
+                                kSubscriptionCount, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged", kSubscriptionCount,
       1);
 
   task_environment_.FastForwardBy(base::Minutes(5) + kEpsilon);
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   reporter_->StreamScrolled(kForYouStream, 1);
 
   EXPECT_EQ(want_1, ReportedEngagementType(kWebFeedStream));
@@ -272,6 +298,14 @@ TEST_F(MetricsReporterTest, InteractedWithBothFeeds) {
       {FeedEngagementType::kFeedScrolled, 2},
   });
   EXPECT_EQ(want_2c, ReportedEngagementType(kCombinedStreams));
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.FollowCount.Engaged2",
+                                kSubscriptionCount, 2);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2",
+      kSubscriptionCount, 2);
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged", kSubscriptionCount,
       2);
@@ -542,7 +576,7 @@ TEST_F(MetricsReporterTest, WebFeed_ReportsBackgroundRefreshStatus) {
 }
 
 TEST_F(MetricsReporterTest, OpenAction) {
-  reporter_->OpenAction(kForYouStream, 5);
+  reporter_->OpenAction(kForYouStream, 5, OpenActionType::kDefault);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -556,13 +590,20 @@ TEST_F(MetricsReporterTest, OpenAction) {
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedOnCard, 1);
   histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.FollowCount.Engaged2",
+                                kSubscriptionCount, 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2", 0);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged", kSubscriptionCount,
       1);
 }
 
 TEST_F(MetricsReporterTest, OpenActionWebFeed) {
-  reporter_->OpenAction(kWebFeedStream, 5);
+  reporter_->OpenAction(kWebFeedStream, 5, OpenActionType::kDefault);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -576,13 +617,21 @@ TEST_F(MetricsReporterTest, OpenActionWebFeed) {
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedOnCard, 1);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.WebFeed.Opened", 5, 1);
+  histogram_.ExpectTotalCount("ContentSuggestions.Feed.FollowCount.Engaged2",
+                              0);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2",
+      kSubscriptionCount, 1);
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged", kSubscriptionCount,
       1);
 }
 
 TEST_F(MetricsReporterTest, OpenInNewTabAction) {
-  reporter_->OpenInNewTabAction(kForYouStream, 5);
+  reporter_->OpenAction(kForYouStream, 5, OpenActionType::kNewTab);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -595,6 +644,24 @@ TEST_F(MetricsReporterTest, OpenInNewTabAction) {
                    "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedOpenInNewTab, 1);
+  histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
+}
+
+TEST_F(MetricsReporterTest, OpenInNewTabInGroupAction) {
+  reporter_->OpenAction(kForYouStream, 5, OpenActionType::kNewTabInGroup);
+
+  std::map<FeedEngagementType, int> want({
+      {FeedEngagementType::kFeedEngaged, 1},
+      {FeedEngagementType::kFeedInteracted, 1},
+      {FeedEngagementType::kFeedEngagedSimple, 1},
+  });
+  EXPECT_EQ(want, ReportedEngagementType(kForYouStream));
+  EXPECT_EQ(want, ReportedEngagementType(kCombinedStreams));
+  EXPECT_EQ(1, user_actions_.GetActionCount(
+                   "ContentSuggestions.Feed.CardAction.OpenInNewTabInGroup"));
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
+                                FeedUserActionType::kTappedOpenInNewTabInGroup,
+                                1);
   histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
 }
 
@@ -811,7 +878,7 @@ TEST_F(MetricsReporterTest, WebFeed_OpenFeedCloseBeforeLoad) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardSuccessDuration) {
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(19));
   reporter_->PageLoaded();
 
@@ -821,7 +888,7 @@ TEST_F(MetricsReporterTest, OpenCardSuccessDuration) {
 }
 
 TEST_F(MetricsReporterTest, WebFeed_OpenCardSuccessDuration) {
-  reporter_->OpenAction(kWebFeedStream, 0);
+  reporter_->OpenAction(kWebFeedStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(19));
   reporter_->PageLoaded();
 
@@ -831,7 +898,7 @@ TEST_F(MetricsReporterTest, WebFeed_OpenCardSuccessDuration) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardTimeout) {
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(21));
   reporter_->PageLoaded();
 
@@ -842,7 +909,7 @@ TEST_F(MetricsReporterTest, OpenCardTimeout) {
 }
 
 TEST_F(MetricsReporterTest, WebFeed_OpenCardTimeout) {
-  reporter_->OpenAction(kWebFeedStream, 0);
+  reporter_->OpenAction(kWebFeedStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(21));
   reporter_->PageLoaded();
 
@@ -854,9 +921,9 @@ TEST_F(MetricsReporterTest, WebFeed_OpenCardTimeout) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardFailureTwiceAndThenSucceed) {
-  reporter_->OpenAction(kForYouStream, 0);
-  reporter_->OpenAction(kForYouStream, 1);
-  reporter_->OpenAction(kForYouStream, 2);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
+  reporter_->OpenAction(kForYouStream, 1, OpenActionType::kDefault);
+  reporter_->OpenAction(kForYouStream, 2, OpenActionType::kDefault);
   reporter_->PageLoaded();
 
   histogram_.ExpectUniqueSample(
@@ -866,9 +933,9 @@ TEST_F(MetricsReporterTest, OpenCardFailureTwiceAndThenSucceed) {
 }
 
 TEST_F(MetricsReporterTest, WebFeed_OpenCardFailureTwiceAndThenSucceed) {
-  reporter_->OpenAction(kWebFeedStream, 0);
-  reporter_->OpenAction(kWebFeedStream, 1);
-  reporter_->OpenAction(kWebFeedStream, 2);
+  reporter_->OpenAction(kWebFeedStream, 0, OpenActionType::kDefault);
+  reporter_->OpenAction(kWebFeedStream, 1, OpenActionType::kDefault);
+  reporter_->OpenAction(kWebFeedStream, 2, OpenActionType::kDefault);
   reporter_->PageLoaded();
 
   histogram_.ExpectUniqueSample(
@@ -879,7 +946,7 @@ TEST_F(MetricsReporterTest, WebFeed_OpenCardFailureTwiceAndThenSucceed) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardCloseChromeFailure) {
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   reporter_->OnEnterBackground();
 
   histogram_.ExpectUniqueSample(
@@ -889,11 +956,11 @@ TEST_F(MetricsReporterTest, OpenCardCloseChromeFailure) {
 }
 
 TEST_F(MetricsReporterTest, TimeSpentInFeedCountsOnlyForegroundTime) {
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(1));
   reporter_->OnEnterBackground();
   task_environment_.FastForwardBy(base::Seconds(2));
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(3));
   reporter_->OnEnterBackground();
 
@@ -906,7 +973,7 @@ TEST_F(MetricsReporterTest, TimeSpentInFeedCountsOnlyForegroundTime) {
 }
 
 TEST_F(MetricsReporterTest, TimeSpentInFeedLimitsIdleTime) {
-  reporter_->OpenAction(kForYouStream, 0);
+  reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
   task_environment_.FastForwardBy(base::Seconds(31));
   reporter_->OnEnterBackground();
 
@@ -923,7 +990,7 @@ TEST_F(MetricsReporterTest, TimeSpentInFeedIsPerDay) {
   // interaction due to the interaction timeout. The 49th |OpenAction()| call
   // triggers reporting the UMA for the previous day.
   for (int i = 0; i < 49; ++i) {
-    reporter_->OpenAction(kForYouStream, 0);
+    reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
     task_environment_.FastForwardBy(base::Hours(1));
   }
 
@@ -936,7 +1003,7 @@ TEST_F(MetricsReporterTest, TimeSpentIsPersisted) {
   // destroyed and recreated. The 49th |OpenAction()| call triggers reporting
   // the UMA for the previous day.
   for (int i = 0; i < 49; ++i) {
-    reporter_->OpenAction(kForYouStream, 0);
+    reporter_->OpenAction(kForYouStream, 0, OpenActionType::kDefault);
     task_environment_.FastForwardBy(base::Hours(1));
     reporter_->OnEnterBackground();
     RecreateMetricsReporter();

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -72,16 +73,14 @@ int IOSChromeNetworkDelegate::OnBeforeURLRequest(
 bool IOSChromeNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const net::URLRequest& request,
     net::CookieAccessResultList& maybe_included_cookies,
-    net::CookieAccessResultList& excluded_cookies,
-    bool allowed_from_caller) {
+    net::CookieAccessResultList& excluded_cookies) {
   // `cookie_settings_` is null during tests, or when we're running in the
   // system context.
-  bool allowed = allowed_from_caller;
-  if (cookie_settings_) {
-    allowed = allowed && cookie_settings_->IsFullCookieAccessAllowed(
-                             request.url(),
-                             request.site_for_cookies().RepresentativeUrl());
-  }
+  bool allowed =
+      !cookie_settings_ ||
+      cookie_settings_->IsFullCookieAccessAllowed(
+          request.url(), request.site_for_cookies().RepresentativeUrl(),
+          QueryReason::kCookies);
 
   if (!allowed) {
     ExcludeAllCookies(
@@ -95,15 +94,14 @@ bool IOSChromeNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 bool IOSChromeNetworkDelegate::OnCanSetCookie(
     const net::URLRequest& request,
     const net::CanonicalCookie& cookie,
-    net::CookieOptions* options,
-    bool allowed_from_caller) {
+    net::CookieOptions* options) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)
-    return allowed_from_caller;
+    return true;
 
-  return allowed_from_caller &&
-         cookie_settings_->IsFullCookieAccessAllowed(
-             request.url(), request.site_for_cookies().RepresentativeUrl());
+  return cookie_settings_->IsFullCookieAccessAllowed(
+      request.url(), request.site_for_cookies().RepresentativeUrl(),
+      QueryReason::kCookies);
 }
 
 net::NetworkDelegate::PrivacySetting
@@ -116,8 +114,8 @@ IOSChromeNetworkDelegate::OnForcePrivacyMode(
   if (!cookie_settings_.get())
     return net::NetworkDelegate::PrivacySetting::kStateAllowed;
 
-  return cookie_settings_->IsFullCookieAccessAllowed(url, site_for_cookies,
-                                                     top_frame_origin)
+  return cookie_settings_->IsFullCookieAccessAllowed(
+             url, site_for_cookies, top_frame_origin, QueryReason::kCookies)
              ? net::NetworkDelegate::PrivacySetting::kStateAllowed
              : net::NetworkDelegate::PrivacySetting::kStateDisallowed;
 }

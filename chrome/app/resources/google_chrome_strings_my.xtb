@@ -14,8 +14,6 @@
 <translation id="1142745911746664600">Chrome ကို အပ်ဒိတ်လုပ်၍ မရခြင်း</translation>
 <translation id="1152920704813762236">ChromeOS အကြောင်း</translation>
 <translation id="1154147086299354128">&amp;Chrome တွင် ဖွင့်ရန်</translation>
-<translation id="1178374936842835197">ဤစာမျက်နှာတွင် ဆက်တင်ကိုမပြပါက <ph name="LINK_BEGIN" />
-        ChromeOS Flex ဆင်တင်များ<ph name="LINK_END" /> တွင် ကြည့်နိုင်သည်</translation>
 <translation id="1203500561924088507">ထည့်သွင်းသည့်အတွက် ကျေးဇူးတင်ပါသည်။ <ph name="BUNDLE_NAME" /> အသုံးမပြုမီ သင့်ဘရောင်ဇာကို ပြန်စရမည်။</translation>
 <translation id="1278833599417554002">&amp;Chrome အပ်ဒိတ်လုပ်ရန် ပြန်ဖွင့်ပါ</translation>
 <translation id="1302523850133262269">​​ကျေးဇူးပြုပြီး Chrome က စနစ်၏ နောက်ဆုံး မွမ်းမံမှုများကို တပ်ဆင်ပေးနေတာကို စောင့်ပါ။</translation>
@@ -70,6 +68,7 @@
 <translation id="2139300032719313227">ChromeOS ပြန်စပါ</translation>
 <translation id="2151406531797534936">Chrome ကို ယခုပြန်စပါ</translation>
 <translation id="2174917724755363426">ထည့်သွင်းမှု မပြီးဆုံးပါ။ ပယ်ဖျက်လိုသည်မှာ သေချာပါသလား။</translation>
+<translation id="223889379102603431">Chrome က ပင်မအသိအမှတ်ပြုလက်မှတ်များကို စီမံပုံအကြောင်း အချက်အလက်များ</translation>
 <translation id="2258103955319320201">သင့်စက်အားလုံးတွင် သင်၏ Chrome ဘရောင်ဇာနှင့်သက်ဆိုင်သည့်အရာများကို သုံးရန် လက်မှတ်ထိုးဝင်ပြီး စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ</translation>
 <translation id="2290014774651636340">Google API သော့များ မရှိပါ။ Google Chrome ၏ အချို့သော လုပ်ကိုင်နိုင်စွမ်းများမှာ ပိတ်ခံကြရမည်။</translation>
 <translation id="2290095356545025170">သင်သည် Google Chromeကို ဖြုတ်ချင်တာ သေချာလား?</translation>
@@ -82,6 +81,7 @@
 <translation id="2401189691232800402">ChromeOS စနစ်</translation>
 <translation id="2467438592969358367">Google Chrome သည် သင်၏ စကားဝှက်များကို တင်ပို့လိုသည်။ ၎င်းကို ခွင့်ပြုရန် သင်၏ Windows စကားဝှက်ကို ထည့်ပါ။</translation>
 <translation id="2485422356828889247">ဖြုတ်ရန်</translation>
+<translation id="2494974097748878569">Chrome အတွင်းရှိ Google Assistant</translation>
 <translation id="2534507159460261402">Google Pay (Chrome သို့ မိတ္တူကူးထားသည်)</translation>
 <translation id="2559253115192232574">နောက်ပိုင်းတွင် မြင်တွေ့မည့် ကြော်ငြာများကို ပုဂ္ဂိုလ်ရေးသီးသန့်ပြုလုပ်ရန် သင့်စိတ်ဝင်စားမှုများကို သင်ဝင်ကြည့်သည့် ဝဘ်ဆိုက်က Chrome ထံ တောင်းဆိုနိုင်သည်။ Chrome က စိတ်ဝင်စားမှု ၃ ခုအထိ မျှဝေနိုင်သည်။</translation>
 <translation id="2563121210305478421">Chrome ပြန်ဖွင့်မလား။</translation>
@@ -122,7 +122,6 @@
 <translation id="3080151273017101988">Google Chrome ကို ပိတ်လိုက်ချိန်မှာ နောက်ခံအက်ပ်များကို ဆက်ဖွင့် ထားရန်</translation>
 <translation id="3089968997497233615">ပိုသစ်သော၊ ပိုလုံခြုံသော Google Chrome ရနိုင်ပါသည်။</translation>
 <translation id="3100998948628680988">သင်၏ Chrome ပရိုဖိုင်ကို အမည်ပေးပါ</translation>
-<translation id="3103390129666310801">သင့်စက် အပ်ဒိတ်ဖြစ် မဖြစ် ကြည့်ရန် <ph name="LINK_BEGIN" />ChromeOS Flex ဆက်တင်များ<ph name="LINK_END" /> သို့သွားပါ</translation>
 <translation id="3114643501466072395">သင်၏အခြားစကားဝှက်များတွင် ဒေတာပေါက်ကြားမှုနှင့် အခြားသော လုံခြုံရေးပြဿနာများ ရှိ၊ မရှိ စစ်ဆေးရန် <ph name="BEGIN_LINK" />Chrome သို့ လက်မှတ်ထိုးဝင်ပါ<ph name="END_LINK" />။</translation>
 <translation id="3140883423282498090">သင် ပြောင်းလဲခဲ့သည်များမျာ သင်က Google Chrome ကို နောက်တစ်ကြိမ် ပြန်ဖွင့်စဉ် အကျိုးသက်ရောက် လာကြပါမည်။</translation>
 <translation id="3149510190863420837">Chrome အက်ပ်များ</translation>
@@ -213,7 +212,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">နောက်ပိုင်းထွက်မည့် Google Chrome အပ်ဒိတ်များ ရယူရန် macOS 10.13 နှင့်အထက် လိုအပ်ပါမည်။ ဤကွန်ပျူတာက OS X 10.11 အသုံးပြုနေသည်။</translation>
 <translation id="5098668839038261629">ဖွင့်ထားပါက Chrome မှလည်း သင်ထွက်သွားပါမည်</translation>
-<translation id="5112116809696021727">သင်၏စက် အပ်ဒိတ်ဖြစ်၊ မဖြစ် ကြည့်ရန် <ph name="LINK_BEGIN" />ChromeOS ဆက်တင်များ<ph name="LINK_END" /> သို့သွားပါ</translation>
 <translation id="5132929315877954718">Google Chrome အတွက် ဧရာမ အက်ပ်များ၊ ဂိမ်းများ၊ တိုးချဲ့မှုများ နှင့် အပြင်အဆင်များကို ရှာကြည့်ပါ</translation>
 <translation id="5139423532931106058">သင့် Chrome ပရိုဖိုင်ကို စိတ်ကြိုက်လုပ်ရန်</translation>
 <translation id="5163087008893166964">Chrome က ကြိုဆိုပါသည်၊ ဘရောင်ဇာဝင်းဒိုးအသစ် ဖွင့်လိုက်ပါပြီ</translation>
@@ -253,8 +251,6 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="5940385492829620908">သင်၏ ဝဘ်၊ စာညှပ်များ၊ နှင့် အခြားသော Chrome အရာများဟာ ဒီမှာ နေထိုင်ကြပါသည်။</translation>
 <translation id="5941711191222866238">အနည်းဆုံး လုပ်ရန်</translation>
 <translation id="5941830788786076944">Google Chrome ကို ပုံသေ ဘရောင်ဇာ ပြုလုပ်ပါ။</translation>
-<translation id="5959292945051687759">ဤစာမျက်နှာတွင် ဆက်တင်ကို မပြပါက <ph name="LINK_BEGIN" />
-        ChromeOS ဆင်တင်များ<ph name="LINK_END" /> တွင် ကြည့်နိုင်သည်</translation>
 <translation id="6003112304606738118">ဒေါင်းလုဒ်လုပ်နေသည်… <ph name="HOURS" /> နာရီ ကျန်သည်</translation>
 <translation id="6040143037577758943">ပိတ်ရန်</translation>
 <translation id="6070348360322141662">လုံခြုံရေး ပိုမိုတင်းကြပ်စေရန်အတွက် Google Chrome သည် သင်၏ ဒေတာများကို အသွင်ဝှက်ထားပါမည်</translation>
@@ -282,6 +278,7 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="6739177684496155661">Chrome ပရိုဖိုင်အသစ်တွင် ဆက်လုပ်မလား။</translation>
 <translation id="6750954913813541382">စာလုံးပေါင်း အမှားများ ပြင်ရန် Chrome က ဘရောင်ဇာတွင် သင်ရိုက်သည့် စာသားကို Google သို့ ပို့ပါသည်</translation>
 <translation id="677276454032249905">မည်သို့ပင်ဖြစ်စေ Chrome မှ ထွက်လိုပါသလား။</translation>
+<translation id="6785872064505734160">Chrome ရှိ Google Assistant က ဝဘ်ဆိုက်များတွင် သင့်အတွက် အလိုအလျောက် ဖြည့်ပေးနိုင်သည်</translation>
 <translation id="683440813066116847">Google Chrome ကိန္နရီ အတွက် mDNS သွားလာမှု ခွင့်ပြုရေး အဝင် စည်းကမ်းချက်</translation>
 <translation id="6881299373831449287">Chrome ကို အပ်ဒိတ်လုပ်နေသည်</translation>
 <translation id="6885412569789873916">Chrome စမ်းသပ်ဆော့ဖ်ဝဲ အက်ပ်များ</translation>
@@ -354,6 +351,7 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="8129812357326543296">Google Chrome &amp;အကြောင်း</translation>
 <translation id="813913629614996137">စတင်နေသည်…</translation>
 <translation id="8255190535488645436">Google Chrome က သင့်ကင်မရာနှင့် မိုက်ကရိုဖုန်းကို သုံးနေသည်။</translation>
+<translation id="8270775718612349140">Chrome မှစီမံထားသည့် အသိအမှတ်ပြုလက်မှတ်များ</translation>
 <translation id="8286862437124483331">Google Chrome သည် စကားဝှက်ကို ပြပေးရန် ကြိုးစာနေသည်။ ၎င်းကို ခွင့်ပြုရန် သင်၏ Windows စကားဝှက်ကို ရိုက်ထည့်ပါ။</translation>
 <translation id="828798499196665338">Chrome အတွက် "ဝဘ်ဆိုက်၊ အက်ပ်နှင့် နောက်ဆက်တွဲ ခွင့်ပြုချက်များ" ကို သင့်မိဘက ပိတ်လိုက်သည်။ ဤ <ph name="EXTENSION_TYPE_PARAMETER" /> ဖွင့်ခြင်းကို ခွင့်မပြုပါ။</translation>
 <translation id="8290100596633877290">ဝါး! Google Chrome ပျက်သွားပြီ။ ယခုပြန်စတင်မလား?</translation>

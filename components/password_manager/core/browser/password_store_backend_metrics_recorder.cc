@@ -69,6 +69,27 @@ void PasswordStoreBackendMetricsRecorder::RecordMetrics(
   }
 }
 
+void PasswordStoreBackendMetricsRecorder::RecordMetricsForUnenrolledClients(
+    const absl::optional<AndroidBackendError>& error) const {
+  base::UmaHistogramBoolean(BuildMetricName("UnenrolledFromUPM.Success"),
+                            !error.has_value());
+  if (!error.has_value())
+    return;
+
+  base::UmaHistogramEnumeration(BuildMetricName("UnenrolledFromUPM.ErrorCode"),
+                                error->type);
+  if (error->type == AndroidBackendErrorType::kExternalError) {
+    DCHECK(error->api_error_code.has_value());
+    base::UmaHistogramSparse(BuildMetricName("UnenrolledFromUPM.APIError"),
+                             error->api_error_code.value());
+  }
+  if (error->connection_result_code.has_value()) {
+    base::UmaHistogramSparse(
+        BuildMetricName("UnenrolledFromUPM.ConnectionResultCode"),
+        error->connection_result_code.value());
+  }
+}
+
 base::TimeDelta
 PasswordStoreBackendMetricsRecorder::GetElapsedTimeSinceCreation() const {
   return base::Time::Now() - start_;
@@ -102,6 +123,9 @@ void PasswordStoreBackendMetricsRecorder::RecordErrorCode(
                << " failed with error code: "
                << backend_error.api_error_code.value();
   }
+  if (backend_error.connection_result_code.has_value()) {
+    RecordConnectionResultCode(backend_error.connection_result_code.value());
+  }
 }
 
 void PasswordStoreBackendMetricsRecorder::RecordLatency() const {
@@ -115,6 +139,15 @@ void PasswordStoreBackendMetricsRecorder::RecordApiErrorCode(
   base::UmaHistogramSparse(
       base::StrCat({kMetricPrefix, "AndroidBackend.APIError"}), api_error_code);
   base::UmaHistogramSparse(BuildMetricName("APIError"), api_error_code);
+}
+
+void PasswordStoreBackendMetricsRecorder::RecordConnectionResultCode(
+    int connection_result_code) const {
+  base::UmaHistogramSparse(
+      base::StrCat({kMetricPrefix, "AndroidBackend.ConnectionResultCode"}),
+      connection_result_code);
+  base::UmaHistogramSparse(BuildMetricName("ConnectionResultCode"),
+                           connection_result_code);
 }
 
 std::string PasswordStoreBackendMetricsRecorder::GetBackendMetricName() const {

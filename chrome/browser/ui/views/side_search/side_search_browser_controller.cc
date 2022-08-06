@@ -105,10 +105,12 @@ class DseImageView : public views::ImageView {
  public:
   METADATA_HEADER(DseImageView);
   explicit DseImageView(Browser* browser)
-      : default_search_icon_source_(
-            browser,
-            base::BindRepeating(&DseImageView::UpdateIconImage,
-                                base::Unretained(this))) {
+      : browser_(browser),
+        icon_changed_subscription_(
+            DefaultSearchIconSource::GetOrCreateForBrowser(browser)
+                ->RegisterIconChangedSubscription(
+                    base::BindRepeating(&DseImageView::UpdateIconImage,
+                                        base::Unretained(this)))) {
     SetFlipCanvasOnPaintForRTLUI(false);
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets::VH(0, views::LayoutProvider::Get()->GetDistanceMetric(
@@ -119,11 +121,13 @@ class DseImageView : public views::ImageView {
 
   void UpdateIconImage() {
     // Attempt to get the default search engine's favicon.
-    auto icon_image = default_search_icon_source_.GetIconImage();
+    auto* default_search_icon_source =
+        DefaultSearchIconSource::GetOrCreateForBrowser(browser_);
+    auto icon_image = default_search_icon_source->GetIconImage();
 
     // Use the DSE's icon image if available.
     if (!icon_image.IsEmpty()) {
-      SetImage(default_search_icon_source_.GetIconImage());
+      SetImage(default_search_icon_source->GetIconImage());
       return;
     }
 
@@ -141,7 +145,10 @@ class DseImageView : public views::ImageView {
   }
 
  private:
-  DefaultSearchIconSource default_search_icon_source_;
+  Browser* const browser_;
+
+  // Subscription to change notifications to the default search icon source.
+  base::CallbackListSubscription icon_changed_subscription_;
 };
 
 BEGIN_METADATA(DseImageView, views::ImageView)
@@ -216,8 +223,8 @@ class HeaderView : public views::View {
     close_button_ = AddChildView(std::make_unique<HeaderButton>(
         vector_icons::kCloseIcon, std::move(callback)));
     views::InstallCircleHighlightPathGenerator(close_button_);
-    close_button_->SetID(SideSearchBrowserController::SideSearchViewID::
-                             VIEW_ID_SIDE_PANEL_CLOSE_BUTTON);
+    close_button_->SetProperty(views::kElementIdentifierKey,
+                               kSidePanelCloseButtonElementId);
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_SEARCH_CLOSE_BUTTON));
     close_button_->SetTooltipText(
@@ -473,7 +480,7 @@ void SideSearchBrowserController::OpenSidePanel() {
   UpdateSidePanel();
 
   // After showing the side panel if the web_view_ is visible request focus.
-  if (web_view_->GetVisible())
+  if (web_view_->GetVisible() && web_view_->web_contents())
     web_view_->web_contents()->Focus();
 }
 
@@ -650,7 +657,7 @@ void SideSearchBrowserController::OnWebViewVisibilityChanged() {
   // layout and we should not do this until the web_view_ is visible. Layout is
   // invalidated when we call UpdateSidePanel() but is scheduled asynchronously
   // by the hosting Widget.
-  if (web_view_->GetVisible())
+  if (web_view_->GetVisible() && web_view_->web_contents())
     web_view_->web_contents()->Focus();
 }
 

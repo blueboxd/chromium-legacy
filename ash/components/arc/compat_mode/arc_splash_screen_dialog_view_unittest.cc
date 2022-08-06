@@ -82,15 +82,39 @@ TEST_F(ArcSplashScreenDialogViewTest, TestCloseButton) {
   }
 }
 
+TEST_F(ArcSplashScreenDialogViewTest, TestEscKey) {
+  for (const bool is_for_unresizable : {true, false}) {
+    bool on_close_callback_called = false;
+    auto dialog_view = std::make_unique<ArcSplashScreenDialogView>(
+        base::BindLambdaForTesting([&]() { on_close_callback_called = true; }),
+        parent_window(), anchor(), is_for_unresizable);
+    ArcSplashScreenDialogView::TestApi dialog_view_test(dialog_view.get());
+    auto* const bubble = ShowAsBubble(std::move(dialog_view));
+    EXPECT_FALSE(on_close_callback_called);
+    EXPECT_TRUE(
+        anchor()->GetIndexOf(dialog_view_test.highlight_border()).has_value());
+
+    // Simulates esc key event to close the dialog.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
+    bubble->OnKeyEvent(&event);
+
+    EXPECT_TRUE(on_close_callback_called);
+    EXPECT_FALSE(
+        anchor()->GetIndexOf(dialog_view_test.highlight_border()).has_value());
+  }
+}
+
 TEST_F(ArcSplashScreenDialogViewTest, TestAnchorHighlight) {
   for (const bool is_for_unresizable : {true, false}) {
     auto dialog_view = std::make_unique<ArcSplashScreenDialogView>(
         base::DoNothing(), parent_window(), anchor(), is_for_unresizable);
     ArcSplashScreenDialogView::TestApi dialog_view_test(dialog_view.get());
     ShowAsBubble(std::move(dialog_view));
-    EXPECT_NE(-1, anchor()->GetIndexOf(dialog_view_test.highlight_border()));
+    EXPECT_TRUE(
+        anchor()->GetIndexOf(dialog_view_test.highlight_border()).has_value());
     LeftClickOnView(parent_widget(), dialog_view_test.close_button());
-    EXPECT_EQ(-1, anchor()->GetIndexOf(dialog_view_test.highlight_border()));
+    EXPECT_FALSE(
+        anchor()->GetIndexOf(dialog_view_test.highlight_border()).has_value());
   }
 }
 

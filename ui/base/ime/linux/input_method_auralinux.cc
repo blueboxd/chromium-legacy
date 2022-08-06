@@ -44,17 +44,12 @@ bool IsSameKeyEvent(const ui::KeyEvent& lhs, const ui::KeyEvent& rhs) {
 namespace ui {
 
 InputMethodAuraLinux::InputMethodAuraLinux(
-    internal::InputMethodDelegate* delegate)
-    : InputMethodBase(delegate),
+    ImeKeyEventDispatcher* ime_key_event_dispatcher)
+    : InputMethodBase(ime_key_event_dispatcher),
       text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
       composition_changed_(false) {
-  DCHECK(LinuxInputMethodContextFactory::instance())
-      << "Trying to initialize InputMethodAuraLinux, but "
-         "LinuxInputMethodContextFactory is not initialized yet.";
-  context_ =
-      LinuxInputMethodContextFactory::instance()->CreateInputMethodContext(
-          this);
+  context_ = CreateLinuxInputMethodContext(this);
 }
 
 InputMethodAuraLinux::~InputMethodAuraLinux() = default;
@@ -141,7 +136,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
     suppress_non_key_input_until_ = base::TimeTicks::UnixEpoch();
     composition_changed_ = false;
     last_commit_result_.reset();
-    result_text_.clear();
+    result_text_ = absl::nullopt;
     base::AutoReset<bool> flipper(&is_sync_mode_, true);
     filtered = context_->DispatchKeyEvent(*event);
   }
@@ -277,15 +272,15 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchImeFilteredKeyPressEvent(
 InputMethodAuraLinux::CommitResult InputMethodAuraLinux::MaybeCommitResult(
     bool filtered,
     const KeyEvent& event) {
-  // Take the ownership of |result_text_|.
-  std::u16string result_text = std::move(result_text_);
-  result_text_.clear();
-
   // Note: |client| could be NULL because DispatchKeyEventPostIME could have
   // changed the text input client.
   TextInputClient* client = GetTextInputClient();
-  if (!client || result_text.empty())
+  if (!client || !result_text_)
     return CommitResult::kNoCommitString;
+
+  // Take the ownership of |result_text_|.
+  std::u16string result_text = std::move(*result_text_);
+  result_text_ = absl::nullopt;
 
   if (filtered && NeedInsertChar(result_text)) {
     for (const auto ch : result_text) {
@@ -391,7 +386,14 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
       context_->SetGrammarFragmentAtCursor(
           ui::GrammarFragment(gfx::Range(), ""));
     }
+
+    // Send the updated autocorrect information before surrounding text,
+    // as surrounding text changes may trigger the IME to ask for the
+    // autocorrect information.
+    context_->SetAutocorrectInfo(client->GetAutocorrectRange(),
+                                 client->GetAutocorrectCharacterBounds());
 #endif
+
     context_->SetSurroundingText(text, selection_range);
   }
 }
@@ -419,7 +421,7 @@ void InputMethodAuraLinux::ResetContext() {
   context_->Reset();
 
   composition_ = CompositionText();
-  result_text_.clear();
+  result_text_ = absl::nullopt;
   is_sync_mode_ = false;
   composition_changed_ = false;
 }
@@ -436,6 +438,9 @@ bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
 
 VirtualKeyboardController*
 InputMethodAuraLinux::GetVirtualKeyboardController() {
+  // This should only be not null when set via testing.
+  if (auto* controller = InputMethodBase::GetVirtualKeyboardController())
+    return controller;
   return context_->GetVirtualKeyboardController();
 }
 
@@ -447,8 +452,13 @@ void InputMethodAuraLinux::OnCommit(const std::u16string& text) {
 
   // Discard the result iff in async-mode and the TextInputType is None
   // for backward compatibility.
-  if (is_sync_mode_ || !IsTextInputTypeNone())
-    result_text_.append(text);
+  if (is_sync_mode_ || !IsTextInputTypeNone()) {
+    if (result_text_) {
+      result_text_->append(text);
+    } else {
+      result_text_ = text;
+    }
+  }
 
   // Sync mode means this is called on a stack of DispatchKeyEvent(), so its
   // following code should handle the key dispatch and actual committing.
@@ -470,6 +480,10 @@ void InputMethodAuraLinux::OnCommit(const std::u16string& text) {
     last_commit_result_ = MaybeCommitResult(/*filtered=*/true, event);
     composition_ = CompositionText();
   }
+}
+
+void InputMethodAuraLinux::OnConfirmCompositionText(bool keep_selection) {
+  ConfirmCompositionText(keep_selection);
 }
 
 void InputMethodAuraLinux::OnDeleteSurroundingText(size_t before,
@@ -527,12 +541,26 @@ void InputMethodAuraLinux::OnAddGrammarFragment(
 #endif
 }
 
+void InputMethodAuraLinux::OnSetAutocorrectRange(const gfx::Range& range) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* text_input_client = GetTextInputClient();
+  if (!text_input_client)
+    return;
+  text_input_client->SetAutocorrectRange(range);
+#endif
+}
+
+void InputMethodAuraLinux::OnSetVirtualKeyboardOccludedBounds(
+    const gfx::Rect& screen_bounds) {
+  SetVirtualKeyboardBounds(screen_bounds);
+}
+
 // Overridden from InputMethodBase.
 
 void InputMethodAuraLinux::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText();
+  ResetContext();
 }
 
 void InputMethodAuraLinux::OnDidChangeFocusedClient(
@@ -576,14 +604,14 @@ void InputMethodAuraLinux::OnPreeditUpdate(
 }
 
 bool InputMethodAuraLinux::HasInputMethodResult() {
-  return !result_text_.empty() || composition_changed_;
+  return result_text_ || composition_changed_;
 }
 
 bool InputMethodAuraLinux::NeedInsertChar(
-    const std::u16string& result_text) const {
+    const absl::optional<std::u16string>& result_text) const {
   return IsTextInputTypeNone() ||
-         (!composition_changed_ && composition_.text.empty() &&
-          result_text.length() == 1);
+         (!composition_changed_ && composition_.text.empty() && result_text &&
+          result_text->length() == 1);
 }
 
 ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
@@ -595,8 +623,13 @@ ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
   return details;
 }
 
-void InputMethodAuraLinux::ConfirmCompositionText() {
-  ResetContext();
+void InputMethodAuraLinux::ConfirmCompositionText(bool keep_selection) {
+  auto* client = GetTextInputClient();
+  if (client)
+    client->ConfirmCompositionText(keep_selection);
+  composition_ = CompositionText();
+  composition_changed_ = false;
+  result_text_.reset();
 }
 
 }  // namespace ui

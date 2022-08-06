@@ -6,7 +6,6 @@
 
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -654,6 +653,26 @@ class LocalFrameUkmAggregatorSimTest : public SimTest {
   }
 };
 
+TEST_F(LocalFrameUkmAggregatorSimTest, EnsureUkmAggregator) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete("<iframe id=frame src='frame.html'></iframe>");
+  frame_resource.Complete("");
+
+  auto* root_view = GetDocument().View();
+  root_view->ResetUkmAggregatorForTesting();
+  auto* subframe_view =
+      To<HTMLFrameOwnerElement>(GetDocument().getElementById("frame"))
+          ->contentDocument()
+          ->View();
+  auto& aggregator_from_subframe = subframe_view->EnsureUkmAggregator();
+  auto& aggregator_from_root = root_view->EnsureUkmAggregator();
+  EXPECT_EQ(&aggregator_from_root, &aggregator_from_subframe);
+  EXPECT_EQ(&aggregator_from_root, &subframe_view->EnsureUkmAggregator());
+  EXPECT_EQ(&aggregator_from_root, &root_view->EnsureUkmAggregator());
+}
+
 TEST_F(LocalFrameUkmAggregatorSimTest, IntersectionObserverCounts) {
   std::unique_ptr<base::StatisticsRecorder> statistics_recorder =
       base::StatisticsRecorder::CreateTemporaryForTesting();
@@ -675,9 +694,6 @@ TEST_F(LocalFrameUkmAggregatorSimTest, IntersectionObserverCounts) {
 }
 
 TEST_F(LocalFrameUkmAggregatorSimTest, IntersectionObserverCountsInChildFrame) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLocalFrameRootPrePostFCPMetrics);
-
   std::unique_ptr<base::StatisticsRecorder> statistics_recorder =
       base::StatisticsRecorder::CreateTemporaryForTesting();
   base::HistogramTester histogram_tester;
@@ -702,33 +718,16 @@ TEST_F(LocalFrameUkmAggregatorSimTest, IntersectionObserverCountsInChildFrame) {
            ->contentDocument());
 }
 
-static void TestLocalFrameRootPrePostFCPMetrics(
-    const LocalFrame& local_frame_root) {
+TEST_F(LocalFrameUkmAggregatorSimTest, LocalFrameRootPrePostFCPMetrics) {
+  InitializeRemote();
+  LocalFrame& local_frame_root = *LocalFrameRoot().GetFrame();
   ASSERT_FALSE(local_frame_root.IsMainFrame());
   ASSERT_TRUE(local_frame_root.IsLocalRoot());
   auto& ukm_aggregator = local_frame_root.View()->EnsureUkmAggregator();
   EXPECT_TRUE(ukm_aggregator.IsBeforeFCPForTesting());
   // Simulate the first contentful paint.
   PaintTiming::From(*local_frame_root.GetDocument()).MarkFirstContentfulPaint();
-  EXPECT_EQ(
-      base::FeatureList::IsEnabled(features::kLocalFrameRootPrePostFCPMetrics),
-      !ukm_aggregator.IsBeforeFCPForTesting());
-}
-
-TEST_F(LocalFrameUkmAggregatorSimTest, LocalFrameRootPrePostFCPMetrics) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLocalFrameRootPrePostFCPMetrics);
-  InitializeRemote();
-  TestLocalFrameRootPrePostFCPMetrics(*LocalFrameRoot().GetFrame());
-}
-
-TEST_F(LocalFrameUkmAggregatorSimTest,
-       LocalFrameRootPrePostFCPMetricsDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kLocalFrameRootPrePostFCPMetrics);
-  InitializeRemote();
-  TestLocalFrameRootPrePostFCPMetrics(*LocalFrameRoot().GetFrame());
+  EXPECT_FALSE(ukm_aggregator.IsBeforeFCPForTesting());
 }
 
 }  // namespace blink

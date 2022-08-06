@@ -744,7 +744,8 @@ bool TemplateURLService::CanMakeDefault(const TemplateURL* url) const {
               DefaultSearchManager::FROM_FALLBACK) &&
          (url != GetDefaultSearchProvider()) &&
          url->url_ref().SupportsReplacement(search_terms_data()) &&
-         (url->type() == TemplateURL::NORMAL);
+         (url->type() == TemplateURL::NORMAL) &&
+         (url->starter_pack_id() != TemplateURLStarterPackData::kTabs);
 }
 
 void TemplateURLService::SetUserSelectedDefaultSearchProvider(
@@ -927,6 +928,13 @@ void TemplateURLService::RepairStarterPackEngines() {
        i < actions.added_engines.end(); ++i) {
     Add(std::make_unique<TemplateURL>(*i));
   }
+}
+
+bool TemplateURLService::IsKeywordFromStarterPackTabSearch(
+    const std::u16string& keyword) {
+  const TemplateURL* turl = GetTemplateURLForKeyword(keyword);
+
+  return (turl && turl->starter_pack_id() == TemplateURLStarterPackData::kTabs);
 }
 
 void TemplateURLService::AddObserver(TemplateURLServiceObserver* observer) {
@@ -2356,11 +2364,12 @@ bool TemplateURLService::RemoveDuplicateReplaceableEnginesOf(
     DCHECK_NE(turl, candidate) << "This algorithm runs BEFORE |candidate| is "
                                   "added to the keyword map.";
 
-    // Prepopulated engines are marked as safe_for_autoreplace(). But because
+    // Built-in engines are marked as safe_for_autoreplace(). But because
     // they are shown in the Default Search Engines Settings UI, users would
     // find it confusing if they were ever automatically removed.
     // https://crbug.com/1164024
-    if (turl->safe_for_autoreplace() && turl->prepopulate_id() == 0) {
+    if (turl->safe_for_autoreplace() && turl->prepopulate_id() == 0 &&
+        turl->starter_pack_id() == 0) {
       replaceable_turls.push_back(turl);
     }
   }
@@ -2410,7 +2419,7 @@ bool TemplateURLService::RemoveDuplicateReplaceableEnginesOf(
   // above. Most probably: the solution is to stop Syncing prepopulated engines
   // and make the GUIDs actually globally unique again.
   return candidate != best && candidate->safe_for_autoreplace() &&
-         candidate->prepopulate_id() == 0;
+         candidate->prepopulate_id() == 0 && candidate->starter_pack_id() == 0;
 }
 
 bool TemplateURLService::MatchesDefaultSearchProvider(TemplateURL* turl) const {

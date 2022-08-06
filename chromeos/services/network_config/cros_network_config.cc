@@ -16,28 +16,28 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/network/cellular_esim_profile_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_device_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_metadata_store.h"
+#include "chromeos/ash/components/network/network_name_util.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/onc/onc_translation_tables.h"
+#include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/components/sync_wifi/network_eligibility_checker.h"
-#include "chromeos/dbus/hermes/hermes_euicc_client.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_metadata_store.h"
-#include "chromeos/network/network_name_util.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/network_util.h"
-#include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
@@ -65,9 +65,6 @@ const char kErrorNotReady[] = "Error.NotReady";
 
 // IKEv2 string from Shill SupportedVPNType property.
 const char kIKEv2VPNType[] = "ikev2";
-
-// WireGuard string from Shill SupportedVPNType property.
-const char kWireGuardVPNType[] = "wireguard";
 
 // Default traffic counter reset day.
 const int kDefaultResetDay = 1;
@@ -171,11 +168,19 @@ std::string MojoNetworkTypeToOnc(mojom::NetworkType type) {
 mojom::ConnectionStateType GetMojoConnectionStateType(
     const NetworkState* network) {
   if (network->IsConnectedState()) {
-    if (network->IsCaptivePortal())
-      return mojom::ConnectionStateType::kPortal;
-    if (network->IsOnline())
-      return mojom::ConnectionStateType::kOnline;
-    return mojom::ConnectionStateType::kConnected;
+    auto portal_state = network->GetPortalState();
+    switch (portal_state) {
+      case NetworkState::PortalState::kUnknown:
+        return mojom::ConnectionStateType::kConnected;
+      case NetworkState::PortalState::kOnline:
+        return mojom::ConnectionStateType::kOnline;
+      case NetworkState::PortalState::kPortalSuspected:
+      case NetworkState::PortalState::kPortal:
+      case NetworkState::PortalState::kProxyAuthRequired:
+      case NetworkState::PortalState::kNoInternet:
+        // See PortalState for differentiation of portal states.
+        return mojom::ConnectionStateType::kPortal;
+    }
   }
   if (network->IsConnectingState())
     return mojom::ConnectionStateType::kConnecting;
@@ -374,7 +379,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
   result->guid = network->guid();
   result->name =
       network_name_util::GetNetworkName(cellular_esim_profile_handler, network);
-  result->portal_state = GetMojoPortalState(network->portal_state());
+  result->portal_state = GetMojoPortalState(network->GetPortalState());
   result->priority = network->priority();
   result->prohibited_by_policy = network->blocked_by_policy();
   result->source = GetMojoOncSource(network);
@@ -403,6 +408,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       cellular->sim_lock_enabled =
           sim_is_primary && cellular_device->sim_lock_enabled();
       cellular->sim_locked = sim_is_primary && cellular_device->IsSimLocked();
+      if (sim_is_primary)
+        cellular->sim_lock_type = cellular_device->sim_lock_type();
       result->type_state =
           mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
@@ -1533,7 +1540,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       ip_configs.push_back(GetIPConfig(&ip_config_value));
     result->ip_configs = std::move(ip_configs);
   }
-  result->portal_state = GetMojoPortalState(network_state->portal_state());
+  result->portal_state = GetMojoPortalState(network_state->GetPortalState());
   const base::Value* saved_ip_config =
       GetDictionary(properties, ::onc::network_config::kSavedIPConfig);
   if (saved_ip_config)
@@ -1985,8 +1992,7 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                 open_vpn.user_authentication_type, &open_vpn_dict);
       type_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
     }
-    if (vpn.wireguard &&
-        base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
+    if (vpn.wireguard) {
       const mojom::WireGuardConfigProperties& wireguard = *vpn.wireguard;
       base::Value wireguard_dict(base::Value::Type::DICTIONARY);
       SetString(::onc::wireguard::kPrivateKey, wireguard.private_key,
@@ -3190,12 +3196,6 @@ void CrosNetworkConfig::OnGetSupportedVpnTypes(
   }
   if (!base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
     auto iter = std::find(result.begin(), result.end(), kIKEv2VPNType);
-    if (iter != result.end()) {
-      result.erase(iter);
-    }
-  }
-  if (!base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
-    auto iter = std::find(result.begin(), result.end(), kWireGuardVPNType);
     if (iter != result.end()) {
       result.erase(iter);
     }

@@ -4,7 +4,7 @@
 
 #include "content/browser/preloading/preloading_attempt_impl.h"
 
-#include "content/common/state_transitions.h"
+#include "base/state_transitions.h"
 #include "content/public/browser/preloading.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -16,34 +16,41 @@ namespace {
 void DCHECKTriggeringOutcomeTransitions(PreloadingTriggeringOutcome old_state,
                                         PreloadingTriggeringOutcome new_state) {
 #if DCHECK_IS_ON()
-  static const base::NoDestructor<StateTransitions<PreloadingTriggeringOutcome>>
-      allowed_transitions(StateTransitions<PreloadingTriggeringOutcome>({
+  static const base::NoDestructor<
+      base::StateTransitions<PreloadingTriggeringOutcome>>
+      allowed_transitions(base::StateTransitions<PreloadingTriggeringOutcome>({
           {PreloadingTriggeringOutcome::kUnspecified,
            {PreloadingTriggeringOutcome::kDuplicate,
             PreloadingTriggeringOutcome::kRunning,
             PreloadingTriggeringOutcome::kReady,
             PreloadingTriggeringOutcome::kSuccess,
             PreloadingTriggeringOutcome::kFailure,
-            PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown}},
+            PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown,
+            PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender}},
 
           {PreloadingTriggeringOutcome::kDuplicate, {}},
 
           {PreloadingTriggeringOutcome::kRunning,
            {PreloadingTriggeringOutcome::kReady,
-            PreloadingTriggeringOutcome::kFailure}},
+            PreloadingTriggeringOutcome::kFailure,
+            PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender}},
 
           // It can be possible that the preloading attempt may end up failing
           // after being ready to use, for cases where we have to cancel the
           // attempt for performance and security reasons.
           {PreloadingTriggeringOutcome::kReady,
            {PreloadingTriggeringOutcome::kSuccess,
-            PreloadingTriggeringOutcome::kFailure}},
+            PreloadingTriggeringOutcome::kFailure,
+            PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender}},
 
           {PreloadingTriggeringOutcome::kSuccess, {}},
 
           {PreloadingTriggeringOutcome::kFailure, {}},
 
           {PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown, {}},
+
+          {PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender,
+           {PreloadingTriggeringOutcome::kFailure}},
       }));
   DCHECK_STATE_TRANSITION(allowed_transitions,
                           /*old_state=*/old_state,
@@ -98,6 +105,10 @@ void PreloadingAttemptImpl::SetFailureReason(PreloadingFailureReason reason) {
   failure_reason_ = reason;
 }
 
+base::WeakPtr<PreloadingAttempt> PreloadingAttemptImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 PreloadingAttemptImpl::PreloadingAttemptImpl(
     PreloadingPredictor predictor,
     PreloadingType preloading_type,
@@ -111,19 +122,13 @@ PreloadingAttemptImpl::PreloadingAttemptImpl(
 PreloadingAttemptImpl::~PreloadingAttemptImpl() = default;
 
 void PreloadingAttemptImpl::RecordPreloadingAttemptUKMs(
-    ukm::SourceId navigated_page_source_id,
-    const GURL& navigated_url) {
+    ukm::SourceId navigated_page_source_id) {
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-
-  DCHECK(url_match_predicate_);
-  // Use the predicate to match the URLs as the matching logic varies for each
-  // predictor.
-  bool accurate_triggering = url_match_predicate_.Run(navigated_url);
 
   // Ensure that when the `triggering_outcome_` is kSuccess, then the
   // accurate_triggering should be true.
   if (triggering_outcome_ == PreloadingTriggeringOutcome::kSuccess) {
-    DCHECK(accurate_triggering)
+    DCHECK(is_accurate_triggering_)
         << "TriggeringOutcome set to kSuccess without correct prediction\n";
   }
 
@@ -136,7 +141,7 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptUKMs(
         .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
         .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
         .SetFailureReason(static_cast<int64_t>(failure_reason_))
-        .SetAccurateTriggering(accurate_triggering)
+        .SetAccurateTriggering(is_accurate_triggering_)
         .Record(ukm_recorder);
   }
 
@@ -149,9 +154,17 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptUKMs(
         .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
         .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
         .SetFailureReason(static_cast<int64_t>(failure_reason_))
-        .SetAccurateTriggering(accurate_triggering)
+        .SetAccurateTriggering(is_accurate_triggering_)
         .Record(ukm_recorder);
   }
+}
+
+void PreloadingAttemptImpl::SetIsAccurateTriggering(const GURL& navigated_url) {
+  DCHECK(url_match_predicate_);
+
+  // Use the predicate to match the URLs as the matching logic varies for each
+  // predictor.
+  is_accurate_triggering_ |= url_match_predicate_.Run(navigated_url);
 }
 
 // Used for StateTransitions matching.
@@ -178,6 +191,9 @@ std::ostream& operator<<(std::ostream& os,
       break;
     case PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown:
       os << "TriggeredButOutcomeUnknown";
+      break;
+    case PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender:
+      os << "TriggeredButUpgradedToPrerender";
       break;
   }
   return os;

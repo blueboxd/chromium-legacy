@@ -76,27 +76,18 @@ void TouchIdAuthenticator::GetCredentialInformationForRequest(
       return;
     }
 
-    // Resident credentials request.
-    absl::optional<std::list<Credential>> resident_credentials =
-        credential_store_.FindResidentCredentials(request.rp_id);
-    if (!resident_credentials) {
-      FIDO_LOG(ERROR) << "GetResidentCredentialsForRequest() failed";
-      std::move(callback).Run(/*credentials=*/{}, /*has_credentials=*/false);
-      return;
-    }
-    std::vector<DiscoverableCredentialMetadata> result;
-    for (const auto& credential : *resident_credentials) {
-      absl::optional<CredentialMetadata> metadata =
-          credential_store_.UnsealMetadata(request.rp_id, credential);
-      if (!metadata) {
-        FIDO_LOG(ERROR) << "Could not unseal metadata from resident credential";
-        continue;
-      }
-      result.emplace_back(request.rp_id, credential.credential_id,
-                          metadata->ToPublicKeyCredentialUserEntity());
-    }
-    std::move(callback).Run(std::move(result), !resident_credentials->empty());
+  // Resident credentials request.
+  absl::optional<std::list<Credential>> resident_credentials =
+      credential_store_.FindResidentCredentials(request.rp_id);
+  if (!resident_credentials) {
+    FIDO_LOG(ERROR) << "GetResidentCredentialsForRequest() failed";
+    std::move(callback).Run(/*credentials=*/{}, /*has_credentials=*/false);
     return;
+  }
+  std::vector<DiscoverableCredentialMetadata> result;
+  for (const auto& credential : *resident_credentials) {
+    result.emplace_back(request.rp_id, credential.credential_id,
+                        credential.metadata.ToPublicKeyCredentialUserEntity());
   }
   NOTREACHED();
   std::move(callback).Run(/*credentials=*/{}, /*has_credentials=*/false);

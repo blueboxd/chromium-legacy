@@ -5,7 +5,7 @@
 import './sandboxed_load_time_data.js';
 
 import {assertCast, MessagePipe} from './message_pipe.m.js';
-import {EditInPhotosMessage, FileContext, IsFileBrowserWritableMessage, IsFileBrowserWritableResponse, LoadFilesMessage, Message, OpenAllowedFileMessage, OpenAllowedFileResponse, OpenFilesWithPickerMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileResponse, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.js';
+import {EditInPhotosMessage, FileContext, IsFileArcWritableMessage, IsFileArcWritableResponse, IsFileBrowserWritableMessage, IsFileBrowserWritableResponse, LoadFilesMessage, Message, OpenAllowedFileMessage, OpenAllowedFileResponse, OpenFilesWithPickerMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileResponse, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.js';
 import {loadPiex} from './piex_module_loader.js';
 
 /** A pipe through which we can send messages to the parent frame. */
@@ -39,6 +39,20 @@ class ReceivedFile {
       this.renameOriginalFile = (/** string */ newName) =>
           this.renameOriginalFileImpl(newName);
     }
+  }
+
+  /**
+   * @override
+   * @return {!Promise<boolean>}
+   */
+  async isArcWritable() {
+    /** @type {!IsFileArcWritableMessage} */
+    const message = {token: this.token};
+
+    const {writable} = /** @type {!IsFileArcWritableResponse} */ (
+        await parentMessagePipe.sendMessage(
+            Message.IS_FILE_ARC_WRITABLE, message));
+    return writable;
   }
 
   /**
@@ -434,7 +448,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // empty file list available.
 window.customLaunchData = {
   delegate: DELEGATE,
-  files: new ReceivedFileList({files: [], currentFileIndex: -1})
+  files: new ReceivedFileList({files: [], currentFileIndex: -1}),
 };
 
 // Attempting to show file pickers in the sandboxed <iframe> is guaranteed to

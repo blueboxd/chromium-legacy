@@ -62,13 +62,11 @@ template("chrome_repack_percent") {
     }
     if (is_chromeos_ash) {
       sources += [
-        "$root_gen_dir/ash/app_list/resources/app_list_resources_${percent}_percent.pak",
         "$root_gen_dir/ash/login/resources/login_resources_${percent}_percent.pak",
         "$root_gen_dir/chrome/app_icon_resources_${percent}_percent.pak",
         "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       ]
       deps += [
-        "//ash/app_list/resources",
         "//ash/login/resources",
         "//chrome/browser/resources/chromeos:app_icon_resources",
         "//ui/chromeos/resources",
@@ -147,7 +145,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/dev_ui_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
         "$root_gen_dir/chrome/feed_resources.pak",
-        "$root_gen_dir/chrome/feedback_webui_resources.pak",
+        "$root_gen_dir/chrome/feedback_resources.pak",
         "$root_gen_dir/chrome/gaia_auth_host_resources.pak",
         "$root_gen_dir/chrome/history_resources.pak",
         "$root_gen_dir/chrome/identity_internals_resources.pak",
@@ -160,6 +158,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/privacy_sandbox_resources.pak",
         "$root_gen_dir/chrome/profile_internals_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
+        "$root_gen_dir/chrome/side_panel_customize_chrome_resources.pak",
         "$root_gen_dir/chrome/side_panel_resources.pak",
         "$root_gen_dir/chrome/signin_resources.pak",
         "$root_gen_dir/chrome/support_tool_resources.pak",
@@ -180,7 +179,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/commander:resources",
         "//chrome/browser/resources/downloads:resources",
         "//chrome/browser/resources/feed:resources",
-        "//chrome/browser/resources/feedback_webui:resources",
+        "//chrome/browser/resources/feedback:resources",
         "//chrome/browser/resources/gaia_auth_host:resources",
         "//chrome/browser/resources/history:resources",
         "//chrome/browser/resources/identity_internals:resources",
@@ -194,6 +193,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/profile_internals:resources",
         "//chrome/browser/resources/settings:resources",
         "//chrome/browser/resources/side_panel:resources",
+        "//chrome/browser/resources/side_panel/customize_chrome:resources",
         "//chrome/browser/resources/signin:resources",
         "//chrome/browser/resources/support_tool:resources",
         "//chrome/browser/resources/tab_search:resources",
@@ -244,6 +244,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/audio_resources.pak",
         "$root_gen_dir/chrome/bluetooth_pairing_dialog_resources.pak",
         "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
+        "$root_gen_dir/chrome/cloud_upload_resources.pak",
         "$root_gen_dir/chrome/common/chromeos/extensions/chromeos_system_extensions_resources.pak",
         "$root_gen_dir/chrome/emoji_picker_resources.pak",
         "$root_gen_dir/chrome/gaia_action_buttons_resources.pak",
@@ -307,6 +308,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos/arc_account_picker:resources",
         "//chrome/browser/resources/chromeos/assistant_optin:resources",
         "//chrome/browser/resources/chromeos/audio:resources",
+        "//chrome/browser/resources/chromeos/cloud_upload:resources",
         "//chrome/browser/resources/chromeos/emoji_picker:resources",
         "//chrome/browser/resources/chromeos/gaia_action_buttons:resources",
         "//chrome/browser/resources/chromeos/launcher_internals:resources",
@@ -330,11 +332,13 @@ template("chrome_extra_paks") {
       if (!is_official_build) {
         sources += [
           "$root_gen_dir/ash/webui/ash_demo_mode_app_resources.pak",
+          "$root_gen_dir/ash/webui/ash_facial_ml_app_resources.pak",
           "$root_gen_dir/ash/webui/ash_sample_system_web_app_resources.pak",
           "$root_gen_dir/ash/webui/ash_sample_system_web_app_untrusted_resources.pak",
         ]
         deps += [
           "//ash/webui/resources:demo_mode_app_resources",
+          "//ash/webui/resources:facial_ml_app_resources",
           "//ash/webui/resources:sample_system_web_app_resources",
           "//ash/webui/resources:sample_system_web_app_untrusted_resources",
         ]

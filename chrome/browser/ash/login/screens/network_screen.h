@@ -16,8 +16,8 @@
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 
@@ -32,14 +32,12 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
     CONNECTED_REGULAR,
     CONNECTED_DEMO,
     CONNECTED_REGULAR_CONSOLIDATED_CONSENT,
-    CONNECTED_DEMO_CONSOLIDATED_CONSENT,
     BACK_REGULAR,
     BACK_DEMO,
     BACK_OS_INSTALL,
     NOT_APPLICABLE,
     NOT_APPLICABLE_CONSOLIDATED_CONSENT,
     NOT_APPLICABLE_CONNECTED_DEMO,
-    NOT_APPLICABLE_CONNECTED_DEMO_CONSOLIDATED_CONSENT
   };
 
   static std::string GetResultString(Result result);
@@ -80,7 +78,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesOnlyOnce);
 
   // BaseScreen:
-  bool MaybeSkip(WizardContext* context) override;
+  bool MaybeSkip(WizardContext& context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserActionDeprecated(const std::string& action_id) override;
@@ -157,7 +155,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_{this};

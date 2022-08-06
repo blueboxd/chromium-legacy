@@ -55,7 +55,6 @@
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -215,7 +214,7 @@ class FakeCryptAuthGCMManagerFactory : public CryptAuthGCMManagerImpl::Factory {
         std::make_unique<FakeCryptAuthGCMManager>(initial_registration_id_);
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
   gcm::FakeGCMDriver* fake_gcm_driver_;
@@ -257,7 +256,7 @@ class FakeCryptAuthDeviceManagerFactory
     auto instance = std::make_unique<FakeCryptAuthDeviceManager>();
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
   base::SimpleTestClock* simple_test_clock_;
@@ -299,7 +298,7 @@ class FakeCryptAuthDeviceRegistryFactory
     EXPECT_FALSE(instance_);
     auto instance = std::make_unique<FakeCryptAuthDeviceRegistry>();
     instance_ = instance.get();
-    return std::move(instance);
+    return instance;
   }
 
   TestingPrefServiceSimple* test_pref_service_;
@@ -338,7 +337,7 @@ class FakeCryptAuthKeyRegistryFactory
     EXPECT_FALSE(instance_);
     auto instance = std::make_unique<FakeCryptAuthKeyRegistry>();
     instance_ = instance.get();
-    return std::move(instance);
+    return instance;
   }
 
   TestingPrefServiceSimple* test_pref_service_;
@@ -372,7 +371,7 @@ class FakeCryptAuthSchedulerFactory : public CryptAuthSchedulerImpl::Factory {
     auto instance = std::make_unique<FakeCryptAuthScheduler>();
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
   TestingPrefServiceSimple* test_pref_service_;
@@ -427,7 +426,7 @@ class FakeCryptAuthV2DeviceManagerFactory
     auto instance = std::make_unique<FakeCryptAuthV2DeviceManager>();
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
   cryptauthv2::ClientAppMetadata client_app_metadata_;
@@ -484,7 +483,7 @@ class FakeCryptAuthEnrollmentManagerFactory
     instance->set_is_enrollment_valid(device_already_enrolled_in_cryptauth_);
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
  private:
@@ -549,7 +548,7 @@ class FakeCryptAuthV2EnrollmentManagerFactory
     instance->set_is_enrollment_valid(device_already_enrolled_in_cryptauth_);
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
  private:
@@ -622,7 +621,7 @@ class FakeRemoteDeviceProviderFactory
     instance->set_synced_remote_devices(initial_devices_);
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
  private:
@@ -660,7 +659,7 @@ class FakeSoftwareFeatureManagerFactory
     auto instance = std::make_unique<FakeSoftwareFeatureManager>();
     instance_ = instance.get();
 
-    return std::move(instance);
+    return instance;
   }
 
  private:
@@ -755,7 +754,6 @@ class DeviceSyncServiceTest
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
-    DBusThreadManager::Initialize();
     network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     base::RunLoop().RunUntilIdle();
 
@@ -887,7 +885,6 @@ class DeviceSyncServiceTest
     DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
 
     network_handler_test_helper_.reset();
-    DBusThreadManager::Shutdown();
   }
 
   // Creates and initializes |device_sync_|. Done here instead of in SetUp()

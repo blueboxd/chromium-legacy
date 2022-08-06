@@ -16,6 +16,15 @@
 
 class PasswordChangeRunDisplay;
 class AssistantDisplayDelegate;
+class ApcScrimManager;
+class GURL;
+
+namespace autofill_assistant {
+struct RectF;
+}
+namespace autofill_assistant {
+class WebsiteLoginManager;
+}  // namespace autofill_assistant
 
 // Receives actions from the `HeadlessScriptController` and passes them on an
 // implementation of a `PasswordChangeRunDisplay`.
@@ -27,7 +36,9 @@ class ApcExternalActionDelegate
       public PasswordChangeRunController {
  public:
   explicit ApcExternalActionDelegate(
-      AssistantDisplayDelegate* display_delegate);
+      AssistantDisplayDelegate* display_delegate,
+      ApcScrimManager* apc_scrim_manager,
+      autofill_assistant::WebsiteLoginManager* website_login_manager);
   ApcExternalActionDelegate(const ApcExternalActionDelegate&) = delete;
   ApcExternalActionDelegate& operator=(const ApcExternalActionDelegate&) =
       delete;
@@ -35,7 +46,7 @@ class ApcExternalActionDelegate
 
   // Sets up the display to render a password change run UI,
   // needs to be called BEFORE starting a script.
-  void SetupDisplay();
+  virtual void SetupDisplay();
 
   // ExternalActionDelegate:
   void OnActionRequested(
@@ -45,6 +56,11 @@ class ApcExternalActionDelegate
                                   result)> end_action_callback) override;
   void OnInterruptStarted() override;
   void OnInterruptFinished() override;
+
+  void OnTouchableAreaChanged(
+      const autofill_assistant::RectF& visual_viewport,
+      const std::vector<autofill_assistant::RectF>& touchable_areas,
+      const std::vector<autofill_assistant::RectF>& restricted_areas) override;
 
   // PasswordChangeRunController:
   void SetTopIcon(
@@ -64,6 +80,8 @@ class ApcExternalActionDelegate
       const std::u16string& generated_password) override;
   void OnGeneratedPasswordSelected(bool selected) override;
   void ShowStartingScreen(const GURL& url) override;
+  void ShowCompletionScreen(
+      base::RepeatingClosure onShowCompletionScreenDoneButtonClicked) override;
 
  private:
   friend class ApcExternalActionDelegateTest;
@@ -121,6 +139,13 @@ class ApcExternalActionDelegate
 
   // The display where we render the UI for a password change run.
   raw_ptr<AssistantDisplayDelegate> display_delegate_ = nullptr;
+
+  // The scrim manager to update the overlay and html elements showcasting.
+  raw_ptr<ApcScrimManager> apc_scrim_manager_ = nullptr;
+
+  // Use to handle interactions with the password manager.
+  raw_ptr<autofill_assistant::WebsiteLoginManager> website_login_manager_ =
+      nullptr;
 
   // Factory for weak pointers to this class.
   base::WeakPtrFactory<PasswordChangeRunController> weak_ptr_factory_{this};

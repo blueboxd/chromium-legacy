@@ -11,11 +11,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_util.h"
 #include "components/user_manager/user.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -56,7 +56,7 @@ void NetworkingAttributesAsh::GetNetworkDetails(
     std::move(callback).Run(Result::NewErrorMessage(kErrorNetworkNotConnected));
     return;
   }
-  const chromeos::DeviceState* device =
+  const ash::DeviceState* device =
       network_state_handler->GetDeviceState(network->device_path());
   if (!device) {
     std::move(callback).Run(Result::NewErrorMessage(kErrorNetworkNotConnected));
@@ -65,7 +65,7 @@ void NetworkingAttributesAsh::GetNetworkDetails(
 
   mojom::NetworkDetailsPtr details = mojom::NetworkDetails::New();
   details->mac_address =
-      chromeos::network_util::FormattedMacAddress(device->mac_address());
+      ash::network_util::FormattedMacAddress(device->mac_address());
   net::IPAddress ipv4_address;
   if (ipv4_address.AssignFromIPLiteral(
           device->GetIpAddressByType(shill::kTypeIPv4))) {

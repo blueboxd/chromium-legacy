@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/types/pass_key.h"
+#include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/stored_page.h"
@@ -91,11 +92,14 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kEmbedderTriggeredAndSameOriginRedirected = 33,
     kEmbedderTriggeredAndCrossOriginRedirected = 34,
     kEmbedderTriggeredAndDestroyed = 35,
-    kMaxValue = kEmbedderTriggeredAndDestroyed,
+    kMemoryLimitExceeded = 36,
+    kFailToGetMemoryUsage = 37,
+    kMaxValue = kFailToGetMemoryUsage,
   };
 
   PrerenderHost(const PrerenderAttributes& attributes,
-                WebContents& web_contents);
+                WebContents& web_contents,
+                PreloadingAttemptImpl* attempt);
   ~PrerenderHost() override;
 
   PrerenderHost(const PrerenderHost&) = delete;
@@ -171,6 +175,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   }
   const GURL& initiator_url() const { return attributes_.initiator_url; }
 
+  const GURL& prerendering_url() const { return attributes_.prerendering_url; }
+
   bool IsBrowserInitiated() { return attributes_.IsBrowserInitiated(); }
 
   int frame_tree_node_id() const { return frame_tree_node_id_; }
@@ -206,6 +212,13 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // Asks the registry to cancel prerendering.
   void Cancel(FinalStatus status);
 
+  // Sets the PreloadingTriggeringOutcome, PreloadingEligibility,
+  // PreloadingFailureReason for PreloadingAttempt associated with this
+  // PrerenderHost.
+  void SetTriggeringOutcome(PreloadingTriggeringOutcome outcome);
+  void SetEligibility(PreloadingEligibility eligibility);
+  void SetFailureReason(FinalStatus status);
+
   bool AreBeginNavigationParamsCompatibleWithNavigation(
       const blink::mojom::BeginNavigationParams& potential_activation);
   bool AreCommonNavigationParamsCompatibleWithNavigation(
@@ -226,6 +239,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   std::unique_ptr<PageHolder> page_holder_;
 
   base::ObserverList<Observer> observers_;
+
+  // Stores the attempt corresponding to this prerender to log various metrics.
+  raw_ptr<PreloadingAttemptImpl, DanglingUntriaged> attempt_;
 
   // Navigation parameters for the navigation which loaded the main document of
   // the prerendered page, copied immediately after BeginNavigation when

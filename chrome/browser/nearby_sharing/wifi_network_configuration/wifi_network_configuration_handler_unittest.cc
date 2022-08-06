@@ -7,8 +7,8 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/nearby_sharing/wifi_credentials_attachment.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/network/network_handler.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@ class FakeCrosNetworkConfig
     : public chromeos::network_config::CrosNetworkConfig {
  public:
   explicit FakeCrosNetworkConfig(
-      chromeos::NetworkStateTestHelper* network_state_test_helper)
+      ash::NetworkStateTestHelper* network_state_test_helper)
       : CrosNetworkConfig(network_state_test_helper->network_state_handler(),
                           network_state_test_helper->network_device_handler(),
                           /*cellular_inhibitor=*/nullptr,
@@ -77,7 +77,7 @@ class FakeCrosNetworkConfig
 
 TEST(WifiNetworkConfigurationHandlerTest, Success) {
   base::test::TaskEnvironment task_environment;
-  chromeos::NetworkStateTestHelper network_state_test_helper{
+  ash::NetworkStateTestHelper network_state_test_helper{
       /*use_default_devices_and_services=*/true};
   FakeCrosNetworkConfig fake_cros_network_config{&network_state_test_helper};
 
@@ -118,7 +118,7 @@ TEST(WifiNetworkConfigurationHandlerTest, Success) {
 
 TEST(WifiNetworkConfigurationHandlerTest, Failure) {
   base::test::TaskEnvironment task_environment;
-  chromeos::NetworkStateTestHelper network_state_test_helper{
+  ash::NetworkStateTestHelper network_state_test_helper{
       /*use_default_devices_and_services=*/true};
   FakeCrosNetworkConfig fake_cros_network_config{&network_state_test_helper};
 

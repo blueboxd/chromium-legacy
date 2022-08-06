@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -116,8 +117,8 @@ AppServiceProxyLacros::LoadIconFromIconKey(AppType app_type,
 
 void AppServiceProxyLacros::Launch(const std::string& app_id,
                                    int32_t event_flags,
-                                   apps::mojom::LaunchSource launch_source,
-                                   apps::mojom::WindowInfoPtr window_info) {
+                                   apps::LaunchSource launch_source,
+                                   apps::WindowInfoPtr window_info) {
   if (!remote_crosapi_app_service_proxy_) {
     return;
   }
@@ -137,11 +138,20 @@ void AppServiceProxyLacros::Launch(const std::string& app_id,
                                               display::kInvalidDisplayId));
 }
 
+void AppServiceProxyLacros::Launch(const std::string& app_id,
+                                   int32_t event_flags,
+                                   apps::mojom::LaunchSource launch_source,
+                                   apps::mojom::WindowInfoPtr window_info) {
+  Launch(app_id, event_flags,
+         ConvertMojomLaunchSourceToLaunchSource(launch_source),
+         ConvertMojomWindowInfoToWindowInfo(window_info));
+}
+
 void AppServiceProxyLacros::LaunchAppWithFiles(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::FilePathsPtr file_paths) {
+    LaunchSource launch_source,
+    std::vector<base::FilePath> file_paths) {
   if (!remote_crosapi_app_service_proxy_) {
     return;
   }
@@ -156,7 +166,46 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
   }
   auto params = CreateCrosapiLaunchParamsWithEventFlags(
       this, app_id, event_flags, launch_source, display::kInvalidDisplayId);
-  params->intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
+  params->intent =
+      apps_util::CreateCrosapiIntentForViewFiles(std::move(file_paths));
+  remote_crosapi_app_service_proxy_->Launch(std::move(params));
+}
+
+void AppServiceProxyLacros::LaunchAppWithFiles(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::FilePathsPtr file_paths) {
+  LaunchAppWithFiles(app_id, event_flags,
+                     ConvertMojomLaunchSourceToLaunchSource(launch_source),
+                     ConvertMojomFilePathsToFilePaths(std::move(file_paths)));
+}
+
+void AppServiceProxyLacros::LaunchAppWithIntent(const std::string& app_id,
+                                                int32_t event_flags,
+                                                IntentPtr intent,
+                                                LaunchSource launch_source,
+                                                WindowInfoPtr window_info) {
+  CHECK(intent);
+
+  if (!remote_crosapi_app_service_proxy_) {
+    return;
+  }
+
+  if (crosapi_app_service_proxy_version_ <
+      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+              kLaunchMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << crosapi_app_service_proxy_version_
+                 << " does not support Launch().";
+    return;
+  }
+
+  auto params = CreateCrosapiLaunchParamsWithEventFlags(
+      this, app_id, event_flags, launch_source,
+      window_info ? window_info->display_id : display::kInvalidDisplayId);
+  params->intent =
+      apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
   remote_crosapi_app_service_proxy_->Launch(std::move(params));
 }
 
@@ -182,11 +231,23 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
   }
 
   auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      this, app_id, event_flags, launch_source,
+      this, app_id, event_flags,
+      ConvertMojomLaunchSourceToLaunchSource(launch_source),
       window_info ? window_info->display_id : display::kInvalidDisplayId);
   params->intent =
       apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
   remote_crosapi_app_service_proxy_->Launch(std::move(params));
+}
+
+void AppServiceProxyLacros::LaunchAppWithUrl(const std::string& app_id,
+                                             int32_t event_flags,
+                                             GURL url,
+                                             LaunchSource launch_source,
+                                             WindowInfoPtr window_info) {
+  LaunchAppWithIntent(
+      app_id, event_flags,
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
+      launch_source, std::move(window_info));
 }
 
 void AppServiceProxyLacros::LaunchAppWithUrl(
@@ -236,6 +297,8 @@ void AppServiceProxyLacros::Uninstall(
   if (app_type == AppType::kWeb) {
     web_app::UninstallImpl(web_app::WebAppProvider::GetForWebApps(profile_),
                            app_id, uninstall_source, parent_window);
+  } else {
+    NOTIMPLEMENTED();
   }
 }
 
@@ -435,7 +498,7 @@ absl::optional<IconKey> AppServiceProxyLacros::InnerIconLoader::GetIconKey(
   }
 
   absl::optional<IconKey> icon_key;
-  host_->app_registry_cache_.ForApp(
+  host_->app_registry_cache_.ForOneApp(
       app_id,
       [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
   return icon_key;

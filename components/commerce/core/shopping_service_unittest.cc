@@ -4,7 +4,8 @@
 
 #include "components/commerce/core/shopping_service.h"
 #include "base/bind.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/run_loop.h"
+#include "base/values.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/shopping_service_test_base.h"
 #include "components/optimization_guide/core/new_optimization_guide_decider.h"
@@ -49,8 +50,8 @@ class ShoppingServiceTest : public ShoppingServiceTestBase {
 TEST_F(ShoppingServiceTest, TestProductInfoResponse) {
   // Ensure a feature that uses product info is enabled. This doesn't
   // necessarily need to be the shopping list.
-  base::test::ScopedFeatureList test_features;
-  test_features.InitAndEnableFeature(commerce::kShoppingList);
+  test_features_.InitWithFeatures(
+      {commerce::kShoppingList, commerce::kCommerceAllowServerImages}, {});
 
   OptimizationMetadata meta = opt_guide_->BuildPriceTrackingResponse(
       kTitle, kImageUrl, kOfferId, kClusterId, kCountryCode);
@@ -82,8 +83,9 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse) {
 
 // Test that no object is provided for a negative optimization guide response.
 TEST_F(ShoppingServiceTest, TestProductInfoResponse_OptGuideFalse) {
-  base::test::ScopedFeatureList test_features;
-  test_features.InitAndEnableFeature(commerce::kShoppingList);
+  test_features_.InitWithFeatures(
+      {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
+      {});
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kFalse,
@@ -105,8 +107,9 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse_OptGuideFalse) {
 
 // Test that the product info cache only keeps track of live tabs.
 TEST_F(ShoppingServiceTest, TestProductInfoCacheURLCount) {
-  base::test::ScopedFeatureList test_features;
-  test_features.InitAndEnableFeature(kShoppingList);
+  test_features_.InitWithFeatures(
+      {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
+      {});
 
   std::string url = "http://example.com/foo";
   MockWebWrapper web1(GURL(url), false);
@@ -153,9 +156,9 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheURLCount) {
 // Test that product info is inserted into the cache without a client
 // necessarily querying for it.
 TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycle) {
-  base::test::ScopedFeatureList test_features;
-  test_features.InitWithFeatures({kShoppingList, kCommerceAllowServerImages},
-                                 {});
+  test_features_.InitWithFeatures(
+      {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
+      {});
 
   MockWebWrapper web(GURL(kProductUrl), false);
 
@@ -171,7 +174,8 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycle) {
   ASSERT_EQ(1, GetProductInfoCacheOpenURLCount(GURL(kProductUrl)));
 
   // We should be able to access the cached data.
-  const ProductInfo* cached_info = GetFromProductInfoCache(GURL(kProductUrl));
+  absl::optional<ProductInfo> cached_info =
+      shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
   ASSERT_EQ(kTitle, cached_info->title);
   ASSERT_EQ(kImageUrl, cached_info->image_url);
   ASSERT_EQ(kOfferId, cached_info->offer_id);
@@ -205,11 +209,82 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycle) {
   ASSERT_EQ(0, GetProductInfoCacheOpenURLCount(GURL(kProductUrl)));
 }
 
+// Test that product info is inserted into the cache without a client
+// necessarily querying for it.
+TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycleWithFallback) {
+  test_features_.InitWithFeatures(
+      {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
+      {});
+
+  MockWebWrapper web(GURL(kProductUrl), false);
+  std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
+  base::Value js_result(json);
+  web.SetMockJavaScriptResult(&js_result);
+
+  // Intentionally exclude the image URL to ensure the javascript fallback
+  // works.
+  OptimizationMetadata meta = opt_guide_->BuildPriceTrackingResponse(
+      kTitle, "", kOfferId, kClusterId, kCountryCode);
+
+  opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
+                          OptimizationGuideDecision::kTrue, meta);
+
+  DidNavigatePrimaryMainFrame(&web);
+
+  // By this point there should be something in the cache.
+  ASSERT_EQ(1, GetProductInfoCacheOpenURLCount(GURL(kProductUrl)));
+
+  // We should be able to access the cached data.
+  absl::optional<ProductInfo> cached_info =
+      shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
+  ASSERT_EQ(kTitle, cached_info->title);
+  ASSERT_EQ("", cached_info->image_url);
+  ASSERT_EQ(kOfferId, cached_info->offer_id);
+  ASSERT_EQ(kClusterId, cached_info->product_cluster_id);
+  ASSERT_EQ(kCountryCode, cached_info->country_code);
+
+  // The main API should still work.
+  bool callback_executed = false;
+  shopping_service_->GetProductInfoForUrl(
+      GURL(kProductUrl), base::BindOnce(
+                             [](bool* callback_executed, const GURL& url,
+                                const absl::optional<ProductInfo>& info) {
+                               ASSERT_EQ(kProductUrl, url.spec());
+                               ASSERT_TRUE(info.has_value());
+
+                               ASSERT_EQ(kTitle, info->title);
+                               ASSERT_EQ("", info->image_url);
+                               ASSERT_EQ(kOfferId, info->offer_id);
+                               ASSERT_EQ(kClusterId, info->product_cluster_id);
+                               ASSERT_EQ(kCountryCode, info->country_code);
+                               *callback_executed = true;
+                             },
+                             &callback_executed));
+
+  // Make sure the callback was actually run. In testing the callback is run
+  // immediately, this check ensures that is actually the case.
+  ASSERT_TRUE(callback_executed);
+
+  // Use a RunLoop here since this functionality depends on a JSON sanitizer
+  // running on a different thread internally.
+  base::RunLoop run_loop;
+  DidFinishLoad(&web);
+  run_loop.RunUntilIdle();
+
+  // At this point we should have the image in the cache.
+  cached_info =
+      shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
+  ASSERT_EQ(kImageUrl, cached_info->image_url.spec());
+
+  // Close the "tab" and make sure the cache is empty.
+  WebWrapperDestroyed(&web);
+  ASSERT_EQ(0, GetProductInfoCacheOpenURLCount(GURL(kProductUrl)));
+}
+
 // Test that merchant info is processed correctly.
 TEST_F(ShoppingServiceTest, TestMerchantInfoResponse) {
   // Ensure a feature that uses merchant info is enabled.
-  base::test::ScopedFeatureList test_features;
-  test_features.InitAndEnableFeature(commerce::kCommerceMerchantViewer);
+  test_features_.InitAndEnableFeature(kCommerceMerchantViewer);
 
   OptimizationMetadata meta = opt_guide_->BuildMerchantTrustResponse(
       kStarRating, kCountRating, kDetailsPageUrl, kHasReturnPolicy,
@@ -241,6 +316,54 @@ TEST_F(ShoppingServiceTest, TestMerchantInfoResponse) {
   // Make sure the callback was actually run. In testing the callback is run
   // immediately, this check ensures that is actually the case.
   ASSERT_TRUE(callback_executed);
+}
+
+TEST_F(ShoppingServiceTest, TestDataMergeWithLeadImage) {
+  ProductInfo info;
+  info.image_url = GURL(kImageUrl);
+
+  base::Value::Dict data_map;
+  data_map.Set("image", "https://example.com/fallback_image.png");
+
+  MergeProductInfoData(&info, data_map);
+
+  EXPECT_EQ(kImageUrl, info.image_url);
+}
+
+TEST_F(ShoppingServiceTest, TestDataMergeWithNoLeadImage) {
+  test_features_.InitWithFeatures(
+      {kCommerceAllowLocalImages, kCommerceAllowServerImages}, {});
+  ProductInfo info;
+
+  base::Value::Dict data_map;
+  data_map.Set("image", kImageUrl);
+
+  MergeProductInfoData(&info, data_map);
+
+  EXPECT_EQ(kImageUrl, info.image_url.spec());
+}
+
+TEST_F(ShoppingServiceTest, TestDataMergeWithTitle) {
+  ProductInfo info;
+  info.title = kTitle;
+
+  base::Value::Dict data_map;
+  data_map.Set("title", "Some other fallback title");
+
+  MergeProductInfoData(&info, data_map);
+
+  EXPECT_EQ(kTitle, info.title);
+}
+
+TEST_F(ShoppingServiceTest, TestDataMergeWithNoTitle) {
+  ProductInfo info;
+
+  base::Value::Dict data_map;
+  data_map.Set("title", kTitle);
+
+  MergeProductInfoData(&info, data_map);
+
+  EXPECT_EQ(kTitle, info.title);
 }
 
 }  // namespace commerce

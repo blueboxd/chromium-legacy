@@ -1737,14 +1737,16 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
 TEST_F(RenderWidgetHostViewAuraTest, TimerBasedWheelEventPhaseInfo) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kPercentBasedScrolling);
+  scoped_feature_list.InitAndDisableFeature(
+      features::kWindowsScrollingPersonality);
   RunTimerBasedWheelEventPhaseInfoTest(false);
 }
 
 TEST_F(RenderWidgetHostViewAuraTest,
        TimerBasedWheelEventPhaseInfoWithPercentBasedScrolling) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPercentBasedScrolling);
+  scoped_feature_list.InitAndEnableFeature(
+      features::kWindowsScrollingPersonality);
   RunTimerBasedWheelEventPhaseInfoTest(true);
 }
 
@@ -4971,7 +4973,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
   EXPECT_EQ(view_->GetNativeView()->bounds(), orig_view_bounds);
 
   // Simulate virtual keyboard.
-  input_method->SetOnScreenKeyboardBounds(keyboard_view_bounds);
+  input_method->SetVirtualKeyboardBounds(keyboard_view_bounds);
 
   // Window should be shifted.
   EXPECT_EQ(view_->GetNativeView()->bounds(), shifted_view_bounds);
@@ -5020,7 +5022,7 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateInsetsWithVirtualKeyboardEnabled) {
       0, 0,
       gfx::IntersectRects(orig_view_bounds, keyboard_view_bounds).height(), 0));
   EXPECT_EQ(view_->insets_, origin_view_insets);
-  input_method->SetOnScreenKeyboardBounds(keyboard_view_bounds);
+  input_method->SetVirtualKeyboardBounds(keyboard_view_bounds);
 
   // Window should be shifted. The insets will be updated.
   EXPECT_EQ(view_->GetNativeView()->bounds(), shifted_view_bounds);
@@ -6128,7 +6130,7 @@ TEST_F(InputMethodResultAuraTest, SetCompositionText) {
 
 // This test is for ui::TextInputClient::ConfirmCompositionText.
 TEST_F(InputMethodResultAuraTest, ConfirmCompositionText) {
-  base::RepeatingCallback<uint32_t()> ime_call = base::BindRepeating(
+  base::RepeatingCallback<size_t()> ime_call = base::BindRepeating(
       &ui::TextInputClient::ConfirmCompositionText,
       base::Unretained(text_input_client()), /** keep_selection */ true);
   for (auto index : active_view_sequence_) {

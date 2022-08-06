@@ -36,9 +36,7 @@ class MerchantPromoCodeManager : public SingleFieldFormFiller,
   void OnGetSingleFieldSuggestions(int query_id,
                                    bool is_autocomplete_enabled,
                                    bool autoselect_first_suggestion,
-                                   const std::u16string& name,
-                                   const std::u16string& prefix,
-                                   const std::string& form_control_type,
+                                   const FormFieldData& field,
                                    base::WeakPtr<SuggestionsHandler> handler,
                                    const SuggestionsContext& context) override;
   void OnWillSubmitFormWithFields(const std::vector<FormFieldData>& fields,
@@ -68,6 +66,29 @@ class MerchantPromoCodeManager : public SingleFieldFormFiller,
       MerchantPromoCodeManagerTest,
       DoesNotShowPromoCodeOffersIfPersonalDataManagerDoesNotExist);
 
+  // Records metrics related to the offers suggestions popup.
+  class UMARecorder {
+   public:
+    UMARecorder() = default;
+
+    UMARecorder(const UMARecorder&) = delete;
+    UMARecorder& operator=(const UMARecorder&) = delete;
+
+    ~UMARecorder() = default;
+
+    void OnOffersSuggestionsShown(
+        const std::u16string& name,
+        std::vector<const AutofillOfferData*>& offers);
+    void OnOfferSuggestionSelected(int frontend_id);
+
+   private:
+    // The name of the field that most recently had suggestions shown.
+    std::u16string most_recent_suggestions_shown_field_name_;
+
+    // The name of the field that most recently had a suggestion selected.
+    std::u16string most_recent_suggestion_selected_field_name_;
+  };
+
   // Sends suggestions for |promo_code_offers| to the |query_handler|'s handler
   // for display in the associated Autofill popup.
   void SendPromoCodeSuggestions(
@@ -77,6 +98,8 @@ class MerchantPromoCodeManager : public SingleFieldFormFiller,
   raw_ptr<PersonalDataManager> personal_data_manager_ = nullptr;
 
   bool is_off_the_record_ = false;
+
+  UMARecorder uma_recorder_;
 
   base::WeakPtrFactory<MerchantPromoCodeManager> weak_ptr_factory_{this};
 };

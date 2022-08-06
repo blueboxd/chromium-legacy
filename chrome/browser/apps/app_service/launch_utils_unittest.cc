@@ -30,7 +30,7 @@ class LaunchUtilsTest : public testing::Test {
           apps::LaunchContainer::kLaunchContainerNone) {
     return apps::CreateAppIdLaunchParamsWithEventFlags(
         app_id, apps::GetEventFlags(disposition, preferred_container),
-        apps::mojom::LaunchSource::kFromChromeInternal, display_id,
+        apps::LaunchSource::kFromChromeInternal, display_id,
         fallback_container);
   }
 
@@ -94,13 +94,14 @@ TEST_F(LaunchUtilsTest, UseIntentFullUrlInLaunchParams) {
   auto disposition = WindowOpenDisposition::NEW_WINDOW;
 
   const GURL url = GURL("https://example.com/?query=1#frag");
-  auto intent = apps_util::CreateIntentFromUrl(url);
+  auto intent =
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url);
 
   auto params = apps::CreateAppLaunchParamsForIntent(
       app_id, apps::GetEventFlags(disposition, true),
-      apps::mojom::LaunchSource::kFromChromeInternal,
-      display::kInvalidDisplayId, apps::LaunchContainer::kLaunchContainerWindow,
-      std::move(intent), &profile_);
+      apps::LaunchSource::kFromChromeInternal, display::kInvalidDisplayId,
+      apps::LaunchContainer::kLaunchContainerWindow, std::move(intent),
+      &profile_);
 
   EXPECT_EQ(url, params.override_url);
 }
@@ -108,20 +109,20 @@ TEST_F(LaunchUtilsTest, UseIntentFullUrlInLaunchParams) {
 TEST_F(LaunchUtilsTest, IntentFilesAreCopiedToLaunchParams) {
   auto disposition = WindowOpenDisposition::NEW_WINDOW;
 
-  std::vector<apps::mojom::IntentFilePtr> files;
-  auto file = apps::mojom::IntentFile::New();
+  std::vector<apps::IntentFilePtr> files;
   std::string file_path = "filesystem:http://foo.com/test/foo.txt";
-  file->url = GURL(file_path);
+  auto file = std::make_unique<apps::IntentFile>(GURL(file_path));
   EXPECT_TRUE(file->url.is_valid());
   file->mime_type = "text/plain";
   files.push_back(std::move(file));
-  auto intent = apps_util::CreateViewIntentFromFiles(std::move(files));
+  auto intent = std::make_unique<apps::Intent>(apps_util::kIntentActionView,
+                                               std::move(files));
 
   auto params = apps::CreateAppLaunchParamsForIntent(
       app_id, apps::GetEventFlags(disposition, true),
-      apps::mojom::LaunchSource::kFromChromeInternal,
-      display::kInvalidDisplayId, apps::LaunchContainer::kLaunchContainerWindow,
-      std::move(intent), &profile_);
+      apps::LaunchSource::kFromChromeInternal, display::kInvalidDisplayId,
+      apps::LaunchContainer::kLaunchContainerWindow, std::move(intent),
+      &profile_);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_EQ(params.launch_files.size(), 1U);
@@ -281,7 +282,7 @@ TEST_F(LaunchUtilsTest, ConvertToCrosapiIntent) {
 TEST_F(LaunchUtilsTest, FromCrosapiIncomplete) {
   auto params = crosapi::mojom::LaunchParams::New();
   params->app_id = "aaaa";
-  params->launch_source = apps::mojom::LaunchSource::kFromIntentUrl;
+  params->launch_source = apps::LaunchSource::kFromIntentUrl;
 
   auto converted_params = apps::ConvertCrosapiToLaunchParams(params, &profile_);
 
@@ -289,8 +290,7 @@ TEST_F(LaunchUtilsTest, FromCrosapiIncomplete) {
   EXPECT_EQ(apps::LaunchContainer::kLaunchContainerNone,
             converted_params.container);
   EXPECT_EQ(WindowOpenDisposition::UNKNOWN, converted_params.disposition);
-  EXPECT_EQ(apps::mojom::LaunchSource::kFromIntentUrl,
-            converted_params.launch_source);
+  EXPECT_EQ(apps::LaunchSource::kFromIntentUrl, converted_params.launch_source);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -307,7 +307,7 @@ TEST_F(LaunchUtilsTest, FromCrosapiIntent) {
       crosapi::mojom::LaunchContainer::kLaunchContainerWindow;
   crosapi_params->disposition =
       crosapi::mojom::WindowOpenDisposition::kNewForegroundTab;
-  crosapi_params->launch_source = apps::mojom::LaunchSource::kFromSharesheet;
+  crosapi_params->launch_source = apps::LaunchSource::kFromSharesheet;
   const int64_t kDisplayId = 5;
   crosapi_params->display_id = kDisplayId;
   crosapi_params->intent = crosapi::mojom::Intent::New();
@@ -331,7 +331,7 @@ TEST_F(LaunchUtilsTest, FromCrosapiIntent) {
   EXPECT_EQ(converted_params.disposition,
             WindowOpenDisposition::NEW_FOREGROUND_TAB);
   EXPECT_EQ(converted_params.launch_source,
-            apps::mojom::LaunchSource::kFromSharesheet);
+            apps::LaunchSource::kFromSharesheet);
   EXPECT_EQ(converted_params.display_id, kDisplayId);
 
   EXPECT_EQ(converted_params.launch_files.size(), 1U);

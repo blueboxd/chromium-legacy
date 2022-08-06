@@ -19,13 +19,16 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -101,11 +104,11 @@ void BuildTabSpecifics(const std::string& tag,
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 }
 
-testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
+testing::AssertionResult CheckSessionModels(const base::Value::List& devices,
                                             size_t num_sessions) {
-  EXPECT_EQ(5u, devices.GetListDeprecated().size());
-  for (size_t i = 0; i < devices.GetListDeprecated().size(); ++i) {
-    const base::Value& device_value = devices.GetListDeprecated()[i];
+  EXPECT_EQ(5u, devices.size());
+  for (size_t i = 0; i < devices.size(); ++i) {
+    const base::Value& device_value = devices[i];
     EXPECT_TRUE(device_value.is_dict());
     const base::Value::Dict device = utils::ToDictionary(device_value);
     EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "info"));
@@ -268,33 +271,29 @@ void ExtensionSessionsTest::CreateSessionModels() {
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
   CreateSessionModels();
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetDevicesFunction>(true).get(),
           "[{\"maxResults\": 0}]", browser())));
-  ASSERT_TRUE(result);
-  EXPECT_TRUE(CheckSessionModels(*result, 0u));
+  EXPECT_TRUE(CheckSessionModels(result, 0u));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesMaxResults) {
   CreateSessionModels();
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetDevicesFunction>(true).get(), "[]",
           browser())));
-  ASSERT_TRUE(result);
-  EXPECT_TRUE(CheckSessionModels(*result, 1u));
+  EXPECT_TRUE(CheckSessionModels(result, 1u));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesListEmpty) {
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List devices(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetDevicesFunction>(true).get(), "[]",
           browser())));
 
-  ASSERT_TRUE(result);
-  base::ListValue* devices = result.get();
-  EXPECT_EQ(0u, devices->GetListDeprecated().size());
+  EXPECT_TRUE(devices.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreForeignSessionWindow) {
@@ -305,18 +304,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreForeignSessionWindow) {
           CreateFunction<SessionsRestoreFunction>(true).get(), "[\"tag3.3\"]",
           browser(), api_test_utils::INCLUDE_INCOGNITO));
 
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List windows(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<WindowsGetAllFunction>(true).get(), "[]", browser())));
-  ASSERT_TRUE(result);
 
-  base::ListValue* windows = result.get();
-  EXPECT_EQ(2u, windows->GetListDeprecated().size());
+  EXPECT_EQ(2u, windows.size());
   const base::Value::Dict restored_window =
       api_test_utils::GetDict(restored_window_session, "window");
   base::Value::Dict window;
   int restored_id = api_test_utils::GetInteger(restored_window, "id");
-  for (base::Value& window_value : windows->GetListDeprecated()) {
+  for (base::Value& window_value : windows) {
     window = utils::ToDictionary(std::move(window_value));
     if (api_test_utils::GetInteger(window, "id") == restored_id)
       break;
@@ -344,14 +341,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreInIncognito) {
       "Can not restore sessions in incognito mode."));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreNonEditableTabstrip) {
+  CreateSessionModels();
+
+  // Set up a browser with a non-editable tabstrip, simulating one in the midst
+  // of a tab dragging session.
+  std::unique_ptr<TestBrowserWindow> browser_window =
+      std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(browser()->profile(), true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = browser_window.get();
+  std::unique_ptr<Browser> browser =
+      std::unique_ptr<Browser>(Browser::Create(params));
+  browser_window->SetIsTabStripEditable(false);
+
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          CreateFunction<SessionsRestoreFunction>(true).get(), "[\"1\"]",
+          browser.get()),
+      tabs_constants::kTabStripNotEditableError));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List sessions(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetRecentlyClosedFunction>(true).get(), "[]",
           CreateIncognitoBrowser())));
-  ASSERT_TRUE(result);
-  base::ListValue* sessions = result.get();
-  EXPECT_EQ(0u, sessions->GetListDeprecated().size());
+  EXPECT_TRUE(sessions.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedMaxResults) {
@@ -366,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedMaxResults) {
     content::WebContentsDestroyedWatcher destroyed_watcher(
         browser()->tab_strip_model()->GetWebContentsAt(tab_index));
     browser()->tab_strip_model()->CloseWebContentsAt(
-        tab_index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+        tab_index, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
     destroyed_watcher.Wait();
   }
 

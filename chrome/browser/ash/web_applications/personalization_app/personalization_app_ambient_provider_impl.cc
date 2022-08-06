@@ -120,8 +120,6 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientObserver(
   OnAnimationThemeChanged();
 
   ResetLocalSettings();
-  // Will notify WebUI when fetches successfully.
-  FetchSettingsAndAlbums();
 }
 
 void PersonalizationAppAmbientProviderImpl::SetAmbientModeEnabled(
@@ -228,6 +226,24 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
 
 void PersonalizationAppAmbientProviderImpl::SetPageViewed() {
   page_viewed_ = true;
+}
+
+void PersonalizationAppAmbientProviderImpl::FetchSettingsAndAlbums() {
+  // If there is an ongoing update, do not fetch. If update succeeds, it will
+  // update the UI with the new settings. If update fails, it will restore
+  // previous settings and update UI.
+  if (is_updating_backend_) {
+    has_pending_fetch_request_ = true;
+    return;
+  }
+
+  // TODO(b/161044021): Add a helper function to get all the albums. Currently
+  // only load 100 latest modified albums.
+  ash::AmbientBackendController::Get()->FetchSettingsAndAlbums(
+      kBannerWidthPx, kBannerHeightPx, /*num_albums=*/100,
+      base::BindOnce(
+          &PersonalizationAppAmbientProviderImpl::OnSettingsAndAlbumsFetched,
+          read_weak_factory_.GetWeakPtr()));
 }
 
 void PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged() {
@@ -420,24 +436,6 @@ void PersonalizationAppAmbientProviderImpl::UpdateUIWithCachedSettings(
   has_pending_fetch_request_ = false;
 }
 
-void PersonalizationAppAmbientProviderImpl::FetchSettingsAndAlbums() {
-  // If there is an ongoing update, do not fetch. If update succeeds, it will
-  // update the UI with the new settings. If update fails, it will restore
-  // previous settings and update UI.
-  if (is_updating_backend_) {
-    has_pending_fetch_request_ = true;
-    return;
-  }
-
-  // TODO(b/161044021): Add a helper function to get all the albums. Currently
-  // only load 100 latest modified albums.
-  ash::AmbientBackendController::Get()->FetchSettingsAndAlbums(
-      kBannerWidthPx, kBannerHeightPx, /*num_albums=*/100,
-      base::BindOnce(
-          &PersonalizationAppAmbientProviderImpl::OnSettingsAndAlbumsFetched,
-          read_weak_factory_.GetWeakPtr()));
-}
-
 void PersonalizationAppAmbientProviderImpl::OnSettingsAndAlbumsFetched(
     const absl::optional<ash::AmbientSettings>& settings,
     ash::PersonalAlbums personal_albums) {
@@ -509,7 +507,10 @@ void PersonalizationAppAmbientProviderImpl::MaybeUpdateTopicSource(
   // If the setting is the same, no need to update.
   if (settings_->topic_source != topic_source) {
     settings_->topic_source = topic_source;
-    UpdateSettings();
+    if (IsAmbientModeEnabled()) {
+      // Only send update to server if ambient mode is currently enabled.
+      UpdateSettings();
+    }
   }
 
   OnTopicSourceChanged();

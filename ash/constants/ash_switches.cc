@@ -146,11 +146,6 @@ const char kArcStartMode[] = "arc-start-mode";
 // Sets ARC Terms Of Service hostname url for testing.
 const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
 
-// Mounts the debugfs file system if this flag is set.
-// Debugfs was removed in Android S to meet GTS requirements, but for ureadahead
-// tracing we need to enable it in developer mode only.
-const char kArcVmMountDebugFs[] = "arcvm-mount-debugfs";
-
 // Sets the mode of operation for ureadahead during ARCVM boot. If this switch
 // is not set, ARCVM ureadahead will check for the presence and age of pack
 // file and reads ahead files to page cache for improved boot performance.
@@ -622,6 +617,11 @@ const char kIgnoreArcVmDevConf[] = "ignore-arcvm-dev-conf";
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
+// If true, the time dependent views (such as the time view) show with the
+// predefined fixed time.
+const char kStabilizeTimeDependentViewForTests[] =
+    "stabilize-time-dependent-view-for-tests";
+
 // Decreases delay in uploading installation event logs for integration test.
 const char kInstallLogFastUploadForTests[] =
     "install-log-fast-upload-for-tests";
@@ -640,6 +640,14 @@ const char kLacrosAvailabilityIgnore[] = "lacros-availability-ignore";
 //   --foo=5
 //   --bar=/tmp/dir name
 const char kLacrosChromeAdditionalArgs[] = "lacros-chrome-additional-args";
+
+// If this switch is set, then ash-chrome will read from the provided path
+// and pass additional arguments when launching lacros-chrome. Each non-empty
+// line in the file will be treated as an argument. Example file contents:
+//   --foo=5
+//   --bar=/tmp/dir name
+const char kLacrosChromeAdditionalArgsFile[] =
+    "lacros-chrome-additional-args-file";
 
 // Additional environment variables set for lacros-chrome. The string '####' is
 // used as a delimiter. For example:
@@ -721,9 +729,6 @@ const char kOobeLargeScreenSpecialScaling[] =
 
 // Specifies directory for screenshots taken with OOBE UI Debugger.
 const char kOobeScreenshotDirectory[] = "oobe-screenshot-dir";
-
-// Shows Blazey screens.
-const char kOobeShowBlazeyScreen[] = "oobe-show-blazey";
 
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
@@ -1011,6 +1016,11 @@ bool HasHps() {
 bool IsSkipRecorderNudgeShowThresholdDurationEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kSkipReorderNudgeShowThresholdDurationForTest);
+}
+
+bool IsStabilizeTimeDependentViewForTestsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kStabilizeTimeDependentViewForTests);
 }
 
 }  // namespace switches

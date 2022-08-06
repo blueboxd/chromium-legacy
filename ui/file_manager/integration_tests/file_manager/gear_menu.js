@@ -288,8 +288,7 @@ testcase.showPasteIntoCurrentFolder = async () => {
   await remoteCall.waitForElement(appId, '#gear-menu[hidden]');
 
   // 2. Selecting a single regular file
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [ENTRIES.hello.nameText]));
+  await remoteCall.waitUntilSelected(appId, ENTRIES.hello.nameText);
 
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['#gear-button']));
@@ -307,8 +306,7 @@ testcase.showPasteIntoCurrentFolder = async () => {
   await remoteCall.waitForElement(appId, '#gear-menu[hidden]');
 
   // 3. When ready to paste a file
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [ENTRIES.hello.nameText]));
+  await remoteCall.waitUntilSelected(appId, ENTRIES.hello.nameText);
 
   // Ctrl-C to copy the selected file
   await remoteCall.fakeKeyDown(appId, '#file-list', 'c', true, false, false);
@@ -575,7 +573,7 @@ testcase.showAvailableStorageMyFiles = async () => {
 };
 
 /**
- * Tests that the "xGB available message appears in the gear menu for
+ * Tests that the "xGB available" message appears in the gear menu for
  * the "Google Drive" volume.
  */
 testcase.showAvailableStorageDrive = async () => {
@@ -589,17 +587,19 @@ testcase.showAvailableStorageDrive = async () => {
   // Wait for the gear menu to appear.
   await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
 
-  // Check #volume-storage is shown and disabled (can't manage Drive
-  // storage).
-  await remoteCall.waitForElement(
+  // Check #volume-storage is displayed and get a reference to it.
+  const driveMenuEntry = await remoteCall.waitForElement(
       appId,
       '#gear-menu:not([hidden]) cr-menu-item' +
           '[command=\'#volume-storage\']' +
           ':not([hidden])');
+
+  // Check that it correctly indicates the available storage.
+  chrome.test.assertTrue(driveMenuEntry.text.trim() === '1 MB available');
 };
 
 /**
- * Tests that the "xGB available message appears in the gear menu for
+ * Tests that the "xGB available" message appears in the gear menu for
  * an SMB volume.
  */
 testcase.showAvailableStorageSmbfs = async () => {

@@ -69,7 +69,7 @@ generate_stubs("gtk_stubs") {
 }
 
 component("gtk") {
-  visibility = [ "//ui/views/linux_ui:linux_ui_factory" ]
+  visibility = [ "//ui/linux:linux_ui_factory" ]
   public = [ "gtk_ui_factory.h" ]
 
   sources = [
@@ -126,7 +126,6 @@ component("gtk") {
     "//ui/aura",
     "//ui/base",
     "//ui/base:buildflags",
-    "//ui/base/cursor:theme_manager",
     "//ui/base/ime",
     "//ui/base/ime/linux",
     "//ui/color",
@@ -138,6 +137,7 @@ component("gtk") {
     "//ui/gfx",
     "//ui/gfx:native_widget_types",
     "//ui/gfx/geometry",
+    "//ui/linux:linux_ui_impl",
     "//ui/native_theme",
     "//ui/shell_dialogs",
     "//ui/strings",

@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {AlbumsSubpage, AmbientActionName, AmbientModeAlbum, AmbientObserver, AmbientSubpage, AnimationTheme, AnimationThemeItem, emptyState, Paths, PersonalizationRouter, SetAlbumsAction, SetAmbientModeEnabledAction, SetAnimationThemeAction, SetTemperatureUnitAction, SetTopicSourceAction, TemperatureUnit, TopicSource, TopicSourceItem, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
+import {AlbumsSubpage, AmbientActionName, AmbientModeAlbum, AmbientObserver, AmbientSubpage, AnimationTheme, AnimationThemeItem, emptyState, Paths, PersonalizationRouter, SetAlbumsAction, SetAmbientModeEnabledAction, SetAnimationThemeAction, SetTemperatureUnitAction, SetTopicSourceAction, TemperatureUnit, TopicSource, TopicSourceItem, WallpaperGridItem} from 'chrome://personalization/js/personalization_app.js';
 import {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
@@ -438,7 +438,7 @@ suite('AmbientSubpageTest', function() {
   test('has albums subpage visible with path ambient albums', async () => {
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AMBIENT_ALBUMS,
-      queryParams: {topicSource: TopicSource.kArtGallery}
+      queryParams: {topicSource: TopicSource.kArtGallery},
     });
     personalizationStore.data.ambient.ambientModeEnabled = true;
     personalizationStore.notifyObservers();
@@ -472,7 +472,7 @@ suite('AmbientSubpageTest', function() {
   test('show placeholders when no albums on albums subpage', async () => {
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AMBIENT_ALBUMS,
-      queryParams: {topicSource: TopicSource.kGooglePhotos}
+      queryParams: {topicSource: TopicSource.kGooglePhotos},
     });
     personalizationStore.data.ambient.ambientModeEnabled = true;
     personalizationStore.notifyObservers();
@@ -511,7 +511,7 @@ suite('AmbientSubpageTest', function() {
   test('has correct albums on Google Photos albums subpage', async () => {
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AMBIENT_ALBUMS,
-      queryParams: {topicSource: TopicSource.kGooglePhotos}
+      queryParams: {topicSource: TopicSource.kGooglePhotos},
     });
     personalizationStore.data.ambient.ambientModeEnabled = true;
     personalizationStore.data.ambient.albums = ambientProvider.albums;
@@ -535,7 +535,7 @@ suite('AmbientSubpageTest', function() {
   test('has correct albums on Art albums subpage', async () => {
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AMBIENT_ALBUMS,
-      queryParams: {topicSource: TopicSource.kArtGallery}
+      queryParams: {topicSource: TopicSource.kArtGallery},
     });
     personalizationStore.data.ambient.ambientModeEnabled = true;
     personalizationStore.data.ambient.albums = ambientProvider.albums;
@@ -564,7 +564,7 @@ suite('AmbientSubpageTest', function() {
     personalizationStore.expectAction(AmbientActionName.SET_ALBUMS);
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AMBIENT_ALBUMS,
-      queryParams: {topicSource: TopicSource.kArtGallery}
+      queryParams: {topicSource: TopicSource.kArtGallery},
     });
 
     await ambientProvider.whenCalled('setAmbientObserver');
@@ -622,7 +622,7 @@ suite('AmbientSubpageTest', function() {
     personalizationStore.expectAction(AmbientActionName.SET_ALBUMS);
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AMBIENT_ALBUMS,
-      queryParams: {topicSource: TopicSource.kArtGallery}
+      queryParams: {topicSource: TopicSource.kArtGallery},
     });
 
     await ambientProvider.whenCalled('setAmbientObserver');
@@ -729,7 +729,7 @@ suite('AmbientSubpageTest', function() {
             /*ambientModeEnabled=*/ true);
         personalizationStore.data.ambient.googlePhotosAlbumsPreviews = [
           ambientProvider.googlePhotosAlbumsPreviews[0],
-          ambientProvider.googlePhotosAlbumsPreviews[1]
+          ambientProvider.googlePhotosAlbumsPreviews[1],
         ];
         personalizationStore.notifyObservers();
         await waitAfterNextRender(ambientSubpageElement);

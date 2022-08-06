@@ -6,13 +6,18 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_resize_area.h"
+#include "chrome/common/pref_names.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -149,15 +154,32 @@ class BorderView : public views::View {
 
 }  // namespace
 
-SidePanel::SidePanel(BrowserView* browser_view)
-    : border_view_(AddChildView(std::make_unique<BorderView>(browser_view))) {
+SidePanel::SidePanel(BrowserView* browser_view,
+                     HorizontalAlignment horizontal_alignment)
+    : border_view_(AddChildView(std::make_unique<BorderView>(browser_view))),
+      browser_view_(browser_view),
+      resize_area_(
+          AddChildView(std::make_unique<views::SidePanelResizeArea>(this))),
+      horizontal_alignment_(horizontal_alignment) {
+  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    pref_change_registrar_.Init(browser_view->GetProfile()->GetPrefs());
+
+    // base::Unretained is safe since the side panel must be attached to some
+    // BrowserView. Deleting BrowserView will also delete the SidePanel.
+    pref_change_registrar_.Add(
+        prefs::kSidePanelHorizontalAlignment,
+        base::BindRepeating(&BrowserView::UpdateSidePanelHorizontalAlignment,
+                            base::Unretained(browser_view)));
+  } else {
+    resize_area_->SetVisible(false);
+  }
+
   SetVisible(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // TODO(pbos): Reconsider if SetPanelWidth() should add borders, if so move
   // accounting for the border into SetPanelWidth(), otherwise remove this TODO.
-  constexpr int kDefaultWidth = 320;
-  SetPanelWidth(kDefaultWidth + kBorderInsets.width());
+  SetPanelWidth(GetMinimumSize().width());
 
   SetBorder(views::CreateEmptyBorder(kBorderInsets));
 
@@ -173,6 +195,25 @@ void SidePanel::SetPanelWidth(int width) {
   SetPreferredSize(gfx::Size(width, 1));
 }
 
+void SidePanel::SetHorizontalAlignment(HorizontalAlignment alignment) {
+  horizontal_alignment_ = alignment;
+}
+
+SidePanel::HorizontalAlignment SidePanel::GetHorizontalAlignment() {
+  return horizontal_alignment_;
+}
+
+bool SidePanel::IsRightAligned() {
+  return GetHorizontalAlignment() == kAlignRight;
+}
+
+gfx::Size SidePanel::GetMinimumSize() const {
+  const int min_side_panel_contents_width = 320;
+  const int min_height = 0;
+  return gfx::Size(min_side_panel_contents_width + kBorderInsets.width(),
+                   min_height);
+}
+
 void SidePanel::ChildVisibilityChanged(View* child) {
   UpdateVisibility();
 }
@@ -181,11 +222,33 @@ void SidePanel::OnChildViewAdded(View* observed_view, View* child) {
   UpdateVisibility();
   // Reorder `border_view_` to be last so that it gets painted on top, even if
   // an added child also paints to a layer.
-  ReorderChildView(border_view_, -1);
+  ReorderChildView(border_view_, children().size());
+  // Reorder `resize_area_` to be last so that it gets painted on top of
+  // `border_view_`, for displaying the resize handle.
+  ReorderChildView(resize_area_, children().size());
+  // The resize area should come before all other side panel children in focus
+  // order.
+  resize_area_->InsertBeforeInFocusList(GetChildrenFocusList().front());
 }
 
 void SidePanel::OnChildViewRemoved(View* observed_view, View* child) {
   UpdateVisibility();
+}
+
+void SidePanel::OnResize(int resize_amount, bool done_resizing) {
+  if (starting_width_on_resize_ < 0) {
+    starting_width_on_resize_ = width();
+  }
+  int proposed_width = starting_width_on_resize_ +
+                       (IsRightAligned() ? -resize_amount : resize_amount);
+  if (done_resizing) {
+    starting_width_on_resize_ = -1;
+  }
+  const int minimum_width = GetMinimumSize().width();
+  if (proposed_width < minimum_width) {
+    proposed_width = minimum_width;
+  }
+  SetPanelWidth(proposed_width);
 }
 
 void SidePanel::UpdateVisibility() {
@@ -193,7 +256,7 @@ void SidePanel::UpdateVisibility() {
   // TODO(pbos): Iterate content instead. Requires moving the owned pointer out
   // of owned contents before resetting it.
   for (const auto* view : children()) {
-    if (view == border_view_)
+    if (view == border_view_ || view == resize_area_)
       continue;
 
     if (view->GetVisible()) {

@@ -21,14 +21,13 @@
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/skia/include/third_party/skcms/skcms.h"
+#include "third_party/skia/modules/skcms/skcms.h"
 
 namespace gl {
 struct HDRMetadata;
@@ -377,11 +376,62 @@ bool RRectFFromDict(const base::Value& dict, gfx::RRectF* out) {
   return true;
 }
 
-base::Value MaskFilterInfoToDict(const gfx::MaskFilterInfo& mask_filter_info) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("rounded_corner_bounds",
-              RRectFToDict(mask_filter_info.rounded_corner_bounds()));
+base::Value::Dict LinearGradientToDict(
+    const gfx::LinearGradient& gradient_mask) {
+  base::Value::Dict dict;
+  dict.Set("angle", static_cast<double>(gradient_mask.angle()));
+  dict.Set("step_count", static_cast<int>(gradient_mask.step_count()));
+
+  base::Value::List steps;
+  for (size_t i = 0; i < gradient_mask.step_count(); ++i) {
+    base::Value::Dict step_dict;
+    step_dict.Set("percent",
+                  static_cast<double>(gradient_mask.steps()[i].percent));
+    step_dict.Set("alpha", static_cast<int>(gradient_mask.steps()[i].alpha));
+    steps.Append(std::move(step_dict));
+  }
+  dict.Set("steps", std::move(steps));
+
   return dict;
+}
+
+bool LinearGradientFromDict(const base::Value::Dict& dict,
+                            gfx::LinearGradient* out) {
+  absl::optional<double> angle = dict.FindDouble("angle");
+  absl::optional<int> step_count = dict.FindInt("step_count");
+  if (!angle || !step_count)
+    return false;
+
+  gfx::LinearGradient gradient_mask = gfx::LinearGradient(*angle);
+  const base::Value::List* steps = dict.FindList("steps");
+  if (!steps)
+    return false;
+  for (const base::Value& v : *steps) {
+    const base::Value::Dict* step = v.GetIfDict();
+    if (!step)
+      return false;
+
+    absl::optional<double> percent = step->FindDouble("percent");
+    absl::optional<int> alpha = step->FindInt("alpha");
+    if (!percent || !alpha)
+      return false;
+
+    gradient_mask.AddStep(*percent, *alpha);
+  }
+
+  *out = gradient_mask;
+  return true;
+}
+
+base::Value MaskFilterInfoToDict(const gfx::MaskFilterInfo& mask_filter_info) {
+  base::Value::Dict dict;
+  dict.Set("rounded_corner_bounds",
+           RRectFToDict(mask_filter_info.rounded_corner_bounds()));
+  if (mask_filter_info.HasGradientMask()) {
+    dict.Set("gradient_mask",
+             LinearGradientToDict(*mask_filter_info.gradient_mask()));
+  }
+  return base::Value(std::move(dict));
 }
 
 bool MaskFilterInfoFromDict(const base::Value& dict, gfx::MaskFilterInfo* out) {
@@ -395,7 +445,19 @@ bool MaskFilterInfoFromDict(const base::Value& dict, gfx::MaskFilterInfo* out) {
   gfx::RRectF t_rounded_corner_bounds;
   if (!RRectFFromDict(*rounded_corner_bounds, &t_rounded_corner_bounds))
     return false;
-  *out = gfx::MaskFilterInfo(t_rounded_corner_bounds);
+
+  const base::Value::Dict* gradient_mask =
+      dict.FindDictKey("gradient_mask")->GetIfDict();
+  if (!gradient_mask) {
+    *out = gfx::MaskFilterInfo(t_rounded_corner_bounds);
+    return true;
+  }
+
+  gfx::LinearGradient t_gradient_mask;
+  if (!LinearGradientFromDict(*gradient_mask, &t_gradient_mask))
+    return false;
+
+  *out = gfx::MaskFilterInfo(t_rounded_corner_bounds, t_gradient_mask);
   return true;
 }
 
@@ -512,8 +574,8 @@ base::Value FilterOperationToDict(const cc::FilterOperation& filter) {
     case cc::FilterOperation::DROP_SHADOW:
       dict.SetKey("drop_shadow_offset",
                   PointToDict(filter.drop_shadow_offset()));
-      dict.SetIntKey("drop_shadow_color",
-                     base::bit_cast<int>(filter.drop_shadow_color()));
+      dict.SetKey("drop_shadow_color",
+                  SkColor4fToDict(filter.drop_shadow_color()));
       break;
     case cc::FilterOperation::REFERENCE:
       dict.SetStringKey("image_filter",
@@ -548,7 +610,6 @@ bool FilterOperationFromDict(const base::Value& dict,
       dict.FindDoubleKey("outer_threshold");
   const base::Value* drop_shadow_offset =
       dict.FindDictKey("drop_shadow_offset");
-  absl::optional<int> drop_shadow_color = dict.FindIntKey("drop_shadow_color");
   const std::string* image_filter = dict.FindStringKey("image_filter");
   const base::Value* matrix = dict.FindListKey("matrix");
   absl::optional<int> zoom_inset = dict.FindIntKey("zoom_inset");
@@ -580,13 +641,16 @@ bool FilterOperationFromDict(const base::Value& dict,
     } break;
     case cc::FilterOperation::DROP_SHADOW: {
       gfx::Point offset;
-      if (!drop_shadow_offset || !drop_shadow_color ||
-          !PointFromDict(*drop_shadow_offset, &offset)) {
+      if (!drop_shadow_offset || !PointFromDict(*drop_shadow_offset, &offset)) {
         return false;
       }
       filter.set_drop_shadow_offset(offset);
-      filter.set_drop_shadow_color(
-          base::bit_cast<SkColor>(drop_shadow_color.value()));
+
+      SkColor4f t_drop_shadow_color;
+      if (!ColorFromDict(dict, "drop_shadow_color", &t_drop_shadow_color)) {
+        return false;
+      }
+      filter.set_drop_shadow_color(t_drop_shadow_color);
     } break;
     case cc::FilterOperation::REFERENCE:
       if (!image_filter)
@@ -1030,7 +1094,6 @@ int StringToDrawQuadMaterial(const std::string& str) {
   MAP_STRING_TO_MATERIAL(kCompositorRenderPass)
   MAP_STRING_TO_MATERIAL(kSharedElement)
   MAP_STRING_TO_MATERIAL(kSolidColor)
-  MAP_STRING_TO_MATERIAL(kStreamVideoContent)
   MAP_STRING_TO_MATERIAL(kSurfaceContent)
   MAP_STRING_TO_MATERIAL(kTextureContent)
   MAP_STRING_TO_MATERIAL(kTiledContent)
@@ -1184,17 +1247,6 @@ void SolidColorDrawQuadToDict(const SolidColorDrawQuad* draw_quad,
                    draw_quad->force_anti_aliasing_off);
 }
 
-void StreamVideoDrawQuadToDict(const StreamVideoDrawQuad* draw_quad,
-                               base::Value* dict) {
-  DCHECK(draw_quad);
-  DCHECK(dict);
-  dict->SetKey("uv_top_left", PointFToDict(draw_quad->uv_top_left));
-  dict->SetKey("uv_bottom_right", PointFToDict(draw_quad->uv_bottom_right));
-  DCHECK_EQ(1u, draw_quad->resources.count);
-  dict->SetKey("overlay_resource_size_in_pixels",
-               SizeToDict(draw_quad->overlay_resources.size_in_pixels));
-}
-
 #define MAP_VIDEO_TYPE_TO_STRING(NAME) \
   case gfx::ProtectedVideoType::NAME:  \
     return #NAME;
@@ -1256,6 +1308,12 @@ void TextureDrawQuadToDict(const TextureDrawQuad* draw_quad,
   if (draw_quad->damage_rect.has_value()) {
     dict->SetKey("damage_rect", RectToDict(draw_quad->damage_rect.value()));
   }
+  // Conditionally set is_stream_video to not break backwards-compatibility with
+  // unit test data.
+  // Note: is_video_frame is not being saved in dict.
+  if (draw_quad->is_stream_video) {
+    dict->SetBoolKey("is_stream_video", draw_quad->is_stream_video);
+  }
 }
 
 void TileDrawQuadToDict(const TileDrawQuad* draw_quad, base::Value* dict) {
@@ -1316,7 +1374,6 @@ base::Value DrawQuadToDict(const DrawQuad* draw_quad,
     WRITE_DRAW_QUAD_TYPE_FIELDS(kCompositorRenderPass,
                                 CompositorRenderPassDrawQuad)
     WRITE_DRAW_QUAD_TYPE_FIELDS(kSolidColor, SolidColorDrawQuad)
-    WRITE_DRAW_QUAD_TYPE_FIELDS(kStreamVideoContent, StreamVideoDrawQuad)
     WRITE_DRAW_QUAD_TYPE_FIELDS(kSurfaceContent, SurfaceDrawQuad)
     WRITE_DRAW_QUAD_TYPE_FIELDS(kTextureContent, TextureDrawQuad)
     WRITE_DRAW_QUAD_TYPE_FIELDS(kTiledContent, TileDrawQuad)
@@ -1418,41 +1475,6 @@ bool SolidColorDrawQuadFromDict(const base::Value& dict,
   return true;
 }
 
-bool StreamVideoDrawQuadFromDict(const base::Value& dict,
-                                 const DrawQuadCommon& common,
-                                 StreamVideoDrawQuad* draw_quad) {
-  DCHECK(draw_quad);
-  if (!dict.is_dict())
-    return false;
-  if (common.resources.count != 1u)
-    return false;
-  const base::Value* uv_top_left = dict.FindDictKey("uv_top_left");
-  const base::Value* uv_bottom_right = dict.FindDictKey("uv_bottom_right");
-  const base::Value* overlay_resource_size_in_pixels =
-      dict.FindDictKey("overlay_resource_size_in_pixels");
-
-  if (!uv_top_left || !uv_bottom_right || !overlay_resource_size_in_pixels) {
-    return false;
-  }
-  gfx::PointF t_uv_top_left, t_uv_bottom_right;
-  gfx::Size t_overlay_resource_size_in_pixels;
-  if (!PointFFromDict(*uv_top_left, &t_uv_top_left) ||
-      !PointFFromDict(*uv_bottom_right, &t_uv_bottom_right) ||
-      !SizeFromDict(*overlay_resource_size_in_pixels,
-                    &t_overlay_resource_size_in_pixels)) {
-    return false;
-  }
-
-  const size_t kIndex = StreamVideoDrawQuad::kResourceIdIndex;
-  ResourceId resource_id = common.resources.ids[kIndex];
-
-  draw_quad->SetAll(common.shared_quad_state, common.rect, common.visible_rect,
-                    common.needs_blending, resource_id,
-                    t_overlay_resource_size_in_pixels, t_uv_top_left,
-                    t_uv_bottom_right);
-  return true;
-}
-
 bool SurfaceDrawQuadFromDict(const base::Value& dict,
                              const DrawQuadCommon& common,
                              SurfaceDrawQuad* draw_quad) {
@@ -1538,6 +1560,9 @@ bool TextureDrawQuadFromDict(const base::Value& dict,
       t_background_color, t_vertex_opacity, y_flipped.value(),
       nearest_neighbor.value(), secure_output_only.value(),
       static_cast<gfx::ProtectedVideoType>(protected_video_type_index));
+
+  draw_quad->is_stream_video =
+      dict.FindBoolKey("is_stream_video").value_or(false);
 
   gfx::Rect t_damage_rect;
   if (damage_rect && RectFromDict(*damage_rect, &t_damage_rect)) {
@@ -1707,7 +1732,6 @@ bool QuadListFromList(const base::Value& list,
     switch (common->material) {
       GET_QUAD_FROM_DICT(kCompositorRenderPass, CompositorRenderPassDrawQuad)
       GET_QUAD_FROM_DICT(kSolidColor, SolidColorDrawQuad)
-      GET_QUAD_FROM_DICT(kStreamVideoContent, StreamVideoDrawQuad)
       GET_QUAD_FROM_DICT(kSurfaceContent, SurfaceDrawQuad)
       GET_QUAD_FROM_DICT(kTextureContent, TextureDrawQuad)
       GET_QUAD_FROM_DICT(kTiledContent, TileDrawQuad)
@@ -1805,22 +1829,27 @@ bool SharedQuadStateFromDict(const base::Value& dict, SharedQuadState* sqs) {
       dict.FindDoubleKey("de_jelly_delta_y");
 
   if (!quad_to_target_transform || !quad_layer_rect ||
-      !visible_quad_layer_rect || !mask_filter_info || !are_contents_opaque ||
-      !opacity || !blend_mode || !sorting_context_id ||
-      !is_fast_rounded_corner || !de_jelly_delta_y) {
+      !visible_quad_layer_rect || !are_contents_opaque || !opacity ||
+      !blend_mode || !sorting_context_id || !is_fast_rounded_corner ||
+      !de_jelly_delta_y) {
     return false;
   }
   gfx::Transform t_quad_to_target_transform;
   gfx::Rect t_quad_layer_rect, t_visible_quad_layer_rect, t_clip_rect;
-  gfx::MaskFilterInfo t_mask_filter_info;
   if (!TransformFromList(*quad_to_target_transform,
                          &t_quad_to_target_transform) ||
       !RectFromDict(*quad_layer_rect, &t_quad_layer_rect) ||
       !RectFromDict(*visible_quad_layer_rect, &t_visible_quad_layer_rect) ||
-      !MaskFilterInfoFromDict(*mask_filter_info, &t_mask_filter_info) ||
       (clip_rect && !RectFromDict(*clip_rect, &t_clip_rect))) {
     return false;
   }
+
+  gfx::MaskFilterInfo t_mask_filter_info;
+  if (mask_filter_info &&
+      !MaskFilterInfoFromDict(*mask_filter_info, &t_mask_filter_info)) {
+    return false;
+  }
+
   absl::optional<gfx::Rect> clip_rect_opt;
   // Some older files still use the is_clipped field.  If it's present, we'll
   // respect it, and ignore clip_rect if it's false.
@@ -1946,7 +1975,6 @@ const char* DrawQuadMaterialToString(DrawQuad::Material material) {
     MAP_MATERIAL_TO_STRING(kCompositorRenderPass)
     MAP_MATERIAL_TO_STRING(kSharedElement)
     MAP_MATERIAL_TO_STRING(kSolidColor)
-    MAP_MATERIAL_TO_STRING(kStreamVideoContent)
     MAP_MATERIAL_TO_STRING(kSurfaceContent)
     MAP_MATERIAL_TO_STRING(kTextureContent)
     MAP_MATERIAL_TO_STRING(kTiledContent)

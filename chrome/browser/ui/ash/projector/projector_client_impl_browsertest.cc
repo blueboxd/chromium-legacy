@@ -8,9 +8,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/projector/test/mock_projector_client.h"
 #include "ash/public/cpp/projector/projector_client.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
+#include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ProjectorClientTest, GetDriveFsMountPointPath) {
   ASSERT_FALSE(client()->IsDriveFsMountFailed());
 
   base::FilePath mounted_path;
-  ASSERT_TRUE(client()->GetDriveFsMountPointPath(&mounted_path));
+  ASSERT_TRUE(client()->GetBaseStoragePath(&mounted_path));
   ASSERT_EQ(browser()->profile()->GetPath().Append("drivefs"), mounted_path);
 }
 
@@ -332,23 +332,38 @@ class ProjectorClientManagedTest
 };
 
 IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest,
-                       CantOpenProjectorAppWithoutPolicy) {
+                       OpenProjectorAppWithoutPolicy) {
   auto* profile = browser()->profile();
   SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
 
   client()->OpenProjectorApp();
   FlushSystemWebAppLaunchesForTesting(profile);
 
-  // Verify that Projector App is not opened.
+  // Verify that Projector App is opened.
   Browser* app_browser =
-      FindSystemWebAppBrowser(profile, SystemWebAppType::PROJECTOR);
-  EXPECT_FALSE(app_browser);
+      FindSystemWebAppBrowser(profile, ash::SystemWebAppType::PROJECTOR);
+
+  if (is_child()) {
+    // Can't open for Family Link account.
+    EXPECT_FALSE(app_browser);
+  } else {
+    // Can open for other managed account.
+    EXPECT_TRUE(app_browser);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest,
+                       PRE_DisableThenEnablePolicy) {
+  auto* profile = browser()->profile();
+  // By the time the test runs, SystemWebAppManager already marked the app as
+  // disabled because the policy is not set. This PRE step, sets the policy so
+  // that the app is correctly enabled when the actual test runs.
+  profile->GetPrefs()->SetBoolean(GetPolicy(), true);
 }
 
 // Prevents a regression to b/230779397.
 IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   auto* profile = browser()->profile();
-  profile->GetPrefs()->SetBoolean(GetPolicy(), true);
   SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
 
   client()->OpenProjectorApp();
@@ -369,6 +384,12 @@ IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   profile->GetPrefs()->SetBoolean(GetPolicy(), false);
   // The Projector app immediately closes to prevent further access.
   EXPECT_TRUE(app_browser->IsAttemptingToCloseBrowser());
+
+  auto* web_app_provider = web_app::WebAppProvider::GetForTest(profile);
+  base::RunLoop loop;
+  web_app_provider->on_registry_ready().Post(FROM_HERE, loop.QuitClosure());
+  loop.Run();
+
   // We can't uninstall the Projector SWA until the next session, but the icon
   // is greyed out and disabled.
   EXPECT_EQ(apps::Readiness::kDisabledByPolicy,
@@ -379,6 +400,11 @@ IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   // The app can re-enable too if it's already installed and the policy flips to
   // true.
   profile->GetPrefs()->SetBoolean(GetPolicy(), true);
+
+  base::RunLoop loop2;
+  web_app_provider->on_registry_ready().Post(FROM_HERE, loop2.QuitClosure());
+  loop2.Run();
+
   EXPECT_EQ(apps::Readiness::kReady,
             GetAppReadiness(kChromeUITrustedProjectorSwaAppId));
   EXPECT_FALSE(apps::IconEffects::kBlocked &

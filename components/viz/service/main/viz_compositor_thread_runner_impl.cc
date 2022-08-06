@@ -26,9 +26,9 @@
 #include "components/viz/service/frame_sinks/gmb_video_frame_pool_context_provider_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/performance_hint/hint_session.h"
+#include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
-#include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "ui/gfx/switches.h"
@@ -236,6 +236,7 @@ void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
   frame_sink_manager_.reset();
   hint_session_factory_.reset();
   output_surface_provider_.reset();
+  gmb_video_frame_pool_context_provider_.reset();
   gpu_memory_buffer_manager_.reset();
   server_shared_bitmap_manager_.reset();
 }

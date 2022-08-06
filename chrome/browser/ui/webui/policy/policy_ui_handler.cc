@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -38,6 +39,7 @@
 #include "chrome/browser/policy/status_provider/cloud_policy_core_status_provider.h"
 #include "chrome/browser/policy/status_provider/status_provider_util.h"
 #include "chrome/browser/policy/status_provider/user_cloud_policy_status_provider.h"
+#include "chrome/browser/policy/value_provider/value_provider_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/managed_ui.h"
@@ -112,39 +114,23 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/manifest.h"
-#include "extensions/common/manifest_constants.h"
+#include "chrome/browser/policy/value_provider/extension_policies_value_provider.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include <windows.h>
-
-#include <DSRole.h>
-
-#include "chrome/browser/google/google_update_policy_fetcher_win.h"
-#include "chrome/browser/policy/status_provider/updater_status_provider.h"
-#include "chrome/install_static/install_util.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
+#include "chrome/browser/policy/status_provider/updater_status_and_value_provider.h"
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 PolicyUIHandler::PolicyUIHandler() = default;
 
 PolicyUIHandler::~PolicyUIHandler() {
-  GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
-  GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
+  GetPolicyService(Profile::FromWebUI(web_ui()))
+      ->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
                                          ->GetOriginalProfile()
                                          ->GetPolicySchemaRegistryService()
                                          ->registry();
   registry->RemoveObserver(this);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
-      ->RemoveObserver(this);
-#endif
 
   if (export_policies_select_file_dialog_) {
     export_policies_select_file_dialog_->ListenerDestroyed();
@@ -306,38 +292,43 @@ void PolicyUIHandler::RegisterMessages() {
       std::make_unique<DevicePolicyStatusProviderLacros>();
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  ReloadUpdaterPoliciesAndState();
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
   if (!user_status_provider_.get())
     user_status_provider_ = std::make_unique<policy::PolicyStatusProvider>();
   if (!device_status_provider_.get())
     device_status_provider_ = std::make_unique<policy::PolicyStatusProvider>();
   if (!machine_status_provider_.get())
     machine_status_provider_ = std::make_unique<policy::PolicyStatusProvider>();
-  if (!updater_status_provider_.get())
-    updater_status_provider_ = std::make_unique<policy::PolicyStatusProvider>();
 
   auto update_callback(base::BindRepeating(&PolicyUIHandler::SendStatus,
                                            base::Unretained(this)));
   user_status_provider_->SetStatusChangeCallback(update_callback);
   device_status_provider_->SetStatusChangeCallback(update_callback);
   machine_status_provider_->SetStatusChangeCallback(update_callback);
-  updater_status_provider_->SetStatusChangeCallback(update_callback);
+
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  updater_status_and_value_provider_ =
+      std::make_unique<UpdaterStatusAndValueProvider>(
+          Profile::FromWebUI(web_ui()));
+  policy_value_provider_observations_.AddObservation(
+      updater_status_and_value_provider_.get());
+  updater_status_and_value_provider_->SetStatusChangeCallback(update_callback);
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(g_browser_process->local_state());
   pref_change_registrar_->Add(
       enterprise_reporting::kLastUploadSucceededTimestamp, update_callback);
 
-  GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
-  GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
+  GetPolicyService(Profile::FromWebUI(web_ui()))
+      ->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
-      ->AddObserver(this);
-#endif
+  extension_policies_value_provider_ =
+      std::make_unique<ExtensionPoliciesValueProvider>(
+          Profile::FromWebUI(web_ui()));
+  policy_value_provider_observations_.AddObservation(
+      extension_policies_value_provider_.get());
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosService* service = chromeos::LacrosService::Get();
@@ -386,21 +377,6 @@ void PolicyUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void PolicyUIHandler::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
-  SendPolicies();
-}
-
-void PolicyUIHandler::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionReason reason) {
-  SendPolicies();
-}
-#endif
-
 void PolicyUIHandler::OnSchemaRegistryUpdated(bool has_new_schemas) {
   // Update UI when new schema is added.
   if (has_new_schemas) {
@@ -414,8 +390,12 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   SendPolicies();
 }
 
-base::Value PolicyUIHandler::GetPolicyNames() {
-  base::Value names(base::Value::Type::DICTIONARY);
+void PolicyUIHandler::OnPolicyValueChanged() {
+  SendPolicies();
+}
+
+base::Value::Dict PolicyUIHandler::GetPolicyNames() {
+  base::Value::Dict names;
   Profile* profile = Profile::FromWebUI(web_ui());
   policy::SchemaRegistry* registry = profile->GetOriginalProfile()
                                          ->GetPolicySchemaRegistryService()
@@ -423,47 +403,37 @@ base::Value PolicyUIHandler::GetPolicyNames() {
   scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   // Add Chrome policy names.
-  base::Value chrome_policy_names(base::Value::Type::LIST);
+  base::Value::List chrome_policy_names;
   policy::PolicyNamespace chrome_ns(policy::POLICY_DOMAIN_CHROME, "");
   const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
   for (auto it = chrome_schema->GetPropertiesIterator(); !it.IsAtEnd();
        it.Advance()) {
-    chrome_policy_names.Append(base::Value(it.key()));
+    chrome_policy_names.Append(it.key());
   }
-  base::Value chrome_values(base::Value::Type::DICTIONARY);
-  chrome_values.SetStringKey("name", "Chrome Policies");
-  chrome_values.SetKey("policyNames", std::move(chrome_policy_names));
-  names.SetKey("chrome", std::move(chrome_values));
+  base::Value::Dict chrome_values;
+  chrome_values.Set("name", "Chrome Policies");
+  chrome_values.Set("policyNames", std::move(chrome_policy_names));
+  names.Set("chrome", std::move(chrome_values));
 
 #if !BUILDFLAG(IS_CHROMEOS)
   // Add precedence policy names.
-  base::Value precedence_policy_names(base::Value::Type::LIST);
+  base::Value::List precedence_policy_names;
   for (auto* policy : policy::metapolicy::kPrecedence) {
-    precedence_policy_names.Append(base::Value(policy));
+    precedence_policy_names.Append(policy);
   }
-  base::Value precedence_values(base::Value::Type::DICTIONARY);
-  precedence_values.SetStringKey("name", "Policy Precedence");
-  precedence_values.SetKey("policyNames", std::move(precedence_policy_names));
-  names.SetKey("precedence", std::move(precedence_values));
+  base::Value::Dict precedence_values;
+  precedence_values.Set("name", "Policy Precedence");
+  precedence_values.Set("policyNames", std::move(precedence_policy_names));
+  names.Set("precedence", std::move(precedence_values));
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (updater_policies_) {
-    base::Value updater_policies(base::Value::Type::DICTIONARY);
-    updater_policies.SetStringKey("name", "Google Update Policies");
-    updater_policies.SetKey("policyNames", GetGoogleUpdatePolicyNames());
-    names.SetKey("updater", std::move(updater_policies));
-  }
+  names.Merge(updater_status_and_value_provider_->GetNames());
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy names.
-  AddExtensionPolicyNames(&names, policy::POLICY_DOMAIN_EXTENSIONS);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  AddExtensionPolicyNames(&names, policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
+  names.Merge(extension_policies_value_provider_->GetNames());
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   return names;
@@ -472,78 +442,28 @@ base::Value PolicyUIHandler::GetPolicyNames() {
 base::Value::List PolicyUIHandler::GetPolicyValues() {
   auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
       web_ui()->GetWebContents()->GetBrowserContext());
-
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (updater_policies_) {
-    return policy::ArrayPolicyConversions(std::move(client))
-        .EnableConvertValues(true)
-        .SetDropDefaultValues(true)
-        .WithUpdaterPolicies(
-            std::make_unique<policy::PolicyMap>(updater_policies_->Clone()))
-        .WithUpdaterPolicySchemas(GetGoogleUpdatePolicySchemas())
-        .ToValueList();
-  }
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
   auto policy_conversions = policy::ArrayPolicyConversions(std::move(client));
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   policy_conversions.WithAdditionalChromePolicies(device_policy_.Clone());
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  return policy_conversions.EnableConvertValues(true).ToValueList();
-}
+  // Disable extension policies in `policy_conversions` as the extension
+  // policies will be retrieved by `extension_policies_value_provider_` if
+  // extension policies are enabled with build flags.
+  base::Value::List policy_values = policy_conversions.EnableConvertValues(true)
+                                        .EnableExtensionPolicies(false)
+                                        .ToValueList();
 
-void PolicyUIHandler::AddExtensionPolicyNames(
-    base::Value* names,
-    policy::PolicyDomain policy_domain) {
-  DCHECK(names->is_dict());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  Profile* extension_profile =
-      policy_domain == policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS
-          ? ash::ProfileHelper::GetSigninProfile()
-          : Profile::FromWebUI(web_ui());
-#else   // BUILDFLAG(IS_CHROMEOS_ASH)
-  Profile* extension_profile = Profile::FromWebUI(web_ui());
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  scoped_refptr<policy::SchemaMap> schema_map =
-      extension_profile->GetOriginalProfile()
-          ->GetPolicySchemaRegistryService()
-          ->registry()
-          ->schema_map();
-
-  const extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(extension_profile);
-  std::unique_ptr<extensions::ExtensionSet> extension_set =
-      registry->GenerateInstalledExtensionsSet();
-
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       *extension_set) {
-    // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->FindPath(
-            extensions::manifest_keys::kStorageManagedSchema)) {
-      continue;
-    }
-    base::Value extension_value(base::Value::Type::DICTIONARY);
-    extension_value.SetStringKey("name", extension->name());
-    const policy::Schema* schema = schema_map->GetSchema(
-        policy::PolicyNamespace(policy_domain, extension->id()));
-    base::Value policy_names(base::Value::Type::LIST);
-    if (schema && schema->valid()) {
-      // Get policy names from the extension's policy schema.
-      // Store in a map, not an array, for faster lookup on JS side.
-      for (auto prop = schema->GetPropertiesIterator(); !prop.IsAtEnd();
-           prop.Advance()) {
-        policy_names.Append(base::Value(prop.key()));
-      }
-    }
-    extension_value.SetKey("policyNames", std::move(policy_names));
-    names->SetKey(extension->id(), std::move(extension_value));
-  }
+  extension_policies_value_provider_->GetValues(policy_values);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  updater_status_and_value_provider_->GetValues(policy_values);
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+  return policy_values;
 }
 
 void PolicyUIHandler::SendStatus() {
@@ -553,7 +473,7 @@ void PolicyUIHandler::SendStatus() {
   FireWebUIListener("status-updated", GetStatusValue(/*for_webui*/ true));
 }
 
-base::Value PolicyUIHandler::GetStatusValue(bool for_webui) const {
+base::Value::Dict PolicyUIHandler::GetStatusValue(bool for_webui) const {
   base::Value::Dict device_status = device_status_provider_->GetStatus();
   base::Value::Dict user_status = user_status_provider_->GetStatus();
   const std::string* username = user_status.FindString("username");
@@ -561,8 +481,6 @@ base::Value PolicyUIHandler::GetStatusValue(bool for_webui) const {
     user_status.Set("domain", gaia::ExtractDomainName(*username));
 
   base::Value::Dict machine_status = machine_status_provider_->GetStatus();
-
-  base::Value::Dict updater_status = updater_status_provider_->GetStatus();
 
   base::Value::Dict status;
   if (!device_status.empty()) {
@@ -583,12 +501,16 @@ base::Value PolicyUIHandler::GetStatusValue(bool for_webui) const {
     status.Set("user", std::move(user_status));
   }
 
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::Value::Dict updater_status =
+      updater_status_and_value_provider_->GetStatus();
   if (!updater_status.empty()) {
     if (for_webui)
       updater_status.Set("boxLegendKey", "statusUpdater");
     status.Set("updater", std::move(updater_status));
   }
-  return base::Value(std::move(status));
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return status;
 }
 
 void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
@@ -673,11 +595,12 @@ void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
 #endif
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  ReloadUpdaterPoliciesAndState();
+  updater_status_and_value_provider_->Refresh();
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  GetPolicyService()->RefreshPolicies(base::BindOnce(
-      &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
+  GetPolicyService(Profile::FromWebUI(web_ui()))
+      ->RefreshPolicies(base::BindOnce(&PolicyUIHandler::OnRefreshPoliciesDone,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void PolicyUIHandler::HandleCopyPoliciesJson(const base::Value::List& args) {
@@ -728,42 +651,11 @@ void PolicyUIHandler::FileSelectionCanceled(void* params) {
 
 void PolicyUIHandler::SendPolicies() {
   if (IsJavascriptAllowed())
-    FireWebUIListener("policies-updated", GetPolicyNames(),
+    FireWebUIListener("policies-updated", base::Value(GetPolicyNames()),
                       base::Value(GetPolicyValues()));
 }
-
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-void PolicyUIHandler::SetUpdaterPoliciesAndState(
-    std::unique_ptr<GoogleUpdatePoliciesAndState> updater_policies_and_state) {
-  updater_policies_ = std::move(updater_policies_and_state->policies);
-  static_cast<UpdaterStatusProvider*>(updater_status_provider_.get())
-      ->SetUpdaterStatus(std::move(updater_policies_and_state->state));
-  if (updater_policies_)
-    SendPolicies();
-}
-
-void PolicyUIHandler::ReloadUpdaterPoliciesAndState() {
-  if (!updater_status_provider_)
-    updater_status_provider_ = std::make_unique<UpdaterStatusProvider>();
-  base::PostTaskAndReplyWithResult(
-      base::ThreadPool::CreateCOMSTATaskRunner(
-          {base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()})
-          .get(),
-      FROM_HERE, base::BindOnce(&GetGoogleUpdatePoliciesAndState),
-      base::BindOnce(&PolicyUIHandler::SetUpdaterPoliciesAndState,
-                     weak_factory_.GetWeakPtr()));
-}
-
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void PolicyUIHandler::OnRefreshPoliciesDone() {
   SendPolicies();
   SendStatus();
-}
-
-policy::PolicyService* PolicyUIHandler::GetPolicyService() {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->GetWebContents()->GetBrowserContext());
-  return profile->GetProfilePolicyConnector()->policy_service();
 }

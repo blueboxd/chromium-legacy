@@ -49,7 +49,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #include "components/feedback/feedback_common.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_util.h"
@@ -82,6 +82,7 @@ std::string GetCompressedHistograms() {
 void MaybeProceedWithProfile(base::OnceCallback<void(Profile*)> callback,
                              Profile* profile,
                              bool proceed) {
+  LOG_IF(ERROR, !proceed) << "Not proceeding after LacrosFirstRun";
   std::move(callback).Run(proceed ? profile : nullptr);
 }
 
@@ -93,6 +94,7 @@ void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
   DCHECK(callback);
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL:
+      LOG(ERROR) << "Profile creation failed.";
       // Profile creation failed, show the profile picker instead.
       ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
           ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
@@ -106,8 +108,7 @@ void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
 
       auto* fre_service =
           LacrosFirstRunServiceFactory::GetForBrowserContext(profile);
-      DCHECK(fre_service);
-      if (can_trigger_fre && fre_service->ShouldOpenFirstRun()) {
+      if (fre_service && can_trigger_fre && fre_service->ShouldOpenFirstRun()) {
         // TODO(https://crbug.com/1313848): Consider taking a
         // `ScopedProfileKeepAlive`.
         fre_service->OpenFirstRunIfNeeded(
@@ -160,16 +161,16 @@ BrowserServiceLacros::BrowserServiceLacros() {
                               weak_ptr_factory_.GetWeakPtr()));
 
   auto* lacros_service = chromeos::LacrosService::Get();
-  const auto* init_params = chromeos::BrowserInitParams::Get();
+  const auto* init_params = chromeos::BrowserParamsProxy::Get();
 
-  if (init_params->initial_keep_alive ==
+  if (init_params->InitialKeepAlive() ==
       crosapi::mojom::BrowserInitParams::InitialKeepAlive::kUnknown) {
     // ash-chrome is too old, so for backward compatibility fallback to the old
     // way, which is "if launched with kDoNotOpenWindow, run the lacro process
     // on background, and reset the state when a Browser instance is created."
     // Thus, if a user creates a browser window then close it, Lacros is
     // terminated, but ash-chrome has responsibility to re-launch it soon.
-    if (init_params->initial_browser_action ==
+    if (init_params->InitialBrowserAction() ==
         crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow) {
       keep_alive_ = std::make_unique<ScopedKeepAlive>(
           KeepAliveOrigin::BROWSER_PROCESS_LACROS,
@@ -177,7 +178,7 @@ BrowserServiceLacros::BrowserServiceLacros() {
       BrowserList::AddObserver(this);
     }
   } else {
-    if (init_params->initial_keep_alive ==
+    if (init_params->InitialKeepAlive() ==
         crosapi::mojom::BrowserInitParams::InitialKeepAlive::kEnabled) {
       keep_alive_ = std::make_unique<ScopedKeepAlive>(
           KeepAliveOrigin::BROWSER_PROCESS_LACROS,
@@ -536,7 +537,7 @@ void BrowserServiceLacros::NewFullscreenWindowWithProfile(
 
   browser->window()->Show();
 
-  if (chromeos::BrowserInitParams::Get()->session_type ==
+  if (chromeos::BrowserParamsProxy::Get()->SessionType() ==
       crosapi::mojom::SessionType::kWebKioskSession) {
     KioskSessionServiceLacros::Get()->InitWebKioskSession(browser, url);
   }

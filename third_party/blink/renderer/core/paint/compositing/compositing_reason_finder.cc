@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -146,13 +147,7 @@ static CompositingReasons DirectReasonsForSVGChildPaintProperties(
   // scene that contains it.
   auto reasons = CompositingReasonsFor3DSceneLeaf(object);
 
-  // Disable compositing of SVG, except in the cases where it is required for
-  // correctness, if there is clip-path or mask to avoid hairline along the
-  // edges. TODO(crbug.com/1171601): Fix the root cause.
   const ComputedStyle& style = object.StyleRef();
-  if (style.HasClipPath() || style.HasMask())
-    return reasons;
-
   reasons |= CompositingReasonFinder::CompositingReasonsForAnimation(object);
   reasons |= CompositingReasonsForWillChange(style);
   // Exclude will-change for other properties some of which don't apply to SVG
@@ -170,6 +165,14 @@ static CompositingReasons CompositingReasonsForViewportScrollEffect(
     const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
     return CompositingReason::kNone;
+
+  // The viewport scroll effect should never apply to objects inside an
+  // embedded frame tree.
+  if (!layout_object.GetFrame()->Tree().Top().IsOutermostMainFrame())
+    return CompositingReason::kNone;
+
+  DCHECK_EQ(layout_object.GetFrame()->IsMainFrame(),
+            layout_object.GetFrame()->IsOutermostMainFrame());
 
   // Objects inside an iframe that's the root scroller should get the same
   // "pushed by top controls" behavior as for the main frame.
@@ -189,7 +192,7 @@ static CompositingReasons CompositingReasonsForViewportScrollEffect(
   // turn ensures that a TransformNode is created (for fixed elements) in cc.
   if (RuntimeEnabledFeatures::FixedElementsDontOverscrollEnabled())
     reasons |= CompositingReason::kFixedToViewport;
-  
+
   if (layout_object.StyleRef().IsFixedToBottom())
     reasons |= CompositingReason::kAffectedByOuterViewportBoundsDelta;
 
@@ -413,15 +416,21 @@ CompositingReasonFinder::CompositingReasonsForScrollDependentPosition(
       if (frame_view->LayoutViewport()->HasOverflow())
         reasons |= CompositingReason::kFixedPosition;
     }
+
+    if (box->AnchorScrollContainer())
+      reasons |= CompositingReason::kAnchorScroll;
   }
 
   // Don't promote sticky position elements that cannot move with scrolls.
   // We check for |HasOverflow| instead of |ScrollsOverflow| to ensure sticky
   // position elements are composited under overflow: hidden, which can still
   // have smooth scroll animations.
-  if (layer.SticksToScroller() &&
-      layer.AncestorScrollContainerLayer()->GetScrollableArea()->HasOverflow())
-    reasons |= CompositingReason::kStickyPosition;
+  if (const auto* constraints = layer.GetLayoutObject().StickyConstraints()) {
+    if (!constraints->is_fixed_to_view &&
+        constraints->containing_scroll_container_layer->GetScrollableArea()
+            ->HasOverflow())
+      reasons |= CompositingReason::kStickyPosition;
+  }
 
   return reasons;
 }

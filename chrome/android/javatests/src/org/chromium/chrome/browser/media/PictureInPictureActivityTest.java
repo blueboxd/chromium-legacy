@@ -5,9 +5,12 @@
 package org.chromium.chrome.browser.media;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.util.Rational;
+import android.view.View;
 
 import androidx.annotation.RequiresApi;
 import androidx.test.filters.MediumTest;
@@ -31,11 +35,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -52,6 +58,7 @@ import java.util.concurrent.TimeoutException;
  * Tests for PictureInPictureActivity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RequiresApi(Build.VERSION_CODES.O)
 public class PictureInPictureActivityTest {
@@ -108,11 +115,12 @@ public class PictureInPictureActivityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     public void testStartActivity() throws Throwable {
-        startPictureInPictureActivity();
+        PictureInPictureActivity activity = startPictureInPictureActivity();
 
         // The LaunchIntoPipHelper should have been called.
         Assert.assertTrue(mBounds != null);
         Criteria.checkThat(mBounds, Matchers.is(mSourceRectHint));
+        testExitOn(activity, () -> activity.close());
     }
 
     @Test
@@ -134,16 +142,19 @@ public class PictureInPictureActivityTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testMakeEnterPictureInPictureWithBadSourceRect() throws Throwable {
         mSourceRectHint.left = -1;
-        startPictureInPictureActivity();
+        PictureInPictureActivity activity = startPictureInPictureActivity();
         // The pip helper should not be called with trivially bad bounds.
         Assert.assertTrue(mBounds == null);
+        testExitOn(activity, () -> activity.close());
     }
 
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testExitOnBackToTab() throws Throwable {
         PictureInPictureActivity activity = startPictureInPictureActivity();
         Configuration newConfig = activity.getResources().getConfiguration();
@@ -152,6 +163,27 @@ public class PictureInPictureActivityTest {
                         -> activity.onPictureInPictureModeChanged(
                                 /*isInPictureInPictureMode=*/false, newConfig));
         verify(mNativeMock, times(1)).onBackToTab(NATIVE_OVERLAY);
+    }
+
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testResize() throws Throwable {
+        PictureInPictureActivity activity = startPictureInPictureActivity();
+        // Resize to some reasonable size, and verify that native is told about it.
+        final int reasonableSize = 10;
+        View view = activity.getViewForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> view.layout(0, 0, reasonableSize, reasonableSize));
+        verify(mNativeMock, times(1))
+                .onViewSizeChanged(NATIVE_OVERLAY, reasonableSize, reasonableSize);
+        // An unreasonably large size should not generate a resize event.
+        final int unreasonableSize = activity.getWindowAndroid().getDisplay().getDisplayWidth();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> view.layout(0, 0, unreasonableSize, unreasonableSize));
+        verify(mNativeMock, times(0)).onViewSizeChanged(anyInt(), anyInt(), anyInt());
+        testExitOn(activity, () -> activity.close());
     }
 
     private WebContents getWebContents() {

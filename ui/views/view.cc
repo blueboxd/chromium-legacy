@@ -286,16 +286,15 @@ Widget* View::GetWidget() {
   return const_cast<Widget*>(const_cast<const View*>(this)->GetWidget());
 }
 
-void View::ReorderChildView(View* view, int index) {
+void View::ReorderChildView(View* view, size_t index) {
   DCHECK_EQ(view->parent_, this);
   const auto i = std::find(children_.begin(), children_.end(), view);
   DCHECK(i != children_.end());
 
   // If |view| is already at the desired position, there's nothing to do.
-  const bool move_to_end =
-      (index < 0) || (static_cast<size_t>(index) >= children_.size());
-  const auto pos = move_to_end ? std::prev(children_.end())
-                               : std::next(children_.begin(), index);
+  const auto pos =
+      std::next(children_.begin(),
+                static_cast<ptrdiff_t>(std::min(index, children_.size() - 1)));
   if (i == pos)
     return;
 
@@ -348,11 +347,11 @@ View::Views::const_iterator View::FindChild(const View* view) const {
   return std::find(children_.cbegin(), children_.cend(), view);
 }
 
-int View::GetIndexOf(const View* view) const {
+absl::optional<size_t> View::GetIndexOf(const View* view) const {
   const auto i = FindChild(view);
-  return i == children_.cend()
-             ? -1
-             : static_cast<int>(std::distance(children_.cbegin(), i));
+  return i == children_.cend() ? absl::nullopt
+                               : absl::make_optional(static_cast<size_t>(
+                                     std::distance(children_.cbegin(), i)));
 }
 
 // Size and disposition --------------------------------------------------------
@@ -524,6 +523,12 @@ gfx::Size View::GetPreferredSize() const {
   if (preferred_size_)
     return *preferred_size_;
   return CalculatePreferredSize();
+}
+
+gfx::Size View::GetPreferredSize(const SizeBounds& available_size) const {
+  if (preferred_size_)
+    return *preferred_size_;
+  return CalculatePreferredSize(available_size);
 }
 
 int View::GetBaseline() const {
@@ -983,7 +988,21 @@ void View::ConvertPointToTarget(const View* source,
     return;
 
   const View* root = GetHierarchyRoot(target);
+#if BUILDFLAG(IS_MAC)
+  // If the root views don't match make sure we are in the same widget tree.
+  // Full screen in macOS creates a child widget that hosts top chrome.
+  // TODO(bur): Remove this check when top chrome can be composited into its own
+  // NSView without the need for a new widget.
+  if (GetHierarchyRoot(source) != root) {
+    const Widget* source_top_level_widget =
+        source->GetWidget()->GetTopLevelWidget();
+    const Widget* target_top_level_widget =
+        target->GetWidget()->GetTopLevelWidget();
+    CHECK_EQ(source_top_level_widget, target_top_level_widget);
+  }
+#else  // IS_MAC
   CHECK_EQ(GetHierarchyRoot(source), root);
+#endif
 
   if (source != root)
     source->ConvertPointForAncestor(root, point);
@@ -1575,7 +1594,7 @@ void View::RemoveAccelerator(const ui::Accelerator& accelerator) {
     return;
   }
 
-  size_t index = i - accelerators_->begin();
+  auto index = static_cast<size_t>(i - accelerators_->begin());
   accelerators_->erase(i);
   if (index >= registered_accelerator_count_) {
     // The accelerator is not registered to FocusManager.
@@ -1945,6 +1964,10 @@ gfx::Size View::CalculatePreferredSize() const {
   if (HasLayoutManager())
     return GetLayoutManager()->GetPreferredSize(this);
   return gfx::Size();
+}
+
+gfx::Size View::CalculatePreferredSize(const SizeBounds& available_size) const {
+  return CalculatePreferredSize();
 }
 
 void View::PreferredSizeChanged() {
@@ -2556,10 +2579,9 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
 
 // Tree operations -------------------------------------------------------------
 
-void View::AddChildViewAtImpl(View* view, int index) {
+void View::AddChildViewAtImpl(View* view, size_t index) {
   CHECK_NE(view, this) << "You cannot add a view as its own child";
-  DCHECK_GE(index, 0);
-  DCHECK_LE(static_cast<size_t>(index), children_.size());
+  DCHECK_LE(index, children_.size());
 
   // TODO(https://crbug.com/942298): Should just DCHECK(!view->parent_);.
   View* parent = view->parent_;
@@ -2578,7 +2600,8 @@ void View::AddChildViewAtImpl(View* view, int index) {
 #if DCHECK_IS_ON()
   DCHECK(!iterating_);
 #endif
-  const auto pos = children_.insert(std::next(children_.cbegin(), index), view);
+  const auto pos = children_.insert(
+      std::next(children_.cbegin(), static_cast<ptrdiff_t>(index)), view);
 
   view->RemoveFromFocusList();
   SetFocusSiblings(view, pos);
@@ -3142,8 +3165,9 @@ void View::RegisterPendingAccelerators() {
     NOTREACHED();
     return;
   }
-  for (std::vector<ui::Accelerator>::const_iterator i(
-           accelerators_->begin() + registered_accelerator_count_);
+  for (std::vector<ui::Accelerator>::const_iterator i =
+           accelerators_->begin() +
+           static_cast<ptrdiff_t>(registered_accelerator_count_);
        i != accelerators_->end(); ++i) {
     accelerator_focus_manager_->RegisterAccelerator(
         *i, ui::AcceleratorManager::kNormalPriority, this);

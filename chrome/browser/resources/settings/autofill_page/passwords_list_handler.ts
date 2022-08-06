@@ -19,6 +19,7 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -32,20 +33,13 @@ import {StoredAccount, SyncBrowserProxyImpl} from '../people_page/sync_browser_p
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
-import {PasswordListItemElement, PasswordMoreActionsClickedEvent} from './password_list_item.js';
+import {PASSWORD_MORE_ACTIONS_CLICKED_EVENT_NAME, PASSWORD_VIEW_PAGE_CLICKED_EVENT_NAME, PasswordListItemElement, PasswordMoreActionsClickedEvent, PasswordViewPageClickedEvent} from './password_list_item.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import {PasswordRemovalMixin, PasswordRemovalMixinInterface} from './password_removal_mixin.js';
 import {PasswordRemoveDialogPasswordsRemovedEvent} from './password_remove_dialog.js';
 import {PasswordRequestorMixin, PasswordRequestorMixinInterface} from './password_requestor_mixin.js';
 import {PasswordRemovalUrlParams} from './password_view.js';
 import {getTemplate} from './passwords_list_handler.html.js';
-
-declare global {
-  interface HTMLElementEventMap {
-    'password-more-actions-clicked': PasswordMoreActionsClickedEvent;
-  }
-}
 
 export interface PasswordsListHandlerElement {
   $: {
@@ -59,6 +53,8 @@ export interface PasswordsListHandlerElement {
     removalToast: CrToastElement,
   };
 }
+
+type FocusConfig = Map<string, string|(() => void)>;
 
 const PasswordsListHandlerElementBase =
     RouteObserverMixin(PasswordRemovalMixin(PasswordRequestorMixin(
@@ -124,7 +120,7 @@ export class PasswordsListHandlerElement extends
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enableSendPasswords');
-        }
+        },
       },
 
       /**
@@ -149,10 +145,22 @@ export class PasswordsListHandlerElement extends
         type: String,
         value: '',
       },
+
+      focusConfig: {
+        type: Object,
+        observer: 'focusConfigChanged_',
+      },
+
+      enablePasswordViewPage_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enablePasswordViewPage');
+        },
+      },
     };
   }
 
-  savedPasswords: MultiStorePasswordUiEntry[];
+  savedPasswords: chrome.passwordsPrivate.PasswordUiEntry[];
   isAccountStoreUser: boolean;
   allowMoveToAccountOption: boolean;
 
@@ -166,12 +174,19 @@ export class PasswordsListHandlerElement extends
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
 
+  focusConfig: FocusConfig;
+  private enablePasswordViewPage_: boolean;
+
   override ready() {
     super.ready();
 
     this.addEventListener(
-        'password-more-actions-clicked',
+        PASSWORD_MORE_ACTIONS_CLICKED_EVENT_NAME,
         this.passwordMoreActionsClickedHandler_);
+
+    this.addEventListener(
+        PASSWORD_VIEW_PAGE_CLICKED_EVENT_NAME,
+        this.onPasswordViewPageClickedEvent);
   }
 
   override connectedCallback() {
@@ -192,17 +207,17 @@ export class PasswordsListHandlerElement extends
     }
 
     const params = Router.getInstance().getQueryParameters();
-    if (!params.get(PasswordRemovalUrlParams.REMOVED_FROM_ACCOUNT) ||
-        !params.get(PasswordRemovalUrlParams.REMOVED_FROM_DEVICE)) {
+    if (!params.get(PasswordRemovalUrlParams.REMOVED_FROM_STORES)) {
       return;
     }
-
     this.displayRemovalNotification_(
-        params.get(PasswordRemovalUrlParams.REMOVED_FROM_ACCOUNT) === 'true',
-        params.get(PasswordRemovalUrlParams.REMOVED_FROM_DEVICE) === 'true');
-    params.delete(PasswordRemovalUrlParams.REMOVED_FROM_ACCOUNT);
-    params.delete(PasswordRemovalUrlParams.REMOVED_FROM_DEVICE);
+        params.get(PasswordRemovalUrlParams.REMOVED_FROM_STORES) as
+        chrome.passwordsPrivate.PasswordStoreSet);
+    params.delete(PasswordRemovalUrlParams.REMOVED_FROM_STORES);
     Router.getInstance().updateRouteParams(params);
+    // TODO(https://crbug.com/1298027): find a way to announce the removal toast
+    // before the first item in the page
+    getAnnouncerInstance().announce(this.removalNotification_);
   }
 
   override disconnectedCallback() {
@@ -233,8 +248,11 @@ export class PasswordsListHandlerElement extends
   override onPasswordRemoveDialogPasswordsRemoved(
       event: PasswordRemoveDialogPasswordsRemovedEvent) {
     super.onPasswordRemoveDialogPasswordsRemoved(event);
-    this.displayRemovalNotification_(
-        event.detail.removedFromAccount, event.detail.removedFromDevice);
+    this.displayRemovalNotification_(event.detail.removedFromStores);
+  }
+
+  private onPasswordViewPageClickedEvent(event: PasswordViewPageClickedEvent) {
+    this.activePassword_ = event.detail;
   }
 
   private isPasswordEditable_() {
@@ -244,7 +262,7 @@ export class PasswordsListHandlerElement extends
   private onMenuEditPasswordTap_() {
     if (this.isPasswordEditable_()) {
       this.requestPlaintextPassword(
-              this.activePassword_!.entry.getAnyId(),
+              this.activePassword_!.entry.id,
               chrome.passwordsPrivate.PlaintextReason.EDIT)
           .then(password => {
             this.set('activePassword_.entry.password', password);
@@ -290,7 +308,7 @@ export class PasswordsListHandlerElement extends
     // Copy to clipboard occurs inside C++ and we don't expect getting
     // result back to javascript.
     this.requestPlaintextPassword(
-            this.activePassword_!.entry.getAnyId(),
+            this.activePassword_!.entry.id,
             chrome.passwordsPrivate.PlaintextReason.COPY)
         .then((_: string) => {
           this.activePassword_ = null;
@@ -308,8 +326,7 @@ export class PasswordsListHandlerElement extends
     if (!this.removePassword(password)) {
       return;
     }
-    this.displayRemovalNotification_(
-        password.isPresentInAccount(), password.isPresentOnDevice());
+    this.displayRemovalNotification_(password.storedIn);
     this.activePassword_ = null;
   }
 
@@ -326,18 +343,22 @@ export class PasswordsListHandlerElement extends
    * At least one of |removedFromAccount| or |removedFromDevice| must be true.
    */
   private displayRemovalNotification_(
-      removedFromAccount: boolean, removedFromDevice: boolean) {
-    assert(removedFromAccount || removedFromDevice);
-    this.removalNotification_ = this.i18n('passwordDeleted');
+      removedFromStores: chrome.passwordsPrivate.PasswordStoreSet) {
     if (this.isAccountStoreUser) {
-      if (removedFromAccount && removedFromDevice) {
-        this.removalNotification_ =
-            this.i18n('passwordDeletedFromAccountAndDevice');
-      } else if (removedFromAccount) {
-        this.removalNotification_ = this.i18n('passwordDeletedFromAccount');
-      } else {
-        this.removalNotification_ = this.i18n('passwordDeletedFromDevice');
+      switch (removedFromStores) {
+        case chrome.passwordsPrivate.PasswordStoreSet.DEVICE:
+          this.removalNotification_ = this.i18n('passwordDeletedFromDevice');
+          break;
+        case chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT:
+          this.removalNotification_ = this.i18n('passwordDeletedFromAccount');
+          break;
+        case chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT:
+          this.removalNotification_ =
+              this.i18n('passwordDeletedFromAccountAndDevice');
+          break;
       }
+    } else {
+      this.removalNotification_ = this.i18n('passwordDeleted');
     }
 
     this.hideToasts_();
@@ -383,11 +404,25 @@ export class PasswordsListHandlerElement extends
    */
   private shouldShowMoveToAccountOption_(): boolean {
     const isFirstSignedInAccountPassword = !!this.activePassword_ &&
-        this.activePassword_.entry.urls.origin.includes(
+        this.activePassword_.entry.urls.signonRealm.includes(
             'accounts.google.com') &&
         this.activePassword_.entry.username === this.firstSignedInAccountEmail_;
     // It's not useful to move a password for an account into that same account.
     return this.allowMoveToAccountOption && !isFirstSignedInAccountPassword;
+  }
+
+  private focusConfigChanged_(_newConfig: FocusConfig, oldConfig: FocusConfig) {
+    if (!this.enablePasswordViewPage_) {
+      return;
+    }
+    assert(!oldConfig);
+    this.focusConfig.set(routes.PASSWORD_VIEW.path, () => {
+      if (!this.activePassword_) {
+        return;
+      }
+      focusWithoutInk(this.activePassword_);
+      this.activePassword_ = null;
+    });
   }
 }
 

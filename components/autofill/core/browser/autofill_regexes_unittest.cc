@@ -12,11 +12,23 @@
 
 #include <string>
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
+
+namespace {
+
+bool MatchesRegex(base::StringPiece16 input,
+                  base::StringPiece16 regex,
+                  std::vector<std::u16string>* groups = nullptr) {
+  static base::NoDestructor<AutofillRegexCache> cache(ThreadSafe(true));
+  return autofill::MatchesRegex(input, *cache->GetRegexPattern(regex), groups);
+}
+
+}  // namespace
 
 struct InputPatternTestCase {
   const char16_t* const input;
@@ -28,12 +40,12 @@ class PositiveSampleTest : public testing::TestWithParam<InputPatternTestCase> {
 
 TEST_P(PositiveSampleTest, SampleRegexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
-  SCOPED_TRACE(test_case.pattern);
-  EXPECT_TRUE(MatchesPattern(test_case.input, test_case.pattern));
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.pattern));
+  EXPECT_TRUE(MatchesRegex(test_case.input, test_case.pattern));
 }
 
-INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
+INSTANTIATE_TEST_SUITE_P(AutofillRegexesTest,
                          PositiveSampleTest,
                          testing::Values(
                              // Empty pattern
@@ -56,12 +68,12 @@ class NegativeSampleTest : public testing::TestWithParam<InputPatternTestCase> {
 
 TEST_P(NegativeSampleTest, SampleRegexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
-  SCOPED_TRACE(test_case.pattern);
-  EXPECT_FALSE(MatchesPattern(test_case.input, test_case.pattern));
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.pattern));
+  EXPECT_FALSE(MatchesRegex(test_case.input, test_case.pattern));
 }
 
-INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
+INSTANTIATE_TEST_SUITE_P(AutofillRegexesTest,
                          NegativeSampleTest,
                          testing::Values(
                              // Empty string
@@ -90,7 +102,7 @@ TEST_P(CaptureTest, SampleRegexes) {
   auto test_case = GetParam();
   std::vector<std::u16string> groups;
   EXPECT_EQ(test_case.matches,
-            MatchesPattern(test_case.input, test_case.pattern, &groups));
+            MatchesRegex(test_case.input, test_case.pattern, &groups));
   EXPECT_THAT(groups, testing::Eq(test_case.groups));
 }
 
@@ -123,9 +135,9 @@ class ExpirationDate2DigitYearPositive
 
 TEST_P(ExpirationDate2DigitYearPositive, ExpirationDate2DigitYearRegexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
   const std::u16string pattern = kExpirationDate2DigitYearRe;
-  EXPECT_TRUE(MatchesPattern(test_case.input, pattern));
+  EXPECT_TRUE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -157,9 +169,9 @@ class ExpirationDate2DigitYearNegative
 
 TEST_P(ExpirationDate2DigitYearNegative, ExpirationDate2DigitYearRegexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
   const std::u16string pattern = kExpirationDate2DigitYearRe;
-  EXPECT_FALSE(MatchesPattern(test_case.input, pattern));
+  EXPECT_FALSE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -198,8 +210,8 @@ class ExpirationDate4DigitYearPositive
 TEST_P(ExpirationDate4DigitYearPositive, ExpirationDate4DigitYearRegexes) {
   auto test_case = GetParam();
   const std::u16string pattern = kExpirationDate4DigitYearRe;
-  SCOPED_TRACE(test_case.input);
-  EXPECT_TRUE(MatchesPattern(test_case.input, pattern));
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
+  EXPECT_TRUE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
@@ -233,8 +245,8 @@ class ExpirationDate4DigitYearNegative
 TEST_P(ExpirationDate4DigitYearNegative, ExpirationDate4DigitYearRegexes) {
   auto test_case = GetParam();
   const std::u16string pattern = kExpirationDate4DigitYearRe;
-  SCOPED_TRACE(test_case.input);
-  EXPECT_FALSE(MatchesPattern(test_case.input, pattern));
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
+  EXPECT_FALSE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -271,9 +283,9 @@ class ZipCodePositive : public testing::TestWithParam<InputTestCase> {};
 
 TEST_P(ZipCodePositive, ZipCodeRegexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
   const std::u16string pattern = kZipCodeRe;
-  EXPECT_TRUE(MatchesPattern(test_case.input, pattern));
+  EXPECT_TRUE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
@@ -286,9 +298,9 @@ class ZipCodeNegative : public testing::TestWithParam<InputTestCase> {};
 
 TEST_P(ZipCodeNegative, ZipCodeRegexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
   const std::u16string pattern = kZipCodeRe;
-  EXPECT_FALSE(MatchesPattern(test_case.input, pattern));
+  EXPECT_FALSE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -302,9 +314,9 @@ class Zip4Positive : public testing::TestWithParam<InputTestCase> {};
 
 TEST_P(Zip4Positive, Zip4Regexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
   const std::u16string pattern = kZip4Re;
-  EXPECT_TRUE(MatchesPattern(test_case.input, pattern));
+  EXPECT_TRUE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
@@ -315,9 +327,9 @@ class Zip4Negative : public testing::TestWithParam<InputTestCase> {};
 
 TEST_P(Zip4Negative, Zip4Regexes) {
   auto test_case = GetParam();
-  SCOPED_TRACE(test_case.input);
+  SCOPED_TRACE(base::UTF16ToUTF8(test_case.input));
   const std::u16string pattern = kZip4Re;
-  EXPECT_FALSE(MatchesPattern(test_case.input, pattern));
+  EXPECT_FALSE(MatchesRegex(test_case.input, pattern));
 }
 
 INSTANTIATE_TEST_SUITE_P(

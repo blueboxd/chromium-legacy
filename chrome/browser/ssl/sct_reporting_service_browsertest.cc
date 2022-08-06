@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
@@ -331,15 +332,17 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
 
-    if (error_count_ > 0) {
-      http_response->set_code(net::HTTP_TOO_MANY_REQUESTS);
-      --error_count_;
-    } else {
-      http_response->set_code(net::HTTP_OK);
-    }
-
     if (request.relative_url.find("hashdance") == std::string::npos) {
       // Request is a report.
+
+      // Check if the server should just return an error for the full report
+      // request, otherwise just return OK.
+      if (error_count_ > 0) {
+        http_response->set_code(net::HTTP_TOO_MANY_REQUESTS);
+        --error_count_;
+      } else {
+        http_response->set_code(net::HTTP_OK);
+      }
       return http_response;
     }
 
@@ -422,7 +425,8 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
 
   base::OnceClosure requests_closure_;
 
-  // How many times the report server should return an error before succeeding.
+  // How many times the report server should return an error before succeeding,
+  // specific to full report requests.
   size_t error_count_ = 0;
 };
 
@@ -922,6 +926,8 @@ IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest, DoNotReportSCTFound) {
 
 IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest,
                        HashdanceReportCountIncremented) {
+  base::HistogramTester histograms;
+
   // Visit an HTTPS page and wait for the full report to be sent.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), https_server()->GetURL("hashdance.test", "/")));
@@ -938,9 +944,51 @@ IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest,
   int report_count = g_browser_process->local_state()->GetInteger(
       prefs::kSCTAuditingHashdanceReportCount);
   EXPECT_EQ(report_count, 1);
+
+  // The histogram is logged *before* the report count is incremented, so the
+  // histogram will only log a report count of zero, once.
+  histograms.ExpectUniqueSample("Security.SCTAuditing.OptOut.ReportCount", 0,
+                                1);
+}
+
+// Test that report count isn't incremented when retrying a single audit report.
+// Regression test for crbug.com/1348313.
+IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest,
+                       HashdanceReportCountNotIncrementedOnRetry) {
+  base::HistogramTester histograms;
+
+  // Don't succeed for max_retries+1, for the *full report sending*, but the
+  // hashdance lookup query will always succeed.
+  set_error_count(16);
+
+  // Visit an HTTPS page and wait for the report to be sent.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("hashdance.test", "/")));
+
+  // Wait until the reporter completes 32 requests (16 lookup queries which
+  // succeed, and 16 full report requests which fail).
+  WaitForRequests(32);
+
+  // Check that 32 requests were seen and contains the expected details.
+  EXPECT_EQ(32u, requests_seen());
+  EXPECT_EQ(
+      "hashdance.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
+
+  // Check that the report was only counted once towards the max-reports limit.
+  int report_count = g_browser_process->local_state()->GetInteger(
+      prefs::kSCTAuditingHashdanceReportCount);
+  EXPECT_EQ(report_count, 1);
+
+  // Retrying sending the same report will only check the report count once the
+  // first time, so the histogram will only log a report count of zero, once.
+  histograms.ExpectUniqueSample("Security.SCTAuditing.OptOut.ReportCount", 0,
+                                1);
 }
 
 IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest, HashdanceReportLimitReached) {
+  base::HistogramTester histograms;
+
   // Override the report count to be the maximum.
   g_browser_process->local_state()->SetInteger(
       prefs::kSCTAuditingHashdanceReportCount, 3);
@@ -953,6 +1001,9 @@ IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest, HashdanceReportLimitReached) {
   EXPECT_EQ(0u, requests_seen());
   SetSafeBrowsingEnabled(false);  // Clears the deduplication cache.
   EXPECT_TRUE(FlushAndCheckZeroReports());
+
+  histograms.ExpectUniqueSample("Security.SCTAuditing.OptOut.ReportCount", 3,
+                                1);
 }
 
 // Wrapper around FilePathWatcher to help tests wait for an auditing report to

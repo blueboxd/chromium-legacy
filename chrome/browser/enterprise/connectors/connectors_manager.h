@@ -9,12 +9,17 @@
 #include "chrome/browser/enterprise/connectors/analysis/analysis_service_settings.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/file_system/service_settings.h"
+#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
 #include "chrome/browser/enterprise/connectors/reporting/reporting_service_settings.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+
+namespace storage {
+class FileSystemURL;
+}
 
 namespace enterprise_connectors {
 
@@ -31,7 +36,8 @@ class ConnectorsManager {
   using FileSystemConnectorsSettings =
       std::map<FileSystemConnector, std::vector<FileSystemServiceSettings>>;
 
-  ConnectorsManager(PrefService* pref_service,
+  ConnectorsManager(ExtensionInstallEventRouter extension_install_router,
+                    PrefService* pref_service,
                     const ServiceProviderConfig* config,
                     bool observe_prefs = true);
   ~ConnectorsManager();
@@ -48,6 +54,13 @@ class ConnectorsManager {
   absl::optional<AnalysisSettings> GetAnalysisSettings(
       const GURL& url,
       AnalysisConnector connector);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  absl::optional<AnalysisSettings> GetAnalysisSettings(
+      content::BrowserContext* context,
+      const storage::FileSystemURL& source_url,
+      const storage::FileSystemURL& destination_url,
+      AnalysisConnector connector);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Validates which settings should be applied to a file system connector
   // against cached policies.
@@ -68,9 +81,8 @@ class ConnectorsManager {
                                                   const std::string& tag);
   absl::optional<GURL> GetLearnMoreUrl(AnalysisConnector connector,
                                        const std::string& tag);
-  absl::optional<bool> GetBypassJustificationRequired(
-      AnalysisConnector connector,
-      const std::string& tag);
+  bool GetBypassJustificationRequired(AnalysisConnector connector,
+                                      const std::string& tag);
 
   std::vector<std::string> GetAnalysisServiceProviderNames(
       AnalysisConnector connector);
@@ -130,6 +142,9 @@ class ConnectorsManager {
   // Used to track changes of connector policies and propagate them in
   // |connector_settings_|.
   PrefChangeRegistrar pref_change_registrar_;
+
+  // An observer to report extension install events via the reporting pipeline.
+  ExtensionInstallEventRouter extension_install_event_router_;
 };
 
 }  // namespace enterprise_connectors

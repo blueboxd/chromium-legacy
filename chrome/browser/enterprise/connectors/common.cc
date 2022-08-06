@@ -123,6 +123,7 @@ ReportingSettings::ReportingSettings(GURL url,
                                      bool per_profile)
     : reporting_url(url), dm_token(dm_token), per_profile(per_profile) {}
 ReportingSettings::ReportingSettings(ReportingSettings&&) = default;
+ReportingSettings::ReportingSettings(const ReportingSettings&) = default;
 ReportingSettings& ReportingSettings::operator=(ReportingSettings&&) = default;
 ReportingSettings::~ReportingSettings() = default;
 
@@ -304,16 +305,16 @@ bool IncludeDeviceInfo(Profile* profile, bool per_profile) {
 
 bool ShouldPromptReviewForDownload(Profile* profile,
                                    download::DownloadDangerType danger_type) {
+  // Review dialog only appears if custom UI has been set by the admin.
   if (danger_type == download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING ||
       danger_type == download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
     return ConnectorsServiceFactory::GetForBrowserContext(profile)
-        ->HasCustomInfoToDisplay(AnalysisConnector::FILE_DOWNLOADED, kDlpTag);
+        ->HasExtraUiToDisplay(AnalysisConnector::FILE_DOWNLOADED, kDlpTag);
   } else if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
              danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
              danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT) {
     return ConnectorsServiceFactory::GetForBrowserContext(profile)
-        ->HasCustomInfoToDisplay(AnalysisConnector::FILE_DOWNLOADED,
-                                 kMalwareTag);
+        ->HasExtraUiToDisplay(AnalysisConnector::FILE_DOWNLOADED, kMalwareTag);
   }
   return false;
 }
@@ -351,10 +352,8 @@ void ShowDownloadReviewDialog(const std::u16string& filename,
           .value_or(GURL());
 
   bool bypass_justification_required =
-      connectors_service
-          ->GetBypassJustificationRequired(AnalysisConnector::FILE_DOWNLOADED,
-                                           tag)
-          .value_or(false);
+      connectors_service->GetBypassJustificationRequired(
+          AnalysisConnector::FILE_DOWNLOADED, tag);
 
   // This dialog opens itself, and is thereafter owned by constrained window
   // code.
@@ -365,6 +364,18 @@ void ShowDownloadReviewDialog(const std::u16string& filename,
           std::move(discard_closure), download_item),
       web_contents, safe_browsing::DeepScanAccessPoint::DOWNLOAD,
       /* file_count */ 1, state, download_item);
+}
+
+bool CloudResultIsFailure(safe_browsing::BinaryUploadService::Result result) {
+  return result != safe_browsing::BinaryUploadService::Result::SUCCESS;
+}
+
+bool LocalResultIsFailure(safe_browsing::BinaryUploadService::Result result) {
+  return result != safe_browsing::BinaryUploadService::Result::SUCCESS &&
+         result != safe_browsing::BinaryUploadService::Result::FILE_TOO_LARGE &&
+         result != safe_browsing::BinaryUploadService::Result::FILE_ENCRYPTED &&
+         result != safe_browsing::BinaryUploadService::Result::
+                       DLP_SCAN_UNSUPPORTED_FILE_TYPE;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

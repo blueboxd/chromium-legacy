@@ -83,7 +83,7 @@ apps::mojom::IntentFilterPtr CreateFileURLFilter(
   // kAction == View.
   std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
   action_condition_values.push_back(MakeConditionValue(
-      kIntentActionView, apps::mojom::PatternMatchType::kNone));
+      kIntentActionView, apps::mojom::PatternMatchType::kLiteral));
   auto action_condition = MakeCondition(apps::mojom::ConditionType::kAction,
                                         std::move(action_condition_values));
   intent_filter->conditions.push_back(std::move(action_condition));
@@ -129,7 +129,7 @@ apps::mojom::IntentFilterPtr CreateMimeTypeShareFilter(
 
   std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
   action_condition_values.push_back(MakeConditionValue(
-      kIntentActionSend, apps::mojom::PatternMatchType::kNone));
+      kIntentActionSend, apps::mojom::PatternMatchType::kLiteral));
   auto action_condition = MakeCondition(apps::mojom::ConditionType::kAction,
                                         std::move(action_condition_values));
   intent_filter->conditions.push_back(std::move(action_condition));
@@ -172,8 +172,7 @@ apps::IntentFilters CreateShareIntentFiltersFromShareTarget(
   if (!content_types.empty()) {
     const std::vector<std::string> intent_actions(
         {kIntentActionSend, kIntentActionSendMultiple});
-    filters.push_back(apps::ConvertMojomIntentFilterToIntentFilter(
-        CreateFileFilter(intent_actions, content_types, {})));
+    filters.push_back(CreateFileFilter(intent_actions, content_types, {}));
   }
 
   return filters;
@@ -205,7 +204,8 @@ std::vector<apps::mojom::IntentFilterPtr> CreateWebAppShareIntentFilters(
   if (!content_types.empty()) {
     const std::vector<std::string> intent_actions(
         {kIntentActionSend, kIntentActionSendMultiple});
-    filters.push_back(CreateFileFilter(intent_actions, content_types, {}));
+    filters.push_back(apps::ConvertIntentFilterToMojomIntentFilter(
+        CreateFileFilter(intent_actions, content_types, {})));
   }
 
   return filters;
@@ -226,9 +226,8 @@ apps::IntentFilters CreateIntentFiltersFromFileHandlers(
         file_extensions.push_back(extension);
       }
     }
-    filters.push_back(
-        apps::ConvertMojomIntentFilterToIntentFilter(CreateFileFilter(
-            {kIntentActionView}, mime_types, file_extensions, action_url)));
+    filters.push_back(CreateFileFilter({kIntentActionView}, mime_types,
+                                       file_extensions, action_url));
   }
 
   return filters;
@@ -250,8 +249,9 @@ std::vector<apps::mojom::IntentFilterPtr> CreateWebAppFileHandlerIntentFilters(
         file_extensions.push_back(extension);
       }
     }
-    filters.push_back(CreateFileFilter({kIntentActionView}, mime_types,
-                                       file_extensions, action_url));
+    filters.push_back(
+        apps::ConvertIntentFilterToMojomIntentFilter(CreateFileFilter(
+            {kIntentActionView}, mime_types, file_extensions, action_url)));
   }
 
   return filters;
@@ -364,48 +364,47 @@ apps::mojom::ConditionValuePtr ConvertArcPatternMatcherToMojomConditionValue(
 
 }  // namespace
 
-apps::mojom::IntentFilterPtr CreateFileFilter(
+apps::IntentFilterPtr CreateFileFilter(
     const std::vector<std::string>& intent_actions,
     const std::vector<std::string>& mime_types,
     const std::vector<std::string>& file_extensions,
     const std::string& activity_name,
     bool include_directories) {
   DCHECK(!mime_types.empty() || !file_extensions.empty());
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
   // kAction == View, Share etc.
-  std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
+  apps::ConditionValues action_condition_values;
   for (auto& action : intent_actions) {
-    action_condition_values.push_back(
-        MakeConditionValue(action, apps::mojom::PatternMatchType::kNone));
+    action_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+        action, apps::PatternMatchType::kLiteral));
   }
   if (!action_condition_values.empty()) {
-    auto action_condition = MakeCondition(apps::mojom::ConditionType::kAction,
-                                          std::move(action_condition_values));
-    intent_filter->conditions.push_back(std::move(action_condition));
+    intent_filter->conditions.push_back(std::make_unique<apps::Condition>(
+        apps::ConditionType::kAction, std::move(action_condition_values)));
   }
 
-  std::vector<apps::mojom::ConditionValuePtr> condition_values;
+  apps::ConditionValues file_condition_values;
+
   // Mime types.
   for (auto& mime_type : mime_types) {
-    condition_values.push_back(MakeConditionValue(
-        mime_type, apps::mojom::PatternMatchType::kMimeType));
+    file_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+        mime_type, apps::PatternMatchType::kMimeType));
   }
   // And file extensions.
   for (const std::string& extension : file_extensions) {
-    condition_values.push_back(MakeConditionValue(
-        extension, apps::mojom::PatternMatchType::kFileExtension));
+    file_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+        extension, apps::PatternMatchType::kFileExtension));
   }
   if (include_directories) {
-    condition_values.push_back(
-        MakeConditionValue("", apps::mojom::PatternMatchType::kIsDirectory));
+    file_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+        "", apps::PatternMatchType::kIsDirectory));
   }
 
-  DCHECK(!condition_values.empty());
-  if (!condition_values.empty()) {
-    auto file_condition = MakeCondition(apps::mojom::ConditionType::kFile,
-                                        std::move(condition_values));
-    intent_filter->conditions.push_back(std::move(file_condition));
+  DCHECK(!file_condition_values.empty());
+  if (!file_condition_values.empty()) {
+    intent_filter->conditions.push_back(std::make_unique<apps::Condition>(
+        apps::ConditionType::kFile, std::move(file_condition_values)));
   }
 
   if (!activity_name.empty()) {
@@ -528,9 +527,9 @@ apps::IntentFilters CreateIntentFiltersForChromeApp(
                                         handler.types.end());
     std::vector<std::string> file_extensions(handler.extensions.begin(),
                                              handler.extensions.end());
-    filters.push_back(apps::ConvertMojomIntentFilterToIntentFilter(
-        CreateFileFilter({kIntentActionView}, mime_types, file_extensions,
-                         handler.id, handler.include_directories)));
+    filters.push_back(CreateFileFilter({kIntentActionView}, mime_types,
+                                       file_extensions, handler.id,
+                                       handler.include_directories));
     filters.back()->activity_label = extension->name();
   }
 
@@ -567,9 +566,9 @@ std::vector<apps::mojom::IntentFilterPtr> CreateChromeAppIntentFilters(
                                         handler.types.end());
     std::vector<std::string> file_extensions(handler.extensions.begin(),
                                              handler.extensions.end());
-    filters.push_back(CreateFileFilter({kIntentActionView}, mime_types,
-                                       file_extensions, handler.id,
-                                       handler.include_directories));
+    filters.push_back(apps::ConvertIntentFilterToMojomIntentFilter(
+        CreateFileFilter({kIntentActionView}, mime_types, file_extensions,
+                         handler.id, handler.include_directories)));
     filters.back()->activity_label = extension->name();
   }
 
@@ -629,7 +628,7 @@ apps::IntentFilterPtr CreateNoteTakingFilter() {
   auto intent_filter = std::make_unique<apps::IntentFilter>();
   intent_filter->AddSingleValueCondition(apps::ConditionType::kAction,
                                          kIntentActionCreateNote,
-                                         apps::PatternMatchType::kNone);
+                                         apps::PatternMatchType::kLiteral);
   return intent_filter;
 }
 
@@ -641,7 +640,7 @@ apps::IntentFilterPtr CreateLockScreenFilter() {
   auto intent_filter = std::make_unique<apps::IntentFilter>();
   intent_filter->AddSingleValueCondition(apps::ConditionType::kAction,
                                          kIntentActionStartOnLockScreen,
-                                         apps::PatternMatchType::kNone);
+                                         apps::PatternMatchType::kLiteral);
   return intent_filter;
 }
 
@@ -650,25 +649,22 @@ apps::mojom::IntentFilterPtr CreateLockScreenFilterMojom() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1253219): Use FilePaths in intents to avoid dependency on
-// File Manager.
-apps::mojom::IntentPtr CreateShareIntentFromFiles(
+apps::IntentPtr CreateShareIntentFromFiles(
     Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types) {
   auto file_urls = apps::GetFileSystemUrls(profile, file_paths);
-  return CreateShareIntentFromFiles(file_urls, mime_types);
+  return MakeShareIntent(file_urls, mime_types);
 }
 
-apps::mojom::IntentPtr CreateShareIntentFromFiles(
+apps::IntentPtr CreateShareIntentFromFiles(
     Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types,
     const std::string& share_text,
     const std::string& share_title) {
   auto file_urls = apps::GetFileSystemUrls(profile, file_paths);
-  return CreateShareIntentFromFiles(file_urls, mime_types, share_text,
-                                    share_title);
+  return MakeShareIntent(file_urls, mime_types, share_text, share_title);
 }
 
 base::flat_map<std::string, std::string> CreateArcIntentExtras(
@@ -688,6 +684,9 @@ base::flat_map<std::string, std::string> CreateArcIntentExtras(
     // Slice off the "S." prefix for the key.
     extras.insert(std::make_pair(kIntentExtraStartType + kIntentPrefixLength,
                                  intent->start_type.value()));
+  }
+  if (!intent->extras.empty()) {
+    extras.insert(intent->extras.begin(), intent->extras.end());
   }
   return extras;
 }
@@ -709,6 +708,9 @@ base::flat_map<std::string, std::string> CreateArcIntentExtras(
     // Slice off the "S." prefix for the key.
     extras.insert(std::make_pair(kIntentExtraStartType + kIntentPrefixLength,
                                  intent->start_type.value()));
+  }
+  if (intent->extras.has_value()) {
+    extras.insert(intent->extras->begin(), intent->extras->end());
   }
   return extras;
 }
@@ -799,11 +801,11 @@ const char* ConvertArcToAppServiceIntentAction(const std::string& arc_action) {
 }
 
 std::string CreateLaunchIntent(const std::string& package_name,
-                               const apps::mojom::IntentPtr& intent) {
+                               const apps::IntentPtr& intent) {
   // If |intent| has |ui_bypassed|, |url| or |data|, it is too complex to
   // convert to a string, so return the empty string.
-  if (intent->ui_bypassed != apps::mojom::OptionalBool::kUnknown ||
-      intent->url.has_value() || intent->data.has_value()) {
+  if (intent->ui_bypassed.has_value() || intent->url.has_value() ||
+      intent->data.has_value()) {
     return std::string();
   }
 
@@ -815,10 +817,8 @@ std::string CreateLaunchIntent(const std::string& package_name,
                             ConvertAppServiceToArcIntentAction(intent->action));
 
   // Convert categories.
-  if (intent->categories.has_value()) {
-    for (const auto& category : intent->categories.value()) {
-      ret += base::StringPrintf("%s=%s;", arc::kCategory, category.c_str());
-    }
+  for (const auto& category : intent->categories) {
+    ret += base::StringPrintf("%s=%s;", arc::kCategory, category.c_str());
   }
 
   // Set launch flags.
@@ -861,10 +861,8 @@ std::string CreateLaunchIntent(const std::string& package_name,
                               intent->start_type.value().c_str());
   }
 
-  if (intent->extras.has_value()) {
-    for (auto it : intent->extras.value()) {
-      ret += base::StringPrintf("%s=%s;", it.first.c_str(), it.second.c_str());
-    }
+  for (auto it : intent->extras) {
+    ret += base::StringPrintf("%s=%s;", it.first.c_str(), it.second.c_str());
   }
 
   ret += arc::kEndSuffix;
@@ -893,7 +891,7 @@ arc::IntentFilter ConvertAppServiceToArcIntentFilter(
               /*host=*/condition_value->value, /*port=*/0);
         }
         break;
-      case apps::ConditionType::kPattern:
+      case apps::ConditionType::kPath:
         for (auto& condition_value : condition->condition_values) {
           arc::mojom::PatternType match_type;
           switch (condition_value->match_type) {
@@ -906,7 +904,6 @@ arc::IntentFilter ConvertAppServiceToArcIntentFilter(
             case apps::PatternMatchType::kGlob:
               match_type = arc::mojom::PatternType::PATTERN_SIMPLE_GLOB;
               break;
-            case apps::PatternMatchType::kNone:
             case apps::PatternMatchType::kMimeType:
             case apps::PatternMatchType::kFileExtension:
             case apps::PatternMatchType::kIsDirectory:
@@ -956,7 +953,7 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
     }
 
     action_condition_values.push_back(std::make_unique<apps::ConditionValue>(
-        action, apps::PatternMatchType::kNone));
+        action, apps::PatternMatchType::kLiteral));
   }
   if (!action_condition_values.empty()) {
     auto action_condition = std::make_unique<apps::Condition>(
@@ -970,7 +967,7 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
     apps::ConditionValues scheme_condition_values;
     for (auto& scheme : arc_intent_filter.schemes()) {
       scheme_condition_values.push_back(std::make_unique<apps::ConditionValue>(
-          scheme, apps::PatternMatchType::kNone));
+          scheme, apps::PatternMatchType::kLiteral));
     }
     if (!scheme_condition_values.empty()) {
       auto scheme_condition = std::make_unique<apps::Condition>(
@@ -982,7 +979,7 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
   apps::ConditionValues host_condition_values;
   for (auto& authority : arc_intent_filter.authorities()) {
     auto match_type = authority.wild() ? apps::PatternMatchType::kSuffix
-                                       : apps::PatternMatchType::kNone;
+                                       : apps::PatternMatchType::kLiteral;
     host_condition_values.push_back(
         std::make_unique<apps::ConditionValue>(authority.host(), match_type));
   }
@@ -1027,7 +1024,7 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
   }
   if (!path_condition_values.empty()) {
     auto path_condition = std::make_unique<apps::Condition>(
-        apps::ConditionType::kPattern, std::move(path_condition_values));
+        apps::ConditionType::kPath, std::move(path_condition_values));
     intent_filter->conditions.push_back(std::move(path_condition));
   }
 
@@ -1078,7 +1075,7 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
     }
 
     action_condition_values.push_back(
-        MakeConditionValue(action, apps::mojom::PatternMatchType::kNone));
+        MakeConditionValue(action, apps::mojom::PatternMatchType::kLiteral));
   }
   if (!action_condition_values.empty()) {
     auto action_condition = MakeCondition(apps::mojom::ConditionType::kAction,
@@ -1092,7 +1089,7 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
     std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
     for (auto& scheme : arc_intent_filter.schemes()) {
       scheme_condition_values.push_back(
-          MakeConditionValue(scheme, apps::mojom::PatternMatchType::kNone));
+          MakeConditionValue(scheme, apps::mojom::PatternMatchType::kLiteral));
     }
     if (!scheme_condition_values.empty()) {
       auto scheme_condition = MakeCondition(apps::mojom::ConditionType::kScheme,
@@ -1103,8 +1100,9 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
 
   std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
   for (auto& authority : arc_intent_filter.authorities()) {
-    auto match_type = authority.wild() ? apps::mojom::PatternMatchType::kSuffix
-                                       : apps::mojom::PatternMatchType::kNone;
+    auto match_type = authority.wild()
+                          ? apps::mojom::PatternMatchType::kSuffix
+                          : apps::mojom::PatternMatchType::kLiteral;
     host_condition_values.push_back(
         MakeConditionValue(authority.host(), match_type));
   }
@@ -1137,7 +1135,7 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
         MakeConditionValue("/", apps::mojom::PatternMatchType::kPrefix));
   }
   if (!path_condition_values.empty()) {
-    auto path_condition = MakeCondition(apps::mojom::ConditionType::kPattern,
+    auto path_condition = MakeCondition(apps::mojom::ConditionType::kPath,
                                         std::move(path_condition_values));
     intent_filter->conditions.push_back(std::move(path_condition));
   }
@@ -1368,6 +1366,20 @@ apps::mojom::IntentPtr ConvertCrosapiToAppServiceIntent(
     app_service_intent->data = crosapi_intent->data.value();
 
   return app_service_intent;
+}
+
+crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(
+    std::vector<base::FilePath> file_paths) {
+  auto intent = crosapi::mojom::Intent::New();
+  intent->action = kIntentActionView;
+  std::vector<crosapi::mojom::IntentFilePtr> crosapi_files;
+  for (const auto& file_path : file_paths) {
+    auto crosapi_file = crosapi::mojom::IntentFile::New();
+    crosapi_file->file_path = file_path;
+    crosapi_files.push_back(std::move(crosapi_file));
+  }
+  intent->files = std::move(crosapi_files);
+  return intent;
 }
 
 crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(

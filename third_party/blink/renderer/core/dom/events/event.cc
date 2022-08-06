@@ -88,7 +88,7 @@ Event::Event(const AtomicString& event_type,
       fire_only_non_capture_listeners_at_target_(false),
       copy_event_path_from_underlying_event_(false),
       handling_passive_(PassiveMode::kNotPassiveDefault),
-      event_phase_(0),
+      event_phase_(Event::PhaseType::kNone),
       current_target_(nullptr),
       platform_time_stamp_(platform_time_stamp) {}
 
@@ -192,6 +192,10 @@ bool Event::IsWheelEvent() const {
 }
 
 bool Event::IsPointerEvent() const {
+  return false;
+}
+
+bool Event::IsHighlightPointerEvent() const {
   return false;
 }
 
@@ -305,7 +309,7 @@ void Event::SetHandlingPassive(PassiveMode mode) {
 HeapVector<Member<EventTarget>> Event::PathInternal(ScriptState* script_state,
                                                     EventPathMode mode) const {
   if (!current_target_) {
-    DCHECK_EQ(Event::kNone, event_phase_);
+    DCHECK_EQ(Event::PhaseType::kNone, event_phase_);
     if (!event_path_) {
       // Before dispatching the event
       return HeapVector<Member<EventTarget>>();

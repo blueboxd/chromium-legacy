@@ -85,19 +85,21 @@ void ChromeBluetoothDelegateImplClient::ShowBluetoothDevicePairDialog(
     content::RenderFrameHost* frame,
     const std::u16string& device_identifier,
     content::BluetoothDelegate::PairPromptCallback callback,
-    content::BluetoothDelegate::PairingKind pairing_kind) {
+    content::BluetoothDelegate::PairingKind pairing_kind,
+    const absl::optional<std::u16string>& pin) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
 
   switch (pairing_kind) {
-    case (content::BluetoothDelegate::PairingKind::kProvidePin):
+    case content::BluetoothDelegate::PairingKind::kProvidePin:
       chrome::ShowBluetoothDeviceCredentialsDialog(
           content::WebContents::FromRenderFrameHost(frame), device_identifier,
           std::move(callback));
       break;
-    case (content::BluetoothDelegate::PairingKind::kConfirmOnly):
+    case content::BluetoothDelegate::PairingKind::kConfirmOnly:
+    case content::BluetoothDelegate::PairingKind::kConfirmPinMatch:
       chrome::ShowBluetoothDevicePairConfirmDialog(
           content::WebContents::FromRenderFrameHost(frame), device_identifier,
-          std::move(callback));
+          pin, std::move(callback));
       break;
     default:
       NOTREACHED();

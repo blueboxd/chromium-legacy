@@ -69,13 +69,17 @@ static_library("app") {
     "//base",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//components/crash/core/common:crash_key_lib",
     "//content/public/common:content_descriptors",
     "//third_party/crashpad/crashpad/client",
     "//third_party/crashpad/crashpad/util",
   ]
 
   if (is_ios) {
-    deps -= [ "//content/public/common:content_descriptors" ]
+    deps -= [
+      "//components/crash/core/common:crash_key_lib",
+      "//content/public/common:content_descriptors",
+    ]
   }
 
   if (is_android) {
@@ -288,6 +292,7 @@ source_set("unit_tests") {
     ]
     deps += [
       ":run_as_crashpad_handler",
+      "//components/crash/win:unit_tests",
       "//third_party/breakpad:client",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/crashpad/crashpad/snapshot:snapshot",

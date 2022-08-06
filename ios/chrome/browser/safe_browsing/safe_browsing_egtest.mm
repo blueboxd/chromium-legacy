@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -31,6 +32,7 @@
 
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 namespace {
@@ -88,6 +90,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   std::string _safeContent2;
   // The default value for SafeBrowsingEnabled pref.
   BOOL _safeBrowsingEnabledPrefDefault;
+  // The default value for SafeBrowsingEnhanced pref.
+  BOOL _safeBrowsingEnhancedPrefDefault;
   // The default value for SafeBrowsingProceedAnywayDisabled pref.
   BOOL _proceedAnywayDisabledPrefDefault;
 }
@@ -109,6 +113,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   config.additional_args.push_back(
       std::string("--mark_as_allowlisted_for_real_time=") + _safeURL1.spec());
   config.relaunch_policy = NoForceRelaunchAndResetState;
+  config.features_enabled.push_back(safe_browsing::kEnhancedProtection);
   return config;
 }
 
@@ -158,8 +163,15 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   // Save the existing value of the pref to set it back in tearDown.
   _safeBrowsingEnabledPrefDefault =
       [ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnabled];
-  // Ensure that Safe Browsing opt-out starts in its default (opted-in) state.
+  // Ensure that Safe Browsing opt-out starts in its default (opted-out) state.
   [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSafeBrowsingEnabled];
+
+  // Save the existing value of the pref to set it back in tearDown.
+  _safeBrowsingEnhancedPrefDefault =
+      [ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnhanced];
+  // Ensure that Enhanced Safe Browsing opt-out starts in its default (opted-in)
+  // state.
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSafeBrowsingEnhanced];
 
   // Save the existing value of the pref to set it back in tearDown.
   _proceedAnywayDisabledPrefDefault = [ChromeEarlGrey
@@ -178,6 +190,10 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey setBoolValue:_safeBrowsingEnabledPrefDefault
                    forUserPref:prefs::kSafeBrowsingEnabled];
 
+  // Ensure that Enhanced Safe Browsing is reset to its original value.
+  [ChromeEarlGrey setBoolValue:_safeBrowsingEnhancedPrefDefault
+                   forUserPref:prefs::kSafeBrowsingEnhanced];
+
   // Ensure that Proceed link is reset to its original value.
   [ChromeEarlGrey setBoolValue:_proceedAnywayDisabledPrefDefault
                    forUserPref:prefs::kSafeBrowsingProceedAnywayDisabled];
@@ -189,6 +205,24 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [super tearDown];
 }
 
+#pragma mark - Helper methods
+
+// Instantiates an ElementSelector to detect the enhanced protection message on
+// interstitial page.
+- (ElementSelector*)enhancedProtectionMessage {
+  NSString* selector =
+      @"(function() {"
+       "  var element = document.getElementById('enhanced-protection-message');"
+       "  if (element == null) return false;"
+       "  if (element.classList.contains('hidden')) return false;"
+       "  return true;"
+       "})()";
+  NSString* description = @"Enhanced Safe Browsing message.";
+  return [ElementSelector selectorWithScript:selector
+                         selectorDescription:description];
+}
+
+#pragma mark - Tests
 // Tests that safe pages are not blocked.
 - (void)testSafePage {
   [ChromeEarlGrey loadURL:_safeURL1];
@@ -395,6 +429,63 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey loadURL:_malwareURL];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_MALWARE_V3_HEADING)];
+}
+
+// Tests enabling Enhanced Protection from a Standard Protection state (Default
+// state) from the interstitial blocking page.
+- (void)testDisableAndEnableEnhancedSafeBrowsing {
+  // Disable Enhanced Safe Browsing and verify that a dark red box prompting to
+  // turn on Enhanced Protection is visible.
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSafeBrowsingEnhanced];
+  ElementSelector* enhancedSafeBrowsingMessage =
+      [self enhancedProtectionMessage];
+
+  [ChromeEarlGrey loadURL:_safeURL1];
+  [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
+  [ChromeEarlGrey loadURL:_phishingURL];
+  [ChromeEarlGrey waitForWebStateContainingElement:enhancedSafeBrowsingMessage];
+
+  // Re-enable Enhanced Safe Browsing and verify that a dark red box prompting
+  // to turn on Enhanced Protection is not visible.
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSafeBrowsingEnhanced];
+  [ChromeEarlGrey loadURL:_safeURL2];
+  [ChromeEarlGrey waitForWebStateContainingText:_safeContent2];
+  [ChromeEarlGrey loadURL:_realTimePhishingURL];
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_PHISHING_V4_HEADING)];
+  [ChromeEarlGrey
+      waitForWebStateNotContainingElement:enhancedSafeBrowsingMessage];
+}
+
+- (void)testEnhancedSafeBrowsingLink {
+  // Disable Enhanced Safe Browsing and verify that a dark red box prompting to
+  // turn on Enhanced Protection is visible.
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSafeBrowsingEnhanced];
+  ElementSelector* enhancedSafeBrowsingMessage =
+      [self enhancedProtectionMessage];
+
+  [ChromeEarlGrey loadURL:_safeURL1];
+  [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
+  [ChromeEarlGrey loadURL:_phishingURL];
+  [ChromeEarlGrey waitForWebStateContainingElement:enhancedSafeBrowsingMessage];
+  [ChromeEarlGrey tapWebStateElementWithID:@"enhanced-protection-link"];
+
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kSettingsSafeBrowsingEnhancedProtectionCellId)]
+      performAction:grey_tap()];
+  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnhanced],
+                 @"Failed to toggle-on Enhanced Safe Browsing");
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+
+  // Verify that a dark red box prompting to turn on Enhanced Protection is not
+  // visible.
+  [ChromeEarlGrey loadURL:_phishingURL];
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_PHISHING_V4_HEADING)];
+  [ChromeEarlGrey
+      waitForWebStateNotContainingElement:enhancedSafeBrowsingMessage];
 }
 
 // Tests displaying a warning for an unsafe page in incognito mode, and

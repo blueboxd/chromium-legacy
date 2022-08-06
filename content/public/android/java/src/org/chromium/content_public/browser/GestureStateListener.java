@@ -22,7 +22,7 @@ public abstract class GestureStateListener {
     /**
      * Called when a fling starts.
      */
-    public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {}
+    public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY, boolean isDirectionUp) {}
 
     /**
      * Called when a fling has ended.
@@ -40,7 +40,14 @@ public abstract class GestureStateListener {
     /**
      * Called when a scroll gesture has started.
      */
-    public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {}
+    public void onScrollStarted(int scrollOffsetY, int scrollExtentY, boolean isDirectionUp) {}
+
+    /**
+     * Called when the scroll direction changes.
+     * @param directionUp Whether the scroll direction is up, i.e. swiping down.
+     * @param currentScrollRatio The current scroll ratio of the page.
+     */
+    public void onVerticalScrollDirectionChanged(boolean directionUp, float currentScrollRatio) {}
 
     /**
      * Called when a scroll gesture has stopped.

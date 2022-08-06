@@ -40,7 +40,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/extensions/extensions_dialogs.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -243,9 +243,9 @@ void ShowBlockedByParentDialog(const Extension* extension,
     return;
   }
 
-  chrome::ShowExtensionInstallBlockedByParentDialog(
-      chrome::ExtensionInstalledBlockedByParentDialogAction::kAdd, extension,
-      contents, std::move(done_callback));
+  extensions::ShowExtensionInstallBlockedByParentDialog(
+      extensions::ExtensionInstalledBlockedByParentDialogAction::kAdd,
+      extension, contents, std::move(done_callback));
 }
 
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -871,7 +871,7 @@ bool WebstorePrivateBeginInstallWithManifest3Function::ShouldShowFrictionDialog(
 void WebstorePrivateBeginInstallWithManifest3Function::
     ShowInstallFrictionDialog(content::WebContents* contents) {
   friction_dialog_shown_ = true;
-  chrome::ShowExtensionInstallFrictionDialog(
+  ShowExtensionInstallFrictionDialog(
       contents,
       base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
                          OnFrictionPromptDone,
@@ -933,9 +933,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::
     return;
   }
 
-  chrome::ShowExtensionInstallBlockedDialog(
-      extension->id(), extension->name(), blocked_by_policy_error_message_,
-      image, contents, std::move(done_callback));
+  ShowExtensionInstallBlockedDialog(extension->id(), extension->name(),
+                                    blocked_by_policy_error_message_, image,
+                                    contents, std::move(done_callback));
 }
 
 WebstorePrivateCompleteInstallFunction::
@@ -1294,7 +1294,7 @@ WebstorePrivateGetExtensionStatusFunction::BuildResponseWithoutManifest(
 void WebstorePrivateGetExtensionStatusFunction::OnManifestParsed(
     const ExtensionId& extension_id,
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.value || !result.value->is_dict()) {
+  if (!result.has_value() || !result->is_dict()) {
     Respond(Error(kWebstoreInvalidManifestError));
     return;
   }
@@ -1307,7 +1307,7 @@ void WebstorePrivateGetExtensionStatusFunction::OnManifestParsed(
   std::string error;
   auto dummy_extension =
       Extension::Create(base::FilePath(), mojom::ManifestLocation::kInternal,
-                        base::Value::AsDictionaryValue(*result.value),
+                        base::Value::AsDictionaryValue(*result),
                         Extension::FROM_WEBSTORE, extension_id, &error);
 
   if (!dummy_extension) {

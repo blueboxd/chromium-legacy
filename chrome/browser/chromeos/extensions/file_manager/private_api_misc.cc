@@ -160,8 +160,17 @@ bool ConvertURLsToProvidedInfo(
 
   *file_system = nullptr;
   for (const auto& url : urls) {
-    const storage::FileSystemURL file_system_url(
+    storage::FileSystemURL file_system_url(
         file_system_context->CrackURLInFirstPartyContext(GURL(url)));
+
+    // Convert fusebox URL to its backing (FSP) file system provider URL.
+    if (file_system_url.type() == storage::kFileSystemTypeFuseBox) {
+      std::string fsp_url(url);
+      base::ReplaceFirstSubstringAfterOffset(&fsp_url, 0, "/external/fusebox",
+                                             "/external/");
+      file_system_url =
+          file_system_context->CrackURLInFirstPartyContext(GURL(fsp_url));
+    }
 
     ash::file_system_provider::util::FileSystemURLParser parser(
         file_system_url);
@@ -254,8 +263,7 @@ FileManagerPrivateGetPreferencesFunction::Run() {
       service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
   std::vector<std::string> folder_shortcuts;
   const auto& value_list =
-      service->GetList(ash::prefs::kFilesAppFolderShortcuts)
-          ->GetListDeprecated();
+      service->GetValueList(ash::prefs::kFilesAppFolderShortcuts);
   for (const base::Value& value : value_list) {
     folder_shortcuts.push_back(value.is_string() ? value.GetString() : "");
   }
@@ -770,11 +778,18 @@ FileManagerPrivateConfigureVolumeFunction::Run() {
   using file_manager::VolumeManager;
   VolumeManager* const volume_manager =
       VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
-  base::WeakPtr<Volume> volume =
-      volume_manager->FindVolumeById(params->volume_id);
-  if (!volume.get())
-    return RespondNow(Error("ConfigureVolume: volume with ID * not found.",
-                            params->volume_id));
+  DCHECK(volume_manager);
+
+  std::string volume_id = params->volume_id;
+  volume_manager->ConvertFuseBoxFSPVolumeIdToFSPIfNeeded(&volume_id);
+
+  const base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeById(volume_id);
+  if (!volume) {
+    return RespondNow(
+        Error("ConfigureVolume: volume with ID * not found.", volume_id));
+  }
+
   if (!volume->configurable())
     return RespondNow(Error("Volume not configurable."));
 

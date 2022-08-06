@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -20,6 +20,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {SettingChangeValue} from '../../mojom-webui/search/user_action_recorder.mojom-webui.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
@@ -39,8 +40,10 @@ import {BatteryStatus, DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleB
  */
 const SettingsPowerElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -335,10 +338,8 @@ class SettingsPowerElement extends SettingsPowerElementBase {
         this.$.adaptiveChargingToggle.checked;
     this.browserProxy_.setAdaptiveCharging(enabled);
     recordSettingChange(
-        chromeos.settings.mojom.Setting.kAdaptiveCharging,
-        /** @type {!chromeos.settings.mojom.SettingChangeValue} */ ({
-          boolValue: enabled
-        }));
+        Setting.kAdaptiveCharging,
+        /** @type {!SettingChangeValue} */ ({boolValue: enabled}));
   }
 
   /**
@@ -405,31 +406,31 @@ class SettingsPowerElement extends SettingsPowerElementBase {
         return {
           value: idleBehavior,
           name: loadTimeData.getString('powerIdleDisplayOffSleep'),
-          selected: selected
+          selected: selected,
         };
       case IdleBehavior.DISPLAY_OFF:
         return {
           value: idleBehavior,
           name: loadTimeData.getString('powerIdleDisplayOff'),
-          selected: selected
+          selected: selected,
         };
       case IdleBehavior.DISPLAY_ON:
         return {
           value: idleBehavior,
           name: loadTimeData.getString('powerIdleDisplayOn'),
-          selected: selected
+          selected: selected,
         };
       case IdleBehavior.SHUT_DOWN:
         return {
           value: idleBehavior,
           name: loadTimeData.getString('powerIdleDisplayShutDown'),
-          selected: selected
+          selected: selected,
         };
       case IdleBehavior.STOP_SESSION:
         return {
           value: idleBehavior,
           name: loadTimeData.getString('powerIdleDisplayStopSession'),
-          selected: selected
+          selected: selected,
         };
       default:
         assertNotReached('Unknown IdleBehavior type');

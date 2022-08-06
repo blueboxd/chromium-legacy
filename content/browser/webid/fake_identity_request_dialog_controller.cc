@@ -20,12 +20,13 @@ void FakeIdentityRequestDialogController::ShowAccountsDialog(
     const IdentityProviderMetadata& idp_metadata,
     const ClientIdData& client_id_data,
     IdentityRequestAccount::SignInMode sign_in_mode,
-    AccountSelectionCallback on_selected) {
+    AccountSelectionCallback on_selected,
+    DismissCallback dismiss_callback) {
   DCHECK_GT(accounts.size(), 0ul);
   // Use the provided account, if any. Otherwise use the first one.
   std::move(on_selected)
       .Run(selected_account_ ? *selected_account_ : accounts[0].id,
-           /* is_sign_in= */ true, /* should_embargo=*/false);
+           /* is_sign_in= */ true);
 }
 
 }  // namespace content

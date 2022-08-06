@@ -42,7 +42,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
@@ -63,14 +62,14 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_metadata_store.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
-#include "chromeos/dbus/dbus_thread_manager.h"  // nogncheck
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_metadata_store.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
@@ -95,6 +94,10 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_test_helper.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 using testing::_;
 using testing::AnyNumber;
@@ -196,17 +199,9 @@ class TestManagementUIHandler : public ManagementUIHandler {
  public:
   TestManagementUIHandler() = default;
   explicit TestManagementUIHandler(policy::PolicyService* policy_service)
-      : policy_service_(policy_service) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    dlp_rules_manager_ = new policy::MockDlpRulesManager();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  }
+      : policy_service_(policy_service) {}
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  ~TestManagementUIHandler() override { delete dlp_rules_manager_; }
-#else
   ~TestManagementUIHandler() override = default;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void EnableUpdateRequiredEolInfo(bool enable) {
     update_required_eol_ = enable;
@@ -239,20 +234,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
               (const, override));
   bool IsUpdateRequiredEol() const override { return update_required_eol_; }
 
-  base::Value GetDeviceReportingInfo(
-      const TestDeviceCloudPolicyManagerAsh* manager,
-      const TestDeviceStatusCollector* collector,
-      const policy::SystemLogUploader* uploader,
-      Profile* profile) {
-    base::Value::List report_sources;
-    AddDeviceReportingInfo(&report_sources, collector, uploader, profile);
-    return base::Value(std::move(report_sources));
-  }
-
   const std::string GetDeviceManager() const override { return device_domain; }
-  const policy::DlpRulesManager* GetDlpRulesManager() const override {
-    return dlp_rules_manager_;
-  }
   void SetDeviceDomain(const std::string& domain) { device_domain = domain; }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -260,9 +242,6 @@ class TestManagementUIHandler : public ManagementUIHandler {
   raw_ptr<policy::PolicyService> policy_service_ = nullptr;
   bool update_required_eol_ = false;
   std::string device_domain = "devicedomain.com";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::DlpRulesManager* dlp_rules_manager_ = nullptr;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 // We need to use a different base class for ChromeOS and non ChromeOS case.
@@ -278,10 +257,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ManagementUIHandlerTests()
       : TestingBaseClass(),
-        handler_(&policy_service_),
         device_domain_(u"devicedomain.com"),
         task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
-        state_keys_broker_(&session_manager_client_) {
+        state_keys_broker_(&session_manager_client_),
+        handler_(&policy_service_) {
     ON_CALL(policy_service_, GetPolicies(_))
         .WillByDefault(ReturnRef(empty_policy_map_));
   }
@@ -406,11 +385,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
     crostini_features_ = std::make_unique<crostini::FakeCrostiniFeatures>();
     SetUpConnectManager();
-    // DBusThreadManager::Initialize() has to be called before creating
-    // NetworkHandlerTestHelper.
-    chromeos::DBusThreadManager::Initialize();
     network_handler_test_helper_ =
-        std::make_unique<chromeos::NetworkHandlerTestHelper>();
+        std::make_unique<ash::NetworkHandlerTestHelper>();
     chromeos::NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
     // The |DeviceSettingsTestBase| setup above instantiates
     // |FakeShillManagerClient| with a default environment which will post
@@ -421,7 +397,6 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   void TearDown() override {
     network_handler_test_helper_.reset();
     profile_.reset();
-    chromeos::DBusThreadManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     DeviceSettingsTestBase::TearDown();
   }
@@ -474,12 +449,14 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         /*task_runner=*/task_runner_);
     ON_CALL(testing::Const(handler_), GetDeviceCloudPolicyManager())
         .WillByDefault(Return(manager_.get()));
-    EXPECT_CALL(*static_cast<const policy::MockDlpRulesManager*>(
-                    handler_.GetDlpRulesManager()),
-                IsReportingEnabled)
-        .WillRepeatedly(testing::Return(GetTestConfig().report_dlp_events));
-    return handler_.GetDeviceReportingInfo(manager_.get(), &status_collector,
-                                           &system_log_uploader, GetProfile());
+    base::Value::List result;
+    ManagementUIHandler::AddDeviceReportingInfoForTesting(
+        &result, &status_collector, &system_log_uploader, GetProfile());
+    if (GetTestConfig().report_dlp_events) {
+      ManagementUIHandler::AddDlpDeviceReportingElementForTesting(
+          &result, kManagementReportDlpEvents);
+    }
+    return base::Value(std::move(result));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -582,14 +559,12 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
  protected:
   TestConfig setup_config_;
-  TestManagementUIHandler handler_;
   policy::MockPolicyService policy_service_;
   policy::PolicyMap empty_policy_map_;
   std::u16string device_domain_;
   ContextualManagementSourceUpdate extracted_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
-      network_handler_test_helper_;
+  std::unique_ptr<ash::NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<ash::ScopedStubInstallAttributes> install_attributes_;
   std::unique_ptr<crostini::FakeCrostiniFeatures> crostini_features_;
   TestingPrefServiceSimple local_state_;
@@ -603,6 +578,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::ScopedLacrosServiceTestHelper scoped_lacros_test_helper_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  TestManagementUIHandler handler_;
 };
 
 AssertionResult MessagesToBeEQ(const char* infolist_expr,
@@ -1014,10 +994,10 @@ TEST_F(ManagementUIHandlerTests, NoDeviceReportingInfo) {
   GetTestConfig().managed_account = false;
   SetUpProfileAndHandler();
 
-  base::Value info =
-      handler_.GetDeviceReportingInfo(nullptr, nullptr, nullptr, GetProfile());
+  base::Value::List info =
+      ManagementUIHandler::GetDeviceReportingInfo(nullptr, GetProfile());
 
-  EXPECT_EQ(info.GetListDeprecated().size(), 0u);
+  EXPECT_EQ(info.size(), 0u);
 }
 
 TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
@@ -1136,7 +1116,7 @@ TEST_F(ManagementUIHandlerTests, ProxyServerDisclosureDeviceOffline) {
   chromeos::NetworkStateHandler::NetworkStateList networks;
   chromeos::NetworkHandler::Get()
       ->network_state_handler()
-      ->GetNetworkListByType(chromeos::NetworkTypePattern::Default(),
+      ->GetNetworkListByType(ash::NetworkTypePattern::Default(),
                              true,   // configured_only
                              false,  // visible_only,
                              0,      // no limit to number of results
@@ -1310,6 +1290,10 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
                           "[]", chrome_policies);
   SetConnectorPolicyValue(policy::key::kOnPrintEnterpriseConnector, "[]",
                           chrome_policies);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  SetConnectorPolicyValue(policy::key::kOnFileTransferEnterpriseConnector, "[]",
+                          chrome_policies);
+#endif
   SetConnectorPolicyValue(policy::key::kOnSecurityEventEnterpriseConnector,
                           "[]", chrome_policies);
   profile_no_domain->GetPrefs()->SetInteger(
@@ -1338,6 +1322,11 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   safe_browsing::SetAnalysisConnector(profile_no_domain->GetPrefs(),
                                       enterprise_connectors::PRINT,
                                       "[{\"service_provider\":\"google\"}]");
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  safe_browsing::SetAnalysisConnector(profile_no_domain->GetPrefs(),
+                                      enterprise_connectors::FILE_TRANSFER,
+                                      "[{\"service_provider\":\"google\"}]");
+#endif
   safe_browsing::SetOnSecurityEventReporting(profile_no_domain->GetPrefs(),
                                              true);
   profile_no_domain->GetPrefs()->SetInteger(
@@ -1362,7 +1351,12 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   ASSERT_TRUE(info.is_dict());
   threat_protection_info = info.GetIfDict();
-  EXPECT_EQ(6u, threat_protection_info->FindList("info")->size());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const size_t expected_size = 7u;
+#else
+  const size_t expected_size = 6u;
+#endif
+  EXPECT_EQ(expected_size, threat_protection_info->FindList("info")->size());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindString("description")));
@@ -1392,6 +1386,14 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
     value.Set("permission", kManagementOnPrintVisibleData);
     expected_info.Append(std::move(value));
   }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  {
+    base::Value::Dict value;
+    value.Set("title", kManagementOnFileTransferEvent);
+    value.Set("permission", kManagementOnFileTransferVisibleData);
+    expected_info.Append(std::move(value));
+  }
+#endif
   {
     base::Value::Dict value;
     value.Set("title", kManagementEnterpriseReportingEvent);

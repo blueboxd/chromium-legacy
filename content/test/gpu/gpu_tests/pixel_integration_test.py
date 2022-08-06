@@ -7,7 +7,7 @@ import os
 import posixpath
 import sys
 import time
-import typing
+from typing import Any, List
 import unittest
 
 from gpu_tests import common_typing as ct
@@ -77,7 +77,9 @@ class PixelIntegrationTest(
     pages += namespace.ExperimentalCanvasFeaturesPages(cls.test_base_name)
     pages += namespace.LowLatencyPages(cls.test_base_name)
     pages += namespace.WebGPUPages(cls.test_base_name)
+    pages += namespace.WebGPUCanvasCapturePages(cls.test_base_name)
     pages += namespace.PaintWorkletPages(cls.test_base_name)
+    pages += namespace.VideoFromCanvasPages(cls.test_base_name)
     # pages += namespace.NoGpuProcessPages(cls.test_base_name)
     # The following pages should run only on platforms where SwiftShader is
     # enabled. They are skipped on other platforms through test expectations.
@@ -323,7 +325,7 @@ class PixelIntegrationTest(
     tab.EvaluateJavaScript('render()')
 
   @classmethod
-  def ExpectationsFiles(cls) -> typing.List[str]:
+  def ExpectationsFiles(cls) -> List[str]:
     return [
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
@@ -335,7 +337,7 @@ def _TestHarnessMessages(tab: ct.Tab) -> str:
   return tab.EvaluateJavaScript('domAutomationController._messages')
 
 
-def load_tests(loader: unittest.TestLoader, tests: typing.Any,
-               pattern: typing.Any) -> unittest.TestSuite:
+def load_tests(loader: unittest.TestLoader, tests: Any,
+               pattern: Any) -> unittest.TestSuite:
   del loader, tests, pattern  # Unused.
   return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

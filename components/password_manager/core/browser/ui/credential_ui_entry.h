@@ -10,11 +10,10 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/password_form.h"
 
 namespace password_manager {
-
-using CredentialKey = base::StrongAlias<class CredentialKeyTag, std::string>;
 
 // Simple struct that represents an entry inside Settings UI. Allows implicit
 // construction from PasswordForm for convenience. A single entry might
@@ -22,13 +21,12 @@ using CredentialKey = base::StrongAlias<class CredentialKeyTag, std::string>;
 struct CredentialUIEntry {
   struct Less {
     bool operator()(const CredentialUIEntry& lhs,
-                    const CredentialUIEntry& rhs) const {
-      return lhs.key() < rhs.key();
-    }
+                    const CredentialUIEntry& rhs) const;
   };
 
   CredentialUIEntry();
   explicit CredentialUIEntry(const PasswordForm& form);
+  explicit CredentialUIEntry(const CSVPassword& csv_password);
   CredentialUIEntry(const CredentialUIEntry& other);
   CredentialUIEntry(CredentialUIEntry&& other);
   ~CredentialUIEntry();
@@ -84,17 +82,11 @@ struct CredentialUIEntry {
   // site. Defaults to |date_created|.
   base::Time last_used_time;
 
-  const CredentialKey& key() const { return key_; }
-
   // Information about password insecurities.
   bool IsLeaked() const;
   bool IsPhished() const;
 
   const base::Time GetLastLeakedOrPhishedTime() const;
-
- private:
-  // Key which is constructed from an original PasswordForm.
-  CredentialKey key_;
 };
 
 bool operator==(const CredentialUIEntry& lhs, const CredentialUIEntry& rhs);

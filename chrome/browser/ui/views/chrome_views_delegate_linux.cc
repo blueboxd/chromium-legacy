@@ -12,7 +12,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/version_info/channel.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/linux_ui/linux_ui.h"
+#include "ui/linux/linux_ui.h"
 
 namespace {
 
@@ -47,6 +47,9 @@ NativeWidgetType GetNativeWidgetTypeForInitParams(
       params.z_order.value() == ui::ZOrderLevel::kSecuritySurface) {
     return NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA;
   }
+
+  if (params.requires_accelerated_widget)
+    return NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA;
 
   return (params.parent &&
           params.type != views::Widget::InitParams::TYPE_MENU &&

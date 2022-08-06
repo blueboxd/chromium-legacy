@@ -114,6 +114,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "components/user_manager/user_names.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
@@ -137,6 +138,7 @@
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
 #include "components/account_manager_core/chromeos/fake_account_manager_ui.h"  // nogncheck
+#include "content/public/test/network_connection_change_simulator.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls.h"
 #endif
@@ -404,8 +406,9 @@ void InProcessBrowserTest::SetUp() {
         ash::switches::kLoginUser,
         cryptohome::Identification(user_manager::StubAccountId()).id());
     if (!command_line->HasSwitch(ash::switches::kLoginProfile)) {
-      command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
-                                      chrome::kTestUserProfileDir);
+      command_line->AppendSwitchASCII(
+          ash::switches::kLoginProfile,
+          ash::BrowserContextHelper::kTestUserBrowserContextDirName);
     }
   }
 #endif
@@ -727,6 +730,11 @@ base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
 }
 
 void InProcessBrowserTest::PreRunTestOnMainThread() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  content::NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.InitializeChromeosConnectionType();
+#endif
+
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 
   // Take the ChromeBrowserMainParts' RunLoop to run ourself, when we

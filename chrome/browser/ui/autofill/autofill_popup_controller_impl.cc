@@ -98,6 +98,10 @@ void AutofillPopupControllerImpl::Show(
     const std::vector<Suggestion>& suggestions,
     bool autoselect_first_suggestion,
     PopupType popup_type) {
+  // TODO(crbug.com/1341374, crbug.com/1277218): Why can `this` be deleted
+  // synchronously?
+  WeakPtr<AutofillPopupControllerImpl> weak_this = GetWeakPtr();
+
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
@@ -105,8 +109,11 @@ void AutofillPopupControllerImpl::Show(
 
   SetValues(suggestions);
 
-  bool just_created = false;
-  if (!view_) {
+  if (view_) {
+    if (selected_line_ && *selected_line_ >= GetLineCount())
+      selected_line_.reset();
+    OnSuggestionsChanged();
+  } else {
     view_ = AutofillPopupView::Create(GetWeakPtr());
 
     // It is possible to fail to create the popup, in this case
@@ -116,16 +123,18 @@ void AutofillPopupControllerImpl::Show(
       Hide(PopupHidingReason::kViewDestroyed);
       return;
     }
-    just_created = true;
-  }
 
-  if (just_created) {
 #if BUILDFLAG(IS_ANDROID)
     ManualFillingController::GetOrCreate(web_contents_)
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions.empty());
 #endif
     view_->Show();
+    // TODO(crbug.com/1055981): `this` can be destroyed synchronously at this
+    // point.
+    if (!weak_this || !view_)
+      return;
+
     // We only fire the event when a new popup shows. We do not fire the
     // event when suggestions changed.
     FireControlsChangedEvent(true);
@@ -135,12 +144,12 @@ void AutofillPopupControllerImpl::Show(
       // SetSelectedLine().
       SetSelectedLineHelper(0);
     }
-  } else {
-    if (selected_line_ && *selected_line_ >= GetLineCount())
-      selected_line_.reset();
-
-    OnSuggestionsChanged();
   }
+  // TODO(crbug.com/1200766, crbug.com/1276850, crbug.com/1277218): `this` can
+  // be destroyed synchronously at this point.
+  if (!weak_this)
+    return;
+
   absl::visit(
       [&](auto* driver) {
         driver->SetKeyPressHandler(base::BindRepeating(
@@ -150,7 +159,7 @@ void AutofillPopupControllerImpl::Show(
                const content::NativeWebKeyboardEvent& event) {
               return weak_this && weak_this->HandleKeyPressEvent(event);
             },
-            GetWeakPtr()));
+            weak_this));
       },
       GetDriver());
 
@@ -584,6 +593,8 @@ void AutofillPopupControllerImpl::HideViewAndDie() {
                                  /*has_suggestions=*/false);
 #endif
 
+  // TODO(crbug.com/1341374, crbug.com/1277218): Move this into the asynchronous
+  // call?
   if (view_) {
     // We need to fire the event while view is not deleted yet.
     FireControlsChangedEvent(false);

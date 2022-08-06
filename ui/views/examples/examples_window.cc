@@ -123,12 +123,12 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   }
 
   // ui::ComboboxModel:
-  int GetItemCount() const override { return example_list_.size(); }
-  std::u16string GetItemAt(int index) const override {
+  size_t GetItemCount() const override { return example_list_.size(); }
+  std::u16string GetItemAt(size_t index) const override {
     return base::UTF8ToUTF16(example_list_[index]->example_title());
   }
 
-  View* GetItemViewAt(int index) {
+  View* GetItemViewAt(size_t index) {
     return example_list_[index]->example_view();
   }
 
@@ -194,7 +194,7 @@ class ExamplesWindowContents : public WidgetDelegateView {
   }
   gfx::Size CalculatePreferredSize() const override {
     gfx::Size size(800, 300);
-    for (int i = 0; i < combobox_model_->GetItemCount(); i++) {
+    for (size_t i = 0; i < combobox_model_->GetItemCount(); i++) {
       size.set_height(
           std::max(size.height(),
                    combobox_model_->GetItemViewAt(i)->GetHeightForWidth(800)));
@@ -204,7 +204,7 @@ class ExamplesWindowContents : public WidgetDelegateView {
   gfx::Size GetMinimumSize() const override { return gfx::Size(50, 50); }
 
   void ComboboxChanged() {
-    int index = combobox_->GetSelectedIndex();
+    size_t index = combobox_->GetSelectedIndex().value();
     DCHECK_LT(index, combobox_model_->GetItemCount());
     example_shown_->RemoveAllChildViewsWithoutDeleting();
     example_shown_->AddChildView(combobox_model_->GetItemViewAt(index));

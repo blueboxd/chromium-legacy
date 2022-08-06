@@ -1599,6 +1599,10 @@ bool AXNodeObject::IsNativeSpinButton() const {
   return false;
 }
 
+bool AXNodeObject::IsChildTreeOwner() const {
+  return ui::IsChildTreeOwner(native_role_);
+}
+
 bool AXNodeObject::IsClickable() const {
   // Determine whether the element is clickable either because there is a
   // mouse button handler or because it has a native element where click
@@ -1850,7 +1854,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   // kPopup, then set aria-expanded=false when the popup is hidden, and
   // aria-expanded=true when it is showing.
   if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    if (auto popup = form_control->togglePopupElement().element;
+    if (auto popup = form_control->popupTargetElement().element;
         popup && popup->PopupType() == PopupValueType::kAuto) {
       return popup->popupOpen() ? kExpandedExpanded : kExpandedCollapsed;
     }
@@ -2660,13 +2664,33 @@ ax::mojom::blink::InvalidState AXNodeObject::GetInvalidState() const {
   if (GetElement()) {
     ListedElement* form_control = ListedElement::From(*GetElement());
     if (form_control) {
-      if (form_control->IsNotCandidateOrValid())
-        return ax::mojom::blink::InvalidState::kFalse;
-      else
-        return ax::mojom::blink::InvalidState::kTrue;
+      return IsValidFormControl(form_control)
+                 ? ax::mojom::blink::InvalidState::kFalse
+                 : ax::mojom::blink::InvalidState::kTrue;
     }
   }
+
   return AXObject::GetInvalidState();
+}
+
+bool AXNodeObject::IsValidFormControl(ListedElement* form_control) const {
+  // If the control is marked with a custom error, the form control is invalid.
+  if (form_control->CustomError())
+    return false;
+
+  // If the form control checks for validity, and has passed the checks,
+  // then consider it valid.
+  if (form_control->IsNotCandidateOrValid())
+    return true;
+
+  // The control is invalid, as far as CSS is concerned.
+  // However, we ignore a failed check inside of an empty required text field,
+  // in order to avoid redundant verbalizations (screen reader already says
+  // required).
+  if (IsAtomicTextField() && IsRequired() && GetValueForControl().length() == 0)
+    return true;
+
+  return false;
 }
 
 int AXNodeObject::PosInSet() const {
@@ -3350,7 +3374,7 @@ String AXNodeObject::TextAlternative(
     }
   }
 
-  name_from = ax::mojom::blink::NameFrom::kUninitialized;
+  name_from = ax::mojom::blink::NameFrom::kNone;
 
   if (name_sources && found_text_alternative) {
     for (NameSource& name_source : *name_sources) {
@@ -3387,7 +3411,6 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   // spec and with what is done in other user agents.
   switch (last_used_name_from) {
     case ax::mojom::blink::NameFrom::kNone:
-    case ax::mojom::blink::NameFrom::kUninitialized:
     case ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty:
     case ax::mojom::blink::NameFrom::kContents:
       break;
@@ -3401,7 +3424,6 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   }
   switch (name_from) {
     case ax::mojom::blink::NameFrom::kNone:
-    case ax::mojom::blink::NameFrom::kUninitialized:
     case ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty:
     case ax::mojom::blink::NameFrom::kContents:
       break;
@@ -3462,7 +3484,7 @@ String AXNodeObject::TextFromDescendants(
   StringBuilder accumulated_text;
   AXObject* previous = nullptr;
   ax::mojom::blink::NameFrom last_used_name_from =
-      ax::mojom::blink::NameFrom::kUninitialized;
+      ax::mojom::blink::NameFrom::kNone;
 
   // Ensure that if this node needs to invalidate its children (e.g. due to
   // included in tree status change), that we do it now, rather than while
@@ -3478,19 +3500,13 @@ String AXNodeObject::TextFromDescendants(
     if (visited.size() > kMaxDescendantsForTextAlternativeComputation)
       break;
 
-    // Don't recurse into children that are explicitly hidden.
-    // Note that we don't call IsInert()/IsAriaHidden because they would return
-    // true if any ancestor is hidden, but we need to be able to compute the
-    // accessible name of object inside hidden subtrees (for example, if
-    // aria-labelledby points to an object that's hidden).
-    if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden) ||
-        child->IsHiddenForTextAlternativeCalculation(
+    if (child->IsHiddenForTextAlternativeCalculation(
             aria_label_or_description_root)) {
       continue;
     }
 
     ax::mojom::blink::NameFrom child_name_from =
-        ax::mojom::blink::NameFrom::kUninitialized;
+        ax::mojom::blink::NameFrom::kNone;
     String result;
     if (child->IsPresentational()) {
       result = child->TextFromDescendants(visited,
@@ -3999,7 +4015,7 @@ bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
   // https://crrev.com/c/chromium/src/+/3591572/9/third_party/blink/renderer/modules/accessibility/ax_node_object.cc#3973
   // TODO(accessibility) Remove this once legacy layout is completely removed,
   // as this problem will go away.
-  AXObject* ax_dom_parent = AXObjectCache().GetWithoutInvalidation(
+  AXObject* ax_dom_parent = AXObjectCache().SafeGet(
       LayoutTreeBuilderTraversal::Parent(*child.GetNode()));
   if (ax_dom_parent &&
       !ax_dom_parent->ShouldUseLayoutObjectTraversalForChildren()) {
@@ -4744,23 +4760,6 @@ void AXNodeObject::SelectedOptions(AXObjectVector& options) const {
   for (const auto& obj : children) {
     if (obj->IsSelected() == kSelectedStateTrue)
       options.push_back(obj);
-  }
-}
-
-void AXNodeObject::SelectionChanged() {
-  // Post the selected text changed event on the first ancestor that's
-  // focused (to handle form controls, ARIA text boxes and contentEditable),
-  // or the web area if the selection is just in the document somewhere.
-  if (IsFocused() || IsWebArea()) {
-    AXObjectCache().PostNotification(
-        this, ax::mojom::blink::Event::kTextSelectionChanged);
-    if (GetDocument()) {
-      AXObject* document_object = AXObjectCache().GetOrCreate(GetDocument());
-      AXObjectCache().PostNotification(
-          document_object, ax::mojom::blink::Event::kDocumentSelectionChanged);
-    }
-  } else {
-    AXObject::SelectionChanged();  // Calls selectionChanged on parent.
   }
 }
 
@@ -5631,7 +5630,7 @@ String AXNodeObject::Description(
   // For form controls that act as triggering elements for popups of type kHint,
   // then set aria-describedby to the hint popup.
   if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    auto popup = form_control->togglePopupElement();
+    auto popup = form_control->popupTargetElement();
     if (popup.element && popup.element->PopupType() == PopupValueType::kHint) {
       description_from = ax::mojom::blink::DescriptionFrom::kPopupElement;
       if (description_sources) {

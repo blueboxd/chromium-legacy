@@ -405,10 +405,8 @@ void ClientSideDetectionService::LoadPhishingReportTimesFromPrefs() {
     return;
 
   phishing_report_times_.clear();
-  for (const base::Value& timestamp :
-       delegate_->GetPrefs()
-           ->GetList(prefs::kSafeBrowsingCsdPingTimestamps)
-           ->GetListDeprecated()) {
+  for (const base::Value& timestamp : delegate_->GetPrefs()->GetValueList(
+           prefs::kSafeBrowsingCsdPingTimestamps)) {
     phishing_report_times_.push_back(
         base::Time::FromDoubleT(timestamp.GetDouble()));
   }
@@ -470,6 +468,11 @@ void ClientSideDetectionService::SetPhishingModel(
           GetModelSharedMemoryRegion(), GetVisualTfLiteModel().Duplicate());
       return;
   }
+}
+
+base::WeakPtr<ClientSideDetectionService>
+ClientSideDetectionService::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace safe_browsing

@@ -8,9 +8,9 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/grit/generated_resources.h"
@@ -293,7 +293,8 @@ void CrostiniPackageNotification::Click(
 
   if (app_count_ == 0) {
     LaunchTerminal(profile_,
-                   display::Screen::GetScreen()->GetPrimaryDisplay().id());
+                   display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+                   DefaultContainerId());
   } else if (app_count_ == 1) {
     DCHECK(!app_id_.empty());
     LaunchCrostiniApp(profile_, app_id_,

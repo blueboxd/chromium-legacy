@@ -182,7 +182,7 @@ void DcheckEmptyFunction1() {
 }
 void DcheckEmptyFunction2() {}
 
-#if defined(DCHECK_IS_CONFIGURABLE)
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 class ScopedDcheckSeverity {
  public:
   ScopedDcheckSeverity(logging::LogSeverity new_severity)
@@ -195,7 +195,7 @@ class ScopedDcheckSeverity {
  private:
   logging::LogSeverity old_severity_;
 };
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 // https://crbug.com/709067 tracks test flakiness on iOS.
 #if BUILDFLAG(IS_IOS)
@@ -204,12 +204,12 @@ class ScopedDcheckSeverity {
 #define MAYBE_Dcheck Dcheck
 #endif
 TEST_F(CheckTest, MAYBE_Dcheck) {
-#if defined(DCHECK_IS_CONFIGURABLE)
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
   // DCHECKs are enabled, and LOGGING_DCHECK is mutable, but defaults to
   // non-fatal. Set it to LOGGING_FATAL to get the expected behavior from the
   // rest of this test.
   ScopedDcheckSeverity dcheck_severity(logging::LOGGING_FATAL);
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Release build.
@@ -305,7 +305,7 @@ TEST_F(CheckTest, CheckEqStatements) {
     CHECK_EQ(false, true);  // Unreached.
 }
 
-#if defined(DCHECK_IS_CONFIGURABLE)
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 TEST_F(CheckTest, ConfigurableDCheck) {
   // Verify that DCHECKs default to non-fatal in configurable-DCHECK builds.
   // Note that we require only that DCHECK is non-fatal by default, rather
@@ -348,7 +348,7 @@ TEST_F(CheckTest, ConfigurableDCheckFeature) {
     EXPECT_LT(logging::LOGGING_DCHECK, logging::LOGGING_FATAL);
   }
 }
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 struct StructWithOstream {
   bool operator==(const StructWithOstream& o) const { return &o == this; }
@@ -407,7 +407,7 @@ TEST_F(CheckTest, OstreamVsToString) {
                CHECK_EQ(g, h));
 }
 
-#define EXPECT_LOG_ERROR(msg, expr, expected_line)                             \
+#define EXPECT_LOG_ERROR(expected_line, expr, msg)                             \
   do {                                                                         \
     static bool got_log_message = false;                                       \
     ASSERT_EQ(logging::GetLogMessageHandler(), nullptr);                       \
@@ -441,9 +441,10 @@ TEST_F(CheckTest, OstreamVsToString) {
   } while (0)
 
 TEST_F(CheckTest, NotReached) {
-#if BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
-  // Expect LOG(ERROR) without the streamed params.
-  EXPECT_LOG_ERROR("NOTREACHED() hit.\n", NOTREACHED() << "foo", __LINE__);
+#if BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED) && !DCHECK_IS_ON()
+  // Expect LOG(ERROR) that looks like CHECK(false) with streamed params intact.
+  EXPECT_LOG_ERROR(__LINE__, NOTREACHED() << "foo",
+                   "Check failed: false. foo\n");
 #else
   // Expect a DCHECK with streamed params intact.
   EXPECT_DCHECK("Check failed: false. foo", NOTREACHED() << "foo");
@@ -456,7 +457,7 @@ TEST_F(CheckTest, NotImplemented) {
 
 #if DCHECK_IS_ON()
   // Expect LOG(ERROR) with streamed params intact.
-  EXPECT_LOG_ERROR(expected_msg + "foo\n", NOTIMPLEMENTED() << "foo", __LINE__);
+  EXPECT_LOG_ERROR(__LINE__, NOTIMPLEMENTED() << "foo", expected_msg + "foo\n");
 #else
   // Expect nothing.
   EXPECT_NO_LOG(NOTIMPLEMENTED() << "foo");
@@ -473,7 +474,7 @@ TEST_F(CheckTest, NotImplementedLogOnce) {
       "Not implemented reached in void (anonymous namespace)::NiLogOnce()\n";
 
 #if DCHECK_IS_ON()
-  EXPECT_LOG_ERROR(expected_msg, NiLogOnce(), __LINE__ - 8);
+  EXPECT_LOG_ERROR(__LINE__ - 8, NiLogOnce(), expected_msg);
   EXPECT_NO_LOG(NiLogOnce());
 #else
   EXPECT_NO_LOG(NiLogOnce());

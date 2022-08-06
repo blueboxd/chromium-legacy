@@ -58,6 +58,15 @@ presets:
           - android-pixel4-perf
         stories:
           - motionmark_ramp_composite
+      - benchmark: jetstream2
+        configs:
+          - mac-laptop_low_end-perf
+          - mac-m1_mini_2020-perf
+          - linux-perf
+          - win-10-perf
+          - android-pixel4-perf
+        stories:
+          - JetStream2
   chrome_health_pgo:
     telemetry_batch_experiment:
       - benchmark: speedometer2-chrome-health
@@ -109,6 +118,15 @@ presets:
           - android-pixel4-perf
         stories:
           - motionmark_ramp_composite
+      - benchmark: jetstream2
+        configs:
+          - mac-laptop_low_end-perf-pgo
+          - mac-m1_mini_2020-perf-pgo
+          - linux-perf-pgo
+          - win-10-perf-pgo
+          - android-pixel4-perf
+        stories:
+          - JetStream2
   speedometer2:
     telemetry_batch_experiment:
       - benchmark: speedometer2-chrome-health
@@ -117,6 +135,17 @@ presets:
           - mac-m1_mini_2020-perf
           - linux-perf
           - win-10-perf
+          - android-pixel4-perf
+        stories:
+          - Speedometer2
+  speedometer2_pgo:
+    telemetry_batch_experiment:
+      - benchmark: speedometer2-chrome-health
+        configs:
+          - mac-laptop_low_end-perf-pgo
+          - mac-m1_mini_2020-perf-pgo
+          - linux-perf-pgo
+          - win-10-perf-pgo
           - android-pixel4-perf
         stories:
           - Speedometer2
@@ -164,6 +193,72 @@ presets:
           - android-pixel4-perf
         stories:
           - motionmark_ramp_composite
+  motionmark_pgo:
+    telemetry_batch_experiment:
+      - benchmark: rendering.desktop
+        configs:
+          - mac-laptop_low_end-perf-pgo
+          - mac-m1_mini_2020-perf-pgo
+          - linux-perf-pgo
+          - win-10-perf-pgo
+        stories:
+          - motionmark_ramp_canvas_arcs
+          - motionmark_ramp_canvas_lines
+          - motionmark_ramp_design
+          - motionmark_ramp_focus
+          - motionmark_ramp_images
+          - motionmark_ramp_leaves
+          - motionmark_ramp_multiply
+          - motionmark_ramp_paths
+          - motionmark_ramp_suits
+      - benchmark: rendering.mobile
+        configs:
+          - android-pixel4-perf
+        stories:
+          - motionmark_ramp_canvas_arcs
+          - motionmark_ramp_canvas_lines
+          - motionmark_ramp_design
+          - motionmark_ramp_focus
+          - motionmark_ramp_images
+          - motionmark_ramp_leaves
+          - motionmark_ramp_multiply
+          - motionmark_ramp_paths
+          - motionmark_ramp_suits
+      - benchmark: rendering.desktop.notracing
+        configs:
+          - mac-laptop_low_end-perf-pgo
+          - mac-m1_mini_2020-perf-pgo
+          - linux-perf-pgo
+          - win-10-perf-pgo
+        stories:
+          - motionmark_ramp_composite
+      - benchmark: rendering.mobile.notracing
+        configs:
+          - android-pixel4-perf
+        stories:
+          - motionmark_ramp_composite
+  jetstream2:
+    telemetry_batch_experiment:
+      - benchmark: jetstream2
+        configs:
+          - mac-laptop_low_end-perf
+          - mac-m1_mini_2020-perf
+          - linux-perf
+          - win-10-perf
+          - android-pixel4-perf
+        stories:
+          - JetStream2
+  jetstream2_pgo:
+    telemetry_batch_experiment:
+      - benchmark: jetstream2
+        configs:
+          - mac-laptop_low_end-perf-pgo
+          - mac-m1_mini_2020-perf-pgo
+          - linux-perf-pgo
+          - win-10-perf-pgo
+          - android-pixel4-perf
+        stories:
+          - JetStream2
   cwv-ch:
     telemetry_batch_experiment:
       - benchmark: loading.desktop

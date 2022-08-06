@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
-import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+import {Menu} from 'chrome://resources/js/cr/ui/menu.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {util} from '../../../common/js/util.js';
@@ -14,12 +14,6 @@ import {ActionsSubmenu} from './actions_submenu.js';
 let menu = null;
 let submenu = null;
 let separator = null;
-
-function queryRequiredElement(selectors, opt_context) {
-  const element = (opt_context || document).querySelector(selectors);
-  return assertInstanceof(
-      element, HTMLElement, 'Missing required element: ' + selectors);
-}
 
 export function setUp() {
   document.body.innerHTML = `
@@ -33,7 +27,7 @@ export function setUp() {
       <hr id="actions-separator" hidden>
       </cr-menu>`;
   menu = util.queryDecoratedElement('#menu', Menu);
-  separator = queryRequiredElement('#actions-separator', menu);
+  separator = util.queryRequiredElement('#actions-separator', menu);
   submenu = new ActionsSubmenu(menu);
 }
 

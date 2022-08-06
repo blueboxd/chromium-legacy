@@ -12,8 +12,6 @@
 <translation id="1142745911746664600">Chrome не може да се актуализира</translation>
 <translation id="1152920704813762236">Всичко за Chrome OS</translation>
 <translation id="1154147086299354128">&amp;Отваряне в Chrome</translation>
-<translation id="1178374936842835197">Ако дадена настройка не се показва на тази страница, потърсете в
-<ph name="LINK_BEGIN" />настройките на ChromeOS Flex<ph name="LINK_END" /></translation>
 <translation id="1203500561924088507">Благодарим ви, че инсталирахте <ph name="BUNDLE_NAME" />. Трябва да рестартирате браузъра си, преди да използвате това приложение.</translation>
 <translation id="1278833599417554002">Повторно стартиране за актуализиране на &amp;Chrome</translation>
 <translation id="1302523850133262269">Моля, изчакайте, докато Chrome инсталира най-новите системни актуализации.</translation>
@@ -68,6 +66,7 @@
 <translation id="2139300032719313227">Рестартиране на Chrome OS</translation>
 <translation id="2151406531797534936">Моля, рестартирайте Chrome сега</translation>
 <translation id="2174917724755363426">Инсталирането не е завършило. Наистина ли искате да го анулирате?</translation>
+<translation id="223889379102603431">Информация за начина, по който Chrome управлява основните си сертификати</translation>
 <translation id="2258103955319320201">За да имате достъп до нещата си в браузъра Chrome на всичките си устройства, влезте в профила си и включете синхронизирането</translation>
 <translation id="2290014774651636340">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Google Chrome ще бъдат деактивирани.</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
@@ -80,6 +79,7 @@
 <translation id="2401189691232800402">Система Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome иска да експортира паролите ви. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
+<translation id="2494974097748878569">Google Асистент в Chrome</translation>
 <translation id="2534507159460261402">Google Pay (копирано в Chrome)</translation>
 <translation id="2559253115192232574">Впоследствие посетен от вас сайт може да поиска от Chrome информация за интересите ви с цел да персонализира показваните ви реклами. Chrome може да сподели до 3 интереса.</translation>
 <translation id="2563121210305478421">Да се рестартира ли Chrome?</translation>
@@ -120,7 +120,6 @@
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="3100998948628680988">Наименуване на потребителския ви профил в Chrome</translation>
-<translation id="3103390129666310801">За да проверите дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на ChromeOS Flex<ph name="LINK_END" /></translation>
 <translation id="3114643501466072395">За да проверите дали другите ви пароли не са компрометирани при нарушения на сигурността на данните и други проблеми със сигурността, <ph name="BEGIN_LINK" />влезте в Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Промените ви ще влязат в сила следващия път, когато стартирате отново Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения в Chrome</translation>
@@ -211,7 +210,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">За да получавате бъдещи актуализации на Google Chrome, трябва да използвате macOS 10.13 или по-нова версия. Компютърът ви работи с OS X 10.11.</translation>
 <translation id="5098668839038261629">Когато е включено, ще излезете и от Chrome</translation>
-<translation id="5112116809696021727">За да разберете дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на Chrome OS<ph name="LINK_END" /></translation>
 <translation id="5132929315877954718">Открийте отлични приложения, игри, разширения и теми за Google Chrome.</translation>
 <translation id="5139423532931106058">Персонализиране на потребителския ви профил в Chrome</translation>
 <translation id="5163087008893166964">Добре дошли в Chrome. Отворен е нов прозорец на браузъра</translation>
@@ -247,7 +245,6 @@
 <translation id="5940385492829620908">Тук ще намерите посещаваните от вас места в мрежата, отметките и другите си неща в Chrome.</translation>
 <translation id="5941711191222866238">Намаляване</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
-<translation id="5959292945051687759">Ако дадена настройка не се показва на тази страница, потърсете в <ph name="LINK_BEGIN" />настройките на Chrome OS<ph name="LINK_END" /></translation>
 <translation id="6003112304606738118">Изтегля се... Оставащо време: <ph name="HOURS" /> ч</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6070348360322141662">За повишаване на сигурността Google Chrome ще шифрова данните ви</translation>
@@ -275,6 +272,7 @@
 <translation id="6739177684496155661">Искате ли да продължите с нов потребителски профил в Chrome?</translation>
 <translation id="6750954913813541382">С цел поправка на правописни грешки Chrome изпраща до Google текста, който въвеждате в браузъра</translation>
 <translation id="677276454032249905">Искате ли да излезете от Chrome въпреки това?</translation>
+<translation id="6785872064505734160">Google Асистент в Chrome може да извършва действия вместо вас във всички уебсайтове</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>
 <translation id="6881299373831449287">Chrome се актуализира</translation>
 <translation id="6885412569789873916">Приложения за Chrome бета</translation>
@@ -347,6 +345,7 @@
 <translation id="8129812357326543296">Всичко за &amp;Google Chrome</translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>
 <translation id="8255190535488645436">Google Chrome използва камерата и микрофона ви.</translation>
+<translation id="8270775718612349140">Сертификати, управлявани от Chrome</translation>
 <translation id="8286862437124483331">Google Chrome опитва да покаже паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="828798499196665338">Някой от родителите ви е изключил разрешенията за сайтове, приложения и разширения за Chrome. Активирането на <ph name="EXTENSION_TYPE_PARAMETER" /> не е разрешено.</translation>
 <translation id="8290100596633877290">О, не! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>

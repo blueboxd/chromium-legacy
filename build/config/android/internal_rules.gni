@@ -677,6 +677,7 @@ template("test_runner_script") {
   testonly = true
   _test_name = invoker.test_name
   _test_type = invoker.test_type
+  _is_unit_test = defined(invoker.is_unit_test) && invoker.is_unit_test
   _incremental_apk = defined(invoker.incremental_apk) && invoker.incremental_apk
 
   _runtime_deps =
@@ -710,7 +711,8 @@ template("test_runner_script") {
   if (defined(invoker.apk_under_test)) {
     _install_artifacts_json =
         "${target_gen_dir}/${target_name}.install_artifacts"
-    generated_file("${target_name}__install_artifacts") {
+    _install_artifacts_target_name = "${target_name}__install_artifacts"
+    generated_file(_install_artifacts_target_name) {
       deps = [ invoker.apk_under_test ]
       output_conversion = "json"
       outputs = [ _install_artifacts_json ]
@@ -731,8 +733,8 @@ template("test_runner_script") {
 
     executable = "//testing/test_env.py"
 
-    if (defined(android_test_runner_script)) {
-      _runner_script = android_test_runner_script
+    if (defined(invoker.android_test_runner_script)) {
+      _runner_script = invoker.android_test_runner_script
     } else {
       _runner_script = "//build/android/test_runner.py"
     }
@@ -763,6 +765,10 @@ template("test_runner_script") {
       "@WrappedPath(.)",
       "--wrapper-script-args",
     ]
+
+    if (_is_unit_test) {
+      executable_args += [ "--is-unit-test" ]
+    }
 
     if (_runtime_deps) {
       deps += [ ":$_runtime_deps_target" ]
@@ -819,12 +825,9 @@ template("test_runner_script") {
       if (_incremental_apk) {
         _test_apk = "@WrappedPath(@FileArg($_rebased_apk_build_config:deps_info:incremental_apk_path))"
       }
-      _rebased_test_jar = rebase_path(invoker.test_jar, root_build_dir)
       executable_args += [
         "--test-apk",
         _test_apk,
-        "--test-jar",
-        "@WrappedPath(${_rebased_test_jar})",
       ]
       if (defined(invoker.apk_under_test)) {
         if (_incremental_apk) {
@@ -837,7 +840,7 @@ template("test_runner_script") {
               rebase_path(_apk_under_test_build_config, root_build_dir)
           _apk_under_test = "@WrappedPath(@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_apk_path))"
         } else {
-          deps += [ ":${target_name}__install_artifacts" ]
+          deps += [ ":${_install_artifacts_target_name}" ]
           _rebased_install_artifacts_json =
               rebase_path(_install_artifacts_json, root_build_dir)
           _apk_under_test =
@@ -1395,7 +1398,11 @@ if (enable_java_templates) {
   #
   template("java_binary_script") {
     action_with_pydeps(target_name) {
-      forward_variables_from(invoker, TESTONLY_AND_VISIBILITY + [ "deps" ])
+      forward_variables_from(invoker,
+                             TESTONLY_AND_VISIBILITY + [
+                                   "data",
+                                   "deps",
+                                 ])
 
       _main_class = invoker.main_class
       _build_config = invoker.build_config
@@ -1419,8 +1426,7 @@ if (enable_java_templates) {
       if (use_jacoco_coverage) {
         args += [
           "--classpath",
-          rebase_path("//third_party/jacoco/lib/jacocoagent.jar",
-                      root_build_dir),
+          "lib.java/third_party/jacoco/jacocoagent.jar",
         ]
       }
       if (use_jacoco_coverage || !treat_warnings_as_errors) {
@@ -1694,6 +1700,19 @@ if (enable_java_templates) {
           }
         }
         if (_desugar_needs_classpath) {
+          if (defined(invoker.unprocessed_jar_path)) {
+            # Cannot use header jar for the active jar, because it does not
+            # contain anonymous classes. https://crbug.com/1342018#c5
+            # Cannot use processed .jar here because it might have classes
+            # filtered out via jar_excluded_patterns.
+            # Must come first in classpath in order to take precedence over
+            # deps that defined the same classes (via jar_excluded_patterns).
+            args += [
+              "--classpath",
+              rebase_path(invoker.unprocessed_jar_path, root_build_dir),
+            ]
+            inputs += [ invoker.unprocessed_jar_path ]
+          }
           _desugar_dependencies_path =
               "$target_gen_dir/$target_name.desugardeps"
           args += [
@@ -1709,15 +1728,6 @@ if (enable_java_templates) {
             _rebased_desugar_jars_paths =
                 rebase_path(invoker.desugar_jars_paths, root_build_dir)
             args += [ "--classpath=${_rebased_desugar_jars_paths}" ]
-          }
-          if (defined(invoker.final_jar_path)) {
-            # Need to include the input .interface.jar on the classpath in order to make
-            # jar_excluded_patterns classes visible to desugar.
-            args += [
-              "--classpath",
-              rebase_path(invoker.final_jar_path, root_build_dir),
-            ]
-            inputs += [ invoker.final_jar_path ]
           }
         } else {
           not_needed(invoker, [ "desugar_jars_paths" ])
@@ -3958,12 +3968,7 @@ if (enable_java_templates) {
           if (enable_desugar) {
             # Desugaring with D8 requires full classpath.
             build_config = _build_config
-
-            # Cannot use header jar for the active jar, because it does not
-            # contain anonymous classes. https://crbug.com/1342018#c5
-            # Cannot use processed .jar here because it might have classes
-            # filtered out via jar_excluded_patterns.
-            final_jar_path = _unprocessed_jar_path
+            unprocessed_jar_path = _unprocessed_jar_path
             deps += _header_classpath_deps + _unprocessed_jar_deps
           }
 
@@ -4003,7 +4008,15 @@ if (enable_java_templates) {
         }
         deps = [ ":$_build_config_target_name" ]
         if (_is_robolectric) {
+          # An uninstrumented robolectric platform .jar is needed by the test
+          # runner for two reasons:
+          # 1) To provide a copy of org.json (we could pull from maven instead
+          #    if we wanted)
+          # 2) It uses reflection to discover test classes, and test classes
+          #    fail to load with NoClassDefFoundErrors if their referenced
+          #    Android symbols do not exist in the classpath.
           extra_classpath_jars = [ _robolectric_jar_path ]
+          data = extra_classpath_jars
         }
       }
     }
@@ -4072,6 +4085,9 @@ if (enable_java_templates) {
       }
       if (defined(_jacoco_instrument) && _jacoco_instrument) {
         deps += [ _jacoco_dep ]
+      }
+      if (defined(invoker.apk_under_test)) {
+        deps += [ invoker.apk_under_test ]
       }
       if (defined(_process_device_jar_target_name)) {
         public_deps += [ ":$_process_device_jar_target_name" ]

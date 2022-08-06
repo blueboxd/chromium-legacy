@@ -11,12 +11,12 @@
 #include "base/bind.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
+namespace ash {
 
 FastTransitionObserver::FastTransitionObserver(PrefService* local_state)
     : local_state_(local_state) {
@@ -47,4 +47,4 @@ void FastTransitionObserver::OnPreferenceChanged(const std::string& pref_name) {
       enabled);
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -18,7 +18,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -29,6 +28,10 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/public/mojom/hid/hid.mojom-forward.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 namespace aura {
 namespace test {
 class AuraTestHelper;
@@ -36,6 +39,9 @@ class AuraTestHelper;
 }  // namespace aura
 
 namespace blink {
+struct ParsedPermissionsPolicyDeclaration;
+using ParsedPermissionsPolicy = std::vector<ParsedPermissionsPolicyDeclaration>;
+
 namespace web_pref {
 struct WebPreferences;
 }
@@ -60,15 +66,16 @@ namespace content {
 
 class BrowserContext;
 class ContentBrowserConsistencyChecker;
+class InputMsgWatcher;
 class MockAgentSchedulingGroupHostFactory;
 class MockRenderProcessHost;
 class MockRenderProcessHostFactory;
 class NavigationController;
 class RenderProcessHostFactory;
+class TestNavigationURLLoaderFactory;
 class TestRenderFrameHostFactory;
 class TestRenderViewHostFactory;
 class TestRenderWidgetHostFactory;
-class TestNavigationURLLoaderFactory;
 class WebContents;
 
 // An interface and utility for driving tests of RenderFrameHost.
@@ -142,6 +149,12 @@ class RenderFrameHostTester {
   virtual RenderFrameHost* AppendFencedFrame(
       blink::mojom::FencedFrameMode mode =
           blink::mojom::FencedFrameMode::kDefault) = 0;
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Creates the HidService and binds `receiver`.
+  virtual void CreateHidServiceForTesting(
+      mojo::PendingReceiver<blink::mojom::HidService> receiever) = 0;
+#endif  // !BUILDFLAG(IS_ANDROID)
 };
 
 // An interface and utility for driving tests of RenderViewHost.

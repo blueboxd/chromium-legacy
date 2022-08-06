@@ -13,6 +13,8 @@ import org.chromium.components.autofill_assistant.generic_ui.AssistantGenericUiM
 import org.chromium.components.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.components.autofill_assistant.infobox.AssistantInfoBoxModel;
 import org.chromium.components.autofill_assistant.overlay.AssistantOverlayModel;
+import org.chromium.components.autofill_assistant.qr_code.AssistantQrCodeCameraScanModelWrapper;
+import org.chromium.components.autofill_assistant.qr_code.AssistantQrCodeImagePickerModelWrapper;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -38,10 +40,16 @@ public class AssistantModel extends PropertyModel {
     static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
             new WritableObjectPropertyKey<>();
 
+    static final WritableBooleanPropertyKey HANDLE_BACK_PRESS = new WritableBooleanPropertyKey();
+
     private final AssistantOverlayModel mOverlayModel;
     private final AssistantHeaderModel mHeaderModel = new AssistantHeaderModel();
     private final AssistantDetailsModel mDetailsModel = new AssistantDetailsModel();
     private final AssistantInfoBoxModel mInfoBoxModel = new AssistantInfoBoxModel();
+    private final AssistantQrCodeCameraScanModelWrapper mQrCodeCameraScanModelWrapper =
+            new AssistantQrCodeCameraScanModelWrapper();
+    private final AssistantQrCodeImagePickerModelWrapper mQrCodeImagePickerModelWrapper =
+            new AssistantQrCodeImagePickerModelWrapper();
     private final AssistantCollectUserDataModel mCollectUserDataModel =
             new AssistantCollectUserDataModel();
     private final AssistantFormModel mFormModel = new AssistantFormModel();
@@ -56,7 +64,7 @@ public class AssistantModel extends PropertyModel {
     AssistantModel(AssistantOverlayModel overlayModel) {
         super(ALLOW_SOFT_KEYBOARD, ALLOW_TALKBACK_ON_WEBSITE, BOTTOM_BAR_DELEGATE,
                 BOTTOM_SHEET_STATE, TALKBACK_SHEET_SIZE_FRACTION, VISIBLE, PEEK_MODE_DISABLED,
-                WEB_CONTENTS);
+                WEB_CONTENTS, HANDLE_BACK_PRESS);
         mOverlayModel = overlayModel;
     }
 
@@ -78,6 +86,16 @@ public class AssistantModel extends PropertyModel {
     @CalledByNative
     public AssistantInfoBoxModel getInfoBoxModel() {
         return mInfoBoxModel;
+    }
+
+    @CalledByNative
+    public AssistantQrCodeCameraScanModelWrapper getQrCodeCameraScanModelWrapper() {
+        return mQrCodeCameraScanModelWrapper;
+    }
+
+    @CalledByNative
+    public AssistantQrCodeImagePickerModelWrapper getQrCodeImagePickerModelWrapper() {
+        return mQrCodeImagePickerModelWrapper;
     }
 
     @CalledByNative
@@ -154,5 +172,10 @@ public class AssistantModel extends PropertyModel {
     @CalledByNative
     private void setWebContents(WebContents contents) {
         set(WEB_CONTENTS, contents);
+    }
+
+    @CalledByNative
+    private void setHandleBackPress(boolean handleBackPress) {
+        set(HANDLE_BACK_PRESS, handleBackPress);
     }
 }

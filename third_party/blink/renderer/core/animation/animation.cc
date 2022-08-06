@@ -91,7 +91,7 @@ bool SupportedTimeValue(double time_in_ms) {
                                     1000;
 }
 
-enum PseudoPriority { kNone, kMarker, kBefore, kOther, kAfter };
+enum class PseudoPriority { kNone, kMarker, kBefore, kOther, kAfter };
 
 unsigned NextSequenceNumber() {
   static unsigned next = 0;
@@ -595,7 +595,7 @@ bool Animation::PreCommit(
   // notified yet.
   if (!compositor_property_animations_had_no_effect && start_on_compositor &&
       should_cancel && should_start && compositor_state_ &&
-      compositor_state_->pending_action == kStart &&
+      compositor_state_->pending_action == CompositorAction::kStart &&
       !compositor_state_->effect_changed) {
     // Restarting but still waiting for a start time.
     return false;
@@ -654,14 +654,16 @@ bool Animation::PreCommit(
 void Animation::PostCommit() {
   compositor_pending_ = false;
 
-  if (!compositor_state_ || compositor_state_->pending_action == kNone)
+  if (!compositor_state_ ||
+      compositor_state_->pending_action == CompositorAction::kNone) {
     return;
+  }
 
-  DCHECK_EQ(kStart, compositor_state_->pending_action);
+  DCHECK_EQ(CompositorAction::kStart, compositor_state_->pending_action);
   if (compositor_state_->start_time) {
     DCHECK(IsWithinAnimationTimeEpsilon(start_time_.value().InSecondsF(),
                                         compositor_state_->start_time.value()));
-    compositor_state_->pending_action = kNone;
+    compositor_state_->pending_action = CompositorAction::kNone;
   }
 }
 
@@ -722,10 +724,10 @@ bool Animation::HasLowerCompositeOrdering(
 
     // The following if statement is not reachable, but the implementation
     // matches the specification for composite ordering
-    if (priority1 == kOther && pseudo1 != pseudo2) {
+    if (priority1 == PseudoPriority::kOther && pseudo1 != pseudo2) {
       return CodeUnitCompareLessThan(
-          PseudoElement::PseudoElementNameForEvents(pseudo1),
-          PseudoElement::PseudoElementNameForEvents(pseudo2));
+          PseudoElement::PseudoElementNameForEvents(owning_element1),
+          PseudoElement::PseudoElementNameForEvents(owning_element2));
     }
     if (anim_priority1 == kCssAnimationPriority) {
       // When comparing two CSSAnimations with the same owning element, we sort
@@ -764,9 +766,10 @@ void Animation::NotifyReady(AnimationTimeDelta ready_time) {
   else if (pending_pause_)
     CommitPendingPause(ready_time);
 
-  if (compositor_state_ && compositor_state_->pending_action == kStart) {
+  if (compositor_state_ &&
+      compositor_state_->pending_action == CompositorAction::kStart) {
     DCHECK(!compositor_state_->start_time);
-    compositor_state_->pending_action = kNone;
+    compositor_state_->pending_action = CompositorAction::kNone;
     compositor_state_->start_time =
         start_time_ ? absl::make_optional(start_time_.value().InSecondsF())
                     : absl::nullopt;
@@ -2233,16 +2236,20 @@ bool Animation::AtScrollTimelineBoundary() {
       start_time_.value_or(AnimationTimeDelta());
   // 3.  Let effective timeline time be (animation's current time / animation's
   // playback rate) + effective start time
+  // TODO(crbug.com/1329159): Spec needs updating since a finished animation
+  // sets it's hold time which effectively caps current time at end time.
   AnimationTimeDelta effective_timeline_time =
-      (CurrentTimeInternal().value_or(AnimationTimeDelta()) / playback_rate_) +
+      (UnlimitedCurrentTime().value_or(AnimationTimeDelta()) / playback_rate_) +
       effective_start_time;
+
   // 4.  Let effective timeline progress be (effective timeline time / timeline
   // duration)
   // 5.  If effective timeline progress is 0 or 1, return true,
   // We avoid the division here but it is effectively the same as 4 & 5 above.
-  return effective_timeline_time.is_zero() ||
-         IsWithinAnimationTimeTolerance(effective_timeline_time,
-                                        timeline_duration.value());
+  bool result = effective_timeline_time.is_zero() ||
+                IsWithinAnimationTimeTolerance(effective_timeline_time,
+                                               timeline_duration.value());
+  return result;
 
   // Issue: This procedure is not strictly correct for a paused
   // animation if the animation's current time is explicitly set, as this can

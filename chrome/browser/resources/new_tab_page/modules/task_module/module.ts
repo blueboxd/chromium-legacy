@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 import '../module_header.js';
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
@@ -45,6 +45,11 @@ export class TaskModuleElement extends I18nMixin
     return {
       task: Object,
 
+      showRelatedSearches_: {
+        type: Boolean,
+        computed: 'computeShowRelatedSearches_(task)',
+      },
+
       title_: {
         type: String,
         computed: 'computeTitle_()',
@@ -59,13 +64,20 @@ export class TaskModuleElement extends I18nMixin
         type: String,
         computed: 'computeDisableName_()',
       },
+
+      info_: {
+        type: String,
+        computed: 'computeInfo_()',
+      },
     };
   }
 
   task: Task;
+  private showRelatedSearches_: boolean;
   private title_: string;
   private dismissName_: string;
   private disableName_: string;
+  private info_: string;
 
   private intersectionObserver_: IntersectionObserver|null = null;
 
@@ -85,6 +97,16 @@ export class TaskModuleElement extends I18nMixin
     return loadTimeData.getBoolean('modulesRecipeHistoricalExperimentEnabled') ?
         loadTimeData.getString('modulesRecipeViewedTasksLower') :
         loadTimeData.getString('modulesRecipeTasksLower');
+  }
+
+  private computeInfo_(): string {
+    return loadTimeData.getBoolean('moduleRecipeExtendedExperimentEnabled') ?
+        loadTimeData.getString('modulesRecipeExtendedInfo') :
+        loadTimeData.getString('modulesRecipeInfo');
+  }
+
+  private computeShowRelatedSearches_(): boolean {
+    return this.task.relatedSearches && this.task.relatedSearches.length > 0;
   }
 
   private onTaskItemClick_(e: DomRepeatEvent<TaskItem>) {

@@ -54,6 +54,8 @@ enum class SessionEvent {
   kMaxValue = kCloseButtonClicked,
 };
 
+using ResetInactivityTimerCallback = base::RepeatingCallback<void()>;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Bubble
 //
@@ -93,6 +95,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
     tick_clock_ = tick_clock;
   }
 
+  void SetCaptionBubbleStyle();
+
 #if BUILDFLAG(IS_WIN)
   void OnContentSettingsLinkClicked();
 #endif
@@ -124,6 +128,11 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   // Called by CaptionBubbleModel to notify this object that the model's text
   // has changed. Sets the text of the caption bubble to the model's text.
   void OnTextChanged();
+
+  // Used to prevent propagating theme changes when no theme colors have
+  // changed. Returns whether the caption theme colors have changed since the
+  // last time this function was called.
+  bool ThemeColorsChanged();
 
   // Called by CaptionBubbleModel to notify this object that the model's error
   // state has changed. Makes the caption bubble display an error message if
@@ -158,7 +167,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
 
   // The following methods set the caption bubble style based on the user's
   // preferences, which are stored in `caption_style_`.
-  void SetCaptionBubbleStyle();
   double GetTextScaleFactor();
   const gfx::FontList GetFontList();
   void SetTextSizeAndFontFamily();
@@ -169,6 +177,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   // as transcription received from the speech service or user interacting with
   // the bubble through focus, pressing buttons, or dragging.
   void OnInactivityTimeout();
+
+  void ResetInactivityTimer();
 
   void MediaFoundationErrorCheckboxPressed();
   bool HasMediaFoundationError();
@@ -211,6 +221,14 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
 
   // Whether we should hide the caption bubble on inactivity.
   bool const hide_on_inactivity_;
+
+  // Used to determine whether to propagate theme changes to the widget.
+  SkColor text_color_ = gfx::kPlaceholderColor;
+  SkColor icon_color_ = gfx::kPlaceholderColor;
+  SkColor icon_disabled_color_ = gfx::kPlaceholderColor;
+  SkColor link_color_ = gfx::kPlaceholderColor;
+  SkColor checkbox_color_ = gfx::kPlaceholderColor;
+  SkColor background_color_ = gfx::kPlaceholderColor;
 
   // A timer which causes the bubble to hide if there is no activity after a
   // specified interval.

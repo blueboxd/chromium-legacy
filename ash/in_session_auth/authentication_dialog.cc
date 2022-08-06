@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/components/login/auth/auth_performer.h"
-#include "ash/components/login/auth/cryptohome_error.h"
-#include "ash/components/login/auth/cryptohome_key_constants.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/cryptohome_error.h"
+#include "ash/components/login/auth/public/cryptohome_key_constants.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
 #include "ash/public/cpp/in_session_auth_token_provider.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -160,7 +160,9 @@ void AuthenticationDialog::ValidateAuthFactor() {
   // Create a copy of `user_context_` so that we don't lose it to std::move
   // for future auth attempts
   auth_performer_->AuthenticateWithPassword(
-      user_context_->GetAuthFactorsData().FindOnlinePasswordKey()->label,
+      user_context_->GetAuthFactorsData()
+          .FindOnlinePasswordKey()
+          ->label.value(),
       base::UTF16ToUTF8(password_field_->GetText()),
       std::make_unique<UserContext>(*user_context_),
       base::BindOnce(&AuthenticationDialog::OnAuthFactorValidityChecked,

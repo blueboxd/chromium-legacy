@@ -531,17 +531,21 @@ bool AddCSSPaintArgument(
 Vector<CSSParserToken> ConsumeFunctionArgsOrNot(CSSParserTokenRange& args) {
   Vector<CSSParserToken> argument_tokens;
   if (args.Peek().GetBlockType() == CSSParserToken::kBlockStart) {
-    // Function block.
-    // Push the function name and initial right parenthesis.
-    // Since we don't have any upfront knowledge about the input argument types
-    // here, we should just leave the token as it is and resolve it later in
-    // the variable parsing phase.
+    // A block of some type (maybe a function, maybe (), [], or {}).
+    // Push the block start.
+    //
+    // For functions, we don't have any upfront knowledge about the input
+    // argument types here, we should just leave the token as it is and
+    // resolve it later in the variable parsing phase.
     argument_tokens.push_back(args.Peek());
+    CSSParserTokenType closing_type =
+        CSSParserToken::ClosingTokenType(args.Peek().GetType());
+
     CSSParserTokenRange contents = args.ConsumeBlock();
     while (!contents.AtEnd())
       argument_tokens.push_back(contents.Consume());
     argument_tokens.push_back(
-        CSSParserToken(kRightParenthesisToken, CSSParserToken::kBlockEnd));
+        CSSParserToken(closing_type, CSSParserToken::kBlockEnd));
 
   } else {
     argument_tokens.push_back(args.ConsumeIncludingWhitespace());
@@ -940,6 +944,10 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
         if (!RuntimeEnabledFeatures::CSSContainerRelativeUnitsEnabled())
           return nullptr;
         break;
+      case CSSPrimitiveValue::UnitType::kIcs:
+        if (!RuntimeEnabledFeatures::CSSIcUnitEnabled())
+          return nullptr;
+        break;
       default:
         return nullptr;
     }
@@ -1262,27 +1270,15 @@ CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange& range,
   return ConsumeIdent(range);
 }
 
-CSSCustomIdentValue* ConsumeCustomIdentWithToken(
-    const CSSParserToken& token,
-    const CSSParserContext& context) {
-  if (token.GetType() != kIdentToken || IsCSSWideKeyword(token.Value()))
-    return nullptr;
-
-  if (EqualIgnoringASCIICase(token.Value(), "default"))
-    context.Count(WebFeature::kDefaultInCustomIdent);
-
-  return MakeGarbageCollected<CSSCustomIdentValue>(
-      token.Value().ToAtomicString());
-}
-
 CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,
                                         const CSSParserContext& context) {
   if (range.Peek().GetType() != kIdentToken ||
-      IsCSSWideKeyword(range.Peek().Value())) {
+      IsCSSWideKeyword(range.Peek().Id()) ||
+      range.Peek().Id() == CSSValueID::kDefault) {
     return nullptr;
   }
-  return ConsumeCustomIdentWithToken(range.ConsumeIncludingWhitespace(),
-                                     context);
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      range.ConsumeIncludingWhitespace().Value().ToAtomicString());
 }
 
 // Consume a custom ident more conservatively, for use in new uses of custom
@@ -1294,8 +1290,6 @@ CSSCustomIdentValue* ConsumeCustomIdentConservatively(
   if (range.Peek().GetType() != kIdentToken)
     return nullptr;
   switch (range.Peek().Id()) {
-    // TODO(crbug.com/882285): ConsumeCustomIdent should not allow "default".
-    case CSSValueID::kDefault:
     // TODO(crbug.com/1340852): Find out if we can make auto/none/normal
     // invalid generally.  For now, avoid allowing them on new custom idents.
     case CSSValueID::kNone:
@@ -2516,9 +2510,7 @@ CSSValue* ConsumeIntrinsicSizeLonghandNew(CSSParserTokenRange& range,
 
 CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange& range,
                                        const CSSParserContext& context) {
-  if (RuntimeEnabledFeatures::ContainIntrinsicSizeAutoEnabled())
-    return ConsumeIntrinsicSizeLonghandNew(range, context);
-  return ConsumeIntrinsicSizeLonghandOld(range, context);
+  return ConsumeIntrinsicSizeLonghandNew(range, context);
 }
 
 static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
@@ -2551,8 +2543,7 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
 
 static CSSValue* ConsumePaint(CSSParserTokenRange& args,
                               const CSSParserContext& context) {
-  const CSSParserToken& name_token = args.ConsumeIncludingWhitespace();
-  CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token, context);
+  CSSCustomIdentValue* name = ConsumeCustomIdent(args, context);
   if (!name)
     return nullptr;
 
@@ -4445,8 +4436,7 @@ CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kAuto ||
-      range.Peek().Id() == CSSValueID::kSpan ||
-      range.Peek().Id() == CSSValueID::kDefault) {
+      range.Peek().Id() == CSSValueID::kSpan) {
     return nullptr;
   }
   return ConsumeCustomIdent(range, context);
@@ -5686,32 +5676,18 @@ CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
   if (CSSValue* value = ConsumeIdent<CSSValueID::kNormal>(range))
     return value;
 
-  CSSValue* style = nullptr;
-  CSSValue* size = nullptr;
-  while (!range.AtEnd()) {
-    if (!size) {
-      size = ConsumeIdent<CSSValueID::kSize, CSSValueID::kInlineSize>(range);
-      if (size)
-        continue;
-    }
-    if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
-      if (!style) {
-        style = ConsumeIdent<CSSValueID::kStyle>(range);
-        if (style)
-          continue;
-      }
-    }
-    return nullptr;
+  if (CSSValue* value =
+          ConsumeIdent<CSSValueID::kSize, CSSValueID::kInlineSize>(range)) {
+    // Note that StyleBuilderConverter::ConvertFlags requires that values
+    // other than the ZeroValue appear in a CSSValueList, hence we return a list
+    // with one item here. Also note that the full grammar will require multiple
+    // list items in the future, if we add support for non-size container types.
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    list->Append(*value);
+    return list;
   }
-  if (!size && !style)
-    return nullptr;
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style)
-    list->Append(*style);
-  if (size)
-    list->Append(*size);
-  return list;
+  return nullptr;
 }
 
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange& range,

@@ -7,9 +7,13 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 
 import {FileAttachmentElement} from 'chrome://os-feedback/file_attachment.js';
 import {mojoString16ToString} from 'chrome://resources/ash/common/mojo_utils.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
+
+/** @type {string} */
+const fakeImageUrl = 'chrome://os_feedback/app_icon_48.png';
 
 const MAX_ATTACH_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -63,7 +67,7 @@ export function fileAttachmentTestSuite() {
     // Verify the i18n string is added.
     assertTrue(page.i18nExists('addFileLabel'));
     // Verify the replace file label is in the page.
-    assertEquals('Replace', getElementContent('#replaceFileLabel'));
+    assertEquals('Replace', getElementContent('#replaceFileButton'));
     // The addFileContainer should be visible when no file is selected.
     assertTrue(isVisible(getElement('#addFileContainer')));
     // The replaceFileContainer should be invisible when no file is selected.
@@ -97,11 +101,11 @@ export function fileAttachmentTestSuite() {
 
   // Test that when the replace file label is clicked, the file dialog is
   // opened.
-  test('canOpenFileDialogByClickReplaceFileLabel', async () => {
+  test('canOpenFileDialogByClickReplaceFileButton', async () => {
     await initializePage();
     // Verify the add file label is in the page.
-    const replaceFileLabel = getElement('#replaceFileLabel');
-    assertTrue(!!replaceFileLabel);
+    const replaceFileButton = getElement('#replaceFileButton');
+    assertTrue(!!replaceFileButton);
     /**@type {!HTMLInputElement} */
     const fileDialog =
         /**@type {!HTMLInputElement} */ (getElement('#selectFileDialog'));
@@ -113,7 +117,7 @@ export function fileAttachmentTestSuite() {
       fileDialogClicked = true;
     });
 
-    replaceFileLabel.click();
+    replaceFileButton.click();
 
     await fileDialogClickPromise;
     assertTrue(fileDialogClicked);
@@ -140,11 +144,18 @@ export function fileAttachmentTestSuite() {
     assertEquals('fake.zip', getElementContent('#selectedFileName'));
     // The select file checkbox is checked automatically when a file is
     // selected.
-    assertTrue(getElement('#selectFileCheckbox').checked);
+    const selectFileCheckbox = getElement('#selectFileCheckbox');
+    assertTrue(selectFileCheckbox.checked);
+    assertEquals('Attach file', selectFileCheckbox.ariaDescription);
+
     // The addFileContainer should be invisible.
     assertFalse(isVisible(getElement('#addFileContainer')));
     // The replaceFileContainer should be visible.
     assertTrue(isVisible(getElement('#replaceFileContainer')));
+    // The aria label of the replace file button is set.
+    assertEquals('Replace file', getElement('#replaceFileButton').ariaLabel);
+    // Verify the i18n string is added.
+    assertTrue(page.i18nExists('replaceFileArialLabel'));
   });
 
   // Test that when there is not a file selected, getAttachedFile returns null.
@@ -262,13 +273,70 @@ export function fileAttachmentTestSuite() {
         return new Uint8Array(fakeData).buffer;
       },
     });
-    // getImageUrl_ should return an url when file is image type.
-    const imageUrl = await page.getImageUrl_(fakeImageFile);
+
+    page.setSelectedFileForTesting(fakeImageFile);
+    await flushTasks();
+
+    // The selected file name is set properly.
+    assertEquals('fake.png', getElementContent('#selectedFileName'));
+
+    // The selectedFileImage should have an url when file is image type.
+    const imageUrl = getElement('#selectedFileImage').src;
     assertTrue(imageUrl.length > 0);
     // There should be a preview image.
     page.selectedImageUrl_ = imageUrl;
     const selectedImage = getElement('#selectedFileImage');
     assertTrue(!!selectedImage.src);
     assertEquals(imageUrl, selectedImage.src);
+    assertEquals(
+        'Preview fake.png', getElement('#selectedImageButton').ariaLabel);
+  });
+
+  // Test that clicking the image will open preview dialog and set the
+  // focus on the close dialog icon button.
+  test('selectedImagePreviewDialog', async () => {
+    await initializePage();
+    const fakeData = [12, 11, 99];
+
+    /** @type {!File} */
+    const fakeImageFile = /** @type {!File} */ ({
+      name: 'fake.png',
+      type: 'image/png',
+      size: MAX_ATTACH_FILE_SIZE,
+      arrayBuffer: async () => {
+        return new Uint8Array(fakeData).buffer;
+      },
+    });
+
+    page.setSelectedFileForTesting(fakeImageFile);
+    page.selectedImageUrl_ = fakeImageUrl;
+    assertEquals(fakeImageUrl, getElement('#selectedFileImage').src);
+
+    const closeDialogButton = getElement('#closeDialogButton');
+    // The preview dialog's close icon button is not visible.
+    assertFalse(isVisible(closeDialogButton));
+
+    // The selectedImage is displayed as an image button.
+    const imageButton =
+        /** @type {!Element} */ (getElement('#selectedImageButton'));
+    const imageClickPromise = eventToPromise('click', imageButton);
+    imageButton.click();
+    await imageClickPromise;
+
+    // The preview dialog's title should be set properly.
+    assertEquals('fake.png', getElementContent('#modalDialogTitleText'));
+
+    // The preview dialog's close icon button is visible now.
+    assertTrue(isVisible(closeDialogButton));
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
   });
 }

@@ -11,6 +11,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -39,6 +41,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/widget_scheduler.h"
+#include "third_party/blink/renderer/platform/widget/compositing/categorized_worker_pool.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_settings.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h"
 #include "third_party/blink/renderer/platform/widget/compositing/render_frame_metadata_observer_impl.h"
@@ -196,13 +199,12 @@ void WidgetBase::InitializeCompositing(
     settings = &default_settings.value();
   }
   screen_infos_ = screen_infos;
-  Platform* platform = Platform::Current();
   layer_tree_view_->Initialize(
       *settings, main_thread_compositor_task_runner_,
       compositing_thread_scheduler
           ? compositing_thread_scheduler->CompositorTaskRunner()
           : nullptr,
-      platform->GetTaskGraphRunner());
+      CategorizedWorkerPool::GetOrCreate());
 
   FrameWidget* frame_widget = client_->FrameWidget();
 
@@ -236,6 +238,13 @@ void WidgetBase::InitializeCompositing(
   if (!is_hidden_)
     SetCompositorVisible(true);
 
+  if (Platform::Current()->IsThreadedAnimationEnabled()) {
+    DCHECK(AnimationHost());
+    scroll_animation_timeline_ = cc::AnimationTimeline::Create(
+        cc::AnimationIdProvider::NextTimelineId());
+    AnimationHost()->AddAnimationTimeline(scroll_animation_timeline_);
+  }
+
   initialized_ = true;
 }
 
@@ -246,9 +255,12 @@ void WidgetBase::InitializeNonCompositing() {
   initialized_ = true;
 }
 
-void WidgetBase::DidFirstVisuallyNonEmptyPaint() {
-  if (widget_input_handler_manager_)
-    widget_input_handler_manager_->DidFirstVisuallyNonEmptyPaint();
+void WidgetBase::DidFirstVisuallyNonEmptyPaint(
+    base::TimeTicks& first_paint_time) {
+  if (widget_input_handler_manager_) {
+    widget_input_handler_manager_->DidFirstVisuallyNonEmptyPaint(
+        first_paint_time);
+  }
 }
 
 void WidgetBase::Shutdown() {
@@ -266,6 +278,11 @@ void WidgetBase::Shutdown() {
   // LayerTreeView owns the LayerTreeHost, and is its client, so they are kept
   // alive together for a clean call stack.
   if (layer_tree_view_) {
+    if (ScrollAnimationTimeline()) {
+      DCHECK(AnimationHost());
+      AnimationHost()->RemoveAnimationTimeline(ScrollAnimationTimeline());
+    }
+
     layer_tree_view_->Disconnect();
 
     // The `widget_scheduler_` must be deleted last because the
@@ -303,7 +320,11 @@ cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
 }
 
 cc::AnimationHost* WidgetBase::AnimationHost() const {
-  return layer_tree_view_->animation_host();
+  return layer_tree_view_ ? layer_tree_view_->animation_host() : nullptr;
+}
+
+cc::AnimationTimeline* WidgetBase::ScrollAnimationTimeline() const {
+  return scroll_animation_timeline_.get();
 }
 
 scheduler::WidgetScheduler* WidgetBase::WidgetScheduler() {

@@ -47,10 +47,21 @@ class OsSettingsAddInputMethodsDialogElement extends PolymerElement {
   getSuggestedInputMethodIds_() {
     const languageCodes = [
       ...this.languageHelper.getEnabledLanguageCodes(),
-      this.languageHelper.getArcImeLanguageCode()
+      this.languageHelper.getArcImeLanguageCode(),
     ];
-    return this.languageHelper.getInputMethodsForLanguages(languageCodes)
-        .map(inputMethod => inputMethod.id);
+    let inputMethods =
+        this.languageHelper.getInputMethodsForLanguages(languageCodes);
+    // Temporary solution for b/237492047: move Vietnamese extension input
+    // methods to the top of the suggested list.
+    // TODO(b/237492047): Remove this once 1P Vietnamese input methods are
+    // suitable for widespread use.
+    const isVietnameseExtension = inputMethod =>
+        (inputMethod.id.startsWith('_ext_ime_') &&
+         inputMethod.languageCodes.includes('vi'));
+    inputMethods = inputMethods.filter(isVietnameseExtension)
+                       .concat(inputMethods.filter(
+                           inputMethod => !isVietnameseExtension(inputMethod)));
+    return inputMethods.map(inputMethod => inputMethod.id);
   }
 
   /**
@@ -75,7 +86,7 @@ class OsSettingsAddInputMethodsDialogElement extends PolymerElement {
                id: inputMethod.id,
                name: inputMethod.displayName,
                searchTerms: inputMethod.tags,
-               disabledByPolicy: !!inputMethod.isProhibitedByPolicy
+               disabledByPolicy: !!inputMethod.isProhibitedByPolicy,
              }));
   }
 

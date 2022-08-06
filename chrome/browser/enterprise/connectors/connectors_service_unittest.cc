@@ -4,18 +4,22 @@
 
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 
+#include <tuple>
+
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/test/browser_task_environment.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -50,7 +54,7 @@ constexpr char kNormalCloudAnalysisSettingsPref[] = R"([
 
 constexpr char kNormalLocalAnalysisSettingsPref[] = R"([
   {
-    "service_provider": "local_test",
+    "service_provider": "local_user_agent",
     "enable": [
       {"url_list": ["*"], "tags": ["dlp", "malware"]}
     ],
@@ -108,7 +112,49 @@ constexpr char kDlpAndMalwareUrl[] = "https://foo.com";
 constexpr char kOnlyDlpUrl[] = "https://no.malware.com";
 constexpr char kOnlyMalwareUrl[] = "https://no.dlp.com";
 constexpr char kNoTagsUrl[] = "https://no.dlp.or.malware.ca";
+constexpr char kCustomMessage[] = "Custom Admin Message";
+constexpr char kCustomUrl[] = "https://learn.more.com";
+constexpr char kDlpTag[] = "dlp";
 
+std::string CreateCustomUIPref(const char* custom_message,
+                               const char* custom_url,
+                               bool bypass_enabled) {
+  std::string custom_messages_section;
+
+  if (custom_message || custom_url) {
+    std::string message_section =
+        custom_message
+            ? base::StringPrintf(R"("message": "%s" ,)", custom_message)
+            : "";
+    std::string learn_more_url_section =
+        custom_url
+            ? base::StringPrintf(R"("learn_more_url": "%s" ,)", custom_url)
+            : "";
+
+    custom_messages_section = base::StringPrintf(
+        R"( "custom_messages": [
+          { "language": "default",
+            %s
+            %s
+            "tag": "dlp"
+          } ] ,)",
+        message_section.c_str(), learn_more_url_section.c_str());
+  }
+
+  std::string bypass_enabled_section;
+  if (bypass_enabled) {
+    bypass_enabled_section = R"("require_justification_tags": [ "dlp"],)";
+  }
+
+  std::string pref = base::StringPrintf(
+      R"({  "enable": [{"url_list": ["*"], "tags": ["dlp"]}],
+            %s
+            %s
+            "service_provider": "google"
+          })",
+      custom_messages_section.c_str(), bypass_enabled_section.c_str());
+  return pref;
+}
 }  // namespace
 
 class ConnectorsServiceTest : public testing::Test {
@@ -168,6 +214,125 @@ INSTANTIATE_TEST_SUITE_P(
                                      FILE_DOWNLOADED,
                                      BULK_DATA_ENTRY,
                                      PRINT)));
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+constexpr char kNormalSourceDestinationCloudAnalysisSettingsPref[] = R"([
+  {
+    "service_provider": "google",
+    "enable": [
+      {
+        "source_destination_list": [
+          {
+            "sources": [
+              {"file_system_type": "ANY"}
+            ],
+            "destinations": [
+              {"file_system_type": "ANY"}
+            ]
+          }
+        ],
+        "tags": ["dlp", "malware"]
+      }
+    ],
+    "block_until_verdict": 1,
+    "block_password_protected": true,
+    "block_large_files": true,
+    "block_unsupported_file_types": true
+  }
+])";
+
+constexpr char kNormalSourceDestinationLocalAnalysisSettingsPref[] = R"([
+  {
+    "service_provider": "local_user_agent",
+    "enable": [
+      {
+        "source_destination_list": [
+          {
+            "sources": [
+              {"file_system_type": "ANY"}
+            ],
+            "destinations": [
+              {"file_system_type": "ANY"}
+            ]
+          }
+        ],
+        "tags": ["dlp", "malware"]
+      }
+    ],
+    "block_until_verdict": 1,
+    "block_password_protected": true,
+    "block_large_files": true,
+    "block_unsupported_file_types": true
+  }
+])";
+
+using ConnectorsServiceAnalysisSourceDestinationNoFeatureTest =
+    ConnectorsServiceAnalysisNoFeatureTest;
+TEST_P(ConnectorsServiceAnalysisSourceDestinationNoFeatureTest,
+       AnalysisConnectors) {
+  profile_->GetPrefs()->Set(ConnectorPref(connector()),
+                            *base::JSONReader::Read(pref_value()));
+  auto* service = ConnectorsServiceFactory::GetForBrowserContext(profile_);
+
+  // Only absl::nullopt should be returned when the feature is disabled.
+  storage::FileSystemURL source;
+  storage::FileSystemURL destination;
+  auto settings =
+      service->GetAnalysisSettings(source, destination, connector());
+  ASSERT_FALSE(settings.has_value());
+
+  // No cached settings imply the connector value was never read.
+  ASSERT_TRUE(service->ConnectorsManagerForTesting()
+                  ->GetAnalysisConnectorsSettingsForTesting()
+                  .empty());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ConnectorsServiceAnalysisSourceDestinationNoFeatureTest,
+    testing::Combine(
+        testing::Values(kNormalSourceDestinationCloudAnalysisSettingsPref,
+                        kNormalSourceDestinationLocalAnalysisSettingsPref),
+        testing::Values(FILE_TRANSFER)));
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Test to make sure that HasExtraUiToDisplay returns the right value to
+// show the extra UI from opt in features like custom message, URL and bypass
+// on Download.
+class ConnectorsServiceHasExtraUiTest
+    : public ConnectorsServiceTest,
+      public testing::WithParamInterface<std::tuple<std::string, bool>> {
+ public:
+  std::string pref() { return std::get<0>(GetParam()); }
+  bool has_extra_ui() { return std::get<1>(GetParam()); }
+};
+
+TEST_P(ConnectorsServiceHasExtraUiTest, AnalysisConnectors) {
+  safe_browsing::SetAnalysisConnector(profile_->GetPrefs(), FILE_DOWNLOADED,
+                                      pref());
+  auto* service = ConnectorsServiceFactory::GetForBrowserContext(profile_);
+  bool show_extra_ui = service->HasExtraUiToDisplay(FILE_DOWNLOADED, kDlpTag);
+  ASSERT_EQ(show_extra_ui, has_extra_ui());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ConnectorsServiceHasExtraUiTest,
+    testing::Values(
+        std::make_tuple(CreateCustomUIPref(kCustomMessage, kCustomUrl, true),
+                        true),
+        std::make_tuple(CreateCustomUIPref(kCustomMessage, kCustomUrl, false),
+                        true),
+        std::make_tuple(CreateCustomUIPref(kCustomMessage, nullptr, true),
+                        true),
+        std::make_tuple(CreateCustomUIPref(kCustomMessage, nullptr, false),
+                        true),
+        std::make_tuple(CreateCustomUIPref(nullptr, kCustomUrl, true), true),
+        std::make_tuple(CreateCustomUIPref(nullptr, kCustomUrl, false), true),
+        std::make_tuple(CreateCustomUIPref(nullptr, nullptr, true), true),
+        std::make_tuple(CreateCustomUIPref(nullptr, nullptr, false), false)));
 
 // Tests to make sure getting reporting settings work with both the feature flag
 // and the OnSecurityEventEnterpriseConnector policy. The parameter for these

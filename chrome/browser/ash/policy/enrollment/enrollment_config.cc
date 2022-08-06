@@ -6,14 +6,16 @@
 
 #include <string>
 
-#include "ash/components/tpm/install_attributes.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -32,10 +34,17 @@ bool GetMachineFlag(chromeos::system::StatisticsProvider* statistics_provider,
   return value;
 }
 
-std::string GetString(const base::Value& dict, base::StringPiece key) {
-  DCHECK(dict.is_dict());
-  const std::string* value = dict.FindStringKey(key);
+std::string GetString(const base::Value::Dict& dict, base::StringPiece key) {
+  const std::string* value = dict.FindString(key);
   return value ? *value : std::string();
+}
+
+bool IsEnrollingAfterRollback() {
+  auto* login_display_host = ash::LoginDisplayHost::default_host();
+  if (!login_display_host)
+    return false;
+  const auto* wizard_context = login_display_host->GetWizardContext();
+  return wizard_context && ash::IsRollbackFlow(*wizard_context);
 }
 
 }  // namespace
@@ -116,21 +125,17 @@ EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
   // signal present that indicates the device should enroll.
 
   // Gather enrollment signals from various sources.
-  const base::Value* device_state =
-      local_state.GetDictionary(prefs::kServerBackedDeviceState);
-  std::string device_state_mode;
-  std::string device_state_management_domain;
-  bool is_license_packaged_with_device = false;
-  std::string license_type;
+  const base::Value::Dict& device_state =
+      local_state.GetValueDict(prefs::kServerBackedDeviceState);
 
-  if (device_state) {
-    device_state_mode = GetString(*device_state, kDeviceStateMode);
-    device_state_management_domain =
-        GetString(*device_state, kDeviceStateManagementDomain);
-    is_license_packaged_with_device =
-        device_state->FindBoolPath(kDeviceStatePackagedLicense).value_or(false);
-    license_type = GetString(*device_state, kDeviceStateLicenseType);
-  }
+  const std::string device_state_mode =
+      GetString(device_state, kDeviceStateMode);
+  const std::string device_state_management_domain =
+      GetString(device_state, kDeviceStateManagementDomain);
+  const bool is_license_packaged_with_device =
+      device_state.FindBool(kDeviceStatePackagedLicense).value_or(false);
+  const std::string license_type =
+      GetString(device_state, kDeviceStateLicenseType);
 
   config.is_license_packaged_with_device = is_license_packaged_with_device;
 
@@ -161,7 +166,11 @@ EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
       true);
 
   // Decide enrollment mode. Give precedence to forced variants.
-  if (device_state_mode == kDeviceStateRestoreModeReEnrollmentEnforced) {
+  if (IsEnrollingAfterRollback()) {
+    config.mode = policy::EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_FORCED;
+    config.auth_mechanism =
+        policy::EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE;
+  } else if (device_state_mode == kDeviceStateRestoreModeReEnrollmentEnforced) {
     config.mode = EnrollmentConfig::MODE_SERVER_FORCED;
     config.management_domain = device_state_management_domain;
   } else if (device_state_mode == kDeviceStateInitialModeEnrollmentEnforced) {
@@ -196,6 +205,37 @@ EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
   }
 
   return config;
+}
+
+// static
+EnrollmentConfig::Mode EnrollmentConfig::GetManualFallbackMode(
+    EnrollmentConfig::Mode attestation_mode) {
+  switch (attestation_mode) {
+    case EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED:
+      return EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED:
+      return EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_FORCED:
+      return EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_NONE:
+    case EnrollmentConfig::MODE_MANUAL:
+    case EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
+    case EnrollmentConfig::MODE_LOCAL_FORCED:
+    case EnrollmentConfig::MODE_LOCAL_ADVERTISED:
+    case EnrollmentConfig::MODE_SERVER_FORCED:
+    case EnrollmentConfig::MODE_SERVER_ADVERTISED:
+    case EnrollmentConfig::MODE_RECOVERY:
+    case EnrollmentConfig::MODE_ATTESTATION:
+    case EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED:
+    case EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK:
+    case EnrollmentConfig::MODE_OFFLINE_DEMO_DEPRECATED:
+    case EnrollmentConfig::OBSOLETE_MODE_ENROLLED_ROLLBACK:
+    case EnrollmentConfig::MODE_INITIAL_SERVER_FORCED:
+    case EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
+    case EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_MANUAL_FALLBACK:
+      NOTREACHED();
+  }
+  return EnrollmentConfig::MODE_NONE;
 }
 
 }  // namespace policy

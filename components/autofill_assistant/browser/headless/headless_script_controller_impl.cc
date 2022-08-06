@@ -4,23 +4,26 @@
 
 #include "components/autofill_assistant/browser/headless/headless_script_controller_impl.h"
 
+#include "base/callback_helpers.h"
 #include "base/time/default_tick_clock.h"
 #include "components/autofill_assistant/browser/desktop/starter_delegate_desktop.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager.h"
 #include "components/autofill_assistant/browser/starter.h"
 
 namespace autofill_assistant {
 
 HeadlessScriptControllerImpl::HeadlessScriptControllerImpl(
     content::WebContents* web_contents,
-    ExternalActionDelegate* action_extension_delegate)
+    ExternalActionDelegate* action_extension_delegate,
+    WebsiteLoginManager* website_login_manager)
     : web_contents_(web_contents) {
   DCHECK(web_contents_);
 
   auto* starter = Starter::FromWebContents(web_contents_);
   if (starter) {
-    client_ = std::make_unique<ClientHeadless>(web_contents,
-                                               starter->GetCommonDependencies(),
-                                               action_extension_delegate, this);
+    client_ = std::make_unique<ClientHeadless>(
+        web_contents, starter->GetCommonDependencies(),
+        action_extension_delegate, website_login_manager);
   }
 }
 
@@ -29,6 +32,15 @@ HeadlessScriptControllerImpl::~HeadlessScriptControllerImpl() = default;
 void HeadlessScriptControllerImpl::StartScript(
     const base::flat_map<std::string, std::string>& script_parameters,
     base::OnceCallback<void(ScriptResult)> script_ended_callback) {
+  StartScript(script_parameters, std::move(script_ended_callback),
+              /*use_autofill_assistant_onboarding=*/false, base::DoNothing());
+}
+
+void HeadlessScriptControllerImpl::StartScript(
+    const base::flat_map<std::string, std::string>& script_parameters,
+    base::OnceCallback<void(ScriptResult)> script_ended_callback,
+    bool use_autofill_assistant_onboarding,
+    base::OnceCallback<void()> onboarding_successful_callback) {
   // This HeadlessScriptController is currently executing a script, so we return
   // an error.
   if (script_ended_callback_) {
@@ -44,6 +56,7 @@ void HeadlessScriptControllerImpl::StartScript(
   }
 
   script_ended_callback_ = std::move(script_ended_callback);
+  onboarding_successful_callback_ = std::move(onboarding_successful_callback);
   auto parameters = std::make_unique<ScriptParameters>(script_parameters);
   auto trigger_context = std::make_unique<TriggerContext>(
       std::move(parameters),
@@ -53,7 +66,9 @@ void HeadlessScriptControllerImpl::StartScript(
       /*is_direct_action = */ false,
       /* initial_url = */ "",
       /* is_in_chrome_triggered = */ true,
-      /* is_externally_triggered = */ true);
+      /* is_externally_triggered = */ true,
+      /* skip_autofill_assistant_onboarding = */
+      !use_autofill_assistant_onboarding);
   starter->CanStart(
       std::move(trigger_context),
       base::BindOnce(&HeadlessScriptControllerImpl::OnReadyToStart,
@@ -68,9 +83,15 @@ void HeadlessScriptControllerImpl::OnReadyToStart(
     std::move(script_ended_callback_).Run({false});
     return;
   }
+
+  std::move(onboarding_successful_callback_).Run();
+
   // TODO(b/201964911): At this point we should be sure no other Controller
   // exists on this tab. Add logic to the starter to check that's the case.
-  client_->Start(*url, std::move(trigger_context));
+  client_->Start(
+      *url, std::move(trigger_context),
+      base::BindOnce(&HeadlessScriptControllerImpl::NotifyScriptEnded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HeadlessScriptControllerImpl::NotifyScriptEnded(

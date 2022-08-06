@@ -10,9 +10,9 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
-#include "chromeos/network/network_state.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -35,6 +35,7 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
     return NetworkStateInformer::OFFLINE;
 
   if (network_portal_detector::GetInstance()->IsEnabled()) {
+    /// TODO(b/207069182): Remove this clause and rely on NetworkState.
     NetworkPortalDetector::CaptivePortalStatus status =
         network_portal_detector::GetInstance()->GetCaptivePortalStatus();
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
@@ -59,12 +60,24 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL)
       return NetworkStateInformer::CAPTIVE_PORTAL;
   } else {
-    if (NetworkState::StateIsConnecting(network->connection_state()))
+    if (network->IsConnectingState())
       return NetworkStateInformer::CONNECTING;
-    if (network->connection_state() == shill::kStateOnline)
-      return NetworkStateInformer::ONLINE;
-    if (network->IsCaptivePortal())
-      return NetworkStateInformer::CAPTIVE_PORTAL;
+    if (network->IsConnectedState()) {
+      auto portal_state = network->GetPortalState();
+      switch (portal_state) {
+        case NetworkState::PortalState::kUnknown:
+          return NetworkStateInformer::UNKNOWN;
+        case NetworkState::PortalState::kOnline:
+          return NetworkStateInformer::ONLINE;
+        case NetworkState::PortalState::kPortalSuspected:
+        case NetworkState::PortalState::kPortal:
+          return NetworkStateInformer::CAPTIVE_PORTAL;
+        case NetworkState::PortalState::kProxyAuthRequired:
+          return NetworkStateInformer::PROXY_AUTH_REQUIRED;
+        case NetworkState::PortalState::kNoInternet:
+          return NetworkStateInformer::CAPTIVE_PORTAL;
+      }
+    }
   }
 
   // If there is no connection to the internet report it as online for the

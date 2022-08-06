@@ -1180,8 +1180,7 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_PAGE_CLASSIFICATION:
         if (search_terms_args.page_classification !=
-                metrics::OmniboxEventProto::INVALID_SPEC &&
-            !base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
+            metrics::OmniboxEventProto::INVALID_SPEC) {
           HandleReplacement(
               "pgcl",
               base::NumberToString(search_terms_args.page_classification),
@@ -1265,14 +1264,19 @@ std::string TemplateURLRef::HandleReplacements(
       }
 
       case GOOGLE_SUGGEST_CLIENT:
-        HandleReplacement(std::string(), search_terms_data.GetSuggestClient(),
-                          replacement, &url);
+        HandleReplacement(
+            std::string(),
+            search_terms_data.GetSuggestClient(
+                search_terms_args.request_source == NON_SEARCHBOX_NTP),
+            replacement, &url);
         break;
 
       case GOOGLE_SUGGEST_REQUEST_ID:
-        HandleReplacement(std::string(),
-                          search_terms_data.GetSuggestRequestIdentifier(),
-                          replacement, &url);
+        HandleReplacement(
+            std::string(),
+            search_terms_data.GetSuggestRequestIdentifier(
+                search_terms_args.request_source == NON_SEARCHBOX_NTP),
+            replacement, &url);
         break;
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {

@@ -9,20 +9,20 @@
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './all_sites_icons.html.js';
 import './clear_storage_dialog_shared.css.js';
 import './site_entry.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
@@ -40,23 +40,23 @@ import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_bro
 import {SiteSettingsMixin, SiteSettingsMixinInterface} from './site_settings_mixin.js';
 import {OriginInfo, SiteGroup} from './site_settings_prefs_browser_proxy.js';
 
-type ActionMenuModel = {
-  actionScope: string,
-  index: number,
-  item: SiteGroup,
-  origin: string,
-  isPartitioned: boolean,
-  path: string,
-  target: HTMLElement,
-};
+interface ActionMenuModel {
+  actionScope: string;
+  index: number;
+  item: SiteGroup;
+  origin: string;
+  isPartitioned: boolean;
+  path: string;
+  target: HTMLElement;
+}
 
 type OpenMenuEvent = CustomEvent<ActionMenuModel>;
 type RemoveSiteEvent = CustomEvent<ActionMenuModel>;
 
-type SelectedItem = {
-  item: SiteGroup,
-  index: number,
-};
+interface SelectedItem {
+  item: SiteGroup;
+  index: number;
+}
 
 declare global {
   interface HTMLElementEventMap {
@@ -467,7 +467,7 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: siteGroupToUpdate.numCookies,
-      origins: []
+      origins: [],
     };
 
     if (actionScope === 'origin') {
@@ -545,7 +545,7 @@ export class AllSitesElement extends AllSitesElementBase {
    * Checks if a filter is applied.
    * @return True if a filter is applied.
    */
-  private isFiltered_(): Boolean {
+  private isFiltered_(): boolean {
     return this.filter !== '';
   }
 
@@ -903,7 +903,7 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: 0,
-      origins: []
+      origins: [],
     };
 
     this.browserProxy.clearEtldPlus1DataAndCookies(siteGroupToUpdate.etldPlus1);

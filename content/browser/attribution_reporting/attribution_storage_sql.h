@@ -21,6 +21,7 @@
 #include "content/browser/attribution_reporting/rate_limit_table.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/storage_partition.h"
 #include "sql/meta_table.h"
 
 namespace base {
@@ -111,7 +112,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       AttributionReport::ReportTypes report_types = {
           AttributionReport::ReportType::kEventLevel,
           AttributionReport::ReportType::kAggregatableAttribution}) override;
-  absl::optional<base::Time> GetNextReportTime() override;
+  absl::optional<base::Time> GetNextReportTime(base::Time time) override;
   std::vector<AttributionReport> GetReports(
       const std::vector<AttributionReport::Id>& ids) override;
   std::vector<StoredSource> GetActiveSources(int limit = -1) override;
@@ -121,7 +122,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   absl::optional<base::Time> AdjustOfflineReportTimes() override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
-                 base::RepeatingCallback<bool(const url::Origin&)> filter,
+                 StoragePartition::StorageKeyMatcherFunction filter,
                  bool delete_rate_limit_data) override;
 
   void ClearAllDataAllTime(bool delete_rate_limit_data)
@@ -197,7 +198,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   absl::optional<std::vector<uint64_t>> ReadDedupKeys(
       StoredSource::Id source_id) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  [[nodiscard]] bool HasCapacityForUniqueDestinationLimitForPendingSource(
+  [[nodiscard]] RateLimitResult
+  HasCapacityForUniqueDestinationLimitForPendingSource(
       const StorableSource& source) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] absl::optional<AttributionReport::EventLevelData::Id>
@@ -284,9 +286,9 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
 
   // Aggregate Attribution:
 
-  // Deletes all aggregatable attribution data in storage for URLs matching
-  // `filter`, between `delete_begin` and `delete_end` time. More specifically,
-  // this:
+  // Deletes all aggregatable attribution data in storage for storage keys
+  // matching `filter`, between `delete_begin` and `delete_end` time. More
+  // specifically, this:
   // 1. Deletes all sources within the time range. If any aggregatable
   //    attribution is attributed to this source it is also deleted.
   // 2. Deletes all aggregatable attributions within the time range. All sources
@@ -297,7 +299,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   [[nodiscard]] bool ClearAggregatableAttributionsForOriginsInRange(
       base::Time delete_begin,
       base::Time delete_end,
-      base::RepeatingCallback<bool(const url::Origin&)> filter,
+      StoragePartition::StorageKeyMatcherFunction filter,
       std::vector<StoredSource::Id>& source_ids_to_delete)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
@@ -390,15 +392,16 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   //  - table/index initialization failed
   std::unique_ptr<sql::Database> db_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  std::unique_ptr<AttributionStorageDelegate> delegate_
+      GUARDED_BY_CONTEXT(sequence_checker_);
   // Table which stores timestamps of sent reports, and checks if new reports
   // can be created given API rate limits. The underlying table is created in
   // |db_|, but only accessed within |RateLimitTable|.
+  // `rate_limit_table_` references `delegate_` So it must be declared last and
+  // deleted first.
   RateLimitTable rate_limit_table_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   sql::MetaTable meta_table_ GUARDED_BY_CONTEXT(sequence_checker_);
-
-  std::unique_ptr<AttributionStorageDelegate> delegate_
-      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Time at which `DeleteExpiredSources()` was last called. Initialized to
   // the NULL time.

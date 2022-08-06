@@ -11,7 +11,7 @@
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import '../controls/settings_toggle_button.js';
 import '../settings_page/settings_animated_pages.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 // <if expr="not is_macosx and not chromeos_ash">
 import './captions_subpage.js';
 import '../settings_page/settings_subpage.js';
@@ -83,7 +83,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('showFocusHighlightOption');
-        }
+        },
       },
       // </if>
 

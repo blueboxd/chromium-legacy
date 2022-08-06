@@ -4,6 +4,9 @@
 
 #include "components/user_notes/storage/user_note_storage_impl.h"
 
+#include <unordered_set>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -39,7 +42,7 @@ void UserNoteStorageImpl::RemoveObserver(Observer* observer) {
 }
 
 void UserNoteStorageImpl::GetNoteMetadataForUrls(
-    const std::vector<GURL>& urls,
+    const UserNoteStorage::UrlSet& urls,
     base::OnceCallback<void(UserNoteMetadataSnapshot)> callback) {
   database_.AsyncCall(&UserNoteDatabase::GetNoteMetadataForUrls)
       .WithArgs(std::move(urls))
@@ -47,7 +50,7 @@ void UserNoteStorageImpl::GetNoteMetadataForUrls(
 }
 
 void UserNoteStorageImpl::GetNotesById(
-    const std::vector<base::UnguessableToken>& ids,
+    const UserNoteStorage::IdSet& ids,
     base::OnceCallback<void(std::vector<std::unique_ptr<UserNote>>)> callback) {
   database_.AsyncCall(&UserNoteDatabase::GetNotesById)
       .WithArgs(std::move(ids))
@@ -55,7 +58,7 @@ void UserNoteStorageImpl::GetNotesById(
 }
 
 void UserNoteStorageImpl::UpdateNote(const UserNote* model,
-                                     std::string note_body_text,
+                                     std::u16string note_body_text,
                                      bool is_creation) {
   database_.AsyncCall(&UserNoteDatabase::UpdateNote)
       .WithArgs(model, note_body_text, is_creation)

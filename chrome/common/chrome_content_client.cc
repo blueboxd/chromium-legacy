@@ -79,7 +79,7 @@
 #include "components/nacl/common/nacl_process_type.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
 #endif
@@ -88,8 +88,10 @@
 #include "components/pdf/common/internal_plugin_helpers.h"
 #endif
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "chrome/common/media/cdm_host_file_path.h"
+#endif
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -98,7 +100,7 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 #if BUILDFLAG(ENABLE_PDF)
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
@@ -156,7 +158,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   plugins->push_back(nacl);
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
-#endif  //  BUILDFLAG(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 }  // namespace
 
@@ -191,7 +193,7 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
   gpu::SetKeysForCrashLogging(gpu_info);
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 // static
 content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
     const std::vector<std::unique_ptr<content::PepperPluginInfo>>& plugins) {
@@ -210,13 +212,13 @@ content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
 
   return plugin_map.rbegin()->second;
 }
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   ComputeBuiltInPlugins(plugins);
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 }
 
 void ChromeContentClient::AddContentDecryptionModules(
@@ -225,9 +227,11 @@ void ChromeContentClient::AddContentDecryptionModules(
   if (cdms)
     RegisterCdmInfo(cdms);
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   if (cdm_host_file_paths)
     AddCdmHostFilePaths(cdm_host_file_paths);
+#endif
 #endif
 }
 
@@ -252,8 +256,8 @@ static const char* const kChromeStandardURLSchemes[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::kExtensionScheme,
 #endif
-    chrome::kChromeNativeScheme,        chrome::kChromeSearchScheme,
-    dom_distiller::kDomDistillerScheme,
+    chrome::kIsolatedAppScheme,   chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,  dom_distiller::kDomDistillerScheme,
 #if BUILDFLAG(IS_ANDROID)
     content::kAndroidAppScheme,
 #endif
@@ -306,6 +310,18 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
 
   schemes->csp_bypassing_schemes.push_back(extensions::kExtensionScheme);
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  schemes->predefined_handler_schemes.emplace_back(
+      url::kMailToScheme, chrome::kChromeOSDefaultMailtoHandler);
+  schemes->predefined_handler_schemes.emplace_back(
+      url::kWebcalScheme, chrome::kChromeOSDefaultWebcalHandler);
+#endif
+
+  schemes->secure_schemes.push_back(chrome::kIsolatedAppScheme);
+  schemes->cors_enabled_schemes.push_back(chrome::kIsolatedAppScheme);
+  schemes->service_worker_schemes.push_back(chrome::kIsolatedAppScheme);
+  url::AddWebStorageScheme(chrome::kIsolatedAppScheme);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   schemes->local_schemes.push_back(content::kExternalFileScheme);
@@ -400,7 +416,7 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 void ChromeContentClient::ExposeInterfacesToBrowser(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     mojo::BinderMap* binders) {
-  binders->Add(
+  binders->Add<heap_profiling::mojom::ProfilingClient>(
       base::BindRepeating(
           [](mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>
                  receiver) {

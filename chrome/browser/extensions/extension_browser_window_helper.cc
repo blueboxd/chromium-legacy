@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -108,7 +109,7 @@ void ExtensionBrowserWindowHelper::CleanUpTabsOnUnload(
   for (int i = tab_strip_model->count() - 1; i >= 0; --i) {
     content::WebContents* web_contents = tab_strip_model->GetWebContentsAt(i);
     if (ShouldCloseTabOnExtensionUnload(extension, browser_, web_contents))
-      tab_strip_model->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
+      tab_strip_model->CloseWebContentsAt(i, TabCloseTypes::CLOSE_NONE);
     else
       UnmuteIfMutedByExtension(web_contents, extension->id());
   }

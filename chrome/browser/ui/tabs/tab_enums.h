@@ -29,4 +29,27 @@ enum class TabWebFeedFollowState {
   kNotFollowed,  // The web feed is not followed.
 };
 
+// The Service, UI, or Setting which muted the tab.
+enum class TabMutedReason {
+  NONE,                    // The tab has never been muted or unmuted.
+  EXTENSION,               // Mute state changed via extension API.
+  AUDIO_INDICATOR,         // Mute toggled via tab-strip audio icon.
+  CONTENT_SETTING,         // The sound content setting was set to BLOCK.
+  CONTENT_SETTING_CHROME,  // Mute toggled on chrome:// URL.
+};
+
+// A BitField used to specify what should happen when the tab is closed.
+enum TabCloseTypes {
+  CLOSE_NONE = 0,
+
+  // Indicates the tab was closed by the user. If true,
+  // WebContents::SetClosedByUserGesture(true) is invoked.
+  CLOSE_USER_GESTURE = 1 << 0,
+
+  // If true the history is recorded so that the tab can be reopened later. You
+  // almost always want to set this.
+  CLOSE_CREATE_HISTORICAL_TAB = 1 << 1,
+
+};
+
 #endif  // CHROME_BROWSER_UI_TABS_TAB_ENUMS_H_

@@ -92,9 +92,11 @@ using views::View;
 
 namespace ash {
 
-// The distance of the cursor from the outer rim of the shelf before it
-// separates.
-constexpr int kRipOffDistance = 48;
+// The rip off distance, where the shelf icon gets unpinned if dragged over this
+// distance from the outer edge of the shelf, depends on the shelf size. The
+// distance is calculated by multiplying the shelf size by
+// `kRipOffDistanceFactor`.
+constexpr float kRipOffDistanceFactor = 0.75f;
 
 // The rip off drag and drop proxy image should get scaled by this factor.
 constexpr float kDragAndDropProxyScale = 1.2f;
@@ -455,22 +457,6 @@ void ShelfView::Init() {
   // We'll layout when our bounds change.
 }
 
-gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
-  int index = model_->ItemIndexByID(id);
-  if (index < 0 ||
-      !base::Contains(visible_views_indices_, static_cast<size_t>(index)))
-    return gfx::Rect();
-
-  const gfx::Rect& ideal_bounds(
-      view_model_->ideal_bounds(static_cast<size_t>(index)));
-  ShelfAppButton* button = GetShelfAppButton(id);
-  gfx::Rect icon_bounds = button->GetIconBounds();
-  return gfx::Rect(GetMirroredXWithWidthInView(
-                       ideal_bounds.x() + icon_bounds.x(), icon_bounds.width()),
-                   ideal_bounds.y() + icon_bounds.y(), icon_bounds.width(),
-                   icon_bounds.height());
-}
-
 bool ShelfView::IsShowingMenu() const {
   return shelf_menu_model_adapter_ &&
          shelf_menu_model_adapter_->IsShowingMenu();
@@ -621,6 +607,12 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
     return gfx::Size(last_button_bounds.right(), hotseat_size);
 
   return gfx::Size(hotseat_size, last_button_bounds.bottom());
+}
+
+void ShelfView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
+  if (separator_)
+    separator_->SchedulePaint();
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -803,17 +795,17 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
   const ShelfItem& item = model_->items()[last_pressed_index_.value()];
   if (!model_->GetShelfItemDelegate(item.id)) {
-    AfterItemSelected(item, sender, ui::Event::Clone(event), ink_drop,
-                      SHELF_ACTION_NONE, {});
+    AfterItemSelected(item, sender, event.Clone(), ink_drop, SHELF_ACTION_NONE,
+                      {});
     return;
   }
 
   // Notify the item of its selection; handle the result in AfterItemSelected.
   item_awaiting_response_ = item.id;
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
-      ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_SHELF,
+      event.Clone(), GetDisplayIdForView(this), LAUNCH_FROM_SHELF,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
-                     item, sender, ui::Event::Clone(event), ink_drop),
+                     item, sender, event.Clone(), ink_drop),
       base::BindRepeating(&ShouldIncludeMenuItem));
 }
 
@@ -1505,7 +1497,7 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   }
 
   // Move the view to the front so that it appears on top of other views.
-  ReorderChildView(drag_view_, -1);
+  ReorderChildView(drag_view_, children().size());
   bounds_animator_->StopAnimatingView(drag_view_);
 
   drag_view_->OnDragStarted(&event);
@@ -1521,10 +1513,14 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
     gfx::Point screen_location = event.root_location();
     ::wm::ConvertPointToScreen(root_window, &screen_location);
 
+    // Scale up the icon only if the button is not considered as dragged and
+    // scaled up in ShelfAppButton.
+    float scale_factor = (drag_view_->state() & ShelfAppButton::STATE_DRAGGING)
+                             ? 1.0f
+                             : kDragAndDropProxyScale;
     drag_icon_proxy_ = std::make_unique<AppDragIconProxy>(
-        root_window, drag_view_->GetImage(), screen_location, gfx::Vector2d(),
-        /*scale_factor=*/1.0f,
-        /*use_blurred_background=*/false);
+        root_window, drag_view_->GetIconImage(), screen_location,
+        gfx::Vector2d(), scale_factor, /*use_blurred_background=*/false);
 
     if (pointer == MOUSE) {
       haptics_util::PlayHapticTouchpadEffect(
@@ -1662,15 +1658,19 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     if (GetBoundsForDragInsertInScreen().Contains(screen_location)) {
       if (!is_active_drag_and_drop_host_) {
         drag_icon_proxy_ = std::make_unique<AppDragIconProxy>(
-            root_window, drag_view_->GetImage(), screen_location,
+            root_window, drag_view_->GetIconImage(), screen_location,
             /*cursor_offset_from_center=*/gfx::Vector2d(),
-            kDragAndDropProxyScale,
+            /*scale_factor=*/1.0f,
             /*use_blurred_background=*/false);
       }
 
       // Re-insert the item and return simply false since the caller will handle
       // the move as in any normal case.
       dragged_off_shelf_ = false;
+
+      // After re-insertion, trigger an animation to ideal bounds to show the
+      // ghost view.
+      AnimateToIdealBounds();
 
       return;
     }
@@ -1679,9 +1679,11 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   }
 
   // Mark the item as dragged off the shelf if the drag distance exceeds
-  // |kRipOffDistance|.
+  // `rip_off_distance`.
+  int rip_off_distance =
+      ShelfConfig::Get()->shelf_size() * kRipOffDistanceFactor;
   int delta = CalculateShelfDistance(screen_location);
-  bool dragged_off_shelf = delta > kRipOffDistance;
+  bool dragged_off_shelf = delta > rip_off_distance;
 
   if (dragged_off_shelf) {
     if (!is_active_drag_and_drop_host_) {
@@ -1690,8 +1692,8 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       const gfx::Point center = drag_view_->GetLocalBounds().CenterPoint();
       const gfx::Vector2d cursor_offset_from_center = drag_origin_ - center;
       drag_icon_proxy_ = std::make_unique<AppDragIconProxy>(
-          root_window, drag_view_->GetImage(), screen_location,
-          cursor_offset_from_center, kDragAndDropProxyScale,
+          root_window, drag_view_->GetIconImage(), screen_location,
+          cursor_offset_from_center, /*scale_factor=*/1.0f,
           /*use_blurred_background=*/false);
       delegate_->CancelScrollForItemDrag();
     }
@@ -2183,9 +2185,10 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     // The first animation fades out the view. When done we'll animate the rest
     // of the views to their target location.
     bounds_animator_->AnimateViewTo(view.get(), view->bounds());
+    auto* const view_ptr = view.get();
     bounds_animator_->SetAnimationDelegate(
-        view.get(), std::unique_ptr<gfx::AnimationDelegate>(
-                        new FadeOutAnimationDelegate(this, std::move(view))));
+        view_ptr,
+        std::make_unique<FadeOutAnimationDelegate>(this, std::move(view)));
   } else {
     // Ensures that |view| is not used after destruction.
     StopAnimatingViewIfAny(view.get());

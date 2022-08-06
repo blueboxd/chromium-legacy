@@ -14,10 +14,12 @@ import android.util.Size;
 import android.view.Display;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.MathUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -52,10 +54,26 @@ public class TabUtils {
     @Retention(RetentionPolicy.SOURCE)
     public @interface UseDesktopUserAgentCaller {
         int ON_MENU_OR_KEYBOARD_ACTION = 0;
-        int LOAD_IF_NEEDED = 1;
-        int RELOAD = 2;
-        int RELOAD_IGNORING_CACHE = 3;
-        int OTHER = 4;
+        int LOAD_IF_NEEDED = 100;
+        int RELOAD = 200;
+        int RELOAD_IGNORING_CACHE = 300;
+        int OTHER = 400;
+    }
+
+    /**
+     * Define the callers of TabImpl#loadIfNeeded.
+     */
+    @IntDef({LoadIfNeededCaller.SET_TAB, LoadIfNeededCaller.ON_ACTIVITY_SHOWN,
+            LoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW, LoadIfNeededCaller.REQUEST_TO_SHOW_TAB,
+            LoadIfNeededCaller.REQUEST_TO_SHOW_TAB_THEN_SHOW, LoadIfNeededCaller.OTHER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LoadIfNeededCaller {
+        int SET_TAB = 0;
+        int ON_ACTIVITY_SHOWN = 1;
+        int ON_ACTIVITY_SHOWN_THEN_SHOW = 2;
+        int REQUEST_TO_SHOW_TAB = 3;
+        int REQUEST_TO_SHOW_TAB_THEN_SHOW = 4;
+        int OTHER = 5;
     }
 
     // Do not instantiate this class.
@@ -81,6 +99,8 @@ public class TabUtils {
      * @param context The application context.
      * @return The estimated prerender size in pixels.
      */
+    // status_bar_height is not a public framework resource, so we have to getIdentifier()
+    @SuppressWarnings("DiscouragedApi")
     public static Rect estimateContentSize(Context context) {
         // The size is estimated as:
         // X = screenSizeX
@@ -114,8 +134,8 @@ public class TabUtils {
      * @param forcedByUser Whether this was triggered by users action.
      * @param caller The caller of this method.
      */
-    public static void switchUserAgent(Tab tab, boolean switchToDesktop, boolean forcedByUser,
-            @UseDesktopUserAgentCaller int caller) {
+    public static void switchUserAgent(
+            Tab tab, boolean switchToDesktop, boolean forcedByUser, int caller) {
         final boolean reloadOnChange = !tab.isNativePage();
         tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
                 switchToDesktop, reloadOnChange, caller);
@@ -168,14 +188,13 @@ public class TabUtils {
     /**
      * Read Request Desktop Site ContentSettings.
      * @param profile The profile used to retrieve ContentSettings.
-     * @param webContents The webContents used to retrieve Url for site level setting.
+     * @param url The Url used to retrieve site level ContentSettings.
      * @return Whether Request Desktop Site is enabled in ContentSettings.
      */
     public static boolean readRequestDesktopSiteContentSettings(
-            Profile profile, WebContents webContents) {
+            Profile profile, @Nullable GURL url) {
         if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS)) {
-            return webContents != null
-                    && TabUtils.isDesktopSiteEnabled(profile, webContents.getVisibleUrl());
+            return url != null && TabUtils.isDesktopSiteEnabled(profile, url);
         } else {
             return TabUtils.isDesktopSiteGlobalEnabled(profile);
         }
@@ -235,6 +254,19 @@ public class TabUtils {
     }
 
     /**
+     * Return whether hardware keyboard is available, including QWERTY and 12Key keyboards.
+     * @param tab The tab used to retrieve context for keyboard configuration.
+     * TODO(shuyng): Create ConfigurationChangedObserver to update the current value in C++; to
+     * avoid extra JNI request on each navigation.
+     */
+    @CalledByNative
+    public static boolean isHardwareKeyboardAvailable(Tab tab) {
+        int keyboard = tab.getContext().getResources().getConfiguration().keyboard;
+        return keyboard == Configuration.KEYBOARD_QWERTY
+                || keyboard == Configuration.KEYBOARD_12KEY;
+    }
+
+    /**
      * Return aspect ratio for grid tab card based on form factor and orientation.
      * @param context - Context of the application.
      * @return Aspect ratio for the grid tab card.
@@ -265,14 +297,13 @@ public class TabUtils {
 
     /**
      * Derive thumbnail size based on parent card size.
-     * @param gridCardWidth width of parent card.
-     * @param gridCardHeight height of parent card.
+     * @param gridCardSize size of parent card.
      * @param context to derive view margins.
      * @return computed width and height of thumbnail.
      */
-    public static Size deriveThumbnailSize(int gridCardWidth, int gridCardHeight, Context context) {
-        int thumbnailWidth = gridCardWidth - getThumbnailWidthDiff(context);
-        int thumbnailHeight = gridCardHeight - getThumbnailHeightDiff(context);
+    public static Size deriveThumbnailSize(@NonNull Size gridCardSize, @NonNull Context context) {
+        int thumbnailWidth = gridCardSize.getWidth() - getThumbnailWidthDiff(context);
+        int thumbnailHeight = gridCardSize.getHeight() - getThumbnailHeightDiff(context);
         return new Size(thumbnailWidth, thumbnailHeight);
     }
 
@@ -282,7 +313,7 @@ public class TabUtils {
                 org.chromium.chrome.tab_ui.R.dimen.tab_grid_card_thumbnail_margin);
         int heightMargins = (2 * tabGridCardMargin) + thumbnailMargin;
         final int titleHeight = (int) context.getResources().getDimension(
-                org.chromium.chrome.tab_ui.R.dimen.tab_list_card_title_height);
+                org.chromium.chrome.tab_ui.R.dimen.tab_grid_card_header_height);
         return titleHeight + heightMargins;
     }
 

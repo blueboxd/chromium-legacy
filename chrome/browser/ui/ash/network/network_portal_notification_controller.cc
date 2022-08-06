@@ -30,8 +30,8 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -133,7 +133,7 @@ NetworkPortalNotificationController::~NetworkPortalNotificationController() {
 }
 
 void NetworkPortalNotificationController::OnPortalDetectionCompleted(
-    const NetworkState* network,
+    const ash::NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
   if (!network ||
       status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
@@ -200,7 +200,7 @@ void NetworkPortalNotificationController::OnDialogDestroyed(
 
 std::unique_ptr<message_center::Notification>
 NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
-    const NetworkState* network) {
+    const ash::NetworkState* network) {
   auto delegate =
       base::MakeRefCounted<NetworkPortalNotificationControllerDelegate>(
           network->guid(), weak_factory_.GetWeakPtr());

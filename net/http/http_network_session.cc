@@ -83,6 +83,8 @@ HttpNetworkSessionParams::HttpNetworkSessionParams()
       time_func(&base::TimeTicks::Now) {
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
+  use_dns_https_svcb_alpn =
+      base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcbAlpn);
 }
 
 HttpNetworkSessionParams::HttpNetworkSessionParams(
@@ -228,18 +230,19 @@ HttpNetworkSession::~HttpNetworkSession() {
   spdy_session_pool_.CloseAllSessions();
 }
 
-void HttpNetworkSession::AddResponseDrainer(
+void HttpNetworkSession::StartResponseDrainer(
     std::unique_ptr<HttpResponseBodyDrainer> drainer) {
   DCHECK(!base::Contains(response_drainers_, drainer.get()));
   HttpResponseBodyDrainer* drainer_ptr = drainer.get();
-  response_drainers_[drainer_ptr] = std::move(drainer);
+  response_drainers_.insert(std::move(drainer));
+  drainer_ptr->Start(this);
 }
 
 void HttpNetworkSession::RemoveResponseDrainer(
     HttpResponseBodyDrainer* drainer) {
   DCHECK(base::Contains(response_drainers_, drainer));
-  response_drainers_[drainer].release();
-  response_drainers_.erase(drainer);
+
+  response_drainers_.erase(response_drainers_.find(drainer));
 }
 
 ClientSocketPool* HttpNetworkSession::GetSocketPool(

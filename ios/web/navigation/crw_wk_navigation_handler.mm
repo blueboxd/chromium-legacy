@@ -332,10 +332,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       requestURL.SchemeIs(url::kBlobScheme);
 
   _shouldPerformDownload = NO;
-  if (web::features::IsNewDownloadAPIEnabled()) {
-    if (@available(iOS 15, *)) {
-      _shouldPerformDownload = action.shouldPerformDownload;
-    }
+  if (@available(iOS 15, *)) {
+    _shouldPerformDownload = action.shouldPerformDownload;
   }
 
   __weak CRWWKNavigationHandler* weakSelf = self;
@@ -444,11 +442,9 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     return;
   }
 
-  if (web::features::IsNewDownloadAPIEnabled()) {
-    if (@available(iOS 15, *)) {
-      handler(WKNavigationResponsePolicyDownload);
-      return;
-    }
+  if (@available(iOS 15, *)) {
+    handler(WKNavigationResponsePolicyDownload);
+    return;
   }
 
   if (web::UrlHasWebScheme(responseURL)) {
@@ -1380,7 +1376,6 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 
   if (_shouldPerformDownload) {
-    DCHECK(web::features::IsNewDownloadAPIEnabled());
     return NO;
   }
 
@@ -1851,6 +1846,11 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   CRWErrorPageHelper* errorPage =
       [[CRWErrorPageHelper alloc] initWithError:error];
   WKBackForwardListItem* backForwardItem = webView.backForwardList.currentItem;
+  GURL backForwardGURL = net::GURLWithNSURL(backForwardItem.URL);
+  GURL failedURL = [CRWErrorPageHelper
+      failedNavigationURLFromErrorPageFileURL:backForwardGURL];
+  bool isSameURLFromWebClient = web::GetWebClient()->IsPointingToSameDocument(
+      failedURL, net::GURLWithNSURL(errorPage.failedNavigationURL));
   // There are 4 possible scenarios here:
   //   1. Current nav item is an error page for failed URL;
   //   2. Current nav item has a failed URL. This may happen when
@@ -1867,6 +1867,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   if (provisionalLoad &&
       ![errorPage
           isErrorPageFileURLForFailedNavigationURL:backForwardItem.URL] &&
+      !isSameURLFromWebClient &&
       ![backForwardItem.URL isEqual:errorPage.failedNavigationURL] &&
       !web::wk_navigation_util::IsRestoreSessionUrl(backForwardItem.URL)) {
     errorNavigation = [webView loadFileURL:errorPage.errorPageFileURL

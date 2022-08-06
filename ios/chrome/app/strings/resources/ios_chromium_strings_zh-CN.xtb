@@ -45,7 +45,6 @@
 <translation id="3344973607274501920">Chromium 无法检查您的密码。请尝试检查您的互联网连接。</translation>
 <translation id="3472200483164753384">在 Chromium Canary 版中不受支持</translation>
 <translation id="3567399274263440288">若要充分利用 Chromium，请使用您的 Google 帐号登录 Chromium。</translation>
-<translation id="3619462831205197427">登录此网站、您的 Google 帐号和 Chromium。</translation>
 <translation id="3639997914391704523">您需要先登录 Google 帐号才能使用 Chromium 的密码检查功能。</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> 原本使用 Chromium，并在此设备上保存了书签、密码及其他设置。</translation>
 <translation id="3805899903892079518">Chromium 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
@@ -74,11 +73,11 @@
 <translation id="5945387852661427312">您正要登录由 <ph name="DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chromium 数据。您的数据将与此帐号永久关联。退出 Chromium 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="5983312940147103417">帮助改善 Chromium</translation>
 <translation id="602807004951640891">使用 Chromium 即表示您同意接受<ph name="BEGIN_LINK_TOS" />服务条款<ph name="END_LINK_TOS" />。</translation>
+<translation id="6062449165341879460">贵组织 (<ph name="DOMAIN" />) 将能够访问您在此帐号中存储的 Chromium 数据、书签、历史记录、密码和其他设置。当您退出帐号时，系统将从这部设备上清除您的数据。不过，您的数据仍会存储在您名下受管理的 Google 帐号中，且可供贵组织访问。贵组织也可专门针对上述帐号设置用户规范，这可能会改变 Chromium 的行为。</translation>
 <translation id="6119647025869519954">若要将 Chromium 设为默认浏览器，请执行以下操作：
 1. 打开“设置”
 2. 点按“默认浏览器应用”
 3. 选择“Chromium”。</translation>
-<translation id="6183442264225539303">登录此网站和 Chromium。您可等到需要时再开启同步功能。</translation>
 <translation id="6268381023930128611">退出 Chromium？</translation>
 <translation id="632825460376924298">允许登录 Chromium</translation>
 <translation id="6337530241089703714">请选择是要清除还是要保留您在此设备上存储的 Chromium 数据</translation>
@@ -120,6 +119,7 @@
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="865600487977764604">保护您在 Chromium 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用。</translation>
 <translation id="8663480472502753423">让 Chromium 保持最新状态</translation>
+<translation id="8685813584220679697">登录此网站和 Chromium。</translation>
 <translation id="8747378496147986285">处于开启状态时：
 <ph name="BEGIN_INDENT" />  • 可协助改进 Chromium，让所有像您这样使用 Chromium 的用户都能获享更好的体验。<ph name="END_INDENT" />
 

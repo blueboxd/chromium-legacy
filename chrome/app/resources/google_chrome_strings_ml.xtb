@@ -14,8 +14,6 @@
 <translation id="1142745911746664600">Chrome അപ്‌ഡേറ്റ് ചെയ്യാനാവില്ല</translation>
 <translation id="1152920704813762236">ChromeOS-നെ കുറിച്ച്</translation>
 <translation id="1154147086299354128">&amp;Chrome-ൽ തുറക്കുക</translation>
-<translation id="1178374936842835197">ഈ പേജിൽ ക്രമീകരണം കാണുന്നില്ലെങ്കിൽ, നിങ്ങളുടെ <ph name="LINK_BEGIN" />
-        ChromeOS Flex ക്രമീകരണത്തിൽ<ph name="LINK_END" /> പരിശോധിക്കുക</translation>
 <translation id="1203500561924088507">ഇൻസ്റ്റാൾ ചെയ്തതിന് നന്ദി. <ph name="BUNDLE_NAME" /> ഉപയോഗിക്കും മുമ്പ് നിങ്ങളുടെ ബ്രൗസർ റീസ്റ്റാർട്ട് ചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="1278833599417554002">&amp;Chrome അപ്‌ഡേറ്റ് ചെയ്യാൻ വീണ്ടും ആരംഭിക്കുക</translation>
 <translation id="1302523850133262269">ഏറ്റവും പുതിയ സിസ്‌റ്റം അപ്‌ഡേറ്റുകൾ Chrome ഇൻസ്റ്റാളുചെയ്യുന്നതുവരെ കാത്തിരിക്കുക.</translation>
@@ -70,6 +68,7 @@
 <translation id="2139300032719313227">ChromeOS റീസ്റ്റാർട്ട് ചെയ്യുക</translation>
 <translation id="2151406531797534936">Chrome ഇപ്പോൾ റീസ്‌റ്റാർട്ട് ചെയ്യുക</translation>
 <translation id="2174917724755363426">ഇൻസ്റ്റാൾ ചെയ്യൽ പൂർത്തിയായിട്ടില്ല. റദ്ദാക്കണമെന്ന് ഉറപ്പാണോ?</translation>
+<translation id="223889379102603431">Chrome അതിന്റെ റൂട്ട് സർട്ടിഫിക്കറ്റുകൾ മാനേജ് ചെയ്യുന്നത് എങ്ങനെ എന്നതിനെക്കുറിച്ചുള്ള വിവരങ്ങൾ</translation>
 <translation id="2258103955319320201">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും Chrome ബ്രൗസർ ഉള്ളടക്കം ആക്സസ് ചെയ്യാൻ, സൈൻ ഇൻ ചെയ്ത ശേഷം സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="2290014774651636340">Google API കീകൾ നഷ്‌ടമായി. Google Chrome-ന്‍റെ ചില പ്രവർത്തനങ്ങൾ പ്രവർത്തനരഹിതമാകും.</translation>
 <translation id="2290095356545025170">Google Chrome അണിന്‍സ്റ്റാള്‍ ചെയ്യണമെന്ന് നിങ്ങള്‍ക്കുറപ്പാണോ?</translation>
@@ -82,6 +81,7 @@
 <translation id="2401189691232800402">ChromeOS സിസ്റ്റം</translation>
 <translation id="2467438592969358367">നിങ്ങളുടെ പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാൻ Google Chrome ആഗ്രഹിക്കുന്നു. ഇത് അനുവദിക്കാൻ നിങ്ങളുടെ Windows പാസ്‌വേഡ് നൽകുക.</translation>
 <translation id="2485422356828889247">അണ്‍‌ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യുക</translation>
+<translation id="2494974097748878569">Chrome സ്വമേധയാ പൂരിപ്പിക്കലിലെ Google അസിസ്‌റ്റന്റ് സാന്നിധ്യം</translation>
 <translation id="2534507159460261402">Google Pay (Chrome-ലേക്ക് പകർത്തി)</translation>
 <translation id="2559253115192232574">പിന്നീട്, കാണുന്ന പരസ്യങ്ങൾ വ്യക്തിപരമാക്കുന്നതിന് നിങ്ങളുടെ താൽപ്പര്യങ്ങൾ കാണിക്കാൻ നിങ്ങൾ സന്ദർശിക്കുന്ന സൈറ്റിന് Chrome-നോട് ആവശ്യപ്പെടാം. Chrome-ന് 3 താൽപ്പര്യങ്ങൾ വരെ പങ്കിടാനാകും.</translation>
 <translation id="2563121210305478421">Chrome വീണ്ടും ആരംഭിക്കണോ?</translation>
@@ -122,7 +122,6 @@
 <translation id="3080151273017101988">Google Chrome അടച്ചാലും പശ്ചാത്തല ആപ്ലിക്കേഷനുകള്‍ പ്രവര്‍ത്തിപ്പിക്കുന്നത് തുടരുക</translation>
 <translation id="3089968997497233615">Google Chrome-ന്റെ പുതിയതും സുരക്ഷിതവുമായ പതിപ്പ് ലഭ്യമാണ്.</translation>
 <translation id="3100998948628680988">നിങ്ങളുടെ Chrome പ്രൊഫൈലിന് പേര് നൽകുക</translation>
-<translation id="3103390129666310801">നിങ്ങളുടെ ഉപകരണം അപ് ടു ഡേറ്റാണോ എന്ന് കാണാൻ <ph name="LINK_BEGIN" />ChromeOS Flex ക്രമീകരണത്തിലേക്ക്<ph name="LINK_END" /> പോകുക</translation>
 <translation id="3114643501466072395">ഡാറ്റാ ലംഘനങ്ങളിൽ നിന്നും മറ്റ് സുരക്ഷാ പ്രശ്‌നങ്ങളിൽ നിന്നും നിങ്ങളുടെ മറ്റ് പാസ്‌വേഡുകൾ സുരക്ഷിതമാണോ എന്ന് പരിശോധിക്കാൻ, <ph name="BEGIN_LINK" />Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">നിങ്ങളുടെ മാറ്റങ്ങൾ അടുത്ത തവണ Google Chrome വീണ്ടും ആരംഭിക്കുമ്പോൾ പ്രാബല്യത്തിൽ വരും.</translation>
 <translation id="3149510190863420837">Chrome അപ്ലിക്കേഷനുകൾ</translation>
@@ -213,7 +212,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">ഭാവിയിലെ Google Chrome അപ്ഡേറ്റുകൾ ലഭിക്കാൻ macOS 10.13 അല്ലെങ്കിൽ അതിന് ശേഷമുള്ള പതിപ്പ് ആവശ്യമാണ്. ഈ കമ്പ്യൂട്ടർ ഉപയോഗിക്കുന്നത് OS X 10.11 ആണ്.</translation>
 <translation id="5098668839038261629">ഓണായിരിക്കുമ്പോൾ, Chrome-ൽ നിന്ന് നിങ്ങളും സൈൻ ഔട്ട് ആകും</translation>
-<translation id="5112116809696021727">നിങ്ങളുടെ ഉപകരണം അപ് ടു ഡേറ്റാണോ എന്ന് കാണാൻ <ph name="LINK_BEGIN" />ChromeOS ക്രമീകരണത്തിലേക്ക്<ph name="LINK_END" /> പോകുക</translation>
 <translation id="5132929315877954718">Google Chrome-നായി മികച്ച അപ്ലിക്കേഷനുകളും വിപുലീകരണങ്ങളും തീമുകളും കണ്ടെത്തുക.</translation>
 <translation id="5139423532931106058">നിങ്ങളുടെ Chrome പ്രൊഫൈൽ ഇഷ്‌ടാനുസൃതമാക്കുക</translation>
 <translation id="5163087008893166964">Chrome-ലേക്ക് സ്വാഗതം; പുതിയ ബ്രൗസർ വിൻഡോ തുറന്നു</translation>
@@ -253,8 +251,6 @@
 <translation id="5940385492829620908">നിങ്ങളുടെ വെബും ബുക്ക്മാർക്കുകളും മറ്റ് Chrome ഫയലും ഇവിടെ തത്സമയമാണ്.</translation>
 <translation id="5941711191222866238">ചെറുതാക്കുക</translation>
 <translation id="5941830788786076944">Google Chrome-നെ ഡിഫോൾട്ട് ബ്രൗസർ ആക്കുക</translation>
-<translation id="5959292945051687759">ഈ പേജിൽ ക്രമീകരണം കാണുന്നില്ലെങ്കിൽ, നിങ്ങളുടെ <ph name="LINK_BEGIN" />
-        ChromeOS ക്രമീകരണത്തിൽ<ph name="LINK_END" /> പരിശോധിക്കുക</translation>
 <translation id="6003112304606738118">ഡൗൺലോഡ് ചെയ്യുന്നു... <ph name="HOURS" /> മണിക്കൂർ ശേഷിക്കുന്നു</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6070348360322141662">കൂടുതൽ സുരക്ഷ ലഭ്യമാക്കാൻ, Google Chrome നിങ്ങളുടെ ഡാറ്റ എന്‍‌ക്രിപ്‌റ്റ് ചെയ്യും</translation>
@@ -282,6 +278,7 @@
 <translation id="6739177684496155661">പുതിയ Chrome പ്രൊഫൈലിൽ തുടരണോ?</translation>
 <translation id="6750954913813541382">അക്ഷരത്തെറ്റുകൾ പരിഹരിക്കാൻ നിങ്ങൾ ബ്രൗസറിൽ ടൈപ്പ് ചെയ്യുന്ന ടെക്‌സ്‌റ്റ് Chrome Google ലേക്ക് അയയ്ക്കുന്നു</translation>
 <translation id="677276454032249905">എന്തായാലും Chrome-ൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
+<translation id="6785872064505734160">Chrome-ലെ Google Assistant-ന് വെബ്‌സൈറ്റുകളിലുടനീളം നിങ്ങൾക്കായി പ്രവർത്തനങ്ങൾ പൂർത്തിയാക്കാനാവും</translation>
 <translation id="683440813066116847">mDNS ട്രാഫിക് അനുവദിക്കാൻ Google Chrome കാനറിയ്‌ക്കുള്ള ഇൻബൗണ്ട് റൂൾ.</translation>
 <translation id="6881299373831449287">Chrome അപ്‌ഡേറ്റ് ചെയ്യുന്നു</translation>
 <translation id="6885412569789873916">Chrome ബീറ്റ ആപ്പുകൾ</translation>
@@ -354,6 +351,7 @@
 <translation id="8129812357326543296">&amp;Google Chrome-നെക്കുറിച്ച്</translation>
 <translation id="813913629614996137">ആരംഭിക്കുന്നു...</translation>
 <translation id="8255190535488645436">Google Chrome നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ഉപയോഗിക്കുന്നു.</translation>
+<translation id="8270775718612349140">Chrome മാനേജ് ചെയ്യുന്ന സർട്ടിഫിക്കറ്റുകൾ</translation>
 <translation id="8286862437124483331">Google Chrome പാസ്‌വേഡുകൾ ദൃശ്യമാക്കാൻ ശ്രമിക്കുന്നു. ഇത് അനുവദിക്കാൻ നിങ്ങളുടെ Windows പാസ്‌വേഡ് നൽകുക.</translation>
 <translation id="828798499196665338">നിങ്ങളുടെ രക്ഷിതാവ് Chrome-നുള്ള "സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കുമുള്ള അനുമതികൾ" ഓഫാക്കി. ഈ <ph name="EXTENSION_TYPE_PARAMETER" /> പ്രവർത്തനക്ഷമമാക്കുന്നത് അനുവദനീയമല്ല.</translation>
 <translation id="8290100596633877290">ഓ! Google Chrome ക്രാഷുചെയ്തു. ഇപ്പോള്‍ വീണ്ടും സമാരംഭിക്കണോ?</translation>

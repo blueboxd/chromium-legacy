@@ -47,6 +47,7 @@ struct FieldDataDescription {
   absl::optional<bool> is_autofilled;
   absl::optional<url::Origin> origin;
   std::vector<SelectOption> select_options = {};
+  FieldPropertiesMask properties_mask = 0;
 };
 
 // Attributes provided to the test form.
@@ -89,7 +90,6 @@ struct TestFormFlags {
 template <typename = void>
 struct ExpectedFieldTypeValues {
   std::vector<HtmlFieldType> expected_html_type = {};
-  std::vector<AutofillField::PhonePart> expected_phone_part = {};
   std::vector<ServerFieldType> expected_heuristic_type = {};
   std::vector<ServerFieldType> expected_overall_type = {};
 };

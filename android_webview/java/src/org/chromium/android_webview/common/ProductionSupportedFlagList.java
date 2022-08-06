@@ -7,6 +7,7 @@ package org.chromium.android_webview.common;
 import org.chromium.base.BaseFeatures;
 import org.chromium.base.BaseSwitches;
 import org.chromium.blink_public.common.BlinkFeatures;
+import org.chromium.blink_scheduler.BlinkSchedulerFeatures;
 import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -152,13 +153,11 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_TYPE_TAKES_PRECEDENCE,
                     "Enables server type marked as overrides to take precedence over the "
                             + "autocomplete attribute."),
-            Flag.baseFeature(
-                    AutofillFeatures.AUTOFILL_FIX_SERVER_QUERIES_IF_PASSWORD_MANAGER_IS_ENABLED,
-                    "Enables a autofill server queries if the password manager is enabled but "
-                            + "autofill for addresses and credit cards are disabled."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ACROSS_IFRAMES,
                     "Enable Autofill for frame-transcending forms (forms whose fields live in "
                             + "different frames)."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_DEPENDENT_LOCALITY_PARSING,
+                    "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_RANKING_FORMULA,
                     "Enables new autofill suggestion ranking formula"),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_NAMES,
@@ -175,6 +174,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
                     "Enforce delay between offering Autofill opportunities in the "
                             + "strike database."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_ASYNC,
+                    "Parse forms asynchronously outside of the UI thread."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSING_PATTERN_PROVIDER,
                     "Enables Autofill to use its new method to retrieve parsing patterns."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PAGE_LANGUAGE_DETECTION,
@@ -203,13 +204,6 @@ public final class ProductionSupportedFlagList {
                             + "accessory."),
             Flag.baseFeature(
                     NetworkServiceFeatures.TRUST_TOKENS, "Enables the prototype Trust Tokens API."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_APPS_PACKAGE_NAMES_ALLOWLIST,
-                    "Enables using a server-defined allowlist of apps whose name can be recorded "
-                            + "in UMA logs. The allowlist is downloaded and fetched via component "
-                            + "updater services in WebView."),
-            Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_APPS_PACKAGE_NAMES_ALLOWLIST_COMPONENT,
-                    "Disable downloading the apps package names allowlist component by the "
-                            + "component updater."),
             Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_PACKAGE_ALLOWLIST_THROTTLING,
                     "Disables throttling querying apps package names allowlist components in"
                             + "WebView clients."),
@@ -340,6 +334,16 @@ public final class ProductionSupportedFlagList {
                             + " rather than token count."),
             Flag.baseFeature(AwFeatures.WEBVIEW_HIT_TEST_IN_BLINK_ON_TOUCH_START,
                     "Hit test on touch start in blink"),
+            Flag.baseFeature(BlinkFeatures.STYLUS_WRITING_TO_INPUT,
+                    "Allows using a stylus for text input. This requires "
+                            + "either a Samsung device with Direct Writing enabled, or an "
+                            + "Android T device with stylus handwriting enabled."),
+            Flag.baseFeature(BlinkFeatures.SCROLL_UPDATE_OPTIMIZATIONS,
+                    "Enable scroll update optimizations. See https://crbug.com/1346789."),
+            Flag.baseFeature(BaseFeatures.ALIGN_WAKE_UPS, "Align delayed wake ups at 125 Hz"),
+            Flag.baseFeature(BlinkSchedulerFeatures.THREADED_SCROLL_PREVENT_RENDERING_STARVATION,
+                    "Enable rendering starvation-prevention during threaded scrolling."
+                            + " See https://crbug.com/1315279."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

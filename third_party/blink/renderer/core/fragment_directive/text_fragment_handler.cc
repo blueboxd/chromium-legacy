@@ -40,7 +40,11 @@ void TextFragmentHandler::BindTextFragmentReceiver(
 }
 
 void TextFragmentHandler::Cancel() {
-  DCHECK(GetTextFragmentSelectorGenerator());
+  // TODO(crbug.com/1303881): This shouldn't happen, but sometimes browser
+  // side requests link to text when generation was never started.
+  // See crash in crbug.com/1301794.
+  if (!GetTextFragmentSelectorGenerator())
+    return;
 
   GetTextFragmentSelectorGenerator()->Reset();
 }
@@ -48,7 +52,6 @@ void TextFragmentHandler::Cancel() {
 void TextFragmentHandler::RequestSelector(RequestSelectorCallback callback) {
   DCHECK(shared_highlighting::ShouldOfferLinkToText(
       GURL(GetFrame()->GetDocument()->Url())));
-  DCHECK(!GetFrame()->Selection().SelectedText().IsEmpty());
 
   response_callback_ = std::move(callback);
   selector_ready_status_ =

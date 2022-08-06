@@ -9,8 +9,11 @@ import android.content.Context;
 import android.text.SpannableString;
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,11 +40,30 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.util.ColorUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
-class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache.Observer,
-                                        AccountPickerCoordinator.Listener {
+@VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+public class SigninFirstRunMediator
+        implements AccountsChangeObserver, ProfileDataCache.Observer,
+                   AccountPickerCoordinator.Listener, FreUMADialogCoordinator.Listener {
+    /**
+     * Used for MobileFre.SlowestLoadPoint histogram. Should be treated as append-only.
+     * See {@code LoadPoint} in tools/metrics/histograms/enums.xml.
+     */
+    @VisibleForTesting
+    @IntDef({LoadPoint.NATIVE_INITIALIZATION, LoadPoint.POLICY_LOAD, LoadPoint.CHILD_STATUS_LOAD,
+            LoadPoint.MAX})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LoadPoint {
+        int NATIVE_INITIALIZATION = 0;
+        int POLICY_LOAD = 1;
+        int CHILD_STATUS_LOAD = 2;
+        int MAX = 3;
+    }
+
     private final Context mContext;
     private final ModalDialogManager mModalDialogManager;
     private final AccountManagerFacade mAccountManagerFacade;
@@ -49,9 +71,15 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
     private final PrivacyPreferencesManager mPrivacyPreferencesManager;
     private final PropertyModel mModel;
     private final ProfileDataCache mProfileDataCache;
+    private boolean mDestroyed;
+
+    private @LoadPoint int mSlowestLoadPoint;
+    private boolean mNativePolicyAndChildStatusLoaded;
+
     private AccountPickerDialogCoordinator mDialogCoordinator;
     private @Nullable String mSelectedAccountName;
     private @Nullable String mDefaultAccountName;
+    private boolean mAllowCrashUpload;
 
     SigninFirstRunMediator(Context context, ModalDialogManager modalDialogManager,
             Delegate delegate, PrivacyPreferencesManager privacyPreferencesManager) {
@@ -63,6 +91,11 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mModel = SigninFirstRunProperties.createModel(this::onSelectedAccountClicked,
                 this::onContinueAsClicked, this::onDismissClicked,
                 ExternalAuthUtils.getInstance().canUseGooglePlayServices(), getFooterString(false));
+
+        mDelegate.getNativeInitializationPromise().then(result -> { onNativeLoaded(); });
+        mDelegate.getPolicyLoadListener().onAvailable(hasPolicies -> onPolicyLoad());
+        mDelegate.getChildAccountStatusSupplier().onAvailable(
+                ignored -> onChildAccountStatusAvailable());
 
         mProfileDataCache.addObserver(this);
 
@@ -77,8 +110,10 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
     }
 
     void destroy() {
+        assert !mDestroyed;
         mProfileDataCache.removeObserver(this);
         mAccountManagerFacade.removeObserver(this);
+        mDestroyed = true;
     }
 
     void reset() {
@@ -86,7 +121,46 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, false);
     }
 
+    private void onNativeLoaded() {
+        // This happens asynchronously, so this check is necessary to ensure we don't interact with
+        // the delegate after the mediator is destroyed. See https://crbug.com/1294998.
+        if (mDestroyed) return;
+
+        mSlowestLoadPoint = LoadPoint.NATIVE_INITIALIZATION;
+        mDelegate.recordNativeInitializedHistogram();
+        checkWhetherNativePolicyAndChildStatusAreLoaded();
+    }
+
+    private void onChildAccountStatusAvailable() {
+        mSlowestLoadPoint = LoadPoint.CHILD_STATUS_LOAD;
+        checkWhetherNativePolicyAndChildStatusAreLoaded();
+    }
+
+    private void onPolicyLoad() {
+        mSlowestLoadPoint = LoadPoint.POLICY_LOAD;
+        checkWhetherNativePolicyAndChildStatusAreLoaded();
+    }
+
+    private void checkWhetherNativePolicyAndChildStatusAreLoaded() {
+        // This happens asynchronously, so this check is necessary to ensure we don't interact with
+        // the delegate after the mediator is destroyed. See https://crbug.com/1294998.
+        if (mDestroyed) return;
+
+        if (mDelegate.getNativeInitializationPromise().isFulfilled()
+                && mDelegate.getChildAccountStatusSupplier().get() != null
+                && mDelegate.getPolicyLoadListener().get() != null
+                && !mNativePolicyAndChildStatusLoaded) {
+            mNativePolicyAndChildStatusLoaded = true;
+            onNativeAndPolicyLoaded(mDelegate.getPolicyLoadListener().get());
+            mDelegate.recordNativePolicyAndChildStatusLoadedHistogram();
+            RecordHistogram.recordEnumeratedHistogram(
+                    "MobileFre.SlowestLoadPoint", mSlowestLoadPoint, LoadPoint.MAX);
+        }
+    }
+
     void onNativeAndPolicyLoaded(boolean hasPolicies) {
+        mAllowCrashUpload = !isMetricsReportingDisabledByPolicy();
+
         mModel.set(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED, true);
         mModel.set(SigninFirstRunProperties.FRE_POLICY, hasPolicies ? new FrePolicy() : null);
         final boolean isSigninSupported = ExternalAuthUtils.getInstance().canUseGooglePlayServices()
@@ -132,7 +206,17 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mDelegate.addAccount();
     }
 
-    protected boolean isMetricsReportingDisabledByPolicy() {
+    /** Implements {@link FreUMADialogCoordinator.Listener} */
+    @Override
+    public void onAllowCrashUploadChecked(boolean allowCrashUpload) {
+        mAllowCrashUpload = allowCrashUpload;
+    }
+
+    private void openUmaDialog() {
+        new FreUMADialogCoordinator(mContext, mModalDialogManager, this, mAllowCrashUpload);
+    }
+
+    private boolean isMetricsReportingDisabledByPolicy() {
         @Nullable
         FrePolicy frePolicy = mModel.get(SigninFirstRunProperties.FRE_POLICY);
         return frePolicy != null && frePolicy.metricsReportingDisabledByPolicy;
@@ -153,7 +237,7 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
     private void onContinueAsClicked() {
         if (isContinueOrDismissClicked()) return;
         if (!mModel.get(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED)) {
-            mDelegate.acceptTermsOfService();
+            mDelegate.acceptTermsOfService(mAllowCrashUpload);
             mDelegate.advanceToNextPage();
             return;
         }
@@ -164,7 +248,7 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
 
         // In all other cases, the button text is "Continue as ...", so mark ToS as accepted.
         // This is needed to get metrics/crash reports from the sign-in flow itself.
-        mDelegate.acceptTermsOfService();
+        mDelegate.acceptTermsOfService(mAllowCrashUpload);
         if (mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED)) {
             // Don't perform the sign-in here, as it will be handled by SigninChecker.
             mDelegate.advanceToNextPage();
@@ -218,7 +302,7 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         assert mModel.get(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED)
             : "The dismiss button shouldn't be visible before the native is not initialized!";
         mDelegate.recordFreProgressHistogram(MobileFreProgress.WELCOME_DISMISS);
-        mDelegate.acceptTermsOfService();
+        mDelegate.acceptTermsOfService(mAllowCrashUpload);
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
                         .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
@@ -308,7 +392,7 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         if (!isMetricsReportingDisabled) {
             footerString += " " + mContext.getString(R.string.signin_fre_footer_metrics_reporting);
             final NoUnderlineClickableSpan clickableUMADialogSpan =
-                    new NoUnderlineClickableSpan(mContext, view -> mDelegate.openUmaDialog());
+                    new NoUnderlineClickableSpan(mContext, view -> openUmaDialog());
             spans.add(
                     new SpanApplier.SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan));
         }

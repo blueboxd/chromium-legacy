@@ -181,6 +181,17 @@ V8OffscreenRenderingContext* GPUCanvasContext::AsV8OffscreenRenderingContext() {
   return MakeGarbageCollected<V8OffscreenRenderingContext>(this);
 }
 
+SkColorInfo GPUCanvasContext::CanvasRenderingContextSkColorInfo() const {
+  if (!swap_buffers_)
+    return CanvasRenderingContext::CanvasRenderingContextSkColorInfo();
+  return SkColorInfo(viz::ResourceFormatToClosestSkColorType(
+                         /*gpu_compositing=*/true, swap_buffers_->Format()),
+                     alpha_mode_ == V8GPUCanvasAlphaMode::Enum::kOpaque
+                         ? kOpaque_SkAlphaType
+                         : kPremul_SkAlphaType,
+                     SkColorSpace::MakeSRGB());
+}
+
 void GPUCanvasContext::Stop() {
   UnconfigureInternal();
   stopped_ = true;
@@ -259,6 +270,15 @@ bool GPUCanvasContext::CopyRenderingResultsFromDrawingBuffer(
 
   return CopyTextureToResourceProvider(
       texture_->GetHandle(), swap_buffers_->Size(), resource_provider);
+}
+
+bool GPUCanvasContext::CopyRenderingResultsToVideoFrame(
+    WebGraphicsContext3DVideoFramePool* frame_pool,
+    SourceDrawingBuffer src_buffer,
+    const gfx::ColorSpace& dst_color_space,
+    VideoFrameCopyCompletedCallback callback) {
+  return swap_buffers_->CopyToVideoFrame(frame_pool, src_buffer,
+                                         dst_color_space, std::move(callback));
 }
 
 void GPUCanvasContext::SetFilterQuality(
@@ -594,7 +614,10 @@ GPUTexture* GPUCanvasContext::ReplaceCurrentTexture() {
 
   texture_ = nullptr;
 
-  WGPUTexture dawn_client_texture = swap_buffers_->GetNewTexture(size_);
+  WGPUTexture dawn_client_texture = swap_buffers_->GetNewTexture(
+      size_, alpha_mode_ == V8GPUCanvasAlphaMode::Enum::kOpaque
+                 ? kOpaque_SkAlphaType
+                 : kPremul_SkAlphaType);
   if (!dawn_client_texture) {
     texture_ = GPUTexture::CreateError(device_);
     return texture_;
@@ -657,10 +680,11 @@ bool GPUCanvasContext::CopyTextureToResourceProvider(
   gpu::SyncToken sync_token;
   ri->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   webgpu->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-  webgpu->AssociateMailbox(reservation.deviceId, reservation.deviceGeneration,
-                           reservation.id, reservation.generation,
-                           WGPUTextureUsage_CopyDst,
-                           reinterpret_cast<const GLbyte*>(&dst_mailbox));
+  webgpu->AssociateMailbox(
+      reservation.deviceId, reservation.deviceGeneration, reservation.id,
+      reservation.generation,
+      WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment,
+      reinterpret_cast<const GLbyte*>(&dst_mailbox));
   WGPUImageCopyTexture source = {
       .nextInChain = nullptr,
       .texture = texture,
@@ -681,24 +705,60 @@ bool GPUCanvasContext::CopyTextureToResourceProvider(
       .depthOrArrayLayers = 1,
   };
 
-  WGPUDawnEncoderInternalUsageDescriptor internal_usage_desc = {
-      .chain = {.sType = WGPUSType_DawnEncoderInternalUsageDescriptor},
-      .useInternalUsages = true,
-  };
-  WGPUCommandEncoderDescriptor command_encoder_desc = {
-      .nextInChain = &internal_usage_desc.chain,
-  };
-  WGPUCommandEncoder command_encoder = GetProcs().deviceCreateCommandEncoder(
-      device_->GetHandle(), &command_encoder_desc);
-  GetProcs().commandEncoderCopyTextureToTexture(command_encoder, &source,
-                                                &destination, &copy_size);
+  if (alpha_mode_ == V8GPUCanvasAlphaMode::Enum::kOpaque) {
+    // Issue a copyTextureForBrowser call with internal usage turned on.
+    // There is a special step for srcAlphaMode == WGPUAlphaMode_Opaque that
+    // clears alpha channel to one.
+    SkImageInfo sk_dst_image_info = resource_provider->GetSkImageInfo();
+    WGPUAlphaMode dstAlphaMode;
+    switch (sk_dst_image_info.alphaType()) {
+      case SkAlphaType::kPremul_SkAlphaType:
+        dstAlphaMode = WGPUAlphaMode_Premultiplied;
+        break;
+      case SkAlphaType::kUnpremul_SkAlphaType:
+        dstAlphaMode = WGPUAlphaMode_Unpremultiplied;
+        break;
+      case SkAlphaType::kOpaque_SkAlphaType:
+        dstAlphaMode = WGPUAlphaMode_Opaque;
+        break;
+      default:
+        // Unknown dst alpha type, default to equal to src alpha mode
+        dstAlphaMode = WGPUAlphaMode_Opaque;
+        break;
+    }
+    WGPUCopyTextureForBrowserOptions options = {
+        .flipY = !resource_provider->IsOriginTopLeft(),
+        .srcAlphaMode = WGPUAlphaMode_Opaque,
+        .dstAlphaMode = dstAlphaMode,
+        .internalUsage = true,
+    };
 
-  WGPUCommandBuffer command_buffer =
-      GetProcs().commandEncoderFinish(command_encoder, nullptr);
-  GetProcs().commandEncoderRelease(command_encoder);
+    GetProcs().queueCopyTextureForBrowser(device_->queue()->GetHandle(),
+                                          &source, &destination, &copy_size,
+                                          &options);
 
-  GetProcs().queueSubmit(device_->queue()->GetHandle(), 1u, &command_buffer);
-  GetProcs().commandBufferRelease(command_buffer);
+  } else {
+    // Create a command encoder and call copyTextureToTexture for the image
+    // copy.
+    WGPUDawnEncoderInternalUsageDescriptor internal_usage_desc = {
+        .chain = {.sType = WGPUSType_DawnEncoderInternalUsageDescriptor},
+        .useInternalUsages = true,
+    };
+    WGPUCommandEncoderDescriptor command_encoder_desc = {
+        .nextInChain = &internal_usage_desc.chain,
+    };
+    WGPUCommandEncoder command_encoder = GetProcs().deviceCreateCommandEncoder(
+        device_->GetHandle(), &command_encoder_desc);
+    GetProcs().commandEncoderCopyTextureToTexture(command_encoder, &source,
+                                                  &destination, &copy_size);
+
+    WGPUCommandBuffer command_buffer =
+        GetProcs().commandEncoderFinish(command_encoder, nullptr);
+    GetProcs().commandEncoderRelease(command_encoder);
+
+    GetProcs().queueSubmit(device_->queue()->GetHandle(), 1u, &command_buffer);
+    GetProcs().commandBufferRelease(command_buffer);
+  }
 
   webgpu->DissociateMailbox(reservation.id, reservation.generation);
   GetProcs().textureRelease(reservation.texture);
@@ -711,11 +771,10 @@ bool GPUCanvasContext::CopyTextureToResourceProvider(
 scoped_refptr<StaticBitmapImage> GPUCanvasContext::SnapshotInternal(
     const WGPUTexture& texture,
     const gfx::Size& size) const {
-  const auto info =
-      SkImageInfo::Make(size.width(), size.height(),
-                        viz::ResourceFormatToClosestSkColorType(
-                            /*gpu_compositing=*/true, swap_buffers_->Format()),
-                        kPremul_SkAlphaType);
+  const auto canvas_context_color = CanvasRenderingContextSkColorInfo();
+  const auto info = SkImageInfo::Make(size.width(), size.height(),
+                                      canvas_context_color.colorType(),
+                                      canvas_context_color.alphaType());
   // We tag the SharedImage inside the WebGPUImageProvider with display usage
   // since there are uncommon paths which may use this snapshot for compositing.
   // These paths are usually related to either printing or either video and

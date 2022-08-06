@@ -152,6 +152,25 @@ const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
   return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorName());
 }
 
+const CSSValue* AnchorScroll::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (CSSValue* value =
+          css_parsing_utils::ConsumeIdent<CSSValueID::kNone>(range)) {
+    return value;
+  }
+  return css_parsing_utils::ConsumeDashedIdent(range, context);
+}
+const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  if (style.AnchorScroll().IsEmpty())
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorScroll());
+}
+
 const CSSValue* AnimationDelay::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -1585,9 +1604,7 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
     state.Style()->SetColorIsCurrentColor(true);
-    if (((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-          state.IsForHighlight()) ||
-         state.IsForCustomHighlight()) &&
+    if (state.UsesHighlightPseudoInheritance() &&
         state.OriginatingElementStyle())
       state.Style()->SetColor(state.OriginatingElementStyle()->GetColor());
     return;
@@ -1635,11 +1652,9 @@ const CSSValue* ColorScheme::ParseSingleValue(
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
   do {
     CSSValueID id = range.Peek().Id();
-    // 'normal' is handled above, and 'default' is reserved for future use.
-    // 'revert' is not yet implemented as a keyword, but still skip it for
-    // compat and interop.
-    if (id == CSSValueID::kNormal || id == CSSValueID::kRevert ||
-        id == CSSValueID::kDefault) {
+    // 'normal' is handled above, and needs to be excluded from
+    // ConsumeCustomIdent below.
+    if (id == CSSValueID::kNormal) {
       return nullptr;
     }
     CSSValue* value =
@@ -2021,17 +2036,12 @@ const CSSValue* ContainerType::CSSValueFromComputedStyleInternal(
             kContainerTypeBlockSize);
   if (style.ContainerType() == kContainerTypeNormal)
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style.ContainerType() & kContainerTypeStyle)
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kStyle));
-  if ((style.ContainerType() & kContainerTypeSize) == kContainerTypeSize) {
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kSize));
-  } else if ((style.ContainerType() & kContainerTypeSize) ==
-             kContainerTypeInlineSize) {
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kInlineSize));
-  }
-  return list;
+  if (style.ContainerType() == kContainerTypeSize)
+    return CSSIdentifierValue::Create(CSSValueID::kSize);
+  if (style.ContainerType() == kContainerTypeInlineSize)
+    return CSSIdentifierValue::Create(CSSValueID::kInlineSize);
+  NOTREACHED();
+  return nullptr;
 }
 
 namespace {
@@ -3197,7 +3207,6 @@ const CSSValue* FontSynthesisWeight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
   return CSSIdentifierValue::Create(
       style.GetFontDescription().GetFontSynthesisWeight());
 }
@@ -3206,7 +3215,6 @@ const CSSValue* FontSynthesisStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
   return CSSIdentifierValue::Create(
       style.GetFontDescription().GetFontSynthesisStyle());
 }
@@ -3215,7 +3223,6 @@ const CSSValue* FontSynthesisSmallCaps::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
   return CSSIdentifierValue::Create(
       style.GetFontDescription().GetFontSynthesisSmallCaps());
 }
@@ -3230,6 +3237,7 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
 void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
   state.Style()->SetInternalVisitedColor(
       state.Style()->InitialColorForColorScheme());
+  state.Style()->SetInternalVisitedColorIsCurrentColor(false);
 }
 
 void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
@@ -3240,6 +3248,8 @@ void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
   } else {
     style->SetInternalVisitedColor(state.ParentStyle()->GetColor());
   }
+  state.Style()->SetInternalVisitedColorIsCurrentColor(
+      state.ParentStyle()->InternalVisitedColorIsCurrentColor());
 }
 
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
@@ -3248,16 +3258,23 @@ void InternalVisitedColor::ApplyValue(StyleResolverState& state,
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
+    state.Style()->SetInternalVisitedColorIsCurrentColor(true);
+    if (state.UsesHighlightPseudoInheritance() &&
+        state.OriginatingElementStyle()) {
+      state.Style()->SetInternalVisitedColor(
+          state.OriginatingElementStyle()->InternalVisitedColor());
+    }
     return;
   }
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
     state.Style()->SetInternalVisitedColor(
         state.Style()->InitialColorForColorScheme());
-    return;
+  } else {
+    state.Style()->SetInternalVisitedColor(
+        StyleBuilderConverter::ConvertStyleColor(state, value, true));
   }
-  state.Style()->SetInternalVisitedColor(
-      StyleBuilderConverter::ConvertStyleColor(state, value, true));
+  state.Style()->SetInternalVisitedColorIsCurrentColor(false);
 }
 
 const blink::Color InternalVisitedColor::ColorIncludingFallback(
@@ -3616,6 +3633,38 @@ const CSSValue* Height::CSSValueFromComputedStyleInternal(
   }
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.Height(),
                                                              style);
+}
+
+const CSSValue* PopUpShowDelay::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeTime(
+      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+const CSSValue* PopUpShowDelay::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return CSSNumericLiteralValue::Create(style.PopUpShowDelay(),
+                                        CSSPrimitiveValue::UnitType::kSeconds);
+}
+
+const CSSValue* PopUpHideDelay::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeTime(
+      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+const CSSValue* PopUpHideDelay::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return CSSNumericLiteralValue::Create(style.PopUpHideDelay(),
+                                        CSSPrimitiveValue::UnitType::kSeconds);
 }
 
 const CSSValue* Hyphens::CSSValueFromComputedStyleInternal(
@@ -6085,9 +6134,6 @@ const CSSValue* ScrollbarGutter::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (!RuntimeEnabledFeatures::ScrollbarGutterEnabled())
-    return nullptr;
-
   if (auto* value = css_parsing_utils::ConsumeIdent<CSSValueID::kAuto>(range))
     return value;
 
@@ -6868,14 +6914,8 @@ const CSSValue* ContentVisibility::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueID::kHiddenMatchable &&
-      !RuntimeEnabledFeatures::CSSContentVisibilityHiddenMatchableEnabled(
-          context.GetExecutionContext())) {
-    return nullptr;
-  }
-  return css_parsing_utils::ConsumeIdent<CSSValueID::kVisible,
-                                         CSSValueID::kAuto, CSSValueID::kHidden,
-                                         CSSValueID::kHiddenMatchable>(range);
+  return css_parsing_utils::ConsumeIdent<
+      CSSValueID::kVisible, CSSValueID::kAuto, CSSValueID::kHidden>(range);
 }
 
 const CSSValue* TabSize::ParseSingleValue(CSSParserTokenRange& range,
@@ -7023,7 +7063,6 @@ const CSSValue* TextDecorationThickness::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
   if (auto* ident = css_parsing_utils::ConsumeIdent<CSSValueID::kFromFont,
                                                     CSSValueID::kAuto>(range)) {
     return ident;
@@ -7036,8 +7075,6 @@ const CSSValue* TextDecorationThickness::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
-
   if (style.GetTextDecorationThickness().IsFromFont())
     return CSSIdentifierValue::Create(CSSValueID::kFromFont);
 
@@ -7255,19 +7292,15 @@ const CSSValue* TextUnderlinePosition::ParseSingleValue(
     return css_parsing_utils::ConsumeIdent(range);
 
   CSSIdentifierValue* from_font_or_under_value =
-      RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled()
-          ? css_parsing_utils::ConsumeIdent<CSSValueID::kFromFont,
-                                            CSSValueID::kUnder>(range)
-          : css_parsing_utils::ConsumeIdent<CSSValueID::kUnder>(range);
+      css_parsing_utils::ConsumeIdent<CSSValueID::kFromFont,
+                                      CSSValueID::kUnder>(range);
   CSSIdentifierValue* left_or_right_value =
       css_parsing_utils::ConsumeIdent<CSSValueID::kLeft, CSSValueID::kRight>(
           range);
   if (left_or_right_value && !from_font_or_under_value) {
     from_font_or_under_value =
-        RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled()
-            ? css_parsing_utils::ConsumeIdent<CSSValueID::kFromFont,
-                                              CSSValueID::kUnder>(range)
-            : css_parsing_utils::ConsumeIdent<CSSValueID::kUnder>(range);
+        css_parsing_utils::ConsumeIdent<CSSValueID::kFromFont,
+                                        CSSValueID::kUnder>(range);
   }
   if (!from_font_or_under_value && !left_or_right_value)
     return nullptr;
@@ -7314,7 +7347,6 @@ const CSSValue* TextUnderlineOffset::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
   if (range.Peek().Id() == CSSValueID::kAuto)
     return css_parsing_utils::ConsumeIdent(range);
   return css_parsing_utils::ConsumeLengthOrPercent(

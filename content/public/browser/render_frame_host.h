@@ -327,7 +327,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // <fencedframe> element, if the frame is not the top-level <fencedframe>
   // itself. That is, this will return false for all <iframes> nested under a
   // <fencedframe>.
-  virtual bool IsFencedFrameRoot() = 0;
+  virtual bool IsFencedFrameRoot() const = 0;
 
   // Fenced frames (meta-bug https://crbug.com/1111084):
   // Returns true if `this` was loaded in a <fencedframe> element directly or if
@@ -379,13 +379,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   //
   // In the other direction, a RenderFrameHost can also transfer to a different
   // FrameTreeNode! Prior to the advent of prerendered pages
-  // (content/browser/prerender/README.md), that was not true, and it could be
-  // assumed that the return value of RenderFrameHost::GetFrameTreeNodeId() was
-  // constant over the lifetime of the RenderFrameHost. But with prerender
-  // activations, the main frame of the prerendered page transfers to a new
-  // FrameTreeNode, so newer code should no longer make that assumption. This
-  // transfer only happens for main frames (currently only during a prerender
-  // activation navigation) and never happens for subframes.
+  // (content/browser/preloading/prerender/README.md), that was not true, and it
+  // could be assumed that the return value of
+  // RenderFrameHost::GetFrameTreeNodeId() was constant over the lifetime of the
+  // RenderFrameHost. But with prerender activations, the main frame of the
+  // prerendered page transfers to a new FrameTreeNode, so newer code should no
+  // longer make that assumption. This transfer only happens for main frames
+  // (currently only during a prerender activation navigation) and never happens
+  // for subframes.
   //
   // If a stable identifier is needed, GetGlobalId() always refers to this
   // RenderFrameHost, while this RenderFrameHost might host multiple documents
@@ -962,14 +963,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns true if this frame has fired DOMContentLoaded.
   virtual bool IsDOMContentLoaded() = 0;
 
-  // Update whether the frame is considered an ad subframe by Ad Tagging.
+  // Update whether the frame is considered an ad frame by Ad Tagging.
   //
   // Note: This ad status is currently maintained and updated *outside* content.
   // This is used to ensure the render frame proxies are in sync (since they
   // aren't exposed in the public API). Eventually, we might be able to simplify
   // this somewhat (maybe //content would be responsible for maintaining the
   // state, with some content client method used to update it).
-  virtual void UpdateIsAdSubframe(bool is_ad_subframe) = 0;
+  virtual void UpdateIsAdFrame(bool is_ad_frame) = 0;
 
   // Tells the host that this is part of setting up a WebXR DOM Overlay. This
   // starts a short timer that permits entering fullscreen mode, similar to a

@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -343,11 +343,11 @@ bool OwnerSettingsServiceAsh::RemoveFromList(const std::string& setting,
   const base::Value* old_value = CrosSettings::Get()->GetPref(setting);
   if (old_value && !old_value->is_list())
     return false;
-  base::Value new_value(base::Value::Type::LIST);
+  base::Value::List new_value;
   if (old_value)
-    new_value = old_value->Clone();
-  new_value.EraseListValue(value);
-  return Set(setting, std::move(new_value));
+    new_value = old_value->GetList().Clone();
+  new_value.EraseValue(value);
+  return Set(setting, base::Value(std::move(new_value)));
 }
 
 bool OwnerSettingsServiceAsh::CommitTentativeDeviceSettings(

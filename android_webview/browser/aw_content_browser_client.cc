@@ -54,6 +54,7 @@
 #include "build/build_config.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/embedder_support/switches.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
@@ -349,15 +350,15 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     DCHECK(process_type == switches::kRendererProcess ||
            process_type == switches::kUtilityProcess)
         << process_type;
-    // Pass crash reporter enabled state to renderer processes.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kEnableCrashReporter)) {
-      command_line->AppendSwitch(::switches::kEnableCrashReporter);
-    }
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kEnableCrashReporterForTesting)) {
-      command_line->AppendSwitch(::switches::kEnableCrashReporterForTesting);
-    }
+
+    static const char* const kSwitchNames[] = {
+        ::switches::kEnableCrashReporter,
+        ::switches::kEnableCrashReporterForTesting,
+        embedder_support::kOriginTrialDisabledFeatures,
+    };
+
+    command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                   kSwitchNames, std::size(kSwitchNames));
   }
 }
 
@@ -640,7 +641,7 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
     const std::string& request_method,
     bool has_user_gesture,
     bool is_redirect,
-    bool is_main_frame,
+    bool is_outermost_main_frame,
     ui::PageTransition transition,
     bool* ignore_navigation) {
   *ignore_navigation = false;
@@ -663,7 +664,7 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
   // Note: about:blank navigations are not received in this path at the moment,
   // they use the old SYNC IPC path as they are not handled by network stack.
   // However, the old path should be removed in future.
-  if (!is_main_frame &&
+  if (!is_outermost_main_frame &&
       (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
        gurl.SchemeIs(url::kAboutScheme)))
     return true;
@@ -687,12 +688,14 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
           ->IsEnterpriseAuthenticationUrl(gurl)) {
     bool success = client_bridge->SendBrowseIntent(url);
     if (success) {
+      *ignore_navigation = true;
       return true;
     }
   }
 
   return client_bridge->ShouldOverrideUrlLoading(
-      url, has_user_gesture, is_redirect, is_main_frame, ignore_navigation);
+      url, has_user_gesture, is_redirect, is_outermost_main_frame,
+      ignore_navigation);
 }
 
 bool AwContentBrowserClient::

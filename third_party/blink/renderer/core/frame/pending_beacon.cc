@@ -4,16 +4,16 @@
 
 #include "third_party/blink/renderer/core/frame/pending_beacon.h"
 
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/frame/pending_beacon.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_beacon_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_blob_formdata_readablestream_urlsearchparams_usvstring.h"
+#include "third_party/blink/public/platform/web_url_request_util.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/html/forms/form_data.h"
-#include "third_party/blink/renderer/core/url/url_search_params.h"
-#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/core/loader/beacon_data.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -56,89 +56,81 @@ class PendingBeaconHostRemote
 const char PendingBeaconHostRemote::kSupplementName[] =
     "PendingBeaconHostRemote";
 
-// static
-PendingBeacon* PendingBeacon::Create(ExecutionContext* ec,
-                                     const String& targetURL) {
-  BeaconOptions* options = BeaconOptions::Create();
-  return PendingBeacon::Create(ec, targetURL, options);
-}
-// static
-PendingBeacon* PendingBeacon::Create(ExecutionContext* ec,
-                                     const String& targetURL,
-                                     BeaconOptions* options) {
-  PendingBeacon* beacon = MakeGarbageCollected<PendingBeacon>(
-      ec, targetURL, options->method(), options->pageHideTimeout());
-  mojom::blink::BeaconMethod method;
-  if (options->method() == V8BeaconMethod::Enum::kGET) {
-    method = mojom::blink::BeaconMethod::kGet;
+PendingBeacon::PendingBeacon(ExecutionContext* ec,
+                             const String& url,
+                             const String& method,
+                             int32_t background_timeout,
+                             int32_t timeout)
+    : ec_(ec),
+      remote_(ec),
+      url_(url),
+      method_(method),
+      background_timeout_(base::Milliseconds(background_timeout)),
+      timeout_(base::Milliseconds(timeout)) {
+  mojom::blink::BeaconMethod host_method;
+  if (method == http_names::kGET) {
+    host_method = mojom::blink::BeaconMethod::kGet;
   } else {
-    method = mojom::blink::BeaconMethod::kPost;
+    host_method = mojom::blink::BeaconMethod::kPost;
   }
 
   // Using the MiscPlatformAPI task type as pending beacons are not yet
   // associated with any specific task runner in the spec.
   auto task_runner = ec->GetTaskRunner(TaskType::kMiscPlatformAPI);
-
   mojo::PendingReceiver<mojom::blink::PendingBeacon> beacon_receiver =
-      beacon->remote_.BindNewPipeAndPassReceiver(task_runner);
+      remote_.BindNewPipeAndPassReceiver(task_runner);
+  KURL host_url = ec->CompleteURL(url);
 
   PendingBeaconHostRemote& host_remote = PendingBeaconHostRemote::From(*ec);
-
-  KURL url = ec->CompleteURL(targetURL);
-
-  host_remote.remote_->CreateBeacon(
-      std::move(beacon_receiver), url, method,
-      base::Milliseconds(beacon->page_hide_timeout_));
-  return beacon;
+  host_remote.remote_->CreateBeacon(std::move(beacon_receiver), host_url,
+                                    host_method, background_timeout_);
 }
-
-PendingBeacon::PendingBeacon(ExecutionContext* context,
-                             String url,
-                             String method,
-                             int32_t page_hide_timeout)
-    : remote_(context),
-      url_(url),
-      method_(method),
-      page_hide_timeout_(page_hide_timeout) {}
 
 void PendingBeacon::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+  visitor->Trace(ec_);
   visitor->Trace(remote_);
 }
 
-void PendingBeacon::setData(
-    const V8UnionReadableStreamOrXMLHttpRequestBodyInit* data) {
-  switch (data->GetContentType()) {
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::
-        kUSVString: {
-      auto string_data = data->GetAsUSVString();
-      remote_->SetData(string_data);
-      return;
-    }
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::
-        kArrayBuffer:
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::
-        kArrayBufferView:
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::kFormData:
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::
-        kURLSearchParams:
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::kBlob:
-    case V8UnionReadableStreamOrXMLHttpRequestBodyInit::ContentType::
-        kReadableStream: {
-    }
-  }
-  NOTIMPLEMENTED();
-}
-
 void PendingBeacon::deactivate() {
-  remote_->Deactivate();
+  if (pending_) {
+    remote_->Deactivate();
+    pending_ = false;
+  }
 }
 
 void PendingBeacon::sendNow() {
-  if (is_pending_) {
+  if (pending_) {
     remote_->SendNow();
-    is_pending_ = false;
+    pending_ = false;
   }
+}
+
+void PendingBeacon::setBackgroundTimeout(int32_t background_timeout) {
+  background_timeout_ = base::Milliseconds(background_timeout);
+}
+
+void PendingBeacon::setTimeout(int32_t timeout) {
+  timeout_ = base::Milliseconds(timeout);
+}
+
+void PendingBeacon::SetURLInternal(const String& url) {
+  url_ = url;
+  KURL host_url = ec_->CompleteURL(url);
+  remote_->SetRequestURL(host_url);
+}
+
+void PendingBeacon::SetDataInternal(const BeaconData& data) {
+  ResourceRequest request;
+
+  data.Serialize(request);
+  // `WrappedResourceRequest` only works for POST request.
+  request.SetHttpMethod(http_names::kPOST);
+  scoped_refptr<network::ResourceRequestBody> request_body =
+      GetRequestBodyForWebURLRequest(WrappedResourceRequest(request));
+  AtomicString content_type = request.HttpContentType();
+  remote_->SetRequestData(std::move(request_body),
+                          content_type.IsNull() ? "" : content_type);
 }
 
 }  // namespace blink

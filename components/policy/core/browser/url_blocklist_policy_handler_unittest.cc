@@ -9,6 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -29,7 +30,9 @@ namespace policy {
 
 namespace {
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 const char kTestDisabledScheme[] = "kTestDisabledScheme";
+#endif
 const char kTestBlocklistValue[] = "kTestBlocklistValue";
 
 }  // namespace
@@ -73,6 +76,7 @@ TEST_F(URLBlocklistPolicyHandlerTest,
   EXPECT_EQ(0U, errors_.size());
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(URLBlocklistPolicyHandlerTest,
        CheckPolicySettings_URLBlocklistUnspecified) {
   EXPECT_TRUE(
@@ -89,6 +93,7 @@ TEST_F(URLBlocklistPolicyHandlerTest,
   const std::string actual = errors_.begin()->first;
   EXPECT_EQ(expected, actual);
 }
+#endif
 
 TEST_F(URLBlocklistPolicyHandlerTest,
        CheckPolicySettings_URLBlocklistWrongType) {
@@ -105,6 +110,7 @@ TEST_F(URLBlocklistPolicyHandlerTest, ApplyPolicySettings_NothingSpecified) {
   EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlocklist, nullptr));
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(URLBlocklistPolicyHandlerTest,
        ApplyPolicySettings_DisabledSchemesWrongType) {
   // The policy expects a list. Give it a boolean.
@@ -114,27 +120,10 @@ TEST_F(URLBlocklistPolicyHandlerTest,
 }
 
 TEST_F(URLBlocklistPolicyHandlerTest,
-       ApplyPolicySettings_URLBlocklistWrongType) {
-  // The policy expects a list. Give it a boolean.
-  SetPolicy(key::kURLBlocklist, base::Value(false));
-  ApplyPolicies();
-  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlocklist, nullptr));
-}
-
-TEST_F(URLBlocklistPolicyHandlerTest,
        ApplyPolicySettings_DisabledSchemesEmpty) {
   SetPolicy(key::kDisabledSchemes, base::Value(base::Value::Type::LIST));
   ApplyPolicies();
-  base::Value* out;
-  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
-  ASSERT_TRUE(out->is_list());
-  EXPECT_EQ(0U, out->GetListDeprecated().size());
-}
-
-TEST_F(URLBlocklistPolicyHandlerTest, ApplyPolicySettings_URLBlocklistEmpty) {
-  SetPolicy(key::kURLBlocklist, base::Value(base::Value::Type::LIST));
-  ApplyPolicies();
-  base::Value* out;
+  base::Value* out = nullptr;
   EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
   ASSERT_TRUE(out->is_list());
   EXPECT_EQ(0U, out->GetListDeprecated().size());
@@ -149,22 +138,7 @@ TEST_F(URLBlocklistPolicyHandlerTest,
   ApplyPolicies();
 
   // The element should be skipped.
-  base::Value* out;
-  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
-  ASSERT_TRUE(out->is_list());
-  EXPECT_EQ(0U, out->GetListDeprecated().size());
-}
-
-TEST_F(URLBlocklistPolicyHandlerTest,
-       ApplyPolicySettings_URLBlocklistWrongElementType) {
-  // The policy expects string-valued elements. Give it booleans.
-  base::Value in(base::Value::Type::LIST);
-  in.Append(false);
-  SetPolicy(key::kURLBlocklist, std::move(in));
-  ApplyPolicies();
-
-  // The element should be skipped.
-  base::Value* out;
+  base::Value* out = nullptr;
   EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
   ASSERT_TRUE(out->is_list());
   EXPECT_EQ(0U, out->GetListDeprecated().size());
@@ -177,7 +151,7 @@ TEST_F(URLBlocklistPolicyHandlerTest,
   SetPolicy(key::kDisabledSchemes, std::move(in_disabled_schemes));
   ApplyPolicies();
 
-  base::Value* out;
+  base::Value* out = nullptr;
   EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
   ASSERT_TRUE(out->is_list());
   EXPECT_EQ(1U, out->GetListDeprecated().size());
@@ -185,23 +159,6 @@ TEST_F(URLBlocklistPolicyHandlerTest,
   const std::string* out_string = out->GetListDeprecated()[0].GetIfString();
   ASSERT_TRUE(out_string);
   EXPECT_EQ(kTestDisabledScheme + std::string("://*"), *out_string);
-}
-
-TEST_F(URLBlocklistPolicyHandlerTest,
-       ApplyPolicySettings_URLBlocklistSuccessful) {
-  base::Value in_url_blocklist(base::Value::Type::LIST);
-  in_url_blocklist.Append(kTestBlocklistValue);
-  SetPolicy(key::kURLBlocklist, std::move(in_url_blocklist));
-  ApplyPolicies();
-
-  base::Value* out;
-  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
-  ASSERT_TRUE(out->is_list());
-  EXPECT_EQ(1U, out->GetListDeprecated().size());
-
-  const std::string* out_string = out->GetListDeprecated()[0].GetIfString();
-  ASSERT_TRUE(out_string);
-  EXPECT_EQ(kTestBlocklistValue, *out_string);
 }
 
 TEST_F(URLBlocklistPolicyHandlerTest, ApplyPolicySettings_MergeSuccessful) {
@@ -214,7 +171,7 @@ TEST_F(URLBlocklistPolicyHandlerTest, ApplyPolicySettings_MergeSuccessful) {
   SetPolicy(key::kURLBlocklist, std::move(in_url_blocklist));
   ApplyPolicies();
 
-  base::Value* out;
+  base::Value* out = nullptr;
   EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
   ASSERT_TRUE(out->is_list());
   ASSERT_EQ(2U, out->GetListDeprecated().size());
@@ -226,49 +183,6 @@ TEST_F(URLBlocklistPolicyHandlerTest, ApplyPolicySettings_MergeSuccessful) {
   const std::string* out_string2 = out->GetListDeprecated()[1].GetIfString();
   ASSERT_TRUE(out_string2);
   EXPECT_EQ(kTestBlocklistValue, *out_string2);
-}
-
-TEST_F(URLBlocklistPolicyHandlerTest,
-       ApplyPolicySettings_CheckPolicySettingsMaxFiltersLimitOK) {
-  size_t max_filters_per_policy = policy::kMaxUrlFiltersPerPolicy;
-  base::Value urls =
-      GetURLBlocklistPolicyValueWithEntries(max_filters_per_policy);
-
-  EXPECT_TRUE(CheckPolicy(key::kURLBlocklist, std::move(urls)));
-  EXPECT_EQ(0U, errors_.size());
-
-  ApplyPolicies();
-
-  base::Value* out;
-  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
-  ASSERT_TRUE(out->is_list());
-  EXPECT_EQ(max_filters_per_policy, out->GetListDeprecated().size());
-}
-
-// Test that the warning message, mapped to
-// |IDS_POLICY_URL_ALLOW_BLOCK_LIST_MAX_FILTERS_LIMIT_WARNING|, is added to
-// |errors_| when URLBlocklist entries exceed the max filters per policy limit.
-TEST_F(URLBlocklistPolicyHandlerTest,
-       ApplyPolicySettings_CheckPolicySettingsMaxFiltersLimitExceeded_1) {
-  size_t max_filters_per_policy = policy::kMaxUrlFiltersPerPolicy;
-  base::Value urls =
-      GetURLBlocklistPolicyValueWithEntries(max_filters_per_policy + 1);
-
-  EXPECT_TRUE(CheckPolicy(key::kURLBlocklist, std::move(urls)));
-  EXPECT_EQ(1U, errors_.size());
-
-  ApplyPolicies();
-
-  auto error_str = errors_.GetErrors(key::kURLBlocklist);
-  auto expected_str = l10n_util::GetStringFUTF16(
-      IDS_POLICY_URL_ALLOW_BLOCK_LIST_MAX_FILTERS_LIMIT_WARNING,
-      base::NumberToString16(max_filters_per_policy));
-  EXPECT_TRUE(error_str.find(expected_str) != std::wstring::npos);
-
-  base::Value* out;
-  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
-  ASSERT_TRUE(out->is_list());
-  EXPECT_EQ(max_filters_per_policy + 1, out->GetListDeprecated().size());
 }
 
 // Test that the warning message, mapped to
@@ -296,7 +210,100 @@ TEST_F(URLBlocklistPolicyHandlerTest,
       base::NumberToString16(max_filters_per_policy));
   EXPECT_TRUE(error_str.find(expected_str) != std::wstring::npos);
 
-  base::Value* out;
+  base::Value* out = nullptr;
+  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
+  ASSERT_TRUE(out->is_list());
+  EXPECT_EQ(max_filters_per_policy + 1, out->GetListDeprecated().size());
+}
+#endif
+
+TEST_F(URLBlocklistPolicyHandlerTest,
+       ApplyPolicySettings_URLBlocklistWrongType) {
+  // The policy expects a list. Give it a boolean.
+  SetPolicy(key::kURLBlocklist, base::Value(false));
+  ApplyPolicies();
+  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlocklist, nullptr));
+}
+
+TEST_F(URLBlocklistPolicyHandlerTest, ApplyPolicySettings_URLBlocklistEmpty) {
+  SetPolicy(key::kURLBlocklist, base::Value(base::Value::Type::LIST));
+  ApplyPolicies();
+  base::Value* out = nullptr;
+  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
+  ASSERT_TRUE(out->is_list());
+  EXPECT_EQ(0U, out->GetListDeprecated().size());
+}
+
+TEST_F(URLBlocklistPolicyHandlerTest,
+       ApplyPolicySettings_URLBlocklistWrongElementType) {
+  // The policy expects string-valued elements. Give it booleans.
+  base::Value in(base::Value::Type::LIST);
+  in.Append(false);
+  SetPolicy(key::kURLBlocklist, std::move(in));
+  ApplyPolicies();
+
+  // The element should be skipped.
+  base::Value* out = nullptr;
+  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
+  ASSERT_TRUE(out->is_list());
+  EXPECT_EQ(0U, out->GetListDeprecated().size());
+}
+
+TEST_F(URLBlocklistPolicyHandlerTest,
+       ApplyPolicySettings_URLBlocklistSuccessful) {
+  base::Value in_url_blocklist(base::Value::Type::LIST);
+  in_url_blocklist.Append(kTestBlocklistValue);
+  SetPolicy(key::kURLBlocklist, std::move(in_url_blocklist));
+  ApplyPolicies();
+
+  base::Value* out = nullptr;
+  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
+  ASSERT_TRUE(out->is_list());
+  EXPECT_EQ(1U, out->GetListDeprecated().size());
+
+  const std::string* out_string = out->GetListDeprecated()[0].GetIfString();
+  ASSERT_TRUE(out_string);
+  EXPECT_EQ(kTestBlocklistValue, *out_string);
+}
+
+TEST_F(URLBlocklistPolicyHandlerTest,
+       ApplyPolicySettings_CheckPolicySettingsMaxFiltersLimitOK) {
+  size_t max_filters_per_policy = policy::kMaxUrlFiltersPerPolicy;
+  base::Value urls =
+      GetURLBlocklistPolicyValueWithEntries(max_filters_per_policy);
+
+  EXPECT_TRUE(CheckPolicy(key::kURLBlocklist, std::move(urls)));
+  EXPECT_EQ(0U, errors_.size());
+
+  ApplyPolicies();
+
+  base::Value* out = nullptr;
+  EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
+  ASSERT_TRUE(out->is_list());
+  EXPECT_EQ(max_filters_per_policy, out->GetListDeprecated().size());
+}
+
+// Test that the warning message, mapped to
+// |IDS_POLICY_URL_ALLOW_BLOCK_LIST_MAX_FILTERS_LIMIT_WARNING|, is added to
+// |errors_| when URLBlocklist entries exceed the max filters per policy limit.
+TEST_F(URLBlocklistPolicyHandlerTest,
+       ApplyPolicySettings_CheckPolicySettingsMaxFiltersLimitExceeded_1) {
+  size_t max_filters_per_policy = policy::kMaxUrlFiltersPerPolicy;
+  base::Value urls =
+      GetURLBlocklistPolicyValueWithEntries(max_filters_per_policy + 1);
+
+  EXPECT_TRUE(CheckPolicy(key::kURLBlocklist, std::move(urls)));
+  EXPECT_EQ(1U, errors_.size());
+
+  ApplyPolicies();
+
+  auto error_str = errors_.GetErrors(key::kURLBlocklist);
+  auto expected_str = l10n_util::GetStringFUTF16(
+      IDS_POLICY_URL_ALLOW_BLOCK_LIST_MAX_FILTERS_LIMIT_WARNING,
+      base::NumberToString16(max_filters_per_policy));
+  EXPECT_TRUE(error_str.find(expected_str) != std::wstring::npos);
+
+  base::Value* out = nullptr;
   EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlocklist, &out));
   ASSERT_TRUE(out->is_list());
   EXPECT_EQ(max_filters_per_policy + 1, out->GetListDeprecated().size());

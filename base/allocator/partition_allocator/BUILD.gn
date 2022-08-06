@@ -153,6 +153,7 @@ target(partition_alloc_target_type, "partition_alloc") {
     "partition_stats.h",
     "partition_tag.h",
     "partition_tag_bitmap.h",
+    "partition_tag_types.h",
     "partition_tls.h",
     "random.cc",
     "random.h",
@@ -277,17 +278,13 @@ target(partition_alloc_target_type, "partition_alloc") {
     ":debugging_buildflags",
     ":logging_buildflags",
     ":partition_alloc_buildflags",
-    "//build:branding_buildflags",
-    "//build/config/compiler:compiler_buildflags",
   ]
 
-  # TODO(https://crbug.com/1151236): Remove this dependency on Abseil once PA
-  # no longer includes any headers directly from base/.
-  deps = [ "//third_party/abseil-cpp:absl" ]
   configs += [
     ":partition_alloc_implementation",
     ":memory_tagging",
   ]
+  deps = []
   public_configs = []
   if (is_android) {
     # tagging.cc requires __arm_mte_set_* functions.
@@ -322,71 +319,6 @@ target(partition_alloc_target_type, "partition_alloc") {
   }
 }
 
-source_set("test_support") {
-  sources = [
-    "extended_api.cc",
-    "extended_api.h",
-    "partition_alloc_base/threading/platform_thread_for_testing.h",
-  ]
-  if (is_posix) {
-    sources += [
-      "partition_alloc_base/threading/platform_thread_posix_for_testing.cc",
-    ]
-  }
-  if (is_fuchsia) {
-    sources += [
-      "partition_alloc_base/threading/platform_thread_fuchsia_for_testing.cc",
-      "partition_alloc_base/threading/platform_thread_posix_for_testing.cc",
-    ]
-  }
-  if (is_win) {
-    sources +=
-        [ "partition_alloc_base/threading/platform_thread_win_for_testing.cc" ]
-  }
-  if (is_mac || is_ios) {
-    sources +=
-        [ "partition_alloc_base/threading/platform_thread_mac_for_testing.mm" ]
-  }
-  if (is_linux || is_chromeos) {
-    sources += [
-      "partition_alloc_base/threading/platform_thread_linux_for_testing.cc",
-    ]
-  }
-  if (is_android) {
-    sources += [
-      "partition_alloc_base/threading/platform_thread_android_for_testing.cc",
-    ]
-  }
-  public_deps = [
-    ":chromecast_buildflags",
-    ":chromeos_buildflags",
-    ":debugging_buildflags",
-    ":logging_buildflags",
-    ":partition_alloc_buildflags",
-    "//build:branding_buildflags",
-    "//build/config/compiler:compiler_buildflags",
-  ]
-  public_configs = []
-  if (is_fuchsia) {
-    public_deps += [
-      "//third_party/fuchsia-sdk/sdk/pkg/fit",
-      "//third_party/fuchsia-sdk/sdk/pkg/sync",
-      "//third_party/fuchsia-sdk/sdk/pkg/zx",
-    ]
-
-    # Needed for users of spinning_mutex.h, which for performance reasons,
-    # contains inlined calls to `libsync` inside the header file.
-    # It appends an entry to the "libs" section of the dependent target.
-    public_configs += [ ":fuchsia_sync_lib" ]
-  }
-  deps = [ "//base:base" ]
-
-  if (!is_debug) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_speed" ]
-  }
-}
-
 buildflag_header("partition_alloc_buildflags") {
   header = "partition_alloc_buildflags.h"
 
@@ -410,7 +342,7 @@ buildflag_header("partition_alloc_buildflags") {
   _record_alloc_info = false
 
   # TODO(crbug.com/1151236): Need to refactor the following buildflags.
-  # The buildflags (expect RECORD_ALLOC_INFO) are used by both chrome and
+  # The buildflags (except RECORD_ALLOC_INFO) are used by both chrome and
   # partition alloc. For partition alloc,
   # gen/base/allocator/partition_allocator/partition_alloc_buildflags.h
   # defines and partition alloc includes the header file. For chrome,
@@ -461,6 +393,7 @@ buildflag_header("debugging_buildflags") {
   flags = [
     "PA_DCHECK_IS_ON=$_dcheck_is_on",
     "PA_EXPENSIVE_DCHECKS_ARE_ON=$enable_expensive_dchecks",
+    "PA_DCHECK_IS_CONFIGURABLE=$dcheck_is_configurable",
   ]
 }
 
@@ -473,8 +406,6 @@ group("buildflags") {
     ":partition_alloc_buildflags",
   ]
 }
-
 # TODO(crbug.com/1151236): After making partition_alloc a standalone library,
 # move test code here. i.e. test("partition_alloc_tests") { ... } and
 # test("partition_alloc_perftests").
-

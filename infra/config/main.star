@@ -97,6 +97,18 @@ luci.project(
             roles = "role/configs.validator",
             groups = "project-chromium-try-task-accounts",
         ),
+        luci.binding(
+            roles = "role/weetbix.reader",
+            groups = "all",
+        ),
+        luci.binding(
+            roles = "role/weetbix.queryUser",
+            groups = "authenticated-users",
+        ),
+        luci.binding(
+            roles = "role/weetbix.editor",
+            groups = "project-chromium-committers",
+        ),
     ],
 )
 
@@ -151,7 +163,17 @@ luci.realm(
         # Allow try builders to create invocations in their own builds.
         luci.binding(
             roles = "role/resultdb.invocationCreator",
-            groups = "project-chromium-try-task-accounts",
+            groups = [
+                "project-chromium-try-task-accounts",
+                # In order to be able to reproduce test tasks that have
+                # ResultDB enabled (at this point that should be all
+                # tests), a realm must be provided. The ability to
+                # trigger machines in the test pool is associated with
+                # the try realm, so allow those who can trigger swarming
+                # tasks in that pool tasks to create invocations.
+                "chromium-led-users",
+                "project-chromium-tryjob-access",
+            ],
         ),
     ],
 )
@@ -181,6 +203,7 @@ branches.exec("//subprojects/findit/subproject.star")
 branches.exec("//subprojects/flakiness/subproject.star")
 branches.exec("//subprojects/goma/subproject.star")
 branches.exec("//subprojects/reclient/subproject.star")
+branches.exec("//subprojects/reviver/subproject.star")
 branches.exec("//subprojects/webrtc/subproject.star")
 
 exec("//generators/cq-usage.star")

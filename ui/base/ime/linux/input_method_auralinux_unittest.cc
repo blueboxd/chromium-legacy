@@ -3,18 +3,20 @@
 // found in the LICENSE file.
 
 #include "ui/base/ime/linux/input_method_auralinux.h"
-#include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/virtual_keyboard_controller_stub.h"
 #include "ui/events/event.h"
@@ -171,6 +173,8 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
 
   void SetGrammarFragmentAtCursor(
       const ui::GrammarFragment& fragment) override {}
+  void SetAutocorrectInfo(const gfx::Range& autocorrect_range,
+                          const gfx::Rect& autocorrect_bounds) override {}
 
  private:
   raw_ptr<LinuxInputMethodContextDelegate> delegate_;
@@ -185,23 +189,7 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
   bool should_do_learning_;
 };
 
-class LinuxInputMethodContextFactoryForTesting
-    : public LinuxInputMethodContextFactory {
- public:
-  LinuxInputMethodContextFactoryForTesting() {}
-
-  LinuxInputMethodContextFactoryForTesting(
-      const LinuxInputMethodContextFactoryForTesting&) = delete;
-  LinuxInputMethodContextFactoryForTesting& operator=(
-      const LinuxInputMethodContextFactoryForTesting&) = delete;
-
-  std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
-      LinuxInputMethodContextDelegate* delegate) const override {
-    return std::make_unique<LinuxInputMethodContextForTesting>(delegate);
-  }
-};
-
-class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
+class InputMethodDelegateForTesting : public ImeKeyEventDispatcher {
  public:
   InputMethodDelegateForTesting() {}
 
@@ -242,6 +230,8 @@ class TextInputClientForTesting : public DummyTextInputClient {
   gfx::Range selection_range;
   std::u16string surrounding_text;
 
+  absl::optional<gfx::Rect> caret_not_in_rect;
+
  protected:
   void SetCompositionText(const CompositionText& composition) override {
     composition_text = composition.text;
@@ -252,7 +242,7 @@ class TextInputClientForTesting : public DummyTextInputClient {
 
   bool HasCompositionText() const override { return !composition_text.empty(); }
 
-  uint32_t ConfirmCompositionText(bool keep_selection) override {
+  size_t ConfirmCompositionText(bool keep_selection) override {
     // TODO(b/134473433) Modify this function so that when keep_selection is
     // true, the selection is not changed when text committed
     if (keep_selection) {
@@ -260,8 +250,7 @@ class TextInputClientForTesting : public DummyTextInputClient {
     }
     TestResult::GetInstance()->RecordAction(u"compositionend");
     TestResult::GetInstance()->RecordAction(u"textinput:" + composition_text);
-    const uint32_t composition_text_length =
-        static_cast<uint32_t>(composition_text.length());
+    const size_t composition_text_length = composition_text.length();
     composition_text.clear();
     return composition_text_length;
   }
@@ -283,7 +272,7 @@ class TextInputClientForTesting : public DummyTextInputClient {
 
   void InsertChar(const ui::KeyEvent& event) override {
     std::stringstream ss;
-    ss << event.GetCharacter();
+    ss << static_cast<uint16_t>(event.GetCharacter());
     TestResult::GetInstance()->RecordAction(u"keypress:" +
                                             base::ASCIIToUTF16(ss.str()));
   }
@@ -303,6 +292,10 @@ class TextInputClientForTesting : public DummyTextInputClient {
     *text = surrounding_text.substr(range.GetMin(), range.length());
     return true;
   }
+
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override {
+    caret_not_in_rect = rect;
+  }
 };
 
 class InputMethodAuraLinuxTest : public testing::Test {
@@ -312,17 +305,18 @@ class InputMethodAuraLinuxTest : public testing::Test {
 
  protected:
   InputMethodAuraLinuxTest()
-      : factory_(nullptr),
-        input_method_auralinux_(nullptr),
+      : input_method_auralinux_(nullptr),
         delegate_(nullptr),
         context_(nullptr) {
-    factory_ = new LinuxInputMethodContextFactoryForTesting();
-    LinuxInputMethodContextFactory::SetInstance(factory_);
+    GetInputMethodContextFactoryForTest() =
+        base::BindRepeating([](LinuxInputMethodContextDelegate* delegate)
+                                -> std::unique_ptr<LinuxInputMethodContext> {
+          return std::make_unique<LinuxInputMethodContextForTesting>(delegate);
+        });
     test_result_ = TestResult::GetInstance();
   }
   ~InputMethodAuraLinuxTest() override {
-    delete factory_;
-    factory_ = nullptr;
+    ShutdownInputMethodForTesting();
     test_result_ = nullptr;
   }
 
@@ -345,7 +339,6 @@ class InputMethodAuraLinuxTest : public testing::Test {
     delegate_ = nullptr;
   }
 
-  raw_ptr<LinuxInputMethodContextFactoryForTesting> factory_;
   raw_ptr<InputMethodAuraLinux> input_method_auralinux_;
   raw_ptr<InputMethodDelegateForTesting> delegate_;
   raw_ptr<LinuxInputMethodContextForTesting> context_;
@@ -536,6 +529,38 @@ TEST_F(InputMethodAuraLinuxTest, JapaneseCommit) {
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
   test_result_->ExpectAction("textinput:a");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, EmptyCommit) {
+  context_->SetSyncMode(false);
+  context_->SetEatKey(true);
+
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
+  key.set_character(L'a');
+  input_method_auralinux_->DispatchKeyEvent(&key);
+
+  input_method_auralinux_->OnPreeditStart();
+  CompositionText comp;
+  comp.text = u"a";
+  input_method_auralinux_->OnPreeditChanged(comp);
+
+  test_result_->ExpectAction("keydown:229");
+  test_result_->ExpectAction("compositionstart");
+  test_result_->ExpectAction("compositionupdate:a");
+  test_result_->Verify();
+
+  input_method_auralinux_->OnCommit(u"");
+  comp.text = u"";
+  input_method_auralinux_->OnPreeditChanged(comp);
+  input_method_auralinux_->OnPreeditEnd();
+
+  test_result_->ExpectAction("compositionend");
+  test_result_->ExpectAction("textinput:");
   test_result_->Verify();
 }
 
@@ -733,6 +758,7 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithEmptyCommitTest) {
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
+  test_result_->ExpectAction("textinput:");
   test_result_->Verify();
 }
 
@@ -1045,6 +1071,17 @@ TEST_F(InputMethodAuraLinuxTest, SetPreeditRegionCompositionEndTest) {
 
   test_result_->ExpectAction("compositionend");
   test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, OnSetVirtualKeyboardOccludedBounds) {
+  auto client =
+      std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_TEXT);
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+
+  constexpr gfx::Rect kBounds(10, 20, 300, 400);
+  input_method_auralinux_->OnSetVirtualKeyboardOccludedBounds(kBounds);
+
+  EXPECT_EQ(client->caret_not_in_rect, kBounds);
 }
 
 TEST_F(InputMethodAuraLinuxTest, GetVirtualKeyboardController) {

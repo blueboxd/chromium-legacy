@@ -10,6 +10,7 @@
 #import "base/metrics/field_trial_params.h"
 #import "base/time/time.h"
 #import "components/segmentation_platform/embedder/default_model/feed_user_segment.h"
+#import "components/segmentation_platform/internal/stats.h"
 #import "components/segmentation_platform/public/config.h"
 #import "components/segmentation_platform/public/features.h"
 #import "components/segmentation_platform/public/model_provider.h"
@@ -32,9 +33,13 @@ constexpr int kFeedUserSegmentUnknownSelectionTTLDays = 14;
 std::unique_ptr<Config> GetConfigForFeedSegments() {
   auto config = std::make_unique<Config>();
   config->segmentation_key = kFeedUserSegmentationKey;
-  config->segment_ids = {
-      SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER,
-  };
+  config->segmentation_uma_name =
+      stats::SegmentationKeyToUmaName(config->segmentation_key);
+  const proto::SegmentId segment_id =
+      SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER;
+  std::string feed_segment_name =
+      stats::OptimizationTargetToHistogramVariant(segment_id);
+  config->segments.insert({segment_id, Config::SegmentMetadata{feed_segment_name}});
   config->segment_selection_ttl =
       base::Days(base::GetFieldTrialParamByFeatureAsInt(
           features::kSegmentationPlatformFeedSegmentFeature,
@@ -89,6 +94,18 @@ void IOSFieldTrialRegisterImpl::RegisterFieldTrial(
 void IOSFieldTrialRegisterImpl::RegisterSubsegmentFieldTrialIfNeeded(
     base::StringPiece trial_name,
     SegmentId segment_id,
-    int subsegment_rank) {}
+    int subsegment_rank) {
+  // Per target checks should be replaced by making this as a ModelProvider
+  // method.
+  absl::optional<std::string> group_name;
+  if (segment_id == SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER) {
+    group_name = FeedUserSegment::GetSubsegmentName(subsegment_rank);
+  }
+
+  if (!group_name) {
+    return;
+  }
+  RegisterFieldTrial(trial_name, *group_name);
+}
 
 }  // namespace segmentation_platform

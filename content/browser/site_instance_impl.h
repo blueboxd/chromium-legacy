@@ -387,10 +387,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // instance (i.e. GetSiteInfo()). Otherwise returns false.
   bool DoesSiteInfoForURLMatch(const UrlInfo& url_info);
 
-  // Adds |origin| as a non-isolated origin within this BrowsingInstance due to
-  // an existing instance at the time of opt-in, so that future instances of it
-  // here won't be origin isolated.
-  void PreventOptInOriginIsolation(
+  // Adds |origin| as having the default isolation state within this
+  // BrowsingInstance due to an existing instance at the time of opt-in, so that
+  // future instances of it here won't be origin isolated.
+  void RegisterAsDefaultOriginIsolation(
       const url::Origin& previously_visited_origin);
 
   // Returns the web-exposed isolation status of the BrowsingInstance this
@@ -403,10 +403,16 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
 
   // Finds an existing SiteInstance in this SiteInstance's BrowsingInstance that
   // matches this SiteInstance's SiteInfo but with the `is_sandboxed_` flag
-  // true. If an existing SiteInstance isn't found, a new one is created in the
-  // same BrowsingInstance. Note that this SiteInstance must have had its
-  // SiteInfo already assigned via SetSite() before calling this function.
-  scoped_refptr<SiteInstanceImpl> GetCompatibleSandboxedSiteInstance();
+  // true, and the `unique_sandbox_id_` set to the supplied value. If an
+  // existing SiteInstance isn't found, a new one is created in the same
+  // BrowsingInstance. Note that this SiteInstance must have had its SiteInfo
+  // already assigned via SetSite() before calling this function.
+  scoped_refptr<SiteInstanceImpl> GetCompatibleSandboxedSiteInstance(
+      int unique_sandbox_id);
+
+  // Returns the process used by non-isolated sites in this SiteInstance's
+  // BrowsingInstance.
+  RenderProcessHost* GetDefaultProcessForBrowsingInstance();
 
  private:
   friend class BrowsingInstance;

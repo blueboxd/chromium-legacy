@@ -88,6 +88,9 @@ absl::optional<HtmlFieldType> ParseStandardizedAutocompleteAttribute(
           {"address-line1", HTML_TYPE_ADDRESS_LINE1},
           {"address-line2", HTML_TYPE_ADDRESS_LINE2},
           {"address-line3", HTML_TYPE_ADDRESS_LINE3},
+          {"bday-day", HTML_TYPE_BIRTHDATE_DAY},
+          {"bday-month", HTML_TYPE_BIRTHDATE_MONTH},
+          {"bday-year", HTML_TYPE_BIRTHDATE_YEAR},
           {"cc-csc", HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE},
           {"cc-exp", HTML_TYPE_CREDIT_CARD_EXP},
           {"cc-exp-month", HTML_TYPE_CREDIT_CARD_EXP_MONTH},
@@ -174,8 +177,9 @@ absl::optional<HtmlFieldType> ParseNonStandarizedAutocompleteAttribute(
 // "address".
 // Ignoring autocomplete="off" and alike is treated separately in
 // `ParseFieldTypesFromAutocompleteAttributes()`.
-bool ShouldIgnoreAutocompleteValue(const std::string& value) {
-  return MatchesPattern(base::UTF8ToUTF16(value), u"address");
+bool ShouldIgnoreAutocompleteValue(base::StringPiece value) {
+  static constexpr char16_t kRegex[] = u"address";
+  return MatchesRegex<kRegex>(base::UTF8ToUTF16(value));
 }
 
 // Returns the Chrome Autofill-supported field type corresponding to a given
@@ -227,8 +231,7 @@ absl::optional<AutocompleteParsingResult> ParseAutocompleteAttribute(
   // type hint or whether autocomplete should be enabled at all. Ignore the
   // latter type of attribute value.
   if (tokens.empty() ||
-      (tokens.size() == 1 &&
-       (tokens[0] == "on" || tokens[0] == "off" || tokens[0] == "false"))) {
+      (tokens.size() == 1 && ShouldIgnoreAutocompleteAttribute(tokens[0]))) {
     return absl::nullopt;
   }
 
@@ -287,13 +290,9 @@ absl::optional<AutocompleteParsingResult> ParseAutocompleteAttribute(
   return result;
 }
 
-base::StringPiece HtmlFieldModeToStringPiece(HtmlFieldMode mode) {
-  if (mode == HTML_MODE_BILLING)
-    return "billing";
-  if (mode == HTML_MODE_SHIPPING)
-    return "shipping";
-  NOTREACHED();
-  return "";
+bool ShouldIgnoreAutocompleteAttribute(base::StringPiece autocomplete) {
+  return autocomplete == "on" || autocomplete == "off" ||
+         autocomplete == "false";
 }
 
 }  // namespace autofill

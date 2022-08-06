@@ -8,6 +8,7 @@
 
 #include "base/hash/md5.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -83,8 +84,8 @@ HttpAuthHandlerDigest::Factory::Factory()
 HttpAuthHandlerDigest::Factory::~Factory() = default;
 
 void HttpAuthHandlerDigest::Factory::set_nonce_generator(
-    const NonceGenerator* nonce_generator) {
-  nonce_generator_.reset(nonce_generator);
+    std::unique_ptr<const NonceGenerator> nonce_generator) {
+  nonce_generator_ = std::move(nonce_generator);
 }
 
 int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
@@ -100,14 +101,14 @@ int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
     std::unique_ptr<HttpAuthHandler>* handler) {
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
-  std::unique_ptr<HttpAuthHandler> tmp_handler(
+  auto tmp_handler = base::WrapUnique(
       new HttpAuthHandlerDigest(digest_nonce_count, nonce_generator_.get()));
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info,
                                       network_isolation_key, scheme_host_port,
                                       net_log)) {
     return ERR_INVALID_RESPONSE;
   }
-  handler->swap(tmp_handler);
+  *handler = std::move(tmp_handler);
   return OK;
 }
 

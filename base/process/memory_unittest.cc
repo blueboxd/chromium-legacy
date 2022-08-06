@@ -119,6 +119,7 @@ TEST(MemoryTest, AllocatorShimWorking) {
     !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 namespace {
+
 #if BUILDFLAG(IS_WIN)
 
 // Windows raises an exception in order to make the exit code unique to OOM.
@@ -282,10 +283,13 @@ TEST_F(OutOfMemoryDeathTest, NewHandlerGeneratesUnhandledException) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-// OS X and Android have no 2Gb allocation limit.
+// OS X has no 2Gb allocation limit.
 // See https://crbug.com/169327.
-#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_MAC)
 TEST_F(OutOfMemoryDeathTest, SecurityNew) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = operator new(insecure_test_size_);
@@ -293,6 +297,9 @@ TEST_F(OutOfMemoryDeathTest, SecurityNew) {
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityNewArray) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = new char[insecure_test_size_];
@@ -300,6 +307,9 @@ TEST_F(OutOfMemoryDeathTest, SecurityNewArray) {
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityMalloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = malloc(insecure_test_size_);
@@ -307,6 +317,9 @@ TEST_F(OutOfMemoryDeathTest, SecurityMalloc) {
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityRealloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = realloc(nullptr, insecure_test_size_);
@@ -314,6 +327,9 @@ TEST_F(OutOfMemoryDeathTest, SecurityRealloc) {
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityCalloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = calloc(1024, insecure_test_size_ / 1024L);
@@ -321,6 +337,9 @@ TEST_F(OutOfMemoryDeathTest, SecurityCalloc) {
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityAlignedAlloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = base::AlignedAlloc(insecure_test_size_, 8);
@@ -330,13 +349,16 @@ TEST_F(OutOfMemoryDeathTest, SecurityAlignedAlloc) {
 // POSIX does not define an aligned realloc function.
 #if BUILDFLAG(IS_WIN)
 TEST_F(OutOfMemoryDeathTest, SecurityAlignedRealloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = _aligned_realloc(nullptr, insecure_test_size_, 8);
   });
 }
 #endif  // BUILDFLAG(IS_WIN)
-#endif  // !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
@@ -559,17 +581,17 @@ TEST_F(OutOfMemoryTest, TerminateBecauseOutOfMemoryReportsAllocSize) {
 
 void TestAllocationsReleaseReservation(void* (*alloc_fn)(size_t),
                                        void (*free_fn)(void*)) {
-  base::ReleaseReservation();
+  partition_alloc::ReleaseReservation();
   base::EnableTerminationOnOutOfMemory();
 
   constexpr size_t kMiB = 1 << 20;
   constexpr size_t kReservationSize = 512 * kMiB;  // MiB.
 
   size_t reservation_size = kReservationSize;
-  while (!base::ReserveAddressSpace(reservation_size)) {
+  while (!partition_alloc::ReserveAddressSpace(reservation_size)) {
     reservation_size -= 16 * kMiB;
   }
-  ASSERT_TRUE(base::HasReservationForTesting());
+  ASSERT_TRUE(partition_alloc::HasReservationForTesting());
   ASSERT_GT(reservation_size, 0u);
 
   // Allocate a large area at a time to bump into address space exhaustion
@@ -593,7 +615,7 @@ void TestAllocationsReleaseReservation(void* (*alloc_fn)(size_t),
     // was dropped instead of crashing.
     //
     // Meaning that the test is either successful, or crashes.
-    if (!base::HasReservationForTesting())
+    if (!partition_alloc::HasReservationForTesting())
       break;
   }
 

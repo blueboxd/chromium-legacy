@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_DECORATION_INFO_H_
 
 #include "base/types/strong_alias.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -61,6 +62,20 @@ class CORE_EXPORT TextDecorationInfo {
     DCHECK(applied_text_decoration_);
     return *applied_text_decoration_;
   }
+
+  // Returns whether any of the decoration indices in AppliedTextDecoration
+  // have any of the given lines.
+  bool HasAnyLine(TextDecorationLine lines) const {
+    return EnumHasFlags(union_all_lines_, lines);
+  }
+
+ private:
+  // Returns whether the decoration currently selected by |SetDecorationIndex|
+  // has any of the given lines.
+  bool Has(TextDecorationLine line) const { return EnumHasFlags(lines_, line); }
+
+ public:
+  // These methods also apply to the currently selected decoration only.
   bool HasUnderline() const { return has_underline_; }
   bool HasOverline() const { return has_overline_; }
   bool HasLineThrough() const { return Has(TextDecorationLine::kLineThrough); }
@@ -128,27 +143,26 @@ class CORE_EXPORT TextDecorationInfo {
   // Compute bounds for the given line and the current decoration.
   gfx::RectF Bounds() const;
 
-  // Return a path for current decoration.
-  absl::optional<Path> StrokePath() const;
+  // Returns tile record and coordinates for wavy decorations.
+  sk_sp<cc::PaintRecord> WavyTileRecord() const;
+  gfx::RectF WavyPaintRect() const;
+  gfx::RectF WavyTileRect() const;
 
   // Overrides the line color with the given topmost active highlight ‘color’.
   void SetHighlightOverrideColor(const absl::optional<Color>&);
 
  private:
-  bool Has(TextDecorationLine line) const { return EnumHasFlags(lines_, line); }
   LayoutUnit OffsetFromDecoratingBox() const;
   float ComputeThickness() const;
   float ComputeUnderlineThickness(
       const TextDecorationThickness& applied_decoration_thickness,
       const ComputedStyle* decorating_box_style) const;
+  void ComputeWavyLineData(gfx::RectF& pattern_rect,
+                           sk_sp<cc::PaintRecord>& tile_record) const;
 
   gfx::RectF BoundsForDottedOrDashed() const;
   gfx::RectF BoundsForWavy() const;
-  float WavyDecorationSizing() const;
-  float ControlPointDistanceFromResolvedThickness() const;
-  float StepFromResolvedThickness() const;
   Path PrepareDottedOrDashedStrokePath() const;
-  Path PrepareWavyStrokePath() const;
   bool IsSpellingOrGrammarError() const {
     return line_data_.line == TextDecorationLine::kSpellingError ||
            line_data_.line == TextDecorationLine::kGrammarError;
@@ -191,7 +205,14 @@ class CORE_EXPORT TextDecorationInfo {
 
   int decoration_index_ = 0;
 
+  // |lines_| represents the lines in the current |decoration_index_|, while
+  // |union_all_lines_| represents the lines found in any |decoration_index_|.
+  //
+  // Ideally we would build a vector of the TextDecorationLine instances needing
+  // ‘line-through’, but this is a rare case so better to avoid vector overhead.
   TextDecorationLine lines_ = TextDecorationLine::kNone;
+  const TextDecorationLine union_all_lines_ = TextDecorationLine::kNone;
+
   ResolvedUnderlinePosition original_underline_position_ =
       ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
   ResolvedUnderlinePosition flipped_underline_position_ =
@@ -208,8 +229,14 @@ class CORE_EXPORT TextDecorationInfo {
     TextDecorationLine line;
     float line_offset;
     float double_offset;
-    int wavy_offset_factor;
+
+    // Only used for kDotted and kDashed lines.
     absl::optional<Path> stroke_path;
+
+    // Only used for kWavy lines.
+    int wavy_offset_factor;
+    gfx::RectF wavy_pattern_rect;
+    sk_sp<cc::PaintRecord> wavy_tile_record;
   };
   LineData line_data_;
   absl::optional<Color> highlight_override_;

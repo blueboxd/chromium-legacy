@@ -5,25 +5,28 @@
 #ifndef CHROME_SERVICES_SYSTEM_SIGNALS_MAC_MAC_SYSTEM_SIGNALS_SERVICE_H_
 #define CHROME_SERVICES_SYSTEM_SIGNALS_MAC_MAC_SYSTEM_SIGNALS_SERVICE_H_
 
-#include <vector>
-
-#include "components/device_signals/core/common/mojom/system_signals.mojom.h"
+#include "chrome/services/system_signals/base_system_signals_service.h"
 
 namespace system_signals {
 
-class MacSystemSignalsService
-    : public device_signals::mojom::SystemSignalsService {
+class MacSystemSignalsService : public BaseSystemSignalsService {
  public:
-  MacSystemSignalsService();
+  explicit MacSystemSignalsService(
+      mojo::PendingReceiver<device_signals::mojom::SystemSignalsService>
+          receiver);
   ~MacSystemSignalsService() override;
 
   MacSystemSignalsService(const MacSystemSignalsService&) = delete;
   MacSystemSignalsService& operator=(const MacSystemSignalsService&) = delete;
 
-  // device_signals::mojom::SystemSignalsService:
-  void GetBinarySignals(
-      std::vector<device_signals::mojom::BinarySignalsRequestPtr> requests,
-      GetBinarySignalsCallback callback) override;
+ private:
+  friend class MacSystemSignalsServiceTest;
+
+  // Constructor that can be used by tests to mock out dependencies.
+  MacSystemSignalsService(
+      mojo::PendingReceiver<device_signals::mojom::SystemSignalsService>
+          receiver,
+      std::unique_ptr<device_signals::FileSystemService> file_system_service);
 };
 
 }  // namespace system_signals

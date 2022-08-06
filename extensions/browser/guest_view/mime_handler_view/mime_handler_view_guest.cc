@@ -163,10 +163,10 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
 }
 
 void MimeHandlerViewGuest::CreateWebContents(
-    const base::DictionaryValue& create_params,
+    const base::Value::Dict& create_params,
     WebContentsCreatedCallback callback) {
   const std::string* stream_id =
-      create_params.FindStringKey(mime_handler_view::kStreamId);
+      create_params.FindString(mime_handler_view::kStreamId);
   if (!stream_id || stream_id->empty()) {
     std::move(callback).Run(nullptr);
     return;
@@ -245,7 +245,7 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
 }
 
 void MimeHandlerViewGuest::DidInitialize(
-    const base::DictionaryValue& create_params) {
+    const base::Value::Dict& create_params) {
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
 }
 
@@ -259,10 +259,6 @@ void MimeHandlerViewGuest::EmbedderFullscreenToggled(bool entered_fullscreen) {
 
 bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
   return false;
-}
-
-bool MimeHandlerViewGuest::ShouldDestroyOnDetach() const {
-  return true;
 }
 
 WebContents* MimeHandlerViewGuest::OpenURLFromTab(

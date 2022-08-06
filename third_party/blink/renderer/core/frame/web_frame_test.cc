@@ -37,6 +37,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -210,6 +211,7 @@
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/transform.h"
 #include "v8/include/v8.h"
 
@@ -7497,29 +7499,6 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
                   .IsEquivalent(net::SiteForCookies::FromUrl(GURL(redirect))));
 }
 
-class TestNewWindowWebViewClient
-    : public frame_test_helpers::TestWebViewClient {
- public:
-  TestNewWindowWebViewClient() = default;
-  ~TestNewWindowWebViewClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  WebView* CreateView(
-      WebLocalFrame*,
-      const WebURLRequest&,
-      const WebWindowFeatures&,
-      const WebString&,
-      WebNavigationPolicy,
-      network::mojom::blink::WebSandboxFlags,
-      const SessionStorageNamespaceId&,
-      bool& consumed_user_gesture,
-      const absl::optional<Impression>&,
-      const absl::optional<WebPictureInPictureWindowOptions>&) override {
-    EXPECT_TRUE(false);
-    return nullptr;
-  }
-};
-
 class TestNewWindowWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
@@ -7535,6 +7514,20 @@ class TestNewWindowWebFrameClient
     TestWebFrameClient::BeginNavigation(std::move(info));
   }
 
+  WebView* CreateNewWindow(
+      const WebURLRequest&,
+      const WebWindowFeatures&,
+      const WebString&,
+      WebNavigationPolicy,
+      network::mojom::blink::WebSandboxFlags,
+      const SessionStorageNamespaceId&,
+      bool& consumed_user_gesture,
+      const absl::optional<Impression>&,
+      const absl::optional<WebPictureInPictureWindowOptions>&) override {
+    EXPECT_TRUE(false);
+    return nullptr;
+  }
+
   int BeginNavigationCallCount() const { return begin_navigation_call_count_; }
   void IgnoreNavigations() { ignore_navigations_ = true; }
 
@@ -7548,11 +7541,10 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   // but instead goes to client to decide the navigation policy.
   RegisterMockedHttpURLLoad("ctrl_click.html");
   RegisterMockedHttpURLLoad("hello_world.html");
-  TestNewWindowWebViewClient web_view_client;
   TestNewWindowWebFrameClient web_frame_client;
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "ctrl_click.html",
-                                    &web_frame_client, &web_view_client);
+                                    &web_frame_client);
 
   auto* frame =
       To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
@@ -9194,7 +9186,7 @@ class WebFrameSwapTest : public WebFrameTest {
 
 TEST_F(WebFrameSwapTest, SwapMainFrame) {
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame(), remote_frame);
 
   WebLocalFrame* local_frame =
       web_view_helper_.CreateProvisional(*remote_frame);
@@ -9213,7 +9205,7 @@ TEST_F(WebFrameSwapTest, SwapMainFrameWithPageScaleReset) {
   EXPECT_EQ(1.25, WebView()->PageScaleFactor());
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame(), remote_frame);
 
   mojo::AssociatedRemote<mojom::blink::RemoteMainFrameHost> main_frame_host;
   std::ignore = main_frame_host.BindNewEndpointAndPassDedicatedReceiver();
@@ -9229,7 +9221,7 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
   gfx::Size size(111, 222);
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame(), remote_frame);
 
   To<WebViewImpl>(remote_frame->View())->Resize(size);
 
@@ -9251,7 +9243,7 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
 TEST_F(WebFrameSwapTest,
        ValidateBrowserControlsSizeOnRemoteToLocalMainFrameSwap) {
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame(), remote_frame);
 
   // Create a provisional main frame frame but don't swap it in yet.
   WebLocalFrame* local_frame =
@@ -9292,8 +9284,10 @@ class SwapMainFrameWhenTitleChangesWebFrameClient
     if (title.IsEmpty())
       return;
 
-    if (!Frame()->Parent())
-      Frame()->Swap(frame_test_helpers::CreateRemote());
+    if (!Frame()->Parent()) {
+      frame_test_helpers::SwapRemoteFrame(Frame(),
+                                          frame_test_helpers::CreateRemote());
+    }
   }
 };
 
@@ -9345,7 +9339,12 @@ void WebFrameTest::SwapAndVerifyFirstChildConsistency(const char* const message,
                                                       WebFrame* parent,
                                                       WebFrame* new_child) {
   SCOPED_TRACE(message);
-  parent->FirstChild()->Swap(new_child);
+  if (new_child->IsWebLocalFrame()) {
+    parent->FirstChild()->Swap(new_child->ToWebLocalFrame());
+  } else {
+    frame_test_helpers::SwapRemoteFrame(parent->FirstChild(),
+                                        new_child->ToWebRemoteFrame());
+  }
 
   EXPECT_EQ(new_child, parent->FirstChild());
   EXPECT_EQ(new_child->Parent(), parent);
@@ -9383,7 +9382,7 @@ TEST_F(WebFrameSwapTest, DoNotPropagateDisplayNonePropertyOnSwap) {
   EXPECT_FALSE(main_frame_client->DidPropagateDisplayNoneProperty());
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  child_frame->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(child_frame, remote_frame);
   EXPECT_FALSE(main_frame_client->DidPropagateDisplayNoneProperty());
 
   WebLocalFrame* local_frame =
@@ -9398,7 +9397,13 @@ void WebFrameTest::SwapAndVerifyMiddleChildConsistency(
     WebFrame* parent,
     WebFrame* new_child) {
   SCOPED_TRACE(message);
-  parent->FirstChild()->NextSibling()->Swap(new_child);
+
+  if (new_child->IsWebLocalFrame()) {
+    parent->FirstChild()->NextSibling()->Swap(new_child->ToWebLocalFrame());
+  } else {
+    frame_test_helpers::SwapRemoteFrame(parent->FirstChild()->NextSibling(),
+                                        new_child->ToWebRemoteFrame());
+  }
 
   Frame* parent_frame = WebFrame::ToCoreFrame(*parent);
   Frame* new_child_frame = WebFrame::ToCoreFrame(*new_child);
@@ -9436,7 +9441,12 @@ void WebFrameTest::SwapAndVerifyLastChildConsistency(const char* const message,
                                                      WebFrame* parent,
                                                      WebFrame* new_child) {
   SCOPED_TRACE(message);
-  parent->LastChild()->Swap(new_child);
+  if (new_child->IsWebLocalFrame()) {
+    parent->LastChild()->Swap(new_child->ToWebLocalFrame());
+  } else {
+    frame_test_helpers::SwapRemoteFrame(parent->LastChild(),
+                                        new_child->ToWebRemoteFrame());
+  }
 
   EXPECT_EQ(new_child, parent->LastChild());
   EXPECT_EQ(new_child->Parent(), parent);
@@ -9494,7 +9504,13 @@ void WebFrameTest::SwapAndVerifySubframeConsistency(const char* const message,
   SCOPED_TRACE(message);
 
   EXPECT_TRUE(old_frame->FirstChild());
-  old_frame->Swap(new_frame);
+
+  if (new_frame->IsWebLocalFrame()) {
+    old_frame->Swap(new_frame->ToWebLocalFrame());
+  } else {
+    frame_test_helpers::SwapRemoteFrame(old_frame,
+                                        new_frame->ToWebRemoteFrame());
+  }
 
   EXPECT_FALSE(new_frame->FirstChild());
   EXPECT_FALSE(new_frame->LastChild());
@@ -9591,7 +9607,7 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext) {
   // Make sure window reference stays the same when swapping to a remote frame.
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   WebFrame* target_frame = MainFrame()->FirstChild()->NextSibling();
-  target_frame->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(target_frame, remote_frame);
   v8::Local<v8::Value> remote_window = MainFrame()->ExecuteScriptAndReturnValue(
       WebScriptSource("document.querySelector('#frame2').contentWindow;"));
   EXPECT_TRUE(original_window->StrictEquals(remote_window));
@@ -9624,7 +9640,7 @@ TEST_F(WebFrameSwapTest, SetTimeoutAfterSwap) {
   // Swap the frame to a remote frame.
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   WebFrame* target_frame = MainFrame()->FirstChild();
-  target_frame->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(target_frame, remote_frame);
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -9658,7 +9674,7 @@ TEST_F(WebFrameSwapTest, SwapInitializesGlobal) {
   ASSERT_TRUE(last_child->IsObject());
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->LastChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame()->LastChild(), remote_frame);
   v8::Local<v8::Value> remote_window_top =
       MainFrame()->ExecuteScriptAndReturnValue(WebScriptSource("saved.top"));
   EXPECT_TRUE(remote_window_top->IsObject());
@@ -9679,7 +9695,7 @@ TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->LastChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame()->LastChild(), remote_frame);
   v8::Local<v8::Value> remote_window =
       MainFrame()->ExecuteScriptAndReturnValue(WebScriptSource("window[2]"));
   EXPECT_TRUE(remote_window->IsObject());
@@ -9693,7 +9709,7 @@ TEST_F(WebFrameSwapTest, RemoteFrameLengthAccess) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->LastChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame()->LastChild(), remote_frame);
   v8::Local<v8::Value> remote_window_length =
       MainFrame()->ExecuteScriptAndReturnValue(
           WebScriptSource("window[2].length"));
@@ -9708,7 +9724,7 @@ TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess) {
   // named window access on a remote window works. For now, just test that
   // accessing a named property doesn't crash.
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->LastChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame()->LastChild(), remote_frame);
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
   v8::Local<v8::Value> remote_window_property =
@@ -9722,7 +9738,7 @@ TEST_F(WebFrameSwapTest, RemoteWindowToString) {
   v8::HandleScope scope(isolate);
 
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->LastChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame()->LastChild(), remote_frame);
   v8::Local<v8::Value> to_string_result =
       MainFrame()->ExecuteScriptAndReturnValue(
           WebScriptSource("Object.prototype.toString.call(window[2])"));
@@ -9738,7 +9754,7 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   WebRemoteFrame* remote_parent_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->Swap(remote_parent_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame(), remote_parent_frame);
   remote_parent_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -9766,7 +9782,7 @@ TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   WebRemoteFrame* remote_parent_frame = frame_test_helpers::CreateRemote();
-  MainFrame()->Swap(remote_parent_frame);
+  frame_test_helpers::SwapRemoteFrame(MainFrame(), remote_parent_frame);
   remote_parent_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -9809,7 +9825,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap) {
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   WebFrame* target_frame = MainFrame()->FirstChild();
   ASSERT_TRUE(target_frame);
-  target_frame->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(target_frame, remote_frame);
   ASSERT_TRUE(MainFrame()->FirstChild());
   ASSERT_EQ(MainFrame()->FirstChild(), remote_frame);
 
@@ -9844,16 +9860,15 @@ class RemoteFrameHostInterceptor : public FakeRemoteFrameHost {
 };
 
 TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation) {
-  frame_test_helpers::TestWebRemoteFrameClient client;
-  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote(&client);
+  RemoteFrameHostInterceptor interceptor;
+  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   WebFrame* target_frame = MainFrame()->FirstChild();
   ASSERT_TRUE(target_frame);
-  target_frame->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(target_frame, remote_frame,
+                                      interceptor.BindNewAssociatedRemote());
   ASSERT_TRUE(MainFrame()->FirstChild());
   ASSERT_EQ(MainFrame()->FirstChild(), remote_frame);
 
-  RemoteFrameHostInterceptor interceptor;
-  interceptor.Init(client.GetRemoteAssociatedInterfaces());
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin::CreateFromString("http://127.0.0.1"), false);
   MainFrame()->ExecuteScript(
@@ -9870,10 +9885,10 @@ TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation) {
 }
 
 TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
-  frame_test_helpers::TestWebRemoteFrameClient remote_client;
-  WebRemoteFrame* remote_frame =
-      frame_test_helpers::CreateRemote(&remote_client);
-  MainFrame()->FirstChild()->Swap(remote_frame);
+  RemoteFrameHostInterceptor interceptor;
+  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
+  frame_test_helpers::SwapRemoteFrame(MainFrame()->FirstChild(), remote_frame,
+                                      interceptor.BindNewAssociatedRemote());
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -9881,8 +9896,6 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   LocalDOMWindow* main_window =
       To<WebLocalFrameImpl>(MainFrame())->GetFrame()->DomWindow();
 
-  RemoteFrameHostInterceptor interceptor;
-  interceptor.Init(remote_client.GetRemoteAssociatedInterfaces());
   String destination = "data:text/html:destination";
   NonThrowableExceptionState exception_state;
   ScriptState* script_state =
@@ -9929,10 +9942,6 @@ class RemoteWindowCloseTest : public WebFrameTest {
   RemoteWindowCloseTest() = default;
   ~RemoteWindowCloseTest() override = default;
 
-  frame_test_helpers::TestWebRemoteFrameClient* remote_frame_client() {
-    return &remote_frame_client_;
-  }
-
   bool Closed() const { return remote_main_frame_host_.remote_window_closed(); }
 
   TestRemoteMainFrameHostForWindowClose* remote_main_frame_host() {
@@ -9941,7 +9950,6 @@ class RemoteWindowCloseTest : public WebFrameTest {
 
  private:
   TestRemoteMainFrameHostForWindowClose remote_main_frame_host_;
-  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client_;
 };
 
 TEST_F(RemoteWindowCloseTest, WindowOpenRemoteClose) {
@@ -9950,7 +9958,7 @@ TEST_F(RemoteWindowCloseTest, WindowOpenRemoteClose) {
 
   // Create a remote window that will be closed later in the test.
   frame_test_helpers::WebViewHelper popup;
-  popup.InitializeRemote(remote_frame_client(), nullptr, nullptr);
+  popup.InitializeRemote(nullptr, nullptr);
   popup.GetWebView()->DidAttachRemoteMainFrame(
       remote_main_frame_host()->BindNewAssociatedRemote(),
       mojo::AssociatedRemote<mojom::blink::RemoteMainFrame>()
@@ -9988,7 +9996,7 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener) {
   // Create a popup with a remote frame and set its opener to the main frame.
   frame_test_helpers::WebViewHelper popup_helper;
   popup_helper.InitializeRemoteWithOpener(
-      main_frame, nullptr, SecurityOrigin::CreateFromString("http://foo.com"));
+      main_frame, SecurityOrigin::CreateFromString("http://foo.com"));
   WebRemoteFrame* popup_remote_frame = popup_helper.RemoteMainFrame();
   EXPECT_FALSE(main_frame->GetSecurityOrigin().CanAccess(
       popup_remote_frame->GetSecurityOrigin()));
@@ -10268,8 +10276,7 @@ TEST_F(WebFrameTest, SendBeaconFromChildWithRemoteMainFrame) {
 
 TEST_F(WebFrameTest, SiteForCookiesFromChildWithRemoteMainFrame) {
   frame_test_helpers::WebViewHelper helper;
-  helper.InitializeRemote(nullptr,
-                          SecurityOrigin::Create(ToKURL(not_base_url_)));
+  helper.InitializeRemote(SecurityOrigin::Create(ToKURL(not_base_url_)));
 
   WebLocalFrame* local_frame =
       helper.CreateLocalChild(*helper.RemoteMainFrame());
@@ -10345,43 +10352,6 @@ TEST_F(WebFrameTest, PausedPageLoadWithRemoteMainFrame) {
       local_child->GetDocument()->Fetcher()->GetProperties().IsPaused());
 }
 
-class OverscrollWidgetInputHandlerHost
-    : public frame_test_helpers::TestWidgetInputHandlerHost {
- public:
-  MOCK_METHOD5(DidOverscroll,
-               void(const gfx::Vector2dF&,
-                    const gfx::Vector2dF&,
-                    const gfx::PointF&,
-                    const gfx::Vector2dF&,
-                    cc::OverscrollBehavior));
-
-  void DidOverscroll(mojom::blink::DidOverscrollParamsPtr params) override {
-    DidOverscroll(params->latest_overscroll_delta,
-                  params->accumulated_overscroll,
-                  params->causal_event_viewport_point,
-                  params->current_fling_velocity, params->overscroll_behavior);
-  }
-};
-
-class OverscrollWebFrameWidget : public frame_test_helpers::TestWebFrameWidget {
- public:
-  template <typename... Args>
-  explicit OverscrollWebFrameWidget(Args&&... args)
-      : frame_test_helpers::TestWebFrameWidget(std::forward<Args>(args)...) {}
-
-  frame_test_helpers::TestWidgetInputHandlerHost* GetInputHandlerHost()
-      override {
-    return &input_handler_host_;
-  }
-
-  OverscrollWidgetInputHandlerHost& GetOverscrollWidgetInputHandlerHost() {
-    return input_handler_host_;
-  }
-
- private:
-  OverscrollWidgetInputHandlerHost input_handler_host_;
-};
-
 class WebFrameOverscrollTest
     : public WebFrameTest,
       public testing::WithParamInterface<WebGestureDevice> {
@@ -10389,9 +10359,9 @@ class WebFrameOverscrollTest
   WebFrameOverscrollTest() {}
 
  protected:
-  WebCoalescedInputEvent GenerateEvent(WebInputEvent::Type type,
-                                       float delta_x = 0.0,
-                                       float delta_y = 0.0) {
+  WebGestureEvent GenerateEvent(WebInputEvent::Type type,
+                                float delta_x = 0.0,
+                                float delta_y = 0.0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests(),
                           GetParam());
@@ -10405,13 +10375,13 @@ class WebFrameOverscrollTest
       event.data.scroll_begin.delta_x_hint = delta_x;
       event.data.scroll_begin.delta_y_hint = delta_y;
     }
-    return WebCoalescedInputEvent(event, ui::LatencyInfo());
+    return event;
   }
 
   void ScrollBegin(frame_test_helpers::WebViewHelper* web_view_helper,
                    float delta_x_hint,
                    float delta_y_hint) {
-    web_view_helper->GetWebView()->MainFrameWidget()->HandleInputEvent(
+    web_view_helper->GetMainFrameWidget()->DispatchThroughCcInputHandler(
         GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, delta_x_hint,
                       delta_y_hint));
   }
@@ -10419,14 +10389,35 @@ class WebFrameOverscrollTest
   void ScrollUpdate(frame_test_helpers::WebViewHelper* web_view_helper,
                     float delta_x,
                     float delta_y) {
-    web_view_helper->GetWebView()->MainFrameWidget()->HandleInputEvent(
+    web_view_helper->GetMainFrameWidget()->DispatchThroughCcInputHandler(
         GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, delta_x,
                       delta_y));
   }
 
   void ScrollEnd(frame_test_helpers::WebViewHelper* web_view_helper) {
-    web_view_helper->GetWebView()->MainFrameWidget()->HandleInputEvent(
+    web_view_helper->GetMainFrameWidget()->DispatchThroughCcInputHandler(
         GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
+  }
+
+  void ExpectOverscrollParams(
+      const mojom::blink::DidOverscrollParamsPtr& params,
+      gfx::Vector2dF expected_accumulated_overscroll,
+      gfx::Vector2dF expected_latest_overscroll_delta,
+      gfx::Vector2dF expected_current_fling_velocity,
+      gfx::PointF expected_causal_event_viewport_point,
+      cc::OverscrollBehavior expected_overscroll_behavior) {
+    // Rounding errors are sometimes too big for DidOverscrollParams::Equals.
+    const float kAbsError = 0.001;
+
+    EXPECT_VECTOR2DF_NEAR(expected_accumulated_overscroll,
+                          params->accumulated_overscroll, kAbsError);
+    EXPECT_VECTOR2DF_NEAR(expected_latest_overscroll_delta,
+                          params->latest_overscroll_delta, kAbsError);
+    EXPECT_VECTOR2DF_NEAR(expected_current_fling_velocity,
+                          params->current_fling_velocity, kAbsError);
+    EXPECT_POINTF_NEAR(expected_causal_event_viewport_point,
+                       params->causal_event_viewport_point, kAbsError);
+    EXPECT_EQ(expected_overscroll_behavior, params->overscroll_behavior);
   }
 };
 
@@ -10438,128 +10429,92 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_P(WebFrameOverscrollTest,
        AccumulatedRootOverscrollAndUnsedDeltaValuesOnOverscroll) {
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
                                     nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
 
   // Calculation of accumulatedRootOverscroll and unusedDelta on multiple
   // scrollUpdate.
   ScrollBegin(&web_view_helper, -300, -316);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(8, 16), gfx::Vector2dF(8, 16),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, -308, -316);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(8, 16),
+                         gfx::Vector2dF(8, 16), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, 13), gfx::Vector2dF(8, 29),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -13);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(8, 29),
+                         gfx::Vector2dF(0, 13), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(20, 13), gfx::Vector2dF(28, 42),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, -20, -13);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(28, 42),
+                         gfx::Vector2dF(20, 13), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
   // Overscroll is not reported.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0, 1);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 1, 0);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
   // Overscroll is reported.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, -701), gfx::Vector2dF(0, -701),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 1000);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(0, -701),
+                         gfx::Vector2dF(0, -701), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
   // Overscroll is not reported.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollEnd(&web_view_helper);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 }
 
 TEST_P(WebFrameOverscrollTest,
        AccumulatedOverscrollAndUnusedDeltaValuesOnDifferentAxesOverscroll) {
   RegisterMockedHttpURLLoad("overscroll/div-overscroll.html");
-
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(
       base_url_ + "overscroll/div-overscroll.html", nullptr, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 0, -316);
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
-
   // Scroll the Div to the end.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0, -316);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
   ScrollEnd(&web_view_helper);
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 0, -100);
 
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, 100), gfx::Vector2dF(0, 100),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -100);
   ScrollUpdate(&web_view_helper, 0, -100);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(0, 100),
+                         gfx::Vector2dF(0, 100), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
   // TODO(bokan): This has never worked but by the accident that this test was
   // being run in a WebView without a size. This test should be fixed along with
@@ -10584,100 +10539,83 @@ TEST_P(WebFrameOverscrollTest,
 
 TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
   RegisterMockedHttpURLLoad("overscroll/div-overscroll.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(
       base_url_ + "overscroll/div-overscroll.html", nullptr, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 0, -316);
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
   // Scroll the Div to the end.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0, -316);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
   ScrollEnd(&web_view_helper);
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 0, -150);
 
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, 50), gfx::Vector2dF(0, 50),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -150);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(0, 50),
+                         gfx::Vector2dF(0, 50), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 }
 
 TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(
       base_url_ + "overscroll/iframe-overscroll.html", nullptr, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 0, -320);
   // Scroll the IFrame to the end.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
-
   // This scroll will fully scroll the iframe but will be consumed before being
   // counted as overscroll.
   ScrollUpdate(&web_view_helper, 0, -320);
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
   // This scroll will again target the iframe but wont bubble further up. Make
   // sure that the unused scroll isn't handled as overscroll.
   ScrollUpdate(&web_view_helper, 0, -50);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
   ScrollEnd(&web_view_helper);
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 0, -150);
 
   // Now On Scrolling IFrame, scroll is bubbled and root layer is over-scrolled.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, 50), gfx::Vector2dF(0, 50),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -150);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(0, 50),
+                         gfx::Vector2dF(0, 50), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
   ScrollEnd(&web_view_helper);
 }
 
 TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "overscroll/overscroll.html", nullptr, nullptr,
@@ -10685,174 +10623,117 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   web_view_helper.Resize(gfx::Size(200, 200));
   web_view_impl->SetPageScaleFactor(3.0);
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   // Calculation of accumulatedRootOverscroll and unusedDelta on scaled page.
-  // The point is (99, 99) because we clamp in the division by 3 to 33 so when
-  // we go back to viewport coordinates it becomes (99, 99).
+  // The point is (100, 100) because that is the position GenerateEvent uses.
   ScrollBegin(&web_view_helper, 0, 30);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, -30), gfx::Vector2dF(0, -30),
-                            gfx::PointF(99, 99), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 30);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(0, -30),
+                         gfx::Vector2dF(0, -30), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, -30), gfx::Vector2dF(0, -60),
-                            gfx::PointF(99, 99), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 30);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(0, -60),
+                         gfx::Vector2dF(0, -30), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-30, -30), gfx::Vector2dF(-30, -90),
-                            gfx::PointF(99, 99), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 30, 30);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-30, -90),
+                         gfx::Vector2dF(-30, -30), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-30, 0), gfx::Vector2dF(-60, -90),
-                            gfx::PointF(99, 99), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 30, 0);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-60, -90),
+                         gfx::Vector2dF(-30, 0), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
   // Overscroll is not reported.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollEnd(&web_view_helper);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 }
 
 TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
                                     nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 10, 10);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-10, -10), gfx::Vector2dF(-10, -10),
-                            gfx::PointF(100, 100), gfx::Vector2dF(),
-                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 10, 10);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-10, -10),
+                         gfx::Vector2dF(-10, -10), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(0, -0.10),
-                            gfx::Vector2dF(-10, -10.10), gfx::PointF(100, 100),
-                            gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 0.10);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-10, -10.10),
+                         gfx::Vector2dF(0, -0.10), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
-  EXPECT_CALL(
-      widget->GetOverscrollWidgetInputHandlerHost(),
-      DidOverscroll(gfx::Vector2dF(-0.10, 0), gfx::Vector2dF(-10.10, -10.10),
-                    gfx::PointF(100, 100), gfx::Vector2dF(),
-                    kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0.10, 0);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(),
+                         gfx::Vector2dF(-10.10, -10.10),
+                         gfx::Vector2dF(-0.10, 0), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
 
   // For residual values overscrollDelta should be reset and DidOverscroll
   // shouldn't be called.
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0, 0.09);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0.09, 0.09);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0.09, 0);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, 0, -0.09);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, -0.09, -0.09);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollUpdate(&web_view_helper, -0.09, 0);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(_, _, _, _, _))
-      .Times(0);
   ScrollEnd(&web_view_helper);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
 }
 
 TEST_P(WebFrameOverscrollTest, OverscrollBehaviorGoesToCompositor) {
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
                                     nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+
   WebLocalFrame* mainFrame =
       web_view_helper.GetWebView()->MainFrame()->ToWebLocalFrame();
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
@@ -10860,65 +10741,61 @@ TEST_P(WebFrameOverscrollTest, OverscrollBehaviorGoesToCompositor) {
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: auto;'")));
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-100, -100),
-                            gfx::Vector2dF(-100, -100), gfx::PointF(100, 100),
-                            gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 100, 100);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-100, -100),
+                         gfx::Vector2dF(-100, -100), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorAuto);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
             kOverscrollBehaviorAuto);
 
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: contain;'")));
-  ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-100, -100),
-                            gfx::Vector2dF(-200, -200), gfx::PointF(100, 100),
-                            gfx::Vector2dF(), kOverscrollBehaviorContain));
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollUpdate(&web_view_helper, 100, 100);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-200, -200),
+                         gfx::Vector2dF(-100, -100), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorContain);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
             kOverscrollBehaviorContain);
 
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: none;'")));
-  ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-100, -100),
-                            gfx::Vector2dF(-300, -300), gfx::PointF(100, 100),
-                            gfx::Vector2dF(), kOverscrollBehaviorNone));
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollUpdate(&web_view_helper, 100, 100);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  ExpectOverscrollParams(widget->last_overscroll(), gfx::Vector2dF(-300, -300),
+                         gfx::Vector2dF(-100, -100), gfx::Vector2dF(),
+                         gfx::PointF(100, 100), kOverscrollBehaviorNone);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
             kOverscrollBehaviorNone);
 }
 
-TEST_P(WebFrameOverscrollTest, OnlyMainFrameOverscrollBehaviorHasEffect) {
+TEST_P(WebFrameOverscrollTest, SubframeOverscrollBehaviorPreventsChaining) {
+  // This test fails without scroll unification (crbug.com/1222427).
+  if (!base::FeatureList::IsEnabled(::features::kScrollUnification))
+    return;
+
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
-  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
-      base::BindRepeating(
-          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
-              OverscrollWebFrameWidget>);
-  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(
       base_url_ + "overscroll/iframe-overscroll.html", nullptr, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(gfx::Size(200, 200));
 
-  OverscrollWebFrameWidget* widget = static_cast<OverscrollWebFrameWidget*>(
-      web_view_helper.GetMainFrameWidget());
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  auto* layer_tree_host = web_view_helper.GetLayerTreeHost();
+
   WebLocalFrame* mainFrame =
       web_view_helper.GetWebView()->MainFrame()->ToWebLocalFrame();
   mainFrame->ExecuteScript(
@@ -10931,32 +10808,25 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameOverscrollBehaviorHasEffect) {
   subframe->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: none;'")));
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
 
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-100, -100),
-                            gfx::Vector2dF(-100, -100), gfx::PointF(100, 100),
-                            gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 100, 100);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
             kOverscrollBehaviorAuto);
 
-  mainFrame->ExecuteScript(
+  subframe->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: contain;'")));
-  EXPECT_CALL(widget->GetOverscrollWidgetInputHandlerHost(),
-              DidOverscroll(gfx::Vector2dF(-100, -100),
-                            gfx::Vector2dF(-200, -200), gfx::PointF(100, 100),
-                            gfx::Vector2dF(), kOverscrollBehaviorContain));
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+
   ScrollUpdate(&web_view_helper, 100, 100);
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(
-      &widget->GetOverscrollWidgetInputHandlerHost());
+  layer_tree_host->CompositeForTest(base::TimeTicks::Now(), false);
+  EXPECT_TRUE(widget->last_overscroll().is_null());
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
-            kOverscrollBehaviorContain);
+            kOverscrollBehaviorAuto);
 }
 
 TEST_F(WebFrameTest, OrientationFrameDetach) {
@@ -11023,12 +10893,11 @@ TEST_F(WebFrameTest, RotatedIframeViewportIntersection) {
 </style>
 <iframe></iframe>
   )HTML");
-  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client;
   TestViewportIntersection remote_frame_host;
-  remote_frame_host.Init(remote_frame_client.GetRemoteAssociatedInterfaces());
-  WebRemoteFrameImpl* remote_frame =
-      frame_test_helpers::CreateRemote(&remote_frame_client);
-  web_view_helper.LocalMainFrame()->FirstChild()->Swap(remote_frame);
+  WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
+  frame_test_helpers::SwapRemoteFrame(
+      web_view_helper.LocalMainFrame()->FirstChild(), remote_frame,
+      remote_frame_host.BindNewAssociatedRemote());
   web_view->MainFrameImpl()
       ->GetFrame()
       ->View()
@@ -11185,9 +11054,7 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
         web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html")
             ->MainFrameImpl();
     web_view_helper_.Resize(gfx::Size(640, 480));
-    remote_frame_host_.Init(
-        remote_frame_client_.GetRemoteAssociatedInterfaces());
-    web_remote_frame_ = frame_test_helpers::CreateRemote(&remote_frame_client_);
+    web_remote_frame_ = frame_test_helpers::CreateRemote();
   }
 
   ~WebRemoteFrameVisibilityChangeTest() override = default;
@@ -11201,7 +11068,9 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
   }
 
   void SwapLocalFrameToRemoteFrame() {
-    MainFrame()->LastChild()->Swap(RemoteFrame());
+    frame_test_helpers::SwapRemoteFrame(
+        MainFrame()->LastChild(), RemoteFrame(),
+        remote_frame_host_.BindNewAssociatedRemote());
   }
 
   WebLocalFrame* MainFrame() { return frame_; }
@@ -11212,7 +11081,6 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
 
  private:
   TestRemoteFrameHostForVisibility remote_frame_host_;
-  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client_;
   frame_test_helpers::WebViewHelper web_view_helper_;
   WebLocalFrame* frame_;
   Persistent<WebRemoteFrameImpl> web_remote_frame_;
@@ -11919,18 +11787,18 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
 
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
   // seeing a Begin first doesn't break anything. (This currently happens).
-  web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(end_event, ui::LatencyInfo()));
-  web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(update_event, ui::LatencyInfo()));
+  auto* widget = web_view_helper.GetMainFrameWidget();
+  widget->DispatchThroughCcInputHandler(end_event);
+  widget->DispatchThroughCcInputHandler(update_event);
+  web_view_helper.GetLayerTreeHost()->CompositeForTest(base::TimeTicks::Now(),
+                                                       false);
 
   // Try a full Begin/Update/End cycle.
-  web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(begin_event, ui::LatencyInfo()));
-  web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(update_event, ui::LatencyInfo()));
-  web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(end_event, ui::LatencyInfo()));
+  widget->DispatchThroughCcInputHandler(begin_event);
+  widget->DispatchThroughCcInputHandler(update_event);
+  widget->DispatchThroughCcInputHandler(end_event);
+  web_view_helper.GetLayerTreeHost()->CompositeForTest(base::TimeTicks::Now(),
+                                                       false);
 }
 
 TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
@@ -13620,7 +13488,6 @@ TEST_F(WebFrameSimTest, GetPageSizeType) {
 }
 
 TEST_F(WebFrameSimTest, PageOrientation) {
-  ScopedNamedPagesForTest named_pages_enabler(true);
   gfx::Size page_size(500, 500);
   WebView().MainFrameWidget()->Resize(page_size);
 
@@ -13677,12 +13544,11 @@ TEST_F(WebFrameSimTest, MainFrameTransformOffsetPixelSnapped) {
       <!DOCTYPE html>
       <iframe id="iframe" style="position:absolute;top:7px;left:13.5px;border:none"></iframe>
   )HTML");
-  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client;
   TestViewportIntersection remote_frame_host;
-  remote_frame_host.Init(remote_frame_client.GetRemoteAssociatedInterfaces());
-  WebRemoteFrame* remote_frame =
-      frame_test_helpers::CreateRemote(&remote_frame_client);
-  MainFrame().FirstChild()->Swap(remote_frame);
+  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
+  frame_test_helpers::SwapRemoteFrame(
+      MainFrame().FirstChild(), remote_frame,
+      remote_frame_host.BindNewAssociatedRemote());
   Compositor().BeginFrame();
   RunPendingTasks();
   EXPECT_TRUE(remote_frame_host.GetIntersectionState()
@@ -13783,8 +13649,7 @@ TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
   local_frame->GetFrame()
       ->GetDocument()
       ->GetLayoutView()
-      ->MapToVisualRectInAncestorSpace(
-          nullptr, rect, viewport_intersection_flags, kDefaultVisualRectFlags);
+      ->MapToVisualRectInAncestorSpace(nullptr, rect);
   EXPECT_EQ(PhysicalRect(7, 0, 25, 24), rect);
 
   // Without the main frame overflow clip the rect should not be clipped and the
@@ -13794,7 +13659,6 @@ TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
       ->GetDocument()
       ->GetLayoutView()
       ->MapToVisualRectInAncestorSpace(nullptr, mainframe_rect,
-                                       viewport_intersection_flags,
                                        kDontApplyMainFrameOverflowClip);
   EXPECT_EQ(PhysicalRect(7, -11, 25, 35), mainframe_rect);
 }
@@ -14084,7 +13948,8 @@ TEST_F(WebFrameTest, RemoteFrameCompositingScaleFactor) {
   )HTML");
 
   WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
-  web_view_helper.LocalMainFrame()->FirstChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(
+      web_view_helper.LocalMainFrame()->FirstChild(), remote_frame);
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -14123,7 +13988,8 @@ TEST_F(WebFrameTest, RotatedRemoteFrameCompositingScaleFactor) {
   )HTML");
 
   WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
-  web_view_helper.LocalMainFrame()->FirstChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(
+      web_view_helper.LocalMainFrame()->FirstChild(), remote_frame);
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -14162,7 +14028,8 @@ TEST_F(WebFrameTest, ZeroScaleRemoteFrameCompositingScaleFactor) {
   )HTML");
 
   WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
-  web_view_helper.LocalMainFrame()->FirstChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(
+      web_view_helper.LocalMainFrame()->FirstChild(), remote_frame);
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
@@ -14200,7 +14067,8 @@ TEST_F(WebFrameTest, LargeScaleRemoteFrameCompositingScaleFactor) {
   )HTML");
 
   WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
-  web_view_helper.LocalMainFrame()->FirstChild()->Swap(remote_frame);
+  frame_test_helpers::SwapRemoteFrame(
+      web_view_helper.LocalMainFrame()->FirstChild(), remote_frame);
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 

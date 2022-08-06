@@ -124,6 +124,21 @@ class SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes
   base::test::ScopedFeatureList feature_list_;
 };
 
+class SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart
+    : public SyncTest {
+ public:
+  SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart()
+      : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitWithFeatureState(
+        syncer::kCacheBaseEntitySpecificsInMetadata, GetTestPreCount() == 0);
+  }
+  ~SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart()
+      override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -300,6 +315,7 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
   void SetUpInProcessBrowserTestFixture() override {
     test_signin_client_subscription_ =
         secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
+    SyncTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
@@ -426,16 +442,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Sanity check: The profile database should *not* get cleared on signout.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// On Lacros, signout is not supported with Mirror account consistency.
-// TODO(https://crbug.com/1260291): Enable this test once signout is supported.
-#define MAYBE_DoesNotClearProfileDBOnSignout \
-  DISABLED_DoesNotClearProfileDBOnSignout
-#else
-#define MAYBE_DoesNotClearProfileDBOnSignout DoesNotClearProfileDBOnSignout
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
-                       MAYBE_DoesNotClearProfileDBOnSignout) {
+                       DoesNotClearProfileDBOnSignout) {
   AddTestPasswordToFakeServer();
 
   // Sign in and enable Sync.
@@ -588,10 +596,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
 
-// On Lacros, signout is not supported with Mirror account consistency.
-// TODO(https://crbug.com/1260291): Enable this part of the test once signout is
-// supported.
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Clear the primary account to put Sync into transport mode again.
   // Note: Clearing the primary account without also signing out isn't exposed
   // to the user, so this shouldn't happen. Still best to cover it here.
@@ -609,7 +613,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // cleared when Sync gets disabled.
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
-#endif
 }
 
 // Regression test for crbug.com/1076378.
@@ -771,6 +774,54 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ("new note value", decrypted_note.value());
     EXPECT_EQ(kUnsupportedNoteField, decrypted_note.unknown_fields());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart,
+    PRE_PasswordBridgeIgnoresEntriesWithoutCachedBaseSpecificOnRestart) {
+  // Disabled by the test fixture.
+  ASSERT_FALSE(base::FeatureList::IsEnabled(
+      syncer::kCacheBaseEntitySpecificsInMetadata));
+
+  // Add password entity with caching entity specifics disabled in the PRE test.
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  PasswordForm form = CreateTestPasswordForm(0);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+}
+
+// Regression test for crrev.com/c/3755526. Checks that password bridge ignores
+// entries without a password field in entity specifics cache (added by the PRE
+// test with `syncer::kCacheBaseEntitySpecificsInMetadata` disabled).
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart,
+    PasswordBridgeIgnoresEntriesWithoutCachedBaseSpecificOnRestart) {
+  // Enabled by the test fixture.
+  ASSERT_TRUE(base::FeatureList::IsEnabled(
+      syncer::kCacheBaseEntitySpecificsInMetadata));
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_EQ(1, GetPasswordCount(0));
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  // After restart, the last sync cycle snapshot should be empty. Once a sync
+  // request happened (e.g. by a poll), that snapshot is populated. We use the
+  // following checker to simply wait for an non-empty snapshot.
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  // The original metric is defined in password_sync_bridge.cc.
+  const int kNone = 0;
+  // Since the local base entity specifics cache doesn't contain supported
+  // fields, running into the initial sync flow is not expected. Since the
+  // bridge is initialized for both account and profile store, the metric is
+  // expected to be recorded twice.
+  histogram_tester.ExpectUniqueSample("PasswordManager.SyncMetadataReadError",
+                                      kNone, /*expected_bucket_count=*/2);
 }
 
 }  // namespace

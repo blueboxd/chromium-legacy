@@ -162,7 +162,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Helper function that converts users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
   // skipped.
-  void ParseUserList(const base::Value::ConstListView& users_list,
+  void ParseUserList(const base::Value::List& users_list,
                      const std::set<AccountId>& existing_users,
                      std::vector<AccountId>* users_vector,
                      std::set<AccountId>* users_set);
@@ -221,7 +221,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Implementation for RemoveUser method. It is synchronous. It is called from
   // RemoveUserInternal after owner check.
-  virtual void RemoveNonOwnerUserInternal(const AccountId& account_id,
+  // Pass |account_id| by value here to avoid use-after-free. Original
+  // |account_id| could be destroyed during the user removal.
+  virtual void RemoveNonOwnerUserInternal(AccountId account_id,
                                           UserRemovalReason reason,
                                           RemoveUserDelegate* delegate);
 

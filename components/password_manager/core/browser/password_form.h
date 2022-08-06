@@ -133,13 +133,17 @@ struct PasswordForm {
   // Always append new types at the end. This enum is converted to int and
   // stored in password store backends, so it is important to keep each
   // value assigned to the same integer.
+  //
+  // This might contain non-enum values: coming from clients that have a shorter
+  // list of Type.
   enum class Type {
     kFormSubmission = 0,
     kGenerated = 1,
     kApi = 2,
     kManuallyAdded = 3,
+    kImported = 4,
     kMinValue = kFormSubmission,
-    kMaxValue = kManuallyAdded,
+    kMaxValue = kImported,
   };
 
   // Enum to keep track of what information has been sent to the server about
@@ -310,6 +314,8 @@ struct PasswordForm {
   bool blocked_by_user = false;
 
   // The form type.
+  // This might contain non-enum values: coming from clients that have a shorter
+  // list of Type.
   Type type = Type::kFormSubmission;
 
   // The number of times that this username/password has been used to
@@ -446,10 +452,6 @@ struct PasswordForm {
 
   // Returns true when |password_value| or |new_password_value| are non-empty.
   bool HasNonEmptyPasswordValue() const;
-
-  // Utility method to check whether the form represents an insecure credential
-  // of insecure type `type`.
-  bool IsInsecureCredential(InsecureType insecure_type) const;
 
   PasswordForm();
   PasswordForm(const PasswordForm& other);

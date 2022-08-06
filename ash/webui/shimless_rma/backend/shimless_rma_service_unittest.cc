@@ -25,11 +25,11 @@
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,7 +122,7 @@ class ShimlessRmaServiceTest : public testing::Test {
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {chromeos::features::kShimlessRMAOsUpdate}, {});
-    chromeos::DBusThreadManager::Initialize();
+    PowerManagerClient::InitializeFake();
     // VersionUpdater depends on UpdateEngineClient.
     UpdateEngineClient::InitializeFake();
 
@@ -150,7 +150,7 @@ class ShimlessRmaServiceTest : public testing::Test {
     cros_network_config_test_helper_.reset();
     chromeos::LoginState::Shutdown();
     UpdateEngineClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    PowerManagerClient::Shutdown();
   }
 
   void SetupFakeNetwork() {
@@ -291,7 +291,7 @@ class ShimlessRmaServiceTest : public testing::Test {
     return *cros_network_config_test_helper_;
   }
 
-  chromeos::NetworkStateTestHelper& network_state_helper() {
+  NetworkStateTestHelper& network_state_helper() {
     return cros_network_config_test_helper_->network_state_helper();
   }
 
@@ -887,6 +887,45 @@ TEST_F(ShimlessRmaServiceTest, WithNetworkConnectedAndGoBack) {
   run_loop.Run();
 }
 
+// Navigating to the SelectNetwork page should enable WiFi if it's currently
+// disabled.
+TEST_F(ShimlessRmaServiceTest, SelectNetworkTurnsOnWiFi) {
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWelcome, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kComponentsRepair,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+
+  base::RunLoop run_loop;
+
+  // Simulate disabling WiFi.
+  network_state_handler()->SetTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi(), /*enabled=*/false,
+      network_handler::ErrorCallback());
+  EXPECT_FALSE(network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi()));
+
+  // Initialize current state.
+  shimless_rma_provider_->GetCurrentState(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kWelcomeScreen);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  // No network should direct user to the NetworkPage.
+  shimless_rma_provider_->BeginFinalization(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kConfigureNetwork);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  // After transitioning to the select network page, WiFi should be enabled.
+  EXPECT_TRUE(network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi()));
+}
+
 TEST_F(ShimlessRmaServiceTest, GetCurrentState) {
   std::vector<rmad::GetStateReply> fake_states;
   fake_states.push_back(CreateStateReply(rmad::RmadState::kDeviceDestination,
@@ -1013,6 +1052,57 @@ TEST_F(ShimlessRmaServiceTest, CannotCancelRma) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, AbortRmaRequestsFullReboot) {
+  const std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  fake_rmad_client_()->SetAbortable(true);
+  base::RunLoop run_loop;
+  shimless_rma_provider_->AbortRma(
+      base::BindLambdaForTesting([&](rmad::RmadErrorCode error) {
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
+}
+
+TEST_F(ShimlessRmaServiceTest,
+       CriticalErrorExitToLoginDoesntRequestFullReboot) {
+  const std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  fake_rmad_client_()->SetAbortable(true);
+  shimless_rma_provider_->SetCriticalErrorOccurredForTest(true);
+  base::RunLoop run_loop;
+  shimless_rma_provider_->CriticalErrorExitToLogin(
+      base::BindLambdaForTesting([&](rmad::RmadErrorCode error) {
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+}
+
+TEST_F(ShimlessRmaServiceTest, CriticalErrorRebootRequestsFullReboot) {
+  const std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  fake_rmad_client_()->SetAbortable(true);
+  shimless_rma_provider_->SetCriticalErrorOccurredForTest(true);
+  base::RunLoop run_loop;
+  shimless_rma_provider_->CriticalErrorReboot(
+      base::BindLambdaForTesting([&](rmad::RmadErrorCode error) {
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 TEST_F(ShimlessRmaServiceTest, SetSameOwner) {

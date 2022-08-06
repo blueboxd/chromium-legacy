@@ -4,6 +4,7 @@
 
 import("//build/apple/compile_entitlements.gni")
 import("//build/apple/tweak_info_plist.gni")
+import("//build/buildflag_header.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//build/ios/extension_bundle_data.gni")
@@ -11,6 +12,11 @@ import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
+
+buildflag_header("buildflags") {
+  header = "background_mode_buildflags.h"
+  flags = [ "IOS_BACKGROUND_MODE_ENABLED=$ios_enable_background_mode" ]
+}
 
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -24,6 +30,7 @@ source_set("app") {
   deps = [
     "//base",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ui:feature_flags",
     "//net",
     "//url",
   ]
@@ -100,6 +107,9 @@ if (!is_fat_secondary_toolchain) {
       "resources/Info.plist",
       "resources/ChromeAddition+Info.plist",
     ]
+    if (ios_enable_background_mode) {
+      info_plists += [ "resources/Background+Info.plist" ]
+    }
     if (target_environment == "catalyst") {
       info_plists += [ "resources/Environment+Catalyst.plist" ]
     } else {
@@ -218,6 +228,7 @@ source_set("enterprise_app_agent_ui") {
   deps = [
     "//base",
     "//ios/chrome/app/strings:ios_chromium_strings_grit",
+    "//ios/chrome/browser/ui/first_run:constants",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ios/chrome/common/ui/util:dynamic_type_util",
@@ -254,6 +265,27 @@ source_set("first_run_app_state_agent") {
   ]
 }
 
+source_set("feed_app_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "feed_app_agent.h",
+    "feed_app_agent.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/app/application_delegate:observing_app_state_agent",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/discover_feed:discover_feed",
+    "//ios/chrome/browser/discover_feed:discover_feed_factory",
+    "//ios/chrome/browser/ntp:features",
+  ]
+  frameworks = [
+    "BackgroundTasks.framework",
+    "UserNotifications.framework",
+  ]
+}
+
 source_set("app_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -276,6 +308,7 @@ source_set("app_internal") {
     ":app_metrics_app_state_agent",
     ":blocking_scene_commands",
     ":enterprise_app_agent",
+    ":feed_app_agent",
     ":first_run_app_state_agent",
     ":mode",
     ":safe_mode_app_state_agent",
@@ -386,6 +419,7 @@ source_set("app_internal") {
     "//ios/public/provider/chrome/browser/overrides:overrides_api",
     "//ios/public/provider/chrome/browser/ui_utils:ui_utils_api",
     "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/third_party/material_components_ios",
     "//ios/web/common:features",
     "//ios/web/common:uikit",
     "//ios/web/public/webui",

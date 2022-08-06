@@ -5,7 +5,6 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/locales.gni")
 import("//components/cast_streaming/features.gni")
-import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 
 # These args blocks should contain arguments used within the //chromecast
@@ -19,6 +18,10 @@ declare_args() {
   is_cast_desktop_build =
       target_os == "linux" && (target_cpu == "x86" || target_cpu == "x64") &&
       enable_cast_receiver
+
+  # chromecast_branding is used to include or exclude Google-branded components.
+  # Set it to "public" for a Chromium build.
+  chromecast_branding = "public"
 }
 
 declare_args() {
@@ -145,6 +148,11 @@ declare_args() {
 
   # device specific string to append to User string.
   device_user_agent_suffix = ""
+
+  # link vendor-supplied functionality as shared libraries. When true,
+  # cast_shared_library targets are normal shared libraries. When false,
+  # they become source_sets.
+  use_vendor_shlibs = !is_android
 }
 
 declare_args() {
@@ -183,10 +191,6 @@ if (!(is_ios || is_chromeos)) {
   ]
 }
 
-declare_args() {
-  enable_chromecast_extensions = enable_extensions
-}
-
 # Use Chromecast CDMs for protected content. Some Android platforms use
 # MediaDrm for CDM support.
 declare_args() {
@@ -196,16 +200,30 @@ declare_args() {
 foreach(target_type,
         [
           "executable",
-          "shared_library",
           "loadable_module",
           "source_set",
         ]) {
   template("cast_${target_type}") {
     target(target_type, target_name) {
-      forward_variables_from(invoker, "*")
+      forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)
+      forward_variables_from(invoker, [ "testonly" ])
 
       configs += [ "//chromecast:cast_config" ]
     }
+  }
+}
+
+template("cast_shared_library") {
+  if (use_vendor_shlibs) {
+    target_type = "shared_library"
+  } else {
+    target_type = "source_set"
+  }
+  target(target_type, target_name) {
+    forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)
+    forward_variables_from(invoker, [ "testonly" ])
+
+    configs += [ "//chromecast:cast_config" ]
   }
 }
 

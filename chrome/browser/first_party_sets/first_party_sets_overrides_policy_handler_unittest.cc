@@ -89,9 +89,8 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
 
   EXPECT_TRUE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
-  EXPECT_EQ(
-      errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-      u"Schema validation error at \"(ROOT)\": Unknown property: unknown");
+  EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
+            u"Schema validation error: Unknown property: unknown");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -150,8 +149,8 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
   EXPECT_FALSE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
   EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-            u"Schema validation error at \"(ROOT)\": The value type doesn't "
-            u"match the schema type.");
+            u"Schema validation error: Policy type mismatch: "
+            u"expected: \"dictionary\", actual: \"list\".");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -166,10 +165,9 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
 
   EXPECT_FALSE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
-  EXPECT_EQ(
-      errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-      u"Schema validation error at \"replacements\": The value type doesn't "
-      u"match the schema type.");
+  EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
+            u"Schema validation error at \"replacements\": Policy type "
+            u"mismatch: expected: \"list\", actual: \"integer\".");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -185,8 +183,8 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
   EXPECT_FALSE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
   EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-            u"Schema validation error at \"additions\": The value type doesn't "
-            u"match the schema type.");
+            u"Schema validation error at \"additions\": Policy type mismatch: "
+            u"expected: \"list\", actual: \"integer\".");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -228,8 +226,8 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
   EXPECT_FALSE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
   EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-            u"Schema validation error at \"additions.items[0].owner\": The "
-            u"value type doesn't match the schema type.");
+            u"Schema validation error at \"additions.items[0].owner\": Policy "
+            u"type mismatch: expected: \"string\", actual: \"integer\".");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -271,8 +269,8 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
   EXPECT_FALSE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
   EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-            u"Schema validation error at \"additions.items[0].members\": The "
-            u"value type doesn't match the schema type.");
+            u"Schema validation error at \"additions.items[0].members\": "
+            u"Policy type mismatch: expected: \"list\", actual: \"integer\".");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -295,7 +293,7 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
   EXPECT_EQ(
       errors.GetErrors(policy::key::kFirstPartySetsOverrides),
       u"Schema validation error at \"additions.items[0].members.items[1]\": "
-      u"The value type doesn't match the schema type.");
+      u"Policy type mismatch: expected: \"string\", actual: \"integer\".");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
@@ -349,9 +347,8 @@ TEST_F(FirstPartySetsOverridesPolicyHandlerTest,
   // CheckPolicySettings returns true, and errors on the last unknown property.
   EXPECT_TRUE(
       handler()->CheckPolicySettings(MakePolicyWithInput(input), &errors));
-  EXPECT_EQ(
-      errors.GetErrors(policy::key::kFirstPartySetsOverrides),
-      u"Schema validation error at \"(ROOT)\": Unknown property: unknown3");
+  EXPECT_EQ(errors.GetErrors(policy::key::kFirstPartySetsOverrides),
+            u"Schema validation error: Unknown property: unknown3");
 }
 
 TEST_F(FirstPartySetsOverridesPolicyHandlerTest,

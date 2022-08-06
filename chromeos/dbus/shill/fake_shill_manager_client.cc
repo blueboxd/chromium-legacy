@@ -126,13 +126,13 @@ int GetTechnologyOrder(const base::Value& dict) {
 }
 
 int GetSecurityOrder(const base::Value& dict) {
-  std::string security = GetStringValue(dict, shill::kSecurityProperty);
+  std::string security = GetStringValue(dict, shill::kSecurityClassProperty);
   // No security is listed last.
-  if (security == shill::kSecurityNone)
+  if (security == shill::kSecurityClassNone)
     return 3;
 
   // 8021x is listed first.
-  if (security == shill::kSecurity8021x)
+  if (security == shill::kSecurityClass8021x)
     return 1;
 
   // All other security types are equal priority.
@@ -500,6 +500,45 @@ void FakeShillManagerClient::RemovePasspointCredentials(
     base::OnceClosure callback,
     ErrorCallback error_callback) {}
 
+void FakeShillManagerClient::SetTetheringEnabled(bool enabled,
+                                                 base::OnceClosure callback,
+                                                 ErrorCallback error_callback) {
+  switch (simulate_tethering_enable_result_) {
+    case FakeShillSimulatedResult::kSuccess:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(callback));
+      return;
+    case FakeShillSimulatedResult::kFailure:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(error_callback), "Error",
+                                    "Simulated failure"));
+      return;
+    case FakeShillSimulatedResult::kTimeout:
+      // No callbacks get executed and the caller should eventually timeout.
+      return;
+  }
+}
+
+void FakeShillManagerClient::CheckTetheringReadiness(
+    StringCallback callback,
+    ErrorCallback error_callback) {
+  switch (simulate_tethering_enable_result_) {
+    case FakeShillSimulatedResult::kSuccess:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    simulate_tethering_readiness_status_));
+      return;
+    case FakeShillSimulatedResult::kFailure:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(error_callback), "Error",
+                                    "Simulated failure"));
+      return;
+    case FakeShillSimulatedResult::kTimeout:
+      // No callbacks get executed and the caller should eventually timeout.
+      return;
+  }
+}
+
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
   return this;
 }
@@ -800,6 +839,21 @@ void FakeShillManagerClient::SetSimulateConfigurationResult(
   simulate_configuration_result_ = configuration_result;
 }
 
+void FakeShillManagerClient::SetSimulateTetheringEnableResult(
+    FakeShillSimulatedResult tethering_enable_result) {
+  simulate_tethering_enable_result_ = tethering_enable_result;
+}
+
+void FakeShillManagerClient::SetSimulateCheckTetheringReadinessResult(
+    FakeShillSimulatedResult tethering_readiness_result,
+    const std::string& readiness_status) {
+  simulate_check_tethering_readiness_result_ = tethering_readiness_result;
+  if (simulate_check_tethering_readiness_result_ ==
+      FakeShillSimulatedResult::kSuccess) {
+    simulate_tethering_readiness_status_ = readiness_status;
+  }
+}
+
 void FakeShillManagerClient::SetupDefaultEnvironment() {
   // Bail out from setup if there is no message loop. This will be the common
   // case for tests that are not testing Shill.
@@ -888,7 +942,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->AddService(kWifi1Path, "wifi1_guid", "wifi1" /* name */,
                          shill::kTypeWifi, state, add_to_visible);
     services->SetServiceProperty(kWifi1Path, shill::kSecurityClassProperty,
-                                 base::Value(shill::kSecurityWep));
+                                 base::Value(shill::kSecurityClassWep));
     services->SetServiceProperty(kWifi1Path, shill::kConnectableProperty,
                                  base::Value(true));
     profiles->AddService(shared_profile, kWifi1Path);
@@ -899,7 +953,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          shill::kTypeWifi, shill::kStateIdle, add_to_visible);
     if (s_dynamic_wep) {
       services->SetServiceProperty(kWifi2Path, shill::kSecurityClassProperty,
-                                   base::Value(shill::kSecurityWep));
+                                   base::Value(shill::kSecurityClassWep));
       services->SetServiceProperty(kWifi2Path, shill::kEapKeyMgmtProperty,
                                    base::Value(shill::kKeyManagementIEEE8021X));
       services->SetServiceProperty(kWifi2Path, shill::kEapMethodProperty,
@@ -908,7 +962,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                    base::Value("John Doe"));
     } else {
       services->SetServiceProperty(kWifi2Path, shill::kSecurityClassProperty,
-                                   base::Value(shill::kSecurityPsk));
+                                   base::Value(shill::kSecurityClassPsk));
     }
     services->SetServiceProperty(kWifi2Path, shill::kConnectableProperty,
                                  base::Value(false));
@@ -932,7 +986,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                            shill::kStateIdle, add_to_visible);
       services->SetServiceProperty(kPortaledWifiPath,
                                    shill::kSecurityClassProperty,
-                                   base::Value(shill::kSecurityNone));
+                                   base::Value(shill::kSecurityClassNone));
       services->SetConnectBehavior(
           kPortaledWifiPath,
           base::BindRepeating(&UpdatePortaledWifiState, kPortaledWifiPath));

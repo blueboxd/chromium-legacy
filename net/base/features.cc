@@ -11,9 +11,6 @@
 
 namespace net::features {
 
-const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAlpsForHttp2{"AlpsForHttp2",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -22,9 +19,6 @@ const base::Feature kAvoidH2Reprioritization{"AvoidH2Reprioritization",
 
 const base::Feature kCapReferrerToOriginOnCrossOrigin{
     "CapReferrerToOriginOnCrossOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCookieDomainAttributeEmptyString{
-    "CookieDomainAttributeEmptyString", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDnsTransactionDynamicTimeouts{
     "DnsTransactionDynamicTimeouts", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -151,6 +145,14 @@ const base::Feature kPartitionExpectCTStateByNetworkIsolationKey{
 
 const base::Feature kPartitionNelAndReportingByNetworkIsolationKey{
     "PartitionNelAndReportingByNetworkIsolationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableDoubleKeyNetworkAnonymizationKey{
+    "EnableDoubleKeyNetworkAnonymizationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableCrossSiteFlagNetworkAnonymizationKey{
+    "EnableCrossSiteFlagNetworkAnonymizationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kExpectCTPruning{"ExpectCTPruning",
@@ -328,4 +330,10 @@ const base::FeatureParam<int>
         &kOptimizeNetworkBuffers, "filter_source_stream_buffer_size",
         32 * 1024};
 
+const base::Feature kStorageAccessAPI{"StorageAccessAPI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr int kStorageAccessAPIDefaultImplicitGrantLimit = 5;
+const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
+    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit",
+    kStorageAccessAPIDefaultImplicitGrantLimit};
 }  // namespace net::features

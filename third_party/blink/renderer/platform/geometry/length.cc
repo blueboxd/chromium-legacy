@@ -193,6 +193,22 @@ bool Length::IsCalculatedEqual(const Length& o) const {
           GetCalculationValue() == o.GetCalculationValue());
 }
 
+absl::optional<LayoutUnit> Length::AnchorEvaluator::EvaluateAnchor(
+    const AtomicString& anchor_name,
+    AnchorValue anchor_value) const {
+  return absl::nullopt;
+}
+
+absl::optional<LayoutUnit> Length::AnchorEvaluator::EvaluateAnchorSize(
+    const AtomicString& anchor_name,
+    AnchorSizeValue anchor_size_value) const {
+  return absl::nullopt;
+}
+
+bool Length::HasAnchorQueries() const {
+  return IsCalculated() && GetCalculationValue().HasAnchorQueries();
+}
+
 String Length::ToString() const {
   StringBuilder builder;
   builder.Append("Length(");

@@ -26,7 +26,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/pref_names.h"
-#include "components/variations/service/variations_safe_mode_constants.h"
 #include "components/variations/variations_switches.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -37,6 +36,7 @@
 #endif
 
 namespace metrics {
+
 namespace {
 
 using ::variations::prefs::kVariationsCrashStreak;
@@ -206,16 +206,17 @@ std::unique_ptr<base::Value> MaybeGetFileContents(
 
 }  // namespace
 
+const base::FilePath::CharType kCleanExitBeaconFilename[] =
+    FILE_PATH_LITERAL("Variations");
+
 CleanExitBeacon::CleanExitBeacon(const std::wstring& backup_registry_key,
                                  const base::FilePath& user_data_dir,
-                                 PrefService* local_state,
-                                 version_info::Channel channel)
+                                 PrefService* local_state)
     : backup_registry_key_(backup_registry_key),
       user_data_dir_(user_data_dir),
       local_state_(local_state),
       initial_browser_last_live_timestamp_(
-          local_state->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp)),
-      channel_(channel) {
+          local_state->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp)) {
   DCHECK_NE(PrefService::INITIALIZATION_STATUS_WAITING,
             local_state_->GetInitializationStatus());
 }
@@ -226,8 +227,7 @@ void CleanExitBeacon::Initialize() {
   if (!user_data_dir_.empty()) {
     // Platforms that pass an empty path do so deliberately. They should not
     // use the beacon file.
-    beacon_file_path_ =
-        user_data_dir_.Append(variations::kCleanExitBeaconFilename);
+    beacon_file_path_ = user_data_dir_.Append(kCleanExitBeaconFilename);
   }
 
   std::unique_ptr<base::Value> beacon_file_contents =

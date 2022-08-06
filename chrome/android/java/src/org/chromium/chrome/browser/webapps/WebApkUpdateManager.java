@@ -204,6 +204,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
             destroyFetcher();
         }
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_APK_UNIQUE_ID)
+                && TextUtils.isEmpty(mInfo.manifestId())) {
+            RecordHistogram.recordBooleanHistogram(
+                    "WebApk.Update.UpdateEmptyUniqueId.NeedsUpgrade", needsUpgrade);
+        }
+
         if (!needsUpgrade) {
             if (!mStorage.didPreviousUpdateSucceed() || mStorage.shouldForceUpdate()) {
                 onFinishedUpdate(mStorage, WebApkInstallResult.SUCCESS, false /* relaxUpdates */);
@@ -336,6 +342,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     private void buildUpdateRequestAndSchedule(WebappInfo info, String primaryIconUrl,
             String splashIconUrl, boolean isManifestStale, boolean appIdentityUpdateSupported,
             List<Integer> updateReasons) {
+        recordWebApkUpdateUniqueIdHistogram(mInfo, mFetchedInfo);
+
         Callback<Boolean> callback = (success) -> {
             if (!success) {
                 onFinishedUpdate(mStorage, WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
@@ -346,6 +354,18 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         String updateRequestPath = mStorage.createAndSetUpdateRequestFilePath(info);
         encodeIconsInBackground(updateRequestPath, info, primaryIconUrl, splashIconUrl,
                 isManifestStale, appIdentityUpdateSupported, updateReasons, callback);
+    }
+
+    private void recordWebApkUpdateUniqueIdHistogram(WebappInfo oldInfo, WebappInfo fetchedInfo) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_APK_UNIQUE_ID)) return;
+        if (fetchedInfo == null) return;
+
+        String baseName = "WebApk.Update.UniqueId"
+                + (TextUtils.isEmpty(oldInfo.manifestId()) ? "Empty" : "Same");
+        RecordHistogram.recordBooleanHistogram(baseName + ".ManifestUrl",
+                TextUtils.equals(oldInfo.manifestUrl(), fetchedInfo.manifestUrl()));
+        RecordHistogram.recordBooleanHistogram(
+                baseName + ".StartUrl", TextUtils.equals(oldInfo.url(), fetchedInfo.url()));
     }
 
     /** Schedules update for when WebAPK is not running. */
@@ -652,24 +672,24 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
         WebApkUpdateManagerJni.get().storeWebApkUpdateRequestToFile(updateRequestPath,
                 info.manifestStartUrl(), info.scopeUrl(), info.name(), info.shortName(),
-                primaryIconUrl, primaryIconData, info.isIconAdaptive(), splashIconUrl,
-                splashIconData, info.isSplashIconMaskable(), iconUrls, iconHashes,
-                info.displayMode(), info.orientation(), info.toolbarColor(), info.backgroundColor(),
-                shareTargetAction, shareTargetParamTitle, shareTargetParamText,
-                shareTargetIsMethodPost, shareTargetIsEncTypeMultipart, shareTargetParamFileNames,
-                shareTargetParamAccepts, shortcuts, shortcutIconData, info.manifestUrl(),
-                info.webApkPackageName(), versionCode, isManifestStale,
+                info.manifestId(), info.appKey(), primaryIconUrl, primaryIconData,
+                info.isIconAdaptive(), splashIconUrl, splashIconData, info.isSplashIconMaskable(),
+                iconUrls, iconHashes, info.displayMode(), info.orientation(), info.toolbarColor(),
+                info.backgroundColor(), shareTargetAction, shareTargetParamTitle,
+                shareTargetParamText, shareTargetIsMethodPost, shareTargetIsEncTypeMultipart,
+                shareTargetParamFileNames, shareTargetParamAccepts, shortcuts, shortcutIconData,
+                info.manifestUrl(), info.webApkPackageName(), versionCode, isManifestStale,
                 isAppIdentityUpdateSupported, updateReasonsArray, callback);
     }
 
     @NativeMethods
     interface Natives {
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
-                String scope, String name, String shortName, String primaryIconUrl,
-                String primaryIconData, boolean isPrimaryIconMaskable, String splashIconUrl,
-                String splashIconData, boolean isSplashIconMaskable, String[] iconUrls,
-                String[] iconHashes, @DisplayMode.EnumType int displayMode, int orientation,
-                long themeColor, long backgroundColor, String shareTargetAction,
+                String scope, String name, String shortName, String manifestId, String appKey,
+                String primaryIconUrl, String primaryIconData, boolean isPrimaryIconMaskable,
+                String splashIconUrl, String splashIconData, boolean isSplashIconMaskable,
+                String[] iconUrls, String[] iconHashes, @DisplayMode.EnumType int displayMode,
+                int orientation, long themeColor, long backgroundColor, String shareTargetAction,
                 String shareTargetParamTitle, String shareTargetParamText,
                 boolean shareTargetParamIsMethodPost, boolean shareTargetParamIsEncTypeMultipart,
                 String[] shareTargetParamFileNames, Object[] shareTargetParamAccepts,

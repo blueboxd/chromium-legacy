@@ -24,7 +24,7 @@ import {changeDirectory} from '../../state/actions.js';
 import {getStore} from '../../state/store.js';
 
 import {constants} from './constants.js';
-import {ContentScanner, CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, DriveSearchContentScanner, FileFilter, FileListContext, GuestOsMounter, LocalSearchContentScanner, MediaViewContentScanner, RecentContentScanner} from './directory_contents.js';
+import {ContentScanner, CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, DriveSearchContentScanner, FileFilter, FileListContext, GuestOsMounter, LocalSearchContentScanner, MediaViewContentScanner, RecentContentScanner, TrashContentScanner} from './directory_contents.js';
 import {FileListModel} from './file_list_model.js';
 import {FileWatcher} from './file_watcher.js';
 import {MetadataModel} from './metadata/metadata_model.js';
@@ -743,16 +743,34 @@ export class DirectoryModel extends EventTarget {
       if (!util.isFakeEntry(currentEntry)) {
         this.metadataModel_.get(
             [currentEntry],
-            constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+            constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES.concat(
+                constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES));
       }
     }
 
     // Clear the table, and start scanning.
-    dispatchSimpleEvent(this, 'scan-started');
     fileList.splice(0, fileList.length);
+    dispatchSimpleEvent(this, 'scan-started');
     this.scan_(
         this.currentDirContents_, false, true, onDone, onFailed, onUpdated,
         onCancelled);
+  }
+
+  /**
+   * Similar to clearAndScan_() but instead of passing a `newDirContents`, it
+   * uses the `currentDirContents_`.
+   */
+  clearCurrentDirAndScan() {
+    const sequence = ++this.changeDirectorySequence_;
+    this.directoryChangeQueue_.run(callback => {
+      if (this.changeDirectorySequence_ !== sequence) {
+        callback();
+        return;
+      }
+      const newDirContents = this.createDirectoryContents_(
+          this.currentFileListContext_, assert(this.getCurrentDirEntry()));
+      this.clearAndScan_(newDirContents, callback);
+    });
   }
 
   /**
@@ -1294,7 +1312,7 @@ export class DirectoryModel extends EventTarget {
       onDirectoryChange_: function(event) {
         tracker.stop();
         tracker.hasChanged = true;
-      }
+      },
     };
     return tracker;
   }
@@ -1500,7 +1518,11 @@ export class DirectoryModel extends EventTarget {
       return () => {
         const fakeEntry = /** @type {!FakeEntry} */ (entry);
         return new RecentContentScanner(
-            query, fakeEntry.sourceRestriction, fakeEntry.recentFileType);
+            query,
+            this.volumeManager_,
+            fakeEntry.sourceRestriction,
+            fakeEntry.recentFileType,
+        );
       };
     }
     if (entry.rootType == VolumeManagerCommon.RootType.CROSTINI) {
@@ -1523,6 +1545,12 @@ export class DirectoryModel extends EventTarget {
     if (entry.rootType == VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
       return () => {
         return new ContentScanner();
+      };
+    }
+    if (util.isTrashEnabled() &&
+        entry.rootType == VolumeManagerCommon.RootType.TRASH) {
+      return () => {
+        return new TrashContentScanner(this.volumeManager_);
       };
     }
     if (query && canUseDriveSearch) {
@@ -1693,6 +1721,7 @@ export class DirectoryModel extends EventTarget {
       chrome.fileManagerPrivate.IOTaskType.DELETE,
       chrome.fileManagerPrivate.IOTaskType.EMPTY_TRASH,
       chrome.fileManagerPrivate.IOTaskType.MOVE,
+      chrome.fileManagerPrivate.IOTaskType.RESTORE,
     ]);
     /** @type {!Set<?VolumeManagerCommon.RootType>} */
     const rootTypesRequireRefresh = new Set([

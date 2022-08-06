@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getInstance, MarginsType, NativeInitialSettings, NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement, ScalingType, SerializedSettings, Setting, SettingsMixinInterface} from 'chrome://print/print_preview.js';
+import {getInstance, MarginsType, NativeInitialSettings, NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement, ScalingType, SerializedSettings, Settings, SettingsMixinInterface} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
@@ -65,20 +65,22 @@ suite(restore_state_test.suiteName, function() {
         (stickySettings.vendorOptions! as {[key: string]: any})['printArea'],
         page.settings.vendorItems.value.printArea);
 
-    [['margins', 'marginsType'],
-     ['color', 'isColorEnabled'],
-     ['headerFooter', 'isHeaderFooterEnabled'],
-     ['layout', 'isLandscapeEnabled'],
-     ['collate', 'isCollateEnabled'],
-     ['cssBackground', 'isCssBackgroundEnabled'],
-     ['scaling', 'scaling'],
-     ['scalingType', 'scalingType'],
-     ['scalingTypePdf', 'scalingTypePdf'],
-    ].forEach(keys => {
-      assertEquals(
-          (stickySettings as {[key: string]: any})[keys[1]!],
-          (page.settings! as {[key: string]: Setting})[keys[0]!]!.value);
-    });
+    ([
+      ['margins', 'marginsType'],
+      ['color', 'isColorEnabled'],
+      ['headerFooter', 'isHeaderFooterEnabled'],
+      ['layout', 'isLandscapeEnabled'],
+      ['collate', 'isCollateEnabled'],
+      ['cssBackground', 'isCssBackgroundEnabled'],
+      ['scaling', 'scaling'],
+      ['scalingType', 'scalingType'],
+      ['scalingTypePdf', 'scalingTypePdf'],
+    ] as Array<[keyof Settings, string]>)
+        .forEach(keys => {
+          assertEquals(
+              (stickySettings as {[key: string]: any})[keys[1]!],
+              page.settings![keys[0]!]!.value);
+        });
   }
 
   /**
@@ -101,7 +103,7 @@ suite(restore_state_test.suiteName, function() {
 
     await Promise.all([
       nativeLayer.whenCalled('getInitialSettings'),
-      nativeLayer.whenCalled('getPrinterCapabilities')
+      nativeLayer.whenCalled('getPrinterCapabilities'),
     ]);
     verifyStickySettingsApplied(stickySettings);
   }
@@ -120,13 +122,13 @@ suite(restore_state_test.suiteName, function() {
             name: 'CUSTOM',
             width_microns: 215900,
             height_microns: 215900,
-            custom_display_name: 'CUSTOM_SQUARE'
+            custom_display_name: 'CUSTOM_SQUARE',
           },
           customMargins: {
             marginTop: 74,
             marginRight: 74,
             marginBottom: 74,
-            marginLeft: 74
+            marginLeft: 74,
           },
           vendorOptions: {
             paperType: 1,
@@ -167,7 +169,7 @@ suite(restore_state_test.suiteName, function() {
             width_microns: 215900,
             height_microns: 279400,
             is_default: true,
-            custom_display_name: 'Letter'
+            custom_display_name: 'Letter',
           },
           vendorOptions: {
             paperType: 0,
@@ -197,12 +199,12 @@ suite(restore_state_test.suiteName, function() {
    * values being sent to the native layer.
    */
   test(assert(restore_state_test.TestNames.SaveValues), async function() {
-    type TestCase = {
-      section: string,
-      settingName: string,
-      key: string,
-      value: any,
-    };
+    interface TestCase {
+      section: string;
+      settingName: string;
+      key: string;
+      value: any;
+    }
 
     /**
      * Array of section names, setting names, keys for serialized state, and
@@ -329,7 +331,7 @@ suite(restore_state_test.suiteName, function() {
 
     await Promise.all([
       nativeLayer.whenCalled('getInitialSettings'),
-      nativeLayer.whenCalled('getPrinterCapabilities')
+      nativeLayer.whenCalled('getPrinterCapabilities'),
     ]);
     // Set all the settings sections.
     testData.forEach((testValue: TestCase, index: number) => {

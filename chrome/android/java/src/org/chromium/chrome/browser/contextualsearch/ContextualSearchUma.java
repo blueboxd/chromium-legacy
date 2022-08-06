@@ -243,7 +243,7 @@ public class ContextualSearchUma {
     public static void logTapResultsSeen(boolean wasPanelSeen) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.Tap.ResultsSeen", wasPanelSeen);
-        if (SyncService.get() != null && SyncService.get().isSyncRequested()) {
+        if (SyncService.get() != null && SyncService.get().isSyncFeatureEnabled()) {
             RecordHistogram.recordBooleanHistogram(
                     "Search.ContextualSearch.Tap.SyncEnabled.ResultsSeen", wasPanelSeen);
         }
@@ -570,6 +570,12 @@ public class ContextualSearchUma {
     static void logUnifiedConsentThrottleEligible(boolean isThrottleEligible) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.UnifiedConsent.ThrottleEligible", isThrottleEligible);
+    }
+
+    /** Logs whether the triggering was suppressed due to the Base Page view being too small. */
+    static void logViewTooSmall(boolean isViewTooSmall) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.SuppressedViewTooSmall", isViewTooSmall);
     }
 
     /**

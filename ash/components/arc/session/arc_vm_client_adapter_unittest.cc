@@ -50,10 +50,10 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,7 +145,7 @@ bool HasDiskImage(const vm_tools::concierge::StartArcVmRequest& request,
 
 // A debugd client that can fail to start Concierge.
 // TODO(yusukes): Merge the feature to FakeDebugDaemonClient.
-class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
+class TestDebugDaemonClient : public ash::FakeDebugDaemonClient {
  public:
   TestDebugDaemonClient() = default;
 
@@ -350,9 +350,8 @@ class ArcVmClientAdapterTest : public testing::Test,
     logging::SetMinLogLevel(-1);
 
     // Create and set new fake clients every time to reset clients' status.
-    chromeos::DBusThreadManager::Initialize();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
-        std::make_unique<TestDebugDaemonClient>());
+    test_debug_daemon_client_ = std::make_unique<TestDebugDaemonClient>();
+    ash::DebugDaemonClient::SetInstanceForTest(test_debug_daemon_client_.get());
     TestConciergeClient::Initialize();
     ash::UpstartClient::InitializeFake();
   }
@@ -362,7 +361,8 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   ~ArcVmClientAdapterTest() override {
     ash::ConciergeClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    ash::DebugDaemonClient::SetInstanceForTest(nullptr);
+    test_debug_daemon_client_.reset();
   }
 
   void SetUp() override {
@@ -642,9 +642,8 @@ class ArcVmClientAdapterTest : public testing::Test,
     return static_cast<TestConciergeClient*>(ash::ConciergeClient::Get());
   }
 
-  TestDebugDaemonClient* GetTestDebugDaemonClient() {
-    return static_cast<TestDebugDaemonClient*>(
-        chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
+  TestDebugDaemonClient* test_debug_daemon_client() {
+    return test_debug_daemon_client_.get();
   }
 
   TestArcVmBootNotificationServer* boot_notification_server() {
@@ -698,6 +697,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   std::unique_ptr<FakeAppHost> app_host_;
   std::unique_ptr<FakeAppInstance> app_instance_;
   std::unique_ptr<ArcDlcInstaller> arc_dlc_installer_;
+  std::unique_ptr<TestDebugDaemonClient> test_debug_daemon_client_;
 };
 
 // Tests that SetUserInfo() doesn't crash.
@@ -755,6 +755,19 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_WithPerVCpuCoreScheduling) {
 TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopArcVmPostLoginServicesJobFail) {
   // Inject failure to FakeUpstartClient.
   InjectUpstartStopJobFailure(kArcVmPostLoginServicesJobName);
+
+  StartMiniArc();
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+
+  StopArcInstance();
+}
+
+// Tests that StartMiniArc() still succeeds even when Upstart fails to stop
+// arcvm-media-sharing-services.
+TEST_F(ArcVmClientAdapterTest,
+       StartMiniArc_StopArcVmMediaSharingServicesJobFail) {
+  // Inject failure to FakeUpstartClient.
+  InjectUpstartStopJobFailure(kArcVmMediaSharingServicesJobName);
 
   StartMiniArc();
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
@@ -943,8 +956,8 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_WithLogBackup_BackupFailed) {
   StartMiniArc();
   UpgradeArc(true);
 
-  EXPECT_FALSE(GetTestDebugDaemonClient()->backup_arc_bug_report_called());
-  GetTestDebugDaemonClient()->set_backup_arc_bug_report_result(false);
+  EXPECT_FALSE(test_debug_daemon_client()->backup_arc_bug_report_called());
+  test_debug_daemon_client()->set_backup_arc_bug_report_result(false);
 
   adapter()->StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/true);
   run_loop()->RunUntilIdle();
@@ -958,7 +971,7 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_WithLogBackup_BackupFailed) {
   SendVmStoppedSignal(vm_tools::concierge::STOP_VM_REQUESTED);
   run_loop()->Run();
 
-  EXPECT_TRUE(GetTestDebugDaemonClient()->backup_arc_bug_report_called());
+  EXPECT_TRUE(test_debug_daemon_client()->backup_arc_bug_report_called());
   // ..and that calls ArcInstanceStopped.
   ASSERT_TRUE(is_system_shutdown().has_value());
   EXPECT_FALSE(is_system_shutdown().value());
@@ -1326,22 +1339,6 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DisableMediaStoreMaintenance) {
                      "androidboot.disable_media_store_maintenance=1"));
 }
 
-TEST_F(ArcVmClientAdapterTest, StartMiniArc_ArcVmMountDebugFsDefaultDisabled) {
-  StartMiniArcWithParams(true, GetPopulatedStartParams());
-  EXPECT_FALSE(
-      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
-                     "androidboot.arcvm_mount_debugfs=1"));
-}
-
-TEST_F(ArcVmClientAdapterTest, StartMiniArc_ArcVmMountDebugFsEnabled) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arcvm-mount-debugfs"});
-  StartMiniArcWithParams(true, GetPopulatedStartParams());
-  EXPECT_TRUE(
-      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
-                     "androidboot.arcvm_mount_debugfs=1"));
-}
-
 TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_ArcVmUreadaheadMode) {
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
@@ -1572,7 +1569,8 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_FlagDisabled) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskimageResponseEmpty) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(arc::kEnableVirtioBlkForData, true);
+  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
+                                                  {{"use_lvm", "false"}});
 
   // CreateDiskImage() returns an empty response.
   GetTestConciergeClient()->set_create_disk_image_response(absl::nullopt);
@@ -1586,7 +1584,8 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskimageResponseEmpty) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusFailed) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(arc::kEnableVirtioBlkForData, true);
+  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
+                                                  {{"use_lvm", "false"}});
 
   GetTestConciergeClient()->set_create_disk_image_response(
       CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_FAILED));
@@ -1600,7 +1599,8 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusFailed) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusCreated) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(arc::kEnableVirtioBlkForData, true);
+  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
+                                                  {{"use_lvm", "false"}});
 
   GetTestConciergeClient()->set_create_disk_image_response(
       CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_CREATED));
@@ -1619,7 +1619,8 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusCreated) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusExists) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(arc::kEnableVirtioBlkForData, true);
+  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
+                                                  {{"use_lvm", "false"}});
 
   GetTestConciergeClient()->set_create_disk_image_response(
       CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_EXISTS));
@@ -1632,6 +1633,27 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusExists) {
   // StartArcVmRequest should contain a disk path created by CreateDiskImage().
   auto req = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_TRUE(HasDiskImage(req, kCreatedDiskImagePath));
+  EXPECT_TRUE(
+      base::Contains(req.params(), "androidboot.arcvm_virtio_blk_data=1"));
+}
+
+TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_UseLvm) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
+                                                  {{"use_lvm", "true"}});
+
+  StartMiniArcWithParams(true, GetPopulatedStartParams());
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+
+  // CreateDiskImage() should NOT be called.
+  EXPECT_EQ(GetTestConciergeClient()->create_disk_image_call_count(), 0);
+
+  // StartArcVmRequest should contain the LVM-provided disk path.
+  const std::string expected_lvm_disk_path =
+      base::StringPrintf("/dev/mapper/vm/dmcrypt-%s-arcvm",
+                         std::string(kUserIdHash).substr(0, 8).c_str());
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(HasDiskImage(req, expected_lvm_disk_path));
   EXPECT_TRUE(
       base::Contains(req.params(), "androidboot.arcvm_virtio_blk_data=1"));
 }
@@ -2433,6 +2455,33 @@ TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeEnabledValid3) {
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_TRUE(
       base::Contains(request.params(), "androidboot.arcvm.logd.size=1M"));
+}
+
+// Test that the value of swappiness is default value when kGuestZram is
+// disabled.
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramDisabledSwappiness) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kGuestZram);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(0, request.guest_swappiness());
+}
+
+// Test that StartArcVmRequest has correct swappiness value.
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramSwappinessValid) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["swappiness"] = "90";
+  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(90, request.guest_swappiness());
 }
 
 // Test that StartArcVmRequest has no matching command line flag

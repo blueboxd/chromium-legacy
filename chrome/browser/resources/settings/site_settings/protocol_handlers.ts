@@ -19,42 +19,42 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
 import '../privacy_page/collapse_radio_button.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_favicon.js';
 
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getTemplate} from './protocol_handlers.html.js';
 
+import {getTemplate} from './protocol_handlers.html.js';
 import {SiteSettingsMixin} from './site_settings_mixin.js';
 
-export type HandlerEntry = {
-  host: string,
-  is_default: boolean,
-  protocol: string,
-  protocol_display_name: string,
-  spec: string,
-};
+export interface HandlerEntry {
+  host: string;
+  is_default: boolean;
+  protocol: string;
+  protocol_display_name: string;
+  spec: string;
+}
 
-export type ProtocolEntry = {
-  handlers: HandlerEntry[],
-  protocol: string,
-  protocol_display_name: string,
-};
+export interface ProtocolEntry {
+  handlers: HandlerEntry[];
+  protocol: string;
+  protocol_display_name: string;
+}
 
-export type AppHandlerEntry = {
-  host: string,
-  protocol: string,
-  protocol_display_name: string,
-  spec: string,
-  app_id: string,
-};
+export interface AppHandlerEntry {
+  host: string;
+  protocol: string;
+  protocol_display_name: string;
+  spec: string;
+  app_id: string;
+}
 
-export type AppProtocolEntry = {
-  handlers: AppHandlerEntry[],
-  protocol: string,
-  protocol_display_name: string,
-};
+export interface AppProtocolEntry {
+  handlers: AppHandlerEntry[];
+  protocol: string;
+  protocol_display_name: string;
+}
 
 export interface ProtocolHandlersElement {
   $: {

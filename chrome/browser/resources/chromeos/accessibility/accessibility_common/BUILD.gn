@@ -9,6 +9,7 @@ import(
 import(
     "//chrome/browser/resources/chromeos/accessibility/tools/run_jsbundler.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
@@ -45,6 +46,7 @@ run_jsbundler("accessibility_common_copied_files") {
     "dictation/editing_util.js",
     "dictation/focus_handler.js",
     "dictation/input_controller.js",
+    "dictation/locale_info.js",
     "dictation/macros/delete_prev_sent_macro.js",
     "dictation/macros/hidden_macro_manager.js",
     "dictation/macros/input_text_view_macro.js",
@@ -136,6 +138,7 @@ js2gtest("accessibility_common_extjs_tests") {
     "dictation/dictation_ui_test.js",
     "dictation/editing_util_test.js",
     "dictation/focus_handler_test.js",
+    "dictation/locale_info_test.js",
     "dictation/macros/dictation_macros_test.js",
     "dictation/parse/dictation_parse_test.js",
     "magnifier/magnifier_test.js",
@@ -165,7 +168,6 @@ js2gtest("accessibility_common_extjs_tests") {
 
 js_type_check("closure_compile") {
   deps = [ ":accessibility_common" ]
-  closure_flags = [ "js_module_root=../" ]
 }
 
 js_library("accessibility_common") {
@@ -215,6 +217,7 @@ js_library("dictation") {
     ":dictation_editing_util",
     ":dictation_focus_handler",
     ":dictation_input_controller",
+    ":dictation_locale_info",
     ":dictation_metrics",
     ":dictation_ui_controller",
     ":speech_parsing",
@@ -228,7 +231,11 @@ js_library("dictation") {
 
 js_library("dictation_input_controller") {
   sources = [ "dictation/input_controller.js" ]
-  deps = [ ":dictation_editing_util" ]
+  deps = [
+    ":dictation_editing_util",
+    ":dictation_focus_handler",
+    ":dictation_locale_info",
+  ]
   externs_list = [
     "$externs_path/input_method_private.js",
     "$externs_path/language_settings_private.js",
@@ -238,6 +245,7 @@ js_library("dictation_input_controller") {
 
 js_library("dictation_ui_controller") {
   sources = [ "dictation/ui_controller.js" ]
+  deps = [ ":dictation_locale_info" ]
   externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
@@ -259,6 +267,7 @@ js_library("dictation_macros") {
   ]
   deps = [
     ":dictation_input_controller",
+    ":dictation_locale_info",
     "../common:event_generator",
     "../common:key_code",
   ]
@@ -279,6 +288,7 @@ js_library("speech_parsing") {
   }
   deps = [
     ":dictation_input_controller",
+    ":dictation_locale_info",
     ":dictation_macros",
   ]
 }
@@ -302,4 +312,8 @@ js_library("dictation_focus_handler") {
 
 js_library("dictation_editing_util") {
   sources = [ "dictation/editing_util.js" ]
+}
+
+js_library("dictation_locale_info") {
+  sources = [ "dictation/locale_info.js" ]
 }

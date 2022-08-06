@@ -24,9 +24,9 @@
 #include "components/viz/common/features.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_disk_cache_factory.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/shader_cache_factory.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -476,16 +476,16 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
 void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {
-  GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
-  GetShaderCacheFactorySingleton()->SetCacheInfo(
+  GetGpuDiskCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
+  GetGpuDiskCacheFactorySingleton()->SetCacheInfo(
       gpu::kDisplayCompositorClientId, cache_dir);
 }
 
 // static
 void BrowserGpuChannelHostFactory::InitializeGrShaderDiskCacheOnIO(
     const base::FilePath& cache_dir) {
-  GetShaderCacheFactorySingleton()->SetCacheInfo(gpu::kGrShaderCacheClientId,
-                                                 cache_dir);
+  GetGpuDiskCacheFactorySingleton()->SetCacheInfo(gpu::kGrShaderCacheClientId,
+                                                  cache_dir);
 }
 
 }  // namespace content

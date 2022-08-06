@@ -23,8 +23,12 @@ TaskQueueSelector::TaskQueueSelector(
     scoped_refptr<const AssociatedThreadId> associated_thread,
     const SequenceManager::Settings& settings)
     : associated_thread_(std::move(associated_thread)),
+#if DCHECK_IS_ON()
+      random_task_selection_(settings.random_task_selection_seed != 0),
+#endif
       delayed_work_queue_sets_("delayed", this, settings),
-      immediate_work_queue_sets_("immediate", this, settings) {}
+      immediate_work_queue_sets_("immediate", this, settings) {
+}
 
 TaskQueueSelector::~TaskQueueSelector() = default;
 
@@ -184,11 +188,21 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService(
   // but the resulting queue must be the lower one.
   if (option == SelectTaskOption::kSkipDelayedTask) {
     WorkQueue* queue =
-        ChooseImmediateOnlyWithPriority<SetOperationOldest>(priority);
+#if DCHECK_IS_ON()
+        random_task_selection_
+            ? ChooseImmediateOnlyWithPriority<SetOperationRandom>(priority)
+            :
+#endif
+            ChooseImmediateOnlyWithPriority<SetOperationOldest>(priority);
     return queue;
   }
 
-  WorkQueue* queue = ChooseWithPriority<SetOperationOldest>(priority);
+  WorkQueue* queue =
+#if DCHECK_IS_ON()
+      random_task_selection_ ? ChooseWithPriority<SetOperationRandom>(priority)
+                             :
+#endif
+                             ChooseWithPriority<SetOperationOldest>(priority);
 
   // If we have selected a delayed task while having an immediate task of the
   // same priority, increase the starvation count.
@@ -201,10 +215,10 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService(
   return queue;
 }
 
-Value TaskQueueSelector::AsValue() const {
+Value::Dict TaskQueueSelector::AsValue() const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  Value state(Value::Type::DICTIONARY);
-  state.SetIntKey("immediate_starvation_count", immediate_starvation_count_);
+  Value::Dict state;
+  state.Set("immediate_starvation_count", immediate_starvation_count_);
   return state;
 }
 

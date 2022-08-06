@@ -60,21 +60,20 @@ bool TabMatcherDesktop::IsTabOpenWithURL(const GURL& url,
   if (!input)
     input = &empty_input;
   const GURL stripped_url = AutocompleteMatch::GURLToStrippedGURL(
-      url, *input, client_.GetTemplateURLService(), std::u16string());
-  Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
-  content::WebContents* active_tab = nullptr;
-  if (active_browser)
-    active_tab = active_browser->tab_strip_model()->GetActiveWebContents();
+      url, *input, template_url_service_, std::u16string());
   for (auto* web_contents : GetOpenTabs()) {
-    if (web_contents != active_tab &&
-        IsStrippedURLEqualToWebContentsURL(stripped_url, web_contents)) {
+    if (IsStrippedURLEqualToWebContentsURL(stripped_url, web_contents))
       return true;
-    }
   }
   return false;
 }
 
 std::vector<content::WebContents*> TabMatcherDesktop::GetOpenTabs() const {
+  Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
+  content::WebContents* active_tab = nullptr;
+  if (active_browser)
+    active_tab = active_browser->tab_strip_model()->GetActiveWebContents();
+
   std::vector<content::WebContents*> all_tabs;
   for (auto* browser : *BrowserList::GetInstance()) {
     if (profile_ != browser->profile()) {
@@ -82,7 +81,9 @@ std::vector<content::WebContents*> TabMatcherDesktop::GetOpenTabs() const {
       continue;
     }
     for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-      all_tabs.push_back(browser->tab_strip_model()->GetWebContentsAt(i));
+      auto* web_contents = browser->tab_strip_model()->GetWebContentsAt(i);
+      if (web_contents != active_tab)
+        all_tabs.push_back(web_contents);
     }
   }
   return all_tabs;
@@ -99,7 +100,7 @@ bool TabMatcherDesktop::IsStrippedURLEqualToWebContentsURL(
       web_contents->GetController().GetLastCommittedEntryIndex()) {
     user_data->UpdateLastCommittedStrippedURL(
         web_contents->GetController().GetLastCommittedEntryIndex(),
-        web_contents->GetLastCommittedURL(), client_.GetTemplateURLService());
+        web_contents->GetLastCommittedURL(), template_url_service_);
   }
   return stripped_url == user_data->GetLastCommittedStrippedURL();
 }

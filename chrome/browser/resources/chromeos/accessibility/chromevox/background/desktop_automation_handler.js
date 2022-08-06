@@ -5,17 +5,22 @@
 /**
  * @fileoverview Handles automation from a desktop automation node.
  */
-import {AutoScrollHandler} from '/chromevox/background/auto_scroll_handler.js';
-import {AutomationObjectConstructorInstaller} from '/chromevox/background/automation_object_constructor_installer.js';
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {CommandHandlerInterface} from '/chromevox/background/command_handler_interface.js';
-import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
-import {TextEditHandler} from '/chromevox/background/editing/editing.js';
-import {EventSourceState} from '/chromevox/background/event_source.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
-import {EventSourceType} from '/chromevox/common/event_source_type.js';
-import {CursorRange} from '/common/cursors/range.js';
+import {WrappingCursor} from '../../common/cursors/cursor.js';
+import {CursorRange} from '../../common/cursors/range.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '../common/custom_automation_event.js';
+import {EventSourceType} from '../common/event_source_type.js';
+import {Msgs} from '../common/msgs.js';
+
+import {AutoScrollHandler} from './auto_scroll_handler.js';
+import {AutomationObjectConstructorInstaller} from './automation_object_constructor_installer.js';
+import {ChromeVox} from './chromevox.js';
+import {ChromeVoxState} from './chromevox_state.js';
+import {CommandHandlerInterface} from './command_handler_interface.js';
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
+import {TextEditHandler} from './editing/editing.js';
+import {EventSourceState} from './event_source.js';
+import {Output} from './output/output.js';
+import {OutputEventType} from './output/output_types.js';
 
 const ActionType = chrome.automation.ActionType;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -267,7 +272,7 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
           new CustomAutomationEvent(evt.type, selectionStart, {
             eventFrom: evt.eventFrom,
             eventFromAction: evt.eventFromAction,
-            intents: evt.intents
+            intents: evt.intents,
           }));
     }
 
@@ -332,7 +337,7 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
     const event = new CustomAutomationEvent(EventType.FOCUS, node, {
       eventFrom: evt.eventFrom,
       eventFromAction: evt.eventFromAction,
-      intents: evt.intents
+      intents: evt.intents,
     });
     this.onEventDefault(event);
 
@@ -512,9 +517,9 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
       // Sync to the selection's deep equivalent especially in editables, where
       // selection is often on the root text field with a child offset.
       const selectedRange = new CursorRange(
-          new cursors.WrappingCursor(selectionStartObject, selectionStartOffset)
+          new WrappingCursor(selectionStartObject, selectionStartOffset)
               .deepEquivalent,
-          new cursors.WrappingCursor(selectionEndObject, selectionEndOffset)
+          new WrappingCursor(selectionEndObject, selectionEndOffset)
               .deepEquivalent);
 
       // Sync ChromeVox range with selection.
@@ -865,6 +870,9 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
     }
 
     ChromeVoxState.instance.setCurrentRange(CursorRange.fromNode(focus));
+    if (!ChromeVoxState.instance.currentRange) {
+      return;
+    }
 
     o.withRichSpeechAndBraille(
          ChromeVoxState.instance.currentRange, null, evt.type)

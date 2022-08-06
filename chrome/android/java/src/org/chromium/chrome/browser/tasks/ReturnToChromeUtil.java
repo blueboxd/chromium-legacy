@@ -311,7 +311,7 @@ public final class ReturnToChromeUtil {
             @Nullable String postDataType, @Nullable byte[] postData, boolean isBackground,
             @Nullable Boolean incognito, @Nullable Tab parentTab) {
         String url = params.getUrl();
-        ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox();
+        ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox(url);
         if (chromeActivity == null) return null;
 
         // Create a new unparented tab.
@@ -359,7 +359,7 @@ public final class ReturnToChromeUtil {
      * @param url The URL to load.
      * @return The ChromeActivity if it is presenting the omnibox on the tab switcher, else null.
      */
-    private static ChromeActivity getActivityPresentingOverviewWithOmnibox() {
+    private static ChromeActivity getActivityPresentingOverviewWithOmnibox(String url) {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (activity == null || !isStartSurfaceEnabled(activity)
                 || !(activity instanceof ChromeActivity)) {
@@ -369,6 +369,7 @@ public final class ReturnToChromeUtil {
         ChromeActivity chromeActivity = (ChromeActivity) activity;
 
         assert LibraryLoader.getInstance().isInitialized();
+        if (!chromeActivity.isInOverviewMode() && !UrlUtilities.isNTPUrl(url)) return null;
 
         return chromeActivity;
     }
@@ -903,6 +904,17 @@ public final class ReturnToChromeUtil {
     public static boolean getFeedArticlesVisibility() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true);
+    }
+
+    /**
+     * Returns true if START_SURFACE_REFACTOR is enabled but Start surface is disabled.
+     * Currently we only support the refactor code when Start surface is disabled. We may remove
+     * #isStartSurfaceEnabled check in this method after we support the refactor when Start surface
+     * is enabled.
+     */
+    public static boolean isTabSwitcherOnlyRefactorEnabled(Context context) {
+        return ChromeFeatureList.sStartSurfaceRefactor.isEnabled()
+                && TabUiFeatureUtilities.isGridTabSwitcherEnabled(context);
     }
 
     @VisibleForTesting

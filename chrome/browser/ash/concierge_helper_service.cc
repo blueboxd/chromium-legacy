@@ -9,9 +9,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/browser/browser_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -113,14 +111,10 @@ ConciergeHelperService* ConciergeHelperServiceFactory::GetForBrowserContext(
 }
 
 ConciergeHelperServiceFactory::ConciergeHelperServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-          "ConciergeHelperServiceFactory",
-          BrowserContextDependencyManager::GetInstance()) {}
+    : ProfileKeyedServiceFactory("ConciergeHelperServiceFactory") {}
 
 KeyedService* ConciergeHelperServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (context->IsOffTheRecord())
-    return nullptr;
   return new ConciergeHelperService();
 }
 

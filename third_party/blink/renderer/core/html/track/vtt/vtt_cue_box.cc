@@ -31,16 +31,39 @@
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/track/text_track_container.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_cue_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_vtt_cue.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
+
+namespace {
+
+class VttCueBoxResizeDelegate final : public ResizeObserver::Delegate {
+ public:
+  void OnResize(
+      const HeapVector<Member<ResizeObserverEntry>>& entries) override {
+    DCHECK_EQ(entries.size(), 1u);
+    VttCueLayoutAlgorithm(*To<VTTCueBox>(entries[0]->target())).Layout();
+  }
+};
+
+}  // anonymous namespace
 
 VTTCueBox::VTTCueBox(Document& document)
     : HTMLDivElement(document),
       snap_to_lines_position_(std::numeric_limits<float>::quiet_NaN()) {
   SetShadowPseudoId(AtomicString("-webkit-media-text-track-display"));
+}
+
+void VTTCueBox::Trace(Visitor* visitor) const {
+  visitor->Trace(box_size_observer_);
+  HTMLDivElement::Trace(visitor);
 }
 
 void VTTCueBox::ApplyCSSProperties(
@@ -54,18 +77,20 @@ void VTTCueBox::ApplyCSSProperties(
   SetInlineStyleProperty(CSSPropertyID::kPosition, CSSValueID::kAbsolute);
 
   //  the 'unicode-bidi' property must be set to 'plaintext'
-  SetInlineStyleProperty(CSSPropertyID::kUnicodeBidi,
-                         CSSValueID::kWebkitPlaintext);
+  SetInlineStyleProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kPlaintext);
 
   // the 'direction' property must be set to direction
   SetInlineStyleProperty(CSSPropertyID::kDirection,
                          display_parameters.direction);
 
   // the 'writing-mode' property must be set to writing-mode
-  SetInlineStyleProperty(CSSPropertyID::kWebkitWritingMode,
+  SetInlineStyleProperty(CSSPropertyID::kWritingMode,
                          display_parameters.writing_mode);
 
   const gfx::PointF& position = display_parameters.position;
+  const bool is_horizontal =
+      display_parameters.writing_mode == CSSValueID::kHorizontalTb;
+  original_percent_position_ = is_horizontal ? position.y() : position.x();
 
   // the 'top' property must be set to top,
   SetInlineStyleProperty(CSSPropertyID::kTop, position.y(),
@@ -77,7 +102,7 @@ void VTTCueBox::ApplyCSSProperties(
 
   // the 'width' property must be set to width, and the 'height' property  must
   // be set to height
-  if (display_parameters.writing_mode == CSSValueID::kHorizontalTb) {
+  if (is_horizontal) {
     SetInlineStyleProperty(CSSPropertyID::kWidth, display_parameters.size,
                            CSSPrimitiveValue::UnitType::kPercentage);
     SetInlineStyleProperty(CSSPropertyID::kHeight, CSSValueID::kAuto);
@@ -123,11 +148,62 @@ LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
   // longer necessary, since cues having the region parameter set do not have
   // any positioning parameters. Also, in this case, the regions themselves
   // have positioning information.
-  if (style.GetPosition() == EPosition::kRelative)
+  if (IsInRegion())
     return HTMLDivElement::CreateLayoutObject(style, legacy);
+
+  // We create a standard block-flow container.
+  // See the comment in vtt_cue_layout_algorithm.h about how we adjust
+  // VTTCueBox positions.
+  if (RuntimeEnabledFeatures::LayoutNGVTTCueEnabled())
+    return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
 
   UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByVTTCue);
   return MakeGarbageCollected<LayoutVTTCue>(this, snap_to_lines_position_);
+}
+
+Node::InsertionNotificationRequest VTTCueBox::InsertedInto(
+    ContainerNode& insertion_point) {
+  if (RuntimeEnabledFeatures::LayoutNGVTTCueEnabled() &&
+      insertion_point.isConnected() && !IsInRegion()) {
+    DCHECK(!box_size_observer_);
+    box_size_observer_ =
+        ResizeObserver::Create(GetDocument().domWindow(),
+                               MakeGarbageCollected<VttCueBoxResizeDelegate>());
+    box_size_observer_->observe(this);
+    RevertAdjustment();
+  }
+  return HTMLDivElement::InsertedInto(insertion_point);
+}
+
+void VTTCueBox::RemovedFrom(ContainerNode& insertion_point) {
+  HTMLDivElement::RemovedFrom(insertion_point);
+  if (!box_size_observer_)
+    return;
+  box_size_observer_->disconnect();
+  box_size_observer_.Clear();
+}
+
+bool VTTCueBox::IsInRegion() const {
+  return parentNode() && !IsA<TextTrackContainer>(parentNode());
+}
+
+LayoutUnit& VTTCueBox::StartAdjustment(LayoutUnit new_value,
+                                       base::PassKey<VttCueLayoutAlgorithm>) {
+  adjusted_position_ = new_value;
+  DCHECK(IsAdjusted()) << new_value;
+  return adjusted_position_;
+}
+
+void VTTCueBox::RevertAdjustment() {
+  adjusted_position_ = LayoutUnit::Min();
+}
+
+LayoutUnit VTTCueBox::AdjustedPosition(
+    LayoutUnit full_dimention,
+    base::PassKey<VttCueLayoutAlgorithm>) const {
+  return IsAdjusted()
+             ? adjusted_position_
+             : LayoutUnit(full_dimention * original_percent_position_ / 100);
 }
 
 }  // namespace blink

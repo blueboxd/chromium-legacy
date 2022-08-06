@@ -42,6 +42,22 @@ class FormStructureTestApi {
     DCHECK(form_structure_);
   }
 
+  // Set the heuristic and server types for each field. The `heuristic_types`
+  // and `server_types` vectors must be aligned with the indices of the fields
+  // in the form. For each field in `heuristic_types` there must be exactly one
+  // `GetActivePatternSource()` prediction and any number of alternative
+  // predictions.
+  void SetFieldTypes(
+      const std::vector<std::vector<std::pair<PatternSource, ServerFieldType>>>&
+          heuristic_types,
+      const std::vector<ServerFieldType>& server_types);
+
+  // Set the heuristic and server types for each field. The `heuristic_types`
+  // and `server_types` vectors must be aligned with the indices of the fields
+  // in the form.
+  void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
+                     const std::vector<ServerFieldType>& server_types);
+
   const std::vector<std::unique_ptr<AutofillField>>& fields() {
     return form_structure_->fields_;
   }
@@ -50,7 +66,7 @@ class FormStructureTestApi {
     form_structure_->IdentifySections(has_author_specified_sections);
   }
 
-  bool phone_rationalized(const std::string& section) const {
+  bool phone_rationalized(const Section& section) const {
     auto it = form_structure_->phone_rationalized_.find(section);
     return it != form_structure_->phone_rationalized_.end() && it->second;
   }

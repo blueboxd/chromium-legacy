@@ -27,9 +27,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/constants/devicetype.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
@@ -289,9 +289,9 @@ std::unique_ptr<base::Value> GetValue(const std::string& property_name) {
   }
 
   if (property_name == kPropertyHomeProvider) {
-    const chromeos::DeviceState* cellular_device =
+    const ash::DeviceState* cellular_device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
-            chromeos::NetworkTypePattern::Cellular());
+            ash::NetworkTypePattern::Cellular());
     std::string home_provider_id;
     if (cellular_device) {
       if (!cellular_device->country_code().empty()) {

@@ -48,7 +48,7 @@
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
-#include "gpu/ipc/scheduler_sequence.h"
+#include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
@@ -80,7 +80,6 @@ const DrawQuad::Material kNonSplittableMaterials[] = {
     DrawQuad::Material::kDebugBorder,
     // Exclude possible overlay candidates from quad splitting
     // See OverlayCandidate::FromDrawQuad
-    DrawQuad::Material::kStreamVideoContent,
     DrawQuad::Material::kTextureContent,
     DrawQuad::Material::kVideoHole,
     // See DCLayerOverlayProcessor::ProcessRenderPass
@@ -660,10 +659,7 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   if (params.max_pending_swaps >= 0 && skia_output_surface_ &&
       skia_output_surface_->capabilities()
           .supports_dynamic_frame_buffer_allocation) {
-    if (skia_output_surface_->EnsureMinNumberOfBuffers(
-            params.max_pending_swaps + 1)) {
-      renderer_->ReallocatedFrameBuffers();
-    }
+    renderer_->EnsureMinNumberOfBuffers(params.max_pending_swaps + 1);
   }
 
   gfx::OverlayTransform current_display_transform = gfx::OVERLAY_TRANSFORM_NONE;
@@ -847,6 +843,7 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     overlay_processor_->SetFrameSequenceNumber(frame_sequence_number_);
     overlay_processor_->SetIsVideoCaptureEnabled(frame.video_capture_enabled);
+    overlay_processor_->SetIsVideoFullscreen(frame.page_fullscreen_mode);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, display_color_spaces_,
                          std::move(frame.surface_damage_rect_list_));
@@ -972,6 +969,11 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
       "WaitForPresentation", timings.swap_end);
 
+  if (overlay_processor_)
+    overlay_processor_->OverlayPresentationComplete();
+  if (renderer_)
+    renderer_->SwapBuffersComplete(std::move(release_fence));
+
   DCHECK_GT(pending_swaps_, 0);
   pending_swaps_--;
   if (scheduler_) {
@@ -980,11 +982,6 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
 
   if (no_pending_swaps_callback_ && pending_swaps_ == 0)
     std::move(no_pending_swaps_callback_).Run();
-
-  if (overlay_processor_)
-    overlay_processor_->OverlayPresentationComplete();
-  if (renderer_)
-    renderer_->SwapBuffersComplete(std::move(release_fence));
 
   // It's possible to receive multiple calls to DidReceiveSwapBuffersAck()
   // before DidReceivePresentationFeedback(). Ensure that we're not setting

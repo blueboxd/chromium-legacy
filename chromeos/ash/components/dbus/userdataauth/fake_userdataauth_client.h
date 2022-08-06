@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -54,8 +55,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
       supports_low_entropy_credentials_ = supports;
     }
 
-    // If enable_auth_check is true, then CheckKey will actually check the
-    // authorization.
+    // If enable_auth_check is true, then authentication requests actually check
+    // the key.
     void set_enable_auth_check(bool enable_auth_check) {
       enable_auth_check_ = enable_auth_check;
     }
@@ -90,6 +91,20 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
                       const std::string& label,
                       bool locked);
 
+    // Marks a user as existing and creates the user's home directory. No auth
+    // factors are added.
+    void AddExistingUser(const cryptohome::AccountIdentifier& account_id);
+
+    // Returns the user's home directory, or an empty optional if the user data
+    // directory is not initialized or the user doesn't exist.
+    absl::optional<base::FilePath> GetUserProfileDir(
+        const cryptohome::AccountIdentifier& account_id) const;
+
+    // Adds the given key as a fake auth factor to the user (the user must
+    // already exist).
+    void AddKey(const cryptohome::AccountIdentifier& account_id,
+                const cryptohome::Key& key);
+
    private:
     friend class FakeUserDataAuthClient;
 
@@ -106,7 +121,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     // that GetSupportedKeyPolicies() returns.
     bool supports_low_entropy_credentials_ = false;
 
-    // Controls if CheckKeyEx actually checks the key.
+    // If true, authentication requests actually check the key.
     bool enable_auth_check_ = false;
 
     // If true, fails if |create| field is not provided
@@ -127,6 +142,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   struct AuthSessionData {
     // AuthSession id.
     std::string id;
+    // Whether the `AUTH_SESSION_FLAGS_EPHEMERAL_USER` flag was passed on
+    // creation.
+    bool ephemeral = false;
     // Account associated with the session.
     cryptohome::AccountIdentifier account;
     // True if session is authenticated.
@@ -230,6 +248,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void RemoveAuthFactor(
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) override;
+  void GetAuthSessionStatus(
+      const ::user_data_auth::GetAuthSessionStatusRequest& request,
+      GetAuthSessionStatusCallback callback) override;
 
   // Sets the CryptohomeError value to return.
   void set_cryptohome_error(::user_data_auth::CryptohomeErrorCode error) {
@@ -301,14 +322,19 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   // Calls LowDiskSpace() on Observer instances.
   void NotifyLowDiskSpace(uint64_t disk_free_bytes);
 
-  void AddExistingUser(const cryptohome::AccountIdentifier& account_id);
-
-  void set_user_data_dir(base::FilePath path) { user_data_dir_ = path; }
-
-  void CreateUserProfileDir(const cryptohome::AccountIdentifier& account_id);
+  // Reads synchronously from disk, so must only be called in a scope that
+  // allows blocking IO.
+  void SetUserDataDir(base::FilePath path);
 
  private:
   struct UserCryptohomeState;
+
+  enum class AuthResult {
+    kAuthSuccess,
+    kUserNotFound,
+    kFactorNotFound,
+    kAuthFailed,
+  };
 
   // Helper that returns the protobuf reply.
   template <typename ReplyType>
@@ -320,11 +346,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void OnDircryptoMigrationProgressUpdated();
 
   // Returns a path to home directory for account.
-  base::FilePath GetUserProfileDir(
+  absl::optional<base::FilePath> GetUserProfileDir(
       const cryptohome::AccountIdentifier& account_id) const;
-
-  // Check whether user with given id exists
-  bool UserExists(const cryptohome::AccountIdentifier& account_id) const;
 
   // The method takes serialized auth session id and returns an authenticated
   // auth session associated with the id. If the session is missing or not
@@ -336,6 +359,17 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 
   void RunPendingWaitForServiceToBeAvailableCallbacks();
 
+  // Checks the given credentials against the fake factors configured for the
+  // given user. If `wildcard_allowed` is true and `factor_label` is empty,
+  // every configured factor is attempted; `matched_factor_label` can be passed
+  // in order to know the found factor's label.
+  AuthResult AuthenticateViaAuthFactors(
+      const cryptohome::AccountIdentifier& account_id,
+      const std::string& factor_label,
+      const std::string& secret,
+      bool wildcard_allowed,
+      std::string* matched_factor_label = nullptr) const;
+
   ::user_data_auth::CryptohomeErrorCode cryptohome_error_ =
       ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET;
   int prepare_guest_request_count_ = 0;
@@ -346,7 +380,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   bool last_unlock_webauthn_secret_;
 
   // The collection of users we know about.
-  std::map<cryptohome::AccountIdentifier, UserCryptohomeState> users_;
+  base::flat_map<cryptohome::AccountIdentifier, UserCryptohomeState> users_;
 
   // Timer for triggering the dircrypto migration progress signal.
   base::RepeatingTimer dircrypto_migration_progress_timer_;
@@ -387,7 +421,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   // Other stuff/miscellaneous:
 
   // Base directory of user directories.
-  base::FilePath user_data_dir_;
+  absl::optional<base::FilePath> user_data_dir_;
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;

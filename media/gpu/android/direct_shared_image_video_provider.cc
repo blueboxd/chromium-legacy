@@ -16,8 +16,8 @@
 #include "base/task/task_runner_util.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_video.h"
+#include "gpu/command_buffer/service/shared_image/android_video_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -152,7 +152,7 @@ void GpuSharedImageVideoFactory::CreateImage(
 
   TRACE_EVENT0("media", "GpuSharedImageVideoFactory::CreateVideoFrame");
 
-  if (!CreateImageInternal(spec, mailbox, codec_image, std::move(drdc_lock))) {
+  if (!CreateImageInternal(spec, mailbox, codec_image, drdc_lock)) {
     return;
   }
 
@@ -181,7 +181,8 @@ void GpuSharedImageVideoFactory::CreateImage(
   // should work with some other object that happens to be used by CodecImage,
   // and non-GL things, to hold the output buffer, etc.
   record.codec_image_holder = base::MakeRefCounted<CodecImageHolder>(
-      base::SequencedTaskRunnerHandle::Get(), std::move(codec_image));
+      base::SequencedTaskRunnerHandle::Get(), std::move(codec_image),
+      std::move(drdc_lock));
 
   std::move(image_ready_cb).Run(std::move(record));
 }
@@ -213,7 +214,7 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   // Create a shared image.
   // TODO(vikassoni): This shared image need to be thread safe eventually for
   // webview to work with shared images.
-  auto shared_image = gpu::SharedImageVideo::Create(
+  auto shared_image = gpu::AndroidVideoImageBacking::Create(
       mailbox, coded_size, spec.color_space, kTopLeft_GrSurfaceOrigin,
       kPremul_SkAlphaType, std::move(image), std::move(shared_context),
       std::move(drdc_lock));

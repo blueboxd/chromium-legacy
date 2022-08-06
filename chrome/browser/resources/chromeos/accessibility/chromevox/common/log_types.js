@@ -6,21 +6,12 @@
  * @fileoverview Class definitions of log that are stored in LogStore
  */
 
-goog.provide('BaseLog');
-goog.provide('EventLog');
-goog.provide('LogType');
-goog.provide('SpeechLog');
-goog.provide('TextLog');
-goog.provide('TreeLog');
-
-goog.require('QueueMode');
-
 /**
  * List of all types of logs supported.
  * Note that filter type checkboxes are shown in this order at the log page.
  * @enum {string}
  */
-LogType = {
+export const LogType = {
   SPEECH: 'speech',
   SPEECH_RULE: 'speechRule',
   BRAILLE: 'braille',
@@ -31,7 +22,7 @@ LogType = {
   TREE: 'tree',
 };
 
-BaseLog = class {
+export class BaseLog {
   constructor(logType) {
     /**
      * @type {!LogType}
@@ -48,10 +39,10 @@ BaseLog = class {
   toString() {
     return '';
   }
-};
+}
 
 
-EventLog = class extends BaseLog {
+export class EventLog extends BaseLog {
   /**
    * @param {!chrome.automation.AutomationEvent} event
    */
@@ -88,10 +79,10 @@ EventLog = class extends BaseLog {
     return `EventType = ${this.type_}, TargetName = ${this.targetName_}, ` +
         `RootName = ${this.rootName_}, DocumentURL = ${this.docUrl_}`;
   }
-};
+}
 
 
-SpeechLog = class extends BaseLog {
+export class SpeechLog extends BaseLog {
   /**
    * @param {!string} textString
    * @param {!QueueMode} queueMode
@@ -137,10 +128,10 @@ SpeechLog = class extends BaseLog {
     logStr += ' "' + this.textString_ + '"';
     return logStr;
   }
-};
+}
 
 
-TextLog = class extends BaseLog {
+export class TextLog extends BaseLog {
   /**
    * @param {string} logStr
    * @param {!LogType} logType
@@ -159,10 +150,10 @@ TextLog = class extends BaseLog {
   toString() {
     return this.logStr_;
   }
-};
+}
 
 
-TreeLog = class extends BaseLog {
+export class TreeLog extends BaseLog {
   /**
    * @param {!TreeDumper} logTree
    */
@@ -180,4 +171,4 @@ TreeLog = class extends BaseLog {
   toString() {
     return this.logTree_.treeToString();
   }
-};
+}

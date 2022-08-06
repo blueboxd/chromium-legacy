@@ -8,10 +8,12 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/file_opening_job.h"
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 
 namespace enterprise_connectors {
 
@@ -22,22 +24,6 @@ namespace {
 FilesRequestHandler::Factory* GetFactoryStorage() {
   static base::NoDestructor<FilesRequestHandler::Factory> factory;
   return factory.get();
-}
-
-// Returns true if `result` as returned by FileAnalysisRequest is considered a
-// a failed result when attempting a cloud-based content analysis.
-bool CloudResultIsFailure(safe_browsing::BinaryUploadService::Result result) {
-  return result != safe_browsing::BinaryUploadService::Result::SUCCESS;
-}
-
-// Returns true if `result` as returned by FileAnalysisRequest is considered a
-// a failed result when attempting a local content analysis.
-bool LocalResultIsFailure(safe_browsing::BinaryUploadService::Result result) {
-  return result != safe_browsing::BinaryUploadService::Result::SUCCESS &&
-         result != safe_browsing::BinaryUploadService::Result::FILE_TOO_LARGE &&
-         result != safe_browsing::BinaryUploadService::Result::FILE_ENCRYPTED &&
-         result != safe_browsing::BinaryUploadService::Result::
-                       DLP_SCAN_UNSUPPORTED_FILE_TYPE;
 }
 
 }  // namespace
@@ -182,21 +168,36 @@ void FilesRequestHandler::OnGotFileInfo(
                     ? CloudResultIsFailure(result)
                     : LocalResultIsFailure(result);
   if (failed) {
-    request->FinishRequest(result,
-                           enterprise_connectors::ContentAnalysisResponse());
+    FinishRequestEarly(std::move(request), result);
     return;
   }
 
   // If |throttled_| is true, then the file shouldn't be upload since the server
   // is receiving too many requests.
   if (throttled_) {
-    request->FinishRequest(
-        safe_browsing::BinaryUploadService::Result::TOO_MANY_REQUESTS,
-        enterprise_connectors::ContentAnalysisResponse());
+    FinishRequestEarly(
+        std::move(request),
+        safe_browsing::BinaryUploadService::Result::TOO_MANY_REQUESTS);
     return;
   }
 
   UploadFileForDeepScanning(result, paths_[index], std::move(request));
+}
+
+void FilesRequestHandler::FinishRequestEarly(
+    std::unique_ptr<safe_browsing::BinaryUploadService::Request> request,
+    safe_browsing::BinaryUploadService::Result result) {
+  // We add the request here in case we never actually uploaded anything, so it
+  // wasn't added in OnGetRequestData
+  safe_browsing::WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+      request->tab_url(), request->per_profile_request(),
+      request->content_analysis_request());
+  safe_browsing::WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
+      /*token=*/"", safe_browsing::BinaryUploadService::ResultToString(result),
+      enterprise_connectors::ContentAnalysisResponse());
+
+  request->FinishRequest(result,
+                         enterprise_connectors::ContentAnalysisResponse());
 }
 
 void FilesRequestHandler::UploadFileForDeepScanning(
@@ -212,6 +213,10 @@ void FilesRequestHandler::FileRequestCallback(
     size_t index,
     safe_browsing::BinaryUploadService::Result upload_result,
     enterprise_connectors::ContentAnalysisResponse response) {
+  // Remember to send an ack for this response.
+  if (upload_result == safe_browsing::BinaryUploadService::Result::SUCCESS)
+    request_tokens_.push_back(response.request_token());
+
   DCHECK_EQ(results_.size(), paths_.size());
   if (upload_result ==
       safe_browsing::BinaryUploadService::Result::TOO_MANY_REQUESTS) {

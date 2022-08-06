@@ -7,18 +7,11 @@
 #include "base/barrier_callback.h"
 #include "base/functional/identity.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
-#include "base/ranges/algorithm.h"
 #include "net/base/net_errors.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_tcp_socket_connection.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_tcp_socket_open_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_tcp_socket_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/direct_sockets/direct_sockets_service_mojo_remote.h"
@@ -26,10 +19,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -39,26 +29,16 @@ namespace {
 constexpr char kTCPNetworkFailuresHistogramName[] =
     "DirectSockets.TCPNetworkFailures";
 
-bool CheckKeepAliveOptionsValidity(const TCPSocketOptions* options,
-                                   ExceptionState& exception_state) {
-  if (options->hasKeepAlive() && options->keepAlive()) {
-    if (!options->hasKeepAliveDelay()) {
-      exception_state.ThrowTypeError(
-          "keepAliveDelay must be set when keepAlive = true.");
-      return false;
-    }
-    if (base::Milliseconds(options->keepAliveDelay()) < base::Seconds(1)) {
-      exception_state.ThrowTypeError(
-          "keepAliveDelay must be no less than one second.");
-      return false;
-    }
-  } else {
-    if (options->hasKeepAliveDelay()) {
-      exception_state.ThrowTypeError(
-          "keepAliveDelay must not be set when keepAlive = "
-          "false or missing.");
-      return false;
-    }
+bool CheckSendReceiveBufferSize(const TCPSocketOptions* options,
+                                ExceptionState& exception_state) {
+  if (options->hasSendBufferSize() && options->sendBufferSize() == 0) {
+    exception_state.ThrowTypeError("sendBufferSize must be greater than zero.");
+    return false;
+  }
+  if (options->hasReceiveBufferSize() && options->receiveBufferSize() == 0) {
+    exception_state.ThrowTypeError(
+        "receiverBufferSize must be greater than zero.");
+    return false;
   }
   return true;
 }
@@ -73,35 +53,27 @@ mojom::blink::DirectSocketOptionsPtr CreateTCPSocketOptions(
   socket_options->remote_hostname = remote_address;
   socket_options->remote_port = remote_port;
 
-  const bool has_full_local_address =
-      options->hasLocalAddress() && options->hasLocalPort();
-
-  if (const bool has_partial_local_address =
-          options->hasLocalAddress() || options->hasLocalPort();
-      has_partial_local_address && !has_full_local_address) {
-    exception_state.ThrowTypeError("Incomplete local address specified.");
+  if (!CheckSendReceiveBufferSize(options, exception_state)) {
     return {};
   }
 
-  if (!CheckKeepAliveOptionsValidity(options, exception_state)) {
+  if (options->hasKeepAliveDelay() &&
+      base::Milliseconds(options->keepAliveDelay()) < base::Seconds(1)) {
+    exception_state.ThrowTypeError(
+        "keepAliveDelay must be no less than 1,000 milliseconds.");
     return {};
   }
 
-  if (options->hasNoDelay()) {
-    socket_options->no_delay = options->noDelay();
-  }
-  if (options->hasKeepAlive()) {
-    socket_options->keep_alive_options =
-        network::mojom::blink::TCPKeepAliveOptions::New(
-            /*enable=*/options->keepAlive(),
-            /*delay=*/base::Milliseconds(options->getKeepAliveDelayOr(0))
-                .InSeconds());
-  }
+  // noDelay has a default value specified, therefore it's safe to call
+  // ->noDelay() without checking ->hasNoDelay() first.
+  socket_options->no_delay = options->noDelay();
 
-  if (has_full_local_address) {
-    socket_options->local_hostname = options->localAddress();
-    socket_options->local_port = options->localPort();
-  }
+  socket_options->keep_alive_options =
+      network::mojom::blink::TCPKeepAliveOptions::New(
+          /*enable=*/options->hasKeepAliveDelay() ? true : false,
+          /*delay=*/options->hasKeepAliveDelay()
+              ? base::Milliseconds(options->keepAliveDelay()).InSeconds()
+              : 0);
 
   if (options->hasSendBufferSize()) {
     socket_options->send_buffer_size = options->sendBufferSize();
@@ -175,30 +147,30 @@ void TCPSocket::Init(int32_t result,
     writable_stream_wrapper_ = MakeGarbageCollected<TCPWritableStreamWrapper>(
         script_state_, close_callback, std::move(send_stream));
 
-    auto* connection = TCPSocketConnection::Create();
+    auto* open_info = TCPSocketOpenInfo::Create();
 
-    connection->setReadable(readable_stream_wrapper_->Readable());
-    connection->setWritable(writable_stream_wrapper_->Writable());
+    open_info->setReadable(readable_stream_wrapper_->Readable());
+    open_info->setWritable(writable_stream_wrapper_->Writable());
 
-    connection->setRemoteAddress(String{peer_addr->ToStringWithoutPort()});
-    connection->setRemotePort(peer_addr->port());
+    open_info->setRemoteAddress(String{peer_addr->ToStringWithoutPort()});
+    open_info->setRemotePort(peer_addr->port());
 
-    connection->setLocalAddress(String{local_addr->ToStringWithoutPort()});
-    connection->setLocalPort(local_addr->port());
+    open_info->setLocalAddress(String{local_addr->ToStringWithoutPort()});
+    open_info->setLocalPort(local_addr->port());
 
-    connection_resolver_->Resolve(connection);
+    opened_resolver_->Resolve(open_info);
   } else {
     if (result != net::OK) {
       // Error codes are negative.
       base::UmaHistogramSparse(kTCPNetworkFailuresHistogramName, -result);
     }
-    connection_resolver_->Reject(CreateDOMExceptionFromNetErrorCode(result));
+    opened_resolver_->Reject(CreateDOMExceptionFromNetErrorCode(result));
     CloseServiceAndResetFeatureHandle();
 
     closed_resolver_->Reject();
   }
 
-  connection_resolver_ = nullptr;
+  opened_resolver_ = nullptr;
 }
 
 mojo::PendingReceiver<network::mojom::blink::TCPConnectedSocket>
@@ -228,7 +200,7 @@ void TCPSocket::OnSocketConnectionError() {
 }
 
 void TCPSocket::OnServiceConnectionError() {
-  if (connection_resolver_) {
+  if (opened_resolver_) {
     Init(net::ERR_CONTEXT_SHUT_DOWN, absl::nullopt, absl::nullopt,
          mojo::ScopedDataPipeConsumerHandle(),
          mojo::ScopedDataPipeProducerHandle());

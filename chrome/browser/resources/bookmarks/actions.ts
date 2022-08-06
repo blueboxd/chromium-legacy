@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {Action} from 'chrome://resources/js/cr/ui/store.js';
+import {Action} from 'chrome://resources/js/cr/ui/store_ts.js';
 
 import {IncognitoAvailability, ROOT_NODE_ID} from './constants.js';
 import {BookmarkNode, BookmarksPageState, NodeMap} from './types.js';
@@ -249,11 +249,11 @@ export type FinishSearchAction = Action&{
   results: string[],
 };
 
-export function setSearchResults(ids: string[]): Action {
+export function setSearchResults(ids: string[]): FinishSearchAction {
   return {
     name: 'finish-search',
     results: ids,
-  } as Action;
+  };
 }
 
 export type SetPrefAction = Action&{

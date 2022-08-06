@@ -549,6 +549,8 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
     return;
   LayoutBox* box_to_scroll = scrollable_area->GetLayoutBox();
 
+  auto& visual_viewport = GetDocument().GetPage()->GetVisualViewport();
+
   // TODO(bokan): This is a hack to fix https://crbug.com/977954. If we have a
   // non-default root scroller, scrolling from one of its siblings or a fixed
   // element will chain up to the root node without passing through the root
@@ -558,8 +560,8 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   // thread is awkward since we assume only Nodes are scrollable but the
   // VisualViewport isn't a Node. See LTHI::ApplyScroll for the equivalent
   // behavior in CC.
-  bool also_scroll_visual_viewport = GetDocument().GetFrame() &&
-                                     GetDocument().GetFrame()->IsMainFrame() &&
+  bool also_scroll_visual_viewport = GetDocument().IsInMainFrame() &&
+                                     visual_viewport.IsActiveViewport() &&
                                      IsA<LayoutView>(box_to_scroll);
   DCHECK(!also_scroll_visual_viewport ||
          !box_to_scroll->IsGlobalRootScroller());
@@ -571,9 +573,8 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   // Also try scrolling the visual viewport if we're at the end of the scroll
   // chain.
   if (!result.DidScroll() && also_scroll_visual_viewport) {
-    result = GetDocument().GetPage()->GetVisualViewport().UserScroll(
-        scroll_state.delta_granularity(), delta,
-        ScrollableArea::ScrollCallback());
+    result = visual_viewport.UserScroll(scroll_state.delta_granularity(), delta,
+                                        ScrollableArea::ScrollCallback());
   }
 
   if (!result.DidScroll())
@@ -2242,8 +2243,9 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   }
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->ChildrenChanged(&insertion_point);
+  if (GetDocument().HasAXObjectCache()) {
+    GetDocument().ExistingAXObjectCache()->ChildrenChanged(&insertion_point);
+  }
   return kInsertionDone;
 }
 
@@ -2260,8 +2262,9 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
   }
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->Remove(this);
+  if (GetDocument().HasAXObjectCache()) {
+    GetDocument().ExistingAXObjectCache()->Remove(this);
+  }
 }
 
 String Node::DebugName() const {

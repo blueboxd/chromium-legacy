@@ -41,14 +41,6 @@ namespace {
 // to be parsed.
 const char kInstructionKeyName[] = "-- Instructions --";
 
-// The name of the switch to filter the testcases by
-// ${policy_name}[.optionalTestNameSuffix]. Several names could be passed
-// separated by colon. (For example --test_policy_to_pref_mappings_filter=\
-// AuthNegotiateDelegateByKdcPolicy:\
-// BuiltInDnsClientEnabled.FeatureEnabledByDefault
-const char kPolicyToPrefMappingsFilterSwitch[] =
-    "test_policy_to_pref_mappings_filter";
-
 enum class PrefLocation {
   kUserProfile,
   kSigninProfile,
@@ -214,9 +206,13 @@ class PolicyPrefMappingTest {
     if (policies_settings)
       policies_settings_ = policies_settings->Clone();
     if (prefs) {
-      for (auto pref_setting : prefs->DictItems())
-        prefs_.push_back(std::make_unique<PrefTestCase>(pref_setting.first,
-                                                        pref_setting.second));
+      for (auto [name, setting] : prefs->DictItems()) {
+        if (!setting.is_dict()) {
+          ADD_FAILURE() << "prefs item " << name << " is not dict";
+          continue;
+        }
+        prefs_.push_back(std::make_unique<PrefTestCase>(name, setting));
+      }
     }
     if (prefs_.empty()) {
       ADD_FAILURE() << "missing |prefs|";
@@ -583,10 +579,11 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
   auto test_filter = GetTestFilter();
 
   for (const auto& policy : test_cases) {
-    SCOPED_TRACE(::testing::Message() << "Policy name: " << policy.first);
     for (const auto& test_case : policy.second) {
+      SCOPED_TRACE(::testing::Message()
+                   << "Policy test case name: " << test_case->name());
       if (chunk_info != nullptr) {
-        const size_t policy_name_hash = base::FastHash(policy.first);
+        const size_t policy_name_hash = base::PersistentHash(policy.first);
         const size_t chunk_index = policy_name_hash % chunk_info->num_chunks;
         if (chunk_index != chunk_info->current_chunk)
           // Skip policy if test cases are chunked and the policy is not part of

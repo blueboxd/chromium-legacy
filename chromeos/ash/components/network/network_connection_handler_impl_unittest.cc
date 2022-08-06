@@ -22,15 +22,15 @@
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_connection_observer.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
+#include "chromeos/ash/components/network/prohibited_technologies_handler.h"
+#include "chromeos/ash/components/network/stub_cellular_networks_provider.h"
+#include "chromeos/ash/components/network/system_token_cert_db_storage.h"
 #include "chromeos/ash/components/network/test_cellular_esim_profile_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/prohibited_technologies_handler.h"
-#include "chromeos/network/stub_cellular_networks_provider.h"
-#include "chromeos/network/system_token_cert_db_storage.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -460,8 +460,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     helper_.hermes_euicc_test()->AddCarrierProfile(
         dbus::ObjectPath(kTestCellularServicePath),
         dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestCellularName,
-        "service_provider", "activation_code", kTestCellularServicePath,
-        hermes::profile::State::kInactive,
+        "nickname", "service_provider", "activation_code",
+        kTestCellularServicePath, hermes::profile::State::kInactive,
         hermes::profile::ProfileClass::kOperational, behavior);
     base::RunLoop().RunUntilIdle();
   }

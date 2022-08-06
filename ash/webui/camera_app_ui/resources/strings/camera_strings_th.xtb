@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">หมุน 90 องศาตามเข็มนาฬิกา</translation>
 <translation id="1276998909102132017">รูปภาพในแกลเลอรี</translation>
 <translation id="1300209025925956156">สแกนเอกสาร</translation>
+<translation id="1309250603447638106">กำลังดาวน์โหลดอัปเดตของฟีเจอร์การสแกนเอกสาร</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" /> กดค้นหา + ลูกศรซ้ายเพื่อเข้าถึง</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">แสดงตัวอย่างมิเรอร์</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> เสียบอยู่</translation>
+<translation id="2904654629665923749">การสแกนเอกสารพร้อมใช้งานแล้ว</translation>
 <translation id="2968794441791257519">รูปภาพและวิดีโอที่ถ่ายจากกล้องจะย้ายไปยังโฟลเดอร์ "ดาวน์โหลด" คุณจะเข้าถึงรายการเหล่านี้ได้ในแอป Files
 
 แอปที่มีสิทธิ์ในพื้นที่เก็บข้อมูลจะเข้าถึงรูปภาพและวิดีโอของคุณได้</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">สแกนบาร์โค้ด</translation>
 <translation id="3892148308691398805">คัดลอกข้อความ</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> ล้านพิกเซล</translation>
-<translation id="4096701159033358951">กำลังดาวน์โหลดฟีเจอร์การสแกนเอกสาร</translation>
 <translation id="4118525110028899586">หยุดบันทึกชั่วคราว</translation>
 <translation id="4121305183798804752">ตรวจพบเอกสาร</translation>
 <translation id="414641094616694804">เปลี่ยนความละเอียดของกล้องนี้ไม่ได้</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">ขณะนี้กล้องไม่พร้อมใช้งาน
         โปรดตรวจสอบว่ากล้องเชื่อมต่ออย่างถูกต้อง</translation>
 <translation id="5163387177077603948">ย้ายไปทางด้านขวา</translation>
-<translation id="520537883758714667">การสแกนเอกสารพร้อมใช้งานแล้ว</translation>
 <translation id="5235304959032763950">16 ต่อ 9</translation>
 <translation id="5266635337630551423">มุมซ้ายบนของเอกสาร</translation>
 <translation id="5317780077021120954">บันทึก</translation>

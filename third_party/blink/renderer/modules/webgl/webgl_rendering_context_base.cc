@@ -1506,10 +1506,8 @@ WebGLRenderingContextBase::ClearIfComposited(
   if (isContextLost())
     return kSkipped;
 
-  GLbitfield buffers_needing_clearing =
-      GetDrawingBuffer()->GetBuffersToAutoClear();
-
-  if (buffers_needing_clearing == 0 || (mask && framebuffer_binding_) ||
+  if (!GetDrawingBuffer()->BufferClearNeeded() ||
+      (mask && framebuffer_binding_) ||
       (rasterizer_discard_enabled_ && caller == kClearCallerDrawOrClear))
     return kSkipped;
 
@@ -1567,11 +1565,7 @@ WebGLRenderingContextBase::ClearIfComposited(
   {
     ScopedDisableRasterizerDiscard scoped_disable(this,
                                                   rasterizer_discard_enabled_);
-    // If the WebGL 2.0 clearBuffer APIs already have been used to
-    // selectively clear some of the buffers, don't destroy those
-    // results.
-    GetDrawingBuffer()->ClearFramebuffers(clear_mask &
-                                          buffers_needing_clearing);
+    GetDrawingBuffer()->ClearFramebuffers(clear_mask);
   }
 
   // Call the DrawingBufferClient method to restore scissor test, mask, and
@@ -1579,7 +1573,7 @@ WebGLRenderingContextBase::ClearIfComposited(
   DrawingBufferClientRestoreScissorTest();
   DrawingBufferClientRestoreMaskAndClearValues();
 
-  GetDrawingBuffer()->SetBuffersToAutoClear(0);
+  GetDrawingBuffer()->SetBufferClearNeeded(false);
 
   return combined_clear ? kCombinedClear : kJustClear;
 }
@@ -1621,7 +1615,7 @@ void WebGLRenderingContextBase::RestoreColorMask() {
 
 void WebGLRenderingContextBase::MarkLayerComposited() {
   if (!isContextLost())
-    GetDrawingBuffer()->ResetBuffersToAutoClear();
+    GetDrawingBuffer()->SetBufferClearNeeded(true);
 }
 
 bool WebGLRenderingContextBase::UsingSwapChain() const {
@@ -4809,13 +4803,27 @@ void WebGLRenderingContextBase::RenderbufferStorageImpl(
     case GL_RGB5_A1:
     case GL_RGB565:
     case GL_STENCIL_INDEX8:
-      ContextGL()->RenderbufferStorage(target, internalformat, width, height);
-      renderbuffer_binding_->SetInternalFormat(internalformat);
-      renderbuffer_binding_->SetSize(width, height);
-      break;
     case GL_SRGB8_ALPHA8_EXT:
-      if (!ExtensionEnabled(kEXTsRGBName)) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name, "sRGB not enabled");
+    case GL_RGB16F_EXT:
+    case GL_RGBA16F_EXT:
+    case GL_RGBA32F_EXT:
+      if (internalformat == GL_SRGB8_ALPHA8_EXT &&
+          !ExtensionEnabled(kEXTsRGBName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "EXT_sRGB not enabled");
+        break;
+      }
+      if ((internalformat == GL_RGB16F_EXT ||
+           internalformat == GL_RGBA16F_EXT) &&
+          !ExtensionEnabled(kEXTColorBufferHalfFloatName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "EXT_color_buffer_half_float not enabled");
+        break;
+      }
+      if (internalformat == GL_RGBA32F_EXT &&
+          !ExtensionEnabled(kWebGLColorBufferFloatName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "WEBGL_color_buffer_float not enabled");
         break;
       }
       ContextGL()->RenderbufferStorage(target, internalformat, width, height);
@@ -5330,7 +5338,7 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBufferForTexImage(
   }
 
   if (!image->CurrentFrameKnownToBeOpaque())
-    resource_provider->Canvas()->clear(SK_ColorTRANSPARENT);
+    resource_provider->Canvas()->clear(SkColors::kTransparent);
 
   gfx::Rect src_rect(image->Size());
   gfx::Rect dest_rect(0, 0, width, height);
@@ -5643,13 +5651,17 @@ void WebGLRenderingContextBase::TexImageViaGPU(
   if (!texture)
     return;
 
+  // source in Y-down coordinate space -> is_source_origin_top_left = true
+  // source in Y-up coordinate space -> is_source_origin_top_left = false
+  bool is_source_origin_top_left = false;
+  gfx::Size source_size;
   // Only one of `source_image` and `source_canvas_webgl_context` may be
   // specified.
-  gfx::Size source_size;
   if (source_image) {
     DCHECK(source_image->IsTextureBacked());
     DCHECK(!source_canvas_webgl_context);
     source_size = source_image->Size();
+    is_source_origin_top_left = source_image->IsOriginTopLeft();
   }
   if (source_canvas_webgl_context) {
     DCHECK(!source_image);
@@ -5660,6 +5672,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
       return;
     }
     source_size = source_canvas_webgl_context->GetDrawingBuffer()->Size();
+    is_source_origin_top_left = source_canvas_webgl_context->IsOriginTopLeft();
   }
   if (!params.width)
     params.width = source_size.width();
@@ -5702,13 +5715,25 @@ void WebGLRenderingContextBase::TexImageViaGPU(
     gfx::Rect source_sub_rectangle(params.unpack_skip_pixels,
                                    params.unpack_skip_rows, *params.width,
                                    *params.height);
-    bool should_adjust_source_sub_rectangle = !params.unpack_flip_y;
-    if (is_origin_top_left_ && source_canvas_webgl_context)
-      should_adjust_source_sub_rectangle = !should_adjust_source_sub_rectangle;
-    if (should_adjust_source_sub_rectangle) {
+
+    // source_sub_rectangle is always specified in Y-down coordinate space.
+    // Adjust if source is in Y-up coordinate space.
+    // If unpack_flip_y is true specified by the caller, adjust it back again.
+    // This is equivalent of is_source_origin_top_left == params.unpack_flip_y.
+    bool adjust_source_sub_rectangle =
+        is_source_origin_top_left == params.unpack_flip_y;
+    if (adjust_source_sub_rectangle) {
       source_sub_rectangle.set_y(source_size.height() -
                                  source_sub_rectangle.bottom());
     }
+
+    // The various underlying copy functions require a Y-up rectangle.
+    // We need to set flip_y according to source_coordinate system and the
+    // unpack_flip_y value specified by the caller.
+    // The first transferred pixel should be the upper left corner of the source
+    // when params.unpack_flip_y is false. And bottom left corner of the source
+    // when params.unpack_flip_y is true.
+    bool flip_y = is_source_origin_top_left == params.unpack_flip_y;
 
     // glCopyTextureCHROMIUM has a DRAW_AND_READBACK path which will call
     // texImage2D. So, reset unpack buffer parameters before that.
@@ -5716,17 +5741,14 @@ void WebGLRenderingContextBase::TexImageViaGPU(
     if (source_image) {
       source_image->CopyToTexture(
           ContextGL(), params.target, target_texture, params.level,
-          params.unpack_premultiply_alpha, params.unpack_flip_y,
+          params.unpack_premultiply_alpha, flip_y,
           gfx::Point(params.xoffset, params.yoffset), source_sub_rectangle);
     } else {
       WebGLRenderingContextBase* gl = source_canvas_webgl_context;
-      bool flip_y = params.unpack_flip_y;
-      if (gl->is_origin_top_left_ && !canvas()->LowLatencyEnabled())
-        flip_y = !flip_y;
       ScopedTexture2DRestorer inner_restorer(gl);
       if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
               ContextGL(), params.target, target_texture, params.level,
-              params.unpack_premultiply_alpha, !flip_y,
+              params.unpack_premultiply_alpha, flip_y,
               gfx::Point(params.xoffset, params.yoffset), source_sub_rectangle,
               kBackBuffer)) {
         NOTREACHED();

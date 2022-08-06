@@ -45,7 +45,10 @@ namespace content {
 namespace {
 
 inline bool IsChromeOS() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(b/206464999): for now, we're making the LaCrOS and Ash GPU sandboxes
+  // behave similarly. However, the LaCrOS GPU sandbox could probably be made
+  // tighter.
+#if BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
   return false;
@@ -77,6 +80,7 @@ inline bool UseV4L2Codec() {
 }
 
 inline bool UseLibV4L2() {
+  // TODO(b/240881905): for LaCrOS, this will need to be determined at runtime.
 #if BUILDFLAG(USE_LIBV4L2)
   return true;
 #else
@@ -84,7 +88,7 @@ inline bool UseLibV4L2() {
 #endif
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(__aarch64__)
+#if BUILDFLAG(IS_CHROMEOS) && defined(__aarch64__)
 static const char kLibGlesPath[] = "/usr/lib64/libGLESv2.so.2";
 static const char kLibEglPath[] = "/usr/lib64/libEGL.so.1";
 static const char kLibMaliPath[] = "/usr/lib64/libmali.so";
@@ -398,6 +402,7 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
   AddVulkanICDPermissions(&permissions);
 
   if (IsChromeOS()) {
+    // Permissions are additive, there can be multiple GPUs in the system.
     AddStandardChromeOsPermissions(&permissions);
     if (UseV4L2Codec())
       AddV4L2GpuPermissions(&permissions, options);
@@ -406,16 +411,18 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
       AddArmGpuPermissions(&permissions);
       // Add standard DRM permissions for snapdragon:
       AddDrmGpuPermissions(&permissions);
-      return permissions;
+      // Following discrete GPUs can be plugged in via USB4 on ARM systems.
     }
     if (options.use_amd_specific_policies) {
       AddAmdGpuPermissions(&permissions);
-      return permissions;
     }
     if (options.use_intel_specific_policies) {
       AddIntelGpuPermissions(&permissions);
-      return permissions;
     }
+    if (options.use_nvidia_specific_policies) {
+      AddStandardGpuPermissions(&permissions);
+    }
+    return permissions;
   }
 
   if (UseChromecastSandboxAllowlist()) {
@@ -555,19 +562,20 @@ bool LoadLibrariesForGpu(
       LoadV4L2Libraries(options);
     if (IsArchitectureArm()) {
       LoadArmGpuLibraries();
-      return true;
     }
-    if (options.use_amd_specific_policies)
-      return LoadAmdGpuLibraries();
+    if (options.use_amd_specific_policies) {
+      if (!LoadAmdGpuLibraries())
+        return false;
+    }
   } else {
     if (UseChromecastSandboxAllowlist() && IsArchitectureArm()) {
       LoadArmGpuLibraries();
       if (UseV4L2Codec())
         LoadChromecastV4L2Libraries();
     }
-    if (options.use_nvidia_specific_policies)
-      return LoadNvidiaLibraries();
   }
+  if (options.use_nvidia_specific_policies)
+    return LoadNvidiaLibraries();
   return true;
 }
 

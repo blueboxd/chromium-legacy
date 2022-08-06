@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PrefsManager} from '/select_to_speak/prefs_manager.js';
+import {PrefsManager} from './prefs_manager.js';
 
 // Utilities for UMA metrics.
 
@@ -171,7 +171,7 @@ MetricsUtils.StartSpeechMethod = {
  */
 MetricsUtils.START_SPEECH_METHOD_METRIC = {
   EVENT_COUNT: Object.keys(MetricsUtils.StartSpeechMethod).length,
-  METRIC_NAME: 'Accessibility.CrosSelectToSpeak.StartSpeechMethod'
+  METRIC_NAME: 'Accessibility.CrosSelectToSpeak.StartSpeechMethod',
 };
 
 /**
@@ -192,7 +192,7 @@ MetricsUtils.StateChangeEvent = {
  */
 MetricsUtils.STATE_CHANGE_METRIC = {
   EVENT_COUNT: Object.keys(MetricsUtils.StateChangeEvent).length,
-  METRIC_NAME: 'Accessibility.CrosSelectToSpeak.StateChangeEvent'
+  METRIC_NAME: 'Accessibility.CrosSelectToSpeak.StateChangeEvent',
 };
 
 /**
@@ -215,7 +215,7 @@ MetricsUtils.TtsEngineUsed = {
  */
 MetricsUtils.TTS_ENGINE_USED_METRIC = {
   EVENT_COUNT: Object.keys(MetricsUtils.TtsEngineUsed).length,
-  METRIC_NAME: 'Accessibility.CrosSelectToSpeak.TtsEngineUsed'
+  METRIC_NAME: 'Accessibility.CrosSelectToSpeak.TtsEngineUsed',
 };
 
 /**

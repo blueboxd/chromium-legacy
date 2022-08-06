@@ -8,7 +8,7 @@
  * its connected devices.
  */
 
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 
@@ -32,7 +32,7 @@ import {RouteOriginBehavior, RouteOriginBehaviorInterface} from '../route_origin
  */
 const LabelType = {
   A11Y: 1,
-  DISPLAYED_TEXT: 2
+  DISPLAYED_TEXT: 2,
 };
 
 /**

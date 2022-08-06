@@ -9,7 +9,7 @@
 #include "base/check.h"
 #include "base/containers/intrusive_heap.h"
 #include "base/memory/raw_ptr.h"
-#include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/common/lazy_now.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -41,7 +41,7 @@ class BASE_EXPORT WakeUpQueue {
   absl::optional<WakeUp> GetNextDelayedWakeUp() const;
 
   // Debug info.
-  Value AsValue(TimeTicks now) const;
+  Value::Dict AsValue(TimeTicks now) const;
 
   bool has_pending_high_resolution_tasks() const {
     return pending_high_res_wake_up_count_;

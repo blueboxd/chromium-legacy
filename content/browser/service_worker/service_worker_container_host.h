@@ -289,11 +289,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       ukm::SourceId worker_ukm_source_id);
 
-  // Sets `url_`, `site_for_cookies_`, `top_frame_origin_` and `key_`. For
-  // service worker clients, updates the client uuid if it's a cross-origin
-  // transition.
+  // Sets `url_`, `top_frame_origin_` and `key_`. For service worker clients,
+  // updates the client uuid if it's a cross-origin transition.
   void UpdateUrls(const GURL& url,
-                  const net::SiteForCookies& site_for_cookies,
                   const absl::optional<url::Origin>& top_frame_origin,
                   const blink::StorageKey& storage_key);
 
@@ -361,12 +359,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // is_response_committed() is true, the URL should no longer change.
   const GURL& url() const { return url_; }
 
-  // Representing the first party for cookies, if any, for this context. See
-  // |URLRequest::site_for_cookies()| for details.
+  // This returns the first party for cookies as derived from the storage key.
+  // For information on how this may differ from the SiteForCookies in the frame
+  // context please see the comments above StorageKey::ToNetSiteForCookies.
   // For service worker execution contexts, site_for_cookies() always
   // corresponds to the service worker script URL.
-  const net::SiteForCookies& site_for_cookies() const {
-    return site_for_cookies_;
+  const net::SiteForCookies site_for_cookies() const {
+    // TODO(crbug.com/1159586): Once partitioning is on by default calling
+    // ToNetSiteForCookies will be sufficient.
+    return key_.CopyWithForceEnabledThirdPartyStoragePartitioning()
+        .ToNetSiteForCookies();
   }
 
   // The URL representing the first-party site for this context.
@@ -619,7 +621,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   // See comments for the getter functions.
   GURL url_;
-  net::SiteForCookies site_for_cookies_;
   absl::optional<url::Origin> top_frame_origin_;
   blink::StorageKey key_;
 

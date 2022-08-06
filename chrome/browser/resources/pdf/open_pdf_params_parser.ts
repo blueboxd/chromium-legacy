@@ -6,14 +6,14 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FittingType, NamedDestinationMessageData, Point} from './constants.js';
 import {Size} from './viewport.js';
 
-export type OpenPdfParams = {
-  url?: string,
-  zoom?: number,
-  view?: FittingType,
-  viewPosition?: number,
-  position?: Point,
-  page?: number,
-};
+export interface OpenPdfParams {
+  url?: string;
+  zoom?: number;
+  view?: FittingType;
+  viewPosition?: number;
+  position?: Point;
+  page?: number;
+}
 
 type GetNamedDestinationCallback = (name: string) =>
     Promise<NamedDestinationMessageData>;
@@ -76,7 +76,7 @@ export class OpenPdfParamsParser {
     // Handle #zoom=scale,left,top.
     const position = {
       x: parseFloat(paramValueSplit[1]),
-      y: parseFloat(paramValueSplit[2])
+      y: parseFloat(paramValueSplit[2]),
     };
     return {'position': position, 'zoom': zoomFactor};
   }

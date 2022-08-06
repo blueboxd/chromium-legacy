@@ -27,8 +27,8 @@
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -51,7 +51,7 @@ const int kOTASPRetryDelay = 40000;
 const int kMaxReconnectTime = 30000;
 
 // Returns true if the device follows the simple activation flow.
-bool IsSimpleActivationFlow(const chromeos::NetworkState* network) {
+bool IsSimpleActivationFlow(const NetworkState* network) {
   return (network->activation_type() == shill::kActivationTypeNonCellular ||
           network->activation_type() == shill::kActivationTypeOTA);
 }

@@ -310,8 +310,8 @@ TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
       ShellContentBrowserClient::Get()->GetBrowserContext();
   TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
       TestGuestViewManager::FromBrowserContext(context));
-  // TestGuestViewManager::WaitForSingleGuestCreated may and will get called
-  // before a guest is created.
+  // Test code may access the TestGuestViewManager before it would be created
+  // during creation of the first guest.
   if (!manager) {
     manager =
         static_cast<TestGuestViewManager*>(GuestViewManager::CreateWithDelegate(
@@ -347,7 +347,7 @@ void WebViewDPIAPITest::SetUp() {
 }
 
 content::WebContents* WebViewAPITest::GetGuestWebContents() {
-  return GetGuestViewManager()->WaitForSingleGuestCreated();
+  return GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
 }
 
 // This test verifies that hiding the embedder also hides the guest.
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, DisplayNoneSetSrc) {
   LaunchApp("web_view/display_none_set_src");
   // Navigate the guest while it's in "display: none" state.
   SendMessageToEmbedder("navigate-guest");
-  GetGuestViewManager()->WaitForSingleGuestCreated();
+  GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
 
   // Now attempt to navigate the guest again.
   SendMessageToEmbedder("navigate-guest");
@@ -867,7 +867,12 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebViewInsideFrame) {
   LaunchApp("web_view/inside_iframe");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCaptureVisibleRegion) {
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_TestCaptureVisibleRegion DISABLED_TestCaptureVisibleRegion
+#else
+#define MAYBE_TestCaptureVisibleRegion TestCaptureVisibleRegion
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_TestCaptureVisibleRegion) {
   RunTest("testCaptureVisibleRegion", "web_view/apitest");
 }
 

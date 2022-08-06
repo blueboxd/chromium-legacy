@@ -405,6 +405,16 @@ const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",
 const base::Feature kNetworkQualityEstimatorWebHoldback{
     "NetworkQualityEstimatorWebHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the getDisplayMediaSet API for capturing multiple screens at once.
+const base::Feature kGetDisplayMediaSet{"GetDisplayMediaSet",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables auto selection of all screens in combination with the
+// getDisplayMediaSet API.
+const base::Feature kGetDisplayMediaSetAutoSelectAllScreens{
+    "GetDisplayMediaSetAutoSelectAllScreens",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Determines if an extra brand version pair containing possibly escaped double
 // quotes and escaped backslashed should be added to the Sec-CH-UA header
 // (activated by kUserAgentClientHint)
@@ -420,6 +430,10 @@ const base::Feature kIdentityInCanMakePaymentEventFeature{
 // or the site should obtain an Origin Trial token.
 const base::Feature kIdleDetection{"IdleDetection",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// A feature flag for the memory-backed code cache.
+const base::Feature kInMemoryCodeCache{"InMemoryCodeCache",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Historically most navigations required IPC from browser to renderer and
 // from renderer back to browser. This was done to check for before-unload
@@ -471,7 +485,8 @@ const base::Feature kIsolateSandboxedIframes{"IsolateSandboxedIframes",
 const base::FeatureParam<IsolateSandboxedIframesGrouping>::Option
     isolated_sandboxed_iframes_grouping_types[] = {
         {IsolateSandboxedIframesGrouping::kPerSite, "per-site"},
-        {IsolateSandboxedIframesGrouping::kPerOrigin, "per-origin"}};
+        {IsolateSandboxedIframesGrouping::kPerOrigin, "per-origin"},
+        {IsolateSandboxedIframesGrouping::kPerDocument, "per-document"}};
 const base::FeatureParam<IsolateSandboxedIframesGrouping>
     kIsolateSandboxedIframesGroupingParam{
         &kIsolateSandboxedIframes, "grouping",
@@ -649,14 +664,14 @@ const base::Feature kPepper3DImageChromium{"Pepper3DImageChromium",
 const base::Feature kPepperCrossOriginRedirectRestriction{
     "PepperCrossOriginRedirectRestriction", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// A browser-side equivalent of the Blink feature "PictureInPictureV2". This is
-// used for sanity checks to ensure that the feature can't be enabled by a
-// compromised renderer despite the Blink flag not being enabled.
+// A browser-side equivalent of the Blink feature "DocumentPictureInPictureAPI".
+// This is used for sanity checks to ensure that the feature can't be enabled by
+// a compromised renderer despite the Blink flag not being enabled.
 //
 // Tracking bug: https://crbug.com/1269059
 // Removal bug (when no longer experimental): https://crbug.com/1285144
-const base::Feature kPictureInPictureV2{"PictureInPictureV2",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDocumentPictureInPictureAPI{
+    "DocumentPictureInPictureAPI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables process sharing for sites that do not require a dedicated process
 // by using a default SiteInstance. Default SiteInstances will only be used
@@ -681,6 +696,15 @@ const base::Feature kHighPriorityBeforeUnload{
 // Preload cookie database on NetworkContext creation.
 const base::Feature kPreloadCookies{"PreloadCookies",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Prerender2 holdback feature disables prerendering on all predictors. This is
+// useful in comparing the impact of blink::features::kPrerender2 experiment
+// with and without Prerendering.
+
+// Please note this feature is only used for experimental purposes, please don't
+// enable this feature by default.
+const base::Feature kPrerender2Holdback{"Prerender2Holdback",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables exposure of ads APIs in the renderer: Attribution Reporting,
 // FLEDGE, Topics.
@@ -998,10 +1022,6 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 const base::Feature kTreatBootstrapAsDefault{"TreatBootstrapAsDefault",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the Trusted Types API is available.
-const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // This feature is for a reverse Origin Trial, enabling SharedArrayBuffer for
 // sites as they migrate towards requiring cross-origin isolation for these
 // features.
@@ -1088,12 +1108,6 @@ const base::Feature kWebAssemblyTrapHandler {
 #endif
 };
 
-// Controls whether CTAP2 devices can communicate via the WebAuthentication API
-// using pairingless BLE protocol.
-// https://w3c.github.io/webauthn
-const base::Feature kWebAuthCable{"WebAuthenticationCable",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether WebAuthn conditional UI requests are supported.
 const base::Feature kWebAuthConditionalUI{"WebAuthenticationConditionalUI",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1175,10 +1189,6 @@ const base::Feature kAccessibilityPageZoom{"AccessibilityPageZoom",
 const base::Feature kBackgroundMediaRendererHasModerateBinding{
     "BackgroundMediaRendererHasModerateBinding",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Coalesce independent begin frame by ignoring begin frame that is out of date.
-const base::Feature kCoalesceIndependentBeginFrame{
-    "CoalesceIndependentBeginFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows the use of an experimental feature to drop any AccessibilityEvents
 // that are not relevant to currently enabled accessibility services.

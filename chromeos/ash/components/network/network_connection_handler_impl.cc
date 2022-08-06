@@ -25,18 +25,18 @@
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_util.h"
+#include "chromeos/ash/components/network/prohibited_technologies_handler.h"
+#include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/network_util.h"
-#include "chromeos/network/prohibited_technologies_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -726,7 +726,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   } else if (*type == shill::kTypeWifi) {
     const std::string* security_class =
         properties->FindStringKey(shill::kSecurityClassProperty);
-    if (security_class && *security_class == shill::kSecurity8021x)
+    if (security_class && *security_class == shill::kSecurityClass8021x)
       client_cert_type = client_cert::ConfigType::kEap;
   }
 
@@ -1049,7 +1049,7 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
       // If a profile path was specified, set it on a successful connection.
       configuration_handler_->SetNetworkProfile(
           service_path, request->profile_path, base::DoNothing(),
-          chromeos::network_handler::ErrorCallback());
+          network_handler::ErrorCallback());
     }
     InvokeConnectSuccessCallback(request->service_path,
                                  std::move(request->success_callback));

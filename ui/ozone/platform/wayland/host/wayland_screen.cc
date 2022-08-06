@@ -16,6 +16,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_list.h"
+#include "ui/display/util/display_util.h"
 #include "ui/display/util/gpu_info_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/display_color_spaces.h"
@@ -26,7 +27,9 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
+#include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_zcr_color_management_output.h"
 #include "ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.h"
 
 #if defined(USE_DBUS)
@@ -88,6 +91,9 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
       // Enable that back when the issue is resolved.
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
+    if (format == gfx::BufferFormat::RGBA_1010102)
+      image_format_hdr_ = format;
+
     if (!image_format_alpha_ && format == gfx::BufferFormat::BGRA_8888)
       image_format_alpha_ = gfx::BufferFormat::BGRA_8888;
 
@@ -103,6 +109,8 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
     image_format_alpha_ = gfx::BufferFormat::RGBA_8888;
   if (!image_format_no_alpha_)
     image_format_no_alpha_ = image_format_alpha_;
+  if (!image_format_hdr_)
+    image_format_hdr_ = image_format_alpha_;
 }
 
 WaylandScreen::~WaylandScreen() = default;
@@ -190,8 +198,25 @@ void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
   changed_display.UpdateWorkAreaFromInsets(insets);
 
   gfx::DisplayColorSpaces color_spaces;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* wayland_output =
+      connection_->wayland_output_manager()->GetOutput(output_id);
+  auto* color_management_output =
+      wayland_output ? wayland_output->color_management_output() : nullptr;
+
+  if (color_management_output && color_management_output->gfx_color_space()) {
+    auto* gfx_color = color_management_output->gfx_color_space();
+    color_spaces = display::CreateDisplayColorSpaces(
+        *gfx_color, image_format_hdr_ == gfx::BufferFormat::RGBA_1010102, {});
+  } else {
+    color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),
+                                        image_format_alpha_.value());
+  }
+#else
   color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),
                                       image_format_alpha_.value());
+#endif
+
   changed_display.set_color_spaces(color_spaces);
 
   // There are 2 cases where |changed_display| must be set as primary:
@@ -331,6 +356,37 @@ display::Display WaylandScreen::GetDisplayMatching(
   return display_matching ? *display_matching : GetPrimaryDisplay();
 }
 
+std::unique_ptr<WaylandScreen::WaylandScreenSaverSuspender>
+WaylandScreen::WaylandScreenSaverSuspender::Create(WaylandScreen& screen) {
+  auto suspender = base::WrapUnique(new WaylandScreenSaverSuspender(screen));
+  if (suspender->is_suspending_) {
+    screen.screen_saver_suspension_count_++;
+    return suspender;
+  }
+
+  return nullptr;
+}
+
+WaylandScreen::WaylandScreenSaverSuspender::WaylandScreenSaverSuspender(
+    WaylandScreen& screen)
+    : screen_(screen.GetWeakPtr()) {
+  is_suspending_ = screen.SetScreenSaverSuspended(true);
+}
+
+WaylandScreen::WaylandScreenSaverSuspender::~WaylandScreenSaverSuspender() {
+  if (screen_ && is_suspending_) {
+    screen_->screen_saver_suspension_count_--;
+    if (screen_->screen_saver_suspension_count_ == 0) {
+      screen_->SetScreenSaverSuspended(false);
+    }
+  }
+}
+
+std::unique_ptr<PlatformScreen::PlatformScreenSaverSuspender>
+WaylandScreen::SuspendScreenSaver() {
+  return WaylandScreenSaverSuspender::Create(*this);
+}
+
 bool WaylandScreen::SetScreenSaverSuspended(bool suspend) {
   if (!connection_->zwp_idle_inhibit_manager())
     return false;
@@ -395,7 +451,7 @@ void WaylandScreen::RemoveObserver(display::DisplayObserver* observer) {
   display_list_.RemoveObserver(observer);
 }
 
-std::vector<base::Value> WaylandScreen::GetGpuExtraInfo(
+base::Value::List WaylandScreen::GetGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
   auto values = GetDesktopEnvironmentInfo();
   std::vector<std::string> protocols;
@@ -404,7 +460,7 @@ std::vector<base::Value> WaylandScreen::GetGpuExtraInfo(
                                            protocol_and_version.first.c_str(),
                                            protocol_and_version.second));
   }
-  values.push_back(
+  values.Append(
       display::BuildGpuInfoEntry("Interfaces exposed by the Wayland compositor",
                                  base::JoinString(protocols, " ")));
   StorePlatformNameIntoListOfValues(values, "wayland");

@@ -15,6 +15,25 @@ namespace holding_space_util {
 // Returns the maximum image size required for a holding space item of `type`.
 ASH_PUBLIC_EXPORT gfx::Size GetMaxImageSizeForType(HoldingSpaceItem::Type type);
 
+// Returns whether the specified `command_id` refers to a command for an
+// in-progress item which is shown in an item's context menu and possibly, in
+// the case of cancel/pause/resume, as primary/secondary actions on the item
+// view itself.
+ASH_PUBLIC_EXPORT bool IsInProgressCommand(HoldingSpaceCommandId command_id);
+
+// Returns whether the specified `item` supports a given in-progress command
+// which is shown in the `item`'s context menu and possibly, in the case of
+// cancel/pause/resume, as primary/secondary actions on the `item` view itself.
+ASH_PUBLIC_EXPORT bool SupportsInProgressCommand(
+    const HoldingSpaceItem* item,
+    HoldingSpaceCommandId command_id);
+
+// Attempts to execute the in-progress command specified by `command_id` on
+// `item`, returning whether the attempt was successful.
+ASH_PUBLIC_EXPORT bool ExecuteInProgressCommand(
+    const HoldingSpaceItem* item,
+    HoldingSpaceCommandId command_id);
+
 }  // namespace holding_space_util
 }  // namespace ash
 

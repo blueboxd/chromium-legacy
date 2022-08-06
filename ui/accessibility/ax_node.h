@@ -29,6 +29,8 @@ namespace ui {
 
 class AXComputedNodeData;
 class AXTableInfo;
+class AXTreeManager;
+
 struct AXLanguageInfo;
 struct AXTreeData;
 
@@ -122,7 +124,7 @@ class AX_EXPORT AXNode final {
          AXNode* parent,
          AXNodeID id,
          size_t index_in_parent,
-         size_t unignored_index_in_parent = 0);
+         size_t unignored_index_in_parent = 0u);
   virtual ~AXNode();
 
   // Accessors.
@@ -167,10 +169,18 @@ class AX_EXPORT AXNode final {
   AXNode* GetLastChildCrossingTreeBoundary() const;
   AXNode* GetLastUnignoredChild() const;
   AXNode* GetLastUnignoredChildCrossingTreeBoundary() const;
+
+  // TODO(accessibility): Consider renaming all "GetDeepest...Child" methods to
+  // "GetDeepest...Descendant".
   AXNode* GetDeepestFirstChild() const;
+  AXNode* GetDeepestFirstChildCrossingTreeBoundary() const;
   AXNode* GetDeepestFirstUnignoredChild() const;
+  AXNode* GetDeepestFirstUnignoredChildCrossingTreeBoundary() const;
   AXNode* GetDeepestLastChild() const;
+  AXNode* GetDeepestLastChildCrossingTreeBoundary() const;
   AXNode* GetDeepestLastUnignoredChild() const;
+  AXNode* GetDeepestLastUnignoredChildCrossingTreeBoundary() const;
+
   AXNode* GetNextSibling() const;
   AXNode* GetNextUnignoredSibling() const;
   AXNode* GetPreviousSibling() const;
@@ -231,6 +241,12 @@ class AX_EXPORT AXNode final {
   UnignoredChildCrossingTreeBoundaryIterator
   UnignoredChildrenCrossingTreeBoundaryEnd() const;
 
+  // Returns true if this is a node on which accessibility events make sense to
+  // be fired. Events are not needed on nodes that will, for example, never
+  // appear in a tree that is visible to assistive software, as there will be no
+  // software to handle the event on the other end.
+  bool CanFireEvents() const;
+
   // Returns an optional integer indicating the logical order of this node
   // compared to another node, or returns an empty optional if the nodes are not
   // comparable. Nodes are not comparable if they do not share a common
@@ -245,6 +261,8 @@ class AX_EXPORT AXNode final {
   // traverse from the root, the node that we visited earlier is always going to
   // be before (logically less) the node we visit later.
   absl::optional<int> CompareTo(const AXNode& other) const;
+
+  bool IsDataValid() const { return data_.id != kInvalidAXNodeID; }
 
   // Returns true if the node has any of the text related roles, including
   // kStaticText, kInlineTextBox and kListMarker (for Legacy Layout). Does not
@@ -291,6 +309,8 @@ class AX_EXPORT AXNode final {
   // common cases.
   SkColor ComputeColor() const;
   SkColor ComputeBackgroundColor() const;
+
+  AXTreeManager* GetManager() const;
 
   //
   // Methods for accessing accessibility attributes including attributes that
@@ -387,6 +407,9 @@ class AX_EXPORT AXNode final {
   }
   bool HasHtmlAttribute(const char* attribute) const {
     return data().HasHtmlAttribute(attribute);
+  }
+  std::u16string GetHtmlAttribute(const char* attribute) const {
+    return data().GetHtmlAttribute(attribute);
   }
   bool GetHtmlAttribute(const char* attribute, std::string* value) const {
     return data().GetHtmlAttribute(attribute, value);
@@ -667,6 +690,10 @@ class AX_EXPORT AXNode final {
   // menu list popup.
   bool IsCollapsedMenuListPopUpButton() const;
 
+  // Returns true if this node is at the root of an accessibility tree that is
+  // hosted by a presentational iframe.
+  bool IsRootWebAreaForPresentationalIframe() const;
+
   // Returns the popup button ancestor of this current node if any. The popup
   // button needs to be the parent of a menu list popup and needs to be
   // collapsed.
@@ -683,6 +710,11 @@ class AX_EXPORT AXNode final {
   // an editable region is synonymous to a node with the kTextField role, or a
   // contenteditable without the role, (see `AXNodeData::IsTextField()`).
   AXNode* GetTextFieldAncestor() const;
+
+  // Get the native text field's deepest container; the lowest descendant that
+  // contains all its text. Returns nullptr if the text field is empty, or if it
+  // is not an atomic text field, (e.g., <input> or <textarea>).
+  AXNode* GetTextFieldInnerEditorElement() const;
 
   // If this node is within a container (or widget) that supports either single
   // or multiple selection, returns the node that represents the container.
@@ -701,10 +733,6 @@ class AX_EXPORT AXNode final {
 
   // Finds and returns a pointer to ordered set containing node.
   AXNode* GetOrderedSet() const;
-
-  // Returns false if the |data_| is uninitialized or has been taken. Returns
-  // true otherwise.
-  bool IsDataValid() const;
 
   // Returns true if the node supports the read-only attribute.
   bool IsReadOnlySupported() const;
@@ -744,13 +772,6 @@ class AX_EXPORT AXNode final {
   // Stores information about this node that is immutable and which has been
   // computed by the tree's source, such as `content::BlinkAXTreeSource`.
   AXNodeData data_;
-
-  // Used to track when this object's data_ is valid. If either of these are
-  // true, and data is accessed, there will be a crash.
-  // TODO(crbug.com/1237353): Wrap this inside of an `#if DCHECK_IS_ON()` after
-  // removing `DumpWithoutCrashing`.
-  bool is_data_still_uninitialized_ = true;
-  bool has_data_been_taken_ = false;
 
   // See the class comment in "ax_hypertext.h" for an explanation of this
   // member.

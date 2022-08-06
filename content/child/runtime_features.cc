@@ -24,6 +24,7 @@
 #include "device/base/features.h"
 #include "device/fido/features.h"
 #include "device/gamepad/public/cpp/gamepad_features.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "net/base/features.h"
@@ -213,6 +214,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDevicePosture, features::kDevicePosture},
     {wf::EnableDigitalGoodsAPI, features::kDigitalGoodsApi,
      kSetOnlyIfOverridden},
+    {wf::EnableDocumentPictureInPictureAPI,
+     features::kDocumentPictureInPictureAPI},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
     {wf::EnableFedCm, features::kFedCm, kSetOnlyIfOverridden},
@@ -251,14 +254,12 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
     {wf::EnablePaymentRequest, features::kWebPayments},
     {wf::EnablePaymentRequestBasicCard, features::kPaymentRequestBasicCard},
-    {wf::EnablePercentBasedScrolling, features::kPercentBasedScrolling},
+    {wf::EnablePercentBasedScrolling, features::kWindowsScrollingPersonality},
     {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
     {wf::EnablePictureInPicture, media::kPictureInPicture},
-    {wf::EnablePictureInPictureV2, features::kPictureInPictureV2,
-     kSetOnlyIfOverridden},
     {wf::EnablePointerLockOptions, features::kPointerLockOptions},
     {wf::EnablePortals, blink::features::kPortals, kSetOnlyIfOverridden},
-    {wf::EnablePrerender2, blink::features::kPrerender2, kSetOnlyIfOverridden},
+    {wf::EnablePrerender2, blink::features::kPrerender2},
     {wf::EnablePushSubscriptionChangeEvent,
      features::kPushSubscriptionChangeEvent},
     {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess},
@@ -314,6 +315,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kRemoveMobileViewportDoubleTap},
     {wf::EnableZeroCopyTabCapture, blink::features::kZeroCopyTabCapture},
     {wf::EnableEventPath, blink::features::kEventPath},
+    {wf::EnableGetDisplayMediaSet, features::kGetDisplayMediaSet},
+    {wf::EnableGetDisplayMediaSetAutoSelectAllScreens,
+     features::kGetDisplayMediaSetAutoSelectAllScreens},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -334,6 +338,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kAndroidDownloadableFontsMatching},
           {"CancelFormSubmissionInDefaultHandler",
            blink::features::kCancelFormSubmissionInDefaultHandler},
+          {"BatchFetchRequests", blink::features::kBatchFetchRequests},
           {"ClipboardCustomFormats", blink::features::kClipboardCustomFormats},
           {"CSSContainerQueries", blink::features::kCSSContainerQueries},
           {"CSSOverflowForReplacedElements",
@@ -373,14 +378,22 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"PendingBeaconAPI", blink::features::kPendingBeaconAPI},
           {"PrefersColorSchemeClientHintHeader",
            blink::features::kPrefersColorSchemeClientHintHeader},
+          {"PrivateNetworkAccessPermissionPrompt",
+           blink::features::kPrivateNetworkAccessPermissionPrompt},
           {"FirstPartySets", features::kFirstPartySets},
           {"QuickIntensiveWakeUpThrottlingAfterLoading",
            blink::features::kQuickIntensiveWakeUpThrottlingAfterLoading},
+          {"ReduceUserAgentMinorVersion",
+           blink::features::kReduceUserAgentMinorVersion},
+          {"ReduceUserAgentPlatformOsCpu",
+           blink::features::kReduceUserAgentPlatformOsCpu},
           {"SanitizerAPI", blink::features::kSanitizerAPI},
           {"SanitizerAPIv0", blink::features::kSanitizerAPIv0},
+          {"ScrollUpdateOptimizations",
+           blink::features::kScrollUpdateOptimizations},
           {"SecureContextFixForWorkers",
            blink::features::kSecureContextFixForWorkers},
-          {"StorageAccessAPI", blink::features::kStorageAccessAPI},
+          {"StorageAccessAPI", net::features::kStorageAccessAPI},
           {"ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
            blink::features::
                kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
@@ -388,7 +401,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kSetOnlyIfOverridden},
           {"TouchActionEffectiveAtPointerDown",
            features::kVirtualKeyboardMultitouch},
-          {"TrustedDOMTypes", features::kTrustedDOMTypes},
           {"UserAgentClientHint", blink::features::kUserAgentClientHint},
           {"ViewportHeightClientHintHeader",
            blink::features::kViewportHeightClientHintHeader},
@@ -409,8 +421,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kAutoExpandDetailsElement},
           {"ClientHintsMetaHTTPEquivAcceptCH",
            blink::features::kClientHintsMetaHTTPEquivAcceptCH},
-          {"ClientHintsMetaNameAcceptCH",
-           blink::features::kClientHintsMetaNameAcceptCH},
+          {"ClientHintsMetaEquivDelegateCH",
+           blink::features::kClientHintsMetaEquivDelegateCH},
           {"ClientHintThirdPartyDelegation",
            blink::features::kClientHintThirdPartyDelegation},
           {"UserAgentReduction", blink::features::kReduceUserAgent},
@@ -482,7 +494,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        switches::kEnableWebGLDeveloperExtensions, true},
       {wrf::EnableWebGLDraftExtensions, switches::kEnableWebGLDraftExtensions,
        true},
-      {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
       {wrf::EnableWebGPUDeveloperFeatures,
        switches::kEnableWebGPUDeveloperFeatures, true},
       {wrf::EnableDirectSockets, switches::kIsolatedAppOrigins, true},
@@ -598,6 +609,16 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
       WebRuntimeFeatures::EnableFedCmIframeSupport(true);
     }
   }
+
+  // (b/239679616) kWebGPUService can be controlled by finch. So switching off
+  // WebGPU based on it can help remotely control origin trial usage. Local
+  // command switches --enable-unsafe-webgpu can still enable WebGPU.
+  if (!base::FeatureList::IsEnabled(features::kWebGPUService)) {
+    WebRuntimeFeatures::EnableWebGPU(false);
+  }
+  if (command_line.HasSwitch(switches::kEnableUnsafeWebGPU)) {
+    WebRuntimeFeatures::EnableWebGPU(true);
+  }
 }
 
 // Ensures that the various ways of enabling/disabling features do not produce
@@ -610,17 +631,6 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "=" << blink::features::kPortals.name
         << " instead.";
     WebRuntimeFeatures::EnablePortals(false);
-  }
-
-  // blink::features::kPrerender2 controls the browser side implementation of
-  // the Prerender2. To use the feature, both blink::features::kPrerender2 and
-  // WebRuntimeFeatures are enabled.
-  if (!blink::features::IsPrerender2Enabled()) {
-    LOG_IF(WARNING, WebRuntimeFeatures::IsPrerender2Enabled())
-        << "Prerender2 cannot be enabled in this configuration. Use --"
-        << switches::kEnableFeatures << "=" << blink::features::kPrerender2.name
-        << " instead.";
-    WebRuntimeFeatures::EnablePrerender2(false);
   }
 
   // Fenced frames, like Portals, cannot be enabled without the support of the

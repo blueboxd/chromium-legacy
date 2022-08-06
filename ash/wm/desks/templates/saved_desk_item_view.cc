@@ -127,6 +127,8 @@ SavedDeskItemView::SavedDeskItemView(
   const bool is_admin_managed =
       desk_template_->source() == DeskTemplateSource::kPolicy;
 
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+
   views::Builder<SavedDeskItemView>(this)
       .SetPreferredSize(kPreferredSize)
       .SetUseDefaultFillLayout(true)
@@ -283,20 +285,33 @@ bool SavedDeskItemView::IsNameBeingModified() const {
   return name_view_->HasFocus();
 }
 
-void SavedDeskItemView::MaybeRemoveNameNumber() {
-  // When there are existing matched Desk name and Template name (ie.
+void SavedDeskItemView::MaybeRemoveNameNumber(
+    const std::u16string& saved_desk_name) {
+  // When there is a matched `saved_desk_name` and existing Template name (ie.
   // "Desk 1"), creating a new template from "Desk 1" will get auto generated
-  // template name from the frontend as "Desk 1 (1)", to prevent template
-  // duplication, we show the template view name to be "Desk 1" by removing name
-  // number, save template under such name will call out template replace
-  // dialog.
+  // template name from the frontend as "Desk 1 (1)". To prevent template
+  // duplication, we show the template view name to be "Desk 1" by removing the
+  // appended name number. Saving the template under the new name will trigger
+  // the template replace dialog.
   if (saved_desk_util::GetSavedDeskPresenter()->FindOtherEntryWithName(
-          DesksController::Get()->active_desk()->name(), desk_template().type(),
-          uuid())) {
+          saved_desk_name, desk_template().type(), uuid())) {
     // Replace the name number.
-    name_view_->SetTemporaryName(DesksController::Get()->active_desk()->name());
-    name_view_->SetViewName(DesksController::Get()->active_desk()->name());
+    name_view_->SetTemporaryName(saved_desk_name);
+    name_view_->SetViewName(saved_desk_name);
   }
+}
+
+void SavedDeskItemView::MaybeShowReplaceDialog(DeskTemplateType type,
+                                               const base::GUID& uuid) {
+  // Show replace template dialog. If accepted, replace old template and commit
+  // name change.
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  saved_desk_util::GetSavedDeskDialogController()->ShowReplaceDialog(
+      root_window, name_view_->GetText(), type,
+      base::BindOnce(&SavedDeskItemView::ReplaceTemplate,
+                     weak_ptr_factory_.GetWeakPtr(), uuid.AsLowercaseString()),
+      base::BindOnce(&SavedDeskItemView::RevertTemplateName,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SavedDeskItemView::ReplaceTemplate(const std::string& uuid) {
@@ -497,17 +512,25 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
   UpdateTemplateName();
 }
 
-void SavedDeskItemView::MaybeShowReplaceDialog(DeskTemplateType type,
-                                               const base::GUID& uuid) {
-  // Show replace template dialog. If accepted, replace old template and commit
-  // name change.
-  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
-  saved_desk_util::GetSavedDeskDialogController()->ShowReplaceDialog(
-      root_window, name_view_->GetText(), type,
-      base::BindOnce(&SavedDeskItemView::ReplaceTemplate,
-                     weak_ptr_factory_.GetWeakPtr(), uuid.AsLowercaseString()),
-      base::BindOnce(&SavedDeskItemView::RevertTemplateName,
-                     weak_ptr_factory_.GetWeakPtr()));
+void SavedDeskItemView::OnFocus() {
+  auto* highlight_controller = Shell::Get()
+                                   ->overview_controller()
+                                   ->overview_session()
+                                   ->highlight_controller();
+  DCHECK(highlight_controller);
+  AccessibilityControllerImpl* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  if (highlight_controller->IsFocusHighlightVisible() ||
+      accessibility_controller->spoken_feedback().enabled()) {
+    highlight_controller->MoveHighlightToView(this);
+  }
+  OnViewHighlighted();
+  View::OnFocus();
+}
+
+void SavedDeskItemView::OnBlur() {
+  OnViewUnhighlighted();
+  View::OnBlur();
 }
 
 views::Button::KeyClickAction SavedDeskItemView::GetKeyClickActionForEvent(

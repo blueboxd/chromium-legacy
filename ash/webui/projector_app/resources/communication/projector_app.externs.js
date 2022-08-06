@@ -243,39 +243,22 @@ projectorApp.NewScreencastPreconditionState.prototype.reasons;
 projectorApp.Video = function() {};
 
 /**
+ * Duration of the video in milliseconds.
+ * @type {string|undefined}
+ */
+projectorApp.Video.prototype.durationMillis;
+
+/**
  * The local source url of screencast video.
  * @type {string|undefined}
  */
-projectorApp.Video.prototype.srcURL;
+projectorApp.Video.prototype.srcUrl;
 
 /**
- * Structure for Screencast object.
- * @record
- * @struct
+ * Drive item id of the video file.
+ * @type {string|undefined}
  */
-projectorApp.Screencast = function() {};
-
-/**
- * The container folder id of the screencast.
- * @type {string}
- */
-// TODO(b/236858194): Add the rest of the fields and refactor the Screencast
-// model in ../shared/screencast_model.d.ts to this file. Remove
-// PendingScreencast.
-projectorApp.Screencast.prototype.containerFolderId;
-
-/**
- * The name of the screencast.
- * @type {string}
- */
-projectorApp.Screencast.prototype.name;
-
-
-/**
- * The video object of screencast.
- * @type {projectorApp.Video}
- */
-projectorApp.Screencast.prototype.video;
+projectorApp.Video.prototype.fileId;
 
 /**
  * The delegate interface that the Projector app can use to make requests to
@@ -384,15 +367,14 @@ projectorApp.ClientDelegate.prototype.setUserPref = function(
  */
 projectorApp.ClientDelegate.prototype.openFeedbackDialog = function() {};
 
-// TODO(b/236860361): Support screencast located outside DriveFS by using path
-// or blob uuid.
-
 /**
- * Gets information about the specified screencast from DriveFS.
- * @param {string} screencastId The Drive item id of container folder.
- * @return {!Promise<projectorApp.Screencast>}
+ * Gets information about the specified video from DriveFS.
+ * @param {string} videoFileId The Drive item id of the video file.
+ * @param {string|undefined} resourceKey The Drive item resource key.
+ * @return {!Promise<!projectorApp.Video>}
  */
-projectorApp.ClientDelegate.prototype.getScreencast = function(screencastId) {};
+projectorApp.ClientDelegate.prototype.getVideo = function(
+    videoFileId, resourceKey) {};
 
 /**
  * The client Api for interacting with the Projector app instance.

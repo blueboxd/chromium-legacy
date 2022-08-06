@@ -13,18 +13,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_checker.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
 #include "components/viz/service/display/resolved_frame_data.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/surfaces/surface.h"
+#include "gpu/command_buffer/service/display_compositor_memory_and_task_controller_on_gpu.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/shared_image_manager.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
-#include "gpu/ipc/display_compositor_memory_and_task_controller_on_gpu.h"
-#include "gpu/ipc/scheduler_sequence.h"
-#include "gpu/ipc/single_task_sequence.h"
+#include "gpu/command_buffer/service/scheduler_sequence.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
+#include "gpu/command_buffer/service/single_task_sequence.h"
 #include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -142,8 +142,8 @@ class OverlayProcessorWebView::Manager
    private:
     gfx::Rect crop_rect_;
     base::ScopedClosureRunner return_resource;
-    std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
-    std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+    std::unique_ptr<gpu::OverlayImageRepresentation> representation_;
+    std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
         read_access_;
     base::ScopedFD begin_read_fence_;
   };
@@ -893,9 +893,9 @@ void OverlayProcessorWebView::ProcessForFrameSinkId(
     // TODO(vasilyt): We should get this from surface aggregator after
     // aggregator refactoring will be finished.
     const auto& frame = surface->GetActiveFrame();
-    auto* quad = viz::StreamVideoDrawQuad::MaterialCast(
+    auto* quad = viz::TextureDrawQuad::MaterialCast(
         frame.render_pass_list.back()->quad_list.front());
-    DCHECK(quad);
+    DCHECK(quad->is_stream_video);
 
     auto uv_rect = gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
 

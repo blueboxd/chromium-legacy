@@ -191,9 +191,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // or multiple selection, returns the node that represents the container.
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
-  bool IsPreviousSiblingOnSameLine() const;
-  bool IsNextSiblingOnSameLine() const;
-
   // Returns nullptr if there are no children.
   BrowserAccessibility* PlatformDeepestFirstChild() const;
   // Returns nullptr if there are no children.
@@ -349,7 +346,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::AXNodeID GetId() const;
   gfx::RectF GetLocation() const;
 
-  bool IsWebAreaForPresentationalIframe() const override;
+  // See `AXNode::IsRootWebAreaForPresentationalIframe()`.
+  bool IsRootWebAreaForPresentationalIframe() const override;
 
   // See AXNodeData::IsClickable().
   virtual bool IsClickable() const;
@@ -368,12 +366,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Returns true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
-
-  // Get text to announce for a live region change, for ATs that do not
-  // implement this functionality.
-  //
-  // TODO(nektar): Replace with `AXNode::GetTextContentUTF16()`.
-  std::string GetLiveRegionText() const;
 
   // |offset| could only be a character offset. Depending on the platform, the
   // character offset could be either in the object's text content (Android and
@@ -446,6 +438,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool HasAction(ax::mojom::Action action) const override;
   bool HasTextStyle(ax::mojom::TextStyle text_style) const override;
   ax::mojom::NameFrom GetNameFrom() const override;
+  ax::mojom::DescriptionFrom GetDescriptionFrom() const override;
   const ui::AXTree::Selection GetUnignoredSelection() const override;
   AXPosition CreatePositionAt(
       int offset,
@@ -468,7 +461,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsChildOfLeaf() const override;
   bool IsDescendantOfAtomicTextField() const override;
   bool IsPlatformDocument() const override;
-  bool IsPlatformDocumentWithContent() const override;
   bool IsLeaf() const override;
   bool IsFocused() const override;
   bool IsIgnored() const override;
@@ -483,6 +475,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::unique_ptr<ChildIterator> ChildrenEnd() override;
 
   const std::string& GetName() const override;
+  const std::string& GetDescription() const override;
   std::u16string GetHypertext() const override;
   const std::map<int, int>& GetHypertextOffsetToHyperlinkChildIndex()
       const override;

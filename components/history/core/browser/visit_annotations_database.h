@@ -76,6 +76,9 @@ class VisitAnnotationsDatabase {
   // entries for any `Cluster` that it failed to add.
   void AddClusters(const std::vector<Cluster>& clusters);
 
+  // Get a `Cluster`.
+  Cluster GetCluster(int64_t cluster_id);
+
   // Get recent `Cluster`s' IDs newer than `minimum_time`.
   std::vector<int64_t> GetRecentClusterIds(base::Time minimum_time);
 
@@ -88,8 +91,12 @@ class VisitAnnotationsDatabase {
   // Get `VisitID`s in a cluster.
   std::vector<VisitID> GetVisitIdsInCluster(int64_t cluster_id);
 
-  // Return whether `visit_id` belongs to any cluster.
-  bool IsVisitClustered(VisitID visit_id);
+  // Get a `ClusterVisit`.
+  ClusterVisit GetClusterVisit(VisitID visit_id);
+
+  // Return the ID of the cluster containing `visit_id`. Returns 0 if `visit_id`
+  // is not in a cluster.`
+  int64_t GetClusterIdContainingVisit(VisitID visit_id);
 
   // Delete `Cluster`s from the table.
   void DeleteClusters(const std::vector<int64_t>& cluster_ids);
@@ -140,6 +147,18 @@ class VisitAnnotationsDatabase {
   // Called by the derived classes to migrate the older content_annotations
   // table by adding the alternative_title column.
   bool MigrateContentAnnotationsAddAlternativeTitle();
+
+  // Called by the derived classes to delete the 'clusters' and
+  // 'clusters_and_visits' tables so they can be recreated with updated columns.
+  bool MigrateClustersAddColumns();
+
+ private:
+  // Helper to create the 'clusters' table and avoid duplicating the code.
+  bool CreateClustersTable();
+
+  // Helper to create the 'clusters_and_visits' table and avoid duplicating the
+  // code.
+  bool CreateClustersAndVisitsTableAndIndex();
 };
 
 }  // namespace history

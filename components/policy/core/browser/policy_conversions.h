@@ -18,6 +18,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_export.h"
+#include "extensions/buildflags/buildflags.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace policy {
@@ -64,22 +65,19 @@ class POLICY_EXPORT PolicyConversions {
   // Set to drop the policies of which value is a default one set by the policy
   // provider. Disabled by default.
   virtual PolicyConversions& SetDropDefaultValues(bool enabled);
-
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Sets the updater policies.
-  virtual PolicyConversions& WithUpdaterPolicies(
-      std::unique_ptr<PolicyMap> policies);
-
-  // Sets the updater policy schemas.
-  virtual PolicyConversions& WithUpdaterPolicySchemas(
-      PolicyToSchemaMap schemas);
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Set to get extension policies.
+  // Enabled by default.
+  // TODO(b/233209041): Remove this option when extension policies are removed
+  // from ArrayPolicyConversions.
+  virtual PolicyConversions& EnableExtensionPolicies(bool enabled);
 
   // Returns the policy data as a JSON string;
   virtual std::string ToJSON() = 0;
 
  protected:
   PolicyConversionsClient* client() { return client_.get(); }
+
+  bool extension_policies_enabled_ = true;
 
  private:
   std::unique_ptr<PolicyConversionsClient> client_;
@@ -109,15 +107,11 @@ class POLICY_EXPORT DictionaryPolicyConversions : public PolicyConversions {
 
   DictionaryPolicyConversions& SetDropDefaultValues(bool enabled) override;
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Sets the updater policies.
-  DictionaryPolicyConversions& WithUpdaterPolicies(
-      std::unique_ptr<PolicyMap> policies) override;
+  DictionaryPolicyConversions& EnableExtensionPolicies(bool enabled) override;
 
-  // Sets the updater policy schemas.
-  DictionaryPolicyConversions& WithUpdaterPolicySchemas(
-      PolicyToSchemaMap schemas) override;
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  base::Value::Dict GetExtensionPolicies();
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   std::string ToJSON() override;
 
@@ -154,15 +148,7 @@ class POLICY_EXPORT ArrayPolicyConversions : public PolicyConversions {
 
   ArrayPolicyConversions& SetDropDefaultValues(bool enabled) override;
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Sets the updater policies.
-  ArrayPolicyConversions& WithUpdaterPolicies(
-      std::unique_ptr<PolicyMap> policies) override;
-
-  // Sets the updater policy schemas.
-  ArrayPolicyConversions& WithUpdaterPolicySchemas(
-      PolicyToSchemaMap schemas) override;
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  ArrayPolicyConversions& EnableExtensionPolicies(bool enabled) override;
 
   std::string ToJSON() override;
 
@@ -178,9 +164,10 @@ class POLICY_EXPORT ArrayPolicyConversions : public PolicyConversions {
   base::Value::Dict GetChromePolicies();
   base::Value::Dict GetPrecedencePolicies();
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  base::Value::Dict GetUpdaterPolicies();
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Returns extension policies in a list.
+  base::Value::List GetExtensionPolicies();
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   base::Value::Dict additional_chrome_policies_;

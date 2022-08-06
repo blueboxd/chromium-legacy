@@ -214,9 +214,7 @@ async function verifyRecentDocuments(appId, expectedEntries) {
  * @param {string} expectedPath Expected breadcrumb path.
  */
 async function verifyBreadcrumbsPath(appId, expectedPath) {
-  const path =
-      await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
-  chrome.test.assertEq(expectedPath, path);
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, expectedPath);
 }
 
 /**
@@ -229,8 +227,7 @@ async function verifyBreadcrumbsPath(appId, expectedPath) {
  */
 async function rightClickContextMenu(appId, fileName, commandId) {
   // Select the item.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [fileName]));
+  await remoteCall.waitUntilSelected(appId, fileName);
 
   // Right-click the selected file.
   await remoteCall.waitAndRightClick(appId, '.table-row[selected]');
@@ -329,6 +326,31 @@ async function cutFileAndPasteTo(appId, fileName, newFolder) {
 }
 
 /**
+ * Wait for the empty folder element to show and assert the content to
+ * match the expected message.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} expectedMessage The expected empty folder message
+ */
+async function waitForEmptyFolderMessage(appId, expectedMessage) {
+  const caller = getCaller();
+  // Use repeatUntil() here because when we switch between different filters,
+  // the message changes but the element itself will always show there.
+  await repeatUntil(async () => {
+    const emptyMessage = await remoteCall.waitForElement(
+        appId, '#empty-folder:not(.hidden) > .label');
+    if (emptyMessage.text === expectedMessage) {
+      return;
+    }
+
+    return pending(
+        caller,
+        `Expected empty folder message: "${expectedMessage}", got "${
+            emptyMessage.text}"`);
+  });
+}
+
+/**
  * Tests that file entries populated in the Downloads folder recently will be
  * displayed in Recent folder.
  */
@@ -381,8 +403,9 @@ testcase.recentsPlayFiles = async () => {
   // Verifies file list in Recents. Audio files from Play Files folder are
   // not supported in Recents.
   await verifyRecents(appId, [
-    RECENT_MODIFIED_ANDROID_DOCUMENT, RECENT_MODIFIED_ANDROID_IMAGE,
-    RECENT_MODIFIED_ANDROID_VIDEO
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
 };
 
@@ -436,8 +459,9 @@ testcase.recentsDownloadsAndDriveAndPlayFiles = async () => {
       [ENTRIES.desktop, ENTRIES.world, ENTRIES.testDocument]);
 
   await verifyRecents(appId, RECENT_ENTRY_SET.concat([
-    RECENT_MODIFIED_ANDROID_DOCUMENT, RECENT_MODIFIED_ANDROID_IMAGE,
-    RECENT_MODIFIED_ANDROID_VIDEO
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]));
 };
 
@@ -609,8 +633,9 @@ testcase.recentVideosDownloadsAndDriveAndPlayFiles = async () => {
       BASIC_LOCAL_ENTRY_SET.concat([RECENTLY_MODIFIED_VIDEO]),
       BASIC_DRIVE_ENTRY_SET.concat([RECENTLY_MODIFIED_VIDEO]));
   await verifyRecentVideos(appId, [
-    RECENTLY_MODIFIED_VIDEO, RECENTLY_MODIFIED_VIDEO,
-    RECENT_MODIFIED_ANDROID_VIDEO
+    RECENTLY_MODIFIED_VIDEO,
+    RECENTLY_MODIFIED_VIDEO,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
 };
 
@@ -651,8 +676,9 @@ testcase.recentDocumentsDownloadsAndDriveAndPlayFiles = async () => {
       RootPath.DOWNLOADS, [RECENTLY_MODIFIED_DOCUMENT],
       [RECENTLY_MODIFIED_DOCUMENT]);
   await verifyRecentDocuments(appId, [
-    RECENTLY_MODIFIED_DOCUMENT, RECENTLY_MODIFIED_DOCUMENT,
-    RECENT_MODIFIED_ANDROID_DOCUMENT
+    RECENTLY_MODIFIED_DOCUMENT,
+    RECENTLY_MODIFIED_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
   ]);
 };
 
@@ -733,24 +759,30 @@ testcase.recentsAllowDeletion = async () => {
       RootPath.DOWNLOADS, [ENTRIES.beautiful], [ENTRIES.desktop]);
   await navigateToRecent(appId);
   const files = TestEntryInfo.getExpectedRows([
-    ENTRIES.beautiful, ENTRIES.desktop, RECENT_MODIFIED_ANDROID_DOCUMENT,
-    RECENT_MODIFIED_ANDROID_IMAGE, RECENT_MODIFIED_ANDROID_VIDEO
+    ENTRIES.beautiful,
+    ENTRIES.desktop,
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
   await remoteCall.waitForFiles(appId, files);
 
   // Delete a file originated from Downloads.
   await deleteFile(appId, ENTRIES.beautiful.nameText);
   const files1 = TestEntryInfo.getExpectedRows([
-    ENTRIES.desktop, RECENT_MODIFIED_ANDROID_DOCUMENT,
-    RECENT_MODIFIED_ANDROID_IMAGE, RECENT_MODIFIED_ANDROID_VIDEO
+    ENTRIES.desktop,
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
   await remoteCall.waitForFiles(appId, files1);
 
   // Delete a file originated from Drive.
   await deleteFile(appId, ENTRIES.desktop.nameText);
   const files2 = TestEntryInfo.getExpectedRows([
-    RECENT_MODIFIED_ANDROID_DOCUMENT, RECENT_MODIFIED_ANDROID_IMAGE,
-    RECENT_MODIFIED_ANDROID_VIDEO
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
   await remoteCall.waitForFiles(appId, files2);
 
@@ -771,8 +803,11 @@ testcase.recentsAllowMultipleFilesDeletion = async () => {
       RootPath.DOWNLOADS, [ENTRIES.beautiful], [ENTRIES.desktop]);
   await navigateToRecent(appId);
   const files = TestEntryInfo.getExpectedRows([
-    ENTRIES.beautiful, ENTRIES.desktop, RECENT_MODIFIED_ANDROID_DOCUMENT,
-    RECENT_MODIFIED_ANDROID_IMAGE, RECENT_MODIFIED_ANDROID_VIDEO
+    ENTRIES.beautiful,
+    ENTRIES.desktop,
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
   await remoteCall.waitForFiles(appId, files);
 
@@ -849,14 +884,16 @@ testcase.recentsNoRenameForPlayFiles = async () => {
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
   await navigateToRecent(appId);
   const files = TestEntryInfo.getExpectedRows([
-    ENTRIES.beautiful, RECENT_MODIFIED_ANDROID_DOCUMENT,
-    RECENT_MODIFIED_ANDROID_IMAGE, RECENT_MODIFIED_ANDROID_VIDEO
+    ENTRIES.beautiful,
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
   await remoteCall.waitForFiles(appId, files);
 
   // Select the item.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [RECENT_MODIFIED_ANDROID_DOCUMENT.nameText]));
+  await remoteCall.waitUntilSelected(
+      appId, RECENT_MODIFIED_ANDROID_DOCUMENT.nameText);
 
   // Right-click the selected file.
   await remoteCall.waitAndRightClick(appId, '.table-row[selected]');
@@ -874,7 +911,7 @@ testcase.recentsNoRenameForPlayFiles = async () => {
 testcase.recentsAllowCutForDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.directoryA], []);
-  const files = TestEntryInfo.getExpectedRows([ENTRIES.beautiful]);
+  const files = [ENTRIES.beautiful.getExpectedRow()];
   const newFolderBreadcrumb =
       `/My files/Downloads/${ENTRIES.directoryA.nameText}`;
 
@@ -933,8 +970,9 @@ testcase.recentsAllowCutForPlayFiles = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.directoryA], []);
   const files = TestEntryInfo.getExpectedRows([
-    RECENT_MODIFIED_ANDROID_DOCUMENT, RECENT_MODIFIED_ANDROID_IMAGE,
-    RECENT_MODIFIED_ANDROID_VIDEO
+    RECENT_MODIFIED_ANDROID_DOCUMENT,
+    RECENT_MODIFIED_ANDROID_IMAGE,
+    RECENT_MODIFIED_ANDROID_VIDEO,
   ]);
   const newFolderBreadcrumb =
       `/My files/Downloads/${ENTRIES.directoryA.nameText}`;
@@ -1003,4 +1041,45 @@ testcase.recentsTimePeriodHeadings = async () => {
   chrome.test.assertEq('Yesterday', groupTitles[1].text);
   chrome.test.assertEq(
       yesterdayFile.nameText, gridItems[1].attributes['file-name']);
+};
+
+/**
+ * Tests message will show in Recents for empty folder.
+ */
+testcase.recentsEmptyFolderMessage = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.directoryA], []);
+  await navigateToRecent(appId);
+  // All filter is on by default.
+  await waitForEmptyFolderMessage(appId, 'Your recent files will appear here');
+  // Activates to audio filter.
+  await remoteCall.waitAndClickElement(appId, [`[file-type-filter="audio"]`]);
+  await waitForEmptyFolderMessage(
+      appId, 'Your recent audio files will appear here');
+  // Activates to documents filter.
+  await remoteCall.waitAndClickElement(
+      appId, [`[file-type-filter="document"]`]);
+  await waitForEmptyFolderMessage(
+      appId, 'Your recent documents will appear here');
+  // Activates to images filter.
+  await remoteCall.waitAndClickElement(appId, [`[file-type-filter="image"]`]);
+  await waitForEmptyFolderMessage(appId, 'Your recent images will appear here');
+  // Activates to videos filter.
+  await remoteCall.waitAndClickElement(appId, [`[file-type-filter="video"]`]);
+  await waitForEmptyFolderMessage(appId, 'Your recent videos will appear here');
+};
+
+
+/**
+ * Tests message will show in Recents after the last file is
+ * deleted.
+ */
+testcase.recentsEmptyFolderMessageAfterDeletion = async () => {
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+  await navigateToRecent(appId);
+  const files = TestEntryInfo.getExpectedRows([ENTRIES.beautiful]);
+  await remoteCall.waitForFiles(appId, files);
+  await deleteFile(appId, ENTRIES.beautiful.nameText);
+  await waitForEmptyFolderMessage(appId, 'Your recent files will appear here');
 };

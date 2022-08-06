@@ -181,12 +181,15 @@ class MetaBuildWrapper:
                         help='Sets GN arg android_default_version_code')
       subp.add_argument('--android-version-name',
                         help='Sets GN arg android_default_version_name')
+      subp.add_argument('--rts',
+                        default=None,
+                        help='which regression test selection model to use'
+                        ' For more info about RTS, please see'
+                        ' //docs/testing/regression-test-selection.md')
       subp.add_argument('--use-rts',
                         action='store_true',
                         default=False,
-                        help='whether or not to use regression test selection'
-                        ' For more info about RTS, please see'
-                        ' //docs/testing/regression-test-selection.md')
+                        help='Deprecated argument for enabling RTS')
 
       # TODO(crbug.com/1060857): Remove this once swarming task templates
       # support command prefixes.
@@ -469,10 +472,15 @@ class MetaBuildWrapper:
     return 0
 
   def RtsSelect(self):
-    model_dir = self.PathJoin(
-        self.chromium_src_dir, 'testing', 'rts', self._CipdPlatform())
+    if self.args.rts == 'rts-ml-chromium':
+      model_dir = self.PathJoin(self.chromium_src_dir, 'testing', 'rts',
+                                self.args.rts, self._CipdPlatform())
+      exe = self.PathJoin(model_dir, self.args.rts)
+    else:
+      model_dir = self.PathJoin(self.chromium_src_dir, 'testing', 'rts',
+                                self._CipdPlatform())
+      exe = self.PathJoin(model_dir, self.args.rts)
 
-    exe = self.PathJoin(model_dir, 'rts-chromium')
     if self.platform == 'win32':
       exe += '.exe'
 
@@ -489,12 +497,12 @@ class MetaBuildWrapper:
             'rts-target-change-recall must be between (0 and 1]', None)
       args += ['-target-change-recall', str(self.args.rts_target_change_recall)]
 
-    ret, _, _ = self.Run(args, force_verbose=True)
+    ret, _, err = self.Run(args, force_verbose=True)
     if ret != 0:
       self.WriteFailureAndRaise(err, None)
 
   def CmdGen(self):
-    if self.args.use_rts:
+    if self.args.rts:
       self.RtsSelect()
     vals = self.Lookup()
     return self.RunGNGen(vals)
@@ -581,7 +589,7 @@ class MetaBuildWrapper:
       if self.args.verbose:
         self.Print(('| ' if previous_res else '') + ' '.join(cmd))
 
-      res, out, err = self.Call(cmd, stdin=previous_res)
+      res, out, err = self.Call(cmd, input=previous_res)
       if res != 0:
         self.Print("Err while running '%s'. Output:\n%s\nstderr:\n%s" % (
           ' '.join(cmd), out, err))
@@ -731,7 +739,7 @@ class MetaBuildWrapper:
       if self.args.extra_args:
         cmd += self.args.extra_args
       self.Print('')
-      ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
+      ret, _, _ = self.Run(cmd, force_verbose=True, capture_output=False)
       if ret:
         return ret
       task_json = self.ReadFile(json_file)
@@ -747,7 +755,7 @@ class MetaBuildWrapper:
           collect_output,
           task_id,
       ]
-      ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
+      ret, _, _ = self.Run(cmd, force_verbose=True, capture_output=False)
       if ret != 0:
         return ret
       collect_json = json.loads(self.ReadFile(collect_output))
@@ -769,7 +777,7 @@ class MetaBuildWrapper:
     ]
     if self.args.extra_args:
       cmd += ['--'] + self.args.extra_args
-    ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
+    ret, _, _ = self.Run(cmd, force_verbose=True, capture_output=False)
     return ret
 
   def _DefaultDimensions(self):
@@ -1328,7 +1336,7 @@ class MetaBuildWrapper:
 
       # For more info about RTS, please see
       # //docs/testing/regression-test-selection.md
-      if self.args.use_rts:
+      if self.args.rts:
         self.AddFilterFileArg(target, build_dir, command)
 
       canonical_target = target.replace(':','_').replace('/','_')
@@ -1452,7 +1460,7 @@ class MetaBuildWrapper:
         '-i',
         self.ToSrcRelPath('%s/%s.isolate' % (build_dir, target)),
     ],
-                         buffer_output=False)
+                         capture_output=False)
 
     return ret
 
@@ -1627,7 +1635,7 @@ class MetaBuildWrapper:
     if android_version_name:
       gn_args += ' android_default_version_name="%s"' % android_version_name
 
-    if self.args.use_rts:
+    if self.args.rts:
       gn_args += ' use_rts=true'
 
     args_gn_lines = []
@@ -1696,8 +1704,6 @@ class MetaBuildWrapper:
     # that one Ozone build can be used to run different backends. Currently,
     # tests are executed for the headless and X11 backends and both can run
     # under Xvfb on Linux.
-    # TODO(tonikitoo,msisov,fwang): Find a way to run tests for the Wayland
-    # backend.
     use_xvfb = (self.platform.startswith('linux') and not is_android
                 and not is_fuchsia and not is_cros_device)
 
@@ -2026,17 +2032,17 @@ class MetaBuildWrapper:
     if self.args.jobs:
       ninja_cmd.extend(['-j', '%d' % self.args.jobs])
     ninja_cmd.append(target)
-    ret, _, _ = self.Run(ninja_cmd, buffer_output=False)
+    ret, _, _ = self.Run(ninja_cmd, capture_output=False)
     return ret
 
-  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True):
+  def Run(self, cmd, env=None, force_verbose=True, capture_output=True):
     # This function largely exists so it can be overridden for testing.
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.PrintCmd(cmd)
     if self.args.dryrun:
       return 0, '', ''
 
-    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output)
+    ret, out, err = self.Call(cmd, env=env, capture_output=capture_output)
     if self.args.verbose or force_verbose:
       if ret != 0:
         self.Print('  -> returned %d' % ret)
@@ -2047,20 +2053,25 @@ class MetaBuildWrapper:
         self.Print(err, end='', file=sys.stderr)
     return ret, out, err
 
-  def Call(self, cmd, env=None, buffer_output=True, stdin=None):
-    if buffer_output:
-      p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           env=env, stdin=subprocess.PIPE)
-      out, err = p.communicate(input=stdin)
-      out = out.decode('utf-8')
-      err = err.decode('utf-8')
-    else:
-      p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
-                           env=env)
-      p.wait()
-      out = err = ''
-    return p.returncode, out, err
+  # Call has argument input to match subprocess.run
+  def Call(
+      self,
+      cmd,
+      env=None,
+      capture_output=True,
+      input='',
+  ):  # pylint: disable=redefined-builtin
+    # We are returning the exit code, we don't want an exception thrown
+    # for non-zero exit code
+    # pylint: disable=subprocess-run-check
+    p = subprocess.run(cmd,
+                       shell=False,
+                       capture_output=capture_output,
+                       cwd=self.chromium_src_dir,
+                       env=env,
+                       text=True,
+                       input=input)
+    return p.returncode, p.stdout, p.stderr
 
   def _CipdPlatform(self):
     """Returns current CIPD platform, e.g. linux-amd64.

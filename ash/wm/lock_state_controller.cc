@@ -27,6 +27,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -48,6 +49,10 @@
 #define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                    \
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, base::Milliseconds(1), \
                              base::Seconds(50), 100)
+
+// TODO(b/228873153): Remove after figuring out the root cause of the bug
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 
@@ -163,6 +168,15 @@ void LockStateController::StartShutdownAnimation(ShutdownReason reason) {
 }
 
 void LockStateController::LockWithoutAnimation() {
+  if (animating_unlock_) {
+    CancelUnlockAnimation();
+    // One would expect a call to
+    // `Shell::Get()->session_controller()->LockScreen()` at this point,
+    // however, when execution reaches here, `session_manager` still considers
+    // the screen to be locked, as we've only executed the part of the
+    // animations done before the lock screen UI is destroyed.
+    return;
+  }
   if (animating_lock_)
     return;
   animating_lock_ = true;
@@ -207,6 +221,11 @@ void LockStateController::CancelLockAnimation() {
   animation_sequence->EndSequence();
 }
 
+void LockStateController::CancelUnlockAnimation() {
+  VLOG(1) << "CancelUnlockAnimation";
+  pb_pressed_during_unlock_ = true;
+}
+
 bool LockStateController::CanCancelShutdownAnimation() {
   return pre_shutdown_timer_.IsRunning();
 }
@@ -246,8 +265,30 @@ void LockStateController::RequestShutdown(ShutdownReason reason) {
   StartRealShutdownTimer(true);
 }
 
-void LockStateController::OnLockScreenHide(base::OnceClosure callback) {
-  StartUnlockAnimationBeforeUIDestroyed(std::move(callback));
+void LockStateController::OnUnlockAnimationBeforeLockUIDestroyedFinished() {
+  if (pb_pressed_during_unlock_) {
+    // Power button was pressed during the unlock animation and
+    // CancelUnlockAnimation was called, restore UI elements to previous state
+    // immediately.
+    animator_->StartAnimation(SessionStateAnimator::SHELF,
+                              SessionStateAnimator::ANIMATION_FADE_IN,
+                              SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+    animator_->StartAnimation(SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+                              SessionStateAnimator::ANIMATION_UNDO_LIFT,
+                              SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+    // We aborted, so we are not animating anymore.
+    animating_unlock_ = false;
+  }
+  std::move(start_unlock_callback_).Run(pb_pressed_during_unlock_);
+  pb_pressed_during_unlock_ = false;
+}
+
+void LockStateController::OnLockScreenHide(
+    SessionStateAnimator::AnimationCallback callback) {
+  start_unlock_callback_ = std::move(callback);
+  StartUnlockAnimationBeforeLockUIDestroyed(base::BindOnce(
+      &LockStateController::OnUnlockAnimationBeforeLockUIDestroyedFinished,
+      base::Unretained(this)));
 }
 
 void LockStateController::SetLockScreenDisplayedCallback(
@@ -308,7 +349,7 @@ void LockStateController::OnLockStateChanged(bool locked) {
       lock_duration_timer_.reset();
     }
   } else {
-    StartUnlockAnimationAfterUIDestroyed();
+    StartUnlockAnimationAfterLockUIDestroyed();
   }
 }
 
@@ -318,7 +359,12 @@ void LockStateController::OnLockFailTimeout() {
   lock_duration_timer_.reset();
   DCHECK(!system_is_locked_);
 
-  LOG(FATAL) << "Screen lock took too long; crashing intentionally";
+  // b/228873153: Here we use `LOG(ERROR)` instead of `LOG(FATAL)` because it
+  // seems like certain users are hitting this timeout causing chrome to crash
+  // and be restarted from session manager without `--login-manager`
+  LOG(ERROR) << "Screen lock took too long; Signing out";
+  base::debug::DumpWithoutCrashing();
+  Shell::Get()->session_controller()->RequestSignOut();
 }
 
 void LockStateController::StartPreShutdownAnimationTimer() {
@@ -417,9 +463,10 @@ void LockStateController::StartPostLockAnimation() {
   animation_sequence->EndSequence();
 }
 
-void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
+void LockStateController::StartUnlockAnimationBeforeLockUIDestroyed(
     base::OnceClosure callback) {
   VLOG(1) << "StartUnlockAnimationBeforeUIDestroyed";
+  animating_unlock_ = true;
   // Hide the lock screen shelf. This is a no-op if views-based shelf is
   // disabled, since shelf is in NonLockScreenContainersContainer.
   animator_->StartAnimation(SessionStateAnimator::SHELF,
@@ -434,7 +481,7 @@ void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
                             SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
 }
 
-void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
+void LockStateController::StartUnlockAnimationAfterLockUIDestroyed() {
   VLOG(1) << "StartUnlockAnimationAfterUIDestroyed";
   auto next_animation_starter = base::BindOnce(
       &LockStateController::UnlockAnimationAfterUIDestroyedFinished,
@@ -481,6 +528,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock,
     Shell::Get()->session_controller()->LockScreen();
   }
 
+  VLOG(1) << "b/228873153 : Starting lock fail timer";
   lock_fail_timer_.Start(FROM_HERE, kLockFailTimeout, this,
                          &LockStateController::OnLockFailTimeout);
 
@@ -501,6 +549,7 @@ void LockStateController::PostLockAnimationFinished(bool aborted) {
 void LockStateController::UnlockAnimationAfterUIDestroyedFinished(
     bool aborted) {
   DVLOG(1) << "UnlockAnimationAfterUIDestroyedFinished: aborted=" << aborted;
+  animating_unlock_ = false;
   Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(false);
   RestoreUnlockedProperties();
 }

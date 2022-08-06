@@ -9,6 +9,8 @@
 #import "components/send_tab_to_self/entry_point_display_reason.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
@@ -79,7 +81,13 @@ ShareToData* ShareToDataForWebState(web::WebState* web_state,
 
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+  ChromeAccountManagerService* accountManagerService =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state);
+  // Divergence between iOS and other platforms: today the sign-in promo UI only
+  // supports the case where there are already accounts on the device.
   BOOL can_send_tab_to_self =
+      !browser_state->IsOffTheRecord() && accountManagerService &&
+      accountManagerService->HasIdentities() &&
       send_tab_to_self::GetEntryPointDisplayReason(
           finalURLToShare,
           SyncServiceFactory::GetForBrowserState(browser_state),
@@ -96,12 +104,14 @@ ShareToData* ShareToDataForWebState(web::WebState* web_state,
                               isPageSearchable:is_page_searchable
                               canSendTabToSelf:can_send_tab_to_self
                                      userAgent:userAgent
-                            thumbnailGenerator:thumbnail_generator];
+                            thumbnailGenerator:thumbnail_generator
+                                  linkMetadata:nil];
 }
 
 ShareToData* ShareToDataForURL(const GURL& URL,
                                NSString* title,
-                               NSString* additionalText) {
+                               NSString* additionalText,
+                               LPLinkMetadata* linkMetadata) {
   return [[ShareToData alloc] initWithShareURL:URL
                                     visibleURL:URL
                                          title:title
@@ -111,11 +121,12 @@ ShareToData* ShareToDataForURL(const GURL& URL,
                               isPageSearchable:NO
                               canSendTabToSelf:NO
                                      userAgent:web::UserAgentType::NONE
-                            thumbnailGenerator:nil];
+                            thumbnailGenerator:nil
+                                  linkMetadata:linkMetadata];
 }
 
 ShareToData* ShareToDataForURLWithTitle(URLWithTitle* URLWithTitle) {
-  return ShareToDataForURL(URLWithTitle.URL, URLWithTitle.title, nil);
+  return ShareToDataForURL(URLWithTitle.URL, URLWithTitle.title, nil, nil);
 }
 
 }  // namespace activity_services

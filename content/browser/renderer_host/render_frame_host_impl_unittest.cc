@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/test_utils.h"
@@ -372,7 +373,16 @@ TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
   EXPECT_FALSE(child_frame->IsAnonymous());
   EXPECT_FALSE(child_frame->storage_key().nonce().has_value());
 
-  child_frame->frame_tree_node()->SetAnonymous(true);
+  auto attributes = blink::mojom::IframeAttributes::New();
+  attributes->parsed_csp_attribute = std::move(
+      child_frame->frame_tree_node()->attributes_->parsed_csp_attribute);
+  attributes->id = child_frame->frame_tree_node()->html_id();
+  attributes->name = child_frame->frame_tree_node()->html_name();
+  attributes->src = child_frame->frame_tree_node()->html_src();
+  // Set |anonymous| to true.
+  attributes->anonymous = true;
+  child_frame->frame_tree_node()->SetAttributes(std::move(attributes));
+
   EXPECT_FALSE(child_frame->IsAnonymous());
   EXPECT_FALSE(child_frame->storage_key().nonce().has_value());
 
@@ -388,7 +398,7 @@ TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
 
   // An anonymous document sets a nonce on its network isolation key.
   EXPECT_TRUE(child_frame->GetNetworkIsolationKey().GetNonce().has_value());
-  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->anonymous_iframes_nonce(),
             child_frame->GetNetworkIsolationKey().GetNonce().value());
 
   // A child of an anonymous RFH is anonymous.
@@ -396,7 +406,7 @@ TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
       content::RenderFrameHostTester::For(child_frame)
           ->AppendChild("grandchild"));
   EXPECT_TRUE(grandchild_frame->IsAnonymous());
-  EXPECT_TRUE(child_frame->storage_key().nonce().has_value());
+  EXPECT_TRUE(grandchild_frame->storage_key().nonce().has_value());
 
   // The two anonymous RFH's storage keys should have the same nonce.
   EXPECT_EQ(child_frame->storage_key().nonce().value(),
@@ -406,7 +416,7 @@ TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
   // isolation key.
   EXPECT_TRUE(
       grandchild_frame->GetNetworkIsolationKey().GetNonce().has_value());
-  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->anonymous_iframes_nonce(),
             grandchild_frame->GetNetworkIsolationKey().GetNonce().value());
 }
 

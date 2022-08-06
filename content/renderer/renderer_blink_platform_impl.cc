@@ -52,7 +52,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
-#include "content/renderer/storage_util.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/variations_render_thread_observer.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -86,7 +85,6 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
-#include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -201,9 +199,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 #endif
 
-  top_level_blame_context_.Initialize();
-  main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
-
   auto io_task_runner = GetIOTaskRunner();
   if (io_task_runner) {
     io_task_runner->PostTask(
@@ -221,13 +216,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
-  main_thread_scheduler_->SetTopLevelBlameContext(nullptr);
-  {
-    base::ScopedAllowBaseSyncPrimitives allow;
-    // Ensure task posted to IO thread is finished because it contains
-    // pointers to fields of `this`.
-    io_thread_id_ready_event_.Wait();
-  }
+  base::ScopedAllowBaseSyncPrimitives allow;
+  // Ensure task posted to IO thread is finished because it contains
+  // pointers to fields of `this`.
+  io_thread_id_ready_event_.Wait();
 }
 
 void RendererBlinkPlatformImpl::Shutdown() {}
@@ -262,35 +254,15 @@ RendererBlinkPlatformImpl::WrapURLLoaderFactory(
       /*terminate_sync_load_event=*/nullptr);
 }
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-RendererBlinkPlatformImpl::WrapSharedURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> factory) {
-  std::vector<std::string> cors_exempt_header_list =
-      RenderThreadImpl::current()->cors_exempt_header_list();
-  blink::WebVector<blink::WebString> web_cors_exempt_header_list(
-      cors_exempt_header_list.size());
-  std::transform(cors_exempt_header_list.begin(), cors_exempt_header_list.end(),
-                 web_cors_exempt_header_list.begin(), [](const std::string& h) {
-                   return blink::WebString::FromLatin1(h);
-                 });
-  return std::make_unique<blink::WebURLLoaderFactory>(
-      std::move(factory), web_cors_exempt_header_list,
-      /*terminate_sync_load_event=*/nullptr);
-}
-
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-void RendererBlinkPlatformImpl::SetCompositingThreadType(
-    base::PlatformThreadId thread_id) {
+void RendererBlinkPlatformImpl::SetThreadType(base::PlatformThreadId thread_id,
+                                              base::ThreadType thread_type) {
   if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
-    render_thread->render_message_filter()->SetThreadType(
-        thread_id, base::ThreadType::kCompositing);
+    render_thread->render_message_filter()->SetThreadType(thread_id,
+                                                          thread_type);
   }
 }
 #endif
-
-blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
-  return &top_level_blame_context_;
-}
 
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
@@ -418,20 +390,6 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
 
 //------------------------------------------------------------------------------
 
-WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
-    const blink::WebSecurityOrigin& origin) {
-  return WebString::FromUTF8(
-      storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin)));
-}
-
-//------------------------------------------------------------------------------
-
-WebString RendererBlinkPlatformImpl::DatabaseCreateOriginIdentifier(
-    const blink::WebSecurityOrigin& origin) {
-  return WebString::FromUTF8(
-      storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin)));
-}
-
 viz::FrameSinkId RendererBlinkPlatformImpl::GenerateFrameSinkId() {
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                           RenderThread::Get()->GenerateRoutingID());
@@ -483,11 +441,6 @@ bool RendererBlinkPlatformImpl::IsElasticOverscrollEnabled() {
 bool RendererBlinkPlatformImpl::IsScrollAnimatorEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread ? thread->IsScrollAnimatorEnabled() : false;
-}
-
-cc::TaskGraphRunner* RendererBlinkPlatformImpl::GetTaskGraphRunner() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread ? thread->GetTaskGraphRunner() : nullptr;
 }
 
 bool RendererBlinkPlatformImpl::IsThreadedAnimationEnabled() {

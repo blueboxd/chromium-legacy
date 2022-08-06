@@ -15,7 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
@@ -29,10 +29,9 @@ namespace quick_pair {
 class DeviceMetadata;
 enum class PairFailure;
 
-class FastPairDiscoverableScannerImpl
-    : public FastPairDiscoverableScanner,
-      public FastPairScanner::Observer,
-      public chromeos::NetworkStateHandlerObserver {
+class FastPairDiscoverableScannerImpl : public FastPairDiscoverableScanner,
+                                        public FastPairScanner::Observer,
+                                        public NetworkStateHandlerObserver {
  public:
   class Factory {
    public:
@@ -71,8 +70,8 @@ class FastPairDiscoverableScannerImpl
   void OnDeviceFound(device::BluetoothDevice* device) override;
   void OnDeviceLost(device::BluetoothDevice* device) override;
 
-  // chromeos::NetworkStateHandlerObserver:
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  // NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
  private:
   void OnModelIdRetrieved(const std::string& address,

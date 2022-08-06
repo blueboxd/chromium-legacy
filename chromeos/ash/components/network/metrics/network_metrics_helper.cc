@@ -8,14 +8,19 @@
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "chromeos/ash/components/network/metrics/connection_results.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace network_config {
+namespace mojom = ::chromeos::network_config::mojom;
+}
 
 const char kNetworkMetricsPrefix[] = "Network.Ash.";
 const char kAllConnectionResultSuffix[] = ".ConnectionResult.All";
@@ -257,4 +262,4 @@ NetworkMetricsHelper::NetworkMetricsHelper() = default;
 
 NetworkMetricsHelper::~NetworkMetricsHelper() = default;
 
-}  // namespace chromeos
+}  // namespace ash

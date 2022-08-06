@@ -7,12 +7,16 @@ package org.chromium.chrome.browser.ui.signin.fre;
 import android.content.Context;
 
 import androidx.annotation.MainThread;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.Promise;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
@@ -25,8 +29,11 @@ public class SigninFirstRunCoordinator {
         /** Notifies when the user clicked the "add account" button. */
         void addAccount();
 
-        /** Notifies when the user accepts the terms of service. */
-        void acceptTermsOfService();
+        /**
+         * Notifies when the user accepts the terms of service.
+         * @param allowCrashUpload Whether the user has opted into uploading crash reports and UMA.
+         * */
+        void acceptTermsOfService(boolean allowCrashUpload);
 
         /** Called when the interaction with the page is over and the next page should be shown. */
         void advanceToNextPage();
@@ -37,6 +44,12 @@ public class SigninFirstRunCoordinator {
          */
         void recordFreProgressHistogram(@MobileFreProgress int state);
 
+        /** Records MobileFre.FromLaunch.NativeAndPoliciesLoaded histogram. **/
+        void recordNativePolicyAndChildStatusLoadedHistogram();
+
+        /** Records MobileFre.FromLaunch.NativeInitialized histogram. **/
+        void recordNativeInitializedHistogram();
+
         /**
          * Show an informational web page. The page doesn't show navigation control.
          * @param url Resource id for the URL of the web page.
@@ -44,37 +57,50 @@ public class SigninFirstRunCoordinator {
         void showInfoPage(@StringRes int url);
 
         /**
-         * Opens a dialog to get consent for recording UMA data.
+         * The supplier that supplies whether reading policy value is necessary.
+         * See {@link PolicyLoadListener} for details.
          */
-        void openUmaDialog();
+        OneshotSupplier<Boolean> getPolicyLoadListener();
+
+        /**
+         * Returns the supplier that supplies child account status.
+         */
+        OneshotSupplier<Boolean> getChildAccountStatusSupplier();
+
+        /**
+         * Returns the promise that provides information about native initialization. Callers can
+         * use {@link Promise#isFulfilled()} to check whether the native has already been
+         * initialized.
+         */
+        Promise<Void> getNativeInitializationPromise();
     }
 
     private final SigninFirstRunMediator mMediator;
+
+    @Nullable
+    private PropertyModelChangeProcessor<PropertyModel, SigninFirstRunView, PropertyKey>
+            mPropertyModelChangeProcessor;
 
     /**
      * Constructs a coordinator instance.
      *
      * @param context is used to create the UI.
-     * @param view is the FRE view including the selected account, the continue/dismiss buttons,
-     *        the footer string and other view components that change according to different state.
      * @param modalDialogManager is used to open dialogs like account picker dialog and uma dialog.
      * @param delegate is invoked to interact with classes outside the module.
      * @param privacyPreferencesManager is used to check whether metrics and crash reporting are
      *         disabled by policy and set the footer string accordingly.
      */
-    public SigninFirstRunCoordinator(Context context, SigninFirstRunView view,
-            ModalDialogManager modalDialogManager, Delegate delegate,
-            PrivacyPreferencesManager privacyPreferencesManager) {
+    public SigninFirstRunCoordinator(Context context, ModalDialogManager modalDialogManager,
+            Delegate delegate, PrivacyPreferencesManager privacyPreferencesManager) {
         mMediator = new SigninFirstRunMediator(
                 context, modalDialogManager, delegate, privacyPreferencesManager);
-        PropertyModelChangeProcessor.create(
-                mMediator.getModel(), view, SigninFirstRunViewBinder::bind);
     }
 
     /**
      * Releases the resources used by the coordinator.
      */
     public void destroy() {
+        setView(null);
         mMediator.destroy();
     }
 
@@ -88,20 +114,24 @@ public class SigninFirstRunCoordinator {
     }
 
     /**
-     * Notifies that native is loaded, policies are available if any exists and child account
-     * status is fetched.
-     * @param hasPolicies whether policies are found on device.
+     * Sets the view that is controlled by the coordinator.
+     * @param view is the FRE view including the selected account, the continue/dismiss buttons,
+     *        the footer string and other view components that change according to different state.
+     *        Can be null, in which case the coordinator will just detach from the previous view.
      */
-    public void onNativePolicyAndChildStatusLoaded(boolean hasPolicies) {
-        ThreadUtils.assertOnUiThread();
-        mMediator.onNativeAndPolicyLoaded(hasPolicies);
+    public void setView(@Nullable SigninFirstRunView view) {
+        if (mPropertyModelChangeProcessor != null) {
+            mPropertyModelChangeProcessor.destroy();
+            mPropertyModelChangeProcessor = null;
+        }
+
+        if (view != null) {
+            mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
+                    mMediator.getModel(), view, SigninFirstRunViewBinder::bind);
+        }
     }
 
     public void onAccountSelected(String accountName) {
         mMediator.onAccountSelected(accountName);
-    }
-
-    public boolean isMetricsReportingDisabledByPolicy() {
-        return mMediator.isMetricsReportingDisabledByPolicy();
     }
 }

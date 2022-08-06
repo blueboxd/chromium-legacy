@@ -15,7 +15,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './safety_check_extensions_child.js';
 import './safety_check_passwords_child.js';
 import './safety_check_safe_browsing_child.js';
@@ -38,10 +38,10 @@ import {Router} from '../router.js';
 import {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckParentStatus} from './safety_check_browser_proxy.js';
 import {getTemplate} from './safety_check_page.html.js';
 
-type ParentChangedEvent = {
-  newState: SafetyCheckParentStatus,
-  displayString: string,
-};
+interface ParentChangedEvent {
+  newState: SafetyCheckParentStatus;
+  displayString: string;
+}
 
 const SettingsSafetyCheckPageElementBase =
     WebUIListenerMixin(I18nMixin(PolymerElement));

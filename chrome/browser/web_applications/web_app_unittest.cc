@@ -172,6 +172,7 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
    "!name": "",
    "additional_search_terms": [  ],
    "allowed_launch_protocols": [  ],
+   "always_show_toolbar_in_fullscreen": true,
    "app_service_icon_url": "chrome://app-icon/empty_app/32",
    "app_size_in_bytes": "",
    "background_color": "none",
@@ -244,15 +245,12 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
 }
 
 TEST(WebAppTest, SampleAppAsDebugValue) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  EnableSystemWebAppsInLacrosForTesting();
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
   EXPECT_EQ(base::JSONReader::Read(R"JSON({
    "!app_id": "eajjdjobhihlgobdfaehiiheinneagde",
    "!name": "Name1234",
    "additional_search_terms": [ "Foo_1234_0" ],
    "allowed_launch_protocols": [ "web+test_1234_0", "web+test_1234_1" ],
+   "always_show_toolbar_in_fullscreen": false,
    "app_service_icon_url": "chrome://app-icon/eajjdjobhihlgobdfaehiiheinneagde/32",
    "app_size_in_bytes": "4226285750",
    "background_color": "rgba(77,188,194,0.9686274509803922)",
@@ -402,7 +400,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
    "last_badging_time": "1970-01-13 20:12:59.451 UTC",
    "last_launch_time": "1970-01-04 17:38:34.900 UTC",
    "launch_handler": {
-      "route_to": "kExistingClientNavigate"
+      "client_mode": "kNavigateExisting"
    },
    "launch_query_params": "986688382",
    "lock_screen_start_url": "https://example.com/scope1234/lock_screen_start_url3206632378",

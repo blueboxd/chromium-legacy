@@ -73,10 +73,6 @@ void MergeForSubframesWithAdjustedTime(
                       merged_candidate.Type(), merged_candidate.ImageBPP());
 }
 
-bool IsSubframe(content::RenderFrameHost* subframe_rfh) {
-  return subframe_rfh != nullptr && subframe_rfh->GetParent() != nullptr;
-}
-
 void Reset(ContentfulPaintTimingInfo& timing) {
   timing.Reset(absl::nullopt, 0u, blink::LargestContentfulPaintType::kNone,
                /*image_bpp=*/0.0);
@@ -220,32 +216,6 @@ LargestContentfulPaintHandler::LargestContentfulPaintHandler()
 
 LargestContentfulPaintHandler::~LargestContentfulPaintHandler() = default;
 
-void LargestContentfulPaintHandler::RecordTiming(
-    const page_load_metrics::mojom::LargestContentfulPaintTiming&
-        largest_contentful_paint,
-    const absl::optional<base::TimeDelta>&
-        first_input_or_scroll_notified_timestamp,
-    content::RenderFrameHost* subframe_rfh) {
-  if (!IsSubframe(subframe_rfh)) {
-    RecordMainFrameTiming(largest_contentful_paint,
-                          first_input_or_scroll_notified_timestamp);
-    return;
-  }
-  // For subframes
-  const auto it = subframe_navigation_start_offset_.find(
-      subframe_rfh->GetFrameTreeNodeId());
-  if (it == subframe_navigation_start_offset_.end()) {
-    // We received timing information for an untracked load. Ignore it.
-    return;
-  }
-  RecordSubframeTiming(largest_contentful_paint,
-                       first_input_or_scroll_notified_timestamp, it->second);
-  if (!IsSameSite(subframe_rfh->GetLastCommittedURL(),
-                  subframe_rfh->GetMainFrame()->GetLastCommittedURL())) {
-    RecordCrossSiteSubframeTiming(largest_contentful_paint, it->second);
-  }
-}
-
 const ContentfulPaintTimingInfo&
 LargestContentfulPaintHandler::MergeMainFrameAndSubframes() const {
   const ContentfulPaintTimingInfo& main_frame_timing =
@@ -253,6 +223,55 @@ LargestContentfulPaintHandler::MergeMainFrameAndSubframes() const {
   const ContentfulPaintTimingInfo& subframe_timing =
       subframe_contentful_paint_.MergeTextAndImageTiming();
   return MergeTimingsBySizeAndTime(main_frame_timing, subframe_timing);
+}
+
+void LargestContentfulPaintHandler::RecordMainFrameTiming(
+    const page_load_metrics::mojom::LargestContentfulPaintTiming&
+        largest_contentful_paint,
+    const absl::optional<base::TimeDelta>&
+        first_input_or_scroll_notified_timestamp) {
+  UpdateFirstInputOrScrollNotified(
+      first_input_or_scroll_notified_timestamp,
+      /* navigation_start_offset */ base::TimeDelta());
+  if (IsValid(largest_contentful_paint.largest_text_paint)) {
+    main_frame_contentful_paint_.Text().Reset(
+        largest_contentful_paint.largest_text_paint,
+        largest_contentful_paint.largest_text_paint_size,
+        blink::LargestContentfulPaintType::kNone,
+        /*image_bpp=*/0.0);
+  }
+  if (IsValid(largest_contentful_paint.largest_image_paint)) {
+    main_frame_contentful_paint_.Image().Reset(
+        largest_contentful_paint.largest_image_paint,
+        largest_contentful_paint.largest_image_paint_size,
+        static_cast<blink::LargestContentfulPaintType>(
+            largest_contentful_paint.type),
+        largest_contentful_paint.image_bpp);
+  }
+}
+
+void LargestContentfulPaintHandler::RecordSubFrameTiming(
+    const page_load_metrics::mojom::LargestContentfulPaintTiming&
+        largest_contentful_paint,
+    const absl::optional<base::TimeDelta>&
+        first_input_or_scroll_notified_timestamp,
+    content::RenderFrameHost* subframe_rfh,
+    const GURL& main_frame_url) {
+  // For subframes
+  const auto it = subframe_navigation_start_offset_.find(
+      subframe_rfh->GetFrameTreeNodeId());
+  if (it == subframe_navigation_start_offset_.end()) {
+    // We received timing information for an untracked load. Ignore it.
+    return;
+  }
+  RecordSubFrameTimingInternal(largest_contentful_paint,
+                               first_input_or_scroll_notified_timestamp,
+                               it->second);
+  // Note that subframe can be in other page like FencedFrames.
+  // So, we can't know `main_frame_url` without help of PageLoadTracker.
+  if (!IsSameSite(subframe_rfh->GetLastCommittedURL(), main_frame_url)) {
+    RecordCrossSiteSubframeTiming(largest_contentful_paint, it->second);
+  }
 }
 
 // We handle subframe and main frame differently. For main frame, we directly
@@ -263,7 +282,7 @@ LargestContentfulPaintHandler::MergeMainFrameAndSubframes() const {
 // should have been able when a large ephemeral element is removed). This is a
 // trade-off we make to keep a simple algorithm, otherwise we will have to
 // track one candidate per subframe.
-void LargestContentfulPaintHandler::RecordSubframeTiming(
+void LargestContentfulPaintHandler::RecordSubFrameTimingInternal(
     const page_load_metrics::mojom::LargestContentfulPaintTiming&
         largest_contentful_paint,
     const absl::optional<base::TimeDelta>&
@@ -332,31 +351,6 @@ void LargestContentfulPaintHandler::RecordCrossSiteSubframeTiming(
   if (IsValid(new_image_candidate.Time())) {
     MergeForSubframesWithAdjustedTime(
         &cross_site_subframe_contentful_paint_.Image(), new_image_candidate);
-  }
-}
-
-void LargestContentfulPaintHandler::RecordMainFrameTiming(
-    const page_load_metrics::mojom::LargestContentfulPaintTiming&
-        largest_contentful_paint,
-    const absl::optional<base::TimeDelta>&
-        first_input_or_scroll_notified_timestamp) {
-  UpdateFirstInputOrScrollNotified(
-      first_input_or_scroll_notified_timestamp,
-      /* navigation_start_offset */ base::TimeDelta());
-  if (IsValid(largest_contentful_paint.largest_text_paint)) {
-    main_frame_contentful_paint_.Text().Reset(
-        largest_contentful_paint.largest_text_paint,
-        largest_contentful_paint.largest_text_paint_size,
-        blink::LargestContentfulPaintType::kNone,
-        /*image_bpp=*/0.0);
-  }
-  if (IsValid(largest_contentful_paint.largest_image_paint)) {
-    main_frame_contentful_paint_.Image().Reset(
-        largest_contentful_paint.largest_image_paint,
-        largest_contentful_paint.largest_image_paint_size,
-        static_cast<blink::LargestContentfulPaintType>(
-            largest_contentful_paint.type),
-        largest_contentful_paint.image_bpp);
   }
 }
 

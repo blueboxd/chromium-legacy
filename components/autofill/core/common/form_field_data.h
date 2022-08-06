@@ -14,6 +14,7 @@
 
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/html_field_types.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -63,6 +64,46 @@ struct SelectOption {
   std::u16string content;
 };
 
+// Stores information about the section of the field.
+class Section {
+ public:
+  // In the second pass of `FormStructure::IdentifySections()`, a suffix is
+  // added to the legacy section string based on the field type group.
+  enum class FieldTypeGroupSuffix : uint8_t { kNoGroup, kDefault, kCreditCard };
+
+  friend bool operator==(const Section& a, const Section& b);
+  friend bool operator!=(const Section& a, const Section& b);
+  friend bool operator<(const Section& a, const Section& b);
+
+  void set_field_type_group(FieldTypeGroupSuffix field_type_group);
+  void set_prefix(std::string prefix);
+  bool SetPrefixFromAutocomplete(const std::string& autocomplete_section,
+                                 HtmlFieldMode autocomplete_mode);
+
+  // Reconstructs `this` to a string. The string representation of the section
+  // is used in the renderer.
+  // TODO(crbug/1257141): Remove when fixed.
+  std::string ToString() const;
+
+ private:
+  friend struct mojo::StructTraits<autofill::mojom::SectionDataView,
+                                   autofill::Section>;
+
+  // Default section name for the fields.
+  static constexpr char kDefaultSection[] = "-default";
+
+  // The `kNoGroup` is assigned in the beginning, as
+  // `FormStructure::IdentifySections()` was not run yet.
+  FieldTypeGroupSuffix field_type_group_ = FieldTypeGroupSuffix::kNoGroup;
+
+  // Represents the prefix of the section's name. It is either derived from the
+  // autocomplete attribute or by the sectioning algorithm.
+  std::string prefix_;
+};
+
+LogBuffer& operator<<(LogBuffer& buffer, const Section& section);
+std::ostream& operator<<(std::ostream& os, const Section& section);
+
 // Stores information about a field in a form. Read more about forms and fields
 // at FormData.
 struct FormFieldData {
@@ -70,7 +111,31 @@ struct FormFieldData {
   using RoleAttribute = mojom::FormFieldData_RoleAttribute;
   using LabelSource = mojom::FormFieldData_LabelSource;
 
-  // Returns true if all members of fields |a| and |b| are identical.
+  // Returns true if many members of fields |a| and |b| are identical.
+  //
+  // "Many" is intended to be "all", but currently the following members are not
+  // being compared:
+  //
+  // - FormFieldData::value,
+  // - FormFieldData::aria_label,
+  // - FormFieldData::aria_description,
+  // - FormFieldData::host_frame,
+  // - FormFieldData::host_form_id,
+  // - FormFieldData::host_form_signature,
+  // - FormFieldData::origin,
+  // - FormFieldData::force_override,
+  // - FormFieldData::form_control_ax_id,
+  // - FormFieldData::section,
+  // - FormFieldData::is_autofilled,
+  // - FormFieldData::properties_mask,
+  // - FormFieldData::is_enabled,
+  // - FormFieldData::is_readonly,
+  // - FormFieldData::user_input,
+  // - FormFieldData::options,
+  // - FormFieldData::label_source,
+  // - FormFieldData::bounds,
+  // - FormFieldData::datalist_values,
+  // - FormFieldData::datalist_labels.
   static bool DeepEqual(const FormFieldData& a, const FormFieldData& b);
 
   FormFieldData();
@@ -85,9 +150,10 @@ struct FormFieldData {
   FieldGlobalId global_id() const { return {host_frame, unique_renderer_id}; }
 
   // An identifier of the renderer form that contained this field.
-  // This may be from the browser form that contains this field in the case of a
-  // frame-transcending form. See ContentAutofillRouter and internal::FormForest
-  // for details on the distinction between renderer and browser forms.
+  // This may be different from the browser form that contains this field in the
+  // case of a frame-transcending form. See ContentAutofillRouter and
+  // internal::FormForest for details on the distinction between renderer and
+  // browser forms.
   FormGlobalId renderer_form_id() const { return {host_frame, host_form_id}; }
 
   // TODO(crbug/1211834): This function is deprecated. Use
@@ -195,7 +261,7 @@ struct FormFieldData {
 
   // The unique identifier of the section (e.g. billing vs. shipping address)
   // of this field.
-  std::string section;
+  Section section;
 
   // Note: we use uint64_t instead of size_t because this struct is sent over
   // IPC which could span 32 & 64 bit processes. We chose uint64_t instead of

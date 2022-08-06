@@ -50,9 +50,6 @@ enum ProbeCategoryEnum {
   kNetworkInterface = 18,
   kInput = 19,
   [MinVersion=1] kAudioHardware = 20,
-
-  // TODO(b/190459636): Rename it to kSystem after migration.
-  kSystem2 = 0x10000,
 };
 
 // An enumeration of the different categories of errors that can occur when
@@ -86,7 +83,7 @@ struct ProbeError {
 
 // An enumeration of states a process can be in.
 //
-// NextMinVersion: 1, NextIndex: 8
+// NextMinVersion: 2, NextIndex: 9
 [Stable, Extensible]
 enum ProcessState {
   [Default] kUnknown = 7,
@@ -104,6 +101,8 @@ enum ProcessState {
   kTracingStop = 5,
   // The process is dead.
   kDead = 6,
+  // The process is idle.
+  [MinVersion=1] kIdle = 8,
 };
 
 // Process probe result. Can either be populated with the ProcessInfo or an
@@ -123,7 +122,7 @@ union ProcessResult {
 
 // Information related to a particular process.
 //
-// NextMinVersion: 1, NextIndex: 16
+// NextMinVersion: 2, NextIndex: 20
 [Stable]
 struct ProcessInfo {
   // Command which started the process.
@@ -170,6 +169,14 @@ struct ProcessInfo {
   // Number of bytes which this process caused to not happen, by truncating
   // pagecache.
   uint64 cancelled_bytes_written@15;
+  // Filename of the executable.
+  [MinVersion=1] string? name@16;
+  // PID of the parent of this process.
+  [MinVersion=1] uint32 parent_process_id@17;
+  // Process group ID of the group.
+  [MinVersion=1] uint32 process_group_id@18;
+  // Number of threads in this process.
+  [MinVersion=1] uint32 threads@19;
 };
 
 // Battery probe result. Can either be populated with the BatteryInfo or an
@@ -732,9 +739,16 @@ struct SupportedCapabilities {
   int16 max_tx_power@3;
 };
 
+// System probe result. DEPRECATED.
+union DEPRECATE_SystemResult {
+  // Valid DEPRECATE_SystemInfo.
+  DEPRECATE_SystemInfo system_info;
+  // The error that occurred attempting to retrieve DEPRECATE_SystemInfo.
+  ProbeError error;
+};
+
 // System probe result. Can either be populated with the SystemInfo or an error
 // retrieving the information.
-// DEPRECATED(b/188508561): Use SystemResultV2 instead.
 union SystemResult {
   // Valid SystemInfo.
   SystemInfo system_info;
@@ -742,20 +756,11 @@ union SystemResult {
   ProbeError error;
 };
 
-// System probe result. Can either be populated with the SystemInfoV2 or an
-// error retrieving the information.
-union SystemResultV2 {
-  // Valid SystemInfoV2.
-  SystemInfoV2 system_info_v2;
-  // The error that occurred attempting to retrieve SystemInfo.
-  ProbeError error;
-};
-
-// System Information.
-// DEPRECATED(b/188508561): Use SystemInfoV2 instead.
+// System Information. DEPRECATED.
+// TODO(b/190459636): Delete struct elements.
 //
 // NextMinVersion: 1, NextIndex: 12
-struct SystemInfo {
+struct DEPRECATE_SystemInfo {
   // The date the device was first activated.
   // Format: YYYY-WW.
   string? first_power_date@0;
@@ -787,10 +792,9 @@ struct SystemInfo {
 };
 
 // System Information.
-// TODO(b/190459636): Rename it to SystemInfo after migration.
 //
 // NextMinVersion: 1, NextIndex: 3
-struct SystemInfoV2 {
+struct SystemInfo {
   // The info related to the OS.
   OsInfo os_info@0;
   // The info from the VPD cache.
@@ -1607,10 +1611,8 @@ struct TelemetryInfo {
   // Information about the device's Bluetooth adapters and devices. Only present
   // when kBluetooth was included in the categories input to ProbeTelemetryInfo.
   BluetoothResult? bluetooth_result@8;
-  // Information about the system. Only present when kSystem was included in
-  // the categories input to ProbeTelemetryInfo.
-  // DEPRECATED(b/188508561): Use system_result_v2 instead.
-  SystemResult? system_result@9;
+  // Information about the system. DEPRECATED.
+  DEPRECATE_SystemResult? deprecate_system_result@9;
   // Information about the networking devices and associated networks of the
   // system. Only present when kNetwork was included in the categories input to
   // ProbeTelemetryInfo.
@@ -1624,9 +1626,9 @@ struct TelemetryInfo {
   // Information about the bus devices. Only present when kBus was included
   // in the categories input to ProbeTelemetryInfo.
   BusResult? bus_result@13;
-  // Information about the system. Only present when kSystem2 was included in
-  // the categories input to ProbeTelemetryInfo.
-  SystemResultV2? system_result_v2@14;
+  // Information about the system. Only present when kSystem was included in the
+  // categories input to ProbeTelemetryInfo.
+  SystemResult? system_result@14;
   // Information about the tpm. Only present when kTpm was included in
   // the categories input to ProbeTelemetryInfo.
   TpmResult? tpm_result@15;

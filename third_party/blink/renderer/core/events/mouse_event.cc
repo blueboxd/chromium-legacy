@@ -321,6 +321,10 @@ int16_t MouseEvent::button() const {
   return button_;
 }
 
+bool MouseEvent::IsLeftButton() const {
+  return button() == static_cast<int16_t>(WebPointerProperties::Button::kLeft);
+}
+
 unsigned MouseEvent::which() const {
   // For the DOM, the return values for left, middle and right mouse buttons are
   // 0, 1, 2, respectively.
@@ -387,6 +391,21 @@ DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
 
   if (type().IsEmpty())
     return DispatchEventResult::kNotCanceled;  // Shouldn't happen.
+
+  if (is_click) {
+    auto& path = GetEventPath();
+    bool saw_disabled_control = false;
+    for (unsigned i = 0; i < path.size(); i++) {
+      auto& node = path[i].GetNode();
+      if (saw_disabled_control && node.WillRespondToMouseClickEvents()) {
+        UseCounter::Count(
+            node.GetDocument(),
+            WebFeature::kParentOfDisabledFormControlRespondsToMouseEvents);
+      }
+      if (IsDisabledFormControl(&node))
+        saw_disabled_control = true;
+    }
+  }
 
   DCHECK(!target() || target() != relatedTarget());
 

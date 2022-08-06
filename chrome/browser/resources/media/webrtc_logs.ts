@@ -10,9 +10,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {appendParam} from 'chrome://resources/js/util.m.js';
 
 
-type EventLogEntry = {
-  [key: string]: number|string,
-};
+interface EventLogEntry {
+  [key: string]: number|string;
+}
 
 /**
  * Requests the list of WebRTC logs from the backend.
@@ -87,15 +87,24 @@ function updateWebRtcTextLogsList(
       const commentLines = [
         'Chrome Version: ' + version,
         // TODO(tbreisacher): fill in the OS automatically?
-        'Operating System: e.g., "Windows 7", "Mac OSX 10.6"', '',
-        'URL (if applicable) where the problem occurred:', '',
-        'Can you reproduce this problem?', '',
+        'Operating System: e.g., "Windows 7", "Mac OSX 10.6"',
+        '',
+        'URL (if applicable) where the problem occurred:',
+        '',
+        'Can you reproduce this problem?',
+        '',
         'What steps will reproduce this problem? (or if it\'s not ' +
             'reproducible, what were you doing just before the problem)?',
-        '', '1.', '2.', '3.', '',
+        '',
+        '1.',
+        '2.',
+        '3.',
+        '',
         '*Please note that issues filed with no information filled in ' +
             'above will be marked as WontFix*',
-        '', '****DO NOT CHANGE BELOW THIS LINE****', 'report_id:' + id
+        '',
+        '****DO NOT CHANGE BELOW THIS LINE****',
+        'report_id:' + id,
       ];
       const params = {
         template: 'Defect report from user',

@@ -20,7 +20,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/database/storage_service.h"
-#include "components/segmentation_platform/internal/execution/processing/input_delegate.h"
 #include "components/segmentation_platform/internal/platform_options.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/scheduler/model_execution_scheduler_impl.h"
@@ -30,6 +29,8 @@
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/field_trial_register.h"
+#include "components/segmentation_platform/public/input_context.h"
+#include "components/segmentation_platform/public/input_delegate.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/trigger_context.h"
 
@@ -42,8 +43,8 @@ base::flat_set<SegmentId> GetAllSegmentIds(
     const std::vector<std::unique_ptr<Config>>& configs) {
   base::flat_set<SegmentId> all_segment_ids;
   for (const auto& config : configs) {
-    for (const auto& segment_id : config->segment_ids)
-      all_segment_ids.insert(segment_id);
+    for (const auto& segment_id : config->segments)
+      all_segment_ids.insert(segment_id.first);
   }
   return all_segment_ids;
 }
@@ -86,12 +87,9 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
         model_provider_factory_.get());
   }
 
-  std::vector<SegmentId> segment_id_vec(all_segment_ids_.begin(),
-                                        all_segment_ids_.end());
-
   // Construct signal processors.
   signal_handler_.Initialize(
-      storage_service_.get(), init_params->history_service, segment_id_vec,
+      storage_service_.get(), init_params->history_service, all_segment_ids_,
       base::BindRepeating(
           &SegmentationPlatformServiceImpl::OnModelRefreshNeeded,
           weak_ptr_factory_.GetWeakPtr()));
@@ -142,6 +140,37 @@ SegmentSelectionResult SegmentationPlatformServiceImpl::GetCachedSegmentResult(
   return selector->GetCachedSegmentResult();
 }
 
+void SegmentationPlatformServiceImpl::GetSelectedSegmentOnDemand(
+    const std::string& segmentation_key,
+    scoped_refptr<InputContext> input_context,
+    SegmentSelectionCallback callback) {
+  if (!storage_initialized_) {
+    // If the platform isn't fully initialized, cache the input arguments to run
+    // later.
+    pending_actions_.push_back(base::BindOnce(
+        &SegmentationPlatformServiceImpl::GetSelectedSegmentOnDemand,
+        weak_ptr_factory_.GetWeakPtr(), segmentation_key,
+        std::move(input_context), std::move(callback)));
+    return;
+  }
+
+  CHECK(segment_selectors_.find(segmentation_key) != segment_selectors_.end());
+  auto& selector = segment_selectors_.at(segmentation_key);
+
+  // Wrap callback to record metrics.
+  auto wrapped_callback = base::BindOnce(
+      [](const std::string& segmentation_key, base::Time start_time,
+         SegmentSelectionCallback callback,
+         const SegmentSelectionResult& result) -> void {
+        stats::RecordOnDemandSegmentSelectionDuration(
+            segmentation_key, result, base::Time::Now() - start_time);
+        std::move(callback).Run(result);
+      },
+      segmentation_key, base::Time::Now(), std::move(callback));
+  selector->GetSelectedSegmentOnDemand(input_context,
+                                       std::move(wrapped_callback));
+}
+
 CallbackId
 SegmentationPlatformServiceImpl::RegisterOnDemandSegmentSelectionCallback(
     const std::string& segmentation_key,
@@ -177,6 +206,8 @@ void SegmentationPlatformServiceImpl::OnTrigger(
   const TriggerType trigger = trigger_context->trigger_type();
   if (clients_for_trigger_.find(trigger) == clients_for_trigger_.end())
     return;
+  // This method is scheduled to be deprecated.
+  NOTREACHED();
   scoped_refptr<InputContext> input_context =
       base::MakeRefCounted<InputContext>(*trigger_context);
   for (const auto& segmentation_key : clients_for_trigger_[trigger]) {

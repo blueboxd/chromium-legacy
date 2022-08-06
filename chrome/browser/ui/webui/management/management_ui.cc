@@ -52,7 +52,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     ManagementUI::GetManagementPageSubtitle(profile));
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     {"learnMore", IDS_LEARN_MORE},
     {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
     {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED},
@@ -85,7 +85,10 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_REPORT_ANDROID_APPLICATIONS},
     {"proxyServerPrivacyDisclosure",
      IDS_MANAGEMENT_PROXY_SERVER_PRIVACY_DISCLOSURE},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    {kManagementOnFileTransferEvent, IDS_MANAGEMENT_FILE_TRANSFER_EVENT},
+    {kManagementOnFileTransferVisibleData,
+     IDS_MANAGEMENT_FILE_TRANSFER_VISIBLE_DATA},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
     {"browserReportingExplanation",
      IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION},
@@ -144,10 +147,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     chrome::kLearnMoreEnterpriseURL);
   source->AddString("managementAccountLearnMoreUrl",
                     chrome::kManagedUiLearnMoreUrl);
-  source->AddString("pluginVmDataCollection",
-                    l10n_util::GetStringFUTF16(
-                        IDS_MANAGEMENT_REPORT_PLUGIN_VM,
-                        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)));
   const size_t dlp_events_count =
       policy::DlpRulesManagerFactory::GetForPrimaryProfile() &&
               policy::DlpRulesManagerFactory::GetForPrimaryProfile()
@@ -160,6 +159,13 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     l10n_util::GetPluralStringFUTF16(
                         IDS_MANAGEMENT_REPORT_DLP_EVENTS, dlp_events_count));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  source->AddString("pluginVmDataCollection",
+                    l10n_util::GetStringFUTF16(
+                        IDS_MANAGEMENT_REPORT_PLUGIN_VM,
+                        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kManagementResources, kManagementResourcesSize),

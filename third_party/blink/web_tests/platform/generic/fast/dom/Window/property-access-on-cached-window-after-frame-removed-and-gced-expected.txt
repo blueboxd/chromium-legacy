@@ -2,6 +2,7 @@ Tests property access on a cached DOMWindow after the associated frame is remove
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS childWindow.anonymouslyFramed is false
 FAIL childWindow.closed should be false. Was true.
 PASS childWindow.crossOriginEmbedderPolicy is 'unsafe-none'
 PASS childWindow.crossOriginIsolated is false
@@ -10,7 +11,6 @@ PASS childWindow.defaultstatus is ''
 PASS childWindow.devicePixelRatio is 0
 PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0
-PASS childWindow.isAnonymouslyFramed is false
 PASS childWindow.isSecureContext is true
 PASS childWindow.length is 0
 PASS childWindow.location.href is undefined
@@ -51,6 +51,7 @@ PASS childWindow.onanimationiteration is null
 PASS childWindow.onanimationstart is null
 PASS childWindow.onappinstalled is null
 PASS childWindow.onauxclick is null
+PASS childWindow.onbeforeinput is null
 PASS childWindow.onbeforeinstallprompt is null
 PASS childWindow.onbeforematch is null
 PASS childWindow.onbeforeprint is null
@@ -63,6 +64,7 @@ PASS childWindow.oncanplaythrough is null
 PASS childWindow.onchange is null
 PASS childWindow.onclick is null
 PASS childWindow.onclose is null
+PASS childWindow.oncontentvisibilityautostatechanged is null
 PASS childWindow.oncontextlost is null
 PASS childWindow.oncontextmenu is null
 PASS childWindow.oncontextrestored is null

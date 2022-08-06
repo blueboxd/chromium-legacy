@@ -267,13 +267,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of the status tray and the information on it.">
         Status tray, time <ph name="time">$1<ex>9:50</ex></ph>,
         <ph name="battery">$2<ex>Battery is full.</ex></ph>
-        <ph name="network">$3<ex>Connected to Wifi.</ex></ph>,
-        <ph name="mic">$4<ex>A virtual machine is using your microphone</ex></ph>,
-        <ph name="camera">$5<ex>A virtual machine is using your camera</ex></ph>,
-        <ph name="managed">$6<ex>This account is managed by Family Link</ex></ph>
-        <ph name="notification">$7<ex>1 notification</ex></ph>,
-        <ph name="ime">$8<ex>Using US keyboard</ex></ph>
-        <ph name="locale">$9<ex>Using English</ex></ph>
+        <ph name="channel">$3<ex>Stable Channel</ex></ph>
+        <ph name="network">$4<ex>Connected to Wifi.</ex></ph>,
+        <ph name="mic">$5<ex>A virtual machine is using your microphone</ex></ph>,
+        <ph name="camera">$6<ex>A virtual machine is using your camera</ex></ph>,
+        <ph name="managed">$7<ex>This account is managed by Family Link</ex></ph>
+        <ph name="notification">$8<ex>1 notification</ex></ph>,
+        <ph name="ime">$9<ex>Using US keyboard</ex></ph>
+        <ph name="locale">$10<ex>Using English</ex></ph>
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the quick settings bubble and the information in it.">
         Quick Settings, Press search + left to access the notification center.
@@ -313,6 +314,33 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_VPN_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for VPN settings accessed through the VPN feature pod.">
         VPN Settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off. [CHAR_LIMIT=14]">
+        Autozoom
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off.">
+        Toggle autozoom. <ph name="STATE_TEXT">$1<ex>Autozoom is on.</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_TOGGLE_ACCESSIBILITY_DESCRIPTION" desc="The accessible description for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off.">
+        Adjust camera to put you in the center of the screen.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_OFF_STATE_TOOLTIP" desc="The tooltip text indicating the Autozoom feature is off.">
+        Autozoom is off.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_ON_STATE_TOOLTIP" desc="The tooltip text indicating the Autozoom feature is on.">
+        Autozoom is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_OFF_STATE" desc="Button label for the Autozoom feature." meaning="Autozoom feature is off. [CHAR_LIMIT=14]">
+        Off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_ON_STATE" desc="Button label for the Autozoom feature." meaning="Autozoom feature is on. [CHAR_LIMIT=14]">
+        On
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_TOAST_ON_STATE" desc="The text for the toast after autozoom centers the camera.">
+        Autozoom centered the camera
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_EDUCATIONAL_NUDGE_TEXT" desc="The text for the educational nudge for autozoom.">
+        Try autozoom so you'll be in the center of the screen. Turn it on in Quick Settings.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED" desc="The message shown on a notification when a braille display is connected">
         Braille display connected.
@@ -752,8 +780,17 @@ This file contains the strings for ash.
       <message name="IDS_UPDATE_NOTIFICATION_RESTART_BUTTON" meaning="button label" desc="The label used as the button to restart system and update. Displayed as the action button of the notification for system update.">
         Restart to update
       </message>
+      <message name="IDS_UPDATE_NOTIFICATION_APPLY_UPDATE_BUTTON" meaning="button label" desc="The label used as the button to apply deferred update. Displayed as the action button of the notification for deferred system update.">
+        Update
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_AUTOMATIC_UPDATE_BUTTON" meaning="button label" desc="The label used as the button to take users to the settings page with the automatic update toggle. Displayed as the action button of the notification for deferred system update.">
+        Automatic updates
+      </message>
       <message name="IDS_ROLLBACK_NOTIFICATION_RESTART_BUTTON" meaning="button label" desc="The label used as the button to restart system to rollback. Displayed as the action button of the notification for system rollback.">
         Reset
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_DEFERRED_UPDATE"  desc="The notification message used in the system notification update when update is downloaded but deferred.">
+        Get the latest features and security improvements. Updates happen in the background.
       </message>
       <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_POWERWASH" desc="The notification message used in the system notification update when user need to powerwash the device in order to update the system.">
         This update requires powerwashing your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. All data will be deleted. Learn more about the latest <ph name="SYSTEM_APP_NAME">$2<ex>ChromiumOS</ex></ph> update.
@@ -951,7 +988,7 @@ This file contains the strings for ash.
         ChromeVox (spoken feedback)
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK" desc="The label used in the accessibility menu of the system tray to toggle on/off the select-to-speak feature.">
-        Select-to-Speak
+        Select-to-speak
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION" desc="The label used in the accessibility menu of the system tray to toggle on/off the speak to type feature.">
         Dictation
@@ -963,7 +1000,7 @@ This file contains the strings for ash.
         Are you sure you want to turn off Switch Access?
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE" desc="The label used in the accessibility menu of the system tray to toggle on/off high contrast feature.">
-        High-contrast mode
+        Color inversion
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER" desc="The label used in the accessibility menu of the system tray to toggle on/off a magnifier that magnifies the entire screen.">
         Full-screen magnifier
@@ -1917,7 +1954,7 @@ This file contains the strings for ash.
         Saved desk, <ph name="SAVE_AND_RECALL_DESK_NAME">$1</ph>
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_LIBRARY_SAVED_DESK_GRID_ITEM_EXTRA_ACCESSIBLE_DESCRIPTION" desc="The extra accessible description of saved desk grid item">
-        Press Ctrl+W to close
+        Press Ctrl+W to delete
       </message>
 
       <!-- Virtual Desks -->
@@ -2097,13 +2134,25 @@ Connect your device to power.
         ''' - '''
       </message>
       <!-- Status tray channel indicator strings -->
-      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_BETA" desc="The string used to indicate that this device is on the beta release track">
+      <message name="IDS_ASH_STATUS_TRAY_REPORT_FEEDBACK" desc="The string used for the tooltip and speakable name of the 'report feedback' button">
+        Report feedback
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_BETA" desc="The string used to show the name of beta release track, by itself">
+        Beta
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_DEV" desc="The string used to show the name of dev release track, by itself">
+        Dev
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_CANARY" desc="The string used to show the name of canary release track, by itself">
+        Canary
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_BETA_CHANNEL" desc="The string used to indicate that this device is on the beta release track">
         Beta Channel
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_DEV" desc="The string used to indicate that this device is on the development release track">
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_DEV_CHANNEL" desc="The string used to indicate that this device is on the development release track">
         Dev Channel
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_CANARY" desc="The string used to indicate that this device is on the canary release track">
+      <message name="IDS_ASH_STATUS_TRAY_CHANNEL_CANARY_CHANNEL" desc="The string used to indicate that this device is on the canary release track">
         Canary Channel
       </message>
       <!-- Status Tray Network strings -->
@@ -2231,10 +2280,10 @@ Connect your device to power.
         Tap to complete set up
       </message>
       <message name="IDS_ASH_NETWORK_MANAGED_SIM_LOCK_NOTIFICATION_TITLE" desc="Title used for the system notification shown when the active SIM is locked when it is enterprise policy restricted.">
-        Disable your SIM Lock setting
+        Turn off "Lock SIM" setting
       </message>
       <message name="IDS_ASH_NETWORK_MANAGED_SIM_LOCK_NOTIFICATION_MESSAGE" desc="Message displayed in the system notification shown when the active SIM is locked when it is enterprise policy restricted.">
-        Your administrator is requesting that you turn off the Lock SIM setting
+        Your administrator has requested this change
       </message>
       <message name="IDS_ASH_NETWORK_RESET_EUICC_NOTIFICATION_TITLE" desc="Title used for the system notification shown when the reset euicc operation is initiated.">
         eSIM connection unavailable
@@ -3263,6 +3312,9 @@ Connect your device to power.
       <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_EMAIL_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair that includes the user's email address.">
         Your <ph name="NAME">$1<ex>Pixel Buds</ex></ph> will appear on devices linked with <ph name="EMAIL">$2<ex>alisha123@gmail.com</ex></ph>
       </message>
+      <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_SUBSEQUENT" desc="Notification message shown when there is a device discovered with Fast Pair that has already been saved to a user's account on another device.">
+        Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph> previously saved to <ph name="EMAIL">$2<ex>alisha123@gmail.com</ex></ph>
+      </message>
       <message name="IDS_FAST_PAIR_CANCEL_BUTTON" desc="Message on button to tell users to cancel bluetooth device connection with Fast Pair.">
         Cancel
       </message>
@@ -3856,6 +3908,17 @@ Here are some things you can try to get started.
         An application is using your microphone
       </message>
 
+      <!-- For privacy indicators notification -->
+      <message name="IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA_AND_MIC" desc="Title for a notification shown when an app is using the camera and the microphone.">
+        Camera and microphone in use
+      </message>
+      <message name="IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA" desc="Title for a notification shown when an app is using the camera.">
+        Camera in use
+      </message>
+      <message name="IDS_PRIVACY_NOTIFICATION_TITLE_MIC" desc="Title for a notification shown when an app is using the microphone.">
+        Microphone in use
+      </message>
+
       <!-- Strings for microphone mute switch notification -->
       <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the microphone while the microphone is muted.i Similar to IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE_WITH_APP_NAME, except this message contains a generic app name string. Used when the name of the app that's using the microphone cannot be determined.">
           An app wants to use the microphone
@@ -4045,9 +4108,6 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE" desc="The delete button label for the screen capture notification.">
         Delete
-      </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_FOLDER_SELECTION_USER_NUDGE" desc="The message shown in a toast widget to nudge the user and alert them to check out the new settings that allow them to change where captured files are saved.">
-        You can now change where screen captures are saved
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_FULLSCREEN_IMAGE_CAPTURE_CLAMSHELL" desc="The capture label message which shows in the middle of the screen when in fullscreen image capture mode in clamshell mode.">
         Click anywhere to capture full screen
@@ -4382,15 +4442,6 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SHORTCUT_DEPRECATION_SEARCH_PERIOD_INSERT" desc="Message telling user to use search/launcher + shift + backspace instead of search/launcher + period to emulate the delete key. The name of the launcher key varies by device and may be either Search or Launcher depending on the glyph on the keyboard.">
         The <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> + Period keyboard shortcut has changed. To use the Insert key, press the <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> key + Shift + Backspace.
       </message>
-      <message name="IDS_SHORTCUT_CHANGES_IN_RELEASE_NOTIFICATION_BODY" desc="Message body of notification telling user that this release has changes to keyboard shortcuts.">
-        To see the updates, open the Shortcuts app
-      </message>
-      <message name="IDS_SHORTCUT_CHANGES_IN_RELEASE_NOTIFICATION_TITLE" desc="Title of notification telling user that this release has changes to keyboard shortcuts.">
-        Keyboard shortcuts have been improved
-      </message>
-      <message name="IDS_SHORTCUT_CHANGES_IN_RELEASE_NOTIFICATION_LEARN_MORE_BUTTON_TEXT" desc="Button text on notification to learn more. Links to a help page.">
-        Learn more
-      </message>
 
       <!-- PciePeripheral notifications -->
       <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_PERFORMANCE_LIMITED_TITLE" desc="Notification title to indicate to users that their peripheral device's performance may be limited.">
@@ -4705,9 +4756,6 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_APP_LIST_APP_KEYBOARD_MOVE_TO_FOLDER_ACCESSIBILE_NAME" desc="The spoken feedback after keyboard moving an app into a folder, which describes the folder name the app has been moved to.">
         <ph name="MOVED_APP_NAME">$1<ex>App Name</ex></ph> moved to folder <ph name="FOLDER_NAME">$2<ex>Folder Name</ex></ph>.
-      </message>
-      <message name="IDS_APP_LIST_BACK" desc="The name of the button that goes to the previous screen in the launcher.">
-        Back
       </message>
       <message name="IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER" desc="The placeholder text for app list folder name.">
         Unnamed
@@ -5062,6 +5110,28 @@ New install
         Can't stream apps in tablet mode. Try again in laptop mode.
       </message>
 
+      <!-- Deferred update dialog -->
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_TITLE" desc="Title of the dialog for notifying deferred update available to be applied.">
+        Update available
+      </message>
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_TEXT" desc="Content of the dialog for notifying deferred update available.">
+        Get the latest features and security improvements. If you decline this update, your device may no longer work properly and you may experience security and performance issues.
+      </message>
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_CHECKBOX" desc="Checkbox to enable automatic updates.">
+        Get automatic updates
+      </message>
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_SIGN_OUT" desc="Sign out button.">
+        Sign out
+      </message>
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_UPDATE_SIGN_OUT" desc="Update and sign out button.">
+        Update and sign out
+      </message>
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_SHUT_DOWN" desc="Shut down button.">
+        Shut down
+      </message>
+      <message name="IDS_DEFERRED_UPDATE_DIALOG_UPDATE_SHUT_DOWN" desc="Update and shut down button.">
+        Update and shut down
+      </message>
     </messages>
   </release>
 </grit>

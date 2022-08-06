@@ -74,7 +74,6 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/main:scene_state_header",
-    "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/sharing",
     "//ios/chrome/browser/ui/table_view",
@@ -90,6 +89,7 @@ source_set("bookmarks") {
     "//ios/chrome/common/ui/favicon:favicon",
     "//ios/chrome/common/ui/favicon:favicon_constants",
     "//ios/chrome/common/ui/util",
+    "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
@@ -124,13 +124,12 @@ source_set("core") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main:public",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/default_promo:utils",
-    "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:url_with_title",
     "//ios/chrome/browser/undo",
     "//ios/chrome/common/ui/colors",
+    "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
@@ -165,7 +164,6 @@ source_set("bookmarks_ui") {
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
-    "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:presentation",
     "//ios/chrome/browser/ui/table_view:styler",

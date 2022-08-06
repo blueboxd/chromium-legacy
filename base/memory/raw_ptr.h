@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <climits>
 #include <cstddef>
 #include <functional>
 #include <type_traits>
@@ -35,6 +36,7 @@
 
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag.h"
+#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "base/check_op.h"
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
@@ -142,7 +144,7 @@ constexpr int kTagBits = sizeof(uintptr_t) * 8 - kValidAddressBits;
 // MTECheckedPtr has no business with the topmost bits reserved for the
 // tag used by true ARM MTE, so we strip it out here.
 constexpr uintptr_t kTagMask =
-    ~kAddressMask & partition_alloc::internal::kMemTagUnmask;
+    ~kAddressMask & partition_alloc::internal::kPtrUntagMask;
 
 constexpr int kTopBitShift = 63;
 constexpr uintptr_t kTopBit = 1ull << kTopBitShift;
@@ -156,19 +158,20 @@ struct MTECheckedPtrImplPartitionAllocSupport {
   // Checks if the necessary support is enabled in PartitionAlloc for `ptr`.
   template <typename T>
   static ALWAYS_INLINE bool EnabledForPtr(T* ptr) {
-    auto as_uintptr =
-        partition_alloc::internal::UnmaskPtr(reinterpret_cast<uintptr_t>(ptr));
+    // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this class
+    // is responsible for handling the software MTE tag.
+    auto addr = partition_alloc::UntagPtr(ptr);
     // MTECheckedPtr algorithms work only when memory is
     // allocated by PartitionAlloc, from normal buckets pool.
     //
     // TODO(crbug.com/1307514): Allow direct-map buckets.
-    return partition_alloc::IsManagedByPartitionAlloc(as_uintptr) &&
-           partition_alloc::internal::IsManagedByNormalBuckets(as_uintptr);
+    return partition_alloc::IsManagedByPartitionAlloc(addr) &&
+           partition_alloc::internal::IsManagedByNormalBuckets(addr);
   }
 
-  // Returns pointer to the tag that protects are pointed by |ptr|.
-  static ALWAYS_INLINE void* TagPointer(uintptr_t ptr) {
-    return partition_alloc::PartitionTagPointer(ptr);
+  // Returns pointer to the tag that protects are pointed by |addr|.
+  static ALWAYS_INLINE void* TagPointer(uintptr_t addr) {
+    return partition_alloc::PartitionTagPointer(addr);
   }
 };
 
@@ -183,13 +186,15 @@ struct MTECheckedPtrImpl {
   // Wraps a pointer, and returns its uintptr_t representation.
   template <typename T>
   static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
-    uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+    // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this
+    // function is responsible for adding the software MTE tag.
+    uintptr_t addr = partition_alloc::UntagPtr(ptr);
     DCHECK_EQ(ExtractTag(addr), 0ull);
 
     // Return a not-wrapped |addr|, if it's either nullptr or if the protection
     // for this pointer is disabled.
     if (!PartitionAllocSupport::EnabledForPtr(ptr)) {
-      return reinterpret_cast<T*>(addr);
+      return ptr;
     }
 
     // Read the tag and place it in the top bits of the address.
@@ -201,7 +206,10 @@ struct MTECheckedPtrImpl {
 
     tag <<= kValidAddressBits;
     addr |= tag;
-    return reinterpret_cast<T*>(addr);
+    // See the disambiguation comment above.
+    // TODO(kdlee): Ensure that ptr's hardware MTE tag is preserved.
+    // TODO(kdlee): Ensure that hardware and software MTE tags don't conflict.
+    return static_cast<T*>(partition_alloc::internal::TagAddr(addr));
   }
 
   // Notifies the allocator when a wrapped pointer is being removed or replaced.
@@ -213,7 +221,9 @@ struct MTECheckedPtrImpl {
   // hasn't been freed. The function is allowed to crash on nullptr.
   template <typename T>
   static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
-    uintptr_t wrapped_addr = reinterpret_cast<uintptr_t>(wrapped_ptr);
+    // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this
+    // function is responsible for removing the software MTE tag.
+    uintptr_t wrapped_addr = partition_alloc::UntagPtr(wrapped_ptr);
     uintptr_t tag = ExtractTag(wrapped_addr);
     if (tag > 0) {
       // Read the tag provided by PartitionAlloc.
@@ -226,7 +236,11 @@ struct MTECheckedPtrImpl {
               PartitionAllocSupport::TagPointer(ExtractAddress(wrapped_addr)));
       if (UNLIKELY(tag != read_tag))
         IMMEDIATE_CRASH();
-      return reinterpret_cast<T*>(ExtractAddress(wrapped_addr));
+      // See the disambiguation comment above.
+      // TODO(kdlee): Ensure that ptr's hardware MTE tag is preserved.
+      // TODO(kdlee): Ensure that hardware and software MTE tags don't conflict.
+      return static_cast<T*>(
+          partition_alloc::internal::TagAddr(ExtractAddress(wrapped_addr)));
     }
     return wrapped_ptr;
   }
@@ -283,8 +297,12 @@ struct MTECheckedPtrImpl {
 
   template <typename T>
   static ALWAYS_INLINE T* ExtractPtr(T* wrapped_ptr) {
-    return reinterpret_cast<T*>(
-        ExtractAddress(reinterpret_cast<uintptr_t>(wrapped_ptr)));
+    // Disambiguation: UntagPtr/TagAddr handle the hardware MTE tag, whereas
+    // this function is responsible for removing the software MTE tag.
+    // TODO(kdlee): Ensure that wrapped_ptr's hardware MTE tag is preserved.
+    // TODO(kdlee): Ensure that hardware and software MTE tags don't conflict.
+    return static_cast<T*>(partition_alloc::internal::TagAddr(
+        ExtractAddress(partition_alloc::UntagPtr(wrapped_ptr))));
   }
 
   static ALWAYS_INLINE uintptr_t ExtractTag(uintptr_t wrapped_ptr) {
@@ -362,7 +380,7 @@ struct BackupRefPtrImpl {
   // Wraps a pointer.
   template <typename T>
   static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
-    uintptr_t address = reinterpret_cast<uintptr_t>(ptr);
+    uintptr_t address = partition_alloc::UntagPtr(ptr);
     if (IsSupportedAndNotNull(address)) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(ptr != nullptr);
@@ -382,7 +400,7 @@ struct BackupRefPtrImpl {
   // Notifies the allocator when a wrapped pointer is being removed or replaced.
   template <typename T>
   static ALWAYS_INLINE void ReleaseWrappedPtr(T* wrapped_ptr) {
-    uintptr_t address = reinterpret_cast<uintptr_t>(wrapped_ptr);
+    uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address)) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(wrapped_ptr != nullptr);
@@ -403,7 +421,7 @@ struct BackupRefPtrImpl {
   template <typename T>
   static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    uintptr_t address = reinterpret_cast<uintptr_t>(wrapped_ptr);
+    uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address)) {
       CHECK(wrapped_ptr != nullptr);
       CHECK(IsPointeeAlive(address));
@@ -441,14 +459,43 @@ struct BackupRefPtrImpl {
             typename Z,
             typename = std::enable_if_t<offset_type<Z>, void>>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, Z delta_elems) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    uintptr_t address = reinterpret_cast<uintptr_t>(wrapped_ptr);
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+    // First check if the new address lands within the same allocation
+    // (end-of-allocation address is ok too). It has a non-trivial cost, but
+    // it's cheaper and more secure than the previous implementation that
+    // rewrapped the pointer (wrapped the new pointer and unwrapped the old
+    // one).
+    uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address))
-      CHECK(IsValidDelta(address, delta_elems * sizeof(T)));
+      CHECK(IsValidDelta(address, delta_elems * static_cast<Z>(sizeof(T))));
+    return wrapped_ptr + delta_elems;
+#else
+    // In the "before allocation" mode, on 32-bit, we can run into a problem
+    // that the end-of-allocation address could fall out of "GigaCage", if this
+    // is the last slot of the super page, thus pointing to the guard page. This
+    // mean the ref-count won't be decreased when the pointer is released
+    // (leak).
+    //
+    // We could possibly solve it in a few different ways:
+    // - Add the trailing guard page to "GigaCage", but we'd have to think very
+    //   hard if this doesn't create another hole.
+    // - Add an address adjustment to "GigaCage" check, similar as the one in
+    //   PartitionAllocGetSlotStartInBRPPool(), but that seems fragile, not to
+    //   mention adding an extra instruction to an inlined hot path.
+    // - Let the leak happen, since it should a very rare condition.
+    // - Go back to the previous solution of rewrapping the pointer, but that
+    //   had an issue of losing protection in case the pointer ever gets shifter
+    //   before the end of allocation.
+    //
+    // We decided to cross that bridge once we get there... if we ever get
+    // there. Currently there are no plans to switch back to the "before
+    // allocation" mode.
+    //
+    // This problem doesn't exist in the "previous slot" mode, or any mode that
+    // involves putting extras after the allocation, because the
+    // end-of-allocation address belongs to the same slot.
+    static_assert(false);
 #endif
-    T* new_wrapped_ptr = WrapRawPtr(wrapped_ptr + delta_elems);
-    ReleaseWrappedPtr(wrapped_ptr);
-    return new_wrapped_ptr;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion on whether
@@ -668,6 +715,16 @@ struct IsSupportedType<content::responsiveness::Calculator> {
   static constexpr bool value = false;
 };
 
+// IsRawPtrCountingImpl<T>::value answers whether T is a specialization of
+// RawPtrCountingImplWrapperForTest, to know whether Impl is for testing
+// purposes.
+template <typename T>
+struct IsRawPtrCountingImpl : std::false_type {};
+
+template <typename T>
+struct IsRawPtrCountingImpl<internal::RawPtrCountingImplWrapperForTest<T>>
+    : std::true_type {};
+
 #if __OBJC__
 // raw_ptr<T> is not compatible with pointers to Objective-C classes for a
 // multitude of reasons. They may fail to compile in many cases, and wouldn't
@@ -755,6 +812,11 @@ using DefaultRawPtrImpl = RawPtrBanDanglingIfSupported;
 
 template <typename T, typename Impl = DefaultRawPtrImpl>
 class TRIVIAL_ABI GSL_POINTER raw_ptr {
+  using DanglingRawPtr = std::conditional_t<
+      raw_ptr_traits::IsRawPtrCountingImpl<Impl>::value,
+      raw_ptr<T, internal::RawPtrCountingImplWrapperForTest<RawPtrMayDangle>>,
+      raw_ptr<T, RawPtrMayDangle>>;
+
  public:
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
                 "raw_ptr<T> doesn't work with this kind of pointee type T");
@@ -771,15 +833,23 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
     p.wrapped_ptr_ = nullptr;
   }
 
-  ALWAYS_INLINE raw_ptr& operator=(const raw_ptr& p) {
+  ALWAYS_INLINE raw_ptr& operator=(const raw_ptr& p) noexcept {
     // Duplicate before releasing, in case the pointer is assigned to itself.
+    //
+    // Unlike the move version of this operator, don't add |this != &p| branch,
+    // for performance reasons. Even though Duplicate() is not cheap, we
+    // practically never assign a raw_ptr<T> to itself. We suspect that a
+    // cumulative cost of a conditional branch, even if always correctly
+    // predicted, would exceed that.
     T* new_ptr = Impl::Duplicate(p.wrapped_ptr_);
     Impl::ReleaseWrappedPtr(wrapped_ptr_);
     wrapped_ptr_ = new_ptr;
     return *this;
   }
 
-  ALWAYS_INLINE raw_ptr& operator=(raw_ptr&& p) {
+  ALWAYS_INLINE raw_ptr& operator=(raw_ptr&& p) noexcept {
+    // Unlike the the copy version of this operator, this branch is necessaty
+    // for correctness.
     if (LIKELY(this != &p)) {
       Impl::ReleaseWrappedPtr(wrapped_ptr_);
       wrapped_ptr_ = p.wrapped_ptr_;
@@ -813,7 +883,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   ALWAYS_INLINE raw_ptr& operator=(const raw_ptr&) noexcept = default;
   ALWAYS_INLINE raw_ptr& operator=(raw_ptr&&) noexcept = default;
 
-  ALWAYS_INLINE ~raw_ptr() = default;
+  ALWAYS_INLINE ~raw_ptr() noexcept = default;
 
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
@@ -960,26 +1030,39 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   // during the free operation, which will lead to taking the slower path that
   // involves quarantine.
   ALWAYS_INLINE void ClearAndDelete() noexcept {
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    // We cannot directly `delete` a wrapped pointer, since the tag bits
-    // atop will lead PA totally astray.
-    T* ptr = Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_);
-#else
-    T* ptr = wrapped_ptr_;
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    operator=(nullptr);
-    delete ptr;
+    delete GetForExtractionAndReset();
   }
   ALWAYS_INLINE void ClearAndDeleteArray() noexcept {
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    // We cannot directly `delete` a wrapped pointer, since the tag bits
-    // atop will lead PA totally astray.
-    T* ptr = Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_);
-#else
-    T* ptr = wrapped_ptr_;
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    operator=(nullptr);
-    delete[] ptr;
+    delete[] GetForExtractionAndReset();
+  }
+
+  // Clear the underlying pointer and return another raw_ptr instance
+  // that is allowed to dangle.
+  // This can be useful in cases such as:
+  // ```
+  //  ptr.ExtractAsDangling()->SelfDestroy();
+  // ```
+  // ```
+  //  c_style_api_do_something_and_destroy(ptr.ExtractAsDangling());
+  // ```
+  // NOTE, avoid using this method as it indicates an error-prone memory
+  // ownership pattern. If possible, use smart pointers like std::unique_ptr<>
+  // instead of raw_ptr<>.
+  ALWAYS_INLINE DanglingRawPtr ExtractAsDangling() noexcept {
+    if constexpr (std::is_same_v<
+                      typename std::remove_reference<decltype(*this)>::type,
+                      DanglingRawPtr>) {
+      DanglingRawPtr res(std::move(*this));
+      // Not all implementation clear the source pointer on move, so do it
+      // here just in case. Should be cheap.
+      operator=(nullptr);
+      return res;
+    } else {
+      T* ptr = GetForExtraction();
+      DanglingRawPtr res(ptr);
+      operator=(nullptr);
+      return res;
+    }
   }
 
   // Comparison operators between raw_ptr and raw_ptr<U>/U*/std::nullptr_t.
@@ -1112,6 +1195,12 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   // Any verifications can and should be skipped for performance reasons.
   ALWAYS_INLINE T* GetForComparison() const {
     return Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_);
+  }
+
+  ALWAYS_INLINE T* GetForExtractionAndReset() {
+    T* ptr = GetForExtraction();
+    operator=(nullptr);
+    return ptr;
   }
 
   T* wrapped_ptr_;

@@ -18,6 +18,10 @@
 #include "components/performance_manager/public/graph/page_node.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace url_matcher {
+class URLMatcher;
+}  // namespace url_matcher
+
 namespace performance_manager {
 
 namespace mechanism {
@@ -40,20 +44,18 @@ class PageDiscardingHelper : public GraphOwned,
   PageDiscardingHelper(const PageDiscardingHelper& other) = delete;
   PageDiscardingHelper& operator=(const PageDiscardingHelper&) = delete;
 
-  // Selects a tab to discard based on |strategy| and posts to the UI thread to
-  // discard it. This will try to discard a tab until there's been a successful
-  // discard or until there's no more discard candidate.
-  void UrgentlyDiscardAPage(features::DiscardStrategy discard_strategy,
-                            base::OnceCallback<void(bool)> post_discard_cb);
+  // Selects a tab to discard and posts to the UI thread to discard it. This
+  // will try to discard a tab until there's been a successful discard or until
+  // there's no more discard candidate.
+  void UrgentlyDiscardAPage(base::OnceCallback<void(bool)> post_discard_cb);
 
-  // Discards multiple tabs to meet the reclaim target based on |strategy| and
-  // posts to the UI thread to discard these tabs. Retries discarding if all
-  // discardings in the UI thread fail. If |reclaim_target_kb| is nullopt, only
-  // discard one tab. If |discard_protected_tabs| is true, protected tab
-  // (CanUrgentlyDiscard() returns kProtected) can also be discarded.
+  // Discards multiple tabs to meet the reclaim target based and posts to the UI
+  // thread to discard these tabs. Retries discarding if all discardings in the
+  // UI thread fail. If |reclaim_target_kb| is nullopt, only discard one tab. If
+  // |discard_protected_tabs| is true, protected tab (CanUrgentlyDiscard()
+  // returns kProtected) can also be discarded.
   void UrgentlyDiscardMultiplePages(
       absl::optional<uint64_t> reclaim_target_kb,
-      features::DiscardStrategy discard_strategy,
       bool discard_protected_tabs,
       base::OnceCallback<void(bool)> post_discard_cb);
 
@@ -62,6 +64,10 @@ class PageDiscardingHelper : public GraphOwned,
   // PageNodeObserver:
   void OnBeforePageNodeRemoved(const PageNode* page_node) override;
   void OnIsAudibleChanged(const PageNode* page_node) override;
+
+  void SetNoDiscardPatternsForProfile(const std::string& browser_context_id,
+                                      const std::vector<std::string>& patterns);
+  void ClearNoDiscardPatternsForProfile(const std::string& browser_context_id);
 
   void SetMockDiscarderForTesting(
       std::unique_ptr<mechanism::PageDiscarder> discarder);
@@ -103,6 +109,9 @@ class PageDiscardingHelper : public GraphOwned,
       const PageNode* page_node,
       bool consider_minimum_protection_time = true) const;
 
+  bool IsPageOptedOutOfDiscarding(const std::string& browser_context_id,
+                                  const GURL& url) const;
+
   // NodeDataDescriber implementation:
   base::Value DescribePageNodeData(const PageNode* node) const override;
 
@@ -112,7 +121,6 @@ class PageDiscardingHelper : public GraphOwned,
   // candidates.
   void PostDiscardAttemptCallback(
       absl::optional<uint64_t> reclaim_target_kb,
-      features::DiscardStrategy discard_strategy,
       bool discard_protected_tabs,
       base::OnceCallback<void(bool)> post_discard_cb,
       bool success);
@@ -125,6 +133,9 @@ class PageDiscardingHelper : public GraphOwned,
   // The mechanism used to do the actual discarding.
   std::unique_ptr<performance_manager::mechanism::PageDiscarder>
       page_discarder_;
+
+  std::map<std::string, std::unique_ptr<url_matcher::URLMatcher>>
+      profiles_no_discard_patterns_;
 
   raw_ptr<Graph> graph_ = nullptr;
 

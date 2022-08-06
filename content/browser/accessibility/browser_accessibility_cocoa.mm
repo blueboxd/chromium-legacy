@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <algorithm>
 #include <iterator>
 #include <map>
@@ -31,6 +30,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -961,6 +961,7 @@ bool content::IsNSRange(id value) {
     return nil;
 
   const AXRange range = GetSelectedRange(*_owner);
+
   // If the selection is not collapsed, then there is no visible caret.
   if (!range.IsCollapsed())
     return nil;
@@ -974,10 +975,20 @@ bool content::IsNSRange(id value) {
          "is a valid selection focus inside the current object.";
   const std::vector<int> lineStarts =
       _owner->GetIntListAttribute(ax::mojom::IntListAttribute::kLineStarts);
+
+  // Find the text offset that starts the next line after the current caret
+  // position, then subtract 1 to get the current line number.
   auto iterator =
-      std::lower_bound(lineStarts.begin(), lineStarts.end(),
+      std::upper_bound(lineStarts.begin(), lineStarts.end(),
                        caretPosition->AsTextPosition()->text_offset());
-  return @(std::distance(lineStarts.begin(), iterator));
+
+  // If the caret is on a single line and the line is empty, then
+  // the iterator will be equal to lineStarts.begin() because the lineStarts
+  // vector will be empty. The line number should be 0 in this case.
+  if (iterator == lineStarts.begin())
+    return @(0);
+
+  return @(std::distance(lineStarts.begin(), std::prev(iterator)));
 }
 
 - (NSString*)language {
@@ -1073,18 +1084,24 @@ bool content::IsNSRange(id value) {
 - (id)parent {
   if (![self instanceActive])
     return nil;
-  // A nil parent means we're the root.
   if (_owner->PlatformGetParent()) {
-    return NSAccessibilityUnignoredAncestor(
+    id unignored_parent = NSAccessibilityUnignoredAncestor(
         _owner->PlatformGetParent()->GetNativeViewAccessible());
-  } else {
-    // Hook back up to RenderWidgetHostViewCocoa.
-    BrowserAccessibilityManagerMac* manager =
-        _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
-    if (manager)
-      return manager->GetParentView();
+    DCHECK(unignored_parent);
+    return unignored_parent;
+  }
+
+  // A nil parent means we're the root.
+  // Hook back up to RenderWidgetHostViewCocoa.
+  BrowserAccessibilityManagerMac* manager =
+      _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
+  if (!manager) {
+    // TODO(accessibility) Determine why this is happening.
+    SANITIZER_NOTREACHED();
     return nil;
   }
+  SANITIZER_CHECK(manager->GetParentView());
+  return manager->GetParentView();
 }
 
 - (NSValue*)position {
@@ -1192,9 +1209,6 @@ bool content::IsNSRange(id value) {
   return [self role];
 }
 - (NSString*)role {
-  content::BrowserAccessibilityStateImpl::GetInstance()
-      ->OnAccessibilityApiUsage();
-
   if (![self instanceActive]) {
     TRACE_EVENT0("accessibility", "BrowserAccessibilityCocoa::role nil");
     return nil;
@@ -1214,7 +1228,7 @@ bool content::IsNSRange(id value) {
   } else if (role == ax::mojom::Role::kImage &&
              _owner->HasExplicitlyEmptyName()) {
     cocoa_role = NSAccessibilityUnknownRole;
-  } else if (_owner->IsWebAreaForPresentationalIframe()) {
+  } else if (_owner->IsRootWebAreaForPresentationalIframe()) {
     cocoa_role = NSAccessibilityGroupRole;
   } else {
     cocoa_role = [AXPlatformNodeCocoa nativeRoleFromAXRole:role];
@@ -1651,12 +1665,12 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return nil;
 
-  BrowserAccessibilityManagerMac* manager =
+  BrowserAccessibilityManagerMac* root_manager =
       _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
-  if (!manager || !manager->GetParentView())
-    return nil;
-
-  return manager->GetWindow();
+  CHECK(root_manager) << "There should always be a root manager whenever an "
+                         "object is instanceActive.";
+  CHECK(root_manager->GetParentView());
+  return root_manager->GetWindow();  // Can be null for inactive tabs.
 }
 
 - (void)getTreeItemDescendantNodeIds:(std::vector<int32_t>*)tree_item_ids {

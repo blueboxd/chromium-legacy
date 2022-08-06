@@ -4,9 +4,9 @@
 
 import '../module_header.js';
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {DomIf, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
@@ -68,14 +68,14 @@ export class PhotosModuleElement extends I18nMixin
         value: () => {
           return `chrome://new-tab-page/modules/photos/images/img0${
               loadTimeData.getString('photosModuleCustomArtWork')}_240x236.svg`;
-        }
+        },
       },
 
       customArtworkIndex_: {
         type: String,
         value: () => {
           return loadTimeData.getString('photosModuleCustomArtWork');
-        }
+        },
       },
 
       // If true, the artwork shown in opt-in screen will be one single svg
@@ -85,7 +85,7 @@ export class PhotosModuleElement extends I18nMixin
         value: () => {
           return loadTimeData.getString('photosModuleCustomArtWork') !== '' &&
               !loadTimeData.getBoolean('photosModuleSplitSvgCustomArtWork');
-        }
+        },
       },
 
       // If true, the artwork shown in opt-in screen will be a composite image
@@ -100,7 +100,7 @@ export class PhotosModuleElement extends I18nMixin
               (loadTimeData.getString('photosModuleCustomArtWork') === '1' ||
                loadTimeData.getString('photosModuleCustomArtWork') === '2' ||
                loadTimeData.getString('photosModuleCustomArtWork') === '3');
-        }
+        },
       },
 
       showSoftOptOutButton: Boolean,

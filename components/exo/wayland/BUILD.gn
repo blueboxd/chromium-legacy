@@ -204,6 +204,7 @@ source_set("wayland") {
 
     if (enable_color_manager) {
       deps += [
+        "//ash:ash",
         "//components/exo/wayland/protocol:chrome_color_management_protocol",
         "//ui/base/wayland:color_manager_util",
       ]
@@ -604,8 +605,8 @@ test("wayland_client_tests") {
   use_xvfb = use_xvfb_in_this_config
 
   sources = [
-    "clients/capability_binding_test.cc",
     "clients/interface_binding_test.cc",
+    "clients/security_delegate_binding_test.cc",
     "clients/test/run_all_client_tests.cc",
   ]
 

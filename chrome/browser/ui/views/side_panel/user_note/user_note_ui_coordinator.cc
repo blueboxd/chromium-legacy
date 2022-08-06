@@ -45,8 +45,35 @@ bool UserNoteComparator(const user_notes::UserNoteInstance* first,
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(UserNoteUICoordinator,
                                       kScrollViewElementIdForTesting);
 
+// static
+void UserNoteUICoordinator::CreateForBrowser(Browser* browser) {
+  DCHECK(browser);
+  if (!FromBrowser(browser)) {
+    browser->SetUserData(user_notes::UserNotesUI::UserDataKey(),
+                         base::WrapUnique(new UserNoteUICoordinator(browser)));
+  }
+}
+
+// static
+UserNoteUICoordinator* UserNoteUICoordinator::FromBrowser(Browser* browser) {
+  DCHECK(browser);
+  return static_cast<UserNoteUICoordinator*>(
+      browser->GetUserData(user_notes::UserNotesUI::UserDataKey()));
+}
+
+// static
+UserNoteUICoordinator* UserNoteUICoordinator::GetOrCreateForBrowser(
+    Browser* browser) {
+  if (auto* data = FromBrowser(browser)) {
+    return data;
+  }
+
+  CreateForBrowser(browser);
+  return FromBrowser(browser);
+}
+
 UserNoteUICoordinator::UserNoteUICoordinator(Browser* browser)
-    : BrowserUserData<UserNoteUICoordinator>(*browser), browser_(browser) {
+    : browser_(browser) {
   browser_->tab_strip_model()->AddObserver(this);
 }
 
@@ -70,9 +97,20 @@ void UserNoteUICoordinator::OnNoteDeleted(const base::UnguessableToken& id,
   service->OnNoteDeleted(id);
 }
 
+void UserNoteUICoordinator::OnNoteSelected(const base::UnguessableToken& id) {
+  auto* service =
+      user_notes::UserNoteServiceFactory::GetForContext(browser_->profile());
+  // TODO(crbug.com/1313967): This only works because notes are only supported
+  // in the primary main frame for now. If notes are ever supported in
+  // subframes, this will need to change.
+  service->OnNoteSelected(id, browser_->tab_strip_model()
+                                  ->GetActiveWebContents()
+                                  ->GetPrimaryMainFrame());
+}
+
 void UserNoteUICoordinator::OnNoteCreationDone(
     const base::UnguessableToken& id,
-    const std::string& note_content) {
+    const std::u16string& note_content) {
   auto* service =
       user_notes::UserNoteServiceFactory::GetForContext(browser_->profile());
   service->OnNoteCreationDone(id, note_content);
@@ -88,7 +126,7 @@ void UserNoteUICoordinator::OnNoteCreationCancelled(
 }
 
 void UserNoteUICoordinator::OnNoteUpdated(const base::UnguessableToken& id,
-                                          const std::string& note_content) {
+                                          const std::u16string& note_content) {
   auto* service =
       user_notes::UserNoteServiceFactory::GetForContext(browser_->profile());
   service->OnNoteEdited(id, note_content);
@@ -302,5 +340,3 @@ std::unique_ptr<views::View> UserNoteUICoordinator::CreateUserNotesView() {
   Invalidate();
   return root_view;
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(UserNoteUICoordinator);

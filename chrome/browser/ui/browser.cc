@@ -47,6 +47,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/download/bubble/download_bubble_controller.h"
+#include "chrome/browser/download/bubble/download_display_controller.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -558,6 +560,12 @@ Browser::Browser(const CreateParams& params)
   exclusive_access_manager_ = std::make_unique<ExclusiveAccessManager>(
       window_->GetExclusiveAccessContext());
 
+  if (window_->GetDownloadBubbleUIController()) {
+    window_->GetDownloadBubbleUIController()
+        ->GetDownloadDisplayController()
+        ->ListenToFullScreenChanges();
+  }
+
   BrowserList::AddBrowser(this);
 }
 
@@ -673,7 +681,7 @@ bool Browser::HasFindBarController() const {
 
 GURL Browser::GetNewTabURL() const {
   if (app_controller_)
-    return app_controller_->GetAppStartUrl();
+    return app_controller_->GetAppNewTabUrl();
   return GURL(chrome::kChromeUINewTabURL);
 }
 
@@ -828,10 +836,11 @@ std::u16string Browser::FormatTitleForDisplay(std::u16string title) {
 
 Browser::WarnBeforeClosingResult Browser::MaybeWarnBeforeClosing(
     Browser::WarnBeforeClosingCallback warn_callback) {
-  // If the browser can close right away (there are no pending downloads we need
-  // to prompt about) then there's no need to warn. In the future, we might need
-  // to check other conditions as well.
-  if (CanCloseWithInProgressDownloads())
+  // If the browser can close right away (we've indicated that we want to skip
+  // before-unload handlers by setting `force_skip_warning_user_on_close_` to
+  // true or there are no pending downloads we need to prompt about) then
+  // there's no need to warn.
+  if (force_skip_warning_user_on_close_ || CanCloseWithInProgressDownloads())
     return WarnBeforeClosingResult::kOkToClose;
 
   DCHECK(!warn_before_closing_callback_)
@@ -841,6 +850,11 @@ Browser::WarnBeforeClosingResult Browser::MaybeWarnBeforeClosing(
 }
 
 bool Browser::ShouldCloseWindow() {
+  // If `force_skip_warning_user_` is true, then we should immediately
+  // return true.
+  if (force_skip_warning_user_on_close_)
+    return true;
+
   // If the user needs to see one or more warnings, hold off closing the
   // browser.
   const WarnBeforeClosingResult result = MaybeWarnBeforeClosing(base::BindOnce(
@@ -870,12 +884,14 @@ bool Browser::IsAttemptingToCloseBrowser() const {
 
 bool Browser::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* web_contents) {
-  return unload_controller_.ShouldRunUnloadEventsHelper(web_contents);
+  return !force_skip_warning_user_on_close_ &&
+         unload_controller_.ShouldRunUnloadEventsHelper(web_contents);
 }
 
 bool Browser::RunUnloadListenerBeforeClosing(
     content::WebContents* web_contents) {
-  return unload_controller_.RunUnloadEventsHelper(web_contents);
+  return !force_skip_warning_user_on_close_ &&
+         unload_controller_.RunUnloadEventsHelper(web_contents);
 }
 
 void Browser::SetWindowUserTitle(const std::string& user_title) {
@@ -1188,8 +1204,12 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
   if (tab_strip_model_->empty())
     return;
 
-  OnActiveTabChanged(selection.old_contents, selection.new_contents,
-                     selection.new_model.active(), selection.reason);
+  OnActiveTabChanged(
+      selection.old_contents, selection.new_contents,
+      selection.new_model.active().has_value()
+          ? static_cast<int>(selection.new_model.active().value())
+          : TabStripModel::kNoTab,
+      selection.reason);
 }
 
 void Browser::OnTabGroupChanged(const TabGroupChange& change) {
@@ -1424,7 +1444,14 @@ bool Browser::IsBackForwardCacheSupported() {
 bool Browser::IsPrerender2Supported(content::WebContents& web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents.GetBrowserContext());
-  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs());
+  bool disabled =
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+      web_contents.GetBrowserContext()->GetUserData(
+          extensions::kIsPrerender2DisabledKey);
+#else
+      false;
+#endif
+  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs()) && !disabled;
 }
 
 std::unique_ptr<content::WebContents> Browser::ActivatePortalWebContents(
@@ -1946,8 +1973,13 @@ void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {
 }
 
 bool Browser::IsFullscreenForTabOrPending(const WebContents* web_contents) {
+  return IsFullscreenForTabOrPending(web_contents, /*display_id=*/nullptr);
+}
+
+bool Browser::IsFullscreenForTabOrPending(const WebContents* web_contents,
+                                          int64_t* display_id) {
   return exclusive_access_manager_->fullscreen_controller()
-      ->IsFullscreenForTabOrPending(web_contents);
+      ->IsFullscreenForTabOrPending(web_contents, display_id);
 }
 
 blink::mojom::DisplayMode Browser::GetDisplayMode(
@@ -1958,6 +1990,17 @@ blink::mojom::DisplayMode Browser::GetDisplayMode(
   if (is_type_app() || is_type_devtools() || is_type_app_popup()) {
     if (app_controller_ && app_controller_->HasMinimalUiButtons())
       return blink::mojom::DisplayMode::kMinimalUi;
+
+    // TODO(crbug.com/1333978): Sync with the value of
+    // browser_view()->IsWindowControlsOverlayEnabled().
+    if (app_controller_ && app_controller_->AppUsesWindowControlsOverlay())
+      return blink::mojom::DisplayMode::kWindowControlsOverlay;
+
+    // TODO(crbug.com/1325830): Add check for the Window Management API
+    // permission status.
+    if (app_controller_ && app_controller_->AppUsesBorderlessMode())
+      return blink::mojom::DisplayMode::kBorderless;
+
     return blink::mojom::DisplayMode::kStandalone;
   }
 
@@ -3129,4 +3172,11 @@ void Browser::RunScreenAIAnnotator() {
   }
   screen_ai_annotator_->Run();
 }
+
+void Browser::SetScreenAIAnnotatorForTesting(
+    std::unique_ptr<screen_ai::AXScreenAIAnnotator> annotator) {
+  DCHECK(!screen_ai_annotator_);
+  screen_ai_annotator_.swap(annotator);
+}
+
 #endif

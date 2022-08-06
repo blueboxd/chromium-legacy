@@ -20,6 +20,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/interest_group_storage.h"
+#include "content/browser/interest_group/interest_group_update.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -138,8 +139,7 @@ void InterestGroupManagerImpl::CheckPermissionsAndJoinInterestGroup(
 }
 
 void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
-    const url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     const url::Origin& main_frame,
     const url::Origin& frame_origin,
     const net::NetworkIsolationKey& network_isolation_key,
@@ -147,11 +147,11 @@ void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
     network::mojom::URLLoaderFactory& url_loader_factory,
     blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback) {
   permissions_checker_.CheckPermissions(
-      InterestGroupPermissionsChecker::Operation::kLeave, frame_origin, owner,
-      network_isolation_key, url_loader_factory,
+      InterestGroupPermissionsChecker::Operation::kLeave, frame_origin,
+      group_key.owner, network_isolation_key, url_loader_factory,
       base::BindOnce(
           &InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked,
-          base::Unretained(this), owner, name, main_frame, report_result_only,
+          base::Unretained(this), group_key, main_frame, report_result_only,
           std::move(callback)));
 }
 
@@ -164,13 +164,12 @@ void InterestGroupManagerImpl::JoinInterestGroup(blink::InterestGroup group,
 }
 
 void InterestGroupManagerImpl::LeaveInterestGroup(
-    const ::url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     const ::url::Origin& main_frame) {
   NotifyInterestGroupAccessed(InterestGroupObserverInterface::kLeave,
-                              owner.Serialize(), name);
+                              group_key.owner.Serialize(), group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::LeaveInterestGroup)
-      .WithArgs(owner, name, main_frame);
+      .WithArgs(group_key, main_frame);
 }
 
 void InterestGroupManagerImpl::UpdateInterestGroupsOfOwner(
@@ -198,31 +197,36 @@ void InterestGroupManagerImpl::set_max_parallel_updates_for_testing(
       max_parallel_updates);
 }
 
-void InterestGroupManagerImpl::RecordInterestGroupBid(
-    const ::url::Origin& owner,
-    const std::string& name) {
-  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kBid,
-                              owner.Serialize(), name);
-  impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupBid)
-      .WithArgs(owner, name);
+void InterestGroupManagerImpl::RecordInterestGroupBids(
+    const blink::InterestGroupSet& group_keys) {
+  for (const auto& group_key : group_keys) {
+    NotifyInterestGroupAccessed(InterestGroupObserverInterface::kBid,
+                                group_key.owner.Serialize(), group_key.name);
+  }
+  impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupBids)
+      .WithArgs(group_keys);
 }
 
 void InterestGroupManagerImpl::RecordInterestGroupWin(
-    const ::url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     const std::string& ad_json) {
   NotifyInterestGroupAccessed(InterestGroupObserverInterface::kWin,
-                              owner.Serialize(), name);
+                              group_key.owner.Serialize(), group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupWin)
-      .WithArgs(owner, name, std::move(ad_json));
+      .WithArgs(group_key, std::move(ad_json));
 }
 
 void InterestGroupManagerImpl::GetInterestGroup(
     const url::Origin& owner,
     const std::string& name,
     base::OnceCallback<void(absl::optional<StorageInterestGroup>)> callback) {
+  GetInterestGroup(blink::InterestGroupKey(owner, name), std::move(callback));
+}
+void InterestGroupManagerImpl::GetInterestGroup(
+    const blink::InterestGroupKey& group_key,
+    base::OnceCallback<void(absl::optional<StorageInterestGroup>)> callback) {
   impl_.AsyncCall(&InterestGroupStorage::GetInterestGroup)
-      .WithArgs(owner, name)
+      .WithArgs(group_key)
       .Then(std::move(callback));
 }
 
@@ -241,9 +245,9 @@ void InterestGroupManagerImpl::GetInterestGroupsForOwner(
 }
 
 void InterestGroupManagerImpl::DeleteInterestGroupData(
-    base::RepeatingCallback<bool(const url::Origin&)> origin_matcher) {
+    StoragePartition::StorageKeyMatcherFunction storage_key_matcher) {
   impl_.AsyncCall(&InterestGroupStorage::DeleteInterestGroupData)
-      .WithArgs(std::move(origin_matcher));
+      .WithArgs(std::move(storage_key_matcher));
 }
 
 void InterestGroupManagerImpl::GetLastMaintenanceTimeForTesting(
@@ -271,8 +275,7 @@ void InterestGroupManagerImpl::OnJoinInterestGroupPermissionsChecked(
 }
 
 void InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked(
-    const url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     const url::Origin& main_frame,
     bool report_result_only,
     blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback,
@@ -286,7 +289,7 @@ void InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked(
   // in the InterestGroup through timing differences.
   std::move(callback).Run(/*failed_well_known_check=*/!can_leave);
   if (!report_result_only && can_leave)
-    LeaveInterestGroup(owner, name, main_frame);
+    LeaveInterestGroup(group_key, main_frame);
 }
 
 void InterestGroupManagerImpl::GetInterestGroupsForUpdate(
@@ -298,18 +301,22 @@ void InterestGroupManagerImpl::GetInterestGroupsForUpdate(
       .Then(std::move(callback));
 }
 
-void InterestGroupManagerImpl::UpdateInterestGroup(blink::InterestGroup group) {
+void InterestGroupManagerImpl::UpdateInterestGroup(
+    const blink::InterestGroupKey& group_key,
+    InterestGroupUpdate update,
+    base::OnceCallback<void(bool)> callback) {
   NotifyInterestGroupAccessed(InterestGroupObserverInterface::kUpdate,
-                              group.owner.Serialize(), group.name);
+                              group_key.owner.Serialize(), group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::UpdateInterestGroup)
-      .WithArgs(std::move(group));
+      .WithArgs(group_key, std::move(update))
+      .Then(std::move(callback));
 }
 
-void InterestGroupManagerImpl::ReportUpdateFailed(const url::Origin& owner,
-                                                  const std::string& name,
-                                                  bool parse_failure) {
+void InterestGroupManagerImpl::ReportUpdateFailed(
+    const blink::InterestGroupKey& group_key,
+    bool parse_failure) {
   impl_.AsyncCall(&InterestGroupStorage::ReportUpdateFailed)
-      .WithArgs(owner, name, parse_failure);
+      .WithArgs(group_key, parse_failure);
 }
 
 void InterestGroupManagerImpl::NotifyInterestGroupAccessed(
@@ -454,11 +461,10 @@ void InterestGroupManagerImpl::set_max_active_report_requests_for_testing(
 }
 
 void InterestGroupManagerImpl::SetInterestGroupPriority(
-    const url::Origin& owner,
-    const std::string& name,
+    const blink::InterestGroupKey& group_key,
     double priority) {
   impl_.AsyncCall(&InterestGroupStorage::SetInterestGroupPriority)
-      .WithArgs(owner, name, priority);
+      .WithArgs(group_key, priority);
 }
 
 void InterestGroupManagerImpl::set_max_report_queue_length_for_testing(

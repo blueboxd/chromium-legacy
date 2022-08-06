@@ -960,11 +960,6 @@ const char kScreenTimeLastState[] = "screen_time.last_state";
 // Shares for Chrome OS feature.
 const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
 
-// Boolean pref indicating whether the currently running public session runs in
-// the old standard "public session" mode (false), or in the new "managed
-// session" mode which has lifted restrictions (true).
-const char kManagedSessionEnabled[] = "managed_session.enabled";
-
 // Boolean pref indicating whether the message displayed on the login screen for
 // the managed guest session should be the full warning or not.
 // True means the full warning should be displayed.
@@ -1101,6 +1096,14 @@ const char kKerberosAccounts[] = "kerberos.accounts";
 // active (empty if none) and to determine whether to wake up the Kerberos
 // daemon on session startup.
 const char kKerberosActivePrincipalName[] = "kerberos.active_principal_name";
+// Used by KerberosAccountsHandler to prefill kerberos domain in
+// username field of "Add a ticket" UI window.
+// Tied to KerberosDomainAutocomplete policy.
+const char kKerberosDomainAutocomplete[] = "kerberos.domain_autocomplete";
+// Used by KerberosAccountsHandler to prefill kerberos krb5 config for
+// manually creating new tickets.
+// Tied to KerberosDefaultConfiguration policy.
+const char kKerberosDefaultConfiguration[] = "kerberos.default_configuration";
 
 // A boolean pref for enabling/disabling App reinstall recommendations in Zero
 // State Launcher by policy.
@@ -1171,10 +1174,6 @@ const char kOOMKillsDailySample[] = "oomkills.daily_sample";
 // managed guest session clean-up procedure.
 const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
     "restricted_managed_guest_session_extension_cleanup_exempt_list";
-
-// Boolean user profile pref that determines whether to show a banner in browser
-// settings that links to OS settings.
-const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 
 // This pref is used in two contexts:
 // In Profile prefs, it is a bool pref which encodes whether the Profile has
@@ -1306,6 +1305,10 @@ const char kAccessibilityImageLabelsOnlyOnWifi[] =
 const char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
 #endif
+
+// Pref indicating the page colors option the user wants. Page colors is an
+// accessibility feature that simulates forced colors mode at the browser level.
+const char kPageColors[] = "settings.a11y.page_colors";
 
 #if BUILDFLAG(IS_MAC)
 // Boolean that indicates whether the application should show the info bar
@@ -1655,6 +1658,12 @@ const char kManagedAccountsSigninRestriction[] =
 // will have the restriction applied.
 const char kManagedAccountsSigninRestrictionScopeMachine[] =
     "profile.managed_accounts.restriction.all_managed_accounts";
+#if !BUILDFLAG(IS_CHROMEOS)
+// Whether or not the option to keep existing browsing data is checked by
+// default.
+extern const char kEnterpriseProfileCreationKeepBrowsingData[] =
+    "profile.enterprise_profile_creation.keep_existing_data_by_default";
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -1702,6 +1711,10 @@ const char kForceMajorVersionToMinorPositionInUserAgent[] =
 // True when the side panel is aligned to the right.
 const char kSidePanelHorizontalAlignment[] = "side_panel.is_right_aligned";
 #endif
+
+// Number of minutes of inactivity before closing the profile and showing the
+// Profile Picker. Controlled via the IdleProfileCloseTimeout policy.
+const char kIdleProfileCloseTimeout[] = "idle_profile_close_timeout";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -2121,36 +2134,6 @@ const char kWebAppsIsolationState[] = "web_apps.isolation_state";
 const char kWebAppsUrlHandlerInfo[] = "web_apps.url_handler_info";
 #endif
 
-// A string representing the last version of Chrome that System Web Apps were
-// updated for.
-const char kSystemWebAppLastUpdateVersion[] =
-    "web_apps.system_web_app_last_update";
-
-// A string representing the last locale that System Web Apps were installed in.
-// This is used to refresh System Web Apps i18n when the locale is changed.
-const char kSystemWebAppLastInstalledLocale[] =
-    "web_apps.system_web_app_last_installed_language";
-
-// An int representing the number of failures to install SWAs for a given
-// version & locale pair. After 3 failures, we'll abandon this version to avoid
-// bootlooping, and wait for a new version to come along.
-const char kSystemWebAppInstallFailureCount[] =
-    "web_apps.system_web_app_failure_count";
-
-// A string representing the latest Chrome version where an attempt was made
-// to install. In the case of success, this and LastUpdateVersion will be the
-// same. If there is an installation failure, they will diverge until a
-// successful installation is made.
-extern const char kSystemWebAppLastAttemptedVersion[] =
-    "web_apps.system_web_app_last_attempted_update";
-
-// A string representing the most recent locale that was attempted to be
-// installed. In the case of success, this and LastUpdateVersion will be the
-// same. If there is an installation failure, they will diverge until a
-// successful installation is made.
-extern const char kSystemWebAppLastAttemptedLocale[] =
-    "web_apps.system_web_app_last_attempted_language";
-
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
@@ -2301,6 +2284,9 @@ const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
 
 // If false, disable post-quantum key agreement in TLS connections.
 const char kCECPQ2Enabled[] = "ssl.cecpq2_enabled";
+
+// If false, disable Encrypted ClientHello (ECH) in TLS connections.
+const char kEncryptedClientHelloEnabled[] = "ssl.ech_enabled";
 
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
@@ -2553,11 +2539,6 @@ const char kReportingUsers[] = "reporting_users";
 const char kArcAppInstallEventLoggingEnabled[] =
     "arc.app_install_event_logging_enabled";
 
-// Boolean pref indicating if event logging is enabled for policy based
-// extension.
-const char kExtensionInstallEventLoggingEnabled[] =
-    "extensions.install.event_logging_enabled";
-
 // Whether we received the remove users remote command, and hence should proceed
 // with removing the users while at the login screen.
 const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
@@ -2709,6 +2690,17 @@ const char kLastChromadMigrationAttemptTime[] =
 const char kHardwareSecureDecryptionDisabledTimes[] =
     "media.hardware_secure_decryption.disabled_times";
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS)
+// A dictionary containing kiosk metrics latest session related information.
+// For example, kiosk session start times, number of network drops.
+// This setting resides in local state.
+const char kKioskMetrics[] = "kiosk-metrics";
+
+// A boolean pref which determines whether a Web Kiosk can open more than one
+// browser window.
+const char kNewWindowsInKioskAllowed[] = "new_windows_in_kiosk_allowed";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
@@ -3565,12 +3557,5 @@ const char kSCTAuditingHashdanceReportCount[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-// A dictionary containing kiosk metrics latest session related information.
-// For example, kiosk session start times, number of network drops.
-// This setting resides in local state.
-const char kKioskMetrics[] = "kiosk-metrics";
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace prefs

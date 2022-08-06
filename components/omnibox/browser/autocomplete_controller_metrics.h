@@ -26,7 +26,7 @@ class AutocompleteProvider;
 //      `AutocompleteController::OnProviderUpdate()`).
 // 2) How long until the suggestions finalize.
 //    - Does not track sync requests (i.e.,
-//      `AutocompleteInput::set_want_asynchronous_matches()` set to false).
+//      `AutocompleteInput::omit_asynchronous_matches()` set to true).
 //    - Does track async requests that complete syncly.
 //    - Tracks suggestion additions, changes, and removals.
 // 3) How many suggestions change during updates.
@@ -102,15 +102,13 @@ class AutocompleteControllerMetrics {
                                          bool completed,
                                          const base::TimeTicks end_time) const;
 
-  // Logs 'Omnibox.CrossInputMatchStability.MatchChange' or
-  // 'Omnibox.MatchStability.AsyncMatchChange2' depending on
-  // `controller_.in_start()`.
-  void LogSuggestionChangedMetrics(size_t change_index) const;
+  // Logs 'Omnibox.MatchStability.MatchChangeIndex'. Additionally logs
+  // '*.CrossInput' or '*.Async' depending on `controller_.in_start()`.
+  void LogSuggestionChangeIndexMetrics(size_t change_index) const;
 
-  // Logs 'Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition' or
-  // 'Omnibox.MatchStability.AsyncMatchChangedInAnyPosition' depending on
-  // `controller_.in_start()`.
-  void LogAnySuggestionChangedMetrics(bool changed) const;
+  // Logs 'Omnibox.MatchStability.MatchChangeInAnyPosition'. Additionally logs
+  // '*.CrossInput' or '*.Async' depending on `controller_.in_start()`.
+  void LogSuggestionChangeInAnyPositionMetrics(bool changed) const;
 
   const AutocompleteController& controller_;
 

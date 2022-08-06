@@ -19,7 +19,7 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chromeos/ash/components/network/cellular_esim_uninstall_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,7 +68,7 @@ DeviceCommandResetEuiccJob::CreateTimedResetMemorySuccessCallback(
 
 void DeviceCommandResetEuiccJob::RunImpl(CallbackWithResult succeeded_callback,
                                          CallbackWithResult failed_callback) {
-  absl::optional<dbus::ObjectPath> euicc_path = chromeos::GetCurrentEuiccPath();
+  absl::optional<dbus::ObjectPath> euicc_path = ash::GetCurrentEuiccPath();
   if (!euicc_path) {
     SYSLOG(ERROR) << "No current EUICC. Unable to reset EUICC";
     RunResultCallback(std::move(failed_callback));

@@ -16,7 +16,7 @@ const base::Feature kAutofillAssistant{"AutofillAssistant",
 // Controls whether to enable Autofill Assistant's way of annotating DOM. If
 // enabled will create an |AnnotateDomModelService|.
 const base::Feature kAutofillAssistantAnnotateDom{
-    "AutofillAssistantAnnotateDom", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillAssistantAnnotateDom", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable Assistant Autofill in a normal Chrome tab.
 const base::Feature kAutofillAssistantChromeEntry{
@@ -105,7 +105,19 @@ const base::Feature kAutofillAssistantLoadDFMForTriggerScripts{
 const base::Feature kAutofillAssistantProactiveHelp{
     "AutofillAssistantProactiveHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Used to configure the start heuristics for
+// Used to configure URL heuristics for upcoming new features.
+extern const base::Feature kAutofillAssistantUrlHeuristic1{
+    "AutofillAssistantUrlHeuristic1", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kAutofillAssistantUrlHeuristic2{
+    "AutofillAssistantUrlHeuristic2", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kAutofillAssistantUrlHeuristic3{
+    "AutofillAssistantUrlHeuristic3", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kAutofillAssistantUrlHeuristic4{
+    "AutofillAssistantUrlHeuristic4", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kAutofillAssistantUrlHeuristic5{
+    "AutofillAssistantUrlHeuristic5", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Legacy URL heuristics. Used to configure the start heuristics for
 // |kAutofillAssistantInCctTriggering| and/or
 // |kAutofillAssistantInTabTriggering|.
 const base::Feature kAutofillAssistantUrlHeuristics{
@@ -114,12 +126,6 @@ const base::Feature kAutofillAssistantUrlHeuristics{
 // Whether Autofill Assistant is enabled on desktop.
 const base::Feature kAutofillAssistantDesktop{"AutofillAssistantDesktop",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Decides whether leak checks may be performed on saving a manually
-// submitted password in an automated password change flow.
-const base::Feature kAutofillAssistantAPCLeakCheckOnSaveSubmittedPassword{
-    "AutofillAssistantAPCLeakCheckOnSaveSubmittedPassword",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace autofill_assistant

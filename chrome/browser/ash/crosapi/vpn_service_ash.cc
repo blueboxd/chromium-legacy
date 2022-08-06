@@ -11,25 +11,18 @@
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
-#include "base/notreached.h"
-#include "base/run_loop.h"
 #include "base/values.h"
-#include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
 #include "crypto/sha2.h"
-#include "extensions/browser/extension_event_histogram_value.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace {
@@ -574,13 +567,7 @@ void VpnServiceAsh::RegisterVpnServiceForExtension(
     const std::string& extension_id,
     mojo::PendingReceiver<crosapi::mojom::VpnServiceForExtension> receiver,
     mojo::PendingRemote<crosapi::mojom::EventObserverForExtension> observer) {
-  auto it = extension_id_to_service_.find(extension_id);
-  if (it == extension_id_to_service_.end()) {
-    it = extension_id_to_service_.insert(
-        it, {extension_id,
-             std::make_unique<VpnServiceForExtensionAsh>(extension_id)});
-  }
-  const auto& service = it->second;
+  auto* service = GetVpnServiceForExtension(extension_id);
   service->BindReceiverAndObserver(std::move(receiver), std::move(observer));
 }
 
@@ -606,7 +593,7 @@ void VpnServiceAsh::NetworkListChanged() {
 
   auto* network_handler = chromeos::NetworkHandler::Get();
   network_handler->network_state_handler()->GetVisibleNetworkListByType(
-      chromeos::NetworkTypePattern::VPN(), &network_list);
+      ash::NetworkTypePattern::VPN(), &network_list);
 
   for (auto* network_state : network_list) {
     network_handler->network_configuration_handler()->GetShillProperties(
@@ -649,18 +636,21 @@ void VpnServiceAsh::OnGetShillProperties(
     return;
   }
 
-  auto it = extension_id_to_service_.find(*extension_id);
-  if (it == extension_id_to_service_.end()) {
-    it = extension_id_to_service_.insert(
-        it, {*extension_id,
-             std::make_unique<VpnServiceForExtensionAsh>(*extension_id)});
-  }
-  auto& service = it->second;
+  auto* service = GetVpnServiceForExtension(*extension_id);
   if (service->HasConfigurationForServicePath(service_path)) {
     return;
   }
   service->CreateConfigurationWithServicePath(*configuration_name,
                                               service_path);
+}
+
+VpnServiceForExtensionAsh* VpnServiceAsh::GetVpnServiceForExtension(
+    const std::string& extension_id) {
+  auto& service = extension_id_to_service_[extension_id];
+  if (!service) {
+    service = std::make_unique<VpnServiceForExtensionAsh>(extension_id);
+  }
+  return service.get();
 }
 
 }  // namespace crosapi

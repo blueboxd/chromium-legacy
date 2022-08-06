@@ -127,6 +127,7 @@ let kRTCInboundRtpStreamStats = new RTCStats(kRTCReceivedRtpStreamStats, {
   framesPerSecond: 'number',
   jitterBufferDelay: 'number',
   jitterBufferTargetDelay: 'number',
+  jitterBufferMinimumDelay: 'number',
   jitterBufferEmittedCount: 'number',
   totalSamplesReceived: 'number',
   concealedSamples: 'number',
@@ -209,6 +210,7 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   framesPerSecond: 'number',
   framesSent: 'number',
   hugeFramesSent: 'number',
+  active: 'boolean',
 });
 addRTCStatsToAllowlist(
     Presence.MANDATORY, 'outbound-rtp', kRTCOutboundRtpStreamStats);

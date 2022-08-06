@@ -726,7 +726,7 @@ class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
 
   static std::unique_ptr<ConfiguredProxyResolutionService>
   CreateFixedProxyResolutionService(const std::string& proxy) {
-    return ConfiguredProxyResolutionService::CreateFixed(
+    return ConfiguredProxyResolutionService::CreateFixedForTest(
         proxy, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
@@ -3986,8 +3986,8 @@ class URLRequestTestHTTP : public URLRequestTest {
   void HTTPUploadDataOperationTest(const std::string& method) {
     const int kMsgSize = 20000;  // multiple of 10
     const int kIterations = 50;
-    char* uploadBytes = new char[kMsgSize + 1];
-    char* ptr = uploadBytes;
+    auto uploadBytes = std::make_unique<char[]>(kMsgSize + 1);
+    char* ptr = uploadBytes.get();
     char marker = 'a';
     for (int idx = 0; idx < kMsgSize / 10; idx++) {
       memcpy(ptr, "----------", 10);
@@ -4008,7 +4008,7 @@ class URLRequestTestHTTP : public URLRequestTest {
           TRAFFIC_ANNOTATION_FOR_TESTS));
       r->set_method(method.c_str());
 
-      r->set_upload(CreateSimpleUploadData(uploadBytes));
+      r->set_upload(CreateSimpleUploadData(uploadBytes.get()));
 
       r->Start();
       EXPECT_TRUE(r->is_pending());
@@ -4019,9 +4019,9 @@ class URLRequestTestHTTP : public URLRequestTest {
           << "request failed. Error: " << d.request_status();
 
       EXPECT_FALSE(d.received_data_before_response());
-      EXPECT_EQ(uploadBytes, d.data_received());
+      EXPECT_EQ(base::StringPiece(uploadBytes.get(), kMsgSize),
+                d.data_received());
     }
-    delete[] uploadBytes;
   }
 
   HttpTestServer* http_test_server() { return &test_server_; }
@@ -9112,7 +9112,16 @@ class FailingHttpTransactionFactory : public HttpTransactionFactory {
 // This currently only happens when in suspend mode and there's no cache, but
 // just use a special HttpTransactionFactory, to avoid depending on those
 // behaviors.
-TEST_F(URLRequestTestHTTP, NetworkCancelAfterCreateTransactionFailsTest) {
+//
+// Flaky crash: https://crbug.com/1348418
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_NetworkCancelAfterCreateTransactionFailsTest \
+  DISABLED_NetworkCancelAfterCreateTransactionFailsTest
+#else
+#define MAYBE_NetworkCancelAfterCreateTransactionFailsTest \
+  NetworkCancelAfterCreateTransactionFailsTest
+#endif
+TEST_F(URLRequestTestHTTP, MAYBE_NetworkCancelAfterCreateTransactionFailsTest) {
   auto context_builder = CreateTestURLRequestContextBuilder();
   context_builder->SetCreateHttpTransactionFactoryCallback(
       base::BindOnce([](HttpNetworkSession* session) {
@@ -12157,7 +12166,8 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksAuthRetry) {
 
   auto req_headers_callback = base::BindRepeating(
       [](ReqHeadersVector* vec, HttpRawRequestHeaders headers) {
-        vec->emplace_back(new HttpRawRequestHeaders(std::move(headers)));
+        vec->emplace_back(
+            std::make_unique<HttpRawRequestHeaders>(std::move(headers)));
       },
       &raw_req_headers);
   auto resp_headers_callback = base::BindRepeating(

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 import './strings.m.js';
+import './omnibox_input.js';
+import './omnibox_output.js';
 
-import {OmniboxPageCallbackRouter, OmniboxPageHandler, OmniboxPageHandlerRemote, OmniboxResponse} from '/chrome/browser/ui/webui/omnibox/omnibox.mojom-webui.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
+import {OmniboxPageCallbackRouter, OmniboxPageHandler, OmniboxPageHandlerRemote, OmniboxResponse} from './omnibox.mojom-webui.js';
 import {DisplayInputs, OmniboxInput, QueryInputs} from './omnibox_input.js';
 import {OmniboxOutput} from './omnibox_output.js';
 
@@ -277,7 +279,7 @@ class ExportDelegate {
       variationInfo,
       pathInfo,
       appVersion: navigator.appVersion,
-      batchExports
+      batchExports,
     };
     ExportDelegate.download_(batchData, fileName);
   }
@@ -293,23 +295,23 @@ class ExportDelegate {
       this.processBatch(
           processBatchData.batchQueryInputs, processBatchData.batchName);
     } else {
-      const expected = {
-        batchMode: 'combined',
-        batchName: 'name for this batch of queries',
-        batchQueryInputs: [{
-          inputText: 'example input text',
-          cursorPosition: 18,
-          resetAutocompleteController: false,
-          cursorLock: false,
-          zeroSuggest: false,
-          preventInlineAutocomplete: false,
-          preferKeyword: false,
-          currentUrl: '',
-          pageClassification: '4'
-        }],
-      };
-      console.error(`Invalid batch specifier data.  Expected format: \n${
-          JSON.stringify(expected, null, 2)}`);
+    const expected = {
+      batchMode: 'combined',
+      batchName: 'name for this batch of queries',
+      batchQueryInputs: [{
+        inputText: 'example input text',
+        cursorPosition: 18,
+        resetAutocompleteController: false,
+        cursorLock: false,
+        zeroSuggest: false,
+        preventInlineAutocomplete: false,
+        preferKeyword: false,
+        currentUrl: '',
+        pageClassification: '4',
+      }],
+    };
+    console.error(`Invalid batch specifier data.  Expected format: \n${
+        JSON.stringify(expected, null, 2)}`);
     }
   }
 
@@ -394,7 +396,7 @@ function validateImportData_(importData) {
   const EXPECTED_FORMAT = {
     queryInputs: {},
     displayInputs: {},
-    responsesHistory: [[{combinedResults: [], resultsByProvider: []}]]
+    responsesHistory: [[{combinedResults: [], resultsByProvider: []}]],
   };
   const INVALID_MESSAGE = `Invalid import format; expected \n${
       JSON.stringify(EXPECTED_FORMAT, null, 2)};\n`;

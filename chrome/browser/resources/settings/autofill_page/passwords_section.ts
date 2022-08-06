@@ -17,12 +17,12 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../controls/extension_controlled_indicator.js';
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 import '../controls/password_prompt_dialog.js';
 // </if>
 import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../site_favicon.js';
 import './password_list_item.js';
 import './passwords_list_handler.js';
@@ -41,28 +41,30 @@ import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {FocusConfig} from '../focus_config.js';
 import {GlobalScrollTargetMixin, GlobalScrollTargetMixinInterface} from '../global_scroll_target_mixin.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
-import {StoredAccount, SyncBrowserProxyImpl, SyncPrefs, SyncStatus, TrustedVaultBannerState} from '../people_page/sync_browser_proxy.js';
+import {SyncBrowserProxyImpl, TrustedVaultBannerState} from '../people_page/sync_browser_proxy.js';
 import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-import {MergeExceptionsStoreCopiesMixin, MergeExceptionsStoreCopiesMixinInterface} from './merge_exceptions_store_copies_mixin.js';
 import {MergePasswordsStoreCopiesMixin, MergePasswordsStoreCopiesMixinInterface} from './merge_passwords_store_copies_mixin.js';
-import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
+// <if expr="is_win">
+import {PasskeysBrowserProxy, PasskeysBrowserProxyImpl} from './passkeys_browser_proxy.js';
+// </if>
 import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_mixin.js';
 import {AddCredentialFromSettingsUserInteractions, PasswordEditDialogElement} from './password_edit_dialog.js';
 import {PasswordCheckReferrer, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import {PasswordRequestorMixin, PasswordRequestorMixinInterface} from './password_requestor_mixin.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
 import {getTemplate} from './passwords_section.html.js';
+import {UserUtilMixin, UserUtilMixinInterface} from './user_util_mixin.js';
 
 /**
  * Checks if an HTML element is an editable. An editable is either a text
@@ -76,8 +78,6 @@ function isEditable(element: Element): boolean {
         /^(?:text|search|email|number|tel|url|password)$/i.test(
             (element as HTMLInputElement).type)));
 }
-
-type FocusConfig = Map<string, string|(() => void)>;
 
 export interface PasswordsSectionElement {
   $: {
@@ -110,16 +110,15 @@ export interface PasswordsSectionElement {
 }
 
 const PasswordsSectionElementBase =
-    MergePasswordsStoreCopiesMixin(PasswordRequestorMixin(
-        PrefsMixin(GlobalScrollTargetMixin(RouteObserverMixin(
-            MergeExceptionsStoreCopiesMixin(WebUIListenerMixin(
+    UserUtilMixin(
+        MergePasswordsStoreCopiesMixin(PasswordRequestorMixin(PrefsMixin(
+            GlobalScrollTargetMixin(RouteObserverMixin(WebUIListenerMixin(
                 I18nMixin(PasswordCheckMixin(PolymerElement))))))))) as {
       new (): PolymerElement & PasswordCheckMixinInterface &
           I18nMixinInterface & WebUIListenerMixinInterface &
-          MergeExceptionsStoreCopiesMixinInterface &
           RouteObserverMixinInterface & GlobalScrollTargetMixinInterface &
           PrefsMixinInterface & PasswordRequestorMixinInterface &
-          MergePasswordsStoreCopiesMixinInterface,
+          MergePasswordsStoreCopiesMixinInterface & UserUtilMixinInterface,
     };
 
 export class PasswordsSectionElement extends PasswordsSectionElementBase {
@@ -166,21 +165,6 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         value: 0,
       },
 
-      storedAccounts_: Array,
-
-      signedIn_: {
-        type: Boolean,
-        value: true,
-        computed: 'computeSignedIn_(syncStatus_, storedAccounts_)',
-      },
-
-      eligibleForAccountStorage_: {
-        type: Boolean,
-        value: false,
-        computed: 'computeEligibleForAccountStorage_(' +
-            'syncStatus_, signedIn_, syncPrefs_)',
-      },
-
       hasNeverCheckedPasswords_: {
         type: Boolean,
         computed: 'computeHasNeverCheckedPasswords_(status)',
@@ -211,18 +195,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         type: Boolean,
         value: true,
         computed: 'computeShouldShowBanner_(hasLeakedCredentials_,' +
-            'signedIn_, hasNeverCheckedPasswords_, hasSavedPasswords_)',
-      },
-
-      /**
-       * If true, the edit dialog and removal notification show
-       * information about which location(s) a password is stored.
-       */
-      isAccountStoreUser_: {
-        type: Boolean,
-        value: false,
-        computed: 'computeIsAccountStoreUser_(' +
-            'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
+            'signedIn, hasNeverCheckedPasswords_, hasSavedPasswords_)',
       },
 
       /**
@@ -233,7 +206,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         type: Boolean,
         value: false,
         computed: 'computeShouldShowDevicePasswordsLink_(' +
-            'isOptedInForAccountStorage_, numberOfDevicePasswords_)',
+            'isOptedInForAccountStorage, numberOfDevicePasswords_)',
       },
 
       /** The visibility state of the trusted vault banner. */
@@ -247,10 +220,16 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         computed: 'computeHasLeakedCredentials_(leakedPasswords)',
       },
 
+      /** Whether the user has passkeys (i.e. WebAuthn credentials). */
+      hasPasskeys_: {
+        type: Boolean,
+        value: false,
+      },
+
       hidePasswordsLink_: {
         type: Boolean,
-        computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_, ' +
-            'eligibleForAccountStorage_)',
+        computed: 'computeHidePasswordsLink_(syncPrefs, syncStatus, ' +
+            'eligibleForAccountStorage, isUnifiedPasswordManagerEnabled_)',
       },
 
       isAutomaticPasswordChangeEnabled_: {
@@ -258,7 +237,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         value() {
           return loadTimeData.getBoolean(
               'enableAutomaticPasswordChangeInSettings');
-        }
+        },
       },
 
       isPasswordViewPageEnabled_: {
@@ -281,25 +260,16 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         value() {
           return loadTimeData.valueExists('showImportPasswords') &&
               loadTimeData.getBoolean('showImportPasswords');
-        }
+        },
       },
 
-      profileEmail_: {
-        type: String,
-        value: '',
-        computed: 'getFirstStoredAccountEmail_(storedAccounts_)',
+      /** An array of blocked sites to display. */
+      passwordExceptions: {
+        type: Array,
+        value: () => [],
       },
 
-      /**
-       * The currently selected profile icon as CSS image set.
-       */
-      profileIcon_: String,
-
-      isOptedInForAccountStorage_: Boolean,
-      syncPrefs_: Object,
-      syncStatus_: Object,
-
-      // <if expr="chromeos_ash or chromeos_lacros">
+      // <if expr="is_chromeos">
       showPasswordPromptDialog_: Boolean,
       // </if>
 
@@ -320,34 +290,26 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   focusConfig: FocusConfig;
   subpageRoute: Route;
   filter: string;
+  passwordExceptions: chrome.passwordsPrivate.ExceptionEntry[];
 
   private shownPasswordsCount_: number;
   private shownExceptionsCount_: number;
-
-  private storedAccounts_: StoredAccount[];
-  private signedIn_: boolean;
-  private eligibleForAccountStorage_: boolean;
   private hasNeverCheckedPasswords_: boolean;
   private hasSavedPasswords_: boolean;
   private numberOfDevicePasswords_: number;
   private hasPasswordExceptions_: boolean;
   private shouldShowBanner_: boolean;
-  private isAccountStoreUser_: boolean;
   private isAutomaticPasswordChangeEnabled_: boolean;
   private isPasswordViewPageEnabled_: boolean;
   private isUnifiedPasswordManagerEnabled_: boolean;
   private shouldShowDevicePasswordsLink_: boolean;
   private trustedVaultBannerState_: TrustedVaultBannerState;
   private hasLeakedCredentials_: boolean;
+  private hasPasskeys_: boolean;
   private hidePasswordsLink_: boolean;
   private showImportPasswords_: boolean;
-  private profileEmail_: string;
-  private profileIcon_: string;
-  private isOptedInForAccountStorage_: boolean;
-  private syncPrefs_: SyncPrefs;
-  private syncStatus_: SyncStatus;
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   private showPasswordPromptDialog_: boolean;
   // </if>
 
@@ -359,8 +321,10 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   private activeDialogAnchorStack_: HTMLElement[];
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
-  private setIsOptedInForAccountStorageListener_:
-      ((isOptedIn: boolean) => void)|null = null;
+  // <if expr="is_win">
+  private passkeysBrowserProxy_: PasskeysBrowserProxy =
+      PasskeysBrowserProxyImpl.getInstance();
+  // </if>
   private setPasswordExceptionsListener_: PasswordExceptionListChangedListener|
       null = null;
 
@@ -392,20 +356,22 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
       }
       // </if>
     });
+
+    // <if expr="is_win">
+    this.passkeysBrowserProxy_.hasPasskeys().then(hasPasskeys => {
+      this.hasPasskeys_ = hasPasskeys;
+    });
+    // </if>
   }
 
   override connectedCallback() {
     super.connectedCallback();
 
-    // Create listener functions.
-    const setIsOptedInForAccountStorageListener = (optedIn: boolean) => {
-      this.isOptedInForAccountStorage_ = optedIn;
+    this.setPasswordExceptionsListener_ = exceptionList => {
+      this.passwordExceptions = exceptionList;
     };
 
-    this.setIsOptedInForAccountStorageListener_ =
-        setIsOptedInForAccountStorageListener;
-
-    // <if expr="chromeos_ash or chromeos_lacros">
+    // <if expr="is_chromeos">
     // If the user's account supports the password check, an auth token will be
     // required in order for them to view or export passwords. Otherwise there
     // is no additional security so |tokenRequestManager| will immediately
@@ -419,32 +385,13 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     // </if>
 
     // Request initial data.
-    this.passwordManager_.isOptedInForAccountStorage().then(
-        setIsOptedInForAccountStorageListener);
+    this.passwordManager_.getExceptionList(this.setPasswordExceptionsListener_);
 
     // Listen for changes.
-    this.passwordManager_.addAccountStorageOptInStateListener(
-        setIsOptedInForAccountStorageListener);
+    this.passwordManager_.addExceptionListChangedListener(
+        this.setPasswordExceptionsListener_);
 
     const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
-
-    const syncStatusChanged = (syncStatus: SyncStatus) => this.syncStatus_ =
-        syncStatus;
-    syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
-    this.addWebUIListener('sync-status-changed', syncStatusChanged);
-
-    const syncPrefsChanged = (syncPrefs: SyncPrefs) => this.syncPrefs_ =
-        syncPrefs;
-    this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
-    syncBrowserProxy.sendSyncPrefsChanged();
-
-    // For non-ChromeOS, non-Lacros, also check whether accounts are available.
-    // <if expr="not (chromeos_ash or chromeos_lacros)">
-    const storedAccountsChanged = (accounts: StoredAccount[]) =>
-        this.storedAccounts_ = accounts;
-    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
-    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
-    // </if>
 
     syncBrowserProxy.sendTrustedVaultBannerStateChanged();
     this.addWebUIListener(
@@ -460,10 +407,10 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   override disconnectedCallback() {
     super.disconnectedCallback();
 
-    assert(this.setIsOptedInForAccountStorageListener_);
-    this.passwordManager_.removeAccountStorageOptInStateListener(
-        this.setIsOptedInForAccountStorageListener_);
-    this.setIsOptedInForAccountStorageListener_ = null;
+    assert(this.setPasswordExceptionsListener_);
+    PasswordManagerImpl.getInstance().removeExceptionListChangedListener(
+        this.setPasswordExceptionsListener_);
+    this.setPasswordExceptionsListener_ = null;
   }
 
   override currentRouteChanged(route: Route): void {
@@ -484,27 +431,16 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         !this.prefs.credentials_enable_service.value);
   }
 
-  private computeSignedIn_(): boolean {
-    return !!this.syncStatus_ && !!this.syncStatus_.signedIn ?
-        !this.syncStatus_.hasError :
-        (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
-  }
-
-  private computeEligibleForAccountStorage_(): boolean {
-    // The user must have signed in but should have sync disabled
-    // (|!this.syncStatus_.signedin|). They should not be using a custom
-    // passphrase to encrypt their sync data, since there's no way for account
-    // storage users to input their passphrase and decrypt the passwords.
-    return (!!this.syncStatus_ && !this.syncStatus_.signedIn) &&
-        this.signedIn_ && (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
-  }
-
   private computeHasSavedPasswords_(): boolean {
     return this.savedPasswords.length > 0;
   }
 
   private computeNumberOfDevicePasswords_(): number {
-    return this.savedPasswords.filter(p => p.isPresentOnDevice()).length;
+    return this.savedPasswords
+        .filter(
+            p =>
+                p.storedIn !== chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT)
+        .length;
   }
 
   private computeHasPasswordExceptions_(): boolean {
@@ -512,16 +448,12 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   }
 
   private computeShouldShowBanner_(): boolean {
-    return this.signedIn_ && this.hasSavedPasswords_ &&
+    return !!this.signedIn && this.hasSavedPasswords_ &&
         this.hasNeverCheckedPasswords_ && !this.hasLeakedCredentials_;
   }
 
-  private computeIsAccountStoreUser_(): boolean {
-    return this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_;
-  }
-
   private computeShouldShowDevicePasswordsLink_(): boolean {
-    return this.isOptedInForAccountStorage_ &&
+    return this.isOptedInForAccountStorage &&
         (this.numberOfDevicePasswords_ > 0);
   }
 
@@ -532,9 +464,9 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
    *  c) unified password manager for desktop is enabled.
    */
   private computeHidePasswordsLink_(): boolean {
-    return this.eligibleForAccountStorage_ ||
-        (!!this.syncStatus_ && !!this.syncStatus_.signedIn &&
-         !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData) ||
+    return !!this.eligibleForAccountStorage ||
+        (!!this.syncStatus && !!this.syncStatus.signedIn && !!this.syncPrefs &&
+         !!this.syncPrefs.encryptAllData) ||
         this.isUnifiedPasswordManagerEnabled_;
   }
 
@@ -583,11 +515,15 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     Router.getInstance().navigateTo(routes.DEVICE_PASSWORDS);
   }
 
+  private onManagePasskeysClick_() {
+    Router.getInstance().navigateTo(routes.PASSKEYS);
+  }
+
   getPasswordManagerForTest(): PasswordManagerProxy {
     return this.passwordManager_;
   }
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   /**
    * When this event fired, it means that the password-prompt-dialog succeeded
    * in creating a fresh token in the quickUnlockPrivate API. Because new tokens
@@ -620,7 +556,8 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   }
   // </if>
 
-  private passwordFilter_(): ((entry: MultiStorePasswordUiEntry) => boolean) {
+  private passwordFilter_():
+      ((entry: chrome.passwordsPrivate.PasswordUiEntry) => boolean) {
     return password => [password.urls.shown, password.username].some(
                term => term.toLowerCase().includes(
                    this.filter.trim().toLowerCase()));
@@ -654,9 +591,9 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
    * Fires an event that should delete the password exception.
    */
   private onRemoveExceptionButtonTap_(
-      e: DomRepeatEvent<MultiStoreExceptionEntry>) {
+      e: DomRepeatEvent<chrome.passwordsPrivate.ExceptionEntry>) {
     const exception = e.model.item;
-    this.passwordManager_.removeException(exception.getAnyId());
+    this.passwordManager_.removeException(exception.id);
   }
 
   /**
@@ -720,28 +657,8 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     focusWithoutInk(toFocus);
   }
 
-  private onOptIn_() {
-    this.passwordManager_.optInForAccountStorage(true);
-  }
-
-  private onOptOut_() {
-    this.passwordManager_.optInForAccountStorage(false);
-  }
-
   private showImportOrExportPasswords_(): boolean {
     return this.hasSavedPasswords_ || this.showImportPasswords_;
-  }
-
-  /**
-   * Return the first available stored account. This is useful when trying to
-   * figure out the account logged into the content area which seems to always
-   * be first even if multiple accounts are available.
-   * @return The email address of the first stored account or an empty string.
-   */
-  private getFirstStoredAccountEmail_(): string {
-    return !!this.storedAccounts_ && this.storedAccounts_.length > 0 ?
-        this.storedAccounts_[0].email :
-        '';
   }
 
   private focusConfigChanged_(_newConfig: FocusConfig, oldConfig: FocusConfig) {
@@ -757,6 +674,14 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
       assert(toFocus);
       focusWithoutInk(toFocus);
     });
+    // <if expr="is_win">
+    this.focusConfig.set(routes.PASSKEYS.path, () => {
+      const toFocus =
+          this.shadowRoot!.querySelector<HTMLElement>('#managePasskeysIcon');
+      assert(toFocus);
+      focusWithoutInk(toFocus);
+    });
+    // </if>
   }
 
   private announceSearchResults_() {

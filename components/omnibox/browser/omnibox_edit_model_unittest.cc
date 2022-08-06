@@ -31,9 +31,11 @@
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/url_formatter/url_fixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 
 using metrics::OmniboxEventProto;
@@ -57,6 +59,12 @@ class TestOmniboxPopupView : public OmniboxPopupView {
 class OmniboxEditModelTest : public testing::Test {
  public:
   void SetUp() override {
+    // The #omnibox-site-search-starter-pack feature flag has to be enabled
+    // before set up in order for the OpenTabProvider to be initialized (needed
+    // for OpenTabMatch test).
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(omnibox::kSiteSearchStarterPack);
+
     controller_ = std::make_unique<TestOmniboxEditController>();
     view_ = std::make_unique<TestOmniboxView>(controller_.get());
     view_->SetModel(std::make_unique<TestOmniboxEditModel>(
@@ -734,13 +742,20 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   matches[3].has_tab_match = true;
   matches[3].deletable = true;
   // Make match index 4 have a suggestion_group_id to test header behavior.
-  matches[4].suggestion_group_id = 7;
+  const auto kNewGroupId = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
+  matches[4].suggestion_group_id = kNewGroupId;
 
   auto* result = &model()->autocomplete_controller()->result_;
+  result->AppendMatches(matches);
+
+  SuggestionGroupsMap suggestion_groups_map;
+  suggestion_groups_map[kNewGroupId].header = u"header";
+  // Do not set the original_group_id on purpose to test that default visibility
+  // can be safely queried via AutocompleteResult::IsSuggestionGroupHidden().
+  result->MergeSuggestionGroupsMap(suggestion_groups_map);
+
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(matches);
-  result->MergeHeadersMap({{7, u"header"}});
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_EQ(0u, model()->GetPopupSelection().line);
@@ -813,16 +828,24 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithHiddenGroupIds) {
   }
 
   // Hide the second two matches.
-  matches[2].suggestion_group_id = 7;
-  matches[3].suggestion_group_id = 7;
-  omnibox::SetSuggestionGroupVisibility(
-      pref_service(), 7, omnibox::SuggestionGroupVisibility::HIDDEN);
+  const auto kNewGroupId = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
+  matches[2].suggestion_group_id = kNewGroupId;
+  matches[3].suggestion_group_id = kNewGroupId;
 
   auto* result = &model()->autocomplete_controller()->result_;
+  result->AppendMatches(matches);
+
+  SuggestionGroupsMap suggestion_groups_map;
+  suggestion_groups_map[kNewGroupId].header = u"header";
+  suggestion_groups_map[kNewGroupId].original_group_id = 12345;
+  // Setting the original_group_id allows the default visibility to be set via
+  // AutocompleteResult::SetSuggestionGroupHidden().
+  result->MergeSuggestionGroupsMap(suggestion_groups_map);
+  result->SetSuggestionGroupHidden(pref_service(), kNewGroupId,
+                                   /*hidden=*/true);
+
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(matches);
-  result->MergeHeadersMap({{7, u"header"}});
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_EQ(0u, model()->GetPopupSelection().line);
@@ -882,13 +905,20 @@ TEST_F(OmniboxEditModelPopupTest, PopupInlineAutocompleteAndTemporaryText) {
   matches[0].inline_autocompletion = u"1";
   matches[1].fill_into_edit = u"a2";
   matches[2].fill_into_edit = u"a3";
-  matches[2].suggestion_group_id = 7;
+  const auto kNewGroupId = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
+  matches[2].suggestion_group_id = kNewGroupId;
 
   auto* result = &model()->autocomplete_controller()->result_;
+  result->AppendMatches(matches);
+
+  SuggestionGroupsMap suggestion_groups_map;
+  suggestion_groups_map[kNewGroupId].header = u"header";
+  // Do not set the original_group_id on purpose to test that default visibility
+  // can be safely queried via AutocompleteResult::IsSuggestionGroupHidden().
+  result->MergeSuggestionGroupsMap(suggestion_groups_map);
+
   AutocompleteInput input(u"a", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(matches);
-  result->MergeHeadersMap({{7, u"header"}});
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
 
@@ -1168,3 +1198,59 @@ TEST_F(OmniboxEditModelTest, OmniboxEscapeHistogram) {
     }
   }
 }
+
+#if !(BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID))
+// The keyword mode feature is only available on Desktop. Do not test on mobile.
+TEST_F(OmniboxEditModelTest, OpenTabMatch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kSiteSearchStarterPack);
+
+  // Populate template URL with starter pack entries
+  std::vector<std::unique_ptr<TemplateURLData>> turls =
+      TemplateURLStarterPackData::GetStarterPackEngines();
+  for (auto& turl : turls) {
+    model()->client()->GetTemplateURLService()->Add(
+        std::make_unique<TemplateURL>(std::move(*turl)));
+  }
+
+  // When the match comes from the Open Tab Provider while in tabs search
+  // keyword mode, the disposition should be set to SWITCH_TO_TAB.
+  AutocompleteMatch match(
+      model()->autocomplete_controller()->open_tab_provider(), 0, false,
+      AutocompleteMatchType::OPEN_TAB);
+  match.destination_url = GURL("https://foo/");
+  match.from_keyword = true;
+
+  // Set the keyword to "@tabs" to put us in tab search mode.
+  model()->OnPopupDataChanged(std::u16string(), false, std::u16string(),
+                              std::u16string(), /* keyword = */ u"@tabs", false,
+                              std::u16string());
+
+  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
+                     std::u16string(), 0);
+  EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::SWITCH_TO_TAB);
+
+  // Suggestions not from the Open Tab Provider or not from keyword mode should
+  // not change the disposition.
+  match.from_keyword = false;
+  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
+                     std::u16string(), 0);
+  EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::CURRENT_TAB);
+
+  match.provider = model()->autocomplete_controller()->search_provider();
+  match.from_keyword = true;
+  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
+                     std::u16string(), 0);
+  EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::CURRENT_TAB);
+
+  // Suggestions in keyword mode but NOT in tab search should NOT change the
+  // disposition.
+  model()->OnPopupDataChanged(std::u16string(), false, std::u16string(),
+                              std::u16string(), /* keyword = */ u"@history",
+                              false, std::u16string());
+  match.provider = model()->autocomplete_controller()->open_tab_provider();
+  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
+                     std::u16string(), 0);
+  EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::CURRENT_TAB);
+}
+#endif  // !(BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID))

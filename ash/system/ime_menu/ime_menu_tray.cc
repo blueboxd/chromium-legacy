@@ -350,6 +350,10 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   init_params.reroute_event_handler = true;
 
   auto setup_layered_view = [](views::View* view) {
+    // In dark light mode, we switch TrayBubbleView to use a textured layer
+    // instead of solid color layer, so no need to create an extra layer here.
+    if (features::IsDarkLightModeEnabled())
+      return;
     view->SetPaintToLayer();
     view->layer()->SetFillsBoundsOpaquely(false);
   };
@@ -479,6 +483,24 @@ TrayBubbleView* ImeMenuTray::GetBubbleView() {
 
 views::Widget* ImeMenuTray::GetBubbleWidget() const {
   return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
+}
+
+void ImeMenuTray::AddedToWidget() {
+  // SetVisiblePreferred cannot be called until after the view has been added to
+  // a widget.
+  auto* ime_controller = Shell::Get()->ime_controller();
+
+  // On the primary display, `ImeMenuTray` is created for the primary shelf, and
+  // then `ImeObserver`s (of which `ImeMenuTray` is one) can react to IME menu
+  // activation. If the IME menu is active, and then a display is connected,
+  // this object will not have been notified of previous IME menu activations.
+  // So check for that here and modify visibility. Only necessary for secondary
+  // displays.
+  if (!ime_controller || !ime_controller->is_menu_active())
+    return;
+
+  SetVisiblePreferred(true);
+  UpdateTrayLabel();
 }
 
 void ImeMenuTray::OnIMERefresh() {

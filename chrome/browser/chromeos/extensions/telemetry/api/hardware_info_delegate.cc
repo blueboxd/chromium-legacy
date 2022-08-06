@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"
-#include "ash/webui/telemetry_extension_ui/services/probe_service.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -19,6 +17,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/remote_probe_service_strategy.h"
+#include "chromeos/crosapi/mojom/probe_service.mojom.h"
 
 namespace chromeos {
 
@@ -50,7 +49,7 @@ void GetManufacturerFromSysfs(base::OnceCallback<void(std::string)> callback) {
 }
 
 // Callback from ProbeTelemetryService::ProbeTelemetryInfo().
-std::string OnGetSystemInfo(ash::health::mojom::TelemetryInfoPtr ptr) {
+std::string OnGetSystemInfo(crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
   if (!ptr || !ptr->system_result || !ptr->system_result->is_system_info()) {
     return "";
   }
@@ -88,7 +87,7 @@ HardwareInfoDelegate::HardwareInfoDelegate()
     : remote_probe_service_strategy_(RemoteProbeServiceStrategy::Create()) {}
 HardwareInfoDelegate::~HardwareInfoDelegate() = default;
 
-mojo::Remote<ash::health::mojom::ProbeService>&
+mojo::Remote<crosapi::mojom::ProbeService>&
 HardwareInfoDelegate::GetRemoteService() {
   return remote_probe_service_strategy_->GetRemoteService();
 }
@@ -104,7 +103,7 @@ void HardwareInfoDelegate::GetManufacturer(ManufacturerCallback done_cb) {
                                  base::Unretained(this), std::move(done_cb));
   auto cb = base::BindOnce(&OnGetSystemInfo).Then(std::move(fallback));
   GetRemoteService()->ProbeTelemetryInfo(
-      {ash::health::mojom::ProbeCategoryEnum::kSystem}, std::move(cb));
+      {crosapi::mojom::ProbeCategoryEnum::kSystem}, std::move(cb));
 }
 
 void HardwareInfoDelegate::FallbackHandler(ManufacturerCallback done_cb,

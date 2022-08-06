@@ -26,6 +26,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/ash/crostini/crostini_engagement_metrics_service.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
@@ -63,8 +64,8 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -662,6 +663,8 @@ void CrostiniManager::CrostiniRestarter::LoadComponentFinished(
   }
   // Set the pref here, after we first successfully install something
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
+  // Register penguin so it will show in Terminal even on failure (b/221771751).
+  AddNewLxdContainerToPrefs(profile_, DefaultContainerId());
 
   // Allow concierge to choose an appropriate disk image size.
   int64_t disk_size_bytes = requests_[0].options.disk_size_bytes.value_or(0);
@@ -1238,6 +1241,17 @@ CrostiniManager::CrostiniManager(Profile* profile)
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
     for (const auto& container :
          guest_os::GetContainers(profile_, kCrostiniDefaultVmType)) {
+      // For a short while in M106 Bruschetta was getting added to prefs without
+      // a VM type, which meant it defaulted to Termina. If we've got it in
+      // prefs remove it instead of registering it. This'll break anyone who
+      // really has a vm named "bru" which is unfortunate, but we can't tell the
+      // difference between a correct and incorrect pref, so hopefully no one's
+      // done so.
+      // TODO(b/241043433): This code can be removed after M118.
+      if (container.vm_name == bruschetta::kBruschettaVmName) {
+        guest_os::RemoveContainerFromPrefs(profile, container);
+        continue;
+      }
       RegisterContainer(container);
     }
   }
@@ -2678,8 +2692,8 @@ void CrostiniManager::OnContainerStarted(
   running_containers_.emplace(
       signal.vm_name(),
       ContainerInfo(signal.container_name(), signal.container_username(),
-                    signal.container_homedir(), signal.ipv4_address()));
-
+                    signal.container_homedir(), signal.ipv4_address(),
+                    signal.sftp_vsock_port()));
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, container_id, CrostiniResult::SUCCESS);
 
@@ -3754,18 +3768,18 @@ void CrostiniManager::OnPendingAppListUpdates(
 
 // TODO(danielng): Consider handling instant tethering.
 void CrostiniManager::ActiveNetworksChanged(
-    const std::vector<const chromeos::NetworkState*>& active_networks) {
+    const std::vector<const ash::NetworkState*>& active_networks) {
   chromeos::NetworkStateHandler::NetworkStateList active_physical_networks;
   chromeos::NetworkHandler::Get()
       ->network_state_handler()
-      ->GetActiveNetworkListByType(chromeos::NetworkTypePattern::Physical(),
+      ->GetActiveNetworkListByType(ash::NetworkTypePattern::Physical(),
                                    &active_physical_networks);
   if (active_physical_networks.empty())
     return;
-  const chromeos::NetworkState* network = active_physical_networks.at(0);
+  const ash::NetworkState* network = active_physical_networks.at(0);
   if (!network)
     return;
-  const chromeos::DeviceState* device =
+  const ash::DeviceState* device =
       chromeos::NetworkHandler::Get()->network_state_handler()->GetDeviceState(
           network->device_path());
   if (!device)
@@ -3959,7 +3973,7 @@ void CrostiniManager::RegisterContainer(const guest_os::GuestId& container_id) {
     auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
                          ->TerminalProviderRegistry();
     terminal_provider_ids_[container_id] = registry->Register(
-        std::make_unique<CrostiniTerminalProvider>(container_id));
+        std::make_unique<CrostiniTerminalProvider>(profile_, container_id));
   }
   if (CrostiniFeatures::Get()->IsMultiContainerAllowed(profile_) &&
       container_id != DefaultContainerId()) {
@@ -3992,8 +4006,8 @@ void CrostiniManager::UnregisterAllContainers() {
                                 ->TerminalProviderRegistry();
   for (const auto& pair : terminal_provider_ids_) {
     terminal_registry->Unregister(pair.second);
-    terminal_provider_ids_.erase(pair.first);
   }
+  terminal_provider_ids_.clear();
 }
 
 }  // namespace crostini

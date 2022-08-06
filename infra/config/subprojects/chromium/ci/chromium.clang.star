@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.clang builder group."""
 
-load("//lib/builders.star", "builders", "os", "sheriff_rotations", "xcode")
+load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations", "xcode")
 load("//lib/branches.star", "branches")
-load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
+load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -102,8 +102,8 @@ ci.builder(
         short_name = "CF",
     ),
     notifies = ["CFI Linux"],
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -399,7 +399,7 @@ ci.builder(
     cores = None,
     os = os.MAC_12,
     ssd = True,
-    xcode = xcode.x13main,
+    xcode = xcode.x14main,
 )
 
 ci.builder(
@@ -412,7 +412,7 @@ ci.builder(
     cores = None,
     os = os.MAC_12,
     ssd = True,
-    xcode = xcode.x13main,
+    xcode = xcode.x14main,
 )
 
 clang_mac_builder(

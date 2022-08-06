@@ -50,11 +50,11 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   // These getters must be called after UpdateScreenTransform() when screen
   // transform data is really needed.
   const TransformationMatrix& to_screen() const {
-    DCHECK(screen_transform_);
+    DCHECK(ScreenTransformIsValid());
     return screen_transform_->to_screen;
   }
   const TransformationMatrix& projection_from_screen() const {
-    DCHECK(screen_transform_);
+    DCHECK(ScreenTransformIsValid());
     return screen_transform_->projection_from_screen;
   }
   bool projection_from_screen_is_valid() const {
@@ -65,13 +65,19 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
            screen_transform_->projection_from_screen_is_valid;
   }
   void ApplyToScreen(TransformationMatrix& m) const {
-    if (UNLIKELY(screen_transform_))
+#if DCHECK_IS_ON()
+    CheckScreenTransformUpdated();
+#endif
+    if (UNLIKELY(ScreenTransformIsValid()))
       m.Multiply(to_screen());
     else
       ApplyToPlaneRoot(m);
   }
   void ApplyProjectionFromScreen(TransformationMatrix& m) const {
-    if (UNLIKELY(screen_transform_))
+#if DCHECK_IS_ON()
+    CheckScreenTransformUpdated();
+#endif
+    if (UNLIKELY(ScreenTransformIsValid()))
       m.Multiply(projection_from_screen());
     else
       ApplyFromPlaneRoot(m);
@@ -116,6 +122,19 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   }
 
   bool has_fixed() const { return has_fixed_; }
+  bool has_sticky() const { return has_sticky_; }
+
+  bool is_backface_hidden() const { return is_backface_hidden_; }
+
+  const TransformPaintPropertyNode& nearest_scroll_translation() const {
+    DCHECK(nearest_scroll_translation_);
+    return *nearest_scroll_translation_;
+  }
+
+  const TransformPaintPropertyNode* nearest_directly_composited_ancestor()
+      const {
+    return nearest_directly_composited_ancestor_;
+  }
 
  private:
   friend class GeometryMapperTransformCacheTest;
@@ -125,6 +144,10 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
 #endif
 
   void Update(const TransformPaintPropertyNode&);
+
+  bool ScreenTransformIsValid() const {
+    return screen_transform_ && screen_transform_->is_valid;
+  }
 
   static unsigned s_global_generation;
 
@@ -195,21 +218,30 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   struct PlaneRootTransform {
     TransformationMatrix to_plane_root;
     TransformationMatrix from_plane_root;
-    const TransformPaintPropertyNode* plane_root;
-    bool has_animation;
+    const TransformPaintPropertyNode* plane_root = nullptr;
+    bool has_animation = false;
   };
   std::unique_ptr<PlaneRootTransform> plane_root_transform_;
 
   struct ScreenTransform {
     TransformationMatrix to_screen;
     TransformationMatrix projection_from_screen;
-    bool projection_from_screen_is_valid;
-    bool has_animation;
+    bool projection_from_screen_is_valid = false;
+    bool has_animation = false;
+    bool is_valid = false;
   };
   std::unique_ptr<ScreenTransform> screen_transform_;
 
   // Whether or not there is a fixed position transform to the root.
   bool has_fixed_ = false;
+  // Whether or not there is a sticky translation to the root.
+  bool has_sticky_ = false;
+
+  bool is_backface_hidden_ = false;
+
+  const TransformPaintPropertyNode* nearest_scroll_translation_ = nullptr;
+  const TransformPaintPropertyNode* nearest_directly_composited_ancestor_ =
+      nullptr;
 
   unsigned cache_generation_ = s_global_generation - 1;
 };

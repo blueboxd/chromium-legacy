@@ -75,31 +75,14 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
                                MessageCallback callback) override;
-  void RegisterDeprecatedMessageCallback(
-      base::StringPiece message,
-      const DeprecatedMessageCallback& callback) override;
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            base::Value::List args) override;
   bool CanCallJavascript() override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg1,
-                                    const base::Value& arg2) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg1,
-                                    const base::Value& arg2,
-                                    const base::Value& arg3) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg1,
-                                    const base::Value& arg2,
-                                    const base::Value& arg3,
-                                    const base::Value& arg4) override;
+  void CallJavascriptFunctionUnsafe(base::StringPiece function_name) override;
   void CallJavascriptFunctionUnsafe(
-      const std::string& function_name,
-      const std::vector<const base::Value*>& args) override;
+      base::StringPiece function_name,
+      base::span<const base::ValueView> args) override;
   std::vector<std::unique_ptr<WebUIMessageHandler>>* GetHandlersForTesting()
       override;
 
@@ -127,12 +110,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // A map of message name -> message handling callback.
   std::map<std::string, MessageCallback> message_callbacks_;
 
-  // A map of message name -> message handling callback.
-  // TODO(crbug.com/1243386): Remove once RegisterDeprecatedMessageCallback()
-  // instances are migrated to RegisterMessageCallback().
-  std::map<std::string, DeprecatedMessageCallback>
-      deprecated_message_callbacks_;
-
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
   std::u16string overridden_title_;  // Defaults to empty string.
@@ -142,11 +119,17 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // The URL schemes that can be requested by this document.
   std::vector<std::string> requestable_schemes_;
 
-  // RenderFrameHost associated with |this|.
-  raw_ptr<RenderFrameHostImpl> frame_host_;
-
-  // Non-owning pointer to the WebContentsImpl this WebUI is associated with.
-  raw_ptr<WebContentsImpl> web_contents_;
+  // Non-owning pointer to the WebContents and RenderFrameHostImpl this WebUI is
+  // associated with. It is generally safe, because |web_content_| indirectly
+  // owns |frame_host_|, which owns |this|.
+  //
+  // Note: During the destructor, releasing |controller_| calls content/
+  // embedder code. This might delete both synchronously.
+  // This lead to one UAF. See https://crbug.com/1308391
+  // See regression test:
+  // `WebUIImplBrowserTest::SynchronousWebContentDeletionInUnload`
+  raw_ptr<WebContents, DisableDanglingPtrDetection> web_contents_;
+  raw_ptr<RenderFrameHostImpl, DisableDanglingPtrDetection> frame_host_;
 
   // The WebUIMessageHandlers we own.
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;

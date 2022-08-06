@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A TTS engine that writes to window.console.
+ * @fileoverview A TTS engine that writes to globalThis.console.
  */
-import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
+import {SpeechLog} from '../common/log_types.js';
+
+import {LogStore} from './logging/log_store.js';
+import {ChromeVoxPrefs} from './prefs.js';
 
 /**
  * @implements {TtsInterface}

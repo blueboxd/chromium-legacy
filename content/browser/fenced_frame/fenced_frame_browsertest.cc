@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame.mojom-test-utils.h"
 #include "content/public/browser/frame_type.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_features.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -257,30 +257,35 @@ namespace {
 // connects a NavigationDelayer which delays the FencedFrameOwnerHost's
 // Navigate mojo method.
 class NavigationDelayerInterceptor
-    : public mojom::FrameHostInterceptorForTesting {
+    : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
   explicit NavigationDelayerInterceptor(RenderFrameHostImpl* render_frame_host,
                                         base::TimeDelta duration)
       : render_frame_host_(render_frame_host),
         duration_(duration),
-        impl_(render_frame_host_->frame_host_receiver_for_testing()
+        impl_(render_frame_host_->local_frame_host_receiver_for_testing()
                   .SwapImplForTesting(this)) {}
 
   ~NavigationDelayerInterceptor() override = default;
 
-  mojom::FrameHost* GetForwardingInterface() override { return impl_; }
+  blink::mojom::LocalFrameHost* GetForwardingInterface() override {
+    return impl_;
+  }
 
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
           pending_receiver,
       blink::mojom::FencedFrameMode mode,
-      CreateFencedFrameCallback callback) override {
+      blink::mojom::RemoteFrameInterfacesFromRendererPtr
+          remote_frame_interfaces,
+      const blink::RemoteFrameToken& frame_token,
+      const base::UnguessableToken& devtools_frame_token) override {
     mojo::PendingAssociatedRemote<blink::mojom::FencedFrameOwnerHost>
         original_remote;
 
     GetForwardingInterface()->CreateFencedFrame(
         original_remote.InitWithNewEndpointAndPassReceiver(), mode,
-        std::move(callback));
+        std::move(remote_frame_interfaces), frame_token, devtools_frame_token);
     std::vector<FencedFrame*> fenced_frames =
         render_frame_host_->GetFencedFrames();
     ASSERT_FALSE(fenced_frames.empty());
@@ -324,7 +329,7 @@ class NavigationDelayerInterceptor
   raw_ptr<RenderFrameHostImpl> render_frame_host_;
   std::unique_ptr<NavigationDelayer> navigate_interceptor_;
   const base::TimeDelta duration_;
-  raw_ptr<mojom::FrameHost> impl_;
+  raw_ptr<blink::mojom::LocalFrameHost> impl_;
 };
 
 }  // namespace
@@ -479,7 +484,13 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
 // Test that a fenced-frame does not perform any of the Android main-frame
 // viewport behaviors like zoom-out-to-fit-content or parsing the viewport
 // <meta>.
-IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, ViewportSettings) {
+// Flaky on Mac https://crbug.com/1349900
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ViewportSettings DISABLED_ViewportSettings
+#else
+#define MAYBE_ViewportSettings ViewportSettings
+#endif
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, MAYBE_ViewportSettings) {
   ASSERT_TRUE(https_server()->Start());
   const GURL top_level_url =
       https_server()->GetURL("c.test", "/fenced_frames/viewport.html");
@@ -980,6 +991,30 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, FocusedFrameInFencedFrame) {
   EXPECT_EQ(web_contents()->GetFocusedFrame(), fenced_frame_rfh.get());
 }
 
+// Test that the initial navigation in a fenced frame, which navigates from the
+// initial empty document, is not classified as a client redirect.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
+                       InitialNavigationIsNotClientRedirect) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL url = https_server()->GetURL("c.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  FrameNavigateParamsCapturer capturer(web_contents());
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+  fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                               fenced_frame_url);
+  capturer.Wait();
+  EXPECT_EQ(capturer.urls()[0], fenced_frame_url);
+
+  ASSERT_EQ(1U, capturer.transitions().size());
+  // The transition used for the initial navigation in the fenced frame is not
+  // classified as a client-side redirect.
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      capturer.transitions()[0],
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_SUBFRAME)));
+}
+
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
                        ProcessAllocationWithFullSiteIsolation) {
   ASSERT_TRUE(https_server()->Start());
@@ -1093,18 +1128,39 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, EnsureSandboxFlagsEnforced) {
 }
 
 class FencedFrameWithSiteIsolationDisabledBrowserTest
-    : public FencedFrameBrowserTest {
+    : public FencedFrameBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
-  FencedFrameWithSiteIsolationDisabledBrowserTest() = default;
+  FencedFrameWithSiteIsolationDisabledBrowserTest() {
+    std::vector<base::Feature> enabled_features = {
+        GetParam() ? features::kProcessSharingWithDefaultSiteInstances
+                   : features::kProcessSharingWithStrictSiteInstances};
+    std::vector<base::Feature> disabled_features = {
+        GetParam() ? features::kProcessSharingWithStrictSiteInstances
+                   : features::kProcessSharingWithDefaultSiteInstances};
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
   ~FencedFrameWithSiteIsolationDisabledBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FencedFrameBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(FencedFrameWithSiteIsolationDisabledBrowserTest,
+INSTANTIATE_TEST_SUITE_P(All,
+                         FencedFrameWithSiteIsolationDisabledBrowserTest,
+                         testing::Bool(),
+                         [](const testing::TestParamInfo<bool>& info) {
+                           return info.param ? "DefaultSiteInstances"
+                                             : "StrictSiteInstances";
+                         });
+
+IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
                        ProcessAllocationWithSiteIsolationDisabled) {
   ASSERT_TRUE(https_server()->Start());
   if (AreAllSitesIsolatedForTesting()) {
@@ -1143,7 +1199,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameWithSiteIsolationDisabledBrowserTest,
             primary_main_frame_host()->GetProcess());
 }
 
-IN_PROC_BROWSER_TEST_F(FencedFrameWithSiteIsolationDisabledBrowserTest,
+IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
                        ProcessAllocationWithDynamicIsolatedOrigin) {
   ASSERT_TRUE(https_server()->Start());
   if (AreAllSitesIsolatedForTesting()) {
@@ -1173,6 +1229,102 @@ IN_PROC_BROWSER_TEST_F(FencedFrameWithSiteIsolationDisabledBrowserTest,
   // the isolated.b.test fenced frame should be in a different process.
   EXPECT_EQ(ff_rfh_1->GetProcess(), primary_main_frame_host()->GetProcess());
   EXPECT_NE(ff_rfh_2->GetProcess(), ff_rfh_1->GetProcess());
+
+  // When we navigate the second fenced frame to c.test, it should now share
+  // its process with the embedder.
+  ff_rfh_2 = fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
+      ff_rfh_2, cross_site_fenced_frame_url);
+  EXPECT_EQ(ff_rfh_2->GetProcess(), primary_main_frame_host()->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
+                       ProcessAllocationWhenRootIsIsolated) {
+  ASSERT_TRUE(https_server()->Start());
+  if (AreAllSitesIsolatedForTesting()) {
+    LOG(ERROR) << "Site isolation should be disabled for this test.";
+    return;
+  }
+
+  const GURL isolated_url =
+      https_server()->GetURL("isolated.b.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html");
+  const GURL iframe_url = https_server()->GetURL("a.test", "/title1.html");
+
+  // Start isolating "isolated.b.test".
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddFutureIsolatedOrigins(
+      {url::Origin::Create(isolated_url)},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
+
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  RenderFrameHost* ff_rfh = fenced_frame_test_helper().CreateFencedFrame(
+      primary_main_frame_host(), GURL());
+  EXPECT_EQ(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
+  ff_rfh = fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
+      ff_rfh, fenced_frame_url);
+  EXPECT_NE(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
+
+  EXPECT_TRUE(ExecJs(primary_main_frame_host(),
+                     JsReplace(kAddIframeScript, iframe_url)));
+  RenderFrameHostImpl* iframe = static_cast<RenderFrameHostImpl*>(
+      ChildFrameAt(primary_main_frame_host(), 1));
+  ASSERT_TRUE(iframe && iframe->GetParent() == primary_main_frame_host());
+  EXPECT_EQ(iframe->GetProcess(), ff_rfh->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
+                       ProcessAllocationForNestedFencedFrame) {
+  ASSERT_TRUE(https_server()->Start());
+  if (AreAllSitesIsolatedForTesting()) {
+    LOG(ERROR) << "Site isolation should be disabled for this test.";
+    return;
+  }
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("b.test", "/fenced_frames/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHost* ff_rfh = fenced_frame_test_helper().CreateFencedFrame(
+      primary_main_frame_host(), fenced_frame_url);
+  EXPECT_EQ(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
+  RenderFrameHost* nested_ff_rfh =
+      fenced_frame_test_helper().CreateFencedFrame(ff_rfh, fenced_frame_url);
+  EXPECT_EQ(ff_rfh->GetProcess(), nested_ff_rfh->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
+                       ProcessAllocationForFencedFrameInIsolatedPopup) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("b.test", "/fenced_frames/title1.html");
+  const GURL popup_url =
+      https_server()->GetURL("isolated.c.test", "/title2.html");
+
+  // Start isolating "isolated.c.test".
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddFutureIsolatedOrigins(
+      {url::Origin::Create(popup_url)},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(
+      ExecJs(primary_main_frame_host(), "popup = window.open('about:blank');"));
+  Shell* popup = new_shell_observer.GetShell();
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, popup_url));
+  RenderFrameHost* popup_rfh = popup->web_contents()->GetPrimaryMainFrame();
+  ASSERT_EQ(
+      primary_main_frame_host()->GetSiteInstance()->GetBrowsingInstanceId(),
+      popup_rfh->GetSiteInstance()->GetBrowsingInstanceId());
+
+  RenderFrameHost* ff_rfh =
+      fenced_frame_test_helper().CreateFencedFrame(popup_rfh, fenced_frame_url);
+  ASSERT_EQ(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
 }
 
 namespace {

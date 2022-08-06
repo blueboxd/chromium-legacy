@@ -40,21 +40,16 @@ class PasswordStoreAndroidBackendBridgeImpl
 
   // Called via JNI. Called when the api call with `job_id` finished with
   // an exception.
-  void OnError(JNIEnv* env, jint job_id, jint error_type, jint api_error_code);
-
-  // Called via JNI. Called when the api subscribe call with `job_id` succeeded.
-  void OnSubscribed(JNIEnv* env, jint job_id);
-
-  // Called via JNI. Called when the api subscribe call with `job_id` failed.
-  void OnSubscribeFailed(JNIEnv* env,
-                         jint job_id,
-                         jint error_type,
-                         jint api_error_code);
+  void OnError(JNIEnv* env,
+               jint job_id,
+               jint error_type,
+               jint api_error_code,
+               jboolean has_connection_result,
+               jint connection_result_code);
 
  private:
   // Implements PasswordStoreAndroidBackendBridge interface.
   void SetConsumer(base::WeakPtr<Consumer> consumer) override;
-  [[nodiscard]] JobId Subscribe(Account account) override;
   [[nodiscard]] JobId GetAllLogins(Account account) override;
   [[nodiscard]] JobId GetAutofillableLogins(Account account) override;
   [[nodiscard]] JobId GetLoginsForSignonRealm(const std::string& signon_realm,
@@ -67,6 +62,8 @@ class PasswordStoreAndroidBackendBridgeImpl
                                   Account account) override;
 
   [[nodiscard]] JobId GetNextJobId();
+
+  void ShowErrorNotification() override;
 
   // This member stores the unique ID last used for an API request.
   JobId last_job_id_{0};

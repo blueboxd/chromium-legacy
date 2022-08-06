@@ -291,12 +291,12 @@ IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, Test) {
 
 // A version of FilesAppBrowserTest that supports DLP files restrictions.
 class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
- protected:
-  DlpFilesAppBrowserTest() = default;
-
+ public:
   DlpFilesAppBrowserTest(const DlpFilesAppBrowserTest&) = delete;
   DlpFilesAppBrowserTest& operator=(const DlpFilesAppBrowserTest&) = delete;
 
+ protected:
+  DlpFilesAppBrowserTest() = default;
   ~DlpFilesAppBrowserTest() override = default;
 
   std::unique_ptr<KeyedService> SetDlpRulesManager(
@@ -317,6 +317,33 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
                             base::Unretained(this)));
   }
 
+  bool HandleDlpCommands(const std::string& name,
+                         const base::Value::Dict& value,
+                         std::string* output) override {
+    if (name == "setIsRestrictedDestinationRestriction") {
+      EXPECT_CALL(*mock_rules_manager_, IsRestrictedDestination)
+          .WillRepeatedly(
+              ::testing::Return(policy::DlpRulesManager::Level::kBlock));
+      return true;
+    }
+    if (name == "setIsRestrictedByAnyRuleRestrictions") {
+      EXPECT_CALL(*mock_rules_manager_, IsRestrictedByAnyRule)
+          .WillOnce(::testing::Return(policy::DlpRulesManager::Level::kWarn))
+          .WillOnce(::testing::Return(policy::DlpRulesManager::Level::kAllow))
+          .WillOnce(::testing::Return(policy::DlpRulesManager::Level::kNotSet))
+          .WillRepeatedly(
+              ::testing::Return(policy::DlpRulesManager::Level::kBlock));
+      return true;
+    }
+    if (name == "setIsRestrictedByAnyRuleBlocked") {
+      EXPECT_CALL(*mock_rules_manager_, IsRestrictedByAnyRule)
+          .WillRepeatedly(
+              ::testing::Return(policy::DlpRulesManager::Level::kBlock));
+      return true;
+    }
+    return false;
+  }
+
   // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
   // this class.
   policy::MockDlpRulesManager* mock_rules_manager_ = nullptr;
@@ -330,9 +357,6 @@ IN_PROC_BROWSER_TEST_P(DlpFilesAppBrowserTest, Test) {
       .WillByDefault(::testing::Return(policy::DlpRulesManager::Level::kAllow));
   ON_CALL(*mock_rules_manager_, GetReportingManager)
       .WillByDefault(::testing::Return(nullptr));
-  EXPECT_CALL(*mock_rules_manager_, IsRestrictedDestination)
-      .WillRepeatedly(
-          ::testing::Return(policy::DlpRulesManager::Level::kBlock));
 
   StartTest();
 }
@@ -522,6 +546,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("zipExtractNotEnoughSpace").ExtractArchive().FilesSwa(),
         TestCase("zipExtractFromReadOnly").ExtractArchive().FilesSwa(),
         TestCase("zipExtractShowPanel").ExtractArchive().FilesSwa(),
+        TestCase("zipExtractShowMultiPanel").ExtractArchive().FilesSwa(),
         TestCase("zipExtractSelectionMenus").ExtractArchive().FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -655,6 +680,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkCutDisabledForReadOnlyDocument").FilesSwa(),
         TestCase("checkCutDisabledForReadOnlyFile"),
         TestCase("checkCutDisabledForReadOnlyFile").FilesSwa(),
+        TestCase("checkDlpRestrictionDetailsDisabledForNonDlpFiles"),
+        TestCase("checkDlpRestrictionDetailsDisabledForNonDlpFiles").FilesSwa(),
         TestCase("checkCutDisabledForReadOnlyFolder"),
         TestCase("checkCutDisabledForReadOnlyFolder").FilesSwa(),
         TestCase("checkPasteIntoFolderEnabledForReadWriteFolder"),
@@ -1253,9 +1280,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferShowPendingMessageForZeroRemainingTime").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    Transfer, /* transfer.js */
+    DLP, /* dlp.js */
     DlpFilesAppBrowserTest,
-    ::testing::Values(TestCase("transferShowDlpToast").EnableDlp()));
+    ::testing::Values(
+        TestCase("transferShowDlpToast").EnableDlp(),
+        TestCase("dlpShowManagedIcon").EnableDlp(),
+        TestCase("dlpContextMenuRestrictionDetails").EnableDlp()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */
@@ -1619,10 +1649,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("enableDisableStorageSettingsLink").FilesSwa(),
         TestCase("showAvailableStorageMyFiles"),
         TestCase("showAvailableStorageMyFiles").FilesSwa(),
-        // Disabled until Drive quota can be properly displayed.
-        // crbug.com/1177203
-        // TestCase("showAvailableStorageDrive"),
-        // TestCase("showAvailableStorageDrive").FilesSwa(),
+        TestCase("showAvailableStorageDrive"),
+        TestCase("showAvailableStorageDrive").FilesSwa(),
         TestCase("showAvailableStorageSmbfs"),
         TestCase("showAvailableStorageSmbfs").FilesSwa(),
         TestCase("showAvailableStorageDocProvider")
@@ -1649,6 +1677,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("filesTooltipLabelChange").FilesSwa(),
         TestCase("filesTooltipMouseOver"),
         TestCase("filesTooltipMouseOver").FilesSwa(),
+        TestCase("filesTooltipMouseOverStaysOpen"),
+        TestCase("filesTooltipMouseOverStaysOpen").FilesSwa(),
         TestCase("filesTooltipClickHides"),
         TestCase("filesTooltipClickHides").FilesSwa(),
         TestCase("filesTooltipHidesOnWindowResize"),
@@ -1782,6 +1812,20 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableFiltersInRecentsV2(),
         TestCase("recentsAllowRename")
             .EnableArc()
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
+        TestCase("recentsEmptyFolderMessage")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentsEmptyFolderMessage")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
+        TestCase("recentsEmptyFolderMessageAfterDeletion")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentsEmptyFolderMessageAfterDeletion")
             .EnableFiltersInRecents()
             .EnableFiltersInRecentsV2()
             .FilesSwa(),
@@ -1993,7 +2037,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("metricsRecordEnum"),
                       TestCase("metricsRecordEnum").FilesSwa(),
                       TestCase("metricsOpenSwa").FilesSwa(),
-                      TestCase("metricsRecordDirectoryListLoad")));
+                      TestCase("metricsRecordDirectoryListLoad"),
+                      TestCase("metricsRecordUpdateAvailableApps")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Breadcrumbs, /* breadcrumbs.js */
@@ -2114,6 +2159,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableUploadOfficeToCloud(),
         TestCase("openOfficeWordFromMyFiles")
             .EnableWebDriveOffice()
+            .EnableUploadOfficeToCloud()
+            .FilesSwa(),
+        TestCase("uploadToDriveRequiresWebDriveOfficeEnabled")
+            .EnableUploadOfficeToCloud(),
+        TestCase("uploadToDriveRequiresWebDriveOfficeEnabled")
             .EnableUploadOfficeToCloud()
             .FilesSwa(),
         TestCase("openMultipleOfficeWordFromDrive").EnableWebDriveOffice(),

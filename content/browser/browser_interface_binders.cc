@@ -20,6 +20,7 @@
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_topics/browsing_topics_document_host.h"
+#include "content/browser/compute_pressure/pressure_service_impl.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
@@ -37,6 +38,7 @@
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/preloading/prerender/prerender_internals.mojom.h"
 #include "content/browser/preloading/prerender/prerender_internals_ui.h"
+#include "content/browser/preloading/speculation_rules/speculation_host_impl.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
 #include "content/browser/process_internals/process_internals_ui.h"
 #include "content/browser/quota/quota_context.h"
@@ -49,7 +51,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_host.h"
-#include "content/browser/speculation_rules/speculation_host_impl.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
@@ -106,7 +107,7 @@
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
-#include "third_party/blink/public/mojom/compute_pressure/compute_pressure.mojom.h"
+#include "third_party/blink/public/mojom/compute_pressure/pressure_service.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
@@ -737,8 +738,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::CodeCacheHost>(base::BindRepeating(
       &RenderFrameHostImpl::CreateCodeCacheHost, base::Unretained(host)));
 
-  map->Add<blink::mojom::ComputePressureHost>(base::BindRepeating(
-      &RenderFrameHostImpl::BindComputePressureHost, base::Unretained(host)));
+  if (base::FeatureList::IsEnabled(blink::features::kComputePressure)) {
+    map->Add<blink::mojom::PressureService>(base::BindRepeating(
+        &PressureServiceImpl::Create, base::Unretained(host)));
+  }
 
   map->Add<blink::mojom::ContactsManager>(
       base::BindRepeating(ContactsManagerImpl::Create, base::Unretained(host)));
@@ -1024,8 +1027,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
       base::BindRepeating(&RenderFrameHostImpl::BindRestrictedCookieManager,
                           base::Unretained(host)));
 
-  map->Add<network::mojom::HasTrustTokensAnswerer>(
-      base::BindRepeating(&RenderFrameHostImpl::BindHasTrustTokensAnswerer,
+  map->Add<network::mojom::TrustTokenQueryAnswerer>(
+      base::BindRepeating(&RenderFrameHostImpl::BindTrustTokenQueryAnswerer,
                           base::Unretained(host)));
 
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
@@ -1066,7 +1069,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
       base::BindRepeating(&BindTextInputHost));
 #endif
 
-  map->Add<mojom::RenderAccessibilityHost>(
+  map->Add<blink::mojom::RenderAccessibilityHost>(
       base::BindRepeating(&RenderFrameHostImpl::BindRenderAccessibilityHost,
                           base::Unretained(host)));
 }
@@ -1275,6 +1278,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &RenderProcessHostImpl::CreateLockManager, host));
   map->Add<blink::mojom::QuotaManagerHost>(BindWorkerReceiverForStorageKey(
       &RenderProcessHostImpl::BindQuotaManagerHost, host));
+  map->Add<blink::mojom::BucketManagerHost>(BindWorkerReceiverForStorageKey(
+      &RenderProcessHostImpl::BindBucketManagerHostForWorker, host));
 }
 
 void PopulateBinderMapWithContext(
@@ -1285,8 +1290,6 @@ void PopulateBinderMapWithContext(
       &RenderProcessHostImpl::CreatePaymentManagerForOrigin, host));
   map->Add<blink::mojom::PermissionService>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::CreatePermissionService, host));
-  map->Add<blink::mojom::BucketManagerHost>(BindWorkerReceiverForOrigin(
-      &RenderProcessHostImpl::BindBucketManagerHostForWorker, host));
 
   // RenderProcessHost binders taking a frame id and an origin
   map->Add<blink::mojom::NotificationService>(
@@ -1367,6 +1370,8 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
       &RenderProcessHostImpl::CreateLockManager, host));
   map->Add<blink::mojom::QuotaManagerHost>(BindWorkerReceiverForStorageKey(
       &RenderProcessHostImpl::BindQuotaManagerHost, host));
+  map->Add<blink::mojom::BucketManagerHost>(BindWorkerReceiverForStorageKey(
+      &RenderProcessHostImpl::BindBucketManagerHostForWorker, host));
 }
 
 void PopulateBinderMapWithContext(
@@ -1377,8 +1382,6 @@ void PopulateBinderMapWithContext(
       &RenderProcessHostImpl::CreatePaymentManagerForOrigin, host));
   map->Add<blink::mojom::PermissionService>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::CreatePermissionService, host));
-  map->Add<blink::mojom::BucketManagerHost>(BindWorkerReceiverForOrigin(
-      &RenderProcessHostImpl::BindBucketManagerHostForWorker, host));
 
   // RenderProcessHost binders taking a frame id and an origin
   map->Add<blink::mojom::NotificationService>(
@@ -1473,8 +1476,6 @@ void PopulateBinderMapWithContext(
       BindServiceWorkerReceiverForStorageKey(
           &RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker,
           host));
-  map->Add<blink::mojom::BucketManagerHost>(BindServiceWorkerReceiverForOrigin(
-      &RenderProcessHostImpl::BindBucketManagerHostForWorker, host));
   map->Add<blink::mojom::OneShotBackgroundSyncService>(
       BindServiceWorkerReceiverForOrigin(
           &RenderProcessHostImpl::CreateOneShotSyncService, host));
@@ -1498,6 +1499,9 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::QuotaManagerHost>(
       BindServiceWorkerReceiverForStorageKey(
           &RenderProcessHostImpl::BindQuotaManagerHost, host));
+  map->Add<blink::mojom::BucketManagerHost>(
+      BindServiceWorkerReceiverForStorageKey(
+          &RenderProcessHostImpl::BindBucketManagerHostForWorker, host));
 
   // RenderProcessHost binders taking a frame id and an origin
   map->Add<blink::mojom::NotificationService>(

@@ -656,7 +656,7 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
   window_->Show();
   AllowSnap(window_.get());
 
-  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_event);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
@@ -681,7 +681,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
   window_->SetBounds(kInitialBounds);
   window_->Show();
 
-  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_event);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
@@ -729,6 +729,37 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
   }
 }
 
+// Verifies the behavior of resizing and restoring a side snapped window.
+TEST_F(WorkspaceWindowResizerTest, ResizeRestoreSnappedWindow) {
+  WindowState* window_state = WindowState::Get(window_.get());
+  AllowSnap(window_.get());
+
+  const gfx::Rect kInitialBounds(100, 100, 100, 100);
+  window_->SetBounds(kInitialBounds);
+  window_->Show();
+
+  // Snap the window to the left.
+  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  window_state->OnWMEvent(&snap_event);
+  gfx::Rect snapped_bounds = window_->bounds();
+
+  // Resize the snapped window to make it wider.
+  std::unique_ptr<WindowResizer> resizer =
+      CreateResizerForTest(window_.get(), gfx::Point(), HTRIGHT);
+  resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
+  snapped_bounds.Inset(gfx::Insets::TLBR(0, 0, 0, -10));
+  EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
+  EXPECT_EQ(kInitialBounds, window_state->GetRestoreBoundsInParent());
+
+  // Minimize then restore the window and expect the resized snapped bounds to
+  // be restored.
+  window_state->Minimize();
+  window_state->Restore();
+  EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
+}
+
 // Verifies windows are correctly restacked when reordering multiple windows.
 TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
   window_->SetBounds(gfx::Rect(0, 0, 200, 300));
@@ -763,8 +794,10 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
 
 // Makes sure we don't allow dragging below the work area.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 10, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 10, 0),
+      gfx::Insets::TLBR(0, 0, 10, 0));
 
   ASSERT_EQ(1, display::Screen::GetScreen()->GetNumDisplays());
 
@@ -782,8 +815,10 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 10, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 10, 0),
+      gfx::Insets::TLBR(0, 0, 10, 0));
 
   // Positions the secondary display at the bottom the primary display.
   Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
@@ -808,8 +843,9 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
     resizer->RevertDrag();
   }
 
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 10, 0));
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 10, 0),
+      gfx::Insets::TLBR(0, 0, 10, 0));
   {
     window_->SetBounds(gfx::Rect(100, 200, 300, 400));
     std::unique_ptr<WindowResizer> resizer =
@@ -841,8 +877,10 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
 
 // Makes sure we don't allow dragging off the top of the work area.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(10, 0, 0, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(10, 0, 0, 0),
+      gfx::Insets::TLBR(10, 0, 0, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 400));
   std::unique_ptr<WindowResizer> resizer = CreateResizerForTest(window_.get());
@@ -852,8 +890,10 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 50, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 50, 0),
+      gfx::Insets::TLBR(0, 0, 50, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 380));
   std::unique_ptr<WindowResizer> resizer =
@@ -864,8 +904,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 50, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 50, 0),
+      gfx::Insets::TLBR(0, 0, 50, 0));
   int left = screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
   int pixels_to_left_border = 50;
   int window_width = 300;
@@ -880,8 +922,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 50, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 50, 0),
+      gfx::Insets::TLBR(0, 0, 50, 0));
   int right =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
   int pixels_to_right_border = 50;
@@ -923,8 +967,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
 TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // Only primary display.  Changes the window position to fit within the
   // display.
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 50, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 50, 0),
+      gfx::Insets::TLBR(0, 0, 50, 0));
   int right =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
   int pixels_to_right_border = 50;
@@ -941,8 +987,10 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // With secondary display.  Operation itself is same but doesn't change
   // the position because the window is still within the secondary display.
   UpdateDisplay("1000x600,600x400");
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets::TLBR(0, 0, 50, 0));
+  root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 50, 0),
+      gfx::Insets::TLBR(0, 0, 50, 0));
   window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
   EXPECT_EQ(gfx::Rect(window_x + window_width, 100, window_width, 380),
@@ -1485,7 +1533,8 @@ TEST_F(WorkspaceWindowResizerTest, PhantomSnapNonMaximizable) {
 TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1516,7 +1565,8 @@ TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
 TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1542,7 +1592,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
 TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1595,7 +1646,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMinHeight) {
 TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1618,7 +1670,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
 TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1642,7 +1695,8 @@ TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
 TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
   UpdateDisplay("400x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1666,7 +1720,8 @@ TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
 TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
   UpdateDisplay("400x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -2152,7 +2207,7 @@ TEST_F(WorkspaceWindowResizerTest, FlingRestoreSize) {
   EXPECT_EQ(window_size, touch_resize_window_->bounds().size());
 
   // Snap a window and do the same test.
-  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_event);
   ASSERT_TRUE(window_state->IsSnapped());
   const gfx::Rect snapped_bounds = window_state->window()->bounds();
@@ -2382,17 +2437,12 @@ class PortraitWorkspaceWindowResizerTest : public WorkspaceWindowResizerTest {
 
   // WorkspaceWindowResizerTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::wm::features::kVerticalSnap);
     WorkspaceWindowResizerTest::SetUp();
     UpdateDisplay("600x800");
 
     // Make the window snappable.
     AllowSnap(window_.get());
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that dragging to an external portrait display updates phantom snap to
@@ -2570,7 +2620,7 @@ TEST_F(PortraitWorkspaceWindowResizerTest, ResizeSnapped) {
   const gfx::Rect work_area =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get());
 
-  const WMEvent snap_top(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_top(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_top);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   gfx::Rect expected_snap_bounds =
@@ -2618,44 +2668,18 @@ TEST_F(PortraitWorkspaceWindowResizerTest, ResizeSnapped) {
   }
 }
 
+using MultiOrientationDisplayWorkspaceWindowResizerTest =
+    WorkspaceWindowResizerTest;
+
 // Test WorkspaceWindowResizer functionalities for two displays with different
-// orientation: landscape and portrait. This test is parameterized to enable
-// vertical or horizontal snap layout in the portrait display.
-class MultiOrientationDisplayWorkspaceWindowResizerTest
-    : public WorkspaceWindowResizerTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  MultiOrientationDisplayWorkspaceWindowResizerTest() = default;
-  MultiOrientationDisplayWorkspaceWindowResizerTest(
-      const MultiOrientationDisplayWorkspaceWindowResizerTest&) = delete;
-  MultiOrientationDisplayWorkspaceWindowResizerTest& operator=(
-      const MultiOrientationDisplayWorkspaceWindowResizerTest&) = delete;
-  ~MultiOrientationDisplayWorkspaceWindowResizerTest() override = default;
+// orientation: landscape and portrait. Assertions around dragging near the four
+// edges of the display.
+TEST_F(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
+  UpdateDisplay("800x600,500x600");
 
-  bool IsVerticalSnapEnabled() const { return GetParam(); }
+  // Make the window snappable.
+  AllowSnap(window_.get());
 
-  // WorkspaceWindowResizerTest:
-  void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::wm::features::kVerticalSnap);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::wm::features::kVerticalSnap);
-    }
-    WorkspaceWindowResizerTest::SetUp();
-    UpdateDisplay("800x600,500x600");
-
-    // Make the window snappable.
-    AllowSnap(window_.get());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Assertions around dragging near the four edges of the display.
-TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
   WindowState* window_state = WindowState::Get(window_.get());
   // Test dragging to another display and snapping there.
@@ -2685,12 +2709,8 @@ TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
     const gfx::Rect secondary_snap_bounds =
-        IsVerticalSnapEnabled() ? gfx::Rect(0, display2_work_area.height() / 2,
-                                            display2_work_area.width(),
-                                            display2_work_area.height() / 2)
-                                : gfx::Rect(display2_work_area.width() / 2, 0,
-                                            display2_work_area.width() / 2,
-                                            display2_work_area.height());
+        gfx::Rect(0, display2_work_area.height() / 2,
+                  display2_work_area.width(), display2_work_area.height() / 2);
     EXPECT_EQ(secondary_snap_bounds, window_->bounds());
     EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
               window_state->GetRestoreBoundsInScreen());
@@ -2716,18 +2736,11 @@ TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, -100), 0);
     resizer->CompleteDrag();
     const gfx::Rect primary_snap_bounds =
-        IsVerticalSnapEnabled() ? gfx::Rect(display2_work_area.width(),
-                                            display2_work_area.height() / 2)
-                                : gfx::Rect(display2_work_area.width() / 2,
-                                            display2_work_area.height());
+        gfx::Rect(display2_work_area.width(), display2_work_area.height() / 2);
     EXPECT_EQ(primary_snap_bounds, window_->bounds());
     EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
               window_state->GetRestoreBoundsInScreen());
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         MultiOrientationDisplayWorkspaceWindowResizerTest,
-                         ::testing::Bool());
 
 }  // namespace ash

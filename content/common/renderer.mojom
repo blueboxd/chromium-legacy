@@ -155,20 +155,13 @@ interface Renderer {
   // This is called at most once, prior to committing a navigation.
   SetIsCrossOriginIsolated(bool value);
 
-  // Direct sockets require isolation above and beyond what "cross-origin
-  // isolation" provides. This flag corresponds to that set of restrictions.
-  // Similarly to the `SetIsCrossOriginIsolated()` method above, this flag is
-  // process global, and called at most once, prior to committing a navigation.
+  // Set whether this renderer process has the "isolated application" isolation
+  // level. Similarly to the `SetIsCrossOriginIsolated()` method above, this
+  // flag is process global, and called at most once, prior to committing a
+  // navigation.
   //
   // TODO(crbug.com/1206150): We need a specification for this restriction.
-  SetIsDirectSocketEnabled(bool value);
-
-  // Enable the given blink runtime features (based on their names) for this
-  // renderer process. If this is non-empty, the embedder should ensure this
-  // renderer process is isolated to avoid exposing such features to other
-  // sites, because those features are highly privileged and shouldn't be
-  // exposed to other sites.
-  EnableBlinkRuntimeFeatures(array<string> features);
+  SetIsIsolatedApplication(bool value);
 
   // Initialize renderer user agent string, user agent metadata and CORS exempt
   // header list on renderer startup.

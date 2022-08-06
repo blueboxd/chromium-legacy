@@ -231,7 +231,7 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
       continue;
     // Highlight pseudo styles are stored in StyleHighlightData, and compared
     // like any other inherited field, yielding Difference::kInherited.
-    if (StyleResolver::UsesHighlightPseudoInheritance(pseudo_id))
+    if (UsesHighlightPseudoInheritance(pseudo_id))
       continue;
     const ComputedStyle* new_pseudo_style =
         new_style.GetCachedPseudoElementStyle(pseudo_id);
@@ -2009,7 +2009,7 @@ static bool HasInitialVariables(const StyleInitialData* initial_data) {
 
 bool ComputedStyle::HasVariables() const {
   return InheritedVariables() || NonInheritedVariables() ||
-         HasInitialVariables(InitialDataInternal().get());
+         HasInitialVariables(InitialData().get());
 }
 
 wtf_size_t ComputedStyle::GetVariableNamesCount() const {
@@ -2025,7 +2025,7 @@ const Vector<AtomicString>& ComputedStyle::GetVariableNames() const {
   Vector<AtomicString>& cache = EnsureVariableNamesCache();
 
   HashSet<AtomicString> names;
-  if (auto* initial_data = InitialDataInternal().get())
+  if (auto* initial_data = InitialData().get())
     initial_data->CollectVariableNames(names);
   if (auto* inherited_variables = InheritedVariables())
     inherited_variables->CollectNames(names);
@@ -2108,7 +2108,7 @@ CSSVariableData* ComputedStyle::GetVariableData(
     if (auto data = NonInheritedVariables()->GetData(name))
       return *data;
   }
-  return GetInitialVariableData(name, InitialDataInternal().get());
+  return GetInitialVariableData(name, InitialData().get());
 }
 
 CSSVariableData* ComputedStyle::GetVariableData(
@@ -2125,7 +2125,7 @@ CSSVariableData* ComputedStyle::GetVariableData(
         return *data;
     }
   }
-  return GetInitialVariableData(name, InitialDataInternal().get());
+  return GetInitialVariableData(name, InitialData().get());
 }
 
 static const CSSValue* GetInitialVariableValue(
@@ -2146,7 +2146,7 @@ const CSSValue* ComputedStyle::GetVariableValue(
     if (auto value = NonInheritedVariables()->GetValue(name))
       return *value;
   }
-  return GetInitialVariableValue(name, InitialDataInternal().get());
+  return GetInitialVariableValue(name, InitialData().get());
 }
 
 const CSSValue* ComputedStyle::GetVariableValue(
@@ -2163,7 +2163,7 @@ const CSSValue* ComputedStyle::GetVariableValue(
         return *value;
     }
   }
-  return GetInitialVariableValue(name, InitialDataInternal().get());
+  return GetInitialVariableValue(name, InitialData().get());
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
@@ -2418,6 +2418,12 @@ Color ComputedStyle::VisitedDependentColor(
   // visited color.
   return Color(visited_color.Red(), visited_color.Green(), visited_color.Blue(),
                unvisited_color.Alpha());
+}
+
+bool ComputedStyle::VisitedDependentColorIsCurrentColor() const {
+  if (InsideLink() == EInsideLink::kInsideVisitedLink)
+    return InternalVisitedColorIsCurrentColor();
+  return ColorIsCurrentColor();
 }
 
 Color ComputedStyle::ResolvedColor(const StyleColor& color) const {

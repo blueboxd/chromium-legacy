@@ -9,10 +9,11 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/cryptohome/common_types.h"
 #include "ash/components/cryptohome/cryptohome_util.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/cryptohome/userdataauth_util.h"
-#include "ash/components/login/auth/key.h"
+#include "ash/components/login/auth/public/key.h"
 #include "ash/components/multidevice/logging/logging.h"
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -20,14 +21,15 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_types.h"
+#include "chromeos/ash/components/dbus/easy_unlock/easy_unlock_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/easy_unlock/easy_unlock_client.h"
 #include "crypto/encryptor.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+using cryptohome::KeyLabel;
 
 namespace ash {
 namespace {
@@ -85,7 +87,6 @@ class EasyUnlockCreateKeysOperation::ChallengeCreator {
   std::string ec_public_key_;
   std::string esk_;
 
-  // Owned by DBusThreadManager
   EasyUnlockClient* easy_unlock_client_;
 
   base::WeakPtrFactory<ChallengeCreator> weak_ptr_factory_{this};
@@ -102,7 +103,7 @@ EasyUnlockCreateKeysOperation::ChallengeCreator::ChallengeCreator(
       tpm_pub_key_(tpm_pub_key),
       device_(device),
       callback_(std::move(callback)),
-      easy_unlock_client_(DBusThreadManager::Get()->GetEasyUnlockClient()) {}
+      easy_unlock_client_(EasyUnlockClient::Get()) {}
 
 EasyUnlockCreateKeysOperation::ChallengeCreator::~ChallengeCreator() {}
 
@@ -317,7 +318,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
 
   EasyUnlockDeviceKeyData* device = &devices_[index];
   auto key_def = cryptohome::KeyDefinition::CreateForPassword(
-      user_key.GetSecret(), EasyUnlockKeyManager::GetKeyLabel(index),
+      user_key.GetSecret(), KeyLabel(EasyUnlockKeyManager::GetKeyLabel(index)),
       kEasyUnlockKeyPrivileges);
   key_def.revision = kEasyUnlockKeyRevision;
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
@@ -351,8 +352,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   // Create the authorization request with an empty label, in order to act as a
   // wildcard. See https://crbug.com/1002336 for more.
   *request.mutable_authorization_request() =
-      cryptohome::CreateAuthorizationRequest(std::string() /* label */,
-                                             auth_key->GetSecret());
+      cryptohome::CreateAuthorizationRequest(KeyLabel(), auth_key->GetSecret());
   *request.mutable_account_id() = CreateAccountIdentifierFromIdentification(
       cryptohome::Identification(user_context_.GetAccountId()));
   UserDataAuthClient::Get()->AddKey(

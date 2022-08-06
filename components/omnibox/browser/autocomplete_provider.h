@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
+#include "components/omnibox/browser/suggestion_group.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
@@ -275,9 +276,21 @@ class AutocompleteProvider
   // method and include the response in their estimate.
   virtual size_t EstimateMemoryUsage() const;
 
+  // Returns a map of suggestion group IDs to suggestion group information
+  // corresponding to |matches_|.
+  const SuggestionGroupsMap& suggestion_groups_map() const {
+    return suggestion_groups_map_;
+  }
+
   // Returns a suggested upper bound for how many matches this provider should
   // return.
   size_t provider_max_matches() const { return provider_max_matches_; }
+
+  // Returns a suggested upper bound for how many matches this provider should
+  // return while in keyword mode.
+  size_t provider_max_matches_in_keyword_mode() const {
+    return provider_max_matches_in_keyword_mode_;
+  }
 
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }
@@ -288,7 +301,7 @@ class AutocompleteProvider
   // for any provider, then the `AutocompleteController::done_` must also be
   // false. This ensures the controller can determine when each provider
   // finishes processing async requests. Should be true after either `Stop()` or
-  // `Start()` with `AutocompleteInput.want_asynchronous_matches` set to false
+  // `Start()` with `AutocompleteInput.omit_asynchronous_matches_` set to true
   // are called.
   bool done() const { return done_; }
 
@@ -340,6 +353,10 @@ class AutocompleteProvider
       const bool text_is_search_query,
       const ACMatchClassifications& original_class = ACMatchClassifications());
 
+  // Uses the keyword entry mode in `input` to decide if the user is currently
+  // in keyword mode.
+  static bool InKeywordMode(const AutocompleteInput& input);
+
   // Used to determine if we're in keyword mode, if experimental keyword
   // mode is enabled, and if we're confident that the user is intentionally
   // (not accidentally) in keyword mode. Combined, this method returns
@@ -347,11 +364,11 @@ class AutocompleteProvider
   static bool InExplicitExperimentalKeywordMode(const AutocompleteInput& input,
                                                 const std::u16string& keyword);
 
-  // Uses the keyword entry mode in |input| (and possibly compare the length
-  // of the user input vs |keyword|) to decide if the user intentionally
+  // Uses the keyword entry mode in `input` (and possibly compare the length
+  // of the user input vs `keyword`) to decide if the user intentionally
   // entered keyword mode.
-  static bool IsExplicitlyInKeywordMode(const AutocompleteInput& input,
-                                        const std::u16string& keyword);
+  static bool InExplicitKeywordMode(const AutocompleteInput& input,
+                                    const std::u16string& keyword);
 
   // Trims "http:" or "https:" and up to two subsequent slashes from |url|. If
   // |trim_https| is true, trims "https:", otherwise trims "http:". Returns the
@@ -390,9 +407,13 @@ class AutocompleteProvider
   std::vector<AutocompleteProviderListener*> listeners_;
 
   const size_t provider_max_matches_;
+  const size_t provider_max_matches_in_keyword_mode_{7};
 
   ACMatches matches_;
-  bool done_;
+  // A map of suggestion group IDs to suggestion group information corresponding
+  // to |matches_|.
+  SuggestionGroupsMap suggestion_groups_map_{};
+  bool done_{true};
 
   Type type_;
 };

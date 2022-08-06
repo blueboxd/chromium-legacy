@@ -12,13 +12,8 @@
 #include "base/callback.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class Value;
-}  // namespace base
 
 namespace prefs {
 
@@ -74,8 +69,8 @@ class DictionaryValueUpdate {
       std::unique_ptr<base::DictionaryValue> in_value);
 
   // Like Set(), but without special treatment of '.'.  This allows e.g. URLs to
-  // be used as paths.
-  void SetKey(base::StringPiece key, base::Value value);
+  // be used as paths. Returns a pointer to the set `value`.
+  base::Value* SetKey(base::StringPiece key, base::Value value);
   void SetWithoutPathExpansion(base::StringPiece key,
                                std::unique_ptr<base::Value> in_value);
 
@@ -98,8 +93,6 @@ class DictionaryValueUpdate {
                      const base::DictionaryValue** out_value) const;
   bool GetDictionary(base::StringPiece path,
                      std::unique_ptr<DictionaryValueUpdate>* out_value);
-  bool GetList(base::StringPiece path, const base::ListValue** out_value) const;
-  bool GetList(base::StringPiece path, base::ListValue** out_value);
 
   // Like Get(), but without special treatment of '.'.  This allows e.g. URLs to
   // be used as paths.
@@ -120,9 +113,9 @@ class DictionaryValueUpdate {
       base::StringPiece key,
       std::unique_ptr<DictionaryValueUpdate>* out_value);
   bool GetListWithoutPathExpansion(base::StringPiece key,
-                                   const base::ListValue** out_value) const;
+                                   const base::Value::List** out_value) const;
   bool GetListWithoutPathExpansion(base::StringPiece key,
-                                   base::ListValue** out_value);
+                                   base::Value::List** out_value);
 
   // Removes the Value with the specified path from this dictionary (or one
   // of its child dictionaries, if the path is more than just a local key).
@@ -140,8 +133,8 @@ class DictionaryValueUpdate {
   bool RemovePath(base::StringPiece path,
                   std::unique_ptr<base::Value>* out_value);
 
-  base::DictionaryValue* AsDictionary();
-  const base::DictionaryValue* AsConstDictionary() const;
+  base::Value::Dict* AsDict();
+  const base::Value::Dict* AsConstDict() const;
 
  private:
   void RecordPath(base::StringPiece path);

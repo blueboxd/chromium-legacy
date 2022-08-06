@@ -212,6 +212,14 @@ class Port(object):
     WPT_REGEX = re.compile(
         r'^(?:virtual/[^/]+/)?(external/wpt|wpt_internal)/(.*)$')
 
+    # This regex parses the WPT-style style fuzzy match syntax. For actual WPT
+    # tests, this is not needed since this information is contained in the
+    # manifest. However, we reuse this syntax for some non-WPT tests as well.
+    WPT_FUZZY_REGEX = re.compile(
+        r'<(?:html:)?meta\s+name=(?:fuzzy|"fuzzy")\s+content='
+        r'"(?:(.+):)?(?:maxDifference=)?(?:(\d+)-)?(\d+);(?:totalPixels=)?(?:(\d+)-)?(\d+)"\s*/?>'
+    )
+
     # Because this is an abstract base class, arguments to functions may be
     # unused in this class - pylint: disable=unused-argument
 
@@ -486,8 +494,11 @@ class Port(object):
     def baseline_flag_specific_dir(self):
         """If --additional-driver-flag is specified, returns the absolute path to the flag-specific
            platform-independent results. Otherwise returns None."""
-        flag_specific_path = self._flag_specific_baseline_search_path()
-        return flag_specific_path[-1] if flag_specific_path else None
+        config_name = self.flag_specific_config_name()
+        if not config_name:
+            return None
+        return self._filesystem.join(self.web_tests_dir(), 'flag-specific',
+                                     config_name)
 
     def baseline_search_path(self):
         return (self.get_option('additional_platform_directory', []) +
@@ -602,11 +613,11 @@ class Port(object):
         """
         # If only one of them exists, return that one.
         if not actual_contents and not expected_contents:
-            return (None, None)
+            return (None, None, None)
         if not actual_contents:
-            return (expected_contents, None)
+            return (expected_contents, None, None)
         if not expected_contents:
-            return (actual_contents, None)
+            return (actual_contents, None, None)
 
         tempdir = self._filesystem.mkdtemp()
 
@@ -641,19 +652,30 @@ class Port(object):
                 map(str, max_pixels_diff))))
 
         result = None
+        stats = None
         err_str = None
+
+        def handle_output(output):
+            if output:
+                match = re.search(
+                    "Found pixels_different: (\d+), max_channel_diff: (\d+)",
+                    output)
+                _log.debug(output)
+
+                if match:
+                    return {
+                        "maxDifference": int(match.group(2)),
+                        "totalPixels": int(match.group(1))
+                    }
+            return None
+
         try:
             output = self._executive.run_command(command)
-            # Log the output, to enable user debugging of a diff hidden by fuzzy
-            # expectations. This is useful when tightening fuzzy bounds.
-            if output:
-                _log.debug(output)
+            stats = handle_output(output)
         except ScriptError as error:
             if error.exit_code == 1:
                 result = self._filesystem.read_binary_file(diff_filename)
-                # Log the output, to enable user debugging of the diff.
-                if error.output:
-                    _log.debug(error.output)
+                stats = handle_output(error.output)
             else:
                 err_str = 'Image diff returned an exit code of %s. See http://crbug.com/278596' % error.exit_code
         except OSError as error:
@@ -661,7 +683,7 @@ class Port(object):
         finally:
             self._filesystem.rmtree(str(tempdir))
 
-        return (result, err_str or None)
+        return (result, stats, err_str or None)
 
     def driver_name(self):
         if self.get_option('driver_name'):
@@ -1134,20 +1156,47 @@ class Port(object):
         return self.wpt_manifest(wpt_path).is_slow_test(path_in_wpt)
 
     def get_wpt_fuzzy_metadata(self, test_name):
-        """Returns the fuzzy metadata for the given WPT test.
+        """Returns the WPT-style fuzzy metadata for the given test.
 
         The metadata is a pair of lists, (maxDifference, totalPixels), where
-        each list is a [min, max] range, inclusive. If the test is not a WPT
-        test or has no fuzzy metadata, returns (None, None).
+        each list is a [min, max] range, inclusive. If the test has no fuzzy metadata,
+        returns (None, None).
 
         See https://web-platform-tests.org/writing-tests/reftests.html#fuzzy-matching
         """
         match = self.WPT_REGEX.match(test_name)
-        if not match:
-            return None, None
-        wpt_path = match.group(1)
-        path_in_wpt = match.group(2)
-        return self.wpt_manifest(wpt_path).extract_fuzzy_metadata(path_in_wpt)
+
+        if match:
+            # This is an actual WPT test, so we can get the metadata from the manifest.
+            wpt_path = match.group(1)
+            path_in_wpt = match.group(2)
+            return self.wpt_manifest(wpt_path).extract_fuzzy_metadata(
+                path_in_wpt)
+
+        # This is not a WPT test, so we will parse the metadata ourselves.
+        if not self.test_isfile(test_name):
+            return (None, None)
+
+        # We use a safe encoding because some test files are incompatible with utf-8.
+        test_file = self.read_test(test_name, "latin-1")
+        if not test_file:
+            return (None, None)
+
+        # We only take the first match which is in line with what we do for WPT tests.
+        fuzzy_match = self.WPT_FUZZY_REGEX.search(test_file)
+        if not fuzzy_match:
+            return (None, None)
+
+        _, max_diff_min, max_diff_max, tot_pix_min, tot_pix_max = \
+            fuzzy_match.groups()
+        if not max_diff_min:
+            max_diff_min = max_diff_max
+        if not tot_pix_min:
+            tot_pix_min = tot_pix_max
+
+        return ([int(max_diff_min),
+                 int(max_diff_max)], [int(tot_pix_min),
+                                      int(tot_pix_max)])
 
     def get_file_path_for_wpt_test(self, test_name):
         """Returns the real file path for the given WPT test.
@@ -1194,14 +1243,23 @@ class Port(object):
 
         return [tryint(chunk) for chunk in re.split(r'(\d+)', string_to_split)]
 
-    def test_dirs(self):
-        """Returns the list of top-level test directories."""
-        web_tests_dir = self.web_tests_dir()
-        fs = self._filesystem
-        return [
-            d for d in fs.listdir(web_tests_dir)
-            if fs.isdir(fs.join(web_tests_dir, d))
-        ]
+    def read_test(self, test_name, encoding="utf8"):
+        """Returns the contents of the given test according to the given encoding.
+        If no corresponding file can be found, returns None instead.
+        Warning: some tests are in utf8-incompatible encodings.
+        """
+        path = self.abspath_for_test(test_name)
+        if self._filesystem.isfile(path):
+            return self._filesystem.read_binary_file(path).decode(encoding)
+
+        base = self.lookup_virtual_test_base(test_name)
+        if not base:
+            return None
+        path = self.abspath_for_test(base)
+        if self._filesystem.isfile(path):
+            return self._filesystem.read_binary_file(path).decode(encoding)
+
+        return None
 
     @memoized
     def test_isfile(self, test_name):
@@ -1759,18 +1817,8 @@ class Port(object):
             return self.path_to_flag_specific_expectations_file(config_name)
 
     def _flag_specific_baseline_search_path(self):
-        config_name = self.flag_specific_config_name()
-        if not config_name:
-            return []
-        flag_dir = self._filesystem.join(self.web_tests_dir(), 'flag-specific',
-                                         config_name)
-        # FIXME: should we delete the line below? We only run flag specific
-        # tests on linux now
-        baseline_dirs = [
-            self._filesystem.join(flag_dir, 'platform', baseline_dir)
-            for baseline_dir in self.FALLBACK_PATHS[self.version()]
-        ]
-        return baseline_dirs + [flag_dir]
+        dir = self.baseline_flag_specific_dir()
+        return [dir] if dir else []
 
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.

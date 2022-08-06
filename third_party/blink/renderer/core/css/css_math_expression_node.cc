@@ -32,11 +32,14 @@
 
 #include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_math_operator.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_value_clamping_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -98,6 +101,9 @@ static CalculationCategory UnitCategory(CSSPrimitiveValue::UnitType type) {
       return RuntimeEnabledFeatures::CSSContainerRelativeUnitsEnabled()
                  ? kCalcLength
                  : kCalcOther;
+    case CSSPrimitiveValue::UnitType::kIcs:
+      return RuntimeEnabledFeatures::CSSIcUnitEnabled() ? kCalcLength
+                                                        : kCalcOther;
     case CSSPrimitiveValue::UnitType::kDegrees:
     case CSSPrimitiveValue::UnitType::kGradians:
     case CSSPrimitiveValue::UnitType::kRadians:
@@ -121,6 +127,7 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kEms:
     case CSSPrimitiveValue::UnitType::kExs:
     case CSSPrimitiveValue::UnitType::kChs:
+    case CSSPrimitiveValue::UnitType::kIcs:
     case CSSPrimitiveValue::UnitType::kRems:
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kCentimeters:
@@ -437,6 +444,52 @@ CSSMathExpressionNode* CSSMathExpressionOperation::CreateComparisonFunction(
   }
   return MakeGarbageCollected<CSSMathExpressionOperation>(
       category, std::move(operands), op);
+}
+
+// Helper function for parsing trigonometric functions' parameter
+static double ValueAsRadian(const CSSMathExpressionNode* node, bool& error) {
+  if (node->Category() == kCalcAngle)
+    return Deg2rad(node->ComputeValueInCanonicalUnit().value());
+  if (node->Category() == kCalcNumber)
+    return node->DoubleValue();
+  error = true;
+  return 0;
+}
+
+CSSMathExpressionNode*
+CSSMathExpressionOperation::CreateTrigonometricFunctionSimplified(
+    Operands&& operands,
+    CSSValueID function_id) {
+  if (!RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled())
+    return nullptr;
+
+  double value;
+  bool error = false;
+  switch (function_id) {
+    case CSSValueID::kSin: {
+      DCHECK_EQ(operands.size(), 1u);
+      value = sin(ValueAsRadian(operands[0], error));
+      break;
+    }
+    case CSSValueID::kCos: {
+      DCHECK_EQ(operands.size(), 1u);
+      value = cos(ValueAsRadian(operands[0], error));
+      break;
+    }
+    case CSSValueID::kTan: {
+      DCHECK_EQ(operands.size(), 1u);
+      value = tan(ValueAsRadian(operands[0], error));
+      break;
+    }
+    default:
+      return nullptr;
+  }
+
+  if (error)
+    return nullptr;
+
+  return CSSMathExpressionNumericLiteral::Create(
+      value, CSSPrimitiveValue::UnitType::kNumber);
 }
 
 // static
@@ -1135,7 +1188,14 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kMin:
       case CSSValueID::kMax:
       case CSSValueID::kClamp:
+      case CSSValueID::kCalc:
+      case CSSValueID::kWebkitCalc:
         return true;
+      // TODO(crbug.com/1190444): Add other trigonometric functions
+      case CSSValueID::kSin:
+      case CSSValueID::kCos:
+      case CSSValueID::kTan:
+        return RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled();
       case CSSValueID::kAnchor:
       case CSSValueID::kAnchorSize:
         return RuntimeEnabledFeatures::CSSAnchorPositioningEnabled();
@@ -1212,6 +1272,8 @@ class CSSMathExpressionNodeParser {
   CSSMathExpressionNode* ParseMathFunction(CSSValueID function_id,
                                            CSSParserTokenRange& tokens,
                                            int depth) {
+    if (!IsSupportedMathFunction(function_id))
+      return nullptr;
     if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
       if (auto* anchor_query = ParseAnchorQuery(function_id, tokens))
         return anchor_query;
@@ -1232,6 +1294,13 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kClamp:
         min_argument_count = 3;
         max_argument_count = 3;
+        break;
+      case CSSValueID::kSin:
+      case CSSValueID::kCos:
+      case CSSValueID::kTan:
+        DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
+        max_argument_count = 1;
+        min_argument_count = 1;
         break;
       // TODO(crbug.com/1284199): Support other math functions.
       default:
@@ -1270,6 +1339,13 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kClamp:
         return CSSMathExpressionOperation::CreateComparisonFunction(
             std::move(nodes), CSSMathOperator::kClamp);
+      case CSSValueID::kSin:
+      case CSSValueID::kCos:
+      case CSSValueID::kTan:
+        DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
+        return CSSMathExpressionOperation::
+            CreateTrigonometricFunctionSimplified(std::move(nodes),
+                                                  function_id);
       // TODO(crbug.com/1284199): Support other math functions.
       default:
         return nullptr;
@@ -1329,8 +1405,7 @@ class CSSMathExpressionNodeParser {
       CSSParserTokenRange inner_range = tokens.ConsumeBlock();
       tokens.ConsumeWhitespace();
       inner_range.ConsumeWhitespace();
-      if (IsSupportedMathFunction(function_id))
-        return ParseMathFunction(function_id, inner_range, depth);
+      return ParseMathFunction(function_id, inner_range, depth);
     }
 
     return ParseValue(tokens);

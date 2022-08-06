@@ -106,7 +106,6 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
   // Eche application need context when launching. Pinning these creates an
   // item that does nothing.
   const char* kNoPinAppIds[] = {
-      file_manager::kAudioPlayerAppId,
       ash::eche_app::kEcheAppId,
   };
   if (base::Contains(kNoPinAppIds, app_id))
@@ -184,21 +183,21 @@ bool IsAppWithIDPinnedToShelf(const std::string& app_id) {
   return ChromeShelfController::instance()->shelf_model()->IsAppPinned(app_id);
 }
 
-apps::mojom::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
+apps::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
     ash::ShelfLaunchSource source) {
   switch (source) {
     case ash::LAUNCH_FROM_UNKNOWN:
-      return apps::mojom::LaunchSource::kUnknown;
+      return apps::LaunchSource::kUnknown;
     case ash::LAUNCH_FROM_INTERNAL:
-      return apps::mojom::LaunchSource::kFromChromeInternal;
+      return apps::LaunchSource::kFromChromeInternal;
     case ash::LAUNCH_FROM_APP_LIST:
-      return apps::mojom::LaunchSource::kFromAppListGrid;
+      return apps::LaunchSource::kFromAppListGrid;
     case ash::LAUNCH_FROM_APP_LIST_SEARCH:
-      return apps::mojom::LaunchSource::kFromAppListQuery;
+      return apps::LaunchSource::kFromAppListQuery;
     case ash::LAUNCH_FROM_APP_LIST_RECOMMENDATION:
-      return apps::mojom::LaunchSource::kFromAppListRecommendation;
+      return apps::LaunchSource::kFromAppListRecommendation;
     case ash::LAUNCH_FROM_SHELF:
-      return apps::mojom::LaunchSource::kFromShelf;
+      return apps::LaunchSource::kFromShelf;
   }
 }
 

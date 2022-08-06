@@ -13,7 +13,7 @@
 
 import './passwords_list_handler.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import './avatar_icon.js';
 import './passwords_shared.css.js';
 import './password_list_item.js';
@@ -37,7 +37,6 @@ import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {MergePasswordsStoreCopiesMixin, MergePasswordsStoreCopiesMixinInterface} from './merge_passwords_store_copies_mixin.js';
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {AccountStorageOptInStateChangedListener, PasswordManagerImpl} from './password_manager_proxy.js';
 import {getTemplate} from './passwords_device_section.html.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
@@ -200,22 +199,24 @@ export class PasswordsDeviceSectionElement extends
         },
         reflectToAttribute: true,
       },
+
+      focusConfig: Object,
     };
   }
 
   static get observers() {
     return [
-      'maybeRedirectToPasswordsPage_(isUserAllowedToAccessPage_, currentRoute_)'
+      'maybeRedirectToPasswordsPage_(isUserAllowedToAccessPage_, currentRoute_)',
     ];
   }
 
   subpageRoute: Route;
   filter: string;
-  private deviceOnlyPasswords_: MultiStorePasswordUiEntry[];
-  private deviceAndAccountPasswords_: MultiStorePasswordUiEntry[];
-  private allDevicePasswords_: MultiStorePasswordUiEntry[];
+  private deviceOnlyPasswords_: chrome.passwordsPrivate.PasswordUiEntry[];
+  private deviceAndAccountPasswords_: chrome.passwordsPrivate.PasswordUiEntry[];
+  private allDevicePasswords_: chrome.passwordsPrivate.PasswordUiEntry[];
   private shouldShowMoveMultiplePasswordsBanner_: boolean;
-  private lastFocused_: MultiStorePasswordUiEntry;
+  private lastFocused_: chrome.passwordsPrivate.PasswordUiEntry;
   private listBlurred_: boolean;
   private accountEmail_: string;
   private isUserAllowedToAccessPage_: boolean;
@@ -226,6 +227,7 @@ export class PasswordsDeviceSectionElement extends
   private currentRoute_: Route|null;
   private devicePasswordsLabel_: string;
   private isPasswordViewPageEnabled_: boolean;
+  focusConfig: Map<string, string|(() => void)>;
   private accountStorageOptInStateListener_:
       AccountStorageOptInStateChangedListener|null = null;
 
@@ -269,18 +271,23 @@ export class PasswordsDeviceSectionElement extends
     this.accountStorageOptInStateListener_ = null;
   }
 
-  private computeAllDevicePasswords_(): MultiStorePasswordUiEntry[] {
-    return this.savedPasswords.filter(p => p.isPresentOnDevice());
+  private computeAllDevicePasswords_():
+      chrome.passwordsPrivate.PasswordUiEntry[] {
+    return this.savedPasswords.filter(
+        p => p.storedIn !== chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT);
   }
 
-  private computeDeviceOnlyPasswords_(): MultiStorePasswordUiEntry[] {
+  private computeDeviceOnlyPasswords_():
+      chrome.passwordsPrivate.PasswordUiEntry[] {
     return this.savedPasswords.filter(
-        p => p.isPresentOnDevice() && !p.isPresentInAccount());
+        p => p.storedIn === chrome.passwordsPrivate.PasswordStoreSet.DEVICE);
   }
 
-  private computeDeviceAndAccountPasswords_(): MultiStorePasswordUiEntry[] {
+  private computeDeviceAndAccountPasswords_():
+      chrome.passwordsPrivate.PasswordUiEntry[] {
     return this.savedPasswords.filter(
-        p => p.isPresentOnDevice() && p.isPresentInAccount());
+        p => p.storedIn ===
+            chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT);
   }
 
   private computeIsUserAllowedToAccessPage_(): boolean {
@@ -308,7 +315,7 @@ export class PasswordsDeviceSectionElement extends
             (this.savedPasswords
                  .filter(
                      p2 => p1.username === p2.username &&
-                         p1.urls.origin === p2.urls.origin)
+                         p1.urls.signonRealm === p2.urls.signonRealm)
                  .length === 1));
   }
 
@@ -349,13 +356,14 @@ export class PasswordsDeviceSectionElement extends
     this.accountStorageOptInStateListener_ = setOptedIn;
   }
 
-  private isNonEmpty_(passwords: MultiStorePasswordUiEntry[]): boolean {
+  private isNonEmpty_(passwords: chrome.passwordsPrivate.PasswordUiEntry[]):
+      boolean {
     return passwords.length > 0;
   }
 
   private getFilteredPasswords_(
-      passwords: MultiStorePasswordUiEntry[],
-      filter: string): MultiStorePasswordUiEntry[] {
+      passwords: chrome.passwordsPrivate.PasswordUiEntry[],
+      filter: string): chrome.passwordsPrivate.PasswordUiEntry[] {
     if (!filter) {
       return passwords.slice();
     }

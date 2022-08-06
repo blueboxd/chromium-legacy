@@ -36,7 +36,7 @@ status of Chromium's C++ support is covered in more detail in
 
   * Functions used only for testing should be restricted to test-only usages
     with the testing suffixes supported by
-    [PRESUMBIT.py](https://chromium.googlesource.com/chromium/src/+/main/PRESUBMIT.py).
+    [PRESUBMIT.py](https://chromium.googlesource.com/chromium/src/+/main/PRESUBMIT.py).
     `ForTesting` is the conventional suffix although similar patterns, such as
     `ForTest`, are also accepted. These suffixes are checked at presubmit time
     to ensure the functions are called only by test files.
@@ -265,7 +265,7 @@ All files in Chromium start with a common license header. That header should
 look like this:
 
 ```c++
-// Copyright $YEAR The Chromium Authors. All rights reserved.
+// Copyright $YEAR The Chromium Authors.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 ```
@@ -274,8 +274,8 @@ Some important notes about this header:
   * There is no `(c)` after `Copyright`.
   * `$YEAR` should be set to the current year at the time a file is created, and
     not changed thereafter.
-  * For files specific to Chromium OS, replace the word Chromium with the phrase
-    Chromium OS.
+  * For files specific to ChromiumOS, replace the word Chromium with the phrase
+    ChromiumOS.
   * If the style changes, don't bother to update existing files to comply with
     the new style. For the same reason, don't just blindly copy an existing
     file's header when creating a new file, since the existing file may use an
@@ -342,6 +342,28 @@ these:
     `DCHECK()` can be used to document that a pointer is never null, and doing
     so as early as possible can help with debugging, though our styleguide now
     recommends using a reference instead of a pointer when it cannot be null.
+
+## Test-only code paths in production code
+
+Try to avoid test-only code paths in production code. Such code paths make
+production code behave differently in tests. This makes both tests and
+production code hard to reason about. Consider dependency injection, fake
+classes, etc to avoid such code paths.
+
+However, if a test-only path in production code cannot be avoided, instrument
+that code path with `CHECK_IS_TEST();` to assert that the code is only run in
+tests.
+
+```c++
+// `profile_manager` may not be available in tests.
+if (!profile_manager) {
+  CHECK_IS_TEST();
+  return std::string();
+}
+```
+
+`CHECK_IS_TEST();` will crash outside of tests. This asserts that the test-only
+code path is not accidentally or maliciously taken in production.
 
 ## Miscellany
 

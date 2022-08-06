@@ -98,10 +98,17 @@ OTRWebStateObserver::OTRWebStateObserver(
 }
 
 OTRWebStateObserver::~OTRWebStateObserver() {
-  browser_state_manager_->GetBrowserStateInfoCache()->RemoveObserver(this);
+  // TearDown() must be called before destruction.
+  DCHECK(shutting_down_);
 }
 
 void OTRWebStateObserver::OnBrowserStateAdded(const base::FilePath& path) {
+  // This method can be called by the constructor and then the browser state
+  // cache if this class is created at browser state init time. So, if the state
+  // is already tracked, do nothing.
+  if (browser_state_data_.count(path)) {
+    return;
+  }
   auto* browser_state = browser_state_manager_->GetBrowserState(path);
   BrowserList* browser_list =
       BrowserListFactory::GetForBrowserState(browser_state);
@@ -130,6 +137,13 @@ void OTRWebStateObserver::AddObserver(ObserverClient* client) {
 
 void OTRWebStateObserver::RemoveObserver(ObserverClient* client) {
   observer_clients_.RemoveObserver(client);
+}
+
+void OTRWebStateObserver::TearDown() {
+  shutting_down_ = true;
+  browser_state_manager_->GetBrowserStateInfoCache()->RemoveObserver(this);
+  browser_state_data_.clear();
+  browser_state_manager_ = nullptr;
 }
 
 void OTRWebStateObserver::OnWebStateListChanged(

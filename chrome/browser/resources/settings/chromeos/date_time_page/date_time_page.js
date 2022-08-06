@@ -13,7 +13,7 @@ import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './date_time_types.js';
 import './timezone_selector.js';
 import './timezone_subpage.js';
@@ -43,8 +43,11 @@ import {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './timezone_browser
  */
 const SettingsDateTimePageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, PrefsBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      PrefsBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -100,7 +103,7 @@ class SettingsDateTimePageElement extends SettingsDateTimePageElementBase {
         computed: `computeTimeZoneSettingSubLabel_(
             activeTimeZoneDisplayName,
             prefs.generated.resolve_timezone_by_geolocation_on_off.value,
-            prefs.generated.resolve_timezone_by_geolocation_method_short.value)`
+            prefs.generated.resolve_timezone_by_geolocation_method_short.value)`,
       },
 
       /**

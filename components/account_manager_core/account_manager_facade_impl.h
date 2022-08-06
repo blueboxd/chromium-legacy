@@ -68,7 +68,6 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   void ShowManageAccountsSettings() override;
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const AccountKey& account,
-      const std::string& oauth_consumer_name,
       OAuth2AccessTokenConsumer* consumer) override;
   void UpsertAccountForTesting(const Account& account,
                                const std::string& token_value) override;
@@ -177,7 +176,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   void RunAfterInitializationSequence(base::OnceClosure closure);
 
   // Runs `closure` if/when `account_manager_remote_` gets disconnected.
-  void RunOnMojoDisconnection(base::OnceClosure closure);
+  void RunOnAccountManagerRemoteDisconnection(base::OnceClosure closure);
 
   // Mojo disconnect handler for `account_manager_remote_`.
   void OnAccountManagerRemoteDisconnected();
@@ -200,7 +199,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
 
   bool is_initialized_ = false;
   std::vector<base::OnceClosure> initialization_callbacks_;
-  std::vector<base::OnceClosure> mojo_disconnection_handlers_;
+  std::vector<base::OnceClosure> account_manager_remote_disconnection_handlers_;
 
   mojo::Remote<crosapi::mojom::AccountManager> account_manager_remote_;
   std::unique_ptr<mojo::Receiver<crosapi::mojom::AccountManagerObserver>>

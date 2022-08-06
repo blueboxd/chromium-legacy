@@ -11,12 +11,14 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_coordinator.h"
+#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_font_combobox.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_model.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_toolbar_view.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_page_handler.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree_update_forward.h"
+#include "ui/base/models/combobox_model.h"
 
 class Browser;
 
@@ -32,6 +34,7 @@ class Browser;
 //  as the browser.
 //
 class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
+                               public ReadAnythingFontCombobox::Delegate,
                                public ReadAnythingPageHandler::Delegate,
                                public TabStripModelObserver,
                                public content::WebContentsObserver {
@@ -47,21 +50,29 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   bool IsActiveForTesting() { return active_; }
 
  private:
+  friend class ReadAnythingControllerTest;
+
   // ReadAnythingToolbarView::Delegate:
-  void OnFontChoiceChanged(int new_choice) override;
   void OnFontSizeChanged(bool increase) override;
+
+  // ReadAnythingFontCombobox::Delegate:
+  void OnFontChoiceChanged(int new_choice) override;
+  ui::ComboboxModel* GetFontComboboxModel() override;
 
   // ReadAnythingPageHandler::Delegate:
   void OnUIReady() override;
+  void OnUIDestroyed() override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void OnTabStripModelDestroyed(TabStripModel* tab_strip_model) override;
 
   // content::WebContentsObserver:
   void DidStopLoading() override;
+  void WebContentsDestroyed() override;
 
   // Requests a distilled AXTree for the main frame of the currently active
   // web contents.
@@ -79,9 +90,17 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   // browser user data, so this pointer is always valid.
   raw_ptr<Browser> browser_;
 
+  // The active web contents whose distilled text is currently displayed in
+  // the Read Anything app.
+  raw_ptr<content::WebContents> active_contents_ = nullptr;
+
   // Whether the Read Anything feature is currently active. The feature is
   // active when it is currently shown in the Side Panel.
   bool active_ = false;
+
+  // Whether the Read Anything feature's UI is ready. This is set to true when
+  // the UI is constructed and false when it is destroyed.
+  bool ui_ready_ = false;
 
   base::WeakPtrFactory<ReadAnythingController> weak_pointer_factory_{this};
 };

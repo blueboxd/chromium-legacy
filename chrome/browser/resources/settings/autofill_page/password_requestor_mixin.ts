@@ -4,7 +4,7 @@
 
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 import {PasswordManagerImpl} from './password_manager_proxy.js';
@@ -15,7 +15,7 @@ export const PasswordRequestorMixin = dedupingMixin(
     <T extends Constructor<PolymerElement>>(superClass: T): T&
     Constructor<PasswordRequestorMixinInterface> => {
       class PasswordRequestorMixin extends superClass {
-        // <if expr="chromeos_ash or chromeos_lacros">
+        // <if expr="is_chromeos">
         static get properties() {
           return {tokenRequestManager: Object};
         }
@@ -26,7 +26,7 @@ export const PasswordRequestorMixin = dedupingMixin(
         requestPlaintextPassword(
             id: number,
             reason: chrome.passwordsPrivate.PlaintextReason): Promise<string> {
-          // <if expr="chromeos_ash or chromeos_lacros">
+          // <if expr="is_chromeos">
           // If no password was found, refresh auth token and retry.
           return new Promise(resolve => {
             PasswordManagerImpl.getInstance()
@@ -43,25 +43,6 @@ export const PasswordRequestorMixin = dedupingMixin(
               id, reason);
           // </if>
         }
-
-        getPlaintextInsecurePassword(
-            credential: chrome.passwordsPrivate.InsecureCredential,
-            reason: chrome.passwordsPrivate.PlaintextReason):
-            Promise<chrome.passwordsPrivate.InsecureCredential> {
-          return new Promise(resolve => {
-            PasswordManagerImpl.getInstance()
-                .getPlaintextInsecurePassword(credential, reason)
-                .then(insecureCredential => resolve(insecureCredential), () => {
-                  // <if expr="chromeos_ash or chromeos_lacros">
-                  // If no password was found, refresh auth token and retry.
-                  this.tokenRequestManager.request(() => {
-                    this.getPlaintextInsecurePassword(credential, reason)
-                        .then(resolve);
-                  });
-                  // </if>
-                });
-          });
-        }
       }
 
       return PasswordRequestorMixin;
@@ -71,11 +52,7 @@ export interface PasswordRequestorMixinInterface {
   requestPlaintextPassword(
       id: number,
       reason: chrome.passwordsPrivate.PlaintextReason): Promise<string>;
-  getPlaintextInsecurePassword(
-      credential: chrome.passwordsPrivate.InsecureCredential,
-      reason: chrome.passwordsPrivate.PlaintextReason):
-      Promise<chrome.passwordsPrivate.InsecureCredential>;
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   tokenRequestManager: BlockingRequestManager;
   // </if>
 }

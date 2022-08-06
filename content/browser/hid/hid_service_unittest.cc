@@ -16,16 +16,18 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/device/hid/test_report_descriptors.h"
-#include "services/device/hid/test_util.h"
-#include "services/device/public/cpp/hid/fake_hid_manager.h"
+#include "services/device/public/cpp/test/fake_hid_manager.h"
+#include "services/device/public/cpp/test/hid_test_util.h"
+#include "services/device/public/cpp/test/test_report_descriptors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -349,9 +351,14 @@ TEST_P(HidServiceTest, OpenAndCloseHidConnection) {
   CheckWebContentsHidServiceConnectedState(service_creation_type, false);
 }
 
-// This test is disabled because it fails on the "linux-bfcache-rel" bot.
-// TODO(https://crbug.com/1232841): Re-enable this test.
-TEST_F(HidServiceRenderFrameHostTest, DISABLED_OpenAndNavigateCrossOrigin) {
+TEST_F(HidServiceRenderFrameHostTest, OpenAndNavigateCrossOrigin) {
+  // The test assumes the previous page gets deleted after navigation,
+  // disconnecting the device. Disable back/forward cache to ensure that it
+  // doesn't get preserved in the cache.
+  // TODO(crbug.com/1346021): Integrate WebHID with bfcache and remove this.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   NavigateAndCommit(GURL(kTestUrl));
 
   mojo::Remote<blink::mojom::HidService> service;

@@ -40,7 +40,9 @@ bool ShouldReportDevToolsIssueForStatus(
     const net::CookieInclusionStatus& status) {
   return status.ShouldWarn() ||
          status.HasExclusionReason(
-             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
+             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY) ||
+         status.HasExclusionReason(
+             net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
 }
 
 }  // namespace
@@ -110,12 +112,6 @@ void EmitCookieWarningsAndMetrics(
   bool same_party_exclusion_overruled_samesite = false;
   bool same_party_inclusion_overruled_samesite = false;
 
-  bool samesite_none_cookie_required = false;
-  bool samesite_none_cookie_sameparty_included_by_top_resource = false;
-  bool samesite_none_cookie_sameparty_included_by_ancestors = false;
-  bool samesite_none_cookie_included_by_samesite_lax = false;
-  bool samesite_none_cookie_included_by_samesite_strict = false;
-
   bool samesite_cookie_inclusion_changed_by_cross_site_redirect = false;
 
   bool partitioned_cookies_exist = false;
@@ -124,9 +120,12 @@ void EmitCookieWarningsAndMetrics(
   bool cookie_has_not_been_refreshed_in_301_to_350_days = false;
   bool cookie_has_not_been_refreshed_in_351_to_400_days = false;
 
+  bool cookie_has_domain_non_ascii = false;
+
   for (const network::mojom::CookieOrLineWithAccessResultPtr& cookie :
        cookie_details->cookie_list) {
-    if (ShouldReportDevToolsIssueForStatus(cookie->access_result.status)) {
+    const net::CookieInclusionStatus& status = cookie->access_result.status;
+    if (ShouldReportDevToolsIssueForStatus(status)) {
       devtools_instrumentation::ReportCookieIssue(
           root_frame_host, cookie, cookie_details->url,
           cookie_details->site_for_cookies,
@@ -137,7 +136,6 @@ void EmitCookieWarningsAndMetrics(
     }
 
     if (cookie->access_result.status.ShouldWarn()) {
-      const net::CookieInclusionStatus& status = cookie->access_result.status;
       samesite_treated_as_lax_cookies =
           samesite_treated_as_lax_cookies ||
           status.HasWarningReason(
@@ -174,31 +172,6 @@ void EmitCookieWarningsAndMetrics(
               net::CookieInclusionStatus::
                   WARN_SAMEPARTY_INCLUSION_OVERRULED_SAMESITE);
 
-      samesite_none_cookie_required =
-          samesite_none_cookie_required ||
-          status.HasWarningReason(
-              net::CookieInclusionStatus::WARN_SAMESITE_NONE_REQUIRED);
-      samesite_none_cookie_sameparty_included_by_top_resource =
-          samesite_none_cookie_sameparty_included_by_top_resource ||
-          status.HasWarningReason(
-              net::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_TOP_RESOURCE);
-      samesite_none_cookie_sameparty_included_by_ancestors =
-          samesite_none_cookie_sameparty_included_by_ancestors ||
-          status.HasWarningReason(
-              net::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_ANCESTORS);
-      samesite_none_cookie_included_by_samesite_lax =
-          samesite_none_cookie_included_by_samesite_lax ||
-          status.HasWarningReason(
-              net::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_LAX);
-      samesite_none_cookie_included_by_samesite_strict =
-          samesite_none_cookie_included_by_samesite_strict ||
-          status.HasWarningReason(
-              net::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_STRICT);
-
       samesite_cookie_inclusion_changed_by_cross_site_redirect =
           samesite_cookie_inclusion_changed_by_cross_site_redirect ||
           status.HasWarningReason(
@@ -206,10 +179,20 @@ void EmitCookieWarningsAndMetrics(
                   WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION);
     }
 
+    cookie_has_domain_non_ascii =
+        cookie_has_domain_non_ascii ||
+        status.HasWarningReason(
+            net::CookieInclusionStatus::WARN_DOMAIN_NON_ASCII) ||
+        status.HasExclusionReason(
+            net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
+
     partitioned_cookies_exist =
         partitioned_cookies_exist ||
         (cookie->cookie_or_line->is_cookie() &&
-         cookie->cookie_or_line->get_cookie().IsPartitioned());
+         cookie->cookie_or_line->get_cookie().IsPartitioned() &&
+         // Ignore nonced partition keys since this metric is meant to track
+         // usage of the Partitioned attribute.
+         !cookie->cookie_or_line->get_cookie().PartitionKey()->nonce());
 
     breaking_context_downgrade =
         breaking_context_downgrade ||
@@ -281,29 +264,6 @@ void EmitCookieWarningsAndMetrics(
         blink::mojom::WebFeature::kSamePartyCookieInclusionOverruledSameSite);
   }
 
-  if (samesite_none_cookie_required) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kSameSiteNoneRequired);
-  }
-  if (samesite_none_cookie_sameparty_included_by_top_resource) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh,
-        blink::mojom::WebFeature::kSameSiteNoneIncludedBySamePartyTopResource);
-  }
-  if (samesite_none_cookie_sameparty_included_by_ancestors) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh,
-        blink::mojom::WebFeature::kSameSiteNoneIncludedBySamePartyAncestors);
-  }
-  if (samesite_none_cookie_included_by_samesite_lax) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kSameSiteNoneIncludedBySameSiteLax);
-  }
-  if (samesite_none_cookie_included_by_samesite_strict) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kSameSiteNoneIncludedBySameSiteStrict);
-  }
-
   if (samesite_cookie_inclusion_changed_by_cross_site_redirect) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::
@@ -331,6 +291,11 @@ void EmitCookieWarningsAndMetrics(
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh,
         blink::mojom::WebFeature::kCookieHasNotBeenRefreshedIn351To400Days);
+  }
+
+  if (cookie_has_domain_non_ascii) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kCookieDomainNonASCII);
   }
 }
 

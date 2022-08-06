@@ -10,7 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/viz_service_export.h"
@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/hdr_metadata.h"
 #include "ui/gfx/video_types.h"
-#include "ui/gl/gpu_switching_observer.h"
+#include "ui/gl/direct_composition_support.h"
 
 namespace viz {
 struct DebugRendererSettings;
@@ -70,12 +70,14 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
       gfx::ProtectedVideoType::kClear;
 
   gfx::HDRMetadata hdr_metadata;
+
+  bool is_video_fullscreen_mode;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
-class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
-    : public ui::GpuSwitchingObserver {
+class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
+    : public gl::DirectCompositionOverlayCapsObserver {
  public:
   using FilterOperationsMap =
       base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>;
@@ -89,7 +91,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   DCLayerOverlayProcessor(const DCLayerOverlayProcessor&) = delete;
   DCLayerOverlayProcessor& operator=(const DCLayerOverlayProcessor&) = delete;
 
-  virtual ~DCLayerOverlayProcessor();
+  ~DCLayerOverlayProcessor() override;
 
   // Virtual for testing.
   virtual void Process(DisplayResourceProvider* resource_provider,
@@ -100,15 +102,15 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
                        gfx::Rect* damage_rect,
                        SurfaceDamageRectList surface_damage_rect_list,
                        DCLayerOverlayList* dc_layer_overlays,
-                       bool is_video_capture_enabled);
+                       bool is_video_capture_enabled,
+                       bool is_video_fullscreen_mode);
   void ClearOverlayState();
   // This is the damage contribution due to previous frame's overlays which can
   // be empty.
   gfx::Rect PreviousFrameOverlayDamageContribution();
 
-  // GpuSwitchingObserver implementation.
-  void OnDisplayAdded() override;
-  void OnDisplayRemoved() override;
+  // DirectCompositionOverlayCapsObserver implementation.
+  void OnOverlayCapsChanged() override;
   void UpdateHasHwOverlaySupport();
 
   void set_frames_since_last_qualified_multi_overlays_for_testing(int value) {
@@ -131,7 +133,8 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
                              QuadList::Iterator* new_it,
                              size_t* new_index,
                              gfx::Rect* damage_rect,
-                             DCLayerOverlayList* dc_layer_overlays);
+                             DCLayerOverlayList* dc_layer_overlays,
+                             bool is_video_fullscreen_mode);
 
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessForOverlay(const gfx::RectF& display_rect,
@@ -184,14 +187,13 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   // `candidate_index_list` contains the indexes in `quad_list` of overlay
   // candidates.
   void RemoveClearVideoQuadCandidatesIfMoving(
-      const gfx::Transform& transform_to_root_target,
       const QuadList* quad_list,
       std::vector<size_t>* candidate_index_list);
 
   bool has_overlay_support_;
   const int allowed_yuv_overlay_count_;
   int processed_yuv_overlay_count_ = 0;
-  unsigned long frames_since_last_qualified_multi_overlays_ = 0;
+  uint64_t frames_since_last_qualified_multi_overlays_ = 0;
 
   // Reference to the global viz singleton.
   const raw_ptr<const DebugRendererSettings> debug_settings_;
@@ -218,7 +220,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   std::vector<gfx::Rect> previous_frame_overlay_candidate_rects_{};
   int frames_since_last_overlay_candidate_rects_change_ = 0;
 
-  scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace viz

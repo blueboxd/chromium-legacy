@@ -16,16 +16,14 @@ namespace content {
 
 RenderAccessibilityHost::RenderAccessibilityHost(
     base::WeakPtr<RenderFrameHostImpl> render_frame_host_impl,
-    mojo::PendingReceiver<mojom::RenderAccessibilityHost> receiver,
     ui::AXTreeID tree_id)
     : render_frame_host_impl_(std::move(render_frame_host_impl)),
-      receiver_{this, std::move(receiver)},
       tree_id_(tree_id) {}
 
 RenderAccessibilityHost::~RenderAccessibilityHost() = default;
 
 void RenderAccessibilityHost::HandleAXEvents(
-    mojom::AXUpdatesAndEventsPtr updates_and_events,
+    blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
     int32_t reset_token,
     HandleAXEventsCallback callback) {
   // Post the HandleAXEvents task onto the UI thread, and then when that
@@ -40,7 +38,7 @@ void RenderAccessibilityHost::HandleAXEvents(
 }
 
 void RenderAccessibilityHost::HandleAXLocationChanges(
-    std::vector<content::mojom::LocationChangesPtr> changes) {
+    std::vector<blink::mojom::LocationChangesPtr> changes) {
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&RenderFrameHostImpl::HandleAXLocationChanges,

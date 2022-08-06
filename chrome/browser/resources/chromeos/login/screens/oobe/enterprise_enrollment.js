@@ -50,6 +50,7 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
 
       /**
        * Type of license used for enrollment.
+       * Only relevant for manual (gaia) flow.
        */
       licenseType_: {
         type: Number,
@@ -170,9 +171,13 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
 
   get EXTERNAL_API() {
     return [
-      'doReload', 'setAdJoinConfiguration', 'setAdJoinParams',
-      'setEnterpriseDomainInfo', 'showAttributePromptStep', 'showError',
-      'showStep'
+      'doReload',
+      'setAdJoinConfiguration',
+      'setAdJoinParams',
+      'setEnterpriseDomainInfo',
+      'showAttributePromptStep',
+      'showError',
+      'showStep',
     ];
   }
 
@@ -220,8 +225,11 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
       this.$['step-ad-join'].disabled = true;
       this.$['step-ad-join'].loading = true;
       chrome.send('oauthEnrollAdCompleteLogin', [
-        e.detail.machine_name, e.detail.distinguished_name,
-        e.detail.encryption_types, e.detail.username, e.detail.password
+        e.detail.machine_name,
+        e.detail.distinguished_name,
+        e.detail.encryption_types,
+        e.detail.username,
+        e.detail.password,
       ]);
     });
 
@@ -260,35 +268,10 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
         name: 'injectedTabHandler',
         matches: ['http://*/*', 'https://*/*'],
         js: {code: KEYBOARD_UTILS_FOR_INJECTION},
-        run_at: 'document_start'
+        run_at: 'document_start',
       }]);
     }
 
-    // TODO(crbug.com/1187024) - Improve the type checking in `data`
-    //
-    this.authenticator_.setWebviewPartition(
-        'webviewPartitionName' in data ? data.webviewPartitionName : '');
-
-    var gaiaParams = {};
-    gaiaParams.gaiaUrl = data.gaiaUrl;
-    gaiaParams.clientId = data.clientId;
-    gaiaParams.needPassword = false;
-    gaiaParams.hl = data.hl;
-    if (data.management_domain) {
-      gaiaParams.enterpriseEnrollmentDomain = data.management_domain;
-      gaiaParams.emailDomain = data.management_domain;
-    }
-    gaiaParams.flow = data.flow;
-    gaiaParams.enableGaiaActionButtons = true;
-    this.authenticator_.load(
-        cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
-    if (data.gaia_buttons_type) {
-      this.gaiaDialogButtonsType_ = data.gaia_buttons_type;
-    }
-    if (this.gaiaDialogButtonsType_ ==
-        OobeTypes.GaiaDialogButtonsType.KIOSK_PREFERRED) {
-      this.licenseType_ = OobeTypes.LicenseType.KIOSK;
-    }
     this.isManualEnrollment_ = 'enrollment_mode' in data ?
         data.enrollment_mode === 'manual' :
         undefined;
@@ -298,7 +281,35 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
     this.isAutoEnroll_ =
         'attestationBased' in data ? data.attestationBased : undefined;
     this.hasAccountCheck_ =
-        'flow' in data ? (data.flow == 'enterpriseLicense') : false;
+        'flow' in data ? (data.flow === 'enterpriseLicense') : false;
+
+    if (!this.isAutoEnroll_) {
+      const gaiaParams = {};
+      gaiaParams.gaiaUrl = data.gaiaUrl;
+      gaiaParams.clientId = data.clientId;
+      gaiaParams.needPassword = false;
+      gaiaParams.hl = data.hl;
+      if (data.management_domain) {
+        gaiaParams.enterpriseEnrollmentDomain = data.management_domain;
+        gaiaParams.emailDomain = data.management_domain;
+      }
+      gaiaParams.flow = data.flow;
+      gaiaParams.enableGaiaActionButtons = true;
+
+      this.authenticator_.setWebviewPartition(
+          'webviewPartitionName' in data ? data.webviewPartitionName : '');
+
+      this.authenticator_.load(
+          cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
+
+      if (data.gaia_buttons_type) {
+        this.gaiaDialogButtonsType_ = data.gaia_buttons_type;
+      }
+      if (this.gaiaDialogButtonsType_ ==
+          OobeTypes.GaiaDialogButtonsType.KIOSK_PREFERRED) {
+        this.licenseType_ = OobeTypes.LicenseType.KIOSK;
+      }
+    }
 
     cr.ui.login.invokePolymerMethod(this.$['step-ad-join'], 'onBeforeShow');
     this.showStep(
@@ -374,6 +385,7 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
     }
     this.isCancelDisabled = (step === OobeTypes.EnrollmentStep.SIGNIN &&
                              !this.isManualEnrollment_) ||
+        (step === OobeTypes.EnrollmentStep.ERROR && this.isForced_) ||
         step === OobeTypes.EnrollmentStep.AD_JOIN ||
         step === OobeTypes.EnrollmentStep.WORKING ||
         step === OobeTypes.EnrollmentStep.CHECKING ||

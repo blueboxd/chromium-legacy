@@ -24,6 +24,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_animation_registry.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/holding_space/holding_space_tray_icon_preview.h"
@@ -49,6 +50,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "url/gurl.h"
@@ -63,6 +65,14 @@ using testing::ElementsAre;
 constexpr char kTestUser[] = "user@test";
 
 // Helpers ---------------------------------------------------------------------
+
+HoldingSpaceItem::InProgressCommand CreateInProgressCommand(
+    HoldingSpaceCommandId command_id,
+    int label_id,
+    HoldingSpaceItem::InProgressCommand::Handler handler = base::DoNothing()) {
+  return HoldingSpaceItem::InProgressCommand(
+      command_id, label_id, &gfx::kNoneIcon, std::move(handler));
+}
 
 // A wrapper around `views::View::GetVisible()` with a null check for `view`.
 bool IsViewVisible(const views::View* view) {
@@ -2654,10 +2664,34 @@ TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
   StartSession();
 
   // Add multiple in-progress holding space items.
-  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake1"),
-          HoldingSpaceProgress(0, 100));
-  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake2"),
-          HoldingSpaceProgress(0, 100));
+  std::vector<HoldingSpaceItem*> items = {
+      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake1"),
+              HoldingSpaceProgress(0, 100)),
+      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake2"),
+              HoldingSpaceProgress(0, 100))};
+
+  // In-progress download items typically support in-progress commands.
+  std::vector<const HoldingSpaceItem*> cancelled_items;
+  std::vector<const HoldingSpaceItem*> paused_items;
+  for (HoldingSpaceItem* item : items) {
+    EXPECT_TRUE(item->SetInProgressCommands(
+        {CreateInProgressCommand(
+             HoldingSpaceCommandId::kCancelItem,
+             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL,
+             base::BindLambdaForTesting([&](const HoldingSpaceItem* item,
+                                            HoldingSpaceCommandId command_id) {
+               DCHECK_EQ(command_id, HoldingSpaceCommandId::kCancelItem);
+               cancelled_items.push_back(item);
+             })),
+         CreateInProgressCommand(
+             HoldingSpaceCommandId::kPauseItem,
+             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PAUSE,
+             base::BindLambdaForTesting([&](const HoldingSpaceItem* item,
+                                            HoldingSpaceCommandId command_id) {
+               DCHECK_EQ(command_id, HoldingSpaceCommandId::kPauseItem);
+               paused_items.push_back(item);
+             }))}));
+  }
 
   // Show UI.
   test_api()->Show();
@@ -2690,10 +2724,14 @@ TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
     ViewDrawnWaiter().Wait(primary_action);
 
     // Click the 1st item's primary action. Selection state shouldn't change.
-    EXPECT_CALL(*client(), CancelItems(ElementsAre(item_views[0]->item())));
+    EXPECT_TRUE(cancelled_items.empty());
     Click(primary_action);
+    EXPECT_THAT(cancelled_items, ElementsAre(item_views[0]->item()));
     EXPECT_TRUE(item_views[0]->selected());
     EXPECT_FALSE(item_views[1]->selected());
+
+    // Reset tracking.
+    cancelled_items.clear();
   }
 
   // Move mouse to the 2nd item.
@@ -2707,8 +2745,9 @@ TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
     ViewDrawnWaiter().Wait(primary_action);
 
     // Click the 2nd item's primary action. Selection state should change.
-    EXPECT_CALL(*client(), CancelItems(ElementsAre(item_views[1]->item())));
+    EXPECT_TRUE(cancelled_items.empty());
     Click(primary_action);
+    EXPECT_THAT(cancelled_items, ElementsAre(item_views[1]->item()));
     EXPECT_FALSE(item_views[0]->selected());
     EXPECT_FALSE(item_views[1]->selected());
   }
@@ -2724,10 +2763,14 @@ TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
     ViewDrawnWaiter().Wait(secondary_action);
 
     // Click the 2nd item's secondary action. Selection state shouldn't change.
-    EXPECT_CALL(*client(), PauseItems(ElementsAre(item_views[1]->item())));
+    EXPECT_TRUE(paused_items.empty());
     Click(secondary_action);
+    EXPECT_THAT(paused_items, ElementsAre(item_views[1]->item()));
     EXPECT_FALSE(item_views[0]->selected());
     EXPECT_TRUE(item_views[1]->selected());
+
+    // Reset tracking.
+    paused_items.clear();
   }
 
   // Move mouse to the 1st item.
@@ -2741,8 +2784,9 @@ TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
     ViewDrawnWaiter().Wait(secondary_action);
 
     // Click the 1st item's secondary action. Selection state should change.
-    EXPECT_CALL(*client(), PauseItems(ElementsAre(item_views[0]->item())));
+    EXPECT_TRUE(paused_items.empty());
     Click(secondary_action);
+    EXPECT_THAT(paused_items, ElementsAre(item_views[0]->item()));
     EXPECT_FALSE(item_views[0]->selected());
     EXPECT_FALSE(item_views[1]->selected());
   }
@@ -3020,6 +3064,15 @@ TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
   // Create an in-progress holding space `item` of the parameterized type.
   HoldingSpaceItem* item = AddItem(GetType(), base::FilePath("/tmp/fake"),
                                    HoldingSpaceProgress(0, 100));
+
+  // In-progress download items typically support in-progress commands.
+  if (HoldingSpaceItem::IsDownload(item->type())) {
+    EXPECT_TRUE(item->SetInProgressCommands(
+        {CreateInProgressCommand(HoldingSpaceCommandId::kCancelItem,
+                                 IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL),
+         CreateInProgressCommand(HoldingSpaceCommandId::kPauseItem,
+                                 IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PAUSE)}));
+  }
 
   // Show holding space UI.
   test_api()->Show();

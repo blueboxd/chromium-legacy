@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Xoay 90 độ theo chiều kim đồng hồ</translation>
 <translation id="1276998909102132017">Ảnh trong thư viện</translation>
 <translation id="1300209025925956156">Quét tài liệu của bạn</translation>
+<translation id="1309250603447638106">Đang tải bản cập nhật xuống để sử dụng tính năng quét tài liệu</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Hãy nhấn tổ hợp phím Tìm kiếm + Mũi tên trái để truy cập.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">In</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Xem trước gương</translation>
 <translation id="2879583609344924966">Đã cắm <ph name="CAMERA" /> vào thiết bị.</translation>
+<translation id="2904654629665923749">Có tính năng quét tài liệu</translation>
 <translation id="2968794441791257519">Ảnh và video mà bạn chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tệp đã tải xuống. Bạn có thể truy cập vào những nội dung này trong ứng dụng Files.
 
         Ứng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Quét mã vạch</translation>
 <translation id="3892148308691398805">Sao chép văn bản</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Đang tải tính năng quét tài liệu xuống</translation>
 <translation id="4118525110028899586">Tạm dừng quay</translation>
 <translation id="4121305183798804752">Đã phát hiện tài liệu</translation>
 <translation id="414641094616694804">Máy ảnh này không thể thay đổi độ phân giải</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Máy ảnh của bạn hiện chưa sẵn sàng.
         Vui lòng kiểm tra xem máy ảnh có được kết nối đúng cách không.</translation>
 <translation id="5163387177077603948">Đang di chuyển theo hướng sang phải</translation>
-<translation id="520537883758714667">Tính năng quét tài liệu hiện có sẵn</translation>
 <translation id="5235304959032763950">16:9</translation>
 <translation id="5266635337630551423">Góc trên cùng bên trái của tài liệu</translation>
 <translation id="5317780077021120954">Lưu</translation>

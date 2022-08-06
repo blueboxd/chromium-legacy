@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/url_and_id.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -42,6 +44,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -382,18 +385,16 @@ BookmarkManagerPrivatePasteFunction::RunOnReady() {
   // No need to test return value, if we got an empty list, we insert at end.
   if (params->selected_id_list)
     GetNodesFromVector(model, *params->selected_id_list, &nodes);
-  int highest_index = -1;
-  for (size_t i = 0; i < nodes.size(); ++i) {
+  size_t highest_index = 0;
+  for (const BookmarkNode* node : nodes) {
     // + 1 so that we insert after the selection.
-    int index = parent_node->GetIndexOf(nodes[i]) + 1;
-    if (index > highest_index)
-      highest_index = index;
+    highest_index =
+        std::max(highest_index, parent_node->GetIndexOf(node).value() + 1);
   }
-  size_t insertion_index = (highest_index == -1)
-                               ? parent_node->children().size()
-                               : static_cast<size_t>(highest_index);
+  if (!highest_index)
+    highest_index = parent_node->children().size();
 
-  bookmarks::PasteFromClipboard(model, parent_node, insertion_index);
+  bookmarks::PasteFromClipboard(model, parent_node, highest_index);
   return NoArguments();
 }
 
@@ -595,6 +596,7 @@ BookmarkManagerPrivateOpenInNewTabFunction::RunOnReady() {
   ExtensionTabUtil::OpenTabParams options;
   options.url = std::make_unique<std::string>(node->url().spec());
   options.active = std::make_unique<bool>(params->active);
+  options.bookmark_id = std::make_unique<int>(node->id());
 
   std::unique_ptr<base::DictionaryValue> result(
       extensions::ExtensionTabUtil::OpenTab(this, options, user_gesture(),
@@ -637,6 +639,18 @@ BookmarkManagerPrivateOpenInNewWindowFunction::RunOnReady() {
   if (incognito_result == windows_util::IncognitoResult::kError)
     return Error(std::move(error));
 
+  std::vector<UrlAndId> url_and_ids;
+  urls.reserve(nodes.size());
+  for (const auto* node : nodes) {
+    if (!base::Contains(urls, node->url()))
+      continue;  // The URL was filtered out; ignore this node.
+    UrlAndId url_and_id;
+    url_and_id.url = node->url();
+    url_and_id.id = node->id();
+    url_and_ids.push_back(url_and_id);
+  }
+  DCHECK_EQ(urls.size(), url_and_ids.size());
+
   DCHECK(!calling_profile->IsOffTheRecord());
   Profile* window_profile =
       incognito_result == windows_util::IncognitoResult::kIncognito
@@ -644,8 +658,8 @@ BookmarkManagerPrivateOpenInNewWindowFunction::RunOnReady() {
           : calling_profile;
 
   bool first_tab = true;
-  for (auto& url : urls) {
-    NavigateParams navigate_params(window_profile, url,
+  for (auto& url_and_id : url_and_ids) {
+    NavigateParams navigate_params(window_profile, url_and_id.url,
                                    ui::PAGE_TRANSITION_LINK);
     navigate_params.window_action = NavigateParams::WindowAction::SHOW_WINDOW;
     navigate_params.disposition =
@@ -653,7 +667,13 @@ BookmarkManagerPrivateOpenInNewWindowFunction::RunOnReady() {
                   : WindowOpenDisposition::NEW_FOREGROUND_TAB;
     if (params->incognito)
       navigate_params.disposition = WindowOpenDisposition::OFF_THE_RECORD;
-    Navigate(&navigate_params);
+    base::WeakPtr<content::NavigationHandle> handle =
+        Navigate(&navigate_params);
+    if (handle) {
+      ChromeNavigationUIData* ui_data =
+          static_cast<ChromeNavigationUIData*>(handle->GetNavigationUIData());
+      ui_data->set_bookmark_id(url_and_id.id);
+    }
 
     first_tab = false;
   }

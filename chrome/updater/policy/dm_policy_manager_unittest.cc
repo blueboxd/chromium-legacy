@@ -109,7 +109,7 @@ TEST(DMPolicyManager, PolicyManagerFromEmptyProto) {
   auto policy_manager(std::make_unique<DMPolicyManager>(omaha_settings));
 
 #if !BUILDFLAG(IS_LINUX)
-  EXPECT_EQ(policy_manager->IsManaged(), base::IsManagedDevice());
+  EXPECT_EQ(policy_manager->HasActiveDevicePolicies(), base::IsManagedDevice());
 #endif  // BUILDFLAG(IS_LINUX)
   EXPECT_EQ(policy_manager->source(), "DeviceManagement");
 
@@ -141,16 +141,16 @@ TEST(DMPolicyManager, PolicyManagerFromEmptyProto) {
   // Verify app-specific polices.
   int install_policy = -1;
   EXPECT_FALSE(policy_manager->GetEffectivePolicyForAppInstalls(
-      kChromeAppId, &install_policy));
+      test::kChromeAppId, &install_policy));
   int update_policy = -1;
-  EXPECT_FALSE(policy_manager->GetEffectivePolicyForAppUpdates(kChromeAppId,
-                                                               &update_policy));
+  EXPECT_FALSE(policy_manager->GetEffectivePolicyForAppUpdates(
+      test::kChromeAppId, &update_policy));
   bool rollback_allowed = false;
   EXPECT_FALSE(policy_manager->IsRollbackToTargetVersionAllowed(
-      kChromeAppId, &rollback_allowed));
+      test::kChromeAppId, &rollback_allowed));
 
   std::string target_version_prefix;
-  EXPECT_FALSE(policy_manager->GetTargetVersionPrefix(kChromeAppId,
+  EXPECT_FALSE(policy_manager->GetTargetVersionPrefix(test::kChromeAppId,
                                                       &target_version_prefix));
 }
 
@@ -171,7 +171,7 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
       ::wireless_android_enterprise_devicemanagement::MANUAL_UPDATES_ONLY);
 
   ::wireless_android_enterprise_devicemanagement::ApplicationSettings app;
-  app.set_app_guid(kChromeAppId);
+  app.set_app_guid(test::kChromeAppId);
   app.set_install(
       ::wireless_android_enterprise_devicemanagement::INSTALL_DISABLED);
   app.set_update(
@@ -185,7 +185,7 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
   auto policy_manager(std::make_unique<DMPolicyManager>(omaha_settings));
 
 #if !BUILDFLAG(IS_LINUX)
-  EXPECT_EQ(policy_manager->IsManaged(), base::IsManagedDevice());
+  EXPECT_EQ(policy_manager->HasActiveDevicePolicies(), base::IsManagedDevice());
 #endif  // BUILDFLAG(IS_LINUX)
   EXPECT_EQ(policy_manager->source(), "DeviceManagement");
 
@@ -224,19 +224,19 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
   // Verify app-specific polices.
   int install_policy = -1;
   EXPECT_TRUE(policy_manager->GetEffectivePolicyForAppInstalls(
-      kChromeAppId, &install_policy));
+      test::kChromeAppId, &install_policy));
   EXPECT_EQ(install_policy, kPolicyDisabled);
   int update_policy = -1;
-  EXPECT_TRUE(policy_manager->GetEffectivePolicyForAppUpdates(kChromeAppId,
-                                                              &update_policy));
+  EXPECT_TRUE(policy_manager->GetEffectivePolicyForAppUpdates(
+      test::kChromeAppId, &update_policy));
   EXPECT_EQ(update_policy, kPolicyAutomaticUpdatesOnly);
   bool rollback_allowed = false;
   EXPECT_TRUE(policy_manager->IsRollbackToTargetVersionAllowed(
-      kChromeAppId, &rollback_allowed));
+      test::kChromeAppId, &rollback_allowed));
   EXPECT_TRUE(rollback_allowed);
 
   std::string target_version_prefix;
-  EXPECT_TRUE(policy_manager->GetTargetVersionPrefix(kChromeAppId,
+  EXPECT_TRUE(policy_manager->GetTargetVersionPrefix(test::kChromeAppId,
                                                      &target_version_prefix));
   EXPECT_EQ(target_version_prefix, "81.");
 
@@ -276,7 +276,7 @@ TEST(DMPolicyManager, PolicyManagerFromDMResponse) {
 
   auto policy_manager(std::make_unique<DMPolicyManager>(omaha_settings));
 
-  EXPECT_EQ(policy_manager->IsManaged(), base::IsManagedDevice());
+  EXPECT_EQ(policy_manager->HasActiveDevicePolicies(), base::IsManagedDevice());
   EXPECT_EQ(policy_manager->source(), "DeviceManagement");
 
   int last_check_period_minutes = 0;

@@ -7,6 +7,7 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/views/message_popup_view.h"
 
 namespace ash {
 
@@ -146,11 +147,17 @@ void LogSnoozed(const std::string& notification_id,
 // Logs a popup Shown event.
 void LogPopupShown(const std::string& notification_id);
 
+// Logs a popup Closed event.
+void LogPopupClosed(message_center::MessagePopupView* popup);
+
 // Logs a tray ClosedByClearAll event.
 void LogClosedByClearAll(const std::string& notification_id);
 
 // Logs a notification added event.
 void LogNotificationAdded(const std::string& notification_id);
+
+// Logs a system notification added event.
+void LogSystemNotificationAdded(const std::string& notification_id);
 
 // Logs the count of notifications displayed during the first minute after a
 // user logs in.

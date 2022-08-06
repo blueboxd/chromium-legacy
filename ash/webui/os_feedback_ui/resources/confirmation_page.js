@@ -12,7 +12,7 @@ import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_be
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FeedbackFlowState} from './feedback_flow.js';
-import {FeedbackServiceProviderInterface, SendReportStatus} from './feedback_types.js';
+import {FeedbackAppPostSubmitAction, FeedbackServiceProviderInterface, SendReportStatus} from './feedback_types.js';
 import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
@@ -54,6 +54,21 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
 
     /** @private {!FeedbackServiceProviderInterface} */
     this.feedbackServiceProvider_ = getFeedbackServiceProvider();
+    /**
+     * Whether this is the first action taken by the user after sending
+     * feedback.
+     * @type {boolean}
+     */
+    this.isFirstAction = true;
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    window.addEventListener('beforeunload', event => {
+      event.preventDefault();
+      this.handleEmitMetrics_(FeedbackAppPostSubmitAction.kCloseFeedbackApp);
+    });
   }
 
   /**
@@ -81,7 +96,6 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
    * @protected
    */
   getMessage_() {
-    // TODO(xiangdongkong): Localize the strings.
     if (this.isOffline_()) {
       return this.i18n('thankYouNoteOffline');
     }
@@ -98,8 +112,9 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
     this.dispatchEvent(new CustomEvent('go-back-click', {
       composed: true,
       bubbles: true,
-      detail: {currentState: FeedbackFlowState.CONFIRMATION}
+      detail: {currentState: FeedbackFlowState.CONFIRMATION},
     }));
+    this.handleEmitMetrics_(FeedbackAppPostSubmitAction.kSendNewReport);
   }
 
   /**
@@ -107,6 +122,7 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
    * @protected
    */
   handleDoneButtonClicked_() {
+    this.handleEmitMetrics_(FeedbackAppPostSubmitAction.kClickDoneButton);
     window.close();
   }
 
@@ -121,9 +137,12 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
     switch (e.target.id) {
       case 'diagnostics':
         this.feedbackServiceProvider_.openDiagnosticsApp();
+        this.handleEmitMetrics_(
+            FeedbackAppPostSubmitAction.kOpenDiagnosticsApp);
         break;
       case 'explore':
         this.feedbackServiceProvider_.openExploreApp();
+        this.handleEmitMetrics_(FeedbackAppPostSubmitAction.kOpenExploreApp);
         break;
       case 'chromebookCommunity':
         // If app locale is not available, default to en.
@@ -131,9 +150,18 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
             `https://support.google.com/chromebook/?hl=${
                 this.i18n('language') || 'en'}#topic=3399709`,
             '_blank');
+        this.handleEmitMetrics_(
+            FeedbackAppPostSubmitAction.kOpenChromebookCommunity);
         break;
       default:
         console.warn('unexpected caller id: ', e.target.id);
+    }
+  }
+
+  handleEmitMetrics_(action) {
+    if (this.isFirstAction) {
+      this.isFirstAction = false;
+      this.feedbackServiceProvider_.recordPostSubmitAction(action);
     }
   }
 }

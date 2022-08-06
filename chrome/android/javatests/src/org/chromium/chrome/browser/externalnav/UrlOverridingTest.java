@@ -17,6 +17,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.PatternMatcher;
+import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.lifecycle.Stage;
 import android.text.TextUtils;
@@ -35,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
@@ -93,6 +96,7 @@ import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
+import org.chromium.url.Origin;
 
 import java.util.Arrays;
 import java.util.List;
@@ -117,6 +121,7 @@ public class UrlOverridingTest {
     public CustomTabActivityTestRule mCustomTabActivityRule = new CustomTabActivityTestRule();
 
     private static final String BASE_PATH = "/chrome/test/data/android/url_overriding/";
+    private static final String HELLO_PAGE = BASE_PATH + "hello.html";
     private static final String NAVIGATION_FROM_TIMEOUT_PAGE =
             BASE_PATH + "navigation_from_timer.html";
     private static final String NAVIGATION_FROM_TIMEOUT_WITH_FALLBACK_PAGE =
@@ -133,8 +138,6 @@ public class UrlOverridingTest {
             BASE_PATH + "navigation_from_xhr_callback_parent_frame.html";
     private static final String NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE =
             BASE_PATH + "navigation_from_xhr_callback_and_short_timeout.html";
-    private static final String NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE =
-            BASE_PATH + "navigation_from_xhr_callback_and_long_timeout.html";
     private static final String NAVIGATION_WITH_FALLBACK_URL_PAGE =
             BASE_PATH + "navigation_with_fallback_url.html";
     private static final String NAVIGATION_WITH_FALLBACK_URL_PARENT_FRAME_PAGE =
@@ -170,6 +173,9 @@ public class UrlOverridingTest {
 
     @Mock
     private RedirectHandler mRedirectHandler;
+
+    @Spy
+    private RedirectHandler mSpyRedirectHandler;
 
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
@@ -230,7 +236,7 @@ public class UrlOverridingTest {
                     && intent.getPackage().equals(ExternalNavigationHandler.PLAY_APP_PACKAGE)) {
                 return true;
             }
-            if (intent.getScheme().equals("market")) return true;
+            if (intent.getScheme() != null && intent.getScheme().equals("market")) return true;
             return false;
         }
 
@@ -309,6 +315,14 @@ public class UrlOverridingTest {
         if (mContextToRestore != null) {
             ContextUtils.initApplicationContextForTests(mContextToRestore);
         }
+    }
+
+    private Origin createExampleOrigin() {
+        org.chromium.url.internal.mojom.Origin origin = new org.chromium.url.internal.mojom.Origin();
+        origin.scheme = "https";
+        origin.host = "example.com";
+        origin.port = 80;
+        return new Origin(origin);
     }
 
     private Intent getCustomTabFromChromeIntent(final String url, final boolean markFromChrome) {
@@ -392,9 +406,15 @@ public class UrlOverridingTest {
             mActivityTestRule.getActivity().getTabModelSelector().addObserver(selectorObserver);
         });
 
-        mActivityTestRule.getActivity().onUserInteraction();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { tab.loadUrl(new LoadUrlParams(url, PageTransition.LINK)); });
+        LoadUrlParams params = new LoadUrlParams(url, transition);
+        if (transition == PageTransition.LINK || transition == PageTransition.FORM_SUBMIT) {
+            params.setIsRendererInitiated(true);
+            params.setInitiatorOrigin(createExampleOrigin());
+        }
+        if (!RedirectHandler.isRefactoringEnabled()) {
+            mActivityTestRule.getActivity().onUserInteraction();
+        }
+        TestThreadUtils.runOnUiThreadBlocking(() -> { tab.loadUrl(params); });
 
         if (finishCallback.getCallCount() == 0) {
             try {
@@ -482,9 +502,9 @@ public class UrlOverridingTest {
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
                     mActivityMonitor.getHits(), Matchers.is(shouldLaunchExternalIntent ? 1 : 0));
+            boolean finishesTwice = hasFallbackUrl || (shouldLaunchExternalIntent && !needClick);
+            Criteria.checkThat(finishCallback.getCallCount(), Matchers.is(finishesTwice ? 2 : 1));
         });
-        Assert.assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
-
         Assert.assertEquals(shouldFailNavigation ? 1 : 0, failCallback.getCallCount());
 
         return lastResultValue.get();
@@ -579,11 +599,40 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    public void testNavigationFromXHRCallbackAndLongTimeout() {
+    public void testNavigationFromXHRCallbackAndLongTimeout() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        loadUrlAndWaitForIntentUrl(
-                mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE), true,
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> RedirectHandlerTabHelper.swapHandlerFor(tab, mSpyRedirectHandler));
+        // This is a little fragile to code changes, but better than waiting 15 real seconds.
+        if (RedirectHandler.isRefactoringEnabled()) {
+            Mockito.doReturn(SystemClock.elapsedRealtime()) // Initial Navigation create
+                    .doReturn(SystemClock.elapsedRealtime()) // Initial Navigation shouldOverride
+                    .doReturn(SystemClock.elapsedRealtime()) // XHR Navigation create
+                    .doReturn(SystemClock.elapsedRealtime()) // XHR callback navigation create
+                    .doReturn(SystemClock.elapsedRealtime()
+                            + RedirectHandler.NAVIGATION_CHAIN_TIMEOUT_MILLIS + 1) // xhr callback
+                    .when(mSpyRedirectHandler)
+                    .currentRealtime();
+        } else {
+            Mockito.doReturn(SystemClock.elapsedRealtime()) // Initial Navigation create
+                    .doReturn(SystemClock.elapsedRealtime()) // Initial Navigation shouldOverride
+                    .doReturn(SystemClock.elapsedRealtime()) // XHR Navigation create
+                    .doReturn(SystemClock.elapsedRealtime()
+                            + RedirectHandler.NAVIGATION_CHAIN_TIMEOUT_MILLIS + 1) // xhr callback
+                    .when(mSpyRedirectHandler)
+                    .currentRealtime();
+        }
+
+        @OverrideUrlLoadingResultType
+        int result = loadUrlAndWaitForIntentUrl(
+                mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE), true,
                 false);
+
+        Assert.assertEquals(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION, result);
+
+        assertMessagePresent();
     }
 
     @Test
@@ -787,8 +836,8 @@ public class UrlOverridingTest {
 
     private void runRedirectToOtherBrowserTest(Instrumentation.ActivityResult chooserResult) {
         Context context = ContextUtils.getApplicationContext();
-        Intent intent = new Intent(
-                Intent.ACTION_VIEW, Uri.parse(mTestServer.getURL(REDIRECT_TO_OTHER_BROWSER)));
+        String targetUrl = getRedirectToOtherBrowserUrl();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl));
         intent.setClassName(context, ChromeLauncherActivity.class.getName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -807,6 +856,25 @@ public class UrlOverridingTest {
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
     }
 
+    private String getRedirectToOtherBrowserUrl() {
+        // Strip off the "https:" for intent scheme formatting.
+        String redirectUrl = mTestServer.getURL(HELLO_PAGE).substring(6);
+        byte[] param = ApiCompatibilityUtils.getBytesUtf8("PARAM_URL");
+        byte[] value = ApiCompatibilityUtils.getBytesUtf8(redirectUrl);
+        return mTestServer.getURL(REDIRECT_TO_OTHER_BROWSER)
+                + "?replace_text=" + Base64.encodeToString(param, Base64.URL_SAFE) + ":"
+                + Base64.encodeToString(value, Base64.URL_SAFE);
+    }
+
+    private IntentFilter createHelloIntentFilter() {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
+        filter.addDataScheme(UrlConstants.HTTPS_SCHEME);
+        filter.addCategory(Intent.CATEGORY_BROWSABLE);
+        filter.addDataAuthority("*", null);
+        filter.addDataPath(HELLO_PAGE, PatternMatcher.PATTERN_LITERAL);
+        return filter;
+    }
+
     @Test
     @LargeTest
     public void testRedirectToOtherBrowser_ChooseSelf() throws TimeoutException {
@@ -818,9 +886,8 @@ public class UrlOverridingTest {
 
         // Wait for the target (data) URL to load in the tab.
         CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(
-                    mActivityTestRule.getActivity().getActivityTab().getUrl().getScheme(),
-                    Matchers.is(UrlConstants.DATA_SCHEME));
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+                    Matchers.is(mTestServer.getURL(HELLO_PAGE)));
         });
     }
 
@@ -828,9 +895,7 @@ public class UrlOverridingTest {
     @LargeTest
     public void testRedirectToOtherBrowser_ChooseOther() throws TimeoutException {
         mTestContext.setResolveBrowserIntentToNonBrowserPackage(false);
-        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
-        filter.addDataScheme(UrlConstants.DATA_SCHEME);
-        filter.addCategory(Intent.CATEGORY_BROWSABLE);
+        IntentFilter filter = createHelloIntentFilter();
         Instrumentation.ActivityMonitor monitor =
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, true);
 
@@ -850,15 +915,13 @@ public class UrlOverridingTest {
     @LargeTest
     public void testRedirectToOtherBrowser_DefaultNonBrowserPackage() throws TimeoutException {
         mTestContext.setResolveBrowserIntentToNonBrowserPackage(true);
-        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
-        filter.addDataScheme(UrlConstants.DATA_SCHEME);
-        filter.addCategory(Intent.CATEGORY_BROWSABLE);
+        IntentFilter filter = createHelloIntentFilter();
         Instrumentation.ActivityMonitor viewMonitor =
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, true);
 
         Context context = ContextUtils.getApplicationContext();
-        Intent intent = new Intent(
-                Intent.ACTION_VIEW, Uri.parse(mTestServer.getURL(REDIRECT_TO_OTHER_BROWSER)));
+        String targetUrl = getRedirectToOtherBrowserUrl();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl));
         intent.setClassName(context, ChromeLauncherActivity.class.getName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -1107,15 +1170,20 @@ public class UrlOverridingTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         String url = mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PAGE);
-        @OverrideUrlLoadingResultType
-        int result = loadUrlAndWaitForIntentUrl(url, false, null, PageTransition.AUTO_BOOKMARK);
-        Assert.assertEquals(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION, result);
-        assertMessagePresent();
+        if (RedirectHandler.isRefactoringEnabled()) {
+            @OverrideUrlLoadingResultType
+            int result = loadUrlAndWaitForIntentUrl(url, false, null, PageTransition.AUTO_BOOKMARK);
+            Assert.assertEquals(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION, result);
+            assertMessagePresent();
+        } else {
+            loadUrlAndWaitForIntentUrl(url, true, null, PageTransition.AUTO_BOOKMARK);
+        }
     }
 
     @Test
     @LargeTest
     public void testRedirectFromBookmarkWithFallback() throws Exception {
+        if (!RedirectHandler.isRefactoringEnabled()) return;
         mActivityTestRule.startMainActivityOnBlankPage();
 
         String fallbackUrl = mTestServer.getURL(FALLBACK_LANDING_PATH);

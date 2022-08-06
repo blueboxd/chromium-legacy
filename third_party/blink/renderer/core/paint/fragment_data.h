@@ -19,6 +19,7 @@
 namespace blink {
 
 class PaintLayer;
+struct StickyPositionScrollingConstraints;
 
 // Represents the data for a particular fragment of a LayoutObject.
 // See README.md.
@@ -56,6 +57,15 @@ class CORE_EXPORT FragmentData final : public GarbageCollected<FragmentData> {
   // depending on the return value of LayoutBoxModelObject::LayerTypeRequired().
   PaintLayer* Layer() const { return rare_data_ ? rare_data_->layer : nullptr; }
   void SetLayer(PaintLayer*);
+
+  StickyPositionScrollingConstraints* StickyConstraints() const {
+    return rare_data_ ? rare_data_->sticky_constraints : nullptr;
+  }
+  void SetStickyConstraints(StickyPositionScrollingConstraints* constraints) {
+    if (!rare_data_ && !constraints)
+      return;
+    EnsureRareData().sticky_constraints = constraints;
+  }
 
   // A fragment ID unique within the LayoutObject. In NG block fragmentation,
   // this is the fragmentainer index. In legacy block fragmentation, it's the
@@ -168,33 +178,21 @@ class CORE_EXPORT FragmentData final : public GarbageCollected<FragmentData> {
     return rare_data_ ? rare_data_->contents_cull_rect_ : CullRect();
   }
 
-  // This is the complete set of property nodes that is inherited
-  // from the ancestor before applying any local CSS properties,
-  // but includes paint offset transform.
-  PropertyTreeStateOrAlias PreEffectProperties() const {
-    return PropertyTreeStateOrAlias(PreTransform(), PreClip(), PreEffect());
-  }
-
-  // This is the complete set of property nodes that can be used to
-  // paint the contents of this fragment. It is similar to
-  // |local_border_box_properties_| but includes properties (e.g.,
-  // overflow clip, scroll translation) that apply to contents.
+  // This is the complete set of property nodes that can be used to paint the
+  // contents of this fragment. It is similar to LocalBorderBoxProperties()
+  // but includes properties (e.g., overflow clip, scroll translation,
+  // isolation nodes) that apply to contents.
   PropertyTreeStateOrAlias ContentsProperties() const {
-    return PropertyTreeStateOrAlias(PostScrollTranslation(), PostOverflowClip(),
-                                    PostIsolationEffect());
+    return PropertyTreeStateOrAlias(ContentsTransform(), ContentsClip(),
+                                    ContentsEffect());
   }
 
   const TransformPaintPropertyNodeOrAlias& PreTransform() const;
-  const TransformPaintPropertyNodeOrAlias& PostScrollTranslation() const;
   const ClipPaintPropertyNodeOrAlias& PreClip() const;
-  const ClipPaintPropertyNodeOrAlias& PostOverflowClip() const;
-  const EffectPaintPropertyNodeOrAlias& PreEffect() const;
-  const EffectPaintPropertyNodeOrAlias& PreFilter() const;
-  const EffectPaintPropertyNodeOrAlias& PostIsolationEffect() const;
 
-  // Map a rect from |this|'s local border box space to |fragment|'s local
-  // border box space. Both fragments must have local border box properties.
-  void MapRectToFragment(const FragmentData& fragment, gfx::Rect&) const;
+  const ClipPaintPropertyNodeOrAlias& ContentsClip() const;
+  const TransformPaintPropertyNodeOrAlias& ContentsTransform() const;
+  const EffectPaintPropertyNodeOrAlias& ContentsEffect() const;
 
   ~FragmentData() = default;
   void Trace(Visitor* visitor) const { visitor->Trace(rare_data_); }
@@ -217,6 +215,7 @@ class CORE_EXPORT FragmentData final : public GarbageCollected<FragmentData> {
     // The following data fields are not fragment specific. Placed here just to
     // avoid separate data structure for them.
     Member<PaintLayer> layer;
+    Member<StickyPositionScrollingConstraints> sticky_constraints;
     UniqueObjectId unique_id;
 
     // Fragment specific data.

@@ -277,25 +277,16 @@ bool DrawingBuffer::MarkContentsChanged() {
   return false;
 }
 
-void DrawingBuffer::ResetBuffersToAutoClear() {
-  GLuint buffers = GL_COLOR_BUFFER_BIT;
-  if (want_depth_)
-    buffers |= GL_DEPTH_BUFFER_BIT;
-  if (want_stencil_ || has_implicit_stencil_buffer_)
-    buffers |= GL_STENCIL_BUFFER_BIT;
-  SetBuffersToAutoClear(buffers);
+bool DrawingBuffer::BufferClearNeeded() const {
+  return buffer_clear_needed_;
 }
 
-void DrawingBuffer::SetBuffersToAutoClear(GLbitfield buffers) {
+void DrawingBuffer::SetBufferClearNeeded(bool flag) {
   if (preserve_drawing_buffer_ == kDiscard) {
-    buffers_to_auto_clear_ = buffers;
+    buffer_clear_needed_ = flag;
   } else {
-    DCHECK_EQ(0u, buffers_to_auto_clear_);
+    DCHECK(!buffer_clear_needed_);
   }
-}
-
-GLbitfield DrawingBuffer::GetBuffersToAutoClear() const {
-  return buffers_to_auto_clear_;
 }
 
 gpu::gles2::GLES2Interface* DrawingBuffer::ContextGL() {
@@ -497,7 +488,9 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
                      weak_factory_.GetWeakPtr(), std::move(registered));
 
   contents_changed_ = false;
-  ResetBuffersToAutoClear();
+  if (preserve_drawing_buffer_ == kDiscard) {
+    SetBufferClearNeeded(true);
+  }
   return true;
 }
 
@@ -604,7 +597,9 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
   front_color_buffer_ = color_buffer_for_mailbox;
 
   contents_changed_ = false;
-  ResetBuffersToAutoClear();
+  if (preserve_drawing_buffer_ == kDiscard) {
+    SetBufferClearNeeded(true);
+  }
   return true;
 }
 
@@ -1016,10 +1011,9 @@ bool DrawingBuffer::Initialize(const gfx::Size& size, bool use_multisampling) {
   return true;
 }
 
-template <typename CopyFunction>
 bool DrawingBuffer::CopyToPlatformInternal(gpu::InterfaceBase* dst_interface,
                                            SourceDrawingBuffer src_buffer,
-                                           const CopyFunction& copy_function) {
+                                           CopyFunctionRef copy_function) {
   ScopedStateRestorer scoped_state_restorer(this);
 
   gpu::gles2::GLES2Interface* src_gl = gl_;
@@ -1805,8 +1799,10 @@ void DrawingBuffer::ResolveAndPresentSwapChainIfNeeded() {
                                 size_.width(), size_.height(), GL_FALSE,
                                 GL_FALSE, GL_FALSE);
   }
-  ResetBuffersToAutoClear();
   contents_changed_ = false;
+  if (preserve_drawing_buffer_ == kDiscard) {
+    SetBufferClearNeeded(true);
+  }
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
@@ -1832,6 +1828,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
                    gpu::SHARED_IMAGE_USAGE_DISPLAY;
+  if (initial_gpu_ == gl::GpuPreference::kHighPerformance)
+    usage |= gpu::SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU;
   GrSurfaceOrigin origin = opengl_flip_y_extension_
                                ? kTopLeft_GrSurfaceOrigin
                                : kBottomLeft_GrSurfaceOrigin;
@@ -1876,13 +1874,16 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
         additional_usage_flags = gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
       }
 
-      gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
-          size, buffer_format, buffer_usage, gpu::kNullSurfaceHandle, nullptr);
-
-      if (gpu_memory_buffer) {
-        back_buffer_mailbox = sii->CreateSharedImage(
-            gpu_memory_buffer.get(), gpu_memory_buffer_manager, color_space_,
-            origin, kPremul_SkAlphaType, usage | additional_usage_flags);
+      if (gpu::IsImageFromGpuMemoryBufferFormatSupported(
+              buffer_format, ContextProvider()->GetCapabilities())) {
+        gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
+            size, buffer_format, buffer_usage, gpu::kNullSurfaceHandle,
+            nullptr);
+        if (gpu_memory_buffer) {
+          back_buffer_mailbox = sii->CreateSharedImage(
+              gpu_memory_buffer.get(), gpu_memory_buffer_manager, color_space_,
+              origin, kPremul_SkAlphaType, usage | additional_usage_flags);
+        }
       }
     }
 

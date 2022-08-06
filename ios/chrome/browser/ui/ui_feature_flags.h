@@ -94,8 +94,16 @@ extern const base::Feature kCalendarExperienceKit;
 // Feature flag to enable Apple Calendar event in experience kit.
 extern const base::Feature kEnableExpKitAppleCalendar;
 
-// Feature flag to enable Text Classifier entity detection in experience kit
-// calendar.
-extern const base::Feature kEnableExpKitCalendarTextClassifier;
+// Feature flag to enable sign-out from Chrome Browsing Data.
+extern const base::Feature kEnableCBDSignOut;
+
+// Feature flag to enable Phone Numbers detection.
+extern const base::Feature kEnablePhoneNumbers;
+
+// Feature flag to enable Maps in experience kit.
+extern const base::Feature kMapsExperienceKit;
+
+// Feature flag to enable Mini Map in experience kit.
+extern const base::Feature kEnableMiniMap;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

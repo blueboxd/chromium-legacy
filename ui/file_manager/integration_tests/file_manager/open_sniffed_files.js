@@ -20,7 +20,7 @@ async function sniffedFileOpen(path, entry) {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [entry.targetPath],
-    openType: 'launch'
+    openType: 'launch',
   });
   // Open Files.App on |path|, add imgpdf to Downloads and Drive.
   const appId = await setupAndWaitUntilReady(path, [entry], [entry]);
@@ -32,10 +32,7 @@ async function sniffedFileOpen(path, entry) {
     // in the browser.
 
     // Select the file.
-    chrome.test.assertTrue(
-        !!await remoteCall.callRemoteTestUtil(
-            'selectFile', appId, [entry.targetPath]),
-        'selectFile failed');
+    await remoteCall.waitUntilSelected(appId, entry.targetPath);
 
     // Right-click the selected file.
     await remoteCall.waitAndRightClick(appId, '.table-row[selected]');

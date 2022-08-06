@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ItemScanManager} from '/switch_access/item_scan_manager.js';
-import {ItemNavigatorInterface, PointNavigatorInterface} from '/switch_access/navigator_interface.js';
-import {PointScanManager} from '/switch_access/point_scan_manager.js';
+import {ItemScanManager} from './item_scan_manager.js';
+import {ItemNavigatorInterface, PointNavigatorInterface} from './navigator_interface.js';
+import {PointScanManager} from './point_scan_manager.js';
 
 export class Navigator {
   /** @param {!chrome.automation.AutomationNode} desktop */
   static initializeSingletonInstance(desktop) {
     Navigator.item_manager_ = new ItemScanManager(desktop);
     Navigator.point_manager_ = new PointScanManager();
-    window.getTreeForDebugging =
+    globalThis.getTreeForDebugging =
         Navigator.item_manager_.getTreeForDebugging.bind(
             Navigator.item_manager_);
   }

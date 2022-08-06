@@ -464,9 +464,41 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AverageViewportAdDensity">
     <summary>
-      The estimated average density of ads within the viewport by area.
-      Calculated as the moving average of area of ads within the viewport * 100
-      / viewport area. This counts each overlapping area once.
+      The estimated average viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the average
+      of the densities accumulated over the page load time rounded to the
+      nearest integer.
+    </summary>
+  </metric>
+  <metric name="KurtosisViewportAdDensity">
+    <summary>
+      The estimated kurtosis of the viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the kurtosis
+      of the densities accumulated over the page load time rounded to the
+      nearest exponential bucket integer with bucket spacing 1.3. For negative
+      values, the bucketing will be taken on its magnitude part.
+    </summary>
+  </metric>
+  <metric name="SkewnessViewportAdDensity">
+    <summary>
+      The estimated skewness of the viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the skewness
+      of the densities accumulated over the page load time rounded to the
+      nearest exponential bucket integer with bucket spacing 1.3. For negative
+      values, the bucketing will be taken on its magnitude part.
+    </summary>
+  </metric>
+  <metric name="VarianceViewportAdDensity">
+    <summary>
+      The estimated variance of the viewport ad density. Each density value is
+      calculated as the area of ads within the viewport * 100 / viewport area,
+      where each overlapping area is counted once. And this returns the variance
+      of the densities accumulated over the page load time rounded to the
+      nearest exponential bucket integer with bucket spacing 1.3. For negative
+      values, the bucketing will be taken on its magnitude part.
     </summary>
   </metric>
 </event>
@@ -3058,12 +3090,49 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.DeveloperMetricsRare">
+  <owner>schenney@chromium.org</owner>
+  <owner>chrome-webdev-metrics@google.com</owner>
+  <summary>
+    Collects data for a subset of UseCounter features of interest to the Web
+    Platform Developer Metrics team due to their recent launch or potential for
+    spec changes. Features reported in this set should be rare, appearing in
+    fewer than 5% of page loads.
+  </summary>
+  <metric name="Feature" enum="FeatureObserver">
+    <summary>
+      Opt-in UseCounter feature, listed in
+      components/page_load_metrics/browser/observers/use_counter/webdev_metrics_ukm_features.cc
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IsMainFrameFeature" enum="Boolean">
+    <summary>
+      Emits True(1) or False(0) to indicate whether the Feature recorded is in
+      the main frame or not.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.FedCm">
   <owner>yigu@chromium.org</owner>
   <owner>webid-core@google.com</owner>
   <summary>
     Records performance metrics for FedCM(Federated Credential Management) API.
   </summary>
+  <metric name="FedCmSessionID">
+    <summary>
+      Records the session ID associated to the FedCM call for which this event
+      is recording metrics. Each FedCM call gets a random integer session id,
+      which helps group UKM events by the session id.
+    </summary>
+  </metric>
   <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
     <summary>
       Records the status of a request id token call to the FedCM API.
@@ -3120,9 +3189,22 @@ be describing additional metrics about the same event.
     This event uses the specific WEB_IDENTITY ukm_source_id which is generated
     from the identity provider's origin.
   </summary>
+  <metric name="FedCmSessionID">
+    <summary>
+      Records the session ID associated to the FedCM call for which this event
+      is recording metrics. Each FedCM call gets a random integer session id,
+      which helps group UKM events by the session id.
+    </summary>
+  </metric>
   <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
     <summary>
       Records the status of a request id token call to the FedCM API.
+    </summary>
+  </metric>
+  <metric name="Status.SignInStateMatch" enum="FedCmSignInStateMatchStatus">
+    <summary>
+      Records whether user sign-in states between IDP and browser match after
+      browser receives an account list from IDP prior to showing UI.
     </summary>
   </metric>
   <metric name="Timing.CancelOnDialog">
@@ -8550,6 +8632,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="TimingSinceFCPWorstCase">
+    <obsolete>
+      Removed July 2022 along with UMA metric, which are no longer needed.
+    </obsolete>
     <summary>
       The Time From FCP when the worst case happened
     </summary>
@@ -10508,7 +10593,7 @@ be describing additional metrics about the same event.
       Reflects the current status of user gesture/activation. This is a bit
       field with the following values: - 0b0001 if there is a user gesture on
       the stack; - 0b0010 if there was a user gesture on the page (ie. was
-      activated); - 0b0100 if there was a user gesture propogated after a
+      activated); - 0b0100 if there was a user gesture propagated after a
       navigation.
     </summary>
   </metric>
@@ -10899,6 +10984,62 @@ be describing additional metrics about the same event.
   <metric name="KeySystem" enum="MediaKeySystemLegacy">
     <summary>
       The key system associated with this call.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="Media.EME.GetStatusForPolicy">
+  <owner>frs@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when the EME API GetStatusForPolicy promise is resovled.
+  </summary>
+  <metric name="IsAdFrame" enum="Boolean">
+    <summary>
+      Whether the frame is an ad frame. This is not set if the frame is null.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="KeySystem" enum="MediaKeySystem">
+    <summary>
+      The key system associated with the current CDM.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MinHdcpVersion" enum="HdcpVersion">
+    <summary>
+      The minimum HDCP version requested for EME API GetStatusForPolicy.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UseHardwareSecureCodecs" enum="Boolean">
+    <summary>
+      Whether hardware secure codecs are required for the current CDM.
     </summary>
     <aggregation>
       <history>
@@ -17172,6 +17313,13 @@ be describing additional metrics about the same event.
       This is replicated as Prerender.Experimental.PrerenderHostFinalStatus.* in
       UMA.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay4">
     <summary>
@@ -17197,6 +17345,13 @@ be describing additional metrics about the same event.
       the time when the page first paints content. A contentful paint includes a
       paint of text, image, SVG, or canvas.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Timing.ActivationToLargestContentfulPaint">
     <summary>
@@ -17204,6 +17359,13 @@ be describing additional metrics about the same event.
       the time when the page first paints the largest content (text or image)
       within viewport, across all frames.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Timing.NavigationToActivation">
     <summary>

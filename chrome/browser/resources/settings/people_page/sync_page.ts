@@ -10,14 +10,14 @@ import '//resources/cr_elements/cr_link_row/cr_link_row.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
-import '//resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import '//resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import './sync_account_control.js';
 import './sync_encryption_options.js';
 import '../privacy_page/personalization_options.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 // <if expr="not chromeos_ash">
 import '//resources/cr_elements/cr_toast/cr_toast.js';
@@ -33,6 +33,7 @@ import {IronCollapseElement} from '//resources/polymer/v3_0/iron-collapse/iron-c
 import {flush, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 
+import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 // <if expr="chromeos_ash">
 import {SettingsPersonalizationOptionsElement} from '../privacy_page/personalization_options.js';
@@ -49,21 +50,19 @@ import {getTemplate} from './sync_page.html.js';
 
 // TODO(rbpotter): Remove this typedef when this file is no longer needed by OS
 // Settings.
-type SyncRoutes = {
-  BASIC: Route,
-  PEOPLE: Route,
-  SYNC: Route,
-  SYNC_ADVANCED: Route,
-  OS_SYNC: Route,
-  OS_PEOPLE: Route,
-};
+interface SyncRoutes {
+  BASIC: Route;
+  PEOPLE: Route;
+  SYNC: Route;
+  SYNC_ADVANCED: Route;
+  OS_SYNC: Route;
+  OS_PEOPLE: Route;
+}
 
 function getSyncRoutes(): SyncRoutes {
   const router = Router.getInstance();
   return router.getRoutes() as SyncRoutes;
 }
-
-type FocusConfig = Map<string, (string|(() => void))>;
 
 export interface SettingsSyncPageElement {
   $: {
@@ -139,7 +138,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
       dataEncrypted_: {
         type: Boolean,
-        computed: 'computeDataEncrypted_(syncPrefs.encryptAllData)'
+        computed: 'computeDataEncrypted_(syncPrefs.encryptAllData)',
       },
 
       encryptionExpanded_: {
@@ -192,10 +191,12 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
             'syncPrefs.trustedVaultKeysRequired)',
       },
 
+      // <if expr="not chromeos_ash">
       showSetupCancelDialog_: {
         type: Boolean,
         value: false,
       },
+      // </if>
 
       enterPassphraseLabel_: {
         type: String,
@@ -229,7 +230,11 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private signedIn_: boolean;
   private syncDisabledByAdmin_: boolean;
   private syncSectionDisabled_: boolean;
+
+  // <if expr="not chromeos_ash">
   private showSetupCancelDialog_: boolean;
+  // </if>
+
   private enterPassphraseLabel_: string;
   private existingPassphraseLabel_: string;
 
@@ -392,6 +397,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     });
   }
 
+  // <if expr="not chromeos_ash">
   private onSetupCancelDialogBack_() {
     this.shadowRoot!.querySelector<CrDialogElement>(
                         '#setupCancelDialog')!.cancel();
@@ -412,6 +418,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private onSetupCancelDialogClose_() {
     this.showSetupCancelDialog_ = false;
   }
+  // </if>
 
   override currentRouteChanged() {
     const router = Router.getInstance();
@@ -433,6 +440,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       return;
     }
 
+    // <if expr="not chromeos_ash">
     const userActionCancelsSetup = this.syncStatus &&
         this.syncStatus.firstSetupInProgress && this.didAbort_;
     if (userActionCancelsSetup && !this.setupCancelConfirmed_) {
@@ -456,6 +464,8 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
     // Reset variable.
     this.setupCancelConfirmed_ = false;
+
+    // </if>
 
     this.onNavigateAwayFromPage_();
   }
@@ -551,8 +561,8 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       tags: ['a'],
       substitutions: [
         loadTimeData.getString('syncErrorsHelpUrl'),
-        this.syncPrefs.explicitPassphraseTime
-      ]
+        this.syncPrefs.explicitPassphraseTime,
+      ],
     });
   }
 

@@ -12,6 +12,7 @@
 #include "build/chromecast_buildflags.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -42,7 +43,7 @@ class CONTENT_EXPORT MessagePortProvider {
   static void PostMessageToFrame(Page& page,
                                  const std::u16string& source_origin,
                                  const std::u16string& target_origin,
-                                 const std::u16string& data);
+                                 const blink::WebMessagePayload& data);
 
 #if BUILDFLAG(IS_ANDROID)
   static void PostMessageToFrame(
@@ -50,7 +51,8 @@ class CONTENT_EXPORT MessagePortProvider {
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& source_origin,
       const base::android::JavaParamRef<jstring>& target_origin,
-      const base::android::JavaParamRef<jstring>& data,
+      /* org.chromium.content_public.browser.MessagePayload */
+      const base::android::JavaParamRef<jobject>& payload,
       const base::android::JavaParamRef<jobjectArray>& ports);
 #endif  // BUILDFLAG(IS_ANDROID)
 

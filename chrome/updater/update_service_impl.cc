@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,6 +22,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -279,7 +281,7 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   persisted_data_->SetLastStarted(base::Time::NowFromSystemTime());
-  DVLOG(1) << "last_started updated.";
+  VLOG(1) << "last_started updated.";
 
   // The installer should make an updater registration, but in case it halts
   // before it does, synthesize a registration if necessary here.
@@ -298,6 +300,12 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
   new_tasks.push_back(base::BindOnce(&UpdateUsageStatsTask::Run,
                                      base::MakeRefCounted<UpdateUsageStatsTask>(
                                          GetUpdaterScope(), persisted_data_)));
+
+  new_tasks.push_back(base::BindOnce(
+      &CheckForUpdatesTask::Run,
+      base::MakeRefCounted<CheckForUpdatesTask>(
+          config_, base::BindOnce(&UpdateServiceImpl::ForceInstall, this,
+                                  base::DoNothing()))));
   new_tasks.push_back(
       base::BindOnce(&CheckForUpdatesTask::Run,
                      base::MakeRefCounted<CheckForUpdatesTask>(
@@ -334,6 +342,49 @@ void UpdateServiceImpl::TaskDone() {
   TaskStart();
 }
 
+void UpdateServiceImpl::ForceInstall(StateChangeCallback state_update,
+                                     Callback callback) {
+  VLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::vector<std::string> force_install_apps;
+  if (!config_->GetPolicyService()->GetForceInstallApps(nullptr,
+                                                        &force_install_apps)) {
+    base::BindPostTask(main_task_runner_, std::move(callback))
+        .Run(UpdateService::Result::kSuccess);
+    return;
+  }
+  DCHECK(!force_install_apps.empty());
+
+  std::vector<std::string> installed_app_ids = persisted_data_->GetAppIds();
+  std::sort(force_install_apps.begin(), force_install_apps.end());
+  std::sort(installed_app_ids.begin(), installed_app_ids.end());
+
+  std::vector<std::string> app_ids_to_install;
+  std::set_difference(force_install_apps.begin(), force_install_apps.end(),
+                      installed_app_ids.begin(), installed_app_ids.end(),
+                      std::back_inserter(app_ids_to_install));
+  if (app_ids_to_install.empty()) {
+    base::BindPostTask(main_task_runner_, std::move(callback))
+        .Run(UpdateService::Result::kSuccess);
+    return;
+  }
+
+  VLOG(1) << __func__ << ": app_ids_to_install: "
+          << base::JoinString(app_ids_to_install, " ");
+
+  const Priority priority = Priority::kBackground;
+  ShouldBlockUpdateForMeteredNetwork(
+      priority,
+      base::BindOnce(
+          &UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork, this,
+          state_update, std::move(callback),
+          base::MakeFlatMap<std::string, std::string>(
+              app_ids_to_install, {},
+              [](const auto& app_id) { return std::make_pair(app_id, ""); }),
+          priority, UpdateService::PolicySameVersionUpdate::kNotAllowed));
+}
+
 void UpdateServiceImpl::UpdateAll(StateChangeCallback state_update,
                                   Callback callback) {
   VLOG(1) << __func__;
@@ -354,7 +405,7 @@ void UpdateServiceImpl::UpdateAll(StateChangeCallback state_update,
                 if (result == Result::kSuccess) {
                   persisted_data->SetLastChecked(
                       base::Time::NowFromSystemTime());
-                  DVLOG(1) << "last_checked updated.";
+                  VLOG(1) << "last_checked updated.";
                 }
                 std::move(callback).Run(result);
               },
@@ -411,21 +462,32 @@ void UpdateServiceImpl::Install(const RegistrationRequest& registration,
     // Only overwrite the registration if there's no current registration.
     persisted_data_->RegisterApp(registration);
   }
-  // TODO(crbug.com/1290331): Retain the cancellation callback.
-  update_client_->Install(
-      install_data_index,
+
+  std::multimap<std::string, base::RepeatingClosure>::iterator pos =
+      cancellation_callbacks_.emplace(registration.app_id, base::DoNothing());
+  pos->second = update_client_->Install(
+      registration.app_id,
       base::BindOnce(&GetComponents, config_, persisted_data_,
                      AppInstallDataIndex({std::make_pair(registration.app_id,
                                                          install_data_index)}),
                      false, false, PolicySameVersionUpdate::kAllowed),
       MakeUpdateClientCrxStateChangeCallback(config_, state_update),
-      MakeUpdateClientCallback(std::move(callback)));
+      MakeUpdateClientCallback(std::move(callback))
+          .Then(base::BindOnce(
+              [](scoped_refptr<UpdateServiceImpl> self,
+                 const std::multimap<std::string,
+                                     base::RepeatingClosure>::iterator& pos) {
+                self->cancellation_callbacks_.erase(pos);
+              },
+              base::WrapRefCounted(this), pos)));
 }
 
 void UpdateServiceImpl::CancelInstalls(const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  // TODO(crbug.com/1290331): Implement.
+  auto range = cancellation_callbacks_.equal_range(app_id);
+  std::for_each(range.first, range.second,
+                [](const auto& i) { i.second.Run(); });
 }
 
 void UpdateServiceImpl::RunInstaller(const std::string& app_id,
@@ -435,8 +497,8 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
                                      const std::string& install_settings,
                                      StateChangeCallback state_update,
                                      Callback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int policy = kPolicyEnabled;
   if (IsUpdateDisabledByPolicy(app_id, Priority::kForeground, true, policy)) {
@@ -475,10 +537,11 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
             return RunApplicationInstaller(
                 app_info, installer_path, install_args,
                 WriteInstallerDataToTempFile(temp_dir.GetPath(), install_data),
+                kWaitForAppInstaller,
                 base::BindRepeating(
                     [](StateChangeCallback state_update,
                        const std::string& app_id, int progress) {
-                      DVLOG(4) << "Install progress: " << progress;
+                      VLOG(4) << "Install progress: " << progress;
                       UpdateState state;
                       state.app_id = app_id;
                       state.state = UpdateState::State::kInstalling;
@@ -500,7 +563,7 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
             VLOG(1) << app_id << " installation completed: " << result.error;
 
             // TODO(crbug.com/1286574): Perform post-install actions, such as
-            // send pings.
+            // send pings (if `enterprise` is not set in install_settings).
 
             // TODO(crbug.com/1286574): Expand arguments in `Callback` to take
             // more installation result details.

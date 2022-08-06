@@ -817,6 +817,10 @@ gfx::Vector2d VisualViewport::MaximumScrollOffsetInt() const {
 }
 
 ScrollOffset VisualViewport::MaximumScrollOffset() const {
+  return MaximumScrollOffsetAtScale(scale_);
+}
+
+ScrollOffset VisualViewport::MaximumScrollOffsetAtScale(float scale) const {
   if (!IsActiveViewport())
     return ScrollOffset();
 
@@ -830,14 +834,14 @@ ScrollOffset VisualViewport::MaximumScrollOffset() const {
     frame_view_size.Enlarge(0, browser_controls_adjustment_ / min_scale);
   }
 
-  frame_view_size.Scale(scale_);
+  frame_view_size.Scale(scale);
   frame_view_size = gfx::SizeF(ToFlooredSize(frame_view_size));
 
   gfx::SizeF viewport_size(size_);
   viewport_size.Enlarge(0, ceilf(browser_controls_adjustment_));
 
   gfx::SizeF max_position = frame_view_size - viewport_size;
-  max_position.Scale(1 / scale_);
+  max_position.Scale(1 / scale);
   return ScrollOffset(max_position.width(), max_position.height());
 }
 
@@ -1136,19 +1140,15 @@ bool VisualViewport::ShouldDisableDesktopWorkarounds() const {
 }
 
 cc::AnimationHost* VisualViewport::GetCompositorAnimationHost() const {
-  // TODO(bokan): This and below can be reached for an inactive viewport since
-  // RootFrameViewport is created inside non outermost main frames and can can
-  // call into here. Once that's fixed we should probably DCHECK here that the
-  // viewport is active. https://crbug.com/1314858.
-  DCHECK(GetPage().MainFrame()->IsLocalFrame());
-  ScrollingCoordinator* c = GetPage().GetScrollingCoordinator();
-  return c ? c->GetCompositorAnimationHost() : nullptr;
+  DCHECK(IsActiveViewport());
+  DCHECK(GetChromeClient());
+  return GetChromeClient()->GetCompositorAnimationHost(LocalMainFrame());
 }
 
 cc::AnimationTimeline* VisualViewport::GetCompositorAnimationTimeline() const {
-  DCHECK(GetPage().MainFrame()->IsLocalFrame());
-  ScrollingCoordinator* c = GetPage().GetScrollingCoordinator();
-  return c ? c->GetCompositorAnimationTimeline() : nullptr;
+  DCHECK(IsActiveViewport());
+  DCHECK(GetChromeClient());
+  return GetChromeClient()->GetScrollAnimationTimeline(LocalMainFrame());
 }
 
 void VisualViewport::NotifyRootFrameViewport() const {

@@ -149,7 +149,7 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
     return nullptr;
   }
 
-  if (entity && entity->UpdateIsReflection(update.response_version)) {
+  if (entity && entity->IsVersionAlreadyKnown(update.response_version)) {
     // Seen this update before; just ignore it.
     return nullptr;
   }
@@ -237,10 +237,16 @@ void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
   // Apply the resolution.
   switch (resolution_type) {
     case ConflictResolution::kChangesMatch:
-      // Record the update and squash the pending commit.
+      // Record the update and squash the pending commit. Trimming should not be
+      // called for matching deleted entities to avoid failing its requirement
+      // to have a `password` field present.
+      // TODO(crbug.com/1296159): Consider introducing a dedicated function for
+      // recording exact matching updates.
       entity->RecordForcedRemoteUpdate(
-          update,
-          bridge_->TrimRemoteSpecificsForCaching(update.entity.specifics));
+          update, update.entity.is_deleted()
+                      ? sync_pb::EntitySpecifics()
+                      : bridge_->TrimRemoteSpecificsForCaching(
+                            update.entity.specifics));
       break;
     case ConflictResolution::kUseLocal:
     case ConflictResolution::kIgnoreRemoteEncryption:

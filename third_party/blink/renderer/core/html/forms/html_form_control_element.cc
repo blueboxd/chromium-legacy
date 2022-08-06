@@ -323,14 +323,15 @@ bool HTMLFormControlElement::IsSuccessfulSubmitButton() const {
 // element, and c) this form control supports popup triggering. If multiple
 // toggle attributes are present:
 //  1. Only one idref will ever be used, if multiple attributes are present.
-//  2. If 'togglepopup' is present, its IDREF will be used.
-//  3. If 'showpopup' is present and 'togglepopup' isn't, its IDREF will be
-//  used.
-//  4. If both 'showpopup' and 'hidepopup' are present, the behavior is to
-//  toggle.
-HTMLFormControlElement::TogglePopupElement
-HTMLFormControlElement::togglePopupElement() const {
-  const TogglePopupElement no_element{.element = nullptr,
+//  2. If 'popuptoggletarget' is present, its IDREF will be used.
+//  3. If 'popupshowtarget' is present and 'popuptoggletarget' isn't present
+//     or its value doesn't match that of popupshowtarget, only popupshowtarget
+//     will be used.
+//  4. If both 'popupshowtarget' and 'popuphidetarget' are present and their
+//     values match, the behavior is to toggle.
+HTMLFormControlElement::PopupTargetElement
+HTMLFormControlElement::popupTargetElement() const {
+  const PopupTargetElement no_element{.element = nullptr,
                                       .action = PopupTriggerAction::kNone,
                                       .attribute_name = g_null_name};
   if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled() ||
@@ -340,21 +341,21 @@ HTMLFormControlElement::togglePopupElement() const {
   }
 
   AtomicString idref;
-  QualifiedName attribute_name = html_names::kTogglepopupAttr;
+  QualifiedName attribute_name = html_names::kPopuptoggletargetAttr;
   PopupTriggerAction action = PopupTriggerAction::kToggle;
-  if (FastHasAttribute(html_names::kTogglepopupAttr)) {
-    idref = FastGetAttribute(html_names::kTogglepopupAttr);
-  } else if (FastHasAttribute(html_names::kShowpopupAttr)) {
-    idref = FastGetAttribute(html_names::kShowpopupAttr);
+  if (FastHasAttribute(html_names::kPopuptoggletargetAttr)) {
+    idref = FastGetAttribute(html_names::kPopuptoggletargetAttr);
+  } else if (FastHasAttribute(html_names::kPopupshowtargetAttr)) {
+    idref = FastGetAttribute(html_names::kPopupshowtargetAttr);
     action = PopupTriggerAction::kShow;
-    attribute_name = html_names::kShowpopupAttr;
+    attribute_name = html_names::kPopupshowtargetAttr;
   }
-  if (FastHasAttribute(html_names::kHidepopupAttr)) {
+  if (FastHasAttribute(html_names::kPopuphidetargetAttr)) {
     if (idref.IsNull()) {
-      idref = FastGetAttribute(html_names::kHidepopupAttr);
+      idref = FastGetAttribute(html_names::kPopuphidetargetAttr);
       action = PopupTriggerAction::kHide;
-      attribute_name = html_names::kHidepopupAttr;
-    } else if (FastGetAttribute(html_names::kHidepopupAttr) == idref) {
+      attribute_name = html_names::kPopuphidetargetAttr;
+    } else if (FastGetAttribute(html_names::kPopuphidetargetAttr) == idref) {
       action = PopupTriggerAction::kToggle;
       // Leave attribute_name as-is in this case.
     }
@@ -364,14 +365,14 @@ HTMLFormControlElement::togglePopupElement() const {
   Element* popup_element = GetTreeScope().getElementById(idref);
   if (!popup_element || !popup_element->HasValidPopupAttribute())
     return no_element;
-  return TogglePopupElement{.element = popup_element,
+  return PopupTargetElement{.element = popup_element,
                             .action = action,
                             .attribute_name = attribute_name};
 }
 
 void HTMLFormControlElement::DefaultEventHandler(Event& event) {
   if (!IsDisabledFormControl()) {
-    auto popup = togglePopupElement();
+    auto popup = popupTargetElement();
     if (popup.element) {
       auto trigger_support = SupportsPopupTriggering();
       DCHECK_NE(popup.action, PopupTriggerAction::kNone);
@@ -393,20 +394,13 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
       bool can_hide = popup.element->popupOpen() &&
                       (popup.action == PopupTriggerAction::kToggle ||
                        popup.action == PopupTriggerAction::kHide);
-      if (trigger_support == PopupTriggerSupport::kActivate &&
-          event.type() == event_type_names::kDOMActivate &&
+      if (event.type() == event_type_names::kDOMActivate &&
           (!Form() || !IsSuccessfulSubmitButton())) {
         if (can_hide) {
           popup.element->HidePopUpInternal(
               HidePopupFocusBehavior::kFocusPreviousElement,
               HidePopupForcingLevel::kHideAfterAnimations);
         } else if (can_show) {
-          popup.element->InvokePopup(this);
-        }
-      } else if (trigger_support == PopupTriggerSupport::kDownArrow &&
-                 event.type() == event_type_names::kKeydown) {
-        const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event);
-        if (can_show && key_event && key_event->key() == "ArrowDown") {
           popup.element->InvokePopup(this);
         }
       }
@@ -449,6 +443,15 @@ int32_t HTMLFormControlElement::GetAxId() const {
   if (!document.IsActive() || !document.View())
     return 0;
   if (AXObjectCache* cache = document.ExistingAXObjectCache()) {
+    LocalFrameView* local_frame_view = document.View();
+    if (local_frame_view->IsUpdatingLifecycle()) {
+      // Autofill (the caller of this code) can end up making calls to get AXIDs
+      // of form elements during, e.g. resize observer callbacks, which are
+      // in the middle up updating the document lifecycle. In these cases, just
+      // return the existing AXID of the element.
+      return cache->GetExistingAXID(const_cast<HTMLFormControlElement*>(this));
+    }
+
     if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
         document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
       document.View()->UpdateAllLifecyclePhasesExceptPaint(

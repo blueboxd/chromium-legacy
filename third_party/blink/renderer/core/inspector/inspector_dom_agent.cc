@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -113,7 +114,7 @@ const UChar kEllipsisUChar[] = {0x2026, 0};
 template <typename Functor>
 void ForEachSupportedPseudo(const Element* element, Functor& func) {
   for (PseudoId pseudo_id :
-       {kPseudoIdBefore, kPseudoIdAfter, kPseudoIdMarker}) {
+       {kPseudoIdBefore, kPseudoIdAfter, kPseudoIdMarker, kPseudoIdBackdrop}) {
     if (!PseudoElement::IsWebExposed(pseudo_id, element))
       continue;
     if (PseudoElement* pseudo_element = element->GetPseudoElement(pseudo_id))
@@ -2550,6 +2551,10 @@ protocol::Response InspectorDOMAgent::scrollIntoViewIfNeeded(
   if (!node->isConnected())
     return Response::ServerError("Node is detached from document");
   LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object) {
+    node = LayoutTreeBuilderTraversal::FirstLayoutChild(*node);
+    layout_object = node->GetLayoutObject();
+  }
   if (!layout_object)
     return Response::ServerError("Node does not have a layout object");
   PhysicalRect rect_to_scroll =

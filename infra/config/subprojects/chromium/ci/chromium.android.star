@@ -5,9 +5,9 @@
 
 load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "builders", "goma", "os", "sheriff_rotations")
+load("//lib/builders.star", "builders", "goma", "os", "reclient", "sheriff_rotations")
 load("//lib/branches.star", "branches")
-load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
+load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -17,8 +17,8 @@ ci.defaults.set(
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.ANDROID,
 )
@@ -246,7 +246,7 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 4 * time.hour,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
     tree_closing = True,
 )
 
@@ -422,7 +422,7 @@ ci.builder(
         short_name = "x86",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
     tree_closing = True,
 )
 
@@ -511,7 +511,7 @@ ci.builder(
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Android"],
     tree_closing = True,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
     ssd = True,
 )
 
@@ -684,6 +684,42 @@ ci.builder(
 )
 
 ci.builder(
+    name = "android-12l-x86-rel",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "download_vr_test_apks",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+        run_tests_serially = True,
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "tester|tablet",
+        short_name = "12L",
+    ),
+    # TODO: This can be reduced when builder works.
+    execution_timeout = 4 * time.hour,
+    sheriff_rotations = args.ignore_default(None),
+    triggered_by = ["ci/Android arm Builder (dbg)"],
+)
+
+ci.builder(
     name = "android-arm64-proguard-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -713,6 +749,11 @@ ci.builder(
         short_name = "M proguard",
     ),
     execution_timeout = 6 * time.hour,
+    # TODO(b/234140184) Once reproxy is fixed, remove the goma and reclient
+    # values
+    goma_backend = goma.backend.RBE_PROD,
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    reclient_instance = None,
 )
 
 ci.builder(
@@ -756,7 +797,7 @@ ci.builder(
     ),
     executable = "recipe:binary_size_generator_tot",
     ssd = True,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -871,7 +912,7 @@ ci.builder(
     notifies = ["cronet"],
     sheriff_rotations = args.ignore_default(None),
     os = os.ANDROID,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -1170,9 +1211,11 @@ ci.builder(
         category = "on_cq",
         short_name = "M",
     ),
+    cores = 16,
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 4 * time.hour,
     tree_closing = True,
+    ssd = True,
 )
 
 ci.builder(

@@ -25,7 +25,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/dbus/fwupd/fwupd_client.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "components/user_manager/user_type.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -39,7 +39,6 @@
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/message_center.h"
 
-using chromeos::FwupdClient;
 using message_center::MessageCenter;
 using message_center::Notification;
 using ::testing::_;
@@ -161,8 +160,8 @@ class FirmwareUpdateManagerTest : public AshTestBase {
     EXPECT_CALL(*proxy_, DoConnectToSignal(_, _, _, _))
         .WillRepeatedly(Return());
 
-    dbus_client_ = FwupdClient::Create();
-    dbus_client_->InitForTesting(bus_.get());
+    FwupdClient::Initialize(bus_.get());
+    dbus_client_ = FwupdClient::Get();
     fake_fwupd_download_client_ = std::make_unique<FakeFwupdDownloadClient>();
     firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
     firmware_update_manager_->BindInterface(
@@ -172,7 +171,14 @@ class FirmwareUpdateManagerTest : public AshTestBase {
   FirmwareUpdateManagerTest(const FirmwareUpdateManagerTest&) = delete;
   FirmwareUpdateManagerTest& operator=(const FirmwareUpdateManagerTest&) =
       delete;
-  ~FirmwareUpdateManagerTest() override = default;
+
+  ~FirmwareUpdateManagerTest() override {
+    // Destructor depends on FirmwareUpdateManager.
+    firmware_update_notification_controller_.reset();
+    // Destructor depends on FwupdClient.
+    firmware_update_manager_.reset();
+    FwupdClient::Shutdown();
+  }
 
   void OnMethodCalled(dbus::MethodCall* method_call,
                       int timeout_ms,
@@ -545,7 +551,7 @@ class FirmwareUpdateManagerTest : public AshTestBase {
   void RequestAllUpdates() { firmware_update_manager_->RequestAllUpdates(); }
 
   // `FwupdClient` must be be before `FirmwareUpdateManager`.
-  std::unique_ptr<FwupdClient> dbus_client_;
+  FwupdClient* dbus_client_ = nullptr;
   std::unique_ptr<FakeFwupdDownloadClient> fake_fwupd_download_client_;
   std::unique_ptr<FirmwareUpdateManager> firmware_update_manager_;
   // `FirmwareUpdateNotificationController` must be be after
@@ -570,7 +576,7 @@ class FirmwareUpdateManagerTest : public AshTestBase {
 };
 
 TEST_F(FirmwareUpdateManagerTest, CorrectMockInstance) {
-  EXPECT_EQ(dbus_client_.get(), FwupdClient::Get());
+  EXPECT_EQ(dbus_client_, FwupdClient::Get());
 }
 
 TEST_F(FirmwareUpdateManagerTest, RequestAllUpdatesNoDevices) {
@@ -1015,11 +1021,19 @@ class FirmwareUpdateStartupNotificationTest : public NoSessionAshTestBase {
   ~FirmwareUpdateStartupNotificationTest() override = default;
 
   void SetUp() override {
-    dbus_client_ = FwupdClient::Create();
+    FwupdClient::InitializeFake();
+    dbus_client_ = FwupdClient::Get();
     firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
     EXPECT_TRUE(FirmwareUpdateManager::IsInitialized());
     SetShouldShowNotificationForTest(true);
     NoSessionAshTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    firmware_update_notification_controller_.reset();
+    firmware_update_manager_.reset();
+    FwupdClient::Shutdown();
+    NoSessionAshTestBase::TearDown();
   }
 
  protected:
@@ -1049,7 +1063,7 @@ class FirmwareUpdateStartupNotificationTest : public NoSessionAshTestBase {
     FirmwareUpdateManager::Get()->RequestAllUpdates();
   }
 
-  std::unique_ptr<FwupdClient> dbus_client_;
+  FwupdClient* dbus_client_ = nullptr;
   std::unique_ptr<FirmwareUpdateManager> firmware_update_manager_;
   std::unique_ptr<FirmwareUpdateNotificationController>
       firmware_update_notification_controller_;

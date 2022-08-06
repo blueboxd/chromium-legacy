@@ -5,6 +5,7 @@
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './keyboard_diagram.html.js';
 import {KeyboardKeyState} from './keyboard_key.js';
 import {getKeyboardLayoutForRegionCode} from './keyboard_layouts.js';
 
@@ -60,35 +61,35 @@ export const TopRowKey = {
   kBack: {icon: 'keyboard:back', ariaNameI18n: 'keyboardDiagramAriaNameBack'},
   kForward: {
     icon: 'keyboard:forward',
-    ariaNameI18n: 'keyboardDiagramAriaNameForward'
+    ariaNameI18n: 'keyboardDiagramAriaNameForward',
   },
   kRefresh: {
     icon: 'keyboard:refresh',
-    ariaNameI18n: 'keyboardDiagramAriaNameRefresh'
+    ariaNameI18n: 'keyboardDiagramAriaNameRefresh',
   },
   kFullscreen: {
     icon: 'keyboard:fullscreen',
-    ariaNameI18n: 'keyboardDiagramAriaNameFullscreen'
+    ariaNameI18n: 'keyboardDiagramAriaNameFullscreen',
   },
   kOverview: {
     icon: 'keyboard:overview',
-    ariaNameI18n: 'keyboardDiagramAriaNameOverview'
+    ariaNameI18n: 'keyboardDiagramAriaNameOverview',
   },
   kScreenshot: {
     icon: 'keyboard:screenshot',
-    ariaNameI18n: 'keyboardDiagramAriaNameScreenshot'
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenshot',
   },
   kScreenBrightnessDown: {
     icon: 'keyboard:display-brightness-down',
-    ariaNameI18n: 'keyboardDiagramAriaNameScreenBrightnessDown'
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenBrightnessDown',
   },
   kScreenBrightnessUp: {
     icon: 'keyboard:display-brightness-up',
-    ariaNameI18n: 'keyboardDiagramAriaNameScreenBrightnessUp'
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenBrightnessUp',
   },
   kPrivacyScreenToggle: {
     icon: 'keyboard:electronic-privacy-screen',
-    ariaNameI18n: 'keyboardDiagramAriaNamePrivacyScreenToggle'
+    ariaNameI18n: 'keyboardDiagramAriaNamePrivacyScreenToggle',
   },
   kMicrophoneMute: {
     icon: 'keyboard:microphone-mute',
@@ -96,15 +97,15 @@ export const TopRowKey = {
   },
   kVolumeMute: {
     icon: 'keyboard:volume-mute',
-    ariaNameI18n: 'keyboardDiagramAriaNameMute'
+    ariaNameI18n: 'keyboardDiagramAriaNameMute',
   },
   kVolumeDown: {
     icon: 'keyboard:volume-down',
-    ariaNameI18n: 'keyboardDiagramAriaNameVolumeDown'
+    ariaNameI18n: 'keyboardDiagramAriaNameVolumeDown',
   },
   kVolumeUp: {
     icon: 'keyboard:volume-up',
-    ariaNameI18n: 'keyboardDiagramAriaNameVolumeUp'
+    ariaNameI18n: 'keyboardDiagramAriaNameVolumeUp',
   },
   kKeyboardBacklightToggle: {
     icon: 'keyboard:keyboard-brightness-toggle',
@@ -112,27 +113,27 @@ export const TopRowKey = {
   },
   kKeyboardBacklightDown: {
     icon: 'keyboard:keyboard-brightness-down',
-    ariaNameI18n: 'keyboardDiagramAriaNameKeyboardBacklightDown'
+    ariaNameI18n: 'keyboardDiagramAriaNameKeyboardBacklightDown',
   },
   kKeyboardBacklightUp: {
     icon: 'keyboard:keyboard-brightness-up',
-    ariaNameI18n: 'keyboardDiagramAriaNameKeyboardBacklightUp'
+    ariaNameI18n: 'keyboardDiagramAriaNameKeyboardBacklightUp',
   },
   kNextTrack: {
     icon: 'keyboard:next-track',
-    ariaNameI18n: 'keyboardDiagramAriaNameTrackNext'
+    ariaNameI18n: 'keyboardDiagramAriaNameTrackNext',
   },
   kPreviousTrack: {
     icon: 'keyboard:last-track',
-    ariaNameI18n: 'keyboardDiagramAriaNameTrackPrevious'
+    ariaNameI18n: 'keyboardDiagramAriaNameTrackPrevious',
   },
   kPlayPause: {
     icon: 'keyboard:play-pause',
-    ariaNameI18n: 'keyboardDiagramAriaNamePlayPause'
+    ariaNameI18n: 'keyboardDiagramAriaNamePlayPause',
   },
   kScreenMirror: {
     icon: 'keyboard:screen-mirror',
-    ariaNameI18n: 'keyboardDiagramAriaNameScreenMirror'
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenMirror',
   },
   // TODO(crbug.com/1207678): work out the localization scheme for keys like
   // delete and unknown.
@@ -155,7 +156,7 @@ export class KeyboardDiagramElement extends KeyboardDiagramElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

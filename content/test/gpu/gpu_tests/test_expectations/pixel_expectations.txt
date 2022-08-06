@@ -25,8 +25,9 @@
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-hd-630-family intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912
+#         intel intel-hd-630-family intel-gen-9 intel-0xa2e intel-0xd26
+#               intel-0xa011 intel-0x3e92 intel-0x3e9b intel-0x5912
+#               intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Decoder
@@ -40,13 +41,11 @@
 #         angle-vulkan ]
 # Skia Renderer
 # tags: [ skia-renderer-dawn
-#         skia-renderer-disabled
 #         skia-renderer-gl
 #         skia-renderer-vulkan ]
-# SwiftShader
-# tags: [ swiftshader-gl no-swiftshader-gl ]
 # Driver
-# tags: [ mesa_lt_19.1 ]
+# tags: [ mesa_lt_19.1
+#         mesa_ge_21.0 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -169,7 +168,6 @@ crbug.com/1129879 [ fuchsia ] Pixel_Video_Media_Stream_Incompatible_Stride [ Ski
 
 # WebGPU is only supported on Win10, Mac, and Linux+SkiaRenderer+Vulkan.
 crbug.com/976495 [ linux skia-renderer-gl ] Pixel_WebGPU* [ Skip ]
-crbug.com/976495 [ linux skia-renderer-disabled ] Pixel_WebGPU* [ Skip ]
 crbug.com/976497 [ android ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ chromeos ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ fuchsia ] Pixel_WebGPU* [ Skip ]
@@ -177,7 +175,6 @@ crbug.com/852089 [ fuchsia ] Pixel_WebGPU* [ Skip ]
 # WebGPU SwiftShader tests are only supported on Linux with SkiaRenderer Vulkan.
 crbug.com/1307787 [ linux skia-renderer-gl ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ linux skia-renderer-dawn ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
-crbug.com/1307787 [ linux skia-renderer-disabled ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ android ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ chromeos ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ fuchsia ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
@@ -185,7 +182,6 @@ crbug.com/1307787 [ mac ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ win ] Pixel_WebGPUSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ linux skia-renderer-gl ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ linux skia-renderer-dawn ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
-crbug.com/1307787 [ linux skia-renderer-disabled ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ android ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ chromeos ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ fuchsia ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
@@ -222,7 +218,9 @@ crbug.com/1213657 [ linux skia-renderer-vulkan ] Pixel_WebGPU* [ Skip ]
 
 crbug.com/1298943 [ chromeos skia-renderer-gl chromeos-board-amd64-generic ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 
-crbug.com/1299016 [ chromeos chromeos-board-kevin passthrough skia-renderer-disabled ] Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
+# WebGPU canvas capture hang on mac ASAN bot (also see crbug.com/1213170)
+crbug.com/1345767 [ mac asan ] Pixel_WebGPUCanvasOneCopyCapture [ Skip ]
+crbug.com/1345767 [ mac asan ] Pixel_WebGPUCanvasDisableOneCopyCapture* [ Skip ]
 
 ###################
 # Failures/Flakes #
@@ -257,6 +255,7 @@ crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_
 crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
 crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
 crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
+crbug.com/1191282 [ android android-chromium android-nexus-5x ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryOnFailure ]
@@ -304,6 +303,7 @@ crbug.com/1136875 [ fuchsia-board-qemu-x64 ] Pixel_PrecisionRoundedCorner [ Retr
 
 # Still fails on Nexus 5 after all other Pixel_CanvasLowLatency* pass.
 crbug.com/1097752 [ android android-nexus-5 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
+crbug.com/1097752 [ android android-nexus-5 ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
 
 # Fails on Fuchsia emulators
 crbug.com/1302427 [ fuchsia-board-qemu-x64 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
@@ -331,9 +331,7 @@ crbug.com/1271184 [ linux display-server-wayland intel skia-renderer-gl ] Pixel_
 crbug.com/1215747 [ android android-pixel-4 skia-renderer-gl android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefault [ RetryOnFailure ]
 crbug.com/1276605 [ android android-pixel-4 skia-renderer-gl android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmap [ RetryOnFailure ]
 
-# Pixel tests are flakily asserting in GPU process on SkiaRenderer/Vulkan
-crbug.com/1230743 [ linux skia-renderer-vulkan ] Pixel_* [ RetryOnFailure ]
-
+# Pixel tests failing to create SwapChains on SkiaRenderer/Vulkan
 crbug.com/1295079 [ linux skia-renderer-vulkan intel-0x5912 ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
 
 # WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
@@ -348,9 +346,6 @@ crbug.com/1268144 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] Pixel_
 
 # Failures in fuchsia-chrome browser
 crbug.com/1295076 [ fuchsia fuchsia-chrome ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
-
-# Pixel_WebGPUImportVideoFrame hangs on Windows FYI bots
-crbug.com/1274796 [ win skia-renderer-gl ] Pixel_WebGPUImportVideoFrame [ Failure ]
 
 # Crashes on gpu-fyi-win10-nvidia-rel-32
 crbug.com/1300670 [ win nvidia-0x2184 passthrough ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
@@ -372,6 +367,9 @@ crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_
 # Pixel 4 Flaky Failures - Passthrough, WebView and Validating
 crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Failure ]
 crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
+
+# Pixel 4 Flaky Failures - Passthrough and Validating on Chromium
+crbug.com/1346117 [ android android-chromium android-pixel-4 ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
 
 # Pixel 6 failures.
 crbug.com/1286915 [ android android-pixel-6 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
@@ -415,6 +413,7 @@ crbug.com/1307787 [ linux skia-renderer-vulkan ] Pixel_VulkanSwiftShader_WebGPUI
 
 # Flakes on Android
 crbug.com/1203317 [ android android-shield-android-tv no-passthrough ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
+crbug.com/1191282 [ android android-shield-android-tv android-chromium no-passthrough ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
 crbug.com/1203317 [ android android-pixel-2 no-passthrough ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 crbug.com/1203317 [ android android-pixel-6 android-chromium ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 
@@ -426,6 +425,15 @@ crbug.com/982292 [ mac release intel-0x3e9b ] Pixel_Video_MP4_FourColors_Rot_270
 
 # Flaking on Linux FYI Release (AMD RX 5500 XT)
 crbug.com/1340081 [ linux release amd-0x7340 ] Pixel_ScissorTestWithPreserveDrawingBuffer [ RetryOnFailure ]
+
+crbug.com/1345777 [ android ] Pixel_VideoStreamFromWebGLCanvas [ Skip ]
+
+# Pixel_VideoStreamFromWebGL* tests sporadically fail on Linux FYI Release (NVIDIA) bot
+crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLCanvas [ RetryOnFailure ]
+crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
+
+# Pixel_VideoStreamFromWebGLCanvas fails consistently on Linux FYI Release (AMD RX 500 XT)
+crbug.com/1348122 [ linux amd-0x7340 ] Pixel_VideoStreamFromWebGLCanvas [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

@@ -6,10 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/sync/history_sync_metadata_database.h"
+#include "components/history/core/browser/sync/visit_id_remapper.h"
 #include "components/sync/base/page_transition_conversion.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -31,24 +33,30 @@ std::string GetStorageKeyFromVisitRow(const VisitRow& row) {
   return HistorySyncMetadataDatabase::StorageKeyFromVisitTime(row.visit_time);
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class SyncHistoryDatabaseError {
-  // TODO(crbug.com/1318028): Consider introducing separate buckets for
-  // MergeSyncData vs ApplySyncChanges.
-  kApplySyncChangesAddSyncedVisit = 1,
-  kApplySyncChangesWriteMetadata = 2,
-  kOnDatabaseError = 3,
-  kLoadMetadata = 4,
-  kOnURLVisitedGetVisit = 5,
-  kOnURLsDeletedReadMetadata = 6,
-  kOnVisitUpdatedGetURL = 7,
-  kGetAllDataReadMetadata = 8,
+  kApplySyncChangesAddSyncedVisit = 0,
+  kApplySyncChangesWriteMetadata = 1,
+  kOnDatabaseError = 2,
+  kLoadMetadata = 3,
+  // Deprecated (call site was removed):
+  // kOnURLVisitedGetVisit = 4,
+  kOnURLsDeletedReadMetadata = 5,
+  kOnVisitUpdatedGetURL = 6,
+  kGetAllDataReadMetadata = 7,
+  kMaxValue = kGetAllDataReadMetadata
 };
 
 void RecordDatabaseError(SyncHistoryDatabaseError error) {
   DLOG(ERROR) << "SyncHistoryBridge database error: "
               << static_cast<int>(error);
-  // TODO(crbug.com/1318028): Record UMA histogram, and add "do not modify"
-  // comment to the enum.
+  base::UmaHistogramEnumeration("Sync.History.DatabaseError", error);
+}
+
+base::Time GetVisitTime(const sync_pb::HistorySpecifics& specifics) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::Microseconds(specifics.visit_time_windows_epoch_micros()));
 }
 
 // Creates a VisitRow out of a single redirect entry within the `specifics`.
@@ -62,12 +70,11 @@ VisitRow MakeVisitRow(const sync_pb::HistorySpecifics& specifics,
   // Required fields: `visit_time` and `originator_cache_guid`.
   DCHECK_NE(specifics.visit_time_windows_epoch_micros(), 0);
   DCHECK(!specifics.originator_cache_guid().empty());
-  row.visit_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::Microseconds(specifics.visit_time_windows_epoch_micros()));
+  row.visit_time = GetVisitTime(specifics);
   row.originator_cache_guid = specifics.originator_cache_guid();
 
   // The `originator_visit_id` should always exist for visits coming from modern
-  // clients, but it may be missing in visits from legacy clients (i.e. clients
+  // clients, but it may be missing in legacy visits (i.e. those from clients
   // committing history data via the SESSIONS data type).
   row.originator_visit_id =
       specifics.redirect_entries(redirect_index).originator_visit_id();
@@ -109,11 +116,22 @@ VisitRow MakeVisitRow(const sync_pb::HistorySpecifics& specifics,
   }
   row.transition = ui::PageTransitionFromInt(page_transition);
 
-  // The first visit in a chain stores the referring/opener visit (if any).
   if (redirect_index == 0) {
+    // The first visit in a chain stores the chain's referring/opener visit (if
+    // any).
     row.originator_referring_visit = specifics.originator_referring_visit_id();
     row.originator_opener_visit = specifics.originator_opener_visit_id();
+  } else {
+    // All later visits in the chain are implicitly referred to by the preceding
+    // visit.
+    // Note: For legacy visits (i.e. coming from older clients still using the
+    // Sessions integration), originator_visit_id will be unset, so redirect
+    // chain links are lost here. They'll be populated in AddEntityInBackend()
+    // instead.
+    row.originator_referring_visit =
+        specifics.redirect_entries(redirect_index - 1).originator_visit_id();
   }
+
   // The last visit in a chain stores the visit duration (earlier visits, i.e.
   // redirects, are not considered to have a duration).
   if (redirect_index == specifics.redirect_entries_size() - 1) {
@@ -205,10 +223,13 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   return entity_data;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class SpecificsError {
-  kMissingRequiredFields = 1,
-  kTooOld = 2,
-  kTooNew = 3,
+  kMissingRequiredFields = 0,
+  kTooOld = 1,
+  kTooNew = 2,
+  kMaxValue = kTooNew
 };
 
 // Checks the given `specifics` for validity, i.e. whether it passes some basic
@@ -224,8 +245,7 @@ absl::optional<SpecificsError> GetSpecificsError(
     return SpecificsError::kMissingRequiredFields;
   }
 
-  base::Time visit_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::Microseconds(specifics.visit_time_windows_epoch_micros()));
+  base::Time visit_time = GetVisitTime(specifics);
 
   // Already-expired visits are not valid. (They wouldn't really cause any harm,
   // but the history backend would just immediately expire them.)
@@ -241,9 +261,8 @@ absl::optional<SpecificsError> GetSpecificsError(
   return {};
 }
 
-void RecordSpecificsError(SpecificsError validity) {
-  // TODO(crbug.com/1318028): Record UMA histogram, and add "do not modify"
-  // comment to the enum.
+void RecordSpecificsError(SpecificsError error) {
+  base::UmaHistogramEnumeration("Sync.History.IncomingSpecificsError", error);
 }
 
 }  // namespace
@@ -293,6 +312,8 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
   // Set flag to stop accepting history change notifications from backend.
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
+  VisitIDRemapper id_remapper(history_backend_);
+
   for (const std::unique_ptr<syncer::EntityChange>& entity_change :
        entity_changes) {
     DCHECK(entity_change->data().specifics.has_history());
@@ -306,33 +327,39 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
       DLOG(ERROR) << "Skipping invalid visit, reason "
                   << static_cast<int>(*specifics_error);
       RecordSpecificsError(*specifics_error);
-      // If this was a newly-added visit, immediately untrack it again.
-      if (entity_change->type() == syncer::EntityChange::ACTION_ADD) {
-        change_processor()->UntrackEntityForClientTagHash(
-            entity_change->data().client_tag_hash);
-      }
+      continue;
+    }
+
+    if (specifics.originator_cache_guid() == GetLocalCacheGuid()) {
+      // This is likely a reflection, i.e. an update that came from this client.
+      // (Unless a different client is misbehaving and sending data with this
+      // client's cache GUID.) So no need to do anything with it; the data is
+      // already here.
+      // Note: For other data types, the processor filters out reflection
+      // updates before they reach the bridge, but here that's not possible
+      // because metadata is not tracked.
       continue;
     }
 
     switch (entity_change->type()) {
       case syncer::EntityChange::ACTION_ADD:
       case syncer::EntityChange::ACTION_UPDATE: {
-        // First try updating an existing row. In addition to actual updates,
-        // this can also happen during initial merge (if Sync was enabled before
-        // and this entity was already downloaded back then).
-        // TODO(crbug.com/1329131): ...or if the visit was untracked.
-        if (UpdateEntityInBackend(specifics)) {
+        // First try updating an existing row. Since metadata isn't tracked for
+        // this data type, the processor can't distinguish "ADD" from "UPDATE".
+        // Note: Because metadata isn't tracked (and thus no version numbers
+        // exist), it's theoretically possible to receive an older version of an
+        // already-existing entity here. This should be very rare in practice
+        // and would be tricky to handle (would have to store version numbers
+        // elsewhere), so just ignore this case.
+        if (UpdateEntityInBackend(&id_remapper, specifics)) {
           // Updating worked - there was a matching visit in the DB already.
-          // This happens during initial merge, or when an existing visit got
-          // untracked. Nothing further to be done here.
+          // Nothing further to be done here.
         } else {
           // Updating didn't work, so actually add the data instead.
-          if (!AddEntityInBackend(specifics)) {
-            // Something went wrong - stop tracking the entity.
+          if (!AddEntityInBackend(&id_remapper, specifics)) {
+            // Something went wrong.
             RecordDatabaseError(
                 SyncHistoryDatabaseError::kApplySyncChangesAddSyncedVisit);
-            change_processor()->UntrackEntityForClientTagHash(
-                entity_change->data().client_tag_hash);
             break;
           }
         }
@@ -340,11 +367,18 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
       }
       case syncer::EntityChange::ACTION_DELETE:
         // Deletes are not supported - they're handled via
-        // HISTORY_DELETE_DIRECTIVE instead.
-        DLOG(ERROR) << "Received unexpected deletion for HISTORY";
+        // HISTORY_DELETE_DIRECTIVE instead. And, since metadata isn't tracked,
+        // the processor should never send deletions anyway (even if a different
+        // client uploaded a tombstone). [Edge case: Metadata for unsynced
+        // entities *is* tracked, but then an incoming tombstone would result in
+        // a conflict that'd be resolved as "local edit wins over remote
+        // deletion", so still no ACTION_DELETE would arrive here.]
+        NOTREACHED();
         break;
     }
   }
+
+  id_remapper.RemapIDs();
 
   absl::optional<syncer::ModelError> metadata_error =
       static_cast<syncer::SyncMetadataStoreChangeList*>(
@@ -354,6 +388,13 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
     RecordDatabaseError(
         SyncHistoryDatabaseError::kApplySyncChangesWriteMetadata);
   }
+
+  // ApplySyncChanges() gets called both for incoming remote changes (i.e. for
+  // GetUpdates) and after a successful Commit. In either case, there's now
+  // likely some local metadata that's not needed anymore, so go and clean that
+  // up.
+  UntrackAndClearMetadataForSyncedEntities();
+
   return metadata_error;
 }
 
@@ -373,7 +414,11 @@ void HistorySyncBridge::GetData(StorageKeyList storage_keys,
     // Query the redirect chain that ended in this visit.
     std::vector<VisitRow> redirect_visits =
         history_backend_->GetRedirectChain(final_visit);
-    DCHECK(!redirect_visits.empty());
+    if (redirect_visits.empty()) {
+      // This can happen if there's invalid data in the DB (e.g. broken referrer
+      // "links"). In that case, skip this item.
+      continue;
+    }
     DCHECK_EQ(redirect_visits.back().visit_id, final_visit.visit_id);
 
     // Query the corresponding URLs.
@@ -424,11 +469,9 @@ std::string HistorySyncBridge::GetStorageKey(
 }
 
 void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
-                                     ui::PageTransition transition,
-                                     const URLRow& row,
-                                     base::Time visit_time) {
+                                     const URLRow& url_row,
+                                     const VisitRow& visit_row) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_GE(row.typed_count(), 0);
 
   if (processing_syncer_changes_) {
     return;  // These are changes originating from us, ignore.
@@ -437,18 +480,6 @@ void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
   if (!change_processor()->IsTrackingMetadata()) {
     return;  // Sync processor not yet ready, don't sync.
   }
-
-  std::vector<VisitRow> visits;
-  if (!history_backend_->GetMostRecentVisitsForURL(row.id(), /*max_visits=*/1,
-                                                   &visits)) {
-    RecordDatabaseError(SyncHistoryDatabaseError::kOnURLVisitedGetVisit);
-    return;
-  }
-  if (visits.size() != 1) {
-    RecordDatabaseError(SyncHistoryDatabaseError::kOnURLVisitedGetVisit);
-    return;
-  }
-  const VisitRow& visit_row = visits[0];
 
   // If this visit is not the end of a redirect chain, ignore it. Note that
   // visits that are not part of a redirect chain are considered to be both
@@ -460,7 +491,11 @@ void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
   // Query the redirect chain that ended in this visit.
   std::vector<VisitRow> redirect_visits =
       history_backend_->GetRedirectChain(visit_row);
-  DCHECK(!redirect_visits.empty());
+  if (redirect_visits.empty()) {
+    // This can happen if there's invalid data in the DB (e.g. broken referrer
+    // "links"). In that case, ignore the change.
+    return;
+  }
   DCHECK_EQ(redirect_visits.back().visit_id, visit_row.visit_id);
 
   // Query the corresponding URLs.
@@ -513,7 +548,9 @@ void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
   }
 
   // No need to send any actual deletions: A HistoryDeleteDirective will take
-  // care of that. Just untrack all entities and clear their metadata.
+  // care of that. Just untrack all entities and clear their metadata. (The only
+  // case where such metadata actually exists is if there are entities that are
+  // waiting for a commit. Clear their metadata, to cancel those commits.)
   auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
   if (!sync_metadata_database_->GetAllSyncMetadata(metadata_batch.get())) {
     RecordDatabaseError(SyncHistoryDatabaseError::kOnURLsDeletedReadMetadata);
@@ -550,7 +587,11 @@ void HistorySyncBridge::OnVisitUpdated(const VisitRow& visit_row) {
   // Query the redirect chain that ended in this visit.
   std::vector<VisitRow> redirect_visits =
       history_backend_->GetRedirectChain(visit_row);
-  DCHECK(!redirect_visits.empty());
+  if (redirect_visits.empty()) {
+    // This can happen if there's invalid data in the DB (e.g. broken referrer
+    // "links"). In that case, ignore the change.
+    return;
+  }
   DCHECK_EQ(redirect_visits.back().visit_id, visit_row.visit_id);
 
   // Query the corresponding URLs.
@@ -580,7 +621,8 @@ void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
   // No need to send an actual deletion: Either this was an expiry, in which
   // no deletion should be sent, or if it's an actual deletion, then a
   // HistoryDeleteDirective will take care of that. Just untrack the entity and
-  // delete its metadata.
+  // delete its metadata (just in case this entity was waiting to be committed -
+  // otherwise no metadata exists anyway).
   std::string storage_key = GetStorageKeyFromVisitRow(visit_row);
   sync_metadata_database_->ClearSyncMetadata(syncer::HISTORY, storage_key);
   change_processor()->UntrackEntityForStorageKey(storage_key);
@@ -610,13 +652,20 @@ void HistorySyncBridge::LoadMetadata() {
 }
 
 bool HistorySyncBridge::AddEntityInBackend(
+    VisitIDRemapper* id_remapper,
     const sync_pb::HistorySpecifics& specifics) {
-  // Add all the visits in the redirect chain. Populate the `referring_visit`
-  // IDs along the way.
+  // Add all the visits in the redirect chain.
   VisitID referring_visit_id = 0;
   for (int i = 0; i < specifics.redirect_entries_size(); i++) {
     VisitRow visit_row = MakeVisitRow(specifics, i);
-    visit_row.referring_visit = referring_visit_id;
+    // Trivial in-chain remapping: Populate the `referring_visit` IDs along the
+    // redirect chain. Do this here because old clients don't fill originator
+    // visits IDs, so the remapper can't help. For such clients we can at least
+    // do this to have the links inside this redirect chain. For new clients,
+    // might as well do this part here too since it's correct.
+    if (i > 0) {
+      visit_row.referring_visit = referring_visit_id;
+    }
     VisitID added_visit_id = history_backend_->AddSyncedVisit(
         GURL(specifics.redirect_entries(i).url()),
         base::UTF8ToUTF16(specifics.redirect_entries(i).title()),
@@ -626,14 +675,24 @@ bool HistorySyncBridge::AddEntityInBackend(
       return false;
     }
     referring_visit_id = added_visit_id;
+
+    // Remapping chain extremities (i.e. first and last visit in the chain) via
+    // `id_remapper`: The first visit in the chain can refer to a visit outside
+    // of the chain. Similarly, the last visit can be referred to by a visit
+    // outside of the chain (its referring visit ID was already set though).
+    if (i == 0 || i == specifics.redirect_entries_size() - 1) {
+      id_remapper->RegisterVisit(
+          added_visit_id, visit_row.originator_cache_guid,
+          visit_row.originator_visit_id, visit_row.originator_referring_visit,
+          visit_row.originator_opener_visit);
+    }
   }
-  // TODO(crbug.com/1335055): Remap the originator_referring_visit and
-  // originator_opener_visit fields to local visit IDs.
 
   return true;
 }
 
 bool HistorySyncBridge::UpdateEntityInBackend(
+    VisitIDRemapper* id_remapper,
     const sync_pb::HistorySpecifics& specifics) {
   // Only try updating the final visit in a chain - earlier visits (i.e.
   // redirects) can't get updated anyway.
@@ -641,13 +700,33 @@ bool HistorySyncBridge::UpdateEntityInBackend(
   // is indeed sufficient.
   VisitRow final_visit_row =
       MakeVisitRow(specifics, specifics.redirect_entries_size() - 1);
-  if (!history_backend_->UpdateSyncedVisit(final_visit_row)) {
+  // Note: UpdateSyncedVisit() keeps any existing local referrer/opener IDs in
+  // place, and the originator IDs are never updated in practice, so there's no
+  // need to invoke the ID remapper here (in contrast to AddEntityInBackend()).
+  // TODO(crbug.com/1341636): Add an integration test to ensure that updates
+  // don't break referrer/opener links.
+  VisitID updated_visit_id =
+      history_backend_->UpdateSyncedVisit(final_visit_row);
+  if (updated_visit_id == 0) {
     return false;
   }
 
   // TODO(crbug.com/1318028): Handle updates to the URL-related fields
   // (notably the title - other fields probably can't change).
   return true;
+}
+
+void HistorySyncBridge::UntrackAndClearMetadataForSyncedEntities() {
+  for (const std::string& storage_key :
+       change_processor()->GetAllTrackedStorageKeys()) {
+    if (change_processor()->IsEntityUnsynced(storage_key)) {
+      // "Unsynced" entities (i.e. those with local changes that still need to
+      // be committed) have to be tracked, so *don't* clear their metadata.
+      continue;
+    }
+    sync_metadata_database_->ClearSyncMetadata(syncer::HISTORY, storage_key);
+    change_processor()->UntrackEntityForStorageKey(storage_key);
+  }
 }
 
 std::string HistorySyncBridge::GetLocalCacheGuid() const {

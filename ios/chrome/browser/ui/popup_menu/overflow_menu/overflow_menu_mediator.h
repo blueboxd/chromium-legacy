@@ -18,7 +18,9 @@ class BookmarkModel;
 namespace feature_engagement {
 class Tracker;
 }
+@protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
+@protocol BookmarksCommands;
 @protocol BrowserCommands;
 @protocol BrowserCoordinatorCommands;
 class BrowserPolicyConnectorIOS;
@@ -45,13 +47,15 @@ class WebStateList;
 @property(nonatomic, assign) WebStateList* webStateList;
 
 // Dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands,
+@property(nonatomic, weak) id<ActivityServiceCommands,
+                              ApplicationCommands,
                               BrowserCommands,
                               BrowserCoordinatorCommands,
                               FindInPageCommands,
                               TextZoomCommands>
     dispatcher;
 
+@property(nonatomic, weak) id<BookmarksCommands> bookmarksCommandsHandler;
 @property(nonatomic, weak) id<PopupMenuCommands> popupMenuCommandsHandler;
 @property(nonatomic, weak) id<PageInfoCommands> pageInfoCommandsHandler;
 

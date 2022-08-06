@@ -28,9 +28,9 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/constants.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method_base.h"
-#include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,10 +62,9 @@
 #include "base/win/windows_version.h"
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
+#if BUILDFLAG(IS_LINUX)
+#include "ui/linux/fake_linux_ui.h"
+#include "ui/linux/linux_ui.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -88,14 +87,10 @@ namespace test {
 const char16_t kHebrewLetterSamekh = 0x05E1;
 
 // Convenience to make constructing a GestureEvent simpler.
-class GestureEventForTest : public ui::GestureEvent {
- public:
-  GestureEventForTest(int x, int y, ui::GestureEventDetails details)
-      : GestureEvent(x, y, ui::EF_NONE, base::TimeTicks(), details) {}
-
-  GestureEventForTest(const GestureEventForTest&) = delete;
-  GestureEventForTest& operator=(const GestureEventForTest&) = delete;
-};
+ui::GestureEvent
+CreateTestGestureEvent(int x, int y, const ui::GestureEventDetails& details) {
+  return ui::GestureEvent(x, y, ui::EF_NONE, base::TimeTicks(), details);
+}
 
 // This controller will happily destroy the target field passed on
 // construction when a key event is triggered.
@@ -473,8 +468,8 @@ void TextfieldTest::PrepareTextfieldsInternal(int count,
                                               Textfield* textfield,
                                               View* container,
                                               gfx::Rect bounds) {
-  input_method_->SetDelegate(
-      test::WidgetTest::GetInputMethodDelegateForWidget(widget_.get()));
+  input_method_->SetImeKeyEventDispatcher(
+      test::WidgetTest::GetImeKeyEventDispatcherForWidget(widget_.get()));
 
   textfield->set_controller(this);
   textfield->SetBoundsRect(bounds);
@@ -806,12 +801,14 @@ void TextfieldTest::MoveMouseTo(const gfx::Point& where) {
 void TextfieldTest::TapAtCursor(ui::EventPointerType pointer_type) {
   ui::GestureEventDetails tap_down_details(ui::ET_GESTURE_TAP_DOWN);
   tap_down_details.set_primary_pointer_type(pointer_type);
-  GestureEventForTest tap_down(GetCursorPositionX(0), 0, tap_down_details);
+  ui::GestureEvent tap_down =
+      CreateTestGestureEvent(GetCursorPositionX(0), 0, tap_down_details);
   textfield_->OnGestureEvent(&tap_down);
 
   ui::GestureEventDetails tap_up_details(ui::ET_GESTURE_TAP);
   tap_up_details.set_primary_pointer_type(pointer_type);
-  GestureEventForTest tap_up(GetCursorPositionX(0), 0, tap_up_details);
+  ui::GestureEvent tap_up =
+      CreateTestGestureEvent(GetCursorPositionX(0), 0, tap_up_details);
   textfield_->OnGestureEvent(&tap_up);
 }
 
@@ -1473,15 +1470,15 @@ TEST_F(TextfieldTest, TextInputType_InsertionTest) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, textfield_->GetTextInputType());
 
   SendKeyEvent(ui::VKEY_A);
-  EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
+  EXPECT_FALSE(textfield_->GetPasswordCharRevealIndex().has_value());
   SendKeyEvent(kHebrewLetterSamekh, ui::EF_NONE, true /* from_vk */);
 #if !BUILDFLAG(IS_MAC)
   // Don't verifies the password character reveal on MacOS, because on MacOS,
   // the text insertion is not done through TextInputClient::InsertChar().
-  EXPECT_EQ(1, textfield_->GetPasswordCharRevealIndex());
+  EXPECT_EQ(1u, textfield_->GetPasswordCharRevealIndex());
 #endif
   SendKeyEvent(ui::VKEY_B);
-  EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
+  EXPECT_FALSE(textfield_->GetPasswordCharRevealIndex().has_value());
 
   EXPECT_EQ(
       u"a\x05E1"
@@ -1579,11 +1576,9 @@ TEST_F(TextfieldTest, OnKeyPress) {
 TEST_F(TextfieldTest, OnKeyPressBinding) {
   InitTextfield();
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
   // Install a TextEditKeyBindingsDelegateAuraLinux that does nothing.
-  class TestDelegate : public ui::TextEditKeyBindingsDelegateAuraLinux {
+  class TestDelegate : public ui::FakeLinuxUi {
    public:
     TestDelegate() = default;
 
@@ -1592,15 +1587,14 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
 
     ~TestDelegate() override = default;
 
-    bool MatchEvent(
+    bool GetTextEditCommandsForEvent(
         const ui::Event& event,
         std::vector<ui::TextEditCommandAuraLinux>* commands) override {
       return false;
     }
   };
 
-  TestDelegate delegate;
-  ui::SetTextEditKeyBindingsDelegate(&delegate);
+  ui::LinuxUi::SetInstance(std::make_unique<TestDelegate>());
 #endif
 
   SendKeyEvent(ui::VKEY_A, false, false);
@@ -1620,10 +1614,8 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
   EXPECT_EQ(u"a", textfield_->GetText());
   textfield_->clear();
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  ui::SetTextEditKeyBindingsDelegate(nullptr);
+#if BUILDFLAG(IS_LINUX)
+  ui::LinuxUi::SetInstance(nullptr);
 #endif
 }
 
@@ -3064,10 +3056,10 @@ TEST_F(TextfieldTest, CommitComposingTextTest) {
   ui::CompositionText composition;
   composition.text = u"abc123";
   textfield_->SetCompositionText(composition);
-  uint32_t composed_text_length =
+  size_t composed_text_length =
       textfield_->ConfirmCompositionText(/* keep_selection */ false);
 
-  EXPECT_EQ(composed_text_length, static_cast<uint32_t>(6));
+  EXPECT_EQ(composed_text_length, 6u);
 }
 
 TEST_F(TextfieldTest, CommitEmptyComposingTextTest) {
@@ -3075,10 +3067,10 @@ TEST_F(TextfieldTest, CommitEmptyComposingTextTest) {
   ui::CompositionText composition;
   composition.text = u"";
   textfield_->SetCompositionText(composition);
-  uint32_t composed_text_length =
+  size_t composed_text_length =
       textfield_->ConfirmCompositionText(/* keep_selection */ false);
 
-  EXPECT_EQ(composed_text_length, static_cast<uint32_t>(0));
+  EXPECT_EQ(composed_text_length, 0u);
 }
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -3458,7 +3450,7 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
       switches::kEnableTouchDragDrop);
 
   // Create a long press event in the selected region should start a drag.
-  GestureEventForTest long_press(
+  ui::GestureEvent long_press = CreateTestGestureEvent(
       kStringPoint.x(), kStringPoint.y(),
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press);
@@ -3542,7 +3534,7 @@ TEST_F(TextfieldTest, VirtualKeyboardFocusEnsureCaretNotInRect) {
   EXPECT_EQ(widget_->GetNativeView()->bounds(), orig_widget_bounds);
 
   // Simulate virtual keyboard.
-  input_method_->SetOnScreenKeyboardBounds(keyboard_view_bounds);
+  input_method_->SetVirtualKeyboardBounds(keyboard_view_bounds);
 
   // Window should be shifted.
   EXPECT_EQ(widget_->GetNativeView()->bounds(), shifted_widget_bounds);
@@ -3561,26 +3553,27 @@ class TextfieldTouchSelectionTest : public TextfieldTest {
  protected:
   // Simulates a complete tap.
   void Tap(const gfx::Point& point) {
-    GestureEventForTest begin(point.x(), point.y(),
-                              ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
+    ui::GestureEvent begin = CreateTestGestureEvent(
+        point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
     textfield_->OnGestureEvent(&begin);
 
-    GestureEventForTest tap_down(
+    ui::GestureEvent tap_down = CreateTestGestureEvent(
         point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
     textfield_->OnGestureEvent(&tap_down);
 
-    GestureEventForTest show_press(
+    ui::GestureEvent show_press = CreateTestGestureEvent(
         point.x(), point.y(),
         ui::GestureEventDetails(ui::ET_GESTURE_SHOW_PRESS));
     textfield_->OnGestureEvent(&show_press);
 
     ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
     tap_details.set_tap_count(1);
-    GestureEventForTest tap(point.x(), point.y(), tap_details);
+    ui::GestureEvent tap =
+        CreateTestGestureEvent(point.x(), point.y(), tap_details);
     textfield_->OnGestureEvent(&tap);
 
-    GestureEventForTest end(point.x(), point.y(),
-                            ui::GestureEventDetails(ui::ET_GESTURE_END));
+    ui::GestureEvent end = CreateTestGestureEvent(
+        point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_END));
     textfield_->OnGestureEvent(&end);
   }
 };
@@ -3596,7 +3589,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionAndDraggingTest) {
   // Tapping on the textfield should turn on the TouchSelectionController.
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
   tap_details.set_tap_count(1);
-  GestureEventForTest tap(x, 0, tap_details);
+  ui::GestureEvent tap = CreateTestGestureEvent(x, 0, tap_details);
   textfield_->OnGestureEvent(&tap);
   EXPECT_TRUE(test_api_->touch_selection_controller());
 
@@ -3607,7 +3600,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionAndDraggingTest) {
 
   // With touch editing enabled, long press should not show context menu.
   // Instead, select word and invoke TouchSelectionController.
-  GestureEventForTest long_press_1(
+  ui::GestureEvent long_press_1 = CreateTestGestureEvent(
       x, 0, ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press_1);
   EXPECT_EQ(u"hello", textfield_->GetSelectedText());
@@ -3617,7 +3610,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionAndDraggingTest) {
   // With touch drag drop enabled, long pressing in the selected region should
   // start a drag and remove TouchSelectionController.
   ASSERT_TRUE(switches::IsTouchDragDropEnabled());
-  GestureEventForTest long_press_2(
+  ui::GestureEvent long_press_2 = CreateTestGestureEvent(
       x, 0, ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press_2);
   EXPECT_EQ(u"hello", textfield_->GetSelectedText());
@@ -3629,7 +3622,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionAndDraggingTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableTouchDragDrop);
   ASSERT_FALSE(switches::IsTouchDragDropEnabled());
-  GestureEventForTest long_press_3(
+  ui::GestureEvent long_press_3 = CreateTestGestureEvent(
       x, 0, ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press_3);
   EXPECT_EQ(u"hello", textfield_->GetSelectedText());
@@ -3879,7 +3872,7 @@ TEST_F(TextfieldTest, EmojiItem_EmptyField) {
   // A normal empty field may show the Emoji option (if supported).
   ui::MenuModel* context_menu = GetContextMenuModel();
   EXPECT_TRUE(context_menu);
-  EXPECT_GT(context_menu->GetItemCount(), 0);
+  EXPECT_GT(context_menu->GetItemCount(), 0u);
   // Not all OS/versions support the emoji menu.
   EXPECT_EQ(ui::IsEmojiPanelSupported(),
             context_menu->GetLabelAt(0) ==
@@ -3894,7 +3887,7 @@ TEST_F(TextfieldTest, EmojiItem_ReadonlyField) {
   // In no case is the emoji option showing on a read-only field.
   ui::MenuModel* context_menu = GetContextMenuModel();
   EXPECT_TRUE(context_menu);
-  EXPECT_GT(context_menu->GetItemCount(), 0);
+  EXPECT_GT(context_menu->GetItemCount(), 0u);
   EXPECT_NE(context_menu->GetLabelAt(0),
             l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_EMOJI));
 }
@@ -3916,7 +3909,7 @@ TEST_F(TextfieldTest, EmojiItem_FieldWithText) {
   textfield_->SelectAll(false);
   ui::MenuModel* context_menu = GetContextMenuModel();
   EXPECT_TRUE(context_menu);
-  EXPECT_GT(context_menu->GetItemCount(), 0);
+  EXPECT_GT(context_menu->GetItemCount(), 0u);
   // Not all OS/versions support the emoji menu.
   EXPECT_EQ(ui::IsEmojiPanelSupported(),
             context_menu->GetLabelAt(kExpectedEmojiIndex) ==
@@ -3967,7 +3960,7 @@ TEST_F(TextfieldTest, LookUpPassword) {
 
   ui::MenuModel* context_menu = GetContextMenuModel();
   EXPECT_TRUE(context_menu);
-  EXPECT_GT(context_menu->GetItemCount(), 0);
+  EXPECT_GT(context_menu->GetItemCount(), 0u);
   EXPECT_NE(context_menu->GetCommandIdAt(0), IDS_CONTENT_CONTEXT_LOOK_UP);
   EXPECT_NE(context_menu->GetLabelAt(0),
             l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, kText));

@@ -14,7 +14,9 @@ from contextlib import AbstractContextManager
 from typing import Iterable, Optional, TextIO
 
 from common import read_package_paths, register_common_args, \
-                   register_device_args, run_continuous_ffx_command
+                   register_device_args, run_continuous_ffx_command, \
+                   run_ffx_command
+from ffx_integration import ScopedFfxConfig
 
 
 class LogManager(AbstractContextManager):
@@ -27,6 +29,17 @@ class LogManager(AbstractContextManager):
         # value.
         self._log_files = {}
         self._log_procs = []
+        self._scoped_ffx_log = None
+
+        if self._logs_dir:
+            self._scoped_ffx_log = ScopedFfxConfig('log.dir', self._logs_dir)
+
+    def __enter__(self):
+        if self._scoped_ffx_log:
+            self._scoped_ffx_log.__enter__()
+            run_ffx_command(('daemon', 'stop'))
+
+        return self
 
     def is_logging_enabled(self) -> bool:
         """Check whether logging is turned on."""
@@ -59,6 +72,9 @@ class LogManager(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop()
+        if self._scoped_ffx_log:
+            self._scoped_ffx_log.__exit__(exc_type, exc_value, traceback)
+            run_ffx_command(('daemon', 'stop'))
 
 
 def start_system_log(log_manager: LogManager,

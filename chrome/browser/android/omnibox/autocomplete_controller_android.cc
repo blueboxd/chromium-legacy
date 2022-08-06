@@ -31,8 +31,7 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -40,7 +39,6 @@
 #include "chrome/browser/ui/android/omnibox/jni_headers/AutocompleteController_jni.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/browser_ui/util/android/url_constants.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -51,9 +49,11 @@
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/voice_suggest_provider.h"
+#include "components/omnibox/browser/zero_suggest_prefetcher.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/search_engines/omnibox_focus_type.h"
@@ -114,41 +114,6 @@ void RecordClipboardMetrics(AutocompleteMatchType::Type match_type) {
   }
 }
 
-/**
- * A prefetcher class responsible for triggering zero suggest prefetch.
- * The prefetch occurs as a side-effect of calling OnOmniboxFocused() on
- * the AutocompleteController object.
- */
-class ZeroSuggestPrefetcher {
- public:
-  explicit ZeroSuggestPrefetcher(Profile* profile);
-
- private:
-  void SelfDestruct();
-
-  std::unique_ptr<AutocompleteController> controller_;
-  base::OneShotTimer expire_timer_;
-};
-
-ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
-    : controller_(new AutocompleteController(
-          std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
-  AutocompleteInput input(std::u16string(), metrics::OmniboxEventProto::NTP,
-                          ChromeAutocompleteSchemeClassifier(profile));
-  input.set_current_url(GURL(chrome::kChromeUINewTabURL));
-  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
-  controller_->Start(input);
-  // Delete ourselves after 10s. This is enough time to cache results or
-  // give up if the results haven't been received.
-  expire_timer_.Start(FROM_HERE, base::Milliseconds(10000), this,
-                      &ZeroSuggestPrefetcher::SelfDestruct);
-}
-
-void ZeroSuggestPrefetcher::SelfDestruct() {
-  delete this;
-}
-
 }  // namespace
 
 AutocompleteControllerAndroid::AutocompleteControllerAndroid(
@@ -199,21 +164,25 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   input_.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
   input_.set_prefer_keyword(prefer_keyword);
   input_.set_allow_exact_keyword_match(allow_exact_keyword_match);
-  input_.set_want_asynchronous_matches(want_asynchronous_matches);
+  input_.set_omit_asynchronous_matches(!want_asynchronous_matches);
   autocomplete_controller_->Start(input_);
 }
 
 void AutocompleteControllerAndroid::StartPrefetch(JNIEnv* env) {
-  AutocompleteInput autocomplete_input(
+  AutocompleteInput ntp_prefetch_input(
       u"", metrics::OmniboxEventProto::NTP_ZPS_PREFETCH,
       ChromeAutocompleteSchemeClassifier(profile_));
-  autocomplete_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  ntp_prefetch_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
-    autocomplete_controller_->StartPrefetch(autocomplete_input);
+  if (OmniboxFieldTrial::UseSharedInstanceForZeroSuggestPrefetching()) {
+    autocomplete_controller_->StartPrefetch(ntp_prefetch_input);
   } else {
     // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
-    new ZeroSuggestPrefetcher(profile_);
+    new ZeroSuggestPrefetcher(
+        std::make_unique<ChromeAutocompleteProviderClient>(profile_),
+        ntp_prefetch_input,
+        /*use_prefetch_path=*/
+        base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching));
   }
 }
 
@@ -270,18 +239,13 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
   // next navigation if the delay is too long, but the spare renderer will
   // probably get used anyways by a later navigation.
   if (!profile_->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(omnibox::kOmniboxSpareRenderer) &&
       page_class != OmniboxEventProto::ANDROID_SEARCH_WIDGET &&
       !BaseSearchProvider::IsNTPPage(page_class)) {
-    auto renderer_delay_ms = base::GetFieldTrialParamByFeatureAsInt(
-        omnibox::kOmniboxSpareRenderer, "omnibox_spare_renderer_delay_ms",
-        OMNIBOX_SPARE_RENDERER_DELAY_MS);
-
     content::GetUIThreadTaskRunner({})->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AutocompleteControllerAndroid::WarmUpRenderProcess,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::Milliseconds(renderer_delay_ms));
+        base::Milliseconds(OMNIBOX_SPARE_RENDERER_DELAY_MS));
   }
 
   input_ = AutocompleteInput(omnibox_text, page_class,
@@ -514,16 +478,10 @@ AutocompleteControllerAndroid::Factory::GetInstance() {
   return base::Singleton<AutocompleteControllerAndroid::Factory>::get();
 }
 
-content::BrowserContext*
-AutocompleteControllerAndroid::Factory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
-}
-
 AutocompleteControllerAndroid::Factory::Factory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "AutocompleteControllerAndroid",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildServicesForAllProfiles()) {
   DependsOn(TemplateURLServiceFactory::GetInstance());
   DependsOn(ShortcutsBackendFactory::GetInstance());
 }

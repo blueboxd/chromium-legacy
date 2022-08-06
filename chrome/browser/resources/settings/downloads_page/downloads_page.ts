@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../controls/controlled_button.js';
 import '../controls/settings_toggle_button.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
@@ -24,11 +24,11 @@ import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_browser_proxy.js';
 import {getTemplate} from './downloads_page.html.js';
 
-type AccountInfo = {
-  linked: boolean,
-  account: {name: string, login: string},
-  folder: {name: string, link: string},
-};
+interface AccountInfo {
+  linked: boolean;
+  account: {name: string, login: string};
+  folder: {name: string, link: string};
+}
 
 const SettingsDownloadsPageElementBase =
     WebUIListenerMixin(PrefsMixin(PolymerElement));
@@ -96,7 +96,7 @@ export class SettingsDownloadsPageElement extends
   // <if expr="chromeos_ash">
   static get observers() {
     return [
-      'handleDownloadLocationChanged_(prefs.download.default_directory.value)'
+      'handleDownloadLocationChanged_(prefs.download.default_directory.value)',
     ];
   }
   // </if>

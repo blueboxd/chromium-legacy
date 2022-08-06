@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Logg</translation>
 <translation id="1645954272419197032">Bekreft enhetsinformasjonen</translation>
 <translation id="1662989795263954667">Stoppet – tom for blekk</translation>
+<translation id="1664796644829245314">Forhåndsvis <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Innebygd VPN</translation>
 <translation id="1672499492233627739">Videofeed fra nettkameraet</translation>
 <translation id="1676557873873341166">Tar opp video</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferanser</translation>
 <translation id="1852934301711881861">Installer ChromeOS Flex</translation>
 <translation id="1856388568474281774">Nedoverpil</translation>
+<translation id="1858620243986915808">Legg ved skjermdump</translation>
 <translation id="1871569928317311284">Slå av mørkt tema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Slå av mørk modus</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google-profilbilde</translation>
 <translation id="1979103255016296513">Det er på høy tid å endre passordet</translation>
 <translation id="1999615961760456652">Obligatorisk side</translation>
+<translation id="200669432486043882">Bytt ut fil</translation>
 <translation id="2006864819935886708">Tilkobling</translation>
 <translation id="2008685064673031089">Primtallsøk</translation>
 <translation id="2011174342667534258">SDK-versjon:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Nåværende</translation>
 <translation id="2480034874476596812">Slå av manuelt</translation>
+<translation id="248546197012830854">Enheten er uten nett. Koble til et wifi-nettverk for å se hjelpeinnhold.</translation>
 <translation id="2491955442992294626">Taster blir ikke testet når du bruker andre vinduer</translation>
 <translation id="2493126929778606526">De beste bildene dine, valgt automatisk</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">OPPDATER</translation>
 <translation id="3009958530611748826">Velg mappen du vil lagre i</translation>
 <translation id="3017079585324758401">Bakgrunn</translation>
+<translation id="302435934487327038">Installeringen er fullført</translation>
 <translation id="3027578600144895987">Lukk kameraet</translation>
 <translation id="3031560714565892478">Enheten er et videokamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Sluttpunkt</translation>
 <translation id="3069085583900247081">Testen mislyktes</translation>
-<translation id="3076243757415932261">Validerer komponenter …</translation>
 <translation id="3083667275341675831">Tilkoblingsdiagnostikk</translation>
 <translation id="3084958266922136097">Slå av skjermspareren</translation>
 <translation id="3091839911843451378">Mislykket – stoppet</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Er du sikker på at du vil tømme hele utskriftsloggen? Utskriftsjobber som allerede er i gang, fjernes ikke.</translation>
 <translation id="3383751554789092165">Endre enhetsinformasjon etter behov.</translation>
 <translation id="3404249063913988450">Slå på skjermspareren</translation>
-<translation id="3404770484521709967">Komponentene er riktig installert.</translation>
 <translation id="3413935475507503304">For å gå videre med oppdateringen, klikk på Neste.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Gammelt passord</translation>
 <translation id="4453205916657964690">Nettverksmaske</translation>
 <translation id="4454245904991689773">Skann til</translation>
-<translation id="4472575034687746823">Kom i gang</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kunne ikke pinge gatewayen for ikke-standardnettverket</translation>
 <translation id="4500213108254186382">Lokkakselerometer</translation>
@@ -660,14 +662,15 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6611280807952151149">Avslutt <ph name="DEVICE_TYPE" />-reparasjonen</translation>
 <translation id="6618744767048954150">Kjører</translation>
 <translation id="6620487321149975369">Utskriftsjobber vises i loggen med mindre de fjernes manuelt</translation>
+<translation id="6624819909909965616">Kan ikke laste opp filer som er større enn 10 MB</translation>
 <translation id="6643016212128521049">Tøm</translation>
+<translation id="6644568396961840069">Filen kunne ikke lagres. Prøv å koble til en annen ekstern lagringsenhet, eller prøv igjen senere.</translation>
 <translation id="6647510110698214773">Algoritme for kryptering</translation>
 <translation id="6650062777702288430">Kana/alfanumerisk-bytte</translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6659594942844771486">Fane</translation>
 <translation id="6692996468359469499">Få informasjon tilknyttet det du har merket</translation>
 <translation id="6704062477274546131">DNS-konvertering</translation>
-<translation id="6721744718589119342">Vi kan sende deg e-post med oppdateringer eller for å be om mer informasjon</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6723847290197874913">Bakgrunnsbelysning for tastatur</translation>
 <translation id="672609503628871915">Se hva som er nytt</translation>
@@ -695,6 +698,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Fastvareversjon</translation>
 <translation id="6995564396478647735">Sørg for at skrivebeskyttelse er på</translation>
+<translation id="7005833343836210400">Enheten er uten nett</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> administrerer denne enheten og har tilgang til all brukeraktivitet, blant annet nettsteder som besøkes, passord og e-post.</translation>
 <translation id="7040230719604914234">Operatør</translation>
 <translation id="7041549558901442110">Enheten er ikke tilkoblet.</translation>
@@ -720,6 +724,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7212734716605298123">Fastvareoppdateringer for eksterne enheter</translation>
 <translation id="7216409898977639127">Mobiloperatør</translation>
+<translation id="725133483556299729">Velg en e-postadresse</translation>
 <translation id="7271040990581020067">Skanneren er i bruk for øyeblikket. Prøv på nytt senere.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Velg én eller flere komponenter og prøv på nytt, eller hopp over kalibreringen</translation>
@@ -797,6 +802,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7978412674231730200">Privatnøkkel</translation>
 <translation id="7982789257301363584">Nettverk</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
+<translation id="8018928621986160031">Lagret i «<ph name="FILE_LOCATION" />»</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Slå på automatisk fargemodus</translation>
@@ -805,8 +811,8 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8063022551652308521">Skrivebeskyttelse er fremdeles avslått. For å fortsette, slå på skrivebeskyttelse.</translation>
 <translation id="8075838845814659848">Gjenværende batteri</translation>
 <translation id="8082366717211101304">Kan ikke foreta DNS-oppslag fra Android-apper</translation>
-<translation id="8083281199617904460">Denne reparasjonsprosessen er beregnet på en kvalifisert reparatør. Den skal kun startes etter at de ikke-fungerende komponentene er byttet ut.</translation>
 <translation id="808894953321890993">Endre passord</translation>
+<translation id="8094062939584182041">La Google sende deg e-post om dette problemet</translation>
 <translation id="8104083085214006426">Du bruker et åpent og usikret nettverk</translation>
 <translation id="8109786307828817014">Vil du gå videre med de mislykkede kalibreringene?</translation>
 <translation id="811820734797650957">(Android) Gatewayen kan pinges</translation>
@@ -821,6 +827,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8217675307824400706">Koble til</translation>
 <translation id="8221728673725659466">Kalibreringen er fullført</translation>
 <translation id="8226628635270268143">Velg favorittbildene og -albumene dine</translation>
+<translation id="8227119283605456246">Legg ved fil</translation>
 <translation id="8230672074305416752">Kunne ikke pinge gatewayen for standardnettverket</translation>
 <translation id="8246209727385807362">Ukjent operatør</translation>
 <translation id="827422111966801947">Indigo</translation>
@@ -865,6 +872,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8576249514688522074">Ikke initialisert</translation>
 <translation id="8620617069779373398">Status for roaming</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">Del nettadressen:</translation>
 <translation id="8660881923941176839">pund</translation>
 <translation id="8662671328352114214">Koble til <ph name="TYPE" />-nettverket</translation>
 <translation id="8671972493856476349">Oppdater til <ph name="VERSION_NUMBER" /> og start på nytt</translation>

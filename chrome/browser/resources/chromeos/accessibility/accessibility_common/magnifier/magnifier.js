@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {RectUtil} from '/common/rect_util.js';
+import {RectUtil} from '../../common/rect_util.js';
 
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
@@ -155,7 +155,7 @@ export class Magnifier {
       chrome.accessibilityPrivate.setFocusRings([{
         rects: [bounds],
         type: chrome.accessibilityPrivate.FocusType.GLOW,
-        color: '#22d'
+        color: '#22d',
       }]);
     }
   }

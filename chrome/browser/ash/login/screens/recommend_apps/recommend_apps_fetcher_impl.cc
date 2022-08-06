@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
 
-#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -221,6 +220,10 @@ gfx::ExtensionSet GetGLExtensions(const gpu::GPUInfo& gpu_info) {
   return extensionSet;
 }
 
+const std::string& GetDeviceFingerprint(const arc::ArcFeatures& arc_features) {
+  return arc_features.build_props.at("ro.build.fingerprint");
+}
+
 const std::string& GetAndroidSdkVersion(const arc::ArcFeatures& arc_features) {
   return arc_features.build_props.at("ro.build.version.sdk");
 }
@@ -279,7 +282,8 @@ RecommendAppsFetcherImpl::ScopedGpuInfoForTest::~ScopedGpuInfoForTest() {
 
 RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
     RecommendAppsFetcherDelegate* delegate,
-    mojo::PendingRemote<mojom::CrosDisplayConfigController> display_config,
+    mojo::PendingRemote<crosapi::mojom::CrosDisplayConfigController>
+        display_config,
     network::mojom::URLLoaderFactory* url_loader_factory)
     : delegate_(delegate),
       url_loader_factory_(url_loader_factory),
@@ -363,11 +367,12 @@ void RecommendAppsFetcherImpl::OnProtoMessageCompressedAndEncoded(
 }
 
 void RecommendAppsFetcherImpl::OnAshResponse(
-    std::vector<mojom::DisplayUnitInfoPtr> all_displays_info) {
+    std::vector<crosapi::mojom::DisplayUnitInfoPtr> all_displays_info) {
   ash_ready_ = true;
 
   int screen_density = 0;
-  for (const mojom::DisplayUnitInfoPtr& display_info : all_displays_info) {
+  for (const crosapi::mojom::DisplayUnitInfoPtr& display_info :
+       all_displays_info) {
     if (base::NumberToString(display::Display::InternalDisplayId()) ==
         display_info->id) {
       screen_density = display_info->dpi_x + display_info->dpi_y;
@@ -404,6 +409,10 @@ void RecommendAppsFetcherImpl::OnArcFeaturesRead(
     play_store_version_ = read_result.value().play_store_version;
 
     android_sdk_version_ = GetAndroidSdkVersion(read_result.value());
+
+    if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
+      device_fingerprint_ = GetDeviceFingerprint(read_result.value());
+    }
   }
 
   MaybeStartCompressAndEncodeProtoMessage();
@@ -436,6 +445,8 @@ void RecommendAppsFetcherImpl::StartDownload() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
     resource_request->url = GURL(kGetRevisedAppListUrl);
+    resource_request->headers.SetHeader("X-DFE-Device-Fingerprint",
+                                        device_fingerprint_);
   } else {
     resource_request->url = GURL(kGetAppListUrl);
   }
@@ -629,21 +640,21 @@ absl::optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
 void RecommendAppsFetcherImpl::OnJsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
-    if (!result.value) {
+    if (!result.has_value()) {
       delegate_->OnParseResponseError();
       return;
     }
-    delegate_->OnLoadSuccess(std::move(*result.value));
+    delegate_->OnLoadSuccess(std::move(*result));
     return;
   }
 
-  if (!result.value || (!result.value->is_list() && !result.value->is_dict())) {
+  if (!result.has_value() || (!result->is_list() && !result->is_dict())) {
     RecordUmaResponseParseResult(
         RECOMMEND_APPS_RESPONSE_PARSE_RESULT_INVALID_JSON);
     delegate_->OnParseResponseError();
     return;
   }
-  absl::optional<base::Value> output = ParseResponse(*result.value);
+  absl::optional<base::Value> output = ParseResponse(*result);
   if (!output.has_value()) {
     RecordUmaResponseAppCount(0);
     delegate_->OnParseResponseError();

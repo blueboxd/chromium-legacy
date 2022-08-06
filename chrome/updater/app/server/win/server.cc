@@ -23,10 +23,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/atl.h"
 #include "base/win/registry.h"
@@ -188,7 +184,7 @@ bool SwapGoogleUpdate(UpdaterScope scope,
                             WorkItem::ALWAYS);
 
   const std::wstring google_update_appid_key =
-      base::StrCat({CLIENTS_KEY, L"{430FD4D0-B729-4F61-AA34-91526481799D}"});
+      GetAppClientsKey(L"{430FD4D0-B729-4F61-AA34-91526481799D}");
   list->AddCreateRegKeyWorkItem(root, COMPANY_KEY, KEY_WOW64_32KEY);
   list->AddCreateRegKeyWorkItem(root, UPDATER_KEY, KEY_WOW64_32KEY);
   list->AddCreateRegKeyWorkItem(root, CLIENTS_KEY, KEY_WOW64_32KEY);
@@ -222,18 +218,6 @@ void ComServerApp::Stop() {
                                 this_server->update_service_internal_ = nullptr;
                                 this_server->Shutdown(0);
                               }));
-}
-
-void ComServerApp::InitializeThreadPool() {
-  base::ThreadPoolInstance::Create(kThreadPoolName);
-
-  // Reuses the logic in base::ThreadPoolInstance::StartWithDefaultParams.
-  const size_t max_num_foreground_threads =
-      static_cast<size_t>(std::max(3, base::SysInfo::NumberOfProcessors() - 1));
-  base::ThreadPoolInstance::InitParams init_params(max_num_foreground_threads);
-  init_params.common_thread_pool_environment = base::ThreadPoolInstance::
-      InitParams::CommonThreadPoolEnvironment::COM_MTA;
-  base::ThreadPoolInstance::Get()->Start(init_params);
 }
 
 HRESULT ComServerApp::RegisterClassObjects() {
@@ -346,8 +330,8 @@ bool ComServerApp::MigrateLegacyUpdaters(
       continue;
 
     base::win::RegKey key;
-    if (key.Open(root, base::StrCat({CLIENTS_KEY, app_id}).c_str(),
-                 Wow6432(KEY_READ)) != ERROR_SUCCESS) {
+    if (key.Open(root, GetAppClientsKey(app_id).c_str(), Wow6432(KEY_READ)) !=
+        ERROR_SUCCESS) {
       continue;
     }
 

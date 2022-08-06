@@ -319,9 +319,10 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
     IsolationInfo isolation_info =
         IsolationInfo::Create(IsolationInfo::RequestType::kOther, origin,
                               origin, SiteForCookies::FromOrigin(origin));
-    event_interface_ = new ConnectTestingEventInterface();
-    channel_ = std::make_unique<WebSocketChannel>(
-        base::WrapUnique(event_interface_.get()), context_.get());
+    auto event_interface = std::make_unique<ConnectTestingEventInterface>();
+    event_interface_ = event_interface.get();
+    channel_ = std::make_unique<WebSocketChannel>(std::move(event_interface),
+                                                  context_.get());
     channel_->SendAddChannelRequest(
         GURL(socket_url), sub_protocols_, origin, site_for_cookies,
         isolation_info, HttpRequestHeaders(), TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -361,7 +362,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_HttpsProxyUnauthedFails) {
   std::string proxy_config =
       "https=" + proxy_server.host_port_pair().ToString();
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ConfiguredProxyResolutionService::CreateFixed(
+      ConfiguredProxyResolutionService::CreateFixedForTest(
           proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_TRUE(proxy_resolution_service);
   context_builder_->set_proxy_resolution_service(
@@ -397,8 +398,9 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsWssProxyUnauthedFails) {
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ConfiguredProxyResolutionService::CreateFixed(ProxyConfigWithAnnotation(
-          proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)));
+      ConfiguredProxyResolutionService::CreateFixedForTest(
+          ProxyConfigWithAnnotation(proxy_config,
+                                    TRAFFIC_ANNOTATION_FOR_TESTS)));
   ASSERT_TRUE(proxy_resolution_service);
   context_builder_->set_proxy_resolution_service(
       std::move(proxy_resolution_service));
@@ -425,8 +427,9 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsProxyUsed) {
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ConfiguredProxyResolutionService::CreateFixed(ProxyConfigWithAnnotation(
-          proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)));
+      ConfiguredProxyResolutionService::CreateFixedForTest(
+          ProxyConfigWithAnnotation(proxy_config,
+                                    TRAFFIC_ANNOTATION_FOR_TESTS)));
   context_builder_->set_proxy_resolution_service(
       std::move(proxy_resolution_service));
   InitialiseContext();

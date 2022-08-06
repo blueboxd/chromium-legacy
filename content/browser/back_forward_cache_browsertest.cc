@@ -31,7 +31,6 @@
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/render_accessibility.mojom.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/document_service.h"
 #include "content/public/browser/global_routing_id.h"
@@ -70,6 +69,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/switches.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 
 // This file has too many tests.
 //
@@ -2283,8 +2283,15 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
 // Tests that trying to focus on a BFCached cross-site iframe won't crash.
 // See https://crbug.com/1250218.
+// TODO(crbug.com/1349657): Flaky on linux tsan
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_FocusSameSiteSubframeOnPagehide \
+  DISABLED_FocusSameSiteSubframeOnPagehide
+#else
+#define MAYBE_FocusSameSiteSubframeOnPagehide FocusSameSiteSubframeOnPagehide
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       FocusSameSiteSubframeOnPagehide) {
+                       MAYBE_FocusSameSiteSubframeOnPagehide) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));

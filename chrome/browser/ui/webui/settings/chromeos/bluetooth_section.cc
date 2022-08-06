@@ -153,6 +153,18 @@ const std::vector<SearchConcept>& GetFastPairOnSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetFastPairSavedDevicesSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_FAST_PAIR_SAVED_DEVICES,
+       mojom::kBluetoothSavedDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kFastPairSavedDevices}},
+  });
+  return *tags;
+}
+
 }  // namespace
 
 BluetoothSection::BluetoothSection(Profile* profile,
@@ -320,6 +332,19 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"savedDevicesLabel", IDS_BLUETOOTH_SAVED_DEVICES_LABEL},
       {"savedDevicesSubtitle", IDS_BLUETOOTH_SAVED_DEVICES_SUBTITLE},
       {"savedDevicesPageName", IDS_SETTINGS_BLUETOOTH_SAVED_DEVICES},
+      {"savedDevicesRemove", IDS_BLUETOOTH_SAVED_DEVICES_REMOVE},
+      {"savedDevicesDialogRemove",
+       IDS_SETTINGS_REMOVE_SAVED_DEVICE_DIALOG_REMOVE},
+      {"savedDevicesDialogCancel",
+       IDS_SETTINGS_REMOVE_SAVED_DEVICE_DIALOG_CANCEL},
+      {"savedDevicesDialogLabel",
+       IDS_SETTINGS_REMOVE_SAVED_DEVICE_DIALOG_LABEL},
+      {"bluetoothDevicesDialogForget",
+       IDS_SETTINGS_FORGET_DEVICE_DIALOG_FORGET},
+      {"bluetoothDevicesDialogCancel",
+       IDS_SETTINGS_FORGET_DEVICE_DIALOG_CANCEL},
+      {"bluetoothDevicesDialogLabel", IDS_SETTINGS_FORGET_DEVICE_DIALOG_LABEL},
+      {"bluetoothDevicesDialogTitle", IDS_SETTINGS_FORGET_DEVICE_DIALOG_TITLE},
       {"bluetoothPrimaryUserControlled",
        IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
       {"bluetoothDeviceWithConnectionStatus",
@@ -359,7 +384,13 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"bluetoothDeviceListNoConnectedDevices",
        IDS_BLUETOOTH_DEVICE_LIST_NO_CONNECTED_DEVICES},
       {"bluetoothEnabledA11YLabel", IDS_SETTINGS_BLUETOOTH_ENABLED_A11Y_LABEL},
-      {"bluetoothDisabledA11YLabel", IDS_SETTINGS_BLUETOOTH_DISABLED_A11Y_LABEL}
+      {"bluetoothDisabledA11YLabel",
+       IDS_SETTINGS_BLUETOOTH_DISABLED_A11Y_LABEL},
+
+      {"savedDeviceItemA11yLabel", IDS_SAVED_DEVICE_ITEM_A11Y_LABEL},
+
+      {"savedDeviceItemButtonA11yLabel",
+       IDS_SAVED_DEVICE_LIST_ITEM_BUTTON_A11Y_LABEL}
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -372,7 +403,8 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 void BluetoothSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<BluetoothHandler>());
 
-  if (features::IsFastPairSavedDevicesEnabled()) {
+  if (ash::features::IsFastPairEnabled() &&
+      features::IsFastPairSavedDevicesEnabled()) {
     web_ui->AddMessageHandler(std::make_unique<FastPairSavedDevicesHandler>());
   }
 }
@@ -414,7 +446,8 @@ void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                      mojom::kBluetoothDevicesSubpagePath);
   static constexpr mojom::Setting kBluetoothDevicesSettings[] = {
       mojom::Setting::kBluetoothOnOff, mojom::Setting::kBluetoothPairDevice,
-      mojom::Setting::kBluetoothUnpairDevice, mojom::Setting::kFastPairOnOff};
+      mojom::Setting::kBluetoothUnpairDevice, mojom::Setting::kFastPairOnOff,
+      mojom::Setting::kFastPairSavedDevices};
   static constexpr mojom::Setting kBluetoothDevicesSettingsLegacy[] = {
       mojom::Setting::kBluetoothConnectToDevice,
       mojom::Setting::kBluetoothDisconnectFromDevice,
@@ -487,6 +520,7 @@ void BluetoothSection::UpdateSearchTags() {
   updater.RemoveSearchTags(GetBluetoothOffSearchConcepts());
   updater.RemoveSearchTags(GetFastPairOnSearchConcepts());
   updater.RemoveSearchTags(GetFastPairOffSearchConcepts());
+  updater.RemoveSearchTags(GetFastPairSavedDevicesSearchConcepts());
   updater.RemoveSearchTags(GetBluetoothConnectableSearchConcepts());
   updater.RemoveSearchTags(GetBluetoothConnectedSearchConcepts());
   updater.RemoveSearchTags(GetBluetoothPairableSearchConcepts());
@@ -503,6 +537,10 @@ void BluetoothSection::UpdateSearchTags() {
       updater.AddSearchTags(GetFastPairOnSearchConcepts());
     } else {
       updater.AddSearchTags(GetFastPairOffSearchConcepts());
+    }
+
+    if (features::IsFastPairSavedDevicesEnabled()) {
+      updater.AddSearchTags(GetFastPairSavedDevicesSearchConcepts());
     }
   }
 

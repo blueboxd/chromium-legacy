@@ -351,15 +351,14 @@ void MessagePumpCFRunLoopBase::OnAttach() {
 
 void MessagePumpCFRunLoopBase::OnDetach() {
   // This function is called on shutdown. This can happen at either
-  // `nesting_level` 1 or 0:
+  // `nesting_level` >=1 or 0:
   //   `nesting_level_ == 0`: When this is detached as part of tear down outside
-  //   of a run loop (e.g. ~TaskEnvironment). `nesting_level_ == 1`: When this
+  //   of a run loop (e.g. ~TaskEnvironment). `nesting_level_ >= 1`: When this
   //   is detached as part of a native shutdown notification ran from the
-  //   message pump itself.
-  // Additional nesting would be surprising as it would imply that unwinding the
-  // nested loop has to go through the detached MessagePump again...
+  //   message pump itself. Nesting levels higher than 1 can happen in
+  //   legitimate nesting situations like the browser being dismissed while
+  //   displaying a long press context menu (CRWContextMenuController).
   CHECK_GE(nesting_level_, 0);
-  CHECK_LE(nesting_level_, 1);
 }
 #endif  // BUILDFLAG(IS_IOS)
 
@@ -520,9 +519,13 @@ void MessagePumpCFRunLoopBase::RunIdleWork() {
   // objects if the app is not currently handling a UI event to ensure they're
   // released promptly even in the absence of UI events.
   MessagePumpScopedAutoreleasePool autorelease_pool(this);
-  // Call DoIdleWork once, and if something was done, arrange to come back here
-  // again as long as the loop is still running.
+  // Pop the current work item scope as it captures any native work happening
+  // *between* the last DoWork() and this DoIdleWork()
+  PopWorkItemScope();
   bool did_work = delegate_->DoIdleWork();
+  // As in DoWork(), push a new scope to cover any native work that could
+  // possibly happen between now and BeforeWait().
+  PushWorkItemScope();
   if (did_work)
     CFRunLoopSourceSignal(idle_work_source_);
 }
@@ -557,6 +560,8 @@ void MessagePumpCFRunLoopBase::RunNestingDeferredWork() {
 
 void MessagePumpCFRunLoopBase::BeforeWait() {
   // Current work item tracking needs to go away since execution will stop.
+  // Matches the PushWorkItemScope() in AfterWaitObserver() (with an arbitrary
+  // amount of matching Pop/Push in between when running work items).
   PopWorkItemScope();
 
   if (!delegate_) {
@@ -610,7 +615,8 @@ void MessagePumpCFRunLoopBase::AfterWaitObserver(CFRunLoopObserverRef observer,
   MessagePumpCFRunLoopBase* self = static_cast<MessagePumpCFRunLoopBase*>(info);
   base::mac::CallWithEHFrame(^{
     // Emerging from sleep, any work happening after this (outside of a
-    // RunWork()) should be considered native work.
+    // RunWork()) should be considered native work. Matching PopWorkItemScope()
+    // is in BeforeWait().
     self->PushWorkItemScope();
   });
 }

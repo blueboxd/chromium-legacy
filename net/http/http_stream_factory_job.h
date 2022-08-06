@@ -110,7 +110,7 @@ class HttpStreamFactory::Job
                                   HttpAuthController* auth_controller) = 0;
 
     // Invoked when the |job| finishes pre-connecting sockets.
-    virtual void OnPreconnectsComplete(Job* job) = 0;
+    virtual void OnPreconnectsComplete(Job* job, int result) = 0;
 
     // Invoked to record connection attempts made by the socket layer to
     // HttpStreamRequest if |job| is associated with HttpStreamRequest.
@@ -199,6 +199,10 @@ class HttpStreamFactory::Job
   // QUIC session.
   bool HasAvailableQuicSession() const;
 
+  // Returns true if a connected (idle or handed out) or connecting socket
+  // exists for the job. This method is not supported for WebSocket and QUIC.
+  bool TargettedSocketGroupHasActiveSocket() const;
+
   const GURL& origin_url() const { return origin_url_; }
   RequestPriority priority() const { return priority_; }
   bool was_alpn_negotiated() const;
@@ -269,7 +273,7 @@ class HttpStreamFactory::Job
                                 HttpAuthController* auth_controller,
                                 base::OnceClosure restart_with_auth_callback);
   void OnNeedsClientAuthCallback(SSLCertRequestInfo* cert_info);
-  void OnPreconnectsComplete();
+  void OnPreconnectsComplete(int result);
 
   void OnIOComplete(int result);
   // RunLoop() finishes asynchronously and invokes one of the On* methods (see

@@ -15,6 +15,11 @@ module.exports = {
   'rules': {
     // Enabled checks.
     'brace-style': ['error', '1tbs'],
+
+    // https://google.github.io/styleguide/jsguide.html#features-arrays-trailing-comma
+    // https://google.github.io/styleguide/jsguide.html#features-objects-use-trailing-comma
+    'comma-dangle': ['error', 'always-multiline'],
+
     'curly': ['error', 'multi-line', 'consistent'],
     'new-parens': 'error',
     'no-array-constructor': 'error',
@@ -53,6 +58,12 @@ module.exports = {
     'quotes': ['error', 'single', {allowTemplateLiterals: true}],
     'semi': ['error', 'always'],
 
+    // https://google.github.io/styleguide/jsguide.html#features-one-variable-per-declaration
+    'one-var': ['error', {
+      let: 'never',
+      const: 'never',
+    }],
+
     // TODO(dpapad): Add more checks according to our styleguide.
   },
 
@@ -78,6 +89,14 @@ module.exports = {
       '@typescript-eslint/array-type': ['error', {
         default: 'array-simple',
       }],
+
+      // https://google.github.io/styleguide/tsguide.html#type-assertions-syntax
+      '@typescript-eslint/consistent-type-assertions': ['error', {
+         assertionStyle: 'as',
+      }],
+
+      // https://google.github.io/styleguide/tsguide.html#interfaces-vs-type-aliases
+      "@typescript-eslint/consistent-type-definitions": ['error', 'interface'],
 
       // https://google.github.io/styleguide/jsguide.html#naming
       '@typescript-eslint/naming-convention': [
@@ -154,7 +173,34 @@ module.exports = {
             },
           },
         },
-      }]
+      }],
+
+      // https://google.github.io/styleguide/tsguide.html#wrapper-types
+      '@typescript-eslint/ban-types': ['error', {
+        extendDefaults: false,
+        types: {
+          String: {
+            message: 'Use string instead',
+            fixWith: 'string',
+          },
+          Boolean: {
+            message: 'Use boolean instead',
+            fixWith: 'boolean',
+          },
+          Number: {
+            message: 'Use number instead',
+            fixWith: 'number',
+          },
+          Symbol: {
+            message: 'Use symbol instead',
+            fixWith: 'symbol',
+          },
+          BigInt: {
+            message: 'Use bigint instead',
+            fixWith: 'bigint',
+          },
+        }
+      }],
     }
   }]
 };

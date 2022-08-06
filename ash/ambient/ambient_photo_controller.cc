@@ -265,7 +265,7 @@ void AmbientPhotoController::ReadPhotoFromTopicQueue() {
   ResetImageData();
   DVLOG(3) << "Downloading topic photos";
   AmbientModeTopic topic = ambient_topic_queue_->Pop();
-  ambient::Photo* photo = cache_entry_.mutable_primary_photo();
+  ::ambient::Photo* photo = cache_entry_.mutable_primary_photo();
   photo->set_details(topic.details);
   photo->set_is_portrait(topic.is_portrait);
   photo->set_type(topic.topic_type);
@@ -283,7 +283,7 @@ void AmbientPhotoController::ReadPhotoFromTopicQueue() {
                      /*is_related_image=*/false, on_done));
 
   if (!topic.related_image_url.empty()) {
-    ambient::Photo* photo = cache_entry_.mutable_related_photo();
+    ::ambient::Photo* photo = cache_entry_.mutable_related_photo();
     photo->set_details(topic.related_details);
     photo->set_is_portrait(topic.is_portrait);
     photo->set_type(topic.topic_type);
@@ -328,9 +328,9 @@ void AmbientPhotoController::TryReadPhotoFromCache() {
              << backup_cache_index_for_display_;
     // Try to read a backup image.
     backup_photo_cache_->ReadPhotoCache(
-        /*cache_index=*/backup_cache_index_for_display_, &cache_entry_,
-        base::BindOnce(&AmbientPhotoController::OnAllPhotoRawDataAvailable,
-                       weak_factory_.GetWeakPtr(), /*from_downloading=*/false));
+        /*cache_index=*/backup_cache_index_for_display_,
+        base::BindOnce(&AmbientPhotoController::OnPhotoCacheReadComplete,
+                       weak_factory_.GetWeakPtr()));
 
     backup_cache_index_for_display_++;
     if (backup_cache_index_for_display_ == GetBackupPhotoUrls().size())
@@ -347,9 +347,15 @@ void AmbientPhotoController::TryReadPhotoFromCache() {
 
   DVLOG(3) << "Read from cache index: " << current_cache_index;
   photo_cache_->ReadPhotoCache(
-      current_cache_index, &cache_entry_,
-      base::BindOnce(&AmbientPhotoController::OnAllPhotoRawDataAvailable,
-                     weak_factory_.GetWeakPtr(), /*from_downloading=*/false));
+      current_cache_index,
+      base::BindOnce(&AmbientPhotoController::OnPhotoCacheReadComplete,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AmbientPhotoController::OnPhotoCacheReadComplete(
+    ::ambient::PhotoCacheEntry cache_entry) {
+  cache_entry_ = std::move(cache_entry);
+  OnAllPhotoRawDataAvailable(/*from_downloading=*/false);
 }
 
 void AmbientPhotoController::OnPhotoRawDataDownloaded(

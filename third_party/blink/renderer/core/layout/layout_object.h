@@ -293,7 +293,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
                            ContainingBlockFixedLayoutObjectInBody);
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
                            ContainingBlockAbsoluteLayoutObjectInBody);
-  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, LocalToAncestorRectFastPath);
   FRIEND_TEST_ALL_PREFIXES(
       LayoutObjectTest,
       ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor);
@@ -1513,6 +1512,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return bitfields_.ForceLegacyLayout();
   }
+  bool ForceLegacyLayoutForChildren() const;
   bool IsAtomicInlineLevel() const {
     NOT_DESTROYED();
     return bitfields_.IsAtomicInlineLevel();
@@ -1736,12 +1736,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     // Always check HasNonVisibleOverflow() in case the object is not allowed to
     // have non-visible overflow.
-#if DCHECK_IS_ON()
-    const auto* element = DynamicTo<Element>(GetNode());
-    DCHECK(!element || !element->IsReplacedElementRespectingCSSOverflow() ||
-           !StyleRef().IsScrollContainer())
-        << "Replaced elements forbid scrolling " << element;
-#endif
+    // Replaced elements don't support scrolling. If overflow is non visible,
+    // the behaviour applied is equivalent to `clip`. See discussion at:
+    // https://github.com/w3c/csswg-drafts/issues/7435.
+    if (IsLayoutReplaced() &&
+        RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled())
+      return false;
     return HasNonVisibleOverflow() && StyleRef().IsScrollContainer();
   }
 
@@ -2202,6 +2202,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     bitfields_.SetHasReflection(has_reflection);
   }
+  void SetCanContainAbsolutePositionObjects(bool can_contain) {
+    NOT_DESTROYED();
+    can_contain_absolute_position_objects_ = can_contain;
+  }
   void SetCanContainFixedPositionObjects(bool can_contain_fixed_position) {
     NOT_DESTROYED();
     bitfields_.SetCanContainFixedPositionObjects(can_contain_fixed_position);
@@ -2410,12 +2414,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   const LayoutBlock* InclusiveContainingBlock() const;
 
-  const LayoutBlock* EnclosingScrollportBox() const;
+  const LayoutBox* ContainingScrollContainer() const;
 
   bool CanContainAbsolutePositionObjects() const {
     NOT_DESTROYED();
-    return style_->CanContainAbsolutePositionObjects() ||
-           CanContainFixedPositionObjects();
+    return can_contain_absolute_position_objects_;
   }
   bool CanContainFixedPositionObjects() const {
     NOT_DESTROYED();
@@ -2464,7 +2467,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the result will be in the
-  //   space of the local root frame.
+  //   space of the outermost root frame.
   //   Otherwise, the result will be in the space of the containing frame.
   // This method supports kUseGeometryMapperMode.
   PhysicalRect LocalToAncestorRect(const PhysicalRect& rect,
@@ -3567,6 +3570,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     bitfields_.SetShouldAssumePaintOffsetTranslationForLayoutShiftTracking(b);
   }
 
+  // Returns true if this layout object is created for an element which will be
+  // changing behaviour for overflow: visible.
+  // See
+  // https://groups.google.com/a/chromium.org/g/blink-dev/c/MuTeW_AFgxA/m/IlT4QVEfAgAJ
+  // for details.
+  bool BelongsToElementChangingOverflowBehaviour() const;
+
  protected:
   // Identifiers for each of LayoutObject subclasses.
   // The identifier name for blink::LayoutFoo should be kLayoutObjectFoo.
@@ -3796,11 +3806,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
 
  private:
-  bool LocalToAncestorRectFastPath(const PhysicalRect& rect,
-                                   const LayoutBoxModelObject* ancestor,
-                                   MapCoordinatesFlags mode,
-                                   PhysicalRect& result) const;
-
   gfx::QuadF LocalToAncestorQuadInternal(const gfx::QuadF&,
                                          const LayoutBoxModelObject* ancestor,
                                          MapCoordinatesFlags = 0) const;
@@ -3874,6 +3879,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // It's defined as the first field so that it can use the memory gap between
   // DisplayItemClient and LayoutObject's other fields.
   PaintInvalidationReason full_paint_invalidation_reason_;
+
+  // This boolean is used to know if this LayoutObject is a container for
+  // absolute position descendants.
+  // This is not in LayoutObjectBitfields to avoid to bump its size.
+  // This is unit8_t in order to pack it together with PaintInvalidationReason.
+  uint8_t can_contain_absolute_position_objects_ : 1;
 
 #if DCHECK_IS_ON()
   unsigned has_ax_object_ : 1;

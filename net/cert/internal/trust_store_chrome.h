@@ -7,8 +7,8 @@
 
 #include "base/containers/span.h"
 #include "net/base/net_export.h"
-#include "net/cert/internal/trust_store.h"
-#include "net/cert/internal/trust_store_in_memory.h"
+#include "net/cert/pki/trust_store.h"
+#include "net/cert/pki/trust_store_in_memory.h"
 #include "net/cert/root_store_proto_lite/root_store.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -88,6 +88,10 @@ class NET_EXPORT TrustStoreChrome : public TrustStore {
 // Returns the version # of the Chrome Root Store that was compiled into the
 // binary.
 NET_EXPORT int64_t CompiledChromeRootStoreVersion();
+
+// Returns the anchors of the Chrome Root Store that were compiled into the
+// binary.
+NET_EXPORT ParsedCertificateList CompiledChromeRootStoreAnchors();
 
 }  // namespace net
 

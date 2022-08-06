@@ -46,7 +46,6 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/network_qualities_pref_delegate.h"
-#include "services/network/network_service_memory_cache.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/cpp/transferable_directory.h"
@@ -111,6 +110,7 @@ class HostResolver;
 class MdnsResponderManager;
 class MojoBackendFileOperationsFactory;
 class NetworkService;
+class NetworkServiceMemoryCache;
 class NetworkServiceNetworkDelegate;
 class NetworkServiceProxyDelegate;
 class P2PSocketManager;
@@ -245,8 +245,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const url::Origin& origin,
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<mojom::CookieAccessObserver> observer) override;
-  void GetHasTrustTokensAnswerer(
-      mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
+  void GetTrustTokenQueryAnswerer(
+      mojo::PendingReceiver<mojom::TrustTokenQueryAnswerer> receiver,
       const url::Origin& top_frame_origin) override;
   void ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
                            base::OnceClosure done) override;
@@ -317,6 +317,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const net::X509Certificate* validated_certificate_chain,
       const net::SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps);
+  void SetCTLogListAlwaysTimelyForTesting() override;
   void SetSCTAuditingMode(mojom::SCTAuditingMode mode) override;
   void OnCTLogListUpdated(
       const std::vector<network::mojom::CTLogInfoPtr>& log_list,
@@ -740,10 +741,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<PendingTrustTokenStore> trust_token_store_;
 
   // Ordering: this must be after |trust_token_store_| since the
-  // HasTrustTokensAnswerers are provided non-owning pointers to
+  // TrustTokenQueryAnswerers are provided non-owning pointers to
   // |trust_token_store_|.
-  mojo::UniqueReceiverSet<mojom::HasTrustTokensAnswerer>
-      has_trust_tokens_answerers_;
+  mojo::UniqueReceiverSet<mojom::TrustTokenQueryAnswerer>
+      trust_token_query_answerers_;
 
   // Whether the user is blocking Trust Tokens, value provided by the
   // PrivacySandboxSettings service.
@@ -885,7 +886,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // manages the lifetiem of a WebBundleURLLoaderFactory object.
   WebBundleManager web_bundle_manager_;
 
-  NetworkServiceMemoryCache memory_cache_;
+  std::unique_ptr<NetworkServiceMemoryCache> memory_cache_;
 
   // Whether all external consumers are expected to provide a non-empty
   // NetworkIsolationKey with all requests. When set, enabled a variety of

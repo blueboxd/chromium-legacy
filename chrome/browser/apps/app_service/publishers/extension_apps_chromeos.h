@@ -22,9 +22,11 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -48,8 +50,6 @@ class PublisherHost;
 // hosted apps (including desktop PWAs), and browser extensions. In Chrome OS,
 // there are 2 ExtensionAppsChromeOs publishers for browser extensions and
 // Chrome apps(including hosted apps) separately.
-//
-// In the future, desktop PWAs will be migrated to a new system.
 //
 // See components/services/app_service/README.md.
 class ExtensionAppsChromeOs : public ExtensionAppsBase,
@@ -76,6 +76,13 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   void Initialize() override;
   void LaunchAppWithParamsImpl(AppLaunchParams&& params,
                                LaunchCallback callback) override;
+
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           IntentPtr intent,
+                           LaunchSource launch_source,
+                           WindowInfoPtr window_info,
+                           base::OnceCallback<void(bool)> callback) override;
 
   // apps::mojom::Publisher overrides.
   void LaunchAppWithIntent(const std::string& app_id,
@@ -176,9 +183,9 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
 
   void LaunchExtension(const std::string& app_id,
                        int32_t event_flags,
-                       apps::mojom::IntentPtr intent,
-                       apps::mojom::LaunchSource launch_source,
-                       apps::mojom::WindowInfoPtr window_info,
+                       IntentPtr intent,
+                       LaunchSource launch_source,
+                       WindowInfoPtr window_info,
                        LaunchAppWithIntentCallback callback);
 
   apps::InstanceRegistry* const instance_registry_;

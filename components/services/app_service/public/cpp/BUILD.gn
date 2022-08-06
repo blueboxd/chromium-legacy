@@ -280,11 +280,14 @@ source_set("test_support") {
   sources = [
     "intent_test_util.cc",
     "intent_test_util.h",
+    "preferred_apps_test_util.cc",
+    "preferred_apps_test_util.h",
   ]
 
   deps = [
     ":app_types",
     ":intents",
+    ":preferred_apps",
     "//components/services/app_service/public/mojom",
   ]
 }
@@ -321,9 +324,9 @@ source_set("unit_tests") {
   sources = [
     "app_capability_access_cache_unittest.cc",
     "app_capability_access_cache_wrapper_unittest.cc",
+    "app_launch_util_unittest.cc",
     "app_registry_cache_unittest.cc",
     "app_registry_cache_wrapper_unittest.cc",
-    "app_update_mojom_unittest.cc",
     "app_update_unittest.cc",
     "capability_access_update_unittest.cc",
     "icon_cache_unittest.cc",

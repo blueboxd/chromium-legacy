@@ -38,6 +38,7 @@
 #include "ui/color/color_id.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_utils.h"
@@ -62,6 +63,7 @@
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/message_center/views/relative_time_formatter.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -182,16 +184,18 @@ views::Builder<views::BoxLayoutView> CreateCollapsedSummaryBuilder(
       .SetBetweenChildSpacing(ash::kGroupedCollapsedSummaryLabelSpacing)
       .SetOrientation(views::BoxLayout::Orientation::kHorizontal)
       .SetVisible(false)
-      .AddChild(
-          views::Builder<views::Label>()
-              .SetText(notification.title())
-              .SetFontList(gfx::FontList({kGoogleSansFont}, gfx::Font::NORMAL,
-                                         message_center::kTitleFontSize,
-                                         gfx::Font::Weight::MEDIUM)))
+      .AddChild(views::Builder<views::Label>()
+                    .SetText(notification.title())
+                    .SetFontList(gfx::FontList(
+                        {kGoogleSansFont}, gfx::Font::NORMAL, kTitleLabelSize,
+                        gfx::Font::Weight::MEDIUM)))
       .AddChild(views::Builder<views::Label>()
                     .SetText(notification.message())
                     .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
-                    .SetTextStyle(views::style::STYLE_SECONDARY));
+                    .SetTextStyle(views::style::STYLE_SECONDARY)
+                    .SetFontList(gfx::FontList(
+                        {kGoogleSansFont}, gfx::Font::NORMAL, kMessageLabelSize,
+                        gfx::Font::Weight::MEDIUM)));
 }
 
 views::Builder<ash::AshNotificationView::GroupedNotificationsContainer>
@@ -285,7 +289,6 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
   title_view_->SetMultiLine(true);
   title_view_->SetAllowCharacterBreak(true);
   title_view_->SetMaxLines(kTitleLabelExpandedMaxLines);
-  title_view_->SetMaximumWidth(kNotificationInMessageCenterWidth);
 
   ConfigureLabelStyle(title_row_divider_, kTimestampInCollapsedViewSize,
                       /*is_color_primary=*/false);
@@ -902,15 +905,11 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   // are collapsed.
   bool use_expanded_padding = expanded || is_grouped_parent_view_;
 
-  bool is_single_expanded_notification =
-      !is_grouped_child_view_ && !is_grouped_parent_view_ && expanded;
-  header_row()->SetVisible(is_grouped_parent_view_ ||
-                           (is_single_expanded_notification));
+  header_row()->SetVisible(is_grouped_parent_view_ || expanded);
   header_row()->SetTimestampVisible(!is_grouped_parent_view_ || !expanded);
 
   if (title_row_) {
-    title_row_->UpdateVisibility(is_grouped_child_view_ ||
-                                 (IsExpandable() && !expanded));
+    title_row_->UpdateVisibility(IsExpandable() && !expanded);
     title_row_->title_view()->SetMaxLines(
         expanded ? kTitleLabelExpandedMaxLines : kTitleLabelCollapsedMaxLines);
     title_row_->title_view()->SetMaximumWidth(GetExpandedTitleLabelWidth());
@@ -992,7 +991,7 @@ void AshNotificationView::UpdateWithNotification(
   if (is_grouped_child_view_ && !is_nested())
     SetIsNested();
 
-  header_row()->SetVisible(!is_grouped_child_view_);
+  header_row()->SetIsInGroupChildNotification(is_grouped_child_view_);
   UpdateMessageLabelInExpandedState(notification);
 
   NotificationViewBase::UpdateWithNotification(notification);
@@ -1326,8 +1325,10 @@ void AshNotificationView::CreateOrUpdateSnoozeButton(
   if (snooze_button_) {
     DCHECK(snooze_button_spacer_);
     // Spacer and snooze button should be at the end of action buttons row.
-    action_buttons_row()->ReorderChildView(snooze_button_spacer_, -1);
-    action_buttons_row()->ReorderChildView(snooze_button_, -1);
+    action_buttons_row()->ReorderChildView(
+        snooze_button_spacer_, action_buttons_row()->children().size());
+    action_buttons_row()->ReorderChildView(
+        snooze_button_, action_buttons_row()->children().size());
     return;
   }
 
@@ -1409,7 +1410,8 @@ int AshNotificationView::GetExpandedTitleLabelWidth() {
 
   return notification_width - kNotificationViewPadding.width() -
          kAppIconViewSize - kMainRightViewChildPadding.width() -
-         kAppIconViewSize - kRightContentExpandedPadding.width() -
+         kAppIconViewSize - right_content()->width() -
+         kRightContentExpandedPadding.width() -
          kMessageLabelInExpandedStatePadding.width();
 }
 
@@ -1434,8 +1436,8 @@ void AshNotificationView::UpdateAppIconView(
       (is_grouped_child_view_ && !notification->icon().IsEmpty()))
     return;
 
-  SkColor icon_color = AshColorProvider::Get()->GetInvertedContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonLabelColor);
+  SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kInvertedButtonLabelColor);
   SkColor icon_background_color = CalculateIconAndButtonsColor(notification);
 
   // TODO(crbug.com/768748): figure out if this has a performance impact and
@@ -1520,8 +1522,8 @@ void AshNotificationView::AnimateResizeAfterRemoval(
 
   int group_container_previous_height =
       grouped_notifications_container_->height();
-  int removed_index =
-      grouped_notifications_container_->GetIndexOf(to_be_removed);
+  size_t removed_index =
+      grouped_notifications_container_->GetIndexOf(to_be_removed).value();
   LOG(ERROR) << "Removed after animation";
   grouped_notifications_container_->RemoveChildViewT(to_be_removed).reset();
 

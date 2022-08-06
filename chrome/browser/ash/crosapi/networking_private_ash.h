@@ -7,9 +7,9 @@
 
 #include "base/scoped_observation.h"
 #include "chromeos/ash/components/network/network_certificate_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -19,7 +19,7 @@ namespace crosapi {
 // The ash-chrome implementation of the NetworkingPrivate crosapi interface.
 class NetworkingPrivateAsh
     : public mojom::NetworkingPrivate,
-      public chromeos::NetworkStateHandlerObserver,
+      public ash::NetworkStateHandlerObserver,
       public chromeos::NetworkCertificateHandler::Observer {
  public:
   NetworkingPrivateAsh();
@@ -94,12 +94,11 @@ class NetworkingPrivateAsh
   // so that the behavior is consistent between networkingPrivate extensions
   // running in ash and lacros.
   void DeviceListChanged() override;
-  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
+  void DevicePropertiesUpdated(const ash::DeviceState* device) override;
   void NetworkListChanged() override;
-  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
-  void PortalStateChanged(
-      const chromeos::NetworkState* default_network,
-      chromeos::NetworkState::PortalState portal_state) override;
+  void NetworkPropertiesUpdated(const ash::NetworkState* network) override;
+  void PortalStateChanged(const ash::NetworkState* default_network,
+                          ash::NetworkState::PortalState portal_state) override;
 
   // NetworkCertificateHandler::Observer overrides:
   void OnCertificatesChanged() override;
@@ -111,7 +110,7 @@ class NetworkingPrivateAsh
   mojo::RemoteSet<mojom::NetworkingPrivateDelegateObserver> observers_;
   // We observe network state to forward its events to our Lacros observers.
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          ash::NetworkStateHandlerObserver>
       network_state_observation_{this};
   base::ScopedObservation<chromeos::NetworkCertificateHandler,
                           chromeos::NetworkCertificateHandler::Observer>

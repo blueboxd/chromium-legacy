@@ -26,9 +26,9 @@ extern const base::Feature kLensSearchOptimizations;
 // Enables a fix to properly handle transparent images in Lens Image Search
 extern const base::Feature kLensTransparentImagesFix;
 
-// Enables a fix for cursor pointer/crosshair state over overlay on Mac.
-// TODO(crbug/1266514): make default and remove feature once launched.
-extern const base::FeatureParam<bool> kRegionSearchMacCursorFix;
+// Enables Lens integration into the Chrome screenshot sharing feature by adding
+// a "Search Image" button.
+extern const base::Feature kLensSearchImageInScreenshotSharing;
 
 // Enables using `Google` as the visual search provider instead of `Google
 // Lens`.
@@ -40,6 +40,9 @@ extern const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText1;
 // Enables alternate option 2 for the Region Search context menu item text.
 extern const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2;
 
+// Enables alternate option 3 for the Region Search context menu item text.
+extern const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3;
+
 // Enables UKM logging for the Lens Region Search feature.
 extern const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch;
 
@@ -49,14 +52,28 @@ extern const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch;
 // Enables the side panel for Lens features on Chrome where supported.
 extern const base::FeatureParam<bool> kEnableSidePanelForLens;
 
+// Enables footer for the unified side panel
+extern const base::FeatureParam<bool> kEnableLensSidePanelFooter;
+
 // Enables Lens fullscreen search on Desktop platforms.
 extern const base::FeatureParam<bool> kEnableFullscreenSearch;
+
+// Enables using side panel in the Chrome Screenshot sharing feature integration
+// instead of a new tab.
+extern const base::FeatureParam<bool> kUseSidePanelForScreenshotSharing;
+
+// Forces the Chrome Screenshot sharing dialog bubble to stay open after the
+// user clicks the Search Image button.
+extern const base::FeatureParam<bool> kEnablePersistentBubble;
 
 // Returns whether to enable UKM logging for Lens Region Search feature.
 extern bool GetEnableUKMLoggingForRegionSearch();
 
 // Returns whether to enable UKM logging for LensStandalone feature.
 extern bool GetEnableUKMLoggingForImageSearch();
+
+// Returns whether to enable footer for lens in the unified side panel
+extern bool GetEnableLensSidePanelFooter();
 
 // Returns the max pixel width/height for the image to be sent to Lens via
 // region search. The images are sent at 1x as PNGs.
@@ -82,6 +99,10 @@ extern bool UseRegionSearchMenuItemAltText1();
 // menu item text.
 extern bool UseRegionSearchMenuItemAltText2();
 
+// Returns whether to use alternative option 3 for the Region Search context
+// menu item text.
+extern bool UseRegionSearchMenuItemAltText3();
+
 // Returns whether to use `Google` as the visual search provider for all
 // relevant Lens context menu strings.
 extern bool UseGoogleAsVisualSearchProvider();
@@ -91,6 +112,18 @@ extern bool IsLensSidePanelEnabled();
 
 // Returns whether to send images to Lens Standalone as PNG
 extern bool GetSendImagesAsPng();
+
+// Returns whether the Search Image button in the Chrome Screenshot Sharing
+// feature is enabled
+extern bool IsLensInScreenshotSharingEnabled();
+
+// Returns whether to use the Chrome Side Panel for the Lens integration in
+// Chrome Screenshot Sharing feature
+extern bool UseSidePanelForScreenshotSharing();
+
+// Returns whether the Chrome Screenshot Sharing Bubble disappears after the
+// user clicks the Search Image button
+extern bool EnablePersistentBubble();
 
 }  // namespace features
 }  // namespace lens

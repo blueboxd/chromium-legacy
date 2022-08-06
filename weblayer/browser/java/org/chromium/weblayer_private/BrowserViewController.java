@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.RemoteException;
@@ -188,9 +189,18 @@ public final class BrowserViewController
         });
         mContentViewRenderView.addView(mBottomSheetContainer);
 
+        Activity activity = ContextUtils.activityFromContext(context);
+        if (activity == null) {
+            // TODO(rayankans): Remove assumptions about Activity from BottomSheetController.
+            mBottomSheetController = null;
+            mPwaBottomSheetController = null;
+            mBottomSheetObserver = null;
+            return;
+        }
         mBottomSheetController = BottomSheetControllerFactory.createBottomSheetController(
-                () -> mScrim, (v) -> {}, ContextUtils.activityFromContext(context).getWindow(),
-                KeyboardVisibilityDelegate.getInstance(), () -> mBottomSheetContainer);
+                () -> mScrim, (v) -> {}, activity.getWindow(),
+                KeyboardVisibilityDelegate.getInstance(), () -> mBottomSheetContainer,
+                () -> mContentViewRenderView.getHeight());
         BottomSheetControllerFactory.attach(mWindowAndroid, mBottomSheetController);
 
         mPwaBottomSheetController = PwaBottomSheetControllerFactory.createPwaBottomSheetController(
@@ -234,9 +244,11 @@ public final class BrowserViewController
     }
 
     public void destroy() {
-        BottomSheetControllerFactory.detach(mBottomSheetController);
-        mBottomSheetController.removeObserver(mBottomSheetObserver);
-        PwaBottomSheetControllerFactory.detach(mPwaBottomSheetController);
+        if (mBottomSheetController != null) {
+            BottomSheetControllerFactory.detach(mBottomSheetController);
+            mBottomSheetController.removeObserver(mBottomSheetObserver);
+            PwaBottomSheetControllerFactory.detach(mPwaBottomSheetController);
+        }
         mWindowAndroid.setModalDialogManager(null);
         setActiveTab(null);
         if (mOnscreenContentProvider != null) mOnscreenContentProvider.destroy();

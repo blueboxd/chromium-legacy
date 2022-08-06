@@ -18,7 +18,7 @@ import 'chrome://resources/cr_components/chromeos/network/network_nameservers.m.
 import 'chrome://resources/cr_components/chromeos/network/network_property_list_mojo.m.js';
 import 'chrome://resources/cr_components/chromeos/network/network_siminfo.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
@@ -68,8 +68,12 @@ import {TetherConnectionDialogElement} from './tether_connection_dialog.js';
  */
 const SettingsInternetDetailPageElementBase = mixinBehaviors(
     [
-      NetworkListenerBehavior, CrPolicyNetworkBehaviorMojo, DeepLinkingBehavior,
-      RouteObserverBehavior, I18nBehavior, WebUIListenerBehavior
+      NetworkListenerBehavior,
+      CrPolicyNetworkBehaviorMojo,
+      DeepLinkingBehavior,
+      RouteObserverBehavior,
+      I18nBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -270,7 +274,7 @@ class SettingsInternetDetailPageElement extends
         value() {
           return loadTimeData.valueExists('showTechnologyBadge') &&
               loadTimeData.getBoolean('showTechnologyBadge');
-        }
+        },
       },
 
       /**
@@ -282,7 +286,7 @@ class SettingsInternetDetailPageElement extends
         value() {
           return loadTimeData.valueExists('showMeteredToggle') &&
               loadTimeData.getBoolean('showMeteredToggle');
-        }
+        },
       },
 
       /**
@@ -303,7 +307,7 @@ class SettingsInternetDetailPageElement extends
         value() {
           return loadTimeData.valueExists('trafficCountersEnabled') &&
               loadTimeData.getBoolean('trafficCountersEnabled');
-        }
+        },
       },
 
       /**
@@ -313,7 +317,7 @@ class SettingsInternetDetailPageElement extends
       disabled_: {
         type: Boolean,
         value: false,
-        computed: 'computeDisabled_(deviceState_.*)'
+        computed: 'computeDisabled_(deviceState_.*)',
       },
 
       /** @private */
@@ -852,8 +856,7 @@ class SettingsInternetDetailPageElement extends
       return;
     }
     recordSettingChange(
-        chromeos.settings.mojom.Setting.kWifiHidden,
-        {boolValue: !!this.hiddenPref_.value});
+        Setting.kWifiHidden, {boolValue: !!this.hiddenPref_.value});
     const config = this.getDefaultConfigProperties_();
     config.typeConfig.wifi.hiddenSsid = this.hiddenPref_.value ?
         chromeos.networkConfig.mojom.HiddenSsidMode.kEnabled :
@@ -1684,7 +1687,8 @@ class SettingsInternetDetailPageElement extends
     const networkConnectEvent = new CustomEvent('network-connect', {
       bubbles: true,
       composed: true,
-      detail: {networkState: networkState, bypassConnectionDialog: bypassDialog}
+      detail:
+          {networkState: networkState, bypassConnectionDialog: bypassDialog},
     });
     this.dispatchEvent(networkConnectEvent);
     recordSettingChange();
@@ -1777,7 +1781,7 @@ class SettingsInternetDetailPageElement extends
 
     if (this.managedProperties_.type ===
         chromeos.networkConfig.mojom.NetworkType.kWiFi) {
-      recordSettingChange(chromeos.settings.mojom.Setting.kForgetWifiNetwork);
+      recordSettingChange(Setting.kForgetWifiNetwork);
     } else {
       recordSettingChange();
     }
@@ -1804,7 +1808,7 @@ class SettingsInternetDetailPageElement extends
       detail: {
         guid: this.guid,
         type: OncMojo.getNetworkTypeString(this.managedProperties_.type),
-        name: OncMojo.getNetworkName(this.managedProperties_)
+        name: OncMojo.getNetworkName(this.managedProperties_),
       },
     });
     this.dispatchEvent(showConfigEvent);

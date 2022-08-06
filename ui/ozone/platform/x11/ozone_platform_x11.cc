@@ -20,8 +20,6 @@
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
-#include "ui/base/ime/linux/linux_input_method_context_factory.h"
-#include "ui/base/linux/linux_ui_delegate.h"
 #include "ui/base/x/x11_cursor_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -32,6 +30,7 @@
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
+#include "ui/linux/linux_ui_delegate.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 #include "ui/ozone/platform/x11/linux_ui_delegate_x11.h"
@@ -131,18 +130,12 @@ class OzonePlatformX11 : public OzonePlatform,
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate,
+      ImeKeyEventDispatcher* ime_key_event_dispatcher,
       gfx::AcceleratedWidget) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    return std::make_unique<InputMethodAsh>(delegate);
+    return std::make_unique<InputMethodAsh>(ime_key_event_dispatcher);
 #else
-    // This method is used by upper layer components (e.g: GtkUi) to determine
-    // if the LinuxInputMethodContextFactory instance is provided by the Ozone
-    // platform implementation, so we must consider the case that it is still
-    // not set at this point.
-    if (!ui::LinuxInputMethodContextFactory::instance())
-      return nullptr;
-    return std::make_unique<InputMethodAuraLinux>(delegate);
+    return std::make_unique<InputMethodAuraLinux>(ime_key_event_dispatcher);
 #endif
   }
 

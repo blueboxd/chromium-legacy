@@ -11,7 +11,7 @@
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/vm_applications/apps.pb.h"
+#include "chromeos/ash/components/dbus/vm_applications/apps.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -194,7 +194,7 @@ TEST_F(GuestOsMimeTypesServiceTest, Migrate) {
   PrefService* prefs = profile()->GetPrefs();
   prefs->Set("crostini.mime_types", std::move(old));
   GuestOsMimeTypesService::MigrateVerboseMimeTypePrefs(prefs);
-  EXPECT_EQ(expected, prefs->Get("crostini.mime_types")->Clone());
+  EXPECT_EQ(expected, prefs->GetValueDict("crostini.mime_types"));
 }
 
 }  // namespace guest_os

@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/background_script_executor.h"
 #include "extensions/browser/disable_reason.h"
@@ -506,6 +507,19 @@ IN_PROC_BROWSER_TEST_F(PersistentScriptingAPITest,
   listener_->Reply(
       testing::UnitTest::GetInstance()->current_test_info()->name());
   EXPECT_TRUE(result_catcher_.GetNextResult()) << result_catcher_.message();
+}
+
+class ScriptingAPIPrerenderingTest : public ScriptingAPITest {
+ protected:
+  ScriptingAPIPrerenderingTest() = default;
+  ~ScriptingAPIPrerenderingTest() override = default;
+
+ private:
+  content::test::ScopedPrerenderFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ScriptingAPIPrerenderingTest, Basic) {
+  ASSERT_TRUE(RunExtensionTest("scripting/prerendering")) << message_;
 }
 
 }  // namespace extensions

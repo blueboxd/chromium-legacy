@@ -277,7 +277,8 @@ function onProcessCpu(port) {
       return;
     }
 
-    let browserProcessCpu, gpuProcessCpu;
+    let browserProcessCpu;
+    let gpuProcessCpu;
     for (const pid in processes) {
       const process = processes[pid];
       if (process.type === 'browser') {
@@ -297,7 +298,7 @@ function onProcessCpu(port) {
       'tabNetworkUsage': tabProcess.network,
       'tabPrivateMemory': tabProcess.privateMemory,
       'tabJsMemoryAllocated': tabProcess.jsMemoryAllocated,
-      'tabJsMemoryUsed': tabProcess.jsMemoryUsed
+      'tabJsMemoryUsed': tabProcess.jsMemoryUsed,
     });
   }
 

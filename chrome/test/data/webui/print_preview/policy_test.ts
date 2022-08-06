@@ -32,16 +32,18 @@ const policy_tests = {
     DuplexPolicy: 'duplex policy',
     PinPolicy: 'pin policy',
     PrintPdfAsImageAvailability: 'print as image available for PDF policy',
-    PrintPdfAsImageDefault: 'print as image option default for PDF policy'
+    PrintPdfAsImageDefault: 'print as image option default for PDF policy',
   },
 };
 
 Object.assign(window, {policy_tests: policy_tests});
 
-type AllowedDefaultModePolicySetup = {
-  settingName: string,
-  serializedSettingName?: string, allowedMode: any, defaultMode: any,
-};
+interface AllowedDefaultModePolicySetup {
+  settingName: string;
+  serializedSettingName?: string;
+  allowedMode: any;
+  defaultMode: any;
+}
 
 class PolicyTestPluralStringProxy extends TestPluralStringProxy {
   override text: string = '';
@@ -83,7 +85,7 @@ suite(policy_tests.suiteName, function() {
     return Promise
         .all([
           nativeLayer.whenCalled('getInitialSettings'),
-          nativeLayer.whenCalled('getPrinterCapabilities')
+          nativeLayer.whenCalled('getPrinterCapabilities'),
         ])
         .then(function() {
           flush();
@@ -199,14 +201,14 @@ suite(policy_tests.suiteName, function() {
         defaultMode: false,
         expectedDisabled: false,
         expectedChecked: false,
-      }
+      },
     ];
     for (const subtestParams of tests) {
       await doAllowedDefaultModePoliciesSetup([{
         settingName: 'headerFooter',
         serializedSettingName: 'isHeaderFooterEnabled',
         allowedMode: subtestParams.allowedMode,
-        defaultMode: subtestParams.defaultMode
+        defaultMode: subtestParams.defaultMode,
       }]);
       toggleMoreSettings();
       const checkbox = getCheckbox('headerFooter');
@@ -254,14 +256,14 @@ suite(policy_tests.suiteName, function() {
         defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
         expectedDisabled: false,
         expectedChecked: false,
-      }
+      },
     ];
     for (const subtestParams of tests) {
       await doAllowedDefaultModePoliciesSetup([{
         settingName: 'cssBackground',
         serializedSettingName: 'isCssBackgroundEnabled',
         allowedMode: subtestParams.allowedMode,
-        defaultMode: subtestParams.defaultMode
+        defaultMode: subtestParams.defaultMode,
       }]);
       toggleMoreSettings();
       const checkbox = getCheckbox('cssBackground');
@@ -287,14 +289,14 @@ suite(policy_tests.suiteName, function() {
         // Change default paper size setting.
         defaultMode: {width: 215900, height: 215900},
         expectedName: 'CUSTOM',
-      }
+      },
     ];
     for (const subtestParams of tests) {
       await doAllowedDefaultModePoliciesSetup([{
         settingName: 'mediaSize',
         serializedSettingName: undefined,
         allowedMode: undefined,
-        defaultMode: subtestParams.defaultMode
+        defaultMode: subtestParams.defaultMode,
       }]);
       toggleMoreSettings();
       const mediaSettingsSelect =
@@ -353,7 +355,7 @@ suite(policy_tests.suiteName, function() {
         expectedDisabled: true,
         expectedHidden: false,
         expectedNonEmptyErrorMessage: true,
-      }
+      },
     ];
     for (const subtestParams of tests) {
       await doValuePolicySetup('sheets', subtestParams.maxSheets);
@@ -446,7 +448,7 @@ suite(policy_tests.suiteName, function() {
         settingName: 'color',
         serializedSettingName: 'isColorEnabled',
         allowedMode: subtestParams.allowedMode,
-        defaultMode: subtestParams.defaultMode
+        defaultMode: subtestParams.defaultMode,
       }]);
       const colorSettingsSelect =
           page.shadowRoot!.querySelector('print-preview-sidebar')!.shadowRoot!
@@ -575,7 +577,7 @@ suite(policy_tests.suiteName, function() {
         settingName: 'duplex',
         serializedSettingName: 'isDuplexEnabled',
         allowedMode: subtestParams.allowedMode,
-        defaultMode: subtestParams.defaultMode
+        defaultMode: subtestParams.defaultMode,
       }]);
       toggleMoreSettings();
       const duplexSettingsSection =
@@ -758,7 +760,7 @@ suite(policy_tests.suiteName, function() {
             settingName: 'printPdfAsImageAvailability',
             serializedSettingName: 'isRasterizeEnabled',
             allowedMode: subtestParams.allowedMode,
-            defaultMode: undefined
+            defaultMode: undefined,
           }],
           /*isPdf=*/ subtestParams.isPdf);
       toggleMoreSettings();
@@ -836,7 +838,7 @@ suite(policy_tests.suiteName, function() {
               serializedSettingName: undefined,
               allowedMode: undefined,
               defaultMode: subtestParams.selectedDefaultMode,
-            }
+            },
           ],
           /*isPdf=*/ true);
       toggleMoreSettings();

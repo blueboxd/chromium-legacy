@@ -8,7 +8,6 @@ import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 import {ListItem} from 'chrome://resources/js/cr/ui/list_item.m.js';
 import {ListSelectionModel} from 'chrome://resources/js/cr/ui/list_selection_model.m.js';
 import {ListSingleSelectionModel} from 'chrome://resources/js/cr/ui/list_single_selection_model.m.js';
-import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 
 import {DialogType} from '../../../common/js/dialog_type.js';
 import {util} from '../../../common/js/util.js';
@@ -81,7 +80,7 @@ export class ListContainer {
      * @const
      */
     this.spinner =
-        queryRequiredElement('files-spinner.loading-indicator', element);
+        util.queryRequiredElement('files-spinner.loading-indicator', element);
 
     /**
      * @type {FileListModel}
@@ -382,7 +381,7 @@ export class ListContainer {
  * @const
  */
 ListContainer.EventType = {
-  TEXT_SEARCH: 'textsearch'
+  TEXT_SEARCH: 'textsearch',
 };
 
 /**
@@ -392,7 +391,7 @@ ListContainer.EventType = {
 ListContainer.ListType = {
   UNINITIALIZED: 'uninitialized',
   DETAIL: 'detail',
-  THUMBNAIL: 'thumb'
+  THUMBNAIL: 'thumb',
 };
 
 /**

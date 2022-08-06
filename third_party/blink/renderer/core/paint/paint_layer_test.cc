@@ -71,53 +71,6 @@ TEST_P(PaintLayerTest, MAYBE_RootLayerScrollBounds) {
             plsa->VisibleContentRect(kIncludeScrollbars));
 }
 
-TEST_P(PaintLayerTest, SticksToScrollerStickyPosition) {
-  SetBodyInnerHTML(R"HTML(
-    <div style='transform: translateZ(0)'>
-      <div id='target' style='position: sticky; top: 0;'></div>
-    </div>
-    <div style='width: 10px; height: 1000px'></div>
-  )HTML");
-
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-  EXPECT_TRUE(layer->SticksToScroller());
-}
-
-TEST_P(PaintLayerTest, SticksToScrollerNoAnchor) {
-  SetBodyInnerHTML(R"HTML(
-    <div style='transform: translateZ(0)'>
-      <div id='target' style='position: sticky'></div>
-    </div>
-    <div style='width: 10px; height: 1000px'></div>
-  )HTML");
-
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-  EXPECT_FALSE(layer->SticksToScroller());
-}
-
-TEST_P(PaintLayerTest, SticksToScrollerStickyPositionNoScroll) {
-  SetBodyInnerHTML(R"HTML(
-    <div style='transform: translateZ(0)'>
-      <div id='target' style='position: sticky; top: 0;'></div>
-    </div>
-  )HTML");
-
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-  EXPECT_TRUE(layer->SticksToScroller());
-}
-
-TEST_P(PaintLayerTest, SticksToScrollerStickyPositionInsideScroller) {
-  SetBodyInnerHTML(R"HTML(
-    <div style='overflow:scroll; width: 100px; height: 100px;'>
-      <div id='target' style='position: sticky; top: 0;'></div>
-      <div style='width: 50px; height: 1000px;'></div>
-    </div>
-  )HTML");
-
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-  EXPECT_TRUE(layer->SticksToScroller());
-}
-
 TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   SetBodyInnerHTML(R"HTML(
     <div id='scroll' style='width: 100px; height: 100px; overflow: scroll;
@@ -205,26 +158,6 @@ TEST_P(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
   EXPECT_TRUE(parent->HasVisibleSelfPaintingDescendant());
 }
 
-TEST_P(PaintLayerTest, HasStickyPositionDescendant) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='isolation: isolate'>
-      <div id='child' style='position: sticky'>
-      </div>
-    </div>
-  )HTML");
-  PaintLayer* parent = GetPaintLayerByElementId("parent");
-  PaintLayer* child = GetPaintLayerByElementId("child");
-  EXPECT_TRUE(parent->HasStickyPositionDescendant());
-  EXPECT_FALSE(child->HasStickyPositionDescendant());
-
-  GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
-                                                      "position: relative");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(parent->HasStickyPositionDescendant());
-  EXPECT_FALSE(child->HasStickyPositionDescendant());
-}
-
 TEST_P(PaintLayerTest, HasFixedPositionDescendant) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='isolation: isolate'>
@@ -243,48 +176,6 @@ TEST_P(PaintLayerTest, HasFixedPositionDescendant) {
 
   EXPECT_FALSE(parent->HasFixedPositionDescendant());
   EXPECT_FALSE(child->HasFixedPositionDescendant());
-}
-
-TEST_P(PaintLayerTest, HasFixedAndStickyPositionDescendant) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='isolation: isolate'>
-      <div id='child1' style='position: sticky'>
-      </div>
-      <div id='child2' style='position: fixed'>
-      </div>
-    </div>
-  )HTML");
-  PaintLayer* parent = GetPaintLayerByElementId("parent");
-  PaintLayer* child1 = GetPaintLayerByElementId("child1");
-  PaintLayer* child2 = GetPaintLayerByElementId("child2");
-  EXPECT_TRUE(parent->HasFixedPositionDescendant());
-  EXPECT_FALSE(child1->HasFixedPositionDescendant());
-  EXPECT_FALSE(child2->HasFixedPositionDescendant());
-  EXPECT_TRUE(parent->HasStickyPositionDescendant());
-  EXPECT_FALSE(child1->HasStickyPositionDescendant());
-  EXPECT_FALSE(child2->HasStickyPositionDescendant());
-
-  GetDocument().getElementById("child1")->setAttribute(html_names::kStyleAttr,
-                                                       "position: relative");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_TRUE(parent->HasFixedPositionDescendant());
-  EXPECT_FALSE(child1->HasFixedPositionDescendant());
-  EXPECT_FALSE(child2->HasFixedPositionDescendant());
-  EXPECT_FALSE(parent->HasStickyPositionDescendant());
-  EXPECT_FALSE(child1->HasStickyPositionDescendant());
-  EXPECT_FALSE(child2->HasStickyPositionDescendant());
-
-  GetDocument().getElementById("child2")->setAttribute(html_names::kStyleAttr,
-                                                       "position: relative");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(parent->HasFixedPositionDescendant());
-  EXPECT_FALSE(child1->HasFixedPositionDescendant());
-  EXPECT_FALSE(child2->HasFixedPositionDescendant());
-  EXPECT_FALSE(parent->HasStickyPositionDescendant());
-  EXPECT_FALSE(child1->HasStickyPositionDescendant());
-  EXPECT_FALSE(child2->HasStickyPositionDescendant());
 }
 
 TEST_P(PaintLayerTest, HasNonContainedAbsolutePositionDescendant) {
@@ -2340,69 +2231,6 @@ TEST_P(PaintLayerTest, HitTestOverlayResizer) {
   }
 }
 
-TEST_P(PaintLayerTest, PaintLayerCommonAncestor) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      div {
-        position: relative;
-      }
-    </style>
-    <div id='wrapper'>
-      <div id='target1'>
-        <div id='target1x1'></div>
-      </div>
-      <div id='target2'></div>
-      <div>
-        <div id='target3'></div>
-      </div>
-    </div>
-  )HTML");
-
-  PaintLayer* wrapper = GetPaintLayerByElementId("wrapper");
-  PaintLayer* target1 = GetPaintLayerByElementId("target1");
-  PaintLayer* target1x1 = GetPaintLayerByElementId("target1x1");
-  PaintLayer* target2 = GetPaintLayerByElementId("target2");
-  PaintLayer* target3 = GetPaintLayerByElementId("target3");
-
-  EXPECT_EQ(target1->CommonAncestor(target1), target1);
-  EXPECT_EQ(target1->CommonAncestor(target1x1), target1);
-  EXPECT_EQ(target1->CommonAncestor(target2), wrapper);
-  EXPECT_EQ(target1->CommonAncestor(target3), wrapper);
-
-  EXPECT_EQ(target1x1->CommonAncestor(target1), target1);
-  EXPECT_EQ(target1x1->CommonAncestor(target1x1), target1x1);
-  EXPECT_EQ(target1x1->CommonAncestor(target2), wrapper);
-  EXPECT_EQ(target1x1->CommonAncestor(target3), wrapper);
-
-  EXPECT_EQ(target2->CommonAncestor(target1), wrapper);
-  EXPECT_EQ(target2->CommonAncestor(target1x1), wrapper);
-  EXPECT_EQ(target2->CommonAncestor(target2), target2);
-  EXPECT_EQ(target2->CommonAncestor(target3), wrapper);
-
-  EXPECT_EQ(target3->CommonAncestor(target1), wrapper);
-  EXPECT_EQ(target3->CommonAncestor(target1x1), wrapper);
-  EXPECT_EQ(target3->CommonAncestor(target2), wrapper);
-  EXPECT_EQ(target3->CommonAncestor(target3), target3);
-}
-
-TEST_P(PaintLayerTest, PaintLayerCommonAncestorBody) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      body, div {
-        position: relative;
-      }
-    </style>
-    <div id='target1'></div>
-    <div id='target2'></div>
-  )HTML");
-
-  PaintLayer* target1 = GetPaintLayerByElementId("target1");
-  PaintLayer* target2 = GetPaintLayerByElementId("target2");
-
-  EXPECT_EQ(target1->CommonAncestor(target2)->GetLayoutObject(),
-            GetDocument().body()->GetLayoutObject());
-}
-
 TEST_P(PaintLayerTest, InlineWithBackdropFilterHasPaintLayer) {
   SetBodyInnerHTML(
       "<map id='target' style='backdrop-filter: invert(1);'></map>");
@@ -2491,6 +2319,269 @@ TEST_P(PaintLayerTest, HitTestLayerWith3DDescendantCrash) {
   HitTestResult result(request, location);
   // This should not crash.
   target->HitTest(location, result, PhysicalRect(0, 0, 800, 600));
+}
+
+#define TEST_SCROLL_CONTAINER(name, expected_scroll_container,           \
+                              expected_is_fixed_to_view)                 \
+  do {                                                                   \
+    auto* layer = GetPaintLayerByElementId(name);                        \
+    bool is_fixed_to_view = false;                                       \
+    EXPECT_EQ(expected_scroll_container,                                 \
+              layer->ContainingScrollContainerLayer(&is_fixed_to_view)); \
+    EXPECT_EQ(expected_is_fixed_to_view, is_fixed_to_view);              \
+  } while (false)
+
+TEST_P(PaintLayerTest, ScrollContainerLayerRootScroller) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="sticky" style="position: sticky"></div>
+    <div id="absolute" style="position: absolute"></div>
+    <div id="fixed" style="position: fixed">
+      <div id="sticky-under-fixed" style="position: sticky"></div>
+      <div id="absolute-under-fixed" style="position: absolute"></div>
+      <div id="fixed-under-fixed" style="position: fixed">
+        <div id="sticky-under-nested-fixed" style="position: sticky"></div>
+        <div id="absolute-under-nested-fixed" style="position: absolute"></div>
+        <div id="fixed-under-nested-fixed" style="position: fixed"></div>
+        <div id="transform-under-nested-fixed" style="transform: rotate(1deg)">
+        </div>
+      </div>
+      <div id="transform-under-fixed" style="transform: rotate(1deg)"></div>
+    </div>
+    <div id="transform" style="transform: rotate(1deg)">
+      <div id="sticky-under-transform" style="position: sticky"></div>
+      <div id="absolute-under-transform" style="position: absolute"></div>
+      <div id="fixed-under-transform" style="position: fixed"></div>
+      <div id="transform-under-transform" style="transform: rotate(1deg)"></div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  bool is_fixed_to_view = false;
+  EXPECT_EQ(nullptr,
+            view_layer->ContainingScrollContainerLayer(&is_fixed_to_view));
+  EXPECT_TRUE(is_fixed_to_view);
+
+  TEST_SCROLL_CONTAINER("sticky", view_layer, false);
+  TEST_SCROLL_CONTAINER("absolute", view_layer, false);
+  TEST_SCROLL_CONTAINER("fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform", view_layer, false);
+
+  TEST_SCROLL_CONTAINER("sticky-under-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("absolute-under-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("fixed-under-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform-under-fixed", view_layer, true);
+
+  TEST_SCROLL_CONTAINER("sticky-under-nested-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("absolute-under-nested-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("fixed-under-nested-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform-under-nested-fixed", view_layer, true);
+
+  TEST_SCROLL_CONTAINER("sticky-under-transform", view_layer, false);
+  TEST_SCROLL_CONTAINER("absolute-under-transform", view_layer, false);
+  TEST_SCROLL_CONTAINER("fixed-under-transform", view_layer, false);
+  TEST_SCROLL_CONTAINER("transform-under-transform", view_layer, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerRelativeScroller) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="width: 100px; height: 100px; overflow: scroll;
+                              position: relative">
+      <div id="sticky" style="position: sticky">
+        <div id="sticky-under-sticky" style="position: sticky"></div>
+        <div id="absolute-under-sticky" style="position: absolute"></div>
+        <div id="fixed-under-sticky" style="position: fixed"></div>
+        <div id="transform-under-sticky" style="transform: rotate(1deg)"></div>
+      </div>
+      <div id="absolute" style="position: absolute">
+        <div id="sticky-under-absolute" style="position: sticky"></div>
+        <div id="absolute-under-absolute" style="position: absolute"></div>
+        <div id="fixed-under-absolute" style="position: fixed"></div>
+        <div id="transform-under-absolute" style="transform: rotate(1deg)">
+        </div>
+      </div>
+      <div id="fixed" style="position: fixed">
+        <div id="sticky-under-fixed" style="position: sticky"></div>
+        <div id="absolute-under-fixed" style="position: absolute"></div>
+        <div id="fixed-under-fixed" style="position: fixed"></div>
+        <div id="transform-under-fixed" style="transform: rotate(1deg)"></div>
+      </div>
+      <div id="transform" style="transform: rotate(1deg)">
+        <div id="sticky-under-transform" style="position: sticky"></div>
+        <div id="absolute-under-transform" style="position: absolute"></div>
+        <div id="fixed-under-transform" style="position: fixed"></div>
+        <div id="transform-under-transform" style="transform: rotate(1deg)">
+        </div>
+      </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  // scroller has relative position so contains absolute but not fixed.
+  auto* scroller = GetPaintLayerByElementId("scroller");
+  ASSERT_TRUE(scroller->GetLayoutObject().CanContainAbsolutePositionObjects());
+  ASSERT_FALSE(scroller->GetLayoutObject().CanContainFixedPositionObjects());
+  TEST_SCROLL_CONTAINER("scroller", view_layer, false);
+
+  TEST_SCROLL_CONTAINER("sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("sticky-under-sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute-under-sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("fixed-under-sticky", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform-under-sticky", scroller, false);
+
+  TEST_SCROLL_CONTAINER("absolute", scroller, false);
+  TEST_SCROLL_CONTAINER("sticky-under-absolute", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute-under-absolute", scroller, false);
+  TEST_SCROLL_CONTAINER("fixed-under-absolute", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform-under-absolute", scroller, false);
+
+  TEST_SCROLL_CONTAINER("fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("sticky-under-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("absolute-under-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("fixed-under-fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform-under-fixed", view_layer, true);
+
+  TEST_SCROLL_CONTAINER("transform", scroller, false);
+  TEST_SCROLL_CONTAINER("sticky-under-transform", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute-under-transform", scroller, false);
+  TEST_SCROLL_CONTAINER("fixed-under-transform", scroller, false);
+  TEST_SCROLL_CONTAINER("transform-under-transform", scroller, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerNestedScroller) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller1" style="width: 100px; height: 100px; overflow: scroll;
+                               position: relative">
+      <div id="scroller2" style="width: 100px; height: 100px; overflow: scroll">
+        <div id="sticky" style="position: sticky"></div>
+        <div id="absolute" style="position: absolute"></div>
+        <div id="fixed" style="position: fixed"></div>
+        <div id="transform" style="transform: rotate(1deg"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  // scroller1 has relative position so contains absolute but not fixed.
+  // scroller2 is static position so contains neither absolute or fixed.
+  auto* scroller1 = GetPaintLayerByElementId("scroller1");
+  auto* scroller2 = GetPaintLayerByElementId("scroller2");
+  ASSERT_FALSE(
+      scroller2->GetLayoutObject().CanContainAbsolutePositionObjects());
+  ASSERT_FALSE(scroller2->GetLayoutObject().CanContainFixedPositionObjects());
+  TEST_SCROLL_CONTAINER("scroller2", scroller1, false);
+
+  TEST_SCROLL_CONTAINER("sticky", scroller2, false);
+  TEST_SCROLL_CONTAINER("absolute", scroller1, false);
+  TEST_SCROLL_CONTAINER("fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform", scroller2, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerScrollerUnderRealFixed) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="position: fixed">
+      <div id="scroller" style="width: 100px; height: 100px; overflow: scroll">
+        <div id="sticky" style="position: sticky"></div>
+        <div id="absolute" style="position: absolute"></div>
+        <div id="fixed" style="position: fixed"></div>
+        <div id="transform" style="transform: rotate(1deg"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  // scroller is static_position, under real position:fixed.
+  auto* scroller = GetPaintLayerByElementId("scroller");
+  TEST_SCROLL_CONTAINER("scroller", view_layer, true);
+  TEST_SCROLL_CONTAINER("sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute", view_layer, true);
+  TEST_SCROLL_CONTAINER("fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform", scroller, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerScrollerUnderFakeFixed) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="transform: rotate(1deg)">
+      <div style="position: fixed">
+        <div id="scroller"
+             style="width: 100px; height: 100px; overflow: scroll">
+          <div id="sticky" style="position: sticky"></div>
+          <div id="absolute" style="position: absolute"></div>
+          <div id="fixed" style="position: fixed"></div>
+          <div id="transform" style="transform: rotate(1deg"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  // scroller is static position, under fake position:fixed.
+  auto* scroller = GetPaintLayerByElementId("scroller");
+  TEST_SCROLL_CONTAINER("scroller", view_layer, false);
+  TEST_SCROLL_CONTAINER("sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute", view_layer, false);
+  TEST_SCROLL_CONTAINER("fixed", view_layer, false);
+  TEST_SCROLL_CONTAINER("transform", scroller, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerFixedScroller) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller"
+         style="position: fixed; width: 100px; height: 100px; overflow: scroll">
+      <div id="sticky" style="position: sticky"></div>
+      <div id="absolute" style="position: absolute"></div>
+      <div id="fixed" style="position: fixed"></div>
+      <div id="transform" style="transform: rotate(1deg"></div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  // scroller itself has real fixed position.
+  auto* scroller = GetPaintLayerByElementId("scroller");
+  TEST_SCROLL_CONTAINER("scroller", view_layer, true);
+  TEST_SCROLL_CONTAINER("sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute", scroller, false);
+  TEST_SCROLL_CONTAINER("fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform", scroller, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerScrollerUnderTransformAndFixed) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="transform: rotate(1deg); position: fixed">
+      <div id="scroller" style="width: 100px; height: 100px; overflow: scroll">
+        <div id="sticky" style="position: sticky"></div>
+        <div id="absolute" style="position: absolute"></div>
+        <div id="fixed" style="position: fixed"></div>
+        <div id="transform" style="transform: rotate(1deg"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  auto* scroller = GetPaintLayerByElementId("scroller");
+  TEST_SCROLL_CONTAINER("scroller", view_layer, true);
+  TEST_SCROLL_CONTAINER("sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute", view_layer, true);
+  TEST_SCROLL_CONTAINER("fixed", view_layer, true);
+  TEST_SCROLL_CONTAINER("transform", scroller, false);
+}
+
+TEST_P(PaintLayerTest, ScrollContainerLayerTransformScroller) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="transform: rotate(1deg);
+                              width: 100px; height: 100px; overflow: scroll">
+      <div id="sticky" style="position: sticky"></div>
+      <div id="absolute" style="position: absolute"></div>
+      <div id="fixed" style="position: fixed"></div>
+      <div id="transform" style="transform: rotate(1deg"></div>
+    </div>
+  )HTML");
+
+  auto* view_layer = GetLayoutView().Layer();
+  auto* scroller = GetPaintLayerByElementId("scroller");
+  TEST_SCROLL_CONTAINER("scroller", view_layer, false);
+  TEST_SCROLL_CONTAINER("sticky", scroller, false);
+  TEST_SCROLL_CONTAINER("absolute", scroller, false);
+  TEST_SCROLL_CONTAINER("fixed", scroller, false);
+  TEST_SCROLL_CONTAINER("transform", scroller, false);
 }
 
 }  // namespace blink

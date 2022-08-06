@@ -63,7 +63,7 @@ using signin_metrics::PromoAction;
 namespace {
 
 // The size of the symbol image.
-NSInteger kSymbolAddAccountPointSize = 20;
+const CGFloat kSymbolAddAccountPointSize = 20;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierAccounts = kSectionIdentifierEnumZero,
@@ -615,31 +615,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   };
   self.signoutCoordinator.delegate = self;
   [self.signoutCoordinator start];
-}
-
-- (void)handleSignOutWithForceClearData:(BOOL)forceClearData {
-  if (!_browser)
-    return;
-
-  // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
-  // the coordinator has been confirmed.
-  DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
-  self.removeOrMyGoogleChooserAlertCoordinator = nil;
-
-  AuthenticationService* authService = [self authService];
-  if (authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
-    _authenticationOperationInProgress = YES;
-    [self preventUserInteraction];
-    __weak AccountsTableViewController* weakSelf = self;
-    authService->SignOut(
-        signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, forceClearData, ^{
-          // Metrics logging must occur before dismissing the currently
-          // presented view controller from `handleSignoutDidFinish`.
-          [weakSelf logSignoutMetricsWithForceClearData:forceClearData];
-          [weakSelf allowUserInteraction];
-          [weakSelf handleAuthenticationOperationDidFinish];
-        });
-  }
 }
 
 // Logs the UMA metrics to record the data retention option selected by the user

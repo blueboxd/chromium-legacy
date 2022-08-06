@@ -50,6 +50,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/focus/focus_manager.h"
 
 namespace ash {
 
@@ -149,6 +150,18 @@ class DotView : public views::View {
     SchedulePaint();
   }
 };
+
+// Returns whether the `index` is considered on the left edge of a grid with
+// `cols` columns.
+bool IsIndexOnLeftEdge(GridIndex index, int cols) {
+  return (index.slot % cols) == 0;
+}
+
+// Returns whether the `index` is considered on the right edge of a grid with
+// `cols` columns.
+bool IsIndexOnRightEdge(GridIndex index, int cols) {
+  return ((index.slot + 1) % cols) == 0;
+}
 
 }  // namespace
 
@@ -341,14 +354,12 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
                             false /*animate*/);
   }
 
-  if (!is_folder_) {
-    notification_indicator_ =
-        AddChildView(std::make_unique<AppNotificationIndicatorView>(
-            item->notification_badge_color()));
-    notification_indicator_->SetPaintToLayer();
-    notification_indicator_->layer()->SetFillsBoundsOpaquely(false);
-    notification_indicator_->SetVisible(item->has_notification_badge());
-  }
+  notification_indicator_ =
+      AddChildView(std::make_unique<AppNotificationIndicatorView>(
+          item->GetNotificationBadgeColor()));
+  notification_indicator_->SetPaintToLayer();
+  notification_indicator_->layer()->SetFillsBoundsOpaquely(false);
+  notification_indicator_->SetVisible(item->has_notification_badge());
 
   title_ = AddChildView(std::move(title));
 
@@ -697,6 +708,13 @@ void AppListItemView::OnContextMenuModelReceived(
 
   menu_show_initiated_from_key_ = source_type == ui::MENU_SOURCE_KEYBOARD;
 
+  // Clear the existing focus in other elements to prevent having a focus
+  // indicator on other non-selected views.
+  if (GetFocusManager()->GetFocusedView()) {
+    GetFocusManager()->ClearFocus();
+    focus_removed_by_context_menu_ = true;
+  }
+
   if (!grid_delegate_->IsSelectedView(this))
     grid_delegate_->ClearSelectedView();
 
@@ -878,8 +896,7 @@ void AppListItemView::Layout() {
         kNewInstallDotSize, kNewInstallDotSize);
   }
 
-  if (notification_indicator_)
-    notification_indicator_->SetBoundsRect(icon_bounds);
+  notification_indicator_->SetBoundsRect(icon_bounds);
 }
 
 gfx::Size AppListItemView::CalculatePreferredSize() const {
@@ -1018,8 +1035,10 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
 
 void AppListItemView::OnThemeChanged() {
   views::Button::OnThemeChanged();
-  if (item_weak_)
+  if (item_weak_) {
     item_weak_->RequestFolderIconUpdate();
+    notification_indicator_->SetColor(item_weak_->GetNotificationBadgeColor());
+  }
   title_->SetEnabledColor(AppListColorProvider::Get()->GetAppListItemTextColor(
       grid_delegate_->IsInFolder()));
   SchedulePaint();
@@ -1102,7 +1121,7 @@ bool AppListItemView::IsShowingAppMenu() const {
 }
 
 bool AppListItemView::IsNotificationIndicatorShownForTest() const {
-  return notification_indicator_ && notification_indicator_->GetVisible();
+  return notification_indicator_->GetVisible();
 }
 
 void AppListItemView::SetContextMenuShownCallbackForTest(
@@ -1124,14 +1143,12 @@ void AppListItemView::SetMostRecentGridIndex(GridIndex new_grid_index,
   }
 
   if (most_recent_grid_index_.IsValid()) {
-    // Set row change only for items which move to a new row and a new column.
-    // This is done because row change animations should not be shown when
-    // animating items up from the next page into a new row but on the same
-    // column, which could happen when closing a reorder toast.
-    if ((most_recent_grid_index_.slot / columns !=
-         new_grid_index.slot / columns) &&
-        (most_recent_grid_index_.slot % columns !=
-         new_grid_index.slot % columns)) {
+    // Pending row changes are only flagged when the item index changes from one
+    // edge of the grid to the other.
+    if ((IsIndexOnLeftEdge(new_grid_index, columns) &&
+         IsIndexOnRightEdge(most_recent_grid_index_, columns)) ||
+        (IsIndexOnLeftEdge(most_recent_grid_index_, columns) &&
+         IsIndexOnRightEdge(new_grid_index, columns))) {
       has_pending_row_change_ = true;
     } else {
       has_pending_row_change_ = false;
@@ -1167,6 +1184,12 @@ void AppListItemView::OnMenuClosed() {
   // Keep the item focused if the menu was shown via keyboard.
   if (!menu_show_initiated_from_key_)
     OnBlur();
+
+  if (focus_removed_by_context_menu_) {
+    // Restore the last focused view when exiting the menu.
+    GetFocusManager()->RestoreFocusedView();
+    focus_removed_by_context_menu_ = false;
+  }
 }
 
 void AppListItemView::OnSyncDragEnd() {
@@ -1266,13 +1289,12 @@ void AppListItemView::ItemNameChanged() {
 }
 
 void AppListItemView::ItemBadgeVisibilityChanged() {
-  if (notification_indicator_ && icon_)
+  if (icon_)
     notification_indicator_->SetVisible(item_weak_->has_notification_badge());
 }
 
 void AppListItemView::ItemBadgeColorChanged() {
-  if (notification_indicator_)
-    notification_indicator_->SetColor(item_weak_->notification_badge_color());
+  notification_indicator_->SetColor(item_weak_->GetNotificationBadgeColor());
 }
 
 void AppListItemView::ItemIsNewInstallChanged() {

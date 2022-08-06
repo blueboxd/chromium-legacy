@@ -72,7 +72,7 @@ chrome.test.runTests([
         right: 718.5,
         dark_light_right: 717.75,
         bottom: -412.5,
-        dark_light_bottom: -411.75
+        dark_light_bottom: -411.75,
       },
       {
         top: 2.25,
@@ -82,7 +82,7 @@ chrome.test.runTests([
         right: 408.75,
         dark_light_right: 408,
         bottom: -205.125,
-        dark_light_bottom: -204.75
+        dark_light_bottom: -204.75,
       },
       {
         top: -35.25,
@@ -92,7 +92,7 @@ chrome.test.runTests([
         right: 446.25,
         dark_light_right: 445.5,
         bottom: -242.625,
-        dark_light_bottom: -242.25
+        dark_light_bottom: -242.25,
       },
     ];
 
@@ -260,7 +260,10 @@ chrome.test.runTests([
     const touch1 = {pointerId: 11, pointerType: 'touch'};
     const touch2 = {pointerId: 22, pointerType: 'touch'};
 
-    type Expectation = {type: string, init: PointerEventInit};
+    interface Expectation {
+      type: string;
+      init: PointerEventInit;
+    }
 
     function checkExpectations(expectations: Expectation[]) {
       chrome.test.assertEq(expectations.length, events.length);
@@ -268,7 +271,9 @@ chrome.test.runTests([
         const event = events.shift()!;
         const expectation = expectations.shift()!;
         chrome.test.assertEq(expectation.type, event.type);
-        type IndexableType = {[key: string]: any};
+        interface IndexableType {
+          [key: string]: any;
+        }
         for (const key of Object.keys(expectation.init)) {
           chrome.test.assertEq(
               (expectation.init as IndexableType)[key],
@@ -368,7 +373,7 @@ chrome.test.runTests([
         timeStamp: pointerEvent.timeStamp,
         preventDefault() {
           touchPrevented = true;
-        }
+        },
       } as unknown as TouchEvent);
 
       return touchPrevented;

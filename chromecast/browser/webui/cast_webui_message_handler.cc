@@ -22,15 +22,11 @@ void CastWebUIMessageHandler::OnJavascriptDisallowed() {
 }
 
 void CastWebUIMessageHandler::CallJavascriptFunction(
-    const std::string& function,
-    std::vector<base::Value> args) {
+    base::StringPiece function,
+    base::span<const base::ValueView> args) {
   AllowJavascript();
   javascript_called_ = true;
-  std::vector<const base::Value*> args_copy;
-  for (const auto& arg : args) {
-    args_copy.push_back(&arg);
-  }
-  WebUIMessageHandler::CallJavascriptFunction(function, args_copy);
+  WebUIMessageHandler::CallJavascriptFunction(function, args);
 }
 
 }  // namespace chromecast

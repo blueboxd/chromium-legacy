@@ -30,7 +30,9 @@
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
@@ -46,6 +48,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
@@ -243,7 +246,13 @@ RecentAppsView* GetRecentAppsView() {
   if (ShouldUseBubbleAppList())
     return GetAppListBubbleView()->apps_page_for_test()->recent_apps_for_test();
 
-  return GetAppsContainerView()->GetRecentApps();
+  return GetAppsContainerView()->GetRecentAppsView();
+}
+
+SearchBoxView* GetSearchBoxView() {
+  if (ShouldUseBubbleAppList())
+    return GetAppListBubbleView()->search_box_view_for_test();
+  return GetAppListView()->app_list_main_view()->search_box_view();
 }
 
 // AppListVisibilityChangedWaiter ----------------------------------------------
@@ -413,14 +422,24 @@ bool AppListTestApi::HasApp(const std::string& app_id) {
 
 std::u16string AppListTestApi::GetAppListItemViewName(
     const std::string& item_id) {
+  AppListItemView* item_view = GetTopLevelItemViewFromId(item_id);
+  if (!item_view)
+    return u"";
+
+  return item_view->title()->GetText();
+}
+
+AppListItemView* AppListTestApi::GetTopLevelItemViewFromId(
+    const std::string& item_id) {
   views::ViewModelT<AppListItemView>* view_model =
       GetTopLevelAppsGridView()->view_model();
   for (size_t i = 0; i < view_model->view_size(); ++i) {
     AppListItemView* app_list_item_view = view_model->view_at(i);
     if (app_list_item_view->item()->id() == item_id)
-      return app_list_item_view->title()->GetText();
+      return app_list_item_view;
   }
-  return u"";
+
+  return nullptr;
 }
 
 std::vector<std::string> AppListTestApi::GetTopLevelViewIdList() {
@@ -646,6 +665,14 @@ void AppListTestApi::VerifyTopLevelItemVisibility() {
 
 views::View* AppListTestApi::GetRecentAppAt(int index) {
   return GetRecentAppsView()->GetItemViewAt(index);
+}
+
+void AppListTestApi::SimulateSearch(const std::u16string& query) {
+  views::Textfield* textfield = GetSearchBoxView()->search_box();
+  textfield->SetText(u"");
+  textfield->InsertText(
+      query,
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
 }
 
 void AppListTestApi::ReorderByMouseClickAtContextMenuInAppsGrid(

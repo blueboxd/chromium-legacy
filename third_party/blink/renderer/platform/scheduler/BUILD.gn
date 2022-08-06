@@ -6,6 +6,10 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 blink_platform_sources("scheduler") {
   sources = [
     "common/back_forward_cache_disabling_feature_tracker.cc",
@@ -30,8 +34,8 @@ blink_platform_sources("scheduler") {
     "common/scheduler_helper.cc",
     "common/scheduler_helper.h",
     "common/scheduling_lifecycle_state.cc",
-    "common/simple_thread_scheduler.cc",
-    "common/simple_thread_scheduler.h",
+    "common/simple_main_thread_scheduler.cc",
+    "common/simple_main_thread_scheduler.h",
     "common/single_thread_idle_task_runner.cc",
     "common/single_thread_idle_task_runner.h",
     "common/thread.cc",
@@ -39,8 +43,8 @@ blink_platform_sources("scheduler") {
     "common/thread_load_tracker.cc",
     "common/thread_load_tracker.h",
     "common/thread_scheduler.cc",
-    "common/thread_scheduler_impl.cc",
-    "common/thread_scheduler_impl.h",
+    "common/thread_scheduler_base.cc",
+    "common/thread_scheduler_base.h",
     "common/thread_type.cc",
     "common/throttling/budget_pool.cc",
     "common/throttling/budget_pool.h",
@@ -118,6 +122,7 @@ blink_platform_sources("scheduler") {
     "public/frame_or_worker_scheduler.h",
     "public/frame_scheduler.h",
     "public/frame_status.h",
+    "public/main_thread_scheduler.h",
     "public/page_lifecycle_state.h",
     "public/page_scheduler.h",
     "public/post_cancellable_task.h",
@@ -327,4 +332,20 @@ fuzzer_test("sequence_manager_fuzzer") {
 
 proto_library("sequence_manager_test_description_proto") {
   sources = [ "test/fuzzer/proto/sequence_manager_test_description.proto" ]
+}
+
+if (is_android) {
+  java_cpp_features("java_features_srcjar") {
+    # External code should depend on ":blink_scheduler_java" instead.
+    visibility = [ ":*" ]
+    sources =
+        [ "//third_party/blink/renderer/platform/scheduler/common/features.cc" ]
+    template = "//third_party/blink/renderer/platform/scheduler/common/android/java_templates/BlinkSchedulerFeatures.java.tmpl"
+  }
+
+  android_library("blink_scheduler_java") {
+    # Right now, this only includes the Java features. But if we need more Java
+    # files, they should be added here as necessary.
+    srcjar_deps = [ ":java_features_srcjar" ]
+  }
 }

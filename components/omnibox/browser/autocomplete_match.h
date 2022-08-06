@@ -41,6 +41,8 @@ class SuggestionAnswer;
 class TemplateURL;
 class TemplateURLService;
 
+enum class SuggestionGroupId;
+
 namespace base {
 class Time;
 }  // namespace base
@@ -119,9 +121,7 @@ struct AutocompleteMatch {
     // clang-format on
 
     ACMatchClassification(size_t offset, int style)
-        : offset(offset),
-          style(style) {
-    }
+        : offset(offset), style(style) {}
 
     bool operator==(const ACMatchClassification& other) const {
       return offset == other.offset && style == other.style;
@@ -190,7 +190,8 @@ struct AutocompleteMatch {
 
   static const char* const kDocumentTypeStrings[];
 
-  // Return a string version of the core type values.
+  // Return a string version of the core type values. Only used for
+  // `RecordAdditionalInfo()`.
   static const char* DocumentTypeString(DocumentType type);
 
   // Use this function to convert integers to DocumentType enum values.
@@ -383,6 +384,20 @@ struct AutocompleteMatch {
                                  const TemplateURLService* template_url_service,
                                  const std::u16string& keyword);
 
+  // One of these 2 helpers are called by `GURLToStrippedGURL()` depending on
+  // whether optimizations (i.e., caching search term replacements) are enabled.
+  // They will be removed after experiments end.
+  static GURL GURLToStrippedGURLControl(
+      const GURL& url,
+      const AutocompleteInput& input,
+      const TemplateURLService* template_url_service,
+      const std::u16string& keyword);
+  static GURL GURLToStrippedGURLOptimized(
+      const GURL& url,
+      const AutocompleteInput& input,
+      const TemplateURLService* template_url_service,
+      const std::u16string& keyword);
+
   // Sets the |match_in_scheme| and |match_in_subdomain| flags based on the
   // provided |url| and list of substring |match_positions|. |match_positions|
   // is the [begin, end) positions of a match within the unstripped URL spec.
@@ -414,6 +429,10 @@ struct AutocompleteMatch {
   // same purpose as in GURLToStrippedGURL().
   void ComputeStrippedDestinationURL(const AutocompleteInput& input,
                                      TemplateURLService* template_url_service);
+
+  // Returns whether `destination_url` looks like a doc URL. If so, will also
+  // set `stripped_destination_url` to avoid repeating the computation later.
+  bool IsDocumentSuggestion();
 
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.
@@ -513,7 +532,7 @@ struct AutocompleteMatch {
   // Determines whether this match is allowed to be the default match by
   // comparing |input.text| and |inline_autocompletion|. Therefore,
   // |inline_autocompletion| should be set prior to invoking this method. Also
-  // Also considers trailing whitespace in the input, so the input should not be
+  // considers trailing whitespace in the input, so the input should not be
   // fixed up. May trim trailing whitespaces from |inline_autocompletion|.
   //
   // Input "x" will allow default matches "x", "xy", and "x y".
@@ -657,13 +676,12 @@ struct AutocompleteMatch {
   std::u16string description_for_shortcuts;
   ACMatchClassifications description_class_for_shortcuts;
 
-  // The optional suggestion group Id based on the SuggestionGroupIds enum in
-  // suggestion_config.proto. Used to look up the header text this match must
-  // appear under from ACResult.
+  // The optional suggestion group Id. Used to look up the suggestion group info
+  // such as the header text this match must appear under from ACResult.
   //
-  // If this value exists, it should always be positive and nonzero. In Java and
-  // JavaScript, -1 is used as a sentinel value, but should never occur in C++.
-  absl::optional<int> suggestion_group_id;
+  // This is converted to a primitive int type in Java and JavaScript; with -1
+  // (SuggestionGroupId::kInvalid) used as a sentinel value.
+  absl::optional<SuggestionGroupId> suggestion_group_id;
 
   // If true, UI-level code should swap the contents and description fields
   // before displaying.

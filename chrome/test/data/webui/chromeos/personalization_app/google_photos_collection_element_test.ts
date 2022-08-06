@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {GooglePhotosAlbum, GooglePhotosCollection, GooglePhotosEnablementState, Paths, PersonalizationRouter} from 'chrome://personalization/trusted/personalization_app.js';
+import {GooglePhotosAlbum, GooglePhotosCollection, GooglePhotosEnablementState, Paths, PersonalizationRouter} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
@@ -48,7 +48,7 @@ suite('GooglePhotosCollectionTest', function() {
       name: 'foo',
       date: {data: []},
       url: {url: 'foo.com'},
-      location: 'home'
+      location: 'home',
     }]);
 
     googlePhotosCollectionElement =
@@ -144,7 +144,7 @@ suite('GooglePhotosCollectionTest', function() {
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       title: 'Album 0',
       photoCount: 1,
-      preview: {url: 'foo.com'}
+      preview: {url: 'foo.com'},
     }];
     wallpaperProvider.setGooglePhotosAlbums(albums);
     wallpaperProvider.setGooglePhotosPhotos([{
@@ -153,7 +153,7 @@ suite('GooglePhotosCollectionTest', function() {
       name: 'foo',
       date: {data: []},
       url: {url: 'foo.com'},
-      location: 'home'
+      location: 'home',
     }]);
 
     googlePhotosCollectionElement =

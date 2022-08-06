@@ -356,8 +356,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_test_name_file(self):
         fs = self.mac_port.host.filesystem
         test_name_file = fs.mktemp()
-        file = fs.open_text_file_for_writing(test_name_file)
-        file.write(
+        fs.write_text_file(
+            test_name_file,
             textwrap.dedent('''
             one/flaky-fail.html
               one/missing.html
@@ -383,8 +383,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_test_name_file_resultDB(self):
         fs = self.mac_port.host.filesystem
         test_name_file = fs.mktemp()
-        file = fs.open_text_file_for_writing(test_name_file)
-        file.write(
+        fs.write_text_file(
+            test_name_file,
             textwrap.dedent('''
             one/missing.html
               two/missing.html
@@ -599,7 +599,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertEqual(exit_code, 0)
         self.assertLog([
             'INFO: Finished try jobs found for all try bots.\n',
-            'WARNING: No retry summary available for "MOCK Try Win".\n',
+            'WARNING: No retry summary available for ("MOCK Try Win", "blink_web_tests").\n',
             'INFO: Rebaselining one/flaky-fail.html\n',
             'INFO: Rebaselining one/missing.html\n',
             'INFO: Rebaselining one/slow-fail.html\n',

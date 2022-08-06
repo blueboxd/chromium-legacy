@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -32,6 +31,7 @@
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_sync_observation.h"
 #include "chromeos/ash/components/dbus/userdataauth/install_attributes_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
@@ -190,6 +190,7 @@ AutoEnrollmentController::AutoEnrollmentController() {
 AutoEnrollmentController::~AutoEnrollmentController() {}
 
 void AutoEnrollmentController::Start() {
+  LOG(WARNING) << "Starting auto-enrollment controller.";
   switch (state_) {
     case policy::AUTO_ENROLLMENT_STATE_PENDING:
       // Abort re-start if the check is still running.
@@ -393,7 +394,17 @@ void AutoEnrollmentController::OnSystemClockSyncResult(
   LOG(WARNING) << "System clock "
                << (system_clock_synchronized ? "synchronized"
                                              : "failed to synchronize");
-  StartWithSystemClockSyncState();
+  // Only call StartWithSystemClockSyncState() to determine the auto-enrollment
+  // type if the system clock could synchronize successfully. Otherwise, return
+  // an AUTO_ENROLLMENT_STATE_CONNECTION_ERROR to show an error screen and not
+  // proceeding with the auto-enrollment checks until
+  // AutoEnrollmentController::Start() is called again by a network state
+  // change or network selection.
+  if (system_clock_sync_state_ == SystemClockSyncState::kSynchronized) {
+    StartWithSystemClockSyncState();
+  } else {
+    UpdateState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+  }
 }
 
 void AutoEnrollmentController::StartClientForInitialEnrollment() {

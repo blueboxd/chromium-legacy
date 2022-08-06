@@ -41,7 +41,7 @@ constexpr char kExtraSecondaryAppId[] = "aaaaccccaaaaccccaaaaccccaaaacccc";
 
 class AppLaunchTracker : public extensions::TestEventRouter::EventObserver {
  public:
-  AppLaunchTracker(extensions::TestEventRouter* event_router) {
+  explicit AppLaunchTracker(extensions::TestEventRouter* event_router) {
     observation_.Observe(event_router);
   }
   AppLaunchTracker(const AppLaunchTracker&) = delete;
@@ -99,14 +99,14 @@ void InitAppWindow(extensions::AppWindow* app_window, const gfx::Rect& bounds) {
 
   extensions::AppWindow::CreateParams params;
   params.content_spec.bounds = bounds;
-  app_window->Init(GURL(), app_window_contents.release(), main_frame, params);
+  app_window->Init(GURL(), std::move(app_window_contents), main_frame, params);
 }
 
 extensions::AppWindow* CreateAppWindow(Profile* profile,
                                        const extensions::Extension* extension,
                                        gfx::Rect bounds = {}) {
   extensions::AppWindow* app_window = new extensions::AppWindow(
-      profile, new ChromeAppDelegate(profile, true), extension);
+      profile, std::make_unique<ChromeAppDelegate>(profile, true), extension);
   InitAppWindow(app_window, bounds);
   return app_window;
 }

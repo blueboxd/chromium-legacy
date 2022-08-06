@@ -13,10 +13,10 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/policy/handlers/device_name_policy_handler.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/system/statistics_provider.h"
 
 namespace policy {
@@ -24,9 +24,8 @@ namespace policy {
 // This class observes the device setting |DeviceHostname|, and calls
 // NetworkStateHandler::SetHostname() appropriately based on the value of that
 // setting.
-class DeviceNamePolicyHandlerImpl
-    : public DeviceNamePolicyHandler,
-      public chromeos::NetworkStateHandlerObserver {
+class DeviceNamePolicyHandlerImpl : public DeviceNamePolicyHandler,
+                                    public ash::NetworkStateHandlerObserver {
  public:
   explicit DeviceNamePolicyHandlerImpl(ash::CrosSettings* cros_settings);
 
@@ -49,7 +48,7 @@ class DeviceNamePolicyHandlerImpl
       chromeos::NetworkStateHandler* handler);
 
   // NetworkStateHandlerObserver overrides
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const ash::NetworkState* network) override;
   void OnShuttingDown() override;
 
   void OnDeviceHostnamePropertyChanged();
@@ -74,7 +73,7 @@ class DeviceNamePolicyHandlerImpl
   chromeos::system::StatisticsProvider* statistics_provider_;
   chromeos::NetworkStateHandler* handler_;
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   DeviceNamePolicy device_name_policy_;

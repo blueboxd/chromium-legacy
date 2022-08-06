@@ -120,7 +120,6 @@ chrome.automation.EventType = {
   SELECTED_VALUE_CHANGED: 'selectedValueChanged',
   SELECTION: 'selection',
   SELECTION_ADD: 'selectionAdd',
-  SELECTION_IN_TEXT_FIELD_CHANGED: 'selectionInTextFieldChanged',
   SELECTION_REMOVE: 'selectionRemove',
   SET_SIZE_CHANGED: 'setSizeChanged',
   SHOW: 'show',
@@ -444,7 +443,6 @@ chrome.automation.TreeChangeType = {
  * @see https://developer.chrome.com/extensions/automation#type-NameFromType
  */
 chrome.automation.NameFromType = {
-  UNINITIALIZED: 'uninitialized',
   ATTRIBUTE: 'attribute',
   ATTRIBUTE_EXPLICITLY_EMPTY: 'attributeExplicitlyEmpty',
   CAPTION: 'caption',
@@ -461,6 +459,7 @@ chrome.automation.NameFromType = {
  */
 chrome.automation.DescriptionFromType = {
   ARIA_DESCRIPTION: 'ariaDescription',
+  ATTRIBUTE_EXPLICITLY_EMPTY: 'attributeExplicitlyEmpty',
   BUTTON_LABEL: 'buttonLabel',
   POPUP_ELEMENT: 'popupElement',
   RELATED_ELEMENT: 'relatedElement',
@@ -1198,7 +1197,7 @@ chrome.automation.AutomationNode.prototype.state;
 
 /**
  * The rendered location (as a bounding box) of this node in global screen coordinates.
- * @type {(!chrome.automation.Rect|undefined)}
+ * @type {!chrome.automation.Rect}
  * @see https://developer.chrome.com/extensions/automation#type-location
  */
 chrome.automation.AutomationNode.prototype.location;
@@ -2205,6 +2204,13 @@ chrome.automation.AutomationNode.prototype.indexInParent;
  * @see https://developer.chrome.com/extensions/automation#type-sortDirection
  */
 chrome.automation.AutomationNode.prototype.sortDirection;
+
+/**
+ * Explicitly set to true when this node is clickable.
+ * @type {boolean}
+ * @see https://developer.chrome.com/extensions/automation#type-clickable
+ */
+chrome.automation.AutomationNode.prototype.clickable;
 
 /**
  * Does the default action based on this node's role. This is generally the same

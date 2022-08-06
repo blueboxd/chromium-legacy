@@ -77,7 +77,7 @@ export class EnterpriseProfileWelcomeAppElement extends
         reflectToAttribute: true,
         value() {
           return loadTimeData.getBoolean('isModalDialog');
-        }
+        },
       },
 
       showLinkDataCheckbox_: {
@@ -85,7 +85,7 @@ export class EnterpriseProfileWelcomeAppElement extends
         reflectToAttribute: true,
         value() {
           return loadTimeData.getBoolean('showLinkDataCheckbox');
-        }
+        },
       },
 
       /** The label for the button to proceed with the flow */
@@ -106,7 +106,7 @@ export class EnterpriseProfileWelcomeAppElement extends
         type: Boolean,
         reflectToAttribute: true,
         value: false,
-        observer: 'linkDataChanged_'
+        observer: 'linkDataChanged_',
       },
     };
   }
@@ -164,6 +164,7 @@ export class EnterpriseProfileWelcomeAppElement extends
     this.defaultProceedLabel_ = info.proceedLabel;
     this.proceedLabel_ = this.defaultProceedLabel_;
     this.showCancelButton_ = info.showCancelButton;
+    this.linkData_ = info.checkLinkDataCheckboxByDefault;
   }
 }
 

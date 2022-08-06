@@ -28,6 +28,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/bubble/download_bubble_controller.h"
+#include "chrome/browser/download/bubble/download_display.h"
+#include "chrome/browser/download/bubble/download_display_controller.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
@@ -41,6 +44,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "chrome/common/pref_names.h"
@@ -48,6 +52,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/content/common/file_type_policies_test_util.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1853,7 +1859,7 @@ class CustomResponse : public net::test_server::HttpResponse {
   void SendResponse(
       base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) override {
     base::StringPairs headers = {
-        //"HTTP/1.1 200 OK\r\n"
+        // "HTTP/1.1 200 OK\r\n"
         {"Content-type", "application/octet-stream"},
         {"Cache-Control", "max-age=0"},
     };
@@ -3196,6 +3202,9 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     DownloadExtensionTest_OnDeterminingFilename_SafeOverride) {
+  safe_browsing::FileTypePoliciesTestOverlay scoped_dangerous =
+      safe_browsing::ScopedMarkAllFilesDangerousForTesting();
+
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
@@ -4576,11 +4585,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_TRUE(RunFunction(new DownloadsSetShelfEnabledFunction(), "[false]"));
   EXPECT_FALSE(DownloadCoreServiceFactory::GetForBrowserContext(
                    current_browser()->profile())
-                   ->IsShelfEnabled());
+                   ->IsDownloadUiEnabled());
   EXPECT_TRUE(RunFunction(new DownloadsSetShelfEnabledFunction(), "[true]"));
   EXPECT_TRUE(DownloadCoreServiceFactory::GetForBrowserContext(
                   current_browser()->profile())
-                  ->IsShelfEnabled());
+                  ->IsDownloadUiEnabled());
   // TODO(benjhayden) Test that existing shelves are hidden.
   // TODO(benjhayden) Test multiple extensions.
   // TODO(benjhayden) Test disabling extensions.
@@ -4594,6 +4603,21 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 // TODO(benjhayden) Test that the shelf is shown for download() both with and
 // without a WebContents.
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_SetUiOptions) {
+  LoadExtension("downloads_split");
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": false}])"));
+  EXPECT_FALSE(DownloadCoreServiceFactory::GetForBrowserContext(
+                   current_browser()->profile())
+                   ->IsDownloadUiEnabled());
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": true}])"));
+  EXPECT_TRUE(DownloadCoreServiceFactory::GetForBrowserContext(
+                  current_browser()->profile())
+                  ->IsDownloadUiEnabled());
+}
 
 void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
   prompt->InvokeActionForTesting(DownloadDangerPrompt::ACCEPT);
@@ -4610,6 +4634,9 @@ void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_AcceptDanger) {
+  safe_browsing::FileTypePoliciesTestOverlay scoped_dangerous =
+      safe_browsing::ScopedMarkAllFilesDangerousForTesting();
+
   // Download a file that will be marked dangerous; click the browser action
   // button; the browser action poup will call acceptDanger(); when the
   // DownloadDangerPrompt is created, pretend that the user clicks the Accept
@@ -4698,6 +4725,84 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                          R"(    "current": false}}])",
                                          result_id)));
 }
+
+// The DownloadExtensionBubbleEnabledTest relies on the download surface, which
+// ChromeOS_ASH doesn't use (see crbug.com/1323505).
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+class DownloadExtensionBubbleEnabledTest : public DownloadExtensionTest {
+ public:
+  DownloadExtensionBubbleEnabledTest() {
+    feature_list_.InitAndEnableFeature(safe_browsing::kDownloadBubble);
+  }
+
+  bool IsDownloadToolbarButtonShowing() {
+    return current_browser()
+        ->window()
+        ->GetDownloadBubbleUIController()
+        ->GetDownloadDisplayController()
+        ->download_display_for_testing()
+        ->IsShowing();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
+                       DownloadExtensionBubbleEnabledTest_SetUiOptions) {
+  DownloadManager::DownloadVector items;
+  CreateTwoDownloads(&items);
+  ScopedItemVectorCanceller delete_items(&items);
+  LoadExtension("downloads_split");
+
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": true}])"));
+  EXPECT_TRUE(IsDownloadToolbarButtonShowing());
+
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": false}])"));
+  EXPECT_FALSE(IsDownloadToolbarButtonShowing());
+
+  items[0]->Cancel(true);
+  // Remain hidden on download updates.
+  EXPECT_FALSE(IsDownloadToolbarButtonShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionBubbleEnabledTest,
+    DownloadExtensionBubbleEnabledTest_SetUiOptionsBeforeDownloadStart) {
+  LoadExtension("downloads_split");
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": false}])"));
+  DownloadManager::DownloadVector items;
+  CreateTwoDownloads(&items);
+  ScopedItemVectorCanceller delete_items(&items);
+  EXPECT_FALSE(IsDownloadToolbarButtonShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionBubbleEnabledTest,
+    DownloadExtensionBubbleEnabledTest_SetUiOptionsOffTheRecord) {
+  LoadExtension("downloads_split");
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": false}])"));
+  DownloadManager::DownloadVector items;
+  CreateTwoDownloads(&items);
+  ScopedItemVectorCanceller delete_items(&items);
+  EXPECT_FALSE(IsDownloadToolbarButtonShowing());
+
+  GoOffTheRecord();
+  EXPECT_FALSE(IsDownloadToolbarButtonShowing());
+
+  EXPECT_TRUE(RunFunction(new DownloadsSetUiOptionsFunction(),
+                          R"([{"enabled": true}])"));
+  items[0]->Cancel(true);
+  EXPECT_TRUE(IsDownloadToolbarButtonShowing());
+
+  GoOnTheRecord();
+  EXPECT_TRUE(IsDownloadToolbarButtonShowing());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 class DownloadsApiTest : public ExtensionApiTest {
  public:

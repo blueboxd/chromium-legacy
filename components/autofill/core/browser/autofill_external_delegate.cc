@@ -284,8 +284,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
         query_id_, query_form_, query_field_);
   } else if (frontend_id == POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS) {
     DCHECK(absl::holds_alternative<GURL>(payload));
-    manager_->client()->OnPromoCodeSuggestionsFooterSelected(
-        absl::get<GURL>(payload));
+    manager_->OnSeePromoCodeOfferDetailsSelected(absl::get<GURL>(payload),
+                                                 value, frontend_id);
   } else {
     if (frontend_id > 0) {  // Denotes an Autofill suggestion.
       AutofillMetrics::LogAutofillSuggestionAcceptedIndex(
@@ -368,8 +368,8 @@ base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
 }
 
 void AutofillExternalDelegate::OnCreditCardScanned(const CreditCard& card) {
-  manager_->FillCreditCardForm(query_id_, query_form_, query_field_, card,
-                               std::u16string());
+  manager_->FillCreditCardFormImpl(query_form_, query_field_, card,
+                                   std::u16string(), query_id_);
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,

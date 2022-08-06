@@ -80,9 +80,10 @@ def cmp_tests(a, b):
 
 
 class GPUTelemetryTestGenerator(BaseGenerator):
-  def __init__(self, bb_gen, is_android_webview=False):
+  def __init__(self, bb_gen, is_android_webview=False, is_cast_streaming=False):
     super(GPUTelemetryTestGenerator, self).__init__(bb_gen)
     self._is_android_webview = is_android_webview
+    self._is_cast_streaming = is_cast_streaming
 
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
@@ -96,7 +97,8 @@ class GPUTelemetryTestGenerator(BaseGenerator):
         test = self.bb_gen.generate_gpu_telemetry_test(waterfall, tester_name,
                                                        tester_config, test_name,
                                                        config,
-                                                       self._is_android_webview)
+                                                       self._is_android_webview,
+                                                       self._is_cast_streaming)
         if test:
           isolated_scripts.append(test)
 
@@ -529,7 +531,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     arr = self.merge_command_line_args(arr, '--test-launcher-filter-file=', ';')
     return arr
 
-  def substitute_magic_args(self, test_config, tester_name):
+  def substitute_magic_args(self, test_config, tester_name, tester_config):
     """Substitutes any magic substitution args present in |test_config|.
 
     Substitutions are done in-place.
@@ -542,6 +544,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
           a specific builder, e.g. the output of update_and_cleanup_test.
       tester_name: A string containing the name of the tester that |test_config|
           came from.
+      tester_config: A dict containing the configuration for the builder that
+          |test_config| is for.
     """
     substituted_array = []
     for arg in test_config.get('args', []):
@@ -550,7 +554,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
             magic_substitutions.MAGIC_SUBSTITUTION_PREFIX, '')
         if hasattr(magic_substitutions, function):
           substituted_array.extend(
-              getattr(magic_substitutions, function)(test_config, tester_name))
+              getattr(magic_substitutions, function)(test_config, tester_name,
+                                                     tester_config))
         else:
           raise BBGenErr(
               'Magic substitution function %s does not exist' % function)
@@ -824,7 +829,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result, tester_name)
+    self.substitute_magic_args(result, tester_name, tester_config)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -860,7 +865,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result, tester_name)
+    self.substitute_magic_args(result, tester_name, tester_config)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -888,7 +893,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     }
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result, tester_name)
+    self.substitute_magic_args(result, tester_name, tester_config)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -904,7 +909,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result, tester_name)
+    self.substitute_magic_args(result, tester_name, tester_config)
     return result
 
   def generate_skylab_test(self, waterfall, tester_name, tester_config,
@@ -919,7 +924,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(result, test_name, tester_name,
                                           tester_config, waterfall)
-    self.substitute_magic_args(result, tester_name)
+    self.substitute_magic_args(result, tester_name, tester_config)
     return result
 
   def substitute_gpu_args(self, tester_config, swarming_config, args):
@@ -941,7 +946,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     return [string.Template(arg).safe_substitute(substitutions) for arg in args]
 
   def generate_gpu_telemetry_test(self, waterfall, tester_name, tester_config,
-                                  test_name, test_config, is_android_webview):
+                                  test_name, test_config, is_android_webview,
+                                  is_cast_streaming):
     # These are all just specializations of isolated script tests with
     # a bunch of boilerplate command line arguments added.
 
@@ -1000,8 +1006,13 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # queue.
     result['should_retry_with_patch'] = False
 
-    browser = ('android-webview-instrumentation'
-               if is_android_webview else tester_config['browser_config'])
+    browser = ''
+    if is_cast_streaming:
+      browser = 'cast-streaming-shell'
+    elif is_android_webview:
+      browser = 'android-webview-instrumentation'
+    else:
+      browser = tester_config['browser_config']
 
     # Most platforms require --enable-logging=stderr to get useful browser logs.
     # However, this actively messes with logging on CrOS (because Chrome's
@@ -1040,19 +1051,21 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
   def get_test_generator_map(self):
     return {
         'android_webview_gpu_telemetry_tests':
-            GPUTelemetryTestGenerator(self, is_android_webview=True),
+        GPUTelemetryTestGenerator(self, is_android_webview=True),
+        'cast_streaming_tests':
+        GPUTelemetryTestGenerator(self, is_cast_streaming=True),
         'gpu_telemetry_tests':
-            GPUTelemetryTestGenerator(self),
+        GPUTelemetryTestGenerator(self),
         'gtest_tests':
-            GTestGenerator(self),
+        GTestGenerator(self),
         'isolated_scripts':
-            IsolatedScriptTestGenerator(self),
+        IsolatedScriptTestGenerator(self),
         'junit_tests':
-            JUnitGenerator(self),
+        JUnitGenerator(self),
         'scripts':
-            ScriptGenerator(self),
+        ScriptGenerator(self),
         'skylab_tests':
-            SkylabGenerator(self),
+        SkylabGenerator(self),
     }
 
   def get_test_type_remapper(self):

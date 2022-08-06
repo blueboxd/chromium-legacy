@@ -45,6 +45,27 @@
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+autofill::SaveCardUiExperiment GetSaveCardUiExperimentArm() {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillSaveCardUiExperiment)) {
+    return autofill::SaveCardUiExperiment::DEFAULT;
+  }
+
+  switch (
+      autofill::features::kAutofillSaveCardUiExperimentSelectorInNumber.Get()) {
+    case 1:
+      return autofill::SaveCardUiExperiment::FASTER_AND_PROTECTED;
+    case 2:
+      return autofill::SaveCardUiExperiment::ENCRYPTED_AND_SECURE;
+    default:
+      return autofill::SaveCardUiExperiment::DEFAULT;
+  }
+}
+
+}  // namespace
+
 namespace autofill {
 
 SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
@@ -113,10 +134,6 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
   if (bubble_view())
     return;
 
-  // Fetch the logged-in user's AccountInfo if it has not yet been done.
-  if (options.should_request_name_from_user && account_info_.IsEmpty())
-    FetchAccountInfo();
-
   is_upload_save_ = true;
   is_reshow_ = false;
   options_ = options;
@@ -164,29 +181,21 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
 }
 
 std::u16string SaveCardBubbleControllerImpl::GetWindowTitle() const {
-  int save_card_ui_experiment_selected =
-      features::kAutofillSaveCardUiExperimentSelectorInNumber.Get();
-  // Check if the save card offer ui experiment is enabled.
-  bool save_card_ui_experiment_enabled =
-      (base::FeatureList::IsEnabled(features::kAutofillSaveCardUiExperiment) &&
-       save_card_ui_experiment_selected);
-
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
     case BubbleType::UPLOAD_SAVE:
-      if (save_card_ui_experiment_enabled) {
-        switch (save_card_ui_experiment_selected) {
-          case SaveCardUiExperiment::FASTER_AND_PROTECTED:
-            return l10n_util::GetStringUTF16(
-                IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_EXPERIMENT_FASTER_AND_PROTECTED);
-          case SaveCardUiExperiment::ENCRYPTED_AND_SECURE:
-            return l10n_util::GetStringUTF16(
-                IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_EXPERIMENT_ENCRYPTED_AND_SECURE);
-        }
+      if (GetSaveCardUiExperimentArm() ==
+          SaveCardUiExperiment::FASTER_AND_PROTECTED) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_EXPERIMENT_FASTER_AND_PROTECTED);
       }
-
+      if (GetSaveCardUiExperimentArm() ==
+          SaveCardUiExperiment::ENCRYPTED_AND_SECURE) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_EXPERIMENT_ENCRYPTED_AND_SECURE);
+      }
       return features::ShouldShowImprovedUserConsentForCreditCardSave()
                  ? l10n_util::GetStringUTF16(
                        IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4)
@@ -215,25 +224,17 @@ std::u16string SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
         IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
   }
 
-  int save_card_ui_experiment_selected =
-      features::kAutofillSaveCardUiExperimentSelectorInNumber.Get();
-  // Check if the save card offer ui experiment is enabled.
-  bool save_card_ui_experiment_enabled =
-      (base::FeatureList::IsEnabled(features::kAutofillSaveCardUiExperiment) &&
-       save_card_ui_experiment_selected);
-  if (save_card_ui_experiment_enabled) {
-    switch (save_card_ui_experiment_selected) {
-      case SaveCardUiExperiment::FASTER_AND_PROTECTED:
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_EXPERIMENT_FASTER_AND_PROTECTED);
-      case SaveCardUiExperiment::ENCRYPTED_AND_SECURE:
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_EXPERIMENT_ENCRYPTED_AND_SECURE);
-    }
+  switch (GetSaveCardUiExperimentArm()) {
+    case SaveCardUiExperiment::FASTER_AND_PROTECTED:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_EXPERIMENT_FASTER_AND_PROTECTED);
+    case SaveCardUiExperiment::ENCRYPTED_AND_SECURE:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_EXPERIMENT_ENCRYPTED_AND_SECURE);
+    default:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
   }
-
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
 }
 
 std::u16string SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
@@ -269,7 +270,10 @@ std::u16string SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
   }
 }
 
-const AccountInfo& SaveCardBubbleControllerImpl::GetAccountInfo() const {
+const AccountInfo& SaveCardBubbleControllerImpl::GetAccountInfo() {
+  if (account_info_.IsEmpty())
+    FetchAccountInfo();
+
   return account_info_;
 }
 
@@ -311,7 +315,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
         // without edits.
         AutofillMetrics::LogSaveCardCardholderNameWasEdited(
             user_provided_card_details.cardholder_name !=
-            base::UTF8ToUTF16(account_info_.full_name));
+            base::UTF8ToUTF16(GetAccountInfo().full_name));
         // Trim the cardholder name provided by the user and send it in the
         // callback so it can be included in the final request.
         DCHECK(ShouldRequestNameFromUser());
@@ -413,25 +417,9 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed(
   // |closed_reason|.
   if (closed_reason == PaymentsBubbleClosedReason::kAccepted) {
     if (current_bubble_type_ == BubbleType::LOCAL_SAVE) {
-      current_bubble_type_ = base::FeatureList::IsEnabled(
-                                 features::kAutofillCreditCardUploadFeedback)
-                                 ? BubbleType::INACTIVE
-                                 : BubbleType::MANAGE_CARDS;
+      current_bubble_type_ = BubbleType::MANAGE_CARDS;
     } else if (current_bubble_type_ == BubbleType::UPLOAD_SAVE) {
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillCreditCardUploadFeedback)) {
-        current_bubble_type_ = BubbleType::UPLOAD_IN_PROGRESS;
-
-        // Log this metric here since for each bubble, the bubble state will
-        // only be changed to UPLOAD_IN_PROGRESS once.
-        // SavePaymentIconView::Update is not guaranteed to be called only once
-        // so logging in any functions related to it is not reliable.
-        AutofillMetrics::LogCreditCardUploadFeedbackMetric(
-            AutofillMetrics::
-                CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN);
-      } else {
-        current_bubble_type_ = BubbleType::INACTIVE;
-      }
+      current_bubble_type_ = BubbleType::INACTIVE;
     } else {
       DCHECK_EQ(current_bubble_type_, BubbleType::MANAGE_CARDS);
       current_bubble_type_ = BubbleType::INACTIVE;
@@ -470,10 +458,6 @@ std::u16string SaveCardBubbleControllerImpl::GetSavePaymentIconTooltipText()
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
     case BubbleType::UPLOAD_SAVE:
-    // TODO(crbug.com/932818): With |kAutofillCreditCardUploadFeedback| being
-    // enabled, sign in promo will not be shown from the credit card icon, and
-    // there will not be manage cards bubble. These two will be cleaned up in
-    // the future.
     case BubbleType::MANAGE_CARDS:
       return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD);
     case BubbleType::UPLOAD_IN_PROGRESS:
@@ -490,11 +474,7 @@ bool SaveCardBubbleControllerImpl::ShouldShowSavingCardAnimation() const {
 }
 
 bool SaveCardBubbleControllerImpl::ShouldShowCardSavedLabelAnimation() const {
-  // If experiment is on, does not show the "Card Saved" animation but instead
-  // hides the icon.
-  return !base::FeatureList::IsEnabled(
-             features::kAutofillCreditCardUploadFeedback) &&
-         should_show_card_saved_label_animation_;
+  return should_show_card_saved_label_animation_;
 }
 
 bool SaveCardBubbleControllerImpl::ShouldShowSaveFailureBadge() const {

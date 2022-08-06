@@ -10,10 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/common/profiler/process_type.h"
 
-#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
-#include "chrome/android/modules/stack_unwinder/public/module.h"
-#endif
-
 namespace {
 
 // The default configuration to use in the absence of special circumstances on a
@@ -22,10 +18,6 @@ class DefaultPlatformConfiguration
     : public ThreadProfilerPlatformConfiguration {
  public:
   explicit DefaultPlatformConfiguration(bool browser_test_mode_enabled);
-
-  // ThreadProfilerPlatformConfiguration:
-  RuntimeModuleState GetRuntimeModuleState(
-      absl::optional<version_info::Channel> release_channel) const override;
 
   RelativePopulations GetEnableRates(
       absl::optional<version_info::Channel> release_channel) const override;
@@ -50,12 +42,6 @@ class DefaultPlatformConfiguration
 DefaultPlatformConfiguration::DefaultPlatformConfiguration(
     bool browser_test_mode_enabled)
     : browser_test_mode_enabled_(browser_test_mode_enabled) {}
-
-ThreadProfilerPlatformConfiguration::RuntimeModuleState
-DefaultPlatformConfiguration::GetRuntimeModuleState(
-    absl::optional<version_info::Channel> release_channel) const {
-  return RuntimeModuleState::kModuleNotRequired;
-}
 
 ThreadProfilerPlatformConfiguration::RelativePopulations
 DefaultPlatformConfiguration::GetEnableRates(
@@ -121,56 +107,16 @@ class AndroidPlatformConfiguration : public DefaultPlatformConfiguration {
  public:
   explicit AndroidPlatformConfiguration(bool browser_test_mode_enabled);
 
-  // DefaultPlatformConfiguration:
-  RuntimeModuleState GetRuntimeModuleState(
-      absl::optional<version_info::Channel> release_channel) const override;
-
   RelativePopulations GetEnableRates(
       absl::optional<version_info::Channel> release_channel) const override;
 
-  void RequestRuntimeModuleInstall() const override;
-
   double GetChildProcessEnableFraction(
       metrics::CallStackProfileParams::Process process) const override;
-
-  bool IsEnabledForThread(
-      metrics::CallStackProfileParams::Process process,
-      metrics::CallStackProfileParams::Thread thread) const override;
 };
 
 AndroidPlatformConfiguration::AndroidPlatformConfiguration(
     bool browser_test_mode_enabled)
     : DefaultPlatformConfiguration(browser_test_mode_enabled) {}
-
-ThreadProfilerPlatformConfiguration::RuntimeModuleState
-AndroidPlatformConfiguration::GetRuntimeModuleState(
-    absl::optional<version_info::Channel> release_channel) const {
-  // The module will be present in releases due to having been installed via
-  // RequestRuntimeModuleInstall(), and in local/CQ builds of bundle targets
-  // where the module was installed with the bundle.
-  if (stack_unwinder::Module::IsInstalled())
-    return RuntimeModuleState::kModulePresent;
-
-  if (release_channel) {
-    // We only want to incur the cost of universally downloading the module in
-    // early channels, where profiling will occur over substantially all of
-    // the population. When supporting later channels in the future we will
-    // enable profiling for only a fraction of users and only download for
-    // those users.
-    if (*release_channel == version_info::Channel::CANARY ||
-        *release_channel == version_info::Channel::DEV) {
-      return RuntimeModuleState::kModuleAbsentButAvailable;
-    }
-
-    return RuntimeModuleState::kModuleNotAvailable;
-  }
-
-  // This is a local or CQ build of a bundle where the module was not
-  // installed with the bundle, or an apk where the module is not included.
-  // The module is installable from the Play Store only for released Chrome so
-  // is not available in this build.
-  return RuntimeModuleState::kModuleNotAvailable;
-}
 
 ThreadProfilerPlatformConfiguration::RelativePopulations
 AndroidPlatformConfiguration::GetEnableRates(
@@ -186,16 +132,6 @@ AndroidPlatformConfiguration::GetEnableRates(
   return RelativePopulations{0, 50};
 }
 
-void AndroidPlatformConfiguration::RequestRuntimeModuleInstall() const {
-  // The install can only be done in the browser process.
-  CHECK_EQ(metrics::CallStackProfileParams::Process::kBrowser,
-           GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
-
-  // The install occurs asynchronously, with the module available at the first
-  // run of Chrome following install.
-  stack_unwinder::Module::RequestInstallation();
-}
-
 double AndroidPlatformConfiguration::GetChildProcessEnableFraction(
     metrics::CallStackProfileParams::Process process) const {
   DCHECK_NE(metrics::CallStackProfileParams::Process::kBrowser, process);
@@ -207,6 +143,9 @@ double AndroidPlatformConfiguration::GetChildProcessEnableFraction(
 
   // TODO(https://crbug.com/1326430): Enable for all the default processes.
   switch (process) {
+    case metrics::CallStackProfileParams::Process::kGpu:
+      return 1.0;
+
     case metrics::CallStackProfileParams::Process::kRenderer:
       // There are empirically, on average, 1.3 renderer processes per browser
       // process. This samples the renderer process at roughly the same
@@ -216,21 +155,6 @@ double AndroidPlatformConfiguration::GetChildProcessEnableFraction(
 
     default:
       return 0.0;
-  }
-}
-
-bool AndroidPlatformConfiguration::IsEnabledForThread(
-    metrics::CallStackProfileParams::Process process,
-    metrics::CallStackProfileParams::Thread thread) const {
-  // TODO(https://crbug.com/1326430): Enable for all the default processes.
-  switch (process) {
-    case metrics::CallStackProfileParams::Process::kRenderer:
-      return true;
-    case metrics::CallStackProfileParams::Process::kBrowser:
-      return thread == metrics::CallStackProfileParams::Thread::kMain;
-
-    default:
-      return false;
   }
 }
 #endif  // BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)

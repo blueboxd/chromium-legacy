@@ -102,7 +102,7 @@
 #include "media/base/win/mf_feature_checks.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gl/dcomp_surface_registry.h"
-#include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_support.h"
 #endif
 
 #if BUILDFLAG(IS_APPLE)
@@ -273,39 +273,9 @@ bool IsAcceleratedJpegDecodeSupported() {
 void GetVideoCapabilities(const gpu::GpuPreferences& gpu_preferences,
                           const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
                           gpu::GPUInfo* gpu_info) {
-  // Due to https://crbug.com/709631, we don't want to query Android video
-  // decode/encode capabilities during startup. The renderer needs this info
-  // though, so assume some baseline capabilities.
-#if BUILDFLAG(IS_ANDROID)
-  // Note: Video encoding on Android relies on MediaCodec, so all cases
-  // where it's disabled for decoding it is also disabled for encoding.
-  if (gpu_preferences.disable_accelerated_video_decode ||
-      gpu_preferences.disable_accelerated_video_encode) {
-    return;
-  }
-
-  auto& encoding_profiles =
-      gpu_info->video_encode_accelerator_supported_profiles;
-
-  gpu::VideoEncodeAcceleratorSupportedProfile vea_profile;
-  vea_profile.max_resolution = gfx::Size(1280, 720);
-  vea_profile.max_framerate_numerator = 30;
-  vea_profile.max_framerate_denominator = 1;
-
-  if (media::MediaCodecUtil::IsVp8EncoderAvailable()) {
-    vea_profile.profile = gpu::VP8PROFILE_ANY;
-    encoding_profiles.push_back(vea_profile);
-  }
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  vea_profile.profile = gpu::H264PROFILE_BASELINE;
-  encoding_profiles.push_back(vea_profile);
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-
   // Note: Since Android doesn't have to support PPAPI/Flash, we have not
   // returned the decoder profiles here since https://crrev.com/665999.
-#else   // BUILDFLAG(IS_ANDROID)
-
+#if !BUILDFLAG(IS_ANDROID)
   // GpuMojoMediaClient controls which decoder is actually being used, so
   // it should be the source of truth for supported profiles.
   auto maybe_decoder_configs =
@@ -317,13 +287,7 @@ void GetVideoCapabilities(const gpu::GpuPreferences& gpu_preferences,
         media::GpuVideoAcceleratorUtil::ConvertMediaConfigsToGpuDecodeProfiles(
             *maybe_decoder_configs);
   }
-
-  gpu_info->video_encode_accelerator_supported_profiles =
-      media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
-          media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-              gpu_preferences, gpu_workarounds, gpu_info->active_gpu(),
-              /*populate_extended_info=*/false));
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 // Returns a callback which does a PostTask to run |callback| on the |runner|
@@ -430,18 +394,16 @@ GpuServiceImpl::GpuServiceImpl(
 #endif
 
 #if BUILDFLAG(IS_WIN)
-  auto info_callback =
-      base::BindRepeating(&GpuServiceImpl::UpdateOverlayAndDXGIInfo,
-                          weak_ptr_factory_.GetWeakPtr());
-  gl::DirectCompositionSurfaceWin::SetOverlayHDRGpuInfoUpdateCallback(
-      info_callback);
-
   if (media::SupportMediaFoundationClearPlayback()) {
     // Initialize the OverlayStateService using the GPUServiceImpl task
     // sequence.
     auto* overlay_state_service = OverlayStateService::GetInstance();
     overlay_state_service->Initialize(base::SequencedTaskRunnerHandle::Get());
   }
+
+  // Add GpuServiceImpl to DirectCompositionOverlayCapsMonitor observer list for
+  // overlay and DXGI info update.
+  gl::DirectCompositionOverlayCapsMonitor::GetInstance()->AddObserver(this);
 #endif
 
   gpu_memory_buffer_factory_ =
@@ -460,6 +422,10 @@ GpuServiceImpl::~GpuServiceImpl() {
 
   if (!in_host_process())
     GetLogMessageManager()->ShutdownLogging();
+
+#if BUILDFLAG(IS_WIN)
+  gl::DirectCompositionOverlayCapsMonitor::GetInstance()->RemoveObserver(this);
+#endif
 
   // Destroy the receiver on the IO thread.
   {
@@ -538,7 +504,7 @@ void GpuServiceImpl::UpdateGPUInfo() {
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
-  gpu_info_.initialization_time = base::Time::Now() - start_time_;
+  gpu_info_.initialization_time = base::TimeTicks::Now() - start_time_;
 }
 
 void GpuServiceImpl::UpdateGPUInfoGL() {
@@ -913,7 +879,7 @@ void GpuServiceImpl::RequestDXGIInfo(RequestDXGIInfoCallback callback) {
 void GpuServiceImpl::RequestDXGIInfoOnMainThread(
     RequestDXGIInfoCallback callback) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  dxgi_info_ = gl::DirectCompositionSurfaceWin::GetDXGIInfo();
+  dxgi_info_ = gl::GetDirectCompositionHDRMonitorDXGIInfo();
   io_runner_->PostTask(FROM_HERE,
                        base::BindOnce(std::move(callback), dxgi_info_.Clone()));
 }
@@ -1193,16 +1159,32 @@ void GpuServiceImpl::DestroyAllChannels() {
 }
 
 void GpuServiceImpl::OnBackgroundCleanup() {
-// Currently only called on Android.
+  OnBackgroundCleanupGpuMainThread();
+  OnBackgroundCleanupCompositorGpuThread();
+}
+
+void GpuServiceImpl::OnBackgroundCleanupGpuMainThread() {
+  // Currently only called on Android.
 #if BUILDFLAG(IS_ANDROID)
   if (!main_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&GpuServiceImpl::OnBackgroundCleanup, weak_ptr_));
+        base::BindOnce(&GpuServiceImpl::OnBackgroundCleanupGpuMainThread,
+                       weak_ptr_));
     return;
   }
   DVLOG(1) << "GPU: Performing background cleanup";
   gpu_channel_manager_->OnBackgroundCleanup();
+#else
+  NOTREACHED();
+#endif
+}
+
+void GpuServiceImpl::OnBackgroundCleanupCompositorGpuThread() {
+  // Currently only called on Android.
+#if BUILDFLAG(IS_ANDROID)
+  if (compositor_gpu_thread_)
+    compositor_gpu_thread_->OnBackgroundCleanup();
 #else
   NOTREACHED();
 #endif
@@ -1323,7 +1305,8 @@ gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
 }
 
 #if BUILDFLAG(IS_WIN)
-void GpuServiceImpl::UpdateOverlayAndDXGIInfo() {
+// Update Overlay and DXGI Info
+void GpuServiceImpl::OnOverlayCapsChanged() {
   gpu::OverlayInfo old_overlay_info = gpu_info_.overlay_info;
   gpu::CollectHardwareOverlayInfo(&gpu_info_.overlay_info);
 
@@ -1334,7 +1317,7 @@ void GpuServiceImpl::UpdateOverlayAndDXGIInfo() {
 
   // Update DXGI adapter info in the GPU process through the GPU host mojom.
   auto old_dxgi_info = std::move(dxgi_info_);
-  dxgi_info_ = gl::DirectCompositionSurfaceWin::GetDXGIInfo();
+  dxgi_info_ = gl::GetDirectCompositionHDRMonitorDXGIInfo();
   if (!mojo::Equals(dxgi_info_, old_dxgi_info))
     gpu_host_->DidUpdateDXGIInfo(dxgi_info_.Clone());
 }

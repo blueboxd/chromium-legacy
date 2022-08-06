@@ -26,7 +26,7 @@ suite('<bookmarks-toolbar>', function() {
       createItem('2'),
       createItem('3'),
       createFolder('4', [], {
-        unmodifiable: chrome.bookmarks.BookmarkTreeNodeUnmodifiable.MANAGED
+        unmodifiable: chrome.bookmarks.BookmarkTreeNodeUnmodifiable.MANAGED,
       }),
       createFolder('5', []),
       createFolder(
@@ -100,7 +100,7 @@ suite('<bookmarks-toolbar>', function() {
   });
 
   test('delete button is disabled when items are unmodifiable', function() {
-    store.data.nodes['3'].unmodifiable = 'managed';
+    store.data.nodes['3']!.unmodifiable = 'managed';
     store.data.selection.items = new Set(['2', '3']);
     store.notifyObservers();
     flush();

@@ -11,7 +11,6 @@
 #include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/hash/hash.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
@@ -92,7 +91,7 @@ const char* kMacroFailedMetric = "Accessibility.CrosDictation.MacroFailed";
 const int kInputTextViewMetricValue = 1;
 
 static const char* kEnglishDictationCommands[] = {
-    "delete the previous character",
+    "delete",
     "move to the previous character",
     "move to the next character",
     "move to the previous line",
@@ -366,7 +365,8 @@ class DictationTestBase
         browser()->tab_strip_model()->GetActiveWebContents();
     content::AccessibilityNotificationWaiter selection_waiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::kAXModeComplete, ax::mojom::Event::kTextSelectionChanged);
+        ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
     content::BoundingBoxUpdateWaiter bounding_box_waiter(web_contents);
     SendFinalResultAndWait(result);
     bounding_box_waiter.Wait();
@@ -378,7 +378,8 @@ class DictationTestBase
   void SendFinalResultAndWaitForCaretBoundsChanged(const std::string& result) {
     content::AccessibilityNotificationWaiter selection_waiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::kAXModeComplete, ax::mojom::Event::kTextSelectionChanged);
+        ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
     CaretBoundsChangedWaiter caret_waiter(
         browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod());
     SendFinalResultAndWait(result);
@@ -659,7 +660,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, Metrics) {
 
   // Ensure that we recorded the correct locale.
   histogram_tester_.ExpectUniqueSample(/*name=*/kLocaleMetric,
-                                       /*sample=*/base::PersistentHash("en-US"),
+                                       /*sample=*/base::HashMetricName("en-US"),
                                        /*expected_bucket_count=*/1);
   // Ensure that we recorded the type of speech recognition and listening
   // duration.
@@ -722,6 +723,15 @@ IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalization) {
   SendFinalResultAndWaitForTextAreaValue("a test.", "This is a test.");
   SendFinalResultAndWaitForTextAreaValue("you passed!",
                                          "This is a test. You passed!");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalizationWithComma) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("Hello,", "Hello,");
+  SendFinalResultAndWaitForTextAreaValue("world", "Hello, world");
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
 }
@@ -823,12 +833,10 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, TypesNonCommands) {
 IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeleteCharacter) {
   SendFinalResultAndWaitForTextAreaValue("Vega", "Vega");
   // Capitalization and whitespace shouldn't matter.
-  SendFinalResultAndWaitForTextAreaValue(" Delete the previous character",
-                                         "Veg");
-  SendFinalResultAndWaitForTextAreaValue("delete the previous character", "Ve");
-  SendFinalResultAndWaitForTextAreaValue("  delete the previous character",
-                                         "V");
-  SendFinalResultAndWaitForTextAreaValue("DELETE the previous character", "");
+  SendFinalResultAndWaitForTextAreaValue(" Delete", "Veg");
+  SendFinalResultAndWaitForTextAreaValue("delete", "Ve");
+  SendFinalResultAndWaitForTextAreaValue("  delete ", "V");
+  SendFinalResultAndWaitForTextAreaValue("DELETE", "");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationCommandsTest, MoveByCharacter) {
@@ -866,7 +874,7 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectAllAndUnselect) {
   SendFinalResultAndWaitForTextAreaValue("Vega is the brightest star in Lyra",
                                          "Vega is the brightest star in Lyra");
   SendFinalResultAndWaitForSelectionChanged("Select all");
-  SendFinalResultAndWaitForTextAreaValue("delete the previous character", "");
+  SendFinalResultAndWaitForTextAreaValue("delete", "");
   SendFinalResultAndWaitForTextAreaValue(
       "Vega is the fifth brightest star in the sky",
       "Vega is the fifth brightest star in the sky");
@@ -1331,13 +1339,21 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, ChromeVoxAnnouncesHints) {
   // Setup ChromeVox first.
   test::SpeechMonitor sm;
   EXPECT_FALSE(GetManager()->IsSpokenFeedbackEnabled());
+  extensions::ExtensionHostTestHelper host_helper(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId);
   EnableChromeVox();
+  host_helper.WaitForHostCompletedFirstLoad();
   EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
 
-  // Wait for ChromeVox to start.
-  sm.ExpectSpeech("ChromeVox spoken feedback is ready");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
 
-  sm.Call([this]() { ToggleDictationWithKeystroke(); });
+  // Hints should show up after a few seconds without speech.
+  WaitForProperties(
+      /*visible=*/true,
+      /*icon=*/DictationBubbleIconType::kStandby,
+      /*text=*/absl::optional<std::u16string>(),
+      /*hints=*/std::vector<std::u16string>{kTrySaying, kType, kHelp});
 
   // Assert speech from ChromeVox.
   sm.ExpectSpeechPattern("Try saying*Type*Help*");
@@ -1460,7 +1476,8 @@ class DictationHiddenMacrosTest : public DictationTest {
   void RunMacroAndWaitForCaretBoundsChanged(int macro) {
     content::AccessibilityNotificationWaiter selection_waiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::kAXModeComplete, ax::mojom::Event::kTextSelectionChanged);
+        ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
     CaretBoundsChangedWaiter caret_waiter(
         browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod());
     RunHiddenMacro(macro);
@@ -1473,7 +1490,8 @@ class DictationHiddenMacrosTest : public DictationTest {
       const std::string& end_phrase) {
     content::AccessibilityNotificationWaiter selection_waiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::kAXModeComplete, ax::mojom::Event::kTextSelectionChanged);
+        ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
     content::BoundingBoxUpdateWaiter bounding_box_waiter(
         browser()->tab_strip_model()->GetActiveWebContents());
     RunHiddenMacroWithTwoStringArgs(/* SMART_SELECT_BTWN_INCL */ 24,

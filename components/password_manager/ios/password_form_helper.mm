@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -185,7 +186,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 #pragma mark - Private methods
 
 - (BOOL)handleScriptCommand:(const base::Value&)JSONCommand {
-  const std::string* command = JSONCommand.FindStringKey("command");
+  const std::string* command = JSONCommand.GetDict().FindString("command");
   if (!command || *command != "passwordForm.submitButtonClick") {
     return NO;
   }
@@ -283,6 +284,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 }
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
+                 inFrame:(web::WebFrame*)frame
        completionHandler:(nullable void (^)(BOOL))completionHandler {
   web::WebFrame* mainFrame = web::GetMainFrame(_webState);
   if (!mainFrame) {
@@ -316,6 +318,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
       ->FillPasswordForm(mainFrame, formData, UTF16ToUTF8(usernameValue),
                          UTF16ToUTF8(passwordValue),
                          base::BindOnce(^(BOOL success) {
+                           base::UmaHistogramBoolean("PasswordManager."
+                                                     "FillingSuccessIOS",
+                                                     success);
                            if (success) {
                              weakSelf.fieldDataManager->UpdateFieldDataMap(
                                  usernameID, usernameValue,
@@ -331,6 +336,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 }
 
 - (void)fillPasswordForm:(FormRendererId)formIdentifier
+                      inFrame:(web::WebFrame*)frame
         newPasswordIdentifier:(FieldRendererId)newPasswordIdentifier
     confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
@@ -365,6 +371,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 }
 
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
+                             inFrame:(web::WebFrame*)frame
                     triggeredOnField:(FieldRendererId)uniqueFieldID
                    completionHandler:
                        (nullable void (^)(BOOL))completionHandler {
@@ -388,6 +395,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
       ->FillPasswordForm(
           mainFrame, fillData, fillUsername, UTF16ToUTF8(usernameValue),
           UTF16ToUTF8(passwordValue), base::BindOnce(^(BOOL success) {
+            base::UmaHistogramBoolean("PasswordManager."
+                                      "FillingSuccessIOS",
+                                      success);
             if (success) {
               weakSelf.fieldDataManager->UpdateFieldDataMap(
                   usernameID, usernameValue,

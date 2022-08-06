@@ -20,6 +20,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "content/public/test/test_web_ui.h"
@@ -83,6 +84,13 @@ const char kImageBytes6[] = "11110100011111111010100101001010100101010011";
 const std::vector<uint8_t> kAccountKey6 = {0xB5, 0xB6, 0xF0, 0xBB, 0x95, 0x1F,
                                            0xF7, 0xB8, 0xCF, 0x5E, 0x3F, 0x45,
                                            0x61, 0xC3, 0x36, 0x1D};
+
+const char kSavedDeviceRemoveResultMetricName[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.Remove.Result";
+const char kSavedDevicesTotalUxLoadTimeMetricName[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.TotalUxLoadTime";
+const char kSavedDevicesCountMetricName[] =
+    "Bluetooth.ChromeOS.FastPair.SavedDevices.DeviceCount";
 
 nearby::fastpair::FastPairDevice CreateFastPairDevice(
     const std::string device_name,
@@ -265,8 +273,11 @@ class FastPairSavedDevicesHandlerTest : public testing::Test {
                                          &base::Value::AsListValue(args));
   }
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  protected:
   base::test::TaskEnvironment task_environment_;
+  base::HistogramTester histogram_tester_;
   ash::quick_pair::FakeFastPairRepository fast_pair_repository_;
   gfx::Image test_image_;
   ash::quick_pair::MockFastPairImageDecoder* mock_decoder_;
@@ -276,6 +287,8 @@ class FastPairSavedDevicesHandlerTest : public testing::Test {
 };
 
 TEST_F(FastPairSavedDevicesHandlerTest, GetSavedDevices) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
       /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
@@ -299,9 +312,13 @@ TEST_F(FastPairSavedDevicesHandlerTest, GetSavedDevices) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, ReloadBeforePageLoadsIgnored) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
       /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
@@ -331,9 +348,13 @@ TEST_F(FastPairSavedDevicesHandlerTest, ReloadBeforePageLoadsIgnored) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, ReloadAfterPageLoads) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
       /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
@@ -356,6 +377,8 @@ TEST_F(FastPairSavedDevicesHandlerTest, ReloadAfterPageLoads) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
 
   LoadPage();
   base::RunLoop().RunUntilIdle();
@@ -381,9 +404,15 @@ TEST_F(FastPairSavedDevicesHandlerTest, ReloadAfterPageLoads) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      2);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, EmptyListSentToWebUi) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/0, 0);
   fast_pair_repository_.SetSavedDevices(
       /*status=*/nearby::fastpair::OptInStatus::STATUS_OPTED_OUT,
       /*devices=*/{});
@@ -394,9 +423,17 @@ TEST_F(FastPairSavedDevicesHandlerTest, EmptyListSentToWebUi) {
   VerifyOptInStatus(*test_web_ui()->call_data()[0],
                     nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
   VerifyEmptySavedDevicesList(*test_web_ui()->call_data()[1]);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/0, 1);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, SavedDevicesBecomesEmpty) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/0, 0);
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
       /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
@@ -417,6 +454,10 @@ TEST_F(FastPairSavedDevicesHandlerTest, SavedDevicesBecomesEmpty) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/0, 0);
 
   fast_pair_repository_.SetSavedDevices(
       /*status=*/nearby::fastpair::OptInStatus::STATUS_OPTED_OUT,
@@ -430,9 +471,15 @@ TEST_F(FastPairSavedDevicesHandlerTest, SavedDevicesBecomesEmpty) {
   VerifyOptInStatus(*test_web_ui()->call_data()[2],
                     nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
   VerifyEmptySavedDevicesList(*test_web_ui()->call_data()[3]);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      2);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/0, 1);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, SavedDevicesChanges) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
       /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
@@ -453,6 +500,8 @@ TEST_F(FastPairSavedDevicesHandlerTest, SavedDevicesChanges) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
 
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName4, /*device_image_bytes1=*/kImageBytes4,
@@ -474,9 +523,13 @@ TEST_F(FastPairSavedDevicesHandlerTest, SavedDevicesChanges) {
       /*account_key2=*/kAccountKey5, /*device_name3=*/kDeviceName6,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey6);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      2);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, EmptyImageSentToWebUi) {
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      0);
   ON_CALL(*mock_decoder_, DecodeImage(testing::_, testing::_, testing::_))
       .WillByDefault(base::test::RunOnceCallback<2>(gfx::Image()));
   InitializeSavedDevicesList(
@@ -500,9 +553,13 @@ TEST_F(FastPairSavedDevicesHandlerTest, EmptyImageSentToWebUi) {
       /*device_name2=*/kDeviceName2, /*expected_device_url2=*/"",
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/"", /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
+                                      1);
 }
 
 TEST_F(FastPairSavedDevicesHandlerTest, RemoveSavedDevice) {
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/3, 0);
   InitializeSavedDevicesList(
       /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
       /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
@@ -520,6 +577,14 @@ TEST_F(FastPairSavedDevicesHandlerTest, RemoveSavedDevice) {
       /*account_key2=*/kAccountKey2, /*device_name3=*/kDeviceName3,
       /*expected_device_url3=*/kDisplayUrlBase64,
       /*account_key3=*/kAccountKey3);
+  histogram_tester().ExpectBucketCount(kSavedDeviceRemoveResultMetricName,
+                                       /*success=*/true, 0);
+  histogram_tester().ExpectBucketCount(kSavedDeviceRemoveResultMetricName,
+                                       /*success=*/false, 0);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/2, 0);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/3, 1);
 
   RemoveDevice(kAccountKey3);
   base::RunLoop().RunUntilIdle();
@@ -541,6 +606,15 @@ TEST_F(FastPairSavedDevicesHandlerTest, RemoveSavedDevice) {
                          /*expected_device_name=*/kDeviceName2,
                          /*expected_base64_image_url=*/kDisplayUrlBase64,
                          /*expected_account_key=*/kAccountKey2));
+
+  histogram_tester().ExpectBucketCount(kSavedDeviceRemoveResultMetricName,
+                                       /*success=*/true, 1);
+  histogram_tester().ExpectBucketCount(kSavedDeviceRemoveResultMetricName,
+                                       /*success=*/false, 0);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/2, 1);
+  histogram_tester().ExpectBucketCount(kSavedDevicesCountMetricName,
+                                       /*num_devices=*/3, 1);
 }
 
 }  // namespace chromeos::settings

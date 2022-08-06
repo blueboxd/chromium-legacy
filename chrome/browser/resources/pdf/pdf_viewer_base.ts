@@ -120,7 +120,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
     const attributesForLoading:
         chrome.mimeHandlerPrivate.PdfPluginAttributes = {
       backgroundColor: this.getBackgroundColor(),
-      allowJavascript: javascript === 'allow'
+      allowJavascript: javascript === 'allow',
     };
     if (chrome.mimeHandlerPrivate &&
         chrome.mimeHandlerPrivate.setPdfPluginAttributes) {
@@ -191,7 +191,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
     this.tracker.add(
         pluginController.getEventTarget(),
         PluginControllerEventType.PLUGIN_MESSAGE,
-        e => this.handlePluginMessage(<CustomEvent<MessageData>>e));
+        e => this.handlePluginMessage(e as CustomEvent<MessageData>));
 
     document.body.addEventListener('change-page-and-xy', e => {
       const point =
@@ -291,7 +291,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
       pageY: visiblePageDimensions.y,
       pageWidth: visiblePageDimensions.width,
       viewportWidth: size.width,
-      viewportHeight: size.height
+      viewportHeight: size.height,
     });
   }
 

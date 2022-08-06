@@ -197,8 +197,6 @@ void ApkWebAppInstaller::DoInstall() {
             ->web_app_service_ash()
             ->GetWebAppProviderBridge();
     if (!web_app_provider_bridge) {
-      // TODO(crbug.com/1311501): make installation idempotent: by handle
-      // WebAppProviderBridge reconnect events.
       CompleteInstallation(web_app::AppId(),
                            webapps::InstallResultCode::kWebAppProviderNotReady);
       return;
@@ -208,7 +206,7 @@ void ApkWebAppInstaller::DoInstall() {
         base::BindOnce(&ApkWebAppInstaller::OnWebAppCreated,
                        base::Unretained(this), std::move(start_url)));
   } else {
-    auto* provider = web_app::WebAppProvider::GetDeprecated(profile_);
+    auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
     DCHECK(provider);
     // Doesn't overwrite already existing web app with manifest fields from the
     // apk.

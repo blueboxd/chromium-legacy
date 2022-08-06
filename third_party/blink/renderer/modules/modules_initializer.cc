@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/widget/compositing/categorized_worker_pool.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -332,7 +333,8 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
   return base::WrapUnique(web_frame_client->CreateMediaPlayer(
       source, media_player_client, context_impl, &encrypted_media,
       encrypted_media.ContentDecryptionModule(), sink_id,
-      frame_widget->GetLayerTreeSettings()));
+      frame_widget->GetLayerTreeSettings(),
+      CategorizedWorkerPool::GetOrCreate()));
 }
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
@@ -425,9 +427,10 @@ mojom::blink::FileSystemManager& ModulesInitializer::GetFileSystemManager(
 
 void ModulesInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   DCHECK(Platform::Current());
-  binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&WebDatabaseImpl::Bind)),
-              Platform::Current()->GetIOTaskRunner());
+  binders.Add<mojom::blink::WebDatabase>(
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&WebDatabaseImpl::Bind)),
+      Platform::Current()->GetIOTaskRunner());
 }
 
 }  // namespace blink

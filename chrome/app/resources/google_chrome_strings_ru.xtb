@@ -12,8 +12,6 @@
 <translation id="1142745911746664600">Не удалось обновить Chrome</translation>
 <translation id="1152920704813762236">Подробнее о Chrome OS</translation>
 <translation id="1154147086299354128">&amp;Открыть в Chrome</translation>
-<translation id="1178374936842835197">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-        настройки Chrome OS Flex<ph name="LINK_END" />.</translation>
 <translation id="1203500561924088507">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите браузер.</translation>
 <translation id="1278833599417554002">Перезапустить для обновления &amp;Chrome</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
@@ -65,6 +63,7 @@
 <translation id="2139300032719313227">Перезапустите Chrome OS</translation>
 <translation id="2151406531797534936">Перезапустите Chrome</translation>
 <translation id="2174917724755363426">Установка не завершена. Отменить ее?</translation>
+<translation id="223889379102603431">Информация о том, как Chrome управляет корневыми сертификатами</translation>
 <translation id="2258103955319320201">Чтобы получить доступ к данным в браузере Chrome на всех своих устройствах, войдите в аккаунт и включите синхронизацию.</translation>
 <translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
@@ -77,6 +76,7 @@
 <translation id="2401189691232800402">Chrome OS</translation>
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
+<translation id="2494974097748878569">Google Ассистент в Chrome</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
 <translation id="2559253115192232574">Сайты, на которые вы зайдете в дальнейшем, смогут запрашивать у Chrome сведения о ваших интересах, чтобы показывать вам подходящую рекламу. Chrome может предоставлять информацию не более чем о трех интересах.</translation>
 <translation id="2563121210305478421">Перезапустить Chrome?</translation>
@@ -117,7 +117,6 @@
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3100998948628680988">Введите название профиля Chrome</translation>
-<translation id="3103390129666310801">Чтобы посмотреть, обновлена ли операционная система устройства, перейдите в <ph name="LINK_BEGIN" />настройки Chrome OS Flex<ph name="LINK_END" />.</translation>
 <translation id="3114643501466072395">Чтобы проверить, защищены ли другие ваши пароли от утечки данных и прочих проблем с безопасностью, <ph name="BEGIN_LINK" />войдите в Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Внесенные изменения станут активны после перезапуска Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
@@ -208,7 +207,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">На вашем компьютере используется OS X 10.11. Чтобы получать обновления Google Chrome, установите на устройство macOS 10.13 или более поздней версии.</translation>
 <translation id="5098668839038261629">Также выполняется выход из Chrome</translation>
-<translation id="5112116809696021727">Чтобы посмотреть, обновлена ли операционная система устройства, перейдите в <ph name="LINK_BEGIN" />настройки Chrome OS<ph name="LINK_END" />.</translation>
 <translation id="5132929315877954718">Широкий выбор приложений, игр, расширений и тем для Google Chrome.</translation>
 <translation id="5139423532931106058">Настроить профиль Chrome</translation>
 <translation id="5163087008893166964">Добро пожаловать в Chrome! Открыто новое окно браузера.</translation>
@@ -244,8 +242,6 @@
 <translation id="5940385492829620908">Все веб-страницы, закладки и другие данные Chrome можно найти здесь.</translation>
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
-<translation id="5959292945051687759">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-        настройки Chrome OS<ph name="LINK_END" />.</translation>
 <translation id="6003112304606738118">Скачивание… Осталось: <ph name="HOURS" /> ч.</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6070348360322141662">В целях повышения безопасности Google Chrome шифрует ваши данные</translation>
@@ -273,6 +269,7 @@
 <translation id="6739177684496155661">Продолжить работу в новом профиле Chrome?</translation>
 <translation id="6750954913813541382">Для проверки правописания Chrome отправляет в Google текст, который вы вводите в браузере.</translation>
 <translation id="677276454032249905">Закрыть Chrome?</translation>
+<translation id="6785872064505734160">Google Ассистент в Chrome может помогать вам выполнять действия на сайтах.</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6881299373831449287">Обновление Chrome</translation>
 <translation id="6885412569789873916">Приложения Chrome (бета)</translation>
@@ -345,6 +342,7 @@
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
 <translation id="813913629614996137">Инициализация...</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>
+<translation id="8270775718612349140">Сертификаты, которыми управляет Chrome</translation>
 <translation id="8286862437124483331">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="828798499196665338">Родители отключили в Chrome параметр "Разрешения для сайтов, приложений и расширений". Включать это <ph name="EXTENSION_TYPE_PARAMETER" /> запрещено.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>

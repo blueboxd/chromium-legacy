@@ -5,30 +5,41 @@
 /**
  * @fileoverview ChromeVox commands.
  */
-import {AutoScrollHandler} from '/chromevox/background/auto_scroll_handler.js';
-import {BrailleBackground} from '/chromevox/background/braille/braille_background.js';
-import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
-import {Color} from '/chromevox/background/color.js';
-import {CommandHandlerInterface} from '/chromevox/background/command_handler_interface.js';
-import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
-import {TypingEcho} from '/chromevox/background/editing/editable_text_base.js';
-import {EventSourceState} from '/chromevox/background/event_source.js';
-import {GestureInterface} from '/chromevox/background/gesture_interface.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {PhoneticData} from '/chromevox/background/phonetic_data.js';
-import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
-import {SmartStickyMode} from '/chromevox/background/smart_sticky_mode.js';
-import {AbstractTts} from '/chromevox/common/abstract_tts.js';
-import {CommandStore} from '/chromevox/common/command_store.js';
-import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
-import {EventSourceType} from '/chromevox/common/event_source_type.js';
-import {GestureGranularity} from '/chromevox/common/gesture_command_data.js';
-import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
-import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
-import {CursorRange} from '/common/cursors/range.js';
-import {EventGenerator} from '/common/event_generator.js';
+import {Cursor, CursorUnit} from '../../common/cursors/cursor.js';
+import {CursorRange} from '../../common/cursors/range.js';
+import {EventGenerator} from '../../common/event_generator.js';
+import {KeyCode} from '../../common/key_code.js';
+import {AbstractTts} from '../common/abstract_tts.js';
+import {NavBraille} from '../common/braille/nav_braille.js';
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
+import {CommandStore} from '../common/command_store.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '../common/custom_automation_event.js';
+import {EventSourceType} from '../common/event_source_type.js';
+import {GestureGranularity} from '../common/gesture_command_data.js';
+import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+import {LogType} from '../common/log_types.js';
+import {Msgs} from '../common/msgs.js';
+import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+
+import {AutoScrollHandler} from './auto_scroll_handler.js';
+import {BrailleBackground} from './braille/braille_background.js';
+import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
+import {ChromeVox} from './chromevox.js';
+import {ChromeVoxState} from './chromevox_state.js';
+import {ChromeVoxBackground} from './classic_background.js';
+import {Color} from './color.js';
+import {CommandHandlerInterface} from './command_handler_interface.js';
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
+import {TypingEcho} from './editing/editable_text_base.js';
+import {EventSourceState} from './event_source.js';
+import {GestureInterface} from './gesture_interface.js';
+import {LogStore} from './logging/log_store.js';
+import {Output} from './output/output.js';
+import {OutputEventType} from './output/output_types.js';
+import {PhoneticData} from './phonetic_data.js';
+import {ChromeVoxPrefs} from './prefs.js';
+import {SmartStickyMode} from './smart_sticky_mode.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
@@ -111,8 +122,10 @@ export class CommandHandler extends CommandHandlerInterface {
         break;
       case 'toggleStickyMode':
         ChromeVoxBackground.setPref('sticky', !ChromeVox.isStickyPrefOn, true);
-        this.smartStickyMode_.onStickyModeCommand(
-            ChromeVoxState.instance.currentRange);
+        if (ChromeVoxState.instance.currentRange) {
+          this.smartStickyMode_.onStickyModeCommand(
+              ChromeVoxState.instance.currentRange);
+        }
         return false;
       case 'passThroughMode':
         ChromeVox.passThroughMode = true;
@@ -121,7 +134,7 @@ export class CommandHandler extends CommandHandlerInterface {
       case 'showLearnModePage':
         const explorerPage = {
           url: 'chromevox/learn_mode/learn_mode.html',
-          type: 'panel'
+          type: 'panel',
         };
         chrome.windows.create(explorerPage);
         break;
@@ -407,7 +420,7 @@ export class CommandHandler extends CommandHandlerInterface {
     let rootPred = AutomationPredicate.rootOrEditableRoot;
     let unit = null;
     let shouldWrap = true;
-    const speechProps = {};
+    const speechProps = new TtsSpeechProperties();
     let skipSync = false;
     let didNavigate = false;
     let tryScrolling = true;
@@ -416,16 +429,16 @@ export class CommandHandler extends CommandHandlerInterface {
     switch (command) {
       case 'nextCharacter':
         didNavigate = true;
-        speechProps['phoneticCharacters'] = true;
-        unit = cursors.Unit.CHARACTER;
-        current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
+        speechProps.phoneticCharacters = true;
+        unit = CursorUnit.CHARACTER;
+        current = current.move(CursorUnit.CHARACTER, Dir.FORWARD);
         break;
       case 'previousCharacter':
         dir = Dir.BACKWARD;
         didNavigate = true;
-        speechProps['phoneticCharacters'] = true;
-        unit = cursors.Unit.CHARACTER;
-        current = current.move(cursors.Unit.CHARACTER, dir);
+        speechProps.phoneticCharacters = true;
+        unit = CursorUnit.CHARACTER;
+        current = current.move(CursorUnit.CHARACTER, dir);
         break;
       case 'nativeNextCharacter':
       case 'nativePreviousCharacter':
@@ -433,20 +446,21 @@ export class CommandHandler extends CommandHandlerInterface {
           DesktopAutomationInterface.instance.textEditHandler
               .injectInferredIntents([{
                 command: chrome.automation.IntentCommandType.MOVE_SELECTION,
-                textBoundary: chrome.automation.IntentTextBoundaryType.CHARACTER
+                textBoundary:
+                    chrome.automation.IntentTextBoundaryType.CHARACTER,
               }]);
         }
         return true;
       case 'nextWord':
         didNavigate = true;
-        unit = cursors.Unit.WORD;
-        current = current.move(cursors.Unit.WORD, Dir.FORWARD);
+        unit = CursorUnit.WORD;
+        current = current.move(CursorUnit.WORD, Dir.FORWARD);
         break;
       case 'previousWord':
         dir = Dir.BACKWARD;
         didNavigate = true;
-        unit = cursors.Unit.WORD;
-        current = current.move(cursors.Unit.WORD, dir);
+        unit = CursorUnit.WORD;
+        current = current.move(CursorUnit.WORD, dir);
         break;
       case 'nativeNextWord':
       case 'nativePreviousWord':
@@ -456,22 +470,22 @@ export class CommandHandler extends CommandHandlerInterface {
                 command: chrome.automation.IntentCommandType.MOVE_SELECTION,
                 textBoundary: command === 'nativeNextWord' ?
                     chrome.automation.IntentTextBoundaryType.WORD_END :
-                    chrome.automation.IntentTextBoundaryType.WORD_START
+                    chrome.automation.IntentTextBoundaryType.WORD_START,
               }]);
         }
         return true;
       case 'forward':
       case 'nextLine':
         didNavigate = true;
-        unit = cursors.Unit.LINE;
-        current = current.move(cursors.Unit.LINE, Dir.FORWARD);
+        unit = CursorUnit.LINE;
+        current = current.move(CursorUnit.LINE, Dir.FORWARD);
         break;
       case 'backward':
       case 'previousLine':
         dir = Dir.BACKWARD;
         didNavigate = true;
-        unit = cursors.Unit.LINE;
-        current = current.move(cursors.Unit.LINE, dir);
+        unit = CursorUnit.LINE;
+        current = current.move(CursorUnit.LINE, dir);
         break;
       case 'nextButton':
         dir = Dir.FORWARD;
@@ -647,8 +661,8 @@ export class CommandHandler extends CommandHandlerInterface {
         skipSettingSelection = true;
         didNavigate = true;
         unit = (EventSourceState.get() === EventSourceType.TOUCH_GESTURE) ?
-            cursors.Unit.GESTURE_NODE :
-            cursors.Unit.NODE;
+            CursorUnit.GESTURE_NODE :
+            CursorUnit.NODE;
         current = current.move(unit, dir);
         current = this.skipLabelOrDescriptionFor(current, dir);
         break;
@@ -708,6 +722,9 @@ export class CommandHandler extends CommandHandlerInterface {
         skipInitialAncestry = false;
         break;
       case 'jumpToTop': {
+        if (!current.start.node || !current.start.node.root) {
+          break;
+        }
         const node = AutomationUtil.findNodePost(
             current.start.node.root, Dir.FORWARD, AutomationPredicate.object);
         if (node) {
@@ -716,6 +733,9 @@ export class CommandHandler extends CommandHandlerInterface {
         tryScrolling = false;
       } break;
       case 'jumpToBottom': {
+        if (!current.start.node || !current.start.node.root) {
+          break;
+        }
         const node = AutomationUtil.findLastNode(
             current.start.node.root, AutomationPredicate.object);
         if (node) {
@@ -780,7 +800,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
           const prevRange = ChromeVoxState.instance.currentRange;
           const newRange = ChromeVoxState.instance.currentRange.move(
-              cursors.Unit.NODE, Dir.FORWARD);
+              CursorUnit.NODE, Dir.FORWARD);
 
           // Stop if we've wrapped back to the document.
           const maybeDoc = newRange.start.node;
@@ -891,7 +911,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
         if (!target) {
           output.format('@no_title');
-        } else {
+        } else if (target.name) {
           output.withString(target.name);
         }
 
@@ -911,12 +931,16 @@ export class CommandHandler extends CommandHandlerInterface {
               true);
         } else {
           const root = ChromeVoxState.instance.currentRange.start.node.root;
-          if (root && root.selectionStartObject && root.selectionEndObject) {
+          if (root && root.selectionStartObject && root.selectionEndObject &&
+              !isNaN(Number(root.selectionStartOffset)) &&
+              !isNaN(Number(root.selectionEndOffset))) {
             const sel = new CursorRange(
-                new cursors.Cursor(
-                    root.selectionStartObject, root.selectionStartOffset),
-                new cursors.Cursor(
-                    root.selectionEndObject, root.selectionEndOffset));
+                new Cursor(
+                    root.selectionStartObject,
+                    /** @type {number} */ (root.selectionStartOffset)),
+                new Cursor(
+                    root.selectionEndObject,
+                    /** @type {number} */ (root.selectionEndOffset)));
             const o =
                 new Output()
                     .format('@end_selection')
@@ -1027,7 +1051,7 @@ export class CommandHandler extends CommandHandlerInterface {
         // matching that node.
         let startNode = node.lastChild;
         while (startNode.lastChild &&
-               !AutomationPredicate.cellLike(startNode.role)) {
+               !AutomationPredicate.cellLike(startNode)) {
           startNode = startNode.lastChild;
         }
         current = CursorRange.fromNode(startNode);
@@ -1118,7 +1142,8 @@ export class CommandHandler extends CommandHandlerInterface {
         }
 
         // Get word start and end indices.
-        let wordStarts, wordEnds;
+        let wordStarts;
+        let wordEnds;
         if (node.role === RoleType.INLINE_TEXT_BOX) {
           wordStarts = node.wordStarts;
           wordEnds = node.wordEnds;
@@ -1198,6 +1223,8 @@ export class CommandHandler extends CommandHandlerInterface {
           'Accessibility.ChromeVox.Navigate');
     }
 
+    // TODO(accessibility): extract this block and remove explicit type casts
+    // after re-writing.
     if (pred) {
       chrome.metricsPrivate.recordUserAction('Accessibility.ChromeVox.Jump');
 
@@ -1248,11 +1275,13 @@ export class CommandHandler extends CommandHandlerInterface {
             bound = root;
           } else {
             bound = AutomationUtil.findNodePost(
-                        root, dir, AutomationPredicate.leaf) ||
+                        /** @type {!AutomationNode} */ (root), dir,
+                        AutomationPredicate.leaf) ||
                 bound;
           }
-          node =
-              AutomationUtil.findNextNode(bound, dir, pred, {root: rootPred});
+          node = AutomationUtil.findNextNode(
+              /** @type {!AutomationNode} */ (bound), dir, pred,
+              {root: rootPred});
 
           if (node && !skipSync) {
             node = AutomationUtil.findNodePre(
@@ -1274,7 +1303,8 @@ export class CommandHandler extends CommandHandlerInterface {
       }
     }
 
-    if (tryScrolling &&
+    // TODO(accessibility): extract into function.
+    if (tryScrolling && current &&
         !AutoScrollHandler.getInstance().onCommandNavigation(
             current, dir, pred, unit, speechProps, rootPred, () => {
               this.onCommand(command);
@@ -1495,7 +1525,7 @@ export class CommandHandler extends CommandHandlerInterface {
         ancestor = ancestor.parent;
       }
       if (ancestor) {
-        current = current.move(cursors.Unit.NODE, dir);
+        current = current.move(CursorUnit.NODE, dir);
       } else {
         break;
       }
@@ -1510,7 +1540,7 @@ export class CommandHandler extends CommandHandlerInterface {
    */
   checkForLossOfFocus_(focusedNode) {
     const cur = ChromeVoxState.instance.currentRange;
-    if (cur && !cur.isValid()) {
+    if (cur && !cur.isValid() && focusedNode) {
       ChromeVoxState.instance.setCurrentRange(
           CursorRange.fromNode(focusedNode));
     }

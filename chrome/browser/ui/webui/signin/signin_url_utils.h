@@ -6,16 +6,24 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_URL_UTILS_H_
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "url/gurl.h"
 
-// Returns whether the sync confirmation page is using the design for modal
-// dialog.
-bool IsSyncConfirmationModal(const GURL& url);
+// Keep enum values in sync with the JS tests defined in signin_browsertest.js.
+enum class SyncConfirmationStyle {
+  kDefaultModal = 0,
+  kSigninInterceptModal = 1,
+  kWindow = 2
+};
 
-// Adds URL query parameters specified by `params` to `url`.
-// `is_modal` specifies whether the style for modal dialog is used.
-GURL AppendSyncConfirmationQueryParams(const GURL& url, bool is_modal);
+// Returns which style the sync confirmation page is using, as a default modal
+// dialog, the signin intercept modal dialog version or as a window.
+SyncConfirmationStyle GetSyncConfirmationStyle(const GURL& url);
+
+// Adds the `style` URL query parameters to `url` for the sync confirmation.
+GURL AppendSyncConfirmationQueryParams(const GURL& url,
+                                       SyncConfirmationStyle style);
 
 // Returns `ReauthAccessPoint` encoded in the query of the reauth confirmation
 // URL.
@@ -25,5 +33,20 @@ signin_metrics::ReauthAccessPoint GetReauthAccessPointForReauthConfirmationURL(
 // Returns a URL to display in the reauth confirmation dialog. The dialog was
 // triggered by |access_point|.
 GURL GetReauthConfirmationURL(signin_metrics::ReauthAccessPoint access_point);
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+enum class ProfileCustomizationStyle {
+  kDefault = 0,
+  kLocalProfileCreation = 1
+};
+
+// Returns which style the profile customization page is using, as the default
+// profile customization page or the local profile creation page.
+ProfileCustomizationStyle GetProfileCustomizationStyle(const GURL& url);
+
+// Adds the `style` URL query parameters to `url` for the profile customization.
+GURL AppendProfileCustomizationQueryParams(const GURL& url,
+                                           ProfileCustomizationStyle style);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_URL_UTILS_H_

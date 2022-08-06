@@ -9,7 +9,7 @@
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import './edit_dialog.js';
@@ -19,11 +19,11 @@ import './edit_dialog.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {KeyboardShortcutList} from 'chrome://resources/js/cr/ui/keyboard_shortcut_list.m.js';
+import {KeyboardShortcutList} from 'chrome://resources/js/cr/ui/keyboard_shortcut_list.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
@@ -397,7 +397,7 @@ export class BookmarksCommandManagerElement extends
         this.dispatchEvent(new CustomEvent('iron-announce', {
           bubbles: true,
           composed: true,
-          detail: {text: loadTimeData.getString('itemsUnselected')}
+          detail: {text: loadTimeData.getString('itemsUnselected')},
         }));
         break;
       case Command.CUT:
@@ -549,7 +549,7 @@ export class BookmarksCommandManagerElement extends
       } else {
         node.children!.forEach(function(child) {
           const childNode = nodes[child]!;
-          if (childNode.id) {
+          if (childNode.id && childNode.url) {
             result.push(childNode.id);
           }
         });

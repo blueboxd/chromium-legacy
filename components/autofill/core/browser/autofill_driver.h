@@ -63,8 +63,13 @@ class AutofillDriver {
   // Returns whether the user is currently operating in an incognito context.
   virtual bool IsIncognito() const = 0;
 
-  // Returns whether AutofillDriver instance is associated with a main frame,
-  // and this can be a primary or non-primary main frame.
+  // Returns whether the AutofillDriver instance is associated with an active
+  // frame in the MPArch sense.
+  virtual bool IsInActiveFrame() const = 0;
+
+  // Returns whether the AutofillDriver instance is associated with a main
+  // frame, in the MPArch sense. This can be a primary or non-primary main
+  // frame.
   virtual bool IsInAnyMainFrame() const = 0;
 
   // Returns whether the AutofillDriver instance is associated with a
@@ -117,7 +122,7 @@ class AutofillDriver {
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;
 
   // Forwards parsed |forms| to the embedder.
-  virtual void HandleParsedForms(const std::vector<const FormData*>& forms) = 0;
+  virtual void HandleParsedForms(const std::vector<FormData>& forms) = 0;
 
   // Sends the field type predictions specified in |forms| to the renderer. This
   // method is a no-op if the renderer is not available or the appropriate

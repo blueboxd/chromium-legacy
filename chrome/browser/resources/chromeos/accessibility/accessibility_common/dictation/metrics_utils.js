@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Macro} from '/accessibility_common/dictation/macros/macro.js';
+import {Macro} from './macros/macro.js';
 
 const SpeechRecognitionType =
     chrome.speechRecognitionPrivate.SpeechRecognitionType;
@@ -44,7 +44,7 @@ export class MetricsUtils {
   recordSpeechRecognitionStarted() {
     chrome.metricsPrivate.recordBoolean(
         MetricsUtils.ON_DEVICE_SPEECH_METRIC, this.onDevice_);
-    chrome.metricsPrivate.recordSparseHashable(
+    chrome.metricsPrivate.recordSparseValueWithHashMetricName(
         MetricsUtils.LOCALE_METRIC, this.locale_);
     this.speechRecognitionStartTime_ = new Date();
   }

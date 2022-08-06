@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
@@ -27,6 +28,9 @@ class Value;
 
 namespace ash {
 
+class AnnotatorMessageHandler;
+struct AnnotatorTool;
+struct ProjectorScreencastVideo;
 struct NewScreencastPrecondition;
 
 struct PendingScreencast {
@@ -77,6 +81,11 @@ using PendingScreencastSet =
 // ProjectorApp.
 class ProjectorAppClient {
  public:
+  // The callback used by the GetVideo() API.
+  using OnGetVideoCallback =
+      base::OnceCallback<void(std::unique_ptr<ProjectorScreencastVideo> video,
+                              const std::string& error_message)>;
+
   // Interface for observing events on the ProjectorAppClient.
   class Observer : public base::CheckedObserver {
    public:
@@ -124,7 +133,7 @@ class ProjectorAppClient {
   virtual const PendingScreencastSet& GetPendingScreencasts() const = 0;
 
   // Checks if device is eligible to trigger SODA installer.
-  virtual bool ShouldDownloadSoda() = 0;
+  virtual bool ShouldDownloadSoda() const = 0;
 
   // Triggers the installation of SODA (Speech On-Device API) binary and the
   // corresponding language pack for projector.
@@ -142,7 +151,30 @@ class ProjectorAppClient {
   virtual void OnSodaInstalled() = 0;
 
   // Triggers the opening of the Chrome feedback dialog.
-  virtual void OpenFeedbackDialog() = 0;
+  virtual void OpenFeedbackDialog() const = 0;
+
+  // Launches the given DriveFS video file with `video_file_id` into the
+  // Projector app. The `resource_key` is an additional security token needed to
+  // gain access to link-shared files. Since the `resource_key` is currently
+  // only used by Googlers, the `resource_key` might be empty.
+  virtual void GetVideo(const std::string& video_file_id,
+                        const std::string& resource_key,
+                        OnGetVideoCallback callback) const = 0;
+
+  // Registers the AnnotatorMessageHandler that is owned by the WebUI that
+  // contains the Projector annotator.
+  virtual void SetAnnotatorMessageHandler(AnnotatorMessageHandler* handler) = 0;
+
+  // Resets the stored AnnotatorMessageHandler if it matches the one that is
+  // passed in.
+  virtual void ResetAnnotatorMessageHandler(
+      AnnotatorMessageHandler* handler) = 0;
+
+  // Sets the tool inside the annotator WebUI.
+  virtual void SetTool(const AnnotatorTool& tool) = 0;
+
+  // Clears the contents of the annotator canvas.
+  virtual void Clear() = 0;
 
  protected:
   ProjectorAppClient();

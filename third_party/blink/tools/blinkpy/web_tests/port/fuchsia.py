@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-import multiprocessing
 import os
 import select
 import socket
@@ -227,16 +226,10 @@ class FuchsiaPort(base.Port):
         return self.get_option('fuchsia_target_cpu')
 
     def _cpu_cores(self):
-        # Revise the processor count on arm64, the trybots on arm64 are in
-        # dockers and cannot use all processors.
-        # For x64, fvdl always assumes hyperthreading is supported by intel
-        # processors, but the cpu_count returns the number regarding if the core
-        # is a physical one or a hyperthreading one, so the number should be
-        # divided by 2 to avoid creating more threads than the processor
-        # supports.
-        if self._target_cpu() == 'x64':
-            return max(int(multiprocessing.cpu_count() / 2) - 1, 4)
-        return 4
+        # TODO(crbug.com/1340573): Four parallel jobs always gives reasonable
+        # performance, while using larger numbers may actually slow things.
+        # Hard-code eight virtual CPU cores, so that four jobs will be run.
+        return 8
 
     def setup_test_run(self):
         super(FuchsiaPort, self).setup_test_run()
@@ -280,8 +273,9 @@ class FuchsiaPort(base.Port):
             self._target_host = None
 
     def num_workers(self, requested_num_workers):
-        # Run a single qemu instance.
-        return min(self._cpu_cores(), requested_num_workers)
+        # Allow for multi-process / multi-threading overhead in the browser
+        # by allocating two CPU cores per-worker.
+        return min(self._cpu_cores() / 2, requested_num_workers)
 
     def _default_timeout_ms(self):
         # Use 20s timeout instead of the default 6s. This is necessary because
@@ -292,7 +286,8 @@ class FuchsiaPort(base.Port):
     def start_http_server(self, additional_dirs, number_of_drivers):
         additional_dirs['/third_party/blink/PerformanceTests'] = \
             self._perf_tests_dir()
-        additional_dirs[WEB_TESTS_PATH_PREFIX] = self.web_tests_dir()
+        additional_dirs[WEB_TESTS_PATH_PREFIX] = \
+            self._path_finder.web_tests_dir()
         additional_dirs['/gen'] = self.generated_sources_directory()
         additional_dirs['/third_party/blink'] = \
             self._path_from_chromium_base('third_party', 'blink')
@@ -354,9 +349,9 @@ class ChromiumFuchsiaDriver(driver.Driver):
                         self)._command_from_driver_input(driver_input)
         if command.startswith('/'):
             relative_test_filename = \
-                os.path.relpath(command, self._port.web_tests_dir())
-            command = 'http://127.0.0.1:8000' + WEB_TESTS_PATH_PREFIX + \
-                '/' + relative_test_filename
+                os.path.relpath(command,
+                                self._port._path_finder.chromium_base())
+            command = 'http://127.0.0.1:8000' + '/' + relative_test_filename
         return command
 
 

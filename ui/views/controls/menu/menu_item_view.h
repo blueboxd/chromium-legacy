@@ -154,7 +154,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Add an item to the menu at a specified index.  ChildrenChanged() should
   // called after adding menu items if the menu may be active.
-  MenuItemView* AddMenuItemAt(int index,
+  MenuItemView* AddMenuItemAt(size_t index,
                               int item_id,
                               const std::u16string& label,
                               const std::u16string& secondary_label,
@@ -194,7 +194,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void AppendSeparator();
 
   // Adds a separator to this menu at the specified position.
-  void AddSeparatorAt(int index);
+  void AddSeparatorAt(size_t index);
 
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
@@ -369,7 +369,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   bool is_alerted() const { return is_alerted_; }
 
   // Returns whether or not a "new" badge should be shown on this menu item.
-  // Takes into account whether the badging feature is enabled.
   bool ShouldShowNewBadge() const;
 
   // Returns whether keyboard navigation through the menu should stop on this
@@ -580,8 +579,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Command id.
   int command_ = 0;
 
-  // Whether the menu item should be badged as "New" (if badging is enabled) as
-  // a way to highlight a new feature for users.
+  // Whether the menu item should be badged as "New" as a way to highlight a new
+  // feature for users.
   bool is_new_ = false;
 
   // Whether the menu item contains user-created text.
@@ -663,6 +662,19 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Whether this menu item is rendered differently to draw attention to it.
   bool is_alerted_ = false;
+
+  // If true, ViewHierarchyChanged() will call
+  // UpdateSelectionBasedStateIfChanged().
+  // UpdateSelectionBasedStateIfChanged() calls to NonIconChildViewsCount().
+  // NonIconChildViewsCount() accesses fields of type View as part of the
+  // implementation. A common pattern for assigning a field is:
+  // icon_view_ = AddChildView(icon_view);
+  // The problem is ViewHierarchyChanged() is called during AddChildView() and
+  // before `icon_view_` is set. This means NonIconChildViewsCount() may return
+  // the wrong thing. In this case
+  // `update_selection_based_state_in_view_herarchy_changed_` is set to false
+  // and SetIconView() explicitly calls UpdateSelectionBasedStateIfChanged().
+  bool update_selection_based_state_in_view_herarchy_changed_ = true;
 };
 
 }  // namespace views

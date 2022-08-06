@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
@@ -86,8 +87,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 // These tests will make a complete PeerConnection-based call and verify that
 // video is playing for the call.
+// https://crbug.com/1346488 Flaky on linux-lacros-rel
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_CanSetupDefaultVideoCall DISABLED_CanSetupDefaultVideoCall
+#else
+#define MAYBE_CanSetupDefaultVideoCall CanSetupDefaultVideoCall
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       CanSetupDefaultVideoCall) {
+                       MAYBE_CanSetupDefaultVideoCall) {
   MakeTypicalPeerConnectionCall(
       "callAndExpectResolution({video: true}, 640, 480);");
 }

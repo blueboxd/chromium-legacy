@@ -22,6 +22,9 @@
 
 namespace content {
 
+class BucketContext;
+class StoragePartitionImpl;
+
 // One instance of BucketManager exists per StoragePartition, and is created and
 // owned by the `RenderProcessHostImpl`. This class creates and destroys
 // BucketManagerHost instances per origin as a centeralized host for an origin's
@@ -29,25 +32,26 @@ namespace content {
 // deleted, and have them mark their Bucket instance as closed.
 class CONTENT_EXPORT BucketManager {
  public:
-  explicit BucketManager(
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
+  explicit BucketManager(StoragePartitionImpl* storage_partition);
   ~BucketManager();
 
   BucketManager(const BucketManager&) = delete;
   BucketManager& operator=(const BucketManager&) = delete;
 
-  // Binds `receiver` to the BucketManagerHost for the last committed origin in
-  // the RenderFrameHost referenced by  `render_frame_host_id`.
   void BindReceiverForRenderFrame(
-      const content::GlobalRenderFrameHostId& render_frame_host_id,
+      const GlobalRenderFrameHostId& render_frame_host_id,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
       mojo::ReportBadMessageCallback bad_message_callback);
 
-  // Binds `receiver` to the BucketManagerHost for `origin`. `render_process_id`
-  // represents the service worker that is connecting to the bucket service.
   void BindReceiverForWorker(
       int render_process_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
+      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
+      mojo::ReportBadMessageCallback bad_message_callback);
+
+  void BindReceiver(
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
       mojo::ReportBadMessageCallback bad_message_callback);
 
@@ -55,9 +59,7 @@ class CONTENT_EXPORT BucketManager {
   void OnHostReceiverDisconnect(BucketManagerHost* host,
                                 base::PassKey<BucketManagerHost>);
 
-  const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy() const {
-    return quota_manager_proxy_;
-  }
+  StoragePartitionImpl* storage_partition() { return storage_partition_; }
 
  private:
   friend class BucketManagerHostTest;
@@ -67,16 +69,16 @@ class CONTENT_EXPORT BucketManager {
   SEQUENCE_CHECKER(sequence_checker_);
 
   void DoBindReceiver(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
+      const BucketContext& bucket_context,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
-      const BucketHost::PermissionDecisionCallback& permission_decision,
       mojo::ReportBadMessageCallback bad_message_callback);
 
   // Owns all instances of BucketManagerHost associated with a StoragePartition.
-  std::map<url::Origin, std::unique_ptr<BucketManagerHost>> hosts_
+  std::map<blink::StorageKey, std::unique_ptr<BucketManagerHost>> hosts_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
-  const scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  StoragePartitionImpl* storage_partition_;
 };
 
 }  // namespace content

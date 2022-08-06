@@ -765,6 +765,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
   request.SetFetchWindowId(fetch_request_data_->WindowId());
   request.SetTrustTokenParams(fetch_request_data_->TrustTokenParams());
   request.SetMode(fetch_request_data_->Mode());
+  request.SetTargetAddressSpace(fetch_request_data_->TargetAddressSpace());
 
   request.SetCredentialsMode(fetch_request_data_->Credentials());
   for (const auto& header : fetch_request_data_->HeaderList()->List()) {
@@ -788,7 +789,8 @@ void FetchManager::Loader::PerformHTTPFetch() {
             pending_remote;
         fetch_request_data_->Buffer()->DrainAsChunkedDataPipeGetter(
             resolver_->GetScriptState(),
-            pending_remote.InitWithNewPipeAndPassReceiver());
+            pending_remote.InitWithNewPipeAndPassReceiver(),
+            /*client=*/nullptr);
         request.MutableBody().SetStreamBody(std::move(pending_remote));
       }
     }
@@ -903,21 +905,19 @@ void FetchManager::Loader::Failed(
     } else {
       v8::Local<v8::Value> value = exception_.Get(state->GetIsolate());
       exception_.Reset();
-      if (RuntimeEnabledFeatures::ExceptionMetaDataForDevToolsEnabled()) {
-        ThreadDebugger* debugger = ThreadDebugger::From(state->GetIsolate());
-        if (devtools_request_id) {
-          debugger->GetV8Inspector()->associateExceptionData(
-              state->GetContext(), value,
-              V8AtomicString(state->GetIsolate(), "requestId"),
-              V8String(state->GetIsolate(), *devtools_request_id));
-        }
-        if (issue_id) {
-          debugger->GetV8Inspector()->associateExceptionData(
-              state->GetContext(), value,
-              V8AtomicString(state->GetIsolate(), "issueId"),
-              V8String(state->GetIsolate(),
-                       IdentifiersFactory::IdFromToken(*issue_id)));
-        }
+      ThreadDebugger* debugger = ThreadDebugger::From(state->GetIsolate());
+      if (devtools_request_id) {
+        debugger->GetV8Inspector()->associateExceptionData(
+            state->GetContext(), value,
+            V8AtomicString(state->GetIsolate(), "requestId"),
+            V8String(state->GetIsolate(), *devtools_request_id));
+      }
+      if (issue_id) {
+        debugger->GetV8Inspector()->associateExceptionData(
+            state->GetContext(), value,
+            V8AtomicString(state->GetIsolate(), "issueId"),
+            V8String(state->GetIsolate(),
+                     IdentifiersFactory::IdFromToken(*issue_id)));
       }
       resolver_->Reject(value);
     }

@@ -131,7 +131,7 @@ std::string BuildBackdropTopicDetails(
   }
 }
 
-absl::optional<std::string> GetStringValue(base::Value::ConstListView values,
+absl::optional<std::string> GetStringValue(const base::Value::List& values,
                                            size_t field_number) {
   if (values.empty() || values.size() < field_number)
     return absl::nullopt;
@@ -143,7 +143,7 @@ absl::optional<std::string> GetStringValue(base::Value::ConstListView values,
   return v.GetString();
 }
 
-absl::optional<double> GetDoubleValue(base::Value::ConstListView values,
+absl::optional<double> GetDoubleValue(const base::Value::List& values,
                                       size_t field_number) {
   if (values.empty() || values.size() < field_number)
     return absl::nullopt;
@@ -155,7 +155,7 @@ absl::optional<double> GetDoubleValue(base::Value::ConstListView values,
   return v.GetDouble();
 }
 
-absl::optional<bool> GetBoolValue(base::Value::ConstListView values,
+absl::optional<bool> GetBoolValue(const base::Value::List& values,
                                   size_t field_number) {
   if (values.empty() || values.size() < field_number)
     return absl::nullopt;
@@ -176,7 +176,7 @@ absl::optional<WeatherInfo> ToWeatherInfo(const base::Value& result) {
     return absl::nullopt;
 
   WeatherInfo weather_info;
-  const auto& list_result = result.GetListDeprecated();
+  const auto& list_result = result.GetList();
 
   weather_info.condition_icon_url = GetStringValue(
       list_result, backdrop::WeatherInfo::kConditionIconUrlFieldNumber);
@@ -376,7 +376,7 @@ void AmbientBackendControllerImpl::UpdateSettings(
   // race condition with |AmbientPhotoController| possibly being destructed if
   // |kAmbientModeEnabled| pref is toggled off.
   auto* photo_controller = ambient_controller->ambient_photo_controller();
-  DCHECK(photo_controller);
+  CHECK(photo_controller) << "Photo controller is required to update settings";
   photo_controller->ClearCache();
 
   ambient_controller->RequestAccessToken(base::BindOnce(
@@ -407,8 +407,8 @@ void AmbientBackendControllerImpl::FetchWeather(FetchWeatherCallback callback) {
           auto json_handler =
               [](FetchWeatherCallback callback,
                  data_decoder::DataDecoder::ValueOrError result) {
-                if (result.value) {
-                  std::move(callback).Run(ToWeatherInfo(result.value.value()));
+                if (result.has_value()) {
+                  std::move(callback).Run(ToWeatherInfo(*result));
                 } else {
                   DVLOG(1) << "Failed to parse weather json.";
                   std::move(callback).Run(absl::nullopt);
@@ -723,7 +723,7 @@ void AmbientBackendControllerImpl::OnGetGooglePhotosAlbumsPreview(
   std::vector<GURL> preview_urls;
   for (const std::string& preview_url :
        get_google_photos_albums_preview_response.preview_url()) {
-    preview_urls.push_back(GURL(preview_url));
+    preview_urls.emplace_back(preview_url);
   }
   std::move(callback).Run(preview_urls);
 }

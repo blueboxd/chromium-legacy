@@ -5,7 +5,7 @@
 <translation id="1044891598689252897">సైట్‌లు సాధారణ రీతిలో పని చేస్తాయి</translation>
 <translation id="1124090076051167250">ఇది మీ హోమ్ స్క్రీన్‌పై ఉన్న, సైట్‌లు లేదా యాప్‌ల ద్వారా స్టోర్ చేయబడిన <ph name="DATASIZE" /> డేటా, కుక్కీలను క్లియర్ చేస్తుంది.</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
-<translation id="1181037720776840403">తీసివేయి</translation>
+<translation id="1181037720776840403">తీసివేయండి</translation>
 <translation id="1201402288615127009">తరువాత</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />లో పొందుపరచబడింది</translation>
 <translation id="1272079795634619415">ఆపు</translation>
@@ -24,7 +24,7 @@
 <translation id="1647582022260550163">మీరు ఖచ్చితంగా అనుమతులను రీసెట్ చేసి, అలాగే కుక్కీలు, సైట్ డేటాను క్లియర్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="1660204651932907780">ధ్వనిని ప్లే చేయగలిగేలా సైట్‌లను అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="1677097821151855053">మిమ్మల్ని గుర్తుంచుకోవడానికి కుక్కీలు, ఇతర సైట్ డేటా ఉపయోగించబడతాయి, ఉదాహరణకు మిమల్ని సైన్ ఇన్ చేయడం కోసం లేదా యాడ్‌లను వ్యక్తిగతీకరించడం కోసం. అన్ని సైట్‌లకు కుక్కీలను మేనేజ్ చేయడానికి, <ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" />ను చూడండి.</translation>
-<translation id="1688867105868176567">సైట్ డేటాని క్లియర్ చేయాలా?</translation>
+<translation id="1688867105868176567">సైట్ డేటాను క్లియర్ చేయాలా?</translation>
 <translation id="169515064810179024">మోషన్ సెన్సార్‌లను యాక్సెస్ చేయనీయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="1717218214683051432">మోషన్ సెన్సార్‌లు</translation>
 <translation id="1743802530341753419">ఏదైనా పరికరానికి కనెక్ట్ చేయగలిగేలా సైట్‌లను అనుమతించే ముందు మిమ్మల్ని అడుగుతుంది (సిఫార్సు చేయడమైనది)</translation>
@@ -32,6 +32,7 @@
 <translation id="1818308510395330587">ARని వినియోగించడానికి <ph name="APP_NAME" />ని అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="1864927262126810325"><ph name="SOURCE_NAME" /> నుండి</translation>
 <translation id="1887786770086287077">ఈ పరికరానికి స్థానం యాక్సెస్ ఆఫ్ చేయబడింది. దీనిని <ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో తిరిగి ఆన్ చేయండి.</translation>
+<translation id="1915307458270490472">కాల్‌ను ముగించు</translation>
 <translation id="1919345977826869612">యాడ్స్</translation>
 <translation id="1919950603503897840">కాంటాక్ట్‌లను ఎంచుకోండి</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -47,7 +48,7 @@
 <translation id="2146738493024040262">తక్షణ యాప్‌ను తెరువు</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2182457891543959921">మీ పరిసరాల 3D మ్యాప్‌ను రూపొందించడానికి లేదా కెమెరా పొజిషన్‌ను ట్రాక్ చేయడానికి సైట్‌లను అనుమతించే ముందు అడగాలి (సిఫార్సు చేయడమైనది)</translation>
-<translation id="2212565012507486665">కుక్కీలను అనుమతించు</translation>
+<translation id="2212565012507486665">కుక్కీలను అనుమతించండి</translation>
 <translation id="2228071138934252756">మీ కెమెరాను యాక్సెస్ చేయడానికి <ph name="APP_NAME" />ని అనుమతించడానికి, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="2238944249568001759">మీ చివరి ట్యాబ్ ఆధారంగా సూచించబడిన సెర్చ్‌లు</translation>
 <translation id="2241634353105152135">ఒకసారి మాత్రమే</translation>
@@ -75,9 +76,10 @@
 <translation id="2597457036804169544">సైట్‌లకు ముదురు రంగు రూపాన్ని వర్తింపజేయకండి</translation>
 <translation id="2621115761605608342">నిర్దిష్ట సైట్ కోసం జావా స్క్రిప్ట్‌ను అనుమతిస్తుంది.</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
-<translation id="2677748264148917807">నిష్క్రమించు</translation>
+<translation id="2677748264148917807">నిష్క్రమించండి</translation>
 <translation id="2687403674020088961">అన్ని కుక్కీలను బ్లాక్ చేయండి (సిఫార్సు చేయడం లేదు)</translation>
 <translation id="2704606927547763573">కాపీ చేయబడింది</translation>
+<translation id="2713106313042589954">కెమెరాను ఆఫ్ చేయి</translation>
 <translation id="2717722538473713889">ఈమెయిల్‌ అడ్రస్‌లు</translation>
 <translation id="2750481671343847896">గుర్తింపు సర్వీస్‌ల నుండి సైన్-ఇన్ ప్రాంప్ట్‌లను సైట్‌లు చూపగలవు.</translation>
 <translation id="2785051990912111074">దీనిని ఎంచుకోవడం ద్వారా <ph name="WEBSITE" />కు సంబంధించిన కుక్కీలు క్లియర్ చేయబడతాయి</translation>
@@ -93,9 +95,11 @@
 <translation id="3008272652534848354">అనుమతులను రీసెట్ చేయి</translation>
 <translation id="301521992641321250">ఆటోమేటిక్‌గా బ్లాక్ చేయబడింది</translation>
 <translation id="3069226013421428034">నిర్దిష్ట సైట్ కోసం థర్డ్-పార్టీ సైన్-ఇన్‌ను అనుమతిస్తుంది.</translation>
+<translation id="3109724472072898302">కుదించబడింది</translation>
 <translation id="3114012059975132928">వీడియో ప్లేయర్</translation>
 <translation id="3115898365077584848">సమాచారాన్ని చూపు</translation>
 <translation id="3123473560110926937">కొన్ని సైట్‌లలో బ్లాక్ చేయబడింది</translation>
+<translation id="3143754809889689516">ప్రారంభం నుండి ప్లే చేయి</translation>
 <translation id="3198916472715691905">నిల్వ చేసిన డేటా <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">వెబ్ నుండి</translation>
 <translation id="321187648315454507">మీకు నోటిఫికేషన్‌లను పంపడానికి <ph name="APP_NAME" />ని అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా నోటిఫికేషన్‌లను ఆన్ చేయండి.</translation>
@@ -112,8 +116,9 @@
 <translation id="3586500876634962664">కెమెరా, మైక్రోఫోన్‌ల ఉపయోగం</translation>
 <translation id="358794129225322306">పలు ఫైళ్లను ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయడం కోసం సైట్‌ని అనుమతించండి.</translation>
 <translation id="3594780231884063836">వీడియోను మ్యూట్ చేయండి</translation>
-<translation id="3596414637720633074">అజ్ఞాతంలో థర్డ్-పార్టీ కుక్కీలను బ్లాక్ చేయి</translation>
+<translation id="3596414637720633074">అజ్ఞాతంలో థర్డ్-పార్టీ కుక్కీలను బ్లాక్ చేయండి</translation>
 <translation id="3600792891314830896">ధ్వనిని ప్లే చేసే సైట్‌లను మ్యూట్ చేస్తుంది</translation>
+<translation id="3628308229821498208">సెర్చ్ సూచనలు</translation>
 <translation id="3744111561329211289">బ్యాక్‌గ్రౌండ్ సింక్</translation>
 <translation id="3763247130972274048">10సె దాటవేయడానికి వీడియోపై రెండుసార్లు ఎడమ లేదా కుడివైపు ట్యాప్ చేయండి</translation>
 <translation id="3797520601150691162">నిర్దిష్ట సైట్‌కు ముదురు రంగు రూపాన్ని వర్తింపజేయకండి</translation>
@@ -142,7 +147,7 @@
 <translation id="4278390842282768270">అనుమతించబడింది</translation>
 <translation id="429312253194641664">ఒక సైట్‌లో మీడియా ప్లే చేయబడుతోంది</translation>
 <translation id="42981349822642051">విస్తరించు</translation>
-<translation id="4336434711095810371">మొత్తం డేటాను క్లియర్ చేయి</translation>
+<translation id="4336434711095810371">మొత్తం డేటాను క్లియర్ చేయండి</translation>
 <translation id="4402755511846832236">మీరు ఈ పరికరాన్ని యాక్టివ్‌గా ఉపయోగిస్తున్నప్పుడు ఆ విషయాన్ని ఇతర సైట్‌లు తెలుసుకోకుండా బ్లాక్ చేయండి</translation>
 <translation id="4428065317363009941">యాడ్ వ్యక్తిగతీకరణ</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
@@ -151,6 +156,7 @@
 <translation id="4479647676395637221">మీ కెమెరాను ఏవైనా సైట్‌లు ఉపయోగించగలిగేలా వాటిని అనుమతించే ముందు, మిమ్మల్ని అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="4505788138578415521">URL విస్తరించబడింది</translation>
 <translation id="4534723447064627427">మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి <ph name="APP_NAME" />ని అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా మైక్రోఫోన్‌ను ఆన్ చేయండి.</translation>
+<translation id="4566417217121906555">మైక్రోఫోన్‌ను మ్యూట్ చేయి</translation>
 <translation id="4570913071927164677">వివరాలు</translation>
 <translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4670064810192446073">వర్చువల్ రియాలిటీ</translation>
@@ -164,7 +170,7 @@
 <translation id="4994033804516042629">కాంటాక్ట్‌లు కనుగొనబడలేదు</translation>
 <translation id="4996978546172906250">దీని ద్వారా భాగస్వామ్యం చే.</translation>
 <translation id="5014906230196386306">కుక్కీలను క్లియర్ చేయాలా?</translation>
-<translation id="5039804452771397117">అనుమతించు</translation>
+<translation id="5039804452771397117">అనుమతించండి</translation>
 <translation id="5048398596102334565">మోషన్ సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేస్తున్నాము)</translation>
 <translation id="5050380848339752099">ఈ సైట్ అజ్ఞాత మోడ్ వెలుపల ఉన్న ఒక యాప్‌తో సమాచారాన్ని షేర్ చేయబోతోంది.</translation>
 <translation id="5063480226653192405">నిల్వ వినియోగం</translation>
@@ -175,6 +181,7 @@
 <translation id="5186036860380548585">ఆప్షన్ స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉంటుంది</translation>
 <translation id="5197729504361054390">మీరు ఎంచుకున్న కాంటాక్ట్‌లు <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />తో షేర్ చేయబడతాయి.</translation>
 <translation id="5216942107514965959">చివరిగా ఈరోజు సందర్శించారు</translation>
+<translation id="5225463052809312700">కెమెరాను ఆన్ చేయి</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />'ను తీసివేయండి</translation>
 <translation id="528192093759286357">ఫుల్-స్క్రీన్‌ నుండి నిష్క్రమించడానికి పైనుండి లాగి, వెనుకకు బటన్‌ను తాకండి.</translation>
 <translation id="5300589172476337783">చూపించు</translation>
@@ -225,13 +232,15 @@
 <translation id="6196640612572343990">థర్డ్ పార్టీ కుక్కీలను బ్లాక్ చేయండి</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ఎంపికలు</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />'ను అన్‌ఇన్‌స్టాల్ చేయాలా?</translation>
+<translation id="6262191102408817757">మీ చివరి ట్యాబ్ ఆధారంగా</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="6270391203985052864">నోటిఫికేషన్‌లను పంపడానికి సైట్‌లు అడుగగలవు</translation>
 <translation id="6295158916970320988">అన్ని సైట్‌లు</translation>
 <translation id="6320088164292336938">వైబ్రేట్ చేయి</translation>
 <translation id="6367753977865761591">నిర్దిష్ట సైట్ కోసం థర్డ్-పార్టీ సైన్-ఇన్‌ను బ్లాక్ చేస్తుంది.</translation>
 <translation id="6388207532828177975">క్లియర్ చేసి, రీసెట్ చేయి</translation>
-<translation id="6398765197997659313">ఫుల్-స్క్రీన్‌ నుండి నిష్క్రమించు</translation>
+<translation id="6398765197997659313">ఫుల్-స్క్రీన్‌ నుండి నిష్క్రమించండి</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను ఉపయోగించనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
 <translation id="6527303717912515753">షేర్ చేయండి</translation>
@@ -243,7 +252,7 @@
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
 <translation id="662080504995468778">ఇందులోనే ఉంచు</translation>
-<translation id="6643016212128521049">క్లియర్ చేయి</translation>
+<translation id="6643016212128521049">క్లియర్ చేయండి</translation>
 <translation id="6689172468748959065">ప్రొఫైల్ ఫోటోలు</translation>
 <translation id="6697925417670533197">యాక్టివ్‌గా ఉన్న డౌన్‌లోడ్‌లు</translation>
 <translation id="6722828510648505498">గుర్తింపు సర్వీస్‌ల నుండి సైన్-ఇన్ ప్రాంప్ట్‌లను బ్లాక్ చేయండి.</translation>
@@ -267,6 +276,7 @@
 <translation id="7141896414559753902">మళ్లింపులు, పాప్-అప్‌లను చూపనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది (సిఫార్సు చేయడమైనది)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
+<translation id="7203150201908454328">విస్తరించబడింది</translation>
 <translation id="723171743924126238">చిత్రాలను ఎంచుకోండి</translation>
 <translation id="7243308994586599757">స్క్రీన్ దిగువభాగం సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
@@ -281,6 +291,7 @@
 <translation id="757524316907819857">రక్షిత కంటెంట్‌ను ప్లే చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="7577900504646297215">ఆసక్తులను మేనేజ్ చేయండి</translation>
 <translation id="7594634374516752650">బ్లూటూత్ పరికరానికి కనెక్ట్ అయింది</translation>
+<translation id="7641339528570811325">బ్రౌజింగ్ డేటాను తీసివేయండి…</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చేయండి</translation>
 <translation id="7781829728241885113">నిన్న</translation>
@@ -330,6 +341,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 కుక్కీ ఉపయోగంలో ఉంది}other{# కుక్కీలు ఉపయోగంలో ఉన్నాయి}}</translation>
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="848952951823693243">ఎల్లప్పుడూ మొబైల్ సైట్ కోసం రిక్వెస్ట్ చేయండి</translation>
+<translation id="8499083585497694743">మైక్రోఫోన్‌ను అన్‌మ్యూట్ చేయి</translation>
 <translation id="851751545965956758">పరికరాలకు కనెక్ట్ కాకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="8525306231823319788">ఫుల్-స్క్రీన్‌</translation>
 <translation id="857943718398505171">అనుమతించబడింది (సిఫార్సు చేయబడింది)</translation>

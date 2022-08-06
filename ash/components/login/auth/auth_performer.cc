@@ -7,12 +7,17 @@
 #include "ash/components/cryptohome/cryptohome_util.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/cryptohome/userdataauth_util.h"
-#include "ash/components/login/auth/cryptohome_key_constants.h"
 #include "ash/components/login/auth/cryptohome_parameter_utils.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/auth_session_status.h"
+#include "ash/components/login/auth/public/cryptohome_key_constants.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
+#include "base/notreached.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user_type.h"
@@ -30,7 +35,9 @@ bool IsKioskUserType(user_manager::UserType type) {
 }  // namespace
 
 AuthPerformer::AuthPerformer(base::raw_ptr<UserDataAuthClient> client)
-    : client_(client) {}
+    : client_(client) {
+  DCHECK(client_);
+}
 
 AuthPerformer::~AuthPerformer() = default;
 
@@ -79,6 +86,9 @@ void AuthPerformer::AuthenticateUsingKnowledgeKey(
     std::unique_ptr<UserContext> context,
     AuthOperationCallback callback) {
   DCHECK(context->GetChallengeResponseKeys().empty());
+  if (context->GetAuthSessionId().empty())
+    NOTREACHED() << "Auth session should exist";
+
   if (context->GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
     DCHECK(!context->IsUsingPin());
     SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
@@ -105,7 +115,7 @@ void AuthPerformer::AuthenticateUsingKnowledgeKey(
           CryptohomeError{user_data_auth::CRYPTOHOME_ERROR_KEY_NOT_FOUND});
       return;
     }
-    context->GetKey()->SetLabel(key_def->label);
+    context->GetKey()->SetLabel(key_def->label.value());
   }
 
   LOGIN_LOG(EVENT) << "Authenticating using key "
@@ -136,6 +146,8 @@ void AuthPerformer::AuthenticateUsingChallengeResponseKey(
     std::unique_ptr<UserContext> context,
     AuthOperationCallback callback) {
   DCHECK(!context->GetChallengeResponseKeys().empty());
+  if (context->GetAuthSessionId().empty())
+    NOTREACHED() << "Auth session should exist";
   LOGIN_LOG(EVENT) << "Authenticating using challenge-response";
 
   user_data_auth::AuthenticateAuthSessionRequest request;
@@ -158,7 +170,9 @@ void AuthPerformer::AuthenticateWithPassword(
     AuthOperationCallback callback) {
   DCHECK(!password.empty()) << "Caller should check for empty password";
   DCHECK(!key_label.empty()) << "Caller should provide correct label";
-  DCHECK(!context->GetAuthSessionId().empty()) << "Auth session should exist";
+  if (context->GetAuthSessionId().empty())
+    NOTREACHED() << "Auth session should exist";
+
   const AuthFactorsData& auth_factors = context->GetAuthFactorsData();
   if (!auth_factors.HasPasswordKey(key_label)) {
     LOGIN_LOG(ERROR) << "User does not have password factor labeled "
@@ -194,7 +208,9 @@ void AuthPerformer::AuthenticateWithPin(const std::string& pin,
                                         AuthOperationCallback callback) {
   DCHECK(!pin.empty()) << "Caller should check for empty PIN";
   DCHECK(!pin_salt.empty()) << "Client code should provide correct salt";
-  DCHECK(!context->GetAuthSessionId().empty()) << "Auth session should exist";
+  if (context->GetAuthSessionId().empty())
+    NOTREACHED() << "Auth session should exist";
+
   const AuthFactorsData& auth_factors = context->GetAuthFactorsData();
   const cryptohome::KeyDefinition* key_def = auth_factors.FindPinKey();
   if (!key_def) {
@@ -206,8 +222,8 @@ void AuthPerformer::AuthenticateWithPin(const std::string& pin,
   }
   // Use Key until proper migration to AuthFactors API.
   Key key(pin);
-  DCHECK_EQ(key_def->label, kCryptohomePinLabel);
-  key.SetLabel(key_def->label);
+  DCHECK_EQ(key_def->label.value(), kCryptohomePinLabel);
+  key.SetLabel(key_def->label.value());
 
   key.Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, pin_salt);
   AuthenticateUsingKnowledgeKey(std::move(context), std::move(callback));
@@ -215,6 +231,9 @@ void AuthPerformer::AuthenticateWithPin(const std::string& pin,
 
 void AuthPerformer::AuthenticateAsKiosk(std::unique_ptr<UserContext> context,
                                         AuthOperationCallback callback) {
+  if (context->GetAuthSessionId().empty())
+    NOTREACHED() << "Auth session should exist";
+
   LOGIN_LOG(EVENT) << "Authenticating as Kiosk";
   user_data_auth::AuthenticateAuthSessionRequest request;
   request.set_auth_session_id(context->GetAuthSessionId());
@@ -232,10 +251,26 @@ void AuthPerformer::AuthenticateAsKiosk(std::unique_ptr<UserContext> context,
         CryptohomeError{user_data_auth::CRYPTOHOME_ERROR_KEY_NOT_FOUND});
     return;
   }
-  key_data->set_label(key_def->label);
+  key_data->set_label(key_def->label.value());
 
   client_->AuthenticateAuthSession(
       request, base::BindOnce(&AuthPerformer::OnAuthenticateAuthSession,
+                              weak_factory_.GetWeakPtr(), std::move(context),
+                              std::move(callback)));
+}
+
+void AuthPerformer::GetAuthSessionStatus(std::unique_ptr<UserContext> context,
+                                         AuthSessionStatusCallback callback) {
+  if (context->GetAuthSessionId().empty())
+    NOTREACHED() << "Auth session should exist";
+
+  LOGIN_LOG(EVENT) << "Requesting authsession status";
+  user_data_auth::GetAuthSessionStatusRequest request;
+
+  request.set_auth_session_id(context->GetAuthSessionId());
+
+  client_->GetAuthSessionStatus(
+      request, base::BindOnce(&AuthPerformer::OnGetAuthSessionStatus,
                               weak_factory_.GetWeakPtr(), std::move(context),
                               std::move(callback)));
 }
@@ -300,6 +335,51 @@ void AuthPerformer::OnAuthenticateAuthSession(
   DCHECK(reply->authenticated());
   LOGIN_LOG(EVENT) << "Authenticated successfully";
   std::move(callback).Run(std::move(context), absl::nullopt);
+}
+
+void AuthPerformer::OnGetAuthSessionStatus(
+    std::unique_ptr<UserContext> context,
+    AuthSessionStatusCallback callback,
+    absl::optional<user_data_auth::GetAuthSessionStatusReply> reply) {
+  auto error = user_data_auth::ReplyToCryptohomeError(reply);
+
+  if (error == user_data_auth::CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN) {
+    // Do not trigger error handling
+    std::move(callback).Run(AuthSessionStatus(), base::TimeDelta(),
+                            std::move(context),
+                            /*cryptohome_error=*/absl::nullopt);
+    return;
+  }
+
+  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+    LOGIN_LOG(EVENT) << "Failed to get authsession status " << error;
+    std::move(callback).Run(AuthSessionStatus(), base::TimeDelta(),
+                            std::move(context), CryptohomeError{error});
+    return;
+  }
+  CHECK(reply.has_value());
+  base::TimeDelta lifetime;
+  AuthSessionStatus status;
+  switch (reply->status()) {
+    case ::user_data_auth::AUTH_SESSION_STATUS_NOT_SET:
+    case ::user_data_auth::AUTH_SESSION_STATUS_INVALID_AUTH_SESSION:
+      break;
+    case ::user_data_auth::AUTH_SESSION_STATUS_FURTHER_FACTOR_REQUIRED:
+      status.Put(AuthSessionLevel::kSessionIsValid);
+      // Once we support multi-factor authentication (and have partially
+      // authenticated sessions) we might need to use value from reply.
+      lifetime = base::TimeDelta::Max();
+      break;
+    case ::user_data_auth::AUTH_SESSION_STATUS_AUTHENTICATED:
+      status.Put(AuthSessionLevel::kSessionIsValid);
+      status.Put(AuthSessionLevel::kCryptohomeStrong);
+      lifetime = base::Seconds(reply->time_left());
+      break;
+    default:
+      NOTREACHED();
+  }
+  std::move(callback).Run(status, lifetime, std::move(context),
+                          /*cryptohome_error=*/absl::nullopt);
 }
 
 }  // namespace ash

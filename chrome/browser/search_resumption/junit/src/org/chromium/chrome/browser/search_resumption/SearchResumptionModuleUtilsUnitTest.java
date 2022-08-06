@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.search_resumption;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+
+import android.text.TextUtils;
 
 import androidx.test.filters.SmallTest;
 
@@ -18,17 +21,22 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.search_resumption.SearchResumptionModuleUtils.ModuleNotShownReason;
+import org.chromium.chrome.browser.search_resumption.SearchResumptionUserData.SuggestionResult;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.test.util.browser.Features;
@@ -45,7 +53,8 @@ import java.util.Map;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {SearchResumptionModuleUtilsUnitTest.ShadowCriticalPersistedTabData.class,
-                SearchResumptionModuleUtilsUnitTest.ShadowChromeFeatureList.class})
+                SearchResumptionModuleUtilsUnitTest.ShadowChromeFeatureList.class,
+                SearchResumptionModuleUtilsUnitTest.ShadowSearchResumptionUserData.class})
 @SuppressWarnings("DoNotMock") // Mocks GURL
 public class SearchResumptionModuleUtilsUnitTest {
     /** Shadow for {@link CriticalPersistedTabData}. */
@@ -65,6 +74,20 @@ public class SearchResumptionModuleUtilsUnitTest {
         @Implementation
         public static CriticalPersistedTabData from(Tab tab) {
             return sCriticalPersistedTabData;
+        }
+    }
+    /** Shadow for {@link SearchResumptionUserData} */
+    @Implements(SearchResumptionUserData.class)
+    static class ShadowSearchResumptionUserData {
+        private static SearchResumptionUserData sSearchResumptionUserData;
+
+        static void setSearchResumptionUserData(SearchResumptionUserData searchResumptionUserData) {
+            sSearchResumptionUserData = searchResumptionUserData;
+        }
+
+        @Implementation
+        public static SearchResumptionUserData getInstance() {
+            return sSearchResumptionUserData;
         }
     }
 
@@ -99,6 +122,8 @@ public class SearchResumptionModuleUtilsUnitTest {
     @Mock
     private IdentityServicesProvider mIdentityServicesProvider;
     @Mock
+    private SyncService mSyncServiceMock;
+    @Mock
     private IdentityManager mIdentityManager;
     @Mock
     private Profile mProfile;
@@ -107,7 +132,9 @@ public class SearchResumptionModuleUtilsUnitTest {
     @Mock
     private Tab mTabToTrack;
     @Mock
-    private GURL mURL;
+    private GURL mGurl1;
+    @Mock
+    private GURL mGurl2;
     @Mock
     private CriticalPersistedTabData mCriticalPersistedTabData;
 
@@ -117,6 +144,7 @@ public class SearchResumptionModuleUtilsUnitTest {
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         doReturn(mIdentityManager).when(mIdentityServicesProvider).getIdentityManager(any());
+        SyncService.overrideForTests(mSyncServiceMock);
 
         ShadowChromeFeatureList.sEnableScrollableMVT = true;
         ShadowChromeFeatureList.sEnableSearchResumptionModule = true;
@@ -142,23 +170,30 @@ public class SearchResumptionModuleUtilsUnitTest {
         doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
         Assert.assertFalse(
                 SearchResumptionModuleUtils.shouldShowSearchResumptionModule(mProfile, mTab));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.DEFAULT_ENGINE_NOT_GOOGLE));
 
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        when(mSyncServiceMock.hasKeepEverythingSynced()).thenReturn(false);
+        doReturn(true).when(mIdentityManager).hasPrimaryAccount(anyInt());
+        Assert.assertFalse(
+                SearchResumptionModuleUtils.shouldShowSearchResumptionModule(mProfile, mTab));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.NOT_SYNC));
+
+        doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        when(mSyncServiceMock.hasKeepEverythingSynced()).thenReturn(true);
         doReturn(false).when(mIdentityManager).hasPrimaryAccount(anyInt());
         Assert.assertFalse(
                 SearchResumptionModuleUtils.shouldShowSearchResumptionModule(mProfile, mTab));
-
-        doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(true).when(mIdentityManager).hasPrimaryAccount(anyInt());
-        doReturn(true).when(mTab).canGoForward();
-        Assert.assertFalse(
-                SearchResumptionModuleUtils.shouldShowSearchResumptionModule(mProfile, mTab));
-
-        doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(true).when(mIdentityManager).hasPrimaryAccount(anyInt());
-        doReturn(false).when(mTab).canGoForward();
-        Assert.assertTrue(
-                SearchResumptionModuleUtils.shouldShowSearchResumptionModule(mProfile, mTab));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.NOT_SIGN_IN));
     }
 
     @Test
@@ -166,27 +201,43 @@ public class SearchResumptionModuleUtilsUnitTest {
     public void testIsTabToTrackValid() {
         doReturn(true).when(mTabToTrack).isNativePage();
         Assert.assertFalse(SearchResumptionModuleUtils.isTabToTrackValid(mTabToTrack));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.TAB_NOT_VALID));
 
         doReturn(false).when(mTabToTrack).isNativePage();
         doReturn(true).when(mTabToTrack).isIncognito();
         Assert.assertFalse(SearchResumptionModuleUtils.isTabToTrackValid(mTabToTrack));
+        Assert.assertEquals(2,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.TAB_NOT_VALID));
 
-        doReturn(mURL).when(mTabToTrack).getUrl();
+        doReturn(mGurl1).when(mTabToTrack).getUrl();
         doReturn(false).when(mTabToTrack).isNativePage();
         doReturn(false).when(mTabToTrack).isIncognito();
-        doReturn(true).when(mURL).isEmpty();
+        doReturn(true).when(mGurl1).isEmpty();
         Assert.assertFalse(SearchResumptionModuleUtils.isTabToTrackValid(mTabToTrack));
+        Assert.assertEquals(3,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.TAB_NOT_VALID));
 
         doReturn(false).when(mTabToTrack).isNativePage();
         doReturn(false).when(mTabToTrack).isIncognito();
-        doReturn(false).when(mURL).isEmpty();
-        doReturn(false).when(mURL).isValid();
+        doReturn(false).when(mGurl1).isEmpty();
+        doReturn(false).when(mGurl1).isValid();
         Assert.assertFalse(SearchResumptionModuleUtils.isTabToTrackValid(mTabToTrack));
+        Assert.assertEquals(4,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.TAB_NOT_VALID));
 
         doReturn(false).when(mTabToTrack).isNativePage();
         doReturn(false).when(mTabToTrack).isIncognito();
-        doReturn(false).when(mURL).isEmpty();
-        doReturn(true).when(mURL).isValid();
+        doReturn(false).when(mGurl1).isEmpty();
+        doReturn(true).when(mGurl1).isValid();
         ShadowCriticalPersistedTabData.setCriticalPersistedTabData(mCriticalPersistedTabData);
         long lastVisitedTimestampMs = 0;
         doReturn(lastVisitedTimestampMs).when(mCriticalPersistedTabData).getTimestampMillis();
@@ -194,11 +245,15 @@ public class SearchResumptionModuleUtilsUnitTest {
         ShadowChromeFeatureList.sParamValues.put(
                 SearchResumptionModuleUtils.TAB_EXPIRATION_TIME_PARAM, expirationTimeSeconds);
         Assert.assertFalse(SearchResumptionModuleUtils.isTabToTrackValid(mTabToTrack));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SearchResumptionModuleUtils.UMA_MODULE_NOT_SHOW,
+                        ModuleNotShownReason.TAB_EXPIRED));
 
         doReturn(false).when(mTabToTrack).isNativePage();
         doReturn(false).when(mTabToTrack).isIncognito();
-        doReturn(false).when(mURL).isEmpty();
-        doReturn(true).when(mURL).isValid();
+        doReturn(false).when(mGurl1).isEmpty();
+        doReturn(true).when(mGurl1).isValid();
         expirationTimeSeconds = (int) (System.currentTimeMillis() / 1000) + 60; // one more minute
         ShadowChromeFeatureList.sParamValues.put(
                 SearchResumptionModuleUtils.TAB_EXPIRATION_TIME_PARAM, expirationTimeSeconds);
@@ -209,5 +264,41 @@ public class SearchResumptionModuleUtilsUnitTest {
         Assert.assertTrue(SearchResumptionModuleUtils.isTabToTrackValid(mTabToTrack));
 
         ShadowCriticalPersistedTabData.reset();
+    }
+
+    @Test
+    @SmallTest
+    // clang-format off
+    public void testMayGetCachedResults() {
+        // clang-format on
+        doReturn(false).when(mTab).canGoForward();
+        Assert.assertNull(SearchResumptionModuleUtils.mayGetCachedResults(mTab, mTabToTrack));
+
+        doReturn(true).when(mTab).canGoForward();
+        SearchResumptionUserData searchResumptionUserData =
+                Mockito.mock(SearchResumptionUserData.class);
+        ShadowSearchResumptionUserData.setSearchResumptionUserData(searchResumptionUserData);
+        doReturn(null).when(searchResumptionUserData).getCachedSuggestions(mTab);
+        Assert.assertNull(SearchResumptionModuleUtils.mayGetCachedResults(mTab, mTabToTrack));
+
+        SuggestionResult result = Mockito.mock(SuggestionResult.class);
+        doReturn(result).when(searchResumptionUserData).getCachedSuggestions(mTab);
+        String url1 = "foo.com";
+        String url2 = "bar.bom";
+        doReturn(url1).when(mGurl1).getSpec();
+        doReturn(url2).when(mGurl2).getSpec();
+        doReturn(mGurl1).when(result).getLastUrlToTrack();
+        doReturn(mGurl2).when(mTabToTrack).getUrl();
+        Assert.assertFalse(TextUtils.equals(
+                result.getLastUrlToTrack().getSpec(), mTabToTrack.getUrl().getSpec()));
+        Assert.assertNull(SearchResumptionModuleUtils.mayGetCachedResults(mTab, mTabToTrack));
+
+        doReturn(mGurl1).when(mTabToTrack).getUrl();
+        Assert.assertTrue(TextUtils.equals(
+                result.getLastUrlToTrack().getSpec(), mTabToTrack.getUrl().getSpec()));
+        Assert.assertEquals(
+                result, SearchResumptionModuleUtils.mayGetCachedResults(mTab, mTabToTrack));
+
+        ShadowSearchResumptionUserData.setSearchResumptionUserData(null);
     }
 }

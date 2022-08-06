@@ -5,6 +5,7 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
+import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.webkit.ValueCallback;
 
@@ -90,10 +91,14 @@ public class Browser {
         mBrowserRestoreCallbacks = null;
     }
 
-    Browser(IBrowser impl, Fragment fragment) {
+    // Constructor for browserfragment to inject the {@code tabListCallback} on startup.
+    Browser(IBrowser impl, Fragment fragment, @Nullable TabListCallback tabListCallback) {
         mImpl = impl;
         mFragment = fragment;
         mTabListCallbacks = new ObserverList<TabListCallback>();
+        if (tabListCallback != null) {
+            mTabListCallbacks.addObserver(tabListCallback);
+        }
         mBrowserControlsOffsetCallbacks = new ObserverList<BrowserControlsOffsetCallback>();
         mBrowserRestoreCallbacks = new ObserverList<BrowserRestoreCallback>();
 
@@ -103,6 +108,10 @@ public class Browser {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    Browser(IBrowser impl, Fragment fragment) {
+        this(impl, fragment, null);
     }
 
     /**
@@ -586,6 +595,25 @@ public class Browser {
         throwIfDestroyed();
         try {
             mImpl.setChangeVisibilityOnNextDetach(changeVisibility);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Attaches the top-level view to the SurfaceControlViewHost.
+     * @param host The SurfaceControlViewHost created from the host app's SurfaceView.
+     *
+     * @since 105
+     */
+    void setSurfaceControlViewHost(SurfaceControlViewHost host) {
+        ThreadCheck.ensureOnUiThread();
+
+        if (WebLayer.getSupportedMajorVersionInternal() < 105) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.setSurfaceControlViewHost(ObjectWrapper.wrap(host));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

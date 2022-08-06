@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_future.h"
@@ -24,7 +24,6 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/test_kiosk_extension_builder.h"
-#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
@@ -38,7 +37,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/test_app_window_contents.h"
 #include "extensions/browser/extension_prefs.h"
@@ -48,7 +46,6 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
@@ -356,14 +353,15 @@ void InitAppWindow(extensions::AppWindow* app_window, const gfx::Rect& bounds) {
 
   extensions::AppWindow::CreateParams params;
   params.content_spec.bounds = bounds;
-  app_window->Init(GURL(), app_window_contents.release(), main_frame, params);
+  app_window->Init(GURL(), std::move(app_window_contents), main_frame, params);
 }
 
 extensions::AppWindow* CreateAppWindow(Profile* profile,
                                        const TestKioskExtensionBuilder& builder,
                                        gfx::Rect bounds = {}) {
   extensions::AppWindow* app_window = new extensions::AppWindow(
-      profile, new ChromeAppDelegate(profile, true), builder.Build().get());
+      profile, std::make_unique<ChromeAppDelegate>(profile, true),
+      builder.Build().get());
   InitAppWindow(app_window, bounds);
   return app_window;
 }
@@ -1483,6 +1481,15 @@ TEST_F(StartupAppLauncherTest, SecondaryExtensionStateOnSessionRestore) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(kTestPrimaryAppId));
   EXPECT_TRUE(registry()->disabled_extensions().Contains(kSecondaryAppId));
   EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtraSecondaryAppId));
+}
+
+TEST_F(StartupAppLauncherTest, RestartLauncherShouldNotCrash) {
+  InitializeLauncherWithNetworkReady();
+
+  startup_launch_delegate_.set_showing_network_config_screen(true);
+  startup_app_launcher_->RestartLauncher();
+
+  ASSERT_NO_FATAL_FAILURE(startup_app_launcher_->ContinueWithNetworkReady());
 }
 
 }  // namespace ash

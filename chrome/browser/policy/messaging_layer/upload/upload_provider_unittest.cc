@@ -12,6 +12,8 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/policy/messaging_layer/upload/fake_upload_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
+#include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
+#include "chrome/browser/policy/messaging_layer/util/reporting_server_connector_test_util.h"
 #include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
 #include "chrome/browser/policy/messaging_layer/util/test_response_payload.h"
 #include "components/policy/core/common/cloud/dm_token.h"
@@ -19,6 +21,7 @@
 #include "components/reporting/resources/memory_resource_impl.h"
 #include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/util/test_support_callbacks.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,40 +55,20 @@ MATCHER_P(EqualsProto,
 class TestEncryptedReportingUploadProvider
     : public EncryptedReportingUploadProvider {
  public:
-  explicit TestEncryptedReportingUploadProvider(
+  TestEncryptedReportingUploadProvider(
       UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
-      UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
-      policy::CloudPolicyClient* cloud_policy_client)
+      UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb)
       : EncryptedReportingUploadProvider(
             report_successful_upload_cb,
             encryption_key_attached_cb,
-            /*build_cloud_policy_client_cb=*/
-            base::BindRepeating(
-                [](policy::CloudPolicyClient* cloud_policy_client,
-                   CloudPolicyClientResultCb callback) {
-                  std::move(callback).Run(cloud_policy_client);
-                },
-                base::Unretained(cloud_policy_client)),
             /*upload_client_builder_cb=*/
-            base::BindRepeating(
-                [](policy::CloudPolicyClient* cloud_policy_client,
-                   reporting::UploadClient::CreatedCallback
-                       update_upload_client_cb) {
-                  reporting::FakeUploadClient::Create(
-                      cloud_policy_client, std::move(update_upload_client_cb));
-                })) {}
+            base::BindRepeating(&FakeUploadClient::Create)) {}
 };
 
 class EncryptedReportingUploadProviderTest : public ::testing::Test {
  public:
-  MOCK_METHOD(void,
-              ReportSuccessfulUpload,
-              (reporting::SequenceInformation, bool),
-              ());
-  MOCK_METHOD(void,
-              EncryptionKeyCallback,
-              (reporting::SignedEncryptionInfo),
-              ());
+  MOCK_METHOD(void, ReportSuccessfulUpload, (SequenceInformation, bool), ());
+  MOCK_METHOD(void, EncryptionKeyCallback, (SignedEncryptionInfo), ());
 
  protected:
   void SetUp() override {
@@ -99,15 +82,14 @@ class EncryptedReportingUploadProviderTest : public ::testing::Test {
             base::Unretained(this)),
         base::BindRepeating(
             &EncryptedReportingUploadProviderTest::EncryptionKeyCallback,
-            base::Unretained(this)),
-        &cloud_policy_client_);
+            base::Unretained(this)));
 
     record_.set_encrypted_wrapped_record("TEST_DATA");
 
     auto* sequence_information = record_.mutable_sequence_information();
     sequence_information->set_sequencing_id(42);
     sequence_information->set_generation_id(1701);
-    sequence_information->set_priority(reporting::Priority::SLOW_BATCH);
+    sequence_information->set_priority(Priority::SLOW_BATCH);
   }
 
   void TearDown() override {
@@ -126,10 +108,11 @@ class EncryptedReportingUploadProviderTest : public ::testing::Test {
   }
 
   // Must be initialized before any other class member.
-  base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_envrionment_;
 
   policy::MockCloudPolicyClient cloud_policy_client_;
-  reporting::EncryptedRecord record_;
+  ReportingServerConnector::TestEnvironment test_env_{&cloud_policy_client_};
+  EncryptedRecord record_;
 
   scoped_refptr<ResourceInterface> memory_resource_;
 

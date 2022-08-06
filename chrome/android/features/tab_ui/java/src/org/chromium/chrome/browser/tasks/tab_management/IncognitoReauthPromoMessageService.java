@@ -11,22 +11,32 @@ import android.content.Context;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthSettingUtils;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Message service class to show the Incognito re-auth promo inside the incognito
  * tab switcher.
- *
- * TODO(crbug.com/1227656): Add review logic and integrate this class.
  */
-public class IncognitoReauthPromoMessageService extends MessageService {
+public class IncognitoReauthPromoMessageService
+        extends MessageService implements PauseResumeWithNativeObserver {
+    /**
+     * TODO(crbug.com/1227656): Remove this when we support all the Android versions.
+     */
+    @VisibleForTesting
+    public static Boolean sIsPromoEnabledForTesting;
+
     private final int mMaxPromoMessageCount = 10;
     /**
      *  TODO(crbug.com/1148020): Currently every time entering the tab switcher,
@@ -35,12 +45,11 @@ public class IncognitoReauthPromoMessageService extends MessageService {
      *  {@link TabSwitcherMediator#prepareOverview}.
      */
     private final int mPrepareMessageEnteringTabSwitcher;
-    /**
-     * This is NOT intended to be accessed by the outside world. This is made public for test
-     * purposes only.
-     */
+
     @VisibleForTesting
     public final int mMaximumPromoShowCountLimit;
+    /** The re-auth manager that is used to trigger the re-authentication. */
+    private final @NonNull IncognitoReauthManager mIncognitoReauthManager;
 
     /**
      * This is the data type that this MessageService is serving to its Observer.
@@ -55,61 +64,153 @@ public class IncognitoReauthPromoMessageService extends MessageService {
             mReviewActionProvider = reviewActionProvider;
             mDismissActionProvider = dismissActionProvider;
         }
+
+        MessageCardView.ReviewActionProvider getReviewActionProvider() {
+            return mReviewActionProvider;
+        }
+
+        MessageCardView.DismissActionProvider getDismissActionProvider() {
+            return mDismissActionProvider;
+        }
     }
 
     private final @NonNull Profile mProfile;
     private final @NonNull Context mContext;
     private final @NonNull SharedPreferencesManager mSharedPreferencesManager;
     private final @NonNull SnackbarManager mSnackBarManager;
+    private final @NonNull ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+
+    /**
+     * A boolean to indicate when we had temporarily invalidated the promo card due to change of
+     * Android level settings, which is needed to show the promo card. This is set to true in
+     * such cases, where we need to re-prepare the message, in order for it to be shown again when
+     * the Android level settings are on again. See #onResumeWithNative method.
+     */
+    private boolean mShouldTriggerPrepareMessage;
 
     /**
      * @param mMessageType The type of the message.
      * @param profile {@link Profile} to use to check the re-auth status.
      * @param sharedPreferencesManager The {@link SharedPreferencesManager} to query about re-auth
      *         promo shared preference.
+     * @param incognitoReauthManager The {@link IncognitoReauthManager} to trigger re-auth for the
+     *         review action.
      * @param snackbarManager {@link SnackbarManager} to show a snack-bar after a successful review
      * @param isTabToGtsAnimationEnabledSupplier {@link Supplier<Boolean>} indicating whether tab to
-     *         grid tab switcher animation is enabled. This affects the maximum promo shown count.
+     * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} dispacther to
+     *         register listening to onResume events.
      */
     IncognitoReauthPromoMessageService(int mMessageType, @NonNull Profile profile,
             @NonNull Context context, @NonNull SharedPreferencesManager sharedPreferencesManager,
+            @NonNull IncognitoReauthManager incognitoReauthManager,
             @NonNull SnackbarManager snackbarManager,
-            @NonNull Supplier<Boolean> isTabToGtsAnimationEnabledSupplier) {
+            @NonNull Supplier<Boolean> isTabToGtsAnimationEnabledSupplier,
+            @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         super(mMessageType);
         mProfile = profile;
         mContext = context;
         mSharedPreferencesManager = sharedPreferencesManager;
+        mIncognitoReauthManager = incognitoReauthManager;
         mSnackBarManager = snackbarManager;
         mPrepareMessageEnteringTabSwitcher = isTabToGtsAnimationEnabledSupplier.get() ? 2 : 1;
         mMaximumPromoShowCountLimit = mMaxPromoMessageCount * mPrepareMessageEnteringTabSwitcher;
-        preparePromoMessage();
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
+        activityLifecycleDispatcher.register(this);
     }
 
     @VisibleForTesting
-    int getPromoShowCount() {
-        return mSharedPreferencesManager.readInt(INCOGNITO_REAUTH_PROMO_SHOW_COUNT, 0);
+    void dismiss() {
+        sendInvalidNotification();
+        disableIncognitoReauthPromoMessage();
+
+        // Once dismissed, we will never show the re-auth promo card again, so there's no need
+        // to keep tracking the lifecycle events.
+        mActivityLifecycleDispatcher.unregister(this);
     }
 
-    @VisibleForTesting
-    void increasePromoShowCount() {
+    void increasePromoShowCountAndMayDisableIfCountExceeds() {
+        if (getPromoShowCount() > mMaximumPromoShowCountLimit) {
+            dismiss();
+            return;
+        }
+
         mSharedPreferencesManager.writeInt(
                 INCOGNITO_REAUTH_PROMO_SHOW_COUNT, getPromoShowCount() + 1);
     }
 
-    private void disableIncognitoReauthPromoMessage() {
-        mSharedPreferencesManager.writeBoolean(INCOGNITO_REAUTH_PROMO_CARD_ENABLED, false);
+    int getPromoShowCount() {
+        return mSharedPreferencesManager.readInt(INCOGNITO_REAUTH_PROMO_SHOW_COUNT, 0);
     }
 
-    private void dismiss() {
-        sendInvalidNotification();
-        disableIncognitoReauthPromoMessage();
+    /**
+     * Prepares a re-auth promo message notifying a new message is available.
+     *
+     * @return A boolean indicating if the promo message was successfully prepared or not.
+     */
+    @VisibleForTesting
+    boolean preparePromoMessage() {
+        if (!isIncognitoReauthPromoMessageEnabled(mProfile)) return false;
+
+        // We also need to ensure an "equality" check because, we only increase the count of the
+        // promo when we actually show it in the tab switcher. At the |mMaximumPromoShowCountLimit|
+        // time (the last time) we show the promo, we haven't yet dismissed the dialog.
+        // Now, if the user recreates the Chrome Activity instance, the count will be read as
+        // |mMaximumPromoShowCountLimit| at this point, so we should dismiss the promo.
+        if (getPromoShowCount() >= mMaximumPromoShowCountLimit) {
+            dismiss();
+            return false;
+        }
+
+        sendAvailabilityNotification(
+                new IncognitoReauthMessageData(this::review, (int messageType) -> dismiss()));
+        return true;
     }
+
+    @Override
+    public void addObserver(MessageObserver observer) {
+        super.addObserver(observer);
+        preparePromoMessage();
+    }
+
+    /**
+     * A method to dismiss the re-auth promo, if the #isIncognitoReauthPromoMessageEnabled returns
+     * false. This ensures any state change that may occur which results in the promo not being
+     * enabled are accounted for when the users resumes back to ChromeTabbedActivity.
+     */
+    @Override
+    public void onResumeWithNative() {
+        updatePromoCardDismissalStatusIfNeeded();
+    }
+
+    @Override
+    public void onPauseWithNative() {}
 
     /**
      * Provides the functionality to the {@link MessageCardView.ReviewActionProvider}
      */
     public void review() {
-        // TODO(crbug.com/1227656): Add implementation for the review action.
+        // Add a safety net in-case for potential multi window flows.
+        if (!isIncognitoReauthPromoMessageEnabled(mProfile)) {
+            updatePromoCardDismissalStatusIfNeeded();
+            return;
+        }
+
+        mIncognitoReauthManager.startReauthenticationFlow(
+                new IncognitoReauthManager.IncognitoReauthCallback() {
+                    @Override
+                    public void onIncognitoReauthNotPossible() {}
+
+                    @Override
+                    public void onIncognitoReauthSuccess() {
+                        UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                .setBoolean(Pref.INCOGNITO_REAUTHENTICATION_FOR_ANDROID, true);
+                        dismiss();
+                        // TODO(crbug.com/1227656): Add logic to show a snackbar here.
+                    }
+
+                    @Override
+                    public void onIncognitoReauthFailure() {}
+                });
     }
 
     /**
@@ -119,6 +220,9 @@ public class IncognitoReauthPromoMessageService extends MessageService {
      * @return True, if the incognito re-auth promo message is enabled, false otherwise.
      */
     public boolean isIncognitoReauthPromoMessageEnabled(Profile profile) {
+        // To support lower android versions where we support running the render tests.
+        if (sIsPromoEnabledForTesting != null) return sIsPromoEnabledForTesting;
+
         // The Chrome level Incognito lock setting is already enabled, so no use to show a promo for
         // that.
         if (IncognitoReauthManager.isIncognitoReauthEnabled(profile)) return false;
@@ -136,22 +240,45 @@ public class IncognitoReauthPromoMessageService extends MessageService {
         return mSharedPreferencesManager.readBoolean(INCOGNITO_REAUTH_PROMO_CARD_ENABLED, true);
     }
 
-    /**
-     * Prepares a re-auth promo message notifying a new message is available.
-     *
-     * @return A boolean indicating if the promo message was successfully prepared or not.
-     */
     @VisibleForTesting
-    boolean preparePromoMessage() {
-        if (!isIncognitoReauthPromoMessageEnabled(mProfile)) return false;
-        increasePromoShowCount();
-        if (getPromoShowCount() > mMaximumPromoShowCountLimit) {
-            disableIncognitoReauthPromoMessage();
-            return false;
-        }
+    public static void setIsPromoEnabledForTesting(@Nullable Boolean enabled) {
+        sIsPromoEnabledForTesting = enabled;
+    }
 
-        sendAvailabilityNotification(
-                new IncognitoReauthMessageData(this::review, (int messageType) -> dismiss()));
-        return true;
+    private void disableIncognitoReauthPromoMessage() {
+        mSharedPreferencesManager.writeBoolean(INCOGNITO_REAUTH_PROMO_CARD_ENABLED, false);
+    }
+
+    /**
+     * A method that dismisses the promo card and *conditionally* disables it if the conditions
+     * which were met before to show a promo card is not true any more.
+     *
+     * For the case when it only dismisses the card but doesn't disable it, it would prepare
+     * the message again once it detects the promo card can now be enabled.
+     *
+     * TODO(crbug.com/1227656): This method can dismiss the promo card abruptly w/o stating any
+     * user-visible reasoning. This needs to be revisited with UX to see how best can we provide
+     * user education in such scenarios.
+     */
+    private void updatePromoCardDismissalStatusIfNeeded() {
+        if (!isIncognitoReauthPromoMessageEnabled(mProfile)) {
+            // Here, if the user has enabled the Chrome level setting directly then we should
+            // dismiss the promo completely.
+            if (IncognitoReauthManager.isIncognitoReauthEnabled(mProfile)) {
+                // This call also unregisters this lifecycle observer.
+                dismiss();
+            } else {
+                // For all other cases, we only send an invalidate message but don't disable the
+                // promo card completely.
+                sendInvalidNotification();
+                mShouldTriggerPrepareMessage = true;
+            }
+        } else {
+            // The conditions are suitable to show a promo card again but only if we had
+            // invalidated the message in the past.
+            if (mShouldTriggerPrepareMessage) {
+                preparePromoMessage();
+            }
+        }
     }
 }

@@ -6,44 +6,44 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
-type SandboxFeature = {
-  name: string,
-  enabled: boolean,
-};
+interface SandboxFeature {
+  name: string;
+  enabled: boolean;
+}
 
-type BrowserHostProcess = {
-  processId: number,
-  processType: string,
-  name: string,
-  metricsName: string,
-  sandboxType: string,
-};
+interface BrowserHostProcess {
+  processId: number;
+  processType: string;
+  name: string;
+  metricsName: string;
+  sandboxType: string;
+}
 
-type RendererHostProcess = {
-  processId: number,
-};
+interface RendererHostProcess {
+  processId: number;
+}
 
 /**
  * This may have additional fields displayed in the JSON output.
  * See //sandbox/win/src/sandbox_constants.cc for keys in policy.
  */
-type PolicyDiagnostic = {
-  appContainerCapabilities: string[],
-  appContainerSid: string,
-  componentFilters: string,
-  desiredIntegrityLevel: string,
-  lockdownLevel: string,
-  lowboxSid: string,
-  platformMitigations: string,
-  processId: number,
-};
+interface PolicyDiagnostic {
+  appContainerCapabilities: string[];
+  appContainerSid: string;
+  componentFilters: string;
+  desiredIntegrityLevel: string;
+  lockdownLevel: string;
+  lowboxSid: string;
+  platformMitigations: string;
+  processId: number;
+}
 
-type SandboxDiagnostics = {
-  browser: BrowserHostProcess[],
-  renderer: RendererHostProcess[],
-  policies: PolicyDiagnostic[],
-  features: SandboxFeature[],
-};
+interface SandboxDiagnostics {
+  browser: BrowserHostProcess[];
+  renderer: RendererHostProcess[];
+  policies: PolicyDiagnostic[];
+  features: SandboxFeature[];
+}
 
 /**
  * Represents a mitigation field from the PROCESS_CREATION_MITITAGION_POLICY*
@@ -477,8 +477,12 @@ function addRowForProcess(
   if (policy) {
     // Text-only items.
     const entries = [
-      String(pid), type, name, sandbox, policy.lockdownLevel,
-      policy.desiredIntegrityLevel
+      String(pid),
+      type,
+      name,
+      sandbox,
+      policy.lockdownLevel,
+      policy.desiredIntegrityLevel,
     ].map(makeTextEntry);
     entries.push(makeMitigationEntry(policy.platformMitigations));
     entries.push(makeComponentFilterEntry(policy));
@@ -499,8 +503,15 @@ function onGetSandboxDiagnostics(results: SandboxDiagnostics) {
 
   // Titles.
   addRow([
-    'Process', 'Type', 'Name', 'Sandbox', 'Lockdown', 'Integrity',
-    'Mitigations', 'Component Filter', 'Lowbox/AppContainer'
+    'Process',
+    'Type',
+    'Name',
+    'Sandbox',
+    'Lockdown',
+    'Integrity',
+    'Mitigations',
+    'Component Filter',
+    'Lowbox/AppContainer',
   ].map(makeTextEntry));
 
   // Browser Processes.
@@ -508,7 +519,11 @@ function onGetSandboxDiagnostics(results: SandboxDiagnostics) {
     const pid = process.processId;
     const name = process.name || process.metricsName;
     addRowForProcess(
-        pid, process.processType, name, process.sandboxType, policies.get(pid)!
+        pid,
+        process.processType,
+        name,
+        process.sandboxType,
+        policies.get(pid)!,
     );
   }
 

@@ -21,7 +21,7 @@ import java.util.List;
 class HistoryClustersItemProperties {
     @IntDef({HistoryClustersItemProperties.ItemType.VISIT, ItemType.CLUSTER,
             ItemType.RELATED_SEARCHES, ItemType.TOGGLE, ItemType.PRIVACY_DISCLAIMER,
-            ItemType.CLEAR_BROWSING_DATA})
+            ItemType.CLEAR_BROWSING_DATA, ItemType.MORE_PROGRESS})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         int VISIT = 1;
@@ -30,13 +30,17 @@ class HistoryClustersItemProperties {
         int TOGGLE = 4;
         int PRIVACY_DISCLAIMER = 5;
         int CLEAR_BROWSING_DATA = 6;
+        int MORE_PROGRESS = 7;
     }
 
+    static final WritableIntPropertyKey ACCESSIBILITY_STATE = new WritableIntPropertyKey();
     static final WritableObjectPropertyKey<Callback<String>> CHIP_CLICK_HANDLER =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<OnClickListener> CLICK_HANDLER =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<ClusterVisit> CLUSTER_VISIT =
+            new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<Boolean> DIVIDER_VISIBLE =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<OnClickListener> END_BUTTON_CLICK_HANDLER =
             new WritableObjectPropertyKey<>();
@@ -45,13 +49,14 @@ class HistoryClustersItemProperties {
     static final WritableObjectPropertyKey<Drawable> ICON_DRAWABLE =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<String> LABEL = new WritableObjectPropertyKey<>();
+    static final WritableIntPropertyKey PROGRESS_BUTTON_STATE = new WritableIntPropertyKey();
     static final WritableObjectPropertyKey<List<String>> RELATED_SEARCHES =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<CharSequence> TITLE = new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<CharSequence> URL = new WritableObjectPropertyKey<>();
     static final WritableIntPropertyKey VISIBILITY = new WritableIntPropertyKey();
 
-    static final PropertyKey[] ALL_KEYS = {CHIP_CLICK_HANDLER, CLICK_HANDLER, CLUSTER_VISIT,
-            END_BUTTON_CLICK_HANDLER, END_BUTTON_DRAWABLE, ICON_DRAWABLE, LABEL, RELATED_SEARCHES,
-            TITLE, URL, VISIBILITY};
+    static final PropertyKey[] ALL_KEYS = {ACCESSIBILITY_STATE, CHIP_CLICK_HANDLER, CLICK_HANDLER,
+            CLUSTER_VISIT, DIVIDER_VISIBLE, END_BUTTON_CLICK_HANDLER, END_BUTTON_DRAWABLE,
+            ICON_DRAWABLE, LABEL, PROGRESS_BUTTON_STATE, RELATED_SEARCHES, TITLE, URL, VISIBILITY};
 }

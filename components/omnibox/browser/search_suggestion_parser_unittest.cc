@@ -121,7 +121,12 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
           }],
         "google:suggestrelevance": [607, 606],
         "google:suggesttype": ["QUERY", "ENTITY"],
-        "google:verbatimrelevance": 851
+        "google:verbatimrelevance": 851,
+        "google:experimentstats": [
+          {"2":"0:67","4":10001},
+          {"2":"54:67","4":10002},
+          {"2":"0:54","4":10003}
+          ]
       }])";
   absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
   ASSERT_TRUE(root_val);
@@ -138,6 +143,7 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
   ASSERT_EQ(true, results.field_trial_triggered);
   // The "google:verbatimrelevance".
   ASSERT_EQ(851, results.verbatim_relevance);
+  ASSERT_EQ(2U, results.suggest_results.size());
   {
     const auto& suggestion_result = results.suggest_results[0];
     ASSERT_EQ(u"christmas", suggestion_result.suggestion());
@@ -152,6 +158,22 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
     ASSERT_EQ(u"American author", suggestion_result.annotation());
     ASSERT_EQ("#424242", suggestion_result.image_dominant_color());
     ASSERT_EQ(GURL("http://example.com/a.png"), suggestion_result.image_url());
+  }
+  ASSERT_EQ(3U, results.experiment_stats_v2s.size());
+  {
+    const auto& experiment_stats_v2 = results.experiment_stats_v2s[0];
+    ASSERT_EQ(10001, experiment_stats_v2.type_int());
+    ASSERT_EQ("0:67", experiment_stats_v2.string_value());
+  }
+  {
+    const auto& experiment_stats_v2 = results.experiment_stats_v2s[1];
+    ASSERT_EQ(10002, experiment_stats_v2.type_int());
+    ASSERT_EQ("54:67", experiment_stats_v2.string_value());
+  }
+  {
+    const auto& experiment_stats_v2 = results.experiment_stats_v2s[2];
+    ASSERT_EQ(10003, experiment_stats_v2.type_int());
+    ASSERT_EQ("0:54", experiment_stats_v2.string_value());
   }
 }
 
@@ -301,11 +323,16 @@ TEST(SearchSuggestionParserTest, NavigationClassification) {
   EXPECT_EQ(kNone, result.match_contents_class());
 }
 
-TEST(SearchSuggestionParserTest, ParseHeaderInfo) {
-  std::string json_data = R"([
+TEST(SearchSuggestionParserTest, ParseSuggestionGroupInfo) {
+  TestSchemeClassifier scheme_classifier;
+  AutocompleteInput input(u"", metrics::OmniboxEventProto::NTP_REALBOX,
+                          scheme_classifier);
+
+  {
+    std::string json_data = R"([
       "",
       ["los angeles", "san diego", "las vegas", "san francisco"],
-      ["history", "", "", ""],
+      ["", "history", "", ""],
       [],
       {
         "google:clientdata": {
@@ -314,16 +341,17 @@ TEST(SearchSuggestionParserTest, ParseHeaderInfo) {
         },
         "google:headertexts":{
           "a":{
-            "40007":"Not recommended for you",
-            "40008":"Recommended for you"
+            "40000":"Recent Searches",
+            "40008":"Recommended for you",
+            "garbage_non_int":"NOT RECOMMENDED FOR YOU"
           },
-          "h":[40007, "40008", "garbage_non_int"]
+          "h":[40000, "40008", "garbage_non_int"]
         },
         "google:suggestdetail":[
           {
           },
           {
-            "zl":40007
+            "zl":40000
           },
           {
             "zl":40008
@@ -333,42 +361,449 @@ TEST(SearchSuggestionParserTest, ParseHeaderInfo) {
           }
         ],
         "google:suggestrelevance": [607, 606, 605, 604],
-        "google:suggesttype": ["PERSONALIZED_QUERY", "QUERY", "QUERY", "QUERY"]
+        "google:suggesttype": ["QUERY", "PERSONALIZED_QUERY", "QUERY", "QUERY"]
       }])";
-  absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
-  ASSERT_TRUE(root_val);
-  TestSchemeClassifier scheme_classifier;
-  AutocompleteInput input(u"", metrics::OmniboxEventProto::NTP_REALBOX,
-                          scheme_classifier);
-  SearchSuggestionParser::Results results;
-  ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
-      *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
-      /*is_keyword_result=*/false, &results));
+    absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
+    ASSERT_TRUE(root_val);
 
-  // Parse integers, and only integers, out of the "h" metadata list.
-  ASSERT_EQ(1U, results.hidden_group_ids.size());
-  ASSERT_EQ(40007, results.hidden_group_ids[0]);
+    SearchSuggestionParser::Results results;
+    ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
+        *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
+        /*is_keyword_result=*/false, &results));
 
-  {
-    const auto& suggestion_result = results.suggest_results[0];
-    ASSERT_EQ(u"los angeles", suggestion_result.suggestion());
+    // Suggestion group headers, original group ids, priorities, and default
+    // visibilities are correctly parsed and populated.
+    ASSERT_EQ(2U, results.suggestion_groups_map.size());
+
+    ASSERT_EQ(
+        u"Recent Searches",
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .header);
+    ASSERT_EQ(
+        40000,
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .original_group_id.value());
+    ASSERT_EQ(
+        SuggestionGroupPriority::kRemoteZeroSuggest1,
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .priority);
+    ASSERT_TRUE(
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .hidden);
+
+    ASSERT_EQ(u"Recommended for you",
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                  .header);
+    ASSERT_EQ(40008, results
+                         .suggestion_groups_map
+                             [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                         .original_group_id.value());
+    ASSERT_FALSE(results
+                     .suggestion_groups_map
+                         [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                     .hidden);
+    ASSERT_EQ(SuggestionGroupPriority::kRemoteZeroSuggest2,
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                  .priority);
+
+    ASSERT_EQ(u"los angeles", results.suggest_results[0].suggestion());
     // This suggestion does not belong to a group.
-    ASSERT_EQ(absl::nullopt, suggestion_result.suggestion_group_id());
+    ASSERT_EQ(absl::nullopt, results.suggest_results[0].suggestion_group_id());
+
+    ASSERT_EQ(u"san diego", results.suggest_results[1].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kPersonalizedZeroSuggest,
+              *results.suggest_results[1].suggestion_group_id());
+
+    ASSERT_EQ(u"las vegas", results.suggest_results[2].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest2,
+              *results.suggest_results[2].suggestion_group_id());
+
+    ASSERT_EQ(u"san francisco", results.suggest_results[3].suggestion());
+    // This suggestion belongs to an unrecognized group.
+    ASSERT_EQ(absl::nullopt, results.suggest_results[3].suggestion_group_id());
   }
   {
-    const auto& suggestion_result = results.suggest_results[1];
-    ASSERT_EQ(u"san diego", suggestion_result.suggestion());
-    ASSERT_EQ(40007, *suggestion_result.suggestion_group_id());
+    std::string json_data = R"([
+      "",
+      ["los angeles", "san diego", "las vegas", "san francisco"],
+      ["", "", "history", ""],
+      [],
+      {
+        "google:clientdata": {
+          "bpc": false,
+          "tlw": false
+        },
+        "google:headertexts":{
+          "a":{
+            "40000":"Recent Searches",
+            "40008":"Recommended for you",
+            "garbage_non_int":"NOT RECOMMENDED FOR YOU"
+          },
+          "h":[40000, "40008", "garbage_non_int"]
+        },
+        "google:suggestdetail":[
+          {
+            "zl":40008
+          },
+          {
+            "zl":40008
+          },
+          {
+            "zl":40000
+          },
+          {
+            "zl":40009
+          }
+        ],
+        "google:suggestrelevance": [607, 606, 605, 604],
+        "google:suggesttype": ["QUERY", "QUERY", "PERSONALIZED_QUERY", "QUERY"]
+      }])";
+    absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
+    ASSERT_TRUE(root_val);
+
+    SearchSuggestionParser::Results results;
+    ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
+        *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
+        /*is_keyword_result=*/false, &results));
+
+    // Suggestion group headers, original group ids, priorities, and default
+    // visibilities are correctly parsed and populated.
+    ASSERT_EQ(2U, results.suggestion_groups_map.size());
+
+    ASSERT_EQ(u"Recommended for you",
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                  .header);
+    ASSERT_EQ(40008, results
+                         .suggestion_groups_map
+                             [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                         .original_group_id.value());
+    ASSERT_FALSE(results
+                     .suggestion_groups_map
+                         [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                     .hidden);
+    ASSERT_EQ(SuggestionGroupPriority::kRemoteZeroSuggest1,
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                  .priority);
+
+    ASSERT_EQ(
+        u"Recent Searches",
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .header);
+    ASSERT_EQ(
+        40000,
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .original_group_id.value());
+    ASSERT_EQ(
+        SuggestionGroupPriority::kRemoteZeroSuggest2,
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .priority);
+    ASSERT_TRUE(
+        results
+            .suggestion_groups_map[SuggestionGroupId::kPersonalizedZeroSuggest]
+            .hidden);
+
+    ASSERT_EQ(u"los angeles", results.suggest_results[0].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest1,
+              *results.suggest_results[0].suggestion_group_id());
+
+    ASSERT_EQ(u"san diego", results.suggest_results[1].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest1,
+              *results.suggest_results[1].suggestion_group_id());
+
+    ASSERT_EQ(u"las vegas", results.suggest_results[2].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kPersonalizedZeroSuggest,
+              *results.suggest_results[2].suggestion_group_id());
+
+    ASSERT_EQ(u"san francisco", results.suggest_results[3].suggestion());
+    // This suggestion belongs to an unrecognized group.
+    ASSERT_EQ(absl::nullopt, results.suggest_results[3].suggestion_group_id());
   }
   {
-    const auto& suggestion_result = results.suggest_results[2];
-    ASSERT_EQ(u"las vegas", suggestion_result.suggestion());
-    ASSERT_EQ(40008, *suggestion_result.suggestion_group_id());
+    std::string json_data = R"([
+      "",
+      ["los angeles", "san diego", "las vegas", "san francisco"],
+      ["", "", "", "history"],
+      [],
+      {
+        "google:clientdata": {
+          "bpc": false,
+          "tlw": false
+        },
+        "google:headertexts":{
+          "a":{
+            "40007":"Related Searches",
+            "40008":"Recommended for you",
+            "40009":"NOT RECOMMENDED FOR YOU"
+          },
+          "h":[40007, "40008", "garbage_non_int"]
+        },
+        "google:suggestdetail":[
+          {
+            "zl":40008
+          },
+          {
+            "zl":40007
+          },
+          {
+            "zl":40008
+          },
+          {
+            "zl":40000
+          }
+        ],
+        "google:suggestrelevance": [607, 606, 605, 604],
+        "google:suggesttype": ["QUERY", "QUERY", "QUERY", "PERSONALIZED_QUERY"]
+      }])";
+    absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
+    ASSERT_TRUE(root_val);
+
+    SearchSuggestionParser::Results results;
+    ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
+        *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
+        /*is_keyword_result=*/false, &results));
+
+    // Suggestion group headers, original group ids, priorities, and default
+    // visibilities are correctly parsed and populated.
+    ASSERT_EQ(3U, results.suggestion_groups_map.size());
+
+    ASSERT_EQ(u"Recommended for you",
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                  .header);
+    ASSERT_EQ(40008, results
+                         .suggestion_groups_map
+                             [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                         .original_group_id.value());
+    ASSERT_EQ(SuggestionGroupPriority::kRemoteZeroSuggest1,
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                  .priority);
+    ASSERT_FALSE(results
+                     .suggestion_groups_map
+                         [SuggestionGroupId::kNonPersonalizedZeroSuggest1]
+                     .hidden);
+
+    ASSERT_EQ(u"Related Searches",
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                  .header);
+    ASSERT_EQ(40007, results
+                         .suggestion_groups_map
+                             [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                         .original_group_id.value());
+    ASSERT_TRUE(results
+                    .suggestion_groups_map
+                        [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                    .hidden);
+    ASSERT_EQ(SuggestionGroupPriority::kRemoteZeroSuggest2,
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest2]
+                  .priority);
+
+    ASSERT_EQ(u"NOT RECOMMENDED FOR YOU",
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest3]
+                  .header);
+    ASSERT_EQ(40009, results
+                         .suggestion_groups_map
+                             [SuggestionGroupId::kNonPersonalizedZeroSuggest3]
+                         .original_group_id.value());
+    ASSERT_FALSE(results
+                     .suggestion_groups_map
+                         [SuggestionGroupId::kNonPersonalizedZeroSuggest3]
+                     .hidden);
+    ASSERT_EQ(SuggestionGroupPriority::kRemoteZeroSuggest3,
+              results
+                  .suggestion_groups_map
+                      [SuggestionGroupId::kNonPersonalizedZeroSuggest3]
+                  .priority);
+
+    ASSERT_EQ(u"los angeles", results.suggest_results[0].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest1,
+              *results.suggest_results[0].suggestion_group_id());
+
+    ASSERT_EQ(u"san diego", results.suggest_results[1].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest2,
+              *results.suggest_results[1].suggestion_group_id());
+
+    ASSERT_EQ(u"las vegas", results.suggest_results[2].suggestion());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest1,
+              *results.suggest_results[2].suggestion_group_id());
+
+    ASSERT_EQ(u"san francisco", results.suggest_results[3].suggestion());
+    // This suggestion belongs to an unrecognized group.
+    ASSERT_EQ(absl::nullopt, results.suggest_results[3].suggestion_group_id());
   }
   {
-    const auto& suggestion_result = results.suggest_results[3];
-    ASSERT_EQ(u"san francisco", suggestion_result.suggestion());
-    ASSERT_EQ(40009, *suggestion_result.suggestion_group_id());
+    std::string json_data = R"([
+    "",
+    [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11"
+    ],
+    [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    [],
+    {
+      "google:clientdata":{
+        "bpc":false,
+        "tlw":false
+      },
+      "google:headertexts":{
+        "a":{
+          "40000":"1",
+          "40001":"2",
+          "40002":"3",
+          "40003":"4",
+          "40004":"5",
+          "40005":"6",
+          "40006":"7",
+          "40007":"8",
+          "40008":"9",
+          "40009":"10",
+          "40010":"11"
+        },
+        "h":[
+          40007,
+          "40008",
+          "garbage_non_int"
+        ]
+      },
+      "google:suggestdetail":[
+        {
+          "zl":40000
+        },
+        {
+          "zl":40001
+        },
+        {
+          "zl":40002
+        },
+        {
+          "zl":40003
+        },
+        {
+          "zl":40004
+        },
+        {
+          "zl":40005
+        },
+        {
+          "zl":40006
+        },
+        {
+          "zl":40007
+        },
+        {
+          "zl":40008
+        },
+        {
+          "zl":40009
+        },
+        {
+          "zl":40010
+        }
+      ],
+      "google:suggestrelevance":[
+        611,
+        610,
+        609,
+        608,
+        607,
+        606,
+        605,
+        604,
+        603,
+        602,
+        601
+      ],
+      "google:suggesttype":[
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY",
+        "QUERY"
+      ]
+    }])";
+    absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
+    ASSERT_TRUE(root_val);
+
+    SearchSuggestionParser::Results results;
+    ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
+        *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
+        /*is_keyword_result=*/false, &results));
+
+    // Suggestion group headers, original group ids, priorities, and default
+    // visibilities are correctly parsed and populated.
+    ASSERT_EQ(10U, results.suggestion_groups_map.size());
+    ASSERT_EQ(11U, results.suggest_results.size());
+    ASSERT_EQ(SuggestionGroupId::kPersonalizedZeroSuggest,
+              *results.suggest_results[0].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest2,
+              *results.suggest_results[1].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest3,
+              *results.suggest_results[2].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest4,
+              *results.suggest_results[3].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest5,
+              *results.suggest_results[4].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest6,
+              *results.suggest_results[5].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest7,
+              *results.suggest_results[6].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest8,
+              *results.suggest_results[7].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest9,
+              *results.suggest_results[8].suggestion_group_id());
+    ASSERT_EQ(SuggestionGroupId::kNonPersonalizedZeroSuggest10,
+              *results.suggest_results[9].suggestion_group_id());
+    ASSERT_EQ(absl::nullopt, results.suggest_results[10].suggestion_group_id());
   }
 }
 

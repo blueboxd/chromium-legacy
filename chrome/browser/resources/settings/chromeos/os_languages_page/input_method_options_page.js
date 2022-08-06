@@ -8,7 +8,7 @@
  */
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -136,7 +136,8 @@ class SettingsInputMethodOptionsPageElement extends
    */
   populateOptionSections_() {
     const options = generateOptions(
-        this.engineId_, loadTimeData.getBoolean('allowPredictiveWriting'));
+        this.engineId_, loadTimeData.getBoolean('allowPredictiveWriting'),
+        loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress'));
     const prefValue = this.getPref(this.PREFS_PATH).value;
     const prefix = this.getPrefsPrefix_();
     const currentSettings = prefix in prefValue ? prefValue[prefix] : {};
@@ -163,7 +164,7 @@ class SettingsInputMethodOptionsPageElement extends
         url: getOptionUrl(name),
         dependentOptions: option.dependentOptions ?
             option.dependentOptions.map(t => makeOption({name: t})) :
-            []
+            [],
       };
     };
 
@@ -201,8 +202,9 @@ class SettingsInputMethodOptionsPageElement extends
    */
   dependentOptionsDisabled_(value) {
     // TODO(b/189909728): Sometimes the value comes as a string, other times as
-    // an integer, so handle both cases. Try to understand and fix this.
-    return value === '0' || value === 0;
+    // an integer, other times as a boolean, so handle all cases. Try to
+    // understand and fix this.
+    return value === '0' || value === 0 || value === false;
   }
 
   /**

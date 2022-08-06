@@ -75,8 +75,8 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
@@ -1220,9 +1220,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
       const volatile GLbyte* mailbox);
   void DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id, GLenum mode);
   void DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
-
-  void DoBeginBatchReadAccessSharedImageCHROMIUM();
-  void DoEndBatchReadAccessSharedImageCHROMIUM();
 
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
@@ -9787,7 +9784,6 @@ void GLES2DecoderImpl::DoLineWidth(GLfloat width) {
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoLinkProgram");
-  SCOPED_UMA_HISTOGRAM_TIMER("GPU.DoLinkProgramTime");
   Program* program = GetProgramInfoNotShader(
       program_id, "glLinkProgram");
   if (!program) {
@@ -18488,7 +18484,7 @@ void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     return;
   }
 
-  std::unique_ptr<SharedImageRepresentationGLTexture> shared_image;
+  std::unique_ptr<GLTextureImageRepresentation> shared_image;
   if (internal_format == GL_RGB) {
     shared_image = group_->shared_image_representation_factory()
                        ->ProduceRGBEmulationGLTexture(mailbox);
@@ -18526,8 +18522,7 @@ void GLES2DecoderImpl::DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
     return;
   }
 
-  SharedImageRepresentationGLTexture* shared_image =
-      texture_ref->shared_image();
+  GLTextureImageRepresentation* shared_image = texture_ref->shared_image();
   if (!shared_image) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
                        "bound texture is not a shared image");
@@ -18555,8 +18550,7 @@ void GLES2DecoderImpl::DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id) {
     return;
   }
 
-  SharedImageRepresentationGLTexture* shared_image =
-      texture_ref->shared_image();
+  GLTextureImageRepresentation* shared_image = texture_ref->shared_image();
   if (!shared_image) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoEndSharedImageAccessCHROMIUM",
                        "bound texture is not a shared image");
@@ -18570,28 +18564,6 @@ void GLES2DecoderImpl::DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id) {
   }
 
   texture_ref->EndAccessSharedImage();
-}
-
-void GLES2DecoderImpl::DoBeginBatchReadAccessSharedImageCHROMIUM() {
-  DCHECK(group_->shared_image_manager());
-
-  if (!group_->shared_image_manager()->BeginBatchReadAccess()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "DoBeginBatchReadAccessSharedImageCHROMIUM",
-                       "shared image begin batch read access failed ");
-    return;
-  }
-}
-
-void GLES2DecoderImpl::DoEndBatchReadAccessSharedImageCHROMIUM() {
-  DCHECK(group_->shared_image_manager());
-
-  if (!group_->shared_image_manager()->EndBatchReadAccess()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "DoEndBatchReadAccessSharedImageCHROMIUM",
-                       "shared image end batch read access failed ");
-    return;
-  }
 }
 
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(

@@ -50,7 +50,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
 import org.chromium.chrome.browser.lens.LensMetrics;
@@ -526,8 +525,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
             setMVTilesVisibility(!mIsIncognito);
             setTabCarouselVisibility(hasNormalTab && !mIsIncognito);
             setExploreSurfaceVisibility(!mIsIncognito && mExploreSurfaceCoordinatorFactory != null);
-            // TODO(qinmin): show query tiles when flag is enabled.
-            setQueryTilesVisibility(false);
+            setQueryTilesVisibility(!mIsIncognito);
             setFakeBoxVisibility(!mIsIncognito);
             setSecondaryTasksSurfaceVisibility(mIsIncognito, /* skipUpdateController = */ false);
             setTopToolbarPlaceholderHeight(getPixelSize(R.dimen.control_container_height)
@@ -596,6 +594,10 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
 
     void hideTabSwitcherView(boolean animate) {
         mController.hideTabSwitcherView(animate);
+    }
+
+    public void beforeHideTabSwitcherView() {
+        mController.prepareHideTabSwitcherView();
     }
 
     void showOverview(boolean animate) {
@@ -841,8 +843,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
                     ReturnToChromeUtil.getFeedArticlesVisibility();
         }
 
-        return mIsStartSurfaceEnabled
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+        return mIsStartSurfaceEnabled && ChromeFeatureList.sInstantStart.isEnabled()
                 && ReturnToChromeUtil.getFeedArticlesVisibility() && !mHadWarmStart
                 && !mHasFeedPlaceholderShown;
     }

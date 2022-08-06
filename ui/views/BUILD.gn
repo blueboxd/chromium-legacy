@@ -8,7 +8,6 @@ import("//build/config/features.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
-import("//printing/buildflags/buildflags.gni")
 import("//skia/features.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
@@ -124,6 +123,7 @@ component("views") {
     "controls/button/radio_button.h",
     "controls/button/toggle_button.h",
     "controls/combobox/combobox.h",
+    "controls/combobox/combobox_menu_model.h",
     "controls/combobox/combobox_util.h",
     "controls/dot_indicator.h",
     "controls/editable_combobox/editable_combobox.h",
@@ -350,6 +350,7 @@ component("views") {
     "controls/button/radio_button.cc",
     "controls/button/toggle_button.cc",
     "controls/combobox/combobox.cc",
+    "controls/combobox/combobox_menu_model.cc",
     "controls/combobox/combobox_util.cc",
     "controls/combobox/empty_combobox_model.cc",
     "controls/combobox/empty_combobox_model.h",
@@ -567,37 +568,17 @@ component("views") {
     deps += [ "//chromeos/constants" ]
   }
 
+  if (is_linux) {
+    public_deps += [ "//ui/linux:linux_ui" ]
+  }
+
   if (is_linux || is_chromeos || is_fuchsia) {
     public += [ "color_chooser/color_chooser_view.h" ]
     sources += [ "color_chooser/color_chooser_view.cc" ]
   }
 
   if (is_linux || is_chromeos_lacros) {
-    public_deps += [
-      "//printing/buildflags",
-      "//ui/base/cursor:theme_manager",
-    ]
-    deps += [
-      "//build:chromecast_buildflags",
-      "//ui/base/ime/linux",
-      "//ui/shell_dialogs",
-    ]
-    if (enable_basic_printing) {
-      deps += [ "//printing" ]
-    }
-    public += [
-      "linux_ui/device_scale_factor_observer.h",
-      "linux_ui/linux_ui.h",
-      "linux_ui/nav_button_provider.h",
-      "linux_ui/status_icon_linux.h",
-      "linux_ui/window_button_order_observer.h",
-      "linux_ui/window_frame_provider.h",
-    ]
-    sources += [
-      "linux_ui/linux_ui.cc",
-      "linux_ui/status_icon_linux.cc",
-    ]
-
+    deps += [ "//ui/base/ime/linux" ]
     if (!is_chromeos_lacros) {
       sources += [ "controls/menu/menu_config_linux.cc" ]
     }
@@ -613,6 +594,7 @@ component("views") {
 
   if (is_mac) {
     public += [
+      "cocoa/immersive_mode_delegate_mac.h",
       "cocoa/native_widget_mac_ns_window_host.h",
       "controls/menu/menu_closure_animation_mac.h",
       "controls/menu/menu_cocoa_watcher_mac.h",
@@ -811,7 +793,6 @@ component("views") {
         "widget/desktop_aura/desktop_screen_position_client.cc",
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
-      public_deps += [ "//ui/aura/cursor" ]
       if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [
@@ -1304,6 +1285,10 @@ test("views_unittests") {
     ]
   }
 
+  if (is_linux) {
+    deps += [ "//ui/linux:test_support" ]
+  }
+
   if (is_linux || is_chromeos_lacros) {
     deps += [ "//ui/base/ime/linux" ]
   }
@@ -1351,15 +1336,15 @@ test("views_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv2 = false
+    use_cfv1 = false
+
+    # These tests use SwiftShader (crbug.com/1022542), which uses JIT.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
     additional_manifest_fragments = [
-      "//build/config/fuchsia/test/font_capabilities.test-cmx",
-
-      # These tests use SwiftShader (crbug.com/1022542), which uses JIT.
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-
-      "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
-      "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+      "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/present_view.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 

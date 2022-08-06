@@ -593,7 +593,7 @@ void LocalFrameClientImpl::BeginNavigation(
     navigation_info->initiator_frame_has_download_sandbox_flag =
         origin_window->IsSandboxed(
             network::mojom::blink::WebSandboxFlags::kDownloads);
-    navigation_info->initiator_frame_is_ad = frame->IsAdSubframe();
+    navigation_info->initiator_frame_is_ad = frame->IsAdFrame();
   }
 
   // The frame has navigated either by itself or by the action of the
@@ -838,9 +838,8 @@ absl::optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {
 }
 
 String LocalFrameClientImpl::DoNotTrackValue() {
-  WebString do_not_track = web_frame_->Client()->DoNotTrackValue();
-  if (!do_not_track.IsEmpty())
-    return do_not_track;
+  if (web_frame_->View()->GetRendererPreferences().enable_do_not_track)
+    return "1";
   return String();
 }
 
@@ -954,12 +953,6 @@ void LocalFrameClientImpl::DispatchDidChangeManifest() {
 unsigned LocalFrameClientImpl::BackForwardLength() {
   WebViewImpl* webview = web_frame_->ViewImpl();
   return webview ? webview->HistoryListLength() : 0;
-}
-
-BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {
-  if (WebLocalFrameClient* client = web_frame_->Client())
-    return client->GetFrameBlameContext();
-  return nullptr;
 }
 
 WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {

@@ -4,6 +4,8 @@
 
 #include "media/formats/hls/types.h"
 
+#include <initializer_list>
+#include <string>
 #include <utility>
 
 #include "base/location.h"
@@ -226,6 +228,7 @@ TEST(HlsTypesTest, AttributeListIterator) {
 
   // Attribute names may not be empty
   error_test(R"(=BAR,HELLO=WORLD)", {});
+  error_test(R"(  =BAR,HELLO=WORLD)", {});
 
   // Attribute values may not be empty
   error_test(R"(FOO=,HELLO=WORLD)", {});
@@ -240,33 +243,39 @@ TEST(HlsTypesTest, AttributeListIterator) {
   error_test(R"(FOO=BAR,HEL$LO=WORLD)", {{"FOO", "BAR"}});
   error_test(R"(FOO=BAR,HEL(LO=WORLD)", {{"FOO", "BAR"}});
 
-  // Attribute names may not have leading, trailing, or interior whitespace
-  error_test(R"(FOO=BAR, HELLO=WORLD)", {{"FOO", "BAR"}});
-  error_test(R"(FOO=BAR,HELLO =WORLD)", {{"FOO", "BAR"}});
-  error_test(R"(FOO=BAR,HE LLO=WORLD)", {{"FOO", "BAR"}});
+  // Attribute names may have leading or trailing whitespace, but not interior
+  // whitespace
+  ok_test(" FOO\t =BAR,\tHELLO    =WORLD",
+          {{"FOO", "BAR"}, {"HELLO", "WORLD"}});
+  error_test("FOO=BAR,HE LLO=WORLD", {{"FOO", "BAR"}});
 
   // Attribute names must be followed by an equals sign
   error_test(R"(FOO=BAR,HELLOWORLD,)", {{"FOO", "BAR"}});
 
-  // Attribute values may not contain leading, interior, or trailing whitespace
-  error_test(R"(FOO=BAR,HELLO= WORLD,)", {{"FOO", "BAR"}});
-  error_test(R"(FOO=BAR,HELLO=WO RLD,)", {{"FOO", "BAR"}});
-  error_test(R"(FOO=BAR,HELLO=WORLD ,)", {{"FOO", "BAR"}});
+  // Attribute values may contain leading or trailing whitespace, but
+  // it is not significant. Interior whitespace is not allowed in unquoted
+  // attribute values.
+  ok_test("FOO= BAR\t,HELLO= WORLD,", {{"FOO", "BAR"}, {"HELLO", "WORLD"}});
+  ok_test("FOO=BAR,HELLO=WORLD \t,", {{"FOO", "BAR"}, {"HELLO", "WORLD"}});
+  error_test("FOO=BAR,HELLO=WO RLD,", {{"FOO", "BAR"}});
 
   // Leading commas are not allowed
   error_test(R"(,FOO=BAR,HELLO=WORLD,)", {});
 
   // A single trailing comma is allowed, multiple are not
-  error_test(R"(FOO=BAR,HELLO=WORLD,,)", {{"FOO", "BAR"}, {"HELLO", "WORLD"}});
+  ok_test("FOO=BAR,HELLO=WORLD, \t", {{"FOO", "BAR"}, {"HELLO", "WORLD"}});
+  error_test("FOO=BAR,HELLO=WORLD, \t,", {{"FOO", "BAR"}, {"HELLO", "WORLD"}});
 
-  // Single-quotes are not allowed unquoted
-  error_test(R"(FOO='hahaha')", {});
-  ok_test(R"(FOO="'hahaha'")", {{"FOO", "\"'hahaha'\""}});
+  // Single-quotes are allowed, though not treated as strings
+  ok_test("FOO='hahaha'", {{"FOO", "'hahaha'"}});
+  error_test("FOO='hah aha'", {});
+  ok_test(R"(FOO="'hah aha'")", {{"FOO", "\"'hah aha'\""}});
 
-  // Unmatched double-quote is not allowed
+  // Unmatched leading quote is not allowed, interior or trailing quotes are.
   error_test(R"(FOO=")", {});
-  error_test(R"(FOO=BAR"BAZ)", {});
-  error_test(R"(FOO=BAR")", {});
+  error_test(R"(FOO="BAR)", {});
+  ok_test(R"(FOO= BAR"BAZ )", {{"FOO", "BAR\"BAZ"}});
+  ok_test(R"(FOO=BAR")", {{"FOO", "BAR\""}});
 
   // Double-quote (even escaped) inside double-quotes is not allowed
   error_test(R"(FOO=""")", {});
@@ -277,10 +286,6 @@ TEST(HlsTypesTest, AttributeListIterator) {
 
   // Tabs inside quotes are allowed
   ok_test("FOO=\"\t\"", {{"FOO", "\"\t\""}});
-
-  // Linefeed or carriage return inside quotes are not allowed
-  error_test("FOO=\"as\rdf\"", {});
-  error_test("FOO=\"as\ndf\"", {});
 }
 
 TEST(HlsTypesTest, AttributeMap) {
@@ -388,7 +393,7 @@ TEST(HlsTypesTest, AttributeMap) {
   // Test that the attribute map forwards errors to the caller
   {
     auto storage = types::AttributeMap::MakeStorage("FAR", "FAZ", "FOO");
-    auto iter = make_iter("FOO=foo,FAR=far   ,FAZ=faz,");
+    auto iter = make_iter("FOO=foo,FAR=\"far,FAZ=faz,");
 
     auto result = run_fill(storage, &iter);
     EXPECT_TRUE(result.has_error());
@@ -864,6 +869,60 @@ TEST(HlsTypesTest, ParseInstreamId) {
   ok_test("CC4", types::InstreamId::Type::kCc, 4);
   ok_test("SERVICE1", types::InstreamId::Type::kService, 1);
   ok_test("SERVICE63", types::InstreamId::Type::kService, 63);
+}
+
+TEST(HlsTypesTest, ParseAudioChannels) {
+  constexpr auto ok_test =
+      [](base::StringPiece str, types::DecimalInteger max_channels,
+         const std::initializer_list<std::string>& audio_coding_identifiers,
+         const base::Location& from = base::Location::Current()) {
+        auto result = types::AudioChannels::Parse(
+            ResolvedSourceString::CreateForTesting(str));
+        ASSERT_TRUE(result.has_value()) << from.ToString();
+        const auto value = std::move(result).value();
+        EXPECT_EQ(value.GetMaxChannels(), max_channels) << from.ToString();
+        EXPECT_TRUE(base::ranges::equal(value.GetAudioCodingIdentifiers(),
+                                        audio_coding_identifiers))
+            << from.ToString();
+      };
+  constexpr auto error_test = [](base::StringPiece str,
+                                 const base::Location& from =
+                                     base::Location::Current()) {
+    auto result = types::AudioChannels::Parse(
+        ResolvedSourceString::CreateForTesting(str));
+    ASSERT_TRUE(result.has_error()) << from.ToString();
+    EXPECT_EQ(std::move(result).error().code(),
+              ParseStatusCode::kFailedToParseAudioChannels)
+        << from.ToString();
+  };
+
+  // First parameter must be a valid DecimalInteger
+  error_test("");
+  error_test("/");
+  error_test("-1");
+  error_test("-1/");
+  error_test("/1");
+  error_test("/FOO");
+  error_test("1.5");
+  ok_test("1", 1, {});
+  ok_test("0", 0, {});
+  ok_test("2/", 2, {});
+  ok_test("99/", 99, {});
+
+  // Second parameter must be a valid list of audio coding identifiers
+  error_test("2/foo");
+  error_test("2/+");
+  error_test("2/,");
+  error_test("2/FOO,,");
+  ok_test("2/FOO", 2, {"FOO"});
+  ok_test("2/FOO,", 2, {"FOO"});
+  ok_test("2/FOO,BAR", 2, {"FOO", "BAR"});
+  ok_test("2/FOO-BAR,8AZ", 2, {"FOO-BAR", "8AZ"});
+  ok_test("2/-", 2, {"-"});
+
+  // Additional parameters are ignored
+  ok_test("2//19090zz**-0/", 2, {});
+  ok_test("2/FOO/19090zz**-0", 2, {"FOO"});
 }
 
 }  // namespace media::hls

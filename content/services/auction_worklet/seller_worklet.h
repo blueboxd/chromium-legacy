@@ -17,6 +17,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
@@ -44,7 +45,7 @@ namespace auction_worklet {
 // Represents a seller worklet for FLEDGE
 // (https://github.com/WICG/turtledove/blob/main/FLEDGE.md). Loads and runs the
 // seller worklet's Javascript.
-class SellerWorklet : public mojom::SellerWorklet {
+class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
  public:
   // Deletes the worklet immediately and resets the SellerWorklet's Mojo pipe
   // with the provided description. See mojo::Receiver::ResetWithReason().
@@ -244,6 +245,13 @@ class SellerWorklet : public mojom::SellerWorklet {
     ~V8State();
 
     void FinishInit();
+
+    // Calls `PostScoreAdCallbackToUserThread`, passing in a 0 score and null
+    // for all other values. Used on errors, which cause us to drop win/loss
+    // report URLs, even if the methods to set them have been invoked.
+    void PostScoreAdCallbackToUserThreadOnError(
+        ScoreAdCallbackInternal callback,
+        std::vector<std::string> errors);
 
     void PostScoreAdCallbackToUserThread(
         ScoreAdCallbackInternal callback,

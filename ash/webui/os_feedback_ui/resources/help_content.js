@@ -5,6 +5,12 @@
 import './help_resources_icons.js';
 import './strings.m.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import '//resources/cr_elements/cr_icons_css.m.js';
+import '//resources/cr_elements/hidden_style_css.m.js';
+import '//resources/cr_elements/icons.m.js';
+import '//resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
 
 import {mojoString16ToString} from '//resources/ash/common/mojo_utils.js';
 import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
@@ -47,7 +53,11 @@ export class HelpContentElement extends HelpContentElementBase {
   }
 
   static get properties() {
-    return {searchResult: {type: SearchResult}};
+    return {
+      searchResult: {type: SearchResult},
+      isDarkModeEnabled_: {type: Boolean},
+      isOnline_: {type: Boolean},
+    };
   }
 
   constructor() {
@@ -59,24 +69,54 @@ export class HelpContentElement extends HelpContentElementBase {
     this.searchResult = {
       contentList: [],
       isQueryEmpty: true,
-      isPopularContent: true
+      isPopularContent: true,
     };
+
+    /** @type {boolean} */
+    this.isDarkModeEnabled_ = false;
+
+    /** @type {boolean} */
+    this.isOnline_ = navigator.onLine;
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    window.addEventListener('online', () => {
+      this.isOnline_ = true;
+    });
+
+    window.addEventListener('offline', () => {
+      this.isOnline_ = false;
+    });
   }
 
   /**
    * Compute the label to use.
-   * @param {!SearchResult} searchResult
-   * @returns {string}
+   * @return {string}
    * @protected
    */
-  getLabel_(searchResult) {
-    if (!searchResult.isPopularContent) {
+  getLabel_() {
+    if (!this.isOnline_) {
+      return this.i18n('popularHelpContent');
+    }
+    if (!this.searchResult.isPopularContent) {
       return this.i18n('suggestedHelpContent');
     }
-    if (searchResult.isQueryEmpty) {
+    if (this.searchResult.isQueryEmpty) {
       return this.i18n('popularHelpContent');
     }
     return this.i18n('noMatchedResults');
+  }
+
+  /**
+   * Returns true if there are suggested help content displayed.
+   * @return {boolean}
+   * @protected
+   */
+  hasSuggestedHelpContent_() {
+    return (this.isOnline_ && !this.searchResult.isPopularContent);
   }
 
   /**
@@ -116,6 +156,19 @@ export class HelpContentElement extends HelpContentElementBase {
    */
   getTitle_(helpContent) {
     return mojoString16ToString(helpContent.title);
+  }
+
+  /**
+   * Gets the relative source path to the "help content is offline" illustration
+   * @return {string}
+   * @protected
+   */
+  getOfflineIllustrationSrc_() {
+    if (this.isDarkModeEnabled_) {
+      return 'illustrations/network_unavailable_darkmode.svg';
+    } else {
+      return 'illustrations/network_unavailable_lightmode.svg';
+    }
   }
 }
 

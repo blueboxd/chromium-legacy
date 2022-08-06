@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_ASH_GUEST_OS_PUBLIC_GUEST_OS_TERMINAL_PROVIDER_REGISTRY_H_
 
 #include "base/containers/flat_map.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
+
+class Profile;
 
 namespace guest_os {
 
@@ -23,7 +26,7 @@ class GuestOsTerminalProviderRegistry {
   // Gets a list of `Id`s for all provider's in the registry.
   std::vector<Id> List();
 
-  GuestOsTerminalProviderRegistry();
+  explicit GuestOsTerminalProviderRegistry(Profile* profile);
   ~GuestOsTerminalProviderRegistry();
   GuestOsTerminalProviderRegistry(const GuestOsTerminalProviderRegistry&) =
       delete;
@@ -37,7 +40,12 @@ class GuestOsTerminalProviderRegistry {
   // Returns the provider with the specified `id`. Returns nullptr if the
   // provider doesn't exist. Convenience method which converts std::string to
   // Id for you.
-  GuestOsTerminalProvider* Get(std::string id) const;
+  GuestOsTerminalProvider* Get(const std::string& id) const;
+
+  // Returns the provider with the specified `id`. Returns nullptr if the
+  // provider doesn't exist. Searches the registry for the first provider for
+  // the specified guest.
+  GuestOsTerminalProvider* Get(const guest_os::GuestId& id) const;
 
   // Registers a new provider with the registry. The registry takes ownership of
   // the provider, holding on to it until it's unregistered. Returns the id of
@@ -49,6 +57,7 @@ class GuestOsTerminalProviderRegistry {
   std::unique_ptr<GuestOsTerminalProvider> Unregister(Id provider);
 
  private:
+  Profile* profile_;
   Id next_id_ = 0;
   base::flat_map<Id, std::unique_ptr<GuestOsTerminalProvider>> providers_;
 };

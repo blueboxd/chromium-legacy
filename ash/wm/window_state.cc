@@ -356,14 +356,6 @@ bool WindowState::IsUserPositionable() const {
   return window_util::IsWindowUserPositionable(window_);
 }
 
-bool WindowState::HasMaximumWidthOrHeight() const {
-  if (!window_->delegate())
-    return false;
-
-  const gfx::Size max_size = window_->delegate()->GetMaximumSize();
-  return max_size.width() || max_size.height();
-}
-
 bool WindowState::CanMaximize() const {
   bool can_maximize = (window_->GetProperty(aura::client::kResizeBehaviorKey) &
                        aura::client::kResizeBehaviorCanMaximize) != 0;
@@ -459,9 +451,16 @@ void WindowState::RestoreZOrdering() {
 }
 
 void WindowState::OnWMEvent(const WMEvent* event) {
+  if (event->IsSnapEvent()) {
+    // Snap events should be created as WindowSnapWMEvent.
+    DCHECK(event->IsSnapInfoAvailable());
+  }
+
   current_state_->OnWMEvent(this, event);
 
-  MaybeUpdateSnapRatio(event);
+  if (event->IsSnapEvent() || event->IsBoundsEvent()) {
+    UpdateSnapRatio();
+  }
 
   PersistentDesksBarController* bar_controller =
       Shell::Get()->persistent_desks_bar_controller();
@@ -567,27 +566,10 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
   return old_object;
 }
 
-void WindowState::MaybeUpdateSnapRatio(const WMEvent* event) {
-  if (!IsSnapped()) {
-    snap_ratio_.reset();
+void WindowState::UpdateSnapRatio() {
+  if (!IsSnapped())
     return;
-  }
-
-  const WMEventType type = event->type();
-  // Initializes |snap_ratio_| whenever |event| is snapping event.
-  if (type == WM_EVENT_SNAP_PRIMARY || type == WM_EVENT_SNAP_SECONDARY ||
-      type == WM_EVENT_CYCLE_SNAP_PRIMARY ||
-      type == WM_EVENT_CYCLE_SNAP_SECONDARY) {
-    // Since |MaybeUpdateSnapRatio()| is called post WMEvent taking effect,
-    // |window_|'s bounds is in a correct state for ratio update.
-    snap_ratio_ = absl::make_optional(GetCurrentSnapRatio(window_));
-    return;
-  }
-
-  // |snap_ratio_| under snapped state may change due to bounds event.
-  if (event->IsBoundsEvent()) {
-    snap_ratio_ = absl::make_optional(GetCurrentSnapRatio(window_));
-  }
+  snap_ratio_ = absl::make_optional(GetCurrentSnapRatio(window_));
 }
 
 void WindowState::SetPreAutoManageWindowBounds(const gfx::Rect& bounds) {
@@ -750,7 +732,6 @@ void WindowState::SetAndClearRestoreBounds() {
 WindowState::WindowState(aura::Window* window)
     : window_(window),
       bounds_changed_by_user_(false),
-      can_consume_system_keys_(false),
       unminimize_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
       autohide_shelf_when_maximized_or_fullscreen_(false),
@@ -1149,21 +1130,6 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
       NOTIMPLEMENTED();
     }
     return;
-  }
-  // `kWindowToggleFloatKey` is only used to toggle float event, not an
-  // indicator of window's float state. this is created to allow access from
-  // both chromeos/ash and avoid recursive call to `kWindowStateTypeKey`.
-  // TODO(shidi): Create API to allow outside access and remove this property.
-  if (key == chromeos::kWindowToggleFloatKey) {
-    DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
-    if (IsFloated()) {
-      // If window is already floated, unfloat and restore.
-      Restore();
-    } else {
-      WMEvent event(WM_EVENT_FLOAT);
-      OnWMEvent(&event);
-      return;
-    }
   }
   if (key == chromeos::kWindowStateTypeKey) {
     if (!ignore_property_change_) {

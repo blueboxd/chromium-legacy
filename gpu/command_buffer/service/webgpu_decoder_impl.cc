@@ -30,9 +30,9 @@
 #include "gpu/command_buffer/service/dawn_service_serializer.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_manager.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_preferences.h"
@@ -411,31 +411,31 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     virtual WGPUTexture texture() const = 0;
   };
 
-  // Wraps a |SharedImageRepresentationDawn| as a WGPUTexture.
+  // Wraps a |DawnImageRepresentation| as a WGPUTexture.
   class SharedImageRepresentationAndAccessDawn
       : public SharedImageRepresentationAndAccess {
    public:
     SharedImageRepresentationAndAccessDawn(
-        std::unique_ptr<SharedImageRepresentationDawn> representation,
-        std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess> access)
+        std::unique_ptr<DawnImageRepresentation> representation,
+        std::unique_ptr<DawnImageRepresentation::ScopedAccess> access)
         : representation_(std::move(representation)),
           access_(std::move(access)) {}
 
     WGPUTexture texture() const override { return access_->texture(); }
 
    private:
-    std::unique_ptr<SharedImageRepresentationDawn> representation_;
-    std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess> access_;
+    std::unique_ptr<DawnImageRepresentation> representation_;
+    std::unique_ptr<DawnImageRepresentation::ScopedAccess> access_;
   };
 
-  // Wraps a |SharedImageRepresentationSkia| and exposes
+  // Wraps a |SkiaImageRepresentation| and exposes
   // it as a WGPUTexture by performing CPU readbacks/uploads.
   class SharedImageRepresentationAndAccessSkiaFallback
       : public SharedImageRepresentationAndAccess {
    public:
     static std::unique_ptr<SharedImageRepresentationAndAccessSkiaFallback>
     Create(scoped_refptr<SharedContextState> shared_context_state,
-           std::unique_ptr<SharedImageRepresentationSkia> representation,
+           std::unique_ptr<SkiaImageRepresentation> representation,
            const DawnProcTable& procs,
            WGPUDevice device,
            WGPUTextureUsage usage) {
@@ -492,7 +492,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
    private:
     SharedImageRepresentationAndAccessSkiaFallback(
         scoped_refptr<SharedContextState> shared_context_state,
-        std::unique_ptr<SharedImageRepresentationSkia> representation,
+        std::unique_ptr<SkiaImageRepresentation> representation,
         const DawnProcTable& procs,
         WGPUDevice device,
         WGPUTextureUsage usage)
@@ -505,11 +505,17 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       // It should be internally copyable so Chrome can internally perform
       // copies with it, but Javascript cannot (unless |usage| contains copy
       // src/dst).
+      // We also need RenderAttachment usage for clears, and TextureBinding for
+      // copyTextureForBrowser.
       WGPUDawnTextureInternalUsageDescriptor internal_usage_desc = {
           .chain = {.sType = WGPUSType_DawnTextureInternalUsageDescriptor},
           .internalUsage =
               static_cast<WGPUTextureUsageFlags>(WGPUTextureUsage_CopyDst) |
-              static_cast<WGPUTextureUsageFlags>(WGPUTextureUsage_CopySrc),
+              static_cast<WGPUTextureUsageFlags>(WGPUTextureUsage_CopySrc) |
+              static_cast<WGPUTextureUsageFlags>(
+                  WGPUTextureUsage_RenderAttachment) |
+              static_cast<WGPUTextureUsageFlags>(
+                  WGPUTextureUsage_TextureBinding),
       };
       WGPUTextureDescriptor texture_desc = {
           .nextInChain = &internal_usage_desc.chain,
@@ -544,7 +550,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // Align up to 256, required by WebGPU buffer->texture and texture->buffer
       // copies.
-      checked_bytes_per_row = base::bits::AlignUp(packed_bytes_per_row, 256);
+      checked_bytes_per_row =
+          base::bits::AlignUp(packed_bytes_per_row, uint32_t{256});
       if (!checked_bytes_per_row.AssignIfValid(bytes_per_row)) {
         return false;
       }
@@ -805,7 +812,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     }
 
     scoped_refptr<SharedContextState> shared_context_state_;
-    std::unique_ptr<SharedImageRepresentationSkia> representation_;
+    std::unique_ptr<SkiaImageRepresentation> representation_;
     const DawnProcTable& procs_;
     WGPUDevice device_;
     WGPUTexture texture_;
@@ -1481,7 +1488,7 @@ WebGPUDecoderImpl::AssociateMailboxDawn(const Mailbox& mailbox,
                                         WGPUDevice device,
                                         WGPUBackendType backendType,
                                         WGPUTextureUsage usage) {
-  std::unique_ptr<SharedImageRepresentationDawn> shared_image =
+  std::unique_ptr<DawnImageRepresentation> shared_image =
       shared_image_representation_factory_->ProduceDawn(mailbox, device,
                                                         backendType);
 
@@ -1503,7 +1510,7 @@ WebGPUDecoderImpl::AssociateMailboxDawn(const Mailbox& mailbox,
     shared_image->SetClearedRect(gfx::Rect());
   }
 
-  std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess> scoped_access =
+  std::unique_ptr<DawnImageRepresentation::ScopedAccess> scoped_access =
       shared_image->BeginScopedAccess(
           usage, SharedImageRepresentation::AllowUnclearedAccess::kYes);
   if (!scoped_access) {
@@ -1521,7 +1528,7 @@ WebGPUDecoderImpl::AssociateMailboxUsingSkiaFallback(const Mailbox& mailbox,
                                                      WGPUDevice device,
                                                      WGPUTextureUsage usage) {
   // Produce a Skia image from the mailbox.
-  std::unique_ptr<SharedImageRepresentationSkia> shared_image =
+  std::unique_ptr<SkiaImageRepresentation> shared_image =
       shared_image_representation_factory_->ProduceSkia(
           mailbox, shared_context_state_.get());
 

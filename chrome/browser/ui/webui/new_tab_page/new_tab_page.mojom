@@ -54,8 +54,6 @@ struct BackgroundImage {
 struct Theme {
   skia.mojom.SkColor text_color;
   skia.mojom.SkColor background_color;
-  // True if the theme is default.
-  bool is_default;
   // True if the background is custom.
   bool is_custom_background;
   // True if the theme is dark (e.g. NTP background color is dark).
@@ -251,6 +249,10 @@ interface PageHandler {
   ChooseLocalCustomBackground() => (bool success);
   // Get the middle slot promo if it exists.
   GetPromo() => (Promo? promo);
+  // Marks a promo as blocked.
+  BlocklistPromo(string promo_id);
+  // Unmarks a promo as blocked.
+  UndoBlocklistPromo(string promo_id);
   // Called when a module the given id is dismissed.
   OnDismissModule(string module_id);
   // Called when a module the given id is restored.

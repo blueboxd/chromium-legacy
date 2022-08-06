@@ -12,22 +12,21 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/onc/onc_translation_tables.h"
 #include "chromeos/ash/components/network/onc/onc_translator.h"
+#include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_util.h"
-#include "chromeos/network/shill_property_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
-namespace onc {
+namespace ash::onc {
 
 namespace {
 
@@ -459,7 +458,7 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
       shill_dictionary_->FindStringKey(shill::kSecurityClassProperty);
   const std::string* shill_key_mgmt =
       shill_dictionary_->FindStringKey(shill::kEapKeyMgmtProperty);
-  if (shill_security && *shill_security == shill::kSecurityWep &&
+  if (shill_security && *shill_security == shill::kSecurityClassWep &&
       shill_key_mgmt && *shill_key_mgmt == shill::kKeyManagementIEEE8021X) {
     onc_object_.SetKey(::onc::wifi::kSecurity,
                        base::Value(::onc::wifi::kWEP_8021X));
@@ -620,7 +619,10 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
 
   if (network_state_) {
     // Only visible networks set RestrictedConnectivity, and only if true.
-    if (network_state_->IsCaptivePortal()) {
+    auto portal_state = network_state_->GetPortalState();
+    if (network_state_->IsConnectedState() &&
+        portal_state != NetworkState::PortalState::kUnknown &&
+        portal_state != NetworkState::PortalState::kOnline) {
       onc_object_.SetKey(::onc::network_config::kRestrictedConnectivity,
                          base::Value(true));
     }
@@ -1019,5 +1021,4 @@ base::Value TranslateShillServiceToONCPart(
   return translator.CreateTranslatedONCObject();
 }
 
-}  // namespace onc
-}  // namespace chromeos
+}  // namespace ash::onc

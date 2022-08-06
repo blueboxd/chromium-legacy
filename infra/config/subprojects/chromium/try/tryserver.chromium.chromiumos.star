@@ -59,7 +59,9 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
+        "enable_weetbix_queries": 100,
     },
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -83,6 +85,9 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.builder(
@@ -100,11 +105,17 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.builder(
     name = "chromeos-amd64-generic-lacros-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/chromeos-amd64-generic-lacros-dbg",
+    ],
 )
 
 try_.builder(
@@ -116,6 +127,18 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
+)
+
+try_.builder(
+    name = "lacros-arm64-generic-rel",
+    mirrors = [
+        "ci/lacros-arm64-generic-rel",
+    ],
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -196,7 +219,9 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
+        "enable_weetbix_queries": 100,
     },
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -228,11 +253,15 @@ try_.builder(
     ],
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
+    check_for_flakiness = True,
     cores = 16,
     ssd = True,
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.builder(

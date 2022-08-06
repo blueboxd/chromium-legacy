@@ -14,11 +14,11 @@
 #include "ash/projector/model/projector_session_impl.h"
 #include "ash/projector/projector_metadata_controller.h"
 #include "ash/projector/projector_metrics.h"
-#include "ash/projector/test/mock_projector_client.h"
 #include "ash/projector/test/mock_projector_metadata_controller.h"
 #include "ash/projector/test/mock_projector_ui_controller.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/projector_session.h"
+#include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -257,8 +257,7 @@ TEST_F(ProjectorControllerTest, RecordingStarted) {
 
 TEST_F(ProjectorControllerTest, RecordingEnded) {
   base::FilePath screencast_container_path;
-  ASSERT_TRUE(
-      mock_client_.GetDriveFsMountPointPath(&screencast_container_path));
+  ASSERT_TRUE(mock_client_.GetBaseStoragePath(&screencast_container_path));
   ON_CALL(mock_client_, IsDriveFsMounted())
       .WillByDefault(testing::Return(true));
 
@@ -325,8 +324,7 @@ TEST_P(ProjectorOnDlpRestrictionCheckedAtVideoEndTest, WrapUpRecordingOnce) {
   bool user_deleted_video_file = std::get<1>(GetParam());
 
   base::FilePath screencast_container_path;
-  ASSERT_TRUE(
-      mock_client_.GetDriveFsMountPointPath(&screencast_container_path));
+  ASSERT_TRUE(mock_client_.GetBaseStoragePath(&screencast_container_path));
   ON_CALL(mock_client_, IsDriveFsMounted())
       .WillByDefault(testing::Return(true));
 

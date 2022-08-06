@@ -29,6 +29,9 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.He
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.WebAuthnCredentialProperties.ON_WEBAUTHN_CLICK_LISTENER;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.WebAuthnCredentialProperties.SHOW_WEBAUTHN_SUBMIT_BUTTON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.WebAuthnCredentialProperties.WEBAUTHN_CREDENTIAL;
 
 import android.graphics.Bitmap;
 
@@ -46,14 +49,14 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordHistogramJni;
-import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FaviconOrFallback;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.touch_to_fill.data.WebAuthnCredential;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.favicon.IconType;
@@ -75,7 +78,7 @@ import java.util.Collections;
  * properly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE)
 public class TouchToFillControllerTest {
     private static final GURL TEST_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
     private static final String TEST_SUBDOMAIN_URL = "https://subdomain.example.xyz";
@@ -85,6 +88,8 @@ public class TouchToFillControllerTest {
             new Credential("Bob", "*****", "Bob", TEST_SUBDOMAIN_URL, true, false, 0);
     private static final Credential CARL =
             new Credential("Carl", "G3h3!m", "Carl", TEST_URL.getSpec(), false, false, 0);
+    private static final WebAuthnCredential DINO =
+            new WebAuthnCredential("dino@example.com", "Dino", "12345");
     private static final @Px int DESIRED_FAVICON_SIZE = 64;
 
     @Rule
@@ -98,9 +103,6 @@ public class TouchToFillControllerTest {
     @Mock
     private LargeIconBridge mMockIconBridge;
 
-    @Mock
-    private RecordHistogram.Natives mMockRecordHistogram;
-
     // Can't be local, as it has to be initialized by initMocks.
     @Captor
     private ArgumentCaptor<LargeIconBridge.LargeIconCallback> mCallbackArgumentCaptor;
@@ -111,10 +113,9 @@ public class TouchToFillControllerTest {
 
     @Before
     public void setUp() {
-        ShadowRecordHistogram.reset();
+        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
-        mJniMocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);
         when(mUrlFormatterJniMock.formatUrlForDisplayOmitScheme(anyString()))
                 .then(inv -> format(inv.getArgument(0)));
         when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(
@@ -181,6 +182,24 @@ public class TouchToFillControllerTest {
 
         assertThat(itemList.get(2).type, is(ItemType.FILL_BUTTON));
         assertThat(itemList.get(2).model.get(SHOW_SUBMIT_BUTTON), is(false));
+    }
+
+    @Test
+    public void testShowCredentialsWithSingleWebAuthnEntry() {
+        mMediator.showCredentials(
+                TEST_URL, true, Collections.emptyList(), Arrays.asList(DINO), false);
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.size(), is(3)); // Header + 1 credential + Button
+
+        assertThat(itemList.get(0).type, is(ItemType.HEADER));
+        assertThat(itemList.get(0).model.get(SINGLE_CREDENTIAL), is(true));
+
+        assertThat(itemList.get(1).type, is(ItemType.WEBAUTHN_CREDENTIAL));
+        assertThat(itemList.get(1).model.get(WEBAUTHN_CREDENTIAL), is(DINO));
+        assertNotNull(itemList.get(1).model.get(ON_WEBAUTHN_CLICK_LISTENER));
+
+        assertThat(itemList.get(2).type, is(ItemType.FILL_BUTTON));
+        assertThat(itemList.get(2).model.get(SHOW_WEBAUTHN_SUBMIT_BUTTON), is(false));
     }
 
     @Test

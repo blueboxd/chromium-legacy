@@ -33,7 +33,7 @@
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
@@ -130,6 +130,13 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
   if (disable_delegation())
     return false;
 
+  // Do not delegated when we have copy requests otherwise we will end up with
+  // the delegated quads missing from the frame buffer.
+  if (!render_pass->copy_requests.empty()) {
+    delegated_status_ = DelegationStatus::kCompositedCopyRequest;
+    return false;
+  }
+
   if (quad_list->size() >= kTooManyQuads) {
     delegated_status_ = DelegationStatus::kCompositedTooManyQuads;
     return false;
@@ -168,21 +175,32 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
       }
       candidates->push_back(candidate);
       candidate_quads.push_back(it);
+    } else if (candidate_status ==
+               OverlayCandidate::CandidateStatus::kFailVisible) {
+      // This quad can be intentionally skipped.
+      num_quads_skipped++;
     } else {
-      if (candidate_status == OverlayCandidate::CandidateStatus::kFailVisible) {
-        // This quad can be intentionally skipped.
-        num_quads_skipped++;
-      } else {
-        DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
-        DBG_LOG("delegated.overlay.failed", "error code %d", candidate_status);
-      }
+      DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
+      DBG_LOG("delegated.overlay.failed", "error code %d", candidate_status);
 
-      if (candidate_status ==
-          OverlayCandidate::CandidateStatus::kFailNotAxisAligned) {
-        delegated_status_ = DelegationStatus::kCompositedNotAxisAligned;
-      } else if (candidate_status ==
-                 OverlayCandidate::CandidateStatus::kFailNotOverlay) {
-        delegated_status_ = DelegationStatus::kCompositedNotOverlay;
+      switch (candidate_status) {
+        case OverlayCandidate::CandidateStatus::kFailNotAxisAligned:
+          delegated_status_ = DelegationStatus::kCompositedNotAxisAligned;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailNotAxisAligned3dTransform:
+          delegated_status_ = DelegationStatus::kCompositedHas3dTransform;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dShear:
+          delegated_status_ = DelegationStatus::kCompositedHas2dShear;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dRotation:
+          delegated_status_ = DelegationStatus::kCompositedHas2dRotation;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailNotOverlay:
+          delegated_status_ = DelegationStatus::kCompositedNotOverlay;
+          break;
+        default:
+          break;
       }
     }
   }
@@ -239,7 +257,6 @@ void OverlayProcessorDelegated::ProcessForOverlays(
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
   DCHECK(candidates->empty());
-  auto* render_pass = render_passes->back().get();
   bool success = false;
 #if !BUILDFLAG(IS_APPLE)
   RecordFDUsageUMA();
@@ -250,15 +267,10 @@ void OverlayProcessorDelegated::ProcessForOverlays(
     DBG_DRAW_RECT("delegated.surface.damage", each);
   }
 
-  // If we have any copy requests, we can't remove any quads for overlays or
-  // CALayers because the framebuffer would be missing the removed quads'
-  // contents.
-  if (render_pass->copy_requests.empty()) {
-    success = AttemptWithStrategies(
-        output_color_matrix, render_pass_backdrop_filters, resource_provider,
-        render_passes, &surface_damage_rect_list, output_surface_plane,
-        candidates, content_bounds);
-  }
+  success = AttemptWithStrategies(
+      output_color_matrix, render_pass_backdrop_filters, resource_provider,
+      render_passes, &surface_damage_rect_list, output_surface_plane,
+      candidates, content_bounds);
 
   DCHECK(candidates->empty() || success);
 

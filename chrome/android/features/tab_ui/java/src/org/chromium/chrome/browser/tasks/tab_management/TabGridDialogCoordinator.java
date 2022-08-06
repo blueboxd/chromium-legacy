@@ -168,6 +168,16 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     }
 
     @Override
+    public void prepareDialog() {
+        mTabListCoordinator.prepareTabGridDialogView();
+    }
+
+    @Override
+    public void postHiding() {
+        mTabListCoordinator.postHiding();
+    }
+
+    @Override
     public boolean handleBackPressed() {
         if (!isVisible()) return false;
         handleBackPress();

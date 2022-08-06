@@ -114,6 +114,7 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/dark_mode_support.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif BUILDFLAG(IS_MAC)
@@ -815,11 +816,12 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   base::FetchAndCacheSystemInfo();
 #endif
 
-  int exit_code = 0;
   if (!GetContentClient())
     ContentClientCreator::Create(delegate_);
-  if (delegate_->BasicStartupComplete(&exit_code))
-    return exit_code;
+  absl::optional<int> basic_startup_exit_code =
+      delegate_->BasicStartupComplete();
+  if (basic_startup_exit_code.has_value())
+    return basic_startup_exit_code.value();
   completed_basic_startup_ = true;
 
   const base::CommandLine& command_line =
@@ -837,6 +839,11 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
     if (base::StringToDouble(scale_factor_string, &scale_factor))
       display::win::SetDefaultDeviceScaleFactor(scale_factor);
   }
+
+  // Make sure the 'uxtheme.dll' is pinned and that the process enabled to
+  // support the OS dark mode only for the browser process.
+  if (process_type.empty())
+    base::win::AllowDarkModeForApp(true);
 #endif
 
   RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
@@ -1089,7 +1096,11 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
     const bool has_thread_pool =
         GetContentClient()->browser()->CreateThreadPool("Browser");
 
-    delegate_->PreBrowserMain();
+    absl::optional<int> pre_browser_main_exit_code =
+        delegate_->PreBrowserMain();
+    if (pre_browser_main_exit_code.has_value())
+      return pre_browser_main_exit_code.value();
+
 #if BUILDFLAG(IS_WIN)
     if (l10n_util::GetLocaleOverrides().empty()) {
       // Override the configured locale with the user's preferred UI language.
@@ -1111,7 +1122,10 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
           variations::VariationsIdsProvider::Mode::kUseSignedInState);
     }
 
-    delegate_->PostEarlyInitialization(invoked_in_browser);
+    absl::optional<int> post_early_initialization_exit_code =
+        delegate_->PostEarlyInitialization(invoked_in_browser);
+    if (post_early_initialization_exit_code.has_value())
+      return post_early_initialization_exit_code.value();
 
     // The hang watcher needs to be started once the feature list is available
     // but before the IO thread is started.

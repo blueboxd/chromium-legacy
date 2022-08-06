@@ -25,7 +25,6 @@
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura/cursor/cursor_lookup.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
@@ -39,6 +38,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_lookup.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -120,8 +120,9 @@ gfx::RectF GetCursorOverlayBounds(
 }
 
 CameraPreviewView* GetCameraPreviewView() {
-  auto* camera_controller = CaptureModeController::Get()->camera_controller();
-  return camera_controller ? camera_controller->camera_preview_view() : nullptr;
+  return CaptureModeController::Get()
+      ->camera_controller()
+      ->camera_preview_view();
 }
 
 }  // namespace
@@ -231,9 +232,7 @@ VideoRecordingWatcher::VideoRecordingWatcher(
   window_being_recorded_->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kAccessibility);
 
-  auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
-    camera_controller->OnRecordingStarted(is_in_projector_mode_);
+  controller_->camera_controller()->OnRecordingStarted(is_in_projector_mode_);
 
   if (is_in_projector_mode_) {
     recording_overlay_controller_ =
@@ -287,9 +286,7 @@ void VideoRecordingWatcher::ShutDown() {
   auto to_be_removed_request = std::move(non_root_window_capture_request_);
   window_being_recorded_->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  if (controller_->camera_controller()) {
-    controller_->camera_controller()->OnRecordingEnded();
-  }
+  controller_->camera_controller()->OnRecordingEnded();
 }
 
 aura::Window* VideoRecordingWatcher::GetCameraPreviewParentWindow() const {
@@ -354,9 +351,7 @@ void VideoRecordingWatcher::OnWindowBoundsChanged(
 
   // The bounds of the camera preview should be updated if the bounds of the
   // window being recorded is changed.
-  auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
-    camera_controller->MaybeUpdatePreviewWidget();
+  controller_->camera_controller()->MaybeUpdatePreviewWidget();
 }
 
 void VideoRecordingWatcher::OnWindowOpacitySet(
@@ -476,9 +471,8 @@ void VideoRecordingWatcher::OnDisplayMetricsChanged(
   // The bounds of camera preview should be updated accordingly if the display
   // metrics is changed. When the capture source is `kWindow`, it will be
   // handled in `OnWindowBoundsChanged`;
-  auto* camera_controller = controller_->camera_controller();
-  if (camera_controller && recording_source_ != CaptureModeSource::kWindow)
-    camera_controller->MaybeUpdatePreviewWidget();
+  if (recording_source_ != CaptureModeSource::kWindow)
+    controller_->camera_controller()->MaybeUpdatePreviewWidget();
 
   // We don't show a dimming overlay when recording a fullscreen.
   if (recording_source_ == CaptureModeSource::kFullscreen)
@@ -775,9 +769,9 @@ void VideoRecordingWatcher::UpdateCursorOverlayNow(
   DCHECK_NE(cursor.type(), ui::mojom::CursorType::kNull);
 
   const float cursor_image_scale_factor = cursor.image_scale_factor();
-  const SkBitmap cursor_image = aura::GetCursorBitmap(cursor);
+  const SkBitmap cursor_image = wm::GetCursorBitmap(cursor);
   const gfx::RectF cursor_overlay_bounds = GetCursorOverlayBounds(
-      window_being_recorded_, location, aura::GetCursorHotspot(cursor),
+      window_being_recorded_, location, wm::GetCursorHotspot(cursor),
       cursor_image_scale_factor, cursor_image);
 
   if (cursor != last_cursor_) {

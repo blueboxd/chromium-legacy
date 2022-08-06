@@ -215,8 +215,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   PaintLayer* FirstChild() const { return first_; }
   PaintLayer* LastChild() const { return last_; }
 
-  const PaintLayer* CommonAncestor(const PaintLayer*) const;
-
   // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be
   // good but we can't use it for now because it conflicts with
   // PaintInfo::paintContainer.
@@ -277,7 +275,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool UpdateSize();
   void UpdateSizeAndScrollingAfterLayout();
 
-  void UpdateLayerPosition();
   void UpdateLayerPositionsAfterLayout();
 
   PaintLayer* EnclosingPaginationLayer() const {
@@ -477,10 +474,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   bool IsInTopLayer() const;
 
-  // Returns true if the layer is sticky position and may stick to its
-  // ancestor overflow layer.
-  bool SticksToScroller() const;
-
   // FIXME: This should probably return a ScrollableArea but a lot of internal
   // methods are mistakenly exposed.
   PaintLayerScrollableArea* GetScrollableArea() const {
@@ -502,22 +495,17 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate();
 
-  void UpdateAncestorScrollContainerLayer(
-      const PaintLayer* ancestor_scroll_container_layer) {
-    ancestor_scroll_container_layer_ = ancestor_scroll_container_layer;
-  }
-
-  const PaintLayer* AncestorScrollContainerLayer() const {
-    return ancestor_scroll_container_layer_;
-  }
+  // Returns the nearest ancestor layer (in containing block hierarchy,
+  // not including this layer) that is a scroll container. It's nullptr for
+  // the root layer. If not null, the value of |is_fixed_to_view| will be set to
+  // true if the result of this function is the root layer and the current layer
+  // is fixed to the view due to fixed-position ancestors.
+  const PaintLayer* ContainingScrollContainerLayer(
+      bool* is_fixed_to_view = nullptr) const;
 
   bool HasFixedPositionDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_fixed_position_descendant_;
-  }
-  bool HasStickyPositionDescendant() const {
-    DCHECK(!needs_descendant_dependent_flags_update_);
-    return has_sticky_position_descendant_;
   }
   bool HasNonContainedAbsolutePositionDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
@@ -648,7 +636,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Bounding box in the coordinates of this layer.
   PhysicalRect LocalBoundingBox() const;
 
-  void UpdateLayerPositionRecursive(const PaintLayer* enclosing_scroller);
+  void UpdateLayerPositionRecursive();
+  void UpdateLayerPosition();
 
   void SetNextSibling(PaintLayer* next) { next_ = next; }
   void SetPreviousSibling(PaintLayer* prev) { previous_ = prev; }
@@ -685,7 +674,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
                            bool applied_transform = false,
                            HitTestingTransformState* = nullptr,
                            double* z_offset = nullptr,
-                           bool check_resizer_only = false);
+                           bool overflow_controls_only = false);
   PaintLayer* HitTestLayerByApplyingTransform(
       const PaintLayer& transform_container,
       const PaintLayerFragment* container_fragment,
@@ -694,7 +683,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
       const HitTestRecursionData& recursion_data,
       HitTestingTransformState*,
       double* z_offset,
-      bool check_resizer_only,
+      bool overflow_controls_only,
       const PhysicalOffset& translation_offset = PhysicalOffset());
   PaintLayer* HitTestChildren(
       PaintLayerIteration,
@@ -736,7 +725,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
       const HitTestRecursionData&,
       HitTestingTransformState*,
       double* z_offset,
-      bool check_resizer_only,
+      bool overflow_controls_only,
       ShouldRespectOverflowClipType);
   bool HitTestClippedOutByClipPath(const PaintLayer& root_layer,
                                    const HitTestLocation&) const;
@@ -764,8 +753,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   void UpdateTransform(const ComputedStyle* old_style,
                        const ComputedStyle& new_style);
-
-  void RemoveAncestorScrollContainerLayer(const PaintLayer* removed_layer);
 
   void UpdatePaginationRecursive(bool needs_pagination_update = false);
   void ClearPaginationRecursive();
@@ -839,7 +826,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // inputs.
   unsigned has_non_isolated_descendant_with_blend_mode_ : 1;
   unsigned has_fixed_position_descendant_ : 1;
-  unsigned has_sticky_position_descendant_ : 1;
   unsigned has_non_contained_absolute_position_descendant_ : 1;
   unsigned has_stacked_descendant_in_current_stacking_context_ : 1;
 
@@ -890,12 +876,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // left/top values.
   LayoutUnit static_inline_position_;
   LayoutUnit static_block_position_;
-
-  // The first ancestor that is a scroll container. This is not a member of
-  // AncestorDependentCompositingInputs as it is needed when
-  // |needs_descendant_dependent_flags_update_| is true. In other words, it is
-  // accessed and used out of band with normal compositing inputs updating.
-  Member<const PaintLayer> ancestor_scroll_container_layer_;
 
   Member<PaintLayerScrollableArea> scrollable_area_;
 

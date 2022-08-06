@@ -4,7 +4,7 @@
 
 import {getPropertyDescriptor, PropertyKind} from 'chrome://resources/js/cr.m.js';
 import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {MenuItem} from 'chrome://resources/js/cr/ui/menu_item.m.js';
+import {MenuItem} from 'chrome://resources/js/cr/ui/menu_item.js';
 
 import {util} from '../../../common/js/util.js';
 
@@ -111,7 +111,7 @@ export class ComboButton extends MultiMenuButton {
         }
       },
       enumerable: true,
-      configurable: true
+      configurable: true,
     });
   }
 
@@ -148,7 +148,7 @@ export class ComboButton extends MultiMenuButton {
         this.setMenu_(menu);
       },
       enumerable: true,
-      configurable: true
+      configurable: true,
     });
     Object.defineProperty(el, 'defaultItem', {
       get() {
@@ -158,7 +158,7 @@ export class ComboButton extends MultiMenuButton {
         this.setDefaultItem_(defaultItem);
       },
       enumerable: true,
-      configurable: true
+      configurable: true,
     });
     el.addBooleanProperty_('multiple');
     el.addBooleanProperty_('disabled');

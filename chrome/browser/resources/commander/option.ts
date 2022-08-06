@@ -13,10 +13,10 @@ import {Option} from './types.js';
  * Represents a substring of the option title, annotated with whether it's part
  * of a match or not.
  */
-export type MatchSpan = {
-  text: string,
-  isMatch: boolean,
-};
+export interface MatchSpan {
+  text: string;
+  isMatch: boolean;
+}
 
 export class CommanderOptionElement extends PolymerElement {
   static get is() {
@@ -47,7 +47,7 @@ export class CommanderOptionElement extends PolymerElement {
       if (start !== 0) {
         result.push({
           text: this.model.title.substring(firstNonmatch, start),
-          isMatch: false
+          isMatch: false,
         });
       }
       result.push(

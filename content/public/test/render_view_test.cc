@@ -34,7 +34,6 @@
 #include "content/renderer/mock_agent_scheduling_group.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/test_content_client.h"
@@ -230,13 +229,6 @@ class RendererBlinkPlatformImplTestOverrideImpl
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
   blink::WebSandboxSupport* GetSandboxSupport() override { return nullptr; }
-
-  cc::TaskGraphRunner* GetTaskGraphRunner() override {
-    return &task_graph_runner_;
-  }
-
- private:
-  cc::TestTaskGraphRunner task_graph_runner_;
 };
 
 class RenderFrameWasShownWaiter : public RenderFrameObserver {
@@ -415,6 +407,12 @@ void RenderViewTest::SetUp() {
 
   render_thread_->SetIOTaskRunner(test_io_thread_->task_runner());
 
+  // Setting flags and really doing anything with WebKit is fairly fragile and
+  // hacky, but this is the world we live in...
+  // Note that we need to set flags *before* initializing V8 (as part of blink),
+  // as it's not allowed to modify them later.
+  v8::V8::SetFlagsFromString("--expose-gc");
+
   // ContentClient must be initialized before Blink, because Blink now eagerly
   // loads the default stylesheets, which are fetched from the resource bundle
   // using ContentClient.
@@ -453,11 +451,6 @@ void RenderViewTest::SetUp() {
   platform_ = std::make_unique<RendererMainPlatformDelegate>(*params_);
   platform_->PlatformInitialize();
 
-  // Setting flags and really doing anything with WebKit is fairly fragile and
-  // hacky, but this is the world we live in...
-  std::string flags("--expose-gc");
-  v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
-
   // Ensure that we register any necessary schemes when initializing WebKit,
   // since we are using a MockRenderThread.
   RenderThreadImpl::RegisterSchemes();
@@ -481,8 +474,9 @@ void RenderViewTest::SetUp() {
   view_params->window_was_opened_by_another_window = false;
   view_params->renderer_preferences = blink::RendererPreferences();
   view_params->web_preferences = blink::web_pref::WebPreferences();
-  view_params->view_id = render_thread_->GetNextRoutingID();
   view_params->replication_state = blink::mojom::FrameReplicationState::New();
+  view_params->blink_page_broadcast =
+      page_broadcast_.BindNewEndpointAndPassDedicatedReceiver();
 
   auto main_frame_params = mojom::CreateLocalMainFrameParams::New();
   main_frame_params->routing_id = render_thread_->GetNextRoutingID();
@@ -490,6 +484,8 @@ void RenderViewTest::SetUp() {
   // Ignoring the returned PendingReceiver because it is not bound to anything
   std::ignore =
       main_frame_params->interface_broker.InitWithNewPipeAndPassReceiver();
+  main_frame_params->associated_interface_provider_remote =
+      TestRenderFrame::CreateStubAssociatedInterfaceProviderRemote();
   policy_container_host_ = std::make_unique<MockPolicyContainerHost>();
   main_frame_params->policy_container =
       policy_container_host_->CreatePolicyContainerForBlink();
@@ -513,18 +509,16 @@ void RenderViewTest::SetUp() {
   view_params->hidden = false;
   view_params->never_composited = false;
 
-  RenderViewImpl* view = RenderViewImpl::Create(
-      *agent_scheduling_group_, std::move(view_params),
-      /*was_created_by_renderer=*/false, base::ThreadTaskRunnerHandle::Get());
+  web_view_ =
+      agent_scheduling_group_->CreateWebView(std::move(view_params),
+                                             /*was_created_by_renderer=*/false);
 
-  RenderFrameWasShownWaiter waiter(RenderFrame::FromWebFrame(
-      view->GetWebView()->MainFrame()->ToWebLocalFrame()));
+  RenderFrameWasShownWaiter waiter(
+      RenderFrame::FromWebFrame(web_view_->MainFrame()->ToWebLocalFrame()));
   render_widget_host_->widget_remote_for_testing()->WasShown(
       /*was_evicted=*/false,
       blink::mojom::RecordContentToVisibleTimeRequestPtr());
   waiter.Wait();
-
-  web_view_ = view->GetWebView();
 }
 
 void RenderViewTest::TearDown() {
@@ -536,9 +530,10 @@ void RenderViewTest::TearDown() {
       leak_detector.BindNewPipeAndPassReceiver());
   std::ignore = binders_.TryBind(&receiver);
 
-  // Close the main view as well as any other windows that might have been
-  // opened by the test.
-  RenderViewImpl::DestroyAllRenderViewImpls();
+  render_thread_->ReleaseAllWebViews();
+
+  // Resetting `page_broadcast_` will cause the WebView to close itself.
+  page_broadcast_.reset();
 
   web_view_ = nullptr;
   process_.reset();

@@ -26,8 +26,6 @@ export interface ServiceInterface extends ActivityLogDelegate,
   notifyDragInstallInProgress(): void;
   loadUnpackedFromDrag(): Promise<boolean>;
   installDroppedFile(): void;
-  getItemStateChangedTarget():
-      ChromeEvent<(data: chrome.developerPrivate.EventData) => void>;
   getProfileStateChangedTarget():
       ChromeEvent<(info: chrome.developerPrivate.ProfileInfo) => void>;
   getProfileConfiguration(): Promise<chrome.developerPrivate.ProfileInfo>;
@@ -376,7 +374,7 @@ export class Service implements ServiceInterface {
       chrome.activityLogPrivate.getExtensionActivities(
           {
             activityType: chrome.activityLogPrivate.ExtensionActivityFilter.ANY,
-            extensionId: extensionId
+            extensionId: extensionId,
           },
           resolve);
     });
@@ -402,8 +400,8 @@ export class Service implements ServiceInterface {
       {
         activityType: anyType,
         extensionId: extensionId,
-        argUrl: `%${searchTerm}%`
-      }
+        argUrl: `%${searchTerm}%`,
+      },
     ];
 
     const promises:
@@ -493,6 +491,13 @@ export class Service implements ServiceInterface {
     return new Promise(function(resolve) {
       chrome.developerPrivate.removeUserSpecifiedSites(
           {siteList: siteSet, hosts}, resolve);
+    });
+  }
+
+  getUserAndExtensionSitesByEtld():
+      Promise<chrome.developerPrivate.SiteGroup[]> {
+    return new Promise(function(resolve) {
+      chrome.developerPrivate.getUserAndExtensionSitesByEtld(resolve);
     });
   }
 

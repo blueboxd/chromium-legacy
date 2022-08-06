@@ -14,6 +14,8 @@
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -128,19 +130,15 @@ void SavedPasswordsPresenter::Init() {
   }
 }
 
-void SavedPasswordsPresenter::RemovePassword(const PasswordForm& form) {
-  RemoveCredential(CredentialUIEntry(form));
-}
-
 bool SavedPasswordsPresenter::RemoveCredential(
     const CredentialUIEntry& credential) {
   const auto range =
-      sort_key_to_password_forms_.equal_range(credential.key().value());
+      sort_key_to_password_forms_.equal_range(CreateSortKey(credential));
   bool removed = false;
   undo_helper_->StartGroupingActions();
   std::for_each(range.first, range.second, [&](const auto& pair) {
     const auto& current_form = pair.second;
-    // Make sure |form| and |current_form| share the same store.
+    // Make sure |credential| and |current_form| share the same store.
     if (credential.stored_in.contains(current_form.in_store)) {
       // |current_form| is unchanged result obtained from
       // 'OnGetPasswordStoreResultsFrom'. So it can be present only in one store
@@ -159,7 +157,8 @@ void SavedPasswordsPresenter::UndoLastRemoval() {
 }
 
 bool SavedPasswordsPresenter::AddCredential(
-    const CredentialUIEntry& credential) {
+    const CredentialUIEntry& credential,
+    password_manager::PasswordForm::Type type) {
   if (!password_manager_util::IsValidPasswordURL(credential.url))
     return false;
   if (credential.password.empty())
@@ -182,7 +181,7 @@ bool SavedPasswordsPresenter::AddCredential(
     account_store_->Unblocklist(form_digest);
 
   PasswordForm form = GenerateFormFromCredential(credential);
-  form.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form.type = type;
   form.date_created = base::Time::Now();
   form.date_password_modified = base::Time::Now();
 
@@ -197,50 +196,32 @@ bool SavedPasswordsPresenter::AddCredential(
   return true;
 }
 
-bool SavedPasswordsPresenter::EditPassword(const PasswordForm& form,
-                                           std::u16string new_password) {
-  CredentialUIEntry entry(form);
-  entry.password = new_password;
-  return EditSavedCredentials(entry) == EditResult::kSuccess;
-}
-
-bool SavedPasswordsPresenter::EditSavedPasswords(
-    const PasswordForm& form,
-    const std::u16string& new_username,
-    const std::u16string& new_password) {
-  // TODO(crbug.com/1184691): Change desktop settings and maybe iOS to use this
-  // presenter for updating the duplicates.
-  CredentialUIEntry entry(form);
-  entry.password = new_password;
-  entry.username = new_username;
-  return EditSavedCredentials(entry) == EditResult::kSuccess;
-}
-
 SavedPasswordsPresenter::EditResult
 SavedPasswordsPresenter::EditSavedCredentials(
-    const CredentialUIEntry& credential) {
+    const CredentialUIEntry& original_credential,
+    const CredentialUIEntry& updated_credential) {
   std::vector<PasswordForm> forms_to_change =
-      GetCorrespondingPasswordForms(credential.key());
+      GetCorrespondingPasswordForms(original_credential);
   if (forms_to_change.empty())
     return EditResult::kNotFound;
 
-  IsUsernameChanged username_changed(credential.username !=
-                                     forms_to_change[0].username_value);
-  IsPasswordChanged password_changed(credential.password !=
-                                     forms_to_change[0].password_value);
+  IsUsernameChanged username_changed(updated_credential.username !=
+                                     original_credential.username);
+  IsPasswordChanged password_changed(updated_credential.password !=
+                                     original_credential.password);
   IsPasswordNoteChanged note_changed =
-      IsNoteChanged(forms_to_change[0], credential.note);
+      IsNoteChanged(forms_to_change[0], updated_credential.note);
 
   bool issues_changed =
-      credential.password_issues != forms_to_change[0].password_issues;
+      updated_credential.password_issues != forms_to_change[0].password_issues;
 
   // Password can't be empty.
-  if (credential.password.empty())
+  if (updated_credential.password.empty())
     return EditResult::kEmptyPassword;
 
   // Username can't be changed to the existing one.
-  if (username_changed &&
-      IsUsernameAlreadyUsed(passwords_, forms_to_change, credential.username)) {
+  if (username_changed && IsUsernameAlreadyUsed(passwords_, forms_to_change,
+                                                updated_credential.username)) {
     return EditResult::kAlreadyExisits;
   }
 
@@ -257,25 +238,25 @@ SavedPasswordsPresenter::EditSavedCredentials(
     PasswordForm new_form = old_form;
 
     if (issues_changed) {
-      new_form.password_issues = credential.password_issues;
+      new_form.password_issues = updated_credential.password_issues;
     }
 
     if (password_changed) {
-      new_form.password_value = credential.password;
+      new_form.password_value = updated_credential.password;
       new_form.date_password_modified = base::Time::Now();
       new_form.password_issues.clear();
     }
 
     if (note_changed) {
       PasswordNoteAction note_action =
-          UpdateNoteInPasswordForm(new_form, credential.note);
+          UpdateNoteInPasswordForm(new_form, updated_credential.note);
       metrics_util::LogPasswordNoteActionInSettings(note_action);
     }
 
     // An updated username implies a change in the primary key, thus we need
     // to make sure to call the right API.
     if (username_changed) {
-      new_form.username_value = credential.username;
+      new_form.username_value = updated_credential.username;
       // Phished and leaked issues are no longer relevant on username change.
       // Weak and reused issues are still relevant.
       new_form.password_issues.erase(InsecureType::kPhished);
@@ -294,14 +275,13 @@ SavedPasswordsPresenter::EditSavedCredentials(
   return EditResult::kSuccess;
 }
 
-SavedPasswordsPresenter::SavedPasswordsView
-SavedPasswordsPresenter::GetSavedPasswords() const {
+SavedPasswordsView SavedPasswordsPresenter::GetSavedPasswords() const {
   return passwords_;
 }
 
-std::vector<PasswordForm> SavedPasswordsPresenter::GetUniquePasswordForms()
+std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
     const {
-  std::vector<PasswordForm> forms;
+  std::vector<CredentialUIEntry> credentials;
 
   auto it = sort_key_to_password_forms_.begin();
   std::string current_key;
@@ -309,31 +289,22 @@ std::vector<PasswordForm> SavedPasswordsPresenter::GetUniquePasswordForms()
   while (it != sort_key_to_password_forms_.end()) {
     if (current_key != it->first) {
       current_key = it->first;
-      forms.push_back(it->second);
+      credentials.emplace_back(it->second);
     } else {
-      forms.back().in_store = forms.back().in_store | it->second.in_store;
+      // Aggregates store information which might be different across copies.
+      credentials.back().stored_in.insert(it->second.in_store);
     }
     ++it;
   }
 
-  return forms;
-}
-
-std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
-    const {
-  std::vector<PasswordForm> forms = GetUniquePasswordForms();
-  std::vector<CredentialUIEntry> credentials;
-  credentials.reserve(forms.size());
-  base::ranges::transform(
-      forms, std::back_inserter(credentials),
-      [](const PasswordForm& form) { return CredentialUIEntry(form); });
   return credentials;
 }
 
 std::vector<PasswordForm>
 SavedPasswordsPresenter::GetCorrespondingPasswordForms(
-    const CredentialKey& key) const {
-  const auto range = sort_key_to_password_forms_.equal_range(key.value());
+    const CredentialUIEntry& credential) const {
+  const auto range =
+      sort_key_to_password_forms_.equal_range(CreateSortKey(credential));
   std::vector<PasswordForm> forms;
   base::ranges::transform(range.first, range.second, std::back_inserter(forms),
                           [](const auto& pair) { return pair.second; });

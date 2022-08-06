@@ -20,13 +20,13 @@ import './more_settings.js';
 import './other_options_settings.js';
 import './pages_per_sheet_settings.js';
 import './pages_settings.js';
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 import './pin_settings.js';
 // </if>
 import './print_preview_vars.css.js';
 import './scaling_settings.js';
 import '../strings.m.js';
-// <if expr="not chromeos_ash and not chromeos_lacros">
+// <if expr="not is_chromeos">
 import './link_container.js';
 
 // </if>
@@ -197,8 +197,19 @@ export class PrintPreviewSidebarElement extends PrintPreviewSidebarElementBase {
     // Destination settings is always available. See if the total number of
     // available sections exceeds the maximum number to show.
     return [
-      'pages', 'copies', 'layout', 'color', 'mediaSize', 'margins', 'color',
-      'pagesPerSheet', 'scaling', 'dpi', 'duplex', 'otherOptions', 'vendorItems'
+      'pages',
+      'copies',
+      'layout',
+      'color',
+      'mediaSize',
+      'margins',
+      'color',
+      'pagesPerSheet',
+      'scaling',
+      'dpi',
+      'duplex',
+      'otherOptions',
+      'vendorItems',
     ].reduce((count, setting) => {
       return this.getSetting(setting).available ? count + 1 : count;
     }, 1) > MAX_SECTIONS_TO_SHOW;
@@ -235,7 +246,7 @@ export class PrintPreviewSidebarElement extends PrintPreviewSidebarElementBase {
     }
   }
 
-  // <if expr="not chromeos_ash and not chromeos_lacros">
+  // <if expr="not is_chromeos">
   /** @return Whether the system dialog link is available. */
   systemDialogLinkAvailable(): boolean {
     const linkContainer =

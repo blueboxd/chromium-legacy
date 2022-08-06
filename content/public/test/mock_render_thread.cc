@@ -17,7 +17,6 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/test/test_render_frame.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
@@ -284,12 +283,13 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 void MockRenderThread::OnCreateWindow(
     const mojom::CreateNewWindowParams& params,
     mojom::CreateNewWindowReply* reply) {
-  reply->route_id = GetNextRoutingID();
   reply->frame = TestRenderFrame::CreateStubFrameReceiver();
   reply->main_frame_route_id = GetNextRoutingID();
   frame_routing_id_to_initial_browser_brokers_.emplace(
       reply->main_frame_route_id,
       reply->main_frame_interface_broker.InitWithNewPipeAndPassReceiver());
+  reply->associated_interface_provider =
+      TestRenderFrame::CreateStubAssociatedInterfaceProviderRemote();
   reply->cloned_session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
 
@@ -315,6 +315,15 @@ void MockRenderThread::OnCreateWindow(
   widget_params->visual_properties.screen_infos =
       display::ScreenInfos(display::ScreenInfo());
   reply->widget_params = std::move(widget_params);
+
+  mojo::AssociatedRemote<blink::mojom::PageBroadcast> page_broadcast;
+  reply->page_broadcast =
+      page_broadcast.BindNewEndpointAndPassDedicatedReceiver();
+  page_broadcasts_.push_back(std::move(page_broadcast));
+}
+
+void MockRenderThread::ReleaseAllWebViews() {
+  page_broadcasts_.clear();
 }
 
 }  // namespace content

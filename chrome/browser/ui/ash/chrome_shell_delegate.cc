@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -54,6 +53,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
@@ -257,7 +258,7 @@ void ChromeShellDelegate::SetUpEnvironmentForLockedFullscreen(bool locked) {
   }
 
   if (assistant::IsAssistantAllowedForProfile(profile) ==
-      chromeos::assistant::AssistantAllowedState::ALLOWED) {
+      ash::assistant::AssistantAllowedState::ALLOWED) {
     ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
   }
 }
@@ -341,4 +342,19 @@ const GURL& ChromeShellDelegate::GetLastCommittedURLForWindowIfAny(
 
 version_info::Channel ChromeShellDelegate::GetChannel() {
   return chrome::GetChannel();
+}
+
+void ChromeShellDelegate::ForceSkipWarningUserOnClose(
+    const std::vector<aura::Window*>& windows) {
+  for (aura::Window* window : windows) {
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForNativeWindow(window);
+    if (browser_view) {
+      browser_view->browser()->set_force_skip_warning_user_on_close(true);
+    }
+  }
+}
+
+std::string ChromeShellDelegate::GetVersionString() {
+  return version_info::GetVersionNumber();
 }

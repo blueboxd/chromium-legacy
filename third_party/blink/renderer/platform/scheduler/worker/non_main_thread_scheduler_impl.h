@@ -13,19 +13,24 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/single_thread_idle_task_runner.h"
-#include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_base.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_type.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
+namespace base {
+class LazyNow;
+}
+
 namespace blink {
 namespace scheduler {
 
 class WorkerSchedulerProxy;
 
-class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
+class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadScheduler,
+                                                   public ThreadSchedulerBase {
  public:
   NonMainThreadSchedulerImpl(const NonMainThreadSchedulerImpl&) = delete;
   NonMainThreadSchedulerImpl& operator=(const NonMainThreadSchedulerImpl&) =
@@ -55,9 +60,9 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
       NonMainThreadTaskQueue* worker_task_queue,
       const base::sequence_manager::Task& task,
       base::sequence_manager::TaskQueue::TaskTiming* task_timing,
-      base::sequence_manager::LazyNow* lazy_now) = 0;
+      base::LazyNow* lazy_now) = 0;
 
-  // ThreadSchedulerImpl:
+  // ThreadSchedulerBase:
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
   const base::TickClock* GetTickClock() const override;
 
@@ -73,7 +78,7 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
                            Thread::IdleTask task) override;
   std::unique_ptr<WebAgentGroupScheduler> CreateAgentGroupScheduler() override;
   WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
-  [[nodiscard]] std::unique_ptr<RendererPauseHandle> PauseScheduler() override;
+  void SetV8Isolate(v8::Isolate* isolate) override;
 
   // Returns base::TimeTicks::Now() by default.
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;

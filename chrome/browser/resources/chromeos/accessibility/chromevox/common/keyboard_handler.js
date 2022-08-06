@@ -5,9 +5,10 @@
 /**
  * @fileoverview Handles user keyboard input events.
  */
-import {UserActionMonitor} from '/chromevox/background/user_action_monitor.js';
-import {KeyMap} from '/chromevox/common/key_map.js';
-import {KeyUtil} from '/chromevox/common/key_util.js';
+import {UserActionMonitor} from '../background/user_action_monitor.js';
+
+import {KeyMap} from './key_map.js';
+import {KeyUtil} from './key_util.js';
 
 export const ChromeVoxKbHandler = {};
 
@@ -68,13 +69,6 @@ ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(keyToFunctionsTable) {
  */
 ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
   const keySequence = KeyUtil.keyEventToKeySequence(evt);
-  const monitor = UserActionMonitor.instance;
-  if (monitor && !monitor.onKeySequence(keySequence)) {
-    // UserActionMonitor returns true if this key sequence should propagate.
-    // Prevent the default action if it returns false.
-    return false;
-  }
-
   let functionName;
   if (ChromeVoxKbHandler.handlerKeyMap !== undefined) {
     functionName = ChromeVoxKbHandler.handlerKeyMap.commandForKey(keySequence);

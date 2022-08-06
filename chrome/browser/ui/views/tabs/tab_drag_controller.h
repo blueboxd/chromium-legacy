@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -55,12 +56,6 @@ class WindowFinder;
 // is the default on aura.
 class TabDragController : public views::WidgetObserver {
  public:
-  // Indicates the event source that initiated the drag.
-  enum EventSource {
-    EVENT_SOURCE_MOUSE,
-    EVENT_SOURCE_TOUCH,
-  };
-
   // Amount above or below the tabstrip the user has to drag before detaching.
   static const int kTouchVerticalDetachMagnetism;
   static const int kVerticalDetachMagnetism;
@@ -86,7 +81,7 @@ class TabDragController : public views::WidgetObserver {
             const gfx::Point& mouse_offset,
             int source_view_offset,
             ui::ListSelectionModel initial_selection_model,
-            EventSource event_source);
+            ui::mojom::DragEventSource event_source);
 
   // Returns true if there is a drag underway and the drag is attached to
   // |tab_strip|.
@@ -109,7 +104,7 @@ class TabDragController : public views::WidgetObserver {
   // Returns the pointer of |source_context_|.
   static TabDragContext* GetSourceContext();
 
-  EventSource event_source() const { return event_source_; }
+  ui::mojom::DragEventSource event_source() const { return event_source_; }
 
   // See description above fields for details on these.
   bool active() const { return current_state_ != DragState::kStopped; }
@@ -118,26 +113,25 @@ class TabDragController : public views::WidgetObserver {
   // Returns true if a drag started.
   bool started_drag() const { return current_state_ != DragState::kNotStarted; }
 
-  // Returns true if mutating the TabStripModel.
-  bool is_mutating() const { return is_mutating_; }
-
-  // Returns true if we've detached from a tabstrip and are running a nested
-  // move message loop.
-  bool is_dragging_window() const {
-    return current_state_ == DragState::kDraggingWindow;
-  }
-
   // Returns the tab group being dragged, if any. Will only return a value if
   // the user is dragging a tab group header, not an individual tab or tabs from
   // a group.
   const absl::optional<tab_groups::TabGroupId>& group() const { return group_; }
 
-  // Returns true if currently dragging a tab with |contents|.
-  bool IsDraggingTab(content::WebContents* contents);
-
   bool IsRemovingLastTabForRevert() const {
     return is_removing_last_tab_for_revert_;
   }
+
+  // Call when a tab was just added to the attached tabstrip. May end the drag.
+  void TabWasAdded();
+
+  // Call when `contents` is about to be removed from the attached tabstrip. May
+  // end the drag.
+  void OnTabWillBeRemoved(content::WebContents* contents);
+
+  // Returns true if removing `contents` from the attached tabstrip is fine, and
+  // false if that would be problematic for the drag session.
+  bool CanRemoveTabDuringDrag(content::WebContents* contents) const;
 
   // Invoked to drag to the new location, in screen coordinates.
   void Drag(const gfx::Point& point_in_screen);
@@ -454,6 +448,9 @@ class TabDragController : public views::WidgetObserver {
     return header_drag_ ? drag_data_.size() - 1 : drag_data_.size();
   }
 
+  // Returns true if currently dragging a tab with |contents|.
+  bool IsDraggingTab(content::WebContents* contents) const;
+
   // Returns the index of the first Tab, since the first dragging view may
   // instead be a TabGroupHeader.
   int first_tab_index() { return header_drag_ ? 1 : 0; }
@@ -563,7 +560,7 @@ class TabDragController : public views::WidgetObserver {
   // as a result of a drag finishing.
   void NotifyEventIfTabAddedToGroup();
 
-  EventSource event_source_ = EVENT_SOURCE_MOUSE;
+  ui::mojom::DragEventSource event_source_ = ui::mojom::DragEventSource::kMouse;
 
   // The TabDragContext the drag originated from. This is set to null
   // if destroyed during the drag.
@@ -683,15 +680,6 @@ class TabDragController : public views::WidgetObserver {
 
   // See description above getter.
   bool is_mutating_;
-
-  // |attach_x_| and |attach_index_| are set to the x-coordinate of the mouse
-  // (in terms of the tabstrip) and the insertion index at the time tabs are
-  // dragged into a new browser (attached). They are used to ensure we don't
-  // shift the tabs around in the wrong direction. The two are only valid if
-  // |attach_index_| is not -1.
-  // See comment around use for more details.
-  int attach_x_;
-  int attach_index_;
 
   // Called when the loop in RunMoveLoop finishes. Only for tests.
   base::OnceClosure drag_loop_done_callback_;

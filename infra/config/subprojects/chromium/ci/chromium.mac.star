@@ -6,8 +6,8 @@
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "cpu", "goma", "os", "sheriff_rotations", "xcode")
-load("//lib/ci.star", "ci", "rbe_instance")
+load("//lib/builders.star", "cpu", "goma", "os", "reclient", "sheriff_rotations", "xcode")
+load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/structs.star", "structs")
 
@@ -49,7 +49,7 @@ consoles.console_view(
 
 def ios_builder(*, name, **kwargs):
     kwargs.setdefault("sheriff_rotations", sheriff_rotations.IOS)
-    kwargs.setdefault("xcode", xcode.x13main)
+    kwargs.setdefault("xcode", xcode.x14main)
     return ci.builder(name = name, **kwargs)
 
 ci.builder(
@@ -79,6 +79,9 @@ ci.builder(
         short_name = "bld",
     ),
     cq_mirrors_console_view = "mirrors",
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 ci.builder(
@@ -105,6 +108,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     os = os.MAC_ANY,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 ci.builder(
@@ -133,6 +139,9 @@ ci.builder(
     ),
     cpu = cpu.ARM64,
     os = os.MAC_DEFAULT,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 ci.builder(
@@ -158,6 +167,27 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.MAC_DEFAULT,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
+)
+
+ci.builder(
+    name = "mac-arm64-rel (reclient shadow)",
+    builder_spec = builder_config.copy_from(
+        "ci/mac-arm64-rel",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "release|arm64",
+        short_name = "rec",
+    ),
+    os = os.MAC_DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
+    builderless = True,
+    cores = None,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = 40,
 )
 
 ci.thin_tester(
@@ -385,6 +415,9 @@ ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     name = "ios-catalyst",
+
+    # TODO(crbug.com/1350126): Move ios-catalyst to xcode.x14main when fixed.
+    xcode = xcode.x13main,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "ios",
@@ -468,7 +501,7 @@ ios_builder(
     tree_closing = False,
     sheriff_rotations = args.ignore_default(None),
     goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 40,
 )
 
@@ -578,5 +611,5 @@ ios_builder(
     ],
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
-    xcode = xcode.x13main,
+    xcode = xcode.x14main,
 )

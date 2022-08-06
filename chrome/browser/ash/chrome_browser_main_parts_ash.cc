@@ -26,7 +26,6 @@
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/power/dark_resume_controller.h"
 #include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -198,14 +197,19 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/ash/components/network/fast_transition_observer.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_stub.h"
+#include "chromeos/ash/components/network/system_token_cert_db_storage.h"
 #include "chromeos/ash/services/cros_healthd/private/cpp/data_collector.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
@@ -214,12 +218,10 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/version/version_loader.h"
 #include "components/account_id/account_id.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/language/core/browser/pref_names.h"
@@ -633,8 +635,9 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
         switches::kLoginUser,
         cryptohome::Identification(user_manager::StubAccountId()).id());
     if (!command_line->HasSwitch(switches::kLoginProfile)) {
-      command_line->AppendSwitchASCII(switches::kLoginProfile,
-                                      chrome::kTestUserProfileDir);
+      command_line->AppendSwitchASCII(
+          switches::kLoginProfile,
+          ash::BrowserContextHelper::kTestUserBrowserContextDirName);
     }
     LOG(WARNING)
         << "Running as stub user with profile dir: "
@@ -662,7 +665,7 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
 
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    FakeUserDataAuthClient::Get()->set_user_data_dir(user_data_dir);
+    FakeUserDataAuthClient::Get()->SetUserDataDir(std::move(user_data_dir));
 
     // If we're not running on a device, i.e. either in a test or in ash Chrome
     // on linux, fake dbus calls that would result in a shutdown of Chrome by
@@ -802,8 +805,8 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
 
   SystemProxyManager::Initialize(g_browser_process->local_state());
 
-  debugd_notification_handler_ = std::make_unique<DebugdNotificationHandler>(
-      DBusThreadManager::Get()->GetDebugDaemonClient());
+  debugd_notification_handler_ =
+      std::make_unique<DebugdNotificationHandler>(DebugDaemonClient::Get());
 
   return ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
@@ -1140,7 +1143,7 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
       // Enable portal detector if EULA was previously accepted or if
       // this is an unofficial build.
       if (!is_official_build || StartupUtils::IsEulaAccepted())
-        network_portal_detector::GetInstance()->Enable(true);
+        network_portal_detector::GetInstance()->Enable();
     }
 
     // Initialize an observer to update NetworkHandler's pref based services.

@@ -5,11 +5,10 @@
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {ArrayDataModel} from 'chrome://resources/js/cr/ui/array_data_model.m.js';
-import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
+import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.js';
 import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+import {Menu} from 'chrome://resources/js/cr/ui/menu.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 
 import {DialogType} from '../../common/js/dialog_type.js';
 import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
@@ -44,6 +43,7 @@ import {DirectoryModel} from './directory_model.js';
 import {DirectoryTreeNamingController} from './directory_tree_naming_controller.js';
 import {DriveDialogController} from './drive_dialog_controller.js';
 import {importElements} from './elements_importer.js';
+import {EmptyFolderController} from './empty_folder_controller.js';
 import {CommandHandler, CommandUtil} from './file_manager_commands.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
 import {FileTasks} from './file_tasks.js';
@@ -349,6 +349,12 @@ export class FileManager extends EventTarget {
 
     /** @private {?FileTypeFiltersController} */
     this.fileTypeFiltersController_ = null;
+
+    /**
+     * Empty folder controller.
+     * @private {?EmptyFolderController}
+     */
+    this.emptyFolderController_ = null;
 
     /**
      * Records histograms of directory-changed event.
@@ -1080,7 +1086,7 @@ export class FileManager extends EventTarget {
     this.fileFilter_ = new FileFilter(this.volumeManager_);
 
     // Set the files-ng class for dialog header styling.
-    const dialogHeader = queryRequiredElement('.dialog-header');
+    const dialogHeader = util.queryRequiredElement('.dialog-header');
     dialogHeader.classList.add('files-ng');
 
     // Create the root view of FileManager.
@@ -1107,12 +1113,12 @@ export class FileManager extends EventTarget {
     const dom = this.dialogDom_;
     assert(dom);
 
-    const table = queryRequiredElement('.detail-table', dom);
+    const table = util.queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
         table, this.metadataModel_, this.volumeManager_, this.historyLoader_,
         /** @type {!A11yAnnounce} */ (this.ui_),
         this.dialogType == DialogType.FULL_PAGE);
-    const grid = queryRequiredElement('.thumbnail-grid', dom);
+    const grid = util.queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
         grid, this.metadataModel_, this.volumeManager_, this.historyLoader_,
         /** @type {!A11yAnnounce} */ (this.ui_));
@@ -1303,6 +1309,8 @@ export class FileManager extends EventTarget {
       this.fileTypeFiltersController_ = new FileTypeFiltersController(
           this.ui_.fileTypeFilterContainer, this.directoryModel_,
           this.recentEntry_, /** @type {!A11yAnnounce} */ (this.ui_));
+      this.emptyFolderController_ = new EmptyFolderController(
+          this.ui_.emptyFolder, this.directoryModel_, this.recentEntry_);
     }
 
     return directoryTreePromise;

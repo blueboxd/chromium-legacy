@@ -95,7 +95,7 @@ class MockAutofillClient : public TestAutofillClient {
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason), (override));
   MOCK_METHOD(void, ExecuteCommand, (int), (override));
   MOCK_METHOD(void,
-              OnPromoCodeSuggestionsFooterSelected,
+              OpenPromoCodeOfferDetailsURL,
               (const GURL& url),
               (override));
 
@@ -158,12 +158,12 @@ class MockBrowserAutofillManager : public BrowserAutofillManager {
                int unique_id),
               (override));
   MOCK_METHOD(void,
-              FillCreditCardForm,
-              (int query_id,
-               const FormData& form,
+              FillCreditCardFormImpl,
+              (const FormData& form,
                const FormFieldData& field,
                const CreditCard& credit_card,
-               const std::u16string& cvc),
+               const std::u16string& cvc,
+               int query_id),
               (override));
 
  private:
@@ -214,7 +214,7 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
         query_id, suggestions, /*autoselect_first_suggestion=*/false);
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   NiceMock<MockAutofillClient> autofill_client_;
   std::unique_ptr<NiceMock<MockAutofillDriver>> autofill_driver_;
@@ -665,7 +665,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateMerchantPromoCodeSuggestionsFooter) {
   const GURL gurl{"https://example.com/"};
   absl::variant<std::string, GURL> payload(absl::in_place_type<GURL>, gurl);
-  EXPECT_CALL(autofill_client_, OnPromoCodeSuggestionsFooterSelected(gurl));
+  EXPECT_CALL(autofill_client_, OpenPromoCodeOfferDetailsURL(gurl));
   external_delegate_->DidAcceptSuggestion(
       u"baz foo", POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS, payload, 0);
 }
@@ -843,12 +843,12 @@ MATCHER_P(CreditCardMatches, card, "") {
 
 // Test that autofill manager will fill the credit card form after user scans a
 // credit card.
-TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
+TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardFormImpl) {
   CreditCard card;
   test::SetCreditCardInfo(&card, "Alice", "4111", "1", "3000", "1");
-  EXPECT_CALL(
-      *browser_autofill_manager_,
-      FillCreditCardForm(_, _, _, CreditCardMatches(card), std::u16string()));
+  EXPECT_CALL(*browser_autofill_manager_,
+              FillCreditCardFormImpl(_, _, CreditCardMatches(card),
+                                     std::u16string(), _));
   external_delegate_->OnCreditCardScanned(card);
 }
 

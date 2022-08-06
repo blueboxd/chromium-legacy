@@ -9,10 +9,10 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/timer/elapsed_timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/first_party_sets/first_party_sets_context_config.h"
@@ -30,11 +30,9 @@ namespace network {
 class FirstPartySetsAccessDelegate
     : public mojom::FirstPartySetsAccessDelegate {
  public:
-  using SetsByOwner =
-      base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>;
-  using OwnerResult = absl::optional<net::SchemefulSite>;
-  using OwnersResult = base::flat_map<net::SchemefulSite, net::SchemefulSite>;
-  using FlattenedSets = base::flat_map<net::SchemefulSite, net::SchemefulSite>;
+  using OwnerResult = FirstPartySetsManager::OwnerResult;
+  using OwnersResult = FirstPartySetsManager::OwnersResult;
+  using FlattenedSets = FirstPartySetsManager::FlattenedSets;
 
   // Construct a FirstPartySetsAccessDelegate that provides customizations
   // and serves mojo requests for the underlying First-Party Sets info.
@@ -69,16 +67,6 @@ class FirstPartySetsAccessDelegate
       const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback);
-
-  // Computes a mapping from owner to set members. For convenience of iteration,
-  // the members of the set includes the owner.
-  //
-  // This may return a result synchronously, or asynchronously invoke `callback`
-  // with the result. The callback will be invoked iff the return value is
-  // nullopt; i.e. a result will be provided via return value or callback, but
-  // not both, and not neither.
-  [[nodiscard]] absl::optional<SetsByOwner> Sets(
-      base::OnceCallback<void(SetsByOwner)> callback);
 
   // Returns optional(nullopt) if First-Party Sets is disabled or if the input
   // is not in a nontrivial set.
@@ -121,10 +109,6 @@ class FirstPartySetsAccessDelegate
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const;
 
-  // Same as `Sets`, but plumbs the result into the callback. Must only be
-  // called once the instance is fully initialized.
-  void SetsAndInvoke(base::OnceCallback<void(SetsByOwner)> callback) const;
-
   // Same as `FindOwner`, but plumbs the result into the callback. Must only be
   // called once the instance is fully initialized.
   void FindOwnerAndInvoke(const net::SchemefulSite& site,
@@ -160,6 +144,14 @@ class FirstPartySetsAccessDelegate
 
   mojo::Receiver<mojom::FirstPartySetsAccessDelegate> receiver_
       GUARDED_BY_CONTEXT(sequence_checker_){this};
+
+  // Timer starting when the first async query was enqueued, if any. Used for
+  // metrics.
+  absl::optional<base::ElapsedTimer> first_async_query_timer_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Timer starting when the instance is constructed. Used for metrics.
+  base::ElapsedTimer construction_timer_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

@@ -33,7 +33,6 @@
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/drive/drive_pref_names.h"
@@ -235,11 +234,37 @@ TEST_F(DlpFilesControllerTest, GetDisallowedTransfers_SameFileSystem) {
 
   std::vector<storage::FileSystemURL> transferred_files(
       {file_url1_, file_url2_, file_url3_});
-  std::vector<storage::FileSystemURL> disallowed_files;
 
   base::test::TestFuture<std::vector<storage::FileSystemURL>> future;
   files_controller_.GetDisallowedTransfers(transferred_files,
                                            CreateFileSystemURL("Downloads"),
+                                           future.GetCallback());
+  EXPECT_EQ(0u, future.Get().size());
+}
+
+TEST_F(DlpFilesControllerTest, GetDisallowedTransfers_ClientNotRunning) {
+  AddFilesToDlpClient();
+
+  std::vector<storage::FileSystemURL> transferred_files(
+      {file_url1_, file_url2_, file_url3_});
+
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  mount_points->RegisterFileSystem(
+      chromeos::kSystemMountNameArchive, storage::kFileSystemTypeLocal,
+      storage::FileSystemMountOption(),
+      base::FilePath(file_manager::util::kArchiveMountPath));
+  base::ScopedClosureRunner external_mount_points_revoker(
+      base::BindOnce(&storage::ExternalMountPoints::RevokeAllFileSystems,
+                     base::Unretained(mount_points)));
+
+  auto dst_url = mount_points->CreateExternalFileSystemURL(
+      blink::StorageKey(), "archive",
+      base::FilePath("file.rar/path/in/archive"));
+
+  chromeos::DlpClient::Get()->GetTestInterface()->SetIsAlive(false);
+  base::test::TestFuture<std::vector<storage::FileSystemURL>> future;
+  files_controller_.GetDisallowedTransfers(transferred_files, dst_url,
                                            future.GetCallback());
   EXPECT_EQ(0u, future.Get().size());
 }
@@ -405,7 +430,6 @@ class DlpFilesExternalDestinationTest
     crostini_features.set_is_allowed_now(true);
     crostini_features.set_enabled(true);
 
-    chromeos::DBusThreadManager::Initialize();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
@@ -441,7 +465,6 @@ class DlpFilesExternalDestinationTest
   void TearDown() override {
     DlpFilesControllerTest::TearDown();
 
-    chromeos::DBusThreadManager::Shutdown();
     ash::ChunneldClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ConciergeClient::Shutdown();

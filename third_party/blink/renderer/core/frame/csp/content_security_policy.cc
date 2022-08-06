@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security_context/insecure_request_policy.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -223,6 +224,9 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   // callback to determine whether the call should execute or not.
   if (!disable_eval_error_message_.IsNull())
     delegate_->DisableEval(disable_eval_error_message_);
+
+  if (!disable_wasm_eval_error_message_.IsNull())
+    delegate_->SetWasmEvalErrorMessage(disable_wasm_eval_error_message_);
 }
 
 void ContentSecurityPolicy::ReportUseCounters(
@@ -345,6 +349,13 @@ void ContentSecurityPolicy::ComputeInternalStateForParsedPolicy(
   if (CSPDirectiveListShouldDisableEval(csp, disable_eval_message) &&
       disable_eval_error_message_.IsNull()) {
     disable_eval_error_message_ = disable_eval_message;
+  }
+
+  String disable_wasm_eval_message;
+  if (CSPDirectiveListShouldDisableWasmEval(csp, this,
+                                            disable_wasm_eval_message) &&
+      disable_wasm_eval_error_message_.IsNull()) {
+    disable_wasm_eval_error_message_ = disable_wasm_eval_message;
   }
 
   for (const auto& directive : csp.directives) {
@@ -518,6 +529,15 @@ String ContentSecurityPolicy::EvalDisabledErrorMessage() const {
   for (const auto& policy : policies_) {
     String message;
     if (CSPDirectiveListShouldDisableEval(*policy, message))
+      return message;
+  }
+  return String();
+}
+
+String ContentSecurityPolicy::WasmEvalDisabledErrorMessage() const {
+  for (const auto& policy : policies_) {
+    String message;
+    if (CSPDirectiveListShouldDisableWasmEval(*policy, this, message))
       return message;
   }
   return String();

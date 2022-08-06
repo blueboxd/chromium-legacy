@@ -5,7 +5,9 @@
 /**
  * @fileoverview Tracks event sources.
  */
-import {EventSourceType} from '/chromevox/common/event_source_type.js';
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
+import {EventSourceType} from '../common/event_source_type.js';
 
 export const EventSourceState = {};
 

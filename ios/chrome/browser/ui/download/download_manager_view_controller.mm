@@ -4,9 +4,6 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
-#import <MaterialComponents/MaterialPalettes.h>
-#import <MaterialComponents/MaterialTypography.h>
-
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
@@ -474,7 +471,10 @@ NSString* GetSizeString(long long size_in_bytes) {
   if (!_statusLabel) {
     _statusLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _statusLabel.font = [MDCTypography body1Font];
+    const CGFloat kBody1FontSize = 14.0;
+    const UIFontWeight kBody1FontWeight = UIFontWeightRegular;
+    _statusLabel.font = [UIFont systemFontOfSize:kBody1FontSize
+                                          weight:kBody1FontWeight];
     _statusLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     [_statusLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
@@ -490,7 +490,10 @@ NSString* GetSizeString(long long size_in_bytes) {
     _actionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _actionButton.translatesAutoresizingMaskIntoConstraints = NO;
     _actionButton.exclusiveTouch = YES;
-    _actionButton.titleLabel.font = [MDCTypography buttonFont];
+    const CGFloat kButtonFontSize = 14.0;
+    const UIFontWeight kButtonFontWeight = UIFontWeightMedium;
+    _actionButton.titleLabel.font = [UIFont systemFontOfSize:kButtonFontSize
+                                                      weight:kButtonFontWeight];
     [_actionButton setTitleColor:[UIColor colorNamed:kBlueColor]
                         forState:UIControlStateNormal];
 
@@ -510,7 +513,10 @@ NSString* GetSizeString(long long size_in_bytes) {
     _installDriveButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _installDriveButton.translatesAutoresizingMaskIntoConstraints = NO;
     _installDriveButton.exclusiveTouch = YES;
-    _installDriveButton.titleLabel.font = [MDCTypography buttonFont];
+    const CGFloat kButtonFontSize = 14.0;
+    const UIFontWeight kButtonFontWeight = UIFontWeightMedium;
+    _installDriveButton.titleLabel.font =
+        [UIFont systemFontOfSize:kButtonFontSize weight:kButtonFontWeight];
     [_installDriveButton setTitleColor:[UIColor colorNamed:kBlueColor]
                               forState:UIControlStateNormal];
 
@@ -540,7 +546,10 @@ NSString* GetSizeString(long long size_in_bytes) {
   if (!_installDriveLabel) {
     _installDriveLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _installDriveLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _installDriveLabel.font = [MDCTypography body1Font];
+    const CGFloat kBody1FontSize = 14.0;
+    const UIFontWeight kBody1FontWeight = UIFontWeightRegular;
+    _installDriveLabel.font = [UIFont systemFontOfSize:kBody1FontSize
+                                                weight:kBody1FontWeight];
     _installDriveLabel.text =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_GOOGLE_DRIVE);
     [_installDriveLabel sizeToFit];

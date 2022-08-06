@@ -33,9 +33,10 @@ suite('emoji-search', () => {
       'dataUrls': {
         'emoji': [
           '/emoji_test_ordering_start.json',
-          '/emoji_test_ordering_remaining.json'
+          '/emoji_test_ordering_remaining.json',
         ],
         'emoticon': ['/emoticon_test_ordering.json'],
+        'symbol': ['/symbol_test_ordering.json'],
       },
     });
 

@@ -350,11 +350,11 @@ void Label::SetMultiLine(bool multi_line) {
   OnPropertyChanged(&multi_line_, kPropertyEffectsPreferredSizeChanged);
 }
 
-int Label::GetMaxLines() const {
+size_t Label::GetMaxLines() const {
   return max_lines_;
 }
 
-void Label::SetMaxLines(int max_lines) {
+void Label::SetMaxLines(size_t max_lines) {
   if (max_lines_ == max_lines)
     return;
   max_lines_ = max_lines;
@@ -576,6 +576,11 @@ int Label::GetBaseline() const {
 }
 
 gfx::Size Label::CalculatePreferredSize() const {
+  return CalculatePreferredSize({width(), {}});
+}
+
+gfx::Size Label::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   // Return a size of (0, 0) if the label is not visible and if the
   // |collapse_when_hidden_| flag is set.
   // TODO(munjal): This logic probably belongs to the View class. But for now,
@@ -587,7 +592,7 @@ gfx::Size Label::CalculatePreferredSize() const {
   if (GetMultiLine() && fixed_width_ != 0 && !GetText().empty())
     return gfx::Size(fixed_width_, GetHeightForWidth(fixed_width_));
 
-  gfx::Size size(GetTextSize());
+  gfx::Size size(GetBoundedTextSize(available_size));
   const gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
 
@@ -638,7 +643,8 @@ int Label::GetHeightForWidth(int w) const {
   if (!GetMultiLine() || GetText().empty() || w < 0) {
     height = base_line_height;
   } else if (w == 0) {
-    height = std::max(GetMaxLines(), 1) * base_line_height;
+    height =
+        std::max(base::checked_cast<int>(GetMaxLines()), 1) * base_line_height;
   } else {
     // SetDisplayRect() has a side effect for later calls of GetStringSize().
     // Be careful to invoke full_text_->SetDisplayRect(gfx::Rect()) to
@@ -650,7 +656,9 @@ int Label::GetHeightForWidth(int w) const {
     int string_height = full_text_->GetStringSize().height();
     // Cap the number of lines to GetMaxLines() if that's set.
     height = GetMaxLines() > 0
-                 ? std::min(GetMaxLines() * base_line_height, string_height)
+                 ? std::min(base::checked_cast<int>(GetMaxLines()) *
+                                base_line_height,
+                            string_height)
                  : string_height;
   }
   height -= gfx::ShadowValue::GetMargin(full_text_->shadows()).height();
@@ -711,7 +719,7 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
   render_text->set_shadows(GetShadows());
   const bool multiline = GetMultiLine();
   render_text->SetMultiline(multiline);
-  render_text->SetMaxLines(multiline ? GetMaxLines() : 0);
+  render_text->SetMaxLines(multiline ? GetMaxLines() : size_t{0});
   render_text->SetWordWrapBehavior(full_text_->word_wrap_behavior());
 
   // Setup render text for selection controller.
@@ -1131,6 +1139,10 @@ void Label::MaybeBuildDisplayText() const {
 }
 
 gfx::Size Label::GetTextSize() const {
+  return GetBoundedTextSize({width(), {}});
+}
+
+gfx::Size Label::GetBoundedTextSize(const SizeBounds& available_size) const {
   gfx::Size size;
   if (GetText().empty()) {
     size = gfx::Size(0, GetLineHeight());
@@ -1140,17 +1152,20 @@ gfx::Size Label::GetTextSize() const {
     // to report an accurate width given the constraints and how it determines
     // to elide the text. If we simply clamp the width to the max after the
     // fact, then there may be some empty space left over *after* an ellipsis.
+    // TODO(kerenzhu): `available_size` should be respected, but doing so will
+    // break tests. Fix that.
     full_text_->SetDisplayRect(
         gfx::Rect(0, 0, max_width_single_line_ - GetInsets().width(), 0));
     size = full_text_->GetStringSize();
   } else {
-    // Cancel the display rect of |full_text_|. The display rect may be
-    // specified in GetHeightForWidth(), and specifying empty Rect cancels
-    // its effect. See also the comment in GetHeightForWidth().
-    // TODO(mukai): use gfx::Rect() to compute the ideal size rather than
-    // the current width(). See crbug.com/468494, crbug.com/467526, and
-    // the comment for MultilinePreferredSizeTest in label_unittest.cc.
-    full_text_->SetDisplayRect(gfx::Rect(0, 0, width(), 0));
+    const int width = available_size.width().is_bounded()
+                          ? available_size.width().value()
+                          : 0;
+    // SetDisplayRect() has side-effect. The text height will change to respect
+    // width.
+    // TODO(crbug.com/1347330): `width` should respect insets, but doing so
+    // will break LabelTest.MultiLineSizing. Fix that.
+    full_text_->SetDisplayRect(gfx::Rect(0, 0, width, 0));
     size = full_text_->GetStringSize();
   }
   const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(GetShadows());
@@ -1286,7 +1301,7 @@ ADD_PROPERTY_METADATA(gfx::HorizontalAlignment, HorizontalAlignment)
 ADD_PROPERTY_METADATA(gfx::VerticalAlignment, VerticalAlignment)
 ADD_PROPERTY_METADATA(int, LineHeight)
 ADD_PROPERTY_METADATA(bool, MultiLine)
-ADD_PROPERTY_METADATA(int, MaxLines)
+ADD_PROPERTY_METADATA(size_t, MaxLines)
 ADD_PROPERTY_METADATA(bool, Obscured)
 ADD_PROPERTY_METADATA(bool, AllowCharacterBreak)
 ADD_PROPERTY_METADATA(std::u16string, TooltipText)

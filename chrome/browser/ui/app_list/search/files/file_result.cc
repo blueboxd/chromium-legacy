@@ -22,10 +22,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
-#include "chrome/browser/ui/app_list/search/files/justifications.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/ash/thumbnail_loader.h"
-#include "chromeos/components/string_matching/tokenized_string_match.h"
+#include "chromeos/ash/components/string_matching/tokenized_string.h"
+#include "chromeos/ash/components/string_matching/tokenized_string_match.h"
 #include "chromeos/ui/base/file_icon_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,8 +35,8 @@ namespace app_list {
 
 namespace {
 
-using chromeos::string_matching::TokenizedString;
-using chromeos::string_matching::TokenizedStringMatch;
+using ::ash::string_matching::TokenizedString;
+using ::ash::string_matching::TokenizedStringMatch;
 
 // The default relevance returned by CalculateRelevance.
 constexpr double kDefaultRelevance = 0.5;
@@ -249,12 +249,6 @@ void FileResult::OnThumbnailLoaded(const SkBitmap* bitmap,
                                        ash::SearchResultIconShape::kCircle));
 }
 
-void FileResult::SetDetailsToJustificationString() {
-  GetJustificationStringAsync(
-      filepath_, base::BindOnce(&FileResult::OnJustificationStringReturned,
-                                weak_factory_.GetWeakPtr()));
-}
-
 void FileResult::UpdateIcon() {
   // Launcher search results UI is light by default, so use icons for light
   // background if dark/light mode feature is not enabled. Productivity launcher
@@ -294,12 +288,6 @@ void FileResult::UpdateIcon() {
         break;
     }
   }
-}
-
-void FileResult::OnJustificationStringReturned(
-    absl::optional<std::u16string> justification) {
-  if (justification)
-    SetDetails(justification.value());
 }
 
 ::std::ostream& operator<<(::std::ostream& os, const FileResult& result) {

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
+#include "ash/public/cpp/update_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_party_feature_pod_controller.h"
 #include "ash/shell.h"
@@ -23,6 +24,7 @@
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller_legacy.h"
 #include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
+#include "ash/system/camera/autozoom_feature_pod_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
 #include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/dark_mode/dark_mode_feature_pod_controller.h"
@@ -35,6 +37,7 @@
 #include "ash/system/media/unified_media_controls_detailed_view_controller.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/update_model.h"
 #include "ash/system/nearby_share/nearby_share_feature_pod_controller.h"
 #include "ash/system/network/network_detailed_view_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
@@ -49,6 +52,7 @@
 #include "ash/system/time/unified_calendar_view_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/unified/deferred_update_dialog.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
@@ -68,6 +72,7 @@
 #include "base/metrics/user_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/screen.h"
@@ -180,7 +185,15 @@ void UnifiedSystemTrayController::HandleSignOutAction() {
   base::RecordAction(base::UserMetricsAction("StatusArea_SignOut"));
   if (Shell::Get()->session_controller()->IsDemoSession())
     base::RecordAction(base::UserMetricsAction("DemoMode.ExitFromSystemTray"));
-  Shell::Get()->session_controller()->RequestSignOut();
+
+  if (ShouldShowDeferredUpdateDialog()) {
+    DeferredUpdateDialog::CreateDialog(
+        DeferredUpdateDialog::Action::kSignOut,
+        base::BindOnce(&SessionControllerImpl::RequestSignOut,
+                       base::Unretained(Shell::Get()->session_controller())));
+  } else {
+    Shell::Get()->session_controller()->RequestSignOut();
+  }
 }
 
 void UnifiedSystemTrayController::HandleLockAction() {
@@ -198,9 +211,18 @@ void UnifiedSystemTrayController::HandleSettingsAction() {
 
 void UnifiedSystemTrayController::HandlePowerAction() {
   base::RecordAction(base::UserMetricsAction("Tray_ShutDown"));
-  Shell::Get()->lock_state_controller()->RequestShutdown(
-      ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
-  CloseBubble();
+
+  if (ShouldShowDeferredUpdateDialog()) {
+    DeferredUpdateDialog::CreateDialog(
+        DeferredUpdateDialog::Action::kShutDown,
+        base::BindOnce(&LockStateController::RequestShutdown,
+                       base::Unretained(Shell::Get()->lock_state_controller()),
+                       ShutdownReason::TRAY_SHUT_DOWN_BUTTON));
+  } else {
+    Shell::Get()->lock_state_controller()->RequestShutdown(
+        ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
+    CloseBubble();
+  }
 }
 
 void UnifiedSystemTrayController::HandlePageSwitchAction(int page) {
@@ -546,6 +568,9 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   if (base::FeatureList::IsEnabled(features::kShelfParty))
     AddFeaturePodItem(std::make_unique<ShelfPartyFeaturePodController>());
 
+  if (media::ShouldEnableAutoFraming())
+    AddFeaturePodItem(std::make_unique<AutozoomFeaturePodController>());
+
   // If you want to add a new feature pod item, add here.
 
   if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
@@ -658,6 +683,11 @@ bool UnifiedSystemTrayController::IsMessageCenterCollapseRequired() const {
 base::TimeDelta UnifiedSystemTrayController::GetAnimationDurationForReporting()
     const {
   return base::Milliseconds(kSystemMenuCollapseExpandAnimationDurationMs);
+}
+
+bool UnifiedSystemTrayController::ShouldShowDeferredUpdateDialog() const {
+  return Shell::Get()->system_tray_model()->update_model()->update_deferred() ==
+         DeferredUpdateState::kShowDialog;
 }
 
 }  // namespace ash

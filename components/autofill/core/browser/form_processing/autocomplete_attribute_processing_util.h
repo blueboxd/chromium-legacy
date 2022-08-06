@@ -22,7 +22,7 @@ namespace autofill {
 // returns absl::nullopt, if the parsing fails. The latter happens if:
 // - The autocomplete value is empty or contains more than 5 tokens.
 // - The type_hint doesn't match the field_type.
-// - Only "on", "off" or "false" is specified (currently ignored by Autofill).
+// - If ShouldIgnoreAutocompleteAttribute(autocomplete) is true.
 // An unrecognizable field_type doesn't stop parsing and yields
 // HTML_TYPE_UNRECOGNIZED instead.
 struct AutocompleteParsingResult {
@@ -31,13 +31,14 @@ struct AutocompleteParsingResult {
   HtmlFieldMode mode;
   // Type hints are parsed and validated, but otherwise unused.
   HtmlFieldType field_type;
+  // webauthn is parsed, but otherwise unused.
 };
 absl::optional<AutocompleteParsingResult> ParseAutocompleteAttribute(
     const AutofillField& field);
 
-// Maps HTML_MODE_BILLING and HTML_MODE_SHIPPING to their string constants, as
-// specified in the autocomplete standard.
-base::StringPiece HtmlFieldModeToStringPiece(HtmlFieldMode mode);
+// Checks if `autocomplete` is one of "on", "off" or "false". These values are
+// currently ignored by Autofill.
+bool ShouldIgnoreAutocompleteAttribute(base::StringPiece autocomplete);
 
 }  // namespace autofill
 

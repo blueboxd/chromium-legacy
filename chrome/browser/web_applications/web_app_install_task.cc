@@ -29,6 +29,7 @@
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,7 +57,7 @@
 #include "chromeos/crosapi/mojom/arc.mojom.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 namespace web_app {
@@ -120,7 +121,7 @@ bool ShouldInteractWithArc() {
   auto* lacros_service = chromeos::LacrosService::Get();
   return lacros_service &&
          // Check if the feature is enabled.
-         chromeos::BrowserInitParams::Get()->web_apps_enabled &&
+         chromeos::BrowserParamsProxy::Get()->WebAppsEnabled() &&
          // Only use ARC installation flow if we know that remote ash-chrome is
          // capable of installing from Play Store in lacros-chrome, to avoid
          // redirecting users to the Play Store if they cannot install
@@ -639,6 +640,16 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
     UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url,
                                  web_app_info.get());
 
+  if (flow_ == WebAppInstallFlow::kCreateShortcut &&
+      base::FeatureList::IsEnabled(
+          webapps::features::kCreateShortcutIgnoresManifest)) {
+    // When creating a shortcut, the |manifest_id| is not part of the App's
+    // primary key. The only thing that identifies a shortcut is the start URL,
+    // which is always set to the current page.
+    *web_app_info = WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
+        web_contents()->GetLastCommittedURL(), *web_app_info);
+  }
+
   AppId app_id =
       GenerateAppId(web_app_info->manifest_id, web_app_info->start_url);
 
@@ -667,7 +678,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
     }
   }
 
-  std::vector<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info);
+  base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info);
 
   // A system app should always have a manifest icon.
   if (install_surface_ == webapps::WebappInstallSource::SYSTEM_DEFAULT) {
@@ -686,7 +697,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
     blink::mojom::ManifestPtr opt_manifest,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    std::vector<GURL> icon_urls,
+    base::flat_set<GURL> icon_urls,
     bool skip_page_favicons) {
   bool is_create_shortcut = flow_ == WebAppInstallFlow::kCreateShortcut;
   // Background installations are not a user-triggered installs, and thus
@@ -743,7 +754,7 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
 
 void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    std::vector<GURL> icon_urls,
+    base::flat_set<GURL> icon_urls,
     bool skip_page_favicons,
     const std::string& intent,
     bool should_intent_to_store) {
@@ -790,7 +801,7 @@ void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void WebAppInstallTask::OnDidCheckForIntentToPlayStoreLacros(
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    std::vector<GURL> icon_urls,
+    base::flat_set<GURL> icon_urls,
     bool skip_page_favicons,
     const std::string& intent,
     crosapi::mojom::IsInstallableResult result) {

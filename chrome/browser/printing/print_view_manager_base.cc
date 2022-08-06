@@ -281,6 +281,16 @@ void PrintViewManagerBase::PrintForPrintPreview(
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+void PrintViewManagerBase::PrintToPdf(
+    content::RenderFrameHost* rfh,
+    const std::string& page_ranges,
+    mojom::PrintPagesParamsPtr print_pages_params,
+    print_to_pdf::PdfPrintJob::PrintToPdfCallback callback) {
+  print_to_pdf::PdfPrintJob::StartJob(
+      web_contents(), rfh, GetPrintRenderFrame(rfh), page_ranges,
+      std::move(print_pages_params), std::move(callback));
+}
+
 void PrintViewManagerBase::PrintDocument(
     scoped_refptr<base::RefCountedMemory> print_data,
     const gfx::Size& page_size,

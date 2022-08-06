@@ -114,28 +114,6 @@ class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsLastPingDay, LastPingDay) {}
 
-// Tests the GetToolbarOrder/SetToolbarOrder functions.
-class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
- public:
-  void Initialize() override {
-    list_.push_back(prefs_.AddExtensionAndReturnId("1"));
-    list_.push_back(prefs_.AddExtensionAndReturnId("2"));
-    list_.push_back(prefs_.AddExtensionAndReturnId("3"));
-    ExtensionIdList before_list = prefs()->GetToolbarOrder();
-    EXPECT_TRUE(before_list.empty());
-    prefs()->SetToolbarOrder(list_);
-  }
-
-  void Verify() override {
-    ExtensionIdList result = prefs()->GetToolbarOrder();
-    ASSERT_EQ(list_, result);
-  }
-
- private:
-  ExtensionIdList list_;
-};
-TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
-
 // Tests the IsExtensionDisabled/SetExtensionState functions.
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:
@@ -346,7 +324,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsGrantedPermissions, GrantedPermissions) {}
 
-// Tests the SetActivePermissions / GetActivePermissions functions.
+// Tests the SetDesiredActivePermissions / GetDesiredActivePermissions
+// functions.
 class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
  public:
   void Initialize() override {
@@ -374,27 +353,27 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
 
     // Make sure the active permissions start empty.
     std::unique_ptr<const PermissionSet> active =
-        prefs()->GetActivePermissions(extension_id_);
+        prefs()->GetDesiredActivePermissions(extension_id_);
     EXPECT_TRUE(active->IsEmpty());
 
-    // Set the active permissions.
-    prefs()->SetActivePermissions(extension_id_, *active_perms_);
-    active = prefs()->GetActivePermissions(extension_id_);
+    // Set the desired active permissions.
+    prefs()->SetDesiredActivePermissions(extension_id_, *active_perms_);
+    active = prefs()->GetDesiredActivePermissions(extension_id_);
     EXPECT_EQ(active_perms_->apis(), active->apis());
     EXPECT_EQ(active_perms_->explicit_hosts(), active->explicit_hosts());
     EXPECT_EQ(active_perms_->scriptable_hosts(), active->scriptable_hosts());
     EXPECT_EQ(*active_perms_, *active);
 
-    // Reset the active permissions.
+    // Reset the desired active permissions.
     active_perms_ = std::make_unique<PermissionSet>();
-    prefs()->SetActivePermissions(extension_id_, *active_perms_);
-    active = prefs()->GetActivePermissions(extension_id_);
+    prefs()->SetDesiredActivePermissions(extension_id_, *active_perms_);
+    active = prefs()->GetDesiredActivePermissions(extension_id_);
     EXPECT_EQ(*active_perms_, *active);
   }
 
   void Verify() override {
     std::unique_ptr<const PermissionSet> permissions =
-        prefs()->GetActivePermissions(extension_id_);
+        prefs()->GetDesiredActivePermissions(extension_id_);
     EXPECT_EQ(*active_perms_, *permissions);
   }
 
@@ -402,7 +381,7 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
   std::string extension_id_;
   std::unique_ptr<const PermissionSet> active_perms_;
 };
-TEST_F(ExtensionPrefsActivePermissions, SetAndGetActivePermissions) {}
+TEST_F(ExtensionPrefsActivePermissions, SetAndGetDesiredActivePermissions) {}
 
 // Tests the GetVersionString function.
 class ExtensionPrefsVersionString : public ExtensionPrefsTest {
@@ -868,21 +847,22 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
     active_perms_ = std::make_unique<PermissionSet>(
         std::move(api_perms), ManifestPermissionSet(), URLPatternSet(),
         std::move(shosts));
-    // Set the active permissions.
-    prefs()->SetActivePermissions(component_extension_->id(), *active_perms_);
-    prefs()->SetActivePermissions(no_component_extension_->id(),
-                                  *active_perms_);
+    // Set the desired active permissions.
+    prefs()->SetDesiredActivePermissions(component_extension_->id(),
+                                         *active_perms_);
+    prefs()->SetDesiredActivePermissions(no_component_extension_->id(),
+                                         *active_perms_);
   }
 
   void Verify() override {
     // Component extension can access chrome://print/*.
     std::unique_ptr<const PermissionSet> component_permissions =
-        prefs()->GetActivePermissions(component_extension_->id());
+        prefs()->GetDesiredActivePermissions(component_extension_->id());
     EXPECT_EQ(1u, component_permissions->scriptable_hosts().size());
 
     // Non Component extension can not access chrome://print/*.
     std::unique_ptr<const PermissionSet> no_component_permissions =
-        prefs()->GetActivePermissions(no_component_extension_->id());
+        prefs()->GetDesiredActivePermissions(no_component_extension_->id());
     EXPECT_EQ(0u, no_component_permissions->scriptable_hosts().size());
 
     // |URLPattern::SCHEME_CHROMEUI| scheme will be added in valid_schemes for
@@ -1241,13 +1221,9 @@ TEST_F(ExtensionPrefsSimpleTest, MigrateToNewExternalUninstallBits) {
   TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
 
   auto has_extension_pref_entry = [&prefs](const std::string& id) {
-    const base::Value* extensions_dictionary =
-        prefs.pref_service()->GetDictionary(pref_names::kExtensions);
-    if (!extensions_dictionary) {
-      ADD_FAILURE() << "Extensions dictionary is missing!";
-      return false;
-    }
-    return extensions_dictionary->FindDictKey(id) != nullptr;
+    const base::Value::Dict& extensions_dictionary =
+        prefs.pref_service()->GetValueDict(pref_names::kExtensions);
+    return extensions_dictionary.FindDict(id) != nullptr;
   };
 
   std::string external_extension =

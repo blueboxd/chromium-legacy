@@ -27,6 +27,7 @@ group("closure_compile") {
 js_type_check("closure_compile_jsmodules") {
   is_polymer3 = true
   closure_flags = default_closure_args + [
+                    "language_in=ECMASCRIPT_2020",
                     "js_module_root=gen/ui/file_manager/",
                     "js_module_root=../../ui/file_manager/",
                   ]
@@ -74,7 +75,6 @@ html_to_js("web_components") {
 }
 
 js_library("files_format_dialog") {
-  visibility += [ "//ui/file_manager/audio_player/*" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/iron-icon:iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -91,7 +91,6 @@ js_library("files_format_dialog") {
 }
 
 js_library("files_icon_button") {
-  visibility += [ "//ui/file_manager/audio_player/*" ]
   deps = [
     ":files_toggle_ripple",
     "//third_party/polymer/v3_0/components-chromium/iron-behaviors:iron-button-state",
@@ -176,10 +175,6 @@ js_library("files_toast") {
 
 # TODO(tapted): Move this to //ui/file_manager/base.
 js_library("files_toggle_ripple") {
-  visibility += [ "//ui/file_manager/audio_player/*" ]
-
-  #visibility += [ "//ui/file_manager/gallery/*" ]
-
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -248,6 +243,7 @@ js_test_type_check("js_test_type_check") {
 
   closure_flags =
       strict_error_checking_closure_args + [
+        "language_in=ECMASCRIPT_2020",
         "generate_exports=false",
         "js_module_root=./gen/ui",
         "js_module_root=../../ui",

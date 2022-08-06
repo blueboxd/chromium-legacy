@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1645954272419197032">Vahvista laitteen tiedot</translation>
 <translation id="1662989795263954667">Pysähtynyt – Muste loppu</translation>
+<translation id="1664796644829245314">Esikatsele: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Sisäänrakennettu VPN</translation>
 <translation id="1672499492233627739">Webkameran videofiidi</translation>
 <translation id="1676557873873341166">Tallennetaan videota</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferenssit</translation>
 <translation id="1852934301711881861">Asenna ChromeOS Flex</translation>
 <translation id="1856388568474281774">Alanuoli</translation>
+<translation id="1858620243986915808">Liitä kuvakaappaus</translation>
 <translation id="1871569928317311284">Laita tumma teema pois päältä</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Laita tumma tila pois päältä</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google-profiilikuva</translation>
 <translation id="1979103255016296513">Salasanan vaihto myöhässä</translation>
 <translation id="1999615961760456652">Captive portal</translation>
+<translation id="200669432486043882">Korvaa tiedosto.</translation>
 <translation id="2006864819935886708">Yhteys</translation>
 <translation id="2008685064673031089">Ensisijainen haku</translation>
 <translation id="2011174342667534258">SDK-versio:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Tyyppi</translation>
 <translation id="2461822463642141190">Nykyinen</translation>
 <translation id="2480034874476596812">Laita pois päältä manuaalisesti</translation>
+<translation id="248546197012830854">Laite on offline-tilassa. Muodosta yhteys Wi-Fi-verkkoon, niin näet ohjesisältöä.</translation>
 <translation id="2491955442992294626">Näppäimiä ei testata, kun käytät toista ikkunaa</translation>
 <translation id="2493126929778606526">Parhaat kuvasi, valittu automaattisesti</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">PÄIVITÄ</translation>
 <translation id="3009958530611748826">Valitse tallennuskansio</translation>
 <translation id="3017079585324758401">Tausta</translation>
+<translation id="302435934487327038">Asennus valmis</translation>
 <translation id="3027578600144895987">Sulje kamera</translation>
 <translation id="3031560714565892478">Laite on videokamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Päätepiste</translation>
 <translation id="3069085583900247081">Testi epäonnistui</translation>
-<translation id="3076243757415932261">Tarkistetaan komponentteja…</translation>
 <translation id="3083667275341675831">Yhteysdiagnostiikka</translation>
 <translation id="3084958266922136097">Poista näytönsäästäjä käytöstä</translation>
 <translation id="3091839911843451378">Epäonnistui – Pysäytetty</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Haluatko varmasti poistaa tulostushistorian? Käynnissä olevia tulostustöitä ei poisteta.</translation>
 <translation id="3383751554789092165">Muuta tarvittaessa laitteen tietoja.</translation>
 <translation id="3404249063913988450">Ota näytönsäästäjä käyttöön</translation>
-<translation id="3404770484521709967">Komponentit on asennettu oikein.</translation>
 <translation id="3413935475507503304">Jatka päivitystä valitsemalla Seuraava</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Suojaus</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Vanha salasana</translation>
 <translation id="4453205916657964690">Aliverkon maski</translation>
 <translation id="4454245904991689773">Skannauskohde</translation>
-<translation id="4472575034687746823">Aloita</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Muun kuin oletusarvoisen verkkoyhdyskäytävän ping-kutsu epäonnistui</translation>
 <translation id="4500213108254186382">Kannen akselerometri</translation>
@@ -660,14 +662,15 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6611280807952151149">Poistu <ph name="DEVICE_TYPE" />-korjauksesta</translation>
 <translation id="6618744767048954150">Käynnissä</translation>
 <translation id="6620487321149975369">Tulostustyöt näkyvät historiassa, ellei niitä poisteta manuaalisesti</translation>
+<translation id="6624819909909965616">Ladattavan tiedoston koko voi olla enintään 10 Mt.</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
+<translation id="6644568396961840069">Tiedostoa ei voitu tallentaa. Yritä liittää toinen ulkoinen tallennustila tai yritä myöhemmin uudelleen.</translation>
 <translation id="6647510110698214773">Salausalgoritmi</translation>
 <translation id="6650062777702288430">Kana-/aakkosnumeeristen merkkien valitsin</translation>
 <translation id="6657585470893396449">Salasana</translation>
 <translation id="6659594942844771486">Välilehti</translation>
 <translation id="6692996468359469499">Tietoja valinnastasi</translation>
 <translation id="6704062477274546131">DNS-ratkaisu</translation>
-<translation id="6721744718589119342">Voimme lähettää sinulle lisätietoa tai päivityksiä sähköpostitse</translation>
 <translation id="6723839937902243910">Virta</translation>
 <translation id="6723847290197874913">Näppämistön taustavalo</translation>
 <translation id="672609503628871915">Uudet ominaisuudet</translation>
@@ -695,6 +698,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Laiteohjelmiston versio</translation>
 <translation id="6995564396478647735">Varmista, että Write Protect on päällä.</translation>
+<translation id="7005833343836210400">Laite on offline-tilassa</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> ylläpitää tätä laitetta ja pääsee näkemään kaiken käyttäjätoiminnan, esim. avatut verkkosivustot, salasanat ja sähköpostit.</translation>
 <translation id="7040230719604914234">Operaattori</translation>
 <translation id="7041549558901442110">Laitetta ei ole yhdistetty.</translation>
@@ -720,6 +724,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="7180611975245234373">Päivitä</translation>
 <translation id="7212734716605298123">Ulkoisten laitteiden ohjelmapäivitykset</translation>
 <translation id="7216409898977639127">Mobiilioperaattori</translation>
+<translation id="725133483556299729">Valitse sähköpostiosoite</translation>
 <translation id="7271040990581020067">Skanneri on tällä hetkellä käytössä. Yritä myöhemmin uudelleen.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Valitse yksi tai useampi komponentti ja yritä uudestaan tai ohita kalibrointi</translation>
@@ -797,6 +802,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="7978412674231730200">Yksityinen avain</translation>
 <translation id="7982789257301363584">Verkko</translation>
 <translation id="7994702968232966508">EAP-tapa</translation>
+<translation id="8018928621986160031">Tallennettu tänne: <ph name="FILE_LOCATION" /></translation>
 <translation id="802154636333426148">Lataus epäonnistui.</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Ota automaattinen väritila käyttöön</translation>
@@ -805,8 +811,8 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="8063022551652308521">Write Protect on yhä pois päältä. Jatka laittamalla Write Protect päälle.</translation>
 <translation id="8075838845814659848">Virtaa jäljellä</translation>
 <translation id="8082366717211101304">DNS:n selvitys ei onnistu Android-sovelluksilla</translation>
-<translation id="8083281199617904460">Korjausprosessi on tarkoitettu koulutetun korjausteknikon suoritettavaksi. Aloita vasta, kun väärin toimivat komponentit on vaihdettu.</translation>
 <translation id="808894953321890993">Vaihda salasana</translation>
+<translation id="8094062939584182041">Salli Googlen lähettää sinulle sähköpostia tästä ongelmasta</translation>
 <translation id="8104083085214006426">Käytät avointa ja suojaamatonta verkkoa</translation>
 <translation id="8109786307828817014">Jatketaanko epäonnistuneella kalibroinnilla?</translation>
 <translation id="811820734797650957">(Android) Yhdyskäytävää voidaan pingata</translation>
@@ -821,6 +827,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="8217675307824400706">Muodosta yhteys</translation>
 <translation id="8221728673725659466">Kalibrointi valmis</translation>
 <translation id="8226628635270268143">Valitse suosikkikuvat ja ‑albumit</translation>
+<translation id="8227119283605456246">Liitä tiedosto</translation>
 <translation id="8230672074305416752">Oletusarvoisen verkkoyhdyskäytävän ping-kutsu epäonnistui</translation>
 <translation id="8246209727385807362">Tuntematon operaattori</translation>
 <translation id="827422111966801947">Indigo</translation>
@@ -865,6 +872,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="8576249514688522074">Ei ole alustettu</translation>
 <translation id="8620617069779373398">Roaming-tila</translation>
 <translation id="8655295600908251630">Kanava</translation>
+<translation id="8655828773034788261">Jaa URL-osoite:</translation>
 <translation id="8660881923941176839">paunaa</translation>
 <translation id="8662671328352114214">Liity <ph name="TYPE" />-verkkoon</translation>
 <translation id="8671972493856476349">Päivitä versioon <ph name="VERSION_NUMBER" /> ja käynnistä uudelleen</translation>

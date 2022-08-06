@@ -14,6 +14,23 @@
 
 using version_info::Channel;
 
+namespace {
+// Tests lists for Combo Squatting. Some of these entries are intended to test
+// for various edge cases and aren't realistic for production.
+constexpr std::pair<const char*, const char*> kBrandNames[] = {
+    {"google", "google"},
+    {"youtube", "youtube"},
+    {"sample", "sarnple"},
+    {"example", "exarnple"},
+    {"vices", "vices"}};
+const char* const kPopularKeywords[] = {"online", "login",    "account",
+                                        "arnple", "services", "test"};
+const ComboSquattingParams kComboSquattingParams{
+    kBrandNames, std::size(kBrandNames), kPopularKeywords,
+    std::size(kPopularKeywords)};
+
+}  // namespace
+
 std::string TargetEmbeddingTypeToString(TargetEmbeddingType type) {
   switch (type) {
     case TargetEmbeddingType::kNone:
@@ -588,71 +605,130 @@ TEST(LookalikeUrlUtilTest, IsHeuristicEnabledForHostname) {
       "example3.com", Channel::BETA));
 }
 
+class ComboSquattingTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    SetComboSquattingParamsForTesting(kComboSquattingParams);
+  }
+  void TearDown() override { ResetComboSquattingParamsForTesting(); }
+};
+
 // Test for Combo Squatting check of domains.
-TEST(CombosquattingTest, IsComboSquatting) {
+TEST_F(ComboSquattingTest, IsComboSquatting) {
+  const std::vector<DomainInfo> kEngagedSites = {
+      // An engaged site which is not in the hard coded brand names.
+      GetDomainInfo(GURL("https://engagedsite.com")),
+      // An engaged site which is duplicate with a hard coded brand name.
+      GetDomainInfo(GURL("https://subdomain.google.com")),
+      // An engaged site with length less than threshold (4) for
+      // consideration.
+      GetDomainInfo(GURL("https://len.com")),
+  };
   const struct TestCase {
     const char* domain;
     const char* expected_suggested_domain;
-    bool expected_result;
+    const ComboSquattingType expected_type;
+    ;
   } kTestCases[] = {
-      // Not Combo Squatting (CSQ)
-      {"google.com", "google.com", false},
-      {"youtube.ca", "youtube.ca", false},
+      // Not Combo Squatting (CSQ).
+      {"google.com", "", ComboSquattingType::kNone},
+      {"youtube.ca", "", ComboSquattingType::kNone},
 
       // Not CSQ, contains subdomains.
-      {"login.google.com", "login.google.com", false},
+      {"login.google.com", "", ComboSquattingType::kNone},
 
-      // Not CSQ, non registrable domains
-      {"google-login.test", "", false},
+      // Not CSQ, non registrable domains.
+      {"google-login.test", "", ComboSquattingType::kNone},
 
-      // CSQ with "-"
-      {"google-online.com", "google.com", true},
+      // CSQ with "-".
+      {"google-online.com", "google.com", ComboSquattingType::kHardCoded},
 
-      // CSQ with more than one keyword with "-"
-      {"google-login-online.com", "google.com", true},
+      // CSQ with more than one keyword (login, online) with "-".
+      {"google-login-online.com", "google.com", ComboSquattingType::kHardCoded},
 
-      // CSQ with one keyword and one random word with "-"
-      {"one-youtube-online.com", "youtube.com", true},
+      // CSQ with one keyword (online) and one random word (one) with "-".
+      {"one-sample-online.com", "sample.com", ComboSquattingType::kHardCoded},
 
-      // Not CSQ, with a keyword as TLD.
-      // I think TLD should be a valid TLD which we don't have in the keywords
-      // now.
-      {"www.youtube.test", "", false},
+      // Not CSQ, with a keyword (test) as TLD.
+      {"www.example.test", "", ComboSquattingType::kNone},
 
-      // CSQ with more than one brand with "-"
-      {"google-youtube-account.com", "google.com", true},
+      // CSQ with more than one brand (google, youtube) with "-".
+      {"google-youtube-account.com", "google.com",
+       ComboSquattingType::kHardCoded},
 
-      // CSQ without separator
-      {"loginyoutube.com", "youtube.com", true},
+      // CSQ without separator.
+      {"loginsample.com", "sample.com", ComboSquattingType::kHardCoded},
 
-      // CSQ but in allowlist
-      // TODO(crbug.com/1341023): We will use one of the allowlists here.
-      //{"googleusercontent.com", false},
+      // Not CSQ with a keyword (ample) inside brand name (sample).
+      {"sample.com", "", ComboSquattingType::kNone},
 
-      // TODO(crbug.com/1341323): Should define a list of brand names and
-      // keywords for testing in future cls.
+      // Current version of the heuristic cannot flag this kind of CSQ
+      // with a keyword (ample) inside brand name (sample) and as an added
+      // keyword to the domain.
+      {"sample-ample.com", "", ComboSquattingType::kNone},
 
-      // Not CSQ with a keyword inside brand name
-      // TODO(crbug.com/1341323): Should find one brand name with this
-      // condition.
+      // CSQ with more than one keyword (account, online) without separator.
+      {"accountexampleonline.com", "example.com",
+       ComboSquattingType::kHardCoded},
 
-      // CSQ with a keyword inside brand name and as an added keyword to the
-      // domain
-      // TODO(crbug.com/1341323): Should find a domain with this condition.
+      // CSQ with one keyword (login) and one random word (one) without "-".
+      {"oneyoutubelogin.com", "youtube.com", ComboSquattingType::kHardCoded},
 
-      // CSQ with more than one keyword without separator.
-      {"signinyoutubeonline.com", "youtube.com", true},
+      // Not CSQ, google is a public TLD.
+      {"online.google", "", ComboSquattingType::kNone},
 
-      // CSQ with one keyword and one random word without "-"
-      {"oneyoutubelogin.com", "youtube.com", true},
+      // Not CSQ, brand name (vice) is part of keyword (service).
+      {"keyservices.com", "", ComboSquattingType::kNone},
+
+      // CSQ, brand name (engagedsite) is from engaged sites list.
+      {"engagedsite-login.com", "engagedsite.com",
+       ComboSquattingType::kSiteEngagement},
+
+      // Not CSQ, brand name (len) is from engaged sites list but it is short.
+      {"len-online.com", "", ComboSquattingType::kNone},
+
+      // CSQ, brand name (googlé) is one of the hard coded brand names and has
+      // IDN spoofing as well.
+      {"googlé-login.com", "google.com", ComboSquattingType::kHardCoded},
+
+      // CSQ, brand name (engagedsité) is one of the brand names from engaged
+      // sites and has IDN spoofing as well.
+      {"engagedsité-online.com", "engagedsite.com",
+       ComboSquattingType::kSiteEngagement},
+
+      // CSQ, keyword (lógin) has IDN spoofing.
+      {"google-lógin.com", "google.com", ComboSquattingType::kHardCoded},
+
+      // CSQ, CSQ with more than one brand (googlé, youtubé) with "-" and IDN
+      // spoofing.
+      {"googlé-youtubé-account.com", "google.com",
+       ComboSquattingType::kHardCoded},
+
+      // Not CSQ.
+      {"ónline.googlé", "", ComboSquattingType::kNone},
+
+      // Not CSQ, it has IDN spoofing but brand name (vicé) is part of keyword
+      // (servicé).
+      {"keyservicés.com", "", ComboSquattingType::kNone},
+
+      // CSQ without separator and with IDN spoofing in the keyword.
+      {"lóginsample.com", "sample.com", ComboSquattingType::kHardCoded},
+
+      // CSQ without separator and with IDN spoofing in the brand name.
+      {"loginsamplé.com", "sample.com", ComboSquattingType::kHardCoded},
+
+      // Not CSQ, skeleton of brand name (lén) is from engaged sites list but it
+      // is short.
+      {"lén-online.com", "", ComboSquattingType::kNone},
   };
   for (const TestCase& test_case : kTestCases) {
     auto navigated =
         GetDomainInfo(GURL(std::string(url::kHttpsScheme) +
                            url::kStandardSchemeSeparator + test_case.domain));
     std::string matched_domain;
-    bool result = IsComboSquatting(navigated, &matched_domain);
+    ComboSquattingType type =
+        GetComboSquattingType(navigated, kEngagedSites, &matched_domain);
     EXPECT_EQ(std::string(test_case.expected_suggested_domain), matched_domain);
-    EXPECT_EQ(test_case.expected_result, result);
+    EXPECT_EQ(test_case.expected_type, type);
   }
 }

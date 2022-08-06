@@ -442,6 +442,7 @@ TEST_F(AXNativeWidgetMacTest, TextfieldEditableAttributes) {
   EXPECT_EQ(textfield->GetSelectedText(),
             base::SysNSStringToUTF16(ax_node.accessibilitySelectedText));
   EXPECT_EQ(forward_range, gfx::Range(ax_node.accessibilitySelectedTextRange));
+  EXPECT_EQ(0, ax_node.accessibilityInsertionPointLineNumber);
 
   const gfx::Range reversed_range(6, 2);
   textfield->SetSelectedRange(reversed_range);
@@ -689,6 +690,7 @@ TEST_F(AXNativeWidgetMacTest, ProtectedTextfields) {
   EXPECT_NSEQ(@"", ax_node.accessibilitySelectedText);
   EXPECT_NSEQ(NSMakeRange(kTestStringLength, 0),
               ax_node.accessibilitySelectedTextRange);
+  EXPECT_EQ(0, ax_node.accessibilityInsertionPointLineNumber);
 
   EXPECT_EQ(kTestStringLength, ax_node.accessibilityNumberOfCharacters);
   EXPECT_NSEQ(NSMakeRange(0, kTestStringLength),
@@ -705,6 +707,7 @@ TEST_F(AXNativeWidgetMacTest, ProtectedTextfields) {
   EXPECT_EQ(u"12ab", textfield->GetText());
   EXPECT_NSEQ(@"••••", ax_node.accessibilityValue);
   EXPECT_EQ(4, ax_node.accessibilityNumberOfCharacters);
+  EXPECT_EQ(0, ax_node.accessibilityInsertionPointLineNumber);
 }
 
 // Test text-specific attributes of Labels.
@@ -773,8 +776,8 @@ class TestComboboxModel : public ui::ComboboxModel {
   TestComboboxModel& operator=(const TestComboboxModel&) = delete;
 
   // ui::ComboboxModel:
-  int GetItemCount() const override { return 2; }
-  std::u16string GetItemAt(int index) const override {
+  size_t GetItemCount() const override { return 2; }
+  std::u16string GetItemAt(size_t index) const override {
     return index == 0 ? base::SysNSStringToUTF16(kTestStringValue)
                       : u"Second Item";
   }

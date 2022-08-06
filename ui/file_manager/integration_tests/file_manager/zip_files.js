@@ -6,7 +6,7 @@ import {addEntries, ENTRIES, expectHistogramTotalCount, getCaller, pending, repe
 import {testcase} from '../testcase.js';
 
 import {navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
-import {BASIC_ZIP_ENTRY_SET} from './test_data.js';
+import {BASIC_ZIP_ENTRY_SET, COMPLEX_ZIP_ENTRY_SET} from './test_data.js';
 
 /**
  * The name of the UMA to track the zip creation time.
@@ -27,8 +27,10 @@ const ExtractArchiveStatusHistogramName = 'FileBrowser.ExtractTask.Status';
 function getUnzippedFileListRowEntries() {
   return [
     [
-      'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt', '21 bytes', 'Plain text',
-      'Dec 31, 1980, 12:00 AM'
+      'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt',
+      '21 bytes',
+      'Plain text',
+      'Dec 31, 1980, 12:00 AM',
     ],
   ];
 }
@@ -40,7 +42,7 @@ testcase.zipFileOpenDownloads = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [ENTRIES.zipArchive.targetPath],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open Files app on Downloads containing a zip file.
@@ -48,10 +50,7 @@ testcase.zipFileOpenDownloads = async () => {
       RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
 
   // Select the zip file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['archive.zip']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.zipArchive.nameText);
 
   // Press the Enter key.
   const key = ['#file-list', 'Enter', false, false, false];
@@ -71,7 +70,7 @@ testcase.zipNotifyFileTasks = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [ENTRIES.zipArchive.targetPath],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open Files app on Downloads containing a zip file.
@@ -94,7 +93,7 @@ testcase.zipFileOpenDrive = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [ENTRIES.zipArchive.targetPath],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open Files app on Drive containing a zip file.
@@ -102,10 +101,7 @@ testcase.zipFileOpenDrive = async () => {
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.zipArchive]);
 
   // Select the zip file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['archive.zip']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.zipArchive.nameText);
 
   // Press the Enter key.
   const key = ['#file-list', 'Enter', false, false, false];
@@ -125,7 +121,7 @@ testcase.zipFileOpenUsb = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [ENTRIES.zipArchive.targetPath],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
@@ -152,10 +148,7 @@ testcase.zipFileOpenUsb = async () => {
   await remoteCall.waitForFiles(appId, archive);
 
   // Select the zip file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['archive.zip']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.zipArchive.nameText);
 
   // Press the Enter key.
   const key = ['#file-list', 'Enter', false, false, false];
@@ -175,7 +168,7 @@ testcase.zipFileOpenUsb = async () => {
 function getZipSelectionFileListRowEntries() {
   return [
     ['photos', '--', 'Folder', 'Jan 1, 1980, 11:59 PM'],
-    ['photos.zip', '134 bytes', 'ZIP archive', 'Oct 21, 1983, 11:55 AM']
+    ['photos.zip', '134 bytes', 'ZIP archive', 'Oct 21, 1983, 11:55 AM'],
   ];
 }
 
@@ -188,9 +181,7 @@ testcase.zipCreateFileDownloads = async () => {
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Select the file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.photos.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -224,9 +215,7 @@ testcase.zipCreateFileDrive = async () => {
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.photos]);
 
   // Select the file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.photos.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -279,9 +268,7 @@ testcase.zipCreateFileUsb = async () => {
   await remoteCall.waitForFiles(appId, photos);
 
   // Select the photos file list entry.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.photos.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -317,15 +304,14 @@ testcase.zipExtractShowPanel = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [targetDirectoryName],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open files app.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -369,6 +355,79 @@ testcase.zipExtractShowPanel = async () => {
 };
 
 /**
+ * Tests that extraction of a multiple ZIP archives produces the correct
+ * feedback panel string.
+ */
+testcase.zipExtractShowMultiPanel = async () => {
+  const entries = COMPLEX_ZIP_ENTRY_SET;
+
+  // Make sure the test extension handles the new window creation(s) properly.
+  let entry = entries[2];  // ENTRIES.zipArchive.
+  let targetDirectoryName = entry.nameText.split('.')[0];
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [targetDirectoryName],
+    openType: 'launch',
+  });
+  entry = entries[3];  // ENTRIES.zipSJISArchive.
+  targetDirectoryName = entry.nameText.split('.')[0];
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [targetDirectoryName],
+    openType: 'launch',
+  });
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Select two ZIP files.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="archive.zip"]');
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="sjis.zip"]', {shift: true});
+
+  // Right-click the selection.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]']),
+      'fakeMouseRightClick failed');
+
+  // Check: the context menu should appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Tell the background page to never finish the file extraction.
+  await remoteCall.callRemoteTestUtil(
+      'progressCenterNeverNotifyCompleted', appId, []);
+
+  // Click the 'Extract all' menu command.
+  const extract = '[command="#extract-all"]';
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [extract]),
+      'fakeMouseClick failed');
+
+  // Check that the error appears in the feedback panel.
+  let element = {};
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    element = await remoteCall.waitForElement(
+        appId, ['#progress-panel', 'xf-panel-item']);
+    const expectedMsg = `Extracting 2 items…`;
+    const actualMsg = element.attributes['primary-text'];
+
+    if (actualMsg === expectedMsg) {
+      return;
+    }
+
+    return pending(
+        caller,
+        `Expected feedback panel msg: "${expectedMsg}", got "${actualMsg}"`);
+  });
+
+  // Check: a extract archive status histogram value should have been recorded.
+  await expectHistogramTotalCount(ExtractArchiveStatusHistogramName, 1);
+};
+
+/**
  * Tests that various selections enable/hide the correct menu items.
  */
 testcase.zipExtractSelectionMenus = async () => {
@@ -378,8 +437,7 @@ testcase.zipExtractSelectionMenus = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
 
   // Select the first file (ENTRIES.hello).
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entries[0].nameText]));
+  await remoteCall.waitUntilSelected(appId, entries[0].nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -404,8 +462,7 @@ testcase.zipExtractSelectionMenus = async () => {
       'fakeMouseClick failed');
 
   // Select the third file (ENTRIES.zipArchive).
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entries[2].nameText]));
+  await remoteCall.waitUntilSelected(appId, entries[2].nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -492,15 +549,14 @@ testcase.zipExtractCheckContent = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [targetDirectoryName],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open files app.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -551,8 +607,7 @@ testcase.zipExtractCheckDuplicates = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -621,15 +676,14 @@ testcase.zipExtractCheckEncodings = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [targetDirectoryName],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open files app.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -674,8 +728,7 @@ testcase.zipExtractA11y = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -702,8 +755,7 @@ testcase.zipExtractNotEnoughSpace = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(
@@ -753,7 +805,7 @@ testcase.zipExtractFromReadOnly = async () => {
   await sendTestMessage({
     name: 'expectFileTask',
     fileNames: [targetDirectoryName],
-    openType: 'launch'
+    openType: 'launch',
   });
 
   // Open files app.
@@ -769,9 +821,11 @@ testcase.zipExtractFromReadOnly = async () => {
   // Make sure read-only indicator on toolbar is visible.
   await remoteCall.waitForElement(appId, '#read-only-indicator:not([hidden])');
 
+  // Make sure the file we are about to select is present.
+  await remoteCall.waitForFiles(appId, [entry.getExpectedRow()]);
+
   // Select the ZIP file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Right-click the selected file.
   chrome.test.assertTrue(

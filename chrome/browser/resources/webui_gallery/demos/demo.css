@@ -5,14 +5,23 @@
 @import 'chrome://resources/css/text_defaults_md.css';
 
 body {
+  box-sizing: border-box;
+  height: 100%;
   margin: 0;
   padding: 16px;
+  width: 100%;
 }
 
 h1 {
   font-size: 1.5em;
   margin: 0;
   margin-block-end: 16px;
+}
+
+h2 {
+  font-size: 1.2em;
+  margin-block-end: 12px;
+  margin-block-start: 16px;
 }
 
 .demos {
@@ -25,6 +34,10 @@ h1 {
 .row {
   display: flex;
   gap: 16px;
+}
+
+.row.center {
+  align-items: center;
 }
 
 .flex {

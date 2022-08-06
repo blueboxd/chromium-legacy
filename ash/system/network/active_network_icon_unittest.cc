@@ -14,8 +14,8 @@
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -147,7 +147,7 @@ class ActiveNetworkIconTest : public AshTestBase {
     network_state_helper().SetServiceProperty(service_path, key, value);
   }
 
-  chromeos::NetworkStateTestHelper& network_state_helper() {
+  NetworkStateTestHelper& network_state_helper() {
     return network_config_helper_.network_state_helper();
   }
   chromeos::NetworkStateHandler* network_state_handler() {
@@ -264,7 +264,7 @@ TEST_F(ActiveNetworkIconTest, CellularScanning) {
   SetCellularUninitialized(true /* scanning */);
 
   ASSERT_TRUE(network_state_handler()->GetScanningByType(
-      chromeos::NetworkTypePattern::Cellular()));
+      NetworkTypePattern::Cellular()));
 
   bool animating;
   gfx::ImageSkia image = active_network_icon()->GetImage(

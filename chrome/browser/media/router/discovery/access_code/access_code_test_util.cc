@@ -11,11 +11,13 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "components/cast_channel/cast_socket.h"
+#include "components/media_router/browser/media_router_factory.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
 #include "net/base/url_util.h"
+
 namespace media_router {
 DiscoveryDevice BuildDiscoveryDeviceProto(const char* display_name,
                                           const char* sink_id,
@@ -50,4 +52,35 @@ DiscoveryDevice BuildDiscoveryDeviceProto(const char* display_name,
 
   return discovery_proto;
 }
+
+// static
+std::unique_ptr<KeyedService> MockAccessCodeCastSinkService::Create(
+    content::BrowserContext* context) {
+  auto* profile = Profile::FromBrowserContext(context);
+  return std::make_unique<testing::NiceMock<MockAccessCodeCastSinkService>>(
+      profile, MediaRouterFactory::GetApiForBrowserContext(profile), nullptr,
+      nullptr);
+}
+
+MockAccessCodeCastSinkService::MockAccessCodeCastSinkService(
+    Profile* profile,
+    MediaRouter* media_router,
+    CastMediaSinkServiceImpl* cast_media_sink_service_impl,
+    DiscoveryNetworkMonitor* network_monitor)
+    : AccessCodeCastSinkService(profile,
+                                media_router,
+                                cast_media_sink_service_impl,
+                                network_monitor,
+                                profile->GetPrefs()) {}
+
+MediaRoute CreateRouteForTesting(const MediaSinkInternal& sink) {
+  std::string sink_id = sink.id();
+  std::string route_id =
+      "urn:x-org.chromium:media:route:1/" + sink_id + "/http://foo.com";
+  return MediaRoute(route_id, MediaSource("access_code"), sink_id,
+                    "access_sink", true);
+}
+
+MockAccessCodeCastSinkService::~MockAccessCodeCastSinkService() = default;
+
 }  // namespace media_router

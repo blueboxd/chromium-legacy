@@ -38,10 +38,12 @@
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/reauth_reason.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/login_shelf_view.h"
+#include "ash/shelf/login_shelf_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -1089,6 +1091,20 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
   LayoutAuth(big_view, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
+void LockContentsView::OnResetFingerprintUIState(const AccountId& account_id) {
+  UserState* user_state = FindStateForUser(account_id);
+  if (!user_state)
+    return;
+
+  LoginBigUserView* big_view =
+      TryToFindBigUser(account_id, true /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
+    return;
+
+  big_view->auth_user()->ResetFingerprintUIState();
+  LayoutAuth(big_view, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
 void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
                                                bool success) {
   // Make sure the display backlight is not forced off if there is a fingerprint
@@ -1670,6 +1686,9 @@ void LockContentsView::FocusNextWidget(bool reverse) {
         ->status_area_widget_delegate()
         ->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
+  } else if (features::IsUseLoginShelfWidgetEnabled()) {
+    shelf->login_shelf_widget()->SetDefaultLastFocusableChild(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->login_shelf_widget());
   } else {
     shelf->shelf_widget()->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
@@ -2248,15 +2267,15 @@ void LockContentsView::ShowAuthErrorMessage() {
   // Show gaia signin if this is login and the user has failed too many times.
   // Do not show on secondary login screen – even though it has type kLogin – as
   // there is no OOBE there.
-  if (screen_type_ == LockScreen::ScreenType::kLogin &&
-      unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog &&
-      Shell::Get()->session_controller()->GetSessionState() !=
-          session_manager::SessionState::LOGIN_SECONDARY) {
-    // TODO(crbug.com/1335222): Once implemented, we should show the recovery
-    // flow here instead of just gaia signin.
-    Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-        big_view->auth_user()->current_user().basic_user_info.account_id);
-    return;
+  if (!ash::features::IsCryptohomeRecoveryFlowUIEnabled()) {
+    if (screen_type_ == LockScreen::ScreenType::kLogin &&
+        unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog &&
+        Shell::Get()->session_controller()->GetSessionState() !=
+            session_manager::SessionState::LOGIN_SECONDARY) {
+      Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+          big_view->auth_user()->current_user().basic_user_info.account_id);
+      return;
+    }
   }
 
   std::u16string error_text = l10n_util::GetStringUTF16(
@@ -2425,10 +2444,15 @@ void LockContentsView::ForgotPasswordButtonPressed() {
     return;
   }
 
-  // TODO(crbug.com/1335222): Initiate recovery flow instead of blanked gaia
-  // sign in.
-  Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-      big_view->auth_user()->current_user().basic_user_info.account_id);
+  const AccountId account_id =
+      big_view->auth_user()->current_user().basic_user_info.account_id;
+  // TODO(b/240283185): check whether recovery key is configured.
+  if (ash::features::IsCryptohomeRecoveryFlowEnabled()) {
+    user_manager::KnownUser(Shell::Get()->local_state())
+        .UpdateReauthReason(account_id,
+                            static_cast<int>(ReauthReason::FORGOT_PASSWORD));
+  }
+  Shell::Get()->login_screen_controller()->ShowGaiaSignin(account_id);
   HideAuthErrorMessage();
 }
 

@@ -32,7 +32,8 @@ PolicyService::PolicyService(PolicyManagerVector managers)
             managers.begin(), managers.end(),
             [](const std::unique_ptr<PolicyManagerInterface>& lhs,
                const std::unique_ptr<PolicyManagerInterface>& rhs) {
-              return lhs->IsManaged() && !rhs->IsManaged();
+              return lhs->HasActiveDevicePolicies() &&
+                     !rhs->HasActiveDevicePolicies();
             });
         return managers;
       }(std::move(managers))) {}
@@ -46,7 +47,7 @@ std::string PolicyService::source() const {
   std::vector<std::string> sources;
   for (const std::unique_ptr<PolicyManagerInterface>& policy_manager :
        policy_managers_) {
-    if (policy_manager->IsManaged())
+    if (policy_manager->HasActiveDevicePolicies())
       sources.push_back(policy_manager->source());
   }
   return base::JoinString(sources, ";");
@@ -161,6 +162,14 @@ bool PolicyService::GetProxyServer(PolicyStatus<std::string>* policy_status,
       policy_status, proxy_server);
 }
 
+bool PolicyService::GetForceInstallApps(
+    PolicyStatus<std::vector<std::string>>* policy_status,
+    std::vector<std::string>* force_install_apps) const {
+  return QueryPolicy(
+      base::BindRepeating(&PolicyManagerInterface::GetForceInstallApps),
+      policy_status, force_install_apps);
+}
+
 template <typename T>
 bool PolicyService::QueryPolicy(
     const base::RepeatingCallback<bool(const PolicyManagerInterface*, T*)>&
@@ -173,13 +182,14 @@ bool PolicyService::QueryPolicy(
        policy_managers_) {
     if (!policy_query_callback.Run(policy_manager.get(), &value))
       continue;
-    status.AddPolicyIfNeeded(policy_manager->IsManaged(),
+    status.AddPolicyIfNeeded(policy_manager->HasActiveDevicePolicies(),
                              policy_manager->source(), value);
   }
   if (!status.effective_policy())
     return false;
 
-  *result = status.effective_policy().value().policy;
+  if (result)
+    *result = status.effective_policy().value().policy;
   if (policy_status)
     *policy_status = status;
   return true;
@@ -199,13 +209,14 @@ bool PolicyService::QueryAppPolicy(
        policy_managers_) {
     if (!policy_query_callback.Run(policy_manager.get(), app_id, &value))
       continue;
-    status.AddPolicyIfNeeded(policy_manager->IsManaged(),
+    status.AddPolicyIfNeeded(policy_manager->HasActiveDevicePolicies(),
                              policy_manager->source(), value);
   }
   if (!status.effective_policy())
     return false;
 
-  *result = status.effective_policy().value().policy;
+  if (result)
+    *result = status.effective_policy().value().policy;
   if (policy_status)
     *policy_status = status;
   return true;

@@ -42,9 +42,9 @@ std::string GenerateId() {
 namespace {
 const double kCentimetersPerInch = 2.54;
 
-Status FlattenStringArray(const base::ListValue* src, std::u16string* dest) {
+Status FlattenStringArray(const base::Value::List* src, std::u16string* dest) {
   std::u16string keys;
-  for (const base::Value& i : src->GetList()) {
+  for (const base::Value& i : *src) {
     if (!i.is_string())
       return Status(kUnknownError, "keys should be a string");
 
@@ -67,11 +67,10 @@ Status FlattenStringArray(const base::ListValue* src, std::u16string* dest) {
 
 }  // namespace
 
-Status SendKeysOnWindow(
-    WebView* web_view,
-    const base::ListValue* key_list,
-    bool release_modifiers,
-    int* sticky_modifiers) {
+Status SendKeysOnWindow(WebView* web_view,
+                        const base::Value::List* key_list,
+                        bool release_modifiers,
+                        int* sticky_modifiers) {
   std::u16string keys;
   Status status = FlattenStringArray(key_list, &keys);
   if (status.IsError())
@@ -548,6 +547,7 @@ bool GetOptionalString(const base::DictionaryValue* dict,
   const base::Value* value = dict->FindPath(path);
   if (!value)
     return true;
+
   if (value->is_string()) {
     *out_value = value->GetString();
     if (has_value != nullptr)
@@ -567,10 +567,26 @@ bool GetOptionalDictionary(const base::DictionaryValue* dict,
 
 bool GetOptionalList(const base::DictionaryValue* dict,
                      base::StringPiece path,
-                     const base::ListValue** out_value,
+                     const base::Value::List** out_value,
                      bool* has_value) {
-  return GetOptionalValueDeprecated(dict, path, out_value, has_value,
-                                    &base::Value::GetAsList);
+  if (has_value != nullptr)
+    *has_value = false;
+
+  if (!dict->is_dict())
+    return false;
+
+  const base::Value* value = dict->FindPath(path);
+  if (!value)
+    return true;
+
+  if (value->is_list()) {
+    *out_value = &value->GetList();
+    if (has_value != nullptr)
+      *has_value = true;
+    return true;
+  }
+
+  return false;
 }
 
 bool GetOptionalSafeInt(const base::DictionaryValue* dict,

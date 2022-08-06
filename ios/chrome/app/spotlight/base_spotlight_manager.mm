@@ -6,8 +6,6 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #include <memory>
 #include <set>
 #include <string>
@@ -58,8 +56,8 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
       [UIBezierPath bezierPathWithRoundedRect:rect
                                  cornerRadius:kFallbackRoundedCorner];
   [rounded fill];
-  UIFont* font = [MDCTypography headlineFont];
-  font = [font fontWithSize:(kFallbackIconSize / 2)];
+  UIFont* font = [UIFont systemFontOfSize:(kFallbackIconSize / 2)
+                                   weight:UIFontWeightRegular];
   CGRect textRect = CGRectMake(0, (kFallbackIconSize - [font lineHeight]) / 2,
                                kFallbackIconSize, [font lineHeight]);
   NSMutableParagraphStyle* paragraphStyle =

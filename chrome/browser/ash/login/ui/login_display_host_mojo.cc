@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -226,10 +226,8 @@ LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {
 }
 
 ExistingUserController* LoginDisplayHostMojo::GetExistingUserController() {
-  if (!existing_user_controller_) {
-    LOG(WARNING) << "Triggered crbug/1307919 in Mojo host";
+  if (!existing_user_controller_)
     CreateExistingUserController();
-  }
   return existing_user_controller_.get();
 }
 

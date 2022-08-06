@@ -5,27 +5,11 @@
 #ifndef CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 
-#include <memory>
-#include <string>
-
-#include "base/callback.h"
 #include "base/component_export.h"
 #include "chromeos/dbus/init/dbus_thread_manager_base.h"
 
 namespace chromeos {
 
-// Style Note: Clients are sorted by names.
-class ArcObbMounterClient;
-class CecServiceClient;
-class CrosDisksClient;
-class DBusClientsBrowser;
-class DBusThreadManagerSetter;
-class DebugDaemonClient;
-class EasyUnlockClient;
-
-// THIS CLASS IS BEING DEPRECATED. See README.md for guidelines and
-// https://crbug.com/647367 for details.
-//
 // Ash implementation of DBusThreadManagerBase.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager
     : public DBusThreadManagerBase {
@@ -33,16 +17,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager
   // Sets the global instance. Must be called before any calls to Get().
   // We explicitly initialize and shut down the global object, rather than
   // making it a Singleton, to ensure clean startup and shutdown.
-  // This will initialize real or fake DBusClients depending on command-line
-  // arguments and whether this process runs in a ChromeOS environment.
   static void Initialize();
-
-  // Returns a DBusThreadManagerSetter instance that allows tests to replace
-  // individual D-Bus clients with their own implementations. The returned
-  // object will be destroyed in DBusThreadManager::Shutdown(). This method
-  // can be called before calling DBusThreadManager::Initialize() which is
-  // useful for browser tests, but does NOT initialize the manager itself.
-  static DBusThreadManagerSetter* GetSetterForTesting();
 
   // Returns true if DBusThreadManager has been initialized. Call this to
   // avoid initializing + shutting down DBusThreadManager more than once.
@@ -54,47 +29,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
-  // All returned objects are owned by DBusThreadManager.  Do not use these
-  // pointers after DBusThreadManager has been shut down.
-  // TODO(jamescook): Replace this with calls to FooClient::Get().
-  // http://crbug.com/647367
-  ArcObbMounterClient* GetArcObbMounterClient();
-  CecServiceClient* GetCecServiceClient();
-  CrosDisksClient* GetCrosDisksClient();
-  DebugDaemonClient* GetDebugDaemonClient();
-  EasyUnlockClient* GetEasyUnlockClient();
-
  private:
   DBusThreadManager();
   DBusThreadManager(const DBusThreadManager&) = delete;
   const DBusThreadManager& operator=(const DBusThreadManager&) = delete;
   ~DBusThreadManager() override;
-
-  // Initializes all currently stored DBusClients with the system bus and
-  // performs additional setup.
-  void InitializeClients();
-
-  // Owns the clients.
-  std::unique_ptr<DBusClientsBrowser> clients_browser_;
-};
-
-// TODO(jamescook): Replace these with FooClient::InitializeForTesting().
-class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
- public:
-  void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
-  void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
-
- private:
-  friend class DBusThreadManager;
-
-  DBusThreadManagerSetter();
-  DBusThreadManagerSetter(const DBusThreadManagerSetter&) = delete;
-  const DBusThreadManagerSetter& operator=(const DBusThreadManagerSetter&) =
-      delete;
-  ~DBusThreadManagerSetter();
-
-  std::unique_ptr<CrosDisksClient> cros_disks_client_;
-  std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
 };
 
 }  // namespace chromeos

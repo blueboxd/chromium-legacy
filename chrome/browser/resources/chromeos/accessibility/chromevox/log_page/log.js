@@ -7,6 +7,9 @@
  *
  */
 
+import {BackgroundBridge} from '../common/background_bridge.js';
+import {BaseLog, LogType} from '../common/log_types.js';
+
 /**
  * Class to manage the log page.
  */
@@ -75,8 +78,12 @@ export class LogPage {
     const date = new Date();
     a.download =
         [
-          'chromevox_logpage', date.getMonth() + 1, date.getDate(),
-          date.getHours(), date.getMinutes(), date.getSeconds()
+          'chromevox_logpage',
+          date.getMonth() + 1,
+          date.getDate(),
+          date.getHours(),
+          date.getMinutes(),
+          date.getSeconds(),
         ].join('_') +
         '.txt';
     a.href = 'data:text/plain; charset=utf-8,' + encodeURI(outputText);

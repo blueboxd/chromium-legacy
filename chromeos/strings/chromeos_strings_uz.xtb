@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Tarix</translation>
 <translation id="1645954272419197032">Qurilma axborotini tasdiqlang</translation>
 <translation id="1662989795263954667">Toʻxtatildi – Siyoh tugadi</translation>
+<translation id="1664796644829245314">Razm solish: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Ichki oʻrnatilgan VPN</translation>
 <translation id="1672499492233627739">Veb kamera video tasmasi</translation>
 <translation id="1676557873873341166">Video yozib olinmoqda</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videokonferensiya</translation>
 <translation id="1852934301711881861">ChromeOS Flex tizimini oʻrnatish</translation>
 <translation id="1856388568474281774">Pastga strelka</translation>
+<translation id="1858620243986915808">Skrinshot biriktirish</translation>
 <translation id="1871569928317311284">Tungi mavzuni faolsizlantirish</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Tungi rejimdan chiqish</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google profil surati</translation>
 <translation id="1979103255016296513">Parolni almashtirish muddati tugadi</translation>
 <translation id="1999615961760456652">Kirish portali</translation>
+<translation id="200669432486043882">Faylni almashtirish</translation>
 <translation id="2006864819935886708">Ulanish</translation>
 <translation id="2008685064673031089">Oddiy sonlarni qidirish</translation>
 <translation id="2011174342667534258">SDK versiyasi:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Turi</translation>
 <translation id="2461822463642141190">Ayni vaqtda</translation>
 <translation id="2480034874476596812">Mustaqil faolsizlantirish</translation>
+<translation id="248546197012830854">Qurilma internetga ulanmagan. Yordam sahifasini ochish uchun Wi-Fi tarmoqqa ulaning.</translation>
 <translation id="2491955442992294626">Tugmalar sinovi boshqa oynalarda bajarilmaydi</translation>
 <translation id="2493126929778606526">Avtomatik tanlangan eng yaxshi rasmlaringiz</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">YANGILASH</translation>
 <translation id="3009958530611748826">Saqlash uchun jild tanlang</translation>
 <translation id="3017079585324758401">Orqa fon</translation>
+<translation id="302435934487327038">Oʻrnatildi</translation>
 <translation id="3027578600144895987">Kamerani yopish</translation>
 <translation id="3031560714565892478">Qurilma — video kamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">Oxirgi nuqta</translation>
 <translation id="3069085583900247081">Tekshiruv bajarilmadi</translation>
-<translation id="3076243757415932261">Komponentlar tekshirilmoqda...</translation>
 <translation id="3083667275341675831">Aloqa diagnostikasi</translation>
 <translation id="3084958266922136097">Ekran lavhasini faolsizlantirish</translation>
 <translation id="3091839911843451378">Bajarilmadi - Toʻxtatildi</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Chop etish tarixi tozalansinmi? Joriy chop etish vazifalari oʻchirib tashlanmaydi.</translation>
 <translation id="3383751554789092165">Talab etilgan qurilma axborotini oʻzgartiring</translation>
 <translation id="3404249063913988450">Ekran lavhasini faollashtirish</translation>
-<translation id="3404770484521709967">Komponentlar toʻgʻri oʻrnatilgan.</translation>
 <translation id="3413935475507503304">Yangilashda davom etish uchun Keyingisi tugmasini bosing</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Xavfsizlik</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Eski parol</translation>
 <translation id="4453205916657964690">Quyi tarmoq niqobi</translation>
 <translation id="4454245904991689773">Saqlash joyi</translation>
-<translation id="4472575034687746823">Boshlash</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Ikkilamchi tarmoq shlyuzi ping qilinmadi</translation>
 <translation id="4500213108254186382">Qurilma akselerometri</translation>
@@ -660,14 +662,15 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> tuzatish ekranidan chiqish</translation>
 <translation id="6618744767048954150">Bajarilmoqda</translation>
 <translation id="6620487321149975369">Chop etish vazifalari mustaqil olib tashlanmagucha tarix sahifasida chiqadi</translation>
+<translation id="6624819909909965616">10MBdan katta hajmli fayllar yuklanmaydi</translation>
 <translation id="6643016212128521049">Tozalash</translation>
+<translation id="6644568396961840069">Fayl saqlanmadi. Boshqa tashqi xotira omborini ulang yoki keyinroq qayta urining.</translation>
 <translation id="6647510110698214773">Shifrlash algoritmi</translation>
 <translation id="6650062777702288430">Kana/alfaraqamni almashtirish</translation>
 <translation id="6657585470893396449">Parol</translation>
 <translation id="6659594942844771486">Varaq</translation>
 <translation id="6692996468359469499">Tanlovingizga aloqador axborot olish</translation>
 <translation id="6704062477274546131">DNS parametrlari</translation>
-<translation id="6721744718589119342">Qoʻshimcha axborot yoki xabalar haqida sizga email yuboramiz</translation>
 <translation id="6723839937902243910">Quvvat</translation>
 <translation id="6723847290197874913">Klaviatura orqa chirogʻi</translation>
 <translation id="672609503628871915">Nimalar yangiligini ko‘ring</translation>
@@ -695,6 +698,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Mikrodastur versiyasi</translation>
 <translation id="6995564396478647735">Yozishdan himoya yoniqligini tekshiring</translation>
+<translation id="7005833343836210400">Qurilma ulanmagan</translation>
 <translation id="7028979494427204405">Bu qurilma va uning foydalanuvchilari harakatlari, ochilgan sahifalar, parollar va emaillar <ph name="MANAGER" /> domenida boshqariladi.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Qurilma ulanmagan.</translation>
@@ -720,6 +724,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7180611975245234373">Yangilash</translation>
 <translation id="7212734716605298123">Tashqi qurilmalar uchun mikrodastur yangilanishi</translation>
 <translation id="7216409898977639127">Mobil tarmoq</translation>
+<translation id="725133483556299729">Emailni tanlang</translation>
 <translation id="7271040990581020067">Skaner hozir band. Keyinroq urining.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Kamida 1 ta komponent tanlab, qayta urining yoki keyinroq kalibrlang</translation>
@@ -797,6 +802,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7978412674231730200">Xususiy kalit</translation>
 <translation id="7982789257301363584">Tarmoq</translation>
 <translation id="7994702968232966508">EAP usuli</translation>
+<translation id="8018928621986160031">“<ph name="FILE_LOCATION" />” manziliga saqlandi</translation>
 <translation id="802154636333426148">Yuklab olib bo‘lmadi</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Avtomatik rangli rejimni yoqish</translation>
@@ -805,8 +811,8 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="8063022551652308521">Yozishdan himoya imkoni hali ham yoqilmagan. Davom etish uchun Yozishdan himoyani yoqing.</translation>
 <translation id="8075838845814659848">Batareya quvvati</translation>
 <translation id="8082366717211101304">Android ilovalardan DNS manzil olish imkonsiz</translation>
-<translation id="8083281199617904460">Bu tuzatish jarayoni malakali usta uchun moʻljallangan. Faqat xato ishlaydigan komponentlarni almashtirgandan keyin boshlang.</translation>
 <translation id="808894953321890993">Parolni almashtirish</translation>
+<translation id="8094062939584182041">Bu muammo yuzasidan Google email qaytarishiga ruxsat</translation>
 <translation id="8104083085214006426">Siz ochiq va himoyalanmagan tarmoqdan foydalanyapsiz</translation>
 <translation id="8109786307828817014">Kalibrlamay davom ettirilsinmi?</translation>
 <translation id="811820734797650957">(Android) Shlyuzni tekshirish mumkin</translation>
@@ -821,6 +827,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="8217675307824400706">Internetga ulaning</translation>
 <translation id="8221728673725659466">Kalibrlash yakunlandi</translation>
 <translation id="8226628635270268143">Sevimli suratlar va albomlaringizni tanlang</translation>
+<translation id="8227119283605456246">Fayl biriktirish</translation>
 <translation id="8230672074305416752">Birlamchi tarmoq shlyuzi ping qilinmadi</translation>
 <translation id="8246209727385807362">Noma’lum provayder</translation>
 <translation id="827422111966801947">Toʻq siyohrang</translation>
@@ -865,6 +872,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="8576249514688522074">Faolsizlantirildi</translation>
 <translation id="8620617069779373398">Rouming holati</translation>
 <translation id="8655295600908251630">Kanal</translation>
+<translation id="8655828773034788261">URL havolasi:</translation>
 <translation id="8660881923941176839">funt</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> tarmoqqa ulanish</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> versiyasiga yangilash va oʻchirib yoqish</translation>

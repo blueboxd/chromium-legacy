@@ -8,7 +8,9 @@ import 'chrome://new-tab-page/lazy_load.js';
 import {MiddleSlotPromoElement} from 'chrome://new-tab-page/lazy_load.js';
 import {$$, BrowserCommandProxy, CrAutoImgElement, NewTabPageProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {PageCallbackRouter, PageHandlerRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {Command, CommandHandlerRemote} from 'chrome://resources/js/browser_command/browser_command.mojom-webui.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise, flushTasks} from 'chrome://webui-test/test_util.js';
@@ -40,13 +42,13 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
             image: {
               imageUrl: {url: 'https://image'},
               target: {url: 'https://link'},
-            }
+            },
           },
           {
             image: {
               imageUrl: {url: 'https://image'},
               target: {url: 'command:123'},
-            }
+            },
           },
           {text: {text: 'text', color: 'red'}},
           {
@@ -54,16 +56,17 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
               url: {url: 'https://link'},
               text: 'link',
               color: 'green',
-            }
+            },
           },
           {
             link: {
               url: {url: 'command:123'},
               text: 'command',
               color: 'blue',
-            }
+            },
           },
         ],
+        id: 19030295,
       },
     }));
 
@@ -88,14 +91,16 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
 
   function assertHasContent(
       hasContent: boolean, middleSlotPromo: MiddleSlotPromoElement) {
-    assertEquals(hasContent, !!$$(middleSlotPromo, '#container'));
+    assertEquals(hasContent, !!$$(middleSlotPromo, '#promoContainer'));
   }
 
   test(`render canShowPromo=true`, async () => {
     const canShowPromo = true;
     const middleSlotPromo = await createMiddleSlotPromo(canShowPromo);
     assertHasContent(canShowPromo, middleSlotPromo);
-    const parts = $$(middleSlotPromo, '#container')!.children;
+    const promoContainer = $$(middleSlotPromo, '#promoContainer');
+    assert(promoContainer);
+    const parts = promoContainer.children;
     assertEquals(6, parts.length);
 
     const image = parts[0] as CrAutoImgElement;
@@ -141,10 +146,10 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
     assertHasContent(canShowPromo, middleSlotPromo);
     promoBrowserCommandHandler.setResultFor(
         'executeCommand', Promise.resolve());
-    const imageWithCommand =
-        $$(middleSlotPromo, '#container')!.children[2] as HTMLElement;
-    const command =
-        $$(middleSlotPromo, '#container')!.children[5] as HTMLElement;
+    const promoContainer = $$(middleSlotPromo, '#promoContainer');
+    assert(promoContainer);
+    const imageWithCommand = promoContainer.children[2] as HTMLElement;
+    const command = promoContainer.children[5] as HTMLElement;
 
     async function testClick(el: HTMLElement) {
       promoBrowserCommandHandler.reset();
@@ -183,6 +188,41 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
           0, promoBrowserCommandHandler.getCallCount('canExecuteCommand'));
       assertEquals(0, newTabPageHandler.getCallCount('onPromoRendered'));
       assertHasContent(false, middleSlotPromo);
+    });
+  });
+
+  suite('middle slot promo dismissal', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        middleSlotPromoDismissalEnabled: true,
+      });
+    });
+
+    test(`clicking dismiss button dismisses promo`, async () => {
+      const canShowPromo = true;
+      const middleSlotPromo = await createMiddleSlotPromo(canShowPromo);
+      assertHasContent(canShowPromo, middleSlotPromo);
+      const parts = middleSlotPromo.$.promoAndDismissContainer.children;
+      assertEquals(3, parts.length);
+
+      const dismissPromoButton = parts[1] as HTMLElement;
+      dismissPromoButton.click();
+      assertEquals(true, middleSlotPromo.$.promoAndDismissContainer.hidden);
+    });
+
+    test(`clicking dismiss button dismisses promo`, async () => {
+      const canShowPromo = true;
+      const middleSlotPromo = await createMiddleSlotPromo(canShowPromo);
+      assertHasContent(canShowPromo, middleSlotPromo);
+      const parts = middleSlotPromo.$.promoAndDismissContainer.children;
+      assertEquals(3, parts.length);
+
+      const dismissPromoButton = parts[1] as HTMLElement;
+      dismissPromoButton.click();
+      assertEquals(true, middleSlotPromo.$.promoAndDismissContainer.hidden);
+
+      middleSlotPromo.$.undoDismissPromoButton.click();
+      assertEquals(false, middleSlotPromo.$.promoAndDismissContainer.hidden);
     });
   });
 });

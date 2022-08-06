@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
+#include "net/base/network_handle.h"
 
 namespace net {
 
@@ -269,18 +270,8 @@ class NET_EXPORT NetworkChangeNotifier {
         observer_list_;
   };
 
-  // Opaque handle for device-wide connection to a particular network. For
-  // example an association with a particular WiFi network with a particular
-  // SSID or a connection to particular cellular network.
-  // The meaning of this handle is target-dependent. On Android NetworkHandles
-  // are equivalent to:
-  //   On Lollipop, the framework's concept of NetIDs (e.g. Network.netId), and
-  //   On Marshmallow and newer releases, network handles
-  //           (e.g. Network.getNetworkHandle()).
-  typedef int64_t NetworkHandle;
-
   // A list of networks.
-  typedef std::vector<NetworkHandle> NetworkList;
+  typedef std::vector<handles::NetworkHandle> NetworkList;
 
   // An interface that when implemented and added via AddNetworkObserver(),
   // provides notifications when networks come and go.
@@ -294,17 +285,17 @@ class NET_EXPORT NetworkChangeNotifier {
     // Called when device connects to |network|. For example device associates
     // with a WiFi access point. This does not imply the network has Internet
     // access as it may well be behind a captive portal.
-    virtual void OnNetworkConnected(NetworkHandle network) = 0;
+    virtual void OnNetworkConnected(handles::NetworkHandle network) = 0;
     // Called when device disconnects from |network|.
-    virtual void OnNetworkDisconnected(NetworkHandle network) = 0;
+    virtual void OnNetworkDisconnected(handles::NetworkHandle network) = 0;
     // Called when device determines the connection to |network| is no longer
     // preferred, for example when a device transitions from cellular to WiFi
     // it might deem the cellular connection no longer preferred. The device
     // will disconnect from |network| in a period of time (30s on Android),
     // allowing network communications via |network| to wrap up.
-    virtual void OnNetworkSoonToDisconnect(NetworkHandle network) = 0;
+    virtual void OnNetworkSoonToDisconnect(handles::NetworkHandle network) = 0;
     // Called when |network| is made the default network for communication.
-    virtual void OnNetworkMadeDefault(NetworkHandle network) = 0;
+    virtual void OnNetworkMadeDefault(handles::NetworkHandle network) = 0;
 
    protected:
     NetworkObserver();
@@ -339,9 +330,6 @@ class NET_EXPORT NetworkChangeNotifier {
         observer_list_;
   };
 
-  // An invalid NetworkHandle.
-  static const NetworkHandle kInvalidNetworkHandle;
-
   NetworkChangeNotifier(const NetworkChangeNotifier&) = delete;
   NetworkChangeNotifier& operator=(const NetworkChangeNotifier&) = delete;
   virtual ~NetworkChangeNotifier();
@@ -362,8 +350,16 @@ class NET_EXPORT NetworkChangeNotifier {
   // must do so before any other threads try to access the API below, and it
   // must outlive all other threads which might try to use it.
   static std::unique_ptr<NetworkChangeNotifier> CreateIfNeeded(
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // TODO(crbug.com/1347382): Remove this section and align the behavior
+      // with other platforms or confirm that Lacros needs to be separated.
+      NetworkChangeNotifier::ConnectionType initial_type = CONNECTION_UNKNOWN,
+      NetworkChangeNotifier::ConnectionSubtype initial_subtype =
+          SUBTYPE_UNKNOWN);
+#else
       NetworkChangeNotifier::ConnectionType initial_type = CONNECTION_NONE,
       NetworkChangeNotifier::ConnectionSubtype initial_subtype = SUBTYPE_NONE);
+#endif
 
   // Returns the most likely cost attribute for the default network connection.
   // The value does not indicate with absolute certainty if using the connection
@@ -409,15 +405,16 @@ class NET_EXPORT NetworkChangeNotifier {
   static double GetMaxBandwidthMbpsForConnectionSubtype(
       ConnectionSubtype subtype);
 
-  // Returns true if the platform supports use of APIs based on NetworkHandles.
-  // Public methods that use NetworkHandles are GetNetworkConnectionType(),
-  // GetNetworkConnectionType(), GetDefaultNetwork(), AddNetworkObserver(),
-  // RemoveNetworkObserver(), and all public NetworkObserver methods.
+  // Returns true if the platform supports use of APIs based on
+  // handles::NetworkHandles. Public methods that use handles::NetworkHandles
+  // are GetNetworkConnectionType(), GetNetworkConnectionType(),
+  // GetDefaultNetwork(), AddNetworkObserver(), RemoveNetworkObserver(), and all
+  // public NetworkObserver methods.
   static bool AreNetworkHandlesSupported();
 
   // Sets |network_list| to a list of all networks that are currently connected.
   // Only implemented for Android (Lollipop and newer), leaves |network_list|
-  // empty when unimplemented. Requires NetworkHandles support, see
+  // empty when unimplemented. Requires handles::NetworkHandles support, see
   // AreNetworkHandlesSupported().
   static void GetConnectedNetworks(NetworkList* network_list);
 
@@ -425,9 +422,10 @@ class NET_EXPORT NetworkChangeNotifier {
   // slightly over time (e.g. CONNECTION_2G to CONNECTION_3G). If |network|
   // is no longer connected, it will return CONNECTION_UNKNOWN.
   // Only implemented for Android (Lollipop and newer), returns
-  // CONNECTION_UNKNOWN when unimplemented. Requires NetworkHandles support,
-  // see AreNetworkHandlesSupported().
-  static ConnectionType GetNetworkConnectionType(NetworkHandle network);
+  // CONNECTION_UNKNOWN when unimplemented. Requires handles::NetworkHandles
+  // support, see AreNetworkHandlesSupported().
+  static ConnectionType GetNetworkConnectionType(
+      handles::NetworkHandle network);
 
   // Returns the device's current default network connection. This is the
   // network used for newly created socket communication for sockets that are
@@ -436,8 +434,8 @@ class NET_EXPORT NetworkChangeNotifier {
   // there is no default connected network.
   // Only implemented for Android (Lollipop and newer), returns
   // |kInvalidNetworkHandle| when unimplemented.
-  // Requires NetworkHandles support, see AreNetworkHandlesSupported().
-  static NetworkHandle GetDefaultNetwork();
+  // Requires handles::NetworkHandles support, see AreNetworkHandlesSupported().
+  static handles::NetworkHandle GetDefaultNetwork();
 
   // Get the underlying SystemDnsConfigChangeNotifier, or null if there is none.
   // Only intended for code building HostResolverManagers. Other code intending
@@ -533,7 +531,7 @@ class NET_EXPORT NetworkChangeNotifier {
   // Called to signify a non-system DNS config change.
   static void TriggerNonSystemDnsChange();
 
-  // Allow unit tests to trigger notifications.
+  // Allows unit tests to trigger notifications.
   static void NotifyObserversOfIPAddressChangeForTests();
   static void NotifyObserversOfConnectionTypeChangeForTests(
       ConnectionType type);
@@ -546,13 +544,16 @@ class NET_EXPORT NetworkChangeNotifier {
       ConnectionCost cost);
   static void NotifyObserversOfDefaultNetworkActiveForTests();
 
-  // Enable or disable notifications from the host. After setting to true, be
+  // Enables or disables notifications from the host. After setting to true, be
   // sure to pump the RunLoop until idle to finish any preexisting
   // notifications. To use this, it must must be called before a
   // NetworkChangeNotifier is created.
   static void SetTestNotificationsOnly(bool test_only);
 
-  // Return a string equivalent to |type|.
+  // Returns true if `test_notifications_only_` is set to true.
+  static bool IsTestNotificationsOnly() { return test_notifications_only_; }
+
+  // Returns a string equivalent to |type|.
   static const char* ConnectionTypeToString(ConnectionType type);
 
   // Allows a second NetworkChangeNotifier to be created for unit testing, so
@@ -636,8 +637,8 @@ class NET_EXPORT NetworkChangeNotifier {
   virtual bool AreNetworkHandlesCurrentlySupported() const;
   virtual void GetCurrentConnectedNetworks(NetworkList* network_list) const;
   virtual ConnectionType GetCurrentNetworkConnectionType(
-      NetworkHandle network) const;
-  virtual NetworkHandle GetCurrentDefaultNetwork() const;
+      handles::NetworkHandle network) const;
+  virtual handles::NetworkHandle GetCurrentDefaultNetwork() const;
   virtual SystemDnsConfigChangeNotifier* GetCurrentSystemDnsConfigNotifier();
 
   virtual bool IsDefaultNetworkActiveInternal();
@@ -651,8 +652,9 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfNetworkChange(ConnectionType type);
   static void NotifyObserversOfMaxBandwidthChange(double max_bandwidth_mbps,
                                                   ConnectionType type);
-  static void NotifyObserversOfSpecificNetworkChange(NetworkChangeType type,
-                                                     NetworkHandle network);
+  static void NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeType type,
+      handles::NetworkHandle network);
   static void NotifyObserversOfConnectionCostChange();
   static void NotifyObserversOfDefaultNetworkActive();
 
@@ -700,8 +702,9 @@ class NET_EXPORT NetworkChangeNotifier {
   void NotifyObserversOfNetworkChangeImpl(ConnectionType type);
   void NotifyObserversOfMaxBandwidthChangeImpl(double max_bandwidth_mbps,
                                                ConnectionType type);
-  void NotifyObserversOfSpecificNetworkChangeImpl(NetworkChangeType type,
-                                                  NetworkHandle network);
+  void NotifyObserversOfSpecificNetworkChangeImpl(
+      NetworkChangeType type,
+      handles::NetworkHandle network);
   void NotifyObserversOfConnectionCostChangeImpl(ConnectionCost cost);
   void NotifyObserversOfDefaultNetworkActiveImpl();
 

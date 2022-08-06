@@ -100,6 +100,12 @@ FieldGlobalId MakeFieldGlobalId(RandomizeFrame randomize) {
   return {MakeLocalFrameToken(randomize), MakeFieldRendererId()};
 }
 
+FormData WithoutValues(FormData form) {
+  for (FormFieldData& field : form.fields)
+    field.value.clear();
+  return form;
+}
+
 void SetFormGroupValues(FormGroup& form_group,
                         const std::vector<FormGroupValue>& values) {
   for (const auto& value : values) {
@@ -475,8 +481,8 @@ AutofillProfile GetServerProfile2() {
   return profile;
 }
 
-Iban GetIban() {
-  Iban iban(base::GenerateGUID(), kEmptyOrigin);
+IBAN GetIBAN() {
+  IBAN iban(base::GenerateGUID());
   iban.set_value(u"DE91 1000 0000 0123 4567 89");
   iban.set_nickname(u"Nickname for Iban");
   return iban;

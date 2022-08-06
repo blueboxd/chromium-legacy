@@ -71,10 +71,6 @@ class Thread;
 class WaitableEvent;
 }
 
-namespace cc {
-class TaskGraphRunner;
-}
-
 namespace gpu {
 class GpuChannelHost;
 }
@@ -95,7 +91,6 @@ class RasterContextProvider;
 
 namespace content {
 class AgentSchedulingGroup;
-class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
 class RenderFrameImpl;
 class RenderThreadObserver;
@@ -201,7 +196,6 @@ class CONTENT_EXPORT RenderThreadImpl
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler();
-  cc::TaskGraphRunner* GetTaskGraphRunner();
   bool IsLcdTextEnabled();
   bool IsElasticOverscrollEnabled();
   bool IsScrollAnimatorEnabled();
@@ -290,9 +284,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // of the thread on which media operations should be run. Must be called
   // on the renderer's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
-
-  // A TaskRunner instance that runs tasks on the raster worker pool.
-  base::TaskRunner* GetWorkerTaskRunner();
 
   // Creates a ContextProvider if yet created, and returns it to be used for
   // video frame compositing. The ContextProvider given as an argument is
@@ -448,9 +439,7 @@ class CONTENT_EXPORT RenderThreadImpl
       WriteClangProfilingProfileCallback callback) override;
 #endif
   void SetIsCrossOriginIsolated(bool value) override;
-  void SetIsDirectSocketEnabled(bool value) override;
-  void EnableBlinkRuntimeFeatures(
-      const std::vector<std::string>& features) override;
+  void SetIsIsolatedApplication(bool value) override;
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
@@ -516,9 +505,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // Task to run the VideoFrameCompositor on.
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner_;
-
-  // Pool of workers used for raster operations (e.g., tile rasterization).
-  scoped_refptr<CategorizedWorkerPool> categorized_worker_pool_;
 
 #if BUILDFLAG(IS_ANDROID)
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;

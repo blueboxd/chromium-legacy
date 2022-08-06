@@ -42,12 +42,6 @@ WebThreadScheduler::CreateMainThreadScheduler(
 
 // Stubs for main thread only virtual functions.
 scoped_refptr<base::SingleThreadTaskRunner>
-WebThreadScheduler::DefaultTaskRunner() {
-  NOTREACHED();
-  return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 WebThreadScheduler::CompositorTaskRunner() {
   NOTREACHED();
   return nullptr;
@@ -81,22 +75,6 @@ void WebThreadScheduler::ResumeTimersForAndroidWebView() {
   NOTREACHED();
 }
 #endif  // BUILDFLAG(IS_ANDROID)
-
-std::unique_ptr<WebThreadScheduler::RendererPauseHandle>
-WebThreadScheduler::PauseRenderer() {
-  NOTREACHED();
-  return nullptr;
-}
-
-bool WebThreadScheduler::IsHighPriorityWorkAnticipated() {
-  NOTREACHED();
-  return false;
-}
-
-void WebThreadScheduler::SetTopLevelBlameContext(
-    base::trace_event::BlameContext* blame_context) {
-  NOTREACHED();
-}
 
 void WebThreadScheduler::SetRendererProcessType(WebRendererProcessType type) {
   NOTREACHED();

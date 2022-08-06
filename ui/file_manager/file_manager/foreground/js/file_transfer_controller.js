@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.js';
 import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 
 import {getDirectory, getDisallowedTransfers, startIOTask} from '../../common/js/api.js';
 import {FileType} from '../../common/js/file_type.js';
@@ -174,14 +173,14 @@ export class FileTransferController {
      * @const
      */
     this.copyCommand_ = /** @type {!Command} */ (
-        queryRequiredElement('command#copy', assert(this.document_.body)));
+        util.queryRequiredElement('command#copy', assert(this.document_.body)));
 
     /**
      * @private {!Command}
      * @const
      */
     this.cutCommand_ = /** @type {!Command} */ (
-        queryRequiredElement('command#cut', assert(this.document_.body)));
+        util.queryRequiredElement('command#cut', assert(this.document_.body)));
 
     /**
      * @private {DirectoryEntry|FilesAppDirEntry}
@@ -477,7 +476,7 @@ export class FileTransferController {
             callback: () => {
               util.visitURL(
                   'https://support.google.com/chrome/a/?p=chromeos_datacontrols');
-            }
+            },
           });
       throw new Error('ABORT');
     }
@@ -1707,11 +1706,11 @@ FileTransferController.PastePlan = class {
     // Confirmation type for team drives.
     const source = {
       isTeamDrive: util.isSharedDriveEntry(this.sourceEntries[0]),
-      teamDriveName: util.getTeamDriveName(this.sourceEntries[0])
+      teamDriveName: util.getTeamDriveName(this.sourceEntries[0]),
     };
     const destination = {
       isTeamDrive: util.isSharedDriveEntry(this.destinationEntry),
-      teamDriveName: util.getTeamDriveName(this.destinationEntry)
+      teamDriveName: util.getTeamDriveName(this.destinationEntry),
     };
     if (this.isMove) {
       if (source.isTeamDrive) {
@@ -1768,14 +1767,14 @@ FileTransferController.PastePlan = class {
       case FileTransferController.ConfirmationType.MOVE_BETWEEN_SHARED_DRIVES:
         return [
           strf('DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS', sourceName),
-          strf('DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS_TO_COPY', destinationName)
+          strf('DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS_TO_COPY', destinationName),
         ];
       // TODO(yamaguchi): notify ownership transfer if the two Shared Drives
       // belong to different domains.
       case FileTransferController.ConfirmationType
           .MOVE_FROM_SHARED_DRIVE_TO_OTHER:
         return [
-          strf('DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS', sourceName)
+          strf('DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS', sourceName),
           // TODO(yamaguchi): Warn if the operation moves at least one
           // directory to My Drive, as it's no undoable.
         ];

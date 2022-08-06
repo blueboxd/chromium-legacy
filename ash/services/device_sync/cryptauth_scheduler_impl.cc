@@ -13,8 +13,8 @@
 #include "ash/services/device_sync/value_string_encoding.h"
 #include "base/base64.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -71,14 +71,14 @@ cryptauthv2::ClientDirective CreateDefaultClientDirective() {
 
 cryptauthv2::ClientDirective BuildClientDirective(PrefService* pref_service) {
   DCHECK(pref_service);
-  const base::Value* encoded_client_directive =
-      pref_service->Get(prefs::kCryptAuthSchedulerClientDirective);
-  if (encoded_client_directive->GetString() == kNoClientDirective)
+  const base::Value& encoded_client_directive =
+      pref_service->GetValue(prefs::kCryptAuthSchedulerClientDirective);
+  if (encoded_client_directive.GetString() == kNoClientDirective)
     return CreateDefaultClientDirective();
 
   absl::optional<cryptauthv2::ClientDirective> client_directive_from_pref =
       util::DecodeProtoMessageFromValueString<cryptauthv2::ClientDirective>(
-          encoded_client_directive);
+          &encoded_client_directive);
 
   return client_directive_from_pref.value_or(CreateDefaultClientDirective());
 }

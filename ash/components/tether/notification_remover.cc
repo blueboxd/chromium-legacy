@@ -5,7 +5,7 @@
 #include "ash/components/tether/notification_remover.h"
 
 #include "ash/components/tether/notification_presenter.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 
 namespace ash {
 
@@ -48,9 +48,8 @@ void NotificationRemover::NetworkConnectionStateChanged(
   // Note: If a network is active (i.e., connecting or connected), it will be
   // returned at the front of the list, so using FirstNetworkByType() guarantees
   // that we will find an active network if there is one.
-  const chromeos::NetworkState* first_network =
-      network_state_handler_->FirstNetworkByType(
-          chromeos::NetworkTypePattern::Default());
+  const NetworkState* first_network =
+      network_state_handler_->FirstNetworkByType(NetworkTypePattern::Default());
   if (first_network && first_network->IsConnectingOrConnected())
     notification_presenter_->RemovePotentialHotspotNotification();
 }

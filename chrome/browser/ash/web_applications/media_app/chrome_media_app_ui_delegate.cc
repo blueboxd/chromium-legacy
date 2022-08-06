@@ -10,9 +10,12 @@
 #include "ash/webui/media_app_ui/file_system_access_helpers.h"
 #include "ash/webui/media_app_ui/url_constants.h"
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
+#include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -20,6 +23,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/channel_info.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/features.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
@@ -60,6 +66,16 @@ void ChromeMediaAppUIDelegate::ToggleBrowserFullscreenMode() {
   }
 }
 
+void ChromeMediaAppUIDelegate::IsFileArcWritable(
+    mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken> token,
+    base::OnceCallback<void(bool)> is_file_arc_writable_callback) {
+  ash::ResolveTransferToken(
+      std::move(token), web_ui_->GetWebContents(),
+      base::BindOnce(&ChromeMediaAppUIDelegate::IsFileArcWritableImpl,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(is_file_arc_writable_callback)));
+}
+
 void ChromeMediaAppUIDelegate::EditInPhotos(
     mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken> token,
     const std::string& mime_type,
@@ -71,10 +87,60 @@ void ChromeMediaAppUIDelegate::EditInPhotos(
                      std::move(edit_in_photos_callback)));
 }
 
+void ChromeMediaAppUIDelegate::IsFileArcWritableImpl(
+    base::OnceCallback<void(bool)> is_file_arc_writable_callback,
+    absl::optional<storage::FileSystemURL> url) {
+  if (!url.has_value()) {
+    std::move(is_file_arc_writable_callback).Run(false);
+    return;
+  }
+
+  using file_manager::Volume;
+  using file_manager::VolumeManager;
+  using file_manager::VolumeType;
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(web_ui_->GetWebContents()->GetBrowserContext());
+
+  base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeFromPath(url->path());
+
+  if (!volume) {
+    std::move(is_file_arc_writable_callback).Run(false);
+    return;
+  }
+
+  switch (volume->type()) {
+    case VolumeType::VOLUME_TYPE_DOWNLOADS_DIRECTORY:
+    case VolumeType::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
+    case VolumeType::VOLUME_TYPE_ANDROID_FILES:
+      std::move(is_file_arc_writable_callback).Run(true);
+      return;
+    case VolumeType::VOLUME_TYPE_TESTING:
+    case VolumeType::VOLUME_TYPE_GOOGLE_DRIVE:
+    case VolumeType::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
+    case VolumeType::VOLUME_TYPE_PROVIDED:
+    case VolumeType::VOLUME_TYPE_MTP:
+    case VolumeType::VOLUME_TYPE_MEDIA_VIEW:
+    case VolumeType::VOLUME_TYPE_CROSTINI:
+    case VolumeType::VOLUME_TYPE_DOCUMENTS_PROVIDER:
+    case VolumeType::VOLUME_TYPE_SMB:
+    case VolumeType::VOLUME_TYPE_SYSTEM_INTERNAL:
+    case VolumeType::VOLUME_TYPE_GUEST_OS:
+      std::move(is_file_arc_writable_callback).Run(false);
+      return;
+    case VolumeType::NUM_VOLUME_TYPE:
+      NOTREACHED();
+  }
+}
+
 void ChromeMediaAppUIDelegate::EditInPhotosImpl(
     const std::string& mime_type,
     base::OnceCallback<void()> edit_in_photos_callback,
     absl::optional<storage::FileSystemURL> url) {
+  constexpr char kPhotosKeepOpenExtraName[] =
+      "com.google.android.apps.photos.editor.contract.keep_photos_open";
+  constexpr char kPhotosKeepOpenExtraValue[] = "true";
+
   if (!url.has_value()) {
     std::move(edit_in_photos_callback).Run();
     return;
@@ -89,19 +155,38 @@ void ChromeMediaAppUIDelegate::EditInPhotosImpl(
       proxy->profile(), url->path(), GURL(ash::kChromeUIMediaAppURL),
       &filesystem_url);
 
-  auto intent = apps_util::CreateEditIntentFromFile(filesystem_url, mime_type);
+  auto intent = apps_util::MakeEditIntent(filesystem_url, mime_type);
+  intent->extras = {
+      std::make_pair(kPhotosKeepOpenExtraName, kPhotosKeepOpenExtraValue)};
 
-  proxy->LaunchAppWithIntent(
-      arc::kGooglePhotosAppId, ui::EF_NONE, std::move(intent),
-      apps::mojom::LaunchSource::kFromOtherApp, nullptr,
-      base::BindOnce(
-          [](base::OnceCallback<void()> callback,
-             base::WeakPtr<content::WebContents> web_contents,
-             bool launch_success) {
-            if (launch_success && web_contents) {
-              web_contents->Close();
-            }
-            std::move(callback).Run();
-          },
-          std::move(edit_in_photos_callback), web_contents->GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    proxy->LaunchAppWithIntent(
+        arc::kGooglePhotosAppId, ui::EF_NONE, std::move(intent),
+        apps::LaunchSource::kFromOtherApp, nullptr,
+        base::BindOnce(
+            [](base::OnceCallback<void()> callback,
+               base::WeakPtr<content::WebContents> web_contents,
+               bool launch_success) {
+              if (launch_success && web_contents) {
+                web_contents->Close();
+              }
+              std::move(callback).Run();
+            },
+            std::move(edit_in_photos_callback), web_contents->GetWeakPtr()));
+  } else {
+    proxy->LaunchAppWithIntent(
+        arc::kGooglePhotosAppId, ui::EF_NONE,
+        apps::ConvertIntentToMojomIntent(intent),
+        apps::mojom::LaunchSource::kFromOtherApp, nullptr,
+        base::BindOnce(
+            [](base::OnceCallback<void()> callback,
+               base::WeakPtr<content::WebContents> web_contents,
+               bool launch_success) {
+              if (launch_success && web_contents) {
+                web_contents->Close();
+              }
+              std::move(callback).Run();
+            },
+            std::move(edit_in_photos_callback), web_contents->GetWeakPtr()));
+  }
 }

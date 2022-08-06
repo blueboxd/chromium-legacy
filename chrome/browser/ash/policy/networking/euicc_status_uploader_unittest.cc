@@ -13,9 +13,9 @@
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_ui_data.h"
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/network/network_ui_data.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -181,46 +181,47 @@ class EuiccStatusUploaderTest : public testing::Test {
     cloud_policy_client_.SetStatus(success);
   }
 
-  const base::Value* GetStoredPref() {
-    return local_state_.Get(EuiccStatusUploader::kLastUploadedEuiccStatusPref);
+  const base::Value& GetStoredPref() {
+    return local_state_.GetValue(
+        EuiccStatusUploader::kLastUploadedEuiccStatusPref);
   }
 
   std::string GetStoredPrefString() {
-    const base::Value* last_uploaded_pref = GetStoredPref();
+    const base::Value& last_uploaded_pref = GetStoredPref();
     std::string result;
     JSONStringValueSerializer sz(&result);
-    sz.Serialize(*last_uploaded_pref);
+    sz.Serialize(last_uploaded_pref);
     return result;
   }
 
   void UpdateUploader(EuiccStatusUploader* status_uploader) {
-    (static_cast<chromeos::NetworkPolicyObserver*>(status_uploader))
+    (static_cast<ash::NetworkPolicyObserver*>(status_uploader))
         ->PoliciesApplied(/*userhash=*/std::string());
     status_uploader->FireRetryTimerIfExistsForTesting();
   }
 
   void SetupEuicc(int euicc_id = 0) {
-    chromeos::HermesManagerClient::Get()->GetTestInterface()->AddEuicc(
+    ash::HermesManagerClient::Get()->GetTestInterface()->AddEuicc(
         dbus::ObjectPath(GetEuiccPath(euicc_id)), GetEid(euicc_id),
         /*is_active=*/true, euicc_id);
   }
 
   void SetUpDeviceProfiles(const EuiccTestData& data, bool add_to_onc = true) {
     // Create |data.euicc_count| fake EUICCs.
-    chromeos::HermesManagerClient::Get()->GetTestInterface()->ClearEuiccs();
+    ash::HermesManagerClient::Get()->GetTestInterface()->ClearEuiccs();
     for (int euicc_id = 0; euicc_id < data.euicc_count; euicc_id++) {
       SetupEuicc(euicc_id);
     }
 
     for (const auto& test_profile : data.profiles) {
-      chromeos::HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
+      ash::HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
           dbus::ObjectPath(test_profile.profile_path),
           dbus::ObjectPath(GetEuiccPath(/*euicc_id=*/0)), test_profile.iccid,
-          test_profile.guid, "service_provider", "activation_code",
+          test_profile.guid, "nickname", "service_provider", "activation_code",
           test_profile.service_path, test_profile.state,
           hermes::profile::ProfileClass::kOperational,
-          chromeos::HermesEuiccClient::TestInterface::
-              AddCarrierProfileBehavior::kAddProfileWithService);
+          ash::HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+              kAddProfileWithService);
 
       if (test_profile.managed) {
         chromeos::NetworkHandler::Get()
@@ -236,7 +237,7 @@ class EuiccStatusUploaderTest : public testing::Test {
   void ValidateUploadedStatus(const std::string& expected_status_str,
                               bool clear_profile_list) {
     base::Value expected_status = base::test::ParseJson(expected_status_str);
-    EXPECT_EQ(expected_status, *GetStoredPref());
+    EXPECT_EQ(expected_status, GetStoredPref());
     EXPECT_TRUE(cloud_policy_client_.GetLastRequest());
     EXPECT_TRUE(
         RequestsAreEqual(*EuiccStatusUploader::ConstructRequestFromStatus(
@@ -254,7 +255,7 @@ class EuiccStatusUploaderTest : public testing::Test {
 
     // TODO(crbug.com/1269719): Make FakeHermesEuiccClient trigger OnEuiccReset
     // directly.
-    static_cast<chromeos::HermesEuiccClient::Observer*>(status_uploader)
+    static_cast<ash::HermesEuiccClient::Observer*>(status_uploader)
         ->OnEuiccReset(dbus::ObjectPath());
   }
 

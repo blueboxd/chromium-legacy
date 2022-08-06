@@ -143,7 +143,7 @@ class LocalFileSyncServiceTest
     local_service_ = LocalFileSyncService::CreateForTesting(
         &profile_, in_memory_env_.get());
 
-    file_system_->SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
+    file_system_->SetUp();
 
     base::RunLoop run_loop;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
@@ -290,7 +290,8 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
             file_system_->DirectoryExists(kDir));
 }
 
-TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
+// TODO(https://crbug.com/1344927): Flaky.
+TEST_F(LocalFileSyncServiceTest, DISABLED_LocalChangeObserver) {
   const FileSystemURL kFile(file_system_->URL("file"));
   const FileSystemURL kDir(file_system_->URL("dir"));
   const char kTestFileData[] = "0123456789";
@@ -321,7 +322,7 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   CannedSyncableFileSystem file_system2(
       GURL(kOrigin2), in_memory_env_.get(), content::GetIOThreadTaskRunner({}),
       base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()}));
-  file_system2.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
+  file_system2.SetUp();
 
   base::RunLoop run_loop;
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;

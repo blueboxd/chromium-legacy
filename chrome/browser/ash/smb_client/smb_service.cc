@@ -128,7 +128,7 @@ SmbService::SmbService(Profile* profile,
 
   KerberosCredentialsManager* credentials_manager =
       KerberosCredentialsManagerFactory::GetExisting(profile);
-  if (credentials_manager && credentials_manager->IsKerberosEnabled()) {
+  if (credentials_manager) {
     kerberos_credentials_updater_ =
         std::make_unique<SmbKerberosCredentialsUpdater>(
             credentials_manager,
@@ -353,6 +353,12 @@ void SmbService::MountInternal(
     bool save_credentials,
     bool skip_connect,
     MountInternalCallback callback) {
+  // Preconfigured or persisted share information could be invalid.
+  if (!info.share_url().IsValid() || info.share_url().GetShare().empty()) {
+    std::move(callback).Run(SmbMountResult::kInvalidUrl, {});
+    return;
+  }
+
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
   DCHECK(user);
 

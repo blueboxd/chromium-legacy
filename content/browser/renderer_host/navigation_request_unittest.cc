@@ -229,6 +229,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
         TestRenderFrameHost::CreateStubFrameRemote(),
         TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
         TestRenderFrameHost::CreateStubPolicyContainerBindParams(),
+        TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
         blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName0",
         false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
         frame_policy, blink::mojom::FrameOwnerProperties(), false, owner_type,
@@ -702,7 +703,10 @@ TEST_F(NavigationRequestTest, NoDnsAliases) {
 TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   TestRenderFrameHost* child_document = static_cast<TestRenderFrameHost*>(
       content::RenderFrameHostTester::For(main_rfh())->AppendChild(""));
-  child_document->frame_tree_node()->SetAnonymous(true);
+  auto attributes = child_document->frame_tree_node()->attributes_->Clone();
+  // Set |anonymous| to true.
+  attributes->anonymous = true;
+  child_document->frame_tree_node()->SetAttributes(std::move(attributes));
 
   const GURL kUrl = GURL("http://chromium.org");
   auto navigation =
@@ -711,18 +715,17 @@ TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   NavigationRequest* request =
       NavigationRequest::From(navigation->GetNavigationHandle());
   EXPECT_TRUE(request->commit_params().storage_key.nonce().has_value());
-  EXPECT_EQ(child_document->GetMainFrame()->GetPage().anonymous_iframes_nonce(),
+  EXPECT_EQ(child_document->GetMainFrame()->anonymous_iframes_nonce(),
             request->commit_params().storage_key.nonce().value());
 
   navigation->Commit();
   child_document =
       static_cast<TestRenderFrameHost*>(navigation->GetFinalRenderFrameHost());
   EXPECT_TRUE(child_document->IsAnonymous());
-  EXPECT_EQ(
-      blink::StorageKey::CreateWithNonce(
-          url::Origin::Create(kUrl),
-          child_document->GetMainFrame()->GetPage().anonymous_iframes_nonce()),
-      child_document->storage_key());
+  EXPECT_EQ(blink::StorageKey::CreateWithNonce(
+                url::Origin::Create(kUrl),
+                child_document->GetMainFrame()->anonymous_iframes_nonce()),
+            child_document->storage_key());
 }
 
 TEST_F(NavigationRequestTest,
@@ -730,19 +733,22 @@ TEST_F(NavigationRequestTest,
   auto* child_frame = static_cast<TestRenderFrameHost*>(
       content::RenderFrameHostTester::For(main_test_rfh())
           ->AppendChild("child"));
-  child_frame->frame_tree_node()->SetAnonymous(true);
+  auto attributes = child_frame->frame_tree_node()->attributes_->Clone();
+  // Set |anonymous| to true.
+  attributes->anonymous = true;
+  child_frame->frame_tree_node()->SetAttributes(std::move(attributes));
 
   std::unique_ptr<NavigationSimulator> navigation =
       NavigationSimulator::CreateRendererInitiated(
           GURL("https://example.com/navigation.html"), child_frame);
   navigation->ReadyToCommit();
 
-  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->anonymous_iframes_nonce(),
             static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
                 ->isolation_info_for_subresources()
                 .network_isolation_key()
                 .GetNonce());
-  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->anonymous_iframes_nonce(),
             static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
                 ->GetIsolationInfo()
                 .network_isolation_key()
@@ -821,7 +827,10 @@ class CSPEmbeddedEnforcementUnitTest : public NavigationRequestTest {
       std::vector<network::mojom::ContentSecurityPolicyPtr> policies;
       network::AddContentSecurityPolicyFromHeaders(
           *headers, GURL("https://example.com/"), &policies);
-      document->frame_tree_node()->set_csp_attribute(std::move(policies[0]));
+      auto attributes = document->frame_tree_node()->attributes_->Clone();
+      // Set csp value.
+      attributes->parsed_csp_attribute = std::move(policies[0]);
+      document->frame_tree_node()->SetAttributes(std::move(attributes));
     }
 
     // Chrome blocks a document navigating to a URL if more than one of its

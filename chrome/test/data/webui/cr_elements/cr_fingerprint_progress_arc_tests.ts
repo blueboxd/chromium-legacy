@@ -4,7 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
 
-import {CrFingerprintProgressArcElement, FINGERPRINT_CHECK_DARK_URL, FINGERPRINT_CHECK_LIGHT_URL, FINGERPRINT_SCANNED_ICON_DARK, FINGERPRINT_SCANNED_ICON_LIGHT, PROGRESS_CIRCLE_BACKGROUND_COLOR_DARK, PROGRESS_CIRCLE_BACKGROUND_COLOR_LIGHT, PROGRESS_CIRCLE_FILL_COLOR_DARK, PROGRESS_CIRCLE_FILL_COLOR_LIGHT} from 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js';
+import {CrFingerprintProgressArcElement, FINGERPRINT_CHECK_DARK_URL, FINGERPRINT_CHECK_LIGHT_URL, FINGERPRINT_SCANNED_ICON_DARK, FINGERPRINT_SCANNED_ICON_LIGHT, PROGRESS_CIRCLE_BACKGROUND_COLOR_DARK, PROGRESS_CIRCLE_BACKGROUND_COLOR_LIGHT, PROGRESS_CIRCLE_FILL_COLOR_DARK, PROGRESS_CIRCLE_FILL_COLOR_LIGHT} from 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {MockController} from 'chrome://webui-test/mock_controller.js';
@@ -57,10 +57,10 @@ suite('cr_fingerprint_progress_arc_test', function() {
   /**
    * An object descrbing a 2d point.
    */
-  type Point = {
-    x: number,
-    y: number,
-  };
+  interface Point {
+    x: number;
+    y: number;
+  }
 
   const canvasColor: string = 'rgba(255, 255, 255, 1.0)';
 
@@ -137,7 +137,7 @@ suite('cr_fingerprint_progress_arc_test', function() {
       [{x: 185, y: 40} /**  7pi/4 rad */, 12.5],
       [{x: 185, y: 110} /**  pi/4 rad */, 37.5],
       [{x: 115, y: 110} /** 3pi/4 rad */, 62.5],
-      [{x: 115, y: 40} /**  5pi/4 rad */, 87.5]
+      [{x: 115, y: 40} /**  5pi/4 rad */, 87.5],
     ];
 
     // |setProgress()| arguments.
@@ -211,14 +211,14 @@ suite('cr_fingerprint_progress_arc_test', function() {
       new SetProgressTestCase(0, 0, false),
       // Verify that progress is drawn starting from the top of the circle
       // (3pi/2 rad) and moving clockwise.
-      new SetProgressTestCase(0, 40, false)
+      new SetProgressTestCase(0, 40, false),
     ];
 
     const darkModeTestCases = [
       // Verify that the progress drawn includes progress made previously.
       new SetProgressTestCase(40, 80, false),
       // Verify that progress past 100% gets capped rather than wrapping around.
-      new SetProgressTestCase(80, 160, false)
+      new SetProgressTestCase(80, 160, false),
     ];
 
     // Verify that if the enrollment is complete, maximum progress is drawn.

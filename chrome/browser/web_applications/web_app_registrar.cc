@@ -44,7 +44,7 @@ bool WebAppSourceSupported(const WebApp& web_app) {
     return false;
   }
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (web_app.IsSystemApp() && !AreSystemWebAppsSupported())
+  if (web_app.IsSystemApp())
     return false;
 #endif
   return true;
@@ -472,6 +472,41 @@ bool WebAppRegistrar::IsTabbedWindowModeEnabled(const AppId& app_id) const {
   return GetAppEffectiveDisplayMode(app_id) == DisplayMode::kTabbed;
 }
 
+GURL WebAppRegistrar::GetAppNewTabUrl(const AppId& app_id) const {
+  if (IsTabbedWindowModeEnabled(app_id)) {
+    auto* web_app = GetAppById(app_id);
+    if (!web_app)
+      return GURL::EmptyGURL();
+
+    if (web_app->tab_strip() &&
+        absl::holds_alternative<blink::Manifest::NewTabButtonParams>(
+            web_app->tab_strip().value().new_tab_button)) {
+      absl::optional<GURL> url =
+          absl::get<blink::Manifest::NewTabButtonParams>(
+              web_app->tab_strip().value().new_tab_button)
+              .url;
+      if (url.has_value())
+        return url.value();
+    }
+  }
+  // Apps with new_tab_button.url set to 'auto' will use the start URL.
+  return GetAppStartUrl(app_id);
+}
+
+#if BUILDFLAG(IS_MAC)
+bool WebAppRegistrar::AlwaysShowToolbarInFullscreen(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->always_show_toolbar_in_fullscreen() : true;
+}
+
+void WebAppRegistrar::NotifyAlwaysShowToolbarInFullscreenChanged(
+    const AppId& app_id,
+    bool show) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnAlwaysShowToolbarInFullscreenChanged(app_id, show);
+}
+#endif
+
 const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
   if (registry_profile_being_deleted_)
     return nullptr;
@@ -507,6 +542,23 @@ std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation()
 
   std::vector<AppId> app_ids;
   for (const WebApp& app : apps_in_sync_install)
+    app_ids.push_back(app.app_id());
+
+  return app_ids;
+}
+
+std::vector<AppId> WebAppRegistrar::GetAppsPendingUninstall() const {
+  AppSet apps_in_sync_uninstall = AppSet(
+      this,
+      [](const WebApp& web_app) {
+        return WebAppSourceSupported(web_app) &&
+               !web_app.is_from_sync_and_pending_installation() &&
+               web_app.is_uninstalling();
+      },
+      /*empty=*/registry_profile_being_deleted_);
+
+  std::vector<AppId> app_ids;
+  for (const WebApp& app : apps_in_sync_uninstall)
     app_ids.push_back(app.app_id());
 
   return app_ids;

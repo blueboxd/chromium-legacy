@@ -143,6 +143,7 @@ class MostVisitedSitesProviderTest : public testing::Test,
 };
 
 size_t MostVisitedSitesProviderTest::NumMostVisitedMatches() {
+  // TODO(khalidpeer): Update to make direct use of the provider's matches.
   const auto& result = controller_->result();
   size_t count = 0;
   for (const auto& match : result) {
@@ -157,6 +158,7 @@ size_t MostVisitedSitesProviderTest::NumMostVisitedMatches() {
 const AutocompleteMatch* MostVisitedSitesProviderTest::GetMatch(
     AutocompleteMatchType::Type type,
     size_t index) {
+  // TODO(khalidpeer): Update to make direct use of the provider's matches.
   const auto& result = controller_->result();
   for (const auto& match : result) {
     if (match.type == type) {
@@ -175,6 +177,7 @@ void MostVisitedSitesProviderTest::CheckMatchesEquivalentTo(
   // Note that additional matches may be offered if other providers are also
   // registered in the same category as MostVisitedSitesProvider.
   // We ignore all matches that are not ours.
+  // TODO(khalidpeer): Update to make direct use of the provider's matches.
   const auto& result = controller_->result();
 
   size_t match_index = 0;
@@ -226,7 +229,7 @@ void MostVisitedSitesProviderTest::SetUp() {
   controller_ = std::make_unique<AutocompleteController>(
       std::move(client), AutocompleteProvider::TYPE_MOST_VISITED_SITES);
 
-  // Inject a few URLs to
+  // Inject a few URLs to test MostVisitedSitesProvider behavior.
   std::array<history::MostVisitedURL, 5> test_data{{
       {GURL("http://www.a.art/"), u"A art"},
       {GURL("http://www.b.biz/"), u"B biz"},
@@ -261,12 +264,23 @@ TEST_F(MostVisitedSitesProviderWithMatchesTest, TestMostVisitedCallback) {
 
   controller_->Start(input);
   controller_->Stop(false);
-  EXPECT_EQ(0u, NumMostVisitedMatches());
+  // Since this provider's async logic is still in-flight (`EmitURLs()` has not
+  // been called yet), the AutocompleteController will transfer old matches from
+  // the previous provider run.
+  CheckMatchesEquivalentTo(top_sites_->urls(), /* expect_tiles=*/false);
+
+  history::MostVisitedURLList old_urls = top_sites_->urls();
+  // Update the list of top sites so that we can clearly identify when
+  // matches have been transferred from the previous provider run.
+  std::array<history::MostVisitedURL, 1> new_urls{{
+      {GURL("http://www.g.gov/"), u"G gov"},
+  }};
+  top_sites_->urls().assign(new_urls.begin(), new_urls.end());
 
   // Most visited results arriving after Stop() has been called, ensure they
   // are not displayed.
   EXPECT_TRUE(top_sites_->EmitURLs());
-  EXPECT_EQ(0u, NumMostVisitedMatches());
+  CheckMatchesEquivalentTo(old_urls, /* expect_tiles=*/false);
 
   controller_->Start(input);
   controller_->Stop(false);
@@ -274,11 +288,11 @@ TEST_F(MostVisitedSitesProviderWithMatchesTest, TestMostVisitedCallback) {
 
   // Stale results should get rejected.
   EXPECT_TRUE(top_sites_->EmitURLs());
-  EXPECT_EQ(0u, NumMostVisitedMatches());
+  CheckMatchesEquivalentTo(old_urls, /* expect_tiles=*/false);
 
   // Results for the second Start() action should be recorded.
   EXPECT_TRUE(top_sites_->EmitURLs());
-  EXPECT_EQ(top_sites_->urls().size(), NumMostVisitedMatches());
+  CheckMatchesEquivalentTo(top_sites_->urls(), /* expect_tiles=*/false);
   controller_->Stop(false);
 }
 
@@ -305,7 +319,19 @@ class ParameterizedMostVisitedSitesProviderTest
     : public MostVisitedSitesProviderTest,
       public ::testing::WithParamInterface<bool> {
   void SetUp() override {
-    features_.InitWithFeatureState(omnibox::kMostVisitedTiles, GetParam());
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    bool isEnabled = GetParam();
+    if (isEnabled) {
+      enabled_features.push_back(omnibox::kMostVisitedTiles);
+      enabled_features.push_back(omnibox::kOmniboxMostVisitedTilesOnSrp);
+    } else {
+      disabled_features.push_back(omnibox::kMostVisitedTiles);
+      disabled_features.push_back(omnibox::kOmniboxMostVisitedTilesOnSrp);
+    }
+
+    features_.InitWithFeatures(enabled_features, disabled_features);
     MostVisitedSitesProviderTest::SetUp();
   }
 };
@@ -339,6 +365,13 @@ TEST_P(ParameterizedMostVisitedSitesProviderTest,
   EXPECT_TRUE(
       provider_->AllowMostVisitedSitesSuggestions(BuildAutocompleteInput(
           WEB_URL, WEB_URL, OEP::OTHER, OFT::DELETED_PERMANENT_TEXT)));
+
+  // Offer MV sites when the User searched for a query and focus on omnibox.
+  EXPECT_EQ(
+      GetParam(),
+      provider_->AllowMostVisitedSitesSuggestions(BuildAutocompleteInput(
+          WEB_URL, WEB_URL, OEP::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT,
+          OFT::ON_FOCUS)));
 }
 
 TEST_P(ParameterizedMostVisitedSitesProviderTest, TestCreateMostVisitedMatch) {
@@ -357,6 +390,21 @@ TEST_P(ParameterizedMostVisitedSitesProviderTest,
   EXPECT_EQ(0u, NumMostVisitedMatches());
   // Accept only direct TopSites data, confirm no matches are built.
   EXPECT_TRUE(top_sites_->EmitURLs());
+  EXPECT_EQ(0u, NumMostVisitedMatches());
+}
+
+TEST_P(ParameterizedMostVisitedSitesProviderTest,
+       NoMatchesWhenTopSitesNotLoadedAndWantAsyncMatchesFalse) {
+  // Assume that top sites list has not been loaded yet from the DB.
+  ASSERT_FALSE(top_sites_->loaded());
+  auto input = BuildAutocompleteInputForWebOnFocus();
+  input.set_focus_type(OmniboxFocusType::DEFAULT);
+  input.set_omit_asynchronous_matches(true);
+  controller_->Start(input);
+  EXPECT_TRUE(provider_->done());
+  EXPECT_EQ(0u, NumMostVisitedMatches());
+  // No callbacks should have been added due to early return.
+  EXPECT_FALSE(top_sites_->EmitURLs());
   EXPECT_EQ(0u, NumMostVisitedMatches());
 }
 

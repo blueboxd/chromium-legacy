@@ -10,6 +10,11 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/metrics/metrics_utils.h"
@@ -19,11 +24,23 @@
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/commerce/core/subscriptions/subscriptions_manager.h"
 #include "components/commerce/core/web_wrapper.h"
+#include "components/grit/components_resources.h"
 #include "components/optimization_guide/core/new_optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace commerce {
+
+const char kOgTitle[] = "title";
+const char kOgImage[] = "image";
+const char kOgPriceCurrency[] = "price:currency";
+const char kOgPriceAmount[] = "price:amount";
+const long kToMicroCurrency = 1e6;
+
+const char kImageAvailabilityHistogramName[] =
+    "Commerce.ShoppingService.ProductInfo.ImageAvailability";
 
 ProductInfo::ProductInfo() = default;
 ProductInfo::ProductInfo(const ProductInfo&) = default;
@@ -36,7 +53,9 @@ MerchantInfo::~MerchantInfo() = default;
 ShoppingService::ShoppingService(
     bookmarks::BookmarkModel* bookmark_model,
     optimization_guide::NewOptimizationGuideDecider* opt_guide,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    signin::IdentityManager* identity_manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : opt_guide_(opt_guide),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
@@ -63,7 +82,10 @@ ShoppingService::ShoppingService(
         std::make_unique<ShoppingBookmarkModelObserver>(bookmark_model);
   }
 
-  subscriptions_manager_ = std::make_unique<SubscriptionsManager>();
+  if (identity_manager) {
+    subscriptions_manager_ = std::make_unique<SubscriptionsManager>(
+        identity_manager, std::move(url_loader_factory));
+  }
 }
 
 void ShoppingService::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -76,37 +98,96 @@ void ShoppingService::RegisterPrefs(PrefRegistrySimple* registry) {
 void ShoppingService::WebWrapperCreated(WebWrapper* web) {}
 
 void ShoppingService::DidNavigatePrimaryMainFrame(WebWrapper* web) {
-  if (opt_guide_ &&
-      (IsProductInfoApiEnabled() || IsPDPMetricsRecordingEnabled())) {
-    UpdateProductInfoCacheForInsertion(web->GetLastCommittedURL());
+  HandleDidNavigatePrimaryMainFrameForProductInfo(web);
+}
 
-    opt_guide_->CanApplyOptimization(
-        web->GetLastCommittedURL(),
-        optimization_guide::proto::OptimizationType::PRICE_TRACKING,
-        base::BindOnce(
-            [](base::WeakPtr<ShoppingService> service, const GURL& url,
-               bool is_off_the_record,
-               optimization_guide::OptimizationGuideDecision decision,
-               const optimization_guide::OptimizationMetadata& metadata) {
-              service->HandleOptGuideProductInfoResponse(
-                  url,
-                  base::BindOnce(
-                      [](const GURL&, const absl::optional<ProductInfo>&) {}),
-                  decision, metadata);
-
-              service->PDPMetricsCallback(is_off_the_record, decision,
-                                          metadata);
-            },
-            weak_ptr_factory_.GetWeakPtr(), web->GetLastCommittedURL(),
-            web->IsOffTheRecord()));
+void ShoppingService::HandleDidNavigatePrimaryMainFrameForProductInfo(
+    WebWrapper* web) {
+  // We need optimization guide and one of the features that depend on the
+  // price tracking signal to be enabled to do any of this.
+  if (!opt_guide_ ||
+      (!IsProductInfoApiEnabled() && !IsPDPMetricsRecordingEnabled())) {
+    return;
   }
+
+  UpdateProductInfoCacheForInsertion(web->GetLastCommittedURL());
+
+  opt_guide_->CanApplyOptimization(
+      web->GetLastCommittedURL(),
+      optimization_guide::proto::OptimizationType::PRICE_TRACKING,
+      base::BindOnce(
+          [](base::WeakPtr<ShoppingService> service, const GURL& url,
+             bool is_off_the_record,
+             optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            service->HandleOptGuideProductInfoResponse(
+                url,
+                base::BindOnce(
+                    [](const GURL&, const absl::optional<ProductInfo>&) {}),
+                decision, metadata);
+
+            service->PDPMetricsCallback(is_off_the_record, decision, metadata);
+          },
+          weak_ptr_factory_.GetWeakPtr(), web->GetLastCommittedURL(),
+          web->IsOffTheRecord()));
 }
 
 void ShoppingService::DidNavigateAway(WebWrapper* web, const GURL& from_url) {
   UpdateProductInfoCacheForRemoval(from_url);
 }
 
-void ShoppingService::DidFinishLoad(WebWrapper* web) {}
+void ShoppingService::DidFinishLoad(WebWrapper* web) {
+  HandleDidFinishLoadForProductInfo(web);
+}
+
+void ShoppingService::HandleDidFinishLoadForProductInfo(WebWrapper* web) {
+  if (!IsProductInfoApiEnabled())
+    return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto it = product_info_cache_.find(web->GetLastCommittedURL().spec());
+  // If there is both an entry in the cache and the javascript fallback needs
+  // to run, run it.
+  if (it != product_info_cache_.end() && std::get<1>(it->second)) {
+    // Since we're about to run the JS, flip the flag in the cache.
+    std::get<1>(it->second) = false;
+
+    std::string script =
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+            IDR_QUERY_SHOPPING_META_JS);
+
+    web->RunJavascript(
+        base::UTF8ToUTF16(script),
+        base::BindOnce(&ShoppingService::OnProductInfoJavascriptResult,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       GURL(web->GetLastCommittedURL())));
+  }
+}
+
+void ShoppingService::OnProductInfoJavascriptResult(const GURL url,
+                                                    base::Value result) {
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      result.GetString(),
+      base::BindOnce(&ShoppingService::OnProductInfoJsonSanitizationCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), url));
+}
+
+void ShoppingService::OnProductInfoJsonSanitizationCompleted(
+    const GURL url,
+    data_decoder::DataDecoder::ValueOrError result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!result.has_value() || !result.value().is_dict())
+    return;
+
+  auto it = product_info_cache_.find(url.spec());
+  // If there was no entry or the data doesn't need javascript run, do
+  // nothing.
+  if (it != product_info_cache_.end())
+    MergeProductInfoData(std::get<2>(it->second).get(),
+                         result.value().GetDict());
+}
 
 void ShoppingService::WebWrapperDestroyed(WebWrapper* web) {
   UpdateProductInfoCacheForRemoval(web->GetLastCommittedURL());
@@ -115,6 +196,8 @@ void ShoppingService::WebWrapperDestroyed(WebWrapper* web) {
 void ShoppingService::UpdateProductInfoCacheForInsertion(const GURL& url) {
   if (!IsProductInfoApiEnabled())
     return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = product_info_cache_.find(url.spec());
   if (it != product_info_cache_.end()) {
@@ -129,6 +212,8 @@ void ShoppingService::UpdateProductInfoCache(
     const GURL& url,
     bool needs_js,
     std::unique_ptr<ProductInfo> info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto it = product_info_cache_.find(url.spec());
   if (it == product_info_cache_.end())
     return;
@@ -149,6 +234,8 @@ const ProductInfo* ShoppingService::GetFromProductInfoCache(const GURL& url) {
 void ShoppingService::UpdateProductInfoCacheForRemoval(const GURL& url) {
   if (!IsProductInfoApiEnabled())
     return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check if the previously navigated URL cache needs to be cleared. If more
   // than one tab was open with the same URL, keep it in the cache but decrement
@@ -182,11 +269,11 @@ void ShoppingService::GetProductInfoForUrl(const GURL& url,
   // Crash if this API is used without a valid experiment.
   CHECK(IsProductInfoApiEnabled());
 
-  const ProductInfo* cachedInfo = GetFromProductInfoCache(url);
-  if (cachedInfo) {
+  const ProductInfo* cached_info = GetFromProductInfoCache(url);
+  if (cached_info) {
     absl::optional<ProductInfo> info;
     // Make a copy based on the cached value.
-    info.emplace(*cachedInfo);
+    info.emplace(*cached_info);
     std::move(callback).Run(url, info);
     return;
   }
@@ -195,6 +282,17 @@ void ShoppingService::GetProductInfoForUrl(const GURL& url,
       url, optimization_guide::proto::OptimizationType::PRICE_TRACKING,
       base::BindOnce(&ShoppingService::HandleOptGuideProductInfoResponse,
                      weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+}
+
+absl::optional<ProductInfo> ShoppingService::GetAvailableProductInfoForUrl(
+    const GURL& url) {
+  absl::optional<ProductInfo> optional_info;
+
+  const ProductInfo* cached_info = GetFromProductInfoCache(url);
+  if (cached_info)
+    optional_info.emplace(*cached_info);
+
+  return optional_info;
 }
 
 void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
@@ -254,9 +352,16 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
       if (buyable_product.has_title())
         info->title = buyable_product.title();
 
-      if (buyable_product.has_image_url() &&
-          base::FeatureList::IsEnabled(kCommerceAllowServerImages)) {
-        info->image_url = GURL(buyable_product.image_url());
+      if (buyable_product.has_image_url()) {
+        info->server_image_available = true;
+
+        // Only keep the server-provided image if we're allowed to.
+        if (base::FeatureList::IsEnabled(
+                commerce::kCommerceAllowServerImages)) {
+          info->image_url = GURL(buyable_product.image_url());
+        }
+      } else {
+        info->server_image_available = false;
       }
 
       if (buyable_product.has_offer_id())
@@ -284,6 +389,82 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
   // TODO(mdjones): Longer-term it probably makes sense to wait until the
   // javascript has run to execute this.
   std::move(callback).Run(url, optional_info);
+}
+
+void ShoppingService::MergeProductInfoData(
+    ProductInfo* info,
+    const base::Value::Dict& on_page_data_map) {
+  if (!info)
+    return;
+
+  // This will be true if any of the data found in |on_page_data_map| is used to
+  // populate fields in |meta|.
+  bool data_was_merged = false;
+
+  bool had_fallback_image = false;
+
+  for (const auto [key, value] : on_page_data_map) {
+    if (base::CompareCaseInsensitiveASCII(key, kOgTitle) == 0) {
+      if (info->title.empty()) {
+        info->title = value.GetString();
+        base::UmaHistogramEnumeration(
+            "Commerce.ShoppingService.ProductInfo.FallbackDataContent",
+            ProductInfoFallback::kTitle);
+        data_was_merged = true;
+      }
+    } else if (base::CompareCaseInsensitiveASCII(key, kOgImage) == 0) {
+      had_fallback_image = true;
+
+      // If the product already has an image, add the one found on the page as
+      // a fallback. The original image, if it exists, should have been
+      // retrieved from the proto received from optimization guide before this
+      // callback runs.
+      if (info->image_url.is_empty()) {
+        GURL og_url(value.GetString());
+
+        // Only keep the local image if we're allowed to.
+        if (base::FeatureList::IsEnabled(commerce::kCommerceAllowLocalImages))
+          info->image_url.Swap(&og_url);
+
+        base::UmaHistogramEnumeration(
+            "Commerce.ShoppingService.ProductInfo.FallbackDataContent",
+            ProductInfoFallback::kLeadImage);
+        data_was_merged = true;
+      }
+      // TODO(mdjones): Add capacity for fallback images when necessary.
+
+    } else if (base::CompareCaseInsensitiveASCII(key, kOgPriceCurrency) == 0) {
+      if (info->amount_micros <= 0) {
+        double amount = 0;
+        if (base::StringToDouble(*on_page_data_map.FindString(kOgPriceAmount),
+                                 &amount)) {
+          // Currency is stored in micro-units rather than standard units, so we
+          // need to convert (open graph provides standard units).
+          info->amount_micros = amount * kToMicroCurrency;
+          info->currency_code = value.GetString();
+          base::UmaHistogramEnumeration(
+              "Commerce.ShoppingService.ProductInfo.FallbackDataContent",
+              ProductInfoFallback::kPrice);
+          data_was_merged = true;
+        }
+      }
+    }
+  }
+
+  ProductImageAvailability image_availability =
+      ProductImageAvailability::kNeitherAvailable;
+  if (info->server_image_available && had_fallback_image) {
+    image_availability = ProductImageAvailability::kBothAvailable;
+  } else if (had_fallback_image) {
+    image_availability = ProductImageAvailability::kLocalOnly;
+  } else if (info->server_image_available) {
+    image_availability = ProductImageAvailability::kServerOnly;
+  }
+  base::UmaHistogramEnumeration(kImageAvailabilityHistogramName,
+                                image_availability);
+
+  base::UmaHistogramBoolean(
+      "Commerce.ShoppingService.ProductInfo.FallbackDataUsed", data_was_merged);
 }
 
 void ShoppingService::HandleOptGuideMerchantInfoResponse(
@@ -350,6 +531,7 @@ void ShoppingService::HandleOptGuideMerchantInfoResponse(
 void ShoppingService::Subscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
+  CHECK(subscriptions_manager_);
   subscriptions_manager_->Subscribe(std::move(subscriptions),
                                     std::move(callback));
 }
@@ -357,11 +539,14 @@ void ShoppingService::Subscribe(
 void ShoppingService::Unsubscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
+  CHECK(subscriptions_manager_);
   subscriptions_manager_->Unsubscribe(std::move(subscriptions),
                                       std::move(callback));
 }
 
-void ShoppingService::Shutdown() {}
+void ShoppingService::Shutdown() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 ShoppingService::~ShoppingService() = default;
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "chromeos/crosapi/mojom/sync.mojom-test-utils.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
@@ -161,7 +162,8 @@ class AshCustomPassphraseSharingSyncTest : public SyncTest {
     // TODO(crbug.com/1102768): eventually this should be the case for all Ash
     // tests.
     DCHECK_EQ(index, 0);
-    return base::FilePath(chrome::kTestUserProfileDir);
+    return base::FilePath(
+        ash::BrowserContextHelper::kTestUserBrowserContextDirName);
   }
 
   void SetupCrosapi() {
@@ -253,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(AshCustomPassphraseSharingSyncTest,
   // notify observers (Lacros) via crosapi and have default preference value.
   EXPECT_TRUE(passphrase_required_notified_to_crosapi_observer_checker.Wait());
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(0)).Wait());
-  ASSERT_NE(*preferences_helper::GetPrefs(0)->Get(
+  ASSERT_NE(preferences_helper::GetPrefs(0)->GetValue(
                 prefs::kResolveTimezoneByGeolocationMigratedToMethod),
             kNewPrefValue);
 

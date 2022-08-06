@@ -47,12 +47,6 @@ const base::Feature kAutofillCreditCardAuthentication{
 #endif
 };
 
-// When enabled, if credit card upload succeeded, the avatar icon will show a
-// highlight otherwise, the credit card icon image will be updated and if user
-// clicks on the icon, a save card failure bubble will pop up.
-const base::Feature kAutofillCreditCardUploadFeedback{
-    "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, the GetDetailsForEnrollResponseDetails in the
 // UploadCardResponseDetails will be parsed, which will allow the Virtual Card
 // Enrollment flow to skip making a new GetDetailsForEnroll request. This is an
@@ -73,6 +67,11 @@ const base::Feature kAutofillEnableManualFallbackForVirtualCards{
     "AutofillEnableManualFallbackForVirtualCards",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, card product name (instead of issuer network) will be shown in
+// Payments UI.
+const base::Feature kAutofillEnableCardProductName{
+    "AutofillEnableCardProductName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, a notification will be displayed on page navigation if the
 // domain has an eligible merchant promo code offer or reward.
 const base::Feature kAutofillEnableOfferNotificationForPromoCodes{
@@ -85,22 +84,21 @@ const base::Feature kAutofillEnableOffersInClankKeyboardAccessory{
     "AutofillEnableOffersInClankKeyboardAccessory",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, some extra metrics logging for Autofill Downstream will start.
+const base::Feature kAutofillEnableRemadeDownstreamMetrics{
+    "AutofillEnableRemadeDownstreamMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether we send billing customer number in GetUploadDetails
 // preflight call.
 const base::Feature kAutofillEnableSendingBcnInGetUploadDetails{
     "AutofillEnableSendingBcnInGetUploadDetails",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
 const base::Feature kAutofillEnableStickyManualFallbackForCards{
     "AutofillEnableStickyManualFallbackForCards",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, Autofill data related icons will be shown in the status
-// chip in toolbar along with the avatar toolbar button.
-const base::Feature kAutofillEnableToolbarStatusChip{
-    "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, UnmaskCardRequest will set instrument id, which is Chrome-side
 // field for non-legacy ID.
@@ -151,6 +149,11 @@ const base::Feature kAutofillEnableVirtualCardMetadata{
 const base::Feature kAutofillEnforceDelaysInStrikeDatabase{
     "AutofillEnforceDelaysInStrikeDatabase", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, Autofill will attempt to fill IBAN (International Bank Account
+// Number) fields when data is available.
+const base::Feature kAutofillFillIbanFields{"AutofillFillIbanFields",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
 // fields when data is available.
 const base::Feature kAutofillFillMerchantPromoCodeFields{
@@ -165,6 +168,12 @@ const base::Feature kAutofillParseIbanFields{"AutofillParseIbanFields",
 // fields when parsing forms.
 const base::Feature kAutofillParseMerchantPromoCodeFields{
     "AutofillParseMerchantPromoCodeFields", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Autofill will attempt to find standalone CVC fields for VCN
+// card on file when parsing forms.
+const base::Feature kAutofillParseVcnCardOnFileStandaloneCvcFields{
+    "AutofillParseVcnCardOnFileStandaloneCvcFields",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, the Save Card infobar will be dismissed by a user initiated
 // navigation other than one caused by submitted form.
@@ -197,12 +206,6 @@ const base::FeatureParam<int> kAutofillSaveCardUiExperimentSelectorInNumber{
 const base::Feature kAutofillShowUnmaskedCachedCardInManualFillingView{
     "AutofillShowUnmaskedCachedCardInManualFillingView",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, merchant bound virtual cards will be suggested even if we don't
-// detect all of the card number, exp date and CVC fields in the payment form.
-const base::Feature kAutofillSuggestVirtualCardsOnIncompleteForm{
-    "AutofillSuggestVirtualCardsOnIncompleteForm",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.

@@ -78,7 +78,7 @@ namespace ash {
 PulsingBlockView::PulsingBlockView(const gfx::Size& size,
                                    base::TimeDelta animation_delay)
     : block_size_(size) {
-  if (ash::features::IsLauncherPulsingBlocksRefreshEnabled()) {
+  if (ash::features::IsProductivityLauncherEnabled()) {
     views::BoxLayout* layout_manager =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal));
@@ -135,7 +135,7 @@ const char* PulsingBlockView::GetClassName() const {
 }
 
 void PulsingBlockView::OnStartDelayTimer() {
-  if (!ash::features::IsLauncherPulsingBlocksRefreshEnabled()) {
+  if (!ash::features::IsProductivityLauncherEnabled()) {
     SchedulePulsingAnimation(layer());
     return;
   }
@@ -148,7 +148,7 @@ void PulsingBlockView::OnStartDelayTimer() {
 void PulsingBlockView::OnThemeChanged() {
   views::View::OnThemeChanged();
 
-  if (!ash::features::IsLauncherPulsingBlocksRefreshEnabled())
+  if (!ash::features::IsProductivityLauncherEnabled())
     return;
 
   if (background_color_view_) {
@@ -160,13 +160,30 @@ void PulsingBlockView::OnThemeChanged() {
 }
 
 void PulsingBlockView::OnPaint(gfx::Canvas* canvas) {
-  if (ash::features::IsLauncherPulsingBlocksRefreshEnabled()) {
+  if (ash::features::IsProductivityLauncherEnabled()) {
     views::View::OnPaint(canvas);
     return;
   }
   gfx::Rect rect(GetContentsBounds());
   rect.ClampToCenteredSize(gfx::Size(kBlockSize, kBlockSize));
   canvas->FillRect(rect, kBlockColor);
+}
+
+bool PulsingBlockView::IsAnimating() {
+  views::View* animating_view = ash::features::IsProductivityLauncherEnabled()
+                                    ? background_color_view_
+                                    : this;
+  return animating_view->layer()
+             ? animating_view->layer()->GetAnimator()->is_animating()
+             : false;
+}
+
+bool PulsingBlockView::FireAnimationTimerForTest() {
+  if (!start_delay_timer_.IsRunning())
+    return false;
+
+  start_delay_timer_.FireNow();
+  return true;
 }
 
 }  // namespace ash

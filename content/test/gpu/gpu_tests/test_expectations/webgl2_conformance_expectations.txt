@@ -25,8 +25,9 @@
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-hd-630-family intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912
+#         intel intel-hd-630-family intel-gen-9 intel-0xa2e intel-0xd26
+#               intel-0xa011 intel-0x3e92 intel-0x3e9b intel-0x5912
+#               intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Decoder
@@ -40,13 +41,11 @@
 #         angle-vulkan ]
 # Skia Renderer
 # tags: [ skia-renderer-dawn
-#         skia-renderer-disabled
 #         skia-renderer-gl
 #         skia-renderer-vulkan ]
-# SwiftShader
-# tags: [ swiftshader-gl no-swiftshader-gl ]
 # Driver
-# tags: [ mesa_lt_19.1 ]
+# tags: [ mesa_lt_19.1
+#         mesa_ge_21.0 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -216,6 +215,12 @@ crbug.com/1108086 [ no-passthrough ] conformance2/renderbuffers/framebuffer-obje
 crbug.com/angleproject/4807 [ win angle-d3d11 passthrough ] conformance2/glsl3/switch-case.html [ Failure ]
 crbug.com/1276153 conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 crbug.com/1206763 [ win intel ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
+# Failing at least on Pixel 4, both validating and passthrough
+crbug.com/1336010 [ android ] conformance2/extensions/oes-draw-buffers-indexed.html [ Failure ]
+# Failing on at least NVIDIA and Intel
+crbug.com/1336010 [ linux ] conformance2/extensions/oes-draw-buffers-indexed.html [ Failure ]
+crbug.com/1336010 [ win ] conformance2/extensions/oes-draw-buffers-indexed.html [ Failure ]
+crbug.com/1336010 [ chromeos chromeos-board-amd64-generic ] conformance2/extensions/oes-draw-buffers-indexed.html [ Failure ]
 
 # The validating command decoder suppressions here will not be fixed.
 crbug.com/angleproject/6245 [ no-passthrough ] conformance/extensions/ext-texture-compression-bptc.html [ Failure ]
@@ -313,6 +318,8 @@ crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles
 crbug.com/angleproject/7234 [ mac passthrough angle-metal ] conformance2/textures/misc/integer-cubemap-texture-sampling.html [ Failure ]
 
 # Metal AMD
+crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/gles3/textureshadow/2d_array_linear_mipmap_nearest_greater_or_equal.html [ RetryOnFailure ]
+crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] conformance2/renderbuffers/multisampled-stencil-renderbuffer-initialization.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] conformance2/textures/misc/tex-srgb-mipmap.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] conformance2/textures/misc/tex-storage-compressed-formats.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/gles3/pixelbufferobject.html [ Failure ]
@@ -480,7 +487,7 @@ crbug.com/1276186 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/
 crbug.com/1338004 [ mac nvidia-0xfe9 passthrough ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
 
 
-# Mac AMD
+# Mac AMD Retina
 # AMD Radeon HD 8870M (1002:6821)
 # TODO(kbr): uncomment the following two exepectations after test
 # has been made more robust.
@@ -503,6 +510,24 @@ crbug.com/1037958 [ mac amd-0x679e ] conformance2/transform_feedback/switching-o
 crbug.com/636648 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_01.html [ RetryOnFailure ]
 
 crbug.com/642822 [ mac amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
+
+crbug.com/1214931 [ mac amd-0x6821 angle-opengl ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ RetryOnFailure ]
+crbug.com/1343793 [ mac amd-0x6821 angle-opengl ] deqp/functional/gles3/texturefiltering/3d_combinations_24.html [ RetryOnFailure ]
+
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/shaderoperator/binary_operator_14.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/3d_sizes_00.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/cube_formats_05.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/cube_formats_06.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/cube_no_edges_visible.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/basic_teximage3d_2d_array_00.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/basic_texsubimage2d_cube_04.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage2d_depth.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage2d_pbo_cube_00.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_depth.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/texstorage2d_format_cube_01.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ RetryOnFailure ]
+crbug.com/1345782 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/textureformat/sized_color_cube_npot_01.html [ RetryOnFailure ]
+crbug.com/1350287 [ mac amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/occlusionquery_strict.html [ RetryOnFailure ]
 
 crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/canvas/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
@@ -610,6 +635,19 @@ crbug.com/angleproject/5221 [ mac passthrough angle-opengl intel ] deqp/function
 # AMD Radeon HD 7800 GPU (1002:679e)
 crbug.com/1276186 [ mac amd-0x679e angle-opengl passthrough ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 crbug.com/1240443 [ mac amd-0x679e angle-opengl passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/shaderoperator/binary_operator_14.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/3d_combinations_24.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/3d_sizes_00.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/cube_formats_05.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/cube_formats_06.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturefiltering/cube_no_edges_visible.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/basic_teximage3d_2d_array_00.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/basic_texsubimage2d_cube_04.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage2d_depth.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage2d_pbo_cube_00.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_depth.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/texstorage2d_format_cube_01.html [ RetryOnFailure ]
+crbug.com/1345755 [ mac amd-0x679e angle-opengl passthrough ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ RetryOnFailure ]
 
 # Mac / M1 / OpenGL
 crbug.com/1130112 [ mac apple-apple-m1 passthrough angle-opengl ] deqp/functional/gles3/texturefiltering/cube_combinations_00.html [ Failure ]
@@ -681,7 +719,11 @@ crbug.com/angleproject/4417 [ linux no-passthrough ] conformance2/rendering/fram
 crbug.com/1081978 [ linux intel angle-opengl passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 crbug.com/angleproject/4242 [ linux intel angle-opengl passthrough ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
 
+# Linux INTEL
+crbug.com/1310144 [ linux intel mesa_ge_21.0 ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
+
 # Linux NVIDIA
+crbug.com/1343520 [ linux nvidia angle-opengl passthrough ] conformance2/textures/canvas/tex-2d-r8-red-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/angleproject/5783 [ linux nvidia angle-opengl passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 
@@ -826,6 +868,8 @@ crbug.com/1218162 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/unifor
 crbug.com/1218162 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/uniformbuffers/single_basic_type.html [ Failure ]
 crbug.com/1218169 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fragmentoutput/array.float.html [ Failure ]
 crbug.com/1218169 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fragmentoutput/basic.float.html [ Failure ]
+crbug.com/1218509 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fbomultisample.2_samples.html [ RetryOnFailure ]
+crbug.com/1218509 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fbomultisample.4_samples.html [ RetryOnFailure ]
 crbug.com/1218509 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fbomultisample.8_samples.html [ Failure ]
 crbug.com/1218512 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/shadertexturefunction/texturelodoffset.html [ Failure ]
 crbug.com/1218516 [ chromeos chromeos-board-kevin ] deqp/data/gles3/shaders/arrays.html [ Failure ]
@@ -870,6 +914,12 @@ crbug.com/1328444 [ chromeos chromeos-board-kevin ] conformance2/textures/misc/t
 
 crbug.com/1337803 [ chromeos chromeos-board-kevin ] conformance2/misc/expando-loss-2.html [ Failure ]
 
+# Must investigate ChromeOS failures with passthrough command decoder.
+crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
+
+# Failures on validating command decoder only; won't fix.
+crbug.com/angleproject/5038 [ chromeos no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
+
 ##############################
 # Lacros-like Linux Failures #
 ##############################
@@ -881,6 +931,9 @@ crbug.com/1210240 [ linux intel display-server-wayland no-passthrough ] conforma
 crbug.com/1215700 [ linux intel display-server-wayland no-passthrough ] deqp/functional/gles3/negativetextureapi.html [ Failure ]
 crbug.com/1218607 [ linux intel display-server-wayland no-passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 crbug.com/1231736 [ linux intel display-server-wayland no-passthrough ] deqp/functional/gles3/clipping.html [ Failure ]
+
+# Failures on validating command decoder only; won't fix.
+crbug.com/angleproject/5038 [ linux intel display-server-wayland no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
 # Conflicting expectations to test that the
 # "Expectations have no collisions" unittest works.

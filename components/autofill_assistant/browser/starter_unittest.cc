@@ -21,8 +21,8 @@
 #include "components/autofill_assistant/browser/fake_starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_assistant_field_trial_util.h"
-#include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/public/mock_runtime_manager.h"
+#include "components/autofill_assistant/browser/public/password_change/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/service/mock_service_request_sender.h"
 #include "components/autofill_assistant/browser/switches.h"
@@ -2013,7 +2013,7 @@ TEST_F(StarterTest, CommandLineScriptParametersAreAddedToImplicitTriggers) {
   task_environment()->RunUntilIdle();
 }
 
-TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsAllMatchingIntents) {
+TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsFirstLegacyIntent) {
   content::BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
   content::RenderViewHostTestEnabler rvh_test_enabler;
@@ -2079,8 +2079,7 @@ TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsAllMatchingIntents) {
         auto actual_intents =
             base::SplitString(actual_intent_param->value(), ",",
                               base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-        EXPECT_THAT(actual_intents,
-                    UnorderedElementsAre("FAKE_INTENT_A", "FAKE_INTENT_B"));
+        EXPECT_THAT(actual_intents, UnorderedElementsAre("FAKE_INTENT_A"));
       }));
 
   content::WebContentsTester::For(web_contents.get())
@@ -2286,6 +2285,7 @@ TEST_F(StarterTest, FirstTimeUserNotShowOnboardingIfHandledExternally) {
   TriggerContext::Options options;
   options.initial_url = "https://redirect.com/to/www/example/com";
   options.is_externally_triggered = true;
+  options.skip_autofill_assistant_onboarding = true;
   base::MockCallback<
       base::OnceCallback<void(bool success, absl::optional<GURL> url,
                               std::unique_ptr<TriggerContext> trigger_context)>>
@@ -2313,6 +2313,45 @@ TEST_F(StarterTest, FirstTimeUserNotShowOnboardingIfHandledExternally) {
   EXPECT_THAT(GetUkmRegularScriptOnboarding(ukm_recorder_),
               ElementsAreArray(ToHumanReadableMetrics(
                   {{navigation_ids_[0], {Metrics::Onboarding::OB_EXTERNAL}}})));
+}
+
+TEST_F(StarterTest,
+       FirstTimeUserShowOnboardingIfHandledExternallyWithUseOnboardingFlag) {
+  SetupPlatformDelegateForFirstTimeUser();
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  TriggerContext::Options options;
+  options.initial_url = "https://redirect.com/to/www/example/com";
+  options.is_externally_triggered = true;
+  options.skip_autofill_assistant_onboarding = false;
+  base::MockCallback<
+      base::OnceCallback<void(bool success, absl::optional<GURL> url,
+                              std::unique_ptr<TriggerContext> trigger_context)>>
+      mock_preconditions_checked_callback;
+  EXPECT_CALL(mock_preconditions_checked_callback,
+              Run(true, Optional(GURL(kExampleDeeplink)), _));
+
+  starter_->CanStart(
+      std::make_unique<TriggerContext>(
+          std::make_unique<ScriptParameters>(script_parameters), options),
+      mock_preconditions_checked_callback.Get());
+
+  EXPECT_EQ(fake_platform_delegate_.num_install_feature_module_called_, 1);
+  EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
+  EXPECT_TRUE(fake_platform_delegate_.GetOnboardingAccepted());
+  EXPECT_THAT(GetUkmTriggerScriptStarted(ukm_recorder_), IsEmpty());
+  EXPECT_THAT(GetUkmTriggerScriptFinished(ukm_recorder_), IsEmpty());
+  EXPECT_THAT(GetUkmTriggerScriptOnboarding(ukm_recorder_), IsEmpty());
+  histogram_tester_.ExpectUniqueSample(
+      "Android.AutofillAssistant.FeatureModuleInstallation",
+      Metrics::FeatureModuleInstallation::DFM_FOREGROUND_INSTALLATION_SUCCEEDED,
+      1u);
+  EXPECT_THAT(GetUkmRegularScriptOnboarding(ukm_recorder_),
+              ElementsAreArray(ToHumanReadableMetrics(
+                  {{navigation_ids_[0], {Metrics::Onboarding::OB_ACCEPTED}},
+                   {navigation_ids_[0], {Metrics::Onboarding::OB_SHOWN}}})));
 }
 
 TEST_F(StarterTest, RegularStartupFailsForSupervisedUser) {

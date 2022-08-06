@@ -89,11 +89,27 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   virtual display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const = 0;
 
-  // Suspends or un-suspends the platform-specific screensaver, and returns
-  // whether the operation was successful. Can be called more than once with the
-  // same value for |suspend|, but those states should not stack: the first
-  // alternating value should toggle the state of the suspend.
-  virtual bool SetScreenSaverSuspended(bool suspend);
+  // Object which suspends the platform-specific screensaver for the duration of
+  // its existence.
+  class PlatformScreenSaverSuspender {
+   public:
+    PlatformScreenSaverSuspender() = default;
+
+    PlatformScreenSaverSuspender(const PlatformScreenSaverSuspender&) = delete;
+    PlatformScreenSaverSuspender& operator=(
+        const PlatformScreenSaverSuspender&) = delete;
+
+    // Causes the platform-specific screensaver to be un-suspended iff this is
+    // the last remaining instance.
+    virtual ~PlatformScreenSaverSuspender() = 0;
+  };
+
+  // Suspends the platform-specific screensaver until the returned
+  // |PlatformScreenSaverSuspender| is destructed, or returns nullptr if
+  // suspension failed. This method allows stacking multiple overlapping calls,
+  // such that the platform-specific screensaver will not be un-suspended until
+  // all returned |PlatformScreenSaverSuspender| instances have been destructed.
+  virtual std::unique_ptr<PlatformScreenSaverSuspender> SuspendScreenSaver();
 
   // Returns whether the screensaver is currently running.
   virtual bool IsScreenSaverActive() const;
@@ -111,7 +127,7 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
 
   // Returns human readable description of the window manager, desktop, and
   // other system properties related to the compositing.
-  virtual std::vector<base::Value> GetGpuExtraInfo(
+  virtual base::Value::List GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info);
 
   // Sets device scale factor received from external sources such as toolkits.
@@ -119,7 +135,7 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   virtual void SetDeviceScaleFactor(float scale);
 
  protected:
-  void StorePlatformNameIntoListOfValues(std::vector<base::Value>& values,
+  void StorePlatformNameIntoListOfValues(base::Value::List& values,
                                          const std::string& platform_name);
 };
 

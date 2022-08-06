@@ -11,7 +11,7 @@
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
@@ -51,7 +51,7 @@ LoginManagerMixin::TestUserInfo GetTestUserInfo() {
 class AssistantStatusWaiter : private ash::AssistantStateObserver {
  public:
   AssistantStatusWaiter(ash::AssistantState* state,
-                        chromeos::assistant::AssistantStatus expected_status)
+                        ash::assistant::AssistantStatus expected_status)
       : state_(state), expected_status_(expected_status) {
     state_->AddObserver(this);
   }
@@ -74,13 +74,13 @@ class AssistantStatusWaiter : private ash::AssistantStateObserver {
 
  private:
   void OnAssistantStatusChanged(
-      chromeos::assistant::AssistantStatus status) override {
+      ash::assistant::AssistantStatus status) override {
     if (status == expected_status_ && quit_loop_)
       std::move(quit_loop_).Run();
   }
 
   ash::AssistantState* const state_;
-  chromeos::assistant::AssistantStatus const expected_status_;
+  ash::assistant::AssistantStatus const expected_status_;
 
   base::OnceClosure quit_loop_;
 };
@@ -420,7 +420,7 @@ void AssistantTestMixin::StartAssistantAndWaitForReady(
   SetPreferVoice(false);
 
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
-                               chromeos::assistant::AssistantStatus::READY);
+                               ash::assistant::AssistantStatus::READY);
   waiter.RunUntilExpectedStatus();
 }
 
@@ -591,7 +591,7 @@ void AssistantTestMixin::DisableAssistant() {
 
   // Then wait for the Service to shutdown.
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
-                               chromeos::assistant::AssistantStatus::NOT_READY);
+                               ash::assistant::AssistantStatus::NOT_READY);
   waiter.RunUntilExpectedStatus();
 }
 

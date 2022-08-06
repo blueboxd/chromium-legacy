@@ -162,7 +162,10 @@ bool GetAnnotatedVisitsToCluster::AddUnclusteredVisits(
     // Filter out visits from sync.
     // TODO(manukh): Consider allowing the clustering backend to handle sync
     //  visits.
-    const bool is_clustered = db->IsVisitClustered(visit.visit_row.visit_id);
+    const bool is_clustered =
+        GetConfig().persist_clusters_in_history_db
+            ? db->GetClusterIdContainingVisit(visit.visit_row.visit_id) > 0
+            : false;
     if (is_clustered && recent_first_)
       continuation_params_.exhausted_unclustered_visits = true;
     if (!is_clustered && visit.source != history::SOURCE_SYNCED)
@@ -279,8 +282,9 @@ void GetAnnotatedVisitsToCluster::IncrementContinuationParams(
     // added all visits; e.g. `begin_time_limit_` can be more recent than 90
     // days ago or the initial `continuation_end_time_` could have been older
     // than now.
-    if (continuation_params_.continuation_time <= begin_time_limit_ ||
-        continuation_params_.continuation_time >= now) {
+    if ((continuation_params_.continuation_time <= begin_time_limit_ &&
+         recent_first_) ||
+        (continuation_params_.continuation_time >= now && !recent_first_)) {
       continuation_params_.exhausted_unclustered_visits = true;
       continuation_params_.exhausted_all_visits = true;
     }

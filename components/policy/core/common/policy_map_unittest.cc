@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/external_data_manager.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
@@ -74,7 +75,21 @@ PolicyMapTestBase::CreateExternalDataFetcher(const std::string& policy) const {
       base::WeakPtr<ExternalDataManager>(), policy);
 }
 
-class PolicyMapTest : public PolicyMapTestBase, public testing::Test {};
+class PolicyMapTest : public PolicyMapTestBase, public testing::Test {
+ public:
+  const PolicyDetails* GetPolicyDetailsExternalCallback(
+      const std::string& policy_name) {
+    return &externalDetails_;
+  }
+
+  const PolicyDetails* GetPolicyDetailsNonExternalCallback(
+      const std::string& policy_name) {
+    return &nonExternalDetails_;
+  }
+
+  PolicyDetails externalDetails_ = {false, false, false, 0, 10, {}};
+  PolicyDetails nonExternalDetails_ = {false, false, false, 0, 0, {}};
+};
 
 TEST_F(PolicyMapTest, SetAndGet) {
   PolicyMap map;
@@ -982,11 +997,11 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
 
   PolicyMap policy_not_merged;
   policy_not_merged.Set(kTestPolicyName1, platform_user_mandatory.DeepCopy());
-  policy_not_merged.Set(policy::key::kExtensionInstallBlocklist,
+  policy_not_merged.Set(policy::key::kPopupsAllowedForUrls,
                         platform_machine_mandatory.DeepCopy());
-  policy_not_merged.Set(policy::key::kExtensionInstallAllowlist,
+  policy_not_merged.Set(policy::key::kPopupsBlockedForUrls,
                         cloud_machine_mandatory.DeepCopy());
-  policy_not_merged.Set(policy::key::kExtensionInstallForcelist,
+  policy_not_merged.Set(policy::key::kDefaultPopupsSetting,
                         platform_machine_recommended.DeepCopy());
 
   PolicyMap group_merged = policy_not_merged.Clone();
@@ -996,11 +1011,11 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
   PolicyMap expected_group_merged;
   expected_group_merged.Set(kTestPolicyName1,
                             platform_user_mandatory.DeepCopy());
-  expected_group_merged.Set(policy::key::kExtensionInstallBlocklist,
+  expected_group_merged.Set(policy::key::kPopupsAllowedForUrls,
                             platform_machine_mandatory.DeepCopy());
-  expected_group_merged.Set(policy::key::kExtensionInstallAllowlist,
+  expected_group_merged.Set(policy::key::kPopupsBlockedForUrls,
                             cloud_machine_mandatory_ignored.DeepCopy());
-  expected_group_merged.Set(policy::key::kExtensionInstallForcelist,
+  expected_group_merged.Set(policy::key::kDefaultPopupsSetting,
                             platform_machine_recommended.DeepCopy());
 
   EXPECT_TRUE(group_merged.Equals(expected_group_merged));
@@ -1026,6 +1041,25 @@ TEST_F(PolicyMapTest, LoadFromSetsLevelScopeAndSource) {
   expected.Set("TestPolicy3", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_PLATFORM, base::Value(-12321), nullptr);
   EXPECT_TRUE(loaded.Equals(expected));
+}
+
+TEST_F(PolicyMapTest, LoadFromCheckForExternalPolicy) {
+  base::DictionaryValue policies;
+  policies.SetStringKey("TestPolicy1", "google.com");
+
+  PolicyMap loaded;
+  loaded.set_chrome_policy_details_callback_for_test(
+      base::BindRepeating(&PolicyMapTest::GetPolicyDetailsExternalCallback,
+                          base::Unretained(this)));
+  loaded.LoadFrom(&policies, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                  POLICY_SOURCE_PLATFORM);
+  EXPECT_TRUE(loaded.empty());
+  loaded.set_chrome_policy_details_callback_for_test(
+      base::BindRepeating(&PolicyMapTest::GetPolicyDetailsNonExternalCallback,
+                          base::Unretained(this)));
+  loaded.LoadFrom(&policies, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                  POLICY_SOURCE_PLATFORM);
+  EXPECT_FALSE(loaded.empty());
 }
 
 bool IsMandatory(const PolicyMap::PolicyMapType::const_iterator iter) {
@@ -1276,6 +1310,7 @@ TEST_F(PolicyMapTest, Affiliation) {
   EXPECT_TRUE(policies.IsUserAffiliated());
 }
 
+#if !BUILDFLAG(IS_CHROMEOS)
 class PolicyMapMergeTest
     : public PolicyMapTestBase,
       public testing::TestWithParam<
@@ -1674,7 +1709,6 @@ INSTANTIATE_TEST_SUITE_P(PolicyMapMergeTestInstance,
                                           testing::Values(false, true),
                                           testing::Values(false, true)));
 
-#if !BUILDFLAG(IS_CHROMEOS)
 class PolicyMapPriorityTest
     : public testing::TestWithParam<
           std::tuple</*cloud_policy_overrides_platform_policy=*/bool,

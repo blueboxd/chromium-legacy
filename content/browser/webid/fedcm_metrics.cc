@@ -12,16 +12,20 @@
 
 namespace content {
 
-FedCmMetrics::FedCmMetrics(const GURL& provider, ukm::SourceId page_source_id)
+FedCmMetrics::FedCmMetrics(const GURL& provider,
+                           ukm::SourceId page_source_id,
+                           int session_id)
     : page_source_id_(page_source_id),
       provider_source_id_(ukm::UkmRecorder::GetSourceIdForWebIdentityFromScope(
           base::PassKey<FedCmMetrics>(),
-          provider)) {}
+          provider)),
+      session_id_(session_id) {}
 
 void FedCmMetrics::RecordShowAccountsDialogTime(base::TimeDelta duration) {
   auto RecordUkm = [&](auto& ukm_builder) {
     ukm_builder.SetTiming_ShowAccountsDialog(
         ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.SetFedCmSessionID(session_id_);
     ukm_builder.Record(ukm::UkmRecorder::Get());
   };
   ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
@@ -36,6 +40,7 @@ void FedCmMetrics::RecordContinueOnDialogTime(base::TimeDelta duration) {
   auto RecordUkm = [&](auto& ukm_builder) {
     ukm_builder.SetTiming_ContinueOnDialog(
         ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.SetFedCmSessionID(session_id_);
     ukm_builder.Record(ukm::UkmRecorder::Get());
   };
   ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
@@ -51,6 +56,7 @@ void FedCmMetrics::RecordCancelOnDialogTime(base::TimeDelta duration) {
   auto RecordUkm = [&](auto& ukm_builder) {
     ukm_builder.SetTiming_CancelOnDialog(
         ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.SetFedCmSessionID(session_id_);
     ukm_builder.Record(ukm::UkmRecorder::Get());
   };
   ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
@@ -62,6 +68,13 @@ void FedCmMetrics::RecordCancelOnDialogTime(base::TimeDelta duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.FedCm.Timing.CancelOnDialog", duration);
 }
 
+void FedCmMetrics::RecordCancelReason(
+    IdentityRequestDialogController::DismissReason dismiss_reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Blink.FedCm.CancelReason", dismiss_reason,
+      IdentityRequestDialogController::DismissReason::COUNT);
+}
+
 void FedCmMetrics::RecordTokenResponseAndTurnaroundTime(
     base::TimeDelta token_response_time,
     base::TimeDelta turnaround_time) {
@@ -71,6 +84,7 @@ void FedCmMetrics::RecordTokenResponseAndTurnaroundTime(
             token_response_time.InMilliseconds()))
         .SetTiming_TurnaroundTime(ukm::GetExponentialBucketMinForUserTiming(
             turnaround_time.InMilliseconds()));
+    ukm_builder.SetFedCmSessionID(session_id_);
     ukm_builder.Record(ukm::UkmRecorder::Get());
   };
   ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
@@ -86,8 +100,19 @@ void FedCmMetrics::RecordTokenResponseAndTurnaroundTime(
 }
 
 void FedCmMetrics::RecordRequestTokenStatus(FedCmRequestIdTokenStatus status) {
+  // If the request has failed but we have not yet rejected the promise,
+  // e.g. when the user has declined the permission or the API is disabled
+  // etc., we have already recorded a RequestTokenStatus. i.e.
+  // `request_token_status_recorded_` would be true. In this case, we
+  // shouldn't record another RequestTokenStatus.
+  if (request_token_status_recorded_) {
+    return;
+  }
+  request_token_status_recorded_ = true;
+
   auto RecordUkm = [&](auto& ukm_builder) {
     ukm_builder.SetStatus_RequestIdToken(static_cast<int>(status));
+    ukm_builder.SetFedCmSessionID(session_id_);
     ukm_builder.Record(ukm::UkmRecorder::Get());
   };
   ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
@@ -97,6 +122,19 @@ void FedCmMetrics::RecordRequestTokenStatus(FedCmRequestIdTokenStatus status) {
   RecordUkm(fedcm_idp_builder);
 
   UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.RequestIdToken", status);
+}
+
+void FedCmMetrics::RecordSignInStateMatchStatus(
+    FedCmSignInStateMatchStatus status) {
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetStatus_SignInStateMatch(static_cast<int>(status));
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
+
+  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.SignInStateMatch", status);
 }
 
 void RecordIsSignInUser(bool is_sign_in) {

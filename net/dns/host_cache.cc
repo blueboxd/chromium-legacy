@@ -75,6 +75,7 @@ const char kAddressesKey[] = "addresses";
 const char kTextRecordsKey[] = "text_records";
 const char kHostnameResultsKey[] = "hostname_results";
 const char kHostPortsKey[] = "host_ports";
+const char kCanonicalNamesKey[] = "canonical_names";
 
 base::Value IpEndpointToValue(const IPEndPoint& endpoint) {
   base::Value::Dict dictionary;
@@ -285,11 +286,18 @@ HostCache::Entry::GetEndpoints() const {
 
   if (ip_endpoints_.value().empty())
     return endpoints;
-
   absl::optional<std::vector<ConnectionEndpointMetadata>> metadatas =
       GetMetadatas();
-  if (metadatas.has_value()) {
+
+  if (metadatas.has_value() && canonical_names_ &&
+      (canonical_names_->size() == 1)) {
+    // Currently Chrome uses HTTPS records only when A and AAAA records are at
+    // the same canonical name and that matches the HTTPS target name.
     for (ConnectionEndpointMetadata& metadata : metadatas.value()) {
+      if (canonical_names_->find(metadata.target_name) ==
+          canonical_names_->end()) {
+        continue;
+      }
       endpoints.emplace_back();
       endpoints.back().ip_endpoints = ip_endpoints_.value();
       endpoints.back().metadata = std::move(metadata);
@@ -347,6 +355,7 @@ HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
   MergeLists(&front.hostnames_, back.hostnames());
   MergeLists(&front.https_record_compatibility_,
              back.https_record_compatibility_);
+  MergeContainers(front.canonical_names_, back.canonical_names_);
 
   // The DNS aliases include the canonical name(s), if any, each as the
   // first entry in the field, which is an optional vector. If |front| has
@@ -404,6 +413,19 @@ HostCache::Entry& HostCache::Entry::operator=(const Entry& entry) = default;
 
 HostCache::Entry& HostCache::Entry::operator=(Entry&& entry) = default;
 
+HostCache::Entry::Entry(int error,
+                        std::vector<IPEndPoint> ip_endpoints,
+                        std::set<std::string> aliases,
+                        Source source,
+                        absl::optional<base::TimeDelta> ttl)
+    : error_(error),
+      ip_endpoints_(std::move(ip_endpoints)),
+      aliases_(std::move(aliases)),
+      source_(source),
+      ttl_(ttl ? ttl.value() : base::Seconds(-1)) {
+  DCHECK(!ttl || ttl.value() >= base::TimeDelta());
+}
+
 HostCache::Entry::Entry(const HostCache::Entry& entry,
                         base::TimeTicks now,
                         base::TimeDelta ttl,
@@ -418,6 +440,7 @@ HostCache::Entry::Entry(const HostCache::Entry& entry,
       https_record_compatibility_(entry.https_record_compatibility_),
       source_(entry.source()),
       pinning_(entry.pinning()),
+      canonical_names_(entry.canonical_names()),
       ttl_(entry.ttl()),
       expires_(now + ttl),
       network_changes_(network_changes) {}
@@ -618,6 +641,13 @@ base::Value::Dict HostCache::Entry::GetAsValue(bool include_staleness) const {
       }
       entry_dict.Set(kHostnameResultsKey, std::move(hostnames_value));
       entry_dict.Set(kHostPortsKey, std::move(host_ports_value));
+    }
+    if (canonical_names()) {
+      base::Value::List canonical_names_list;
+      for (const std::string& canonical_name : canonical_names().value()) {
+        canonical_names_list.Append(canonical_name);
+      }
+      entry_dict.Set(kCanonicalNamesKey, std::move(canonical_names_list));
     }
   }
 
@@ -970,6 +1000,7 @@ bool HostCache::RestoreFromListValue(const base::Value::List& old_cache) {
     const base::Value::List* text_records_list = nullptr;
     const base::Value::List* hostname_records_list = nullptr;
     const base::Value::List* host_ports_list = nullptr;
+    const base::Value::List* canonical_names_list = nullptr;
     absl::optional<int> maybe_error = entry_dict.FindInt(kNetErrorKey);
     absl::optional<bool> maybe_pinned = entry_dict.FindBool(kPinnedKey);
     if (maybe_error.has_value()) {
@@ -982,6 +1013,7 @@ bool HostCache::RestoreFromListValue(const base::Value::List& old_cache) {
       text_records_list = entry_dict.FindList(kTextRecordsKey);
       hostname_records_list = entry_dict.FindList(kHostnameResultsKey);
       host_ports_list = entry_dict.FindList(kHostPortsKey);
+      canonical_names_list = entry_dict.FindList(kCanonicalNamesKey);
 
       if ((hostname_records_list == nullptr && host_ports_list != nullptr) ||
           (hostname_records_list != nullptr && host_ports_list == nullptr)) {
@@ -1072,6 +1104,17 @@ bool HostCache::RestoreFromListValue(const base::Value::List& old_cache) {
       }
     }
 
+    absl::optional<std::set<std::string>> canonical_names;
+    if (canonical_names_list) {
+      canonical_names = std::set<std::string>();
+      for (const auto& item : *canonical_names_list) {
+        const std::string* name = item.GetIfString();
+        if (!name)
+          return false;
+        canonical_names->insert(*name);
+      }
+    }
+
     // We do not intend to serialize experimental results with the host cache.
     absl::optional<std::vector<bool>> experimental_results;
 
@@ -1090,13 +1133,14 @@ bool HostCache::RestoreFromListValue(const base::Value::List& old_cache) {
     // replace the entry.
     auto found = entries_.find(key);
     if (found == entries_.end()) {
-      Entry entry(error, std::move(ip_endpoints), std::move(endpoint_metadatas),
-                  std::move(aliases), legacy_address_value,
-                  std::move(text_records), std::move(hostname_records),
-                  std::move(experimental_results), Entry::SOURCE_UNKNOWN,
-                  expiration_time, network_changes_ - 1);
-      entry.set_pinning(maybe_pinned.value_or(false));
-      AddEntry(key, std::move(entry));
+      Entry new_entry(
+          error, std::move(ip_endpoints), std::move(endpoint_metadatas),
+          std::move(aliases), legacy_address_value, std::move(text_records),
+          std::move(hostname_records), std::move(experimental_results),
+          Entry::SOURCE_UNKNOWN, expiration_time, network_changes_ - 1);
+      new_entry.set_pinning(maybe_pinned.value_or(false));
+      new_entry.set_canonical_names(std::move(canonical_names));
+      AddEntry(key, std::move(new_entry));
       restore_size_++;
     }
   }

@@ -19,6 +19,8 @@
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,6 +35,10 @@ namespace {
 // Location of the page to buy more storage for Google Drive.
 const char kGoogleDriveBuyStorageUrl[] =
     "https://www.google.com/settings/storage";
+
+// Location of the page to manage Google Drive storage.
+const char kGoogleDriveManageStorageUrl[] =
+    "https://drive.google.com/drive/u/0/quota";
 
 // Location of the overview page about Google Drive.
 const char kGoogleDriveOverviewUrl[] =
@@ -150,8 +156,12 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DRIVE_RECENT_COLLECTION_LABEL);
   SET_STRING("DRIVE_SHARED_WITH_ME_COLLECTION_LABEL",
              IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL);
-  SET_STRING("DRIVE_SPACE_AVAILABLE_LONG",
-             IDS_FILE_BROWSER_DRIVE_SPACE_AVAILABLE_LONG);
+  SET_STRING("DRIVE_INDIVIDUAL_QUOTA_LOW",
+             IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_LOW);
+  SET_STRING("DRIVE_INDIVIDUAL_QUOTA_OVER",
+             IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_OVER);
+  SET_STRING("DRIVE_ORGANIZATION_QUOTA_OVER",
+             IDS_FILE_BROWSER_DRIVE_ORGANIZATION_QUOTA_OVER);
   SET_STRING("DRIVE_VISIT_DRIVE_GOOGLE_COM",
              IDS_FILE_BROWSER_DRIVE_VISIT_DRIVE_GOOGLE_COM);
   SET_STRING("DRIVE_WELCOME_DISMISS", IDS_FILE_BROWSER_DRIVE_WELCOME_DISMISS);
@@ -168,6 +178,10 @@ void AddStringsForDrive(base::Value::Dict* dict) {
   SET_STRING("SYNC_FILE_NUMBER", IDS_FILE_BROWSER_SYNC_FILE_NUMBER);
   SET_STRING("SYNC_MISC_ERROR", IDS_FILE_BROWSER_SYNC_MISC_ERROR);
   SET_STRING("SYNC_NO_SERVER_SPACE", IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE);
+  SET_STRING("SYNC_NO_SERVER_SPACE_ORGANIZATION",
+             IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE_ORGANIZATION);
+  SET_STRING("DRIVE_ORGANIZATION_STORAGE_FULL",
+             IDS_FILE_BROWSER_DRIVE_ORGANIZATION_STORAGE_FULL);
   SET_STRING("SYNC_SERVICE_UNAVAILABLE_ERROR",
              IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR);
   SET_STRING("DRIVE_MANAGE_MIRRORSYNC",
@@ -201,6 +215,15 @@ void AddStringsForMediaView(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_RECENT_TIME_HEADING_THIS_YEAR);
   SET_STRING("RECENT_TIME_HEADING_OLDER",
              IDS_FILE_BROWSER_RECENT_TIME_HEADING_OLDER);
+  SET_STRING("RECENT_EMPTY_FOLDER", IDS_FILE_BROWSER_RECENT_EMPTY_FOLDER);
+  SET_STRING("RECENT_EMPTY_IMAGES_FOLDER",
+             IDS_FILE_BROWSER_RECENT_EMPTY_IMAGES_FOLDER);
+  SET_STRING("RECENT_EMPTY_AUDIO_FOLDER",
+             IDS_FILE_BROWSER_RECENT_EMPTY_AUDIO_FOLDER);
+  SET_STRING("RECENT_EMPTY_VIDEOS_FOLDER",
+             IDS_FILE_BROWSER_RECENT_EMPTY_VIDEOS_FOLDER);
+  SET_STRING("RECENT_EMPTY_DOCUMENTS_FOLDER",
+             IDS_FILE_BROWSER_RECENT_EMPTY_DOCUMENTS_FOLDER);
 }
 
 void AddStringsForMediaPlayer(base::Value::Dict* dict) {
@@ -220,22 +243,6 @@ void AddStringsForMediaPlayer(base::Value::Dict* dict) {
              IDS_MEDIA_PLAYER_SEEK_SLIDER_LABEL);
   SET_STRING("MEDIA_PLAYER_VOLUME_SLIDER_LABEL",
              IDS_MEDIA_PLAYER_VOLUME_SLIDER_LABEL);
-}
-
-void AddStringsForAudioPlayer(base::Value::Dict* dict) {
-  SET_STRING("AUDIO_ERROR", IDS_FILE_BROWSER_AUDIO_ERROR);
-  SET_STRING("AUDIO_OFFLINE", IDS_FILE_BROWSER_AUDIO_OFFLINE);
-  SET_STRING("AUDIO_PLAYER_DEFAULT_ARTIST",
-             IDS_FILE_BROWSER_AUDIO_PLAYER_DEFAULT_ARTIST);
-  SET_STRING("AUDIO_PLAYER_TITLE", IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE);
-  SET_STRING("AUDIO_PLAYER_SHUFFLE_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_SHUFFLE_BUTTON_LABEL);
-  SET_STRING("AUDIO_PLAYER_REPEAT_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_REPEAT_BUTTON_LABEL);
-  SET_STRING("AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL);
-  SET_STRING("AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL);
 }
 
 void AddStringsForCloudImport(base::Value::Dict* dict) {
@@ -330,9 +337,6 @@ void AddStringsForHoldingSpace(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_DISMISS);
   SET_STRING("HOLDING_SPACE_WELCOME_TEXT",
              IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT);
-  // TODO(crbug.com/1228128): Remove this once new banner framework is in use.
-  SET_STRING("HOLDING_SPACE_WELCOME_TEXT_IN_TABLET_MODE",
-             IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT_IN_TABLET_MODE);
   SET_STRING("HOLDING_SPACE_WELCOME_TEXT_IN_TABLET_MODE_HTML",
              IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT_IN_TABLET_MODE_HTML);
   SET_STRING("HOLDING_SPACE_WELCOME_TITLE",
@@ -839,6 +843,7 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("SIZE_PB", IDS_FILE_BROWSER_SIZE_PB);
   SET_STRING("SIZE_TB", IDS_FILE_BROWSER_SIZE_TB);
   SET_STRING("SPACE_AVAILABLE", IDS_FILE_BROWSER_SPACE_AVAILABLE);
+  SET_STRING("SPACE_USED", IDS_FILE_BROWSER_SPACE_USED);
   SET_STRING("STATUS_COLUMN_LABEL", IDS_FILE_BROWSER_STATUS_COLUMN_LABEL);
   SET_STRING("TOTAL_FILE_SIZE", IDS_FILE_BROWSER_TOTAL_FILE_SIZE_LABEL);
   SET_STRING("TOTAL_FILE_COUNT", IDS_FILE_BROWSER_TOTAL_FILE_COUNT_LABEL);
@@ -920,6 +925,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL);
   SET_STRING("DLP_BLOCK_COPY_TOAST", IDS_FILE_BROWSER_DLP_BLOCK_COPY_TOAST);
   SET_STRING("DLP_TOAST_BUTTON_LABEL", IDS_FILE_BROWSER_DLP_TOAST_BUTTON_LABEL);
+  SET_STRING("DLP_RESTRICTION_DETAILS",
+             IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS);
+  SET_STRING("DLP_MANAGED_ICON_TOOLTIP",
+             IDS_FILE_BROWSER_DLP_MANAGED_ICON_TOOLTIP);
 }
 
 #undef SET_STRING
@@ -933,7 +942,6 @@ base::Value::Dict GetFileManagerStrings() {
   AddStringsForMediaView(&dict);
   AddStringsForFileTypes(&dict);
   AddStringsForMediaPlayer(&dict);
-  AddStringsForAudioPlayer(&dict);
   AddStringsForCloudImport(&dict);
   AddStringsForCrUiMenuItemShortcuts(&dict);
   AddStringsForFileErrors(&dict);
@@ -949,6 +957,7 @@ base::Value::Dict GetFileManagerStrings() {
            base::StringPrintf(kHelpURLFormat, kFilesAppHelpNumber));
 
   dict.Set("GOOGLE_DRIVE_BUY_STORAGE_URL", kGoogleDriveBuyStorageUrl);
+  dict.Set("GOOGLE_DRIVE_MANAGE_STORAGE_URL", kGoogleDriveManageStorageUrl);
   dict.Set("GOOGLE_DRIVE_ERROR_HELP_URL",
            base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
   dict.Set("GOOGLE_DRIVE_HELP_URL", kGoogleDriveHelpUrl);
@@ -1035,6 +1044,17 @@ void AddFileManagerFeatureStrings(const std::string& locale,
 
   dict->Set("GUEST_OS",
             base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles));
+
+  if (base::FeatureList::IsEnabled(features::kDataLeakPreventionPolicy) &&
+      base::FeatureList::IsEnabled(
+          features::kDataLeakPreventionFilesRestriction)) {
+    policy::DlpRulesManager* rules_manager =
+        policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+    dict->Set("DLP_ENABLED",
+              (rules_manager && rules_manager->IsFilesPolicyEnabled()));
+  } else {
+    dict->Set("DLP_ENABLED", false);
+  }
 
   dict->Set("UI_LOCALE", locale);
   dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());

@@ -219,7 +219,7 @@ void WaylandBufferManagerGpu::CreateShmBasedBuffer(base::ScopedFD shm_fd,
   RunOrQueueTask(std::move(task));
 }
 
-void WaylandBufferManagerGpu::CreateSolidColorBuffer(SkColor color,
+void WaylandBufferManagerGpu::CreateSolidColorBuffer(SkColor4f color,
                                                      const gfx::Size& size,
                                                      uint32_t buf_id) {
   DCHECK(gpu_thread_runner_);
@@ -242,6 +242,7 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
                                            uint32_t frame_id,
                                            uint32_t buffer_id,
                                            const gfx::Rect& bounds_rect,
+                                           const gfx::RoundedCornersF& corners,
                                            float surface_scale_factor,
                                            const gfx::Rect& damage_region) {
   // This surface only commits one buffer per frame, use INT32_MIN to attach
@@ -252,7 +253,8 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
           INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
           gfx::RectF(bounds_rect), gfx::RectF(1.f, 1.f) /* no crop */, false,
           damage_region, 1.0f /*opacity*/, gfx::OverlayPriorityHint::kNone,
-          gfx::RRectF(), gfx::ColorSpace(), absl::nullopt),
+          gfx::RRectF(gfx::RectF(bounds_rect), corners), gfx::ColorSpace(),
+          absl::nullopt),
       nullptr, buffer_id, surface_scale_factor);
   CommitOverlays(widget, frame_id, std::move(overlay_configs));
 }
@@ -478,7 +480,7 @@ void WaylandBufferManagerGpu::CreateShmBasedBufferTask(base::ScopedFD shm_fd,
                                      length, size, buffer_id);
 }
 
-void WaylandBufferManagerGpu::CreateSolidColorBufferTask(SkColor color,
+void WaylandBufferManagerGpu::CreateSolidColorBufferTask(SkColor4f color,
                                                          const gfx::Size& size,
                                                          uint32_t buf_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);

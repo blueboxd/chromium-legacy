@@ -293,8 +293,8 @@ static_library("content_shell_lib") {
       "browser/shell_plugin_service_filter.cc",
       "browser/shell_plugin_service_filter.h",
     ]
-    deps += [ "//ppapi/shared_impl" ]
   }
+
   if (enable_cast_renderer) {
     deps += [ "//media/mojo/services" ]
   }
@@ -308,7 +308,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_linux) {
-    deps += [ "//ui/views/linux_ui:linux_ui_factory" ]
+    deps += [ "//ui/linux:linux_ui_factory" ]
   }
 
   if (is_mac) {

@@ -200,7 +200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppInfoDialog.CreateWebAppShortcutSuccess" enum="Boolean"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -210,7 +210,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Apps.AppLaunch" enum="AppLaunch" expires_after="2022-11-13">
+<histogram name="Apps.AppLaunch" enum="AppLaunch" expires_after="2023-01-15">
   <owner>tapted@chromium.org</owner>
   <owner>benwells@chromium.org</owner>
   <summary>
@@ -565,6 +565,25 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether or not local file search was exited early due to a time out. Logged
     once per file search query.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.GameProvider.SearchStatus"
+    enum="GameProviderSearchStatus" expires_after="2023-02-28">
+  <owner>wrong@chromium.org</owner>
+  <owner>amandadeacon@chromium.org</owner>
+  <summary>
+    The outcome of a query for game results. Logged once per game search query.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.GameProvider.UpdateStatus" enum="DiscoveryError"
+    expires_after="2023-02-28">
+  <owner>wrong@chromium.org</owner>
+  <owner>amandadeacon@chromium.org</owner>
+  <summary>
+    The outcome of an index update from the Discovery service. Logged once per
+    update.
   </summary>
 </histogram>
 
@@ -978,7 +997,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.SortDiscoveryDurationAfterEducationNudge"
-    units="ms" expires_after="2022-12-25">
+    units="ms" expires_after="2023-01-22">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -1031,7 +1050,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.SuggestedContent.Enabled" enum="BooleanEnabled"
-    expires_after="2022-10-10">
+    expires_after="2023-01-15">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -1365,7 +1384,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListContinueTaskOpenType" enum="AppListSearchResult"
-    expires_after="2022-11-16">
+    expires_after="2023-01-15">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>anasalazar@chromium.org</owner>
@@ -1435,7 +1454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListFolderOpened" enum="AppListFolderOpened"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>mmourgos@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
@@ -1467,7 +1486,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListLauncherClickedSearchQueryLength"
-    units="characters" expires_after="2022-10-31">
+    units="characters" expires_after="2023-01-15">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -1478,7 +1497,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListLauncherIssuedSearchQueryLength"
-    units="characters" expires_after="2022-10-31">
+    units="characters" expires_after="2023-01-15">
   <owner>jennyz@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
@@ -1519,7 +1538,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListPageSwitcherSource"
-    enum="AppListPageSwitcherSource" expires_after="2022-11-13">
+    enum="AppListPageSwitcherSource" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>tbarzic@chromium.org</owner>
@@ -1560,7 +1579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListPlayStoreQueryState"
-    enum="AppListPlayStoreQueryState" expires_after="2022-11-13">
+    enum="AppListPlayStoreQueryState" expires_after="2023-01-15">
   <owner>hejq@chromium.org</owner>
   <summary>The state of a Play Store app search request.</summary>
 </histogram>
@@ -1645,7 +1664,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSearchQueryLength" units="characters"
-    expires_after="2022-12-01">
+    expires_after="2022-08-01">
+  <obsolete>
+    Deprecated in July 2022. Replaced with Apps.AppListSearchQueryLenghtV2,
+    which, unlike this histogram, only records query length for results from
+    launcher search results UI. Apps.AppListSearchQueryLength was recording
+    query length when launching results from continue section.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>yulunwu@chromium.org</owner>
@@ -1654,6 +1679,17 @@ chromium-metrics-reviews@google.com.
     The length of the app list search query when a result is opened. This is
     gathered per click of a search result.
   </summary>
+</histogram>
+
+<histogram name="Apps.AppListSearchQueryLengthV2{TabletOrClamshell}"
+    units="characters" expires_after="2022-12-01">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The length of the app list search query when a result is opened. This is
+    gathered per click of a search result in launcher search results UI.
+  </summary>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
 </histogram>
 
 <histogram name="Apps.AppListSearchResultInternalApp.Open"
@@ -1666,7 +1702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSearchResultInternalApp.Show"
-    enum="AppListInternalAppName" expires_after="2022-11-13">
+    enum="AppListInternalAppName" expires_after="2023-01-15">
   <owner>wutao@chromium.org</owner>
   <summary>
     The app list search result of an internal app that was shown to the user.
@@ -1692,7 +1728,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSearchResultOpenTypeV2" enum="AppListSearchResult"
-    expires_after="2022-11-27">
+    expires_after="2023-01-29">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>tbarzic@chromium.org</owner>
@@ -1942,7 +1978,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.CreateShortcutIcon.Linux.Result"
-    enum="WebAppCreateShortcutIconLinuxResult" expires_after="2022-11-13">
+    enum="WebAppCreateShortcutIconLinuxResult" expires_after="2023-01-15">
   <owner>estade@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1960,7 +1996,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.CreateShortcuts.Mac.Result"
-    enum="WebAppCreateShortcutMacResult" expires_after="2022-11-13">
+    enum="WebAppCreateShortcutMacResult" expires_after="2023-01-15">
   <owner>phillis@chromium.org</owner>
   <owner>cmumford@chromium.org</owner>
   <summary>

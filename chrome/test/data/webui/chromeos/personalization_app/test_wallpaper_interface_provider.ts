@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CurrentWallpaper, FetchGooglePhotosAlbumsResponse, FetchGooglePhotosPhotosResponse, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
+import {CurrentWallpaper, FetchGooglePhotosAlbumsResponse, FetchGooglePhotosPhotosResponse, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -46,20 +46,20 @@ export class TestWallpaperProvider extends
       {
         id: 'id_0',
         name: 'zero',
-        previews: [{url: 'https://collections.googleusercontent.com/0'}]
+        previews: [{url: 'https://collections.googleusercontent.com/0'}],
       },
       {
         id: 'id_1',
         name: 'one',
-        previews: [{url: 'https://collections.googleusercontent.com/1'}]
+        previews: [{url: 'https://collections.googleusercontent.com/1'}],
       },
       {
         id: 'id_2',
         name: 'dark-light',
         previews: [
           {url: 'https://collections.googleusercontent.com/2'},
-          {url: 'https://collections.googleusercontent.com/3'}
-        ]
+          {url: 'https://collections.googleusercontent.com/3'},
+        ],
       },
     ];
 
@@ -69,7 +69,7 @@ export class TestWallpaperProvider extends
     this.images_ = [
       {
         assetId: BigInt(0),
-        attribution: ['Image 0'],
+        attribution: ['Image 0 dark'],
         url: {url: 'https://images.googleusercontent.com/0'},
         unitId: BigInt(1),
         type: OnlineImageType.kDark,
@@ -79,11 +79,11 @@ export class TestWallpaperProvider extends
         attribution: ['Image 2'],
         url: {url: 'https://images.googleusercontent.com/2'},
         unitId: BigInt(2),
-        type: OnlineImageType.kDark,
+        type: OnlineImageType.kUnknown,
       },
       {
         assetId: BigInt(1),
-        attribution: ['Image 1'],
+        attribution: ['Image 0 light'],
         url: {url: 'https://images.googleusercontent.com/1'},
         unitId: BigInt(1),
         type: OnlineImageType.kLight,
@@ -98,11 +98,11 @@ export class TestWallpaperProvider extends
     };
 
     this.currentWallpaper = {
-      attribution: ['Image 0'],
+      attribution: ['Image 0 light'],
       layout: WallpaperLayout.kCenter,
       key: '1',
       type: WallpaperType.kOnline,
-      url: {url: 'https://images.googleusercontent.com/0'},
+      url: {url: 'data:image/png;base64somedataurl/0'},
     };
   }
 

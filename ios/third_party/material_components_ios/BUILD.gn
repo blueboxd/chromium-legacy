@@ -164,6 +164,7 @@ _mdc_public_headers = [
   "src/components/Collections/src/private/MDCCollectionViewStyler.h",
   "src/components/Collections/src/private/MaterialCollectionsStrings.h",
   "src/components/Collections/src/private/MaterialCollectionsStrings_table.h",
+  "src/components/Color/src/UIColor+MaterialBlending.h",
   "src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.h",
   "src/components/Dialogs/src/ColorThemer/MaterialDialogs+ColorThemer.h",
   "src/components/Dialogs/src/MDCAlertController+ButtonForAction.h",
@@ -470,7 +471,6 @@ _mdc_public_headers = [
   "src/components/private/Application/src/MaterialApplication.h",
   "src/components/private/Application/src/UIApplication+MDCAppExtensions.h",
   "src/components/private/Color/src/MaterialColor.h",
-  "src/components/private/Color/src/UIColor+MaterialBlending.h",
   "src/components/private/Color/src/UIColor+MaterialDynamic.h",
   "src/components/private/Icons/icons/ic_arrow_back/src/MaterialIcons+ic_arrow_back.h",
   "src/components/private/Icons/icons/ic_check/src/MaterialIcons+ic_check.h",
@@ -609,6 +609,7 @@ _mdc_include_dirs = [
   "src/components/CollectionLayoutAttributes/src",
   "src/components/Collections/src",
   "src/components/Collections/src/private",
+  "src/components/Color/src",
   "src/components/Dialogs/src",
   "src/components/Dialogs/src/ColorThemer",
   "src/components/Dialogs/src/Theming",
@@ -962,6 +963,8 @@ _mdc_sources = [
   "src/components/Collections/src/private/MDCCollectionViewStyler.m",
   "src/components/Collections/src/private/MaterialCollectionsStrings.h",
   "src/components/Collections/src/private/MaterialCollectionsStrings_table.h",
+  "src/components/Color/src/UIColor+MaterialBlending.h",
+  "src/components/Color/src/UIColor+MaterialBlending.m",
   "src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.h",
   "src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.m",
   "src/components/Dialogs/src/ColorThemer/MaterialDialogs+ColorThemer.h",
@@ -1424,8 +1427,6 @@ _mdc_sources = [
   "src/components/private/Application/src/UIApplication+MDCAppExtensions.h",
   "src/components/private/Application/src/UIApplication+MDCAppExtensions.m",
   "src/components/private/Color/src/MaterialColor.h",
-  "src/components/private/Color/src/UIColor+MaterialBlending.h",
-  "src/components/private/Color/src/UIColor+MaterialBlending.m",
   "src/components/private/Color/src/UIColor+MaterialDynamic.h",
   "src/components/private/Color/src/UIColor+MaterialDynamic.m",
   "src/components/private/Icons/icons/ic_arrow_back/src/MaterialIcons+ic_arrow_back.h",
@@ -1579,11 +1580,12 @@ config("config") {
   include_dirs = _mdc_include_dirs
 }
 
-config("disable_deprecated_errors") {
-  cflags = [
-    "-Wno-deprecated",
-    "-Wno-deprecated-declarations",
-  ]
+config("disable_deprecated") {
+  cflags = [ "-Wno-deprecated" ]
+}
+
+config("disable_deprecated_declarations") {
+  cflags = [ "-Wno-deprecated-declarations" ]
 }
 
 # TODO(crbug.com/1153275): MDCTabBarViewItemView.h has incomplete nullability
@@ -1636,7 +1638,7 @@ ios_framework_bundle("material_components_ios") {
 
     # material_components_ios internally uses deprecated methods.
     # Disable the warning about deprecation usage.
-    ":disable_deprecated_errors",
+    ":disable_deprecated",
 
     # TODO(crbug.com/1153275): MDCTabBarViewItemView.h has incomplete
     # nullability specification, causing compilation to fail. Disable
@@ -1647,6 +1649,14 @@ ios_framework_bundle("material_components_ios") {
     # specification, causing compilation to fail. Disable the warning until this
     # is fixed in MDC. Remove this once fixed.
     ":disable_availability",
+  ]
+
+  public_configs = [
+    # TODO(crbug.com/1344830): A number of components used by Chrome are
+    # marked deprecated in material_components_ios. Disable deprecation
+    # warnings as a temporary measure, until we remove all existing use in
+    # Chrome.
+    ":disable_deprecated_declarations",
   ]
 }
 

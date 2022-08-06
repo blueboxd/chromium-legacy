@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/dbus/vm_applications/apps.pb.h"
+#include "chromeos/ash/components/dbus/vm_applications/apps.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -94,28 +94,28 @@ std::string GuestOsMimeTypesService::GetMimeType(
     const base::FilePath& file_path,
     const std::string& vm_name,
     const std::string& container_name) const {
-  const base::Value* vm =
-      prefs_->GetDictionary(prefs::kGuestOsMimeTypes)->FindDictKey(vm_name);
+  const base::Value::Dict* vm =
+      prefs_->GetValueDict(prefs::kGuestOsMimeTypes).FindDict(vm_name);
   if (vm) {
-    const base::Value* container = vm->FindDictKey(container_name);
+    const base::Value::Dict* container = vm->FindDict(container_name);
     if (container) {
       // Try Extension() which may be a double like ".tar.gz".
       std::string extension = file_path.Extension();
       // Remove leading dot.
       extension.erase(0, 1);
-      const std::string* result = container->FindStringKey(extension);
+      const std::string* result = container->FindString(extension);
       if (!result) {
         // Try lowercase.
-        result = container->FindStringKey(base::ToLowerASCII(extension));
+        result = container->FindString(base::ToLowerASCII(extension));
       }
       // If this was a double extension, then try FinalExtension().
       if (!result && extension.find('.') != std::string::npos) {
         extension = file_path.FinalExtension();
         extension.erase(0, 1);
-        result = container->FindStringKey(extension);
+        result = container->FindString(extension);
         if (!result) {
           // Try lowercase.
-          result = container->FindStringKey(base::ToLowerASCII(extension));
+          result = container->FindString(base::ToLowerASCII(extension));
         }
       }
       if (result) {

@@ -15,15 +15,15 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/network_connect.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/dbus/hermes/hermes_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -138,8 +138,8 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     hermes_euicc_test_->AddCarrierProfile(
         dbus::ObjectPath(kCellularEsimServicePath),
         dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestEsimProfileName,
-        "service_provider", "activation_code", kCellularEsimServicePath,
-        hermes::profile::State::kActive,
+        kTestEsimProfileName, "service_provider", "activation_code",
+        kCellularEsimServicePath, hermes::profile::State::kActive,
         hermes::profile::ProfileClass::kOperational,
         HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
             kAddProfileWithService);
@@ -151,11 +151,11 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
         network_handler_test_helper_->device_test();
 
     std::string lock_pin = is_locked ? shill::kSIMLockPin : "";
-    base::Value sim_lock_status(base::Value::Type::DICTIONARY);
-    sim_lock_status.SetKey(shill::kSIMLockTypeProperty, base::Value(lock_pin));
+    base::Value::Dict sim_lock_status;
+    sim_lock_status.Set(shill::kSIMLockTypeProperty, lock_pin);
     device_test->SetDeviceProperty(
         kCellularDevicePath, shill::kSIMLockStatusProperty,
-        std::move(sim_lock_status), /*notify_changed=*/true);
+        base::Value(std::move(sim_lock_status)), /*notify_changed=*/true);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -176,7 +176,7 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
                              shill::kTypeWifi, shill::kStateIdle, true);
     service_test->SetServiceProperty(kWiFi1ServicePath,
                                      shill::kSecurityClassProperty,
-                                     base::Value(shill::kSecurityWep));
+                                     base::Value(shill::kSecurityClassWep));
     service_test->SetServiceProperty(
         kWiFi1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test->SetServiceProperty(
@@ -196,21 +196,19 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     service_test->SetServiceProperty(
         kCellular1ServicePath, shill::kActivationStateProperty,
         base::Value(shill::kActivationStateActivated));
-    base::Value sim_lock_status(base::Value::Type::DICTIONARY);
-    sim_lock_status.SetKey(shill::kSIMLockTypeProperty,
-                           base::Value(shill::kSIMLockPin));
+    base::Value::Dict sim_lock_status;
+    sim_lock_status.Set(shill::kSIMLockTypeProperty, shill::kSIMLockPin);
     device_test->SetDeviceProperty(
         kCellularDevicePath, shill::kSIMLockStatusProperty,
-        std::move(sim_lock_status), /*notify_changed=*/true);
-    base::Value::ListStorage sim_slot_infos;
-    base::Value slot_info_item(base::Value::Type::DICTIONARY);
-    slot_info_item.SetKey(shill::kSIMSlotInfoICCID,
-                          base::Value(kCellular1Iccid));
-    slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, true);
-    sim_slot_infos.push_back(std::move(slot_info_item));
+        base::Value(std::move(sim_lock_status)), /*notify_changed=*/true);
+    base::Value::List sim_slot_infos;
+    base::Value::Dict slot_info_item;
+    slot_info_item.Set(shill::kSIMSlotInfoICCID, kCellular1Iccid);
+    slot_info_item.Set(shill::kSIMSlotInfoPrimary, true);
+    sim_slot_infos.Append(std::move(slot_info_item));
     device_test->SetDeviceProperty(
         kCellularDevicePath, shill::kSIMSlotInfoProperty,
-        base::Value(sim_slot_infos), /*notify_changed=*/true);
+        base::Value(std::move(sim_slot_infos)), /*notify_changed=*/true);
 
     base::RunLoop().RunUntilIdle();
   }

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_APP_RESTORE_ARC_GHOST_WINDOW_DELEGATE_H_
 #define CHROME_BROWSER_ASH_APP_RESTORE_ARC_GHOST_WINDOW_DELEGATE_H_
 
-#include "chrome/browser/ash/app_restore/arc_window_handler.h"
+#include "chrome/browser/ash/app_restore/arc_ghost_window_handler.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "ui/gfx/geometry/rect.h"
@@ -18,10 +18,9 @@ namespace full_restore {
 // changed, notify ARC.
 class ArcGhostWindowDelegate
     : public exo::ClientControlledShellSurface::Delegate,
-      public ArcWindowHandler::Observer {
+      public ArcGhostWindowHandler::Observer {
  public:
   ArcGhostWindowDelegate(exo::ClientControlledShellSurface* shell_surface,
-                         ArcWindowHandler* handler,
                          int window_id,
                          int64_t display_id,
                          const gfx::Rect& bounds,
@@ -47,7 +46,7 @@ class ArcGhostWindowDelegate
 
   void OnZoomLevelChanged(exo::ZoomChange zoom_change) override;
 
-  // ArcWindowHandler::Observer
+  // ArcGhostWindowHandler::Observer
   void OnAppInstanceConnected() override;
 
   void OnWindowCloseRequested(int window_id) override;
@@ -64,8 +63,8 @@ class ArcGhostWindowDelegate
   chromeos::WindowStateType window_state_;
   exo::ClientControlledShellSurface* shell_surface_;
 
-  ArcWindowHandler* arc_handler_;
-  base::ScopedObservation<ArcWindowHandler, ArcWindowHandler::Observer>
+  base::ScopedObservation<ArcGhostWindowHandler,
+                          ArcGhostWindowHandler::Observer>
       observation_{this};
 };
 

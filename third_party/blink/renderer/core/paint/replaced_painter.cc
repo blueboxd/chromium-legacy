@@ -4,10 +4,13 @@
 
 #include "third_party/blink/renderer/core/paint/replaced_painter.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -21,6 +24,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -32,6 +36,10 @@ class ScopedReplacedContentPaintState : public ScopedPaintState {
  public:
   ScopedReplacedContentPaintState(const ScopedPaintState& input,
                                   const LayoutReplaced& replaced);
+
+ private:
+  absl::optional<MobileFriendlinessChecker::IgnoreBeyondViewportScope>
+      mf_ignore_scope_;
 };
 
 ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
@@ -66,6 +74,21 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
     chunk_properties_.emplace(input_paint_info_.context.GetPaintController(),
                               new_properties, replaced,
                               input_paint_info_.DisplayItemTypeForClipping());
+  }
+
+  if (input_paint_info_.phase == PaintPhase::kForeground) {
+    if (auto* mf_checker =
+            MobileFriendlinessChecker::From(replaced.GetDocument())) {
+      PhysicalRect content_rect = replaced.ReplacedContentRect();
+      content_rect.Move(paint_offset_);
+      content_rect.Intersect(PhysicalRect(GetPaintInfo().GetCullRect().Rect()));
+      mf_checker->NotifyPaintReplaced(content_rect,
+                                      GetPaintInfo()
+                                          .context.GetPaintController()
+                                          .CurrentPaintChunkProperties()
+                                          .Transform());
+      mf_ignore_scope_.emplace(*mf_checker);
+    }
   }
 }
 
@@ -163,6 +186,24 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
                                                         layout_replaced_);
     layout_replaced_.PaintReplaced(content_paint_state.GetPaintInfo(),
                                    content_paint_state.PaintOffset());
+
+    if (layout_replaced_.BelongsToElementChangingOverflowBehaviour() &&
+        !layout_replaced_.ClipsToContentBox() &&
+        layout_replaced_.HasVisualOverflow()) {
+      UseCounter::Count(layout_replaced_.GetDocument(),
+                        WebFeature::kReplacedElementPaintedWithOverflow);
+
+      auto overflow_size = layout_replaced_.PhysicalVisualOverflowRect().size;
+      auto overflow_area = overflow_size.width * overflow_size.height;
+
+      auto content_size = layout_replaced_.Size();
+      auto content_area = content_size.Width() * content_size.Height();
+
+      DCHECK_GT(overflow_area, content_area);
+      UMA_HISTOGRAM_COUNTS_100000(
+          "Blink.Overflow.ReplacedElementAreaOutsideContentRect",
+          (overflow_area - content_area).ToInt());
+    }
   }
 
   if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible &&

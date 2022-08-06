@@ -4,18 +4,18 @@
 
 /** @fileoverview Suite of tests for the ListPropertyUpdateBehavior.  */
 
-import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
-type SimpleArrayEntry = {
-  id: number,
-};
+interface SimpleArrayEntry {
+  id: number;
+}
 
-type ComplexArrayEntry = {
-  letter: string,
-  words: string[],
-};
+interface ComplexArrayEntry {
+  letter: string;
+  words: string[];
+}
 
 /** A test element that implements the ListPropertyUpdateBehavior. */
 const ListPropertyUpdateBehaviorTestElementBase =
@@ -271,8 +271,9 @@ suite('ListPropertyUpdateBehavior', function() {
         testElement.resetComplexArray();
         const newArray = [
           {letter: 'w', words: ['water', 'woods']},
-          {letter: 'x', words: ['xylophone']}, {letter: 'y', words: ['yo-yo']},
-          {letter: 'z', words: ['zebra', 'zephyr']}
+          {letter: 'x', words: ['xylophone']},
+          {letter: 'y', words: ['yo-yo']},
+          {letter: 'z', words: ['zebra', 'zephyr']},
         ];
         result = testElement.updateComplexArray(newArray);
 
@@ -364,8 +365,9 @@ suite('ListPropertyUpdateBehavior', function() {
     testElement.resetComplexArray();
     const newArray = [
       {letter: 'w', words: ['water', 'woods']},
-      {letter: 'x', words: ['xylophone']}, {letter: 'y', words: ['yo-yo']},
-      {letter: 'z', words: ['zebra', 'zephyr']}
+      {letter: 'x', words: ['xylophone']},
+      {letter: 'y', words: ['yo-yo']},
+      {letter: 'z', words: ['zebra', 'zephyr']},
     ];
     testElement.updateList('complexArray', obj => obj, newArray, true);
     assertComplexArrayEquals(testElement.complexArray, newArray);

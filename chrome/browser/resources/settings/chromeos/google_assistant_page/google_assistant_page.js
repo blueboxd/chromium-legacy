@@ -13,7 +13,7 @@ import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 import '../../prefs/pref_util.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -73,8 +73,11 @@ export const ConsentStatus = {
  */
 const SettingsGoogleAssistantPageElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, PrefsBehavior, RouteObserverBehavior,
-      WebUIListenerBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      PrefsBehavior,
+      RouteObserverBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -113,18 +116,18 @@ class SettingsGoogleAssistantPageElement extends
             {
               name: loadTimeData.getString(
                   'googleAssistantEnableHotwordWithoutDspRecommended'),
-              value: DspHotwordState.DEFAULT_ON
+              value: DspHotwordState.DEFAULT_ON,
             },
             {
               name: loadTimeData.getString(
                   'googleAssistantEnableHotwordWithoutDspAlwaysOn'),
-              value: DspHotwordState.ALWAYS_ON
+              value: DspHotwordState.ALWAYS_ON,
             },
             {
               name: loadTimeData.getString(
                   'googleAssistantEnableHotwordWithoutDspOff'),
-              value: DspHotwordState.OFF
-            }
+              value: DspHotwordState.OFF,
+            },
           ];
         },
       },

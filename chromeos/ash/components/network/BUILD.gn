@@ -6,33 +6,44 @@ import("//build/config/chromeos/ui_mode.gni")
 
 assert(is_chromeos_ash, "Non-ChromeOS builds cannot depend on //chromeos/ash")
 
-source_set("network") {
-  # TODO(https://crbug.com/1164001): Allow circular dependency during the
-  # migration and others should depend on via chromeos/network.
-  visibility = [ "//chromeos/network" ]
+config("network_config") {
+  defines = [ "IS_CHROMEOS_NETWORK_IMPL" ]
+}
 
-  configs += [ "//chromeos/network:network_config" ]
+component("network") {
+  configs += [ ":network_config" ]
   deps = [
     "//ash/constants",
     "//base",
+    "//chromeos/ash/components/dbus/hermes",
+    "//chromeos/ash/components/feature_usage",
     "//chromeos/ash/components/network/metrics",
     "//chromeos/ash/components/network/onc",
     "//chromeos/ash/components/network/proxy",
-    "//chromeos/components/feature_usage",
     "//chromeos/components/onc",
     "//chromeos/dbus/common",
-    "//chromeos/dbus/hermes",
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/shill",
     "//chromeos/login/login_state",
+    "//chromeos/services/network_config/public/mojom",
+    "//components/account_id",
     "//components/device_event_log",
     "//components/onc",
+    "//components/pref_registry",
     "//components/prefs",
     "//components/url_formatter",
+    "//components/user_manager",
     "//crypto",
     "//dbus",
     "//net",
     "//services/preferences/public/cpp",
+    "//url",
+  ]
+
+  public_deps = [
+    "//chromeos/ash/components/network/metrics",
+    "//chromeos/ash/components/network/onc",
+    "//chromeos/ash/components/network/proxy",
   ]
 
   # Allow circular dependency from sub-directories of
@@ -81,6 +92,8 @@ source_set("network") {
     "geolocation_handler.h",
     "hermes_metrics_util.cc",
     "hermes_metrics_util.h",
+    "hidden_network_handler.cc",
+    "hidden_network_handler.h",
     "managed_cellular_pref_handler.cc",
     "managed_cellular_pref_handler.h",
     "managed_network_configuration_handler.cc",
@@ -110,15 +123,71 @@ source_set("network") {
     "network_connection_handler_impl.h",
     "network_connection_observer.cc",
     "network_connection_observer.h",
+    "network_device_handler.cc",
+    "network_device_handler.h",
+    "network_device_handler_impl.cc",
+    "network_device_handler_impl.h",
+    "network_event_log.cc",
+    "network_event_log.h",
+    "network_handler.cc",
+    "network_handler.h",
+    "network_handler_callbacks.cc",
+    "network_handler_callbacks.h",
+    "network_ip_config.cc",
+    "network_ip_config.h",
+    "network_metadata_observer.cc",
+    "network_metadata_observer.h",
+    "network_metadata_store.cc",
+    "network_metadata_store.h",
+    "network_name_util.cc",
+    "network_name_util.h",
+    "network_profile.cc",
+    "network_profile.h",
+    "network_profile_handler.cc",
+    "network_profile_handler.h",
+    "network_profile_observer.h",
+    "network_sms_handler.cc",
+    "network_sms_handler.h",
+    "network_state.cc",
+    "network_state.h",
+    "network_state_handler.cc",
+    "network_state_handler.h",
+    "network_state_handler_observer.cc",
+    "network_state_handler_observer.h",
+    "network_type_pattern.cc",
+    "network_type_pattern.h",
+    "network_ui_data.cc",
+    "network_ui_data.h",
+    "network_util.cc",
+    "network_util.h",
+    "policy_applicator.cc",
+    "policy_applicator.h",
+    "policy_certificate_provider.h",
+    "policy_util.cc",
+    "policy_util.h",
+    "profile_policies.cc",
+    "profile_policies.h",
+    "prohibited_technologies_handler.cc",
+    "prohibited_technologies_handler.h",
+    "shill_property_handler.cc",
+    "shill_property_handler.h",
+    "shill_property_util.cc",
+    "shill_property_util.h",
+    "stub_cellular_networks_provider.cc",
+    "stub_cellular_networks_provider.h",
+    "system_token_cert_db_storage.cc",
+    "system_token_cert_db_storage.h",
+    "tether_constants.cc",
+    "tether_constants.h",
   ]
 }
 
 source_set("test_support") {
   testonly = true
   public_deps = [
+    ":network",
+    "//chromeos/ash/components/dbus/hermes",
     "//chromeos/components/onc",
-    "//chromeos/dbus/hermes",
-    "//chromeos/network",
     "//dbus",
   ]
   deps = [
@@ -166,24 +235,33 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   deps = [
+    ":network",
     ":test_support",
     "//ash/constants",
     "//base",
+    "//base:i18n",
     "//base/test:test_support",
-    "//chromeos/components/feature_usage",
+    "//chromeos/ash/components/feature_usage",
+    "//chromeos/ash/components/network/metrics:unit_tests",
+    "//chromeos/ash/components/network/onc:unit_tests",
+    "//chromeos/ash/components/network/proxy:unit_tests",
     "//chromeos/components/onc",
     "//chromeos/components/onc:test_support",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/shill",
     "//chromeos/login/login_state",
-    "//chromeos/network",
+    "//chromeos/services/network_config:in_process_instance",
+    "//chromeos/services/network_config/public/cpp:test_support",
     "//components/onc",
+    "//components/prefs",
     "//components/prefs:test_support",
     "//components/proxy_config",
     "//components/sync_preferences:test_support",
+    "//components/user_manager:test_support",
     "//crypto",
     "//crypto:test_support",
+    "//dbus",
     "//net",
     "//net:test_support",
     "//testing/gmock",
@@ -207,6 +285,7 @@ source_set("unit_tests") {
     "fast_transition_observer_unittest.cc",
     "firewall_hole_unittest.cc",
     "geolocation_handler_unittest.cc",
+    "hidden_network_handler_unittest.cc",
     "managed_cellular_pref_handler_unittest.cc",
     "managed_network_configuration_handler_unittest.cc",
     "network_cert_loader_unittest.cc",
@@ -214,5 +293,21 @@ source_set("unit_tests") {
     "network_configuration_handler_unittest.cc",
     "network_connect_unittest.cc",
     "network_connection_handler_impl_unittest.cc",
+    "network_device_handler_unittest.cc",
+    "network_event_log_unittest.cc",
+    "network_metadata_store_unittest.cc",
+    "network_name_util_unittest.cc",
+    "network_sms_handler_unittest.cc",
+    "network_state_handler_unittest.cc",
+    "network_state_unittest.cc",
+    "network_type_pattern_unittest.cc",
+    "network_ui_data_unittest.cc",
+    "network_util_unittest.cc",
+    "profile_policies_unittest.cc",
+    "prohibited_technologies_handler_unittest.cc",
+    "shill_property_handler_unittest.cc",
+    "shill_property_util_unittest.cc",
+    "stub_cellular_networks_provider_unittest.cc",
+    "system_token_cert_db_storage_unittest.cc",
   ]
 }

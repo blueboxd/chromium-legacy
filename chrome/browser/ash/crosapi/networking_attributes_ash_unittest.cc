@@ -11,14 +11,14 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -182,7 +182,7 @@ class NetworkingAttributesAshTest : public testing::Test {
     service_client_run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(&observer);
 
-    const chromeos::DeviceState* device_state =
+    const ash::DeviceState* device_state =
         chromeos::NetworkHandler::Get()
             ->network_state_handler()
             ->GetDeviceState(kWifiDevicePath);
@@ -197,7 +197,7 @@ class NetworkingAttributesAshTest : public testing::Test {
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   mojo::Remote<mojom::NetworkingAttributes> networking_attributes_remote_;
   std::unique_ptr<NetworkingAttributesAsh> networking_attributes_ash_;
-  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
+  ash::NetworkHandlerTestHelper network_handler_test_helper_;
 
   ScopedTestingLocalState local_state_;
 };

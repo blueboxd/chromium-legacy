@@ -235,7 +235,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultMediaStreamCameraSetting"
-    enum="ContentSetting" expires_after="2022-10-23">
+    enum="ContentSetting" expires_after="2023-01-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default camera setting at profile open.</summary>
@@ -508,7 +508,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -519,7 +519,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups.BlockerActions"
-    enum="PopupBlockerAction" expires_after="2022-11-20">
+    enum="PopupBlockerAction" expires_after="2023-01-22">
   <owner>csharrison@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -604,7 +604,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.BrokenNTPHierarchy"
-    enum="NTPBrokenViewHierarchyRelationship" expires_after="M102">
+    enum="NTPBrokenViewHierarchyRelationship" expires_after="M107">
   <owner>adamta@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -612,6 +612,24 @@ chromium-metrics-reviews@google.com.
     When the NTP view hierarchy is fixed upon NTP creation, this hisotgram logs
     which part was broken. Temporary log used to gather info for
     crbug.com/1262536.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.CanBeShown" enum="BooleanAllowed"
+    expires_after="2023-08-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Whether showing the Feed is permitted. The Feed can be shown if (A) profile
+    policies allow this, (B) the FeedAblationEnabled feature is disabled, and
+    (C) the user has not turned it off in Settings.
+
+    Note that this does not denote (A) whether the Feed is visible at the time
+    the metric is emitted or (B) whether the Feed was ever visible during the
+    browser process lifetime.
+
+    iOS only. Emitted when building a MetricsLog for the current session.
   </summary>
 </histogram>
 
@@ -988,6 +1006,24 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.SessionDuration" units="ms"
+    expires_after="2022-10-01">
+  <owner>edchin@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    The amount of time a user spends in the feed in a single session. A session
+    is measured only by user interactions or user scrolling events in the feed.
+    Two events are considered as being within the same session if they are at
+    most 5 minutes apart from each other. A series of events is likely to
+    constitute a single session. A user opening the feed but having no
+    interaction and not scrolling is not considered a session. A user tapping an
+    article then quickly returning to the feed is considered within the same
+    session. The time between sessions by definition will be longer than 5
+    minutes.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.Task.DelayTime" units="ms"
     expires_after="2020-10-01">
   <owner>carlosk@chromium.org</owner>
@@ -1005,6 +1041,28 @@ chromium-metrics-reviews@google.com.
   <owner>feed@chromium.org</owner>
   <summary>
     How long it took from the task starting to when it finished executing.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.TimeBetweenInteractions" units="ms"
+    expires_after="2022-10-01">
+  <owner>edchin@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    The amount of time between user interactions or user scrolling in the feed.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.TimeBetweenSessions" units="ms"
+    expires_after="2022-10-01">
+  <owner>edchin@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    The amount of time between user feed sessions, as defined in
+    |ContentSuggestions.Feed.SessionDuration|. This is by definition longer than
+    5 minutes.
   </summary>
 </histogram>
 
@@ -1277,6 +1335,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.Engaged"
+    units="follows" expires_after="2023-01-15">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Replaced with the ContentSuggestions.{FeedType}.FollowCount.Engaged2
+    histogram pattern because this one had a misleading name. It will be
+    effectively obsoleted in the future.
+
+    Android: The number of web feeds the user is following. Reported at most
+    once per feed visit, when the user engages (FeedEngagementType.Engaged) with
+    either the For-You or Following Feeds.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.{Event}"
     units="follows" expires_after="2023-03-01">
   <owner>harringtond@chromium.org</owner>
@@ -1285,19 +1358,14 @@ chromium-metrics-reviews@google.com.
     Android: The number of web feeds the user is following. Reported {Event}.
   </summary>
   <token key="Event">
-    <variant name="AfterFollow" summary="after a successful follow action."/>
-    <variant name="AfterUnfollow"
-        summary="after a successful unfollow action."/>
+    <variant name="AfterFollow" summary="after a successful follow action"/>
+    <variant name="AfterUnfollow" summary="after a successful unfollow action"/>
     <variant name="ContentShown"
         summary="after the Following feed is shown, and some content is
-                 displayed."/>
-    <variant name="Engaged"
-        summary="after the user has been recorded as FeedEngagementType
-                 'Engaged', reported at most once per day when the user
-                 interacts with either the For-You or Following Feeds."/>
+                 displayed"/>
     <variant name="NoContentShown"
         summary="after the Following Feed is shown, and no content is
-                 available for display."/>
+                 available for display"/>
   </token>
 </histogram>
 
@@ -1538,6 +1606,23 @@ chromium-metrics-reviews@google.com.
     <variant name="Feed" summary="the For-You Feed"/>
     <variant name="Feed.AllFeeds" summary="all Feeds combined"/>
     <variant name="Feed.WebFeed" summary="the Web Feed"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.FollowCount.Engaged2"
+    units="follows" expires_after="2023-03-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The number of web feeds the user is following. Reported at most
+    once per feed visit, when the user engages (FeedEngagementType.Engaged,
+    non-Simple) with {FeedType}.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="the For-You feed"/>
+    <variant name="Feed.AllFeeds"
+        summary="either the For-You or Following/Web feed"/>
+    <variant name="Feed.WebFeed" summary="the Following/Web Feed"/>
   </token>
 </histogram>
 

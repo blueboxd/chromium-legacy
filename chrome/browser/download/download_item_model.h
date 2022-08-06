@@ -61,13 +61,14 @@ class DownloadItemModel : public DownloadUIModel,
   bool ShouldRemoveFromShelfWhenComplete() const override;
   bool ShouldShowDownloadStartedAnimation() const override;
   bool ShouldShowInShelf() const override;
-  bool ShouldShowInBubble() const override;
   void SetShouldShowInShelf(bool should_show) override;
   bool ShouldNotifyUI() const override;
   bool WasUINotified() const override;
   void SetWasUINotified(bool should_notify) override;
   bool WasUIWarningShown() const override;
   void SetWasUIWarningShown(bool should_notify) override;
+  absl::optional<base::Time> GetEphemeralWarningUiShownTime() const override;
+  void SetEphemeralWarningUiShownTime(absl::optional<base::Time> time) override;
   bool ShouldPreferOpeningInBrowser() const override;
   void SetShouldPreferOpeningInBrowser(bool preference) override;
   safe_browsing::DownloadFileType::DangerLevel GetDangerLevel() const override;
@@ -78,7 +79,7 @@ class DownloadItemModel : public DownloadUIModel,
   void OpenUsingPlatformHandler() override;
   bool IsBeingRevived() const override;
   void SetIsBeingRevived(bool is_being_revived) override;
-  download::DownloadItem* download() override;
+  const download::DownloadItem* GetDownloadItem() const override;
   std::u16string GetWebDriveName() const override;
   std::u16string GetWebDriveMessage(bool verbose) const override;
   base::FilePath GetFileNameToReportUser() const override;
@@ -115,6 +116,8 @@ class DownloadItemModel : public DownloadUIModel,
                         DownloadCommands::Command command) const override;
   void ExecuteCommand(DownloadCommands* download_commands,
                       DownloadCommands::Command command) override;
+  bool ShouldShowInBubble() const override;
+  bool IsEphemeralWarning() const override;
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

@@ -59,6 +59,48 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Ash.Cellular.SimLock.Policy.Notification.Event"
+    enum="SimLockNotificationEvent" expires_after="2022-12-31">
+  <owner>hsuregan@chromium.org</owner>
+  <owner>nikhilcn@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records events on the notification shown when the SIM is locked and admin
+    has restricted users from PIN locking their SIMs. These are emitted once the
+    notification is shown and once when the user interacts with it.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ash.Cellular.SimLock.Policy.Notification.LockType"
+    enum="SimPinLockType" expires_after="2022-12-31">
+  <owner>hsuregan@chromium.org</owner>
+  <owner>nikhilcn@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the type of SIM lock affecting a cellular network when a user is
+    notified that the cellular network is SIM locked.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Cellular.SimLock.Policy.{PinLockPolicy}.ActiveSIMLockStatus"
+    enum="SimPinLockType" expires_after="2022-12-31">
+  <owner>hsuregan@chromium.org</owner>
+  <owner>nikhilcn@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the status of the SIM (Unlocked/PIN Locked/PUK Blocked) upon a
+    change in cellular connection.
+
+    This metric will be recorded upon following transitions: 1. no connection to
+    new connection; 2. connection_1 to connection_2
+  </summary>
+  <token key="PinLockPolicy">
+    <variant name="Restricted"/>
+    <variant name="Unrestricted"/>
+  </token>
+</histogram>
+
 <histogram name="Network.Ash.VPN.{VPNProviderType}.ConfigurationSource"
     enum="VPNConfigurationSource" expires_after="2022-12-31">
   <owner>chadduffin@chromium.org</owner>
@@ -226,7 +268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.EnableProfile.Result"
-    enum="HermesResponseStatus" expires_after="2022-09-01">
+    enum="HermesResponseStatus" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -239,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.InstallationResult"
-    enum="NetworkCellularESimInstallResult" expires_after="2022-11-06">
+    enum="NetworkCellularESimInstallResult" expires_after="2023-01-22">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -289,7 +331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.InstallViaQrCode.Result"
-    enum="HermesResponseStatus" expires_after="2022-11-06">
+    enum="HermesResponseStatus" expires_after="2023-01-22">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -305,7 +347,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.BlockNonManagedCellularBehavior"
-    enum="NetworkBlockNonManagedCellularBehavior" expires_after="2022-11-01">
+    enum="NetworkBlockNonManagedCellularBehavior" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -344,7 +386,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Network.Cellular.ESim.Policy.ESimInstall.OperationResult{OperationType}"
-    enum="NetworkCellularESimInstallResult" expires_after="2022-09-01">
+    enum="NetworkCellularESimInstallResult" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -364,7 +406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.EuiccStatusUploadResult"
-    enum="BooleanSuccess" expires_after="2022-11-01">
+    enum="BooleanSuccess" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -378,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.ResetEuicc.Duration" units="ms"
-    expires_after="2022-09-01">
+    expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -388,7 +430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.ResetEuicc.Result"
-    enum="NetworkCellularResetEuiccResult" expires_after="2022-09-01">
+    enum="NetworkCellularResetEuiccResult" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -401,9 +443,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.ServiceAtLogin.Count"
-    units="units" expires_after="2022-11-06">
+    units="units" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
-  <owner>cros-connectivit@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
   <summary>
     Tracks how many managed eSIM profiles are installed on the devices after a
@@ -412,7 +454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.StatusAtLogin"
-    enum="NetworkESimPolicyStatusAtLogin" expires_after="2022-11-01">
+    enum="NetworkESimPolicyStatusAtLogin" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -437,7 +479,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Policy.Usage.Duration" units="seconds"
-    expires_after="2022-09-01">
+    expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -497,7 +539,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Cellular.ESim.RequestPendingProfiles.OperationResult"
     enum="NetworkCellularESimRequestPendingProfilesResult"
-    expires_after="2022-11-06">
+    expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -512,7 +554,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.RequestPendingProfiles.Result"
-    enum="HermesResponseStatus" expires_after="2022-09-01">
+    enum="HermesResponseStatus" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -523,9 +565,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.ServiceAtLogin.Count" units="units"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
+  <obsolete>
+    Removed as of 07/2022. This is has been replaced with a new metric that adds
+    information on whether sim locking is allowed or not.
+  </obsolete>
   <owner>azeemarshad@chromium.org</owner>
-  <owner>cros-connectivit@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
   <summary>
     Tracks how many eSIM profiles are installed on the devices after a primary
     user login.
@@ -533,7 +579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.SetupFlowResult"
-    enum="ESimSetupFlowResult" expires_after="2022-11-01">
+    enum="ESimSetupFlowResult" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -580,7 +626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.ESim.Usage.Count" enum="NetworkCellularUsage"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -610,7 +656,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.InhibitResult"
-    enum="NetworkCellularInhibitResult" expires_after="2022-09-01">
+    enum="NetworkCellularInhibitResult" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -633,15 +679,23 @@ chromium-metrics-reviews@google.com.
   <token key="SimPinOperation">
     <variant name="ChangeSuccess"/>
     <variant name="LockSuccess" summary="Deprecated on 2022-07-16."/>
+    <variant name="Managed.UnblockSuccess"/>
+    <variant name="Managed.UnlockSuccess"/>
     <variant name="RemoveLockSuccess"/>
     <variant name="RequireLockSuccess"/>
-    <variant name="UnblockSuccess"/>
-    <variant name="UnlockSuccess"/>
+    <variant name="Restricted.UnblockSuccess"/>
+    <variant name="Restricted.UnlockSuccess"/>
+    <variant name="UnblockSuccess" summary="Deprecated on 2022-07-14."/>
+    <variant name="UnlockSuccess" summary="Deprecated on 2022-07-14."/>
+    <variant name="Unmanaged.UnblockSuccess"/>
+    <variant name="Unmanaged.UnlockSuccess"/>
+    <variant name="Unrestricted.UnblockSuccess"/>
+    <variant name="Unrestricted.UnlockSuccess"/>
   </token>
 </histogram>
 
 <histogram name="Network.Cellular.PrepareCellularConnection.OperationResult"
-    enum="NetworkCellularPrepareForConnectionResult" expires_after="2022-11-06">
+    enum="NetworkCellularPrepareForConnectionResult" expires_after="2023-01-15">
   <owner>azeemarshad@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -666,7 +720,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.PSim.ServiceAtLogin.Count" units="units"
-    expires_after="2022-11-01">
+    expires_after="2023-01-15">
+  <obsolete>
+    Removed as of 07/2022. This is has been replaced with a new metric that adds
+    information on whether sim locking is allowed or not.
+  </obsolete>
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-system-services-networking@google.com</owner>
   <summary>
@@ -705,6 +763,34 @@ chromium-metrics-reviews@google.com.
     Tracks the number of times an PSim cellular network is connected as the only
     network, or with other network or not connected at all.
   </summary>
+</histogram>
+
+<histogram name="Network.Cellular.{AllowSIMLock}.ESim.ServiceAtLogin.Count"
+    units="units" expires_after="2023-01-15">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks how many eSIM profiles are installed on the devices after a primary
+    user login.
+  </summary>
+  <token key="AllowSIMLock">
+    <variant name="Restricted"/>
+    <variant name="Unrestricted"/>
+  </token>
+</histogram>
+
+<histogram name="Network.Cellular.{AllowSIMLock}.PSim.ServiceAtLogin.Count"
+    units="units" expires_after="2023-01-15">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks how many pSIM networks are available on the device after a primary
+    user login.
+  </summary>
+  <token key="AllowSIMLock">
+    <variant name="Restricted"/>
+    <variant name="Unrestricted"/>
+  </token>
 </histogram>
 
 <histogram name="Network.Cellular.{SimType}.CellularSetup.{Result}.Duration"
@@ -760,7 +846,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.{SimType}.DisconnectByPolicy.Result"
-    enum="BooleanSuccess" expires_after="2022-09-01">
+    enum="BooleanSuccess" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>jiajunz@google.com</owner>
@@ -775,7 +861,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.{SimType}.Disconnections"
-    enum="NetworkCellularConnectionState" expires_after="2022-09-01">
+    enum="NetworkCellularConnectionState" expires_after="2023-09-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -2424,15 +2510,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.SecurityDowngrade"
-    enum="NetworkSecurityDowngrade" expires_after="2022-12-01">
+<histogram name="Network.Shill.Wifi.SecurityChange"
+    enum="NetworkSecurityChange" expires_after="2022-12-01">
   <owner>andrzejo@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
-    Chrome OS network metric for WiFi security downgrades. It is emitted every
-    time a new BSSID is being added to a network, this network has already been
+    Chrome OS network metric for WiFi security changes. It is emitted every time
+    a new BSSID is being added to a network, this network has already been
     connected before and configuration of this new BSSID causes network security
-    to be lowered.
+    to be changed in a non-trivial way - that is a downgrade or an upgrade that
+    can cause split of an network into two services.
   </summary>
 </histogram>
 
@@ -2934,7 +3021,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.DeletedOldCacheData" enum="Boolean"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -2980,6 +3067,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NetworkService.MemoryCache.BlockedByRequestHeaderReason"
+    enum="NetworkServiceMemoryCacheBlockedByRequestHeaderReason"
+    expires_after="2022-10-05">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records a reason why a request cannot be served from the in-memory cache due
+    to request header checks. Recorded when the in-memory cache tries to serve a
+    stored response.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.MemoryCache.ContentLength.{RequestDestination}"
+    units="bytes" expires_after="2022-10-05">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Size of a response body that is going to be stored to the network service
+    in-memory cache. Recorded before a response is going to be stored to the
+    in-memory cache. If the size is larger than a configurable limit, the
+    response won't be stored in the in-memory cache. This histogram is recorded
+    for {RequestDestination}.
+  </summary>
+  <token key="RequestDestination" variants="RequestDestination"/>
+</histogram>
+
 <histogram name="NetworkService.MemoryCache.EntryStatus"
     enum="NetworkServiceMemoryCacheEntryStatus" expires_after="2022-10-05">
   <owner>bashi@chromium.org</owner>
@@ -2990,6 +3103,16 @@ chromium-metrics-reviews@google.com.
     and the request satisfies preconditions. Preconditions include: CORS checks
     passed, the request was a valid GET request, and the request didn't force
     network access etc. See NetworkServiceMemoryCache::CanServe() for details.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.MemoryCache.FreshnessAtStore" units="seconds"
+    expires_after="2022-10-05">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records freshness of a response when it is going to be stored into the
+    in-memory cache. The range is from 1 seconds to 864000 seconds (10 days).
   </summary>
 </histogram>
 
@@ -3052,7 +3175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -3066,7 +3189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantDataAccess" units="ms"
-    expires_after="2022-11-13">
+    expires_after="2023-01-15">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>

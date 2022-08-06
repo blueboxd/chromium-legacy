@@ -4,97 +4,74 @@
 
 #include "content/browser/buckets/bucket_manager.h"
 
+#include "content/browser/buckets/bucket_context.h"
 #include "content/browser/buckets/bucket_manager_host.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/permission_controller.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 namespace content {
 
-BucketManager::BucketManager(
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
-    : quota_manager_proxy_(std::move(quota_manager_proxy)) {}
+BucketManager::BucketManager(StoragePartitionImpl* storage_partition)
+    : storage_partition_(storage_partition) {}
 
 BucketManager::~BucketManager() = default;
 
 void BucketManager::BindReceiverForRenderFrame(
     const GlobalRenderFrameHostId& render_frame_host_id,
+    const blink::StorageKey& storage_key,
     mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
     mojo::ReportBadMessageCallback bad_message_callback) {
-  auto permission_decision = base::BindRepeating(
-      [](GlobalRenderFrameHostId id, blink::PermissionType permission_type) {
-        auto* rfh = RenderFrameHost::FromID(id);
-        if (!rfh)
-          return blink::mojom::PermissionStatus::DENIED;
-        return rfh->GetBrowserContext()
-            ->GetPermissionController()
-            ->GetPermissionStatusForCurrentDocument(permission_type, rfh);
-      },
-      render_frame_host_id);
-
   RenderFrameHost* rfh = RenderFrameHost::FromID(render_frame_host_id);
   DCHECK(rfh);
-  DoBindReceiver(rfh->GetLastCommittedOrigin(), std::move(receiver),
-                 permission_decision, std::move(bad_message_callback));
+  DoBindReceiver(storage_key, BucketContext(render_frame_host_id),
+                 std::move(receiver), std::move(bad_message_callback));
 }
 
 void BucketManager::BindReceiverForWorker(
     int render_process_id,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
     mojo::ReportBadMessageCallback bad_message_callback) {
-  auto permission_decision = base::BindRepeating(
-      [](int render_process_id, const url::Origin& origin,
-         blink::PermissionType permission_type) {
-        RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-        if (!rph)
-          return blink::mojom::PermissionStatus::DENIED;
-        return rph->GetBrowserContext()
-            ->GetPermissionController()
-            ->GetPermissionStatusForWorker(permission_type, rph, origin);
-      },
-      render_process_id, origin);
-  DoBindReceiver(origin, std::move(receiver), permission_decision,
-                 std::move(bad_message_callback));
+  DoBindReceiver(storage_key, BucketContext(render_process_id),
+                 std::move(receiver), std::move(bad_message_callback));
 }
 
 void BucketManager::DoBindReceiver(
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
+    const BucketContext& context,
     mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver,
-    const BucketHost::PermissionDecisionCallback& permission_decision,
     mojo::ReportBadMessageCallback bad_message_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto it = hosts_.find(origin);
+  auto it = hosts_.find(storage_key);
   if (it != hosts_.end()) {
-    it->second->BindReceiver(std::move(receiver), permission_decision);
+    it->second->BindReceiver(std::move(receiver), context);
     return;
   }
 
-  if (!network::IsOriginPotentiallyTrustworthy(origin)) {
+  if (!network::IsOriginPotentiallyTrustworthy(storage_key.origin())) {
     std::move(bad_message_callback)
         .Run("Called Buckets from an insecure context");
     return;
   }
 
   auto [insert_it, insert_succeeded] = hosts_.insert(
-      {origin, std::make_unique<BucketManagerHost>(this, origin)});
+      {storage_key, std::make_unique<BucketManagerHost>(this, storage_key)});
   DCHECK(insert_succeeded);
-  insert_it->second->BindReceiver(std::move(receiver), permission_decision);
+  insert_it->second->BindReceiver(std::move(receiver), context);
 }
 
 void BucketManager::OnHostReceiverDisconnect(BucketManagerHost* host,
                                              base::PassKey<BucketManagerHost>) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(host != nullptr);
-  DCHECK_GT(hosts_.count(host->origin()), 0u);
-  DCHECK_EQ(hosts_[host->origin()].get(), host);
+  DCHECK_GT(hosts_.count(host->storage_key()), 0u);
+  DCHECK_EQ(hosts_[host->storage_key()].get(), host);
 
   if (host->has_connected_receivers())
     return;
 
-  hosts_.erase(host->origin());
+  hosts_.erase(host->storage_key());
 }
 
 }  // namespace content

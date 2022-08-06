@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -27,6 +28,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/vector_icon_utils.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -51,6 +53,7 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
     const gfx::VectorIcon& icon,
     const gfx::Insets& margin_insets,
     const std::u16string& tooltip_text,
+    ui::ElementIdentifier view_id,
     int dip_size) {
   auto button = views::CreateVectorImageButtonWithNativeTheme(pressed_callback,
                                                               icon, dip_size);
@@ -65,6 +68,7 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
   button->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification().WithAlignment(views::LayoutAlignment::kEnd));
+  button->SetProperty(views::kElementIdentifierKey, view_id);
 
   return button;
 }
@@ -213,6 +217,8 @@ void SidePanelCoordinator::Show(
     return;
   }
 
+  SidePanelUtil::RecordEntryShowTriggeredMetrics(entry->id(), open_trigger);
+
   content_wrapper->RequestEntry(
       entry, base::BindOnce(&SidePanelCoordinator::PopulateSidePanel,
                             base::Unretained(this)));
@@ -297,7 +303,7 @@ absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetCurrentEntryId()
 
 SidePanelEntry::Id SidePanelCoordinator::GetComboboxDisplayedEntryIdForTesting()
     const {
-  return combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex());
+  return combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex().value());
 }
 
 SidePanelEntry* SidePanelCoordinator::GetLoadingEntryForTesting() const {
@@ -435,7 +441,7 @@ absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetSelectedId() const {
 
   // If we are not waiting on content swapping we want to return the active
   // selected entry id.
-  return combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex());
+  return combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex().value());
 }
 
 SidePanelRegistry* SidePanelCoordinator::GetActiveContextualRegistry() const {
@@ -473,6 +479,7 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
       base::BindRepeating(&SidePanelCoordinator::Close, base::Unretained(this)),
       views::kIcCloseIcon, gfx::Insets(),
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE),
+      kSidePanelCloseButtonElementId,
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE)));
 
@@ -488,7 +495,7 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
       GetLastActiveEntryId().value_or(kDefaultEntry)));
   // TODO(corising): Replace this with something appropriate.
   combobox->SetAccessibleName(
-      combobox_model_->GetItemAt(combobox->GetSelectedIndex()));
+      combobox_model_->GetItemAt(combobox->GetSelectedIndex().value()));
   combobox->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::LayoutOrientation::kHorizontal,
@@ -497,14 +504,15 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
                                /*adjust_height_for_width=*/false)
           .WithAlignment(views::LayoutAlignment::kStart));
   combobox->SetBorderColorId(ui::kColorSidePanelComboboxBorder);
+  combobox->SetBackgroundColorId(ui::kColorSidePanelComboboxBackground);
   combobox->SetEventHighlighting(true);
   combobox->SetSizeToLargestLabel(false);
   return combobox;
 }
 
-bool SidePanelCoordinator::OnComboboxChangeTriggered(int index) {
+bool SidePanelCoordinator::OnComboboxChangeTriggered(size_t index) {
   SidePanelEntry::Id entry_id = combobox_model_->GetIdAt(index);
-  Show(entry_id);
+  Show(entry_id, SidePanelUtil::SidePanelOpenTrigger::kComboboxSelected);
   return true;
 }
 
@@ -528,7 +536,8 @@ void SidePanelCoordinator::OnEntryWillDeregister(SidePanelEntry* entry) {
   if (GetContentView() && selected_id.has_value() &&
       selected_id.value() == entry->id()) {
     if (global_registry_->active_entry().has_value()) {
-      Show(GetLastActiveEntryId().value_or(kDefaultEntry));
+      Show(GetLastActiveEntryId().value_or(kDefaultEntry),
+           SidePanelUtil::SidePanelOpenTrigger::kSidePanelEntryDeregistered);
     } else {
       Close();
     }
@@ -565,10 +574,12 @@ void SidePanelCoordinator::OnTabStripModelChanged(
         !global_registry_->active_entry().has_value()) {
       Close();
     } else {
-      Show(GetLastActiveEntryId().value_or(kDefaultEntry));
+      Show(GetLastActiveEntryId().value_or(kDefaultEntry),
+           SidePanelUtil::SidePanelOpenTrigger::kTabChanged);
     }
   } else if (new_contextual_registry &&
              new_contextual_registry->active_entry().has_value()) {
-    Show(new_contextual_registry->active_entry().value()->id());
+    Show(new_contextual_registry->active_entry().value()->id(),
+         SidePanelUtil::SidePanelOpenTrigger::kTabChanged);
   }
 }

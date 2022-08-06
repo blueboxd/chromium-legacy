@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Provide helpers for running Fuchsia's `ffx`."""
 
+import ast
 import logging
 import os
 import json
@@ -150,6 +151,46 @@ class FfxEmulator(AbstractContextManager):
                 ('-l', os.path.join(self._logs_dir, 'emulator_log')))
         if self._with_network:
             emu_command.extend(('--net', 'tap'))
+
+        # TODO(https://crbug.com/1336776): remove when ffx has native support
+        # for starting emulator on arm64 host.
+        if get_host_arch() == 'arm64':
+
+            arm64_qemu_dir = os.path.join(SDK_ROOT, 'tools', 'arm64',
+                                          'qemu_internal')
+
+            # The arm64 emulator binaries are downloaded separately, so add
+            # a symlink to the expected location inside the SDK.
+            if not os.path.isdir(arm64_qemu_dir):
+                os.symlink(
+                    os.path.join(SDK_ROOT, '..', '..', 'qemu-linux-arm64'),
+                    arm64_qemu_dir)
+
+            # Add the arm64 emulator binaries to the SDK's manifest.json file.
+            sdk_manifest = os.path.join(SDK_ROOT, 'meta', 'manifest.json')
+            with open(sdk_manifest, 'r+') as f:
+                data = json.load(f)
+                for part in data['parts']:
+                    if part['meta'] == 'tools/x64/qemu_internal-meta.json':
+                        part['meta'] = 'tools/arm64/qemu_internal-meta.json'
+                        break
+                f.seek(0)
+                json.dump(data, f)
+                f.truncate()
+
+            # Generate a meta file for the arm64 emulator binaries using its
+            # x64 counterpart.
+            qemu_arm64_meta_file = os.path.join(SDK_ROOT, 'tools', 'arm64',
+                                                'qemu_internal-meta.json')
+            qemu_x64_meta_file = os.path.join(SDK_ROOT, 'tools', 'x64',
+                                              'qemu_internal-meta.json')
+            with open(qemu_x64_meta_file) as f:
+                data = str(json.load(f))
+            qemu_arm64_meta = data.replace(r'tools/x64', 'tools/arm64')
+            with open(qemu_arm64_meta_file, "w+") as f:
+                json.dump(ast.literal_eval(qemu_arm64_meta), f)
+            emu_command.extend(['--engine', 'qemu'])
+
         run_ffx_command(emu_command)
         return self._node_name
 

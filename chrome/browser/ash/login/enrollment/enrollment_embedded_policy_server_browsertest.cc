@@ -6,7 +6,6 @@
 
 #include "ash/components/attestation/attestation_flow_utils.h"
 #include "ash/components/attestation/mock_attestation_flow.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -53,6 +52,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -92,13 +92,11 @@ std::string GetDmTokenFromPolicy(const std::string& blob) {
 }
 
 void AllowlistSimpleChallengeSigningKey() {
-  chromeos::AttestationClient::Get()
-      ->GetTestInterface()
-      ->AllowlistSignSimpleChallengeKey(
-          /*username=*/"",
-          attestation::GetKeyNameForProfile(
-              chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-              ""));
+  AttestationClient::Get()->GetTestInterface()->AllowlistSignSimpleChallengeKey(
+      /*username=*/"",
+      attestation::GetKeyNameForProfile(
+          chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
+          ""));
 }
 
 class EnrollmentEmbeddedPolicyServerBase : public OobeBaseTest {
@@ -1159,9 +1157,7 @@ class OobeGuestButtonPolicy : public testing::WithParamInterface<bool>,
   }
 };
 
-// TODO(https://crbug.com/1308787): test is flaky.
-IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy,
-                       DISABLED_VisibilityAfterEnrollment) {
+IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, VisibilityAfterEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();

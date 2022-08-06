@@ -58,6 +58,7 @@ android_library("java") {
 
 android_resources("java_resources") {
   sources = [
+    "java/res/anim/slide_out_child_bottom.xml",
     "java/res/drawable/ic_zoom.xml",
     "java/res/drawable/page_zoom_background.xml",
     "java/res/layout/custom_preference.xml",
@@ -77,7 +78,10 @@ android_resources("java_resources") {
 }
 
 robolectric_library("junit") {
-  sources = [ "java/src/org/chromium/components/browser_ui/accessibility/PageZoomMediatorUnitTest.java" ]
+  sources = [
+    "java/src/org/chromium/components/browser_ui/accessibility/PageZoomMediatorUnitTest.java",
+    "java/src/org/chromium/components/browser_ui/accessibility/PageZoomUtilsUnitTest.java",
+  ]
 
   deps = [
     ":java",

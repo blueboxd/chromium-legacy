@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class VttCueLayoutAlgorithm;
 struct VTTDisplayParameters;
 
 // VTTCueBox represents the bounding box of a VTTCue.
@@ -43,16 +44,50 @@ struct VTTDisplayParameters;
 class VTTCueBox final : public HTMLDivElement {
  public:
   explicit VTTCueBox(Document&);
+  void Trace(Visitor* visitor) const override;
+  bool IsVTTCueBox() const override { return true; }
 
   void ApplyCSSProperties(const VTTDisplayParameters&);
 
+  float SnapToLinesPosition() const { return snap_to_lines_position_; }
+  bool IsAdjusted() const { return adjusted_position_ != LayoutUnit::Min(); }
+  // IsAdjusted() becomes true after calling this.
+  LayoutUnit& StartAdjustment(LayoutUnit new_value,
+                              base::PassKey<VttCueLayoutAlgorithm>);
+  // IsAdjusted() becomes false after calling this.
+  void RevertAdjustment();
+  // Returns adjusted_position_ if IsAdjusted(), or the initial position
+  // without adjustment otherwise.
+  LayoutUnit AdjustedPosition(LayoutUnit full_dimention,
+                              base::PassKey<VttCueLayoutAlgorithm>) const;
+
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  InsertionNotificationRequest InsertedInto(
+      ContainerNode& insertion_point) override;
+  void RemovedFrom(ContainerNode& insertion_point) override;
 
+  bool IsInRegion() const;
+
+  Member<ResizeObserver> box_size_observer_;
   // The computed line position for snap-to-lines layout, and NaN for
   // non-snap-to-lines layout where no adjustment should take place.
   // This is set in applyCSSProperties and propagated to LayoutVTTCue.
   float snap_to_lines_position_;
+
+  // Percentage position before adjustment.
+  float original_percent_position_;
+
+  // Pixel position after adjustment. LayoutUnit::Min() means this box is not
+  // adjusted yet.
+  LayoutUnit adjusted_position_ = LayoutUnit::Min();
+};
+
+template <>
+struct DowncastTraits<VTTCueBox> {
+  static bool AllowFrom(const Node& node) {
+    return node.IsElementNode() && To<Element>(node).IsVTTCueBox();
+  }
 };
 
 }  // namespace blink

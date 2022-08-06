@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
@@ -90,30 +91,28 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   };
 
   struct State {
-    State(WebContents* a_dst_contents,
-          int a_dst_index,
-          TabStripModelObserverAction a_action)
-        : src_contents(nullptr),
-          dst_contents(a_dst_contents),
-          src_index(-1),
-          dst_index(a_dst_index),
-          change_reason(CHANGE_REASON_NONE),
-          foreground(false),
-          action(a_action) {}
+    State(WebContents* dst_contents,
+          absl::optional<size_t> dst_index,
+          TabStripModelObserverAction action)
+        : dst_contents(dst_contents), dst_index(dst_index), action(action) {}
 
-    WebContents* src_contents;
+    WebContents* src_contents = nullptr;
     WebContents* dst_contents;
-    int src_index;
-    int dst_index;
-    int change_reason;
-    bool foreground;
+    absl::optional<size_t> src_index;
+    absl::optional<size_t> dst_index;
+    int change_reason = CHANGE_REASON_NONE;
+    bool foreground = false;
     TabStripModelObserverAction action;
 
     std::string ToString() const {
       std::ostringstream oss;
+      const auto optional_to_string = [](const auto& opt) {
+        return opt.has_value() ? base::NumberToString(opt.value())
+                               : std::string("<none>");
+      };
       oss << "State change: " << kActionNames[int{action}]
-          << "\n  Source index: " << src_index
-          << "\n  Destination index: " << dst_index
+          << "\n  Source index: " << optional_to_string(src_index)
+          << "\n  Destination index: " << optional_to_string(dst_index)
           << "\n  Source contents: " << src_contents
           << "\n  Destination contents: " << dst_contents
           << "\n  Change reason: " << change_reason
@@ -178,7 +177,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
   void PushActivateState(WebContents* old_contents,
                          WebContents* new_contents,
-                         int index,
+                         absl::optional<size_t> index,
                          int reason) {
     State s(new_contents, index, ACTIVATE);
     s.src_contents = old_contents;
@@ -200,8 +199,15 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
 
   void PushMoveState(WebContents* contents, int from_index, int to_index) {
-    State s(contents, to_index, MOVE);
-    s.src_index = from_index;
+    const auto tab_index_to_selection_model_index =
+        [](int tab_index) -> absl::optional<size_t> {
+      if (tab_index == TabStripModel::kNoTab)
+        return absl::nullopt;
+      DCHECK_GE(tab_index, 0);
+      return static_cast<size_t>(tab_index);
+    };
+    State s(contents, tab_index_to_selection_model_index(to_index), MOVE);
+    s.src_index = tab_index_to_selection_model_index(from_index);
     states_.push_back(s);
   }
 
@@ -322,25 +328,25 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   void TabChangedAt(WebContents* contents,
                     int index,
                     TabChangeType change_type) override {
-    states_.push_back(State(contents, index, CHANGE));
+    states_.emplace_back(contents, index, CHANGE);
   }
 
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              WebContents* contents,
                              int index) override {
-    states_.push_back(State(contents, index, PINNED));
+    states_.emplace_back(contents, index, PINNED);
   }
 
   void WillCloseAllTabs(TabStripModel* tab_strip_model) override {
-    states_.push_back(State(nullptr, -1, CLOSE_ALL));
+    states_.emplace_back(nullptr, absl::nullopt, CLOSE_ALL);
   }
 
   void CloseAllTabsStopped(TabStripModel* tab_strip_model,
                            CloseAllStoppedReason reason) override {
     if (reason == kCloseAllCanceled) {
-      states_.push_back(State(nullptr, -1, CLOSE_ALL_CANCELED));
+      states_.emplace_back(nullptr, absl::nullopt, CLOSE_ALL_CANCELED);
     } else if (reason == kCloseAllCompleted) {
-      states_.push_back(State(nullptr, -1, CLOSE_ALL_COMPLETED));
+      states_.emplace_back(nullptr, absl::nullopt, CLOSE_ALL_COMPLETED);
     }
   }
 
@@ -492,7 +498,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     State s2(raw_contents1, 0, MockTabStripModelObserver::ACTIVATE);
     observer.ExpectStateEquals(1, s2);
     State s3(raw_contents1, 0, MockTabStripModelObserver::SELECT);
-    s3.src_index = ui::ListSelectionModel::kUnselectedIndex;
+    s3.src_index = absl::nullopt;
     observer.ExpectStateEquals(2, s3);
     observer.ClearStates();
   }
@@ -616,7 +622,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   // Test CloseWebContentsAt
   {
-    EXPECT_TRUE(tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE));
+    EXPECT_TRUE(tabstrip.CloseWebContentsAt(2, TabCloseTypes::CLOSE_NONE));
     EXPECT_EQ(2, tabstrip.count());
 
     EXPECT_EQ(5, observer.GetStateCount());
@@ -1060,8 +1066,8 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
 
   // Closing a tab should cause its children to inherit the tab's opener.
   EXPECT_EQ(true, tabstrip.CloseWebContentsAt(
-                      1, TabStripModel::CLOSE_USER_GESTURE |
-                             TabStripModel::CLOSE_CREATE_HISTORICAL_TAB));
+                      1, TabCloseTypes::CLOSE_USER_GESTURE |
+                             TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB));
   EXPECT_EQ("1 111 12 2", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
   // opener1 is now the opener of 111, so has two adjacent descendants (111, 12)
@@ -1086,11 +1092,11 @@ TEST_F(TabStripModelTest, CloseInactiveTabKeepsSelection) {
                       CreateWebContents());
   ASSERT_EQ(0, tabstrip.active_index());
 
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
@@ -1116,11 +1122,11 @@ TEST_F(TabStripModelTest, CloseActiveTabShiftsSelectionRight) {
                              TabStripUserGestureDetails::GestureType::kOther));
   ASSERT_EQ(1, tabstrip.active_index());
 
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
@@ -1149,11 +1155,11 @@ TEST_F(TabStripModelTest, CloseGroupedTabShiftsSelectionWithinGroup) {
                              TabStripUserGestureDetails::GestureType::kOther));
   ASSERT_EQ(1, tabstrip.active_index());
 
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
@@ -1269,11 +1275,11 @@ TEST_F(TabStripModelTest, CloseTabWithOpenerShiftsSelectionWithinOpened) {
                              TabStripUserGestureDetails::GestureType::kOther));
   ASSERT_EQ(2, tabstrip.active_index());
 
-  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(2, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
@@ -1300,7 +1306,7 @@ TEST_F(TabStripModelTest, CloseTabWithOpenerShiftsSelectionToOpener) {
       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_OPENER);
   ASSERT_EQ(2, tabstrip.active_index());
 
-  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
@@ -1978,7 +1984,7 @@ TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   // and make sure the correct tab gets selected when the new tab is closed.
   tabstrip.AppendWebContents(CreateWebContents(), true);
   EXPECT_EQ(2, tabstrip.active_index());
-  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   // Clean up after ourselves.
@@ -2021,19 +2027,19 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   EXPECT_EQ(raw_page_a_a_a_contents, strip.GetWebContentsAt(2));
 
   // Close page A.A
-  strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.active_index(), TabCloseTypes::CLOSE_NONE);
 
   // Page A.A.A should be selected, NOT A.B
   EXPECT_EQ(raw_page_a_a_a_contents, strip.GetActiveWebContents());
 
   // Close page A.A.A
-  strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.active_index(), TabCloseTypes::CLOSE_NONE);
 
   // Page A.B should be selected
   EXPECT_EQ(raw_page_a_b_contents, strip.GetActiveWebContents());
 
   // Close page A.B
-  strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.active_index(), TabCloseTypes::CLOSE_NONE);
 
   // Page A should be selected
   EXPECT_EQ(raw_page_a_contents, strip.GetActiveWebContents());
@@ -2072,7 +2078,7 @@ TEST_F(TabStripModelTest, NewTabAtEndOfStripInheritsOpener) {
 
   // Close the New Tab that was just opened. We should be returned to page B's
   // Tab...
-  strip.CloseWebContentsAt(4, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(4, TabCloseTypes::CLOSE_NONE);
 
   EXPECT_EQ(1, strip.active_index());
 
@@ -2088,7 +2094,7 @@ TEST_F(TabStripModelTest, NewTabAtEndOfStripInheritsOpener) {
   EXPECT_EQ(4, strip.active_index());
 
   // Close the Tab. Selection should shift back to page B's Tab.
-  strip.CloseWebContentsAt(4, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(4, TabCloseTypes::CLOSE_NONE);
 
   EXPECT_EQ(1, strip.active_index());
 
@@ -2106,7 +2112,7 @@ TEST_F(TabStripModelTest, NewTabAtEndOfStripInheritsOpener) {
   EXPECT_EQ(4, strip.active_index());
 
   // Close the Tab. The next-adjacent should be selected.
-  strip.CloseWebContentsAt(4, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(4, TabCloseTypes::CLOSE_NONE);
 
   EXPECT_EQ(3, strip.active_index());
 
@@ -2151,7 +2157,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   strip.TabNavigating(raw_page_d_contents, ui::PAGE_TRANSITION_LINK);
 
   // Close page D, page C should be selected. (part of same opener tree).
-  strip.CloseWebContentsAt(3, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(3, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(2, strip.active_index());
 
   // Tell the TabStripModel that we are navigating in page C via a bookmark.
@@ -2159,7 +2165,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
 
   // Close page C, page E should be selected. (C is no longer part of the
   // A-B-C-D tree, selection moves to the right).
-  strip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(2, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(raw_page_e_contents, strip.GetWebContentsAt(strip.active_index()));
 
   strip.CloseAllTabs();
@@ -2212,7 +2218,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // At this point, if we close this tab the last selected one should be
   // re-selected.
-  strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.count() - 1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(raw_page_c_contents, strip.GetWebContentsAt(strip.active_index()));
 
   // TEST 2: As above, but the user selects another tab in the strip and thus
@@ -2232,7 +2238,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
                           TabStripUserGestureDetails::GestureType::kOther));
 
   // Now close the last tab. The next adjacent should be selected.
-  strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.count() - 1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(raw_page_d_contents, strip.GetWebContentsAt(strip.active_index()));
 
   // TEST 3: As above, but the user does multiple navigations and thus the tab's
@@ -2255,7 +2261,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.TabNavigating(raw_new_tab_contents, ui::PAGE_TRANSITION_TYPED);
 
   // Close the tab. The next adjacent should be selected.
-  strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.count() - 1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(raw_page_d_contents, strip.GetWebContentsAt(strip.active_index()));
 
   strip.CloseAllTabs();
@@ -2339,7 +2345,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.AppendWebContents(std::move(contents1), true);
     tabstrip.AppendWebContents(std::move(contents2), true);
 
-    tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+    tabstrip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
     EXPECT_FALSE(raw_contents1->GetPrimaryMainFrame()
                      ->GetProcess()
                      ->FastShutdownStarted());
@@ -2981,7 +2987,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   observer.ClearStates();
 
   // Closing one of the selected tabs, not the active one.
-  strip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(1, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(3, strip.count());
   ASSERT_EQ(3, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action, MockTabStripModelObserver::CLOSE);
@@ -2990,7 +2996,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   observer.ClearStates();
 
   // Closing the active tab, while there are others tabs selected.
-  strip.CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(0, TabCloseTypes::CLOSE_NONE);
   EXPECT_EQ(2, strip.count());
   ASSERT_EQ(5, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action, MockTabStripModelObserver::CLOSE);
@@ -3698,7 +3704,7 @@ TEST_F(TabStripModelTest, CloseTabDeletesGroup) {
   strip.AddToNewGroup({0});
   EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
 
-  strip.CloseWebContentsAt(0, TabStripModel::CLOSE_USER_GESTURE);
+  strip.CloseWebContentsAt(0, TabCloseTypes::CLOSE_USER_GESTURE);
 
   EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 0U);
 }
@@ -3715,7 +3721,7 @@ TEST_F(TabStripModelTest, CloseTabNotifiesObserversOfGroupChange) {
   EXPECT_EQ(1u, observer.group_updates().size());
   EXPECT_EQ(1, observer.group_update(group).contents_update_count);
 
-  strip.CloseWebContentsAt(0, TabStripModel::CLOSE_USER_GESTURE);
+  strip.CloseWebContentsAt(0, TabCloseTypes::CLOSE_USER_GESTURE);
   EXPECT_EQ(0u, observer.group_updates().size());
 }
 

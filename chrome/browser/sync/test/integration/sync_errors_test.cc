@@ -33,6 +33,7 @@ using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
 using syncer::SyncServiceImpl;
+using testing::IsEmpty;
 using user_events_helper::CreateTestEvent;
 
 namespace {
@@ -347,6 +348,10 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 
 IN_PROC_BROWSER_TEST_F(SyncErrorTest,
                        ShouldResendUncommittedEntitiesAfterBrowserRestart) {
+  // Make sure the PRE_ test didn't successfully commit the event.
+  ASSERT_THAT(GetFakeServer()->GetSyncEntitiesByModelType(syncer::USER_EVENTS),
+              IsEmpty());
+
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 

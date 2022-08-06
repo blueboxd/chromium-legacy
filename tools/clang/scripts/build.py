@@ -28,7 +28,8 @@ import tempfile
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
                     STAMP_FILE, THIS_DIR, DownloadUrl, DownloadAndUnpack,
-                    EnsureDirExists, ReadStampFile, RmTree, WriteStampFile)
+                    DownloadAndUnpackPackage, EnsureDirExists, GetDefaultHostOs,
+                    ReadStampFile, RmTree, WriteStampFile)
 
 # Path constants. (All of these should be absolute paths.)
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
@@ -147,7 +148,10 @@ def CheckoutLLVM(commit, dir):
     print('Removing %s.' % dir)
     RmTree(dir)
 
-  clone_cmd = ['git', 'clone', 'https://github.com/llvm/llvm-project/', dir]
+  clone_cmd = [
+      'git', 'clone', 'https://chromium.googlesource.com/external/' +
+      'github.com/llvm/llvm-project', dir
+  ]
 
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
@@ -166,11 +170,11 @@ def UrlOpen(url):
 
 def GetLatestLLVMCommit():
   """Get the latest commit hash in the LLVM monorepo."""
-  ref = json.loads(
-      UrlOpen(('https://api.github.com/repos/'
-               'llvm/llvm-project/git/refs/heads/main')))
-  assert ref['object']['type'] == 'commit'
-  return ref['object']['sha']
+  main = json.loads(
+      UrlOpen('https://chromium.googlesource.com/external/' +
+              'github.com/llvm/llvm-project/' +
+              '+/refs/heads/main?format=JSON').replace(")]}'", ""))
+  return main['commit']
 
 
 def GetCommitDescription(commit):
@@ -181,14 +185,6 @@ def GetCommitDescription(commit):
   return subprocess.check_output(
       [git_exe, 'describe', '--long', '--abbrev=8', commit],
       universal_newlines=True).rstrip()
-
-
-def DeleteChromeToolsShim():
-  # TODO: These dirs are no longer used. Remove this code after a while.
-  OLD_SHIM_DIR = os.path.join(LLVM_DIR, 'tools', 'zzz-chrometools')
-  shutil.rmtree(OLD_SHIM_DIR, ignore_errors=True)
-  CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'llvm', 'tools', 'chrometools')
-  shutil.rmtree(CHROME_TOOLS_SHIM_DIR, ignore_errors=True)
 
 
 def AddCMakeToPath(args):
@@ -389,22 +385,9 @@ def DownloadRPMalloc():
 
 
 def DownloadPinnedClang():
-  # The update.py in this current revision may have a patched revision while
-  # building new clang packages. Get update.py off HEAD~ to pull the current
-  # pinned clang.
-  if not os.path.exists(PINNED_CLANG_DIR):
-    os.mkdir(os.path.join(PINNED_CLANG_DIR))
-
-  script_path = os.path.join(PINNED_CLANG_DIR, 'update.py')
-
-  with open(script_path, 'w') as f:
-    subprocess.check_call(
-        ['git', 'show', 'HEAD~:tools/clang/scripts/update.py'],
-        stdout=f,
-        cwd=CHROMIUM_DIR)
-  print("Running pinned update.py")
-  subprocess.check_call(
-      [sys.executable, script_path, '--output-dir=' + PINNED_CLANG_DIR])
+  PINNED_CLANG_VERSION = 'llvmorg-16-init-572-gdde41c6c-3'
+  DownloadAndUnpackPackage('clang', PINNED_CLANG_DIR, GetDefaultHostOs(),
+                           PINNED_CLANG_VERSION)
 
 
 # TODO(crbug.com/929645): Remove once we don't need gcc's libstdc++.
@@ -612,9 +595,6 @@ def main():
   # move this down to where we fetch other build tools.
   AddGnuWinToPath()
 
-  if sys.platform == 'darwin':
-    isysroot = subprocess.check_output(['xcrun', '--show-sdk-path'],
-                                       universal_newlines=True).rstrip()
 
   if args.build_dir:
     LLVM_BUILD_DIR = args.build_dir
@@ -636,7 +616,6 @@ def main():
   WriteStampFile('', FORCE_HEAD_REVISION_FILE)
 
   AddCMakeToPath(args)
-  DeleteChromeToolsShim()
 
 
   if args.skip_build:
@@ -657,11 +636,6 @@ def main():
 
   projects = 'clang;lld;clang-tools-extra'
   runtimes = 'compiler-rt'
-
-  if sys.platform == 'darwin':
-    # clang needs libc++, else -stdlib=libc++ won't find includes
-    # (this is needed for bootstrap builds and for building the fuchsia runtime)
-    runtimes += ';libcxx'
 
   base_cmake_args = [
       '-GNinja',
@@ -690,6 +664,10 @@ def main():
       # Build libclang.a as well as libclang.so
       '-DLIBCLANG_BUILD_STATIC=ON',
   ]
+
+  if sys.platform == 'darwin':
+    isysroot = subprocess.check_output(['xcrun', '--show-sdk-path'],
+                                       universal_newlines=True).rstrip()
 
   # See https://crbug.com/1302636#c49 - #c56 -- intercepting crypt_r() does not
   # work with the sysroot for not fully understood reasons. Disable it.
@@ -729,15 +707,6 @@ def main():
     # broken on mac.
     # TODO: check if this works now.
     base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
-
-  if sys.platform == 'darwin':
-    # For libc++, we only want the headers.
-    base_cmake_args.extend([
-        '-DLIBCXX_ENABLE_SHARED=OFF',
-        '-DLIBCXX_ENABLE_STATIC=OFF',
-        '-DLIBCXX_INCLUDE_TESTS=OFF',
-        '-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF',
-    ])
 
   if sys.platform.startswith('linux'):
     # Download sysroots. This uses basically Chromium's sysroots, but with
@@ -828,9 +797,6 @@ def main():
       runtimes += ';compiler-rt'
     if sys.platform != 'darwin':
       projects += ';lld'
-    if sys.platform == 'darwin':
-      # Need libc++ for the bootstrap compiler on mac.
-      runtimes += ';libcxx'
 
     bootstrap_targets = 'X86'
     if sys.platform == 'darwin':
@@ -898,13 +864,9 @@ def main():
     os.chdir(LLVM_INSTRUMENTED_DIR)
 
     projects = 'clang'
-    runtimes = ''
-    if sys.platform == 'darwin':
-      runtimes += 'libcxx'
 
     instrument_args = base_cmake_args + [
         '-DLLVM_ENABLE_PROJECTS=' + projects,
-        '-DLLVM_ENABLE_RUNTIMES=' + runtimes,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
         '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
@@ -952,7 +914,7 @@ def main():
                 '-target', 'x86_64-unknown-unknown', '-O2', '-g', '-std=c++14',
                  '-fno-exceptions', '-fno-rtti', '-w', '-c', training_source]
     if sys.platform == 'darwin':
-      train_cmd.extend(['-stdlib=libc++', '-isysroot', isysroot])
+      train_cmd.extend(['-isysroot', isysroot])
     RunCommand(train_cmd, msvc_arch='x64')
 
     # Merge profiles.
@@ -962,19 +924,7 @@ def main():
                                        '*.profraw')), msvc_arch='x64')
     print('Profile generated.')
 
-  # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
-  # needed, on OS X it requires libc++. clang only automatically links to libc++
-  # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run
-  # on OS X versions as old as 10.7.
-  deployment_target = ''
-
-  if sys.platform == 'darwin' and args.bootstrap:
-    # When building on 10.9, /usr/include usually doesn't exist, and while
-    # Xcode's clang automatically sets a sysroot, self-built clangs don't.
-    cflags = ['-isysroot', isysroot]
-    cxxflags = ['-stdlib=libc++'] + cflags
-    ldflags += ['-stdlib=libc++']
-    deployment_target = '10.7'
+  deployment_target = '10.12'
 
   # If building at head, define a macro that plugins can use for #ifdefing
   # out code that builds at head, but not at CLANG_REVISION or vice versa.
@@ -1091,7 +1041,7 @@ def main():
          ]))
   elif sys.platform == 'darwin':
     compiler_rt_args = [
-        'SANITIZER_MIN_OSX_VERSION=10.7',
+        'SANITIZER_MIN_OSX_VERSION=' + deployment_target,
         'COMPILER_RT_ENABLE_MACCATALYST=ON',
         'COMPILER_RT_ENABLE_IOS=ON',
         'COMPILER_RT_ENABLE_WATCHOS=OFF',

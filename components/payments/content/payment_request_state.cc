@@ -23,8 +23,6 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/payments/content/autofill_payment_app.h"
-#include "components/payments/content/autofill_payment_app_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_app.h"
 #include "components/payments/content/payment_app_service.h"
@@ -38,6 +36,7 @@
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
@@ -438,24 +437,8 @@ void PaymentRequestState::SetAvailablePaymentAppForRetry() {
 void PaymentRequestState::AddAutofillPaymentApp(
     bool selected,
     const autofill::CreditCard& card) {
-  if (!base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard))
-    return;
-
-  auto app =
-      AutofillPaymentAppFactory::ConvertCardToPaymentAppIfSupportedNetwork(
-          card, weak_ptr_factory_.GetWeakPtr());
-  if (!app)
-    return;
-
-  available_apps_.push_back(std::move(app));
-  if (journey_logger_) {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kBasicCard);
-  }
-
-  if (selected) {
-    SetSelectedApp(available_apps_.back()->AsWeakPtr());
-  }
+  // TODO(https://crbug.com/1209835): Remove this method.
+  return;
 }
 
 void PaymentRequestState::AddAutofillShippingProfile(
@@ -704,10 +687,7 @@ void PaymentRequestState::SetDefaultProfileSelections() {
                                    CREDIT_CARD_NO_BILLING_ADDRESS);
     }
   } else if (available_apps_[0]->type() == PaymentApp::Type::AUTOFILL) {
-    // Record the missing fields (if any) of the most complete app when
-    // it's autofill based. SW based apps are always complete.
-    static_cast<const AutofillPaymentApp*>(available_apps_[0].get())
-        ->RecordMissingFieldsForApp();
+    NOTREACHED() << "Autofill app shouldn't be available";
   }
 
   SelectDefaultShippingAddressAndNotifyObservers();

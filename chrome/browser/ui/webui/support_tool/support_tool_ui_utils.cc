@@ -33,6 +33,7 @@ const char kWindowTitle[] = "Window Titles";
 const char kURL[] = "URLs";
 const char kSerial[] = "Device & Component Serial Numbers";
 const char kRemovableStorage[] = "Removable Storage Names";
+const char kEAP[] = "EAP Network Authentication Information";
 
 const char kPiiItemDescriptionKey[] = "piiTypeDescription";
 const char kPiiItemDetectedDataKey[] = "detectedData";
@@ -111,7 +112,7 @@ base::Value::List GetDetectedPIIDataItems(const PIIMap& detected_pii) {
                       static_cast<int>(pii_entry.second.size()));
     // TODO(b/200511640): Set `keep` field to the value we'll get from URL's
     // pii_masking_on query if it exists.
-    pii_data_item.Set(support_tool_ui::kPiiItemKeepKey, false);
+    pii_data_item.Set(support_tool_ui::kPiiItemKeepKey, true);
     detected_pii_data_items.Append(base::Value(std::move(pii_data_item)));
   }
   return detected_pii_data_items;

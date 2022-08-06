@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
@@ -55,6 +56,10 @@ using session_manager::SessionState;
 using user_manager::User;
 using user_manager::UserList;
 using user_manager::UserManager;
+
+// TODO(b/228873153): Remove after figuring out the root cause of the bug
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace {
 
@@ -201,7 +206,8 @@ void SessionControllerClientImpl::NotifyChromeLockAnimationsComplete() {
 }
 
 void SessionControllerClientImpl::RunUnlockAnimation(
-    base::OnceClosure animation_finished_callback) {
+    ash::SessionController::RunUnlockAnimationCallback
+        animation_finished_callback) {
   session_controller_->RunUnlockAnimation(
       std::move(animation_finished_callback));
 }
@@ -213,6 +219,10 @@ void SessionControllerClientImpl::ShowTeleportWarningDialog(
 
 void SessionControllerClientImpl::RequestLockScreen() {
   DoLockScreen();
+}
+
+void SessionControllerClientImpl::RequestHideLockScreen() {
+  ash::ScreenLocker::Hide();
 }
 
 void SessionControllerClientImpl::RequestSignOut() {
@@ -410,7 +420,8 @@ void SessionControllerClientImpl::DoLockScreen() {
   if (!CanLockScreen())
     return;
 
-  VLOG(1) << "Requesting screen lock from SessionControllerClientImpl";
+  VLOG(1) << "b/228873153 : Requesting screen lock from "
+             "SessionControllerClientImpl";
   ash::SessionManagerClient::Get()->RequestLockScreen();
 }
 

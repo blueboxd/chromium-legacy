@@ -23,6 +23,7 @@ enum class ParseStatusCode : StatusCodeType {
   kFailedToParseByteRange,
   kFailedToParseStableId,
   kFailedToParseInstreamId,
+  kFailedToParseAudioChannels,
   kInvalidPlaylistVersion,
   kUnknownPlaylistType,
   kMalformedAttributeList,
@@ -56,6 +57,7 @@ enum class ParseStatusCode : StatusCodeType {
   kPartTargetDurationExceedsTargetDuration,
   kPartHoldBackDistanceTooLow,
   kPartInfTagWithoutPartHoldBack,
+  kPlaylistHasUnexpectedDeltaUpdate,
 };
 
 struct ParseStatusTraits {

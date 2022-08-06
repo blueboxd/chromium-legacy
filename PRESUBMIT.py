@@ -335,6 +335,18 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
       ),
       True,
     ),
+    BanRule(
+    ' systemImageNamed:',
+      (
+        '+[UIImage systemImageNamed:] should not be used to create symbols.',
+        'Instead use a wrapper defined in:',
+        'ios/chrome/browser/ui/icons/chrome_symbol.h'
+      ),
+      True,
+      excluded_paths=(
+        'ios/chrome/browser/ui/icons/chrome_symbol.mm',
+      ),
+    ),
 )
 
 _BANNED_IOS_EGTEST_FUNCTIONS : Sequence[BanRule] = (
@@ -1037,6 +1049,22 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       False,
       (),
     ),
+    BanRule(
+      r'/\babsl::FunctionRef\b',
+      (
+        'absl::FunctionRef is banned. Use base::FunctionRef instead.',
+      ),
+      True,
+      [
+        # base::Bind{Once,Repeating} references absl::FunctionRef to disallow
+        # interoperability.
+        r'^base[\\/]bind_internal\.h',
+        # base::FunctionRef is implemented on top of absl::FunctionRef.
+        r'^base[\\/]functional[\\/]function_ref.*\..+',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK,
+      ],
+    ),
 )
 
 _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
@@ -1123,6 +1151,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/create_r_java.pydeps',
     'build/android/gyp/create_r_txt.pydeps',
     'build/android/gyp/create_size_info_files.pydeps',
+    'build/android/gyp/create_test_apk_wrapper_script.pydeps',
     'build/android/gyp/create_ui_locale_resources.pydeps',
     'build/android/gyp/dex.pydeps',
     'build/android/gyp/dex_jdk_libs.pydeps',
@@ -1199,7 +1228,8 @@ _KNOWN_ROBOTS = set(
           for s in ('bling-autoroll-builder', 'v8-ci-autoroll-builder',
                     'wpt-autoroller', 'chrome-weblayer-builder',
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
-                    'infra-try-recipes-tester', 'lacros-tracking-roller')
+                    'infra-try-recipes-tester', 'lacros-tracking-roller',
+                    'lacros-sdk-version-roller')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -2172,6 +2202,26 @@ def CheckNoAbbreviationInPngFileName(input_api, output_api):
                 'Contact oshima@chromium.org if you have questions.', errors))
     return results
 
+def CheckNoProductIconsAddedToPublicRepo(input_api, output_api):
+    """Heuristically identifies product icons based on their file name and reminds
+    contributors not to add them to the Chromium repository.
+    """
+    errors = []
+    files_to_check = [r'.*google.*\.png$|.*google.*\.svg$|.*google.*\.icon$']
+    file_filter = lambda f: input_api.FilterSourceFile(
+        f, files_to_check=files_to_check)
+    for f in input_api.AffectedFiles(include_deletes=False,
+                                     file_filter=file_filter):
+        errors.append('    %s' % f.LocalPath())
+
+    results = []
+    if errors:
+        results.append(
+            output_api.PresubmitError(
+                'Trademarked images should not be added to the public repo. '
+                'See crbug.com/944754', errors))
+    return results
+
 
 def _ExtractAddRulesFromParsedDeps(parsed_deps):
     """Extract the rules that add dependencies from a parsed DEPS file.
@@ -2369,7 +2419,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^chrome[\\/]installer[\\/]setup[\\/].*",
             r"^chromecast[\\/]",
             r"^components[\\/]browser_watcher[\\/]"
-            r"dump_stability_report_main_win.cc$",
+            r"dump_stability_report_main_win\.cc$",
             r"^components[\\/]media_control[\\/]renderer[\\/]"
             r"media_playback_options\.cc$",
             r"^components[\\/]viz[\\/]service[\\/]display[\\/]"
@@ -2383,9 +2433,9 @@ def CheckSpamLogging(input_api, output_api):
             r"^courgette[\\/]courgette_minimal_tool\.cc$",
             r"^courgette[\\/]courgette_tool\.cc$",
             r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
-            r"^fuchsia_web[\\/]common[\\/]init_logging.cc$",
-            r"^fuchsia_web[\\/]runners[\\/]common[\\/]web_component.cc$",
-            r"^fuchsia_web[\\/]shell[\\/]web_engine_shell.cc$",
+            r"^fuchsia_web[\\/]common[\\/]init_logging\.cc$",
+            r"^fuchsia_web[\\/]runners[\\/]common[\\/]web_component\.cc$",
+            r"^fuchsia_web[\\/]shell[\\/].*_shell\.cc$",
             r"^headless[\\/]app[\\/]headless_shell\.cc$",
             r"^ipc[\\/]ipc_logging\.cc$",
             r"^native_client_sdk[\\/]",
@@ -2393,9 +2443,9 @@ def CheckSpamLogging(input_api, output_api):
             r"^remoting[\\/]host[\\/].*",
             r"^sandbox[\\/]linux[\\/].*",
             r"^storage[\\/]browser[\\/]file_system[\\/]" +
-            r"dump_file_system.cc$",
+            r"dump_file_system\.cc$",
             r"^tools[\\/]",
-            r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
+            r"^ui[\\/]base[\\/]resource[\\/]data_pack\.cc$",
             r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
             r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
             r"^ui[\\/]base[\\/]x[\\/]xwmstartupcheck[\\/]"
@@ -3580,9 +3630,10 @@ def _CheckAndroidTestAnnotationUsage(input_api, output_api):
 
 def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
     """Checks if MDPI assets are placed in a correct directory."""
-    file_filter = lambda f: (f.LocalPath().endswith('.png') and
-                             ('/res/drawable/' in f.LocalPath() or
-                              '/res/drawable-ldrtl/' in f.LocalPath()))
+    file_filter = lambda f: (f.LocalPath().endswith(
+        '.png') and ('/res/drawable/'.replace('/', input_api.os_path.sep) in f.
+                     LocalPath() or '/res/drawable-ldrtl/'.replace(
+                         '/', input_api.os_path.sep) in f.LocalPath()))
     errors = []
     for f in input_api.AffectedFiles(include_deletes=False,
                                      file_filter=file_filter):
@@ -5836,23 +5887,24 @@ def CheckMPArchApiUsage(input_api, output_api):
     source_file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=files_to_check, files_to_skip=files_to_skip)
 
+    # Here we list the classes/methods we're monitoring. For the "fyi" cases,
+    # we add the CL to the watchlist, but we don't omit a warning or have it be
+    # included in the triage rotation.
     # Note that since these are are just regular expressions and we don't have
     # the compiler's AST, we could have spurious matches (e.g. an unrelated class
     # could have a method named IsInMainFrame).
-    concerning_class_pattern = input_api.re.compile(
+    fyi_concerning_class_pattern = input_api.re.compile(
         r'WebContentsObserver|WebContentsUserData')
     # A subset of WebContentsObserver overrides where there's particular risk for
     # confusing tab and page level operations and data (e.g. incorrectly
     # resetting page state in DidFinishNavigation).
-    concerning_wco_methods = [
+    fyi_concerning_wco_methods = [
         'DidStartNavigation',
         'ReadyToCommitNavigation',
         'DidFinishNavigation',
         'RenderViewReady',
         'RenderViewDeleted',
         'RenderViewHostChanged',
-        'PrimaryMainDocumentElementAvailable',
-        'DocumentOnLoadCompletedInPrimaryMainFrame',
         'DOMContentLoaded',
         'DidFinishLoad',
     ]
@@ -5860,16 +5912,17 @@ def CheckMPArchApiUsage(input_api, output_api):
         'IsInMainFrame',
     ]
     concerning_web_contents_methods = [
-        'ForEachFrame',
-        'GetAllFrames',
         'FromRenderFrameHost',
         'FromRenderViewHost',
-        'GetMainFrame',
+    ]
+    fyi_concerning_web_contents_methods = [
         'GetRenderViewHost',
     ]
     concerning_rfh_methods = [
         'GetParent',
         'GetMainFrame',
+    ]
+    fyi_concerning_rfh_methods = [
         'GetFrameTreeNodeId',
     ]
     concerning_rfhi_methods = [
@@ -5883,35 +5936,50 @@ def CheckMPArchApiUsage(input_api, output_api):
     ]
     concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
         item for sublist in [
-            concerning_wco_methods, concerning_nav_handle_methods,
+            concerning_nav_handle_methods,
             concerning_web_contents_methods, concerning_rfh_methods,
             concerning_rfhi_methods, concerning_ftn_methods,
             concerning_blink_frame_methods,
         ] for item in sublist) + r')\(')
+    fyi_concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
+        item for sublist in [
+            fyi_concerning_wco_methods, fyi_concerning_web_contents_methods,
+            fyi_concerning_rfh_methods,
+        ] for item in sublist) + r')\(')
 
     used_apis = set()
+    used_fyi_methods = False
     for f in input_api.AffectedFiles(include_deletes=False,
                                      file_filter=source_file_filter):
         for line_num, line in f.ChangedContents():
-            class_match = concerning_class_pattern.search(line)
-            if class_match:
-                used_apis.add(class_match[0])
+            fyi_class_match = fyi_concerning_class_pattern.search(line)
+            if fyi_class_match:
+                used_fyi_methods = True
+            fyi_method_match = fyi_concerning_method_pattern.search(line)
+            if fyi_method_match:
+                used_fyi_methods = True
             method_match = concerning_method_pattern.search(line)
             if method_match:
                 used_apis.add(method_match[1])
 
     if not used_apis:
+        if used_fyi_methods:
+            output_api.AppendCC('mparch-reviews+watchfyi@chromium.org')
+
         return []
 
     output_api.AppendCC('mparch-reviews+watch@chromium.org')
     message = ('This change uses API(s) that are ambiguous in the presence of '
                'MPArch features such as bfcache, prerendering, and fenced '
                'frames.')
-    explaination = (
+    explanation = (
         'Please double check whether new code assumes that a WebContents only '
-        'contains a single page at a time. For example, it is discouraged to '
-        'reset per-document state in response to the observation of a '
-        'navigation. See this doc [1] and the comments on the individual APIs '
+        'contains a single page at a time. Notably, checking whether a frame '
+        'is the \"main frame\" is not specific enough to determine whether it '
+        'corresponds to the document reflected in the omnibox. A WebContents '
+        'may have additional main frames for prerendered pages, bfcached '
+        'pages, fenced frames, etc. '
+        'See this doc [1] and the comments on the individual APIs '
         'for guidance and this doc [2] for context. The MPArch review '
         'watchlist has been CC\'d on this change to help identify any issues.\n'
         '[1] https://docs.google.com/document/d/13l16rWTal3o5wce4i0RwdpMP5ESELLKr439Faj2BBRo/edit?usp=sharing\n'
@@ -5920,7 +5988,7 @@ def CheckMPArchApiUsage(input_api, output_api):
     return [
         output_api.PresubmitNotifyResult(message,
                                          items=list(used_apis),
-                                         long_text=explaination)
+                                         long_text=explanation)
     ]
 
 

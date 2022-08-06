@@ -186,9 +186,6 @@ const char kBackGestureHorizontalThreshold[] =
 // Whether to enable detection and dispatch of a 'drag from the top' gesture.
 const char kEnableTopDragGesture[] = "enable-top-drag-gesture";
 
-// Whether to enable the drawing of rounded window corners in the root window.
-const char kEnableRoundedWindowCorners[] = "enable-rounded-window-corners";
-
 // Whether in hospitality mode
 const char kManagedMode[] = "managed-mode";
 
@@ -217,10 +214,6 @@ const char kForceUpdateRemoteUrl[] = "force-update-remote-url";
 // System info file path. Default is an empty string, which
 // means that dummy info will be used.
 const char kSysInfoFilePath[] = "sys-info-file-path";
-
-// Specifies the directory where system extensions are found.
-// Default is "/system/chrome/extensions".
-const char kExtensionsDir[] = "cast-extensions-dir";
 
 // Defer initialization of the base::FeatureList in an external service process,
 // allowing the process to include its own non-default features.

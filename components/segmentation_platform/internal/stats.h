@@ -7,8 +7,8 @@
 
 #include "components/segmentation_platform/internal/execution/model_execution_status.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
-#include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
+#include "components/segmentation_platform/public/proto/types.pb.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -119,6 +119,12 @@ void RecordModelExecutionDurationModel(SegmentId segment_id,
 void RecordModelExecutionDurationTotal(SegmentId segment_id,
                                        ModelExecutionStatus status,
                                        base::TimeDelta duration);
+// Records the total duration of on-demand segment selection which includes
+// running all the models associated with the client and computing result.
+void RecordOnDemandSegmentSelectionDuration(
+    const std::string& segmentation_key,
+    const SegmentSelectionResult& result,
+    base::TimeDelta duration);
 // Records the result value after successfully executing an ML model.
 void RecordModelExecutionResult(SegmentId segment_id, float result);
 // Records whether the result value of of executing an ML model was successfully
@@ -179,6 +185,26 @@ enum class SegmentationSelectionFailureReason {
 // Records the reason for failure or success to compute a segment selection.
 void RecordSegmentSelectionFailure(const std::string& segmentation_key,
                                    SegmentationSelectionFailureReason reason);
+
+// Keep in sync with SegmentationPlatformFeatureProcessingError in
+// //tools/metrics/histograms/enums.xml.
+enum class FeatureProcessingError {
+  kUkmEngineDisabled = 0,
+  kUmaValidationError = 1,
+  kSqlValidationError = 2,
+  kCustomInputError = 3,
+  kSqlBindValuesError = 4,
+  kSqlQueryRunError = 5,
+  kResultTensorError = 6,
+  kMaxValue = kResultTensorError,
+};
+
+// Return a string display for the given FeatureProcessingError.
+std::string FeatureProcessingErrorToString(FeatureProcessingError error);
+
+// Records the type of error encountered during feature processing.
+void RecordFeatureProcessingError(SegmentId segment_id,
+                                  FeatureProcessingError error);
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Please keep in sync with

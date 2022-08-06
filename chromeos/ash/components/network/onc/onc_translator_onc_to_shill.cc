@@ -21,19 +21,18 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
+#include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/onc/onc_translation_tables.h"
 #include "chromeos/ash/components/network/onc/onc_translator.h"
+#include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/components/onc/onc_signature.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
-namespace onc {
+namespace ash::onc {
 
 namespace {
 
@@ -586,5 +585,4 @@ base::Value TranslateONCObjectToShill(const OncValueSignature* onc_signature,
   return shill_dictionary;
 }
 
-}  // namespace onc
-}  // namespace chromeos
+}  // namespace ash::onc

@@ -24,6 +24,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
@@ -183,12 +184,11 @@ bool WindowRestoreController::CanActivateRestoredWindow(
 
   // Only the topmost unminimize restored window can be activated.
   auto siblings = desk_container->children();
-  for (auto child_iter = siblings.rbegin(); child_iter != siblings.rend();
-       ++child_iter) {
-    if (WindowState::Get(*child_iter)->IsMinimized())
+  for (auto* const sibling : base::Reversed(siblings)) {
+    if (WindowState::Get(sibling)->IsMinimized())
       continue;
 
-    return window == (*child_iter);
+    return window == sibling;
   }
 
   return false;
@@ -528,7 +528,7 @@ void WindowRestoreController::RestoreStateTypeAndClearLaunchedKey(
           *state_type == chromeos::WindowStateType::kSecondarySnapped) {
         base::AutoReset<aura::Window*> auto_reset_to_be_snapped(
             &to_be_snapped_window_, window);
-        const WMEvent snap_event(
+        const WindowSnapWMEvent snap_event(
             *state_type == chromeos::WindowStateType::kPrimarySnapped
                 ? WM_EVENT_SNAP_PRIMARY
                 : WM_EVENT_SNAP_SECONDARY);
@@ -543,15 +543,16 @@ void WindowRestoreController::RestoreStateTypeAndClearLaunchedKey(
   // is quite common for some widgets to explicitly call Show() after
   // initialized.
   // TODO(sammiequon): Instead of disabling activation when creating the widget
-  // and enabling it here, use ShowInactive() instead of Show() when the widget
-  // is created.
+  // and enabling it here, use `ShowInactive()` instead of `Show()` when the
+  // widget is created.
   restore_property_clear_callbacks_.emplace(
       window, base::BindOnce(&WindowRestoreController::ClearLaunchedKey,
                              weak_ptr_factory_.GetWeakPtr(), window));
 
   // Also, for some ARC and chrome apps, the client can request activation after
   // showing. We cannot detect this, so we use a timeout to keep the window not
-  // activatable for a while longer.
+  // activatable for a while longer. Classic browser and lacros windows are
+  // expected to call `ShowInactive()` where the browser is created.
   const AppType app_type =
       static_cast<AppType>(window->GetProperty(aura::client::kAppType));
   // Prevent apply activation delay on ARC ghost window. It should be only apply

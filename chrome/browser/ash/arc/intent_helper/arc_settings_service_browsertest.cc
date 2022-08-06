@@ -27,13 +27,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -302,9 +302,9 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
   void SetProxyConfigForNetworkService(const std::string& service_path,
                                        base::Value proxy_config) {
     ProxyConfigDictionary proxy_config_dict(std::move(proxy_config));
-    const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                                ->network_state_handler()
-                                                ->GetNetworkState(service_path);
+    const ash::NetworkState* network = chromeos::NetworkHandler::Get()
+                                           ->network_state_handler()
+                                           ->GetNetworkState(service_path);
     ASSERT_TRUE(network);
     chromeos::proxy_config::SetProxyConfigForNetwork(proxy_config_dict,
                                                      *network);
@@ -604,9 +604,9 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoSourcesTest) {
   proxy_config.SetKey("mode",
                       base::Value(ProxyPrefs::kAutoDetectProxyModeName));
   ProxyConfigDictionary proxy_config_dict(std::move(proxy_config));
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->DefaultNetwork();
+  const ash::NetworkState* network = chromeos::NetworkHandler::Get()
+                                         ->network_state_handler()
+                                         ->DefaultNetwork();
   ASSERT_TRUE(network);
   chromeos::proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
   RunUntilIdle();

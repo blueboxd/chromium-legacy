@@ -1071,7 +1071,7 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // 2. IPC           -> blink::mojom::Widget::UpdateVisualProperties
   // 3. Renderer A: parent RenderWidget
   //                  (sometimes blink involved)
-  // 4. Renderer A: child  RenderFrameProxy
+  // 4. Renderer A: child  blink::RemoteFrame
   // 5. IPC           -> FrameHostMsg_SynchronizeVisualProperties
   // 6. Browser:    child  CrossProcessFrameConnector
   // 7. Browser:    parent RenderWidgetHost (We're here if |is_child_frame|.)
@@ -2520,11 +2520,11 @@ void RenderWidgetHostImpl::SetPopupBounds(const gfx::Rect& bounds,
   std::move(callback).Run();
 }
 
-void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_rect,
-                                     const gfx::Rect& anchor_rect,
+void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_screen_rect,
+                                     const gfx::Rect& anchor_screen_rect,
                                      ShowPopupCallback callback) {
   delegate_->ShowCreatedWidget(GetProcess()->GetID(), GetRoutingID(),
-                               initial_rect, anchor_rect);
+                               initial_screen_rect, anchor_screen_rect);
   std::move(callback).Run();
 }
 
@@ -2893,8 +2893,22 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetRenderWidgetHostViewBase() {
 }
 
 void RenderWidgetHostImpl::OnStartStylusWriting() {
-  if (blink_frame_widget_)
-    blink_frame_widget_->OnStartStylusWriting();
+  if (blink_frame_widget_) {
+    auto callback = base::BindOnce(
+        &RenderWidgetHostImpl::OnEditElementFocusedForStylusWriting,
+        weak_factory_.GetWeakPtr());
+    blink_frame_widget_->OnStartStylusWriting(std::move(callback));
+  }
+}
+
+void RenderWidgetHostImpl::OnEditElementFocusedForStylusWriting(
+    const absl::optional<gfx::Rect>& focused_edit_bounds,
+    const absl::optional<gfx::Rect>& caret_bounds) {
+  if (view_) {
+    view_->OnEditElementFocusedForStylusWriting(
+        focused_edit_bounds.value_or(gfx::Rect()),
+        caret_bounds.value_or(gfx::Rect()));
+  }
 }
 
 bool RenderWidgetHostImpl::IsWheelScrollInProgress() {

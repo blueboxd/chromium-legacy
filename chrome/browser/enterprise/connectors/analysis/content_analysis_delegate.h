@@ -7,30 +7,27 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/feature_list.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/connectors/analysis/analysis_settings.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate_base.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/file_analysis_request.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/file_opening_job.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
-#include "content/public/browser/web_contents_view_delegate.h"
 #include "url/gurl.h"
 
 class Profile;
+
+namespace content {
+class WebContent;
+}  // namespace content
 
 namespace enterprise_connectors {
 
@@ -215,6 +212,13 @@ class ContentAnalysisDelegate : public ContentAnalysisDelegateBase {
 
   FilesRequestHandler* GetFilesRequestHandlerForTesting();
 
+  const Data& GetDataForTesting() { return data_; }
+
+  // Methods to either show the final result in the analysis dialog and to
+  // cancel the dialog.  These methods are protected and virtual for testing.
+  virtual bool ShowFinalResultInDialog();
+  virtual bool CancelDialog();
+
  private:
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do. Sets `data_uploaded_`
@@ -270,6 +274,10 @@ class ContentAnalysisDelegate : public ContentAnalysisDelegateBase {
   // FinalResult enum.
   void UpdateFinalResult(FinalContentAnalysisResult message,
                          const std::string& tag);
+
+  // Send an acknowledgement to the service provider of the final result
+  // for the requests of this ContentAnalysisDelegate instance.
+  void AckAllRequests();
 
   // Returns the BinaryUploadService used to upload content for deep scanning.
   // Virtual to override in tests.
@@ -336,6 +344,10 @@ class ContentAnalysisDelegate : public ContentAnalysisDelegateBase {
   // Responsible for opening and scanning multiple files on parallel threads.
   // Always nullptr for non-file content scanning.
   std::unique_ptr<FilesRequestHandler> files_request_handler_;
+
+  // The request tokens of all the requests that make up the user action
+  // represented by this ContentAnalysisDelegate instance.
+  std::vector<std::string> request_tokens_;
 
   base::TimeTicks upload_start_time_;
 

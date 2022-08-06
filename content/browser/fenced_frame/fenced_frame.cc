@@ -23,9 +23,14 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
   return owner_render_frame_host->frame_tree()->AddFrame(
       &*owner_render_frame_host, owner_render_frame_host->GetProcess()->GetID(),
       owner_render_frame_host->GetProcess()->GetNextRoutingID(),
+      // We're creating an dummy outer delegate node which will never have a
+      // corresponding `RenderFrameImpl`, and therefore we pass null
+      // remotes/receivers for connections that it would normally have to a
+      // renderer process.
       /*frame_remote=*/mojo::NullAssociatedRemote(),
       /*browser_interface_broker_receiver=*/mojo::NullReceiver(),
       /*policy_container_bind_params=*/nullptr,
+      /*associated_interface_provider_receiver=*/mojo::NullAssociatedReceiver(),
       blink::mojom::TreeScopeType::kDocument, "", "", true,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
@@ -37,7 +42,8 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
 
 FencedFrame::FencedFrame(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
-    blink::mojom::FencedFrameMode mode)
+    blink::mojom::FencedFrameMode mode,
+    const base::UnguessableToken& devtools_frame_token)
     : web_contents_(static_cast<WebContentsImpl*>(
           WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
@@ -53,7 +59,8 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame)),
+                                      FrameTree::Type::kFencedFrame,
+                                      devtools_frame_token)),
       mode_(mode) {
   scoped_refptr<SiteInstance> site_instance =
       SiteInstanceImpl::CreateForFencedFrame(
@@ -112,6 +119,10 @@ void FencedFrame::Navigate(const GURL& url,
     return;
   }
 
+  GURL validated_url = url;
+  owner_render_frame_host_->GetSiteInstance()->GetProcess()->FilterURL(
+      /*empty_allowed=*/false, &validated_url);
+
   FrameTreeNode* inner_root = frame_tree_->root();
 
   // Rerandomize the fenced frame's storage partitioning nonce, so that state
@@ -136,7 +147,8 @@ void FencedFrame::Navigate(const GURL& url,
   url::Origin initiator_origin;
 
   inner_root->navigator().NavigateFromFrameProxy(
-      inner_root->current_frame_host(), url, /*initiator_frame_token=*/nullptr,
+      inner_root->current_frame_host(), validated_url,
+      /*initiator_frame_token=*/nullptr,
       content::ChildProcessHost::kInvalidUniqueID, initiator_origin,
       /*source_site_instance=*/nullptr, content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_SUBFRAME,
@@ -146,7 +158,7 @@ void FencedFrame::Navigate(const GURL& url,
       network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
       /*is_form_submission=*/false,
       /*impression=*/absl::nullopt, navigation_start_time,
-      blink::IsValidUrnUuidURL(url));
+      /*is_embedder_initiated_fenced_frame_navigation=*/true);
 }
 
 bool FencedFrame::IsHidden() {
@@ -168,7 +180,10 @@ FrameTree* FencedFrame::LoadingTree() {
   return web_contents_->LoadingTree();
 }
 
-RenderFrameProxyHost* FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
+RenderFrameProxyHost* FencedFrame::CreateProxyAndAttachToOuterFrameTree(
+    blink::mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
+    const blink::RemoteFrameToken& frame_token) {
+  DCHECK(remote_frame_interfaces);
   DCHECK(outer_delegate_frame_tree_node_);
   // Connect the outer delegate RenderFrameHost with the inner main
   // FrameTreeNode. This allows us to traverse from the outer delegate RFH
@@ -184,7 +199,12 @@ RenderFrameProxyHost* FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
       inner_root->current_frame_host()
           ->browsing_context_state()
           ->CreateOuterDelegateProxy(
-              owner_render_frame_host_->GetSiteInstance(), inner_root);
+              owner_render_frame_host_->GetSiteInstance(), inner_root,
+              frame_token);
+
+  proxy_host->BindRemoteFrameInterfaces(
+      std::move(remote_frame_interfaces->frame),
+      std::move(remote_frame_interfaces->frame_host_receiver));
 
   inner_root->current_frame_host()->PropagateEmbeddingTokenToParentFrame();
 

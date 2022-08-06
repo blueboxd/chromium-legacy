@@ -111,6 +111,7 @@ class CONTENT_EXPORT NavigationRequest
       public NavigationThrottleRunner::Delegate,
       public CommitDeferringConditionRunner::Delegate,
       public FencedFrameURLMapping::MappingResultObserver,
+      public mojom::NavigationRendererCancellationListener,
       private RenderProcessHostObserver,
       private network::mojom::CookieAccessObserver {
  public:
@@ -224,7 +225,7 @@ class CONTENT_EXPORT NavigationRequest
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       const absl::optional<blink::Impression>& impression,
       bool is_pdf,
-      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
+      bool is_embedder_initiated_fenced_frame_navigation = false);
 
   // Creates a request for a renderer-initiated navigation.
   static std::unique_ptr<NavigationRequest> CreateRendererInitiated(
@@ -239,7 +240,9 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker);
+      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker,
+      mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
+          renderer_cancellation_listener);
 
   // Creates a NavigationRequest for synchronous navigation that have committed
   // in the renderer process. Those are:
@@ -391,6 +394,9 @@ class CONTENT_EXPORT NavigationRequest
   const base::android::JavaRef<jobject>& GetJavaNavigationHandle() override;
 #endif
   base::SafeRef<NavigationHandle> GetSafeRef() override;
+
+  // mojom::NavigationRendererCancellationListener implementation
+  void RendererCancellationWindowEnded() override;
 
   void RegisterCommitDeferringConditionForTesting(
       std::unique_ptr<CommitDeferringCondition> condition);
@@ -546,8 +552,8 @@ class CONTENT_EXPORT NavigationRequest
     return throttle_runner_.get();
   }
 
-  // Simulates renderer aborting navigation.
-  void RendererAbortedNavigationForTesting();
+  // Simulates renderer cancelling the navigation.
+  void RendererRequestedNavigationCancellationForTesting();
 
   typedef base::OnceCallback<bool(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
@@ -629,6 +635,22 @@ class CONTENT_EXPORT NavigationRequest
     ready_to_commit_callback_for_testing_ = std::move(callback);
   }
 
+  void set_renderer_cancellation_window_ended_callback(
+      base::OnceClosure callback) {
+    DCHECK(!renderer_cancellation_window_ended());
+    renderer_cancellation_window_ended_callback_ = std::move(callback);
+  }
+
+  bool renderer_cancellation_window_ended() const {
+    return renderer_cancellation_window_ended_;
+  }
+
+  // Returns true if this navigation should wait for the renderer-initiated
+  // navigation cancellation window to end before committing, and returns false
+  // otherwise. See comment for `renderer_cancellation_listener_` for more
+  // details.
+  bool ShouldWaitForRendererCancellationWindowToEnd();
+
   // Sets the READY_TO_COMMIT -> DID_COMMIT timeout. Resets the timeout to the
   // default value if |timeout| is zero.
   static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
@@ -696,8 +718,8 @@ class CONTENT_EXPORT NavigationRequest
 
   bool is_anonymous() const { return is_anonymous_; }
 
-  bool is_fenced_frame_opaque_url() const {
-    return is_fenced_frame_opaque_url_;
+  bool is_target_fenced_frame_root_originating_from_opaque_url() const {
+    return is_target_fenced_frame_root_originating_from_opaque_url_;
   }
 
   // Returns a pointer to the policies copied from the navigation initiator.
@@ -994,7 +1016,9 @@ class CONTENT_EXPORT NavigationRequest
       int initiator_process_id,
       bool was_opener_suppressed,
       bool is_pdf,
-      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
+      bool is_embedder_initiated_fenced_frame_navigation = false,
+      mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
+          renderer_cancellation_listener = mojo::NullReceiver());
 
   // Checks if this navigation may activate a prerendered page. If it's
   // possible, schedules to start running CommitDeferringConditions for
@@ -1031,17 +1055,24 @@ class CONTENT_EXPORT NavigationRequest
   // Origin-Agent-Cluster header, and if so opts in the origin to be isolated.
   void CheckForIsolationOptIn(const GURL& url);
 
-  // Use to manually opt an origin into Origin-keyed Agent Cluster (OAC) in the
-  // event that process-isolation isn't being used for OAC.
+  // Use to manually set Origin-keyed Agent Cluster (OAC) isolation state in
+  // the event that process-isolation isn't being used for OAC, or
+  // OAC-by-default means that we're tracking explicit opt-out requests (which
+  // by definition are same-process).
   // TODO(wjmaclean): When we switch to using separate SiteInstances even for
   // same-process OAC, then this function can be removed.
-  void AddSameProcessOriginAgentClusterOptInIfNecessary(
+  void AddSameProcessOriginAgentClusterStateIfNecessary(
       const IsolationContext& isolation_context,
       const GURL& url);
 
   // Returns whether this navigation request is requesting opt-in
   // origin-isolation.
-  bool IsOptInIsolationRequested();
+  bool IsOriginAgentClusterOptInRequested();
+
+  // Returns whether this navigation request is requesting opt-out from
+  // origin-isolation. Always returns false if
+  // AreOriginAgentClustersEnabledByDefault() is false.
+  bool IsOriginAgentClusterOptOutRequested();
 
   // Returns whether defaulting to origin-keyed agent cluster (without
   // necessarily an origin-keyed process) is enabled.
@@ -1244,8 +1275,9 @@ class CONTENT_EXPORT NavigationRequest
   // renderer process.
   void UpdateCommitNavigationParamsHistory();
 
-  // Called when an ongoing renderer-initiated navigation is aborted.
-  void OnRendererAbortedNavigation();
+  // Called when the renderer requesting a navigation cancellation, or because
+  // the renderer crashed.
+  void OnRendererRequestedNavigationCancellation();
 
   // Binds the given error_handler to be called when an interface disconnection
   // happens on the renderer side.
@@ -2043,12 +2075,25 @@ class CONTENT_EXPORT NavigationRequest
   // Indicates that this navigation is for PDF content in a renderer.
   bool is_pdf_ = false;
 
-  // Indicates whether the fenced frame is navigated to an opaque url. This flag
-  // can only change when the embedder navigates the fenced frame. Any
-  // subsequent navigation from within the fenced frame tree will keep the same
-  // flag. Note that this flag is only relevant for fenced frames based on
-  // MPArch.
-  const bool is_fenced_frame_opaque_url_ = false;
+  // Only for fenced frames based on MPArch:
+  // Indicates that this navigation is an embedder-initiated navigation of a
+  // fenced frame root. That is to say, the navigation is caused by a `src`
+  // attribute mutation on the <fencedframe> element, which cannot be performed
+  // from inside the fenced frame tree.
+  const bool is_embedder_initiated_fenced_frame_navigation_ = false;
+
+  // Only for fenced frames based on MPArch:
+  // Indicates that this navigation is to an opaque url (urn:uuid). This value
+  // may only be true when `is_embedder_initiated_fenced_frame_navigation` is
+  // true.
+  const bool is_embedder_initiated_fenced_frame_opaque_url_navigation_ = false;
+
+  // Only for fenced frames based on MPArch:
+  // Indicates that the target of this navigation is the root of a fenced frame
+  // tree whose most recent embedder-initiated navigation was to an opaque URL
+  // (urn:uuid). The most recent navigation may be the current
+  // NavigationRequest.
+  const bool is_target_fenced_frame_root_originating_from_opaque_url_ = false;
 
   // If this navigation is a load in a fenced frame of a URN URL that resulted
   // from an interest group auction, this contains some information about the
@@ -2088,6 +2133,23 @@ class CONTENT_EXPORT NavigationRequest
   bool force_new_browsing_instance_ = false;
 
   scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle_;
+
+  // Renderer-initiated navigations can be canceled until the JS task that
+  // started the navigation finishes. See RendererCancellationThrottle for more
+  // details. The window of time in which the renderer can cancel the navigation
+  // is called the "cancellation window" and the navigation can't commit until
+  // the cancellation window ended, which `renderer_cancellation_listener_`
+  // listens to. `renderer_cancellation_window_ended_` is true if the
+  // cancellation window had ended. If
+  // `renderer_cancellation_window_ended_callback_` is set, the navigation is
+  // being deferred by RendererCancellationThrottle to wait for the cancellation
+  // window to finish or for the navigation to get canceled. If it is set when
+  // the cancellation window ended, the callback will be run, to resume the
+  // navigation.
+  mojo::Receiver<mojom::NavigationRendererCancellationListener>
+      renderer_cancellation_listener_{this};
+  bool renderer_cancellation_window_ended_ = false;
+  base::OnceClosure renderer_cancellation_window_ended_callback_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

@@ -4,10 +4,18 @@
 
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 
 namespace password_manager {
+
+bool CredentialUIEntry::Less::operator()(const CredentialUIEntry& lhs,
+                                         const CredentialUIEntry& rhs) const {
+  return CreateSortKey(lhs) < CreateSortKey(rhs);
+}
 
 CredentialUIEntry::CredentialUIEntry() = default;
 
@@ -21,8 +29,7 @@ CredentialUIEntry::CredentialUIEntry(const PasswordForm& form)
       federation_origin(form.federation_origin),
       password_issues(form.password_issues),
       blocked_by_user(form.blocked_by_user),
-      last_used_time(form.date_last_used),
-      key_(CredentialKey(CreateSortKey(form, IgnoreStore(true)))) {
+      last_used_time(form.date_last_used) {
   // Only one-note with an empty `unique_display_name` is supported in the
   // settings UI.
   for (const PasswordNote& n : form.notes) {
@@ -36,6 +43,20 @@ CredentialUIEntry::CredentialUIEntry(const PasswordForm& form)
   if (form.IsUsingProfileStore())
     stored_in.insert(PasswordForm::Store::kProfileStore);
 }
+
+CredentialUIEntry::CredentialUIEntry(const CSVPassword& csv_password)
+    : signon_realm(IsValidAndroidFacetURI(csv_password.GetURL().spec())
+                       ? csv_password.GetURL().spec()
+                       : GetSignonRealm(csv_password.GetURL())),
+      url(csv_password.GetURL()),
+      username(base::UTF8ToUTF16(csv_password.GetUsername())),
+      password(base::UTF8ToUTF16(csv_password.GetPassword())) {
+  DCHECK_EQ(csv_password.GetParseStatus(), CSVPassword::Status::kOK);
+
+  // TODO(crbug/1325290): handle stores according to user preference.
+  stored_in.insert(PasswordForm::Store::kProfileStore);
+}
+
 CredentialUIEntry::CredentialUIEntry(const CredentialUIEntry& other) = default;
 CredentialUIEntry::CredentialUIEntry(CredentialUIEntry&& other) = default;
 CredentialUIEntry::~CredentialUIEntry() = default;
@@ -68,7 +89,7 @@ const base::Time CredentialUIEntry::GetLastLeakedOrPhishedTime() const {
 }
 
 bool operator==(const CredentialUIEntry& lhs, const CredentialUIEntry& rhs) {
-  return lhs.key() == rhs.key();
+  return CreateSortKey(lhs) == CreateSortKey(rhs);
 }
 
 }  // namespace password_manager

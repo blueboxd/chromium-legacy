@@ -15,8 +15,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -30,14 +32,11 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/scoped_display_for_new_windows.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#endif
 
 namespace ash {
 
@@ -53,10 +52,8 @@ Profile* GetProfileForSystemWebAppLaunch(Profile* profile) {
   // alternative.
   if (profile->IsSystemProfile())
     return nullptr;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ProfileHelper::IsSigninProfile(profile))
     return nullptr;
-#endif
 
   // For a guest sessions, launch into the primary off-the-record profile, which
   // is used for browsing in guest sessions. We do this because the "original"
@@ -112,7 +109,7 @@ absl::optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
   // TODO(crbug/1113502): Plumb through better launch sources from callsites.
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id.value(), /*event_flags=*/0,
-      apps::mojom::LaunchSource::kFromChromeInternal, display_id,
+      apps::LaunchSource::kFromChromeInternal, display_id,
       /*fallback_container=*/
       web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
 
@@ -125,7 +122,7 @@ SystemAppLaunchParams::~SystemAppLaunchParams() = default;
 void LaunchSystemWebAppAsync(Profile* profile,
                              const SystemWebAppType type,
                              const SystemAppLaunchParams& params,
-                             apps::mojom::WindowInfoPtr window_info) {
+                             apps::WindowInfoPtr window_info) {
   DCHECK(profile);
   // Terminal should be launched with crostini::LaunchTerminal*.
   DCHECK(type != SystemWebAppType::TERMINAL);
@@ -165,21 +162,42 @@ void LaunchSystemWebAppAsync(Profile* profile,
   if (!params.launch_paths.empty()) {
     DCHECK(!params.url.has_value())
         << "Launch URL can't be used with launch_paths.";
-    app_service->LaunchAppWithFiles(
-        *app_id, event_flags, params.launch_source,
-        apps::mojom::FilePaths::New(params.launch_paths));
+    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+      app_service->LaunchAppWithFiles(
+          *app_id, event_flags, params.launch_source, params.launch_paths);
+    } else {
+      app_service->LaunchAppWithFiles(
+          *app_id, event_flags,
+          apps::ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
+          apps::mojom::FilePaths::New(params.launch_paths));
+    }
     return;
   }
 
   if (params.url) {
     DCHECK(params.url->is_valid());
-    app_service->LaunchAppWithUrl(*app_id, event_flags, *params.url,
-                                  params.launch_source, std::move(window_info));
+    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+      app_service->LaunchAppWithUrl(*app_id, event_flags, *params.url,
+                                    params.launch_source,
+                                    std::move(window_info));
+    } else {
+      app_service->LaunchAppWithUrl(
+          *app_id, event_flags, *params.url,
+          apps::ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
+          apps::ConvertWindowInfoToMojomWindowInfo(window_info));
+    }
     return;
   }
 
-  app_service->Launch(*app_id, event_flags, params.launch_source,
-                      std::move(window_info));
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    app_service->Launch(*app_id, event_flags, params.launch_source,
+                        std::move(window_info));
+  } else {
+    app_service->Launch(
+        *app_id, event_flags,
+        apps::ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
+        apps::ConvertWindowInfoToMojomWindowInfo(window_info));
+  }
 }
 
 Browser* LaunchSystemWebAppImpl(Profile* profile,
@@ -225,7 +243,6 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
     return nullptr;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // LaunchSystemWebAppImpl may be called with a profile associated with an
   // inactive (background) desktop (e.g. when multiple users are logged in).
   // Here we move the newly created browser window (or the existing one on the
@@ -233,7 +250,6 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
   // always sees the launched app.
   multi_user_util::MoveWindowToCurrentDesktop(
       browser->window()->GetNativeWindow());
-#endif
 
   browser->window()->Show();
   return browser;

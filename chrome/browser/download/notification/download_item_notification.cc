@@ -71,7 +71,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 using base::UserMetricsAction;
@@ -201,16 +201,16 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
 }
 
 bool IsExtensionDownload(DownloadUIModel* item) {
-  return item->download() &&
-         download_crx_util::IsExtensionDownload(*item->download());
+  return item->GetDownloadItem() &&
+         download_crx_util::IsExtensionDownload(*item->GetDownloadItem());
 }
 
 bool IsHoldingSpaceIncognitoProfileIntegrationEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return true;
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  return chromeos::BrowserInitParams::Get()
-      ->is_holding_space_incognito_profile_integration_enabled;
+  return chromeos::BrowserParamsProxy::Get()
+      ->IsHoldingSpaceIncognitoProfileIntegrationEnabled();
 #else
   return false;
 #endif
@@ -221,8 +221,8 @@ bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {
   return ash::features::
       IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  return chromeos::BrowserInitParams::Get()
-      ->is_holding_space_in_progress_downloads_notification_suppression_enabled;
+  return chromeos::BrowserParamsProxy::Get()
+      ->IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
 #else
   return false;
 #endif
@@ -531,7 +531,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
   notification_->set_progress_status(GetStatusString());
 
   if (item_->IsDangerous()) {
-    notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
     RecordDangerousDownloadWarningShown(
         item_->GetDangerType(), item_->GetTargetFilePath(),
         item_->GetURL().SchemeIs(url::kHttpsScheme), item_->HasUserGesture());
@@ -543,7 +543,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       notification_->set_priority(message_center::DEFAULT_PRIORITY);
     }
   } else if (item_->IsMixedContent()) {
-    notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
     switch (item_->GetMixedContentStatus()) {
       case download::DownloadItem::MixedContentStatus::BLOCK:
         notification_->set_priority(message_center::HIGH_PRIORITY);
@@ -576,7 +576,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       case download::DownloadItem::COMPLETE:
         DCHECK(item_->IsDone());
         notification_->set_priority(message_center::DEFAULT_PRIORITY);
-        notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+        notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
         notification_->set_progress(100);
         break;
       case download::DownloadItem::CANCELLED:
@@ -586,7 +586,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       case download::DownloadItem::INTERRUPTED:
         // Shows a notifiation as progress type once so the visible content will
         // be updated. (same as the case of type = COMPLETE)
-        notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+        notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
         notification_->set_progress(0);
         notification_->set_priority(message_center::DEFAULT_PRIORITY);
         break;

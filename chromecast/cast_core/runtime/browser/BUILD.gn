@@ -73,18 +73,6 @@ cast_source_set("grpc_webui") {
     "//third_party/abseil-cpp:absl",
     "//third_party/cast_core/public/src/proto/v2:core_application_service_proto_castcore",
   ]
-
-  if (enable_chromecast_extensions) {
-    sources += [
-      "grpc_webui_controller_extension.cc",
-      "grpc_webui_controller_extension.h",
-    ]
-
-    deps += [
-      "//components/guest_view/browser",
-      "//extensions/browser",
-    ]
-  }
 }
 
 cast_source_set("core_service_bindings") {
@@ -194,6 +182,7 @@ cast_source_set("runtime_application_dispatcher") {
     "//components/cast_streaming/public/mojom",
     "//components/url_rewrite/browser",
     "//third_party/abseil-cpp:absl",
+    "//third_party/cast_core/public/src/proto/common:application_state_proto",
     "//third_party/cast_core/public/src/proto/common:value_proto",
     "//third_party/cast_core/public/src/proto/core:cast_core_service_proto_castcore",
     "//third_party/cast_core/public/src/proto/metrics:metrics_recorder_proto_castcore",

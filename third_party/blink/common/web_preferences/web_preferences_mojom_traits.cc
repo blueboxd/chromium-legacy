@@ -36,7 +36,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       !data.ReadTextTrackFontStyle(&out->text_track_font_style) ||
       !data.ReadTextTrackFontVariant(&out->text_track_font_variant) ||
       !data.ReadTextTrackWindowColor(&out->text_track_window_color) ||
-      !data.ReadTextTrackWindowPadding(&out->text_track_window_padding) ||
       !data.ReadTextTrackWindowRadius(&out->text_track_window_radius) ||
       !data.ReadPrimaryPointerType(&out->primary_pointer_type) ||
       !data.ReadPrimaryHoverType(&out->primary_hover_type) ||
@@ -148,6 +147,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.fake_no_alloc_direct_call_for_testing_enabled();
   out->v8_cache_options = data.v8_cache_options();
   out->record_whole_document = data.record_whole_document();
+  out->stylus_handwriting_enabled = data.stylus_handwriting_enabled();
   out->cookie_enabled = data.cookie_enabled();
   out->accelerated_video_decode_enabled =
       data.accelerated_video_decode_enabled();
@@ -216,6 +216,8 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->always_show_focus = data.always_show_focus();
   out->touch_drag_drop_enabled = data.touch_drag_drop_enabled();
   out->webxr_immersive_ar_allowed = data.webxr_immersive_ar_allowed();
+  out->renderer_wide_named_frame_lookup =
+      data.renderer_wide_named_frame_lookup();
   return true;
 }
 

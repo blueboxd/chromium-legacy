@@ -6,10 +6,10 @@
 #define CHROMEOS_ASH_COMPONENTS_NETWORK_METRICS_NETWORK_METRICS_HELPER_H_
 
 #include "base/component_export.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 // Provides APIs for logging to general network metrics that apply to all
 // network types and their variants.
@@ -59,6 +59,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetricsHelper {
   ~NetworkMetricsHelper();
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::NetworkMetricsHelper;
+}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_METRICS_NETWORK_METRICS_HELPER_H_

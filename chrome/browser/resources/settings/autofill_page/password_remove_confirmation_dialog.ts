@@ -46,7 +46,7 @@ export class SettingsPasswordRemoveConfirmationDialogElement extends
     };
   }
 
-  item: chrome.passwordsPrivate.InsecureCredential;
+  item: chrome.passwordsPrivate.PasswordUiEntry;
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
 
@@ -59,7 +59,7 @@ export class SettingsPasswordRemoveConfirmationDialogElement extends
   private onRemoveClick_() {
     this.passwordManager_.recordPasswordCheckInteraction(
         PasswordCheckInteraction.REMOVE_PASSWORD);
-    this.passwordManager_.removeInsecureCredential(this.item);
+    this.passwordManager_.removeSavedPassword(this.item.id, this.item.storedIn);
     this.$.dialog.close();
   }
 
@@ -83,7 +83,7 @@ export class SettingsPasswordRemoveConfirmationDialogElement extends
 
     const url: string|undefined = this.item.changePasswordUrl;
     assert(url);
-    const origin = this.item.formattedOrigin;
+    const origin = this.item.urls.shown;
     return this.i18nAdvanced(
         'removeCompromisedPasswordConfirmationDescription', {
           substitutions:
@@ -96,7 +96,7 @@ export class SettingsPasswordRemoveConfirmationDialogElement extends
    * Used when the change password URL is not present or insecure.
    */
   private getRemovePasswordDescriptionText_(): string {
-    const origin = this.item.formattedOrigin;
+    const origin = this.item.urls.shown;
     return this.i18n(
         'removeCompromisedPasswordConfirmationDescription', origin, origin);
   }

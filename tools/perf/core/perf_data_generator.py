@@ -667,7 +667,7 @@ BUILDERS = {
         }],
         'dimension': {
             'cpu': 'x86-64',
-            'os': 'Windows',
+            'os': 'Windows-10',
             'pool': 'chrome.tests',
         },
         'perf_trigger':
@@ -677,7 +677,7 @@ BUILDERS = {
         'additional_compile_targets': ['chromium_builder_perf'],
         'dimension': {
             'cpu': 'x86-64',
-            'os': 'Windows',
+            'os': 'Windows-10',
             'pool': 'chrome.tests',
         },
         'perf_trigger': False,
@@ -1277,7 +1277,7 @@ BUILDERS = {
         False,
     },
     'chromeos-amd64-generic-lacros-builder-perf': {
-        'additional_compile_targets': ['chrome', 'lacros_version_metadata'],
+        'additional_compile_targets': ['chrome'],
         'tests': [
             {
                 'name': 'resource_sizes_lacros_chrome',
@@ -1300,7 +1300,7 @@ BUILDERS = {
         False,
     },
     'chromeos-arm-generic-lacros-builder-perf': {
-        'additional_compile_targets': ['chrome', 'lacros_version_metadata'],
+        'additional_compile_targets': ['chrome'],
         'tests': [
             {
                 'name': 'resource_sizes_lacros_chrome',
@@ -1646,8 +1646,7 @@ def _verify_benchmark_owners(benchmark_metadatas):
 def _create_csv(file_path):
   if sys.version_info.major == 2:
     return open(file_path, 'wb')
-  else:
-    return open(file_path, 'w', newline='')
+  return open(file_path, 'w', newline='')
 
 
 def update_benchmark_csv(file_path):
@@ -1904,7 +1903,6 @@ def generate_performance_test(tester_config, test, builder_name):
       # allow for other overhead. If the overall builder times out then we
       # don't get data even from the passing shards.
       'hard_timeout': int(6 * 60 * 60),  # 6 hours timeout for full suite
-      'ignore_task_failure': False,
       # 5.5 hour timeout. Note that this is effectively the timeout for a
       # benchmarking subprocess to run since we intentionally do not stream
       # subprocess output to the task stdout.
@@ -2021,9 +2019,7 @@ def main(args):
     if validate_all_files():
       print('All the perf config files are up-to-date. \\o/')
       return 0
-    else:
-      print('Not all perf config files are up-to-date. Please run %s '
-            'to update them.' % sys.argv[0])
-      return 1
-  else:
-    return 0 if update_all_files() else 1
+    print('Not all perf config files are up-to-date. Please run %s '
+          'to update them.' % sys.argv[0])
+    return 1
+  return 0 if update_all_files() else 1

@@ -5,24 +5,29 @@
 #include "chrome/browser/extensions/api/file_system/consent_provider.h"
 
 #include <memory>
-#include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/ash/file_manager/app_id.h"
-#include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/file_system/request_file_system_notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/views/extensions/request_file_system_dialog_view.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "extensions/common/api/file_system.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/app_id.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace extensions {
 
@@ -31,8 +36,9 @@ namespace {
 // List of allowlisted component apps and extensions by their ids for
 // chrome.fileSystem.requestFileSystem.
 const char* const kRequestFileSystemComponentAllowlist[] = {
-    file_manager::kFileManagerAppId, file_manager::kAudioPlayerAppId,
-    file_manager::kImageLoaderExtensionId,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    file_manager::kFileManagerAppId, file_manager::kImageLoaderExtensionId,
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     // TODO(henryhsu,b/110126438): Remove this extension id, and add it only
     // for tests.
     "pkplfbidichfdicaijlchgnapepdginl"  // Testing extensions.
@@ -64,6 +70,7 @@ void DialogResultToConsent(
       std::move(callback).Run(
           file_system_api::ConsentProvider::CONSENT_GRANTED);
       break;
+    // The following is wired to both Cancel and Close callbacks.
     case ui::DIALOG_BUTTON_CANCEL:
       std::move(callback).Run(
           file_system_api::ConsentProvider::CONSENT_REJECTED);
@@ -75,23 +82,24 @@ void DialogResultToConsent(
 
 namespace file_system_api {
 
+/******** ConsentProvider ********/
+
 ConsentProvider::ConsentProvider(DelegateInterface* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 }
 
-ConsentProvider::~ConsentProvider() {
-}
+ConsentProvider::~ConsentProvider() = default;
 
-void ConsentProvider::RequestConsent(
-    const Extension& extension,
-    content::RenderFrameHost* host,
-    const base::WeakPtr<file_manager::Volume>& volume,
-    bool writable,
-    ConsentCallback callback) {
+void ConsentProvider::RequestConsent(content::RenderFrameHost* host,
+                                     const Extension& extension,
+                                     const std::string& volume_id,
+                                     const std::string& volume_label,
+                                     bool writable,
+                                     ConsentCallback callback) {
   DCHECK(IsGrantable(extension));
 
-  // If a allowlisted component, then no need to ask or inform the user.
+  // If an allowlisted component, then no need to ask or inform the user.
   if (extension.location() == mojom::ManifestLocation::kComponent &&
       delegate_->IsAllowlistedComponent(extension)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -102,19 +110,20 @@ void ConsentProvider::RequestConsent(
   // If auto-launched kiosk app, then no need to ask user either, but show the
   // notification.
   if (delegate_->IsAutoLaunched(extension)) {
-    delegate_->ShowNotification(extension, volume, writable);
+    delegate_->ShowNotification(extension.id(), extension.name(), volume_id,
+                                volume_label, writable);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), CONSENT_GRANTED));
     return;
   }
 
-  // If it's a kiosk app running in manual-launch kiosk session, then show
-  // the confirmation dialog.
+  // If it's a kiosk app running in manual-launch kiosk session, then show the
+  // confirmation dialog.
   if (KioskModeInfo::IsKioskOnly(&extension) &&
-      user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
+      profiles::IsChromeAppKioskSession()) {
     delegate_->ShowDialog(
-        extension, host, volume, writable,
-        base::BindOnce(&DialogResultToConsent, std::move(callback)));
+        host, extension.id(), extension.name(), volume_id, volume_label,
+        writable, base::BindOnce(&DialogResultToConsent, std::move(callback)));
     return;
   }
 
@@ -127,18 +136,19 @@ bool ConsentProvider::IsGrantable(const Extension& extension) {
 
   const bool is_running_in_kiosk_session =
       KioskModeInfo::IsKioskOnly(&extension) &&
-      user_manager::UserManager::Get()->IsLoggedInAsKioskApp();
+      profiles::IsChromeAppKioskSession();
 
   return is_allowlisted_component || is_running_in_kiosk_session;
 }
+
+/******** ConsentProviderDelegate ********/
 
 ConsentProviderDelegate::ConsentProviderDelegate(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
 }
 
-ConsentProviderDelegate::~ConsentProviderDelegate() {
-}
+ConsentProviderDelegate::~ConsentProviderDelegate() = default;
 
 // static
 void ConsentProviderDelegate::SetAutoDialogButtonForTest(
@@ -147,9 +157,11 @@ void ConsentProviderDelegate::SetAutoDialogButtonForTest(
 }
 
 void ConsentProviderDelegate::ShowDialog(
-    const Extension& extension,
     content::RenderFrameHost* host,
-    const base::WeakPtr<file_manager::Volume>& volume,
+    const extensions::ExtensionId& extension_id,
+    const std::string& extension_name,
+    const std::string& volume_id,
+    const std::string& volume_label,
     bool writable,
     file_system_api::ConsentProvider::ShowDialogCallback callback) {
   DCHECK(host);
@@ -166,7 +178,7 @@ void ConsentProviderDelegate::ShowDialog(
   // If there is no web contents handle, then the method is most probably
   // executed from a background page.
   if (!web_contents)
-    web_contents = GetWebContentsForAppId(profile_, extension.id());
+    web_contents = GetWebContentsForAppId(profile_, extension_id);
 
   if (!web_contents) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -183,33 +195,27 @@ void ConsentProviderDelegate::ShowDialog(
     return;
   }
 
-  // If the volume is gone, then cancel the dialog.
-  if (!volume.get()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), ui::DIALOG_BUTTON_CANCEL));
-    return;
-  }
-
   RequestFileSystemDialogView::ShowDialog(
-      web_contents, extension.name(),
-      (volume->volume_label().empty() ? volume->volume_id()
-                                      : volume->volume_label()),
-      writable, std::move(callback));
+      web_contents, extension_name,
+      volume_label.empty() ? volume_id : volume_label, writable,
+      std::move(callback));
 }
 
 void ConsentProviderDelegate::ShowNotification(
-    const Extension& extension,
-    const base::WeakPtr<file_manager::Volume>& volume,
+    const extensions::ExtensionId& extension_id,
+    const std::string& extension_name,
+    const std::string& volume_id,
+    const std::string& volume_label,
     bool writable) {
-  ShowNotificationForAutoGrantedRequestFileSystem(profile_, extension, volume,
-                                                  writable);
+  ShowNotificationForAutoGrantedRequestFileSystem(profile_, extension_id,
+                                                  extension_name, volume_id,
+                                                  volume_label, writable);
 }
 
 bool ConsentProviderDelegate::IsAutoLaunched(const Extension& extension) {
-  ash::KioskAppManager::App app_info;
-  return ash::KioskAppManager::Get()->GetApp(extension.id(), &app_info) &&
-         app_info.was_auto_launched_with_zero_delay;
+  return ExtensionsBrowserClient::Get()
+      ->GetKioskDelegate()
+      ->IsAutoLaunchedKioskApp(extension.id());
 }
 
 bool ConsentProviderDelegate::IsAllowlistedComponent(

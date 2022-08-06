@@ -212,6 +212,7 @@ SystemNotificationManager::CreateProgressNotification(
     int progress) {
   message_center::RichNotificationData rich_data;
   rich_data.progress = progress;
+  rich_data.progress_status = message;
 
   return ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id, title,
@@ -231,6 +232,7 @@ SystemNotificationManager::CreateIOTaskProgressNotification(
     int progress) {
   message_center::RichNotificationData rich_data;
   rich_data.progress = progress;
+  rich_data.progress_status = message;
 
   auto notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id, title,
@@ -391,9 +393,14 @@ SystemNotificationManager::MakeDriveSyncErrorNotification(
                                IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR);
         break;
       case file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE:
-        message = l10n_util::GetStringFUTF16(
-            IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE,
-            util::GetDisplayableFileName16(file_url));
+        message =
+            l10n_util::GetStringUTF16(IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE);
+        notification = CreateNotification(id, title, message);
+        break;
+      case file_manager_private::
+          DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE_ORGANIZATION:
+        message = l10n_util::GetStringUTF16(
+            IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE_ORGANIZATION);
         notification = CreateNotification(id, title, message);
         break;
       case file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_LOCAL_SPACE:
@@ -929,7 +936,7 @@ SystemNotificationManager::MakeRemovableNotification(
     DCHECK_EQ(notification_buttons.size(), uma_types_for_buttons.size());
     notification->set_buttons(notification_buttons);
   }
-  if (volume.device_type() != chromeos::DEVICE_TYPE_UNKNOWN &&
+  if (volume.device_type() != ash::DeviceType::kUnknown &&
       !volume.storage_device_path().empty()) {
     if (UpdateDeviceMountStatus(event, volume) != MOUNT_STATUS_SUCCESS) {
       notification = MakeMountErrorNotification(event, volume);
@@ -957,7 +964,7 @@ void SystemNotificationManager::HandleMountCompletedEvent(
       GetNotificationDisplayService()->Close(
           NotificationHandler::Type::TRANSIENT, kRemovableNotificationId);
 
-      if (volume.device_type() != chromeos::DEVICE_TYPE_UNKNOWN &&
+      if (volume.device_type() != ash::DeviceType::kUnknown &&
           !volume.storage_device_path().empty()) {
         UpdateDeviceMountStatus(event, volume);
       }

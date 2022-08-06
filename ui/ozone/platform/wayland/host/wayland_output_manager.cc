@@ -50,6 +50,10 @@ void WaylandOutputManager::AddWaylandOutput(uint32_t output_id,
     wayland_output->InitializeZAuraOutput(
         connection_->zaura_shell()->wl_object());
   }
+  if (connection_->zcr_color_manager()) {
+    wayland_output->InitializeColorManagementOutput(
+        connection_->zcr_color_manager());
+  }
   DCHECK(!wayland_output->is_ready());
 
   output_list_[output_id] = std::move(wayland_output);
@@ -85,6 +89,13 @@ void WaylandOutputManager::InitializeAllZAuraOutputs() {
     output.second->InitializeZAuraOutput(
         connection_->zaura_shell()->wl_object());
   }
+}
+
+void WaylandOutputManager::InitializeAllColorManagementOutputs() {
+  DCHECK(connection_->zcr_color_manager());
+  for (const auto& output : output_list_)
+    output.second->InitializeColorManagementOutput(
+        connection_->zcr_color_manager());
 }
 
 std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen() {
@@ -129,6 +140,11 @@ WaylandOutput* WaylandOutputManager::GetPrimaryOutput() const {
   return nullptr;
 }
 
+const WaylandOutputManager::OutputList& WaylandOutputManager::GetAllOutputs()
+    const {
+  return output_list_;
+}
+
 void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
                                                  const gfx::Point& origin,
                                                  const gfx::Size& logical_size,
@@ -143,9 +159,18 @@ void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
         output_id, origin, logical_size, physical_size, insets, scale_factor,
         panel_transform, logical_transform, label);
   }
-  auto* wayland_window_manager = connection_->wayland_window_manager();
-  for (auto* window : wayland_window_manager->GetWindowsOnOutput(output_id))
-    window->UpdateWindowScale(true);
+
+  // Update scale of the windows currently associated with |output_id|. i.e:
+  // the ones whose GetPreferredEnteredOutputId() returns |output_id|; or those
+  // which have not yet entered any output (i.e: no wl_surface.enter event
+  // received for their root surface) and |output_id| is the primary output.
+  const bool is_primary =
+      wayland_screen_ && output_id == wayland_screen_->GetPrimaryDisplay().id();
+  for (auto* window : connection_->wayland_window_manager()->GetAllWindows()) {
+    uint32_t entered_output = window->GetPreferredEnteredOutputId();
+    if (entered_output == output_id || (!entered_output && is_primary))
+      window->UpdateWindowScale(true);
+  }
 }
 
 }  // namespace ui

@@ -124,15 +124,12 @@ void AppListMainView::Layout() {
     contents_view_->SetBoundsRect(rect);
 }
 
-void AppListMainView::QueryChanged(SearchBoxViewBase* sender) {
-  SearchModel* const search_model = AppListModelProvider::Get()->search_model();
-  const std::u16string raw_query = search_model->search_box()->text();
-  std::u16string query;
-  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+void AppListMainView::QueryChanged(const std::u16string& trimmed_query,
+                                   bool initiated_by_user) {
+  app_list_view_->SetStateFromSearchBoxView(trimmed_query.empty(),
+                                            initiated_by_user);
   contents_view_->ShowSearchResults(search_box_view_->is_search_box_active() ||
-                                    !query.empty());
-
-  delegate_->StartSearch(raw_query);
+                                    !trimmed_query.empty());
 }
 
 void AppListMainView::ActiveChanged(SearchBoxViewBase* sender) {
@@ -197,11 +194,6 @@ bool AppListMainView::CanSelectSearchResults() {
 
 void AppListMainView::AssistantButtonPressed() {
   delegate_->StartAssistant();
-}
-
-void AppListMainView::BackButtonPressed() {
-  if (!contents_view_->Back())
-    app_list_view_->Dismiss();
 }
 
 void AppListMainView::CloseButtonPressed() {

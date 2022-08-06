@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
+#include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
@@ -213,6 +214,7 @@ void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<WebPolicyContainer> policy_container,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -224,7 +226,7 @@ void WorkerThread::FetchAndRunClassicScript(
           &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
           std::move(worker_main_script_load_params),
-          std::move(outside_settings_object_data),
+          std::move(policy_container), std::move(outside_settings_object_data),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
           stack_id));
 }
@@ -233,6 +235,7 @@ void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<WebPolicyContainer> policy_container,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -245,7 +248,7 @@ void WorkerThread::FetchAndRunModuleScript(
           &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
           std::move(worker_main_script_load_params),
-          std::move(outside_settings_object_data),
+          std::move(policy_container), std::move(outside_settings_object_data),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
           credentials_mode, reject_coep_unsafe_none.value()));
 }
@@ -678,6 +681,7 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<WebPolicyContainer> policy_container,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -690,6 +694,8 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunClassicScript(
           script_url, std::move(worker_main_script_load_params),
+          PolicyContainer::CreateFromWebPolicyContainer(
+              std::move(policy_container)),
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           *outside_resource_timing_notifier, stack_id);
@@ -699,6 +705,7 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    std::unique_ptr<WebPolicyContainer> policy_container,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -714,6 +721,8 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunModuleScript(
           script_url, std::move(worker_main_script_load_params),
+          PolicyContainer::CreateFromWebPolicyContainer(
+              std::move(policy_container)),
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           *outside_resource_timing_notifier, credentials_mode,

@@ -61,15 +61,17 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
   PasswordChangeRunViewTest() {
     // Take ownership of the display.
     ON_CALL(display_delegate_, SetView)
-        .WillByDefault([&view = view_](std::unique_ptr<views::View> display) {
-          view = std::move(display);
-          return view.get();
+        .WillByDefault([&view = view_, &widget = widget_](
+                           std::unique_ptr<views::View> display) {
+          view = widget->SetContentsView(std::move(display));
+          return view;
         });
   }
   ~PasswordChangeRunViewTest() override = default;
 
   void SetUp() override {
     views::ViewsTestBase::SetUp();
+    widget_ = CreateTestWidget();
 
     // Always make sure that there is an object that can be tested.
     PasswordChangeRunDisplay::Create(controller_.GetWeakPtr(),
@@ -77,6 +79,11 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
 
     // Create the views.
     view()->Show();
+  }
+
+  void TearDown() override {
+    widget_.reset();
+    views::ViewsTestBase::TearDown();
   }
 
   views::View* GetButtonContainer() {
@@ -100,7 +107,7 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
   }
   MockPasswordChangeRunController* controller() { return &controller_; }
   PasswordChangeRunView* view() {
-    return static_cast<PasswordChangeRunView*>(view_.get());
+    return static_cast<PasswordChangeRunView*>(view_);
   }
 
  private:
@@ -109,7 +116,9 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
   StrictMock<MockPasswordChangeRunController> controller_;
 
   // Variable required to simulate the display delegate.
-  std::unique_ptr<views::View> view_;
+  raw_ptr<views::View> view_;
+  // Widget to anchor the view and retrieve a color provider from.
+  std::unique_ptr<views::Widget> widget_;
 };
 
 TEST_F(PasswordChangeRunViewTest, CreateAndSetInTheProvidedDisplay) {
@@ -129,6 +138,31 @@ TEST_F(PasswordChangeRunViewTest, CreateBasePromptAndClick) {
 
   ASSERT_EQ(container->children().size(), choices.size());
   for (size_t index = 0; index < choices.size(); ++index) {
+    views::Button* button =
+        views::Button::AsButton(container->children()[index]);
+    ASSERT_TRUE(button);
+    EXPECT_EQ(static_cast<views::MdTextButton*>(button)->GetText(),
+              choices[index].text);
+    EXPECT_EQ(static_cast<views::MdTextButton*>(button)->GetProminent(),
+              choices[index].highlighted);
+  }
+
+  EXPECT_CALL(*controller(), OnBasePromptChoiceSelected(0));
+  SimulateButtonClick(container->children()[0]);
+}
+
+TEST_F(PasswordChangeRunViewTest, CreateBasePromptWithEmptyText) {
+  std::vector<PromptChoice> choices = CreatePromptChoices();
+  // Make the last button have no text.
+  // This means our DSL call used a choice with selectIf and no title.
+  choices.back().text = u"";
+  view()->ShowBasePrompt(choices);
+
+  views::View* container = GetButtonContainer();
+  ASSERT_TRUE(container);
+
+  ASSERT_EQ(container->children().size() + 1u, choices.size());
+  for (size_t index = 0; index + 1u < choices.size(); ++index) {
     views::Button* button =
         views::Button::AsButton(container->children()[index]);
     ASSERT_TRUE(button);

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -225,58 +226,6 @@ class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
   NsecRecordRdata();
 
   std::vector<uint8_t> bitmap_;
-};
-
-// OPT record format (https://tools.ietf.org/html/rfc6891):
-class NET_EXPORT_PRIVATE OptRecordRdata : public RecordRdata {
- public:
-  class NET_EXPORT_PRIVATE Opt {
-   public:
-    static constexpr size_t kHeaderSize = 4;  // sizeof(code) + sizeof(size)
-
-    Opt(uint16_t code, base::StringPiece data);
-
-    bool operator==(const Opt& other) const;
-
-    uint16_t code() const { return code_; }
-    base::StringPiece data() const { return data_; }
-
-   private:
-    uint16_t code_;
-    std::string data_;
-  };
-
-  static const uint16_t kType = dns_protocol::kTypeOPT;
-
-  OptRecordRdata();
-
-  OptRecordRdata(const OptRecordRdata&) = delete;
-  OptRecordRdata& operator=(const OptRecordRdata&) = delete;
-
-  OptRecordRdata(OptRecordRdata&& other);
-
-  ~OptRecordRdata() override;
-
-  OptRecordRdata& operator=(OptRecordRdata&& other);
-
-  static std::unique_ptr<OptRecordRdata> Create(const base::StringPiece& data,
-                                                const DnsRecordParser& parser);
-  bool IsEqual(const RecordRdata* other) const override;
-  uint16_t Type() const override;
-
-  const std::vector<char>& buf() const { return buf_; }
-
-  const std::vector<Opt>& opts() const { return opts_; }
-  void AddOpt(const Opt& opt);
-
-  // Add all Opts from |other| to |this|.
-  void AddOpts(const OptRecordRdata& other);
-
-  bool ContainsOptCode(uint16_t opt_code) const;
-
- private:
-  std::vector<Opt> opts_;
-  std::vector<char> buf_;
 };
 
 // This class parses and serializes the INTEGRITY DNS record.

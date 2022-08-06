@@ -2296,9 +2296,7 @@ StyleBuilderConverter::ConvertIntrinsicDimension(
   // If we have a single identifier, it is "none" in either syntax.
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value) {
-    DCHECK((!RuntimeEnabledFeatures::ContainIntrinsicSizeAutoEnabled() &&
-            identifier_value->GetValueID() == CSSValueID::kAuto) ||
-           identifier_value->GetValueID() == CSSValueID::kNone);
+    DCHECK(identifier_value->GetValueID() == CSSValueID::kNone);
     return absl::nullopt;
   }
 
@@ -2355,6 +2353,11 @@ ColorSchemeFlags StyleBuilderConverter::ExtractColorSchemes(
     }
   }
   return flags;
+}
+
+double StyleBuilderConverter::ConvertTimeValue(const StyleResolverState& state,
+                                               const CSSValue& value) {
+  return To<CSSPrimitiveValue>(value).ComputeSeconds();
 }
 
 scoped_refptr<ToggleGroupList> StyleBuilderConverter::ConvertToggleGroup(

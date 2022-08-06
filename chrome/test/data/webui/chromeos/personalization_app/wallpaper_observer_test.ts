@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {emptyState, SetSelectedImageAction, WallpaperActionName, WallpaperObserver} from 'chrome://personalization/trusted/personalization_app.js';
+import {emptyState, SetSelectedImageAction, WallpaperActionName, WallpaperObserver} from 'chrome://personalization/js/personalization_app.js';
 import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 
 import {baseSetup} from './personalization_app_test_utils.js';
@@ -52,6 +52,19 @@ suite('WallpaperObserverTest', function() {
             WallpaperActionName.SET_SELECTED_IMAGE) as SetSelectedImageAction;
 
     assertDeepEquals(wallpaperProvider.currentWallpaper, image);
+  });
+
+  test('sets selected wallpaper if null', async () => {
+    // Make sure state starts as expected.
+    assertDeepEquals(emptyState(), personalizationStore.data);
+
+    personalizationStore.expectAction(WallpaperActionName.SET_SELECTED_IMAGE);
+    wallpaperProvider.wallpaperObserverRemote!.onWallpaperChanged(null);
+
+    const {image} =
+        await personalizationStore.waitForAction(
+            WallpaperActionName.SET_SELECTED_IMAGE) as SetSelectedImageAction;
+    assertEquals(null, image);
   });
 
   test('skips updating OnWallpaperChange while in fullscreen', async () => {

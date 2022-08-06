@@ -9,7 +9,7 @@
 #include "base/i18n/char_iterator.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
-#include "content/common/render_accessibility.mojom.h"
+#include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
 
 namespace content {
@@ -22,14 +22,13 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     return new BrowserAccessibilityManagerAndroid(initial_tree, nullptr,
                                                   nullptr);
 
-  WebContentsAccessibilityAndroid* wcax =
-      static_cast<WebContentsAccessibilityAndroid*>(
-          delegate->AccessibilityGetWebContentsAccessibility());
+  WebContentsAccessibilityAndroid* wcax = nullptr;
+  if (delegate->AccessibilityIsMainFrame()) {
+    wcax = static_cast<WebContentsAccessibilityAndroid*>(
+        delegate->AccessibilityGetWebContentsAccessibility());
+  }
   return new BrowserAccessibilityManagerAndroid(
-      initial_tree,
-      wcax && delegate->AccessibilityIsMainFrame() ? wcax->GetWeakPtr()
-                                                   : nullptr,
-      delegate);
+      initial_tree, wcax ? wcax->GetWeakPtr() : nullptr, delegate);
 }
 
 // static
@@ -345,8 +344,6 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
     case ui::AXEventGenerator::Event::LIVE_RELEVANT_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
-    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
-    case ui::AXEventGenerator::Event::LOAD_START:
     case ui::AXEventGenerator::Event::MENU_POPUP_END:
     case ui::AXEventGenerator::Event::MENU_POPUP_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
@@ -369,18 +366,18 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::SELECTED_VALUE_CHANGED:
-    case ui::AXEventGenerator::Event::SELECTION_IN_TEXT_FIELD_CHANGED:
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
     case ui::AXEventGenerator::Event::SORT_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
     case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
+    case ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED:
     case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       break;
   }
 }
 
 void BrowserAccessibilityManagerAndroid::SendLocationChangeEvents(
-    const std::vector<mojom::LocationChangesPtr>& changes) {
+    const std::vector<blink::mojom::LocationChangesPtr>& changes) {
   // Android is not very efficient at handling notifications, and location
   // changes in particular are frequent and not time-critical. If a lot of
   // nodes changed location, just send a single notification after a short

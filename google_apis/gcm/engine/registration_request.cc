@@ -268,6 +268,7 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
     LOG(ERROR) << "Registration response error message: " << error;
     RegistrationRequest::Status status = GetStatusFromError(error);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // TODO(crbug.com/1327973): Temporarily log additional information for
     // INVALID_SENDER errors. Remove once the investigation is complete!
     if (status == RegistrationRequest::Status::INVALID_SENDER) {
@@ -279,6 +280,7 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
       base::debug::DumpWithoutCrashing(FROM_HERE,
                                        /*time_between_dumps=*/base::Hours(12));
     }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     return status;
   }
 

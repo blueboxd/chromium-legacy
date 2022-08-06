@@ -140,6 +140,10 @@ void WebRuntimeFeatures::EnableAdTagging(bool enable) {
   RuntimeEnabledFeatures::SetAdTaggingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableBatchFetchRequests(bool enable) {
+  RuntimeEnabledFeatures::SetBatchFetchRequestsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCanvas2dImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(enable);
 }
@@ -178,6 +182,10 @@ void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
 
 void WebRuntimeFeatures::EnableDevicePosture(bool enable) {
   RuntimeEnabledFeatures::SetDevicePostureEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableDocumentPictureInPictureAPI(bool enable) {
+  RuntimeEnabledFeatures::SetDocumentPictureInPictureAPIEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableRemoveMobileViewportDoubleTap(bool enable) {
@@ -289,10 +297,6 @@ void WebRuntimeFeatures::EnablePictureInPictureAPI(bool enable) {
   RuntimeEnabledFeatures::SetPictureInPictureAPIEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePictureInPictureV2(bool enable) {
-  RuntimeEnabledFeatures::SetPictureInPictureV2Enabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePointerLockOptions(bool enable) {
   RuntimeEnabledFeatures::SetPointerLockOptionsEnabled(enable);
 }
@@ -371,10 +375,6 @@ void WebRuntimeFeatures::EnablePreciseMemoryInfo(bool enable) {
 
 void WebRuntimeFeatures::EnablePrerender2(bool enable) {
   RuntimeEnabledFeatures::SetPrerender2Enabled(enable);
-}
-
-bool WebRuntimeFeatures::IsPrerender2Enabled() {
-  return RuntimeEnabledFeatures::Prerender2EnabledByRuntimeFlag();
 }
 
 void WebRuntimeFeatures::EnablePrerender2RelatedFeatures(bool enable) {
@@ -675,6 +675,16 @@ void WebRuntimeFeatures::EnableEventPath(bool enable) {
 
 void WebRuntimeFeatures::EnableWebHIDOnServiceWorkers(bool enable) {
   RuntimeEnabledFeatures::SetWebHIDOnServiceWorkersEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableGetDisplayMediaSet(bool enable) {
+  RuntimeEnabledFeatures::SetGetDisplayMediaSetEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableGetDisplayMediaSetAutoSelectAllScreens(
+    bool enable) {
+  RuntimeEnabledFeatures::SetGetDisplayMediaSetAutoSelectAllScreensEnabled(
+      enable);
 }
 
 }  // namespace blink

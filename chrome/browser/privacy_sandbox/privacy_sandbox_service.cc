@@ -14,6 +14,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/browsing_topics/browsing_topics_service.h"
@@ -118,11 +119,6 @@ PrivacySandboxService::PrivacySandboxService(
       prefs::kPrivacySandboxApisEnabledV2,
       base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxV2PrefChanged,
                           base::Unretained(this)));
-
-  // When the user enters the Privacy Sandbox 3 experiment, the default value
-  // of their V2 pref must be set. This is a one time operation that is checked
-  // here to ensure it runs on profile startup.
-  InitializePrivacySandboxV2Pref();
 
   // If the Sandbox is currently restricted, disable the V2 preference. The user
   // must manually enable the sandbox if they stop being restricted.
@@ -357,39 +353,6 @@ void PrivacySandboxService::SetFledgeJoiningAllowed(
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         std::move(filter));
   }
-}
-
-void PrivacySandboxService::InitializePrivacySandboxV2Pref() {
-  if (!base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3))
-    return;
-
-  // The initialization process may turn a preference which is otherwise default
-  // off, on. The default setting for the user is provided by Finch and may
-  // change over time (e.g. location change). This init logic is however only
-  // ever performed once per profile, and so will not attempt to enable if the
-  // user changes location.
-  if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2Init))
-    return;
-
-  pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2Init, true);
-
-  // This logic should run before the user has had an opporunity to interact
-  // with the Privacy Sandbox controls.
-  DCHECK(
-      !pref_service_->GetBoolean(prefs::kPrivacySandboxManuallyControlledV2));
-
-  // Users must have the V1 sandbox enabled, 3P cookies enabled, and the
-  // appropriate feature parameter for the V2 pref to be default enabled.
-  if (!pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled))
-    return;
-
-  if (AreThirdPartyCookiesBlocked(cookie_settings_))
-    return;
-
-  if (!privacy_sandbox::kPrivacySandboxSettings3DefaultOn.Get())
-    return;
-
-  pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, true);
 }
 
 void PrivacySandboxService::RecordPrivacySandboxHistogram(
@@ -637,6 +600,42 @@ void PrivacySandboxService::SetTopicAllowed(
     browsing_topics_service_->ClearTopic(topic);
 
   privacy_sandbox_settings_->SetTopicAllowed(topic, allowed);
+}
+
+base::flat_map<net::SchemefulSite, net::SchemefulSite>
+PrivacySandboxService::GetFirstPartySets() {
+  if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
+    return {{net::SchemefulSite(GURL("https://youtube.com")),
+             net::SchemefulSite(GURL("https://google.com"))},
+            {net::SchemefulSite(GURL("https://google.com")),
+             net::SchemefulSite(GURL("https://google.com"))},
+            {net::SchemefulSite(GURL("https://google.com.au")),
+             net::SchemefulSite(GURL("https://google.com"))},
+            {net::SchemefulSite(GURL("https://google.de")),
+             net::SchemefulSite(GURL("https://google.com"))}};
+  }
+
+  // TODO(crbug.com/1332513): Retrieve set information from FPS delegate.
+  return {};
+}
+
+absl::optional<std::u16string> PrivacySandboxService::GetFpsOwnerForDisplay(
+    const GURL& site_url) {
+  auto sets = GetFirstPartySets();
+  auto schemeful_site = net::SchemefulSite(site_url);
+
+  if (!sets.count(schemeful_site))
+    return absl::nullopt;
+
+  // TODO(crbug.com/1332513): Apply formatting that correctly displays unicode
+  // domains.
+  return base::UTF8ToUTF16(sets[schemeful_site].GetURL().host());
+}
+
+bool PrivacySandboxService::ShouldShowDetailedFpsControls() {
+  // TODO(crbug.com/1332513): Consult the preference state to determine whether
+  // detailed controls should be shown.
+  return privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get();
 }
 
 /*static*/ PrivacySandboxService::PromptType

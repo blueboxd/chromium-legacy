@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
+#include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/database_helper.h"
@@ -116,59 +117,12 @@ std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModel(
       shared_objects.local_storages(), shared_objects.session_storages(),
       shared_objects.indexed_dbs(), shared_objects.file_systems(), nullptr,
       shared_objects.service_workers(), shared_objects.shared_workers(),
-      shared_objects.cache_storages(), nullptr);
+      shared_objects.cache_storages());
 
   return std::make_unique<CookiesTreeModel>(std::move(container), nullptr);
 }
 
 }  // namespace
-
-class CollectedCookiesViews::WebContentsUserData
-    : public content::WebContentsUserData<
-          CollectedCookiesViews::WebContentsUserData> {
- public:
-  ~WebContentsUserData() override {
-    if (!tracker_.view())
-      return;  // Dialog already destroyed.
-    // Destroyed while the Widget is still alive, close immediately.
-    tracker_.view()->GetWidget()->CloseNow();
-  }
-
-  static CollectedCookiesViews* GetDialog(content::WebContents* web_contents) {
-    WebContentsUserData* handle = static_cast<WebContentsUserData*>(
-        web_contents->GetUserData(UserDataKey()));
-    if (!handle)
-      return nullptr;
-    return handle->GetCollectedCookiesViews();
-  }
-
-  static void Create(content::WebContents* web_contents) {
-    CollectedCookiesViews::WebContentsUserData::CreateForWebContents(
-        web_contents);
-  }
-
- private:
-  friend class content::WebContentsUserData<WebContentsUserData>;
-
-  explicit WebContentsUserData(content::WebContents* web_contents)
-      : content::WebContentsUserData<
-            CollectedCookiesViews::WebContentsUserData>(*web_contents) {
-    // Owned by its Widget
-    CollectedCookiesViews* const dialog =
-        new CollectedCookiesViews(web_contents);
-    tracker_.SetView(dialog);
-  }
-
-  CollectedCookiesViews* GetCollectedCookiesViews() {
-    return static_cast<CollectedCookiesViews*>(tracker_.view());
-  }
-
-  views::ViewTracker tracker_;
-
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
-};
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(CollectedCookiesViews::WebContentsUserData);
 
 // This DrawingProvider allows TreeModelNodes to be annotated with auxiliary
 // text. Annotated nodes will be drawn in a lighter color than normal to
@@ -314,38 +268,9 @@ END_METADATA
 
 CollectedCookiesViews::~CollectedCookiesViews() {
   web_contents_->RemoveUserData(
-      CollectedCookiesViews::WebContentsUserData::UserDataKey());
+      PageSpecificSiteDataDialogController::UserDataKey());
   allowed_cookies_tree_->SetModel(nullptr);
   blocked_cookies_tree_->SetModel(nullptr);
-}
-
-// static
-void CollectedCookiesViews::CreateAndShowForWebContents(
-    content::WebContents* web_contents) {
-  CollectedCookiesViews* instance =
-      CollectedCookiesViews::WebContentsUserData::GetDialog(web_contents);
-  if (!instance) {
-    CollectedCookiesViews::WebContentsUserData::Create(web_contents);
-    return;
-  }
-
-  // On rare occasions, |instance| may have started, but not finished,
-  // closing. In this case, the modal dialog manager will have removed the
-  // dialog from its list of tracked dialogs, and therefore might not have any
-  // active dialog. This should be rare enough that it's not worth trying to
-  // re-open the dialog. See https://crbug.com/989888
-  if (instance->GetWidget()->IsClosed())
-    return;
-
-  auto* dialog_manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
-  CHECK(dialog_manager->IsDialogActive());
-  dialog_manager->FocusTopmostDialog();
-}
-
-CollectedCookiesViews* CollectedCookiesViews::GetDialogForTesting(
-    content::WebContents* web_contents) {
-  return CollectedCookiesViews::WebContentsUserData::GetDialog(web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -154,7 +154,7 @@ void FetchDiscountWorker::ReadyToFetch(
     }
   }
   if (!has_partner_merchant) {
-    Start(commerce::kDiscountFetchDelayParam.Get());
+    Start(commerce::GetDiscountFetchDelay());
     return;
   }
   backend_task_runner_->PostTask(
@@ -305,11 +305,8 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
     cart_service_delegate_->UpdateFreeListingCoupons(coupon_map);
   }
 
-  if (base::GetFieldTrialParamByFeatureAsBool(
-          ntp_features::kNtpChromeCartModule,
-          ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam,
-          false)) {
+  if (commerce::IsCartDiscountFeatureEnabled()) {
     // Continue to work.
-    Start(commerce::kDiscountFetchDelayParam.Get());
+    Start(commerce::GetDiscountFetchDelay());
   }
 }

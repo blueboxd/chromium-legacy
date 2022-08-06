@@ -33,13 +33,11 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "net/base/network_change_notifier_win.h"
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_LINUX)
 #include "net/base/network_change_notifier_linux.h"
 #elif BUILDFLAG(IS_APPLE)
 #include "net/base/network_change_notifier_mac.h"
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
+#elif BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #include "net/base/network_change_notifier_posix.h"
 #elif BUILDFLAG(IS_FUCHSIA)
 #include "net/base/network_change_notifier_fuchsia.h"
@@ -92,9 +90,6 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
 
 // static
 bool NetworkChangeNotifier::test_notifications_only_ = false;
-// static
-const NetworkChangeNotifier::NetworkHandle
-    NetworkChangeNotifier::kInvalidNetworkHandle = -1;
 
 NetworkChangeNotifier::NetworkChangeCalculatorParams::
     NetworkChangeCalculatorParams() = default;
@@ -320,10 +315,10 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
   // service in a separate process.
   return std::make_unique<NetworkChangeNotifierPosix>(initial_type,
                                                       initial_subtype);
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS)
   return std::make_unique<NetworkChangeNotifierPosix>(initial_type,
                                                       initial_subtype);
-#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_LINUX)
   return std::make_unique<NetworkChangeNotifierLinux>(
       std::unordered_set<std::string>());
 #elif BUILDFLAG(IS_APPLE)
@@ -471,7 +466,8 @@ void NetworkChangeNotifier::GetConnectedNetworks(NetworkList* network_list) {
 
 // static
 NetworkChangeNotifier::ConnectionType
-NetworkChangeNotifier::GetNetworkConnectionType(NetworkHandle network) {
+NetworkChangeNotifier::GetNetworkConnectionType(
+    handles::NetworkHandle network) {
   DCHECK(AreNetworkHandlesSupported());
   return g_network_change_notifier
              ? g_network_change_notifier->GetCurrentNetworkConnectionType(
@@ -480,12 +476,11 @@ NetworkChangeNotifier::GetNetworkConnectionType(NetworkHandle network) {
 }
 
 // static
-NetworkChangeNotifier::NetworkHandle
-NetworkChangeNotifier::GetDefaultNetwork() {
+handles::NetworkHandle NetworkChangeNotifier::GetDefaultNetwork() {
   DCHECK(AreNetworkHandlesSupported());
   return g_network_change_notifier
              ? g_network_change_notifier->GetCurrentDefaultNetwork()
-             : kInvalidNetworkHandle;
+             : handles::kInvalidNetworkHandle;
 }
 
 // static
@@ -913,13 +908,12 @@ void NetworkChangeNotifier::GetCurrentConnectedNetworks(
 
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifier::GetCurrentNetworkConnectionType(
-    NetworkHandle network) const {
+    handles::NetworkHandle network) const {
   return CONNECTION_UNKNOWN;
 }
 
-NetworkChangeNotifier::NetworkHandle
-NetworkChangeNotifier::GetCurrentDefaultNetwork() const {
-  return kInvalidNetworkHandle;
+handles::NetworkHandle NetworkChangeNotifier::GetCurrentDefaultNetwork() const {
+  return handles::kInvalidNetworkHandle;
 }
 
 SystemDnsConfigChangeNotifier*
@@ -980,7 +974,7 @@ void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
 // static
 void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
     NetworkChangeType type,
-    NetworkHandle network) {
+    handles::NetworkHandle network) {
   if (g_network_change_notifier &&
       !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfSpecificNetworkChangeImpl(
@@ -1047,7 +1041,7 @@ void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
 
 void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChangeImpl(
     NetworkChangeType type,
-    NetworkHandle network) {
+    handles::NetworkHandle network) {
   switch (type) {
     case NetworkChangeType::kConnected:
       GetObserverList().network_observer_list_->Notify(

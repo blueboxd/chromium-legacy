@@ -46,7 +46,6 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/resource_metadata_storage.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -349,7 +348,7 @@ bool ClearCache(base::FilePath cache_path, base::FilePath logs_path) {
 // Observes drive disable Preference's change.
 class DriveIntegrationService::PreferenceWatcher
     : public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public chromeos::NetworkPortalDetector::Observer {
+      public ash::NetworkPortalDetector::Observer {
  public:
   explicit PreferenceWatcher(PrefService* pref_service)
       : pref_service_(pref_service), integration_service_(nullptr) {
@@ -378,7 +377,7 @@ class DriveIntegrationService::PreferenceWatcher
     if (integration_service_) {
       content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
           this);
-      chromeos::network_portal_detector::GetInstance()->RemoveObserver(this);
+      ash::network_portal_detector::GetInstance()->RemoveObserver(this);
     }
   }
 
@@ -406,9 +405,9 @@ class DriveIntegrationService::PreferenceWatcher
 
   bool is_offline() const {
     return last_portal_status_ !=
-               chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE &&
+               ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE &&
            last_portal_status_ !=
-               chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
+               ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
   }
 
  private:
@@ -438,9 +437,8 @@ class DriveIntegrationService::PreferenceWatcher
   }
 
   void AddNetworkPortalDetectorObserver() {
-    if (chromeos::network_portal_detector::IsInitialized()) {
-      chromeos::network_portal_detector::GetInstance()->AddAndFireObserver(
-          this);
+    if (ash::network_portal_detector::IsInitialized()) {
+      ash::network_portal_detector::GetInstance()->AddAndFireObserver(this);
     } else {
       // The NetworkPortalDetector instance still not ready. Postpone even more.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -452,16 +450,15 @@ class DriveIntegrationService::PreferenceWatcher
     }
   }
 
-  // chromeos::NetworkPortalDetector::Observer
+  // ash::NetworkPortalDetector::Observer
   void OnPortalDetectionCompleted(
-      const chromeos::NetworkState* network,
-      const chromeos::NetworkPortalDetector::CaptivePortalStatus status)
-      override {
+      const ash::NetworkState* network,
+      const ash::NetworkPortalDetector::CaptivePortalStatus status) override {
     last_portal_status_ = status;
 
     if (integration_service_->remount_when_online_ &&
         last_portal_status_ ==
-            chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
+            ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
       integration_service_->remount_when_online_ = false;
       integration_service_->mount_start_ = {};
       integration_service_->AddDriveMountPoint();
@@ -482,8 +479,8 @@ class DriveIntegrationService::PreferenceWatcher
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   DriveIntegrationService* integration_service_;
-  chromeos::NetworkPortalDetector::CaptivePortalStatus last_portal_status_ =
-      chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
+  ash::NetworkPortalDetector::CaptivePortalStatus last_portal_status_ =
+      ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 
   base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_{this};
 };
@@ -1253,6 +1250,18 @@ void DriveIntegrationService::GetQuotaUsage(
           std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
 }
 
+void DriveIntegrationService::GetPooledQuotaUsage(
+    drivefs::mojom::DriveFs::GetPooledQuotaUsageCallback callback) {
+  if (!IsMounted() || !GetDriveFsInterface()) {
+    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
+    return;
+  }
+
+  GetDriveFsInterface()->GetPooledQuotaUsage(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+}
+
 void DriveIntegrationService::RestartDrive() {
   MaybeRemountFileSystem(base::TimeDelta(), false);
 }
@@ -1423,20 +1432,15 @@ DriveIntegrationServiceFactory* DriveIntegrationServiceFactory::GetInstance() {
 }
 
 DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "DriveIntegrationService",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildServicesRedirectedToOriginal()) {
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadCoreServiceFactory::GetInstance());
 }
 
 DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() = default;
-
-content::BrowserContext* DriveIntegrationServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
-}
 
 KeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

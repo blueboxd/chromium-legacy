@@ -62,6 +62,8 @@ class CONTENT_EXPORT PreloadingAttempt {
   // sets the PreloadingTriggeringOutcome to kFailure.
   virtual void SetFailureReason(PreloadingFailureReason failure_reason) = 0;
 
+  virtual base::WeakPtr<PreloadingAttempt> GetWeakPtr() = 0;
+
  protected:
   virtual ~PreloadingAttempt() = default;
 };
@@ -78,6 +80,12 @@ class CONTENT_EXPORT PreloadingData {
   // Please see content/browser/preloading/preloading_data_impl.cc for more
   // details.
   static PreloadingData* GetOrCreateForWebContents(WebContents* web_contents);
+
+  // Helper method to return the PreloadingURLMatchCallback for
+  // `destination_url`. This method will return true only for exact matches to
+  // `destination_url`.
+  static PreloadingURLMatchCallback GetSameURLMatcher(
+      const GURL& destination_url);
 
   // Creates a new PreloadingAttempt and returns a pointer associated with the
   // PreloadingAttempt class. Here callers pass the `url_predicate_callback` to

@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/dbus/ash_dbus_helper.h"
 
 #include "ash/components/cryptohome/system_salt_getter.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
@@ -17,17 +16,34 @@
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/ash/components/dbus/anomaly_detector/anomaly_detector_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_appfuse_provider_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_camera_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_data_snapshotd_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_keymaster_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_midis_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_obb_mounter_client.h"
+#include "chromeos/ash/components/dbus/arc/arc_sensor_service_client.h"
+#include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/ash/components/dbus/biod/biod_client.h"
+#include "chromeos/ash/components/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
+#include "chromeos/ash/components/dbus/cec_service/cec_service_client.h"
 #include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/ash/components/dbus/cups_proxy/cups_proxy_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/easy_unlock/easy_unlock_client.h"
 #include "chromeos/ash/components/dbus/federated/federated_client.h"
 #include "chromeos/ash/components/dbus/fusebox/fusebox_reverse_client.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
+#include "chromeos/ash/components/dbus/gnubby/gnubby_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/dbus/human_presence/human_presence_dbus_client.h"
+#include "chromeos/ash/components/dbus/image_burner/image_burner_client.h"
 #include "chromeos/ash/components/dbus/image_loader/image_loader_client.h"
 #include "chromeos/ash/components/dbus/ip_peripheral/ip_peripheral_service_client.h"
 #include "chromeos/ash/components/dbus/kerberos/kerberos_client.h"
@@ -58,26 +74,17 @@
 #include "chromeos/ash/components/dbus/virtual_file_provider/virtual_file_provider_client.h"
 #include "chromeos/ash/components/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 #include "chromeos/ash/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
-#include "chromeos/dbus/arc/arc_appfuse_provider_client.h"
-#include "chromeos/dbus/arc/arc_camera_client.h"
-#include "chromeos/dbus/arc/arc_data_snapshotd_client.h"
-#include "chromeos/dbus/arc/arc_keymaster_client.h"
-#include "chromeos/dbus/arc/arc_midis_client.h"
-#include "chromeos/dbus/arc/arc_sensor_service_client.h"
-#include "chromeos/dbus/attestation/attestation_client.h"
-#include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
-#include "chromeos/dbus/gnubby/gnubby_client.h"
-#include "chromeos/dbus/hermes/hermes_clients.h"
-#include "chromeos/dbus/image_burner/image_burner_client.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/missive/missive_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/u2f/u2f_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -123,39 +130,47 @@ void InitializeDBus() {
   // Initialize Chrome dbus clients.
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
 
+  chromeos::shill_clients::Initialize(bus);
+
   // NOTE: base::Feature is not initialized yet, so any non MultiProcessMash
   // dbus client initialization for Ash should be done in Shell::Init.
   InitializeDBusClient<AnomalyDetectorClient>(bus);
-  InitializeDBusClient<chromeos::ArcAppfuseProviderClient>(bus);
-  InitializeDBusClient<chromeos::ArcCameraClient>(bus);
-  InitializeDBusClient<chromeos::ArcDataSnapshotdClient>(bus);
-  InitializeDBusClient<chromeos::ArcKeymasterClient>(bus);
-  InitializeDBusClient<chromeos::ArcMidisClient>(bus);
+  InitializeDBusClient<ArcAppfuseProviderClient>(bus);
+  InitializeDBusClient<ArcCameraClient>(bus);
+  InitializeDBusClient<ArcDataSnapshotdClient>(bus);
+  InitializeDBusClient<ArcKeymasterClient>(bus);
+  InitializeDBusClient<ArcMidisClient>(bus);
+  InitializeDBusClient<ArcObbMounterClient>(bus);
   InitializeDBusClient<ArcQuotaClient>(bus);
-  InitializeDBusClient<chromeos::ArcSensorServiceClient>(bus);
-  InitializeDBusClient<chromeos::AttestationClient>(bus);
+  InitializeDBusClient<ArcSensorServiceClient>(bus);
+  InitializeDBusClient<AttestationClient>(bus);
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
-  InitializeDBusClient<chromeos::CdmFactoryDaemonClient>(bus);
+  InitializeDBusClient<CdmFactoryDaemonClient>(bus);
+  InitializeDBusClient<CecServiceClient>(bus);
   InitializeDBusClient<ChunneldClient>(bus);
   InitializeDBusClient<CiceroneClient>(bus);
   // ConciergeClient depends on CiceroneClient.
   InitializeDBusClient<ConciergeClient>(bus);
   InitializeDBusClient<CrasAudioClient>(bus);
+  InitializeDBusClient<CrosDisksClient>(bus);
   InitializeDBusClient<cros_healthd::CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeMiscClient>(bus);
   InitializeDBusClient<CryptohomePkcs11Client>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
+  InitializeDBusClient<DebugDaemonClient>(bus);
   InitializeDBusClient<chromeos::DlcserviceClient>(bus);
   InitializeDBusClient<chromeos::DlpClient>(bus);
+  InitializeDBusClient<EasyUnlockClient>(bus);
   InitializeDBusClient<FederatedClient>(bus);
   InitializeDBusClient<FuseBoxReverseClient>(bus);
-  InitializeDBusClient<chromeos::GnubbyClient>(bus);
-  chromeos::hermes_clients::Initialize(bus);
+  InitializeDBusClient<FwupdClient>(bus);
+  InitializeDBusClient<GnubbyClient>(bus);
+  hermes_clients::Initialize(bus);
 #if BUILDFLAG(ENABLE_HIBERNATE)
   InitializeDBusClient<HibermanClient>(bus);
 #endif
-  InitializeDBusClient<chromeos::ImageBurnerClient>(bus);
+  InitializeDBusClient<ImageBurnerClient>(bus);
   InitializeDBusClient<ImageLoaderClient>(bus);
   InitializeDBusClient<InstallAttributesClient>(bus);
   InitializeDBusClient<IpPeripheralServiceClient>(bus);
@@ -277,36 +292,43 @@ void ShutdownDBus() {
   IpPeripheralServiceClient::Shutdown();
   InstallAttributesClient::Shutdown();
   ImageLoaderClient::Shutdown();
-  chromeos::ImageBurnerClient::Shutdown();
+  ImageBurnerClient::Shutdown();
 #if BUILDFLAG(ENABLE_HIBERNATE)
   HibermanClient::Shutdown();
 #endif
-  chromeos::hermes_clients::Shutdown();
-  chromeos::GnubbyClient::Shutdown();
+  hermes_clients::Shutdown();
+  GnubbyClient::Shutdown();
+  FwupdClient::Shutdown();
   FuseBoxReverseClient::Shutdown();
   FederatedClient::Shutdown();
+  EasyUnlockClient::Shutdown();
   chromeos::DlcserviceClient::Shutdown();
   chromeos::DlpClient::Shutdown();
+  DebugDaemonClient::Shutdown();
   CupsProxyClient::Shutdown();
   CryptohomePkcs11Client::Shutdown();
   CryptohomeMiscClient::Shutdown();
   cros_healthd::CrosHealthdClient::Shutdown();
+  CrosDisksClient::Shutdown();
   CrasAudioClient::Shutdown();
   ConciergeClient::Shutdown();
   CiceroneClient::Shutdown();
   ChunneldClient::Shutdown();
-  chromeos::CdmFactoryDaemonClient::Shutdown();
+  CecServiceClient::Shutdown();
+  CdmFactoryDaemonClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
-  chromeos::AttestationClient::Shutdown();
+  AttestationClient::Shutdown();
   ArcQuotaClient::Shutdown();
-  chromeos::ArcMidisClient::Shutdown();
-  chromeos::ArcKeymasterClient::Shutdown();
-  chromeos::ArcDataSnapshotdClient::Shutdown();
-  chromeos::ArcCameraClient::Shutdown();
-  chromeos::ArcAppfuseProviderClient::Shutdown();
+  ArcObbMounterClient::Shutdown();
+  ArcMidisClient::Shutdown();
+  ArcKeymasterClient::Shutdown();
+  ArcDataSnapshotdClient::Shutdown();
+  ArcCameraClient::Shutdown();
+  ArcAppfuseProviderClient::Shutdown();
   AnomalyDetectorClient::Shutdown();
 
+  chromeos::shill_clients::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
 }

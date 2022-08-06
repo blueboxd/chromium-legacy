@@ -12,7 +12,7 @@ const GesturePage = {
   INTRO: 'gestureIntro',
   HOME: 'gestureHome',
   OVERVIEW: 'gestureOverview',
-  BACK: 'gestureBack'
+  BACK: 'gestureBack',
 };
 
 /**
@@ -109,7 +109,7 @@ class GestureNavigation extends GestureScreenElementBase {
   setCurrentPage_(newPage) {
     this.setPlayCurrentScreenAnimation(false);
     this.setUIStep(newPage);
-    chrome.send('handleGesturePageChange', [newPage]);
+    this.userActed(['gesture-page-change', newPage]);
     this.setPlayCurrentScreenAnimation(true);
   }
 

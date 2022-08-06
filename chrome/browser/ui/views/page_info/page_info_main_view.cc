@@ -104,7 +104,8 @@ PageInfoMainView::PageInfoMainView(
 
   int link_text_id = 0;
   int tooltip_text_id = 0;
-  if (ui_delegate_->ShouldShowSiteSettings(&link_text_id, &tooltip_text_id)) {
+  if (ui_delegate_->ShouldShowSiteSettings(&link_text_id, &tooltip_text_id) &&
+      !base::FeatureList::IsEnabled(page_info::kPageInfoHideSiteSettings)) {
     site_settings_link_ = AddChildView(std::make_unique<PageInfoHoverButton>(
         base::BindRepeating(
             [](PageInfoMainView* view) {
@@ -143,22 +144,32 @@ void PageInfoMainView::EnsureCookieInfo() {
     const std::u16string& tooltip =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
 
-    // Create the cookie button, leaving the secondary text blank since the
-    // cookie count is not yet known.
-    cookie_button_ =
-        std::make_unique<PageInfoHoverButton>(
-            base::BindRepeating(
-                [](PageInfoMainView* view) {
-                  view->HandleMoreInfoRequest(view->cookie_button_);
-                },
-                this),
-            icon, IDS_PAGE_INFO_COOKIES, /*secondary_text=*/u"",
-            PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
-            tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon())
-            .release();
+    if (base::FeatureList::IsEnabled(page_info::kPageInfoCookiesSubpage)) {
+      // Create a simple cookie button, that opens a cookies subpage.
+      cookie_button_ = site_settings_view_->AddChildView(std::make_unique<
+                                                         PageInfoHoverButton>(
+          base::BindRepeating(&PageInfoNavigationHandler::OpenCookiesPage,
+                              base::Unretained(navigation_handler_)),
+          icon, IDS_PAGE_INFO_COOKIES, std::u16string(),
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIES_SUBPAGE,
+          tooltip, std::u16string(),
+          PageInfoViewFactory::GetOpenSubpageIcon()));
+    } else {
+      // Create the cookie button, leaving the secondary text blank since the
+      // cookie count is not yet known.
+      cookie_button_ = site_settings_view_->AddChildView(std::make_unique<
+                                                         PageInfoHoverButton>(
+          base::BindRepeating(
+              [](PageInfoMainView* view) {
+                view->HandleMoreInfoRequest(view->cookie_button_);
+              },
+              this),
+          icon, IDS_PAGE_INFO_COOKIES, /*secondary_text=*/u"",
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
+          tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon()));
+    }
     cookie_button_->SetProperty(views::kElementIdentifierKey,
                                 kCookieButtonElementId);
-    site_settings_view_->AddChildView(cookie_button_.get());
 
     if (base::FeatureList::IsEnabled(
             privacy_sandbox::kPrivacySandboxSettings3)) {
@@ -187,7 +198,8 @@ void PageInfoMainView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   PageInfoMainView::EnsureCookieInfo();
 
   // Update the text displaying the number of allowed cookies.
-  cookie_button_->SetTitleText(IDS_PAGE_INFO_COOKIES, num_cookies_text);
+  if (!base::FeatureList::IsEnabled(page_info::kPageInfoCookiesSubpage))
+    cookie_button_->SetTitleText(IDS_PAGE_INFO_COOKIES, num_cookies_text);
 
   PreferredSizeChanged();
 }
@@ -566,10 +578,14 @@ std::unique_ptr<views::View> PageInfoMainView::CreateAboutThisSiteSection(
   if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSiteMoreInfo)) {
     about_this_site_button = about_this_site_section->AddChildView(
         std::make_unique<PageInfoHoverButton>(
-            // TODO(crbug.com/1318000): Open side-panel instead.
             base::BindRepeating(
-                &ChromePageInfoUiDelegate::OpenMoreAboutThisPageUrl,
-                base::Unretained(ui_delegate_), GURL(info.more_about().url())),
+                [](PageInfoMainView* view, GURL more_info_url,
+                   const ui::Event& event) {
+                  view->ui_delegate_->OpenMoreAboutThisPageUrl(more_info_url,
+                                                               event);
+                  view->GetWidget()->Close();
+                },
+                this, GURL(info.more_about().url())),
             PageInfoViewFactory::GetAboutThisPageIcon(),
             IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE, std::u16string(),
             PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,

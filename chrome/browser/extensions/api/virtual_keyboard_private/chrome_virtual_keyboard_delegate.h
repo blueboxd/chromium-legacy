@@ -9,9 +9,11 @@
 
 #include "ash/public/cpp/clipboard_history_controller.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/common/api/virtual_keyboard.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 class AudioSystem;
@@ -66,8 +68,9 @@ class ChromeVirtualKeyboardDelegate
       OnGetClipboardHistoryCallback get_history_callback) override;
   bool PasteClipboardItem(const std::string& clipboard_item_id) override;
   bool DeleteClipboardItem(const std::string& clipboard_item_id) override;
-  api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
-      const api::virtual_keyboard::RestrictFeatures::Params& params) override;
+  void RestrictFeatures(
+      const api::virtual_keyboard::RestrictFeatures::Params& params,
+      OnRestrictFeaturesCallback callback) override;
 
  private:
   // ash::ClipboardHistoryController::Observer:
@@ -79,8 +82,7 @@ class ChromeVirtualKeyboardDelegate
 
   void OnHasInputDevices(OnKeyboardSettingsCallback on_settings_callback,
                          bool has_audio_input_devices);
-  void DispatchConfigChangeEvent(
-      std::unique_ptr<base::DictionaryValue> settings);
+  void DispatchConfigChangeEvent(absl::optional<base::Value::Dict> settings);
 
   content::BrowserContext* browser_context_;
   std::unique_ptr<media::AudioSystem> audio_system_;

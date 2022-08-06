@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -164,8 +165,9 @@ const base::Feature kEnableCsrssLockdownFeature{
 bool AddDirectory(int path,
                   const wchar_t* sub_dir,
                   bool children,
-                  TargetPolicy::Semantics access,
-                  TargetPolicy* policy) {
+                  Semantics access,
+                  TargetConfig* config) {
+  DCHECK(!config->IsConfigured());
   base::FilePath directory;
   if (!base::PathService::Get(path, &directory))
     return false;
@@ -174,8 +176,8 @@ bool AddDirectory(int path,
     directory = base::MakeAbsoluteFilePath(directory.Append(sub_dir));
 
   ResultCode result;
-  result = policy->AddRule(TargetPolicy::SUBSYS_FILES, access,
-                           directory.value().c_str());
+  result =
+      config->AddRule(SubSystem::kFiles, access, directory.value().c_str());
   if (result != SBOX_ALL_OK)
     return false;
 
@@ -184,8 +186,7 @@ bool AddDirectory(int path,
     directory_str += L"*";
   // Otherwise, add the version of the path that ends with a separator.
 
-  result = policy->AddRule(TargetPolicy::SUBSYS_FILES, access,
-                           directory_str.c_str());
+  result = config->AddRule(SubSystem::kFiles, access, directory_str.c_str());
   if (result != SBOX_ALL_OK)
     return false;
 
@@ -324,24 +325,24 @@ bool ShouldSetJobLevel(bool allow_no_sandbox_job) {
   return false;
 }
 
-// Adds the generic policy rules to a sandbox TargetPolicy.
-ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
+// Adds the generic policy rules to a sandbox TargetConfig.
+ResultCode AddGenericPolicy(sandbox::TargetConfig* config) {
+  DCHECK(!config->IsConfigured());
   ResultCode result;
 
   // Add the policy for the client side of a pipe. It is just a file
   // in the \pipe\ namespace. We restrict it to pipes that start with
   // "chrome." so the sandboxed process cannot connect to system services.
-  result =
-      policy->AddRule(TargetPolicy::SUBSYS_FILES, TargetPolicy::FILES_ALLOW_ANY,
-                      L"\\??\\pipe\\chrome.*");
+  result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
+                           L"\\??\\pipe\\chrome.*");
   if (result != SBOX_ALL_OK)
     return result;
 
   // Allow the server side of sync sockets, which are pipes that have
   // the "chrome.sync" namespace and a randomly generated suffix.
-  result = policy->AddRule(TargetPolicy::SUBSYS_NAMED_PIPES,
-                           TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                           L"\\\\.\\pipe\\chrome.sync.*");
+  result =
+      config->AddRule(SubSystem::kNamedPipes, Semantics::kNamedPipesAllowAny,
+                      L"\\\\.\\pipe\\chrome.sync.*");
   if (result != SBOX_ALL_OK)
     return result;
 
@@ -351,8 +352,7 @@ ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (!base::PathService::Get(base::FILE_EXE, &exe))
     return SBOX_ERROR_GENERIC;
   base::FilePath pdb_path = exe.DirName().Append(L"*.pdb");
-  result = policy->AddRule(TargetPolicy::SUBSYS_FILES,
-                           TargetPolicy::FILES_ALLOW_READONLY,
+  result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowReadonly,
                            pdb_path.value().c_str());
   if (result != SBOX_ALL_OK)
     return result;
@@ -372,15 +372,13 @@ ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
     CHECK(coverage_dir.size() == coverage_dir_size);
     base::FilePath sancov_path =
         base::FilePath(coverage_dir).Append(L"*.sancov");
-    result = policy->AddRule(TargetPolicy::SUBSYS_FILES,
-                             TargetPolicy::FILES_ALLOW_ANY,
+    result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
                              sancov_path.value().c_str());
     if (result != SBOX_ALL_OK)
       return result;
   }
 #endif
 
-  AddGenericDllEvictionPolicy(policy);
   return SBOX_ALL_OK;
 }
 
@@ -859,11 +857,12 @@ ResultCode SandboxWin::AddWin32kLockdownPolicy(TargetPolicy* policy) {
   if (result != SBOX_ALL_OK)
     return result;
 
-  return policy->AddRule(TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
-                         TargetPolicy::FAKE_USER_GDI_INIT, nullptr);
-#else
+  if (!policy->GetConfig()->IsConfigured()) {
+    return policy->GetConfig()->AddRule(SubSystem::kWin32kLockdown,
+                                        Semantics::kFakeGdiInit, nullptr);
+  }
+#endif  // !defined(NACL_WIN64)
   return SBOX_ALL_OK;
-#endif
 }
 
 // static
@@ -1064,20 +1063,28 @@ ResultCode SandboxWin::GeneratePolicyForSandboxedProcess(
     policy->AddRestrictingRandomSid();
   }
 
+  sandbox::TargetConfig* config = policy->GetConfig();
+
 #if !defined(NACL_WIN64)
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kPpapiPluginProcess ||
-      sandbox_type == Sandbox::kPrintCompositor) {
-    AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
-                 TargetPolicy::FILES_ALLOW_READONLY, policy);
+  if (!config->IsConfigured()) {
+    if (process_type == switches::kRendererProcess ||
+        process_type == switches::kPpapiPluginProcess ||
+        sandbox_type == Sandbox::kPrintCompositor) {
+      AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
+                   Semantics::kFilesAllowReadonly, config);
+    }
   }
 #endif
 
-  result = AddGenericPolicy(policy);
-  if (result != SBOX_ALL_OK) {
-    NOTREACHED();
-    return result;
+  if (!config->IsConfigured()) {
+    result = AddGenericPolicy(config);
+    if (result != SBOX_ALL_OK) {
+      NOTREACHED();
+      return result;
+    }
   }
+
+  AddGenericDllEvictionPolicy(policy);
 
   std::string appcontainer_id;
   if (IsAppContainerEnabledForSandbox(cmd_line, sandbox_type) &&
@@ -1090,16 +1097,17 @@ ResultCode SandboxWin::GeneratePolicyForSandboxedProcess(
   }
 
   // Allow the renderer, gpu and utility processes to access the log file.
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kGpuProcess ||
-      process_type == switches::kUtilityProcess) {
-    if (logging::IsLoggingToFileEnabled()) {
-      DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
-      result = policy->AddRule(TargetPolicy::SUBSYS_FILES,
-                               TargetPolicy::FILES_ALLOW_ANY,
-                               logging::GetLogFileFullPath().c_str());
-      if (result != SBOX_ALL_OK)
-        return result;
+  if (!config->IsConfigured()) {
+    if (process_type == switches::kRendererProcess ||
+        process_type == switches::kGpuProcess ||
+        process_type == switches::kUtilityProcess) {
+      if (logging::IsLoggingToFileEnabled()) {
+        DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
+        result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
+                                 logging::GetLogFileFullPath().c_str());
+        if (result != SBOX_ALL_OK)
+          return result;
+      }
     }
   }
 
@@ -1133,19 +1141,25 @@ ResultCode SandboxWin::StartSandboxedProcess(
     SandboxDelegate* delegate,
     base::Process* process) {
   const base::ElapsedTimer timer;
-  auto policy = g_broker_services->CreatePolicy();
-  auto time_policy_created = timer.Elapsed();
 
-  ResultCode result = GeneratePolicyForSandboxedProcess(
-      cmd_line, process_type, handles_to_inherit, delegate, policy.get());
-  auto time_policy_generated = timer.Elapsed();
-
-  if (ResultCode::SBOX_ERROR_UNSANDBOXED_PROCESS == result) {
+  // Avoid making a policy if we won't use it.
+  if (IsUnsandboxedProcess(delegate->GetSandboxType(), cmd_line,
+                           *base::CommandLine::ForCurrentProcess())) {
     return LaunchWithoutSandbox(cmd_line, handles_to_inherit, delegate,
                                 process);
   }
+
+  std::string tag;
+  if (base::FeatureList::IsEnabled(features::kSharedSandboxPolicies))
+    tag = delegate->GetSandboxTag();
+
+  auto policy = g_broker_services->CreatePolicy(tag);
+  auto time_policy_created = timer.Elapsed();
+  ResultCode result = GeneratePolicyForSandboxedProcess(
+      cmd_line, process_type, handles_to_inherit, delegate, policy.get());
   if (SBOX_ALL_OK != result)
     return result;
+  auto time_policy_generated = timer.Elapsed();
 
   TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
@@ -1277,6 +1291,16 @@ std::string SandboxWin::GetSandboxTypeInEnglish(Sandbox sandbox_type) {
     case Sandbox::kWindowsSystemProxyResolver:
       return "Windows System Proxy Resolver";
   }
+}
+
+// static
+std::string SandboxWin::GetSandboxTagForDelegate(
+    base::StringPiece prefix,
+    sandbox::mojom::Sandbox sandbox_type) {
+  // sandbox.mojom.Sandbox has an operator << we can use for non-human values.
+  std::ostringstream stream;
+  stream << prefix << "!" << sandbox_type;
+  return stream.str();
 }
 
 }  // namespace policy

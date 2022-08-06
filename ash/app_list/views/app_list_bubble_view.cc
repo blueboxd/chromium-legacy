@@ -246,13 +246,7 @@ void AppListBubbleView::InitContentsView(
 
   search_box_view_ = contents->AddChildView(std::make_unique<SearchBoxView>(
       /*delegate=*/this, view_delegate_, /*app_list_view=*/nullptr));
-  SearchBoxViewBase::InitParams params;
-  // Show the assistant button until the user types text.
-  params.show_close_button_when_active = false;
-  params.create_background = false;
-  params.animate_changing_search_icon = false;
-  params.increase_child_view_padding = true;
-  search_box_view_->Init(params);
+  search_box_view_->InitializeForBubbleLauncher();
 
   // Skip the assistant button on arrow up/down in app list.
   button_focus_skipper_ = std::make_unique<ButtonFocusSkipper>();
@@ -617,19 +611,14 @@ void AppListBubbleView::Layout() {
   }
 }
 
-void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
-  DCHECK_EQ(sender, search_box_view_);
+void AppListBubbleView::QueryChanged(const std::u16string& trimmed_query,
+                                     bool initiated_by_user) {
   if (current_page_ != AppListBubblePage::kNone) {
-    if (search_box_view_->HasValidQuery())
+    if (!trimmed_query.empty())
       ShowPage(AppListBubblePage::kSearch);
     else
       ShowPage(AppListBubblePage::kApps);
   }
-
-  // Ask the controller to start the search.
-  std::u16string query =
-      AppListModelProvider::Get()->search_model()->search_box()->text();
-  view_delegate_->StartSearch(query);
   SchedulePaint();
 }
 
@@ -717,6 +706,10 @@ void AppListBubbleView::ReparentFolderItemTransit(
 void AppListBubbleView::ReparentDragEnded() {
   DVLOG(1) << __FUNCTION__;
   // Nothing to do.
+}
+
+void AppListBubbleView::InitializeUIForBubbleView() {
+  assistant_page_->InitializeUIForBubbleView();
 }
 
 void AppListBubbleView::DisableFocusForShowingActiveFolder(bool disabled) {

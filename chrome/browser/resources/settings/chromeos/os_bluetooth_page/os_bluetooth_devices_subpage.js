@@ -7,7 +7,7 @@
  * Settings subpage for managing Bluetooth properties and devices.
  */
 
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './os_paired_bluetooth_list.js';
 import './settings_fast_pair_toggle.js';
 
@@ -38,8 +38,10 @@ import {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserP
  */
 const SettingsBluetoothDevicesSubpageElementBase = mixinBehaviors(
     [
-      I18nBehavior, RouteObserverBehavior, DeepLinkingBehavior,
-      WebUIListenerBehavior
+      I18nBehavior,
+      RouteObserverBehavior,
+      DeepLinkingBehavior,
+      WebUIListenerBehavior,
     ],
     PolymerElement);
 
@@ -113,7 +115,7 @@ class SettingsBluetoothDevicesSubpageElement extends
       savedDevicesSublabel_: {
         type: String,
         value() {
-          return loadTimeData.getString('sublableWithEmail');
+          return loadTimeData.getString('sublabelWithEmail');
         },
       },
 
@@ -123,7 +125,7 @@ class SettingsBluetoothDevicesSubpageElement extends
       unconnectedDevices_: {
         type: Array,
         value: [],
-      }
+      },
     };
   }
 
@@ -309,12 +311,18 @@ class SettingsBluetoothDevicesSubpageElement extends
   }
 
   /**
+   * Determines if we allow access to the Saved Devices page. Unlike the Fast
+   * Pair toggle, the device does not need to support Fast Pair because a device
+   * could be saved to the user's account from a different device but managed on
+   * this device. However Fast Pair must be enabled to confirm we have all Fast
+   * Pair (and Saved Device) related code working on the device.
    * @return {boolean}
    * @private
    */
   isFastPairSavedDevicesRowVisible_() {
-    return this.isFastPairSupportedByDevice_ &&
-        loadTimeData.getBoolean('enableSavedDevicesFlag');
+    return loadTimeData.getBoolean('enableFastPairFlag') &&
+        loadTimeData.getBoolean('enableSavedDevicesFlag') &&
+        !loadTimeData.getBoolean('isGuest');
   }
 
   /**

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/lens/lens_side_panel_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
@@ -16,31 +17,9 @@
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/webview/webview.h"
-
-namespace {
-
-GURL CreateURLForNewTab(const GURL& original_url) {
-  // We need to create a new URL with the specified |query_parameters| while
-  // also keeping the payloard parameter in the original URL.
-  if (original_url.is_empty())
-    return GURL();
-
-  std::string payload;
-  // Make sure the payload is present.
-  if (!net::GetValueForKeyInQuery(original_url, lens::kPayloadQueryParameter,
-                                  &payload))
-    return GURL();
-
-  GURL modified_url;
-  // Append or replace query parameters related to entry point.
-  modified_url = lens::AppendOrReplaceQueryParametersForLensRequest(
-      original_url, lens::EntryPoint::CHROME_OPEN_NEW_TAB_SIDE_PANEL,
-      /*use_side_panel=*/false);
-  return modified_url;
-}
-
-}  // namespace
+#include "ui/views/view.h"
 
 namespace lens {
 
@@ -57,13 +36,32 @@ LensSidePanelController::LensSidePanelController(
               base::BindRepeating(&LensSidePanelController::CloseButtonClicked,
                                   base::Unretained(this)),
               base::BindRepeating(&LensSidePanelController::LoadResultsInNewTab,
-                                  base::Unretained(this))))) {
+                                  base::Unretained(this))))),
+      side_panel_url_params_(nullptr) {
   side_panel_->SetVisible(false);
   Observe(side_panel_view_->GetWebContents());
   side_panel_view_->GetWebContents()->SetDelegate(this);
+
+  // Observe changes in the side_panel_view_ sizing.
+  side_panel_view_->AddObserver(this);
 }
 
-LensSidePanelController::~LensSidePanelController() = default;
+LensSidePanelController::~LensSidePanelController() {
+  side_panel_view_->RemoveObserver(this);
+
+  // check side_panel -> children() size for unit tests where all the children
+  // are removed when side panel is destroyed.
+  if (side_panel_view_ != nullptr && side_panel_->children().size() != 0) {
+    // Destroy the side panel view added in the constructor. side_panel_ has the
+    // browser_view life span but controller gets created and destroyed each
+    // time the side panel is opened and closed.
+    std::unique_ptr<lens::LensSidePanelView> side_panel_view_unique_ptr =
+        side_panel_->RemoveChildViewT(side_panel_view_);
+    if (side_panel_view_unique_ptr != nullptr) {
+      side_panel_view_unique_ptr.reset();
+    }
+  }
+}
 
 void LensSidePanelController::OpenWithURL(
     const content::OpenURLParams& params) {
@@ -76,8 +74,6 @@ void LensSidePanelController::OpenWithURL(
 
   browser_view_->MaybeClobberAllSideSearchSidePanels();
 
-  side_panel_view_->GetWebContents()->GetController().LoadURLWithParams(
-      content::NavigationController::LoadURLParams(params));
   if (side_panel_->GetVisible()) {
     // The user issued a follow-up Lens query.
     base::RecordAction(
@@ -86,6 +82,9 @@ void LensSidePanelController::OpenWithURL(
     side_panel_->SetVisible(true);
     base::RecordAction(base::UserMetricsAction("LensSidePanel.Show"));
   }
+
+  side_panel_url_params_ = std::make_unique<content::OpenURLParams>(params);
+  MaybeLoadURLWithParams();
 }
 
 bool LensSidePanelController::IsShowing() const {
@@ -111,7 +110,7 @@ void LensSidePanelController::LoadResultsInNewTab() {
     // Open the latest URL visible on the side panel. This accounts for when the
     // user uploads an image to Lens via drag and drop. This also allows any
     // region selection changes to transfer to the new tab.
-    GURL url = CreateURLForNewTab(
+    GURL url = lens::CreateURLForNewTab(
         side_panel_view_->GetWebContents()->GetLastCommittedURL());
     // If there is no payload parameter, we will have an empty URL. This means
     // we should return on empty and not close the side panel.
@@ -159,12 +158,36 @@ void LensSidePanelController::CloseButtonClicked() {
   Close();
 }
 
+void LensSidePanelController::MaybeLoadURLWithParams() {
+  // Ensure side panel has a width before loading URL. If side panel is still
+  // closed (width == 0), defer loading the URL to
+  // LensSidePanelController::OnViewBoundsChanged. The nullptr check ensures we
+  // don't rerender the same page on a unrelated resize event.
+  if (side_panel_view_->width() == 0 || !side_panel_url_params_)
+    return;
+  // Manually set web contents to the size of side panel view on initial load.
+  // This prevents a bug in Lens Web that renders the page as if it was 0px
+  // wide.
+  auto* web_contents = side_panel_view_->GetWebContents();
+  web_contents->Resize(side_panel_view_->bounds());
+  web_contents->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(*side_panel_url_params_));
+
+  side_panel_url_params_.reset();
+}
+
+void LensSidePanelController::OnViewBoundsChanged(views::View* observed_view) {
+  // If side panel is closed when we first try to render the URL, we must wait
+  // until side panel is opened. This method is called once side panel view goes
+  // from 0px wide to ~320px wide. Rendering the page after it fully opens
+  // prevents a race condition which causes the page to load before side panel
+  // is open causing the page to render as if it were 0px wide.
+  MaybeLoadURLWithParams();
+}
+
 void LensSidePanelController::LoadProgressChanged(double progress) {
-  if(progress == 1.0) {
-    side_panel_view_->SetContentVisible(true);
-  } else {
-    side_panel_view_->SetContentVisible(false);
-  }
+  bool is_content_visible = progress == 1.0;
+  side_panel_view_->SetContentVisible(is_content_visible);
 }
 
 }  // namespace lens

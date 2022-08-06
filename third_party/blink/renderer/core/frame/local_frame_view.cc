@@ -33,6 +33,7 @@
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/function_ref.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
@@ -47,8 +48,9 @@
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
-#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -132,7 +134,6 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
@@ -290,14 +291,14 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, gfx::Rect frame_rect)
       layout_shift_tracker_(MakeGarbageCollected<LayoutShiftTracker>(this)),
       paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this)),
       mobile_friendliness_checker_(
-          // Only run the mobile friendliness checker for the local main frame.
-          // The checker will iterate through all local frames in the current
-          // blink::Page. Also skip the mobile friendliness checks for
+          // Only run the mobile friendliness checker for the outermost main
+          // frame. The checker will iterate through all local frames in the
+          // current blink::Page. Also skip the mobile friendliness checks for
           // "non-ordinary" pages by checking IsLocalFrameClientImpl(), since
           // it's not useful to generate mobile friendliness metrics for
-          // devtools.
-          //
-          GetFrame().Client()->IsLocalFrameClientImpl()
+          // devtools, svg, etc.
+          GetFrame().Client()->IsLocalFrameClientImpl() &&
+                  GetFrame().IsOutermostMainFrame()
               ? MakeGarbageCollected<MobileFriendlinessChecker>(*this)
               : nullptr)
 #if DCHECK_IS_ON()
@@ -345,7 +346,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
 }
 
 void LocalFrameView::ForAllChildViewsAndPlugins(
-    absl::FunctionRef<void(EmbeddedContentView&)> function) {
+    base::FunctionRef<void(EmbeddedContentView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->View())
@@ -375,7 +376,7 @@ void LocalFrameView::ForAllChildViewsAndPlugins(
 }
 
 void LocalFrameView::ForAllChildLocalFrameViews(
-    absl::FunctionRef<void(LocalFrameView&)> function) {
+    base::FunctionRef<void(LocalFrameView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
@@ -389,7 +390,7 @@ void LocalFrameView::ForAllChildLocalFrameViews(
 // Note: if this logic is updated, `ForAllThrottledLocalFrameViews()` may
 // need to be updated as well.
 void LocalFrameView::ForAllNonThrottledLocalFrameViews(
-    absl::FunctionRef<void(LocalFrameView&)> function,
+    base::FunctionRef<void(LocalFrameView&)> function,
     TraversalOrder order) {
   if (ShouldThrottleRendering())
     return;
@@ -408,7 +409,7 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(
 // Note: if this logic is updated, `ForAllNonThrottledLocalFrameViews()` may
 // need to be updated as well.
 void LocalFrameView::ForAllThrottledLocalFrameViews(
-    absl::FunctionRef<void(LocalFrameView&)> function) {
+    base::FunctionRef<void(LocalFrameView&)> function) {
   if (ShouldThrottleRendering())
     function(*this);
 
@@ -418,7 +419,7 @@ void LocalFrameView::ForAllThrottledLocalFrameViews(
 }
 
 void LocalFrameView::ForAllRemoteFrameViews(
-    absl::FunctionRef<void(RemoteFrameView&)> function) {
+    base::FunctionRef<void(RemoteFrameView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->IsLocalFrame()) {
@@ -462,8 +463,14 @@ void LocalFrameView::Dispose() {
   // We need to clear the RootFrameViewport's animator since it gets called
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
   // this class.
-  if (viewport_scrollable_area_)
+  if (viewport_scrollable_area_) {
+    DCHECK(frame_->IsMainFrame());
+    DCHECK(frame_->GetPage());
+
     viewport_scrollable_area_->ClearScrollableArea();
+    viewport_scrollable_area_.Clear();
+    frame_->GetPage()->GlobalRootScrollerController().Reset();
+  }
 
   // If we have scheduled plugins to be updated, cancel it. They will still be
   // notified before they are destroyed.
@@ -578,40 +585,18 @@ ScrollingCoordinator* LocalFrameView::GetScrollingCoordinator() const {
   return p ? p->GetScrollingCoordinator() : nullptr;
 }
 
-ScrollingCoordinatorContext* LocalFrameView::GetScrollingContext() const {
-  LocalFrame* root = &GetFrame().LocalFrameRoot();
-  if (GetFrame() != root)
-    return root->View()->GetScrollingContext();
-
-  if (!scrolling_context_)
-    scrolling_context_ = std::make_unique<ScrollingCoordinatorContext>();
-  return scrolling_context_.get();
-}
-
 cc::AnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
-  if (GetScrollingContext()->GetCompositorAnimationHost())
-    return GetScrollingContext()->GetCompositorAnimationHost();
-
-  if (!GetFrame().LocalFrameRoot().IsMainFrame())
-    return frame_->GetWidgetForLocalRoot()->AnimationHost();
-
-  // TODO(kenrb): Compositor animation host and timeline for the main frame
-  // still live on ScrollingCoordinator. https://crbug.com/680606.
-  ScrollingCoordinator* c = GetScrollingCoordinator();
-  return c ? c->GetCompositorAnimationHost() : nullptr;
-}
-
-cc::AnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline() const {
-  if (GetScrollingContext()->GetCompositorAnimationTimeline())
-    return GetScrollingContext()->GetCompositorAnimationTimeline();
-
-  if (!GetFrame().LocalFrameRoot().IsMainFrame())
+  if (!GetChromeClient())
     return nullptr;
 
-  // TODO(kenrb): Compositor animation host and timeline for the main frame
-  // still live on ScrollingCoordinator. https://crbug.com/680606.
-  ScrollingCoordinator* c = GetScrollingCoordinator();
-  return c ? c->GetCompositorAnimationTimeline() : nullptr;
+  return GetChromeClient()->GetCompositorAnimationHost(*frame_);
+}
+
+cc::AnimationTimeline* LocalFrameView::GetScrollAnimationTimeline() const {
+  if (!GetChromeClient())
+    return nullptr;
+
+  return GetChromeClient()->GetScrollAnimationTimeline(*frame_);
 }
 
 void LocalFrameView::SetLayoutOverflowSize(const gfx::Size& size) {
@@ -871,6 +856,8 @@ void LocalFrameView::PerformLayout() {
               !document->GetDisplayLockDocumentState().HasForcedScopes());
       DeferredShapingViewportScope viewport_scope(*this, *GetLayoutView());
       GetLayoutView()->UpdateLayout();
+      if (mobile_friendliness_checker_)
+        mobile_friendliness_checker_->NotifyInitialScaleUpdated();
     }
   }
 
@@ -1862,7 +1849,7 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
 
   UpdateDocumentAnnotatedRegions();
 
-  GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
+  GetLayoutView()->Layer()->UpdateLayerPositionsAfterLayout();
   frame_->Selection().DidLayout();
 
   FontFaceSetDocument::DidLayout(*document);
@@ -1936,23 +1923,48 @@ void LocalFrameView::DidAttachDocument() {
   Page* page = frame_->GetPage();
   DCHECK(page);
 
-  DCHECK(frame_->GetDocument());
+  VisualViewport& visual_viewport = page->GetVisualViewport();
+
+  if (frame_->IsMainFrame() && visual_viewport.IsActiveViewport()) {
+    // If this frame is provisional it's not yet the Page's main frame. In that
+    // case avoid creating a root scroller as it has Page-global effects; it
+    // will be initialized when the frame becomes the Page's main frame.
+    if (!frame_->IsProvisional())
+      InitializeRootScroller();
+  }
 
   if (frame_->IsMainFrame()) {
-    ScrollableArea& visual_viewport = frame_->GetPage()->GetVisualViewport();
-    ScrollableArea* layout_viewport = LayoutViewport();
-    DCHECK(layout_viewport);
-
-    auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-        visual_viewport, *layout_viewport);
-    viewport_scrollable_area_ = root_frame_viewport;
-
-    page->GlobalRootScrollerController().InitializeViewportScrollCallback(
-        *root_frame_viewport, *frame_->GetDocument());
-
     // Allow for commits to be deferred because this is a new document.
     have_deferred_commits_ = false;
   }
+}
+
+void LocalFrameView::InitializeRootScroller() {
+  Page* page = frame_->GetPage();
+  DCHECK(page);
+
+  DCHECK_EQ(frame_, page->MainFrame());
+  DCHECK(frame_->GetDocument());
+  DCHECK(frame_->GetDocument()->IsActive());
+
+  VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
+  DCHECK(visual_viewport.IsActiveViewport());
+
+  ScrollableArea* layout_viewport = LayoutViewport();
+  DCHECK(layout_viewport);
+
+  // This method may be called multiple times during loading. If the root
+  // scroller is already initialized this call will be a no-op.
+  if (viewport_scrollable_area_)
+    return;
+
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      visual_viewport, *layout_viewport);
+  viewport_scrollable_area_ = root_frame_viewport;
+
+  DCHECK(frame_->GetDocument());
+  page->GlobalRootScrollerController().InitializeViewportScrollCallback(
+      *root_frame_viewport, *frame_->GetDocument());
 }
 
 Color LocalFrameView::DocumentBackgroundColor() {
@@ -2725,7 +2737,8 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
     if (paint_artifact_compositor_ &&
         benchmark_mode ==
             PaintBenchmarkMode::kForcePaintArtifactCompositorUpdate) {
-      paint_artifact_compositor_->SetNeedsUpdate();
+      paint_artifact_compositor_->SetNeedsUpdate(
+          PaintArtifactCompositorUpdateReason::kLocalFrameViewBenchmarking);
     }
     needed_update = !paint_artifact_compositor_ ||
                     paint_artifact_compositor_->NeedsUpdate();
@@ -2758,6 +2771,11 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
         total_animations_count +=
             document.GetDocumentAnimations().GetAnimationsCount();
       });
+
+  // If this is a throttled local root, then we shouldn't run animation steps
+  // below, because the cc animation data structures might not even exist.
+  if (frame_->IsLocalRoot() && ShouldThrottleRendering())
+    return;
 
   if (auto* animation_host = GetCompositorAnimationHost()) {
     animation_host->SetAnimationCounts(total_animations_count);
@@ -2853,6 +2871,10 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
                            LocalFrameUkmAggregator::kPaint);
 
   DCHECK(GetFrame().IsLocalRoot());
+
+  absl::optional<MobileFriendlinessChecker::PaintScope> mf_scope;
+  if (mobile_friendliness_checker_)
+    mf_scope.emplace(*mobile_friendliness_checker_);
 
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
@@ -3105,7 +3127,6 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   if (ShouldThrottleRendering() || !frame_->GetDocument()->IsActive())
     return;
 
-  ScopedFrameBlamer frame_blamer(frame_);
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::updateStyleAndLayoutIfNeededRecursive");
 
@@ -3799,9 +3820,11 @@ void LocalFrameView::SetLayoutSizeInternal(const gfx::Size& size) {
 
 void LocalFrameView::DidChangeScrollOffset() {
   GetFrame().Client()->DidChangeScrollOffset();
-  if (GetFrame().IsMainFrame()) {
-    GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged(
-        GetFrame());
+  if (GetFrame().IsOutermostMainFrame()) {
+    GetFrame()
+        .GetPage()
+        ->GetChromeClient()
+        .OutermostMainFrameScrollOffsetChanged();
   }
 }
 
@@ -4029,6 +4052,8 @@ void LocalFrameView::PaintOutsideOfLifecycle(GraphicsContext& context,
   {
     OverriddenCullRectScope force_cull_rect(*GetLayoutView()->Layer(),
                                             cull_rect);
+    PaintControllerCycleScope cycle_scope(context.GetPaintController(),
+                                          PaintDebugInfoEnabled());
     PaintFrame(context, paint_flags);
   }
 
@@ -4051,7 +4076,8 @@ void LocalFrameView::PaintForTest(const CullRect& cull_rect) {
   OverriddenCullRectScope force_cull_rect(*GetLayoutView()->Layer(), cull_rect);
   PaintController& paint_controller = EnsurePaintController();
   if (GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint()) {
-    PaintControllerCycleScope cycle_scope(paint_controller);
+    PaintControllerCycleScope cycle_scope(paint_controller,
+                                          PaintDebugInfoEnabled());
     GraphicsContext graphics_context(paint_controller);
     PaintFrame(graphics_context);
     paint_controller.CommitNewDisplayItems();
@@ -4409,10 +4435,11 @@ bool LocalFrameView::VisualViewportOrOverlayNeedsRepaintForTesting() const {
   return visual_viewport_or_overlay_needs_repaint_;
 }
 
-void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() {
+void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate(
+    PaintArtifactCompositorUpdateReason reason) {
   LocalFrameView* root = GetFrame().LocalFrameRoot().View();
   if (root && root->paint_artifact_compositor_)
-    root->paint_artifact_compositor_->SetNeedsUpdate();
+    root->paint_artifact_compositor_->SetNeedsUpdate(reason);
 }
 
 PaintArtifactCompositor* LocalFrameView::GetPaintArtifactCompositor() const {
@@ -4519,11 +4546,6 @@ void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
 }
 
 void LocalFrameView::BeginLifecycleUpdates() {
-  // Avoid pumping frames for the initially empty document.
-  // TODO(schenney): This seems pointless because main frame updates do occur
-  // for pages like about:blank, at least according to log messages.
-  if (GetFrame().GetDocument()->IsInitialEmptyDocument())
-    return;
   lifecycle_updates_throttled_ = false;
 
   LayoutView* layout_view = GetLayoutView();
@@ -4536,6 +4558,10 @@ void LocalFrameView::BeginLifecycleUpdates() {
 
   ScheduleAnimation();
   SetIntersectionObservationState(kRequired);
+
+  // Do not report paint timing for the initially empty document.
+  if (GetFrame().GetDocument()->IsInitialEmptyDocument())
+    MarkIneligibleToPaint();
 
   // Non-main-frame lifecycle and commit deferral are controlled by their
   // main frame.
@@ -4667,18 +4693,18 @@ void LocalFrameView::DidChangeMobileFriendliness(
 }
 
 LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
-  if (!frame_->IsLocalRoot() &&
-      base::FeatureList::IsEnabled(
-          features::kLocalFrameRootPrePostFCPMetrics)) {
-    DCHECK(!ukm_aggregator_);
-    return frame_->LocalFrameRoot().View()->EnsureUkmAggregator();
+  DCHECK(frame_->IsLocalRoot() || !ukm_aggregator_);
+  LocalFrameView* local_root = frame_->LocalFrameRoot().View();
+  if (!local_root->ukm_aggregator_) {
+    local_root->ukm_aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
+        local_root->frame_->GetDocument()->UkmSourceID(),
+        local_root->frame_->GetDocument()->UkmRecorder());
   }
-  if (!ukm_aggregator_) {
-    ukm_aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
-        frame_->GetDocument()->UkmSourceID(),
-        frame_->GetDocument()->UkmRecorder());
-  }
-  return *ukm_aggregator_;
+  return *local_root->ukm_aggregator_;
+}
+
+void LocalFrameView::ResetUkmAggregatorForTesting() {
+  ukm_aggregator_.reset();
 }
 
 void LocalFrameView::OnFirstContentfulPaint() {
@@ -4690,12 +4716,8 @@ void LocalFrameView::OnFirstContentfulPaint() {
       FontPerformance::MarkFirstContentfulPaint();
   }
 
-  if (base::FeatureList::IsEnabled(features::kLocalFrameRootPrePostFCPMetrics)
-          ? frame_->IsLocalRoot()
-          : frame_->IsMainFrame()) {
-    // See crbug.com/1330675.
+  if (frame_->IsLocalRoot())
     EnsureUkmAggregator().DidReachFirstContentfulPaint();
-  }
 }
 
 void LocalFrameView::RegisterForLifecycleNotifications(
@@ -4762,7 +4784,9 @@ bool LocalFrameView::UpdateLayerDebugInfoEnabled() {
       CoreProbeSink::HasAgentsGlobal(CoreProbeSink::kInspectorLayerTreeAgent);
   if (should_enable != layer_debug_info_enabled_) {
     layer_debug_info_enabled_ = should_enable;
-    SetPaintArtifactCompositorNeedsUpdate();
+    SetPaintArtifactCompositorNeedsUpdate(
+        PaintArtifactCompositorUpdateReason::
+            kLocalFrameViewUpdateLayerDebugInfo);
     return true;
   }
 #endif

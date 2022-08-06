@@ -25,8 +25,8 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "device/bluetooth//bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -304,7 +304,7 @@ void FastPairDiscoverableScannerImpl::OnUtilityProcessStopped(
 }
 
 void FastPairDiscoverableScannerImpl::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
+    const NetworkState* network) {
   // Only retry when we have an active connected network.
   if (!network || !network->IsConnectedState()) {
     return;

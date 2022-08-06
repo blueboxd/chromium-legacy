@@ -31,6 +31,7 @@ POLICY_EXPORT extern const char kAuthHeader[];
 POLICY_EXPORT extern const char kServiceTokenAuthHeaderPrefix[];
 POLICY_EXPORT extern const char kDMTokenAuthHeaderPrefix[];
 POLICY_EXPORT extern const char kEnrollmentTokenAuthHeaderPrefix[];
+POLICY_EXPORT extern const char kOAuthTokenHeaderPrefix[];
 
 // String extern constants for the device and app type we report to the server.
 POLICY_EXPORT extern const char kValueAppType[];
@@ -192,6 +193,10 @@ enum class MarketSegment {
 // Sender ID of FCM (Firebase Cloud Messaging)
 // Policy Invalidation sender coming from the Firebase console.
 extern const char kPolicyFCMInvalidationSenderID[];
+
+// Kiosk SKU name. This is the constant of the enrollment license type that
+// exists on the server side.
+inline static const char kKioskSkuName[] = "GOOGLE.CHROME_KIOSK_ANNUAL";
 
 }  // namespace policy
 

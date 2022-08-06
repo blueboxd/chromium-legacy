@@ -38,11 +38,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
@@ -63,8 +65,6 @@ constexpr size_t kCustomizeByExtensionIndex = 2;
 // Site access combobox visibility in site access menu item.
 constexpr bool kDontShowCombobox = false;
 constexpr bool kShowCombobox = true;
-
-ExtensionsTabbedMenuView* g_extensions_dialog = nullptr;
 
 // Adds a new tab in `tabbed_pane` at `index` with the given `contents` and
 // `footer`.
@@ -158,16 +158,17 @@ ToolbarActionViewController* GetMenuItemViewController(views::View* view) {
 
 // Returns the current index or insert position of `extension_name` in
 // `parent_view`, based on alphabetical order.
-int FindIndex(views::View* parent_view, const std::u16string extension_name) {
+size_t FindIndex(views::View* parent_view,
+                 const std::u16string extension_name) {
   const auto& children = parent_view->children();
-  return std::find_if(
-             children.begin(), children.end(),
-             [extension_name](views::View* v) {
-               return base::i18n::ToLower(extension_name) <=
-                      base::i18n::ToLower(
-                          GetMenuItemViewController(v)->GetActionName());
-             }) -
-         children.begin();
+  return static_cast<size_t>(
+      std::find_if(children.begin(), children.end(),
+                   [extension_name](views::View* v) {
+                     return base::i18n::ToLower(extension_name) <=
+                            base::i18n::ToLower(
+                                GetMenuItemViewController(v)->GetActionName());
+                   }) -
+      children.begin());
 }
 
 // Returns the current site pointed by `web_contents`. This method should only
@@ -239,7 +240,15 @@ ExtensionsTabbedMenuView::ExtensionsTabbedMenuView(
   // appropriately.
   SetPaintClientToLayer(true);
 
-  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
+  // ExtensionsTabbedMenuView::GetAccessibleWindowTitle always returns an empty
+  // string. This was done because the title is already spoken via the call to
+  // SetTitle(). Should that change, kAttributeExplicitlyEmpty will not be
+  // appropriate.
+  ax::mojom::NameFrom name_from =
+      GetAccessibleWindowTitle().empty()
+          ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
+          : ax::mojom::NameFrom::kAttribute;
+  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle(), name_from);
 
   toolbar_model_observation_.Observe(toolbar_model_.get());
   browser_->tab_strip_model()->AddObserver(this);
@@ -254,59 +263,15 @@ ExtensionsTabbedMenuView::ExtensionsTabbedMenuView(
 }
 
 ExtensionsTabbedMenuView::~ExtensionsTabbedMenuView() {
-  g_extensions_dialog = nullptr;
-
   // Note: No need to call TabStripModel::RemoveObserver(), because it's handled
   // directly within TabStripModelObserver::~TabStripModelObserver().
-}
-
-// static
-views::Widget* ExtensionsTabbedMenuView::ShowBubble(
-    views::View* anchor_view,
-    Browser* browser,
-    ExtensionsContainer* extensions_container_,
-    ExtensionsToolbarButton::ButtonType button_type,
-    bool allow_pining) {
-  DCHECK(!g_extensions_dialog);
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kExtensionsMenuAccessControl));
-  g_extensions_dialog = new ExtensionsTabbedMenuView(
-      anchor_view, browser, extensions_container_, button_type, allow_pining);
-  views::Widget* widget =
-      views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog);
-  widget->Show();
-  return widget;
-}
-
-// static
-bool ExtensionsTabbedMenuView::IsShowing() {
-  return g_extensions_dialog != nullptr;
-}
-
-// static
-void ExtensionsTabbedMenuView::Hide() {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kExtensionsMenuAccessControl));
-  if (IsShowing()) {
-    g_extensions_dialog->GetWidget()->Close();
-    // Set the dialog to nullptr since `GetWidget->Close()` is not synchronous.
-    g_extensions_dialog = nullptr;
-  }
-}
-
-// static
-ExtensionsTabbedMenuView*
-ExtensionsTabbedMenuView::GetExtensionsTabbedMenuViewForTesting() {
-  return g_extensions_dialog;
 }
 
 std::vector<InstalledExtensionMenuItemView*>
 ExtensionsTabbedMenuView::GetInstalledItemsForTesting() const {
   std::vector<InstalledExtensionMenuItemView*> menu_item_views;
-  if (IsShowing()) {
-    for (views::View* view : installed_items_->children())
-      menu_item_views.push_back(GetAsInstalledExtensionMenuItem(view));
-  }
+  for (views::View* view : installed_items_->children())
+    menu_item_views.push_back(GetAsInstalledExtensionMenuItem(view));
   return menu_item_views;
 }
 
@@ -366,6 +331,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionAdded(
 
   MaybeCreateAndInsertSiteAccessItem(action_id);
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -385,6 +351,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionRemoved(
               GetSiteAccessMenuItem(has_access_.items, action_id));
 
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -395,6 +362,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionUpdated(
   UpdateSiteAccessMenuItems({action_id});
 
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -404,6 +372,7 @@ void ExtensionsTabbedMenuView::OnToolbarModelInitialized() {
   DCHECK(requests_access_.items->children().empty());
   DCHECK(has_access_.items->children().empty());
   Populate();
+  SizeToContents();
 }
 
 void ExtensionsTabbedMenuView::OnToolbarPinnedActionsChanged() {
@@ -445,7 +414,7 @@ void ExtensionsTabbedMenuView::Populate() {
   ConsistencyCheck();
 }
 
-void ExtensionsTabbedMenuView::UserPermissionsSettingsChanged(
+void ExtensionsTabbedMenuView::OnUserPermissionsSettingsChanged(
     const extensions::PermissionsManager::UserPermissionsSettings& settings) {
   UpdateSiteAccessMenuItems(toolbar_model_->action_ids());
   UpdateSiteAccessTab();
@@ -459,6 +428,7 @@ void ExtensionsTabbedMenuView::Update() {
   UpdateSiteAccessMenuItems(action_ids);
 
   UpdateSiteAccessTab();
+  SizeToContents();
 
   ConsistencyCheck();
 }
@@ -469,10 +439,11 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
     return;
 
   auto current_site = GetCurrentSite(web_contents);
-  const int horizontal_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
-  const int vertical_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_CONTROL_LIST_VERTICAL);
+  ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
+  const int button_margin =
+      provider->GetDistanceMetric(DISTANCE_EXTENSIONS_MENU_BUTTON_MARGIN);
+  const int icon_spacing =
+      provider->GetDistanceMetric(DISTANCE_EXTENSIONS_MENU_ICON_SPACING);
 
   auto create_section_builder =
       [=](ExtensionsTabbedMenuView::SiteAccessSection* section) {
@@ -491,9 +462,8 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
                         .SetTextContext(
                             ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL)
                         .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                        .SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
-                            vertical_spacing, horizontal_spacing,
-                            vertical_spacing, horizontal_spacing))),
+                        .SetBorder(views::CreateEmptyBorder(
+                            gfx::Insets(button_margin))),
                     // Empty section for the menu items. Items
                     // will be populated later.
                     views::Builder<views::BoxLayoutView>()
@@ -517,22 +487,25 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
               views::Builder<views::Label>()
                   .CopyAddressTo(&site_access_message_)
                   .SetVisible(false)
-                  .SetBorder(views::CreateEmptyBorder(
-                      gfx::Insets::TLBR(vertical_spacing, horizontal_spacing,
-                                        vertical_spacing, horizontal_spacing)))
+                  .SetBorder(
+                      views::CreateEmptyBorder(gfx::Insets(button_margin)))
                   .SetTextContext(
                       ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL))
 
           .Build();
 
   const auto create_radio_button_builder =
-      [this, current_site](UserSiteSetting site_settings, int label_id) {
+      [this, current_site, button_margin, icon_spacing](
+          UserSiteSetting site_settings, int label_id) {
         auto label = ((site_settings == UserSiteSetting::kGrantAllExtensions) ||
                       (site_settings == UserSiteSetting::kBlockAllExtensions))
                          ? l10n_util::GetStringFUTF16(label_id, current_site)
                          : l10n_util::GetStringUTF16(label_id);
         return views::Builder<views::RadioButton>(
                    std::make_unique<views::RadioButton>(label, kGroupId))
+            // Space between image and label includes icon spacing to align with
+            // other buttons in the menu.
+            .SetImageLabelSpacing(button_margin + icon_spacing)
             .SetCallback(base::BindRepeating(
                 &ExtensionsTabbedMenuView::OnSiteSettingSelected,
                 base::Unretained(this), site_settings));
@@ -542,6 +515,9 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
       views::Builder<views::BoxLayoutView>()
           .SetOrientation(views::BoxLayout::Orientation::kVertical)
           .AddChildren(
+              // TODO(emiliapaz): Don't show separator when
+              // site_settings_button_ is hidden.
+              views::Builder<views::Separator>(),
               // The following bind is safe because the button will be owned by
               // the parent views and therefore callback can only happen if the
               // button exists and can be clicked.
@@ -550,11 +526,21 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
                       SiteSettingsExpandButton>(base::BindRepeating(
                       &ExtensionsTabbedMenuView::OnSiteSettingsButtonPressed,
                       base::Unretained(this))))
-                  .CopyAddressTo(&site_settings_button_),
+                  .CopyAddressTo(&site_settings_button_)
+                  // Right margin includes icon spacing to align with other
+                  // buttons in the menu.
+                  .SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+                      button_margin, button_margin + icon_spacing,
+                      button_margin, button_margin))),
               views::Builder<views::BoxLayoutView>()
                   .CopyAddressTo(&site_settings_)
                   .SetOrientation(views::BoxLayout::Orientation::kVertical)
                   .SetVisible(show_site_settings_)
+                  // Right margin includes icon spacing to align with other
+                  // buttons in the menu.
+                  .SetBorder(views::CreateEmptyBorder(
+                      gfx::Insets::TLBR(0, button_margin + icon_spacing,
+                                        button_margin, button_margin)))
                   .AddChildAt(
                       create_radio_button_builder(
                           UserSiteSetting::kGrantAllExtensions,
@@ -588,7 +574,8 @@ void ExtensionsTabbedMenuView::CreateExtensionsTab() {
   auto open_icon =
       std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
           vector_icons::kOpenInNewIcon, ui::kColorIcon,
-          webstore_icon->GetImageModel().Size().width()));
+          ChromeLayoutProvider::Get()->GetDistanceMetric(
+              DISTANCE_EXTENSIONS_MENU_BUTTON_ICON_SIZE)));
 
   auto installed_tab_footer =
       views::Builder<HoverButton>(
@@ -607,7 +594,7 @@ void ExtensionsTabbedMenuView::CreateExtensionsTab() {
 
 void ExtensionsTabbedMenuView::CreateAndInsertInstalledExtension(
     const ToolbarActionsModel::ActionId& id,
-    int index) {
+    size_t index) {
   std::unique_ptr<ExtensionActionViewController> controller =
       ExtensionActionViewController::Create(id, browser_,
                                             extensions_container_);
@@ -639,7 +626,7 @@ void ExtensionsTabbedMenuView::InsertSiteAccessItem(
     SiteAccessSection* section) {
   DCHECK(section);
 
-  int index =
+  size_t index =
       FindIndex(section->items, item->view_controller()->GetActionName());
   section->items->AddChildViewAt(std::move(item), index);
 }
@@ -693,7 +680,7 @@ void ExtensionsTabbedMenuView::UpdateSiteAccessMenuItems(
     // Reorder item when it is in the same section.
     if (new_section == section) {
       item->Update();
-      int new_index =
+      size_t new_index =
           FindIndex(section->items, item->view_controller()->GetActionName());
       section->items->ReorderChildView(item, new_index);
       return;
@@ -764,12 +751,6 @@ void ExtensionsTabbedMenuView::UpdateSiteAccessTab() {
         break;
     }
   }
-
-  // Site access tab updates can happen during the menu construction, and
-  // afterwards. The dialog bubble is created after constructing the menu,
-  // therefore we can only resize the contents when the dialog exists.
-  if (g_extensions_dialog)
-    SizeToContents();
 }
 
 void ExtensionsTabbedMenuView::UpdateSiteAccessSectionsVisibility(
@@ -849,7 +830,7 @@ std::vector<SiteAccessMenuItemView*>
 ExtensionsTabbedMenuView::GetVisibleMenuItemsOf(
     ExtensionsTabbedMenuView::SiteAccessSection section) const {
   std::vector<SiteAccessMenuItemView*> menu_items;
-  if (IsShowing() && section.container->GetVisible()) {
+  if (section.container->GetVisible()) {
     for (views::View* item : section.items->children())
       menu_items.push_back(GetAsSiteAccessMenuItem(item));
   }
@@ -871,23 +852,13 @@ void ExtensionsTabbedMenuView::OnSiteSettingsButtonPressed() {
 }
 
 void ExtensionsTabbedMenuView::OnSiteSettingSelected(
-    extensions::PermissionsManager::UserSiteSetting site_settings) {
-  auto current_origin =
-      GetActiveWebContents()->GetPrimaryMainFrame()->GetLastCommittedOrigin();
-  auto* permissions_manager =
-      extensions::PermissionsManager::Get(browser_->profile());
-  switch (site_settings) {
-    case UserSiteSetting::kGrantAllExtensions:
-      permissions_manager->AddUserPermittedSite(current_origin);
-      break;
-    case UserSiteSetting::kBlockAllExtensions:
-      permissions_manager->AddUserRestrictedSite(current_origin);
-      break;
-    case UserSiteSetting::kCustomizeByExtension:
-      permissions_manager->RemoveUserPermittedSite(current_origin);
-      permissions_manager->RemoveUserRestrictedSite(current_origin);
-      break;
-  }
+    extensions::PermissionsManager::UserSiteSetting site_setting) {
+  content::WebContents* web_contents = GetActiveWebContents();
+  DCHECK(web_contents);
+
+  extensions::SitePermissionsHelper(browser_->profile())
+      .UpdateUserSiteSettings(toolbar_model_->action_ids(), web_contents,
+                              site_setting);
 }
 
 void ExtensionsTabbedMenuView::ConsistencyCheck() {

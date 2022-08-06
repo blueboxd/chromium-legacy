@@ -12,9 +12,6 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1184931
   "health.ProbeBatteryMetrics",
 
-  # b/196705842
-  "apps.LaunchGalleryLanguage",
-
   # crbug.com/1242415
   "hwsec.AttestationEnrollOnly",
   "hwsec.ChapsAttributePolicy",
@@ -77,9 +74,6 @@ tast_disabled_tests_from_chrome_all = [
   "security.NetworkListenersARC",
   "security.SELinuxProcessesARC",
 
-  # https://crbug.com/1282369
-  "apps.LaunchHelpAppOffline",
-
   # https://crbug.com/1282370
   "arc.Boot.vm_with_per_vcpu_core_scheduling",
 
@@ -102,10 +96,6 @@ tast_disabled_tests_from_chrome_all = [
   "policy.JavaScriptAllowedForUrls",
   "policy.JavaScriptBlockedForUrls",
   "policy.ImagesForURLCheck.default",
-
-  # https://crbug.com/1302469 (http://b/222407003)
-  "inputs.PhysicalKeyboardKoreanTyping",
-  "inputs.PhysicalKeyboardAutocorrect.en_us_2",
 
   # https://crbug.com/1300941
   "ui.WebUIJSErrors",
@@ -144,10 +134,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1309289
   "policy.AllowDeletingBrowserHistory",
 
-  # https://crbug.com/1307750
-  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
-  "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
-
   # https://crbug.com/1309052
   "policy.ShowHomeButton",
   "policy.ShowLogoutButtonInTray",
@@ -160,8 +146,6 @@ tast_disabled_tests_from_chrome_all = [
   "arc.StartStop.vm",
 
   # https://crbug.com/1309492
-  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
-  "inputs.VirtualKeyboardChangeInput.a11y",
   "arc.DragDrop.chrome_to_android",
 
   # https://crbug.com/1311081
@@ -177,27 +161,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1312908
   "policy.DefaultNotificationsSetting",
 
-  # https://crbug.com/1314935
-  "dlp.DataLeakPreventionRulesListClipboardShelf",
-
-  # https://crbug.com/1322973
-  "dlp.DataLeakPreventionRulesListClipboardShelf.ash",
-
-  # https://crbug.com/1314923
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
-
-  # https://crbug.com/1315123
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
-
   # https://crbug.com/1318989
   "assistant.StartupInSignedOutMode",
   "login.ChangePassword",
-
-  # https://crbug.com/1322572
-  "policy.NotificationsAllowedForUrls",
-  "policy.NotificationsBlockedForUrls",
-  "policy.PolicyRefreshRate",
-  "policy.PopupsForURLCheck.allowlist",
 
   # https://crbug.com/1326279
   "policy.AccessibilityPolicies.focus_highlight",
@@ -208,17 +174,11 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1326403
   "policy.AccessibilityPolicies.large_cursor",
 
-  # https://crbug.com/1327171
-  "policy.PopupsForURLCheck.default",
-
   # https://crbug.com/1327345
   "policy.ChromePolicyPageStatusTimestamps.ash",
 
   # https://crbug.com/1327361
   "policy.FullscreenAllowed",
-
-  # https://crbug.com/1328128
-  "policy.PopupsForURLCheck.blocklist",
 
   # https://crbug.com/1329734
   "health.DiagnosticsList",
@@ -226,14 +186,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1329761
   "policy.DefaultSerialGuardSetting",
-
-  # https://crbug.com/1335176
-  "policy.ScreenBrightnessPercent",
-
-  # b/233264555
-  "inputs.PhysicalKeyboardEmojiSuggestion",
-  "inputs.PhysicalKeyboardEmojiSuggestion.guest",
-  "inputs.PhysicalKeyboardEmojiSuggestion.incognito",
 
   # http://b/229032436
   "health.DiagnosticsRun.captive_portal",
@@ -268,11 +220,11 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.RestartApp.stable",
   "crostini.RestartApp.clamshell_stable",
 
+  # http://b/238600197
+  "crostini.FilesAppWatch.buster_stable",
+
   # http://crbug.com/1335213
   "arc.WindowState.clamshell",
-
-  # http://crbug.com/1338201
-  "ui.ChromeCrashLoggedIn.gpu_process_breakpad",
 
   # http://crbug.com/1309278
   "policy.ChromeOsLockOnIdleSuspend",
@@ -285,6 +237,28 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1341076
   "launcher.BubbleLaunchApp.disable_launcher_app_sort",
+
+  # https://crbug.com/1236234
+  "lacros.AudioPlay",
+
+  # https://crbug.com/1346149
+  "apps.Sharesheet",
+
+  # http://crbug.com/1350529
+  "crostini.RemoveCancel.bullseye_stable",
+  "crostini.RemoveCancel.buster_stable",
+  "crostini.RemoveOk.bullseye_stable",
+  "crostini.RemoveOk.buster_stable",
+
+  # b/241122961
+  "policy.BlockThirdPartyCookies",
+
+  # https://crbug.com/1350180
+  # also see http://crbug.com/1350191
+  "printer.Print",
+
+  # https://crbug.com/1350191
+  "arc.Print",
 ]
 
 # To create filters to be used on specific builders add them like this:
@@ -293,6 +267,8 @@ tast_disabled_tests_from_chrome_all = [
 # test config as 'tast_expr_key'
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
+# The test disabled here will not impact it running in chrome on chromeOS
+# pipeline.
 tast_disabled_tests_from_lacros_all = [
   # https://crbug.com/1329764
   "policy.HistoryClustersVisible",

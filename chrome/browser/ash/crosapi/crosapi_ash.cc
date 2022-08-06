@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "ash/display/cros_display_config.h"
+#include "ash/public/ash_interfaces.h"
 #include "base/dcheck_is_on.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -37,6 +39,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_dependency_registry.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
 #include "chrome/browser/ash/crosapi/device_attributes_ash.h"
+#include "chrome/browser/ash/crosapi/device_oauth2_token_service_ash.h"
 #include "chrome/browser/ash/crosapi/device_settings_ash.h"
 #include "chrome/browser/ash/crosapi/dlp_ash.h"
 #include "chrome/browser/ash/crosapi/document_scan_ash.h"
@@ -54,6 +57,7 @@
 #include "chrome/browser/ash/crosapi/identity_manager_ash.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/image_writer_ash.h"
+#include "chrome/browser/ash/crosapi/in_session_auth_ash.h"
 #include "chrome/browser/ash/crosapi/keystore_service_ash.h"
 #include "chrome/browser/ash/crosapi/kiosk_session_service_ash.h"
 #include "chrome/browser/ash/crosapi/local_printer_ash.h"
@@ -63,6 +67,7 @@
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
+#include "chrome/browser/ash/crosapi/network_change_ash.h"
 #include "chrome/browser/ash/crosapi/network_settings_service_ash.h"
 #include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/networking_private_ash.h"
@@ -82,6 +87,8 @@
 #include "chrome/browser/ash/crosapi/time_zone_service_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/ash/crosapi/video_capture_device_factory_ash.h"
+#include "chrome/browser/ash/crosapi/virtual_keyboard_ash.h"
+#include "chrome/browser/ash/crosapi/volume_manager_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_extension_observer_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_service_ash.h"
 #include "chrome/browser/ash/crosapi/wallpaper_ash.h"
@@ -129,6 +136,8 @@
 
 #if defined(USE_CUPS)
 #include "chrome/browser/ash/crosapi/printing_metrics_ash.h"
+#else
+#include "chrome/browser/ash/crosapi/fake_printing_metrics_ash.h"
 #endif  // defined(USE_CUPS)
 
 namespace crosapi {
@@ -170,6 +179,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       content_protection_ash_(std::make_unique<ContentProtectionAsh>()),
       desk_template_ash_(std::make_unique<DeskTemplateAsh>()),
       device_attributes_ash_(std::make_unique<DeviceAttributesAsh>()),
+      device_oauth2_token_service_ash_(
+          std::make_unique<DeviceOAuth2TokenServiceAsh>()),
       device_settings_ash_(std::make_unique<DeviceSettingsAsh>()),
       digital_goods_factory_ash_(
           std::make_unique<apps::DigitalGoodsFactoryAsh>()),
@@ -192,6 +203,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       identity_manager_ash_(std::make_unique<IdentityManagerAsh>()),
       idle_service_ash_(std::make_unique<IdleServiceAsh>()),
       image_writer_ash_(std::make_unique<ImageWriterAsh>()),
+      in_session_auth_ash_(std::make_unique<InSessionAuthAsh>()),
       keystore_service_ash_(std::make_unique<KeystoreServiceAsh>()),
       kiosk_session_service_ash_(std::make_unique<KioskSessionServiceAsh>()),
       chrome_app_kiosk_service_ash_(
@@ -204,6 +216,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       metrics_reporting_ash_(registry->CreateMetricsReportingAsh(
           g_browser_process->metrics_service())),
       native_theme_service_ash_(std::make_unique<NativeThemeServiceAsh>()),
+      network_change_ash_(std::make_unique<NetworkChangeAsh>()),
       networking_attributes_ash_(std::make_unique<NetworkingAttributesAsh>()),
       networking_private_ash_(std::make_unique<NetworkingPrivateAsh>()),
       network_settings_service_ash_(std::make_unique<NetworkSettingsServiceAsh>(
@@ -232,6 +245,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       url_handler_ash_(std::make_unique<UrlHandlerAsh>()),
       video_capture_device_factory_ash_(
           std::make_unique<VideoCaptureDeviceFactoryAsh>()),
+      virtual_keyboard_ash_(std::make_unique<VirtualKeyboardAsh>()),
+      volume_manager_ash_(std::make_unique<VolumeManagerAsh>()),
       vpn_extension_observer_ash_(std::make_unique<VpnExtensionObserverAsh>()),
       vpn_service_ash_(std::make_unique<VpnServiceAsh>()),
       wallpaper_ash_(std::make_unique<WallpaperAsh>()),
@@ -407,6 +422,11 @@ void CrosapiAsh::BindImageWriter(
   image_writer_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindInSessionAuth(
+    mojo::PendingReceiver<mojom::InSessionAuth> receiver) {
+  in_session_auth_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindKeystoreService(
     mojo::PendingReceiver<crosapi::mojom::KeystoreService> receiver) {
   keystore_service_ash_->BindReceiver(std::move(receiver));
@@ -445,6 +465,11 @@ void CrosapiAsh::BindMetricsReporting(
 void CrosapiAsh::BindNativeThemeService(
     mojo::PendingReceiver<crosapi::mojom::NativeThemeService> receiver) {
   native_theme_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindNetworkChange(
+    mojo::PendingReceiver<crosapi::mojom::NetworkChange> receiver) {
+  network_change_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindSelectFile(
@@ -584,6 +609,11 @@ void CrosapiAsh::BindContentProtection(
   content_protection_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindCrosDisplayConfigController(
+    mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver) {
+  ash::BindCrosDisplayConfigController(std::move(receiver));
+}
+
 void CrosapiAsh::BindDeskTemplate(
     mojo::PendingReceiver<mojom::DeskTemplate> receiver) {
   desk_template_ash_->BindReceiver(std::move(receiver));
@@ -592,6 +622,11 @@ void CrosapiAsh::BindDeskTemplate(
 void CrosapiAsh::BindDeviceAttributes(
     mojo::PendingReceiver<mojom::DeviceAttributes> receiver) {
   device_attributes_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindDeviceOAuth2TokenService(
+    mojo::PendingReceiver<mojom::DeviceOAuth2TokenService> receiver) {
+  device_oauth2_token_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindDeviceSettingsService(
@@ -703,6 +738,16 @@ void CrosapiAsh::BindMachineLearningService(
 void CrosapiAsh::BindVideoCaptureDeviceFactory(
     mojo::PendingReceiver<mojom::VideoCaptureDeviceFactory> receiver) {
   video_capture_device_factory_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindVirtualKeyboard(
+    mojo::PendingReceiver<mojom::VirtualKeyboard> receiver) {
+  virtual_keyboard_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindVolumeManager(
+    mojo::PendingReceiver<crosapi::mojom::VolumeManager> receiver) {
+  volume_manager_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindVpnExtensionObserver(

@@ -23,7 +23,7 @@ import '../../controls/settings_toggle_button.js';
 import './setup_pin_dialog.js';
 import './pin_autosubmit_dialog.js';
 import '../../prefs/prefs.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 import '../multidevice_page/multidevice_smartlock_item.js';
 
@@ -56,8 +56,11 @@ import {LockScreenUnlockType, LockStateBehavior, LockStateBehaviorInterface} fro
  */
 const SettingsLockScreenElementBase = mixinBehaviors(
     [
-      DeepLinkingBehavior, I18nBehavior, LockStateBehavior,
-      WebUIListenerBehavior, RouteObserverBehavior
+      DeepLinkingBehavior,
+      I18nBehavior,
+      LockStateBehavior,
+      WebUIListenerBehavior,
+      RouteObserverBehavior,
     ],
     PolymerElement);
 

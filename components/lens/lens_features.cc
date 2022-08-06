@@ -22,8 +22,8 @@ const base::Feature kLensSearchOptimizations{"LensSearchOptimizations",
 const base::Feature kLensTransparentImagesFix{
     "LensTransparentImagesFix", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::FeatureParam<bool> kRegionSearchMacCursorFix{
-    &kLensStandalone, "region-search-mac-cursor-fix", true};
+const base::Feature kLensSearchImageInScreenshotSharing{
+    "LensSearchImageInScreenshotSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch{
     &kLensStandalone, "region-search-enable-ukm-logging", true};
@@ -33,6 +33,9 @@ const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch{
 
 const base::FeatureParam<bool> kEnableSidePanelForLens{
     &kLensStandalone, "enable-side-panel", true};
+
+const base::FeatureParam<bool> kEnableLensSidePanelFooter{
+    &kLensStandalone, "enable-lens-side-panel-footer", true};
 
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
@@ -55,6 +58,16 @@ const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText1{
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2{
     &kLensSearchOptimizations, "use-menu-item-alt-text-2", false};
 
+const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3{
+    &kLensSearchOptimizations, "use-menu-item-alt-text-3", false};
+
+const base::FeatureParam<bool> kUseSidePanelForScreenshotSharing{
+    &kLensSearchImageInScreenshotSharing,
+    "use-side-panel-for-screenshot-sharing", false};
+
+const base::FeatureParam<bool> kEnablePersistentBubble{
+    &kLensSearchImageInScreenshotSharing, "enable-persistent-bubble", false};
+
 // Default is set to true but it is only enabled if kLensSearchOptimizations is
 // enabled. This setup allows us to have fullscreen search as a toggleable
 // experience in chrome://flags
@@ -67,6 +80,10 @@ bool GetEnableUKMLoggingForRegionSearch() {
 
 bool GetEnableUKMLoggingForImageSearch() {
   return kEnableUKMLoggingForImageSearch.Get();
+}
+
+bool GetEnableLensSidePanelFooter() {
+  return kEnableLensSidePanelFooter.Get();
 }
 
 int GetMaxPixelsForRegionSearch() {
@@ -97,6 +114,12 @@ bool UseRegionSearchMenuItemAltText2() {
          kRegionSearchUseMenuItemAltText2.Get();
 }
 
+bool UseRegionSearchMenuItemAltText3() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
+         kRegionSearchUseMenuItemAltText3.Get();
+}
+
 bool UseGoogleAsVisualSearchProvider() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
@@ -117,6 +140,23 @@ bool IsLensSidePanelEnabled() {
 bool GetSendImagesAsPng() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          base::FeatureList::IsEnabled(kLensTransparentImagesFix);
+}
+
+bool IsLensInScreenshotSharingEnabled() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         base::FeatureList::IsEnabled(kLensSearchImageInScreenshotSharing);
+}
+
+// Does not check if kLensSearchImageInScreenshotSharing is enabled because this
+// method is not called if kLensSearchImageInScreenshotSharing is false
+bool UseSidePanelForScreenshotSharing() {
+  return kUseSidePanelForScreenshotSharing.Get();
+}
+
+// Does not check if kLensSearchImageInScreenshotSharing is enabled because this
+// method is not called if kLensSearchImageInScreenshotSharing is false
+bool EnablePersistentBubble() {
+  return kEnablePersistentBubble.Get();
 }
 
 }  // namespace features

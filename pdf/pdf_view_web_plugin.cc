@@ -316,9 +316,8 @@ bool PdfViewWebPlugin::InitializeCommon() {
   // the plugin to be loaded in the extension and print preview to avoid
   // exposing sensitive APIs directly to external websites.
   //
-  // This is enforced before launching the plugin process (see
-  // `ChromeContentBrowserClient::ShouldAllowPluginCreation()`), so below we
-  // just do a CHECK as a defense-in-depth.
+  // This is enforced before creating the plugin (see
+  // `pdf::CreateInternalPlugin()`), so we just `CHECK` for defense-in-depth.
   const std::string& embedder_origin = client_->GetEmbedderOriginString();
   is_print_preview_ = (embedder_origin == kChromePrintHost);
   CHECK(IsPrintPreview() || embedder_origin == kChromeExtensionHost);
@@ -665,7 +664,7 @@ bool PdfViewWebPlugin::ExecuteEditCommand(const blink::WebString& name,
 
 blink::WebURL PdfViewWebPlugin::LinkAtPosition(
     const gfx::Point& /*position*/) const {
-  return GURL(link_under_cursor());
+  return GURL(link_under_cursor_);
 }
 
 bool PdfViewWebPlugin::StartFind(const blink::WebString& search_text,
@@ -935,6 +934,11 @@ void PdfViewWebPlugin::SetSelectedText(const std::string& selected_text) {
   selected_text_ = blink::WebString::FromUTF8(selected_text);
   client_->TextSelectionChanged(selected_text_, /*offset=*/0,
                                 gfx::Range(0, selected_text_.length()));
+}
+
+void PdfViewWebPlugin::SetLinkUnderCursor(
+    const std::string& link_under_cursor) {
+  link_under_cursor_ = link_under_cursor;
 }
 
 bool PdfViewWebPlugin::IsValidLink(const std::string& url) {

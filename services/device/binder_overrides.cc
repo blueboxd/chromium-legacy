@@ -15,6 +15,11 @@ GeolocationContextBinder& GetGeolocationContextBinderOverride() {
   return *binder;
 }
 
+PressureManagerBinder& GetPressureManagerBinderOverride() {
+  static base::NoDestructor<PressureManagerBinder> binder;
+  return *binder;
+}
+
 #if BUILDFLAG(IS_ANDROID)
 NFCProviderBinder& GetNFCProviderBinderOverride() {
   static base::NoDestructor<NFCProviderBinder> binder;

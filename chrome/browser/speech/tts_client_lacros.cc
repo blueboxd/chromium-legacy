@@ -19,8 +19,17 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 
+namespace {
+
+bool IsOffline(net::NetworkChangeNotifier::ConnectionType type) {
+  return type == net::NetworkChangeNotifier::CONNECTION_NONE;
+}
+
+}  // namespace
+
 TtsClientLacros::TtsClientLacros(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context),
+      is_offline_(IsOffline(net::NetworkChangeNotifier::GetConnectionType())) {
   auto* service = chromeos::LacrosService::Get();
   if (!service->IsAvailable<crosapi::mojom::Tts>())
     return;
@@ -31,10 +40,14 @@ TtsClientLacros::TtsClientLacros(content::BrowserContext* browser_context)
 
   // TODO(crbug.com/1251979): Support secondary profiles when it becomes
   // available for Lacros.
-  DCHECK(is_primary_profile);
+  if (!is_primary_profile)
+    return;
+
   service->GetRemote<crosapi::mojom::Tts>()->RegisterTtsClient(
       receiver_.BindNewPipeAndPassRemoteWithVersion(), browser_context_id_,
       /*is_primary_profile=*/is_primary_profile);
+
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 
   // Push Lacros voices to Ash.
   NotifyLacrosVoicesChanged();
@@ -60,11 +73,26 @@ void TtsClientLacros::GetAllVoices(
     out_voices->push_back(voice);
 }
 
-TtsClientLacros::~TtsClientLacros() = default;
+TtsClientLacros::~TtsClientLacros() {
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+}
 
 TtsClientLacros* TtsClientLacros::GetForBrowserContext(
     content::BrowserContext* context) {
   return TtsClientFactoryLacros::GetForBrowserContext(context);
+}
+
+void TtsClientLacros::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // Since the remote voices are NOT returned by TtsExtensionEngine::GetVoices()
+  // if the system is offline, threfore, when the network status changes, the
+  // Lacros voices need to be refreshed to ensure the remote voices to be
+  // included or excluded according to the current network state.
+  bool is_offline = IsOffline(type);
+  if (is_offline_ != is_offline) {
+    is_offline_ = is_offline;
+    NotifyLacrosVoicesChanged();
+  }
 }
 
 void TtsClientLacros::NotifyLacrosVoicesChanged() {

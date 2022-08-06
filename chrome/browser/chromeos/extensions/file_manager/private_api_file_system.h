@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/logged_extension_function.h"
 #include "components/drive/file_errors.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_histogram_value.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom-forward.h"
 #include "storage/browser/file_system/file_system_url.h"
 
@@ -158,7 +159,6 @@ class FileManagerPrivateInternalAddFileWatchFunction
       base::WeakPtr<file_manager::EventRouter> event_router) override;
 };
 
-
 // Implements the chrome.fileManagerPrivate.removeFileWatch method.
 // Stops watching changes in directories.
 class FileManagerPrivateInternalRemoveFileWatchFunction
@@ -206,6 +206,24 @@ class FileManagerPrivateGetSizeStatsFunction : public LoggedExtensionFunction {
 
   void OnGetSizeStats(const uint64_t* total_size,
                       const uint64_t* remaining_size);
+};
+
+// Implements the chrome.fileManagerPrivate.getDriveQuotaMetadata method.
+class FileManagerPrivateGetDriveQuotaMetadataFunction
+    : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getDriveQuotaMetadata",
+                             FILEMANAGERPRIVATE_GETDRIVEQUOTAMETADATA)
+
+ protected:
+  ~FileManagerPrivateGetDriveQuotaMetadataFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void OnGetDriveQuotaMetadata(drive::FileError error,
+                               drivefs::mojom::PooledQuotaUsagePtr usage);
 };
 
 // Implements the chrome.fileManagerPrivate.validatePathNameLength method.
@@ -320,6 +338,22 @@ class FileManagerPrivateInternalGetDlpMetadataFunction
 
   std::unique_ptr<policy::DlpFilesController> files_controller_;
   std::vector<storage::FileSystemURL> source_urls_;
+};
+
+// Implements the chrome.fileManagerPrivate.showDlpRestrictionDetails method.
+class FileManagerPrivateShowDlpRestrictionDetailsFunction
+    : public LoggedExtensionFunction {
+ public:
+  FileManagerPrivateShowDlpRestrictionDetailsFunction();
+
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.showDlpRestrictionDetails",
+                             FILEMANAGERPRIVATE_SHOWDLPRESTRICTIONDETAILS)
+
+ protected:
+  ~FileManagerPrivateShowDlpRestrictionDetailsFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 // Implements the chrome.fileManagerPrivate.startCopy method.

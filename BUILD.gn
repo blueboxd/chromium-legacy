@@ -147,7 +147,7 @@ group("gn_all") {
     ]
   }
 
-  if (enable_plugins) {
+  if (enable_ppapi) {
     deps += [
       "//ppapi:ppapi_unittests",
       "//ppapi/examples",
@@ -258,10 +258,6 @@ group("gn_all") {
       "//chrome/app:chrome_fuchsia",
       "//fuchsia_web:gn_all",
       "//tools/fuchsia/size_tests:fuchsia_sizes",
-
-      # Ensure this target, used by cipd, is built in all configurations.
-      # TODO(crbug.com/1265618): Remove this once it has a natural dependency.
-      "//media/cdm/library_cdm/clear_key_cdm",
 
       # Ensure this target continues to build.
       "//chromecast/bindings:bindings_manager_fuchsia",
@@ -583,7 +579,7 @@ group("gn_all") {
     }
   }
 
-  if (enable_plugins) {
+  if (enable_ppapi) {
     deps += [
       "//ppapi:pepper_hash_for_uma",
       "//ppapi:ppapi_perftests",
@@ -676,8 +672,7 @@ group("gn_all") {
     deps += [ "//third_party/breakpad:symupload($host_toolchain)" ]
   }
 
-  # TODO(crbug.com/1330636): Remove the Fuchsia `is_chromecast` condition.
-  if (is_cast_android || is_castos || (is_fuchsia && is_chromecast)) {
+  if (is_cast_android || is_castos || (is_fuchsia && enable_cast_receiver)) {
     deps += [ "//chromecast:cast_test_lists" ]
   }
 
@@ -1216,11 +1211,6 @@ if (!is_ios) {
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
       "//third_party/blink/tools/",
-      "//third_party/blink/web_tests/VirtualTestSuites",
-      "//third_party/blink/web_tests/external/WPT_BASE_MANIFEST_8.json",
-      "//third_party/blink/web_tests/external/wpt/common/",
-      "//third_party/blink/web_tests/external/wpt/resources/",
-      "//third_party/blink/web_tests/fast/harness/results.html",
       "//third_party/blink/web_tests/resources/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//third_party/test_fonts/test_fonts/",
@@ -1408,7 +1398,6 @@ if (!is_ios) {
       data += [
         "//third_party/blink/web_tests/platform/win/",
         "//third_party/blink/web_tests/platform/win10/",
-        "//third_party/blink/web_tests/platform/win7/",
       ]
       if (is_linux || is_fuchsia) {
         data += [ "//third_party/blink/web_tests/platform/linux/" ]
@@ -1475,7 +1464,6 @@ if (!is_ios) {
       data += [
         "//third_party/blink/web_tests/platform/win/",
         "//third_party/blink/web_tests/platform/win10/",
-        "//third_party/blink/web_tests/platform/win7/",
       ]
       if (is_linux || is_fuchsia) {
         data += [ "//third_party/blink/web_tests/platform/linux/" ]
@@ -1544,7 +1532,10 @@ if (!is_ios) {
       "//third_party/webgpu-cts",
     ]
     data = [
+      "//third_party/blink/web_tests/external/wpt/common/",
+      "//third_party/blink/web_tests/external/wpt/resources/",
       "//third_party/blink/web_tests/FlagSpecificConfig",
+      "//third_party/blink/web_tests/VirtualTestSuites",
       "//third_party/blink/web_tests/WebGPUExpectations",
       "//third_party/blink/web_tests/wpt_internal/",
       "//third_party/webgpu-cts/scripts/",
@@ -1576,9 +1567,12 @@ if (!is_ios) {
 
   script_test("blink_python_tests") {
     script = "//testing/scripts/run_isolated_script_test.py"
-    args = [ "@WrappedPath(" +
-             rebase_path("//third_party/blink/tools/run_blinkpy_tests.py",
-                         root_build_dir) + ")" ]
+    args = [
+      "@WrappedPath(" +
+          rebase_path("//third_party/blink/tools/run_blinkpy_tests.py",
+                      root_build_dir) + ")",
+      "--coverage",
+    ]
 
     data = [
       # These tests use //build/android/devil_chromium.py even when !is_android,
@@ -1609,6 +1603,7 @@ if (!is_ios) {
       "//third_party/depot_tools/pylint_main.py",
       "//third_party/depot_tools/pylintrc",
       "//third_party/ply/",
+      "//third_party/wpt_tools/",
       "//tools/idl_parser/",
     ]
 

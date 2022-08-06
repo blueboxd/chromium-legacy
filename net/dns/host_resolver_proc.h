@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/net_export.h"
-#include "net/base/network_change_notifier.h"
+#include "net/base/network_handle.h"
 
 namespace net {
 
@@ -30,7 +30,7 @@ class AddressList;
 class NET_EXPORT HostResolverProc
     : public base::RefCountedThreadSafe<HostResolverProc> {
  public:
-  explicit HostResolverProc(HostResolverProc* previous,
+  explicit HostResolverProc(scoped_refptr<HostResolverProc> previous,
                             bool allow_fallback_to_system_or_default = true);
 
   HostResolverProc(const HostResolverProc&) = delete;
@@ -53,7 +53,7 @@ class NET_EXPORT HostResolverProc
                       HostResolverFlags host_resolver_flags,
                       AddressList* addrlist,
                       int* os_error,
-                      NetworkChangeNotifier::NetworkHandle network);
+                      handles::NetworkHandle network);
 
  protected:
   friend class base::RefCountedThreadSafe<HostResolverProc>;
@@ -74,11 +74,11 @@ class NET_EXPORT HostResolverProc
 
   // Sets the previous procedure in the chain.  Aborts if this would result in a
   // cycle.
-  void SetPreviousProc(HostResolverProc* proc);
+  void SetPreviousProc(scoped_refptr<HostResolverProc> proc);
 
   // Sets the last procedure in the chain, i.e. appends |proc| to the end of the
   // current chain.  Aborts if this would result in a cycle.
-  void SetLastProc(HostResolverProc* proc);
+  void SetLastProc(scoped_refptr<HostResolverProc> proc);
 
   // Returns the last procedure in the chain starting at |proc|.  Will return
   // NULL iff |proc| is NULL.
@@ -101,16 +101,16 @@ class NET_EXPORT HostResolverProc
 // `addrlist` with a list of socket addresses. Otherwise returns a
 // network error code, and fills `os_error` with a more specific error if it
 // was non-NULL.
-// `network` is an optional parameter, when specified (!= kInvalidNetworkHandle)
-// the lookup will be performed specifically for `network`.
+// `network` is an optional parameter, when specified (!=
+// handles::kInvalidNetworkHandle) the lookup will be performed specifically for
+// `network`.
 NET_EXPORT_PRIVATE int SystemHostResolverCall(
     const std::string& host,
     AddressFamily address_family,
     HostResolverFlags host_resolver_flags,
     AddressList* addrlist,
     int* os_error,
-    NetworkChangeNotifier::NetworkHandle network =
-        NetworkChangeNotifier::kInvalidNetworkHandle);
+    handles::NetworkHandle network = handles::kInvalidNetworkHandle);
 
 // Wraps call to SystemHostResolverCall as an instance of HostResolverProc.
 class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
@@ -131,7 +131,7 @@ class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
               HostResolverFlags host_resolver_flags,
               AddressList* addr_list,
               int* os_error,
-              NetworkChangeNotifier::NetworkHandle network) override;
+              handles::NetworkHandle network) override;
 
  protected:
   ~SystemHostResolverProc() override;
@@ -158,7 +158,8 @@ struct NET_EXPORT_PRIVATE ProcTaskParams {
       base::Seconds(6);
 
   // Sets up defaults.
-  ProcTaskParams(HostResolverProc* resolver_proc, size_t max_retry_attempts);
+  ProcTaskParams(scoped_refptr<HostResolverProc> resolver_proc,
+                 size_t max_retry_attempts);
 
   ProcTaskParams(const ProcTaskParams& other);
 

@@ -139,7 +139,7 @@ class MockUDPSocket : public net::DatagramClientSocket {
     EXPECT_EQ(peer_ip_.ToString(), address.address().ToString());
     return connect_error_;
   }
-  int ConnectUsingNetwork(net::NetworkChangeNotifier::NetworkHandle network,
+  int ConnectUsingNetwork(net::handles::NetworkHandle network,
                           const net::IPEndPoint& address) override {
     ADD_FAILURE() << "Called ConnectUsingNetwork()";
     return net::ERR_UNEXPECTED;
@@ -148,50 +148,12 @@ class MockUDPSocket : public net::DatagramClientSocket {
     ADD_FAILURE() << "Called ConnectUsingDefaultNetwork()";
     return net::ERR_UNEXPECTED;
   }
-  net::NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override {
+  net::handles::NetworkHandle GetBoundNetwork() const override {
     ADD_FAILURE() << "Called GetBoundNetwork()";
     return network_;
   }
   void ApplySocketTag(const net::SocketTag& tag) override {
     ADD_FAILURE() << "Called ApplySocketTag()";
-  }
-  int WriteAsync(
-      net::DatagramBuffers buffers,
-      net::CompletionOnceCallback callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    ADD_FAILURE() << "Called WriteAsync()";
-    return net::ERR_UNEXPECTED;
-  }
-  int WriteAsync(
-      const char* buffer,
-      size_t buf_len,
-      net::CompletionOnceCallback callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    ADD_FAILURE() << "Called WriteAsync()";
-    return net::ERR_UNEXPECTED;
-  }
-  net::DatagramBuffers GetUnwrittenBuffers() override {
-    ADD_FAILURE() << "Called GetUnwrittenBuffers()";
-    return net::DatagramBuffers();
-  }
-  void SetWriteAsyncEnabled(bool enabled) override {
-    ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
-  }
-  void SetMaxPacketSize(size_t max_packet_size) override {
-    ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
-  }
-  bool WriteAsyncEnabled() override {
-    ADD_FAILURE() << "Called WriteAsyncEnabled()";
-    return false;
-  }
-  void SetWriteMultiCoreEnabled(bool enabled) override {
-    ADD_FAILURE() << "Called SetWriteMultiCoreEnabled()";
-  }
-  void SetSendmmsgEnabled(bool enabled) override {
-    ADD_FAILURE() << "Called SetSendmmsgEnabled()";
-  }
-  void SetWriteBatchingActive(bool active) override {
-    ADD_FAILURE() << "Called SetWriteBatchingActive()";
   }
   int SetMulticastInterface(uint32_t interface_index) override {
     ADD_FAILURE() << "Called SetMulticastInterface()";
@@ -200,7 +162,7 @@ class MockUDPSocket : public net::DatagramClientSocket {
 
  private:
   net::NetLogWithSource net_log_;
-  net::NetworkChangeNotifier::NetworkHandle network_;
+  net::handles::NetworkHandle network_;
 
   net::IPAddress peer_ip_;
   net::IPAddress local_ip_;

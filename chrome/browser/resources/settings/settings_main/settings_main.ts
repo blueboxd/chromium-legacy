@@ -16,7 +16,7 @@ import '../about_page/about_page.js';
 import '../basic_page/basic_page.js';
 import '../prefs/prefs.js';
 import '../search_settings.js';
-import '../settings_shared_css.js';
+import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
@@ -25,14 +25,14 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {loadTimeData} from '../i18n_setup.js';
 import {PageVisibility} from '../page_visibility.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
+import {RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {getTemplate} from './settings_main.html.js';
 
-type MainPageVisibility = {
-  about: boolean,
-  settings: boolean,
-};
+interface MainPageVisibility {
+  about: boolean;
+  settings: boolean;
+}
 
 export interface SettingsMainElement {
   $: {
@@ -120,17 +120,10 @@ export class SettingsMainElement extends SettingsMainElementBase {
    * Updates the hidden state of the about and settings pages based on the
    * current route.
    */
-  override currentRouteChanged(newRoute: Route) {
+  override currentRouteChanged() {
     const inAbout =
         routes.ABOUT.contains(Router.getInstance().getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
-
-    if (!newRoute.isSubpage()) {
-      document.title = inAbout ? loadTimeData.getStringF(
-                                     'settingsAltPageTitle',
-                                     loadTimeData.getString('aboutPageTitle')) :
-                                 loadTimeData.getString('settings');
-    }
   }
 
   private onShowingSubpage_() {

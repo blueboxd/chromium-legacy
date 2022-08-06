@@ -110,7 +110,7 @@ class PrefRegistrySyncable;
                                                   promoAction;
 
 // Returns a coordinator for re-authentication workflow for Trusted
-// Vault for the primary identity. This is done with ChromeTrustedVaultService.
+// Vault for the primary identity. This is done with TrustedVaultService.
 // Related to IOSTrustedVaultClient.
 // `viewController` presents the sign-in.
 // `intent` Dialog to present.
@@ -136,7 +136,10 @@ class PrefRegistrySyncable;
 + (instancetype)
     consistencyPromoSigninCoordinatorWithBaseViewController:
         (UIViewController*)viewController
-                                                    browser:(Browser*)browser;
+                                                    browser:(Browser*)browser
+                                                accessPoint:(signin_metrics::
+                                                                 AccessPoint)
+                                                                accessPoint;
 
 // Interrupts the sign-in flow.
 // `signinCompletion(SigninCoordinatorResultInterrupted, nil)` is guaranteed to

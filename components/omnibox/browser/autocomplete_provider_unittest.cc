@@ -155,7 +155,7 @@ void TestProvider::Start(const AutocompleteInput& input, bool minimal_changes) {
   AddResultsWithSearchTermsArgs(3, 1, AutocompleteMatchType::SEARCH_SUGGEST,
                                 TemplateURLRef::SearchTermsArgs(u"query"));
 
-  if (input.want_asynchronous_matches()) {
+  if (!input.omit_asynchronous_matches()) {
     done_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&TestProvider::Run, this));
@@ -266,7 +266,7 @@ void TestPrefetchProvider::StartPrefetch(const AutocompleteInput& input) {
   matches_.clear();
   done_ = false;
 
-  if (input.want_asynchronous_matches()) {
+  if (!input.omit_asynchronous_matches()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&TestPrefetchProvider::RunPrefetch, this));
   } else {
@@ -324,9 +324,9 @@ class AutocompleteProviderTest : public testing::Test {
     const std::u16string expected_associated_keyword;
   };
 
-  struct HeaderTestData {
-    SearchSuggestionParser::HeadersMap headers_map;
-    std::vector<absl::optional<int>> suggestion_group_ids;
+  struct SuggestionGroupsTestData {
+    SuggestionGroupsMap suggestion_groups_map;
+    std::vector<absl::optional<SuggestionGroupId>> suggestion_group_ids;
   };
 
   struct AssistedQueryStatsTestData {
@@ -360,7 +360,8 @@ class AutocompleteProviderTest : public testing::Test {
                       const KeywordTestData* match_data,
                       size_t size);
 
-  void UpdateResultsWithHeaderTestData(const HeaderTestData& headers_data);
+  void UpdateResultsWithSuggestionGroupsTestData(
+      const SuggestionGroupsTestData& test_data);
 
   void RunAssistedQueryStatsTest(
       const AssistedQueryStatsTestData* aqs_test_data,
@@ -393,19 +394,13 @@ class AutocompleteProviderTest : public testing::Test {
       metrics::OmniboxEventProto::PageClassification classification) {
     controller_->input_.current_page_classification_ = classification;
   }
-  void add_zero_suggest_provider_experiment_stat(
-      const base::Value& experiment_stat) {
-    auto& experiment_stats =
-        const_cast<SearchSuggestionParser::ExperimentStats&>(
-            controller_->zero_suggest_provider_->experiment_stats());
-    experiment_stats.push_back(experiment_stat.Clone());
-  }
-  void add_zero_suggest_provider_headers_map(
-      const SearchSuggestionParser::HeadersMap& headers_map) {
-    auto& provider_headers_map =
-        const_cast<SearchSuggestionParser::HeadersMap&>(
-            controller_->zero_suggest_provider_->headers_map());
-    provider_headers_map = headers_map;
+  void add_zero_suggest_provider_experiment_stats_v2(
+      const metrics::ChromeSearchboxStats::ExperimentStatsV2&
+          experiment_stat_v2) {
+    auto& experiment_stats_v2s =
+        const_cast<SearchSuggestionParser::ExperimentStatsV2s&>(
+            controller_->zero_suggest_provider_->experiment_stats_v2s());
+    experiment_stats_v2s.push_back(experiment_stat_v2);
   }
 
   TestingPrefServiceSimple* GetPrefs() { return &pref_service_; }
@@ -605,27 +600,26 @@ void AutocompleteProviderTest::RunKeywordTest(const std::u16string& input,
   }
 }
 
-void AutocompleteProviderTest::UpdateResultsWithHeaderTestData(
-    const HeaderTestData& headers_data) {
-  // Prepare.
+void AutocompleteProviderTest::UpdateResultsWithSuggestionGroupsTestData(
+    const SuggestionGroupsTestData& test_data) {
+  // Create new matches and add to the result.
   size_t relevance = 1000;
   ACMatches matches;
-  for (auto suggestion_group_id : headers_data.suggestion_group_ids) {
+  for (auto suggestion_group_id : test_data.suggestion_group_ids) {
     AutocompleteMatch match(nullptr, relevance--, false,
                             AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED);
-    match.suggestion_group_id = suggestion_group_id;
+    if (suggestion_group_id.has_value()) {
+      match.suggestion_group_id = suggestion_group_id.value();
+    }
     matches.push_back(match);
   }
-
-  add_zero_suggest_provider_headers_map(headers_data.headers_map);
-
   result_.Reset();
   result_.AppendMatches(matches);
 
-  // Update the result with the header information.
-  controller_->UpdateHeaderInfoFromZeroSuggestProvider(&result_);
-  // Group matches with headers and move them to the bottom of the result set.
-  result_.GroupAndDemoteMatchesWithHeaders();
+  // Update the result with the suggestion groups information.
+  result_.MergeSuggestionGroupsMap(test_data.suggestion_groups_map);
+  // Group matches with group IDs and move them to the bottom of the result set.
+  result_.GroupAndDemoteMatchesInGroups();
 }
 
 void AutocompleteProviderTest::RunAssistedQueryStatsTest(
@@ -859,88 +853,127 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
   }
 }
 
-// Tests that the AutocompleteResult is updated with the header information and
-// matches with headers are grouped and demoted correctly.
-TEST_F(AutocompleteProviderTest, Headers) {
+// Tests that the AutocompleteResult is updated with the suggestion group
+// information and matches with group IDs are grouped and demoted correctly.
+// Also verifies that:
+// 1) headers are optional for suggestion groups.
+// 2) suggestion groups are ordered based on their priories.
+// 3) suggestion group IDs without associated suggestion group information are
+//    stripped away.
+TEST_F(AutocompleteProviderTest, SuggestionGroups) {
   ResetControllerWithKeywordAndSearchProviders();
 
-  const int kRecommendedForYouGroupId = 1;
-  const char16_t kRecommendedForYouHeader[] = u"Recommended for you";
-  const int kRecentSearchesGroupId = 2;
-  const char16_t kRecentSearchesHeader[] = u"Recent Searches";
+  const auto kRecommendedGroupId =
+      SuggestionGroupId::kNonPersonalizedZeroSuggest1;
+  const std::u16string kRecommended = u"Recommended for you";
+  const auto kRecentSearchesGroupId =
+      SuggestionGroupId::kNonPersonalizedZeroSuggest2;
+  const std::u16string kRecentSearches = u"Recent Searches";
 
-  // This exists to verify that we ignore group IDs without associated header
-  // text when sorting results.
-  const int kGroupIdWithoutHeaderText = 99;
-
-  SearchSuggestionParser::HeadersMap headers_map = {
-      {kRecommendedForYouGroupId, kRecommendedForYouHeader},
-      {kRecentSearchesGroupId, kRecentSearchesHeader}};
+  // This exists to verify that suggestion group IDs without associated
+  // suggestion groups information are stripped away.
+  const auto kBadSuggestionGroupId = SuggestionGroupId::kInvalid;
 
   {
-    HeaderTestData test_data = {headers_map,
-                                {{absl::nullopt},
-                                 {absl::nullopt},
-                                 {absl::nullopt},
-                                 {kRecentSearchesGroupId},
-                                 {kRecommendedForYouGroupId}}};
-    UpdateResultsWithHeaderTestData(test_data);
+    // Headers are optional for suggestion groups.
+    SuggestionGroupsMap suggestion_groups_map;
+    suggestion_groups_map[kRecommendedGroupId].header = kRecommended;
+    suggestion_groups_map[kRecommendedGroupId].priority =
+        SuggestionGroupPriority::kRemoteZeroSuggest4;
+    suggestion_groups_map[kRecentSearchesGroupId].header = u"";
+    suggestion_groups_map[kRecentSearchesGroupId].priority =
+        SuggestionGroupPriority::kRemoteZeroSuggest3;
+    UpdateResultsWithSuggestionGroupsTestData({std::move(suggestion_groups_map),
+                                               {
+                                                   {},
+                                                   {},
+                                                   {},
+                                                   {kRecentSearchesGroupId},
+                                                   {kRecommendedGroupId},
+                                               }});
+
     EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
+
     EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
+
     EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());
+
     EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(3)->suggestion_group_id.value());
-    EXPECT_EQ(kRecommendedForYouGroupId,
-              result_.match_at(4)->suggestion_group_id.value());
+    EXPECT_EQ(u"", result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
 
-    // Verify that AutocompleteResult is updated with the header information.
-    EXPECT_EQ(kRecommendedForYouHeader,
-              result_.GetHeaderForSuggestionGroup(kRecommendedForYouGroupId));
-    EXPECT_EQ(kRecentSearchesHeader,
-              result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
-    EXPECT_EQ(std::u16string(),
-              result_.GetHeaderForSuggestionGroup(
-                  SearchSuggestionParser::kInvalidSuggestionGroupId));
+    EXPECT_EQ(kRecommendedGroupId,
+              result_.match_at(4)->suggestion_group_id.value());
+    EXPECT_EQ(kRecommended,
+              result_.GetHeaderForSuggestionGroup(kRecommendedGroupId));
   }
   {
-    HeaderTestData test_data = {headers_map,
-                                {
-                                    {absl::nullopt},
-                                    {kRecentSearchesGroupId},
-                                    {absl::nullopt},
-                                    {kRecommendedForYouGroupId},
-                                    {kRecentSearchesGroupId},
-                                }};
-    UpdateResultsWithHeaderTestData(test_data);
+    // Suggestion groups are ordered based on their priories.
+    SuggestionGroupsMap suggestion_groups_map;
+    suggestion_groups_map[kRecommendedGroupId].header = kRecommended;
+    suggestion_groups_map[kRecommendedGroupId].priority =
+        SuggestionGroupPriority::kRemoteZeroSuggest3;
+    suggestion_groups_map[kRecentSearchesGroupId].header = kRecentSearches;
+    suggestion_groups_map[kRecentSearchesGroupId].priority =
+        SuggestionGroupPriority::kRemoteZeroSuggest4;
+    UpdateResultsWithSuggestionGroupsTestData({std::move(suggestion_groups_map),
+                                               {
+                                                   {},
+                                                   {kRecentSearchesGroupId},
+                                                   {},
+                                                   {kRecommendedGroupId},
+                                                   {kRecentSearchesGroupId},
+                                               }});
 
-    // Verifies that matches with group IDs are grouped and sink to the bottom.
     EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
+
     EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
-    EXPECT_EQ(kRecentSearchesGroupId,
+
+    EXPECT_EQ(kRecommendedGroupId,
               result_.match_at(2)->suggestion_group_id.value());
+    EXPECT_EQ(kRecommended,
+              result_.GetHeaderForSuggestionGroup(kRecommendedGroupId));
+
     EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(3)->suggestion_group_id.value());
-    EXPECT_EQ(kRecommendedForYouGroupId,
+    EXPECT_EQ(kRecentSearches,
+              result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
+
+    EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(4)->suggestion_group_id.value());
+    EXPECT_EQ(kRecentSearches,
+              result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
   }
   {
-    HeaderTestData test_data = {headers_map,
-                                {{kGroupIdWithoutHeaderText},
-                                 {kRecentSearchesGroupId},
-                                 {kRecommendedForYouGroupId},
-                                 {kGroupIdWithoutHeaderText},
-                                 {kGroupIdWithoutHeaderText}}};
-    UpdateResultsWithHeaderTestData(test_data);
+    // suggestion group IDs without associated suggestion group information are
+    // stripped away.
+    SuggestionGroupsMap suggestion_groups_map;
+    suggestion_groups_map[kRecommendedGroupId].header = kRecommended;
+    suggestion_groups_map[kRecentSearchesGroupId].header = kRecentSearches;
+    UpdateResultsWithSuggestionGroupsTestData({std::move(suggestion_groups_map),
+                                               {
+                                                   {kBadSuggestionGroupId},
+                                                   {kRecentSearchesGroupId},
+                                                   {kRecommendedGroupId},
+                                                   {kBadSuggestionGroupId},
+                                                   {kBadSuggestionGroupId},
+                                               }});
 
-    // Verifies that group IDs without associated header text are stripped out,
-    // and those matches float to the top.
     EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
+
     EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
+
     EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());
+
     EXPECT_EQ(kRecentSearchesGroupId,
               result_.match_at(3)->suggestion_group_id.value());
-    EXPECT_EQ(kRecommendedForYouGroupId,
+    EXPECT_EQ(kRecentSearches,
+              result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
+
+    EXPECT_EQ(kRecommendedGroupId,
               result_.match_at(4)->suggestion_group_id.value());
+    EXPECT_EQ(kRecommended,
+              result_.GetHeaderForSuggestionGroup(kRecommendedGroupId));
   }
 }
 
@@ -1269,16 +1302,19 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL_AssistedQueryStatsOnly) {
   // Test experiment stats set.
   match.search_terms_args->assisted_query_stats =
       "chrome.0.69i57j69i58j5l2j0l3j69i59";
-  add_zero_suggest_provider_experiment_stat(
-      base::test::ParseJson(R"json({"2":"0:67","4":10001})json"));
+  metrics::ChromeSearchboxStats::ExperimentStatsV2 experiment_stats_v2;
+  experiment_stats_v2.set_type_int(10001);
+  experiment_stats_v2.set_string_value("0:67");
+  add_zero_suggest_provider_experiment_stats_v2(experiment_stats_v2);
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4.10001i0,67&",
             url.path());
 
   match.search_terms_args->assisted_query_stats =
       "chrome.0.69i57j69i58j5l2j0l3j69i59";
-  add_zero_suggest_provider_experiment_stat(
-      base::test::ParseJson(R"json({"2":"54:67","4":10001})json"));
+  experiment_stats_v2.set_type_int(10001);
+  experiment_stats_v2.set_string_value("54:67");
+  add_zero_suggest_provider_experiment_stats_v2(experiment_stats_v2);
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_EQ(
       "//"
@@ -1383,8 +1419,10 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL_SearchboxStatsOnly) {
   }
 
   // Test experiment stats v2 set.
-  add_zero_suggest_provider_experiment_stat(
-      base::test::ParseJson(R"json({"2":"0:67","4":10001})json"));
+  metrics::ChromeSearchboxStats::ExperimentStatsV2 experiment_stats_v2;
+  experiment_stats_v2.set_type_int(10001);
+  experiment_stats_v2.set_string_value("0:67");
+  add_zero_suggest_provider_experiment_stats_v2(experiment_stats_v2);
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_EQ("//gs_lcrp=EgZjaHJvbWXSAQgyNDU2ajFqNOIDCRIEMCw2NyCRTg&",
             url.path());
@@ -1733,7 +1771,7 @@ TEST_F(AutocompleteProviderPrefetchTest, SupportedProvider_OngoingNonPrefetch) {
   // closure of `run_loop` before `run_loop` is run. This prevents the provider
   // from being able to notify the controller of finishing the non-prefetch
   // request resulting in the controller to remain in an invalid state.
-  input.set_want_asynchronous_matches(false);
+  input.set_omit_asynchronous_matches(true);
   controller_->StartPrefetch(input);
 
   // Wait for the provider to finish asynchronously.

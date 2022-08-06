@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -137,6 +138,11 @@ class CORE_EXPORT WorkerGlobalScope
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const final;
 
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetAgentGroupSchedulerCompositorTaskRunner() final {
+    return agent_group_scheduler_compositor_task_runner_;
+  }
+
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
   CoreProbeSink* GetProbeSink() final;
@@ -180,6 +186,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& script_url,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params_for_modules,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) = 0;
@@ -189,6 +196,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& module_url_record,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params_for_modules,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
@@ -299,6 +307,11 @@ class CORE_EXPORT WorkerGlobalScope
   mutable Member<TrustedTypePolicyFactory> trusted_types_;
 
   WorkerThread* thread_;
+
+  // The compositor task runner associated with the |AgentGroupScheduler| this
+  // worker belongs to.
+  scoped_refptr<base::SingleThreadTaskRunner>
+      agent_group_scheduler_compositor_task_runner_;
 
   bool closing_ = false;
 

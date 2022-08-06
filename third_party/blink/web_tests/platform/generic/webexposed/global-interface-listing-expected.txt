@@ -1259,14 +1259,6 @@ interface CompressionStream
     getter readable
     getter writable
     method constructor
-interface ComputePressureObserver
-    static getter supportedSources
-    attribute @@toStringTag
-    method constructor
-    method disconnect
-    method observe
-    method takeRecords
-    method unobserve
 interface ComputedAccessibleNode
     attribute @@toStringTag
     getter atomic
@@ -1324,6 +1316,10 @@ interface ContentIndex
     method constructor
     method delete
     method getAll
+interface ContentVisibilityAutoStateChangedEvent : Event
+    attribute @@toStringTag
+    getter skipped
+    method constructor
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
@@ -1793,6 +1789,7 @@ interface Document : Node
     getter onauxclick
     getter onbeforecopy
     getter onbeforecut
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforepaste
     getter onbeforexrselect
@@ -1803,6 +1800,7 @@ interface Document : Node
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -1861,6 +1859,7 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onprerenderingchange
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1904,6 +1903,7 @@ interface Document : Node
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
+    getter prerendering
     getter readyState
     getter referrer
     getter rootElement
@@ -2000,6 +2000,7 @@ interface Document : Node
     setter onauxclick
     setter onbeforecopy
     setter onbeforecut
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforepaste
     setter onbeforexrselect
@@ -2010,6 +2011,7 @@ interface Document : Node
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -2068,6 +2070,7 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onprerenderingchange
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -2270,6 +2273,9 @@ interface Element : Node
     getter outerHTML
     getter part
     getter popUp
+    getter popUpHideTarget
+    getter popUpShowTarget
+    getter popUpToggleTarget
     getter prefix
     getter previousElementSibling
     getter role
@@ -2403,6 +2409,9 @@ interface Element : Node
     setter outerHTML
     setter part
     setter popUp
+    setter popUpHideTarget
+    setter popUpShowTarget
+    setter popUpToggleTarget
     setter role
     setter scrollLeft
     setter scrollTop
@@ -3195,6 +3204,7 @@ interface HTMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforexrselect
     getter onblur
@@ -3204,6 +3214,7 @@ interface HTMLElement : Element
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -3322,6 +3333,7 @@ interface HTMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforexrselect
     setter onblur
@@ -3331,6 +3343,7 @@ interface HTMLElement : Element
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -4756,7 +4769,7 @@ interface IIRFilterNode : AudioNode
     method constructor
     method getFrequencyResponse
 interface IdentityCredential : Credential
-    static method logoutRps
+    static method logoutRPs
     attribute @@toStringTag
     getter token
     method constructor
@@ -5130,6 +5143,7 @@ interface MathMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforexrselect
     getter onblur
@@ -5139,6 +5153,7 @@ interface MathMLElement : Element
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -5238,6 +5253,7 @@ interface MathMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforexrselect
     setter onblur
@@ -5247,6 +5263,7 @@ interface MathMLElement : Element
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -5501,6 +5518,7 @@ interface MediaSource : EventTarget
     attribute @@toStringTag
     getter activeSourceBuffers
     getter duration
+    getter handle
     getter onsourceclose
     getter onsourceended
     getter onsourceopen
@@ -5510,7 +5528,6 @@ interface MediaSource : EventTarget
     method clearLiveSeekableRange
     method constructor
     method endOfStream
-    method getHandle
     method removeSourceBuffer
     method setLiveSeekableRange
     setter duration
@@ -5809,6 +5826,7 @@ interface NativeIOFileManager
     method requestCapacity
 interface NavigateEvent : Event
     attribute @@toStringTag
+    getter canIntercept
     getter canTransition
     getter destination
     getter downloadRequest
@@ -5819,7 +5837,9 @@ interface NavigateEvent : Event
     getter signal
     getter userInitiated
     method constructor
+    method intercept
     method restoreScroll
+    method scroll
     method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
@@ -6464,6 +6484,7 @@ interface PerformanceNavigation
     method toJSON
 interface PerformanceNavigationTiming : PerformanceResourceTiming
     attribute @@toStringTag
+    getter activationStart
     getter domComplete
     getter domContentLoadedEventEnd
     getter domContentLoadedEventStart
@@ -6678,6 +6699,14 @@ interface PresentationRequest : EventTarget
     method reconnect
     method start
     setter onconnectionavailable
+interface PressureObserver
+    static getter supportedSources
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
+    method takeRecords
+    method unobserve
 interface ProcessingInstruction : CharacterData
     attribute @@toStringTag
     getter sheet
@@ -6701,6 +6730,7 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PublicKeyCredential : Credential
+    static method isConditionalMediationAvailable
     static method isUserVerifyingPlatformAuthenticatorAvailable
     attribute @@toStringTag
     getter authenticatorAttachment
@@ -7135,7 +7165,6 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
-    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob
@@ -7342,6 +7371,7 @@ interface SVGElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforeinput
     getter onbeforematch
     getter onbeforexrselect
     getter onblur
@@ -7351,6 +7381,7 @@ interface SVGElement : Element
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -7452,6 +7483,7 @@ interface SVGElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforeinput
     setter onbeforematch
     setter onbeforexrselect
     setter onblur
@@ -7461,6 +7493,7 @@ interface SVGElement : Element
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -8361,12 +8394,21 @@ interface Screen : EventTarget
     setter onchange
 interface ScreenDetailed : Screen
     attribute @@toStringTag
+    getter bluePrimaryX
+    getter bluePrimaryY
     getter devicePixelRatio
+    getter greenPrimaryX
+    getter greenPrimaryY
+    getter highDynamicRangeHeadroom
     getter isInternal
     getter isPrimary
     getter label
     getter left
+    getter redPrimaryX
+    getter redPrimaryY
     getter top
+    getter whitePointX
+    getter whitePointY
     method constructor
 interface ScreenDetails : EventTarget
     attribute @@toStringTag
@@ -8665,6 +8707,7 @@ interface Storage
     method setItem
 interface StorageBucket
     attribute @@toStringTag
+    getter indexedDB
     method constructor
     method durability
     method estimate
@@ -8982,6 +9025,13 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TransformStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method constructor
+    method enqueue
+    method error
+    method terminate
 interface TransitionEvent : Event
     attribute @@toStringTag
     getter elapsedTime
@@ -11554,6 +11604,7 @@ namespace CSS
     attribute propertyNamesInGlobal
     attribute testRunner
     attribute textInputController
+    getter anonymouslyFramed
     getter caches
     getter clientInformation
     getter closed
@@ -11574,7 +11625,6 @@ namespace CSS
     getter indexedDB
     getter innerHeight
     getter innerWidth
-    getter isAnonymouslyFramed
     getter isSecureContext
     getter launchQueue
     getter length
@@ -11593,6 +11643,7 @@ namespace CSS
     getter onanimationstart
     getter onappinstalled
     getter onauxclick
+    getter onbeforeinput
     getter onbeforeinstallprompt
     getter onbeforematch
     getter onbeforeprint
@@ -11605,6 +11656,7 @@ namespace CSS
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -11814,6 +11866,7 @@ namespace CSS
     setter onanimationstart
     setter onappinstalled
     setter onauxclick
+    setter onbeforeinput
     setter onbeforeinstallprompt
     setter onbeforematch
     setter onbeforeprint
@@ -11826,6 +11879,7 @@ namespace CSS
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored

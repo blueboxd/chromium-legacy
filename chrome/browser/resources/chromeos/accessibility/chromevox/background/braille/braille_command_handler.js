@@ -5,14 +5,22 @@
 /**
  * @fileoverview ChromeVox braille commands.
  */
-import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
-import {CommandHandlerInterface} from '/chromevox/background/command_handler_interface.js';
-import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
-import {EventSourceState} from '/chromevox/background/event_source.js';
-import {Output} from '/chromevox/background/output/output.js';
-import {BrailleCommandData} from '/chromevox/common/braille/braille_command_data.js';
-import {EventSourceType} from '/chromevox/common/event_source_type.js';
-import {EventGenerator} from '/common/event_generator.js';
+import {EventGenerator} from '../../../common/event_generator.js';
+import {KeyCode} from '../../../common/key_code.js';
+import {BrailleCommandData} from '../../common/braille/braille_command_data.js';
+import {BrailleKeyCommand, BrailleKeyEvent} from '../../common/braille/braille_key_types.js';
+import {NavBraille} from '../../common/braille/nav_braille.js';
+import {BridgeConstants} from '../../common/bridge_constants.js';
+import {BridgeHelper} from '../../common/bridge_helper.js';
+import {EventSourceType} from '../../common/event_source_type.js';
+import {Spannable} from '../../common/spannable.js';
+import {ChromeVox} from '../chromevox.js';
+import {ChromeVoxState} from '../chromevox_state.js';
+import {CommandHandlerInterface} from '../command_handler_interface.js';
+import {DesktopAutomationInterface} from '../desktop_automation_interface.js';
+import {EventSourceState} from '../event_source.js';
+import {Output} from '../output/output.js';
+import {OutputNodeSpan, OutputSelectionSpan} from '../output/output_types.js';
 
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
@@ -158,7 +166,7 @@ export class BrailleCommandHandler {
         anchorObject: actionNode,
         anchorOffset: targetPosition,
         focusObject: actionNode,
-        focusOffset: targetPosition
+        focusOffset: targetPosition,
       });
     } else {
       const start = text.getSpanStart(selectionSpan);

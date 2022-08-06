@@ -56,19 +56,18 @@ int CalculateLoadFlags(int load_flags,
 
 }  // namespace
 
-CronetURLRequest::CronetURLRequest(
-    CronetContext* context,
-    std::unique_ptr<Callback> callback,
-    const GURL& url,
-    net::RequestPriority priority,
-    bool disable_cache,
-    bool disable_connection_migration,
-    bool traffic_stats_tag_set,
-    int32_t traffic_stats_tag,
-    bool traffic_stats_uid_set,
-    int32_t traffic_stats_uid,
-    net::Idempotency idempotency,
-    net::NetworkChangeNotifier::NetworkHandle network)
+CronetURLRequest::CronetURLRequest(CronetContext* context,
+                                   std::unique_ptr<Callback> callback,
+                                   const GURL& url,
+                                   net::RequestPriority priority,
+                                   bool disable_cache,
+                                   bool disable_connection_migration,
+                                   bool traffic_stats_tag_set,
+                                   int32_t traffic_stats_tag,
+                                   bool traffic_stats_uid_set,
+                                   int32_t traffic_stats_uid,
+                                   net::Idempotency idempotency,
+                                   net::handles::NetworkHandle network)
     : context_(context),
       network_tasks_(std::move(callback),
                      url,
@@ -183,7 +182,7 @@ CronetURLRequest::NetworkTasks::NetworkTasks(
     bool traffic_stats_uid_set,
     int32_t traffic_stats_uid,
     net::Idempotency idempotency,
-    net::NetworkChangeNotifier::NetworkHandle network)
+    net::handles::NetworkHandle network)
     : callback_(std::move(callback)),
       initial_url_(url),
       initial_priority_(priority),
@@ -401,6 +400,8 @@ void CronetURLRequest::NetworkTasks::MaybeReportMetrics() {
   metrics_reported_ = true;
   net::LoadTimingInfo metrics;
   url_request_->GetLoadTimingInfo(&metrics);
+  net::NetErrorDetails net_error_details;
+  url_request_->PopulateNetErrorDetails(&net_error_details);
   callback_->OnMetricsCollected(
       metrics.request_start_time, metrics.request_start,
       metrics.connect_timing.dns_start, metrics.connect_timing.dns_end,
@@ -410,7 +411,9 @@ void CronetURLRequest::NetworkTasks::MaybeReportMetrics() {
       metrics.push_end, metrics.receive_headers_end, base::TimeTicks::Now(),
       metrics.socket_reused, url_request_->GetTotalSentBytes(),
       received_byte_count_from_redirects_ +
-          url_request_->GetTotalReceivedBytes());
+          url_request_->GetTotalReceivedBytes(),
+      net_error_details.quic_connection_migration_attempted,
+      net_error_details.quic_connection_migration_successful);
 }
 
 void CronetURLRequest::NetworkTasks::MaybeReportMetricsAndRunCallback(

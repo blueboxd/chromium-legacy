@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
 
-#include "ash/components/login/auth/saml_password_attributes.h"
+#include "ash/components/login/auth/public/saml_password_attributes.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/strings/utf_string_conversions.h"
@@ -237,10 +237,7 @@ TEST_F(InSessionPasswordChangeManagerTest, TimePasses_NoUserActionTaken) {
   EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 }
 
-// Timing out on ASan LSan: http://crbug.com/1306035.
-// Disabling due to timeout in chromeos-dgb on Linux: http://crbug.com/1307706
-TEST_F(InSessionPasswordChangeManagerTest,
-       DISABLED_TimePasses_NotificationDismissed) {
+TEST_F(InSessionPasswordChangeManagerTest, TimePasses_NotificationDismissed) {
   SetExpirationTime(base::Time::Now() + kOneYear + kAdvanceWarningTime / 2);
   manager_->MaybeShowExpiryNotification();
 

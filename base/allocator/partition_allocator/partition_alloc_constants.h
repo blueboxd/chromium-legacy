@@ -27,35 +27,30 @@ namespace partition_alloc {
 // Bit flag constants used as `flag` argument of PartitionRoot::AllocWithFlags,
 // AlignedAllocWithFlags, etc.
 struct AllocFlags {
-  // In order to support bit operations like `flag_a | flag_b`, the old-
-  // fashioned enum (+ surrounding named struct) is used instead of enum class.
-  enum : unsigned int {
-    kReturnNull = 1 << 0,
-    kZeroFill = 1 << 1,
-    // Don't allow allocation override hooks. Override hooks are expected to
-    // check for the presence of this flag and return false if it is active.
-    kNoOverrideHooks = 1 << 2,
-    // Never let a memory tool like ASan (if active) perform the allocation.
-    kNoMemoryToolOverride = 1 << 3,
-    // Don't allow any hooks (override or observers).
-    kNoHooks = 1 << 4,  // Internal only.
-    // If the allocation requires a "slow path" (such as allocating/committing a
-    // new slot span), return nullptr instead. Note this makes all large
-    // allocations return nullptr, such as direct-mapped ones, and even for
-    // smaller ones, a nullptr value is common.
-    kFastPathOrReturnNull = 1 << 5,  // Internal only.
+  static constexpr unsigned int kReturnNull = 1 << 0;
+  static constexpr unsigned int kZeroFill = 1 << 1;
+  // Don't allow allocation override hooks. Override hooks are expected to
+  // check for the presence of this flag and return false if it is active.
+  static constexpr unsigned int kNoOverrideHooks = 1 << 2;
+  // Never let a memory tool like ASan (if active) perform the allocation.
+  static constexpr unsigned int kNoMemoryToolOverride = 1 << 3;
+  // Don't allow any hooks (override or observers).
+  static constexpr unsigned int kNoHooks = 1 << 4;  // Internal.
+  // If the allocation requires a "slow path" (such as allocating/committing a
+  // new slot span), return nullptr instead. Note this makes all large
+  // allocations return nullptr, such as direct-mapped ones, and even for
+  // smaller ones, a nullptr value is common.
+  static constexpr unsigned int kFastPathOrReturnNull = 1 << 5;  // Internal.
 
-    kLastFlag = kFastPathOrReturnNull
-  };
+  static constexpr unsigned int kLastFlag = kFastPathOrReturnNull;
 };
 
 // Bit flag constants used as `flag` argument of PartitionRoot::FreeWithFlags.
 struct FreeFlags {
-  enum : unsigned int {
-    kNoMemoryToolOverride = 1 << 0,  // See AllocFlags::kNoMemoryToolOverride.
+  // See AllocFlags::kNoMemoryToolOverride.
+  static constexpr unsigned int kNoMemoryToolOverride = 1 << 0;
 
-    kLastFlag = kNoMemoryToolOverride
-  };
+  static constexpr unsigned int kLastFlag = kNoMemoryToolOverride;
 };
 
 namespace internal {
@@ -245,24 +240,22 @@ constexpr size_t kSuperPageShift = 21;  // 2 MiB
 constexpr size_t kSuperPageSize = 1 << kSuperPageShift;
 constexpr size_t kSuperPageAlignment = kSuperPageSize;
 constexpr size_t kSuperPageOffsetMask = kSuperPageAlignment - 1;
-constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask & kMemTagUnmask;
+constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 
-// GigaCage is split into two pools, one which supports BackupRefPtr (BRP) and
-// one that doesn't.
+// GigaCage is generally split into two pools, one which supports BackupRefPtr
+// (BRP) and one that doesn't.
 #if defined(PA_HAS_64_BITS_POINTERS)
-// The Configurable Pool is only available in 64-bit mode
+// The 3rd, Configurable Pool is only available in 64-bit mode.
 constexpr size_t kNumPools = 3;
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-// Special-case macOS. Contrary to other platforms, there is no sandbox limit
-// there, meaning that a single renderer could "happily" consume >8GiB. So the
-// 8GiB pool size is a regression. Make the limit higher on this platform only
-// to be consistent with previous behavior. See crbug.com/1232567 for details.
-//
-// On Linux, reserving memory is not costly, and we have cases where heaps can
-// grow to more than 8GiB without being a memory leak.
-constexpr size_t kPoolMaxSize = 16 * kGiB;
-#else
+// Maximum GigaCage pool size. With exception of Configurable Pool, it is also
+// the actual size, unless PA_USE_DYNAMICALLY_SIZED_GIGA_CAGE is set, which
+// allows to choose a different size at initialization time for certain
+// configurations.
+#if BUILDFLAG(IS_ANDROID)
+// Special-case Android, which incurs test failures with larger GigaCage.
 constexpr size_t kPoolMaxSize = 8 * kGiB;
+#else
+constexpr size_t kPoolMaxSize = 16 * kGiB;
 #endif
 #else  // defined(PA_HAS_64_BITS_POINTERS)
 constexpr size_t kNumPools = 2;
@@ -283,14 +276,14 @@ static constexpr pool_handle kConfigurablePoolHandle = 3;
 constexpr size_t kMaxMemoryTaggingSize = 1024;
 
 #if defined(PA_HAS_MEMORY_TAGGING)
-// Returns whether the tag of |object| overflowed and the containing slot needs
-// to be moved to quarantine.
+// Returns whether the tag of |object| overflowed, meaning the containing slot
+// needs to be moved to quarantine.
 PA_ALWAYS_INLINE bool HasOverflowTag(void* object) {
   // The tag with which the slot is put to quarantine.
   constexpr uintptr_t kOverflowTag = 0x0f00000000000000uLL;
-  static_assert((kOverflowTag & ~kMemTagUnmask) != 0,
+  static_assert((kOverflowTag & kPtrTagMask) != 0,
                 "Overflow tag must be in tag bits");
-  return (reinterpret_cast<uintptr_t>(object) & ~kMemTagUnmask) == kOverflowTag;
+  return (reinterpret_cast<uintptr_t>(object) & kPtrTagMask) == kOverflowTag;
 }
 #endif  // defined(PA_HAS_MEMORY_TAGGING)
 

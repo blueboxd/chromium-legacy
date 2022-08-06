@@ -209,14 +209,7 @@ class DeviceManagementServiceIntegrationTest
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
-#if BUILDFLAG(IS_CHROMEOS)
-// Very flaky on ChromeOS: https://crbug.com/1262952
-#define MAYBE_Registration DISABLED_Registration
-#else
-#define MAYBE_Registration Registration
-#endif
-IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
-                       MAYBE_Registration) {
+IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Registration) {
   PerformRegistration();
   EXPECT_FALSE(token_.empty());
 }
@@ -279,6 +272,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
   run_loop.Run();
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
@@ -293,6 +287,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
 
   run_loop.Run();
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 INSTANTIATE_TEST_SUITE_P(
     DeviceManagementServiceIntegrationTestInstance,

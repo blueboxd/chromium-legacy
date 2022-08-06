@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-  'accessibility_test_base.js', 'assert_additions.js', 'callback_helper.js',
-  'common.js', 'doc_utils.js'
+  'accessibility_test_base.js',
+  'assert_additions.js',
+  'callback_helper.js',
+  'common.js',
+  'doc_utils.js',
 ]);
 
 /**
@@ -23,6 +26,7 @@ E2ETestBase = class extends AccessibilityTestBase {
   async setUpDeferred() {
     await super.setUpDeferred();
     await importModule('EventGenerator', '/common/event_generator.js');
+    await importModule('KeyCode', '/common/key_code.js');
   }
 
   /** @override */

@@ -417,8 +417,7 @@ bool TableView::HasColumn(int id) const {
 }
 
 bool TableView::GetHasFocusIndicator() const {
-  int active_row = selection_model_.active();
-  return active_row != ui::ListSelectionModel::kUnselectedIndex &&
+  return selection_model_.active().has_value() &&
          active_visible_column_index_.has_value();
 }
 
@@ -757,10 +756,7 @@ bool TableView::HandleAccessibleAction(const ui::AXActionData& action_data) {
   bool focus_on_row =
       ax_view ? ax_view->GetData().role == ax::mojom::Role::kRow : false;
 
-  size_t active_row =
-      (selection_model_.active() == ui::ListSelectionModel::kUnselectedIndex)
-          ? ModelToView(0)
-          : static_cast<size_t>(selection_model_.active());
+  size_t active_row = selection_model_.active().value_or(ModelToView(0));
 
   switch (action_data.action) {
     case ax::mojom::Action::kDoDefault:
@@ -902,10 +898,14 @@ void TableView::OnItemsRemoved(size_t start, size_t length) {
     selection_model_.SetSelectedIndex(ViewToModel(
         std::min(GetRowCount() - 1, previously_selected_view_index.value())));
   }
-  if (!selection_model_.empty() && selection_model_.active() == -1)
-    selection_model_.set_active(GetFirstSelectedRow().value());
-  if (!selection_model_.empty() && selection_model_.anchor() == -1)
-    selection_model_.set_anchor(GetFirstSelectedRow().value());
+  if (!selection_model_.empty()) {
+    const size_t selected_model_index =
+        *selection_model_.selected_indices().begin();
+    if (!selection_model_.active().has_value())
+      selection_model_.set_active(selected_model_index);
+    if (!selection_model_.anchor().has_value())
+      selection_model_.set_anchor(selected_model_index);
+  }
 
   // Remove the virtual views that are no longer needed.
   auto& virtual_children = GetViewAccessibility().virtual_children();
@@ -1136,11 +1136,10 @@ gfx::Rect TableView::GetCellBounds(size_t row,
 }
 
 gfx::Rect TableView::GetActiveCellBounds() const {
-  if (selection_model_.active() == ui::ListSelectionModel::kUnselectedIndex)
+  if (!selection_model_.active().has_value())
     return gfx::Rect();
-  return GetCellBounds(
-      ModelToView(static_cast<size_t>(selection_model_.active())),
-      active_visible_column_index_.value());
+  return GetCellBounds(ModelToView(selection_model_.active().value()),
+                       active_visible_column_index_.value());
 }
 
 void TableView::AdjustCellBoundsForText(size_t visible_column_index,
@@ -1207,8 +1206,9 @@ TableView::PaintRegion TableView::GetPaintRegion(
   DCHECK(GetRowCount());
 
   PaintRegion region;
-  region.min_row = base::clamp(static_cast<size_t>(bounds.y() / row_height_),
-                               size_t{0}, GetRowCount() - 1);
+  region.min_row = static_cast<size_t>(
+      base::clamp(bounds.y() / row_height_, 0,
+                  base::saturated_cast<int>(GetRowCount() - 1)));
   region.max_row = static_cast<size_t>(bounds.bottom() / row_height_);
   if (bounds.bottom() % row_height_ != 0)
     region.max_row++;
@@ -1247,10 +1247,10 @@ void TableView::SchedulePaintForSelection() {
     const absl::optional<size_t> first_model_row = GetFirstSelectedRow();
     SchedulePaintInRect(GetRowBounds(ModelToView(first_model_row.value())));
 
-    const int active_row = selection_model_.active();
-    if (active_row >= 0 && first_model_row != static_cast<size_t>(active_row)) {
+    if (selection_model_.active().has_value() &&
+        first_model_row != selection_model_.active().value()) {
       SchedulePaintInRect(
-          GetRowBounds(ModelToView(static_cast<size_t>(active_row))));
+          GetRowBounds(ModelToView(selection_model_.active().value())));
     }
   } else if (selection_model_.size() > 1) {
     SchedulePaint();
@@ -1271,8 +1271,8 @@ void TableView::AdvanceActiveVisibleColumn(AdvanceDirection direction) {
   }
 
   if (!active_visible_column_index_.has_value()) {
-    if (selection_model_.active() == -1 && !header_row_is_active_)
-      SelectByViewIndex(0);
+    if (!selection_model_.active().has_value() && !header_row_is_active_)
+      SelectByViewIndex(size_t{0});
     SetActiveVisibleColumnIndex(size_t{0});
     return;
   }
@@ -1295,10 +1295,11 @@ void TableView::SetActiveVisibleColumnIndex(absl::optional<size_t> index) {
     return;
   active_visible_column_index_ = index;
 
-  if (selection_model_.active() != ui::ListSelectionModel::kUnselectedIndex &&
+  if (selection_model_.active().has_value() &&
       active_visible_column_index_.has_value()) {
-    ScrollRectToVisible(GetCellBounds(ModelToView(selection_model_.active()),
-                                      active_visible_column_index_.value()));
+    ScrollRectToVisible(
+        GetCellBounds(ModelToView(selection_model_.active().value()),
+                      active_visible_column_index_.value()));
   }
 
   UpdateFocusRings();
@@ -1326,9 +1327,9 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
   SchedulePaintForSelection();
 
   // Scroll the group for the active item to visible.
-  if (selection_model_.active() != -1) {
+  if (selection_model_.active().has_value()) {
     gfx::Rect vis_rect(GetVisibleBounds());
-    const GroupRange range(GetGroupRange(selection_model_.active()));
+    const GroupRange range(GetGroupRange(selection_model_.active().value()));
     const int start_y = GetRowBounds(ModelToView(range.start)).y();
     const int end_y =
         GetRowBounds(ModelToView(range.start + range.length - 1)).bottom();
@@ -1349,7 +1350,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
 }
 
 void TableView::AdvanceSelection(AdvanceDirection direction) {
-  if (selection_model_.active() == -1) {
+  if (!selection_model_.active().has_value()) {
     bool make_header_active =
         header_ && direction == AdvanceDirection::kDecrement;
     header_row_is_active_ = make_header_active;
@@ -1359,8 +1360,7 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
     ScheduleUpdateAccessibilityFocusIfNeeded();
     return;
   }
-  size_t view_index =
-      ModelToView(static_cast<size_t>(selection_model_.active()));
+  size_t view_index = ModelToView(selection_model_.active().value());
   if (direction == AdvanceDirection::kDecrement) {
     bool make_header_active = header_ && view_index == 0;
     header_row_is_active_ = make_header_active;
@@ -1377,12 +1377,14 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
 void TableView::ConfigureSelectionModelForEvent(
     const ui::LocatedEvent& event,
     ui::ListSelectionModel* model) const {
-  const int view_index = event.y() / row_height_;
-  DCHECK(view_index >= 0 && static_cast<size_t>(view_index) < GetRowCount());
+  const int view_index_int = event.y() / row_height_;
+  DCHECK_GE(view_index_int, 0);
+  const size_t view_index = static_cast<size_t>(view_index_int);
+  DCHECK_LT(view_index, GetRowCount());
 
-  if (selection_model_.anchor() == -1 || single_selection_ ||
+  if (!selection_model_.anchor().has_value() || single_selection_ ||
       (!IsCmdOrCtrl(event) && !event.IsShiftDown())) {
-    SelectRowsInRangeFrom(static_cast<size_t>(view_index), true, model);
+    SelectRowsInRangeFrom(view_index, true, model);
     model->set_anchor(ViewToModel(view_index));
     model->set_active(ViewToModel(view_index));
     return;
@@ -1396,13 +1398,11 @@ void TableView::ConfigureSelectionModelForEvent(
       *model = selection_model_;
     else
       model->set_anchor(selection_model_.anchor());
-    for (size_t i = std::min(static_cast<size_t>(view_index),
-                             ModelToView(model->anchor())),
-                end = std::max(static_cast<size_t>(view_index),
-                               ModelToView(model->anchor()));
-         i <= end; ++i) {
+    DCHECK(model->anchor().has_value());
+    const size_t anchor_index = ModelToView(model->anchor().value());
+    const auto [min, max] = std::minmax(view_index, anchor_index);
+    for (size_t i = min; i <= max; ++i)
       SelectRowsInRangeFrom(i, true, model);
-    }
     model->set_active(ViewToModel(view_index));
   } else {
     DCHECK(IsCmdOrCtrl(event));
@@ -1428,7 +1428,7 @@ void TableView::SelectRowsInRangeFrom(size_t view_index,
   }
 }
 
-GroupRange TableView::GetGroupRange(int model_index) const {
+GroupRange TableView::GetGroupRange(size_t model_index) const {
   GroupRange range;
   if (grouper_) {
     grouper_->GetGroupRange(model_index, &range);
@@ -1757,7 +1757,7 @@ gfx::Rect TableView::CalculateHeaderRowAccessibilityBounds() const {
 }
 
 gfx::Rect TableView::CalculateHeaderCellAccessibilityBounds(
-    const int visible_column_index) const {
+    const size_t visible_column_index) const {
   const gfx::Rect& header_bounds = CalculateHeaderRowAccessibilityBounds();
   const VisibleColumn& visible_column = visible_columns_[visible_column_index];
   gfx::Rect header_cell_bounds(visible_column.x, header_bounds.y(),
@@ -1766,14 +1766,14 @@ gfx::Rect TableView::CalculateHeaderCellAccessibilityBounds(
 }
 
 gfx::Rect TableView::CalculateTableRowAccessibilityBounds(
-    const int row_index) const {
+    const size_t row_index) const {
   gfx::Rect row_bounds = GetRowBounds(row_index);
   return row_bounds;
 }
 
 gfx::Rect TableView::CalculateTableCellAccessibilityBounds(
-    const int row_index,
-    const int visible_column_index) const {
+    const size_t row_index,
+    const size_t visible_column_index) const {
   gfx::Rect cell_bounds = GetCellBounds(row_index, visible_column_index);
   return cell_bounds;
 }
@@ -1816,13 +1816,13 @@ void TableView::UpdateAccessibilityFocus(
     return;
   }
 
-  if (selection_model_.active() == ui::ListSelectionModel::kUnselectedIndex ||
+  if (!selection_model_.active().has_value() ||
       !active_visible_column_index_.has_value()) {
     GetViewAccessibility().OverrideFocus(nullptr);
     return;
   }
 
-  size_t active_row = ModelToView(selection_model_.active());
+  size_t active_row = ModelToView(selection_model_.active().value());
   AXVirtualView* ax_row = GetVirtualAccessibilityBodyRow(active_row);
   if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell) {
     if (ax_row) {
@@ -1896,7 +1896,7 @@ AXVirtualView* TableView::GetVirtualAccessibilityCellImpl(
 }
 
 BEGIN_METADATA(TableView, View)
-ADD_READONLY_PROPERTY_METADATA(int, RowCount)
+ADD_READONLY_PROPERTY_METADATA(size_t, RowCount)
 ADD_READONLY_PROPERTY_METADATA(absl::optional<size_t>, FirstSelectedRow)
 ADD_READONLY_PROPERTY_METADATA(bool, HasFocusIndicator)
 ADD_PROPERTY_METADATA(absl::optional<size_t>, ActiveVisibleColumnIndex)

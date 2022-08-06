@@ -12,6 +12,7 @@
 
 #include "ipcz/driver_memory.h"
 #include "ipcz/driver_transport.h"
+#include "ipcz/fragment_ref.h"
 #include "ipcz/link_side.h"
 #include "ipcz/link_type.h"
 #include "ipcz/node.h"
@@ -53,14 +54,29 @@ class NodeLink : public msg::NodeMessageListener {
     Ref<Router> receiver;
   };
 
-  static Ref<NodeLink> Create(Ref<Node> node,
-                              LinkSide link_side,
-                              const NodeName& local_node_name,
-                              const NodeName& remote_node_name,
-                              Node::Type remote_node_type,
-                              uint32_t remote_protocol_version,
-                              Ref<DriverTransport> transport,
-                              Ref<NodeLinkMemory> memory);
+  // Creates a new NodeLink over a transport which is already active. This is
+  // only safe to call from within the activity handler of that transport, and
+  // the returned NodeLink will have effectively already been activated.
+  static Ref<NodeLink> CreateActive(Ref<Node> node,
+                                    LinkSide link_side,
+                                    const NodeName& local_node_name,
+                                    const NodeName& remote_node_name,
+                                    Node::Type remote_node_type,
+                                    uint32_t remote_protocol_version,
+                                    Ref<DriverTransport> transport,
+                                    Ref<NodeLinkMemory> memory);
+
+  // Creates a new NodeLink over a transport which is not yet active. This
+  // NodeLink must be explicitly activated with Activate() before it can be
+  // used.
+  static Ref<NodeLink> CreateInactive(Ref<Node> node,
+                                      LinkSide link_side,
+                                      const NodeName& local_node_name,
+                                      const NodeName& remote_node_name,
+                                      Node::Type remote_node_type,
+                                      uint32_t remote_protocol_version,
+                                      Ref<DriverTransport> transport,
+                                      Ref<NodeLinkMemory> memory);
 
   const Ref<Node>& node() const { return node_; }
   LinkSide link_side() const { return link_side_; }
@@ -73,14 +89,24 @@ class NodeLink : public msg::NodeMessageListener {
   NodeLinkMemory& memory() { return *memory_; }
   const NodeLinkMemory& memory() const { return *memory_; }
 
+  // Activates this NodeLink. The NodeLink must have been created with
+  // CreateInactive() and must not have already been activated.
+  void Activate();
+
   // Binds `sublink` on this NodeLink to the given `router`. `link_side`
   // specifies which side of the link this end identifies as (A or B), and
   // `type` specifies the type of link this is, from the perspective of
   // `router`.
-  Ref<RemoteRouterLink> AddRemoteRouterLink(SublinkId sublink,
-                                            LinkType type,
-                                            LinkSide side,
-                                            Ref<Router> router);
+  //
+  // If `link_state_fragment` is non-null, the given fragment contains the
+  // shared RouterLinkState structure for the new link. Only central links
+  // require a RouterLinkState.
+  Ref<RemoteRouterLink> AddRemoteRouterLink(
+      SublinkId sublink,
+      FragmentRef<RouterLinkState> link_state,
+      LinkType type,
+      LinkSide side,
+      Ref<Router> router);
 
   // Removes the route specified by `sublink`. Once removed, any messages
   // received for that sublink are ignored.
@@ -93,11 +119,62 @@ class NodeLink : public msg::NodeMessageListener {
   // Retrieves only the Router currently bound to `sublink` on this NodeLink.
   Ref<Router> GetRouter(SublinkId sublink);
 
+  // Sends a new driver memory object to the remote endpoint to be associated
+  // with BufferId within the peer NodeLink's associated NodeLinkMemory, and to
+  // be used to dynamically allocate blocks of `block_size` bytes. The BufferId
+  // must have already been reserved locally by this NodeLink using
+  // AllocateNewBufferId().
+  void AddBlockBuffer(BufferId id, uint32_t block_size, DriverMemory memory);
+
+  // Asks the broker on the other end of this link to introduce the local node
+  // to the node identified by `name`. This will always elicit a response from
+  // the broker in the form of either an AcceptIntroduction or
+  // RejectIntroduction message.
+  void RequestIntroduction(const NodeName& name);
+
+  // Introduces the remote node to the node named `name`, with details needed to
+  // construct a new NodeLink to that node.
+  void AcceptIntroduction(const NodeName& name,
+                          LinkSide side,
+                          uint32_t remote_protocol_version,
+                          Ref<DriverTransport> transport,
+                          DriverMemory memory);
+
+  // Rejects an introduction request previously sent by the remote node for the
+  // node identified by `name`.
+  void RejectIntroduction(const NodeName& name);
+
+  // Sends a request to the remote node to establish a new RouterLink over this
+  // this NodeLink, to replace an existing RouterLink between the remote node
+  // and `current_peer_node`. `current_peer_sublink` identifies the specific
+  // RouterLink between them which is to be replaced.
+  //
+  // `inbound_sequence_length_from_bypassed_link` is the final length of the
+  // parcel sequence to be routed over the link which is being bypassed.
+  // `new_sublink` and (optionally null) `new_link_state` can be used to
+  // establish the new link over the NodeLink transmitting this message.
+  void AcceptBypassLink(
+      const NodeName& current_peer_node,
+      SublinkId current_peer_sublink,
+      SequenceNumber inbound_sequence_length_from_bypassed_link,
+      SublinkId new_sublink,
+      FragmentRef<RouterLinkState> new_link_state);
+
+  // Sends a request to allocate a new shared memory region and invokes
+  // `callback` once the request succeeds or fails. On failure, `callback` is
+  // invoke with an invalid DriverMemory object.
+  using RequestMemoryCallback = std::function<void(DriverMemory)>;
+  void RequestMemory(size_t size, RequestMemoryCallback callback);
+
   // Permanently deactivates this NodeLink. Once this call returns the NodeLink
   // will no longer receive transport messages. It may still be used to transmit
   // outgoing messages, but it cannot be reactivated. Transmissions over a
   // deactivated transport may or may not guarantee delivery to the peer
   // transport, as this is left to driver's discretion.
+  //
+  // Must only be called on an activated NodeLink, either one which was created
+  // with CreateActive(), or one which was activated later by calling
+  // Activate().
   void Deactivate();
 
   // Finalizes serialization of DriverObjects within `message` and transmits it
@@ -106,6 +183,12 @@ class NodeLink : public msg::NodeMessageListener {
   void Transmit(Message& message);
 
  private:
+  enum ActivationState {
+    kNeverActivated,
+    kActive,
+    kDeactivated,
+  };
+
   NodeLink(Ref<Node> node,
            LinkSide link_side,
            const NodeName& local_node_name,
@@ -113,14 +196,29 @@ class NodeLink : public msg::NodeMessageListener {
            Node::Type remote_node_type,
            uint32_t remote_protocol_version,
            Ref<DriverTransport> transport,
-           Ref<NodeLinkMemory> memory);
+           Ref<NodeLinkMemory> memory,
+           ActivationState initial_activation_state);
   ~NodeLink() override;
 
   SequenceNumber GenerateOutgoingSequenceNumber();
 
   // NodeMessageListener overrides:
+  bool OnRequestIntroduction(msg::RequestIntroduction& request) override;
+  bool OnAcceptIntroduction(msg::AcceptIntroduction& accept) override;
+  bool OnRejectIntroduction(msg::RejectIntroduction& reject) override;
+  bool OnAddBlockBuffer(msg::AddBlockBuffer& add) override;
   bool OnAcceptParcel(msg::AcceptParcel& accept) override;
   bool OnRouteClosed(msg::RouteClosed& route_closed) override;
+  bool OnRouteDisconnected(msg::RouteDisconnected& route_disconnected) override;
+  bool OnBypassPeer(msg::BypassPeer& bypass) override;
+  bool OnAcceptBypassLink(msg::AcceptBypassLink& accept) override;
+  bool OnStopProxying(msg::StopProxying& stop) override;
+  bool OnProxyWillStop(msg::ProxyWillStop& will_stop) override;
+  bool OnBypassPeerWithLink(msg::BypassPeerWithLink& bypass) override;
+  bool OnStopProxyingToLocalPeer(msg::StopProxyingToLocalPeer& stop) override;
+  bool OnFlushRouter(msg::FlushRouter& flush) override;
+  bool OnRequestMemory(msg::RequestMemory& request) override;
+  bool OnProvideMemory(msg::ProvideMemory& provide) override;
   void OnTransportError() override;
 
   const Ref<Node> node_;
@@ -133,7 +231,7 @@ class NodeLink : public msg::NodeMessageListener {
   const Ref<NodeLinkMemory> memory_;
 
   absl::Mutex mutex_;
-  bool active_ ABSL_GUARDED_BY(mutex_) = true;
+  ActivationState activation_state_ ABSL_GUARDED_BY(mutex_);
 
   // Messages transmitted from this NodeLink may traverse either the driver
   // transport OR a shared memory queue. Messages transmitted from the same
@@ -144,6 +242,13 @@ class NodeLink : public msg::NodeMessageListener {
 
   using SublinkMap = absl::flat_hash_map<SublinkId, Sublink>;
   SublinkMap sublinks_ ABSL_GUARDED_BY(mutex_);
+
+  // Pending memory allocation request callbacks. Keyed by request size, when
+  // an incoming ProvideMemory message is received, the front of the list for
+  // that size is removed from the map and invoked with the new memory object.
+  using MemoryRequestMap =
+      absl::flat_hash_map<uint32_t, std::list<RequestMemoryCallback>>;
+  MemoryRequestMap pending_memory_requests_ ABSL_GUARDED_BY(mutex_);
 };
 
 }  // namespace ipcz

@@ -55,6 +55,7 @@
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -389,7 +390,7 @@ ui::mojom::blink::WindowOpenDisposition NavigationPolicyToDisposition(
     case kNavigationPolicyNewPopup:
       return ui::mojom::blink::WindowOpenDisposition::NEW_POPUP;
     case kNavigationPolicyPictureInPicture:
-      DCHECK(RuntimeEnabledFeatures::PictureInPictureV2Enabled());
+      DCHECK(RuntimeEnabledFeatures::DocumentPictureInPictureAPIEnabled());
       return ui::mojom::blink::WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
   }
   NOTREACHED() << "Unexpected NavigationPolicy";
@@ -513,8 +514,8 @@ void WebViewImpl::CloseWindowSoon() {
   // could be called from deep in Javascript.  If we ask the RenderViewHost to
   // close now, the window could be closed before the JS finishes executing,
   // thanks to nested message loops running and handling the resulting
-  // DestroyView IPC. So instead, post a message back to the message loop, which
-  // won't run until the JS is complete, and then the
+  // disconnecting `page_broadcast_`. So instead, post a message back to the
+  // message loop, which won't run until the JS is complete, and then the
   // RouteCloseEvent/RequestClose request can be sent.
   GetPage()
       ->GetPageScheduler()
@@ -564,6 +565,15 @@ WebViewImpl::WebViewImpl(
                 std::move(page_handle),
                 agent_group_scheduler.DefaultTaskRunner()),
       session_storage_namespace_id_(session_storage_namespace_id) {
+  if (receiver_) {
+    // Typically, the browser process closes the corresponding peer handle
+    // to signal the renderer process to destroy `this`. In certain
+    // situations where the lifetime of `this` is not controlled by a
+    // corresponding browser-side `RenderViewHostImpl` (e.g. tests or
+    // printing), call `Close()` directly instead to delete `this`.
+    receiver_.set_disconnect_handler(
+        WTF::Bind(&WebViewImpl::MojoDisconnected, WTF::Unretained(this)));
+  }
   if (!web_view_client_)
     DCHECK(!does_composite_);
   page_ = Page::CreateOrdinary(*chrome_client_,
@@ -1096,12 +1106,16 @@ void WebViewImpl::Close() {
 
   // Invalidate any weak ptrs as we are starting to shutdown.
   weak_ptr_factory_.InvalidateWeakPtrs();
+  receiver_.reset();
 
   // Initiate shutdown for the entire frameset.  This will cause a lot of
   // notifications to be sent. This will detach all frames in this WebView's
   // frame tree.
   page_->WillBeDestroyed();
   page_.Clear();
+
+  if (web_view_client_)
+    web_view_client_->OnDestruct();
 
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
@@ -1554,6 +1568,9 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetMainFrameClipsContent(!prefs.record_whole_document);
 
+  RuntimeEnabledFeatures::SetStylusHandwritingEnabled(
+      prefs.stylus_handwriting_enabled);
+
   settings->SetSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->SetSpatialNavigationEnabled(prefs.spatial_navigation_enabled);
@@ -1599,8 +1616,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetTextTrackMarginPercentage(prefs.text_track_margin_percentage);
   settings->SetTextTrackWindowColor(
       WebString::FromASCII(prefs.text_track_window_color));
-  settings->SetTextTrackWindowPadding(
-      WebString::FromASCII(prefs.text_track_window_padding));
   settings->SetTextTrackWindowRadius(
       WebString::FromASCII(prefs.text_track_window_radius));
 
@@ -1967,12 +1982,12 @@ void WebViewImpl::DidAttachLocalMainFrame() {
               ->GetAgentGroupScheduler()
               .DefaultTaskRunner()));
 
+  auto& viewport = GetPage()->GetVisualViewport();
   if (does_composite_) {
     // When attaching a local main frame, set up any state on the compositor.
     MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
     MainFrameImpl()->FrameWidgetImpl()->SetPrefersReducedMotion(
         web_preferences_.prefers_reduced_motion);
-    auto& viewport = GetPage()->GetVisualViewport();
     MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
@@ -1980,6 +1995,19 @@ void WebViewImpl::DidAttachLocalMainFrame() {
     // progress is made and BeginMainFrames are explicitly asked for.
     scoped_defer_main_frame_update_ =
         MainFrameImpl()->FrameWidgetImpl()->DeferMainFrameUpdate();
+  }
+
+  // It's possible that at the time that `local_frame` attached its document it
+  // was provisional so it couldn't initialize the root scroller. Try again now
+  // that the frame has been attached; this is a no-op if the root scroller is
+  // already initialized.
+  if (viewport.IsActiveViewport()) {
+    DCHECK(local_frame->GetDocument());
+    // DidAttachLocalMainFrame can be called before a new document is attached
+    // so ensure we don't try to initialize the root scroller on a stopped
+    // document.
+    if (local_frame->GetDocument()->IsActive())
+      local_frame->View()->InitializeRootScroller();
   }
 }
 
@@ -3521,17 +3549,23 @@ void WebViewImpl::PageScaleFactorChanged() {
   local_main_frame_host_remote_->ScaleFactorChanged(viewport.Scale());
 
   if (dev_tools_emulator_->HasViewportOverride()) {
-    TransformationMatrix device_emulation_transform =
-        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
-    SetDeviceEmulationTransform(device_emulation_transform);
+    // TODO(bokan): Can HasViewportOverride be set on a nested main frame? If
+    // not, we can enforce that when setting it and DCHECK IsOutermostMainFrame
+    // instead.
+    if (MainFrameImpl()->IsOutermostMainFrame()) {
+      TransformationMatrix device_emulation_transform =
+          dev_tools_emulator_->OutermostMainFrameScrollOrScaleChanged();
+      SetDeviceEmulationTransform(device_emulation_transform);
+    }
   }
 }
 
-void WebViewImpl::MainFrameScrollOffsetChanged() {
+void WebViewImpl::OutermostMainFrameScrollOffsetChanged() {
   DCHECK(MainFrameImpl());
+  DCHECK(MainFrameImpl()->IsOutermostMainFrame());
   if (dev_tools_emulator_->HasViewportOverride()) {
     TransformationMatrix device_emulation_transform =
-        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+        dev_tools_emulator_->OutermostMainFrameScrollOrScaleChanged();
     SetDeviceEmulationTransform(device_emulation_transform);
   }
 }
@@ -3777,7 +3811,6 @@ gfx::Size WebViewImpl::GetPreferredSizeForTest() {
 }
 
 void WebViewImpl::StopDeferringMainFrameUpdate() {
-  DCHECK(MainFrameImpl());
   scoped_defer_main_frame_update_ = nullptr;
 }
 
@@ -3793,6 +3826,41 @@ const SessionStorageNamespaceId& WebViewImpl::GetSessionStorageNamespaceId() {
 
 bool WebViewImpl::IsFencedFrameRoot() const {
   return GetPage()->IsMainFrameFencedFrameRoot();
+}
+
+void WebViewImpl::MojoDisconnected() {
+  // This IPC can be called from re-entrant contexts. We can't destroy a
+  // RenderViewImpl while references still exist on the stack, so we dispatch a
+  // non-nestable task. This method is called exactly once by the browser
+  // process, and is used to release ownership of the corresponding
+  // RenderViewImpl instance. https://crbug.com/1000035.
+  GetPage()->GetAgentGroupScheduler().DefaultTaskRunner()->PostNonNestableTask(
+      FROM_HERE, WTF::Bind(&WebViewImpl::Close, WTF::Unretained(this)));
+}
+
+void WebViewImpl::CreateRemoteMainFrame(
+    const RemoteFrameToken& frame_token,
+    const absl::optional<FrameToken>& opener_frame_token,
+    mojom::blink::FrameReplicationStatePtr replicated_state,
+    const base::UnguessableToken& devtools_frame_token,
+    mojom::blink::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
+    mojom::blink::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces) {
+  blink::WebFrame* opener = nullptr;
+  if (opener_frame_token)
+    opener = WebFrame::FromFrameToken(*opener_frame_token);
+  // Create a top level WebRemoteFrame.
+  WebRemoteFrameImpl::CreateMainFrame(
+      this, frame_token, devtools_frame_token, opener,
+      std::move(remote_frame_interfaces->frame_host),
+      std::move(remote_frame_interfaces->frame_receiver),
+      std::move(replicated_state));
+  // Root frame proxy has no ancestors to point to their RenderWidget.
+
+  // The WebRemoteFrame created here was already attached to the Page as its
+  // main frame, so we can call WebView's DidAttachRemoteMainFrame().
+  DidAttachRemoteMainFrame(
+      std::move(remote_main_frame_interfaces->main_frame_host),
+      std::move(remote_main_frame_interfaces->main_frame));
 }
 
 }  // namespace blink

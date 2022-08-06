@@ -16,11 +16,12 @@
 #include "ash/system/network/network_list_mobile_header_view.h"
 #include "ash/system/network/network_list_network_header_view.h"
 #include "ash/system/network/network_list_network_item_view.h"
+#include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -96,7 +97,7 @@ bool IsESimSupported() {
   // Check both the SIM slot infos and the number of EUICCs because the former
   // comes from Shill and the latter from Hermes, and so there may be instances
   // where one may be true while they other isn't.
-  if (chromeos::HermesManagerClient::Get()->GetAvailableEuiccs().empty())
+  if (HermesManagerClient::Get()->GetAvailableEuiccs().empty())
     return false;
 
   for (const auto& sim_info : *cellular_device->sim_infos) {
@@ -171,7 +172,7 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
     std::vector<NetworkStatePropertiesPtr> networks) {
   // Indicates the current position a view will be added to in
   // NetworkDetailedNetworkView scroll list.
-  int index = 0;
+  size_t index = 0;
 
   // Store current views in |previous_network_views|, views which have
   // a corresponding network in |networks| will be added back to
@@ -202,6 +203,7 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
     }
 
     if (!mobile_header_view_) {
+      RecordDetailedViewSection(DetailedViewSection::kMobileSection);
       mobile_header_view_ =
           network_detailed_network_view()->AddMobileSectionHeader();
       mobile_header_view_->SetID(static_cast<int>(
@@ -286,8 +288,8 @@ void NetworkListViewControllerImpl::UpdateNetworkTypeExistence(
       model()->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
 }
 
-int NetworkListViewControllerImpl::ShowConnectionWarningIfVpnOrProxy(
-    int index) {
+size_t NetworkListViewControllerImpl::ShowConnectionWarningIfVpnOrProxy(
+    size_t index) {
   const NetworkStateProperties* default_network = model()->default_network();
   bool using_proxy =
       default_network && default_network->proxy_mode != ProxyMode::kDirect;
@@ -331,8 +333,8 @@ bool NetworkListViewControllerImpl::ShouldMobileDataSectionBeShown() {
   return true;
 }
 
-int NetworkListViewControllerImpl::CreateSeparatorIfMissingAndReorder(
-    int index,
+size_t NetworkListViewControllerImpl::CreateSeparatorIfMissingAndReorder(
+    size_t index,
     views::Separator** separator_view) {
   // Separator view should never be the first view in the list.
   DCHECK(index);
@@ -387,6 +389,7 @@ void NetworkListViewControllerImpl::UpdateMobileSection() {
 
 void NetworkListViewControllerImpl::UpdateWifiSection() {
   if (!wifi_header_view_) {
+    RecordDetailedViewSection(DetailedViewSection::kWifiSection);
     wifi_header_view_ = network_detailed_network_view()->AddWifiSectionHeader();
     wifi_header_view_->SetID(static_cast<int>(
         NetworkListViewControllerViewChildId::kWifiSectionHeader));
@@ -423,7 +426,8 @@ void NetworkListViewControllerImpl::UpdateMobileToggleAndSetStatusMessage() {
   if (cellular_state == DeviceStateType::kUninitialized) {
     CreateInfoLabelIfMissingAndUpdate(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR,
                                       &mobile_status_message_);
-    mobile_header_view_->SetToggleVisibility(/*visible=*/false);
+    mobile_header_view_->SetToggleState(/*enabled=*/false,
+                                        /*is_on=*/false);
     return;
   }
 
@@ -548,13 +552,17 @@ void NetworkListViewControllerImpl::CreateInfoLabelIfMissingAndUpdate(
           std::move(info));
 }
 
-int NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
+size_t NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
     NetworkType type,
-    int index,
+    size_t index,
     std::vector<NetworkStatePropertiesPtr>& networks,
     NetworkIdToViewMap* previous_views) {
   NetworkIdToViewMap id_to_view_map;
   NetworkListNetworkItemView* network_view = nullptr;
+
+  // This value is used to determine whether at least one network of |type| type
+  // already existed prior to this method.
+  bool has_reordered_a_network = false;
 
   for (const auto& network : networks) {
     if (!NetworkTypeMatchesType(network->type, type))
@@ -566,6 +574,7 @@ int NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
     if (it == previous_views->end()) {
       network_view = network_detailed_network_view()->AddNetworkListItem();
     } else {
+      has_reordered_a_network = true;
       network_view = it->second;
       previous_views->erase(it);
     }
@@ -574,6 +583,14 @@ int NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
     network_view->UpdateViewForNetwork(network);
     network_detailed_network_view()->network_list()->ReorderChildView(
         network_view, index);
+
+    // Only emit ethernet metric each time we show Ethernet section
+    // for the first time. We use |has_reordered_a_network| to determine
+    // if Ethernet networks already exist in network detailed list.
+    if (NetworkTypeMatchesType(network->type, NetworkType::kEthernet) &&
+        !has_reordered_a_network) {
+      RecordDetailedViewSection(DetailedViewSection::kEthernetSection);
+    }
 
     // Increment |index| since this position was taken by |network_view|.
     index++;

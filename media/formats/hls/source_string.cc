@@ -11,6 +11,7 @@
 
 namespace media::hls {
 
+// static
 template <>
 SourceString SourceString::Create(base::PassKey<SourceLineIterator>,
                                   size_t line,
@@ -18,6 +19,7 @@ SourceString SourceString::Create(base::PassKey<SourceLineIterator>,
   return SourceString(line, 1, str, {});
 }
 
+// static
 template <>
 ResolvedSourceString ResolvedSourceString::Create(
     base::PassKey<VariableDictionary>,
@@ -28,12 +30,14 @@ ResolvedSourceString ResolvedSourceString::Create(
   return ResolvedSourceString(line, column, str, resolution_state);
 }
 
+// static
 template <typename ResolutionState>
 GenericSourceString<ResolutionState>
 GenericSourceString<ResolutionState>::CreateForTesting(base::StringPiece str) {
   return GenericSourceString::CreateForTesting(1, 1, str);
 }
 
+// static
 template <>
 SourceString SourceString::CreateForTesting(size_t line,
                                             size_t column,
@@ -41,6 +45,7 @@ SourceString SourceString::CreateForTesting(size_t line,
   return SourceString::CreateForTesting(line, column, str, {});
 }
 
+// static
 template <>
 ResolvedSourceString ResolvedSourceString::CreateForTesting(
     size_t line,
@@ -51,6 +56,7 @@ ResolvedSourceString ResolvedSourceString::CreateForTesting(
       ResolvedSourceStringState{.contains_substitutions = false});
 }
 
+// static
 template <typename ResolutionState>
 GenericSourceString<ResolutionState>
 GenericSourceString<ResolutionState>::CreateForTesting(
@@ -80,11 +86,26 @@ GenericSourceString<ResolutionState>::Consume(size_t count) {
   return consumed;
 }
 
+template <typename ResolutionState>
+GenericSourceString<ResolutionState>
+GenericSourceString<ResolutionState>::ConsumeDelimiter(char c) {
+  const auto index = Str().find_first_of(c);
+  const auto prefix = Consume(index);
+  Consume(1);
+  return prefix;
+}
+
 template <>
 ResolvedSourceString SourceString::SkipVariableSubstitution() const {
   return ResolvedSourceString(
       Line(), Column(), Str(),
       ResolvedSourceStringState{.contains_substitutions = false});
+}
+
+template <typename ResolutionState>
+void GenericSourceString<ResolutionState>::TrimStart() {
+  auto start = Str().find_first_not_of(" \t");
+  Consume(start);
 }
 
 template <>

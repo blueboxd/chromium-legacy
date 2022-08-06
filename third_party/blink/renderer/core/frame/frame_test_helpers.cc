@@ -48,6 +48,8 @@
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
@@ -129,6 +131,16 @@ T* CreateDefaultClientIfNeeded(T* client, std::unique_ptr<T>& owned_client) {
     return client;
   owned_client = std::make_unique<T>();
   return owned_client.get();
+}
+
+template <typename T>
+mojo::PendingAssociatedRemote<T> CreateStubRemoteIfNeeded(
+    mojo::PendingAssociatedRemote<T> remote) {
+  if (remote.is_valid())
+    return remote;
+  mojo::AssociatedRemote<T> stub_remote;
+  std::ignore = stub_remote.BindNewEndpointAndPassDedicatedReceiver();
+  return stub_remote.Unbind();
 }
 
 viz::FrameSinkId AllocateFrameSinkId() {
@@ -302,34 +314,50 @@ WebLocalFrameImpl* CreateLocalChild(
   return frame;
 }
 
-WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
-  std::unique_ptr<TestWebRemoteFrameClient> owned_client;
-  client = CreateDefaultClientIfNeeded(client, owned_client);
+WebRemoteFrameImpl* CreateRemote() {
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      mojom::blink::TreeScopeType::kDocument, client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetRemoteAssociatedInterfaces(), RemoteFrameToken());
-  client->Bind(frame, std::move(owned_client));
+      mojom::blink::TreeScopeType::kDocument, RemoteFrameToken());
   return frame;
 }
 
 WebRemoteFrameImpl* CreateRemoteChild(
     WebRemoteFrame& parent,
     const WebString& name,
-    scoped_refptr<SecurityOrigin> security_origin,
-    TestWebRemoteFrameClient* client) {
-  std::unique_ptr<TestWebRemoteFrameClient> owned_client;
-  client = CreateDefaultClientIfNeeded(client, owned_client);
-  auto* frame = To<WebRemoteFrameImpl>(parent.CreateRemoteChild(
-      mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetRemoteAssociatedInterfaces(), RemoteFrameToken(),
-      /*devtools_frame_token=*/base::UnguessableToken(), nullptr));
-  client->Bind(frame, std::move(owned_client));
+    scoped_refptr<SecurityOrigin> security_origin) {
+  mojom::blink::FrameReplicationStatePtr replicated_state =
+      mojom::blink::FrameReplicationState::New();
+  replicated_state->name = name;
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
-  frame->GetFrame()->SetReplicatedOrigin(std::move(security_origin), false);
+  replicated_state->origin = std::move(security_origin);
+
+  auto* frame = To<WebRemoteFrameImpl>(parent).CreateRemoteChild(
+      mojom::blink::TreeScopeType::kDocument, RemoteFrameToken(),
+      /*devtools_frame_token=*/base::UnguessableToken(), /*opener=*/nullptr,
+      CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+          mojo::NullAssociatedRemote()),
+      mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+          .BindNewEndpointAndPassDedicatedReceiver(),
+      std::move(replicated_state));
   return frame;
+}
+
+void SwapRemoteFrame(
+    WebFrame* old_frame,
+    WebRemoteFrame* new_remote_frame,
+    mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost> frame_host) {
+  mojom::FrameReplicationStatePtr replicated_state =
+      mojom::FrameReplicationState::New();
+  // Preserve the frame's name on swap.
+  replicated_state->name =
+      WebFrame::ToCoreFrame(*old_frame)->Tree().GetName().Utf8();
+
+  old_frame->Swap(new_remote_frame,
+                  CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+                      std::move(frame_host)),
+                  mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+                      .BindNewEndpointAndPassDedicatedReceiver(),
+                  std::move(replicated_state));
 }
 
 WebViewHelper::WebViewHelper(
@@ -381,7 +409,7 @@ WebViewHelper::~WebViewHelper() {
 WebViewImpl* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
     TestWebFrameClient* web_frame_client,
-    TestWebViewClient* web_view_client,
+    WebViewClient* web_view_client,
     void (*update_settings_func)(WebSettings*),
     absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode) {
   Reset();
@@ -420,7 +448,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 
 WebViewImpl* WebViewHelper::Initialize(
     TestWebFrameClient* web_frame_client,
-    TestWebViewClient* web_view_client,
+    WebViewClient* web_view_client,
     void (*update_settings_func)(WebSettings*)) {
   return InitializeWithOpener(nullptr, web_frame_client, web_view_client,
                               update_settings_func);
@@ -434,7 +462,7 @@ WebViewImpl* WebViewHelper::InitializeWithSettings(
 WebViewImpl* WebViewHelper::InitializeAndLoad(
     const std::string& url,
     TestWebFrameClient* web_frame_client,
-    TestWebViewClient* web_view_client,
+    WebViewClient* web_view_client,
     void (*update_settings_func)(WebSettings*)) {
   DocumentLoader::DisableCodeCacheForTesting();
   Initialize(web_frame_client, web_view_client, update_settings_func);
@@ -445,36 +473,32 @@ WebViewImpl* WebViewHelper::InitializeAndLoad(
 }
 
 WebViewImpl* WebViewHelper::InitializeRemote(
-    TestWebRemoteFrameClient* client,
     scoped_refptr<SecurityOrigin> security_origin,
-    TestWebViewClient* web_view_client) {
-  return InitializeRemoteWithOpener(nullptr, client, security_origin,
-                                    web_view_client);
+    WebViewClient* web_view_client) {
+  return InitializeRemoteWithOpener(nullptr, security_origin, web_view_client);
 }
 
 WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
     WebFrame* opener,
-    TestWebRemoteFrameClient* web_remote_frame_client,
     scoped_refptr<SecurityOrigin> security_origin,
-    TestWebViewClient* web_view_client) {
+    WebViewClient* web_view_client) {
   Reset();
 
   InitializeWebView(web_view_client, nullptr, absl::nullopt);
 
-  std::unique_ptr<TestWebRemoteFrameClient> owned_web_remote_frame_client;
-  web_remote_frame_client = CreateDefaultClientIfNeeded(
-      web_remote_frame_client, owned_web_remote_frame_client);
-  WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
-      web_view_, web_remote_frame_client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      web_remote_frame_client->GetRemoteAssociatedInterfaces(),
-      RemoteFrameToken(), /*devtools_frame_token=*/base::UnguessableToken(),
-      opener);
-  web_remote_frame_client->Bind(frame,
-                                std::move(owned_web_remote_frame_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
-  frame->GetFrame()->SetReplicatedOrigin(std::move(security_origin), false);
+  auto replication_state = mojom::blink::FrameReplicationState::New();
+  replication_state->origin = security_origin;
+
+  WebRemoteFrameImpl::CreateMainFrame(
+      web_view_, RemoteFrameToken(),
+      /*devtools_frame_token=*/base::UnguessableToken(), opener,
+      CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+          mojo::NullAssociatedRemote()),
+      mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+          .BindNewEndpointAndPassDedicatedReceiver(),
+      std::move(replication_state));
   return web_view_;
 }
 
@@ -596,14 +620,18 @@ void WebViewHelper::Reset() {
       << "Platform::Current() should be the same for the life of a test, "
          "including shutdown.";
 
-  if (test_web_view_client_)
-    test_web_view_client_->DestroyChildViews();
   if (web_view_) {
+    // Prune opened windows before this helper resets.
+    if (auto* local_main_frame =
+            DynamicTo<WebLocalFrameImpl>(web_view_->MainFrame())) {
+      static_cast<TestWebFrameClient*>(local_main_frame->Client())
+          ->DestroyChildViews();
+    }
+
     DCHECK(!TestWebFrameClient::IsLoading());
     web_view_->Close();
     web_view_ = nullptr;
   }
-  test_web_view_client_ = nullptr;
 }
 
 cc::LayerTreeHost* WebViewHelper::GetLayerTreeHost() const {
@@ -631,13 +659,13 @@ void WebViewHelper::Resize(const gfx::Size& size) {
 }
 
 void WebViewHelper::InitializeWebView(
-    TestWebViewClient* web_view_client,
+    WebViewClient* web_view_client,
     class WebView* opener,
     absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode) {
-  test_web_view_client_ =
-      CreateDefaultClientIfNeeded(web_view_client, owned_test_web_view_client_);
+  web_view_client =
+      CreateDefaultClientIfNeeded(web_view_client, owned_web_view_client_);
   web_view_ = To<WebViewImpl>(
-      WebView::Create(test_web_view_client_,
+      WebView::Create(web_view_client,
                       /*is_hidden=*/false,
                       /*is_prerendering=*/false,
                       /*is_inside_portal=*/false,
@@ -814,22 +842,24 @@ void TestWebFrameClient::DidMeaningfulLayout(
   }
 }
 
-TestWebRemoteFrameClient::TestWebRemoteFrameClient()
-    : associated_interface_provider_(new AssociatedInterfaceProvider(nullptr)) {
+WebView* TestWebFrameClient::CreateNewWindow(
+    const WebURLRequest&,
+    const WebWindowFeatures&,
+    const WebString& name,
+    WebNavigationPolicy,
+    network::mojom::blink::WebSandboxFlags,
+    const SessionStorageNamespaceId&,
+    bool& consumed_user_gesture,
+    const absl::optional<Impression>&,
+    const absl::optional<WebPictureInPictureWindowOptions>&) {
+  auto webview_helper = std::make_unique<WebViewHelper>();
+  WebView* result = webview_helper->InitializeWithOpener(frame_);
+  child_web_views_.push_back(std::move(webview_helper));
+  return result;
 }
 
-void TestWebRemoteFrameClient::Bind(
-    WebRemoteFrame* frame,
-    std::unique_ptr<TestWebRemoteFrameClient> self_owned) {
-  DCHECK(!frame_);
-  DCHECK(!self_owned || self_owned.get() == this);
-  frame_ = frame;
-  self_owned_ = std::move(self_owned);
-}
-
-void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
-  frame_->Close();
-  self_owned_.reset();
+void TestWebFrameClient::DestroyChildViews() {
+  child_web_views_.clear();
 }
 
 TestWidgetInputHandlerHost* TestWebFrameWidget::GetInputHandlerHost() {
@@ -852,7 +882,16 @@ void TestWebFrameWidget::DispatchThroughCcInputHandler(
   GetWidgetInputHandlerManager()->DispatchEvent(
       std::make_unique<WebCoalescedInputEvent>(event.Clone(),
                                                ui::LatencyInfo()),
-      mojom::blink::WidgetInputHandler::DispatchEventCallback());
+      base::BindOnce(
+          [](WeakMember<TestWebFrameWidget> widget,
+             mojom::blink::InputEventResultSource, const ui::LatencyInfo&,
+             mojom::blink::InputEventResultState,
+             mojom::blink::DidOverscrollParamsPtr overscroll,
+             mojom::blink::TouchActionOptionalPtr) {
+            if (widget)
+              widget->last_overscroll_ = std::move(overscroll);
+          },
+          this));
   FlushInputHandlerTasks();
 }
 
@@ -973,27 +1012,6 @@ void TestWebFrameWidgetHost::BindWidgetHost(
         frame_receiver) {
   receiver_.Bind(std::move(receiver));
   frame_receiver_.Bind(std::move(frame_receiver));
-}
-
-void TestWebViewClient::DestroyChildViews() {
-  child_web_views_.clear();
-}
-
-WebView* TestWebViewClient::CreateView(
-    WebLocalFrame* opener,
-    const WebURLRequest&,
-    const WebWindowFeatures&,
-    const WebString& name,
-    WebNavigationPolicy,
-    network::mojom::blink::WebSandboxFlags,
-    const SessionStorageNamespaceId&,
-    bool& consumed_user_gesture,
-    const absl::optional<Impression>&,
-    const absl::optional<WebPictureInPictureWindowOptions>&) {
-  auto webview_helper = std::make_unique<WebViewHelper>();
-  WebView* result = webview_helper->InitializeWithOpener(opener);
-  child_web_views_.push_back(std::move(webview_helper));
-  return result;
 }
 
 mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost>

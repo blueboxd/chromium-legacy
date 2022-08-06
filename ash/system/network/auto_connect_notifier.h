@@ -11,7 +11,7 @@
 #include "ash/ash_export.h"
 #include "chromeos/ash/components/network/auto_connect_handler.h"
 #include "chromeos/ash/components/network/network_connection_observer.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 
 namespace base {
 class OneShotTimer;
@@ -23,8 +23,8 @@ namespace ash {
 // network after the user has explicitly requested another network connection.
 // See https://crbug.com/764000 for details.
 class ASH_EXPORT AutoConnectNotifier
-    : public chromeos::NetworkConnectionObserver,
-      public chromeos::NetworkStateHandlerObserver,
+    : public NetworkConnectionObserver,
+      public NetworkStateHandlerObserver,
       public chromeos::AutoConnectHandler::Observer {
  public:
   AutoConnectNotifier();
@@ -34,12 +34,11 @@ class ASH_EXPORT AutoConnectNotifier
 
   ~AutoConnectNotifier() override;
 
-  // chromeos::NetworkConnectionObserver:
+  // NetworkConnectionObserver:
   void ConnectToNetworkRequested(const std::string& service_path) override;
 
-  // chromeos::NetworkStateHandlerObserver:
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  // NetworkStateHandlerObserver:
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
 
   // chromeos::AutoConnectHandler::Observer:
   void OnAutoConnectedInitiated(int auto_connect_reasons) override;
@@ -51,7 +50,7 @@ class ASH_EXPORT AutoConnectNotifier
   static const char kAutoConnectToastId[];
 
  private:
-  void DisplayToast(const chromeos::NetworkState* network);
+  void DisplayToast(const NetworkState* network);
 
   bool has_user_explicitly_requested_connection_ = false;
   std::string connected_network_guid_;

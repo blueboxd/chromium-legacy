@@ -52,7 +52,7 @@ void DownloadShelfContextMenu::RecordCommandsEnabled(
 
   for (int command_int = 1; command_int < DownloadCommands::Command::MAX;
        command_int++) {
-    if (model->GetIndexOfCommandId(command_int) != -1 &&
+    if (model->GetIndexOfCommandId(command_int).has_value() &&
         IsCommandIdEnabled(command_int)) {
       DownloadCommands::Command download_command =
           static_cast<DownloadCommands::Command>(command_int);
@@ -74,7 +74,7 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 
   DCHECK(WantsContextMenu(download_.get()));
 
-  bool is_download = download_->download() != nullptr;
+  bool is_download = download_->GetDownloadItem() != nullptr;
 
   if (download_->IsMixedContent()) {
     model = GetMixedContentDownloadMenuModel();

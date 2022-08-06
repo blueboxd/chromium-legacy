@@ -16,26 +16,16 @@ namespace enterprise_connectors {
 
 namespace {
 
-const base::Value* GetPolicyUrlPatterns(PrefService* prefs) {
-  return prefs->GetList(kContextAwareAccessSignalsAllowlistPref);
+const base::Value::List& GetPolicyUrlPatterns(PrefService* prefs) {
+  return prefs->GetValueList(kContextAwareAccessSignalsAllowlistPref);
 }
 
 bool ConnectorPolicyHasValues(PrefService* profile_prefs) {
-  const auto* list = GetPolicyUrlPatterns(profile_prefs);
-  return list && !list->GetListDeprecated().empty();
+  const auto& list = GetPolicyUrlPatterns(profile_prefs);
+  return !list.empty();
 }
 
 }  // namespace
-
-// static
-bool DeviceTrustConnectorService::IsConnectorEnabled(
-    PrefService* profile_prefs) {
-  if (!IsDeviceTrustConnectorFeatureEnabled() || !profile_prefs) {
-    return false;
-  }
-
-  return ConnectorPolicyHasValues(profile_prefs);
-}
 
 DeviceTrustConnectorService::DeviceTrustConnectorService(
     PrefService* profile_prefs)
@@ -46,7 +36,9 @@ DeviceTrustConnectorService::DeviceTrustConnectorService(
 DeviceTrustConnectorService::~DeviceTrustConnectorService() = default;
 
 bool DeviceTrustConnectorService::IsConnectorEnabled() const {
-  return DeviceTrustConnectorService::IsConnectorEnabled(profile_prefs_);
+  if (!IsDeviceTrustConnectorFeatureEnabled() || !profile_prefs_)
+    return false;
+  return ConnectorPolicyHasValues(profile_prefs_);
 }
 
 void DeviceTrustConnectorService::Initialize() {
@@ -79,17 +71,16 @@ void DeviceTrustConnectorService::OnConnectorEnabled() {
 void DeviceTrustConnectorService::OnPolicyUpdated() {
   DCHECK(IsDeviceTrustConnectorFeatureEnabled());
 
-  const base::Value* url_patterns = GetPolicyUrlPatterns(profile_prefs_);
+  const base::Value::List& url_patterns = GetPolicyUrlPatterns(profile_prefs_);
 
   if (!matcher_ || !matcher_->IsEmpty()) {
     // Reset the matcher.
     matcher_ = std::make_unique<url_matcher::URLMatcher>();
   }
 
-  if (url_patterns && !url_patterns->GetListDeprecated().empty()) {
+  if (!url_patterns.empty()) {
     // Add the new endpoints to the conditions.
-    url_matcher::util::AddAllowFilters(
-        matcher_.get(), &base::Value::AsListValue(*url_patterns));
+    url_matcher::util::AddAllowFilters(matcher_.get(), url_patterns);
 
     // Call the hook which signals that the connector has been enabled.
     OnConnectorEnabled();

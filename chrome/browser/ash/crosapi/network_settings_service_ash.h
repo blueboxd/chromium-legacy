@@ -7,9 +7,9 @@
 
 #include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -22,7 +22,7 @@ class PrefRegistrySimple;
 class Profile;
 class ProfileManager;
 
-namespace chromeos {
+namespace ash {
 class NetworkState;
 }
 
@@ -37,7 +37,7 @@ namespace crosapi {
 // then it will clear the proxy settings set by an extension in the primary
 // profile.
 class NetworkSettingsServiceAsh : public crosapi::mojom::NetworkSettingsService,
-                                  public chromeos::NetworkStateHandlerObserver,
+                                  public ash::NetworkStateHandlerObserver,
                                   public ProfileManagerObserver {
  public:
   explicit NetworkSettingsServiceAsh(PrefService* local_state);
@@ -60,7 +60,7 @@ class NetworkSettingsServiceAsh : public crosapi::mojom::NetworkSettingsService,
 
  private:
   // NetworkStateHandlerObserver:
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const ash::NetworkState* network) override;
 
   void SendProxyConfigToObservers();
 
@@ -98,7 +98,7 @@ class NetworkSettingsServiceAsh : public crosapi::mojom::NetworkSettingsService,
   ProfileManager* profile_manager_ = nullptr;
 
   base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+                          ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   // Support any number of connections.

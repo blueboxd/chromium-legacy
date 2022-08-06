@@ -15,7 +15,7 @@ import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 import '../../prefs/pref_util.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import './search_engine.js';
@@ -92,7 +92,7 @@ class SettingsSearchSubpageElement extends SettingsSearchSubpageElementBase {
         value() {
           return this.getAriaLabelledSubLabel_(
               this.i18nAdvanced('quickAnswersEnableDescriptionWithLink'));
-        }
+        },
       },
 
       /** @private */
@@ -101,7 +101,7 @@ class SettingsSearchSubpageElement extends SettingsSearchSubpageElementBase {
         value() {
           return this.getAriaLabelledSubLabel_(
               this.i18nAdvanced('quickAnswersTranslationEnableDescription'));
-        }
+        },
       },
     };
   }

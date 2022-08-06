@@ -17,14 +17,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -36,6 +39,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@DisableFeatures({ChromeFeatureList.OPTIMIZE_GEOLOCATION_HEADER_GENERATION})
 public class GeolocationHeaderTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -50,12 +54,12 @@ public class GeolocationHeaderTest {
     private static final double LOCATION_LAT = 20.3;
     private static final double LOCATION_LONG = 155.8;
     private static final float LOCATION_ACCURACY = 20f;
+    private static final String TAG = "GeolocationHeaderTst";
 
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         mOmniboxTestUtils = new OmniboxTestUtils(mActivityTestRule.getActivity());
-        GeolocationHeader.setAppPermissionGrantedForTesting(true);
     }
 
     @Test
@@ -306,9 +310,30 @@ public class GeolocationHeaderTest {
 
     private void setPermission(final @ContentSettingValues int setting) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Profile profile = Profile.getLastUsedRegularProfile();
             PermissionInfo infoHttps =
                     new PermissionInfo(ContentSettingsType.GEOLOCATION, SEARCH_URL_1, null, false);
-            infoHttps.setContentSetting(Profile.getLastUsedRegularProfile(), setting);
+            Log.i(TAG,
+                    "[crbug/1338183] Before Settting|isNativeInitialized: "
+                            + profile.isNativeInitialized());
+            Log.i(TAG,
+                    "[crbug/1338183] Before Settting|getBrowserProfileTypeFromProfile: "
+                            + Profile.getBrowserProfileTypeFromProfile(profile));
+            Log.i(TAG,
+                    "[crbug/1338183] Before Settting|getNativeBrowserContextPointer: "
+                            + profile.getNativeBrowserContextPointer());
+
+            infoHttps.setContentSetting(profile, setting);
+
+            Log.i(TAG,
+                    "[crbug/1338183] After Settting|isNativeInitialized: "
+                            + profile.isNativeInitialized());
+            Log.i(TAG,
+                    "[crbug/1338183] Before Settting|getBrowserProfileTypeFromProfile: "
+                            + Profile.getBrowserProfileTypeFromProfile(profile));
+            Log.i(TAG,
+                    "[crbug/1338183] Before Settting|getNativeBrowserContextPointer: "
+                            + profile.getNativeBrowserContextPointer());
         });
     }
 }

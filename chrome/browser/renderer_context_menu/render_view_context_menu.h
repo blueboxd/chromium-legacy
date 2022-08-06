@@ -52,10 +52,6 @@ class QuickAnswersMenuObserver;
 class SpellingMenuObserver;
 class SpellingOptionsSubMenuObserver;
 
-namespace ash {
-class SystemWebAppDelegate;
-}
-
 namespace content {
 class RenderFrameHost;
 class WebContents;
@@ -81,6 +77,9 @@ class DataTransferEndpoint;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace ash {
+class SystemWebAppDelegate;
+}
 namespace policy {
 class DlpRulesManager;
 }  // namespace policy
@@ -243,6 +242,7 @@ class RenderViewContextMenu
   void AppendRegionSearchItem();
   bool AppendFollowUnfollowItem();
   void AppendSendTabToSelfItem(bool add_separator);
+  void AppendUserNotesItems();
   bool AppendQRCodeGeneratorItem(bool for_image,
                                  bool draw_icon,
                                  bool add_separator);
@@ -270,6 +270,7 @@ class RenderViewContextMenu
   bool IsOpenLinkOTREnabled() const;
   bool IsSearchWebForEnabled() const;
   bool IsRegionSearchEnabled() const;
+  bool IsAddANoteEnabled() const;
 
   // Command execution functions.
   void ExecOpenWebApp();
@@ -283,6 +284,7 @@ class RenderViewContextMenu
   void ExecCopyLinkText();
   void ExecCopyImageAt();
   void ExecSearchLensForImage();
+  void ExecAddANote();
   void ExecRegionSearch(int event_flags,
                         bool is_google_default_search_provider);
   void ExecSearchWebForImage();
@@ -389,8 +391,10 @@ class RenderViewContextMenu
   std::unique_ptr<ClickToCallContextMenuObserver>
       click_to_call_context_menu_observer_;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // The system app (if any) associated with the WebContents we're in.
   raw_ptr<const ash::SystemWebAppDelegate> system_app_ = nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // A one-time callback that will be called the next time a plugin action is
   // executed from a given render frame.

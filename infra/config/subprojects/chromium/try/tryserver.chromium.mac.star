@@ -27,7 +27,7 @@ def ios_builder(*, name, **kwargs):
     kwargs.setdefault("builderless", False)
     kwargs.setdefault("os", os.MAC_DEFAULT)
     kwargs.setdefault("ssd", None)
-    kwargs.setdefault("xcode", xcode.x13main)
+    kwargs.setdefault("xcode", xcode.x14main)
     return try_.builder(name = name, **kwargs)
 
 consoles.list_view(
@@ -51,6 +51,7 @@ try_.builder(
         "ci/Mac Builder",
         "ci/mac-osxbeta-rel",
     ],
+    builderless = False,
     os = os.MAC_DEFAULT,
 )
 
@@ -68,7 +69,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "mac-fieldtrial-fyi-rel",
+    name = "mac-fieldtrial-rel",
     os = os.MAC_DEFAULT,
     mirrors = ["ci/mac-fieldtrial-rel"],
 )
@@ -101,6 +102,7 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
+        "enable_weetbix_queries": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -111,6 +113,9 @@ try_.compilator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 try_.builder(
@@ -144,6 +149,9 @@ try_.compilator_builder(
     os = os.MAC_12,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -282,6 +290,9 @@ ios_builder(
 
 ios_builder(
     name = "ios-catalyst",
+
+    # TODO(crbug.com/1350126): Move ios-catalyst to xcode.x14main when fixed.
+    xcode = xcode.x13main,
     mirrors = [
         "ci/ios-catalyst",
     ],
@@ -295,7 +306,7 @@ ios_builder(
 )
 
 ios_builder(
-    name = "ios-fieldtrial-fyi-rel",
+    name = "ios-fieldtrial-rel",
     builderless = True,
     mirrors = ["ci/ios-fieldtrial-rel"],
 )
@@ -326,6 +337,9 @@ ios_builder(
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 ios_builder(
@@ -380,7 +394,6 @@ ios_builder(
     mirrors = [
         "ci/ios-simulator-noncq",
     ],
-    xcode = xcode.x13main,
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/third_party/crashpad/crashpad/.+",
@@ -394,7 +407,6 @@ ios_builder(
 
 ios_builder(
     name = "ios15-sdk-simulator",
-    xcode = xcode.x13betabots,
     os = os.MAC_12,
 )
 

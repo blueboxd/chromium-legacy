@@ -20,6 +20,8 @@
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/base/ime/linux/linux_input_method_context_factory.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
@@ -37,9 +39,10 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_exchange_data_provider.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_controller.h"
-#include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
+#include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
 #include "ui/ozone/platform/wayland/host/wayland_menu_utils.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -99,6 +102,7 @@ class OzonePlatformWayland : public OzonePlatform,
 
   ~OzonePlatformWayland() override {
     KeyEvent::SetSynthesizeKeyRepeatEnabled(old_synthesize_key_repeat_enabled_);
+    GetInputMethodContextFactoryForOzone() = LinuxInputMethodContextFactory();
   }
 
   // OzonePlatform
@@ -164,19 +168,9 @@ class OzonePlatformWayland : public OzonePlatform,
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate,
+      ImeKeyEventDispatcher* ime_key_event_dispatcher,
       gfx::AcceleratedWidget widget) override {
-    // Instantiate and set LinuxInputMethodContextFactory unless it is already
-    // set (e.g: tests may have already set it).
-    if (!LinuxInputMethodContextFactory::instance() &&
-        !input_method_context_factory_) {
-      input_method_context_factory_ =
-          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
-      LinuxInputMethodContextFactory::SetInstance(
-          input_method_context_factory_.get());
-    }
-
-    return std::make_unique<InputMethodAuraLinux>(delegate);
+    return std::make_unique<InputMethodAuraLinux>(ime_key_event_dispatcher);
   }
 
   PlatformMenuUtils* GetPlatformMenuUtils() override {
@@ -247,6 +241,19 @@ class OzonePlatformWayland : public OzonePlatform,
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
     wayland_utils_ = std::make_unique<WaylandUtils>(connection_.get());
 
+    if (connection_->text_input_manager_v1()) {
+      GetInputMethodContextFactoryForOzone() = base::BindRepeating(
+          [](WaylandConnection* connection,
+             WaylandKeyboard::Delegate* key_delegate,
+             LinuxInputMethodContextDelegate* ime_delegate)
+              -> std::unique_ptr<LinuxInputMethodContext> {
+            return std::make_unique<WaylandInputMethodContext>(
+                connection, key_delegate, ime_delegate);
+          },
+          base::Unretained(connection_.get()),
+          base::Unretained(connection_->event_source()));
+    }
+
     return true;
   }
 
@@ -281,13 +288,14 @@ class OzonePlatformWayland : public OzonePlatform,
       properties->set_parent_for_non_top_level_windows = true;
       properties->app_modal_dialogs_use_event_blocker = true;
 
-      // By design, clients are disallowed to manipulate global screen
-      // coordinates, instead only surface-local ones are supported.
+      // Xdg/Wl shell protocol does not disallow clients to manipulate global
+      // screen coordinates, instead only surface-local ones are supported.
       // Non-toplevel surfaces, for example, must be positioned relative to
       // their parents. As for toplevel surfaces, clients simply don't know
       // their position on screens and always assume they are located at some
       // arbitrary position.
-      properties->supports_global_screen_coordinates = false;
+      properties->supports_global_screen_coordinates =
+          features::IsWaylandScreenCoordinatesEnabled();
 
       initialised = true;
     }
@@ -397,8 +405,6 @@ class OzonePlatformWayland : public OzonePlatform,
   std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  std::unique_ptr<WaylandInputMethodContextFactory>
-      input_method_context_factory_;
   std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
   std::unique_ptr<WaylandMenuUtils> menu_utils_;
   std::unique_ptr<WaylandUtils> wayland_utils_;

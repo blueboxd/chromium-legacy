@@ -12,9 +12,13 @@ import '../../a11y_page/captions_subpage.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import './manage_a11y_page.js';
 import './text_to_speech_page.js';
+import './display_and_magnification_page.js';
+import './keyboard_and_text_input_page.js';
+import './cursor_and_touchpad_page.js';
+import './audio_and_captions_page.js';
 import './switch_access_subpage.js';
 import './tts_subpage.js';
 
@@ -86,7 +90,7 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
         value: false,
       },
 
-      /** @private {!Map<string, string>} */
+      /** @protected {!Map<string, string>} */
       focusConfig_: {
         type: Object,
         value() {
@@ -94,14 +98,36 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
           if (routes.MANAGE_ACCESSIBILITY) {
             map.set(routes.MANAGE_ACCESSIBILITY.path, '#subpage-trigger');
           }
-          if (routes.TEXT_TO_SPEECH) {
-            map.set(routes.TEXT_TO_SPEECH.path, '#text-to-speech-page-trigger');
+          if (routes.A11Y_TEXT_TO_SPEECH) {
+            map.set(
+                routes.A11Y_TEXT_TO_SPEECH.path,
+                '#text-to-speech-page-trigger');
+          }
+          if (routes.A11Y_DISPLAY_AND_MAGNIFICATION) {
+            map.set(
+                routes.A11Y_DISPLAY_AND_MAGNIFICATION.path,
+                '#display-and-magnification-page-trigger');
+          }
+          if (routes.A11Y_KEYBOARD_AND_TEXT_INPUT) {
+            map.set(
+                routes.A11Y_KEYBOARD_AND_TEXT_INPUT.path,
+                '#keyboard-and-text-input-page-trigger');
+          }
+          if (routes.A11Y_CURSOR_AND_TOUCHPAD) {
+            map.set(
+                routes.A11Y_CURSOR_AND_TOUCHPAD.path,
+                '#cursor-and-touchpad-page-trigger');
+          }
+          if (routes.A11Y_AUDIO_AND_CAPTIONS) {
+            map.set(
+                routes.A11Y_AUDIO_AND_CAPTIONS.path,
+                '#audio-and-captions-page-trigger');
           }
           return map;
         },
       },
 
-      /** @private */
+      /** @protected */
       isAccessibilityOSSettingsVisibilityEnabled_: {
         type: Boolean,
         value() {
@@ -112,13 +138,24 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
 
       /**
        * Whether the user is in kiosk mode.
-       * @private
+       * @protected
        */
       isKioskModeActive_: {
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('isKioskModeActive');
-        }
+        },
+      },
+
+      /**
+       * Whether the user is in guest mode.
+       * @protected
+       */
+      isGuest_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('isGuest');
+        },
       },
 
       /**
@@ -194,6 +231,17 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
   }
 
   /**
+   * Whether additional features link should be shown.
+   * @param {boolean} isKiosk
+   * @param {boolean} isGuest
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAdditionalFeaturesLink_(isKiosk, isGuest) {
+    return !isKiosk && !isGuest;
+  }
+
+  /**
    * @private
    * @param {boolean} hasScreenReader Whether a screen reader is enabled.
    */
@@ -216,7 +264,27 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
 
   /** @private */
   onTextToSpeechTap_() {
-    Router.getInstance().navigateTo(routes.TEXT_TO_SPEECH);
+    Router.getInstance().navigateTo(routes.A11Y_TEXT_TO_SPEECH);
+  }
+
+  /** @private */
+  onDisplayAndMagnificationTap_() {
+    Router.getInstance().navigateTo(routes.A11Y_DISPLAY_AND_MAGNIFICATION);
+  }
+
+  /** @private */
+  onKeyboardAndTextInputTap_() {
+    Router.getInstance().navigateTo(routes.A11Y_KEYBOARD_AND_TEXT_INPUT);
+  }
+
+  /** @private */
+  onCursorAndTouchpadTap_() {
+    Router.getInstance().navigateTo(routes.A11Y_CURSOR_AND_TOUCHPAD);
+  }
+
+  /** @private */
+  onAudioAndCaptionsTap_() {
+    Router.getInstance().navigateTo(routes.A11Y_AUDIO_AND_CAPTIONS);
   }
 }
 

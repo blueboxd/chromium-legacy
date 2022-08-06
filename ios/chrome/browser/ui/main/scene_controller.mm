@@ -7,7 +7,6 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -27,6 +26,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
+#import "components/url_param_filter/core/url_param_filterer.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -52,8 +52,6 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #include "ios/chrome/browser/default_browser/promo_source.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -80,7 +78,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
-#import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_notification_infobar_delegate.h"
@@ -100,6 +98,8 @@
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
+#import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator.h"
+#import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
@@ -122,10 +122,8 @@
 #include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/features.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -204,7 +202,8 @@ bool IsSigninForcedByPolicy() {
                                SceneURLLoadingServiceDelegate,
                                TabGridCoordinatorDelegate,
                                UserFeedbackDataSource,
-                               WebStateListObserving> {
+                               WebStateListObserving,
+                               IncognitoInterstitialCoordinatorDelegate> {
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
   std::unique_ptr<PolicyWatcherBrowserAgentObserverBridge>
       _policyWatcherObserverBridge;
@@ -277,6 +276,14 @@ bool IsSigninForcedByPolicy() {
 // command is considered as an external trigger because it comes from something
 // outside the sign-in prompt UI.
 @property(nonatomic, assign) BOOL dismissingSigninPromptFromExternalTrigger;
+
+// The coordinator used to present the Incognito interstitial on Incognito
+// third-party intents. Created in
+// `showIncognitoInterstitialWithUrlLoadParams:dismissOmnibox:completion:`
+// and destroyed in
+// `closePresentedViews`.
+@property(nonatomic, strong)
+    IncognitoInterstitialCoordinator* incognitoInterstitialCoordinator;
 
 @end
 
@@ -674,6 +681,23 @@ bool IsSigninForcedByPolicy() {
 
 #pragma mark - private
 
+// Shows the Incognito interstitial on top of `activeViewController`.
+// Assumes the Incognito interstitial coordinator is currently not instantiated.
+// Runs `completion` once the Incognito interstitial is presented.
+- (void)showIncognitoInterstitialWithUrlLoadParams:
+            (const UrlLoadParams&)urlLoadParams
+                                        completion:(ProceduralBlock)completion {
+  DCHECK(self.incognitoInterstitialCoordinator == nil);
+  self.incognitoInterstitialCoordinator =
+      [[IncognitoInterstitialCoordinator alloc]
+          initWithBaseViewController:self.activeViewController
+                             browser:self.currentInterface.browser];
+  self.incognitoInterstitialCoordinator.delegate = self;
+  self.incognitoInterstitialCoordinator.tabOpener = self;
+  self.incognitoInterstitialCoordinator.urlLoadParams = urlLoadParams;
+  [self.incognitoInterstitialCoordinator startWithCompletion:completion];
+}
+
 // A sink for appState:didTransitionFromInitStage: and
 // sceneState:transitionedToActivationLevel: events. Discussion: the scene
 // controller cares both about the app and the scene init stages. This method is
@@ -728,12 +752,6 @@ bool IsSigninForcedByPolicy() {
 
     if (!IsStartSurfaceSplashStartupEnabled()) {
       [self handleShowStartSurfaceIfNecessary];
-    }
-
-    if (IsWebChannelsEnabled()) {
-      // Creating the DiscoverFeedService.
-      DiscoverFeedServiceFactory::GetForBrowserState(
-          self.mainInterface.browser->GetBrowserState());
     }
   }
 
@@ -830,14 +848,6 @@ bool IsSigninForcedByPolicy() {
   DCHECK(!self.browserViewWrangler);
   DCHECK(self.sceneURLLoadingService);
   DCHECK(self.sceneState.appState.mainBrowserState);
-
-  // Turn on KVO support on UIView window if enabled.
-  // TODO(crbug.com/1318016): Remove this call once it can be unconditionally
-  // enabled.
-  UIView.cr_supportsWindowObserving =
-      base::FeatureList::IsEnabled(kUIViewWindowObserving);
-  DCHECK_EQ(UIView.cr_supportsWindowObserving,
-            base::FeatureList::IsEnabled(kUIViewWindowObserving));
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.sceneState.appState.mainBrowserState
@@ -1223,12 +1233,12 @@ bool IsSigninForcedByPolicy() {
   UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUIManagementURL));
   params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   ProceduralBlock moreAction = ^{
-    [self dismissModalsAndOpenSelectedTabInMode:
+    [self dismissModalsAndMaybeOpenSelectedTabInMode:
               inIncognitoMode ? ApplicationModeForTabOpening::INCOGNITO
                               : ApplicationModeForTabOpening::NORMAL
-                              withUrlLoadParams:params
-                                 dismissOmnibox:YES
-                                     completion:nil];
+                                   withUrlLoadParams:params
+                                      dismissOmnibox:YES
+                                          completion:nil];
   };
 
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
@@ -1400,16 +1410,16 @@ bool IsSigninForcedByPolicy() {
     ApplicationModeForTabOpening mode =
         [self isIncognitoForced] ? ApplicationModeForTabOpening::INCOGNITO
                                  : ApplicationModeForTabOpening::NORMAL;
-    [self dismissModalsAndOpenSelectedTabInMode:mode
-                              withUrlLoadParams:params
-                                 dismissOmnibox:YES
-                                     completion:nil];
+    [self dismissModalsAndMaybeOpenSelectedTabInMode:mode
+                                   withUrlLoadParams:params
+                                      dismissOmnibox:YES
+                                          completion:nil];
   };
-  [self closeSettingsOrSigninAnimated:YES completion:completion];
+  [self closePresentedViews:YES completion:completion];
 }
 
 - (void)closeSettingsUI {
-  [self closeSettingsOrSigninAnimated:YES completion:nullptr];
+  [self closePresentedViews:YES completion:nullptr];
 }
 
 - (void)prepareTabSwitcher {
@@ -1581,7 +1591,9 @@ bool IsSigninForcedByPolicy() {
       self.signinCoordinator = [SigninCoordinator
           consistencyPromoSigninCoordinatorWithBaseViewController:
               baseViewController
-                                                          browser:mainBrowser];
+                                                          browser:mainBrowser
+                                                      accessPoint:
+                                                          command.accessPoint];
       break;
     case AuthenticationOperationAddAccount:
       self.signinCoordinator = [SigninCoordinator
@@ -1646,9 +1658,9 @@ bool IsSigninForcedByPolicy() {
                                        trigger:trigger];
 }
 
-- (void)showConsistencyPromoFromViewController:
+- (void)showWebSigninPromoFromViewController:
             (UIViewController*)baseViewController
-                                           URL:(const GURL&)url {
+                                         URL:(const GURL&)url {
   // Do not display the web sign-in promo if there is any UI on the screen.
   if (self.signinCoordinator || self.settingsNavigationController)
     return;
@@ -1661,7 +1673,10 @@ bool IsSigninForcedByPolicy() {
   self.signinCoordinator = [SigninCoordinator
       consistencyPromoSigninCoordinatorWithBaseViewController:baseViewController
                                                       browser:self.mainInterface
-                                                                  .browser];
+                                                                  .browser
+                                                  accessPoint:
+                                                      signin_metrics::AccessPoint::
+                                                          ACCESS_POINT_WEB_SIGNIN];
   if (!self.signinCoordinator)
     return;
   __weak SceneController* weakSelf = self;
@@ -2289,19 +2304,39 @@ bool IsSigninForcedByPolicy() {
 
 #pragma mark - TabOpening implementation.
 
-- (void)dismissModalsAndOpenSelectedTabInMode:
+- (void)dismissModalsAndMaybeOpenSelectedTabInMode:
             (ApplicationModeForTabOpening)targetMode
-                            withUrlLoadParams:
-                                (const UrlLoadParams&)urlLoadParams
-                               dismissOmnibox:(BOOL)dismissOmnibox
-                                   completion:(ProceduralBlock)completion {
+                                 withUrlLoadParams:
+                                     (const UrlLoadParams&)urlLoadParams
+                                    dismissOmnibox:(BOOL)dismissOmnibox
+                                        completion:(ProceduralBlock)completion {
+  // Fallback to NORMAL or INCOGNITO mode if the Incognito interstitial is not
+  // available.
+  if (targetMode == ApplicationModeForTabOpening::UNDETERMINED) {
+    PrefService* prefs = self.mainInterface.browserState->GetPrefs();
+    BOOL canShowIncognitoInterstitial =
+        base::FeatureList::IsEnabled(kIOS3PIntentsInIncognito) &&
+        prefs->GetBoolean(prefs::kIncognitoInterstitialEnabled);
+
+    if (!canShowIncognitoInterstitial) {
+      targetMode = [self isIncognitoForced]
+                       ? ApplicationModeForTabOpening::INCOGNITO
+                       : ApplicationModeForTabOpening::NORMAL;
+    }
+  }
+
   UrlLoadParams copyOfUrlLoadParams = urlLoadParams;
 
   __weak SceneController* weakSelf = self;
   void (^dismissModalsCompletion)() = ^{
-    [weakSelf openSelectedTabInMode:targetMode
-                  withUrlLoadParams:copyOfUrlLoadParams
-                         completion:completion];
+    if (targetMode == ApplicationModeForTabOpening::UNDETERMINED) {
+      [weakSelf showIncognitoInterstitialWithUrlLoadParams:copyOfUrlLoadParams
+                                                completion:completion];
+    } else {
+      [weakSelf openSelectedTabInMode:targetMode
+                    withUrlLoadParams:copyOfUrlLoadParams
+                           completion:completion];
+    }
   };
 
   // Wrap the post-dismiss-modals action with the incognito auth check.
@@ -2328,15 +2363,17 @@ bool IsSigninForcedByPolicy() {
                            dismissOmnibox:dismissOmnibox];
 }
 
-- (void)dismissModalsAndOpenMultipleTabsInMode:
-            (ApplicationModeForTabOpening)targetMode
-                                          URLs:(const std::vector<GURL>&)URLs
-                                dismissOmnibox:(BOOL)dismissOmnibox
-                                    completion:(ProceduralBlock)completion {
+- (void)dismissModalsAndOpenMultipleTabsWithURLs:(const std::vector<GURL>&)URLs
+                                 inIncognitoMode:(BOOL)incognitoMode
+                                  dismissOmnibox:(BOOL)dismissOmnibox
+                                      completion:(ProceduralBlock)completion {
   __weak SceneController* weakSelf = self;
 
   std::vector<GURL> copyURLs = URLs;
 
+  ApplicationModeForTabOpening targetMode =
+      incognitoMode ? ApplicationModeForTabOpening::INCOGNITO
+                    : ApplicationModeForTabOpening::NORMAL;
   id<BrowserInterface> targetInterface =
       [self extractInterfaceBaseOnMode:targetMode];
 
@@ -2358,9 +2395,9 @@ bool IsSigninForcedByPolicy() {
       navigation_manager->AddRestoreCompletionCallback(base::BindOnce(^{
         [self
             dismissModalDialogsWithCompletion:^{
-              [weakSelf openMultipleTabsInMode:targetMode
-                                          URLs:copyURLs
-                                    completion:completion];
+              [weakSelf openMultipleTabsWithURLs:copyURLs
+                                 inIncognitoMode:incognitoMode
+                                      completion:completion];
             }
                                dismissOmnibox:dismissOmnibox];
       }));
@@ -2370,9 +2407,9 @@ bool IsSigninForcedByPolicy() {
 
   [self
       dismissModalDialogsWithCompletion:^{
-        [weakSelf openMultipleTabsInMode:targetMode
-                                    URLs:copyURLs
-                              completion:completion];
+        [weakSelf openMultipleTabsWithURLs:copyURLs
+                           inIncognitoMode:incognitoMode
+                                completion:completion];
       }
                          dismissOmnibox:dismissOmnibox];
 }
@@ -2519,28 +2556,27 @@ bool IsSigninForcedByPolicy() {
                                          ? completionWithoutBVC
                                          : completionWithBVC;
 
-  [self closeSettingsOrSigninAnimated:NO completion:chosenCompletion];
+  [self closePresentedViews:NO completion:chosenCompletion];
 
   // Verify that no modal views are left presented.
   ios::provider::LogIfModalViewsArePresented();
 }
 
-- (void)openMultipleTabsInMode:
-            (ApplicationModeForTabOpening)tabOpeningTargetMode
-                          URLs:(const std::vector<GURL>&)URLs
-                    completion:(ProceduralBlock)completion {
+- (void)openMultipleTabsWithURLs:(const std::vector<GURL>&)URLs
+                 inIncognitoMode:(BOOL)openInIncognito
+                      completion:(ProceduralBlock)completion {
   [self recursiveOpenURLs:URLs
-                   inMode:tabOpeningTargetMode
+          inIncognitoMode:openInIncognito
              currentIndex:0
                totalCount:URLs.size()
                completion:completion];
 }
 
-// Call `dismissModalsAndOpenSelectedTabInMode` recursively to open the list of
-// URLs contained in `URLs`. Achieved through chaining
-// `dismissModalsAndOpenSelectedTabInMode` in its completion handler.
+// Call `dismissModalsAndMaybeOpenSelectedTabInMode` recursively to open the
+// list of URLs contained in `URLs`. Achieved through chaining
+// `dismissModalsAndMaybeOpenSelectedTabInMode` in its completion handler.
 - (void)recursiveOpenURLs:(const std::vector<GURL>&)URLs
-                   inMode:(ApplicationModeForTabOpening)mode
+          inIncognitoMode:(BOOL)incognitoMode
              currentIndex:(size_t)currentIndex
                totalCount:(size_t)totalCount
                completion:(ProceduralBlock)completion {
@@ -2557,7 +2593,7 @@ bool IsSigninForcedByPolicy() {
 
   if (!webpageGURL.is_valid()) {
     [self recursiveOpenURLs:URLs
-                     inMode:mode
+            inIncognitoMode:incognitoMode
                currentIndex:(currentIndex + 1)
                  totalCount:totalCount
                  completion:completion];
@@ -2567,17 +2603,21 @@ bool IsSigninForcedByPolicy() {
   UrlLoadParams param = UrlLoadParams::InNewTab(webpageGURL, webpageGURL);
   std::vector<GURL> copyURLs = URLs;
 
-  [self dismissModalsAndOpenSelectedTabInMode:mode
-                            withUrlLoadParams:param
-                               dismissOmnibox:YES
-                                   completion:^{
-                                     [weakSelf
-                                         recursiveOpenURLs:copyURLs
-                                                    inMode:mode
-                                              currentIndex:(currentIndex + 1)
-                                                totalCount:totalCount
-                                                completion:completion];
-                                   }];
+  ApplicationModeForTabOpening mode =
+      incognitoMode ? ApplicationModeForTabOpening::INCOGNITO
+                    : ApplicationModeForTabOpening::NORMAL;
+  [self
+      dismissModalsAndMaybeOpenSelectedTabInMode:mode
+                               withUrlLoadParams:param
+                                  dismissOmnibox:YES
+                                      completion:^{
+                                        [weakSelf
+                                            recursiveOpenURLs:copyURLs
+                                              inIncognitoMode:incognitoMode
+                                                 currentIndex:(currentIndex + 1)
+                                                   totalCount:totalCount
+                                                   completion:completion];
+                                      }];
 }
 
 // Opens a tab in the target BVC, and switches to it in a way that's appropriate
@@ -2593,6 +2633,7 @@ bool IsSigninForcedByPolicy() {
 - (void)openSelectedTabInMode:(ApplicationModeForTabOpening)tabOpeningTargetMode
             withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion {
+  DCHECK(tabOpeningTargetMode != ApplicationModeForTabOpening::UNDETERMINED);
   // Update the snapshot before opening a new tab. This ensures that the
   // snapshot is correct when tabs are openned via the dispatcher.
   [self updateActiveWebStateSnapshot];
@@ -2839,8 +2880,9 @@ bool IsSigninForcedByPolicy() {
                  completion:nil];
 }
 
-- (void)closeSettingsOrSigninAnimated:(BOOL)animated
-                           completion:(ProceduralBlock)completion {
+// Close Settings, or Signin or the 3rd-party intents Incognito interstitial.
+- (void)closePresentedViews:(BOOL)animated
+                 completion:(ProceduralBlock)completion {
   __weak __typeof(self) weakSelf = self;
   BOOL resetSigninState = self.signinCoordinator != nil;
   completion = ^{
@@ -2879,6 +2921,9 @@ bool IsSigninForcedByPolicy() {
     // `self.signinCoordinator` can be presented without settings, from the
     // bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
+  } else if (self.incognitoInterstitialCoordinator) {
+    [self.incognitoInterstitialCoordinator stopWithCompletion:completion];
+    self.incognitoInterstitialCoordinator = nil;
   } else {
     completion();
   }
@@ -2991,6 +3036,14 @@ bool IsSigninForcedByPolicy() {
       [self lastRegularTabClosed];
     }
   }
+}
+
+#pragma mark - IncognitoInterstitialCoordinatorDelegate
+
+- (void)shouldStopIncognitoInterstitial:
+    (IncognitoInterstitialCoordinator*)incognitoInterstitial {
+  DCHECK(incognitoInterstitial == self.incognitoInterstitialCoordinator);
+  [self closePresentedViews:YES completion:nil];
 }
 
 #pragma mark - Helpers for web state list events
@@ -3126,6 +3179,7 @@ bool IsSigninForcedByPolicy() {
 
 - (id<BrowserInterface>)extractInterfaceBaseOnMode:
     (ApplicationModeForTabOpening)targetMode {
+  DCHECK(targetMode != ApplicationModeForTabOpening::UNDETERMINED);
   ApplicationMode applicationMode;
 
   if (targetMode == ApplicationModeForTabOpening::CURRENT) {
@@ -3162,7 +3216,7 @@ bool IsSigninForcedByPolicy() {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
       /*in_background=*/false, /*inherit_opener=*/false,
-      /*should_show_start_surface=*/false, /*filtered_param_count=*/0);
+      /*should_show_start_surface=*/false, url_param_filter::FilterResult());
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 

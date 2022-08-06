@@ -27,6 +27,7 @@
 <translation id="1199355487114804640">播放/暂停</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1204296502688602597">DNS 延迟时间</translation>
+<translation id="1207734034680156868">建议是根据您的说明提供的</translation>
 <translation id="123124571410524056">疑似存在门户</translation>
 <translation id="1236400083787698183">请先对您的设备执行 Powerwash 操作，然后再重启。如果您的设备配有盖子，请等到 Powerwash 完成后再合上盖子。Powerwash 最多可能需要 1 分钟才能完成。</translation>
 <translation id="1238612778414822719">HTTPS 延迟</translation>
@@ -92,6 +93,7 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1645954272419197032">请确认设备信息</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用完</translation>
+<translation id="1664796644829245314">预览“<ph name="PREVIEW_OBJECT" />”</translation>
 <translation id="1668469839109562275">内置 VPN</translation>
 <translation id="1672499492233627739">摄像头视频画面</translation>
 <translation id="1676557873873341166">正在录制视频</translation>
@@ -118,6 +120,7 @@
 <translation id="1851218745569890714">视频会议</translation>
 <translation id="1852934301711881861">安装 ChromeOS Flex</translation>
 <translation id="1856388568474281774">向下</translation>
+<translation id="1858620243986915808">附加屏幕截图</translation>
 <translation id="1871569928317311284">关闭深色主题</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">关闭深色模式</translation>
@@ -132,6 +135,7 @@
 <translation id="1977994649430373166">Google 个人资料照片</translation>
 <translation id="1979103255016296513">密码更改期限已过</translation>
 <translation id="1999615961760456652">强制门户</translation>
+<translation id="200669432486043882">替换文件</translation>
 <translation id="2006864819935886708">连接</translation>
 <translation id="2008685064673031089">高峰搜索</translation>
 <translation id="2011174342667534258">SDK 版本：</translation>
@@ -194,6 +198,7 @@
 <translation id="2448312741937722512">类型</translation>
 <translation id="2461822463642141190">电流</translation>
 <translation id="2480034874476596812">手动关闭</translation>
+<translation id="248546197012830854">设备处于离线状态。您需要连接到 Wi-Fi 网络才能查看相关的帮助内容。</translation>
 <translation id="2491955442992294626">不再测试按键，因为您正在使用另一个窗口</translation>
 <translation id="2493126929778606526">您的最佳照片，由系统自动挑选</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +237,12 @@
 <translation id="3008341117444806826">刷新</translation>
 <translation id="3009958530611748826">选择要保存到的文件夹</translation>
 <translation id="3017079585324758401">背景</translation>
+<translation id="302435934487327038">安装完毕</translation>
 <translation id="3027578600144895987">关闭摄像头</translation>
 <translation id="3031560714565892478">设备类型是摄像机。</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">端点</translation>
 <translation id="3069085583900247081">测试失败</translation>
-<translation id="3076243757415932261">正在验证组件…</translation>
 <translation id="3083667275341675831">网络连接诊断</translation>
 <translation id="3084958266922136097">停用屏保功能</translation>
 <translation id="3091839911843451378">失败 - 已停止</translation>
@@ -272,7 +277,6 @@
 <translation id="3369013195428705271">确定要清除所有打印记录吗？您正在执行的打印任务不会被清除。</translation>
 <translation id="3383751554789092165">酌情更改设备信息。</translation>
 <translation id="3404249063913988450">启用屏保功能</translation>
-<translation id="3404770484521709967">这些组件已正确安装。</translation>
 <translation id="3413935475507503304">若要继续更新，请点击“下一步”。</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">安全</translation>
@@ -392,7 +396,6 @@
 <translation id="445059817448385655">旧密码</translation>
 <translation id="4453205916657964690">子网掩码</translation>
 <translation id="4454245904991689773">将扫描的文件保存至</translation>
-<translation id="4472575034687746823">开始使用</translation>
 <translation id="4479639480957787382">以太网</translation>
 <translation id="4483049906298469269">未能对非默认网关执行 ping 操作</translation>
 <translation id="4500213108254186382">盖子加速度计</translation>
@@ -518,7 +521,7 @@
 <translation id="5372659122375744710">Wi-Fi 网络不安全</translation>
 <translation id="5376354385557966694">自动浅色模式</translation>
 <translation id="537872351913703572">设备将由另一用户或组织使用</translation>
-<translation id="5389159777326897627">壁纸与样式</translation>
+<translation id="5389159777326897627">壁纸和样式</translation>
 <translation id="5389224261615877010">彩虹色</translation>
 <translation id="5395600419410242651">清除所有数据</translation>
 <translation id="5400907029458559844">设备正在连接。</translation>
@@ -660,14 +663,15 @@
 <translation id="6611280807952151149">退出 <ph name="DEVICE_TYPE" /> 修复流程</translation>
 <translation id="6618744767048954150">正在运行</translation>
 <translation id="6620487321149975369">打印任务如未被手动移除，将会显示在历史记录中，</translation>
+<translation id="6624819909909965616">无法上传大于 10 MB 的文件</translation>
 <translation id="6643016212128521049">清除</translation>
+<translation id="6644568396961840069">无法保存文件。请尝试插接一部不同的外部存储设备，或稍后重试。</translation>
 <translation id="6647510110698214773">加密算法</translation>
 <translation id="6650062777702288430">假名/字母数字切换</translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">标签页</translation>
 <translation id="6692996468359469499">获取与您的所选项相关的信息</translation>
 <translation id="6704062477274546131">DNS 解析</translation>
-<translation id="6721744718589119342">如果需要您提供更多信息或想向您提供最新信息，我们可能会向您发送电子邮件</translation>
 <translation id="6723839937902243910">电源</translation>
 <translation id="6723847290197874913">键盘背光</translation>
 <translation id="672609503628871915">了解一下新变化</translation>
@@ -695,6 +699,7 @@
 <translation id="6965382102122355670">确定</translation>
 <translation id="6977381486153291903">固件版本</translation>
 <translation id="6995564396478647735">请确保已开启写保护</translation>
+<translation id="7005833343836210400">设备处于离线状态</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> 负责管理此设备，而且有权查看所有用户活动（包括访问过的网页、密码和电子邮件）。</translation>
 <translation id="7040230719604914234">运营商</translation>
 <translation id="7041549558901442110">设备未连接。</translation>
@@ -720,6 +725,7 @@
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7212734716605298123">外部设备的固件更新</translation>
 <translation id="7216409898977639127">移动网络服务提供商</translation>
+<translation id="725133483556299729">选择电子邮件地址</translation>
 <translation id="7271040990581020067">扫描仪正在使用中。请稍后再试。</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">请选择 1 个或多个组件并重试，或者跳过校准</translation>
@@ -797,6 +803,7 @@
 <translation id="7978412674231730200">私有密钥</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
+<translation id="8018928621986160031">已保存到“<ph name="FILE_LOCATION" />”</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">启用自动颜色模式</translation>
@@ -805,8 +812,8 @@
 <translation id="8063022551652308521">写保护依然处于关闭状态。若要继续，请开启写保护。</translation>
 <translation id="8075838845814659848">剩余电量</translation>
 <translation id="8082366717211101304">无法从 Android 应用解析 DNS</translation>
-<translation id="8083281199617904460">此维修流程专供训练有素的维修技师执行。请仅在替换了出故障的组件后启动此流程。</translation>
 <translation id="808894953321890993">更改密码</translation>
+<translation id="8094062939584182041">允许 Google 就此问题向您发送电子邮件</translation>
 <translation id="8104083085214006426">您正在使用不安全的开放网络</translation>
 <translation id="8109786307828817014">继续处理未能成功校准的组件？</translation>
 <translation id="811820734797650957">(Android) 可对网关执行 ping 操作</translation>
@@ -821,6 +828,7 @@
 <translation id="8217675307824400706">连接到网络</translation>
 <translation id="8221728673725659466">校准完成</translation>
 <translation id="8226628635270268143">选择您喜爱的照片和影集</translation>
+<translation id="8227119283605456246">附上文件</translation>
 <translation id="8230672074305416752">未能对默认网关执行 ping 操作</translation>
 <translation id="8246209727385807362">未知运营商</translation>
 <translation id="827422111966801947">靛青色</translation>
@@ -865,6 +873,7 @@
 <translation id="8576249514688522074">未初始化</translation>
 <translation id="8620617069779373398">漫游状态</translation>
 <translation id="8655295600908251630">版本</translation>
+<translation id="8655828773034788261">分享网址：</translation>
 <translation id="8660881923941176839">磅</translation>
 <translation id="8662671328352114214">加入<ph name="TYPE" />网络</translation>
 <translation id="8671972493856476349">更新至 <ph name="VERSION_NUMBER" /> 并重启</translation>

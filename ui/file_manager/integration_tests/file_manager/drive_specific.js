@@ -396,7 +396,7 @@ testcase.drivePinFileMobileNetwork = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
   const caller = getCaller();
   await sendTestMessage({name: 'useCellularNetwork'});
-  await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
+  await remoteCall.waitUntilSelected(appId, 'hello.txt');
   await repeatUntil(() => {
     return navigator.connection.type != 'cellular' ?
         pending(caller, 'Network state is not changed to cellular.') :
@@ -434,7 +434,7 @@ testcase.drivePinFileMobileNetwork = async () => {
     name: 'clickNotificationButton',
     extensionId: FILE_MANAGER_EXTENSIONS_ID,
     notificationId: 'disabled-mobile-sync',
-    index: 0
+    index: 0,
   });
   await repeatUntil(async () => {
     const preferences =
@@ -591,9 +591,7 @@ testcase.driveAvailableOfflineGearMenu = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
 
   // Select a file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, 'hello.txt');
 
   // Wait for the entry to be selected.
   await remoteCall.waitForElement(appId, '.table-row[selected]');
@@ -629,9 +627,7 @@ testcase.driveAvailableOfflineDirectoryGearMenu = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
 
   // Select a file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, 'photos');
 
   // Wait for the entry to be selected.
   await remoteCall.waitForElement(appId, '.table-row[selected]');
@@ -748,9 +744,7 @@ testcase.driveLinkToDirectory = async () => {
       ]));
 
   // Select the link
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['G']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, 'G');
   await remoteCall.waitForElement(appId, '.table-row[selected]');
 
   // Open the link
@@ -834,7 +828,9 @@ testcase.driveWelcomeBanner = async () => {
   await remoteCall.isolateBannerForTesting(appId, 'drive-welcome-banner');
   const driveWelcomeBannerQuery = '#banners > drive-welcome-banner';
   const driveWelcomeBannerDismissButtonQuery = [
-    '#banners > drive-welcome-banner', 'educational-banner', '#dismiss-button'
+    '#banners > drive-welcome-banner',
+    'educational-banner',
+    '#dismiss-button',
   ];
 
   // Open the Drive volume in the files-list.
@@ -958,7 +954,7 @@ testcase.driveEnableDocsOfflineDialogWithoutWindow = async () => {
     name: 'clickNotificationButton',
     extensionId: FILE_MANAGER_EXTENSIONS_ID,
     notificationId: 'enable-docs-offline',
-    index: 1
+    index: 1,
   });
 
   // Check: the last dialog result should be 1 (accept).
@@ -975,7 +971,7 @@ testcase.driveEnableDocsOfflineDialogWithoutWindow = async () => {
     name: 'clickNotificationButton',
     extensionId: FILE_MANAGER_EXTENSIONS_ID,
     notificationId: 'enable-docs-offline',
-    index: 0
+    index: 0,
   });
 
   // Check: the last dialog result should be 2 (reject).

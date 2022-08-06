@@ -20,7 +20,7 @@ const EULA_CLEAR_ANCHORS_CONTENT_SCRIPT = {
       '    e.textContent=el.textContent + "(" + el.href + ")";' +
       '  }' +
       '  el.parentNode.replaceChild(e,el);' +
-      '}'
+      '}',
 };
 
 const EULA_FONTS_CSS = {
@@ -30,7 +30,7 @@ const EULA_FONTS_CSS = {
         line-height: 20px !important;}
        body h2 {
          font-size: 15px !important;
-         line-height: 22px !important;}`
+         line-height: 22px !important;}`,
 };
 
 /**
@@ -280,13 +280,6 @@ class EulaScreen extends EulaScreenBase {
   static get properties() {
     return {
       /**
-       * "Accept and continue" button is disabled until content is loaded.
-       */
-      acceptButtonDisabled: {
-        type: Boolean,
-      },
-
-      /**
        * If "Report anonymous usage stats" checkbox is checked.
        */
       usageStatsChecked: {
@@ -317,14 +310,13 @@ class EulaScreen extends EulaScreenBase {
        */
       backButtonHidden_: {
         type: Boolean,
-      }
+      },
     };
   }
 
   constructor() {
     super();
     this.UI_STEPS = EulaScreenState;
-    this.acceptButtonDisabled = true;
     this.usageStatsChecked = false;
     this.tpmDescription_ = '';
     this.initialized_ = false;
@@ -334,8 +326,10 @@ class EulaScreen extends EulaScreenBase {
 
   get EXTERNAL_API() {
     return [
-      'setUsageStats', 'showAdditionalTosDialog', 'showSecuritySettingsDialog',
-      'setTpmDesc'
+      'setUsageStats',
+      'showAdditionalTosDialog',
+      'showSecuritySettingsDialog',
+      'setTpmDesc',
     ];
   }
 
@@ -409,7 +403,6 @@ class EulaScreen extends EulaScreenBase {
       return;
     }
 
-    this.acceptButtonDisabled = false;
     this.setUIStep(EulaScreenState.EULA);
     this.$.eulaDialog.scrollToBottom();
   }

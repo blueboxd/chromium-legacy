@@ -37,6 +37,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -234,6 +235,52 @@ class ContinueButton : public views::MdTextButton {
   base::raw_ptr<AccountSelectionBubbleView> bubble_view_;
   absl::optional<SkColor> brand_background_color_;
   absl::optional<SkColor> brand_text_color_;
+};
+
+class AccountImageView : public views::ImageView {
+ public:
+  AccountImageView() = default;
+
+  AccountImageView(const AccountImageView&) = delete;
+  AccountImageView& operator=(const AccountImageView&) = delete;
+  ~AccountImageView() override = default;
+
+  // Fetch image and set it on AccountImageView.
+  void FetchImage(const content::IdentityRequestAccount& account,
+                  image_fetcher::ImageFetcher& image_fetcher) {
+    image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
+                                             kImageFetcherUmaClient);
+
+    // OnImageFetched() is a member of AccountImageView so that the callback
+    // is cancelled in the case that AccountImageView is destroyed prior to
+    // the callback returning.
+    image_fetcher.FetchImage(account.picture,
+                             base::BindOnce(&AccountImageView::OnImageFetched,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            base::UTF8ToUTF16(account.name)),
+                             std::move(params));
+  }
+
+ private:
+  void OnImageFetched(const std::u16string& account_name,
+                      const gfx::Image& image,
+                      const image_fetcher::RequestMetadata& metadata) {
+    gfx::ImageSkia avatar;
+    if (image.IsEmpty()) {
+      std::u16string letter = account_name;
+      if (letter.length() > 0)
+        letter = base::i18n::ToUpper(account_name.substr(0, 1));
+      avatar = gfx::CanvasImageSource::MakeImageSkia<
+          LetterCircleCroppedImageSkiaSource>(letter, kDesiredAvatarSize);
+    } else {
+      avatar =
+          gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
+              image.AsImageSkia(), absl::nullopt, kDesiredAvatarSize);
+    }
+    SetImage(avatar);
+  }
+
+  base::WeakPtrFactory<AccountImageView> weak_ptr_factory_{this};
 };
 
 void SendAccessibilityEvent(views::Widget* widget,
@@ -550,34 +597,34 @@ AccountSelectionBubbleView::CreateSingleAccountChooser(
 std::unique_ptr<views::View>
 AccountSelectionBubbleView::CreateMultipleAccountChooser(
     base::span<const content::IdentityRequestAccount> accounts) {
-  auto row = std::make_unique<views::View>();
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->SetHorizontalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kDisabled);
+  views::View* row = scroll_view->SetContents(std::make_unique<views::View>());
   row->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   for (const auto& account : accounts) {
     row->AddChildView(CreateAccountRow(account, /*should_hover=*/true));
   }
-  return row;
+  // The maximum height that the multi-account-picker can have. This value was
+  // chosen so that if there are more than two accounts, the picker will show up
+  // as a scrollbar showing 2 accounts plus half of the third one.
+  int per_account_size = row->GetPreferredSize().height() / accounts.size();
+  scroll_view->ClipHeightTo(0, static_cast<int>(per_account_size * 2.5));
+  return scroll_view;
 }
 
 std::unique_ptr<views::View> AccountSelectionBubbleView::CreateAccountRow(
     const content::IdentityRequestAccount& account,
     bool should_hover) {
-  auto image_view = std::make_unique<views::ImageView>();
+  auto image_view = std::make_unique<AccountImageView>();
   image_view->SetImageSize({kDesiredAvatarSize, kDesiredAvatarSize});
-  image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
-                                           kImageFetcherUmaClient);
-  std::u16string account_name16 = base::UTF8ToUTF16(account.name);
-  image_fetcher_->FetchImage(
-      account.picture,
-      base::BindOnce(&AccountSelectionBubbleView::OnAccountImageFetched,
-                     weak_ptr_factory_.GetWeakPtr(), image_view.get(),
-                     account_name16),
-      std::move(params));
+  image_view->FetchImage(account, *image_fetcher_);
   if (should_hover) {
     auto row = std::make_unique<HoverButton>(
         base::BindRepeating(&AccountSelectionBubbleView::OnSingleAccountPicked,
                             weak_ptr_factory_.GetWeakPtr(), account),
-        std::move(image_view), account_name16,
+        std::move(image_view), base::UTF8ToUTF16(account.name),
         base::UTF8ToUTF16(account.email));
     row->SetBorder(views::CreateEmptyBorder(
         gfx::Insets::VH(/*vertical=*/0, /*horizontal=*/kLeftRightPadding)));
@@ -610,26 +657,6 @@ std::unique_ptr<views::View> AccountSelectionBubbleView::CreateAccountRow(
   account_email->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
   return row;
-}
-
-void AccountSelectionBubbleView::OnAccountImageFetched(
-    views::ImageView* image_view,
-    const std::u16string& account_name,
-    const gfx::Image& image,
-    const image_fetcher::RequestMetadata& metadata) {
-  gfx::ImageSkia avatar;
-  if (image.IsEmpty()) {
-    std::u16string letter = account_name;
-    if (letter.length() > 0)
-      letter = base::i18n::ToUpper(account_name.substr(0, 1));
-    avatar = gfx::CanvasImageSource::MakeImageSkia<
-        LetterCircleCroppedImageSkiaSource>(letter, kDesiredAvatarSize);
-  } else {
-    avatar =
-        gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
-            image.AsImageSkia(), absl::nullopt, kDesiredAvatarSize);
-  }
-  image_view->SetImage(avatar);
 }
 
 void AccountSelectionBubbleView::OnBrandImageFetched(

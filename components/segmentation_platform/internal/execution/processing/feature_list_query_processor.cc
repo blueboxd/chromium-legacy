@@ -13,13 +13,13 @@
 #include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/internal/execution/processing/custom_input_processor.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_processor_state.h"
-#include "components/segmentation_platform/internal/execution/processing/input_delegate.h"
 #include "components/segmentation_platform/internal/execution/processing/sql_feature_processor.h"
 #include "components/segmentation_platform/internal/execution/processing/uma_feature_processor.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/internal/ukm_data_manager.h"
+#include "components/segmentation_platform/public/input_delegate.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 
 namespace segmentation_platform::processing {
 
@@ -115,7 +115,8 @@ void FeatureListQueryProcessor::ProcessNext(
       auto* ukm_manager = storage_service_->ukm_data_manager();
       if (!ukm_manager->IsUkmEngineEnabled()) {
         // UKM engine is disabled, feature cannot be processed.
-        feature_processor_state->SetError();
+        feature_processor_state->SetError(
+            stats::FeatureProcessingError::kUkmEngineDisabled);
         feature_processor_state->RunCallback();
         return;
       }

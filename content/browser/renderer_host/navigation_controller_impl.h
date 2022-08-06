@@ -220,7 +220,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_form_submission,
       const absl::optional<blink::Impression>& impression,
       base::TimeTicks navigation_start_time,
-      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
+      bool is_embedder_initiated_fenced_frame_navigation = false,
+      bool is_unfenced_top_navigation = false);
 
   // Navigates to the history entry associated with the given navigation API
   // |key|. Searches |entries_| for a FrameNavigationEntry associated with
@@ -290,10 +291,12 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // For use by WebContentsImpl ------------------------------------------------
 
   // Visit all FrameNavigationEntries as well as all frame trees and register
-  // any instances of |origin| as non-isolated with their respective
-  // BrowsingInstances. This is important when |origin| requests isolation, so
-  // that we only do so in BrowsingInstances that haven't seen it before.
-  void RegisterExistingOriginToPreventOptInIsolation(const url::Origin& origin);
+  // any instances of |origin| as having the default isolation state with their
+  // respective BrowsingInstances. This is important when |origin| is seen with
+  // an OriginAgentCluster header, so that we only accept such requests in
+  // BrowsingInstances that haven't seen it before.
+  void RegisterExistingOriginAsHavingDefaultIsolation(
+      const url::Origin& origin);
 
   // Allow renderer-initiated navigations to create a pending entry when the
   // provisional load starts.
@@ -578,7 +581,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       NavigationEntryImpl* entry,
       FrameNavigationEntry* frame_entry,
       base::TimeTicks navigation_start_time,
-      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
+      bool is_embedder_initiated_fenced_frame_navigation = false,
+      bool is_unfenced_top_navigation = false);
 
   // Creates and returns a NavigationRequest for a navigation to |entry|. Will
   // return nullptr if the parameters are invalid and the navigation cannot
@@ -802,7 +806,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  raw_ptr<NavigationEntryImpl, DanglingUntriaged> pending_entry_ = nullptr;
+  raw_ptr<NavigationEntryImpl> pending_entry_ = nullptr;
 
   // This keeps track of the NavigationRequests associated with the pending
   // NavigationEntry. When all of them have been deleted, or have stopped

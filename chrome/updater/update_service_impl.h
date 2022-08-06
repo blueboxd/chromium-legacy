@@ -5,6 +5,7 @@
 #ifndef CHROME_UPDATER_UPDATE_SERVICE_IMPL_H_
 #define CHROME_UPDATER_UPDATE_SERVICE_IMPL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -80,6 +81,9 @@ class UpdateServiceImpl : public UpdateService {
   // Pops `tasks_`, and calls TaskStart.
   void TaskDone();
 
+  // Installs applications in the wake task based on the ForceInstalls policy.
+  void ForceInstall(StateChangeCallback state_update, Callback callback);
+
   bool IsUpdateDisabledByPolicy(const std::string& app_id,
                                 Priority priority,
                                 bool is_install,
@@ -107,6 +111,9 @@ class UpdateServiceImpl : public UpdateService {
 
   // The queue serializes periodic task execution.
   base::queue<base::OnceClosure> tasks_;
+
+  // Cancellation callbacks, keyed by appid.
+  std::multimap<std::string, base::RepeatingClosure> cancellation_callbacks_;
 };
 
 }  // namespace updater

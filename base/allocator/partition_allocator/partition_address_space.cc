@@ -17,7 +17,6 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_IOS)
@@ -26,7 +25,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+#if defined(PA_USE_DYNAMICALLY_SIZED_GIGA_CAGE)
+#include <VersionHelpers.h>  // For IsWindows8Point1OrGreater().
 #endif
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace partition_alloc::internal {
 
@@ -118,10 +120,12 @@ PA_ALWAYS_INLINE size_t PartitionAddressSpace::BRPPoolSize() {
 }
 #else
 PA_ALWAYS_INLINE size_t PartitionAddressSpace::RegularPoolSize() {
-  return kRegularPoolSize;
+  return IsWindows8Point1OrGreater() ? kRegularPoolSize
+                                     : kRegularPoolSizeForLegacyWindows;
 }
 PA_ALWAYS_INLINE size_t PartitionAddressSpace::BRPPoolSize() {
-  return kBRPPoolSize;
+  return IsWindows8Point1OrGreater() ? kBRPPoolSize
+                                     : kBRPPoolSizeForLegacyWindows;
 }
 #endif  // BUILDFLAG(IS_IOS)
 #endif  // defined(PA_USE_DYNAMICALLY_SIZED_GIGA_CAGE)
@@ -137,7 +141,7 @@ void PartitionAddressSpace::Init() {
   if (!setup_.regular_pool_base_address_)
     HandleGigaCageAllocFailure();
 #if defined(PA_USE_DYNAMICALLY_SIZED_GIGA_CAGE)
-  setup_.regular_pool_base_mask_ = ~(regular_pool_size - 1) & kMemTagUnmask;
+  setup_.regular_pool_base_mask_ = ~(regular_pool_size - 1);
 #endif
   PA_DCHECK(!(setup_.regular_pool_base_address_ & (regular_pool_size - 1)));
   setup_.regular_pool_ = AddressPoolManager::GetInstance().Add(
@@ -164,7 +168,7 @@ void PartitionAddressSpace::Init() {
     HandleGigaCageAllocFailure();
   setup_.brp_pool_base_address_ = base_address + kForbiddenZoneSize;
 #if defined(PA_USE_DYNAMICALLY_SIZED_GIGA_CAGE)
-  setup_.brp_pool_base_mask_ = ~(brp_pool_size - 1) & kMemTagUnmask;
+  setup_.brp_pool_base_mask_ = ~(brp_pool_size - 1);
 #endif
   PA_DCHECK(!(setup_.brp_pool_base_address_ & (brp_pool_size - 1)));
   setup_.brp_pool_ = AddressPoolManager::GetInstance().Add(

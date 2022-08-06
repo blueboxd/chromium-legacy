@@ -6,6 +6,8 @@ import './help_resources_icons.js';
 import './os_feedback_shared_css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
@@ -61,6 +63,13 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
     this.selectedFile_ = null;
 
     /**
+     * The name of the file selected
+     * @type {string}
+     * @protected
+     */
+    this.selectedFileName_;
+
+    /**
      * Url of the selected image.
      * @type {string}
      */
@@ -71,6 +80,15 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
      * @protected {boolean}
      */
     this.hasSelectedAFile_;
+  }
+
+  ready() {
+    super.ready();
+    // Set the aria description works the best for screen reader.
+    // It reads the description when the checkbox is focused, and when it is
+    // checked and unchecked.
+    this.$.selectFileCheckbox.ariaDescription =
+        this.i18n('attachFileCheckboxArialLabel');
   }
 
   /**
@@ -112,7 +130,7 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
     /** @type {!AttachedFile} */
     const attachedFile = {
       fileName: {path: {path: this.selectedFile_.name}},
-      fileData: fileData
+      fileData: fileData,
     };
 
     return attachedFile;
@@ -122,6 +140,7 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
    * Get the image url when uploaded file is image type.
    * @param {!File} file
    * @return {!Promise<string>}
+   * @private
    */
   async getImageUrl_(file) {
     const fileDataBuffer = await file.arrayBuffer();
@@ -130,6 +149,17 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
 
     const imageUrl = URL.createObjectURL(blob);
     return imageUrl;
+  }
+
+  /** @protected */
+  handleSelectedImageClick_() {
+    this.$.selectedImageDialog.showModal();
+    this.$.closeDialogButton.focus();
+  }
+
+  /** @protected */
+  handleSelectedImageDialogCloseClick_() {
+    this.$.selectedImageDialog.close();
   }
 
   /**
@@ -167,16 +197,19 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
       return;
     }
     this.selectedFile_ = file;
-    this.getElement_('#selectedFileName').textContent = file.name;
+    this.selectedFileName_ = file.name;
     this.getElement_('#selectFileCheckbox').checked = true;
 
     // Add a preview image when selected file is image type.
     if (file.type.startsWith('image/')) {
       this.getImageUrl_(file).then((imageUrl) => {
         this.selectedImageUrl_ = imageUrl;
+        this.$.selectedImageButton.ariaLabel =
+            this.i18n('previewImageAriaLabel', file.name);
       });
     } else {
       this.selectedImageUrl_ = '';
+      this.$.selectedImageButton.ariaLabel = '';
     }
   }
 

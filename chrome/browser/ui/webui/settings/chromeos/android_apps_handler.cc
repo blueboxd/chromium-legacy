@@ -5,13 +5,14 @@
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 
 #include "base/bind.h"
-#include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"  // kSettingsAppId
+#include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/display/display.h"
@@ -79,17 +80,14 @@ void AndroidAppsHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
   SendAndroidAppsInfo();
 }
 
-std::unique_ptr<base::DictionaryValue>
-AndroidAppsHandler::BuildAndroidAppsInfo() {
-  std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
-  info->SetBoolKey("playStoreEnabled",
-                   arc::IsArcPlayStoreEnabledForProfile(profile_));
+base::Value::Dict AndroidAppsHandler::BuildAndroidAppsInfo() {
+  base::Value::Dict info;
+  info.Set("playStoreEnabled", arc::IsArcPlayStoreEnabledForProfile(profile_));
   const ArcAppListPrefs* arc_apps_pref = ArcAppListPrefs::Get(profile_);
   // TODO(khmel): Inverstigate why in some browser tests
   // playStoreEnabled is true but arc_apps_pref is not set.
-  info->SetBoolKey(
-      "settingsAppAvailable",
-      arc_apps_pref && arc_apps_pref->IsRegistered(arc::kSettingsAppId));
+  info.Set("settingsAppAvailable",
+           arc_apps_pref && arc_apps_pref->IsRegistered(arc::kSettingsAppId));
   return info;
 }
 
@@ -100,8 +98,7 @@ void AndroidAppsHandler::HandleRequestAndroidAppsInfo(
 }
 
 void AndroidAppsHandler::SendAndroidAppsInfo() {
-  std::unique_ptr<base::DictionaryValue> info = BuildAndroidAppsInfo();
-  FireWebUIListener("android-apps-info-update", *info);
+  FireWebUIListener("android-apps-info-update", BuildAndroidAppsInfo());
 }
 
 void AndroidAppsHandler::ShowAndroidAppsSettings(
@@ -112,10 +109,16 @@ void AndroidAppsHandler::ShowAndroidAppsSettings(
     activated_from_keyboard = args[0].GetBool();
   int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;
 
-  app_service_proxy_->Launch(
-      arc::kSettingsAppId, flags,
-      apps::mojom::LaunchSource::kFromParentalControls,
-      apps::MakeWindowInfo(GetDisplayIdForCurrentProfile()));
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    app_service_proxy_->Launch(
+        arc::kSettingsAppId, flags, apps::LaunchSource::kFromParentalControls,
+        std::make_unique<apps::WindowInfo>(GetDisplayIdForCurrentProfile()));
+  } else {
+    app_service_proxy_->Launch(
+        arc::kSettingsAppId, flags,
+        apps::mojom::LaunchSource::kFromParentalControls,
+        apps::MakeWindowInfo(GetDisplayIdForCurrentProfile()));
+  }
 }
 
 int64_t AndroidAppsHandler::GetDisplayIdForCurrentProfile() {

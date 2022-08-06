@@ -92,16 +92,6 @@ class PortTest(LoggingTestCase):
         # This routine is a no-op. We just test it for coverage.
         port.setup_test_run()
 
-    def test_test_dirs(self):
-        port = self.make_port()
-        port.host.filesystem.write_text_file(
-            port.web_tests_dir() + '/canvas/test', '')
-        port.host.filesystem.write_text_file(
-            port.web_tests_dir() + '/css2.1/test', '')
-        dirs = port.test_dirs()
-        self.assertIn('canvas', dirs)
-        self.assertIn('css2.1', dirs)
-
     def test_get_option__set(self):
         options, _ = optparse.OptionParser().parse_args([])
         options.foo = 'bar'
@@ -247,13 +237,11 @@ class PortTest(LoggingTestCase):
         port._options.additional_platform_directory = []
         port._options.additional_driver_flag = ['--special-flag']
         self.assertEqual(port.baseline_search_path(), [
-            MOCK_WEB_TESTS + 'flag-specific/special-flag/platform/foo',
             MOCK_WEB_TESTS + 'flag-specific/special-flag',
             MOCK_WEB_TESTS + 'platform/foo'
         ])
-        self.assertEqual(
-            port.baseline_version_dir(),
-            MOCK_WEB_TESTS + 'flag-specific/special-flag/platform/foo')
+        self.assertEqual(port.baseline_version_dir(),
+                         MOCK_WEB_TESTS + 'flag-specific/special-flag')
 
         # Flag-specific baseline
         port.host.filesystem.write_text_file(
@@ -305,20 +293,19 @@ class PortTest(LoggingTestCase):
             MOCK_WEB_TESTS +
             'flag-specific/special-flag/platform/foo/fast/test-expected.txt',
             'foo')
-        self.assertEqual(
-            port.expected_baselines(test_file, '.txt'),
-            [(MOCK_WEB_TESTS + 'flag-specific/special-flag/platform/foo',
-              'fast/test-expected.txt')])
+        self.assertEqual(port.expected_baselines(test_file, '.txt'),
+                         [(MOCK_WEB_TESTS + 'flag-specific/special-flag',
+                           'fast/test-expected.txt')])
         self.assertEqual(
             port.expected_filename(test_file, '.txt'), MOCK_WEB_TESTS +
-            'flag-specific/special-flag/platform/foo/fast/test-expected.txt')
+            'flag-specific/special-flag/fast/test-expected.txt')
         self.assertEqual(
             port.expected_filename(test_file, '.txt',
                                    return_default=False), MOCK_WEB_TESTS +
-            'flag-specific/special-flag/platform/foo/fast/test-expected.txt')
+            'flag-specific/special-flag/fast/test-expected.txt')
         self.assertEqual(
-            port.fallback_expected_filename(test_file, '.txt'), MOCK_WEB_TESTS
-            + 'flag-specific/special-flag/fast/test-expected.txt')
+            port.fallback_expected_filename(test_file, '.txt'),
+            MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
 
     def test_expected_baselines_virtual(self):
         port = self.make_port(port_name='foo')
@@ -1160,6 +1147,37 @@ class PortTest(LoggingTestCase):
         self.assertFalse(
             port.is_slow_wpt_test('/dom/ranges/Range-attributes-slow.html'))
 
+    def test_get_wpt_fuzzy_metadata_for_non_wpt_test(self):
+        port = self.make_port(with_tests=True)
+
+        rt_path = port.abspath_for_test("passes/reftest.html")
+
+        port._filesystem.write_text_file(
+            rt_path, "<meta name=fuzzy content=\"15;300\">")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([15, 15], [300, 300]))
+
+        port._filesystem.write_text_file(
+            rt_path, "<meta name=fuzzy content=\"3-20;300\">")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([3, 20], [300, 300]))
+
+        port._filesystem.write_text_file(
+            rt_path, "foo<meta name=fuzzy content=\"ref.html:0;1-200\">bar")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([0, 0], [1, 200]))
+
+        port._filesystem.write_text_file(
+            rt_path,
+            "<meta   name=fuzzy\ncontent=\"ref.html:maxDifference=30;totalPixels=1-2\">"
+        )
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([30, 30], [1, 2]))
+
+        result = port.get_wpt_fuzzy_metadata(
+            "virtual/virtual_passes/passes/reftest.html")
+        self.assertEqual(result, ([30, 30], [1, 2]))
+
     def test_get_file_path_for_wpt_test(self):
         port = self.make_port(with_tests=True)
         add_manifest_to_mock_filesystem(port)
@@ -1283,6 +1301,32 @@ class PortTest(LoggingTestCase):
         self.assertFalse(
             port.test_exists(
                 'virtual/virtual_empty_bases/does_not_exist.html'))
+
+    def test_read_test(self):
+        port = self.make_port(with_tests=True)
+
+        port._filesystem.write_text_file(
+            port.abspath_for_test("passes/text.html"), "Foo")
+        self.assertEqual(port.read_test("passes/text.html"), "Foo")
+        self.assertEqual(
+            port.read_test("virtual/virtual_passes/passes/text.html"), "Foo")
+
+        port._filesystem.write_text_file(
+            port.abspath_for_test("virtual/virtual_passes/passes/text.html"),
+            "Bar")
+        self.assertEqual(
+            port.read_test("virtual/virtual_passes/passes/text.html"), "Bar")
+
+        port._filesystem.write_text_file(
+            port.abspath_for_test(
+                "virtual/virtual_empty_bases/physical1.html"), "Baz")
+        self.assertEqual(
+            port.read_test("virtual/virtual_empty_bases/physical1.html"),
+            "Baz")
+
+        port._filesystem.write_binary_file(
+            port.abspath_for_test("passes/text.html"), "Foo".encode("utf16"))
+        self.assertEqual(port.read_test("passes/text.html", "utf16"), "Foo")
 
     def test_test_isfile(self):
         port = self.make_port(with_tests=True)

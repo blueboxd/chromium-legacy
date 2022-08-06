@@ -5,6 +5,9 @@
 source_set("open_in_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "open_in_activity_delegate.h",
+    "open_in_activity_view_controller.h",
+    "open_in_activity_view_controller.mm",
     "open_in_controller.h",
     "open_in_controller.mm",
     "open_in_controller_testing.h",
@@ -18,7 +21,6 @@ source_set("open_in_ui") {
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/open_in",
     "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",

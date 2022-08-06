@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -51,6 +52,16 @@ InlineScriptStreamer* GetInlineScriptStreamer(const String& source,
 
 }  // namespace
 
+namespace {
+// The base URL for external classic script is
+//
+// <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">
+// ... the URL from which the script was obtained, ...</spec>
+KURL BaseUrl(const ScriptResource& resource) {
+  return resource.GetResponse().ResponseUrl();
+}
+}  // namespace
+
 // <specdef href="https://html.spec.whatwg.org/C/#fetch-a-classic-script">
 ClassicPendingScript* ClassicPendingScript::Fetch(
     const KURL& url,
@@ -67,7 +78,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
 
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
-          element, TextPosition::MinimumPosition(), KURL(), String(),
+          element, TextPosition::MinimumPosition(), KURL(), KURL(), String(),
           ScriptSourceLocationType::kExternalFile, options,
           true /* is_external */);
 
@@ -95,13 +106,14 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
 ClassicPendingScript* ClassicPendingScript::CreateInline(
     ScriptElementBase* element,
     const TextPosition& starting_position,
+    const KURL& source_url,
     const KURL& base_url,
     const String& source_text,
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options) {
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
-          element, starting_position, base_url, source_text,
+          element, starting_position, source_url, base_url, source_text,
           source_location_type, options, false /* is_external */);
   pending_script->CheckState();
   return pending_script;
@@ -110,6 +122,7 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
 ClassicPendingScript::ClassicPendingScript(
     ScriptElementBase* element,
     const TextPosition& starting_position,
+    const KURL& source_url_for_inline_script,
     const KURL& base_url_for_inline_script,
     const String& source_text_for_inline_script,
     ScriptSourceLocationType source_location_type,
@@ -117,6 +130,7 @@ ClassicPendingScript::ClassicPendingScript(
     bool is_external)
     : PendingScript(element, starting_position),
       options_(options),
+      source_url_for_inline_script_(source_url_for_inline_script),
       base_url_for_inline_script_(base_url_for_inline_script),
       source_text_for_inline_script_(source_text_for_inline_script),
       source_location_type_(source_location_type),
@@ -260,6 +274,20 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
                                        options_, cross_origin);
   }
 
+  // <specdef href="https://fetch.spec.whatwg.org/#concept-main-fetch">
+  // <spec step="17">If response is not a network error and any of the following
+  // returns blocked</spec>
+  // <spec step="17.C">should internalResponse to request be blocked due to its
+  // MIME type</spec>
+  // <spec step="17.D">should internalResponse to request be blocked due to
+  // nosniff</spec>
+  // <spec step="17">then set response and internalResponse to a network
+  // error.</spec>
+  auto* fetcher = GetElement()->GetExecutionContext()->Fetcher();
+  const bool mime_type_failure = !AllowedByNosniff::MimeTypeAsScript(
+      fetcher->GetUseCounter(), &fetcher->GetConsoleLogger(),
+      resource->GetResponse(), AllowedByNosniff::MimeTypeCheck::kLaxForElement);
+
   TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
                          "ClassicPendingScript::NotifyFinished", this,
                          TRACE_EVENT_FLAG_FLOW_OUT, "data",
@@ -269,7 +297,10 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
                                GetResource()->Url().GetString());
                          });
 
-  bool error_occurred = GetResource()->ErrorOccurred() || integrity_failure_;
+  // Ordinal ErrorOccurred(), SRI, and MIME check are all considered as network
+  // errors in the Fetch spec.
+  bool error_occurred =
+      GetResource()->ErrorOccurred() || integrity_failure_ || mime_type_failure;
   if (error_occurred) {
     AdvanceReadyState(kErrorOccurred);
     return;
@@ -310,6 +341,43 @@ void ClassicPendingScript::NotifyCacheConsumeFinished() {
   AdvanceReadyState(kReady);
 }
 
+const ParkableString& ClassicPendingScript::GetSourceText() {
+  // This method is an implementation of a virtual function defined by
+  // ScriptCacheConsumerClient, and is only used for external scripts.
+  CHECK(is_external_);
+
+  return To<ScriptResource>(GetResource())->SourceText();
+}
+
+v8::ScriptOrigin ClassicPendingScript::GetScriptOrigin() {
+  // This method is an implementation of a virtual function defined by
+  // ScriptCacheConsumerClient, and is only used for external scripts.
+  CHECK(is_external_);
+
+  v8::Isolate* isolate = GetElement()->GetExecutionContext()->GetIsolate();
+  auto* resource = To<ScriptResource>(GetResource());
+  const KURL& source_url = ClassicScript::SourceUrlFromResource(*resource);
+  TextPosition script_start_position = TextPosition::MinimumPosition();
+  SanitizeScriptErrors sanitize_script_errors =
+      ClassicScript::ShouldSanitizeScriptErrors(resource->GetResponse());
+  String source_map_url =
+      ClassicScript::SourceMapUrlFromResponse(resource->GetResponse());
+  const KURL& base_url = BaseUrl(*resource);
+  const ReferrerScriptInfo referrer_info(base_url, options_);
+  v8::Local<v8::Data> host_defined_options =
+      referrer_info.ToV8HostDefinedOptions(isolate, source_url);
+  return v8::ScriptOrigin(
+      isolate, V8String(isolate, source_url),
+      script_start_position.line_.ZeroBasedInt(),
+      script_start_position.column_.ZeroBasedInt(),
+      sanitize_script_errors == SanitizeScriptErrors::kDoNotSanitize, -1,
+      V8String(isolate, source_map_url),
+      sanitize_script_errors == SanitizeScriptErrors::kSanitize,
+      false,  // is_wasm
+      false,  // is_module
+      host_defined_options);
+}
+
 void ClassicPendingScript::Trace(Visitor* visitor) const {
   visitor->Trace(cache_consumer_);
   ResourceClient::Trace(visitor);
@@ -336,7 +404,7 @@ static SingleCachedMetadataHandler* GetInlineCacheHandler(const String& source,
   return document_cache_handler->HandlerForSource(source);
 }
 
-ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
+ClassicScript* ClassicPendingScript::GetSource() const {
   CheckState();
   DCHECK(IsReady());
 
@@ -369,7 +437,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
 
     return ClassicScript::Create(
         source_text_for_inline_script_,
-        ClassicScript::StripFragmentIdentifier(document_url),
+        ClassicScript::StripFragmentIdentifier(source_url_for_inline_script_),
         base_url_for_inline_script_, options_, source_location_type_,
         SanitizeScriptErrors::kDoNotSanitize, cache_handler, StartingPosition(),
         streamer ? ScriptStreamer::NotStreamingReason::kInvalid
@@ -380,15 +448,6 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   DCHECK(GetResource()->IsLoaded());
   auto* resource = To<ScriptResource>(GetResource());
   RecordThirdPartyRequestWithCookieIfNeeded(resource->GetResponse());
-
-  auto* fetcher = GetElement()->GetExecutionContext()->Fetcher();
-  // If the MIME check fails, which is considered as load failure.
-  if (!AllowedByNosniff::MimeTypeAsScript(
-          fetcher->GetUseCounter(), &fetcher->GetConsoleLogger(),
-          resource->GetResponse(),
-          AllowedByNosniff::MimeTypeCheck::kLaxForElement)) {
-    return nullptr;
-  }
 
   // Check if we can use the script streamer.
   ResourceScriptStreamer* streamer;
@@ -410,11 +469,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
                          TRACE_EVENT_FLAG_FLOW_IN, "not_streamed_reason",
                          not_streamed_reason);
 
-  // The base URL for external classic script is
-  //
-  // <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">
-  // ... the URL from which the script was obtained, ...</spec>
-  const KURL& base_url = resource->GetResponse().ResponseUrl();
+  const KURL& base_url = BaseUrl(*resource);
   return ClassicScript::CreateFromResource(resource, base_url, options_,
                                            streamer, not_streamed_reason,
                                            cache_consumer_);

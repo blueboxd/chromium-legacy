@@ -11,7 +11,11 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/guest_os/dbus_test_helper.h"
+#include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice.pb.h"
@@ -19,6 +23,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace bruschetta {
 
@@ -41,6 +46,10 @@ class BruschettaLauncherTest : public testing::Test,
     response.set_success(true);
     response.set_status(vm_tools::concierge::VmStatus::VM_STATUS_RUNNING);
     FakeConciergeClient()->set_start_vm_response(std::move(response));
+
+    guest_os::GuestId id{guest_os::VmType::UNKNOWN, "vm_name", "penguin"};
+    guest_os::GuestOsSessionTracker::GetForProfile(&profile_)
+        ->AddGuestForTesting(id, guest_os::GuestInfo(id, 30, {}, {}, {}, {}));
   }
 
   void TearDown() override {}
@@ -66,7 +75,8 @@ class BruschettaLauncherTest : public testing::Test,
     return base::WriteFile(bios_path_, "");
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::RunLoop run_loop_;
   TestingProfile profile_;
   base::FilePath bios_path_;
@@ -111,18 +121,12 @@ TEST_F(BruschettaLauncherTest, LaunchStartVmFails) {
 }
 
 // Try to launch, VM already running.
-TEST_F(BruschettaLauncherTest, LaunchStartVmAlreadyRunning) {
-  BruschettaResult result;
-
-  launcher_->EnsureRunning(StoreResultThenQuitRunLoop(&result));
-  run_loop_.Run();
-
-  ASSERT_EQ(result, BruschettaResult::kSuccess);
-}
-
-// Try to launch, Success.
 TEST_F(BruschettaLauncherTest, LaunchStartVmSuccess) {
   BruschettaResult result;
+  vm_tools::concierge::StartVmResponse response;
+  response.set_success(true);
+  response.set_status(vm_tools::concierge::VmStatus::VM_STATUS_RUNNING);
+  FakeConciergeClient()->set_start_vm_response(std::move(response));
 
   launcher_->EnsureRunning(StoreResultThenQuitRunLoop(&result));
   run_loop_.Run();
@@ -166,6 +170,23 @@ TEST_F(BruschettaLauncherTest, SeparateLaunchRequestsAreNotBatched) {
   }
 
   ASSERT_EQ(FakeConciergeClient()->start_vm_call_count(), num_repeats);
+}
+
+// We should timeout if launch takes too long.
+TEST_F(BruschettaLauncherTest, LaunchTimeout) {
+  vm_tools::concierge::VmStoppedSignal signal;
+  signal.set_name("vm_name");
+  FakeConciergeClient()->NotifyVmStopped(
+      signal);  // Notify stopped to clear the session tracker.
+
+  BruschettaResult last_result = BruschettaResult::kUnknown;
+  launcher_->EnsureRunning(StoreResultThenQuitRunLoop(&last_result));
+  // Run until we're idle, rather than all the way until the run loop is
+  // killed, so we can still run things next time through the loop.
+  this->task_environment_.FastForwardBy(base::Minutes(3));
+  ASSERT_EQ(last_result, BruschettaResult::kUnknown);  // No result yet.
+  this->task_environment_.FastForwardBy(base::Minutes(2));
+  ASSERT_EQ(last_result, BruschettaResult::kTimeout);  // Timed out.
 }
 
 }  // namespace bruschetta

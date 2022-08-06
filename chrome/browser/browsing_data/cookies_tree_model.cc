@@ -160,7 +160,6 @@ bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
     // Fall through each below cases to return false.
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
-    case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
       return false;
     default:
       break;
@@ -292,14 +291,6 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitCacheStorage(
   Init(TYPE_CACHE_STORAGE);
   usage_info = storage_usage_info;
   origin = usage_info->origin;
-  return *this;
-}
-
-CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitMediaLicense(
-    const content::StorageUsageInfo* storage_usage_info) {
-  Init(TYPE_MEDIA_LICENSE);
-  media_license_usage_info = storage_usage_info;
-  origin = media_license_usage_info->origin;
   return *this;
 }
 
@@ -801,52 +792,6 @@ class CookieTreeCacheStorageNode : public CookieTreeNode {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookieTreeMediaLicenseNode
-
-class CookieTreeMediaLicenseNode : public CookieTreeNode {
- public:
-  friend class CookieTreeMediaLicensesNode;
-
-  // |media_license_usage_info| is expected to remain valid as long as the
-  // CookieTreeMediaLicenseNode is valid.
-  explicit CookieTreeMediaLicenseNode(
-      const std::list<content::StorageUsageInfo>::iterator
-          media_license_usage_info)
-      : CookieTreeNode(base::UTF8ToUTF16(
-            media_license_usage_info->origin.GetURL().spec())),
-        media_license_usage_info_(media_license_usage_info) {}
-
-  CookieTreeMediaLicenseNode(const CookieTreeMediaLicenseNode&) = delete;
-  CookieTreeMediaLicenseNode& operator=(const CookieTreeMediaLicenseNode&) =
-      delete;
-
-  ~CookieTreeMediaLicenseNode() override = default;
-
-  void DeleteStoredObjects() override {
-    LocalDataContainer* container = GetLocalDataContainerForNode(this);
-
-    if (container) {
-      container->media_license_helper_->DeleteMediaLicenseOrigin(
-          media_license_usage_info_->origin);
-      container->media_license_info_list_.erase(media_license_usage_info_);
-    }
-  }
-
-  DetailedInfo GetDetailedInfo() const override {
-    return DetailedInfo().InitMediaLicense(&*media_license_usage_info_);
-  }
-
-  int64_t InclusiveSize() const override {
-    return media_license_usage_info_->total_size_bytes;
-  }
-
- private:
-  // |media_license_usage_info_| is expected to remain valid as long as the
-  // CookieTreeMediaLicenseNode is valid.
-  std::list<content::StorageUsageInfo>::iterator media_license_usage_info_;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // CookieTreeRootNode, public:
 
 CookieTreeRootNode::CookieTreeRootNode(CookiesTreeModel* model)
@@ -1125,30 +1070,6 @@ class CookieTreeCacheStoragesNode : public CookieTreeCollectionNode {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookieTreeMediaLicensesNode
-
-class CookieTreeMediaLicensesNode : public CookieTreeCollectionNode {
- public:
-  CookieTreeMediaLicensesNode()
-      : CookieTreeCollectionNode(
-            l10n_util::GetStringUTF16(IDS_COOKIES_MEDIA_LICENSES)) {}
-
-  CookieTreeMediaLicensesNode(const CookieTreeMediaLicensesNode&) = delete;
-  CookieTreeMediaLicensesNode& operator=(const CookieTreeMediaLicensesNode&) =
-      delete;
-
-  ~CookieTreeMediaLicensesNode() override = default;
-
-  DetailedInfo GetDetailedInfo() const override {
-    return DetailedInfo().Init(DetailedInfo::TYPE_MEDIA_LICENSES);
-  }
-
-  void AddMediaLicenseNode(std::unique_ptr<CookieTreeMediaLicenseNode> child) {
-    AddChildSortedByTitle(std::move(child));
-  }
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // CookieTreeHostNode, public:
 
 // static
@@ -1278,16 +1199,6 @@ CookieTreeHostNode::GetOrCreateCacheStoragesNode() {
   return cache_storages_child_;
 }
 
-CookieTreeMediaLicensesNode*
-CookieTreeHostNode::GetOrCreateMediaLicensesNode() {
-  if (media_licenses_child_)
-    return media_licenses_child_;
-  auto media_licenses_node = std::make_unique<CookieTreeMediaLicensesNode>();
-  media_licenses_child_ = media_licenses_node.get();
-  AddChildSortedByTitle(std::move(media_licenses_node));
-  return media_licenses_child_;
-}
-
 void CookieTreeHostNode::CreateContentException(
     content_settings::CookieSettings* cookie_settings,
     ContentSetting setting) const {
@@ -1378,9 +1289,6 @@ int CookiesTreeModel::GetSendForMessageID(const net::CanonicalCookie& cookie) {
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesTreeModel, TreeModel methods (public):
 
-// TreeModel methods:
-// Returns the set of icons for the nodes in the tree. You only need override
-// this if you don't want to use the default folder icons.
 void CookiesTreeModel::GetIcons(std::vector<ui::ImageModel>* icons) {
   icons->push_back(ui::ImageModel::FromVectorIcon(vector_icons::kCookieIcon,
                                                   ui::kColorIcon, 18));
@@ -1389,16 +1297,12 @@ void CookiesTreeModel::GetIcons(std::vector<ui::ImageModel>* icons) {
           IDR_COOKIE_STORAGE_ICON)));
 }
 
-// Returns the index of the icon to use for |node|. Return -1 to use the
-// default icon. The index is relative to the list of icons returned from
-// GetIcons.
-int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
+absl::optional<size_t> CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
   CookieTreeNode* ct_node = static_cast<CookieTreeNode*>(node);
   switch (ct_node->GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
-      return COOKIE;
+      return 0;
 
-    // Fall through each below cases to return DATABASE.
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
     case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
@@ -1407,15 +1311,13 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
     case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
     case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER:
     case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
-    case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
-      return DATABASE;
+      return 1;
+
     case CookieTreeNode::DetailedInfo::TYPE_HOST:
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
-      return -1;
     default:
-      break;
+      return absl::nullopt;
   }
-  return -1;
 }
 
 void CookiesTreeModel::DeleteAllStoredObjects() {
@@ -1454,7 +1356,6 @@ void CookiesTreeModel::UpdateSearchResults(const std::u16string& filter) {
   PopulateServiceWorkerUsageInfoWithFilter(data_container(), &notifier, filter);
   PopulateSharedWorkerInfoWithFilter(data_container(), &notifier, filter);
   PopulateCacheStorageUsageInfoWithFilter(data_container(), &notifier, filter);
-  PopulateMediaLicenseInfoWithFilter(data_container(), &notifier, filter);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1539,11 +1440,6 @@ void CookiesTreeModel::PopulateCacheStorageUsageInfo(
   ScopedBatchUpdateNotifier notifier(this, GetRoot());
   PopulateCacheStorageUsageInfoWithFilter(container, &notifier,
                                           std::u16string());
-}
-
-void CookiesTreeModel::PopulateMediaLicenseInfo(LocalDataContainer* container) {
-  ScopedBatchUpdateNotifier notifier(this, GetRoot());
-  PopulateMediaLicenseInfoWithFilter(container, &notifier, std::u16string());
 }
 
 void CookiesTreeModel::PopulateCookieInfoWithFilter(
@@ -1805,31 +1701,6 @@ void CookiesTreeModel::PopulateQuotaInfoWithFilter(
   }
 }
 
-void CookiesTreeModel::PopulateMediaLicenseInfoWithFilter(
-    LocalDataContainer* container,
-    ScopedBatchUpdateNotifier* notifier,
-    const std::u16string& filter) {
-  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
-
-  if (container->media_license_info_list_.empty())
-    return;
-
-  notifier->StartBatchUpdate();
-  for (auto usage_info = container->media_license_info_list_.begin();
-       usage_info != container->media_license_info_list_.end(); ++usage_info) {
-    GURL origin(usage_info->origin.GetURL());
-
-    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin).find(
-                               filter) != std::u16string::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
-      CookieTreeMediaLicensesNode* media_licenses_node =
-          host_node->GetOrCreateMediaLicensesNode();
-      media_licenses_node->AddMediaLicenseNode(
-          std::make_unique<CookieTreeMediaLicenseNode>(usage_info));
-    }
-  }
-}
-
 void CookiesTreeModel::SetBatchExpectation(int batches_expected, bool reset) {
   batches_expected_ = batches_expected;
   if (reset) {
@@ -1936,8 +1807,7 @@ std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfileDeprecated(
       quota_helper, service_worker_helper,
       base::MakeRefCounted<browsing_data::SharedWorkerHelper>(
           storage_partition),
-      cache_helper,
-      BrowsingDataMediaLicenseHelper::Create(file_system_context));
+      cache_helper);
 
   return std::make_unique<CookiesTreeModel>(
       std::move(container), profile->GetExtensionSpecialStoragePolicy(),

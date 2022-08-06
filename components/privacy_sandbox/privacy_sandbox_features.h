@@ -12,9 +12,6 @@ namespace privacy_sandbox {
 
 // Enables the third release of the Privacy Sandbox settings.
 extern const base::Feature kPrivacySandboxSettings3;
-// Determines whether the user facing controls for Privacy Sandbox Settings 3
-// should be default on.
-extern const base::FeatureParam<bool> kPrivacySandboxSettings3DefaultOn;
 // When true, the user will be shown a consent to enable the Privacy Sandbox
 // release 3, if they accept the APIs will become active. Only one of this and
 // the below notice feature should be enabled at any one time.
@@ -50,6 +47,13 @@ extern const base::Feature kOverridePrivacySandboxSettingsLocalTesting;
 // purposes. This feature is used to support external automated testing using
 // Chrome, where additional prompts break behavior expectations.
 extern const base::Feature kDisablePrivacySandboxPrompts;
+
+// Enables the First Party Sets UI.
+extern const base::Feature kPrivacySandboxFirstPartySetsUI;
+
+// Populates First Party Sets information with sample membership information,
+// for testing purposes only.
+extern const base::FeatureParam<bool> kPrivacySandboxFirstPartySetsUISampleSets;
 
 }  // namespace privacy_sandbox
 

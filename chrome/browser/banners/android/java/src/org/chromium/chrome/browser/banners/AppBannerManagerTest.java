@@ -156,7 +156,7 @@ public class AppBannerManagerTest {
             "/chrome/test/data/banners/manifest_prefer_related_chrome_app.json";
 
     private static final String WEB_APP_MANIFEST_FOR_BOTTOM_SHEET_INSTALL =
-            "/chrome/test/data/banners/manifest_bottom_sheet_install.json";
+            "/chrome/test/data/banners/manifest_with_screenshots.json";
 
     private static final String NATIVE_ICON_PATH = "/chrome/test/data/banners/launcher-icon-4x.png";
 
@@ -782,7 +782,11 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE,
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE + "<Study",
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params="
+                    + "Study.Group:installable_ambient_badge_message_throttle_domains_capacity/0",
             "disable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR})
     public void
     testBlockedAmbientBadgeDoesNotAppearAgainForMonths_Message() throws Exception {

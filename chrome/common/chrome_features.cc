@@ -41,11 +41,6 @@ const base::Feature kAllowTouchpadHapticClickSettings{
     "AllowTouchpadHapticClickSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(IS_CHROMEOS_ASH)
 
-// Always reinstall system web apps, instead of only doing so after version
-// upgrade or locale changes.
-const base::Feature kAlwaysReinstallSystemWebApps{
-    "ReinstallSystemWebApps", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_ANDROID)
 const base::Feature kAnonymousUpdateChecks{"AnonymousUpdateChecks",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
@@ -58,6 +53,11 @@ const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kAppManagementAppDetails{"AppManagementAppDetails",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kAppDeduplicationService{"AppDeduplicationService",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -78,12 +78,6 @@ const base::Feature kAppShimRemoteCocoa{"AppShimRemoteCocoa",
 const base::Feature kAppShimNewCloseBehavior{"AppShimNewCloseBehavior",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_MAC)
-
-#if BUILDFLAG(IS_CHROMEOS)
-// Controls whether ARC ghost window will be applied on ARC P version.
-const base::Feature kArcPiGhostWindow{"ArcPiGhostWindow",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Enables the built-in DNS resolver.
 const base::Feature kAsyncDns {
@@ -199,10 +193,6 @@ const base::Feature kCryptohomeUserDataAuthKillswitch{
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-// Enables Privacy Hub for ChromeOS.
-const base::Feature kCrosPrivacyHub{"CrosPrivacyHub",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables parsing and enforcing Data Leak Prevention policy rules that
 // restricts usage of some system features, e.g.clipboard, screenshot, etc.
 // for confidential content.
@@ -210,7 +200,7 @@ const base::Feature kDataLeakPreventionPolicy{"DataLeakPreventionPolicy",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables starting of Data Leak Prevention Files Daemon by sending the
-// DLP policy there. The daemond might restrict access to some protected files.
+// DLP policy there. The daemon might restrict access to some protected files.
 const base::Feature kDataLeakPreventionFilesRestriction{
     "DataLeakPreventionFilesRestriction", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -220,7 +210,7 @@ const base::Feature kDataLeakPreventionFilesRestriction{
 // browser by default. Users can still enable link capturing for apps through
 // the intent picker or settings.
 const base::Feature kDefaultLinkCapturingInBrowser{
-    "DefaultLinkCapturingInBrowser", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DefaultLinkCapturingInBrowser", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -275,10 +265,6 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu {
 const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy{
     "DesktopPWAsEnforceWebAppSettingsPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables showing a detailed install dialog for user installs.
-const base::Feature kDesktopPWAsDetailedInstallDialog{
-    "DesktopPWAsDetailedInstallDialog", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
   "DesktopPWAsRunOnOsLogin",
@@ -309,6 +295,12 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
 const base::Feature kKeepForceInstalledPreinstalledApps{
     "KeepForceInstalledPreinstalledApps", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Enables notification permission revocation for origins that may send
+// disruptive notifications.
+const base::Feature kDisruptiveNotificationPermissionRevocation{
+    "DisruptiveNotificationPermissionRevocation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {
@@ -365,18 +357,9 @@ const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks = {
     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables all registered system web apps, regardless of their respective
-// feature flags.
-const base::Feature kEnableAllSystemWebApps{"EnableAllSystemWebApps",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable the restricted web APIs for high-trusted apps.
 const base::Feature kEnableRestrictedWebApis{"EnableRestrictedWebApis",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable web app uninstallation from Windows settings or control panel.
-const base::Feature kEnableWebAppUninstallFromOsSettings{
-    "EnableWebAppUninstallFromOsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !BUILDFLAG(IS_ANDROID)
 // Enable WebHID on extension service workers.
@@ -607,9 +590,14 @@ const base::Feature kIncognitoDownloadsWarning{
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(IS_CHROMEOS)
+const base::Feature kKioskEnableAppService("KioskEnableAppService",
+                                           base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 // When enabled, removes any entry points to the history UI from Incognito mode.
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
-    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -695,12 +683,6 @@ const base::Feature kNotificationDurationLongForRequireInteraction{
     "NotificationDurationLongForRequireInteraction",
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_WIN)
-
-#if BUILDFLAG(IS_POSIX)
-// Enables NTLMv2, which implicitly disables NTLMv1.
-const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 const base::Feature kOnConnectNative{"OnConnectNative",
@@ -790,14 +772,8 @@ const base::Feature kPwaUpdateDialogForIcon{"PwaUpdateDialogForIcon",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Shows a confirmation dialog when updates to a PWAs name has been detected.
-const base::Feature kPwaUpdateDialogForName {
-  "PwaUpdateDialogForName",
-#if BUILDFLAG(IS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kPwaUpdateDialogForName{"PwaUpdateDialogForName",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables using quiet prompts for notification permission requests.
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",
@@ -813,14 +789,8 @@ const base::Feature kAbusiveNotificationPermissionRevocation{
     "AbusiveOriginNotificationPermissionRevocation",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoveStatusBarInWebApps {
-  "RemoveStatusBarInWebApps",
-#if BUILDFLAG(IS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kRemoveStatusBarInWebApps{"RemoveStatusBarInWebApps",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables permanent removal of Legacy Supervised Users on startup.
@@ -832,6 +802,12 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
 const base::Feature kRequestDesktopSiteForTablets{
     "RequestDesktopSiteForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+// Enables permission modules on Safety Check.
+const base::Feature kSafetyCheckPermissions{"SafetyCheckPermissions",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.
@@ -878,11 +854,6 @@ const base::FeatureParam<base::TimeDelta> kSCTLogMaxIngestionRandomDelay{
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kSharesheetCopyToClipboard{
-    "SharesheetCopyToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
 // Launch bug: https://crbug.com/810843.  This is a //chrome-layer feature to
@@ -1120,13 +1091,6 @@ const base::Feature kWebShare{"WebShare", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kWebShare{"WebShare", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables setting time limit for Chrome and PWA's on child user device.
-// Requires |kPerAppTimeLimits| to be enabled.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kWebTimeLimits{"WebTimeLimits",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 // Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode {
@@ -1181,6 +1145,17 @@ const base::Feature kOmniboxTriggerForPrerender2{
 
 const base::Feature kSupportSearchSuggestionForPrerender2{
     "SupportSearchSuggestionForPrerender2", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<SearchSuggestionPrerenderImplementationType>::Option
+    search_suggestion_implementation_types[] = {
+        {SearchSuggestionPrerenderImplementationType::kUsePrefetch,
+         "use_prefetch"},
+        {SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
+         "ignore_prefetch"}};
+const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
+    kSearchSuggestionPrerenderImplementationTypeParam{
+        &kSupportSearchSuggestionForPrerender2, "implementation_type",
+        SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
+        &search_suggestion_implementation_types};
 
 // Enables omnibox trigger no state prefetch. Only one of
 // kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be

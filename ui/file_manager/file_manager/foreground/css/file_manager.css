@@ -1336,6 +1336,38 @@ body.check-select #read-only-indicator {
   position: relative;
 }
 
+#empty-folder {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+#empty-folder > .image {
+  --empty-folder-svg-dot-color: var(--cros-illustration-color-1-shade-1);
+  --empty-folder-svg-file-color: var(--cros-illustration-secondary-color);
+  --empty-folder-svg-ellipse-color: var(--cros-illustration-color-1);
+  --empty-folder-svg-folder-color: var(--cros-illustration-color-1-shade-2);
+  margin-top: 64px;
+  text-align: center;
+}
+
+.list-view #empty-folder > .image {
+  /* The list view has a .table-header at the top, the margin-top should also
+  cover that, hence the desired margin plus the .table-header height. */
+  margin-top: calc(64px + 57px);
+}
+
+#empty-folder > .label {
+  color: var(--cros-text-color-secondary);
+  font: var(--cros-body-2-font);
+  margin-top: 16px;
+  text-align: center;
+}
+
 #detail-table {
   display: flex;
   flex: auto;
@@ -1371,11 +1403,17 @@ body.check-select #read-only-indicator {
   width: 16px;
 }
 
-body.files-ng .loading-indicator {
+.loading-indicator {
   left: calc(50% - 24px);
   position: absolute;
   right: calc(50% - 24px);
   top: 64px;
+}
+
+.list-view .loading-indicator {
+  /* The list view has a .table-header at the top, the top should also
+  cover that, hence the desired top plus the .table-header height. */
+  top: calc(64px + 57px);
 }
 
 @keyframes heightAnimation {
@@ -1412,16 +1450,7 @@ body.files-ng .banner-close {
      fully visible. */
   box-sizing: border-box;
   overflow-y: auto;
-  padding-bottom: 16px;
-  padding-inline-end: 2px;
-  padding-inline-start: 11px;
-  padding-top: 12px;
   width: 100%;
-}
-
-body.files-ng .thumbnail-grid {
-  padding-inline-end: 20px;
-  padding-inline-start: 16px;
 }
 
 body.files-ng grid .grid-title {
@@ -1929,7 +1958,8 @@ li[renaming=''] .badge {
   color: var(--cros-text-color-secondary);
   flex: none;
   font-family: 'Roboto Medium';
-  height: 48px;
+  /* The desired height plus the border bottom. */
+  height: calc(56px + 1px);
   line-height: 20px;
 }
 
@@ -1980,6 +2010,20 @@ li[renaming=''] .badge {
 .status-icon {
   height: 24px;
   margin-inline-end: 10px;
+  width: 24px;
+}
+
+/* The managed icon in the details list for DLP restricted files. */
+.dlp-managed-icon {
+  -webkit-mask-image: url(chrome://resources/images/business.svg);
+  -webkit-mask-position: right center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px 16px;
+  background-color: currentColor;
+  color: var(--cros-icon-color-primary);
+  height: 24px;
+  margin-inline-end: 10px;
+  margin-inline-start: auto;
   width: 24px;
 }
 
@@ -2195,7 +2239,8 @@ body.files-ng #list-container .table-header-cell:first-child {
 }
 
 body.files-ng .table-header-cell {
-  padding-bottom: 16px;
+  padding-bottom: 12px;
+  padding-top: 12px;
 }
 
 html:not(.pointer-active) body.files-ng .table-header-cell,
@@ -2239,7 +2284,6 @@ body.files-ng .table-label-container {
   align-items: center;
   display: flex;
   height: 32px;
-  padding-top: 8px;
 }
 
 /* Text in the column header */
@@ -2282,7 +2326,7 @@ body.files-ng .table-row-cell > * {
 body.files-ng .table-header-splitter  {
   background: none;
   height: 32px;
-  margin-top: 8px;
+  margin-top: 12px;
   width: auto;
 }
 

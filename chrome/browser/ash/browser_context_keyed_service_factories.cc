@@ -19,7 +19,8 @@
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/lock_screen_apps/lock_screen_apps.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
-#include "chrome/browser/ash/nearby/nearby_connections_dependencies_provider_factory.h"
+#include "chrome/browser/ash/login/signin_partition_manager.h"
+#include "chrome/browser/ash/nearby/nearby_dependencies_provider_factory.h"
 #include "chrome/browser/ash/nearby/nearby_process_manager_factory.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
+#include "chrome/browser/ui/ash/global_media_controls/cast_media_notification_producer_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 
 #if defined(USE_CUPS)
@@ -58,6 +60,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   bluetooth::DebugLogsManagerFactory::GetInstance();
   borealis::BorealisServiceFactory::GetInstance();
   bruschetta::BruschettaServiceFactory::GetInstance();
+  CastMediaNotificationProducerKeyedServiceFactory::GetInstance();
   cert_provisioning::CertProvisioningSchedulerUserServiceFactory::GetInstance();
   crostini::CrostiniEngagementMetricsService::Factory::GetInstance();
 #if defined(USE_CUPS)
@@ -79,7 +82,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   guest_os::GuestOsRegistryServiceFactory::GetInstance();
   KerberosCredentialsManagerFactory::GetInstance();
   LockScreenAppsFactory::GetInstance();
-  nearby::NearbyConnectionsDependenciesProviderFactory::GetInstance();
+  login::SigninPartitionManager::Factory::GetInstance();
+  nearby::NearbyDependenciesProviderFactory::GetInstance();
   nearby::NearbyProcessManagerFactory::GetInstance();
   OwnerSettingsServiceAshFactory::GetInstance();
   phonehub::PhoneHubManagerFactory::GetInstance();

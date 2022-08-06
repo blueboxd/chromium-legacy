@@ -15,8 +15,8 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/service/gpu_task_scheduler_helper.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "gpu/ipc/gpu_task_scheduler_helper.h"
 #include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/overlay_priority_hint.h"
@@ -199,6 +199,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
 
   // If true, video capture is enabled for this frame.
   virtual void SetIsVideoCaptureEnabled(bool enabled) {}
+
+  // If true, video fullscreen mode is enabled for this frame.
+  virtual void SetIsVideoFullscreen(bool enabled) {}
 
   virtual gfx::CALayerResult GetCALayerErrorCode() const;
 

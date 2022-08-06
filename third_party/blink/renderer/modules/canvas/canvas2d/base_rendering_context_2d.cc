@@ -773,6 +773,8 @@ void BaseRenderingContext2D::setFilter(
           filter_string == GetState().UnparsedCSSFilter()) {
         return;
       }
+      if (!execution_context)
+        return;
       const CSSValue* css_value = CSSParser::ParseSingleValue(
           CSSPropertyID::kFilter, filter_string,
           MakeGarbageCollected<CSSParserContext>(
@@ -1701,7 +1703,7 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* image_source,
 void BaseRenderingContext2D::ClearCanvasForSrcCompositeOp() {
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (c)
-    c->clear(HasAlpha() ? SK_ColorTRANSPARENT : SK_ColorBLACK);
+    c->clear(HasAlpha() ? SkColors::kTransparent : SkColors::kBlack);
 }
 
 bool BaseRenderingContext2D::RectContainsTransformedRect(

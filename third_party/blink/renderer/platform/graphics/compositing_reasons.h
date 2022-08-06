@@ -39,6 +39,7 @@ using CompositingReasons = uint64_t;
   V(FixedPosition)                                                            \
   V(FixedToViewport)                                                          \
   V(StickyPosition)                                                           \
+  V(AnchorScroll)                                                             \
   V(OverflowScrolling)                                                        \
   V(WillChangeTransform)                                                      \
   V(WillChangeScale)                                                          \
@@ -118,13 +119,13 @@ class PLATFORM_EXPORT CompositingReason {
 
     // Various combinations of compositing reasons are defined here also, for
     // more intuitive and faster bitwise logic.
-    kComboScrollDependentPosition = kFixedPosition | kStickyPosition,
+
     // Note that translate is not included, because we care about transforms
     // that are not IsIdentityOrTranslation().
     kPreventingSubpixelAccumulationReasons =
         kWillChangeTransform | kWillChangeScale | kWillChangeRotate,
     kDirectReasonsForPaintOffsetTranslationProperty =
-        kComboScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
+        kFixedPosition | kAffectedByOuterViewportBoundsDelta |
         kFixedToViewport | kVideo | kCanvas | kPlugin | kIFrame,
     // TODO(dbaron): kWillChangeOther probably shouldn't be in this list.
     kDirectReasonsForTransformProperty =

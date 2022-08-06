@@ -15,10 +15,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::NetworkHandler;
@@ -76,9 +76,9 @@ void AutoConnectNotifier::ConnectToNetworkRequested(
 }
 
 void AutoConnectNotifier::NetworkConnectionStateChanged(
-    const chromeos::NetworkState* network) {
+    const NetworkState* network) {
   // Ignore non WiFi networks completely.
-  if (!network->Matches(chromeos::NetworkTypePattern::WiFi()))
+  if (!network->Matches(NetworkTypePattern::WiFi()))
     return;
 
   // The notification is only shown when a connection has succeeded; if
@@ -140,7 +140,7 @@ void AutoConnectNotifier::OnAutoConnectedInitiated(int auto_connect_reasons) {
   timer_->Start(FROM_HERE, kNetworkConnectionTimeout, base::DoNothing());
 }
 
-void AutoConnectNotifier::DisplayToast(const chromeos::NetworkState* network) {
+void AutoConnectNotifier::DisplayToast(const NetworkState* network) {
   NET_LOG(EVENT) << "Show AutoConnect Toast for: " << NetworkId(network);
   // Remove previous toast if one was already being shown.
   ash::ToastManager::Get()->Cancel(kAutoConnectToastId);

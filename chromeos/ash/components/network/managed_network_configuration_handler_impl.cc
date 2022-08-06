@@ -25,28 +25,28 @@
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/metrics/esim_policy_login_metrics_logger.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_device_handler.h"
+#include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_policy_observer.h"
+#include "chromeos/ash/components/network/network_profile.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_ui_data.h"
+#include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/onc/onc_merger.h"
 #include "chromeos/ash/components/network/onc/onc_translator.h"
+#include "chromeos/ash/components/network/policy_util.h"
+#include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/ash/components/network/shill_property_util.h"
+#include "chromeos/ash/components/network/tether_constants.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/components/onc/onc_validator.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_policy_observer.h"
-#include "chromeos/network/network_profile.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/network_util.h"
-#include "chromeos/network/policy_util.h"
-#include "chromeos/network/prohibited_technologies_handler.h"
-#include "chromeos/network/shill_property_util.h"
-#include "chromeos/network/tether_constants.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -603,7 +603,12 @@ void ManagedNetworkConfigurationHandlerImpl::StartPolicyApplication(
 
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForUserhash(userhash);
-  DCHECK(profile);
+  if (!profile) {
+    // The shill profile has been removed in the meantime. This could happen
+    // e.g. if the user session is exiting or the device is shutting down.
+    // See b/240237232 for context.
+    return;
+  }
 
   base::flat_set<std::string> modified_guids;
   policy_application_info.modified_policy_guids.swap(modified_guids);

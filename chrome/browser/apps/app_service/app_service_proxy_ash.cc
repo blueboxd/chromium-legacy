@@ -161,10 +161,8 @@ AppServiceProxyAsh::BrowserAppInstanceRegistry() {
 
 void AppServiceProxyAsh::RegisterCrosApiSubScriber(
     SubscriberCrosapi* subscriber) {
-  if (base::FeatureList::IsEnabled(kAppServiceCrosApiOnAppsWithoutMojom)) {
-    crosapi_subscriber_ = subscriber;
-    crosapi_subscriber_->OnApps(app_registry_cache_.GetAllApps());
-  }
+  crosapi_subscriber_ = subscriber;
+  crosapi_subscriber_->OnApps(app_registry_cache_.GetAllApps());
 
   // Initialise the Preferred Apps in the `crosapi_subscriber_` on register.
   if (preferred_apps_impl_ &&
@@ -305,6 +303,12 @@ void AppServiceProxyAsh::SetAppPlatformMetricsServiceForTesting(
     std::unique_ptr<apps::AppPlatformMetricsService>
         app_platform_metrics_service) {
   app_platform_metrics_service_ = std::move(app_platform_metrics_service);
+}
+
+void AppServiceProxyAsh::RegisterPublishersForTesting() {
+  if (publisher_host_) {
+    publisher_host_->RegisterPublishersForTesting();
+  }
 }
 
 void AppServiceProxyAsh::Shutdown() {
@@ -568,7 +572,7 @@ void AppServiceProxyAsh::OnAppRegistryCacheWillBeDestroyed(
 void AppServiceProxyAsh::RecordAppPlatformMetrics(
     Profile* profile,
     const apps::AppUpdate& update,
-    apps::mojom::LaunchSource launch_source,
+    apps::LaunchSource launch_source,
     apps::LaunchContainer container) {
   RecordAppLaunchMetrics(profile, update.AppType(), update.AppId(),
                          launch_source, container);
@@ -593,9 +597,8 @@ void AppServiceProxyAsh::PerformPostUninstallTasks(
 }
 
 void AppServiceProxyAsh::PerformPostLaunchTasks(
-    apps::mojom::LaunchSource launch_source) {
-  if (apps_util::IsHumanLaunch(
-          ConvertMojomLaunchSourceToLaunchSource(launch_source))) {
+    apps::LaunchSource launch_source) {
+  if (apps_util::IsHumanLaunch(launch_source)) {
     ash::full_restore::FullRestoreService::MaybeCloseNotification(profile_);
   }
 }

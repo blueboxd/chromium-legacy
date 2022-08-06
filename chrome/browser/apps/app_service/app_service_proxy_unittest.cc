@@ -372,21 +372,16 @@ class AppServiceProxyPreferredAppsTest : public AppServiceProxyTest {
   // Shortcut for adding apps to App Service without going through a real
   // Publisher.
   void OnApps(std::vector<AppPtr> apps, AppType type) {
-    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
-      proxy_->OnApps(std::move(apps), type,
-                     /*should_notify_initialized=*/false);
-    } else {
-      std::vector<mojom::AppPtr> mojom_apps;
-      for (const auto& app : apps) {
-        mojom_apps.push_back(ConvertAppToMojomApp(app));
-      }
-      proxy_->OnApps(std::move(mojom_apps), ConvertAppTypeToMojomAppType(type),
-                     /*should_notify_initialized=*/false);
-    }
+    proxy_->OnApps(std::move(apps), type,
+                   /*should_notify_initialized=*/false);
   }
 
   PreferredAppsList& GetPreferredAppsList() {
     return proxy()->preferred_apps_impl_->preferred_apps_list_;
+  }
+
+  PreferredAppsImpl* PreferredAppsImpl() {
+    return proxy()->preferred_apps_impl_.get();
   }
 
  private:
@@ -611,11 +606,11 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredApps) {
   EXPECT_EQ(absl::nullopt,
             GetPreferredAppsList().FindPreferredAppForUrl(another_filter_url));
 
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kUnknown, kAppId2, intent_filter->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView, filter_url),
       /*from_publisher=*/true);
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kUnknown, kAppId2, another_intent_filter->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView,
                                another_filter_url),
@@ -631,11 +626,11 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredApps) {
   EXPECT_EQ(absl::nullopt,
             GetPreferredAppsList().FindPreferredAppForUrl(another_filter_url));
 
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kUnknown, kAppId2, intent_filter->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView, filter_url),
       /*from_publisher=*/true);
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kUnknown, kAppId2, another_intent_filter->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView,
                                another_filter_url),
@@ -657,7 +652,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsWriteBeforeInit) {
   std::string kAppId1 = "aaa";
   std::string kAppId2 = "bbb";
 
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kArc, kAppId1,
       apps_util::MakeIntentFilterForMimeType("image/png"), nullptr,
       /*from_publisher=*/false);
@@ -690,7 +685,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsPersistency) {
                                     run_loop_read.QuitClosure(),
                                     run_loop_write.QuitClosure());
     run_loop_read.Run();
-    proxy()->PreferredAppsImpl()->AddPreferredApp(
+    PreferredAppsImpl()->AddPreferredApp(
         AppType::kUnknown, kAppId1, intent_filter->Clone(),
         std::make_unique<Intent>(apps_util::kIntentActionView, filter_url),
         /*from_publisher=*/false);
@@ -791,15 +786,15 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsOverlap) {
 
   auto intent_filter_1 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
 
   auto intent_filter_2 = apps_util::MakeIntentFilterForUrlScope(filter_url_3);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
 
   auto intent_filter_3 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
 
@@ -812,7 +807,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsOverlap) {
   EXPECT_EQ(0U, GetPreferredAppsList().GetEntrySize());
   EXPECT_EQ(0U, GetPreferredAppsList().GetEntrySize());
 
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kArc, kAppId1, intent_filter_1->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView, filter_url_1),
       /*from_publisher=*/true);
@@ -826,7 +821,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsOverlap) {
 
   // Add preferred app with intent filter overlap with existing entry for
   // another app will reset the preferred app setting for the other app.
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kArc, kAppId2, intent_filter_2->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView, filter_url_1),
       /*from_publisher=*/true);
@@ -853,15 +848,15 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsOverlapSupportedLink) {
 
   auto intent_filter_1 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
 
   auto intent_filter_2 = apps_util::MakeIntentFilterForUrlScope(filter_url_3);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
 
   auto intent_filter_3 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
 
@@ -942,7 +937,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsDuplicated) {
             GetPreferredAppsList().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(0U, GetPreferredAppsList().GetEntrySize());
 
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kArc, kAppId1, intent_filter->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView, filter_url),
       /*from_publisher=*/true);
@@ -950,7 +945,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsDuplicated) {
   EXPECT_EQ(1U, GetPreferredAppsList().GetEntrySize());
   EXPECT_EQ(1U, GetPreferredAppsList().GetEntrySize());
 
-  proxy()->PreferredAppsImpl()->AddPreferredApp(
+  PreferredAppsImpl()->AddPreferredApp(
       AppType::kArc, kAppId1, intent_filter->Clone(),
       std::make_unique<Intent>(apps_util::kIntentActionView, filter_url),
       /*from_publisher=*/true);

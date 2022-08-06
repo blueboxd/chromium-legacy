@@ -332,8 +332,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // blink::mojom::PopupWidgetHost implementation.
   void RequestClosePopup() override;
-  void ShowPopup(const gfx::Rect& initial_rect,
-                 const gfx::Rect& anchor_rect,
+  void ShowPopup(const gfx::Rect& initial_screen_rect,
+                 const gfx::Rect& anchor_screen_rect,
                  ShowPopupCallback callback) override;
   void SetPopupBounds(const gfx::Rect& bounds,
                       SetPopupBoundsCallback callback) override;
@@ -1067,6 +1067,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                      const SkBitmap& bitmap);
 
   void OnSnapshotReceived(int snapshot_id, gfx::Image image);
+
+  // This message is received when the stylus writable element is focused.
+  // It receives the focused edit element bounds and the current caret bounds
+  // needed for stylus writing service. These bounds would be null when the
+  // stylus writable element could not be focused.
+  void OnEditElementFocusedForStylusWriting(
+      const absl::optional<gfx::Rect>& focused_edit_bounds,
+      const absl::optional<gfx::Rect>& caret_bounds);
 
   // Called by the RenderProcessHost to handle the case when the process
   // changed its state of being blocked.

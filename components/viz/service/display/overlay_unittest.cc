@@ -23,11 +23,11 @@
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/buildflags.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/resources/resource_id.h"
@@ -4605,6 +4605,25 @@ class TestDelegatedOverlayProcessor : public OverlayProcessorDelegated {
 
 using DelegatedTest = OverlayTest<TestDelegatedOverlayProcessor>;
 
+gfx::Transform MakePerspectiveTransform() {
+  gfx::Transform transform;
+  transform.ApplyPerspectiveDepth(100.f);
+  transform.RotateAbout(gfx::Vector3dF(1.f, 1.f, 1.f), 30);
+  return transform;
+}
+
+gfx::Transform MakeShearTransform() {
+  gfx::Transform transform;
+  transform.Skew(0, 30);
+  return transform;
+}
+
+gfx::Transform MakeRotationTransform() {
+  gfx::Transform transform;
+  transform.RotateAboutZAxis(30);
+  return transform;
+}
+
 TEST_F(DelegatedTest, ForwardMultipleBasic) {
   auto pass = CreateRenderPass();
   constexpr size_t kNumTestQuads = 5;
@@ -4637,6 +4656,33 @@ TEST_F(DelegatedTest, ForwardMultipleBasic) {
     const auto kSmallCandidateRect = gfx::RectF(0, 0, 16 * (i + 1), 16);
     EXPECT_RECTF_EQ(kSmallCandidateRect, candidate_list[i].display_rect);
   }
+}
+
+TEST_F(DelegatedTest, DoNotDelegateCopyRequest) {
+  auto pass = CreateRenderPass();
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        child_resource_provider_.get(), child_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayTopLeftRect);
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+  AggregatedRenderPassList pass_list;
+  // AggregatedRenderPass* main_pass = pass.get();
+  SurfaceDamageRectList surface_damage_rect_list;
+  // Simplify by adding full root damage.
+  surface_damage_rect_list.push_back(pass->output_rect);
+  pass->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_backdrop_filters,
+      std::move(surface_damage_rect_list),
+      overlay_processor_->GetDefaultPrimaryPlane(), &candidate_list,
+      &damage_rect_, &content_bounds_);
+  EXPECT_EQ(0u, candidate_list.size());
 }
 
 TEST_F(DelegatedTest, TestClipHandCrafted) {
@@ -4875,6 +4921,37 @@ TEST_F(DelegatedTest, QuadTypes) {
 
   EXPECT_EQ(main_pass->quad_list.size(), candidate_list.size());
   EXPECT_TRUE(damage_rect_.IsEmpty());
+}
+
+TEST_F(DelegatedTest, NonAxisAlignedCandidateStatus) {
+  auto pass = CreateRenderPass();
+  const auto kSmallCandidateRect = gfx::Rect(5, 10, 57, 64);
+  auto* quad = CreateCandidateQuadAt(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
+      kSmallCandidateRect);
+  SurfaceDamageRectList surface_damage_rect_list;
+  OverlayCandidate candidate;
+  auto color_mat = GetIdentityColorMatrix();
+  auto candidate_factory = OverlayCandidateFactory(
+      pass.get(), resource_provider_.get(), &surface_damage_rect_list,
+      &color_mat, gfx::RectF(pass->output_rect),
+      true /* is_delegated_context */);
+
+  pass->shared_quad_state_list.back()->quad_to_target_transform =
+      MakePerspectiveTransform();
+  EXPECT_EQ(OverlayCandidate::CandidateStatus::kFailNotAxisAligned3dTransform,
+            candidate_factory.FromDrawQuad(quad, candidate));
+
+  pass->shared_quad_state_list.back()->quad_to_target_transform =
+      MakeShearTransform();
+  EXPECT_EQ(OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dShear,
+            candidate_factory.FromDrawQuad(quad, candidate));
+
+  pass->shared_quad_state_list.back()->quad_to_target_transform =
+      MakeRotationTransform();
+  EXPECT_EQ(OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dRotation,
+            candidate_factory.FromDrawQuad(quad, candidate));
 }
 
 // These tests check to make sure that candidate quads that should fail (aka

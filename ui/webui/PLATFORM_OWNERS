@@ -1,10 +1,8 @@
 # Please use more specific OWNERS when possible.
 antrim@chromium.org  # For Chrome OS changes, CET.
-calamity@chromium.org
 dpapad@chromium.org
 johntlee@chromium.org
 khorimoto@chromium.org  # For Chrome OS changes.
-michaelpg@chromium.org  # For Chrome OS changes.
 rbpotter@chromium.org
 
 # Only for backend infra changes e.g. //content/browser/webui,

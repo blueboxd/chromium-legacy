@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/components/login/auth/auth_status_consumer.h"
-#include "ash/components/login/auth/user_context.h"
+#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "base/callback_forward.h"
 #include "base/time/clock.h"
@@ -120,6 +120,10 @@ class InSessionPasswordSyncManager
   // Check if reauth dialog is loaded and ready for testing.
   bool IsReauthDialogLoadedForTesting(base::OnceClosure callback);
 
+  // Check if reauth dialog is closed.
+  // |callback| is used to notify test that the reauth dialog is closed.
+  bool IsReauthDialogClosedForTesting(base::OnceClosure callback);
+
   // Notify test that the reauth dialog is ready for testing.
   void OnReauthDialogReadyForTesting();
 
@@ -136,6 +140,9 @@ class InSessionPasswordSyncManager
   // Password sync token API calls.
   void CreateTokenAsync();
   void FetchTokenAsync();
+
+  // Notify test that the reauth dialog is closed.
+  void OnReauthDialogClosedForTesting();
 
   Profile* const primary_profile_;
   UserContext user_context_;
@@ -157,6 +164,10 @@ class InSessionPasswordSyncManager
 
   // A callback that is used to notify test that the reauth dialog is loaded.
   base::OnceClosure on_dialog_loaded_callback_for_testing_;
+
+  // A callback that is used to notify test that the reauth dialog is closed.
+  base::OnceClosure on_dialog_closed_callback_for_testing_;
+
   bool is_dialog_loaded_for_testing_ = false;
 
   friend class InSessionPasswordSyncManagerTest;

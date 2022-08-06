@@ -19,15 +19,15 @@ export interface PDFPlugin extends HTMLIFrameElement {
   setViewportChangedCallback(callback: ViewportChangedCallback): void;
 }
 
-export type SerializedKeyEvent = {
-  keyCode: number,
-  code: string,
-  key: string,
-  shiftKey: boolean,
-  ctrlKey: boolean,
-  altKey: boolean,
-  metaKey: boolean,
-};
+export interface SerializedKeyEvent {
+  keyCode: number;
+  code: string;
+  key: string;
+  shiftKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
+  metaKey: boolean;
+}
 
 /**
  * Turn a dictionary received from postMessage into a key event.
@@ -60,7 +60,7 @@ export function serializeKeyEvent(event: KeyboardEvent): SerializedKeyEvent {
     shiftKey: event.shiftKey,
     ctrlKey: event.ctrlKey,
     altKey: event.altKey,
-    metaKey: event.metaKey
+    metaKey: event.metaKey,
   };
 }
 
@@ -209,7 +209,7 @@ export class PDFScriptingAPI {
       url: url,
       grayscale: grayscale,
       pageNumbers: pageNumbers,
-      modifiable: modifiable
+      modifiable: modifiable,
     });
   }
 

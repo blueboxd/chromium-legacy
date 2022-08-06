@@ -54,6 +54,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/size.h"
@@ -120,12 +121,10 @@ class WebAppFrameToolbarBrowserTest : public InProcessBrowserTest {
         /*provider=*/nullptr, helper()->app_browser());
     app_menu_model->Init();
     ui::MenuModel* model = app_menu_model.get();
-    int index = -1;
-    if (!app_menu_model->GetModelAndIndexForCommandId(command_id, &model,
-                                                      &index)) {
-      return false;
-    }
-    return model->IsEnabledAt(index);
+    size_t index = 0;
+    return app_menu_model->GetModelAndIndexForCommandId(command_id, &model,
+                                                        &index) &&
+           model->IsEnabledAt(index);
   }
 
  private:
@@ -167,8 +166,9 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
       helper()->browser_view()->toolbar_button_provider()->GetAppMenuButton();
   EXPECT_EQ(menu_button->parent(), toolbar_right_container);
 
-  // Ensure we initially have abundant space.
-  helper()->frame_view()->SetSize(gfx::Size(1000, 1000));
+  // Ensure we initially have abundant space. Set the size from the root view
+  // which will get propagated to the frame view.
+  helper()->root_view()->SetSize(gfx::Size(1000, 1000));
 
   EXPECT_TRUE(toolbar_left_container->GetVisible());
   const int original_left_container_width = toolbar_left_container->width();
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
 
   // The layout should be invalidated, but since we don't have the benefit of
   // the compositor to immediately kick a layout off, we have to do it manually.
-  helper()->frame_view()->Layout();
+  RunScheduledLayouts();
 
   // The page action icons should now take up width, leaving less space on
   // Windows and Linux for the window title. (On Mac, the window title remains
@@ -216,8 +216,9 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
 
   helper()->web_app_frame_toolbar()->SetSize(
       {new_toolbar_width, helper()->web_app_frame_toolbar()->height()});
-  helper()->frame_view()->SetSize(
-      {new_frame_width, helper()->frame_view()->height()});
+  // Set the size of the desired frame width from the root view.
+  helper()->root_view()->SetSize(
+      {new_frame_width, helper()->root_view()->height()});
 
   // The left container (containing Back and Reload) should be hidden.
   EXPECT_FALSE(toolbar_left_container->GetVisible());
@@ -300,9 +301,9 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, TitleHover) {
 
   window_title->SetText(std::u16string(30, 't'));
 
-  // Ensure we initially have abundant space.
-  helper()->frame_view()->SetSize(gfx::Size(1000, 1000));
-  helper()->frame_view()->Layout();
+  // Ensure we initially have abundant space. Set the size from the root view
+  // which will get propagated to the frame view.
+  helper()->root_view()->SetSize(gfx::Size(1000, 1000));
   EXPECT_GT(window_title->width(), 0);
   const int original_title_gap = toolbar_right_container->x() -
                                  toolbar_left_container->x() -
@@ -311,15 +312,14 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, TitleHover) {
   // With a narrow window, we have insufficient space for the full title.
   const int narrow_title_gap =
       window_title->CalculatePreferredSize().width() * 3 / 4;
-  int narrow_frame_width =
+  int narrow_width =
       helper()->frame_view()->width() - original_title_gap + narrow_title_gap;
 #if BUILDFLAG(IS_MAC)
-  // Increase frame width to allow for title padding.
-  narrow_frame_width = base::checked_cast<int>(
-      std::ceil(narrow_frame_width / (1 - 2 * kTitlePaddingWidthFraction)));
+  // Increase width to allow for title padding.
+  narrow_width = base::checked_cast<int>(
+      std::ceil(narrow_width / (1 - 2 * kTitlePaddingWidthFraction)));
 #endif
-  helper()->frame_view()->SetSize(gfx::Size(narrow_frame_width, 1000));
-  helper()->frame_view()->Layout();
+  helper()->root_view()->SetSize(gfx::Size(narrow_width, 1000));
 
   EXPECT_GT(window_title->width(), 0);
   EXPECT_EQ(window_title->GetTooltipHandlerForPoint(gfx::Point(0, 0)),
@@ -405,6 +405,89 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_NoElidedExtensionsMenu,
   // There should be no menu entry for opening the Extensions menu.
   EXPECT_FALSE(IsMenuCommandEnabled(WebAppMenuModel::kExtensionsMenuCommandId));
 }
+
+// Borderless has not been implemented for win/mac.
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
+class WebAppFrameToolbarBrowserTest_Borderless
+    : public WebAppFrameToolbarBrowserTest {
+ public:
+  WebAppFrameToolbarBrowserTest_Borderless() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kWebAppBorderless);
+  }
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    embedded_test_server()->ServeFilesFromDirectory(temp_dir_.GetPath());
+    ASSERT_TRUE(embedded_test_server()->Start());
+    InProcessBrowserTest::SetUp();
+  }
+
+  web_app::AppId InstallAndLaunchWebApp(bool uses_borderless) {
+    EXPECT_TRUE(https_server()->Start());
+
+    GURL start_url = helper()->LoadBorderlessTestPageWithDataAndGetURL(
+        embedded_test_server(), &temp_dir_);
+
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    web_app_info->start_url = start_url;
+    web_app_info->scope = start_url.GetWithoutFilename();
+    web_app_info->title = u"A borderless app";
+    web_app_info->display_mode = web_app::DisplayMode::kStandalone;
+    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+
+    if (uses_borderless) {
+      web_app_info->display_override = {web_app::DisplayMode::kBorderless};
+    }
+
+    web_app::AppId app_id = helper()->InstallAndLaunchCustomWebApp(
+        browser(), std::move(web_app_info), start_url);
+
+    // Inside LoadBorderlessTestPageWithDataAndGetURL() the title is set on
+    // window.onload. This is to make sure that the web contents have loaded
+    // before doing any checks and to reduce the flakiness of the tests.
+    content::TitleWatcher title_watcher(
+        helper()->browser_view()->GetActiveWebContents(), u"Borderless");
+    std::ignore = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(EvalJs(helper()->browser_view()->GetActiveWebContents(),
+                     "document.title")
+                  .ExtractString(),
+              "Borderless");
+
+    return app_id;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::ScopedTempDir temp_dir_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
+                       AppUsesBorderlessMode) {
+  InstallAndLaunchWebApp(true);
+  ASSERT_TRUE(helper()->browser_view()->AppUsesBorderlessMode());
+  ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
+  ASSERT_FALSE(
+      helper()->web_app_frame_toolbar()->GetAppMenuButton()->GetVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
+                       AppDoesntUseBorderlessMode) {
+  InstallAndLaunchWebApp(false);
+  ASSERT_FALSE(helper()->browser_view()->AppUsesBorderlessMode());
+  ASSERT_FALSE(helper()->browser_view()->IsBorderlessModeEnabled());
+  ASSERT_TRUE(
+      helper()->web_app_frame_toolbar()->GetAppMenuButton()->GetVisible());
+}
+
+// TODO(https://crbug.com/1277860): Flaky.
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
+                       DISABLED_DraggableRegions) {
+  InstallAndLaunchWebApp(true);
+
+  helper()->TestDraggableRegions();
+}
+#endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 
 class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
     : public WebAppFrameToolbarBrowserTest {
@@ -860,59 +943,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
                        DISABLED_WindowControlsOverlayDraggableRegions) {
   InstallAndLaunchWebApp();
   ToggleWindowControlsOverlayAndWait();
-
-  views::NonClientFrameView* frame_view =
-      helper()->browser_view()->GetWidget()->non_client_view()->frame_view();
-
-  // Validate that a point marked "app-region: drag" is draggable. The draggable
-  // region is defined in the kTestHTML of WebAppFrameToolbarTestHelper's
-  // LoadWindowControlsOverlayTestPageWithDataAndGetURL.
-  gfx::Point draggable_point(100, 100);
-  views::View::ConvertPointToTarget(
-      helper()->browser_view()->contents_web_view(), frame_view,
-      &draggable_point);
-
-  EXPECT_EQ(frame_view->NonClientHitTest(draggable_point), HTCAPTION);
-
-  EXPECT_FALSE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
-      helper()->browser_view()->GetWidget()->GetNativeView(), draggable_point));
-
-  // Validate that a point marked "app-region: no-drag" within a draggable
-  // region is not draggable.
-  gfx::Point non_draggable_point(106, 106);
-  views::View::ConvertPointToTarget(
-      helper()->browser_view()->contents_web_view(), frame_view,
-      &non_draggable_point);
-
-  EXPECT_EQ(frame_view->NonClientHitTest(non_draggable_point), HTCLIENT);
-
-  EXPECT_TRUE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
-      helper()->browser_view()->GetWidget()->GetNativeView(),
-      non_draggable_point));
-
-  // Validate that a point at the border that does not intersect with the
-  // overlays is not marked as draggable.
-  constexpr gfx::Point kBorderPoint(100, 1);
-  EXPECT_NE(frame_view->NonClientHitTest(kBorderPoint), HTCAPTION);
-  EXPECT_TRUE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
-      helper()->browser_view()->GetWidget()->GetNativeView(), kBorderPoint));
-
-  // Validate that draggable region does not clear after history.replaceState is
-  // invoked.
-  std::string kHistoryReplaceState =
-      "history.replaceState({ test: 'test' }, null);";
-  EXPECT_TRUE(ExecuteScript(helper()->browser_view()->GetActiveWebContents(),
-                            kHistoryReplaceState));
-  EXPECT_FALSE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
-      helper()->browser_view()->GetWidget()->GetNativeView(), draggable_point));
-
-  // Validate that the draggable region is reset on navigation and the point is
-  // no longer draggable.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(helper()->browser_view()->browser(),
-                                           GURL("http://example.test/")));
-  EXPECT_NE(frame_view->NonClientHitTest(draggable_point), HTCAPTION);
-  EXPECT_TRUE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
-      helper()->browser_view()->GetWidget()->GetNativeView(), draggable_point));
+  helper()->TestDraggableRegions();
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,

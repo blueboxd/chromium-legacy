@@ -56,7 +56,7 @@ LoginShelfView* GetLoginShelfView() {
 
   return Shelf::ForWindow(Shell::GetPrimaryRootWindow())
       ->shelf_widget()
-      ->login_shelf_view();
+      ->GetLoginShelfView();
 }
 
 bool IsLoginShelfViewButtonShown(int button_view_id) {
@@ -360,8 +360,10 @@ bool LoginScreenTestApi::IsManagedMessageInDialogShown(
   LoginUserView::TestApi user_test(big_user_view->GetUserView());
   LoginRemoveAccountDialog::TestApi user_dialog_test(
       user_test.remove_account_dialog());
-  auto* managed_user_data = user_dialog_test.managed_user_data();
-  return managed_user_data && managed_user_data->GetVisible();
+  auto* management_disclosure_label =
+      user_dialog_test.management_disclosure_label();
+  return management_disclosure_label &&
+         management_disclosure_label->GetVisible();
 }
 
 // static

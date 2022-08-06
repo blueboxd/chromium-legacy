@@ -157,6 +157,7 @@ class CC_EXPORT PropertyTree {
   base::flat_map<ElementId, int> element_id_to_node_index_;
 };
 
+struct AnchorScrollContainersData;
 struct StickyPositionNodeData;
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
@@ -258,6 +259,10 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   StickyPositionNodeData& EnsureStickyPositionData(int node_id);
 
+  const AnchorScrollContainersData* GetAnchorScrollContainersData(
+      int node_id) const;
+  AnchorScrollContainersData& EnsureAnchorScrollContainersData(int node_id);
+
   // Computes the combined transform between |source_id| and |dest_id|. These
   // two nodes must be on the same ancestor chain.
   void CombineTransformsBetween(int source_id,
@@ -278,6 +283,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   StickyPositionNodeData* MutableStickyPositionData(int node_id);
   gfx::Vector2dF StickyPositionOffset(TransformNode* node);
+  gfx::Vector2dF AnchorScrollOffset(TransformNode* node);
   void UpdateLocalTransform(TransformNode* node,
                             const ViewportPropertyIds* viewport_property_ids);
   void UpdateScreenSpaceTransform(TransformNode* node,
@@ -300,6 +306,13 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
   std::vector<TransformCachedNodeData> cached_data_;
   std::vector<StickyPositionNodeData> sticky_position_data_;
+  std::vector<AnchorScrollContainersData> anchor_scroll_containers_data_;
+};
+
+struct AnchorScrollContainersData {
+  int inner_most_scroll_container_id = kInvalidPropertyNodeId;
+  int outer_most_scroll_container_id = kInvalidPropertyNodeId;
+  gfx::Vector2d accumulated_scroll_origin;
 };
 
 struct StickyPositionNodeData {
@@ -526,7 +539,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   // Applies deltas sent in the previous main frame onto the impl thread state.
   // Should only be called on the impl thread side PropertyTrees.
-  void ApplySentScrollDeltasFromAbortedCommit();
+  void ApplySentScrollDeltasFromAbortedCommit(bool main_frame_applied_deltas);
 
   // Pushes scroll updates from the ScrollTree on the main thread onto the
   // impl thread associated state.
@@ -582,6 +595,11 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // Returns true iff the node is composited and does not have any non-transient
   // main-thread scrolling reasons (see main_thread_scrolling_reason.h).
   bool CanRealizeScrollsOnCompositor(const ScrollNode& node) const;
+
+  // Reports reasons for blocking scroll updates on main-thread repaint. For use
+  // only with scroll unification enabled. Returns bitfield of values from
+  // MainThreadScrollingReason.
+  uint32_t GetMainThreadRepaintReasons(const ScrollNode& node) const;
 
  private:
   // ScrollTree doesn't use the needs_update flag.

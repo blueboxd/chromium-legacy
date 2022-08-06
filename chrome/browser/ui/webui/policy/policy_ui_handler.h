@@ -12,10 +12,12 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/policy/value_provider/policy_value_provider.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -28,11 +30,14 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_registry_observer.h"
+#include "chrome/browser/policy/value_provider/extension_policies_value_provider.h"
 #endif
 
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/policy/status_provider/updater_status_and_value_provider.h"
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 class PrefChangeRegistrar;
-struct GoogleUpdatePoliciesAndState;
 
 namespace policy {
 class PolicyMap;
@@ -41,11 +46,9 @@ class PolicyStatusProvider;
 
 // The JavaScript message handler for the chrome://policy page.
 class PolicyUIHandler : public content::WebUIMessageHandler,
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-                        public extensions::ExtensionRegistryObserver,
-#endif
                         public policy::PolicyService::Observer,
                         public policy::SchemaRegistry::Observer,
+                        public policy::PolicyValueProvider::Observer,
                         public ui::SelectFileDialog::Listener {
  public:
   PolicyUIHandler();
@@ -61,15 +64,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // extensions::ExtensionRegistryObserver implementation.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
   // policy::PolicyService::Observer implementation.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                        const policy::PolicyMap& previous,
@@ -77,6 +71,9 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 
   // policy::SchemaRegistry::Observer implementation.
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
+
+  // policy::PolicyValueProvider::Observer implementation.
+  void OnPolicyValueChanged() override;
 
  protected:
   // ui::SelectFileDialog::Listener implementation.
@@ -86,11 +83,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void FileSelectionCanceled(void* params) override;
 
  private:
-  base::Value GetPolicyNames();
+  base::Value::Dict GetPolicyNames();
   base::Value::List GetPolicyValues();
-
-  void AddExtensionPolicyNames(base::Value* names,
-                               policy::PolicyDomain policy_domain);
 
   void HandleExportPoliciesJson(const base::Value::List& args);
   void HandleListenPoliciesUpdates(const base::Value::List& args);
@@ -102,16 +96,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // metadata is sent.
   void SendPolicies();
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Sets |updater_policies_| in this instance, updates
-  // |updater_status_provider_| with a new state and refreshes the UI via
-  // SendPolicies.
-  void SetUpdaterPoliciesAndState(
-      std::unique_ptr<GoogleUpdatePoliciesAndState> updater_policies_and_state);
-
-  void ReloadUpdaterPoliciesAndState();
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
   // Send the status of cloud policy to the UI.
   void SendStatus();
 
@@ -119,7 +103,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // enabled (device and/or user), a dictionary containing status information.
   // If |for_webui| is true, values needed for webui will be included
   // additionally.
-  base::Value GetStatusValue(bool for_webui) const;
+  base::Value::Dict GetStatusValue(bool for_webui) const;
 
   // Build a JSON string of all the policies.
   std::string GetPoliciesAsJson();
@@ -127,8 +111,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void WritePoliciesToJSONFile(const base::FilePath& path);
 
   void OnRefreshPoliciesDone();
-
-  policy::PolicyService* GetPolicyService();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void OnGotDevicePolicy(base::Value::Dict device_policy,
@@ -145,10 +127,15 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   std::unique_ptr<policy::PolicyStatusProvider> user_status_provider_;
   std::unique_ptr<policy::PolicyStatusProvider> device_status_provider_;
   std::unique_ptr<policy::PolicyStatusProvider> machine_status_provider_;
-  std::unique_ptr<policy::PolicyStatusProvider> updater_status_provider_;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  std::unique_ptr<ExtensionPoliciesValueProvider>
+      extension_policies_value_provider_;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  std::unique_ptr<policy::PolicyMap> updater_policies_;
+  std::unique_ptr<UpdaterStatusAndValueProvider>
+      updater_status_and_value_provider_;
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -156,6 +143,10 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  base::ScopedMultiSourceObservation<policy::PolicyValueProvider,
+                                     policy::PolicyValueProvider::Observer>
+      policy_value_provider_observations_{this};
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_{this};
 };

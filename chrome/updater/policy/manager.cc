@@ -4,9 +4,18 @@
 
 #include "chrome/updater/policy/manager.h"
 
+#include <string>
+#include <vector>
+
 #include "chrome/updater/constants.h"
 
 namespace updater {
+
+namespace {
+
+const int kDelayOneHour = 60 * 60;
+
+}  // namespace
 
 UpdatesSuppressedTimes::UpdatesSuppressedTimes() = default;
 
@@ -44,8 +53,6 @@ bool UpdatesSuppressedTimes::contains(int hour, int minute) const {
   return false;
 }
 
-// TODO(crbug.com/1070833): implement returning the default values instead of
-// returning a failure.
 // DefaultValuesPolicyManager returns the default values for policies when no
 // other policy manager is present in the system.
 class DefaultValuesPolicyManager : public PolicyManagerInterface {
@@ -58,7 +65,7 @@ class DefaultValuesPolicyManager : public PolicyManagerInterface {
 
   std::string source() const override;
 
-  bool IsManaged() const override;
+  bool HasActiveDevicePolicies() const override;
 
   bool GetLastCheckPeriodMinutes(int* minutes) const override;
   bool GetUpdatesSuppressedTimes(
@@ -82,13 +89,15 @@ class DefaultValuesPolicyManager : public PolicyManagerInterface {
   bool GetProxyServer(std::string* proxy_server) const override;
   bool GetTargetChannel(const std::string& app_id,
                         std::string* channel) const override;
+  bool GetForceInstallApps(
+      std::vector<std::string>* force_install_apps) const override;
 };
 
 DefaultValuesPolicyManager::DefaultValuesPolicyManager() = default;
 
 DefaultValuesPolicyManager::~DefaultValuesPolicyManager() = default;
 
-bool DefaultValuesPolicyManager::IsManaged() const {
+bool DefaultValuesPolicyManager::HasActiveDevicePolicies() const {
   return true;
 }
 
@@ -97,7 +106,8 @@ std::string DefaultValuesPolicyManager::source() const {
 }
 
 bool DefaultValuesPolicyManager::GetLastCheckPeriodMinutes(int* minutes) const {
-  return false;
+  *minutes = 4 * kDelayOneHour + 30;
+  return true;
 }
 
 bool DefaultValuesPolicyManager::GetUpdatesSuppressedTimes(
@@ -123,13 +133,15 @@ bool DefaultValuesPolicyManager::GetPackageCacheExpirationTimeDays(
 bool DefaultValuesPolicyManager::GetEffectivePolicyForAppInstalls(
     const std::string& app_id,
     int* install_policy) const {
-  return false;
+  *install_policy = kInstallPolicyDefault;
+  return true;
 }
 
 bool DefaultValuesPolicyManager::GetEffectivePolicyForAppUpdates(
     const std::string& app_id,
     int* update_policy) const {
-  return false;
+  *update_policy = kUpdatePolicyDefault;
+  return true;
 }
 
 bool DefaultValuesPolicyManager::GetTargetVersionPrefix(
@@ -141,7 +153,8 @@ bool DefaultValuesPolicyManager::GetTargetVersionPrefix(
 bool DefaultValuesPolicyManager::IsRollbackToTargetVersionAllowed(
     const std::string& app_id,
     bool* rollback_allowed) const {
-  return false;
+  *rollback_allowed = false;
+  return true;
 }
 
 bool DefaultValuesPolicyManager::GetProxyMode(std::string* proxy_mode) const {
@@ -160,6 +173,11 @@ bool DefaultValuesPolicyManager::GetProxyServer(
 
 bool DefaultValuesPolicyManager::GetTargetChannel(const std::string& app_id,
                                                   std::string* channel) const {
+  return false;
+}
+
+bool DefaultValuesPolicyManager::GetForceInstallApps(
+    std::vector<std::string>* /* force_install_apps */) const {
   return false;
 }
 

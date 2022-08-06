@@ -16,8 +16,6 @@ namespace user_notes {
 
 class UserNoteMetadata;
 
-namespace {
-
 // In order to have GURL as a key in a hashmap, GURL hashing mechanism is
 // needed.
 struct GURLHash {
@@ -25,8 +23,6 @@ struct GURLHash {
     return std::hash<std::string>()(url.spec());
   }
 };
-
-}  // namespace
 
 // A class that encapsulates an
 // `unordered_map<GURL, unordered_map<ID, UserNoteMetadata>>`. This represents
@@ -48,6 +44,10 @@ class UserNoteMetadataSnapshot {
   UserNoteMetadataSnapshot(const UserNoteMetadataSnapshot&) = delete;
   UserNoteMetadataSnapshot& operator=(const UserNoteMetadataSnapshot&) = delete;
   ~UserNoteMetadataSnapshot();
+
+  // Returns false if there's at least one entry in the snapshot, true
+  // otherwise.
+  bool IsEmpty();
 
   // Adds a metadata entry to this class, based on the URL the note is attached
   // to and its ID.

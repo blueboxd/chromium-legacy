@@ -16,11 +16,9 @@
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/common/buildflags.h"
 #include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
-#include "extensions/common/extension_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -37,10 +35,6 @@ class GURL;
 class LoginHandler;
 class Profile;
 struct WebAppInstallInfo;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-class SettingsOverriddenDialogController;
-#endif
 
 namespace base {
 class FilePath;
@@ -139,13 +133,14 @@ void ShowBluetoothDeviceCredentialsDialog(
     const std::u16string& device_identifier,
     content::BluetoothDelegate::PairPromptCallback close_callback);
 
-// Shows the dialog to let user confirm to pair with the device
-// identified by |device_identifier|. |device_identifier| is the most
-// appropriate string to display to the user for device identification
-// (e.g. name, MAC address).
+// Show a user prompt for pairing a Bluetooth device. |device_identifier|
+// is the most appropriate string to display for device identification
+// (e.g. name, MAC address). The |pin| is displayed (if specified),
+// so the user can confirm a matching value is displayed on the device.
 void ShowBluetoothDevicePairConfirmDialog(
     content::WebContents* web_contents,
     const std::u16string& device_identifier,
+    const absl::optional<std::u16string>& pin,
     content::BluetoothDelegate::PairPromptCallback close_callback);
 #endif  // PAIR_BLUETOOTH_ON_DEMAND()
 
@@ -245,6 +240,7 @@ void ShowWebAppDetailedInstallDialog(
     content::WebContents* web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     AppInstallationAcceptanceCallback callback,
+    const std::vector<SkBitmap>& screenshots,
     PwaInProductHelpState iph_state = PwaInProductHelpState::kNotShown);
 
 // Sets whether |ShowPWAInstallBubble| should accept immediately without any
@@ -293,56 +289,6 @@ void ShowChromeCleanerRebootPrompt(
     safe_browsing::ChromeCleanerRebootDialogController* dialog_controller);
 
 #endif  // BUILDFLAG(IS_WIN)
-
-// Displays a dialog to notify the user that the extension installation is
-// blocked due to policy. It also show additional information from administrator
-// if it exists.
-void ShowExtensionInstallBlockedDialog(
-    const extensions::ExtensionId& extension_id,
-    const std::string& extension_name,
-    const std::u16string& custom_error_message,
-    const gfx::ImageSkia& icon,
-    content::WebContents* web_contents,
-    base::OnceClosure done_callback);
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
-// The type of action that the ExtensionInstalledBlockedByParentDialog
-// is being shown in reaction to.
-enum class ExtensionInstalledBlockedByParentDialogAction {
-  kAdd,     // The user attempted to add the extension.
-  kEnable,  // The user attempted to enable the extension.
-};
-
-// Displays a dialog to notify the user that the extension installation is
-// blocked by a parent
-void ShowExtensionInstallBlockedByParentDialog(
-    ExtensionInstalledBlockedByParentDialogAction action,
-    const extensions::Extension* extension,
-    content::WebContents* web_contents,
-    base::OnceClosure done_callback);
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
-
-// TODO(crbug.com/1324288): Move extensions dialogs to
-// c/b/ui/extensions/extensions_dialogs.h
-// TODO(devlin): Put more extension-y bits in this block - currently they're
-// unguarded.
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-// Shows the dialog indicating that an extension has overridden a setting.
-void ShowExtensionSettingsOverriddenDialog(
-    std::unique_ptr<SettingsOverriddenDialogController> controller,
-    Browser* browser);
-
-// Modal dialog shown to Enhanced Safe Browsing users before the extension
-// install dialog if the extension is not included in the Safe Browsing CRX
-// allowlist.
-//
-// `callback` will be invoked with `true` if the user accepts or `false` if the
-// user cancels the dialog.
-void ShowExtensionInstallFrictionDialog(
-    content::WebContents* contents,
-    base::OnceCallback<void(bool)> callback);
-
-#endif
 
 // Returns a OnceClosure that client code can call to close the device chooser.
 // This OnceClosure references the actual dialog as a WeakPtr, so it's safe to

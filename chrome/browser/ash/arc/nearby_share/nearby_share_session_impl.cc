@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/webshare/prepare_directory_task.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
@@ -71,9 +72,21 @@ void DeletePathAndFiles(const base::FilePath& file_path) {
   }
 }
 
+void DoDeleteShareCacheFilePaths(const base::FilePath& profile_path,
+                                 const base::FilePath& user_cache_file_path) {
+  // Up until M99, shared files were stored in <user_cache_dir>/.NearbyShare.
+  // We should remove this obsolete directory path if it is still present.
+  base::FilePath cache_base_path;
+  chrome::GetUserCacheDirectory(profile_path, &cache_base_path);
+  DeletePathAndFiles(cache_base_path.Append(kArcNearbyShareDirname));
+
+  // Delete the current user cache file path.
+  DeletePathAndFiles(user_cache_file_path);
+}
+
 // Calculate the amount of disk space, in bytes, needed in |share_dir| to
 // stream |total_file_size| bytes from Android to the Chrome OS file system.
-static int64_t CalculateRequiredSpace(const base::FilePath share_dir,
+static int64_t CalculateRequiredSpace(const base::FilePath& share_dir,
                                       const uint64_t total_file_size) {
   DVLOG(1) << __func__;
   int64_t free_disk_space = base::SysInfo::AmountOfFreeDiskSpace(share_dir);
@@ -137,14 +150,10 @@ NearbyShareSessionImpl::~NearbyShareSessionImpl() = default;
 void NearbyShareSessionImpl::DeleteShareCacheFilePaths(Profile* const profile) {
   DCHECK(profile);
 
-  // Up until M99, shared files were stored in <user_cache_dir>/.NearbyShare.
-  // We should remove this obsolete directory path if it is still present.
-  base::FilePath cache_base_path;
-  chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
-  DeletePathAndFiles(cache_base_path.Append(kArcNearbyShareDirname));
-
-  // Delete the current user cache file path.
-  DeletePathAndFiles(GetUserCacheFilePath(profile));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&DoDeleteShareCacheFilePaths, profile->GetPath(),
+                     GetUserCacheFilePath(profile)));
 }
 
 void NearbyShareSessionImpl::OnNearbyShareClosed(
@@ -227,8 +236,7 @@ void NearbyShareSessionImpl::OnArcWindowFound(aura::Window* const arc_window) {
   }
 }
 
-apps::mojom::IntentPtr NearbyShareSessionImpl::ConvertShareIntentInfoToIntent()
-    const {
+apps::IntentPtr NearbyShareSessionImpl::ConvertShareIntentInfoToIntent() const {
   DCHECK(share_info_);
 
   DVLOG(1) << __func__;
@@ -254,7 +262,7 @@ apps::mojom::IntentPtr NearbyShareSessionImpl::ConvertShareIntentInfoToIntent()
   // Sharing text
   if (share_info_->extras.has_value() &&
       share_info_->extras->contains(kIntentExtraText)) {
-    apps::mojom::IntentPtr share_intent = apps_util::CreateShareIntentFromText(
+    apps::IntentPtr share_intent = apps_util::MakeShareIntent(
         share_info_->extras->at(kIntentExtraText), share_info_->title);
     share_intent->mime_type = share_info_->mime_type;
     return share_intent;

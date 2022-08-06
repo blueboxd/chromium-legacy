@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/rand_util.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
@@ -44,31 +43,6 @@ bool IsConsumerScanRequest(const CloudBinaryUploadService::Request& request) {
       return false;
   }
   return request.device_token().empty();
-}
-
-std::string ResultToString(CloudBinaryUploadService::Result result) {
-  switch (result) {
-    case CloudBinaryUploadService::Result::UNKNOWN:
-      return "UNKNOWN";
-    case CloudBinaryUploadService::Result::SUCCESS:
-      return "SUCCESS";
-    case CloudBinaryUploadService::Result::UPLOAD_FAILURE:
-      return "UPLOAD_FAILURE";
-    case CloudBinaryUploadService::Result::TIMEOUT:
-      return "TIMEOUT";
-    case CloudBinaryUploadService::Result::FILE_TOO_LARGE:
-      return "FILE_TOO_LARGE";
-    case CloudBinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-      return "FAILED_TO_GET_TOKEN";
-    case CloudBinaryUploadService::Result::UNAUTHORIZED:
-      return "UNAUTHORIZED";
-    case CloudBinaryUploadService::Result::FILE_ENCRYPTED:
-      return "FILE_ENCRYPTED";
-    case CloudBinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
-      return "DLP_SCAN_UNSUPPORTED_FILE_TYPE";
-    case CloudBinaryUploadService::Result::TOO_MANY_REQUESTS:
-      return "TOO_MANY_REQUESTS";
-  }
 }
 
 net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(bool is_app) {
@@ -242,6 +216,10 @@ void CloudBinaryUploadService::MaybeUploadForDeepScanning(
       std::move(request), can_upload_enterprise_data_[token_and_connector]);
 }
 
+void CloudBinaryUploadService::MaybeAcknowledge(std::unique_ptr<Ack> ack) {
+  // Nothing to do for cloud upload service.
+}
+
 void CloudBinaryUploadService::MaybeUploadForDeepScanningCallback(
     std::unique_ptr<CloudBinaryUploadService::Request> request,
     bool authorized) {
@@ -273,10 +251,8 @@ void CloudBinaryUploadService::UploadForDeepScanning(
   active_requests_[raw_request] = std::move(request);
   start_times_[raw_request] = base::TimeTicks::Now();
 
-  std::string token = base::RandBytesAsString(128);
-  token = base::HexEncode(token.data(), token.size());
+  std::string token = raw_request->SetRandomRequestToken();
   active_tokens_[raw_request] = token;
-  raw_request->set_request_token(token);
 
   if ((!binary_fcm_service_ || !binary_fcm_service_->Connected()) &&
       !is_auth_request) {
@@ -729,13 +705,17 @@ void CloudBinaryUploadService::Shutdown() {
 
 void CloudBinaryUploadService::SetAuthForTesting(const std::string& dm_token,
                                                  bool authorized) {
-  for (enterprise_connectors::AnalysisConnector connector :
-       {enterprise_connectors::AnalysisConnector::
-            ANALYSIS_CONNECTOR_UNSPECIFIED,
-        enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
-        enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
-        enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY,
-        enterprise_connectors::AnalysisConnector::PRINT}) {
+  for (enterprise_connectors::AnalysisConnector connector : {
+         enterprise_connectors::AnalysisConnector::
+             ANALYSIS_CONNECTOR_UNSPECIFIED,
+             enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+             enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+             enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY,
+             enterprise_connectors::AnalysisConnector::PRINT,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+             enterprise_connectors::AnalysisConnector::FILE_TRANSFER,
+#endif
+       }) {
     TokenAndConnector token_and_connector = {dm_token, connector};
     can_upload_enterprise_data_[token_and_connector] = authorized;
   }

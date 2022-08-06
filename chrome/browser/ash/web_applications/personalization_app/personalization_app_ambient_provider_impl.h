@@ -56,6 +56,7 @@ class PersonalizationAppAmbientProviderImpl
                         ash::AmbientModeTopicSource topic_source,
                         bool selected) override;
   void SetPageViewed() override;
+  void FetchSettingsAndAlbums() override;
 
   // Notify WebUI the latest values.
   void OnAmbientModeEnabledChanged();
@@ -86,8 +87,6 @@ class PersonalizationAppAmbientProviderImpl
   // `success` is true when update successfully.
   void UpdateUIWithCachedSettings(bool success);
 
-  // Fetch settings and albums from Backdrop server.
-  void FetchSettingsAndAlbums();
   void OnSettingsAndAlbumsFetched(
       const absl::optional<ash::AmbientSettings>& settings,
       ash::PersonalAlbums personal_albums);
@@ -128,7 +127,7 @@ class PersonalizationAppAmbientProviderImpl
   net::BackoffEntry update_settings_retry_backoff_;
 
   // Local settings which may contain changes from WebUI but have not sent to
-  // server. Only one `UpdateSettgings()` at a time.
+  // server. Only one `UpdateSettings()` at a time.
   absl::optional<ash::AmbientSettings> settings_;
 
   // The cached settings from the server. Should be the same as the server side.

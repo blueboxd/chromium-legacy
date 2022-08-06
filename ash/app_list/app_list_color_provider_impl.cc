@@ -10,6 +10,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_colors.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ui/chromeos/styles/cros_styles.h"
 
 namespace ash {
 
@@ -98,6 +99,15 @@ SkColor AppListColorProviderImpl::GetSearchBoxSecondaryTextColor(
   if (ShouldUseDarkLightColors()) {
     return ash_color_provider_->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorSecondary);
+  }
+  return default_color;
+}
+
+SkColor AppListColorProviderImpl::GetSearchBoxSuggestionTextColor(
+    SkColor default_color) const {
+  if (ShouldUseDarkLightColors()) {
+    return ash_color_provider_->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorSuggestion);
   }
   return default_color;
 }
@@ -197,6 +207,14 @@ SkColor AppListColorProviderImpl::GetFolderNameSelectionColor() const {
       AshColorProvider::ControlsLayerType::kFocusAuraColor);
 }
 
+SkColor AppListColorProviderImpl::GetFolderNotificationBadgeColor() const {
+  if (ShouldUseDarkLightColors()) {
+    return cros_styles::ResolveColor(cros_styles::ColorName::kIconColorBlue);
+  }
+  return cros_styles::ResolveColor(cros_styles::ColorName::kIconColorBlue,
+                                   /*is_dark_mode=*/false);
+}
+
 SkColor AppListColorProviderImpl::GetContentsBackgroundColor() const {
   if (ShouldUseDarkLightColors()) {
     return ash_color_provider_->GetControlsLayerColor(
@@ -241,18 +259,6 @@ SkColor AppListColorProviderImpl::GetInkDropBaseColor(SkColor bg_color) const {
 
 float AppListColorProviderImpl::GetInkDropOpacity(SkColor bg_color) const {
   return ash_color_provider_->GetInkDropBaseColorAndOpacity(bg_color).second;
-}
-
-SkColor AppListColorProviderImpl::GetInvertedInkDropBaseColor(
-    SkColor bg_color) const {
-  return ash_color_provider_->GetInvertedInkDropBaseColorAndOpacity(bg_color)
-      .first;
-}
-
-float AppListColorProviderImpl::GetInvertedInkDropOpacity(
-    SkColor bg_color) const {
-  return ash_color_provider_->GetInvertedInkDropBaseColorAndOpacity(bg_color)
-      .second;
 }
 
 SkColor AppListColorProviderImpl::GetSearchResultViewHighlightColor() const {

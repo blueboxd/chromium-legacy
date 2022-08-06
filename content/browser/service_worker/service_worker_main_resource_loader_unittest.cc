@@ -290,7 +290,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(std::move(timing));
+        response_callback->OnFallback(/*request_body=*/absl::nullopt,
+                                      std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
@@ -443,8 +444,8 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
         GetStorageControl(), version_->script_url(), {} /* headers */,
         "I'm the body", "I'm the meta data"));
     version_->script_cache_map()->SetResources(records);
-    version_->set_fetch_handler_existence(
-        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+    version_->set_fetch_handler_type(
+        ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     registration_->SetActiveVersion(version_);
 
@@ -501,8 +502,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
           /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
           &container_endpoints_);
       container_host_->UpdateUrls(
-          request->url, net::SiteForCookies::FromUrl(request->url),
-          url::Origin::Create(request->url),
+          request->url, url::Origin::Create(request->url),
           blink::StorageKey(url::Origin::Create(request->url)));
       container_host_->AddMatchingRegistration(registration_.get());
       container_host_->SetControllerRegistration(
@@ -641,7 +641,6 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, NoActiveWorker) {
       &container_endpoints_);
   container_host_->UpdateUrls(
       GURL("https://example.com/"),
-      net::SiteForCookies::FromUrl(GURL("https://example.com/")),
       url::Origin::Create(GURL("https://example.com/")),
       blink::StorageKey(url::Origin::Create(GURL("https://example.com/"))));
 

@@ -6,13 +6,48 @@
 
 #include "base/test/gmock_move_support.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/fast_checkout/fast_checkout_external_action_delegate.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
+#include "chrome/browser/ui/fast_checkout/fast_checkout_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/public/mock_headless_script_controller.h"
+#include "ui/gfx/native_widget_types.h"
+
+using ::testing::_;
 
 namespace {
 constexpr char kUrl[] = "https://www.example.com";
 }
+
+class MockFastCheckoutController : public FastCheckoutController {
+ public:
+  MockFastCheckoutController() : FastCheckoutController() {}
+  ~MockFastCheckoutController() override = default;
+
+  MOCK_METHOD(void, Show, (), (override));
+  MOCK_METHOD(void,
+              OnOptionsSelected,
+              (std::unique_ptr<autofill::AutofillProfile> profile,
+               std::unique_ptr<autofill::CreditCard> credit_card),
+              (override));
+  MOCK_METHOD(void, OnDismiss, (), (override));
+  MOCK_METHOD(gfx::NativeView, GetNativeView, (), (override));
+};
+
+class MockFastCheckoutExternalActionDelegate
+    : public FastCheckoutExternalActionDelegate {
+ public:
+  MockFastCheckoutExternalActionDelegate() = default;
+  ~MockFastCheckoutExternalActionDelegate() override = default;
+
+  MOCK_METHOD(void,
+              SetOptionsSelected,
+              (const autofill::AutofillProfile& selected_profile,
+               const autofill::CreditCard& selected_credit_card),
+              (override));
+};
 
 class TestFastCheckoutClientImpl : public FastCheckoutClientImpl {
  public:
@@ -33,9 +68,32 @@ class TestFastCheckoutClientImpl : public FastCheckoutClientImpl {
     external_script_controller_ = std::move(external_script_controller);
   }
 
+  std::unique_ptr<FastCheckoutController> CreateFastCheckoutController()
+      override {
+    return std::move(fast_checkout_controller_);
+  }
+
+  void InjectFastCheckoutController(
+      std::unique_ptr<FastCheckoutController> fast_checkout_controller) {
+    fast_checkout_controller_ = std::move(fast_checkout_controller);
+  }
+
+  std::unique_ptr<FastCheckoutExternalActionDelegate>
+  CreateFastCheckoutExternalActionDelegate() override {
+    return std::move(external_action_delegate_);
+  }
+
+  void InjectFastCheckoutExternalActionDelegate(
+      std::unique_ptr<FastCheckoutExternalActionDelegate>
+          external_action_delegate) {
+    external_action_delegate_ = std::move(external_action_delegate);
+  }
+
  private:
   std::unique_ptr<autofill_assistant::HeadlessScriptController>
       external_script_controller_;
+  std::unique_ptr<FastCheckoutController> fast_checkout_controller_;
+  std::unique_ptr<FastCheckoutExternalActionDelegate> external_action_delegate_;
 };
 
 // static
@@ -66,6 +124,20 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
     external_script_controller_ = external_script_controller.get();
     test_client_->InjectHeadlessScriptControllerForTesting(
         std::move(external_script_controller));
+
+    // Prepare the FastCheckoutController.
+    auto fast_checkout_controller =
+        std::make_unique<MockFastCheckoutController>();
+    fast_checkout_controller_ = fast_checkout_controller.get();
+    test_client_->InjectFastCheckoutController(
+        std::move(fast_checkout_controller));
+
+    // Prepare the FastCheckoutExternalActionDelegate.
+    auto external_action_delegate =
+        std::make_unique<MockFastCheckoutExternalActionDelegate>();
+    external_action_delegate_ = external_action_delegate.get();
+    test_client_->InjectFastCheckoutExternalActionDelegate(
+        std::move(external_action_delegate));
   }
 
   TestFastCheckoutClientImpl* fast_checkout_client() { return test_client_; }
@@ -75,12 +147,22 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
     return external_script_controller_;
   }
 
+  MockFastCheckoutController* fast_checkout_controller() {
+    return fast_checkout_controller_;
+  }
+
+  MockFastCheckoutExternalActionDelegate* delegate() {
+    return external_action_delegate_;
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 
   raw_ptr<TestFastCheckoutClientImpl> test_client_;
   raw_ptr<autofill_assistant::MockHeadlessScriptController>
       external_script_controller_;
+  raw_ptr<MockFastCheckoutController> fast_checkout_controller_;
+  raw_ptr<MockFastCheckoutExternalActionDelegate> external_action_delegate_;
 };
 
 TEST_F(
@@ -93,17 +175,49 @@ TEST_F(
   EXPECT_EQ(client, fast_checkout_client());
 }
 
+TEST_F(FastCheckoutClientImplTest, Start_FeatureDisabled_NoRuns) {
+  // Disable Fast Checkout feature
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({}, {features::kFastCheckout});
+
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Do not expect bottomsheet to show up.
+  EXPECT_CALL(*fast_checkout_controller(), Show).Times(0);
+
+  // Starting is not successful which is also represented by the internal state.
+  EXPECT_FALSE(fast_checkout_client()->Start(GURL(kUrl)));
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
 TEST_F(FastCheckoutClientImplTest, Start_FeatureEnabled_RunsSuccessfully) {
   // `FastCheckoutClient` is not running initially.
   EXPECT_FALSE(fast_checkout_client()->IsRunning());
 
-  // Prepare to extract the callback to the external script controller.
+  // Prepare to extract the callbacks to the external script controller.
   base::OnceCallback<void(
       autofill_assistant::HeadlessScriptController::ScriptResult)>
       external_script_controller_callback;
-  EXPECT_CALL(*external_script_controller(), StartScript)
+  base::OnceCallback<void()> onboarding_successful_callback;
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _))
       .Times(1)
-      .WillOnce(MoveArg<1>(&external_script_controller_callback));
+      .WillOnce(
+          [&](const base::flat_map<std::string, std::string>& script_parameters,
+              base::OnceCallback<void(
+                  autofill_assistant::HeadlessScriptController::ScriptResult)>
+                  script_ended_callback,
+              bool use_autofill_assistant_onboarding,
+              base::OnceCallback<void()>
+                  onboarding_successful_callback_parameter) {
+            external_script_controller_callback =
+                std::move(script_ended_callback);
+            onboarding_successful_callback =
+                std::move(onboarding_successful_callback_parameter);
+          });
+
+  // Expect bottomsheet to show up.
+  EXPECT_CALL(*fast_checkout_controller(), Show);
 
   // Starting the run successfully.
   EXPECT_TRUE(fast_checkout_client()->Start(GURL(kUrl)));
@@ -115,8 +229,44 @@ TEST_F(FastCheckoutClientImplTest, Start_FeatureEnabled_RunsSuccessfully) {
   EXPECT_FALSE(fast_checkout_client()->Start(GURL(kUrl)));
 
   // Successful run.
+  std::move(onboarding_successful_callback).Run();
   autofill_assistant::HeadlessScriptController::ScriptResult script_result = {
       /* success= */ true};
+  std::move(external_script_controller_callback).Run(script_result);
+
+  // `FastCheckoutClient` state was reset after run finished.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest,
+       Start_OnboardingNotSuccessful_BottomsheetNotShowing) {
+  // `FastCheckoutClient` is not running initially.
+  EXPECT_FALSE(fast_checkout_client()->IsRunning());
+
+  // Prepare to extract the callbacks to the external script controller.
+  base::OnceCallback<void(
+      autofill_assistant::HeadlessScriptController::ScriptResult)>
+      external_script_controller_callback;
+  base::OnceCallback<void()> onboarding_successful_callback;
+  EXPECT_CALL(*external_script_controller(), StartScript(_, _, _, _))
+      .Times(1)
+      .WillOnce(MoveArg<1>(&external_script_controller_callback));
+
+  // Expect bottomsheet NOT to show up.
+  EXPECT_CALL(*fast_checkout_controller(), Show).Times(0);
+
+  // Starting the run successfully.
+  EXPECT_TRUE(fast_checkout_client()->Start(GURL(kUrl)));
+
+  // `FastCheckoutClient` is running.
+  EXPECT_TRUE(fast_checkout_client()->IsRunning());
+
+  // Cannot start another run.
+  EXPECT_FALSE(fast_checkout_client()->Start(GURL(kUrl)));
+
+  // Failed run.
+  autofill_assistant::HeadlessScriptController::ScriptResult script_result = {
+      /* success= */ false};
   std::move(external_script_controller_callback).Run(script_result);
 
   // `FastCheckoutClient` state was reset after run finished.
@@ -136,15 +286,28 @@ TEST_F(FastCheckoutClientImplTest, Stop_WhenIsRunning_CancelsTheRun) {
   EXPECT_FALSE(fast_checkout_client()->IsRunning());
 }
 
-TEST_F(FastCheckoutClientImplTest, Start_FeatureDisabled_NoRuns) {
-  // Disable Fast Checkout feature
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({}, {features::kFastCheckout});
-
+TEST_F(FastCheckoutClientImplTest, OnDismiss_WhenIsRunning_CancelsTheRun) {
   // `FastCheckoutClient` is not running initially.
   EXPECT_FALSE(fast_checkout_client()->IsRunning());
 
-  // Starting is not successful which is also represented by the internal state.
-  EXPECT_FALSE(fast_checkout_client()->Start(GURL(kUrl)));
+  // Starting the run successfully.
+  EXPECT_TRUE(fast_checkout_client()->Start(GURL(kUrl)));
+
+  fast_checkout_client()->OnDismiss();
+
+  // `FastCheckoutClient` is not running anymore.
   EXPECT_FALSE(fast_checkout_client()->IsRunning());
+}
+
+TEST_F(FastCheckoutClientImplTest,
+       OnOptionsSelected_MovesSelectionsToExternalActionDelegate) {
+  EXPECT_CALL(*delegate(), SetOptionsSelected);
+
+  // Starting the run successfully.
+  EXPECT_TRUE(fast_checkout_client()->Start(GURL(kUrl)));
+
+  // User selected profile and card in bottomsheet.
+  fast_checkout_client()->OnOptionsSelected(
+      std::make_unique<autofill::AutofillProfile>(),
+      std::make_unique<autofill::CreditCard>());
 }

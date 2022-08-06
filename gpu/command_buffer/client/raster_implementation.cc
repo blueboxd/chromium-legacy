@@ -1223,7 +1223,8 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
 
   GLuint src_size = src_info.computeByteSize(row_bytes);
   GLuint total_size =
-      pixels_offset + base::bits::AlignUp(src_size, sizeof(uint64_t));
+      pixels_offset +
+      base::bits::AlignUp(src_size, static_cast<GLuint>(sizeof(uint64_t)));
 
   std::unique_ptr<ScopedSharedMemoryPtr> scoped_shared_memory =
       std::make_unique<ScopedSharedMemoryPtr>(total_size, transfer_buffer_,
@@ -1257,17 +1258,42 @@ constexpr size_t kNumMailboxes = SkYUVAInfo::kMaxPlanes + 1;
 void RasterImplementation::ConvertYUVAMailboxesToRGB(
     const gpu::Mailbox& dest_mailbox,
     SkYUVColorSpace planes_yuv_color_space,
+    const SkColorSpace* planes_rgb_color_space,
     SkYUVAInfo::PlaneConfig plane_config,
     SkYUVAInfo::Subsampling subsampling,
     const gpu::Mailbox yuva_plane_mailboxes[]) {
-  gpu::Mailbox mailboxes[kNumMailboxes]{};
-  for (int i = 0; i < SkYUVAInfo::NumPlanes(plane_config); ++i) {
-    mailboxes[i] = yuva_plane_mailboxes[i];
+  if (!planes_rgb_color_space) {
+    SetGLError(GL_INVALID_VALUE, "ConvertYUVAMailboxesToRGB",
+               "invalid color space");
+    return;
   }
-  mailboxes[kNumMailboxes - 1] = dest_mailbox;
+  skcms_Matrix3x3 primaries = {{{0}}};
+  skcms_TransferFunction transfer = {0};
+  planes_rgb_color_space->toXYZD50(&primaries);
+  planes_rgb_color_space->transferFn(&transfer);
+
+  constexpr size_t kByteSize = sizeof(gpu::Mailbox) * (kNumMailboxes) +
+                               sizeof(skcms_TransferFunction) +
+                               sizeof(skcms_Matrix3x3);
+  static_assert(kByteSize == 144);
+  GLbyte bytes[kByteSize] = {0};
+  size_t offset = 0;
+  for (int i = 0; i < SkYUVAInfo::NumPlanes(plane_config); ++i) {
+    memcpy(bytes + offset, yuva_plane_mailboxes + i, sizeof(gpu::Mailbox));
+    offset += sizeof(gpu::Mailbox);
+  }
+  offset = SkYUVAInfo::kMaxPlanes * sizeof(gpu::Mailbox);
+  memcpy(bytes + offset, &dest_mailbox, sizeof(gpu::Mailbox));
+  offset += sizeof(gpu::Mailbox);
+  memcpy(bytes + offset, &transfer, sizeof(transfer));
+  offset += sizeof(transfer);
+  memcpy(bytes + offset, &primaries, sizeof(primaries));
+  offset += sizeof(primaries);
+  DCHECK_EQ(offset, kByteSize);
+
   helper_->ConvertYUVAMailboxesToRGBINTERNALImmediate(
       planes_yuv_color_space, static_cast<GLenum>(plane_config),
-      static_cast<GLenum>(subsampling), reinterpret_cast<GLbyte*>(mailboxes));
+      static_cast<GLenum>(subsampling), reinterpret_cast<GLbyte*>(bytes));
 }
 
 void RasterImplementation::ConvertRGBAToYUVAMailboxes(
@@ -1346,8 +1372,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   preamble.post_translation = post_translate;
   preamble.post_scale = post_scale;
   preamble.requires_clear = requires_clear;
-  // TODO(aaronhk): change the preamble to float color
-  preamble.background_color = raster_properties_->background_color.toSkColor();
+  preamble.background_color = raster_properties_->background_color;
 
   // Wrap the provided provider in a stashing provider so that we can delay
   // unrefing images until we have serialized dependent commands.
@@ -1441,7 +1466,8 @@ void RasterImplementation::ReadbackImagePixelsINTERNAL(
 
   GLuint dst_size = dst_info.computeByteSize(dst_row_bytes);
   GLuint total_size =
-      pixels_offset + base::bits::AlignUp(dst_size, sizeof(uint64_t));
+      pixels_offset +
+      base::bits::AlignUp(dst_size, static_cast<GLuint>(sizeof(uint64_t)));
 
   std::unique_ptr<ScopedMappedMemoryPtr> scoped_shared_memory =
       std::make_unique<ScopedMappedMemoryPtr>(total_size, helper(),
@@ -1621,9 +1647,9 @@ void RasterImplementation::ReadbackYUVPixelsAsync(
     return;
   }
 
-  GLuint y_offset = base::bits::AlignUp(
+  auto y_offset = static_cast<GLuint>(base::bits::AlignUp(
       sizeof(cmds::ReadbackYUVImagePixelsINTERNALImmediate::Result),
-      sizeof(uint64_t));
+      sizeof(uint64_t)));
 
   if (y_plane_row_stride_bytes < output_rect.width()) {
     SetGLError(
@@ -1633,8 +1659,9 @@ void RasterImplementation::ReadbackYUVPixelsAsync(
   }
   GLuint y_padded_size = output_rect.height() * y_plane_row_stride_bytes;
 
+  constexpr auto kSizeofUint64 = static_cast<GLuint>(sizeof(uint64_t));
   GLuint u_offset =
-      base::bits::AlignUp(y_offset + y_padded_size, sizeof(uint64_t));
+      base::bits::AlignUp(y_offset + y_padded_size, kSizeofUint64);
   if (u_plane_row_stride_bytes < ((output_rect.width() + 1) / 2)) {
     SetGLError(
         GL_INVALID_VALUE, "glReadbackYUVPixelsAsync",
@@ -1645,7 +1672,7 @@ void RasterImplementation::ReadbackYUVPixelsAsync(
       ((output_rect.height() + 1) / 2) * u_plane_row_stride_bytes;
 
   GLuint v_offset =
-      base::bits::AlignUp(u_offset + u_padded_size, sizeof(uint64_t));
+      base::bits::AlignUp(u_offset + u_padded_size, kSizeofUint64);
   if (v_plane_row_stride_bytes < ((output_rect.width() + 1) / 2)) {
     SetGLError(
         GL_INVALID_VALUE, "glReadbackYUVPixelsAsync",
@@ -1656,7 +1683,7 @@ void RasterImplementation::ReadbackYUVPixelsAsync(
       ((output_rect.height() + 1) / 2) * v_plane_row_stride_bytes;
 
   size_t total_size =
-      base::bits::AlignUp(v_offset + v_padded_size, sizeof(uint64_t));
+      base::bits::AlignUp(v_offset + v_padded_size, kSizeofUint64);
 
   std::unique_ptr<ScopedMappedMemoryPtr> scoped_shared_memory =
       std::make_unique<ScopedMappedMemoryPtr>(total_size, helper(),
@@ -1848,17 +1875,13 @@ void RasterImplementation::FlushPaintCachePurgedEntries() {
     return;
 
   paint_cache_->Purge(&temp_paint_cache_purged_data_);
-  for (uint32_t i = static_cast<uint32_t>(cc::PaintCacheDataType::kTextBlob);
+  for (uint32_t i = static_cast<uint32_t>(cc::PaintCacheDataType::kPath);
        i < cc::PaintCacheDataTypeCount; ++i) {
     auto& ids = temp_paint_cache_purged_data_[i];
     if (ids.empty())
       continue;
 
     switch (static_cast<cc::PaintCacheDataType>(i)) {
-      case cc::PaintCacheDataType::kTextBlob:
-        helper_->DeletePaintCacheTextBlobsINTERNALImmediate(ids.size(),
-                                                            ids.data());
-        break;
       case cc::PaintCacheDataType::kPath:
         helper_->DeletePaintCachePathsINTERNALImmediate(ids.size(), ids.data());
         break;

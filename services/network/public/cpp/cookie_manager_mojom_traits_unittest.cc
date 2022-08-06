@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "services/network/public/cpp/cookie_manager_mojom_traits.h"
 #include "services/network/public/mojom/cookie_manager.mojom-shared.h"
@@ -365,18 +366,6 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
   }
 }
 
-TEST(CookieManagerTraitsTest, Roundtrips_SamePartyCookieContextType) {
-  using ContextType = net::SamePartyContext::Type;
-  for (ContextType context_type :
-       {ContextType::kCrossParty, ContextType::kSameParty}) {
-    ContextType roundtrip;
-    ASSERT_TRUE(
-        mojo::test::SerializeAndDeserialize<mojom::SamePartyCookieContextType>(
-            context_type, roundtrip));
-    EXPECT_EQ(context_type, roundtrip);
-  }
-}
-
 TEST(CookieManagerTraitsTest, Roundtrips_PartitionKey) {
   auto original = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "__Host-A", "B", "x.y", "/", base::Time(), base::Time(), base::Time(),
@@ -458,34 +447,6 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookiePartitionKeyCollection) {
   }
 }
 
-TEST(CookieManagerTraitsTest, RoundTrips_SamePartyContext) {
-  {
-    net::SamePartyContext same_party(net::SamePartyContext::Type::kSameParty);
-    net::SamePartyContext copy;
-
-    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SamePartyContext>(
-        same_party, copy));
-    EXPECT_EQ(copy.context_type(), net::SamePartyContext::Type::kSameParty);
-    EXPECT_EQ(copy.ancestors_for_metrics_only(),
-              net::SamePartyContext::Type::kSameParty);
-    EXPECT_EQ(copy.top_resource_for_metrics_only(),
-              net::SamePartyContext::Type::kSameParty);
-  }
-
-  {
-    net::SamePartyContext cross_party(net::SamePartyContext::Type::kCrossParty);
-    net::SamePartyContext copy;
-
-    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SamePartyContext>(
-        cross_party, copy));
-    EXPECT_EQ(copy.context_type(), net::SamePartyContext::Type::kCrossParty);
-    EXPECT_EQ(copy.ancestors_for_metrics_only(),
-              net::SamePartyContext::Type::kCrossParty);
-    EXPECT_EQ(copy.top_resource_for_metrics_only(),
-              net::SamePartyContext::Type::kCrossParty);
-  }
-}
-
 TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
   {
     net::CookieOptions least_trusted, copy;
@@ -505,10 +466,6 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
     EXPECT_TRUE(copy.return_excluded_cookies());
     EXPECT_EQ(net::SamePartyContext::Type::kCrossParty,
               copy.same_party_context().context_type());
-    EXPECT_EQ(net::SamePartyContext::Type::kCrossParty,
-              copy.same_party_context().ancestors_for_metrics_only());
-    EXPECT_EQ(net::SamePartyContext::Type::kCrossParty,
-              copy.same_party_context().top_resource_for_metrics_only());
     EXPECT_EQ(10u, copy.full_party_context_size());
     EXPECT_TRUE(copy.is_in_nontrivial_first_party_set());
   }
@@ -531,10 +488,6 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
     EXPECT_FALSE(copy.return_excluded_cookies());
     EXPECT_EQ(net::SamePartyContext::Type::kSameParty,
               copy.same_party_context().context_type());
-    EXPECT_EQ(net::SamePartyContext::Type::kSameParty,
-              copy.same_party_context().ancestors_for_metrics_only());
-    EXPECT_EQ(net::SamePartyContext::Type::kSameParty,
-              copy.same_party_context().top_resource_for_metrics_only());
     EXPECT_EQ(1u, copy.full_party_context_size());
     EXPECT_TRUE(copy.is_in_nontrivial_first_party_set());
   }

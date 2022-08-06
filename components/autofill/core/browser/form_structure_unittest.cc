@@ -152,8 +152,8 @@ class FormStructureTestImpl : public test::FormStructureTest {
     return FormStructure(form).ShouldRunHeuristics();
   }
 
-  bool FormShouldRunPromoCodeHeuristics(const FormData& form) {
-    return FormStructure(form).ShouldRunPromoCodeHeuristics();
+  bool FormShouldRunHeuristicsForSingleFieldForms(const FormData& form) {
+    return FormStructure(form).ShouldRunHeuristicsForSingleFieldForms();
   }
 
   bool FormShouldBeQueried(const FormData& form) {
@@ -1033,10 +1033,7 @@ TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributePhoneTypes) {
          .field_count = 3,
          .autofill_count = 3},
         {.expected_html_type = {HTML_TYPE_TEL_LOCAL, HTML_TYPE_TEL_LOCAL_PREFIX,
-                                HTML_TYPE_TEL_LOCAL_SUFFIX},
-         .expected_phone_part = {AutofillField::IGNORED,
-                                 AutofillField::PHONE_PREFIX,
-                                 AutofillField::PHONE_SUFFIX}}}});
+                                HTML_TYPE_TEL_LOCAL_SUFFIX}}}});
 }
 
 // The heuristics and server predictions should run if there are more than two
@@ -1185,7 +1182,8 @@ TEST_F(FormStructureTestImpl,
   }
 }
 
-// Tests that promo code heuristics are run for forms with fewer than 3 fields.
+// Tests that heuristics for single field parseable types are run for forms with
+// fewer than 3 fields.
 TEST_F(FormStructureTestImpl, PromoCodeHeuristics_SmallForm) {
   base::test::ScopedFeatureList scoped_feature;
   scoped_feature.InitAndEnableFeature(
@@ -1201,7 +1199,7 @@ TEST_F(FormStructureTestImpl, PromoCodeHeuristics_SmallForm) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  EXPECT_TRUE(FormShouldRunPromoCodeHeuristics(form));
+  EXPECT_TRUE(FormShouldRunHeuristicsForSingleFieldForms(form));
 
   // Default configuration.
   {
@@ -1324,7 +1322,7 @@ TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributeWithSections) {
 
   // All of the fields in this form should be parsed as belonging to different
   // sections.
-  std::set<std::string> section_names;
+  std::set<Section> section_names;
   for (size_t i = 0; i < 9; ++i) {
     section_names.insert(form_structure.field(i)->section);
   }
@@ -1378,7 +1376,7 @@ TEST_F(FormStructureTestImpl,
 
   // All of the fields in this form should be parsed as belonging to the same
   // section.
-  std::set<std::string> section_names;
+  std::set<Section> section_names;
   for (size_t i = 0; i < 6; ++i) {
     section_names.insert(form_structure.field(i)->section);
   }
@@ -1412,7 +1410,7 @@ TEST_F(FormStructureTestImpl,
 
   // All of the fields in this form should be parsed as belonging to the same
   // section.
-  std::set<std::string> section_names;
+  std::set<Section> section_names;
   for (size_t i = 0; i < 2; ++i) {
     section_names.insert(form_structure.field(i)->section);
   }
@@ -2165,13 +2163,11 @@ TEST_F(FormStructureTestImpl, ThreePartPhoneNumber) {
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
 
-  // Area code.
   EXPECT_EQ(PHONE_HOME_CITY_CODE, form_structure->field(0)->heuristic_type());
-  // Phone number suffix.
-  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(1)->heuristic_type());
-  // Phone number suffix.
-  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(2)->heuristic_type());
-  // Phone extension.
+  EXPECT_EQ(PHONE_HOME_NUMBER_PREFIX,
+            form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(PHONE_HOME_NUMBER_SUFFIX,
+            form_structure->field(2)->heuristic_type());
   EXPECT_EQ(PHONE_HOME_EXTENSION, form_structure->field(3)->heuristic_type());
 }
 
@@ -2710,8 +2706,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasLowercaseLetter, true));
   form_structure->set_password_length_vote(10u);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -2790,8 +2786,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasLowercaseLetter, true));
   form_structure->set_password_length_vote(10u);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -2889,8 +2885,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithNonMatchingValidities) {
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasLowercaseLetter, true));
   form_structure->set_password_length_vote(10u);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3013,8 +3009,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMultipleValidities) {
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasLowercaseLetter, true));
   form_structure->set_password_length_vote(10u);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3134,8 +3130,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
   form_structure->set_password_length_vote(10u);
   form_structure->set_submission_event(
       SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3320,8 +3316,8 @@ TEST_F(FormStructureTestImpl,
                                              {ACCOUNT_CREATION_PASSWORD});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3433,8 +3429,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithAutocomplete) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3527,8 +3523,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3612,8 +3608,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_ObservedSubmissionFalse) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3686,8 +3682,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithLabels) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3759,8 +3755,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithCssClassesAndIds) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -3841,8 +3837,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithFormName) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
   form_structure->set_submission_source(SubmissionSource::FRAME_DETACHED);
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
@@ -3923,8 +3919,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -4014,8 +4010,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_DisabledMetadata) {
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   form_structure = std::make_unique<FormStructure>(form);
-  for (auto& field : *form_structure)
-    field->host_form_signature = form_structure->form_signature();
+  for (auto& fs_field : *form_structure)
+    fs_field->host_form_signature = form_structure->form_signature();
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -4229,8 +4225,8 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
 
   FormStructure form_structure(form);
   form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
-  for (auto& field : form_structure)
-    field->host_form_signature = form_structure.form_signature();
+  for (auto& fs_field : form_structure)
+    fs_field->host_form_signature = form_structure.form_signature();
 
   std::vector<ServerFieldTypeSet> possible_field_types;
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
@@ -4610,8 +4606,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_PasswordsRevealed) {
 
   FormStructure form_structure(form);
   form_structure.set_passwords_were_revealed(true);
-  for (auto& field : form_structure)
-    field->host_form_signature = form_structure.form_signature();
+  for (auto& fs_field : form_structure)
+    fs_field->host_form_signature = form_structure.form_signature();
 
   std::vector<AutofillUploadContents> uploads =
       form_structure.EncodeUploadRequest(
@@ -4637,8 +4633,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_IsFormTag) {
     form.is_form_tag = is_form_tag;
 
     FormStructure form_structure(form);
-    for (auto& field : form_structure)
-      field->host_form_signature = form_structure.form_signature();
+    for (auto& fs_field : form_structure)
+      fs_field->host_form_signature = form_structure.form_signature();
     form_structure.set_passwords_were_revealed(true);
     std::vector<AutofillUploadContents> uploads =
         form_structure.EncodeUploadRequest(
@@ -4654,19 +4650,21 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_IsFormTag) {
 TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
   struct FieldMetadata {
     const char *id, *name, *label, *placeholder, *aria_label, *aria_description,
-        *css_classes;
+        *css_classes, *autocomplete;
   };
 
   static const FieldMetadata kFieldMetadata[] = {
       {"fname_id", "fname_name", "First Name:", "Please enter your first name",
-       "Type your first name", "You can type your first name here", "blah"},
+       "Type your first name", "You can type your first name here", "blah",
+       "given-name"},
       {"lname_id", "lname_name", "Last Name:", "Please enter your last name",
-       "Type your lat name", "You can type your last name here", "blah"},
+       "Type your lat name", "You can type your last name here", "blah",
+       "family-name"},
       {"email_id", "email_name", "Email:", "Please enter your email address",
        "Type your email address", "You can type your email address here",
-       "blah"},
-      {"id_only", "", "", "", "", "", ""},
-      {"", "name_only", "", "", "", "", ""},
+       "blah", "email"},
+      {"id_only", "", "", "", "", "", "", ""},
+      {"", "name_only", "", "", "", "", "", ""},
   };
 
   FormData form;
@@ -4685,6 +4683,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
     field.aria_label = ASCIIToUTF16(f.aria_label);
     field.aria_description = ASCIIToUTF16(f.aria_description);
     field.css_classes = ASCIIToUTF16(f.css_classes);
+    field.autocomplete_attribute = f.autocomplete;
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
   }
@@ -4813,6 +4812,15 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
                 encoder.EncodeForTesting(form_signature, field_signature,
                                          RandomizedEncoder::FIELD_PLACEHOLDER,
                                          field.placeholder));
+    }
+    if (field.autocomplete_attribute.empty()) {
+      EXPECT_FALSE(metadata.has_autocomplete());
+    } else {
+      EXPECT_EQ(metadata.autocomplete().encoded_bits(),
+                encoder.EncodeForTesting(
+                    form_signature, field_signature,
+                    RandomizedEncoder::FIELD_AUTOCOMPLETE,
+                    base::UTF8ToUTF16(field.autocomplete_attribute)));
     }
   }
 }
@@ -5131,8 +5139,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_MissingNames) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  for (auto& field : form_structure)
-    field->host_form_signature = form_structure.form_signature();
+  for (auto& fs_field : form_structure)
+    fs_field->host_form_signature = form_structure.form_signature();
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -5168,8 +5176,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithSingleUsernameVoteType) {
   FormStructure form_structure(form);
   form_structure.field(0)->set_single_username_vote_type(
       AutofillUploadContents::Field::STRONG);
-  for (auto& field : form_structure)
-    field->host_form_signature = form_structure.form_signature();
+  for (auto& fs_field : form_structure)
+    fs_field->host_form_signature = form_structure.form_signature();
 
   std::vector<AutofillUploadContents> uploads =
       form_structure.EncodeUploadRequest(
@@ -6252,12 +6260,12 @@ TEST_F(FormStructureTestImpl, RationalizePhoneNumber_RunsOncePerSection) {
   FormStructure::ParseApiQueryResponse(response_string, forms,
                                        test::GetEncodedSignatures(forms),
                                        nullptr, nullptr);
-
-  EXPECT_FALSE(
-      test_api(&form_structure).phone_rationalized("fullName_0_11-default"));
-  form_structure.RationalizePhoneNumbersInSection("fullName_0_11-default");
-  EXPECT_TRUE(
-      test_api(&form_structure).phone_rationalized("fullName_0_11-default"));
+  Section s;
+  s.set_prefix("fullName_0_11");
+  s.set_field_type_group(Section::FieldTypeGroupSuffix::kDefault);
+  EXPECT_FALSE(test_api(&form_structure).phone_rationalized(s));
+  form_structure.RationalizePhoneNumbersInSection(s);
+  EXPECT_TRUE(test_api(&form_structure).phone_rationalized(s));
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
   EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
@@ -6583,37 +6591,37 @@ TEST_F(FormStructureTestImpl,
 
   field.label = u"Full Name";
   field.name = u"fullName";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"City";
   field.name = u"city";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Full Name";
   field.name = u"fullName";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"City";
   field.name = u"city";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6670,93 +6678,93 @@ TEST_F(
   // Shipping
   field.label = u"Full Name";
   field.name = u"fullName";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"City";
   field.name = u"city";
-  field.section = "Shipping";
+  field.section.set_prefix("Shipping");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Billing
   field.label = u"Full Name";
   field.name = u"fullName";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"City";
   field.name = u"city";
-  field.section = "Billing";
+  field.section.set_prefix("Billing");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Work address (not realistic)
   field.label = u"Full Name";
   field.name = u"fullName";
-  field.section = "Work";
+  field.section.set_prefix("Work");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Work";
+  field.section.set_prefix("Work");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Work";
+  field.section.set_prefix("Work");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Work";
+  field.section.set_prefix("Work");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"Address";
   field.name = u"address";
-  field.section = "Work";
+  field.section.set_prefix("Work");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.label = u"City";
   field.name = u"city";
-  field.section = "Work";
+  field.section.set_prefix("Work");
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7129,7 +7137,7 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.section = "shipping";
+  field.section.set_prefix("shipping");
 
   field.label = u"Full Name";
   field.name = u"fullName";
@@ -7151,7 +7159,7 @@ TEST_F(FormStructureTestImpl,
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.section = "billing";
+  field.section.set_prefix("billing");
 
   field.label = u"Country";
   field.name = u"country2";
@@ -7200,7 +7208,7 @@ TEST_F(FormStructureTestImpl,
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.section = "billing-2";
+  field.section.set_prefix("billing-2");
 
   field.label = u"Country";
   field.name = u"country";
@@ -7437,7 +7445,7 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.section = "billing";
+  field.section.set_prefix("billing");
 
   field.label = u"Country";
   field.name = u"country";
@@ -7506,7 +7514,7 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.section = "billing";
+  field.section.set_prefix("billing");
 
   field.label = u"Country";
   field.name = u"country";
@@ -8167,13 +8175,18 @@ TEST_F(FormStructureTestImpl, NoAutocompleteSectionNames) {
 
   // Assert the correct number of fields.
   ASSERT_EQ(6U, form_structure.field_count());
-
-  EXPECT_EQ("fullName_0_11-default", form_structure.field(0)->section);
-  EXPECT_EQ("fullName_0_11-default", form_structure.field(1)->section);
-  EXPECT_EQ("fullName_0_11-default", form_structure.field(2)->section);
-  EXPECT_EQ("fullName_0_14-default", form_structure.field(3)->section);
-  EXPECT_EQ("fullName_0_14-default", form_structure.field(4)->section);
-  EXPECT_EQ("fullName_0_14-default", form_structure.field(5)->section);
+  EXPECT_EQ("fullName_0_11-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("fullName_0_11-default",
+            form_structure.field(1)->section.ToString());
+  EXPECT_EQ("fullName_0_11-default",
+            form_structure.field(2)->section.ToString());
+  EXPECT_EQ("fullName_0_14-default",
+            form_structure.field(3)->section.ToString());
+  EXPECT_EQ("fullName_0_14-default",
+            form_structure.field(4)->section.ToString());
+  EXPECT_EQ("fullName_0_14-default",
+            form_structure.field(5)->section.ToString());
 }
 
 // Tests that the immediate recurrence of the |PHONE_HOME_NUMBER| type does not
@@ -8243,13 +8256,20 @@ TEST_F(FormStructureTestImpl, NoSplitByRecurringPhoneFieldType) {
   // Assert the correct number of fields.
   ASSERT_EQ(7U, form_structure.field_count());
 
-  EXPECT_EQ("blue-billing-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(4)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(5)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(6)->section);
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(1)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(2)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(3)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(4)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(5)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(6)->section.ToString());
 }
 
 // Tests if a new logical form is started with the second appearance of a field
@@ -8302,10 +8322,14 @@ TEST_F(FormStructureTestImpl, SplitByRecurringFieldType) {
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
 
-  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
-  EXPECT_EQ("blue-shipping-default", form_structure.field(2)->section);
-  EXPECT_EQ("country_0_14-default", form_structure.field(3)->section);
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(1)->section.ToString());
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(2)->section.ToString());
+  EXPECT_EQ("country_0_14-default",
+            form_structure.field(3)->section.ToString());
 }
 
 // Tests if a new logical form is started with the second appearance of a field
@@ -8361,10 +8385,14 @@ TEST_F(FormStructureTestImpl,
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
 
-  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
-  EXPECT_EQ("country_0_14-default", form_structure.field(3)->section);
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(1)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(2)->section.ToString());
+  EXPECT_EQ("country_0_14-default",
+            form_structure.field(3)->section.ToString());
 }
 
 // Tests if a new logical form is started with the second appearance of a field
@@ -8418,10 +8446,14 @@ TEST_F(FormStructureTestImpl, SplitByNewAutocompleteSectionName) {
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
 
-  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(1)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(2)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(3)->section.ToString());
 }
 
 // Tests if a new logical form is started with the second appearance of a field
@@ -8476,10 +8508,14 @@ TEST_F(
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
 
-  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
-  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(1)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(2)->section.ToString());
+  EXPECT_EQ("blue-billing-default",
+            form_structure.field(3)->section.ToString());
 }
 
 // Tests if all the fields in the form belong to the same section when the
@@ -8518,8 +8554,10 @@ TEST_F(FormStructureTestImpl, FromEmptyAutocompleteSectionToDefinedOne) {
   // Assert the correct number of fields.
   ASSERT_EQ(2U, form_structure.field_count());
 
-  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(0)->section.ToString());
+  EXPECT_EQ("blue-shipping-default",
+            form_structure.field(1)->section.ToString());
 }
 
 // Tests if all the fields in the form belong to the same section when one of
@@ -8567,50 +8605,9 @@ TEST_F(FormStructureTestImpl,
   // Assert the correct number of fields.
   ASSERT_EQ(3U, form_structure.field_count());
 
-  EXPECT_EQ("-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("-shipping-default", form_structure.field(1)->section);
-  EXPECT_EQ("-shipping-default", form_structure.field(2)->section);
-}
-
-// Tests if the autocomplete section name other than 'shipping' and 'billing'
-// are ignored.
-TEST_F(FormStructureTestImpl, IgnoreAribtraryAutocompleteSectionName) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
-
-  FormData form;
-  form.url = GURL("http://foo.com");
-  FormFieldData field;
-  field.form_control_type = "text";
-  field.max_length = 10000;
-
-  field.label = u"Full Name";
-  field.name = u"fullName";
-  field.autocomplete_attribute = "section-red ship name";
-  field.unique_renderer_id = MakeFieldRendererId();
-  form.fields.push_back(field);
-
-  field.label = u"Country";
-  field.name = u"country";
-  field.autocomplete_attribute = "section-blue shipping country";
-  field.unique_renderer_id = MakeFieldRendererId();
-  form.fields.push_back(field);
-
-  FormStructure form_structure(form);
-
-  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
-  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
-
-  std::vector<FormStructure*> forms;
-  forms.push_back(&form_structure);
-
-  form_structure.identify_sections_for_testing();
-
-  // Assert the correct number of fields.
-  ASSERT_EQ(2U, form_structure.field_count());
-
-  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
-  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("-shipping-default", form_structure.field(0)->section.ToString());
+  EXPECT_EQ("-shipping-default", form_structure.field(1)->section.ToString());
+  EXPECT_EQ("-shipping-default", form_structure.field(2)->section.ToString());
 }
 
 TEST_F(FormStructureTestImpl, FindFieldsEligibleForManualFilling) {

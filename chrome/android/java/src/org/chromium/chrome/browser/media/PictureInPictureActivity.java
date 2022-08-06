@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
@@ -28,28 +29,30 @@ import android.view.ViewGroup;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.IntentUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.components.browser_ui.media.R;
 import org.chromium.components.thinwebview.CompositorView;
 import org.chromium.components.thinwebview.CompositorViewFactory;
 import org.chromium.components.thinwebview.ThinWebViewConstraints;
-import org.chromium.content_public.browser.MediaSession;
-import org.chromium.content_public.browser.MediaSessionObserver;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.overlay_window.PlaybackState;
+import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * A picture in picture activity which get created when requesting
@@ -57,9 +60,24 @@ import java.util.ArrayList;
  * OverlayWindowAndroid.
  */
 public class PictureInPictureActivity extends AsyncInitializationActivity {
-    private static final String ACTION_PLAY =
-            "org.chromium.chrome.browser.media.PictureInPictureActivity.Play";
+    // Used to filter media buttons' remote action intents.
+    private static final String MEDIA_ACTION =
+            "org.chromium.chrome.browser.media.PictureInPictureActivity.MediaAction";
+    // Used to determine which action button has been touched.
+    private static final String CONTROL_TYPE =
+            "org.chromium.chrome.browser.media.PictureInPictureActivity.ControlType";
 
+    // Used to verify Pre-T that the broadcast sender was Chrome. This extra can be removed when the
+    // min supported version is Android T.
+    private static final String EXTRA_RECEIVER_TOKEN =
+            "org.chromium.chrome.browser.media.PictureInPictureActivity.ReceiverToken";
+
+    // Use for passing unique window id to each PictureInPictureActivity instance.
+    private static final String NATIVE_POINTER_KEY =
+            "org.chromium.chrome.browser.media.PictureInPictureActivity.NativePointer";
+    // Used for passing webcontents to PictureInPictureActivity.
+    private static final String WEB_CONTENTS_KEY =
+            "org.chromium.chrome.browser.media.PictureInPicture.WebContents";
     // If present, it indicates that the intent launches into PiP.
     public static final String LAUNCHED_KEY = "com.android.chrome.pictureinpicture.launched";
     // If present, these provide our aspect ratio hint.
@@ -71,66 +89,167 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     private static final float MAX_ASPECT_RATIO = 2.39f;
     private static final float MIN_ASPECT_RATIO = 1 / 2.39f;
 
-    private static long sNativeOverlayWindowAndroid;
-    private static Tab sInitiatorTab;
-    private static int sInitiatorTabTaskID;
-    private static InitiatorTabObserver sTabObserver;
+    private static long sPendingNativeOverlayWindowAndroid;
 
-    // Used to verify Pre-T that the broadcast sender was Chrome. This extra can be removed when the
-    // min supported version is Android T.
-    private static final String EXTRA_RECEIVER_TOKEN = "receiver_token";
+    private long mNativeOverlayWindowAndroid;
+
+    private Tab mInitiatorTab;
+    private InitiatorTabObserver mTabObserver;
 
     private CompositorView mCompositorView;
-    private MediaSessionObserver mMediaSessionObserver;
-    private boolean mIsPlayPauseVisible;
 
     // If present, this is the video's aspect ratio.
     private Rational mAspectRatio;
 
-    private BroadcastReceiver mMediaSessionReceiver = new BroadcastReceiver() {
+    // Maximum pip width, in pixels, to prevent resizes that are too big.
+    private int mMaxWidth;
+
+    private MediaSessionBroadcastReceiver mMediaSessionReceiver;
+
+    private MediaActionButtonsManager mMediaActionsButtonsManager;
+
+    /**
+     * A helper class for managing media action buttons in PictureInPicture window.
+     */
+    private class MediaActionButtonsManager {
+        private final RemoteAction mPreviousTrack;
+        private final RemoteAction mPlay;
+        private final RemoteAction mPause;
+        private final RemoteAction mReplay;
+        private final RemoteAction mNextTrack;
+
+        private @PlaybackState int mPlaybackState;
+
+        /** A set of {@link MediaSessionAction}. */
+        private HashSet<Integer> mVisibleActions;
+
+        private MediaActionButtonsManager() {
+            mPreviousTrack = createRemoteAction(MediaSessionAction.PREVIOUS_TRACK,
+                    R.drawable.ic_skip_previous_white_36dp, R.string.accessibility_previous_track);
+            mPlay = createRemoteAction(MediaSessionAction.PLAY, R.drawable.ic_play_arrow_white_36dp,
+                    R.string.accessibility_play);
+            mPause = createRemoteAction(MediaSessionAction.PAUSE, R.drawable.ic_pause_white_36dp,
+                    R.string.accessibility_pause);
+            mReplay = createRemoteAction(MediaSessionAction.PLAY, R.drawable.ic_replay_white_24dp,
+                    R.string.accessibility_replay);
+            mNextTrack = createRemoteAction(MediaSessionAction.NEXT_TRACK,
+                    R.drawable.ic_skip_next_white_36dp, R.string.accessibility_next_track);
+
+            mPlaybackState = PlaybackState.END_OF_VIDEO;
+            mVisibleActions = new HashSet<>();
+        }
+
+        @SuppressLint("NewApi")
+        private ArrayList<RemoteAction> getActionsForPictureInPictureParams() {
+            ArrayList<RemoteAction> actions = new ArrayList<>();
+
+            mPreviousTrack.setEnabled(mVisibleActions.contains(MediaSessionAction.PREVIOUS_TRACK));
+            actions.add(mPreviousTrack);
+
+            RemoteAction playPauseAction = null;
+            switch (mPlaybackState) {
+                case PlaybackState.PLAYING:
+                    playPauseAction = mPause;
+                    break;
+                case PlaybackState.PAUSED:
+                    playPauseAction = mPlay;
+                    break;
+                case PlaybackState.END_OF_VIDEO:
+                    playPauseAction = mReplay;
+                    break;
+            }
+            playPauseAction.setEnabled(mVisibleActions.contains(MediaSessionAction.PLAY));
+            actions.add(playPauseAction);
+
+            mNextTrack.setEnabled(mVisibleActions.contains(MediaSessionAction.NEXT_TRACK));
+            actions.add(mNextTrack);
+
+            return actions;
+        }
+
+        /**
+         * Update visible actions.
+         *
+         * @param visibleActions A set of available {@link MediaSessionAction}.
+         */
+        private void updateVisibleActions(HashSet<Integer> visibleActions) {
+            mVisibleActions = visibleActions;
+        }
+
+        private void updatePlaybackState(@PlaybackState int playbackState) {
+            mPlaybackState = playbackState;
+        }
+
+        /**
+         * Create a disabled remote action for picture-in-picture window.
+         *
+         * @param action {@link MediaSessionAction} that the action button is corresponding to.
+         * @param iconResourceId used for getting icon associated with the id.
+         * @param titleResourceId used for getting accessibility title associated with the id.
+         */
+        @SuppressLint("NewApi")
+        private RemoteAction createRemoteAction(
+                int action, int iconResourceId, int titleResourceId) {
+            Intent intent = new Intent(MEDIA_ACTION);
+            intent.putExtra(EXTRA_RECEIVER_TOKEN, mMediaSessionReceiver.hashCode());
+            intent.putExtra(CONTROL_TYPE, action);
+            intent.putExtra(NATIVE_POINTER_KEY, mNativeOverlayWindowAndroid);
+            PendingIntent pendingIntent =
+                    PendingIntent.getBroadcast(getApplicationContext(), action, intent,
+                            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
+            RemoteAction remoteAction = new RemoteAction(
+                    Icon.createWithResource(getApplicationContext(), iconResourceId),
+                    getApplicationContext().getResources().getText(titleResourceId), "",
+                    pendingIntent);
+
+            remoteAction.setEnabled(false);
+            return remoteAction;
+        }
+    }
+
+    private class MediaSessionBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (sNativeOverlayWindowAndroid == 0) return;
+            long nativeOverlayWindowAndroid = intent.getLongExtra(NATIVE_POINTER_KEY, 0);
+            if (nativeOverlayWindowAndroid != mNativeOverlayWindowAndroid
+                    || mNativeOverlayWindowAndroid == 0) {
+                return;
+            }
 
-            if (intent.getAction() == null || !intent.getAction().equals(ACTION_PLAY)) return;
+            if (intent.getAction() == null || !intent.getAction().equals(MEDIA_ACTION)) return;
             if (!intent.hasExtra(EXTRA_RECEIVER_TOKEN)
                     || intent.getIntExtra(EXTRA_RECEIVER_TOKEN, 0) != this.hashCode()) {
                 return;
             }
 
-            PictureInPictureActivityJni.get().play(sNativeOverlayWindowAndroid);
+            switch (intent.getIntExtra(CONTROL_TYPE, -1)) {
+                case MediaSessionAction.PLAY:
+                case MediaSessionAction.PAUSE:
+                    // TODO(crbug.com/1345956): Play/pause state might get out of sync.
+                    PictureInPictureActivityJni.get().togglePlayPause(nativeOverlayWindowAndroid);
+                    return;
+                case MediaSessionAction.PREVIOUS_TRACK:
+                    PictureInPictureActivityJni.get().previousTrack(nativeOverlayWindowAndroid);
+                    return;
+                case MediaSessionAction.NEXT_TRACK:
+                    PictureInPictureActivityJni.get().nextTrack(nativeOverlayWindowAndroid);
+                    return;
+                default:
+                    return;
+            }
         }
     };
 
-    private static class InitiatorTabObserver extends EmptyTabObserver {
-        private enum Status { OK, DESTROYED }
-        private PictureInPictureActivity mActivity;
-        private Status mStatus;
-
-        InitiatorTabObserver() {
-            mStatus = Status.OK;
-        }
-
-        public void setActivity(PictureInPictureActivity activity) {
-            mActivity = activity;
-        }
-
-        public Status getStatus() {
-            return mStatus;
-        }
-
+    private class InitiatorTabObserver extends EmptyTabObserver {
         @Override
         public void onDestroyed(Tab tab) {
-            if (tab.isClosing() || !isInitiatorTabAlive()) {
-                mStatus = Status.DESTROYED;
-                if (mActivity != null) mActivity.finish();
-            }
+            if (tab.isClosing()) PictureInPictureActivity.this.finish();
         }
 
         @Override
         public void onCrash(Tab tab) {
-            mStatus = Status.DESTROYED;
-            if (mActivity != null) mActivity.finish();
+            PictureInPictureActivity.this.finish();
         }
     }
 
@@ -186,6 +305,11 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
+        // Compute a somewhat arbitrary cut-off of 90% of the window's display width. The PiP
+        // window can't be anywhere near this big, so the exact value doesn't matter. We'll ignore
+        // resizes messages that are above it, since they're spurious.
+        mMaxWidth = (int) ((getWindowAndroid().getDisplay().getDisplayWidth()) * 0.95);
+
         mCompositorView = CompositorViewFactory.create(
                 this, getWindowAndroid(), new ThinWebViewConstraints());
         addContentView(mCompositorView.getView(),
@@ -196,17 +320,22 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (sNativeOverlayWindowAndroid == 0) return;
+                if (mNativeOverlayWindowAndroid == 0) return;
                 // We sometimes get an initial update of zero before getting something reasonable.
                 if (top == bottom || left == right) return;
 
+                // On close, sometimes we get a size update that's almost the entire display width.
+                // Pip window's can't be that big, so ignore it.
+                final int width = right - left;
+                if (width > mMaxWidth) return;
+
                 PictureInPictureActivityJni.get().onViewSizeChanged(
-                        sNativeOverlayWindowAndroid, right - left, bottom - top);
+                        mNativeOverlayWindowAndroid, width, bottom - top);
             }
         });
 
         PictureInPictureActivityJni.get().compositorViewCreated(
-                sNativeOverlayWindowAndroid, mCompositorView);
+                mNativeOverlayWindowAndroid, mCompositorView);
     }
 
     @Override
@@ -219,34 +348,34 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     public void onStart() {
         super.onStart();
 
+        final Intent intent = getIntent();
+        mNativeOverlayWindowAndroid = intent.getLongExtra(NATIVE_POINTER_KEY, 0);
+
+        intent.setExtrasClassLoader(WebContents.class.getClassLoader());
+        mInitiatorTab = TabUtils.fromWebContents(intent.getParcelableExtra(WEB_CONTENTS_KEY));
+
         // Finish the activity if OverlayWindowAndroid has already been destroyed
         // or InitiatorTab has been destroyed by user or crashed.
-        if (sNativeOverlayWindowAndroid == 0
-                || sTabObserver.getStatus() == InitiatorTabObserver.Status.DESTROYED) {
+        if (mNativeOverlayWindowAndroid != sPendingNativeOverlayWindowAndroid
+                || !isInitiatorTabAlive()) {
             this.finish();
             return;
         }
+        sPendingNativeOverlayWindowAndroid = 0;
 
-        sTabObserver.setActivity(this);
+        mTabObserver = new InitiatorTabObserver();
+        mInitiatorTab.addObserver(mTabObserver);
 
+        mMediaSessionReceiver = new MediaSessionBroadcastReceiver();
         ContextUtils.registerNonExportedBroadcastReceiver(
-                this, mMediaSessionReceiver, new IntentFilter(ACTION_PLAY));
+                this, mMediaSessionReceiver, new IntentFilter(MEDIA_ACTION));
+
+        mMediaActionsButtonsManager = new MediaActionButtonsManager();
 
         PictureInPictureActivityJni.get().onActivityStart(
-                sNativeOverlayWindowAndroid, this, getWindowAndroid());
-
-        // Add an observer to refresh the Picture-in-Picture params if the media
-        // session state changes.
-        MediaSession mediaSession = MediaSession.fromWebContents(sInitiatorTab.getWebContents());
-        mMediaSessionObserver = new MediaSessionObserver(mediaSession) {
-            @Override
-            public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {
-                updatePictureInPictureParams();
-            }
-        };
+                mNativeOverlayWindowAndroid, this, getWindowAndroid());
 
         // See if there are PiP hints in the extras.
-        final Intent intent = getIntent();
         Size size = new Size(
                 intent.getIntExtra(SOURCE_WIDTH_KEY, 0), intent.getIntExtra(SOURCE_HEIGHT_KEY, 0));
         if (size.getWidth() > 0 && size.getHeight() > 0) {
@@ -269,17 +398,17 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        sNativeOverlayWindowAndroid = 0;
-        sInitiatorTab.removeObserver(sTabObserver);
-        sInitiatorTab = null;
-        sTabObserver = null;
 
-        if (mMediaSessionObserver != null) {
-            mMediaSessionObserver.stopObserving();
-            mMediaSessionObserver = null;
+        if (mMediaSessionReceiver != null) {
+            unregisterReceiver(mMediaSessionReceiver);
+            mMediaSessionReceiver = null;
         }
 
-        unregisterReceiver(mMediaSessionReceiver);
+        if (mInitiatorTab != null) {
+            mInitiatorTab.removeObserver(mTabObserver);
+            mInitiatorTab = null;
+        }
+        mTabObserver = null;
     }
 
     @Override
@@ -288,9 +417,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
             boolean isInPictureInPictureMode, Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
         if (isInPictureInPictureMode) return;
-        if (sNativeOverlayWindowAndroid != 0) {
-            PictureInPictureActivityJni.get().onBackToTab(sNativeOverlayWindowAndroid);
-        }
+        PictureInPictureActivityJni.get().onBackToTab(mNativeOverlayWindowAndroid);
         this.finish();
     }
 
@@ -301,12 +428,16 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     }
 
     @SuppressLint("NewApi")
-    private static boolean isInitiatorTabAlive() {
+    private boolean isInitiatorTabAlive() {
+        if (mInitiatorTab == null) return false;
+
         ActivityManager activityManager =
                 (ActivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
-            if (appTask.getTaskInfo().id == sInitiatorTabTaskID) return true;
+            if (appTask.getTaskInfo().id == TabUtils.getActivity(mInitiatorTab).getTaskId()) {
+                return true;
+            }
         }
 
         return false;
@@ -319,27 +450,8 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
     @SuppressLint("NewApi")
     private PictureInPictureParams getPictureInPictureParams() {
-        ArrayList<RemoteAction> actions = new ArrayList<>();
-
-        // If the associated media session is not controllable then we should
-        // place a play button in the Picture-in-Picture window that will
-        // trigger playback.
-        if (mMediaSessionObserver != null
-                && !mMediaSessionObserver.getMediaSession().isControllable()
-                && mIsPlayPauseVisible) {
-            Intent intent = new Intent(ACTION_PLAY);
-            intent.putExtra(EXTRA_RECEIVER_TOKEN, mMediaSessionReceiver.hashCode());
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
-                    intent, IntentUtils.getPendingIntentMutabilityFlag(false));
-
-            actions.add(new RemoteAction(Icon.createWithResource(getApplicationContext(),
-                                                 R.drawable.ic_play_arrow_white_36dp),
-                    getApplicationContext().getResources().getText(R.string.accessibility_play), "",
-                    pendingIntent));
-        }
-
         PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
-        builder.setActions(actions);
+        builder.setActions(mMediaActionsButtonsManager.getActionsForPictureInPictureParams());
         builder.setAspectRatio(mAspectRatio);
 
         return builder.build();
@@ -373,10 +485,25 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     }
 
     @CalledByNative
-    @SuppressLint("NewAPI")
-    private void setPlayPauseButtonVisibility(boolean isVisible) {
-        mIsPlayPauseVisible = isVisible;
+    private void setPlaybackState(@PlaybackState int playbackState) {
+        mMediaActionsButtonsManager.updatePlaybackState(playbackState);
         updatePictureInPictureParams();
+    }
+
+    @CalledByNative
+    private void updateVisibleActions(int[] actions) {
+        HashSet<Integer> visibleActions = new HashSet<>();
+        for (int action : actions) visibleActions.add(action);
+        mMediaActionsButtonsManager.updateVisibleActions(visibleActions);
+        updatePictureInPictureParams();
+    }
+
+    private long getNativeOverlayWindowAndroid() {
+        return mNativeOverlayWindowAndroid;
+    }
+
+    private void resetNativeOverlayWindowAndroid() {
+        mNativeOverlayWindowAndroid = 0;
     }
 
     @VisibleForTesting
@@ -388,25 +515,23 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     public static void createActivity(long nativeOverlayWindowAndroid, Object initiatorTab,
             int sourceX, int sourceY, int sourceWidth, int sourceHeight) {
         // Dissociate OverlayWindowAndroid if there is one already.
-        if (sNativeOverlayWindowAndroid != 0) {
-            PictureInPictureActivityJni.get().destroy(sNativeOverlayWindowAndroid);
+        if (sPendingNativeOverlayWindowAndroid != 0) {
+            PictureInPictureActivityJni.get().destroy(sPendingNativeOverlayWindowAndroid);
         }
 
-        sNativeOverlayWindowAndroid = nativeOverlayWindowAndroid;
-        sInitiatorTab = (Tab) initiatorTab;
-        sInitiatorTabTaskID = TabUtils.getActivity(sInitiatorTab).getTaskId();
+        sPendingNativeOverlayWindowAndroid = nativeOverlayWindowAndroid;
 
         Context activityContext = null;
-        final WindowAndroid window = sInitiatorTab.getWindowAndroid();
+        final WindowAndroid window = ((Tab) initiatorTab).getWindowAndroid();
         if (window != null) {
             activityContext = window.getActivity().get();
         }
         Context context =
                 (activityContext != null) ? activityContext : ContextUtils.getApplicationContext();
         Intent intent = new Intent(context, PictureInPictureActivity.class);
+        intent.putExtra(WEB_CONTENTS_KEY, ((Tab) initiatorTab).getWebContents());
 
-        sTabObserver = new InitiatorTabObserver();
-        sInitiatorTab.addObserver(sTabObserver);
+        intent.putExtra(NATIVE_POINTER_KEY, nativeOverlayWindowAndroid);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Bundle optionsBundle = null;
@@ -441,9 +566,19 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
     @CalledByNative
     private static void onWindowDestroyed(long nativeOverlayWindowAndroid) {
-        if (sNativeOverlayWindowAndroid != nativeOverlayWindowAndroid) return;
+        if (nativeOverlayWindowAndroid == sPendingNativeOverlayWindowAndroid) {
+            sPendingNativeOverlayWindowAndroid = 0;
+        }
 
-        sNativeOverlayWindowAndroid = 0;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (!(activity instanceof PictureInPictureActivity)) continue;
+
+            PictureInPictureActivity pipActivity = (PictureInPictureActivity) activity;
+            if (nativeOverlayWindowAndroid == pipActivity.getNativeOverlayWindowAndroid()) {
+                pipActivity.resetNativeOverlayWindowAndroid();
+                pipActivity.finish();
+            }
+        }
     }
 
     // Allow tests to mock out our LaunchIntoPipHelper.  Returns the outgoing one.
@@ -454,6 +589,11 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         return original;
     }
 
+    @VisibleForTesting
+    /* package */ View getViewForTesting() {
+        return mCompositorView.getView();
+    }
+
     @NativeMethods
     public interface Natives {
         void onActivityStart(long nativeOverlayWindowAndroid, PictureInPictureActivity self,
@@ -461,7 +601,9 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
         void destroy(long nativeOverlayWindowAndroid);
 
-        void play(long nativeOverlayWindowAndroid);
+        void togglePlayPause(long nativeOverlayWindowAndroid);
+        void nextTrack(long nativeOverlayWindowAndroid);
+        void previousTrack(long nativeOverlayWindowAndroid);
 
         void compositorViewCreated(long nativeOverlayWindowAndroid, CompositorView compositorView);
 

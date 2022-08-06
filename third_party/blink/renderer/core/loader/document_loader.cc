@@ -54,6 +54,7 @@
 #include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -474,6 +475,7 @@ DocumentLoader::DocumentLoader(
     }
   }
 
+  frame_->SetAncestorOrSelfHasCSPEE(params_->ancestor_or_self_has_cspee);
   frame_->Client()->DidCreateDocumentLoader(this);
 }
 
@@ -825,6 +827,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow()))
     navigation_api->UpdateForNavigation(*history_item_, type);
+  if (!frame_)
+    return;
 
   // Aything except a history.pushState/replaceState is considered a new
   // navigation that resets whether the user has scrolled and fires popstate.
@@ -838,11 +842,9 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     // exists (https://crbug.com/705550).
     if (!same_item_sequence_number) {
       scoped_refptr<SerializedScriptValue> state_object =
-          history_item ? history_item->StateObject() : nullptr;
-      DCHECK(!state_object || type == WebFrameLoadType::kBackForward);
-      frame_->DomWindow()->StatePopped(
-          state_object ? std::move(state_object)
-                       : SerializedScriptValue::NullValue());
+          history_item ? history_item->StateObject()
+                       : SerializedScriptValue::NullValue();
+      frame_->DomWindow()->DispatchPopstateEvent(std::move(state_object));
     }
   }
 }
@@ -1274,12 +1276,10 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
   DCHECK(!IsReloadLoadType(frame_load_type));
   DCHECK(frame_->GetDocument());
   DCHECK(!is_browser_initiated || !is_synchronously_committed);
+  CHECK(frame_->IsNavigationAllowed());
 
   if (Page* page = frame_->GetPage())
     page->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
-
-  if (!frame_->IsNavigationAllowed())
-    return mojom::blink::CommitResult::Aborted;
 
   if (frame_->GetDocument()->IsFrameSet()) {
     // Navigations in a frameset are always cross-document. Renderer-initiated
@@ -1860,7 +1860,7 @@ void DocumentLoader::DidCommitNavigation() {
   if (response_.IsLegacyTLSVersion()) {
     GetFrameLoader().ReportLegacyTLSVersion(response_.CurrentRequestUrl(),
                                             false /* is_subresource */,
-                                            frame_->IsAdSubframe());
+                                            frame_->IsAdFrame());
   }
 }
 
@@ -2339,7 +2339,7 @@ void DocumentLoader::CommitNavigation() {
     // TODO(iclelland): Add Permissions-Policy-Report-Only to Origin Policy.
     security_init.ApplyPermissionsPolicy(
         *frame_.Get(), response_, frame_policy_,
-        Agent::IsDirectSocketEnabled() ? initial_permissions_policy_
+        Agent::IsIsolatedApplication() ? initial_permissions_policy_
                                        : absl::nullopt);
 
     // |document_policy_| is parsed in document loader because it is
@@ -2374,6 +2374,10 @@ void DocumentLoader::CommitNavigation() {
 
   RecordUseCountersForCommit();
   RecordConsoleMessagesForCommit();
+  if (!response_.HttpHeaderField(http_names::kExpectCT).IsEmpty()) {
+    Deprecation::CountDeprecation(frame_->DomWindow(),
+                                  mojom::blink::WebFeature::kExpectCTHeader);
+  }
 
   // Clear the user activation state.
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
@@ -2391,7 +2395,8 @@ void DocumentLoader::CommitNavigation() {
   }
 
   bool should_clear_window_name =
-      previous_window && frame_->IsMainFrame() && !frame_->Loader().Opener() &&
+      previous_window && frame_->IsOutermostMainFrame() &&
+      !frame_->Loader().Opener() &&
       !frame_->DomWindow()->GetSecurityOrigin()->IsSameOriginWith(
           previous_window->GetSecurityOrigin());
   if (should_clear_window_name) {
@@ -2404,7 +2409,7 @@ void DocumentLoader::CommitNavigation() {
   }
 
   bool should_clear_cross_site_cross_browsing_context_group_window_name =
-      previous_window && frame_->IsMainFrame() &&
+      previous_window && frame_->IsOutermostMainFrame() &&
       is_cross_site_cross_browsing_context_group_;
   if (should_clear_cross_site_cross_browsing_context_group_window_name) {
     // TODO(shuuran): CrossSiteCrossBrowsingContextGroupSetNulledName will just

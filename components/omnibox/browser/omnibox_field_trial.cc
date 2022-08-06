@@ -227,13 +227,8 @@ base::Time OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold() {
   // integer, return the default value.
   unsigned int param_value_as_int = 0;
   if (!base::StringToUint(param_value, &param_value_as_int)) {
-#if BUILDFLAG(IS_ANDROID)
-    param_value_as_int = 7;
-#else
     param_value_as_int = 60;
-#endif
   }
-
   return (base::Time::Now() - base::Days(param_value_as_int));
 }
 
@@ -600,6 +595,12 @@ bool OmniboxFieldTrial::IsFuzzyUrlSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxFuzzyUrlSuggestions);
 }
 
+const base::FeatureParam<bool>
+    OmniboxFieldTrial::kFuzzyUrlSuggestionsCounterfactual(
+        &omnibox::kOmniboxFuzzyUrlSuggestions,
+        "FuzzyUrlSuggestionsCounterfactual",
+        false);
+
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }
@@ -634,10 +635,6 @@ std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
 
 bool OmniboxFieldTrial::ShouldDisableCGIParamMatching() {
   return base::FeatureList::IsEnabled(omnibox::kDisableCGIParamMatching);
-}
-
-bool OmniboxFieldTrial::IsActiveSearchEnginesEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kActiveSearchEngines);
 }
 
 bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
@@ -727,97 +724,72 @@ int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 
 namespace OmniboxFieldTrial {
 
-// Rich autocompletion.
-
-bool IsRichAutocompletionEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kRichAutocompletion);
-}
-
-bool RichAutocompletionShowAdditionalText() {
-  return IsRichAutocompletionEnabled() &&
-         kRichAutocompletionShowAdditionalText.Get();
-}
-
-const base::FeatureParam<bool> kRichAutocompletionAutocompleteTitles(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionAutocompleteTitles",
-    false);
+// Autocomplete stability.
 
 const base::FeatureParam<bool>
-    kRichAutocompletionAutocompleteTitlesShortcutProvider(
-        &omnibox::kRichAutocompletion,
-        "RichAutocompletionAutocompleteTitlesShortcutProvider",
+    kAutocompleteStabilityPreserveDefaultAfterTransfer(
+        &omnibox::kAutocompleteStability,
+        "AutocompleteStabilityPreserveDefaultAfterTransfer",
         false);
-
-const base::FeatureParam<int> kRichAutocompletionAutocompleteTitlesMinChar(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionAutocompleteTitlesMinChar",
-    0);
-
-const base::FeatureParam<bool> kRichAutocompletionAutocompleteNonPrefixAll(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionAutocompleteNonPrefixAll",
-    false);
-
-const base::FeatureParam<bool>
-    kRichAutocompletionAutocompleteNonPrefixShortcutProvider(
-        &omnibox::kRichAutocompletion,
-        "RichAutocompletionAutocompleteNonPrefixShortcutProvider",
-        false);
-
-const base::FeatureParam<int> kRichAutocompletionAutocompleteNonPrefixMinChar(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionAutocompleteNonPrefixMinChar",
-    0);
-
-const base::FeatureParam<bool> kRichAutocompletionShowAdditionalText(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionAutocompleteShowAdditionalText",
-    true);
-
-const base::FeatureParam<bool> kRichAutocompletionAutocompleteShortcutText(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionAutocompleteShortcutText",
-    false);
-
 const base::FeatureParam<int>
-    kRichAutocompletionAutocompleteShortcutTextMinChar(
-        &omnibox::kRichAutocompletion,
-        "RichAutocompletionAutocompleteShortcutTextMinChar",
-        0);
-
-const base::FeatureParam<bool> kRichAutocompletionCounterfactual(
-    &omnibox::kRichAutocompletion,
-    "RichAutocompletionCounterfactual",
-    false);
-
+    kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
+        &omnibox::kAutocompleteStability,
+        "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
+        -1);
 const base::FeatureParam<bool>
-    kRichAutocompletionAutocompletePreferUrlsOverPrefixes(
-        &omnibox::kRichAutocompletion,
-        "RichAutocompletionAutocompletePreferUrlsOverPrefixes",
+    kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
+        &omnibox::kAutocompleteStability,
+        "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
+        true);
+const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
+    &omnibox::kAutocompleteStability,
+    "AutocompleteStabilityDontCopyDoneProviders",
+    false);
+const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
+    &omnibox::kAutocompleteStability,
+    "AutocompleteStabilityAsyncProvidersFirst",
+    false);
+const base::FeatureParam<bool>
+    kAutocompleteStabilityUpdateResultDebounceFromLastRun(
+        &omnibox::kAutocompleteStability,
+        "AutocompleteStabilityUpdateResultDebounceFromLastRun",
         false);
+const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
+    &omnibox::kAutocompleteStability,
+    "AutocompleteStabilityUpdateResultDebounceDelay",
+    0);
 
-// Bookmark paths.
+// Local history zero-prefix (aka zero-suggest) and prefix suggestions:
 
-const base::FeatureParam<std::string> kBookmarkPathsCounterfactual(
-    &omnibox::kBookmarkPaths,
-    "OmniboxBookmarkPathsCounterfactual",
-    "");
-const base::FeatureParam<bool> kBookmarkPathsUiReplaceTitle(
-    &omnibox::kBookmarkPaths,
-    "OmniboxBookmarkPathsUiReplaceTitle",
-    false);
-const base::FeatureParam<bool> kBookmarkPathsUiReplaceUrl(
-    &omnibox::kBookmarkPaths,
-    "OmniboxBookmarkPathsUiReplaceUrl",
-    false);
-const base::FeatureParam<bool> kBookmarkPathsUiAppendAfterTitle(
-    &omnibox::kBookmarkPaths,
-    "OmniboxBookmarkPathsUiAppendAfterTitle",
-    false);
-const base::FeatureParam<bool> kBookmarkPathsUiDynamicReplaceUrl(
-    &omnibox::kBookmarkPaths,
-    "OmniboxBookmarkPathsUiDynamicReplaceUrl",
+// The relevance score for remote zero-suggest ranges from 550-1400. A default
+// value of 500 places local history zero-suggest below the remote zero-suggest.
+const base::FeatureParam<int> kLocalHistoryZeroSuggestRelevanceScore(
+    &omnibox::kAdjustLocalHistoryZeroSuggestRelevanceScore,
+    "LocalHistoryZeroSuggestRelevanceScore",
+    500);
+
+const base::Feature kUseSharedInstanceForZeroSuggestPrefetching{
+    "UseSharedInstanceForZeroSuggestPrefetching",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool UseSharedInstanceForZeroSuggestPrefetching() {
+  return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) &&
+         base::FeatureList::IsEnabled(
+             kUseSharedInstanceForZeroSuggestPrefetching);
+}
+
+bool IsZeroSuggestPrefetchingEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) ||
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP);
+}
+
+const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
+    &omnibox::kLocalHistorySuggestRevamp,
+    "ZeroSuggestIgnoreDuplicateVisits",
+    true);
+const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits(
+    &omnibox::kLocalHistorySuggestRevamp,
+    "PrefixSuggestIgnoreDuplicateVisits",
     false);
 
 // Short bookmarks.
@@ -867,26 +839,109 @@ const base::FeatureParam<int>
         "ShortBookmarkSuggestionsByTotalInputLengthThreshold",
         3);
 
+// Bookmark paths.
+
+const base::FeatureParam<std::string> kBookmarkPathsCounterfactual(
+    &omnibox::kBookmarkPaths,
+    "OmniboxBookmarkPathsCounterfactual",
+    "");
+const base::FeatureParam<bool> kBookmarkPathsUiReplaceTitle(
+    &omnibox::kBookmarkPaths,
+    "OmniboxBookmarkPathsUiReplaceTitle",
+    false);
+const base::FeatureParam<bool> kBookmarkPathsUiReplaceUrl(
+    &omnibox::kBookmarkPaths,
+    "OmniboxBookmarkPathsUiReplaceUrl",
+    false);
+const base::FeatureParam<bool> kBookmarkPathsUiAppendAfterTitle(
+    &omnibox::kBookmarkPaths,
+    "OmniboxBookmarkPathsUiAppendAfterTitle",
+    false);
+const base::FeatureParam<bool> kBookmarkPathsUiDynamicReplaceUrl(
+    &omnibox::kBookmarkPaths,
+    "OmniboxBookmarkPathsUiDynamicReplaceUrl",
+    false);
+
 // Shortcut Expanding
 
 bool IsShortcutExpandingEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kShortcutExpanding);
 }
 
-// Local history zero-prefix (aka zero-suggest) and prefix suggestions.
-const base::FeatureParam<int> kZeroSuggestCacheDurationSec(
-    &omnibox::kZeroSuggestPrefetching,
-    "ZeroSuggestCacheDurationSec",
+// Rich autocompletion.
+
+bool IsRichAutocompletionEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kRichAutocompletion);
+}
+
+bool RichAutocompletionShowAdditionalText() {
+  return IsRichAutocompletionEnabled() &&
+         kRichAutocompletionShowAdditionalText.Get();
+}
+
+const base::FeatureParam<bool> kRichAutocompletionAutocompleteTitles(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteTitles",
+    false);
+
+const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteTitlesShortcutProvider(
+        &omnibox::kRichAutocompletion,
+        "RichAutocompletionAutocompleteTitlesShortcutProvider",
+        false);
+
+const base::FeatureParam<int> kRichAutocompletionAutocompleteTitlesMinChar(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteTitlesMinChar",
     0);
 
-const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
-    &omnibox::kLocalHistorySuggestRevamp,
-    "ZeroSuggestIgnoreDuplicateVisits",
-    true);
-const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits(
-    &omnibox::kLocalHistorySuggestRevamp,
-    "PrefixSuggestIgnoreDuplicateVisits",
+const base::FeatureParam<bool> kRichAutocompletionAutocompleteNonPrefixAll(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteNonPrefixAll",
     false);
+
+const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteNonPrefixShortcutProvider(
+        &omnibox::kRichAutocompletion,
+        "RichAutocompletionAutocompleteNonPrefixShortcutProvider",
+        false);
+
+const base::FeatureParam<int> kRichAutocompletionAutocompleteNonPrefixMinChar(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteNonPrefixMinChar",
+    0);
+
+const base::FeatureParam<bool> kRichAutocompletionShowAdditionalText(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteShowAdditionalText",
+    true);
+
+const base::FeatureParam<bool> kRichAutocompletionAdditionalTextWithParenthesis(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAdditionalTextWithParenthesis",
+    false);
+
+const base::FeatureParam<bool> kRichAutocompletionAutocompleteShortcutText(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteShortcutText",
+    false);
+
+const base::FeatureParam<int>
+    kRichAutocompletionAutocompleteShortcutTextMinChar(
+        &omnibox::kRichAutocompletion,
+        "RichAutocompletionAutocompleteShortcutTextMinChar",
+        0);
+
+const base::FeatureParam<bool> kRichAutocompletionCounterfactual(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionCounterfactual",
+    false);
+
+const base::FeatureParam<bool>
+    kRichAutocompletionAutocompletePreferUrlsOverPrefixes(
+        &omnibox::kRichAutocompletion,
+        "RichAutocompletionAutocompletePreferUrlsOverPrefixes",
+        false);
 
 const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
     &omnibox::kSiteSearchStarterPack,

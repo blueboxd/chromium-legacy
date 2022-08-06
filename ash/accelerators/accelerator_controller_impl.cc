@@ -46,6 +46,7 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -72,6 +73,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -97,7 +99,6 @@
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
 #include "chromeos/ui/wm/features.h"
-#include "chromeos/ui/wm/window_util.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
@@ -431,8 +432,8 @@ bool CanHandleFocusCameraPreview() {
     return false;
 
   auto* camera_controller = controller->camera_controller();
-  auto* preview_widget =
-      camera_controller ? camera_controller->camera_preview_widget() : nullptr;
+  DCHECK(camera_controller);
+  auto* preview_widget = camera_controller->camera_preview_widget();
   return preview_widget && preview_widget->IsVisible();
 }
 
@@ -826,7 +827,7 @@ void HandleToggleFloating() {
   DCHECK(window);
   // TODO(sammiequon|shidi): Add some UI like a bounce if a window cannot be
   // floated.
-  chromeos::ToggleFloating(window);
+  Shell::Get()->float_controller()->ToggleFloat(window);
   base::RecordAction(UserMetricsAction("Accel_Toggle_Floating"));
 }
 
@@ -892,9 +893,9 @@ void HandleWindowSnap(AcceleratorAction action) {
     }
   }
 
-  const WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
-                          ? WM_EVENT_CYCLE_SNAP_PRIMARY
-                          : WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WindowSnapWMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
+                                    ? WM_EVENT_CYCLE_SNAP_PRIMARY
+                                    : WM_EVENT_CYCLE_SNAP_SECONDARY);
   aura::Window* active_window = window_util::GetActiveWindow();
   DCHECK(active_window);
 
@@ -1001,7 +1002,7 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  using chromeos::assistant::AssistantAllowedState;
+  using assistant::AssistantAllowedState;
   switch (AssistantState::Get()->allowed_state().value_or(
       AssistantAllowedState::ALLOWED)) {
     case AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
@@ -1056,8 +1057,8 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
   }
 
   AssistantUiController::Get()->ToggleUi(
-      /*entry_point=*/chromeos::assistant::AssistantEntryPoint::kHotkey,
-      /*exit_point=*/chromeos::assistant::AssistantExitPoint::kHotkey);
+      /*entry_point=*/assistant::AssistantEntryPoint::kHotkey,
+      /*exit_point=*/assistant::AssistantExitPoint::kHotkey);
 }
 
 void HandleSuspend() {
@@ -1465,6 +1466,21 @@ void HandleTouchHudModeChange() {
   RootWindowController* controller =
       RootWindowController::ForTargetRootWindow();
   controller->touch_hud_debug()->ChangeToNextMode();
+}
+
+bool CanHandleToggleProjectorMarker() {
+  auto* projector_controller = ProjectorController::Get();
+  if (projector_controller) {
+    return projector_controller->GetAnnotatorAvailability();
+  }
+  return false;
+}
+
+void HandleToggleProjectorMarker() {
+  auto* projector_controller = ProjectorController::Get();
+  if (projector_controller) {
+    projector_controller->ToggleAnnotationTray();
+  }
 }
 
 }  // namespace
@@ -1927,6 +1943,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case TAKE_SCREENSHOT:
     case TAKE_WINDOW_SCREENSHOT:
       return CanHandleScreenshot(action);
+    case TOGGLE_PROJECTOR_MARKER:
+      return CanHandleToggleProjectorMarker();
     case TOGGLE_RESIZE_LOCK_MENU:
       return CanHandleToggleResizeLockMenu();
     case TOGGLE_FLOATING:
@@ -2312,6 +2330,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case TOGGLE_IME_MENU_BUBBLE:
       HandleToggleImeMenuBubble();
+      break;
+    case TOGGLE_PROJECTOR_MARKER:
+      HandleToggleProjectorMarker();
       break;
     case SHOW_SHORTCUT_VIEWER:
       HandleShowKeyboardShortcutViewer();

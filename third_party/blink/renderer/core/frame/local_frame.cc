@@ -105,6 +105,7 @@
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -378,7 +379,7 @@ LocalFrame::~LocalFrame() {
   // the frame owner.
   DCHECK(!view_);
   DCHECK(!frame_color_overlay_);
-  if (IsAdSubframe())
+  if (IsAdFrame())
     InstanceCounters::DecrementCounter(InstanceCounters::kAdSubframeCounter);
 }
 
@@ -712,6 +713,23 @@ void LocalFrame::DidAttachDocument() {
   GetEventHandler().Clear();
   Selection().DidAttachDocument(document);
   notified_color_scheme_ = false;
+
+#if !BUILDFLAG(IS_ANDROID)
+  // For PWAs with display_override "window-controls-overlay", titlebar area
+  // rect bounds sent from the browser need to persist on navigation to keep the
+  // UI consistent. The titlebar area rect values are set in |LocalFrame| before
+  // the new document is attached. The css environment variables are needed to
+  // be set for the new document.
+  if (is_window_controls_overlay_visible_) {
+    DocumentStyleEnvironmentVariables& vars =
+        GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
+    DCHECK(!vars.ResolveVariable(
+        StyleEnvironmentVariables::GetVariableName(
+            UADefinedVariable::kTitlebarAreaX, document->GetExecutionContext()),
+        {}, false /* record_metrics */));
+    SetTitlebarAreaDocumentStyleEnvironmentVariables();
+  }
+#endif
 }
 
 void LocalFrame::OnFirstPaint(bool text_painted, bool image_painted) {
@@ -1293,6 +1311,9 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   }
 
   if (page_zoom_changed) {
+#if !BUILDFLAG(IS_ANDROID)
+    MaybeUpdateWindowControlsOverlayWithNewZoomLevel();
+#endif
     document->LayoutViewportWasResized();
     document->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   }
@@ -1486,7 +1507,6 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
             inheriting_agent_factory),
       frame_scheduler_(page.GetPageScheduler()->CreateFrameScheduler(
           this,
-          client->GetFrameBlameContext(),
           /*TODO(crbug.com/1170350): Set for portals*/ IsInFencedFrameTree(),
           IsMainFrame() ? FrameScheduler::FrameType::kMainFrame
                         : FrameScheduler::FrameType::kSubframe)),
@@ -1550,7 +1570,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   absl::optional<AdScriptIdentifier> ad_script_on_stack;
   // See SubresourceFilterAgent::Initialize for why we don't set this here for
   // fenced frames.
-  is_subframe_created_by_ad_script_ =
+  is_frame_created_by_ad_script_ =
       !IsMainFrame() && ad_tracker_ &&
       ad_tracker_->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop,
                                      /*out_ad_script=*/&ad_script_on_stack);
@@ -1960,36 +1980,6 @@ FrameNavigationDisabler::~FrameNavigationDisabler() {
   frame_->EnableNavigation();
 }
 
-namespace {
-
-bool IsScopedFrameBlamerEnabled() {
-  // Must match the category used in content::FrameBlameContext.
-  static const auto* enabled =
-      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("blink");
-  return *enabled;
-}
-
-}  // namespace
-
-ScopedFrameBlamer::ScopedFrameBlamer(LocalFrame* frame)
-    : frame_(IsScopedFrameBlamerEnabled() ? frame : nullptr) {
-  if (LIKELY(!frame_))
-    return;
-  LocalFrameClient* client = frame_->Client();
-  if (!client)
-    return;
-  if (BlameContext* context = client->GetFrameBlameContext())
-    context->Enter();
-}
-
-void ScopedFrameBlamer::LeaveContext() {
-  LocalFrameClient* client = frame_->Client();
-  if (!client)
-    return;
-  if (BlameContext* context = client->GetFrameBlameContext())
-    context->Leave();
-}
-
 LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   DCHECK(GetSettings());
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled() ||
@@ -2231,23 +2221,23 @@ bool LocalFrame::IsProvisional() const {
   return Owner()->ContentFrame() != this;
 }
 
-bool LocalFrame::IsAdSubframe() const {
-  return ad_evidence_ && ad_evidence_->IndicatesAdSubframe();
+bool LocalFrame::IsAdFrame() const {
+  return ad_evidence_ && ad_evidence_->IndicatesAdFrame();
 }
 
 bool LocalFrame::IsAdRoot() const {
-  return IsAdSubframe() && !ad_evidence_->parent_is_ad();
+  return IsAdFrame() && !ad_evidence_->parent_is_ad();
 }
 
 void LocalFrame::SetAdEvidence(const blink::FrameAdEvidence& ad_evidence) {
   DCHECK(!IsMainFrame() || IsInFencedFrameTree());
   DCHECK(ad_evidence.is_complete());
 
-  // Once set, `is_subframe_created_by_ad_script_` should not be unset.
-  DCHECK(!is_subframe_created_by_ad_script_ ||
+  // Once set, `is_frame_created_by_ad_script_` should not be unset.
+  DCHECK(!is_frame_created_by_ad_script_ ||
          ad_evidence.created_by_ad_script() ==
              blink::mojom::FrameCreationStackEvidence::kCreatedByAdScript);
-  is_subframe_created_by_ad_script_ =
+  is_frame_created_by_ad_script_ =
       ad_evidence.created_by_ad_script() ==
       blink::mojom::FrameCreationStackEvidence::kCreatedByAdScript;
 
@@ -2263,11 +2253,11 @@ void LocalFrame::SetAdEvidence(const blink::FrameAdEvidence& ad_evidence) {
               ad_evidence.most_restrictive_filter_list_result());
   }
 
-  bool was_ad_subframe = IsAdSubframe();
-  bool is_ad_subframe = ad_evidence.IndicatesAdSubframe();
+  bool was_ad_frame = IsAdFrame();
+  bool is_ad_frame = ad_evidence.IndicatesAdFrame();
   ad_evidence_ = ad_evidence;
 
-  if (was_ad_subframe == is_ad_subframe)
+  if (was_ad_frame == is_ad_frame)
     return;
 
   if (auto* document = GetDocument()) {
@@ -2276,13 +2266,13 @@ void LocalFrame::SetAdEvidence(const blink::FrameAdEvidence& ad_evidence) {
     // of sending an IPC.
     auto* document_resource_coordinator = document->GetResourceCoordinator();
     if (document_resource_coordinator)
-      document_resource_coordinator->SetIsAdFrame(is_ad_subframe);
+      document_resource_coordinator->SetIsAdFrame(is_ad_frame);
   }
 
   UpdateAdHighlight();
-  frame_scheduler_->SetIsAdFrame(is_ad_subframe);
+  frame_scheduler_->SetIsAdFrame(is_ad_frame);
 
-  if (is_ad_subframe) {
+  if (is_ad_frame) {
     UseCounter::Count(DomWindow(), WebFeature::kAdFrameDetected);
     InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
   } else {
@@ -2631,7 +2621,7 @@ void LocalFrame::DidResume() {
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {
-  if (HasTransientUserActivation(this) && IsAdSubframe())
+  if (HasTransientUserActivation(this) && IsAdFrame())
     UseCounter::Count(GetDocument(), WebFeature::kAdClickNavigation);
 }
 
@@ -2798,23 +2788,13 @@ void LocalFrame::UpdateWindowControlsOverlay(
       (window_controls_overlay_rect != window_controls_overlay_rect_);
   is_window_controls_overlay_visible_ = !window_controls_overlay_rect.IsEmpty();
   window_controls_overlay_rect_ = window_controls_overlay_rect;
+  window_controls_overlay_rect_in_dips_ = bounding_rect_in_dips;
 
   DocumentStyleEnvironmentVariables& vars =
       GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
 
   if (is_window_controls_overlay_visible_) {
-    vars.SetVariable(
-        UADefinedVariable::kTitlebarAreaX,
-        StyleEnvironmentVariables::FormatPx(window_controls_overlay_rect_.x()));
-    vars.SetVariable(
-        UADefinedVariable::kTitlebarAreaY,
-        StyleEnvironmentVariables::FormatPx(window_controls_overlay_rect_.y()));
-    vars.SetVariable(UADefinedVariable::kTitlebarAreaWidth,
-                     StyleEnvironmentVariables::FormatPx(
-                         window_controls_overlay_rect_.width()));
-    vars.SetVariable(UADefinedVariable::kTitlebarAreaHeight,
-                     StyleEnvironmentVariables::FormatPx(
-                         window_controls_overlay_rect_.height()));
+    SetTitlebarAreaDocumentStyleEnvironmentVariables();
   } else {
     const UADefinedVariable vars_to_remove[] = {
         UADefinedVariable::kTitlebarAreaX,
@@ -3237,5 +3217,35 @@ void LocalFrame::WriteIntoTrace(perfetto::TracedValue ctx) const {
   dict.Add("is_cross_origin_to_outermost_main_frame",
            IsCrossOriginToOutermostMainFrame());
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+void LocalFrame::SetTitlebarAreaDocumentStyleEnvironmentVariables() const {
+  DCHECK(is_window_controls_overlay_visible_);
+  DocumentStyleEnvironmentVariables& vars =
+      GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
+  vars.SetVariable(
+      UADefinedVariable::kTitlebarAreaX,
+      StyleEnvironmentVariables::FormatPx(window_controls_overlay_rect_.x()));
+  vars.SetVariable(
+      UADefinedVariable::kTitlebarAreaY,
+      StyleEnvironmentVariables::FormatPx(window_controls_overlay_rect_.y()));
+  vars.SetVariable(UADefinedVariable::kTitlebarAreaWidth,
+                   StyleEnvironmentVariables::FormatPx(
+                       window_controls_overlay_rect_.width()));
+  vars.SetVariable(UADefinedVariable::kTitlebarAreaHeight,
+                   StyleEnvironmentVariables::FormatPx(
+                       window_controls_overlay_rect_.height()));
+}
+
+void LocalFrame::MaybeUpdateWindowControlsOverlayWithNewZoomLevel() {
+  // |window_controls_overlay_rect_| is only set for local root.
+  if (!is_window_controls_overlay_visible_ || !IsLocalRoot())
+    return;
+
+  DCHECK(!window_controls_overlay_rect_in_dips_.IsEmpty());
+
+  UpdateWindowControlsOverlay(window_controls_overlay_rect_in_dips_);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace blink

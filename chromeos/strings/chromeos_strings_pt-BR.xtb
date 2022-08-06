@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1645954272419197032">Confirme as informações do dispositivo</translation>
 <translation id="1662989795263954667">Parado (sem tinta)</translation>
+<translation id="1664796644829245314">Visualizar <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integrado</translation>
 <translation id="1672499492233627739">Feed de vídeo da webcam</translation>
 <translation id="1676557873873341166">Captura de vídeo ativada</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Videoconferência</translation>
 <translation id="1852934301711881861">Instalar o ChromeOS Flex</translation>
 <translation id="1856388568474281774">Seta para baixo</translation>
+<translation id="1858620243986915808">Anexar captura de tela</translation>
 <translation id="1871569928317311284">Desativar o tema escuro</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Desativar o modo escuro</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Foto do perfil do Google</translation>
 <translation id="1979103255016296513">O prazo para a alteração de senha foi ultrapassado</translation>
 <translation id="1999615961760456652">Portal cativo</translation>
+<translation id="200669432486043882">Substituir arquivo</translation>
 <translation id="2006864819935886708">Conectividade</translation>
 <translation id="2008685064673031089">Pesquisa de números primos</translation>
 <translation id="2011174342667534258">Versão do SDK:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2461822463642141190">Atual</translation>
 <translation id="2480034874476596812">Desativar manualmente</translation>
+<translation id="248546197012830854">O dispositivo está off-line. Conecte-se à rede Wi-Fi para ver o conteúdo de ajuda.</translation>
 <translation id="2491955442992294626">As chaves não são testadas enquanto você usa outra janela</translation>
 <translation id="2493126929778606526">Suas melhores fotos, selecionadas automaticamente</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ATUALIZAR</translation>
 <translation id="3009958530611748826">Selecione em que pasta quer salvar</translation>
 <translation id="3017079585324758401">Plano de fundo</translation>
+<translation id="302435934487327038">Instalação concluída</translation>
 <translation id="3027578600144895987">Fechar a câmera</translation>
 <translation id="3031560714565892478">Este dispositivo é uma câmera de vídeo.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Endpoint</translation>
 <translation id="3069085583900247081">Falha no teste</translation>
-<translation id="3076243757415932261">Validando componentes…</translation>
 <translation id="3083667275341675831">Diagnósticos de conectividade</translation>
 <translation id="3084958266922136097">Desativar o protetor de tela</translation>
 <translation id="3091839911843451378">Falha - Ação interrompida</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Tem certeza de que quer limpar todo o histórico? Os trabalhos de impressão atuais não serão apagados.</translation>
 <translation id="3383751554789092165">Mude as informações do dispositivo conforme necessário.</translation>
 <translation id="3404249063913988450">Ativar o protetor de tela</translation>
-<translation id="3404770484521709967">Os componentes foram instalados corretamente.</translation>
 <translation id="3413935475507503304">Para continuar com a atualização, clique em "Próxima".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Segurança</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Senha antiga</translation>
 <translation id="4453205916657964690">Máscara de sub-rede</translation>
 <translation id="4454245904991689773">Salvar em</translation>
-<translation id="4472575034687746823">Vamos começar</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Falha no ping do gateway de rede não padrão</translation>
 <translation id="4500213108254186382">Acelerômetro da tampa</translation>
@@ -660,14 +662,15 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6611280807952151149">Sair do reparo do <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">Em execução</translation>
 <translation id="6620487321149975369">Os trabalhos de impressão aparecerão no histórico, a menos que sejam removidos manualmente</translation>
+<translation id="6624819909909965616">Não é possível fazer upload de arquivos com mais de 10 MB</translation>
 <translation id="6643016212128521049">Limpar</translation>
+<translation id="6644568396961840069">Não foi possível salvar o arquivo. Conecte outro tipo armazenamento externo ou tente novamente mais tarde.</translation>
 <translation id="6647510110698214773">Algoritmo de criptografia</translation>
 <translation id="6650062777702288430">Alternar entre o teclado kana e o alfanumérico</translation>
 <translation id="6657585470893396449">Senha</translation>
 <translation id="6659594942844771486">Guia</translation>
 <translation id="6692996468359469499">Veja informações relacionadas à sua seleção</translation>
 <translation id="6704062477274546131">Resolução de DNS</translation>
-<translation id="6721744718589119342">Podemos enviar e-mails a você pedindo mais informações ou atualizações</translation>
 <translation id="6723839937902243910">Energia</translation>
 <translation id="6723847290197874913">Luz de fundo do teclado</translation>
 <translation id="672609503628871915">Veja o que há de novo</translation>
@@ -695,6 +698,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Revisão do firmware</translation>
 <translation id="6995564396478647735">Confira se a proteção contra gravação está ativada</translation>
+<translation id="7005833343836210400">O dispositivo está off-line</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> gerencia este dispositivo e tem acesso a todas as atividades do usuário, incluindo páginas visitadas, senhas e e-mail.</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7041549558901442110">Dispositivo não conectado.</translation>
@@ -720,6 +724,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7212734716605298123">Atualizações de firmware para dispositivos externos</translation>
 <translation id="7216409898977639127">Operadora de celular</translation>
+<translation id="725133483556299729">Selecione um e-mail</translation>
 <translation id="7271040990581020067">O scanner está em uso. Tente novamente mais tarde.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Selecione um ou mais componentes e tente de novo ou ignore a calibragem</translation>
@@ -797,6 +802,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7978412674231730200">Chave privada</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7994702968232966508">Método EAP</translation>
+<translation id="8018928621986160031">Salvos em "<ph name="FILE_LOCATION" />"</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Ativar o modo de cor automático</translation>
@@ -805,8 +811,8 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8063022551652308521">A proteção contra gravação ainda está desativada. Ative para continuar.</translation>
 <translation id="8075838845814659848">Carga restante</translation>
 <translation id="8082366717211101304">Não foi possível resolver o DNS em apps Android</translation>
-<translation id="8083281199617904460">Este processo de reparo precisa ser feito por um técnico treinado. Só comece depois de substituir os componentes com problemas.</translation>
 <translation id="808894953321890993">Alterar senha</translation>
+<translation id="8094062939584182041">Permitir que o Google envie um e-mail para você sobre esse problema</translation>
 <translation id="8104083085214006426">Você está usando uma rede aberta e não segura</translation>
 <translation id="8109786307828817014">Continuar com as calibragens que falharam?</translation>
 <translation id="811820734797650957">(Android) O gateway pode receber um ping</translation>
@@ -821,6 +827,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8217675307824400706">Conectar</translation>
 <translation id="8221728673725659466">Calibragem completa</translation>
 <translation id="8226628635270268143">Escolher seus álbuns e fotos favoritos</translation>
+<translation id="8227119283605456246">Anexar arquivo</translation>
 <translation id="8230672074305416752">Falha no ping do gateway de rede padrão</translation>
 <translation id="8246209727385807362">Operadora desconhecida</translation>
 <translation id="827422111966801947">Índigo</translation>
@@ -865,6 +872,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8576249514688522074">Não inicializado</translation>
 <translation id="8620617069779373398">Status do roaming</translation>
 <translation id="8655295600908251630">Canal</translation>
+<translation id="8655828773034788261">Compartilhar URL:</translation>
 <translation id="8660881923941176839">libras</translation>
 <translation id="8662671328352114214">Entrar na rede <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Atualizar para a versão <ph name="VERSION_NUMBER" /> e reiniciar</translation>

@@ -152,6 +152,7 @@
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_utils.h"
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks_side_panel_ui.h"
+#include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_ui.h"
 #include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
@@ -252,6 +253,7 @@
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/mobile_setup_ui.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
+#include "chrome/browser/ui/webui/chromeos/cloud_upload/cloud_upload_ui.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
@@ -859,6 +861,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ReadingListUI>;
   if (url.host_piece() == chrome::kChromeUIBookmarksSidePanelHost)
     return &NewWebUI<BookmarksSidePanelUI>;
+  if (url.host_piece() == chrome::kChromeUICustomizeChromeSidePanelHost)
+    return &NewWebUI<CustomizeChromeUI>;
   if (base::FeatureList::IsEnabled(features::kSidePanelJourneys)) {
     if (url.host_piece() == chrome::kChromeUIHistoryClustersSidePanelHost)
       return &NewWebUI<HistoryClustersSidePanelUI>;
@@ -928,13 +932,15 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
   }
   if (url.host_piece() == chrome::kChromeUILockScreenStartReauthHost) {
-    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled()) {
+    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled() ||
+        !ash::ProfileHelper::IsLockScreenProfile(profile)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::LockScreenStartReauthUI>;
   }
   if (url.host_piece() == chrome::kChromeUILockScreenNetworkHost) {
-    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled()) {
+    if (!ash::features::IsSamlReauthenticationOnLockscreenEnabled() ||
+        !ash::ProfileHelper::IsLockScreenProfile(profile)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::LockScreenNetworkUI>;
@@ -946,8 +952,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewComponentUI<ash::file_manager::FileManagerUI,
                            ChromeFileManagerUIDelegate>;
   }
-  if (url.host_piece() == chrome::kChromeUINotificationTesterHost)
-    return &NewWebUI<chromeos::NotificationTesterUI>;
+  if (url.host_piece() == chrome::kChromeUICloudUploadHost) {
+    if (!ash::features::IsUploadOfficeToCloudEnabled()) {
+      return nullptr;
+    }
+    return &NewWebUI<chromeos::cloud_upload::CloudUploadUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIAccountManagerErrorHost)
     return &NewWebUI<chromeos::AccountManagerErrorUI>;
   if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
@@ -995,13 +1005,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUINetworkHost)
     return &NewWebUI<chromeos::NetworkUI>;
   if (url.host_piece() == chrome::kChromeUIOobeHost) {
-    // TODO(crbug.com/1329058): Eliminate chrome://oobe/login and fix OOBE tests
-    // running inside the session.
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
-                           command_line->HasSwitch(::switches::kTestType);
-    if (ash::ProfileHelper::IsSigninProfile(profile) ||
-        (url.path() == "/login" && is_running_test)) {
+    if (ash::ProfileHelper::IsSigninProfile(profile)) {
       return &NewWebUI<chromeos::OobeUI>;
     }
     return nullptr;
@@ -1186,6 +1190,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUITabModalConfirmDialogHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
 #endif
+
 #if BUILDFLAG(ENABLE_WEBUI_CERTIFICATE_VIEWER)
   if (url.host_piece() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
@@ -1549,11 +1554,14 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kOsUIAddSupervisionURL),
       GURL(chrome::kChromeUIAppDisabledURL),
       GURL(chrome::kOsUIAppDisabledURL),
+      GURL(chrome::kOsUIAppServiceInternalsURL),
+      GURL(chrome::kOsUIBluetoothInternalsURL),
       GURL(chrome::kChromeUIArcGraphicsTracingURL),
       GURL(chrome::kChromeUIArcOverviewTracingURL),
       GURL(chrome::kChromeUIArcPowerControlURL),
       GURL(chrome::kChromeUIAssistantOptInURL),
       GURL(chrome::kChromeUIBluetoothPairingURL),
+      GURL(ash::kChromeUICameraAppURL),
       GURL(chrome::kOsUIComponentsURL),
       GURL(chrome::kChromeUICrashesUrl),
       GURL(chrome::kOsUICrashesURL),
@@ -1570,6 +1578,7 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kChromeUIEmojiPickerURL),
       GURL(chrome::kOsUIEmojiPickerURL),
       GURL(ash::file_manager::kChromeUIFileManagerURL),
+      GURL(chrome::kChromeUICloudUploadURL),
       GURL(chrome::kChromeUIFlagsURL),
       GURL(chrome::kOsUIFlagsURL),
       GURL(chrome::kOsUIGpuURL),
@@ -1588,8 +1597,18 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kChromeUIPowerUrl),
       GURL(chrome::kChromeUIPrintManagementUrl),
       GURL(ash::multidevice::kChromeUIProximityAuthURL),
+      GURL(ash::multidevice::kOsUIProximityAuthURL),
+      GURL(chrome::kChromeUINearbyInternalsURL),
+      GURL(chrome::kOsUINearbyInternalsURL),
+      GURL(chrome::kChromeUIMultiDeviceInternalsURL),
+      GURL(chrome::kOsUIMultiDeviceInternalsURL),
       GURL(chrome::kOsUIRestartURL),
       GURL(chrome::kChromeUIScanningAppURL),
+      GURL(chrome::kOsUIConnectivityDiagnosticsAppURL),
+      GURL(chrome::kOsUIDiagnosticsAppURL),
+      GURL(chrome::kOsUIFirmwareUpdaterAppURL),
+      GURL(chrome::kOsUIPrintManagementAppURL),
+      GURL(chrome::kOsUIRestartURL),
       GURL(chrome::kOsUIScanningAppURL),
       GURL(chrome::kChromeUISetTimeURL),
       GURL(chrome::kChromeUIOSSettingsURL),
@@ -1605,7 +1624,9 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kOsUIVersionURL),
       GURL(chrome::kChromeUIVmUrl),
       GURL(chrome::kOsUISystemURL),
-      GURL(chrome::kOsUIHelpAppURL)};
+      GURL(chrome::kOsUIHelpAppURL),
+      GURL(chrome::kOsUINetExportURL),
+      GURL(chrome::kOsUILauncherInternalsURL)};
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return std::vector<GURL>{GURL(chrome::kChromeUIAboutURL),
                            GURL(chrome::kChromeUIComponentsUrl),

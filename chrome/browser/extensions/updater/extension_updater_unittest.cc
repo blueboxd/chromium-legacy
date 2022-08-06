@@ -651,7 +651,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   size_t ManifestFetchersCount(ExtensionDownloader* downloader) {
     return downloader->manifests_queue_.size() +
-           (downloader->manifest_loader_.get() ? 1 : 0);
+           (downloader->HasActiveManifestRequestForTesting() ? 1 : 0);
   }
 
   std::set<std::string> GetRunningInstallIds(const ExtensionUpdater& updater) {
@@ -819,8 +819,8 @@ class ExtensionUpdaterTest : public testing::Test {
           loop.Quit();
         }));
 
-    helper.downloader().StartAllPending(NULL);
-    EXPECT_TRUE(helper.downloader().manifest_loader_);
+    helper.downloader().StartAllPending(nullptr);
+    EXPECT_TRUE(helper.downloader().HasActiveManifestRequestForTesting());
 
     loop.Run();
 
@@ -1201,14 +1201,11 @@ class ExtensionUpdaterTest : public testing::Test {
     GURL fetch2_url = fetch2->full_url();
     GURL fetch3_url = fetch3->full_url();
     GURL fetch4_url = fetch4->full_url();
-    helper.StartUpdateCheck(std::move(fetch1));
-    helper.StartUpdateCheck(std::move(fetch2));
-    helper.StartUpdateCheck(std::move(fetch3));
-    helper.StartUpdateCheck(std::move(fetch4));
-    RunUntilIdle();
 
     // fetch1_url
     {
+      helper.StartUpdateCheck(std::move(fetch1));
+      RunUntilIdle();
       helper.test_url_loader_factory().AddResponse(fetch1_url.spec(), "",
                                                    net::HTTP_BAD_REQUEST);
       EXPECT_CALL(
@@ -1227,6 +1224,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // fetch2_url
     {
+      helper.StartUpdateCheck(std::move(fetch2));
+      RunUntilIdle();
       const std::string kInvalidXml = "invalid xml";
       helper.test_url_loader_factory().AddResponse(fetch2_url.spec(),
                                                    kInvalidXml, net::HTTP_OK);
@@ -1246,6 +1245,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // fetch3_url
     {
+      helper.StartUpdateCheck(std::move(fetch3));
+      RunUntilIdle();
       const std::string kNoUpdate =
           "<?xml version='1.0' encoding='UTF-8'?>"
           "<gupdate xmlns='http://www.google.com/update2/response'"
@@ -1277,6 +1278,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // fetch4_url
     {
+      helper.StartUpdateCheck(std::move(fetch4));
+      RunUntilIdle();
       // The last fetcher has an update.
       NotificationsObserver observer;
       const std::string kUpdateAvailable =
@@ -1301,7 +1304,7 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_TRUE(observer.Updated("4444"));
       fetch4_url = GURL();
     }
-    if (helper.downloader().manifest_loader_)
+    if (helper.downloader().HasActiveManifestRequestForTesting())
       ADD_FAILURE() << "Unexpected load";
   }
 
@@ -2219,7 +2222,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // Make the updater do manifest fetching, and note the urls it tries to
     // fetch.
     std::vector<GURL> fetched_urls;
-    ASSERT_TRUE(updater.downloader_->manifest_loader_);
+    ASSERT_TRUE(updater.downloader_->HasActiveManifestRequestForTesting());
     const ManifestFetchData& fetch =
         *updater.downloader_->manifests_queue_.active_request();
     fetched_urls.push_back(fetch.full_url());

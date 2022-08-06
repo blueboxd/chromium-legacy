@@ -16,6 +16,7 @@
 #include "components/keyed_service/core/dependency_graph.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/blink/public/common/features.h"
 
 // Ash doesn't support System Profile.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -70,13 +71,13 @@ std::string DisplaySetDifference(
   error << "Differences between expected and reached services:" << std::endl;
 
   error << "-- Missing Expected Services:" << std::endl;
-  error << GetDifferenceString(expected_active_services_names,
-                               active_services_names)
+  error << GetDifferenceString(active_services_names,
+                               expected_active_services_names)
         << std::endl;
 
   error << "-- Added Extra Services:" << std::endl;
-  error << GetDifferenceString(active_services_names,
-                               expected_active_services_names)
+  error << GetDifferenceString(expected_active_services_names,
+                               active_services_names)
         << std::endl;
 
   return error.str();
@@ -127,7 +128,7 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
 #if !BUILDFLAG(IS_ANDROID)
           features::kTrustSafetySentimentSurvey,
 #endif  // !BUILDFLAG(IS_ANDROID)
-              breadcrumbs::kLogBreadcrumbs
+              breadcrumbs::kLogBreadcrumbs, blink::features::kBrowsingTopics
         },
         {});
   }
@@ -143,7 +144,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     "CleanupManagerLacros",
     "DownloadCoreService",
-    "PolicyCertService",
 #endif // BUILDFLAG(IS_CHROMEOS_LACROS)
     "AlarmManager",
     "BackgroundContentsService",
@@ -213,18 +213,11 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ChildAccountService",
     "CleanupManagerLacros",
     "ClipboardAPI",
-    "DlpRulesManager",
     "DownloadCoreService",
     "ExternalLogoutRequestEventHandler",
-    "LacrosFirstRunServiceFactory",
     "ManualTestHeartbeatEvent",
-    "PolicyCertService",
-    "RemoteAppsProxyLacros",
     "SessionStateChangedEventDispatcher",
-    "SupervisedUserMetricsServiceFactory",
     "SupervisedUserService",
-    "UserNetworkConfigurationUpdater",
-    "VpnService",
 #else // !BUILDFLAG(IS_CHROMEOS_LACROS)
     "DownloadCoreService",
     "SystemIndicatorManager",
@@ -234,10 +227,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     "AboutSigninInternals",
     "AboutThisSiteServiceFactory",
-    "AccessCodeSinkService",
-    "AccessContextAuditService",
     "AccessibilityLabelsService",
-    "AccountConsistencyModeManager",
     "AccountInvestigator",
     "AccountPasswordStore",
     "AccountReconcilor",
@@ -280,7 +270,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "BrowsingDataRemover",
     "BrowsingTopicsService",
     "ChromeSigninClient",
-    "CloudProfileReporting",
     "CommandService",
     "ConsentAuditor",
     "ContentIndexProvider",
@@ -290,9 +279,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "CredentialsCleanerRunner",
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
-    "DomainDiversityReporter",
     "EventRouter",
-    "ExitTypeServiceFactory",
     "ExtensionActionAPI",
     "ExtensionActionManager",
     "ExtensionCommandsGlobalRegistry",
@@ -306,7 +293,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ExtensionSyncService",
     "ExtensionSystem",
     "ExtensionSystemShared",
-    "ExtensionTelemetryService",
     "ExtensionURLLoaderFactory::BrowserContextShutdownNotifierFactory",
     "ExtensionWebUIOverrideRegistrar",
     "FaviconService",
@@ -317,7 +303,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "GAIAInfoUpdateService",
     "GCMProfileService",
     "GeneratedPrefs",
-    "HatsService",
     "HeavyAdService",
     "HidDeviceManager",
     "HistoryAPI",
@@ -354,7 +339,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PageContentAnnotationsService",
     "PasswordStore",
     "PasswordsPrivateEventRouter",
-    "PermissionAuditingService",
     "PermissionHelper",
     "PermissionsManager",
     "PermissionsUpdaterShutdownFactory",
@@ -396,7 +380,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "SendTabToSelfSyncService",
     "SerialConnectionManager",
     "SessionDataService",
-    "SessionService",
     "SessionSyncService",
     "SessionsAPI",
     "SettingsOverridesAPI",
@@ -404,6 +387,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "SharingMessageBridge",
     "SharingService",
     "ShoppingService",
+    "SidePanelService",
     "SigninErrorController",
     "SigninManager",
     "SigninProfileAttributesUpdater",
@@ -425,7 +409,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ToolbarActionsModel",
     "TranslateRanker",
     "TriggeredProfileResetter",
-    "TrustSafetySentimentService",
     "TtsAPI",
     "UDPSocketEventDispatcher",
     "UkmBackgroundRecorderService",

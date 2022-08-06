@@ -23,7 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -329,9 +329,11 @@ void UpdateRequiredScreen::UpdateInfoChanged(
     const VersionUpdater::UpdateInfo& update_info) {
   switch (update_info.status.current_operation()) {
     case update_engine::Operation::CHECKING_FOR_UPDATE:
+    case update_engine::Operation::CLEANUP_PREVIOUS_UPDATE:
     case update_engine::Operation::ATTEMPTING_ROLLBACK:
     case update_engine::Operation::DISABLED:
     case update_engine::Operation::IDLE:
+    case update_engine::Operation::UPDATED_BUT_DEFERRED:
       break;
     case update_engine::Operation::UPDATE_AVAILABLE:
     case update_engine::Operation::DOWNLOADING:

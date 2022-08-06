@@ -601,7 +601,7 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(
 
 void WebContentsAndroid::PostMessageToMainFrame(
     JNIEnv* env,
-    const JavaParamRef<jstring>& jmessage,
+    const JavaParamRef<jobject>& jmessage,
     const JavaParamRef<jstring>& jsource_origin,
     const JavaParamRef<jstring>& jtarget_origin,
     const JavaParamRef<jobjectArray>& jports) {
@@ -707,6 +707,11 @@ void WebContentsAndroid::SetOverscrollRefreshHandler(
 void WebContentsAndroid::SetSpatialNavigationDisabled(JNIEnv* env,
                                                       bool disabled) {
   web_contents_->SetSpatialNavigationDisabled(disabled);
+}
+
+void WebContentsAndroid::SetStylusHandwritingEnabled(JNIEnv* env,
+                                                     bool enabled) {
+  web_contents_->SetStylusHandwritingEnabled(enabled);
 }
 
 int WebContentsAndroid::DownloadImage(

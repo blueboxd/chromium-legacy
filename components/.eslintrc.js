@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 module.exports = {
-  'rules': {
-    'no-restricted-properties': 'off',
+  'rules' : {
+    'no-restricted-properties' : 'off',
   },
 };

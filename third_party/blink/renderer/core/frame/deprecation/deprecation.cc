@@ -102,6 +102,9 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kEventPath:
       return DeprecationInfo::WithTranslation(feature,
                                               DeprecationIssueType::kEventPath);
+    case WebFeature::kExpectCTHeader:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kExpectCTHeader);
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case WebFeature::kGeolocationInsecureOrigin:
     case WebFeature::kGeolocationInsecureOriginIframe:
@@ -156,6 +159,9 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kOpenWebDatabaseInsecureContext:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kOpenWebDatabaseInsecureContext);
+    case WebFeature::kPersistentQuotaType:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kPersistentQuotaType);
     case WebFeature::kPictureSourceSrc:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kPictureSourceSrc);
@@ -238,6 +244,15 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kIdentityInCanMakePaymentEvent:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kIdentityInCanMakePaymentEvent);
+    case WebFeature::kNavigateEventTransitionWhile:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kNavigateEventTransitionWhile);
+    case WebFeature::kNavigateEventRestoreScroll:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kNavigateEventRestoreScroll);
+    case WebFeature::kExplicitOverflowVisibleOnReplacedElement:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kOverflowVisibleOnReplacedElement);
     default:
       return DeprecationInfo::NotDeprecated(feature);
   }

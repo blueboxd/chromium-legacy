@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -515,12 +516,12 @@ static void MatchSlottedRules(const Element& element,
       resolvers.push_back(std::make_pair(slot, resolver));
     }
   }
-  for (auto it = resolvers.rbegin(); it != resolvers.rend(); ++it) {
-    ElementRuleCollector::SlottedRulesScope scope(collector, *(*it).first);
+  for (const auto& [slot, resolver] : base::Reversed(resolvers)) {
+    ElementRuleCollector::SlottedRulesScope scope(collector, *slot);
     collector.ClearMatchedRules();
-    (*it).second->CollectMatchingSlottedRules(collector);
+    resolver->CollectMatchingSlottedRules(collector);
     collector.SortAndTransferMatchedRules();
-    collector.FinishAddingAuthorRulesForTreeScope((*it).first->GetTreeScope());
+    collector.FinishAddingAuthorRulesForTreeScope(slot->GetTreeScope());
   }
 }
 
@@ -615,6 +616,7 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
   // matches one of its containing shadow hosts (see MatchForRelation).
   for (const Element* element = &part_matching_element; element;
        element = element->OwnerShadowHost()) {
+    // Consider the ::part rules for the given scope.
     TreeScope& tree_scope = element->GetTreeScope();
     if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver()) {
       ElementRuleCollector::PartRulesScope scope(
@@ -626,12 +628,17 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
       collector.FinishAddingAuthorRulesForTreeScope(resolver->GetTreeScope());
     }
 
-    // If the host doesn't forward any parts using exportparts= then the element
-    // is unreachable from any scope further above and we can stop.
-    if (element->HasPartNamesMap())
-      current_names.PushMap(*element->PartNamesMap());
-    else if (element != &part_matching_element)
-      return;
+    // If we have now considered the :host/:host() ::part rules in our own tree
+    // scope and the ::part rules in the scope directly above...
+    if (element != &part_matching_element) {
+      // ...then subsequent containing tree scopes require mapping part names
+      // through @exportparts before considering ::part rules. If no parts are
+      // forwarded, the element is now unreachable and we can stop.
+      if (element->HasPartNamesMap())
+        current_names.PushMap(*element->PartNamesMap());
+      else
+        return;
+    }
   }
 }
 
@@ -963,11 +970,6 @@ void StyleResolver::ApplyInheritance(Element& element,
     // the element has rules but no matched properties, we currently clone.
 
     state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
-    state.Style()->SetInsideLink(state.ElementLinkState());
-    state.Style()->SetInForcedColorsMode(
-        style_request.originating_element_style->InForcedColorsMode());
-    state.Style()->SetForcedColorAdjust(
-        style_request.originating_element_style->ForcedColorAdjust());
   } else {
     scoped_refptr<ComputedStyle> style = CreateComputedStyle();
     style->InheritFrom(
@@ -1012,6 +1014,17 @@ void StyleResolver::InitStyleAndApplyInheritance(
   }
   state.Style()->SetStyleType(style_request.pseudo_id);
   state.Style()->SetPseudoArgument(style_request.pseudo_argument);
+
+  // For highlight inheritance, propagate link visitedness and forced-colors
+  // status from the originating element, even if we have no parent highlight
+  // ComputedStyle we can inherit from.
+  if (UsesHighlightPseudoInheritance(style_request.pseudo_id)) {
+    state.Style()->SetInsideLink(state.ElementLinkState());
+    state.Style()->SetInForcedColorsMode(
+        style_request.originating_element_style->InForcedColorsMode());
+    state.Style()->SetForcedColorAdjust(
+        style_request.originating_element_style->ForcedColorAdjust());
+  }
 
   if (!style_request.IsPseudoStyleRequest() && element.IsLink()) {
     state.Style()->SetIsLink();
@@ -1681,8 +1694,7 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
     if (state.Style()->StyleType() == kPseudoIdMarker)
       filter = filter.Add(CSSProperty::kValidForMarker, false);
     if (IsHighlightPseudoElement(state.Style()->StyleType())) {
-      if (StyleResolver::UsesHighlightPseudoInheritance(
-              state.Style()->StyleType())) {
+      if (UsesHighlightPseudoInheritance(state.Style()->StyleType())) {
         filter = filter.Add(CSSProperty::kValidForHighlight, false);
       } else {
         filter = filter.Add(CSSProperty::kValidForHighlightLegacy, false);
@@ -1929,15 +1941,6 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
   }
 
   return true;
-}
-
-bool StyleResolver::UsesHighlightPseudoInheritance(PseudoId pseudo_id) {
-  // ::highlight() pseudos use highlight inheritance rather than originating
-  // inheritance even if highlight inheritance is not enabled for the other
-  // pseudos.
-  return ((IsHighlightPseudoElement(pseudo_id) &&
-           RuntimeEnabledFeatures::HighlightInheritanceEnabled()) ||
-          pseudo_id == PseudoId::kPseudoIdHighlight);
 }
 
 const CSSValue* StyleResolver::ComputeValue(
@@ -2510,6 +2513,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
     unsigned index) {
   const ComputedStyle& base_style = element.ComputedStyleRef();
   // TODO(crbug.com/1309178): Support tree-scoped fallback name lookup.
+  DCHECK(base_style.PositionFallback());
   StyleRulePositionFallback* position_fallback_rule =
       GetDocument().GetScopedStyleResolver()->PositionFallbackForName(
           base_style.PositionFallback());

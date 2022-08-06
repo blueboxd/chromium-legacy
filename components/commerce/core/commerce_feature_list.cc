@@ -11,6 +11,7 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "components/commerce/core/commerce_heuristics_data.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
+#include "components/commerce/core/commerce_heuristics_data_metrics_helper.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace commerce {
@@ -34,6 +35,8 @@ const re2::RE2& GetRulePartnerMerchantPattern() {
           .GetRuleDiscountPartnerMerchantPattern();
   if (pattern_from_component && kRulePartnerMerchantPattern.Get() ==
                                     kRulePartnerMerchantPattern.default_value) {
+    CommerceHeuristicsDataMetricsHelper::RecordPartnerMerchantPatternSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_COMPONENT);
     return *pattern_from_component;
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -41,6 +44,9 @@ const re2::RE2& GetRulePartnerMerchantPattern() {
   options.set_case_sensitive(false);
   static base::NoDestructor<re2::RE2> instance(
       kRulePartnerMerchantPattern.Get(), options);
+  CommerceHeuristicsDataMetricsHelper::RecordPartnerMerchantPatternSource(
+      CommerceHeuristicsDataMetricsHelper::HeuristicsSource::
+          FROM_FEATURE_PARAMETER);
   return *instance;
 }
 
@@ -63,6 +69,11 @@ const re2::RE2& GetCouponPartnerMerchantPattern() {
 }
 
 }  // namespace
+
+namespace switches {
+// Specifies whether ChromeCart is enabled.
+const char kEnableChromeCart[] = "enable-chrome-cart";
+}  // namespace switches
 
 const base::Feature kCommerceAllowLocalImages{
     "CommerceAllowLocalImages", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -229,7 +240,7 @@ bool IsCouponDiscountPartnerMerchant(const GURL& url) {
 bool IsCartDiscountFeatureEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       ntp_features::kNtpChromeCartModule,
-      ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, false);
+      ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, true);
 }
 
 bool IsCouponWithCodeEnabled() {
@@ -248,4 +259,17 @@ bool isContextualConsentEnabled() {
          kContextualConsentShowOnSRP.Get();
 }
 
+#if !BUILDFLAG(IS_ANDROID)
+base::TimeDelta GetDiscountFetchDelay() {
+  auto delay_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetDiscountFetchDelay();
+  if (delay_from_component.has_value() &&
+      kDiscountFetchDelayParam.Get() ==
+          kDiscountFetchDelayParam.default_value) {
+    return *delay_from_component;
+  }
+  return kDiscountFetchDelayParam.Get();
+}
+#endif
 }  // namespace commerce

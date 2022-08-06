@@ -24,6 +24,8 @@ class WaylandOutput;
 
 class WaylandOutputManager : public WaylandOutput::Delegate {
  public:
+  using OutputList = base::flat_map<uint32_t, std::unique_ptr<WaylandOutput>>;
+
   explicit WaylandOutputManager(WaylandConnection* connection);
 
   WaylandOutputManager(const WaylandOutputManager&) = delete;
@@ -40,6 +42,7 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
 
   void InitializeAllXdgOutputs();
   void InitializeAllZAuraOutputs();
+  void InitializeAllColorManagementOutputs();
 
   // Creates a platform screen.
   std::unique_ptr<WaylandScreen> CreateWaylandScreen();
@@ -49,6 +52,7 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
 
   WaylandOutput* GetOutput(uint32_t id) const;
   WaylandOutput* GetPrimaryOutput() const;
+  const OutputList& GetAllOutputs() const;
 
   WaylandScreen* wayland_screen() const { return wayland_screen_.get(); }
 
@@ -63,8 +67,6 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
                              int32_t panel_transform,
                              int32_t logical_transform,
                              const std::string& label) override;
-
-  using OutputList = base::flat_map<uint32_t, std::unique_ptr<WaylandOutput>>;
 
   OutputList output_list_;
 

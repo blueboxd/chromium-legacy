@@ -137,6 +137,19 @@ void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
     case ax::mojom::Event::kScrolledToAnchor:
       ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnScrolledToAnchor();
       break;
+    case ax::mojom::Event::kLoadComplete:
+      // TODO(accessibility): While this check is theoretically what we want to
+      // be the case, timing and other issues can cause it to fail. This seems
+      // to impact bots rather than Orca and its users. If this proves to be a
+      // real-world problem, we can investigate further and reinstate it.
+      // DCHECK(
+      //    !node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
+      FireLoadingEvent(node, false);
+      FireEvent(node, ax::mojom::Event::kLoadComplete);
+      break;
+    case ax::mojom::Event::kLoadStart:
+      FireLoadingEvent(node, true);
+      break;
     default:
       break;
   }
@@ -241,21 +254,6 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
       FireAriaCurrentChangedEvent(node);
       break;
-    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
-      DCHECK(node->IsPlatformDocument());
-      // TODO(accessibility): While this check is theoretically what we want to
-      // be the case, timing and other issues can cause it to fail. This seems
-      // to impact bots rather than Orca and its users. If this proves to be a
-      // real-world problem, we can investigate further and reinstate it.
-      // DCHECK(
-      //    !node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
-      FireLoadingEvent(node, false);
-      FireEvent(node, ax::mojom::Event::kLoadComplete);
-      break;
-    case ui::AXEventGenerator::Event::LOAD_START:
-      DCHECK(node->IsPlatformDocument());
-      FireLoadingEvent(node, true);
-      break;
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
       FireSelectedEvent(node);
       break;
@@ -349,9 +347,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
     case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
     case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
-    case ui::AXEventGenerator::Event::SELECTION_IN_TEXT_FIELD_CHANGED:
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
+    case ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED:
     case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       break;
   }

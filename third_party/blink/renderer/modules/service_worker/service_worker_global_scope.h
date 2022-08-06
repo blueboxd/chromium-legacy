@@ -43,6 +43,7 @@
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_ancestor_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -125,6 +126,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const KURL& script_url,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override;
@@ -133,6 +135,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const KURL& module_url_record,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
@@ -221,6 +224,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       int fetch_event_id,
       const KURL& request_url,
       bool range_request,
+      absl::optional<network::DataElementChunkedDataPipe> request_body,
       base::TimeTicks event_dispatch_time,
       base::TimeTicks respond_with_settled_time);
   // Responds to the fetch event with |response|.
@@ -311,7 +315,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   const ServiceWorkerToken& GetServiceWorkerToken() const { return token_; }
   WorkerToken GetWorkerToken() const final { return token_; }
   bool CrossOriginIsolatedCapability() const final;
-  bool DirectSocketCapability() const final;
+  bool IsolatedApplicationCapability() const final;
   ExecutionContextToken GetExecutionContextToken() const final {
     return token_;
   }
@@ -320,6 +324,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
     DCHECK(global_scope_initialized_);
     return ancestor_frame_type_;
   }
+
+  mojom::blink::ServiceWorkerFetchHandlerType FetchHandlerType();
 
  protected:
   // EventTarget

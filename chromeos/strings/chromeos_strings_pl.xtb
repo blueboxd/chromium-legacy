@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1645954272419197032">Potwierdź informacje o urządzeniu</translation>
 <translation id="1662989795263954667">Zatrzymano – brak tuszu</translation>
+<translation id="1664796644829245314">Wyświetl podgląd: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Wbudowana sieć VPN</translation>
 <translation id="1672499492233627739">Przekaz z kamery internetowej</translation>
 <translation id="1676557873873341166">Nagrywam obraz</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">Rozmowy wideo</translation>
 <translation id="1852934301711881861">Zainstaluj ChromeOS Flex</translation>
 <translation id="1856388568474281774">Strzałka w dół</translation>
+<translation id="1858620243986915808">Załącz zrzut ekranu</translation>
 <translation id="1871569928317311284">Wyłącz ciemny motyw</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Wyłącz tryb ciemny</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Zdjęcie profilowe Google</translation>
 <translation id="1979103255016296513">Zaległa zmiana hasła</translation>
 <translation id="1999615961760456652">Portal przechwytujący</translation>
+<translation id="200669432486043882">Zastąp plik</translation>
 <translation id="2006864819935886708">Łączność</translation>
 <translation id="2008685064673031089">Znajdowanie liczb pierwszych</translation>
 <translation id="2011174342667534258">Wersja SDK:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2461822463642141190">Aktualnie</translation>
 <translation id="2480034874476596812">Wyłącz ręcznie</translation>
+<translation id="248546197012830854">Urządzenie jest offline. Aby wyświetlić materiały pomocy, połącz się z siecią Wi-Fi.</translation>
 <translation id="2491955442992294626">Gdy używasz innego okna, klucze nie są testowane</translation>
 <translation id="2493126929778606526">Twoje najlepsze zdjęcia wybrane automatycznie</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">ODŚWIEŻ</translation>
 <translation id="3009958530611748826">Wybierz folder zapisu</translation>
 <translation id="3017079585324758401">Tło</translation>
+<translation id="302435934487327038">Instalacja ukończona</translation>
 <translation id="3027578600144895987">Zamknij kamerę</translation>
 <translation id="3031560714565892478">Urządzenie to kamera wideo.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Punkt końcowy</translation>
 <translation id="3069085583900247081">Niepowodzenie testu</translation>
-<translation id="3076243757415932261">Weryfikowanie komponentów…</translation>
 <translation id="3083667275341675831">Diagnostyka problemów z łącznością</translation>
 <translation id="3084958266922136097">Wyłącz wygaszacz ekranu</translation>
 <translation id="3091839911843451378">Niepowodzenie – drukarka została zatrzymana</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">Czy na pewno chcesz usunąć całą historię drukowania? Bieżące zadania drukowania nie zostaną usunięte.</translation>
 <translation id="3383751554789092165">W razie potrzeby zmień informacje o urządzeniu.</translation>
 <translation id="3404249063913988450">Włącz wygaszacz ekranu</translation>
-<translation id="3404770484521709967">Komponenty zostały zainstalowane poprawnie.</translation>
 <translation id="3413935475507503304">Aby rozpocząć aktualizację, kliknij Dalej.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Bezpieczeństwo</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">Stare hasło</translation>
 <translation id="4453205916657964690">Maska podsieci</translation>
 <translation id="4454245904991689773">Skanuj do</translation>
-<translation id="4472575034687746823">Rozpocznij</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nie udało się sprawdzić pingiem bramy sieciowej innej niż domyślna</translation>
 <translation id="4500213108254186382">Akcelerometr pokrywy</translation>
@@ -660,14 +662,15 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6611280807952151149">Zamknij naprawę urządzenia <ph name="DEVICE_TYPE" /></translation>
 <translation id="6618744767048954150">W toku</translation>
 <translation id="6620487321149975369">Zadania drukowania będą widoczne w historii, dopóki ich nie usuniesz</translation>
+<translation id="6624819909909965616">Nie możesz przesłać pliku większego niż 10 MB</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
+<translation id="6644568396961840069">Nie udało się zapisać pliku. Podłącz inną pamięć zewnętrzną lub spróbuj jeszcze raz później.</translation>
 <translation id="6647510110698214773">Algorytm szyfrowania</translation>
 <translation id="6650062777702288430">Przełącznik znaków Kana/alfanumerycznych</translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="6659594942844771486">Karta</translation>
 <translation id="6692996468359469499">Uzyskiwanie informacji związanych z zaznaczoną treścią</translation>
 <translation id="6704062477274546131">Rozwiązywanie nazw DNS</translation>
-<translation id="6721744718589119342">Możemy wysyłać do Ciebie e-maile z prośbą o dodatkowe szczegóły lub aktualne informacje</translation>
 <translation id="6723839937902243910">Zasilanie</translation>
 <translation id="6723847290197874913">Podświetlenie klawiatury</translation>
 <translation id="672609503628871915">Zobacz, co nowego</translation>
@@ -695,6 +698,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Wersja oprogramowania</translation>
 <translation id="6995564396478647735">Włącz zabezpieczenie przed zapisem</translation>
+<translation id="7005833343836210400">Urządzenie jest offline</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> zarządza tym urządzeniem i ma dostęp do wszelkiej aktywności użytkownika, w tym odwiedzanych stron internetowych, haseł i e-maili.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Urządzenie nie ma połączenia.</translation>
@@ -720,6 +724,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7212734716605298123">Aktualizacje oprogramowania urządzeń zewnętrznych</translation>
 <translation id="7216409898977639127">Operator komórkowy</translation>
+<translation id="725133483556299729">Wybierz adres e-mail</translation>
 <translation id="7271040990581020067">Skaner jest obecnie używany. Spróbuj ponownie później.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">Wybierz co najmniej 1 komponent i spróbuj ponownie lub pomiń kalibrację</translation>
@@ -797,6 +802,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="7978412674231730200">Klucz prywatny</translation>
 <translation id="7982789257301363584">Sieć</translation>
 <translation id="7994702968232966508">Metoda EAP</translation>
+<translation id="8018928621986160031">Zapisano w folderze „<ph name="FILE_LOCATION" />”</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Włącz automatyczny tryb kolorów</translation>
@@ -805,8 +811,8 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="8063022551652308521">Zabezpieczenie przed zapisem jest wciąż wyłączone. Włącz je, aby chronić dane.</translation>
 <translation id="8075838845814659848">Stan naładowania</translation>
 <translation id="8082366717211101304">Nie udało się znaleźć DNS w aplikacjach na Androida</translation>
-<translation id="8083281199617904460">Proces naprawy powinien zostać przeprowadzony przez wykwalifikowanego specjalistę. Przed rozpoczęciem wymień wadliwe komponenty.</translation>
 <translation id="808894953321890993">Zmień hasło</translation>
+<translation id="8094062939584182041">Zezwalaj Google na wysyłanie e-maili dotyczących tego problemu</translation>
 <translation id="8104083085214006426">Używasz niezabezpieczonej sieci otwartej</translation>
 <translation id="8109786307828817014">Kontynuować mimo braku kalibracji?</translation>
 <translation id="811820734797650957">(Android) Brama reaguje na ping</translation>
@@ -821,6 +827,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="8217675307824400706">Połącz się</translation>
 <translation id="8221728673725659466">Kalibracja ukończona</translation>
 <translation id="8226628635270268143">Wybierz ulubione zdjęcia i albumy</translation>
+<translation id="8227119283605456246">Załącz plik</translation>
 <translation id="8230672074305416752">Nie udało się sprawdzić pingiem domyślnej bramy sieciowej</translation>
 <translation id="8246209727385807362">Nieznany operator</translation>
 <translation id="827422111966801947">Indygo</translation>
@@ -865,6 +872,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="8576249514688522074">Nie zainicjowano</translation>
 <translation id="8620617069779373398">Stan roamingu</translation>
 <translation id="8655295600908251630">Kanał</translation>
+<translation id="8655828773034788261">Udostępnij adres URL:</translation>
 <translation id="8660881923941176839">funty</translation>
 <translation id="8662671328352114214">Połącz z siecią <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Zaktualizuj do wersji <ph name="VERSION_NUMBER" /> i uruchom ponownie urządzenie</translation>

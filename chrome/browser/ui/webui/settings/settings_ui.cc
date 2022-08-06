@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
+#include "chrome/browser/ui/webui/settings/autofill_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
@@ -62,6 +63,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
@@ -94,9 +96,9 @@
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/language/core/common/language_experiments.h"
-#endif  // !BUILDFLAG(IS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
@@ -227,6 +229,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       std::make_unique<SecurityKeysBioEnrollmentHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPhonesHandler>());
 
+#if BUILDFLAG(IS_WIN)
+  AddSettingsPageUIHandler(std::make_unique<PasskeysHandler>());
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   InitBrowserSettingsWebUIHandlers();
 #else
@@ -285,11 +291,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
 
-  // Autofill Assistant on Desktop is currently used only by password change.
-  // As soon as it becomes more widely used, this condition needs to be
-  // adjusted.
+  // Indicates whether any automated password change entry point is enabled.
+  // This is currently used as a prerequisite for showing a settings toggle
+  // for Autofill Assistant.
   html_source->AddBoolean(
-      "enableAutofillAssistant",
+      "isAutomatedPasswordChangeEnabled",
       password_manager::features::IsAutomatedPasswordChangeEnabled());
 
   html_source->AddBoolean(
@@ -297,11 +303,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(
           password_manager::features::kPasswordChangeInSettings));
 
-#if !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
       "enableDesktopDetailedLanguageSettings",
       base::FeatureList::IsEnabled(language::kDesktopDetailedLanguageSettings));
-#endif  // !BUILDFLAG(IS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -352,10 +358,18 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT_SHORT);
   plural_string_handler->AddLocalizedString(
       "safetyCheckPasswordsWeak", IDS_SETTINGS_WEAK_PASSWORDS_COUNT_SHORT);
+  plural_string_handler->AddLocalizedString(
+      "importPasswordsSuccessSummaryDevice",
+      IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_SUMMARY_DEVICE);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
+  // Add the handler for personalization options, e.g. Autofill Assistant
+  // consent.
+  web_ui->AddMessageHandler(std::make_unique<AutofillAssistantHandler>(
+      std::vector<int>{IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF,
+                       IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF_DESC}));
 
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),

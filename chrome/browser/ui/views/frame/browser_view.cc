@@ -72,7 +72,7 @@
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_view.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
@@ -95,6 +95,7 @@
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/color_provider_browser_helper.h"
 #include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -116,20 +117,21 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
-#include "chrome/browser/ui/views/incognito_clear_browsing_data_dialog.h"
+#include "chrome/browser/ui/views/incognito_clear_browsing_data_dialog_coordinator.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/permissions/permission_chip.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
-#include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_coordinator.h"
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_device_picker_bubble_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_promo_bubble_view.h"
@@ -150,6 +152,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
@@ -252,6 +255,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/metrics_util.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/compositor/throughput_tracker.h"
@@ -526,8 +530,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   int GetTopInsetInBrowserView() const override {
     // BrowserView should fill the full window when window controls overlay
     // is enabled.
-    if (browser_view_->IsWindowControlsOverlayEnabled())
+    if (browser_view_->IsWindowControlsOverlayEnabled() ||
+        browser_view_->IsBorderlessModeEnabled()) {
       return 0;
+    }
     return browser_view_->frame()->GetTopInset() - browser_view_->y();
   }
 
@@ -575,7 +581,11 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   }
 
   bool BrowserIsSystemWebApp() const override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     return browser_view_->browser()->app_controller()->system_app();
+#else
+    return false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   bool BrowserIsWebApp() const override {
@@ -850,6 +860,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
         browser_->app_controller()->GetTabMenuModelFactory();
 
     UpdateWindowControlsOverlayEnabled();
+    UpdateBorderlessModeEnabled();
   }
   // TabStrip takes ownership of the controller.
   auto tabstrip_controller = std::make_unique<BrowserTabStripController>(
@@ -862,6 +873,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   top_container_ = AddChildView(std::make_unique<TopContainerView>(this));
   tab_strip_region_view_ = top_container_->AddChildView(
       std::make_unique<TabStripRegionView>(std::move(tabstrip)));
+
+  ColorProviderBrowserHelper::CreateForBrowser(browser_.get());
 
   // Create WebViews early so |webui_tab_strip_| can observe their size.
   auto devtools_web_view =
@@ -894,11 +907,20 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container_ = AddChildView(std::move(contents_container));
   set_contents_view(contents_container_);
 
-  right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
   right_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
+
   if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    const bool is_right_aligned = GetProfile()->GetPrefs()->GetBoolean(
+        prefs::kSidePanelHorizontalAlignment);
+    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(
+        this,
+        is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
+    left_aligned_side_panel_separator_ =
+        AddChildView(std::make_unique<ContentsSeparator>());
     side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
+  } else {
+    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -911,7 +933,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 #endif
 
-  if (browser_->is_type_normal() && IsSideSearchEnabled(browser_->profile())) {
+  if (side_search::IsEnabledForBrowser(browser_.get())) {
     if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
       side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
       left_aligned_side_panel_separator_ =
@@ -1253,7 +1275,7 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
     return;
 
   ExitFullscreen();
-  GetWidget()->SetBounds(bounds);
+  frame_->SetBounds(bounds);
 }
 
 void BrowserView::Close() {
@@ -1309,6 +1331,11 @@ bool BrowserView::IsOnCurrentWorkspace() const {
                             on_current_workspace.has_value());
   if (on_current_workspace.has_value())
     return on_current_workspace.value();
+
+  // If the window is not cloaked, it is not on another desktop because
+  // windows on another virtual desktop are always cloaked.
+  if (!gfx::IsWindowCloaked(native_win->GetHost()->GetAcceleratedWidget()))
+    return true;
 
   Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager;
   if (!SUCCEEDED(::CoCreateInstance(_uuidof(VirtualDesktopManager), nullptr,
@@ -1829,6 +1856,8 @@ void BrowserView::FullscreenStateChanged() {
 
   if (AppUsesWindowControlsOverlay())
     UpdateWindowControlsOverlayEnabled();
+  if (AppUsesBorderlessMode())
+    UpdateBorderlessModeEnabled();
 
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -1966,6 +1995,9 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // that the visibility of the infobar may have changed.
   if (AppUsesWindowControlsOverlay())
     UpdateWindowControlsOverlayEnabled();
+
+  if (AppUsesBorderlessMode())
+    UpdateBorderlessModeEnabled();
 }
 
 void BrowserView::TabDraggingStatusChanged(bool is_dragging) {
@@ -2071,9 +2103,47 @@ void BrowserView::UpdateWindowControlsOverlayToggleVisible() {
     frame_->GetFrameView()->SetWindowControlsOverlayToggleVisible(should_show);
 }
 
+void BrowserView::UpdateBorderlessModeEnabled() {
+  bool borderless_mode_enabled = AppUsesBorderlessMode();
+
+  if (toolbar_ && toolbar_->custom_tab_bar() &&
+      toolbar_->custom_tab_bar()->GetVisible()) {
+    borderless_mode_enabled = false;
+  } else if (infobar_container_ && infobar_container_->GetVisible()) {
+    borderless_mode_enabled = false;
+  } else if (IsImmersiveModeEnabled()) {
+    borderless_mode_enabled = false;
+  }
+
+  if (borderless_mode_enabled == borderless_mode_enabled_)
+    return;
+  borderless_mode_enabled_ = borderless_mode_enabled;
+
+  if (frame_ && frame_->GetFrameView()) {
+    frame_->GetFrameView()->UpdateBorderlessModeEnabled();
+  }
+}
+
 void BrowserView::ToggleWindowControlsOverlayEnabled() {
   browser()->app_controller()->ToggleWindowControlsOverlayEnabled();
   UpdateWindowControlsOverlayEnabled();
+}
+
+bool BrowserView::IsBorderlessModeEnabled() const {
+  return borderless_mode_enabled_;
+}
+
+bool BrowserView::AppUsesBorderlessMode() const {
+  return browser()->app_controller() &&
+         browser()->app_controller()->AppUsesBorderlessMode();
+}
+
+void BrowserView::UpdateSidePanelHorizontalAlignment() {
+  const bool is_right_aligned = GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kSidePanelHorizontalAlignment);
+  right_aligned_side_panel_->SetHorizontalAlignment(
+      is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft);
+  GetBrowserViewLayout()->Layout(this);
 }
 
 void BrowserView::FocusBookmarksToolbar() {
@@ -2282,9 +2352,21 @@ bool BrowserView::IsToolbarVisible() const {
   // This Mac-only preference disables display of the toolbar in fullscreen mode
   // so we need to take it into account when determining if the toolbar is
   // visible - especially as pertains to anchoring views.
-  if (IsFullscreen() && !browser()->profile()->GetPrefs()->GetBoolean(
-                            prefs::kShowFullscreenToolbar)) {
-    return false;
+  bool show_fullscreen_toolbar = true;
+  if (web_app::AppBrowserController::IsWebApp(browser())) {
+    const web_app::AppBrowserController* controller =
+        browser()->app_controller();
+    show_fullscreen_toolbar = controller->AlwaysShowToolbarInFullscreen();
+  } else {
+    show_fullscreen_toolbar = browser()->profile()->GetPrefs()->GetBoolean(
+        prefs::kShowFullscreenToolbar);
+  }
+  // Immersive full screen makes it possible to display the toolbar when
+  // kShowFullscreenToolbar is not set.
+  if (!base::FeatureList::IsEnabled(features::kImmersiveFullscreen)) {
+    if (IsFullscreen() && !show_fullscreen_toolbar) {
+      return false;
+    }
   }
 #endif
   if (immersive_mode_controller_->ShouldHideTopViews())
@@ -2442,7 +2524,9 @@ sharing_hub::SharingHubBubbleView* BrowserView::ShowSharingHubBubble(
     share::ShareAttempt attempt) {
   auto* bubble = new sharing_hub::SharingHubBubbleViewImpl(
       toolbar_button_provider()->GetAnchorView(PageActionIconType::kSharingHub),
-      attempt);
+      attempt,
+      sharing_hub::SharingHubBubbleController::CreateOrGetFromWebContents(
+          attempt.web_contents.get()));
   PageActionIconView* icon_view =
       toolbar_button_provider()->GetPageActionIconView(
           PageActionIconType::kSharingHub);
@@ -2959,6 +3043,10 @@ std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
     }
   }
 
+  // Tab is pinned.
+  if (tabstrip_->IsTabPinned(tabstrip_->tab_at(index)))
+    title = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_PINNED_FORMAT, title);
+
   // Tab has crashed.
   if (tabstrip_->IsTabCrashed(index))
     return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_CRASHED_FORMAT, title);
@@ -3037,6 +3125,9 @@ BrowserView::GetNativeViewHostsForTopControlsSlide() const {
 }
 
 void BrowserView::ReparentTopContainerForEndOfImmersive() {
+  if (top_container()->parent() == this)
+    return;
+
   overlay_view_->SetVisible(false);
   top_container()->DestroyLayer();
   AddChildViewAt(top_container(), 0);
@@ -3250,6 +3341,27 @@ views::View* BrowserView::CreateOverlayView() {
       std::make_unique<views::ViewTargeter>(overlay_view_targeter_.get()));
   return overlay_view_;
 }
+
+#if BUILDFLAG(IS_MAC)
+views::View* BrowserView::CreateMacOverlayView() {
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.child = true;
+  params.parent = GetWidget()->GetNativeView();
+  overlay_widget_ = new ThemeCopyingWidget(GetWidget());
+  overlay_widget_->Init(std::move(params));
+  overlay_widget_->SetNativeWindowProperty(kBrowserViewKey, this);
+
+  std::unique_ptr<TopContainerOverlayView> overlay_view =
+      std::make_unique<TopContainerOverlayView>(weak_ptr_factory_.GetWeakPtr());
+  overlay_view_targeter_ = std::make_unique<OverlayViewTargeterDelegate>();
+  overlay_view->SetEventTargeter(
+      std::make_unique<views::ViewTargeter>(overlay_view_targeter_.get()));
+  overlay_view_ = overlay_view.get();
+  overlay_widget_->GetRootView()->AddChildView(std::move(overlay_view));
+  return overlay_view_;
+}
+#endif  // IS_MAC
 
 void BrowserView::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget_observation_.IsObservingSource(widget));
@@ -3475,7 +3587,9 @@ bool BrowserView::ShouldDescendIntoChildForEventHandling(
   // Window for PWAs with window-controls-overlay display override should claim
   // mouse events that fall within the draggable region.
   web_app::AppBrowserController* controller = browser()->app_controller();
-  if (IsWindowControlsOverlayEnabled() && controller &&
+  bool is_wco_or_borderless_mode =
+      IsWindowControlsOverlayEnabled() || IsBorderlessModeEnabled();
+  if (is_wco_or_borderless_mode && controller &&
       controller->draggable_region().has_value()) {
     // Draggable regions are defined relative to the web contents.
     gfx::Point point_in_contents_web_view_coords(location);
@@ -3946,8 +4060,10 @@ void BrowserView::UpdateDevToolsForContents(
     // When strategy.hide_inspected_contents() returns true, we are hiding
     // contents_web_view_ behind the devtools_web_view_. Otherwise,
     // contents_web_view_ should be right above the devtools_web_view_.
-    int devtools_index = contents_container_->GetIndexOf(devtools_web_view_);
-    int contents_index = contents_container_->GetIndexOf(contents_web_view_);
+    size_t devtools_index =
+        contents_container_->GetIndexOf(devtools_web_view_).value();
+    size_t contents_index =
+        contents_container_->GetIndexOf(contents_web_view_).value();
     bool devtools_is_on_top = devtools_index > contents_index;
     if (strategy.hide_inspected_contents() != devtools_is_on_top)
       contents_container_->ReorderChildView(contents_web_view_, devtools_index);
@@ -4026,17 +4142,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         Activate();
       }
 
-      // Maximized windows must be restored to move to another display.
-      const bool was_maximized = frame_->IsMaximized();
-      if (was_maximized)
-        frame_->Restore();
-
+      const bool was_maximized = IsMaximized();
       if (restore_pre_fullscreen_bounds_callback_.is_null()) {
-        // TODO(crbug.com/1227805): GetRestoredBounds() yields maximized bounds
-        // on Linux when the window is maximized and then made fullscreen on the
-        // current screen, before (now) requesting fullscreen on another screen.
-        // This causes the window's pre-maximized (restored) bounds to be lost.
-        const gfx::Rect restored_bounds = frame_->GetRestoredBounds();
+        // Use GetBounds(), rather than GetRestoredBounds(), when the window is
+        // not maximized, to restore snapped window bounds on fullscreen exit.
+        // TODO(crbug.com/1034783): Support lower-layer fullscreen-on-display.
+        const gfx::Rect bounds_to_restore =
+            was_maximized ? GetRestoredBounds() : GetBounds();
         restore_pre_fullscreen_bounds_callback_ = base::BindOnce(
             [](base::WeakPtr<BrowserView> view, const gfx::Rect& bounds,
                bool maximize) {
@@ -4045,14 +4157,25 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
                 // screen was disconnected or repositioned during fullscreen.
                 view->frame()->SetBoundsConstrained(bounds);
                 if (maximize)
-                  view->frame()->Maximize();
+                  view->Maximize();
               }
             },
-            weak_ptr_factory_.GetWeakPtr(), restored_bounds, was_maximized);
+            weak_ptr_factory_.GetWeakPtr(), bounds_to_restore, was_maximized);
       }
 
-      frame_->SetBounds({display.work_area().origin(),
-                         frame_->GetWindowBoundsInScreen().size()});
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // Always Restore() on ChromeOS Ash, to support moving snapped windows.
+      // TODO(crbug.com/1250088): Find a similar workaround on ChromeOS Lacros.
+      // TODO(crbug.com/1034783): Support lower-layer fullscreen-on-display.
+      const bool should_restore_window = true;
+#else
+      const bool should_restore_window = was_maximized;
+#endif
+      // Restore the window as needed, so it can be moved to the target display.
+      if (should_restore_window)
+        Restore();
+      SetBounds({display.work_area().origin(),
+                 frame_->GetWindowBoundsInScreen().size()});
     }
   }
   frame_->SetFullscreen(fullscreen);
@@ -4106,12 +4229,32 @@ bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
 #endif
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace {
+bool ShouldBeHandledByLacrosInstead(int command) {
+  switch (command) {
+    case IDC_NEW_INCOGNITO_WINDOW:
+    case IDC_NEW_TAB:
+    case IDC_NEW_WINDOW:
+    case IDC_RESTORE_TAB:
+      // TODO(neis): Add more here, perhaps anything tab-related.
+      return true;
+    default:
+      return false;
+  }
+}
+}  // namespace
+#endif
+
 void BrowserView::LoadAccelerators() {
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
   // Let's fill our own accelerator table.
   const bool is_app_mode = chrome::IsRunningInForcedAppMode();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const bool is_lacros_only = !crosapi::browser_util::IsAshWebBrowserEnabled();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
   for (const auto& entry : accelerator_list) {
     // In app mode, only allow accelerators of white listed commands to pass
@@ -4119,6 +4262,13 @@ void BrowserView::LoadAccelerators() {
     if (is_app_mode && !chrome::IsCommandAllowedInAppMode(
                            entry.command_id, browser()->is_type_popup()))
       continue;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // When Lacros is the only browser, disable some browser commands in Ash so
+    // that Lacros can handle them instead.
+    if (is_lacros_only && ShouldBeHandledByLacrosInstead(entry.command_id))
+      continue;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     ui::Accelerator accelerator(entry.keycode, entry.modifiers);
     accelerator_table_[accelerator] = entry.command_id;
@@ -4228,14 +4378,8 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 }
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton(bool is_source_accelerator) {
-  // Do not show avatar bubble if there is no avatar menu button.
-  views::Button* avatar_button =
-      toolbar_button_provider_->GetAvatarToolbarButton();
-  if (!avatar_button)
-    return;
-
-  ProfileMenuViewBase::ShowBubble(avatar_button, browser(),
-                                  is_source_accelerator);
+  ProfileMenuCoordinator::GetOrCreateForBrowser(browser())->Show(
+      is_source_accelerator);
 }
 
 void BrowserView::MaybeShowProfileSwitchIPH() {
@@ -4262,21 +4406,14 @@ void BrowserView::ShowHatsDialog(
 }
 
 void BrowserView::ShowIncognitoClearBrowsingDataDialog() {
-  IncognitoClearBrowsingDataDialog::Show(
-      static_cast<views::View*>(BrowserView::GetBrowserViewForBrowser(browser())
-                                    ->toolbar_button_provider()
-                                    ->GetAvatarToolbarButton()),
-      browser()->profile(),
-      IncognitoClearBrowsingDataDialog::Type::kDefaultBubble);
+  IncognitoClearBrowsingDataDialogCoordinator::GetOrCreateForBrowser(browser())
+      ->Show(IncognitoClearBrowsingDataDialogInterface::Type::kDefaultBubble);
 }
 
 void BrowserView::ShowIncognitoHistoryDisclaimerDialog() {
-  IncognitoClearBrowsingDataDialog::Show(
-      static_cast<views::View*>(BrowserView::GetBrowserViewForBrowser(browser())
-                                    ->toolbar_button_provider()
-                                    ->GetAvatarToolbarButton()),
-      browser()->profile(),
-      IncognitoClearBrowsingDataDialog::Type::kHistoryDisclaimerBubble);
+  IncognitoClearBrowsingDataDialogCoordinator::GetOrCreateForBrowser(browser())
+      ->Show(IncognitoClearBrowsingDataDialogInterface::Type::
+                 kHistoryDisclaimerBubble);
 }
 
 ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {

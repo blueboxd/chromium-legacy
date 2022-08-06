@@ -40,7 +40,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -69,7 +68,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -98,7 +96,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -127,7 +124,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -156,7 +152,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -185,7 +180,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -214,7 +208,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -273,7 +266,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 19
@@ -322,7 +314,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 19
@@ -379,7 +370,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 13
@@ -432,7 +422,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 28
@@ -482,7 +471,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 28
@@ -539,7 +527,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
@@ -592,7 +579,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 21
@@ -641,7 +627,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 21
@@ -698,7 +683,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 28
@@ -747,7 +731,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 28
@@ -796,7 +779,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
@@ -845,7 +827,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
@@ -894,7 +875,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 21
@@ -944,7 +924,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
@@ -994,7 +973,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
@@ -1049,7 +1027,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1078,7 +1055,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1107,7 +1083,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1136,7 +1111,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1165,7 +1139,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1194,7 +1167,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1223,7 +1195,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1252,7 +1223,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1303,7 +1273,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1312,8 +1281,7 @@
   },
   "chromeos-amd64-generic-lacros-builder-perf": {
     "additional_compile_targets": [
-      "chrome",
-      "lacros_version_metadata"
+      "chrome"
     ],
     "isolated_scripts": [
       {
@@ -1342,7 +1310,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1351,8 +1318,7 @@
   },
   "chromeos-arm-generic-lacros-builder-perf": {
     "additional_compile_targets": [
-      "chrome",
-      "lacros_version_metadata"
+      "chrome"
     ],
     "isolated_scripts": [
       {
@@ -1381,7 +1347,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1422,7 +1387,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
@@ -1472,7 +1436,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
@@ -1518,7 +1481,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1572,7 +1534,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -1621,7 +1582,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -1670,7 +1630,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
@@ -1724,7 +1683,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1766,7 +1724,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -1816,7 +1773,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -1866,7 +1822,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -1928,7 +1883,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -1978,7 +1932,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -2035,7 +1988,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -2084,7 +2036,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -2137,7 +2088,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -2186,7 +2136,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 26
@@ -2243,7 +2192,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
@@ -2292,7 +2240,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
@@ -2344,7 +2291,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 40
@@ -2392,7 +2338,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 40
@@ -2440,13 +2385,12 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows",
+              "os": "Windows-10",
               "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }

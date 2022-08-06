@@ -188,6 +188,7 @@ FrameTreeNode::FrameTreeNode(
       is_created_by_script_(is_created_by_script),
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
+      attributes_(blink::mojom::IframeAttributes::New()),
       fenced_frame_status_(
           ComputeFencedFrameStatus(frame_tree_, parent_, frame_policy)),
       render_manager_(this, frame_tree->manager_delegate()) {
@@ -505,19 +506,14 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
   }
 }
 
-void FrameTreeNode::SetAnonymous(bool anonymous) {
-  if (anonymous) {
-    if (!parent_) {
-      bad_message::ReceivedBadMessage(current_frame_host()->GetProcess(),
-                                      bad_message::FTN_ANONYMOUS);
-      return;
-    }
-
+void FrameTreeNode::SetAttributes(
+    blink::mojom::IframeAttributesPtr attributes) {
+  if (!anonymous() && attributes->anonymous) {
+    // Log this only when anonymous is changed to true.
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         parent_, blink::mojom::WebFeature::kAnonymousIframe);
   }
-
-  anonymous_ = anonymous;
+  attributes_ = std::move(attributes);
 }
 
 bool FrameTreeNode::IsLoading() const {
@@ -635,7 +631,7 @@ void FrameTreeNode::DidStartLoading(bool should_show_loading_ui,
   current_frame_host()->browsing_context_state()->OnDidStartLoading();
   base::UmaHistogramTimes(
       base::StrCat({"Navigation.DidStartLoading.",
-                    IsMainFrame() ? "MainFrame" : "Subframe"}),
+                    IsOutermostMainFrame() ? "MainFrame" : "Subframe"}),
       timer.Elapsed());
 }
 
@@ -878,8 +874,6 @@ void FrameTreeNode::SetPopupCreatorOrigin(
 void FrameTreeNode::WriteIntoTrace(
     perfetto::TracedProto<TraceProto> proto) const {
   proto->set_frame_tree_node_id(frame_tree_node_id());
-  // TODO(crbug.com/1314749): we should also capture the concept of outermost
-  // main frame here.
   proto->set_is_main_frame(IsMainFrame());
   proto.Set(TraceProto::kCurrentFrameHost, current_frame_host());
   proto.Set(TraceProto::kSpeculativeFrameHost,
@@ -1004,6 +998,11 @@ void FrameTreeNode::ClearOpenerReferences() {
   // that manually.
   for (auto& observer : observers_)
     observer.OnFrameTreeNodeDisownedOpenee(this);
+}
+
+bool FrameTreeNode::AncestorOrSelfHasCSPEE() const {
+  // Check if CSPEE is set in this frame or any ancestor frames.
+  return csp_attribute() || (parent() && parent()->required_csp());
 }
 
 }  // namespace content

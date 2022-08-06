@@ -28,8 +28,8 @@
 #include "base/task/task_runner_util.h"
 #include "crypto/mac_security_services_lock.h"
 #include "net/base/host_port_pair.h"
-#include "net/cert/internal/extended_key_usage.h"
-#include "net/cert/internal/parse_certificate.h"
+#include "net/cert/pki/extended_key_usage.h"
+#include "net/cert/pki/parse_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_apple.h"
 #include "net/ssl/client_cert_identity_mac.h"
@@ -316,17 +316,15 @@ ClientCertIdentityList GetClientCertsOnBackgroundThread(
     // See if there's an identity preference for this domain:
     ScopedCFTypeRef<CFStringRef> domain_str(
         base::SysUTF8ToCFStringRef("https://" + server_domain));
-    SecIdentityRef sec_identity = nullptr;
-    // While SecIdentityCopyPreferences appears to take a list of CA issuers
+    // While SecIdentityCopyPreferred appears to take a list of CA issuers
     // to restrict the identity search to, within Security.framework the
-    // argument is ignored and filtering unimplemented. See
-    // SecIdentity.cpp in libsecurity_keychain, specifically
+    // argument is ignored and filtering unimplemented. See SecIdentity.cpp in
+    // libsecurity_keychain, specifically
     // _SecIdentityCopyPreferenceMatchingName().
     {
       base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-      if (SecIdentityCopyPreference(domain_str, 0, nullptr, &sec_identity) ==
-          noErr)
-        preferred_sec_identity.reset(sec_identity);
+      preferred_sec_identity.reset(
+          SecIdentityCopyPreferred(domain_str, nullptr, nullptr));
     }
   }
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
@@ -56,6 +57,10 @@ user_education::FeaturePromoSpecification::StringReplacements
 GetReplacementsForFeature(const base::Feature& feature) {
   if (&feature == &feature_engagement::kIPHDesktopPwaInstallFeature)
     return {u"Placeholder Text"};
+#if BUILDFLAG(IS_CHROMEOS)
+  if (&feature == &feature_engagement::kIPHIntentChipFeature)
+    return {u"Chrome device"};
+#endif
   return {};
 }
 
@@ -205,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_LiveCaption) {
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ProfileSwitch) {
-  set_baseline("2936082");
+  set_baseline("3710120");
   ShowAndVerifyUi();
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -221,8 +226,9 @@ class FeaturePromoDialogSideSearchTest : public FeaturePromoDialogTest {
   FeaturePromoDialogSideSearchTest() {
     // Currently the IPH is only supported for the Google ChromeOS
     // configuration.
-    feature_list_.InitWithFeatures({features::kSideSearch},
-                                   {features::kSideSearchDSESupport});
+    feature_list_.InitWithFeatures(
+        {features::kSideSearch},
+        {features::kSideSearchDSESupport, features::kUnifiedSidePanel});
   }
 
   void SetUpOnMainThread() override {

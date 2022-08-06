@@ -39,11 +39,11 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkFeatures;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.ReadingListFeatures;
-import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
+import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
@@ -78,6 +78,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -211,7 +212,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     layoutStateProvider -> { mLayoutStateProvider = layoutStateProvider; }));
         }
 
-        if (startSurfaceSupplier != null) {
+        if (!ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(mContext)
+                && startSurfaceSupplier != null) {
             mStartSurfaceSupplier = startSurfaceSupplier;
             startSurfaceSupplier.onAvailable(mCallbackController.makeCancelable((startSurface) -> {
                 mStartSurfaceState = startSurface.getStartSurfaceState();
@@ -219,6 +221,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     assert ReturnToChromeUtil.isStartSurfaceEnabled(mContext);
                     mStartSurfaceState = newState;
                 };
+                // TODO(https://crbug.com/1315679): Remove |mStartSurfaceSupplier|,
+                // |mStartSurfaceState| and |mStartSurfaceStateObserver| after the refactor is
+                // enabled by default.
                 startSurface.addStateChangeObserver(mStartSurfaceStateObserver);
             }));
         }
@@ -308,6 +313,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     @VisibleForTesting
     boolean isInStartSurfaceHomepage() {
+        if (ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(mContext)) {
+            return mLayoutStateProvider != null
+                    && mLayoutStateProvider.isLayoutVisible(LayoutType.START_SURFACE);
+        }
+
         return mStartSurfaceSupplier != null && mStartSurfaceSupplier.get() != null
                 && mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE;
     }
@@ -751,7 +761,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public boolean isNewWindowMenuFeatureEnabled() {
-        return CachedFeatureFlags.isEnabled(ChromeFeatureList.NEW_WINDOW_APP_MENU);
+        return ChromeFeatureList.sNewWindowAppMenu.isEnabled();
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -802,8 +812,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public boolean shouldShowPaintPreview(
             boolean isChromeScheme, @NonNull Tab currentTab, boolean isIncognito) {
-        return CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_DEMO) && !isChromeScheme
-                && !isIncognito;
+        return ChromeFeatureList.sPaintPreviewDemo.isEnabled() && !isChromeScheme && !isIncognito;
     }
 
     /**
@@ -1140,7 +1149,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     protected void updatePriceTrackingMenuItemRow(@NonNull MenuItem startPriceTrackingMenuItem,
             @NonNull MenuItem stopPriceTrackingMenuItem, @Nullable Tab currentTab) {
-        PowerBookmarkMeta pageMeta = PowerBookmarkUtils.getPriceTrackingMetadataForTab(currentTab);
+        ShoppingService service =
+                ShoppingServiceFactory.getForProfile(Profile.getLastUsedRegularProfile());
+        ShoppingService.ProductInfo info = null;
+        if (service != null && currentTab != null) {
+            info = service.getAvailableProductInfoForUrl(currentTab.getUrl());
+        }
+
         // If price tracking isn't enabled or the page isn't eligible, then hide both items.
         if (!ShoppingFeatures.isShoppingListEnabled()
                 || !PowerBookmarkUtils.isPriceTrackingEligible(currentTab)
@@ -1165,9 +1180,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         startPriceTrackingMenuItem.setEnabled(editEnabled);
         stopPriceTrackingMenuItem.setEnabled(editEnabled);
 
-        boolean priceTrackingEnabled = PowerBookmarkUtils.isPriceTrackingEnabledForClusterId(
-                pageMeta.getShoppingSpecifics().getProductClusterId(),
-                mBookmarkBridgeSupplier.get());
+        boolean priceTrackingEnabled = false;
+        if (info != null) {
+            priceTrackingEnabled = PowerBookmarkUtils.isPriceTrackingEnabledForClusterId(
+                    info.productClusterId, mBookmarkBridgeSupplier.get());
+        }
         startPriceTrackingMenuItem.setVisible(!priceTrackingEnabled);
         stopPriceTrackingMenuItem.setVisible(priceTrackingEnabled);
     }
@@ -1195,7 +1212,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         boolean isRequestDesktopSite =
                 currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION)) {
+        if (ChromeFeatureList.sAppMenuMobileSiteOption.isEnabled()) {
             requestMenuLabel.setTitle(isRequestDesktopSite
                             ? R.string.menu_item_request_mobile_site
                             : R.string.menu_item_request_desktop_site);

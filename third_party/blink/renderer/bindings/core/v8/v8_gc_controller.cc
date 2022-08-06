@@ -32,7 +32,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -101,12 +100,6 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
 
   ScriptForbiddenScope::Enter();
 
-  // Attribute garbage collection to the all frames instead of a specific
-  // frame.
-  if (BlameContext* blame_context =
-          Platform::Current()->GetTopLevelBlameContext())
-    blame_context->Enter();
-
   v8::HandleScope scope(isolate);
   switch (type) {
     case v8::kGCTypeIncrementalMarking:
@@ -138,10 +131,6 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
   V8PerIsolateData::From(isolate)->LeaveGC();
 
   ScriptForbiddenScope::Exit();
-
-  if (BlameContext* blame_context =
-          Platform::Current()->GetTopLevelBlameContext())
-    blame_context->Leave();
 
   ThreadState* current_thread_state = ThreadState::Current();
   if (current_thread_state) {

@@ -92,6 +92,7 @@
 <translation id="1644574205037202324">記錄</translation>
 <translation id="1645954272419197032">請確認裝置資訊</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用完</translation>
+<translation id="1664796644829245314">預覽「<ph name="PREVIEW_OBJECT" />」</translation>
 <translation id="1668469839109562275">內置 VPN</translation>
 <translation id="1672499492233627739">網絡攝影機視像畫面</translation>
 <translation id="1676557873873341166">正在錄影</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">視像會議</translation>
 <translation id="1852934301711881861">安裝 ChromeOS Flex</translation>
 <translation id="1856388568474281774">向下箭咀</translation>
+<translation id="1858620243986915808">附加螢幕截圖</translation>
 <translation id="1871569928317311284">關閉深色主題背景</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">關閉暗光模式</translation>
@@ -132,13 +134,14 @@
 <translation id="1977994649430373166">Google 個人檔案相片</translation>
 <translation id="1979103255016296513">變更密碼已逾期</translation>
 <translation id="1999615961760456652">強制網絡入口</translation>
+<translation id="200669432486043882">取代檔案</translation>
 <translation id="2006864819935886708">連線問題</translation>
 <translation id="2008685064673031089">尖峰搜尋</translation>
 <translation id="2011174342667534258">SDK 版本：</translation>
 <translation id="2016697457005847575">請嘗試解決疑難步驟</translation>
 <translation id="2016848882344942759">--沒有白色標籤--</translation>
 <translation id="202500043506723828">EID</translation>
-<translation id="2047316797244836561">如要查看螢幕保護程式，請連上網路並重新載入頁面。</translation>
+<translation id="2047316797244836561">如要查看螢幕保護程式，請連線至網絡並重新載入頁面。</translation>
 <translation id="2080070583977670716">顯示更多設定</translation>
 <translation id="2085089206770112532">顯示屏校暗亮度</translation>
 <translation id="2105810540595158374">裝置類型係遊戲控制器。</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">類型</translation>
 <translation id="2461822463642141190">電流</translation>
 <translation id="2480034874476596812">手動關閉</translation>
+<translation id="248546197012830854">裝置已離線。連線至 Wi-Fi 網絡即可查看說明內容。</translation>
 <translation id="2491955442992294626">使用其他視窗時，系統不會測試按鍵</translation>
 <translation id="2493126929778606526">自動選取的最佳相片</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">更新</translation>
 <translation id="3009958530611748826">選取儲存的資料夾</translation>
 <translation id="3017079585324758401">背景</translation>
+<translation id="302435934487327038">安裝完成</translation>
 <translation id="3027578600144895987">閂相機</translation>
 <translation id="3031560714565892478">裝置類型係攝影機。</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">端點</translation>
 <translation id="3069085583900247081">未通過測試</translation>
-<translation id="3076243757415932261">正在驗證組件…</translation>
 <translation id="3083667275341675831">連接性診斷</translation>
 <translation id="3084958266922136097">停用螢幕保護程式</translation>
 <translation id="3091839911843451378">失敗 - 已停止</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">您確定要清除所有列印記錄嗎？系統不會清除進行中的列印工作。</translation>
 <translation id="3383751554789092165">按需要變更裝置資訊。</translation>
 <translation id="3404249063913988450">啟用螢幕保護程式</translation>
-<translation id="3404770484521709967">組件已正確安裝。</translation>
 <translation id="3413935475507503304">如要繼續進行更新，請按一下 [下一步]。</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">安全性</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">舊密碼</translation>
 <translation id="4453205916657964690">子網絡遮罩</translation>
 <translation id="4454245904991689773">掃瞄儲存位置</translation>
-<translation id="4472575034687746823">開始使用</translation>
 <translation id="4479639480957787382">以太網絡</translation>
 <translation id="4483049906298469269">無法連線偵測非預設的網絡閘道</translation>
 <translation id="4500213108254186382">上蓋加速計</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149">結束 <ph name="DEVICE_TYPE" /> 維修程序</translation>
 <translation id="6618744767048954150">正在執行</translation>
 <translation id="6620487321149975369">除非您手動移除列印工作，否則列印工作會顯示在記錄中</translation>
+<translation id="6624819909909965616">無法上載大小超過 10 MB 的檔案</translation>
 <translation id="6643016212128521049">清除</translation>
+<translation id="6644568396961840069">無法儲存檔案。請插入其他外部儲存空間，或稍後再試。</translation>
 <translation id="6647510110698214773">加密演算法</translation>
 <translation id="6650062777702288430">假名/英數字元切換</translation>
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6692996468359469499">取得您選取項目相關資料</translation>
 <translation id="6704062477274546131">DNS 解析</translation>
-<translation id="6721744718589119342">我們可能會透過電郵提供更新資訊，或要求您提供更多資訊</translation>
 <translation id="6723839937902243910">電源</translation>
 <translation id="6723847290197874913">鍵盤背光</translation>
 <translation id="672609503628871915">查看最新內容</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">確定</translation>
 <translation id="6977381486153291903">韌體版本</translation>
 <translation id="6995564396478647735">確認已開啟「寫入保護」功能</translation>
+<translation id="7005833343836210400">裝置已離線</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> 會管理此裝置並可存取所有使用者活動，包括網頁瀏覽記錄、密碼和電郵。</translation>
 <translation id="7040230719604914234">流動網絡供應商</translation>
 <translation id="7041549558901442110">未連接裝置。</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7212734716605298123">外部裝置適用的韌體更新</translation>
 <translation id="7216409898977639127">流動服務供應商</translation>
+<translation id="725133483556299729">揀電郵地址</translation>
 <translation id="7271040990581020067">掃瞄器目前正在使用中，請稍後再試。</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">選取 1 或多個組件並重試校正，或略過這個步驟</translation>
@@ -775,7 +780,7 @@
 <translation id="7763470514545477072">域名尾碼相符</translation>
 <translation id="7769672763586021400">型號識別碼</translation>
 <translation id="7784116172884276937">沒有設定 DNS 伺服器</translation>
-<translation id="779591286616261875">傳送新的回報內容</translation>
+<translation id="779591286616261875">傳送新報告</translation>
 <translation id="7799817062559422778">明亮模式</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">私密金鑰</translation>
 <translation id="7982789257301363584">網絡</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
+<translation id="8018928621986160031">已儲存至「<ph name="FILE_LOCATION" />」</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">啟用自動調色模式</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">「寫入保護」功能仍然關閉。如要繼續，請開啟該功能。</translation>
 <translation id="8075838845814659848">剩餘電量</translation>
 <translation id="8082366717211101304">無法從 Android 應用程式解析 DNS</translation>
-<translation id="8083281199617904460">此維修程序應由經受訓練的維修技術員執行。需要先更換故障組件後才能開始維修。</translation>
 <translation id="808894953321890993">變更密碼</translation>
+<translation id="8094062939584182041">允許 Google 就此問題向您傳送電郵</translation>
 <translation id="8104083085214006426">您正在使用開放且不安全的網絡</translation>
 <translation id="8109786307828817014">要使用無法校正的組件繼續操作嗎？</translation>
 <translation id="811820734797650957">(Android) 可連線偵測到閘道</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">連線至互聯網</translation>
 <translation id="8221728673725659466">校正完成</translation>
 <translation id="8226628635270268143">選擇喜愛的相片和相簿</translation>
+<translation id="8227119283605456246">附加檔案</translation>
 <translation id="8230672074305416752">無法連線偵測預設的網絡閘道</translation>
 <translation id="8246209727385807362">不明流動網絡供應商</translation>
 <translation id="827422111966801947">靛藍色</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">未初始化</translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
 <translation id="8655295600908251630">版本</translation>
+<translation id="8655828773034788261">分享網址：</translation>
 <translation id="8660881923941176839">磅</translation>
 <translation id="8662671328352114214">加入 <ph name="TYPE" /> 網絡</translation>
 <translation id="8671972493856476349">請更新至 <ph name="VERSION_NUMBER" /> 並重新啟動</translation>
@@ -928,7 +936,7 @@
 <translation id="9082718469794970195">使用這段影片</translation>
 <translation id="9087578468327036362">報告此查詢</translation>
 <translation id="9088306295921699330">目前使用量</translation>
-<translation id="9092255287806472980">你的寶貴意見有助於改善 Chrome OS，且提交的內容將由 Google 團隊進行審查。由於回報數量眾多，我們將不會逐一回覆。</translation>
+<translation id="9092255287806472980">您的意見能協助我們改善 Chrome OS，而提交的內容將由 Google 團隊審核。由於報告數量眾多，我們將不會逐一回覆。</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">您需要拆解裝置</translation>
 <translation id="9098156406873149060">保留使用者資料</translation>

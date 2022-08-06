@@ -243,10 +243,13 @@ const char kChromeUIWebApksHost[] = "webapks";
 #else
 const char kChromeUIAppServiceInternalsHost[] = "app-service-internals";
 const char kChromeUINearbyInternalsHost[] = "nearby-internals";
+const char kChromeUINearbyInternalsURL[] = "chrome://nearby-internals";
 const char kChromeUIBookmarksSidePanelHost[] =
     "bookmarks-side-panel.top-chrome";
 const char kChromeUIBookmarksSidePanelURL[] =
     "chrome://bookmarks-side-panel.top-chrome/";
+const char kChromeUICustomizeChromeSidePanelHost[] =
+    "customize-chrome-side-panel.top-chrome";
 const char kChromeUIHistoryClustersSidePanelHost[] =
     "history-clusters-side-panel.top-chrome";
 const char kChromeUIHistoryClustersSidePanelURL[] =
@@ -297,6 +300,8 @@ const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
 const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
+const char kChromeUICloudUploadHost[] = "cloud-upload";
+const char kChromeUICloudUploadURL[] = "chrome://cloud-upload/";
 const char kChromeUIConfirmPasswordChangeHost[] = "confirm-password-change";
 const char kChromeUIConfirmPasswordChangeUrl[] =
     "chrome://confirm-password-change";
@@ -328,6 +333,8 @@ const char kChromeUIManageMirrorSyncURL[] = "chrome://manage-mirrorsync";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIMultiDeviceInternalsHost[] = "multidevice-internals";
+const char kChromeUIMultiDeviceInternalsURL[] =
+    "chrome://multidevice-internals";
 const char kChromeUIMultiDeviceSetupHost[] = "multidevice-setup";
 const char kChromeUIMultiDeviceSetupUrl[] = "chrome://multidevice-setup";
 const char kChromeUINetworkHost[] = "network";
@@ -379,6 +386,8 @@ const char kOsUIAccountManagerErrorURL[] = "os://account-manager-error";
 const char kOsUIAccountMigrationWelcomeURL[] = "os://account-migration-welcome";
 const char kOsUIAddSupervisionURL[] = "os://add-supervision";
 const char kOsUIAppDisabledURL[] = "os://app-disabled";
+const char kOsUIAppServiceInternalsURL[] = "os://app-service-internals";
+const char kOsUIBluetoothInternalsURL[] = "os://bluetooth-internals";
 const char kOsUICrashesURL[] = "os://crashes";
 const char kOsUICreditsURL[] = "os://credits";
 const char kOsUIDeviceLogURL[] = "os://device-log";
@@ -387,10 +396,13 @@ const char kOsUIEmojiPickerURL[] = "os://emoji-picker";
 const char kOsUIGpuURL[] = "os://gpu";
 const char kOsUIHistogramsURL[] = "os://histograms";
 const char kOsUIInvalidationsURL[] = "os://invalidations";
+const char kOsUILauncherInternalsURL[] = "os://launcher-internals";
 const char kOsUILockScreenNetworkURL[] = "os://lock-network";
+const char kOsUIMultiDeviceInternalsURL[] = "os://multidevice-internals";
+const char kOsUINearbyInternalsURL[] = "os://nearby-internals";
 const char kOsUINetworkURL[] = "os://network";
+const char kOsUINetExportURL[] = "os://net-export";
 const char kOsUIRestartURL[] = "os://restart";
-const char kOsUIScanningAppURL[] = "os://scanning";
 const char kOsUISettingsURL[] = "os://settings";
 const char kOsUISignInInternalsURL[] = "os://signin-internals";
 const char kOsUISyncInternalsURL[] = "os://sync-internals";
@@ -412,6 +424,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
     kChromeUIBluetoothPairingHost,
     kChromeUIBorealisCreditsHost,
     kChromeUICertificateManagerHost,
+    kChromeUICloudUploadHost,
     kChromeUICrostiniCreditsHost,
     kChromeUICrostiniInstallerHost,
     kChromeUICryptohomeHost,
@@ -451,8 +464,14 @@ const char kChromeUIOSSettingsHost[] = "os-settings";
 const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";
 const char kOsUIAboutURL[] = "os://about";
 const char kOsUIComponentsURL[] = "os://components";
+const char kOsUIConnectivityDiagnosticsAppURL[] =
+    "os://connectivity-diagnostics";
+const char kOsUIDiagnosticsAppURL[] = "os://diagnostics";
+const char kOsUIFirmwareUpdaterAppURL[] = "os://accessory-update";
 const char kOsUIFlagsURL[] = "os://flags";
 const char kOsUIHelpAppURL[] = "os://help-app";
+const char kOsUIPrintManagementAppURL[] = "os://print-management";
+const char kOsUIScanningAppURL[] = "os://scanning";
 const char kOsUIVersionURL[] = "os://version";
 #endif
 

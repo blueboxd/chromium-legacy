@@ -8,7 +8,7 @@
  * Crostini.
  */
 import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -16,18 +16,19 @@ import './crostini_port_forwarding_add_port_dialog.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_page/settings_section.js';
 import '../../settings_page_styles.css.js';
-import '../../settings_shared_css.js';
+import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
+import {containerLabel, equalContainerId} from '../guest_os/guest_os_container_select.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
 
-import {ContainerInfo, CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CONTAINER_ID, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_VM, GuestId} from './crostini_browser_proxy.js';
-import {containerLabel, equalContainerId} from './crostini_container_select.js';
+import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CONTAINER_ID, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_VM} from './crostini_browser_proxy.js';
 
 /**
  * @constructor
@@ -90,7 +91,7 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
 
   static get observers() {
     return [
-      'onCrostiniPortsChanged_(prefs.crostini.port_forwarding.ports.value)'
+      'onCrostiniPortsChanged_(prefs.crostini.port_forwarding.ports.value)',
     ];
   }
 
@@ -153,7 +154,7 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
               activePort.protocol_type === port.protocol_type);
       port.container_id = port.container_id || {
         vm_name: port['vm_name'] || DEFAULT_CROSTINI_VM,
-        container_name: port['container_name'] || DEFAULT_CROSTINI_CONTAINER
+        container_name: port['container_name'] || DEFAULT_CROSTINI_CONTAINER,
       };
       this.push('allPorts_', port);
     }
@@ -290,7 +291,9 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
    * @private
    */
   containerLabel_(id) {
-    return this.showContainerId_(this.allPorts_, id) ? containerLabel(id) : '';
+    return this.showContainerId_(this.allPorts_, id) ?
+        containerLabel(id, DEFAULT_CROSTINI_VM) :
+        '';
   }
 
   /**

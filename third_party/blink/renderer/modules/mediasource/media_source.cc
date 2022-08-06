@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
+#include "third_party/blink/renderer/modules/mediasource/attachment_creation_pass_key_provider.h"
 #include "third_party/blink/renderer/modules/mediasource/cross_thread_media_source_attachment.h"
 #include "third_party/blink/renderer/modules/mediasource/handle_attachment_provider.h"
 #include "third_party/blink/renderer/modules/mediasource/media_source_handle_impl.h"
@@ -154,12 +155,13 @@ MediaSource::MediaSource(ExecutionContext* context)
 
   MseExecutionContext type = MseExecutionContext::kWindow;
   if (!IsMainThread()) {
-    if (context->IsDedicatedWorkerGlobalScope())
+    if (context->IsDedicatedWorkerGlobalScope()) {
       type = MseExecutionContext::kDedicatedWorker;
-    else if (context->IsSharedWorkerGlobalScope())
+    } else if (context->IsSharedWorkerGlobalScope()) {
       type = MseExecutionContext::kSharedWorker;
-    else
+    } else {
       CHECK(false) << "Invalid execution context for MSE usage";
+    }
   }
   base::UmaHistogramEnumeration("Media.MSE.ExecutionContext", type);
 
@@ -580,13 +582,59 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
     return false;
   }
 
+  String codecs = content_type.Parameter("codecs");
+  ContentType filtered_content_type = content_type;
+
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION)
+  // Here, we special-case when encrypted Dolby Vision (DV) is supported but
+  // clear DV is not supported. isTypeSupported(fully qualified type with DV
+  // codec) should say false on such platform, but addSourceBuffer(same) and
+  // changeType(same) shouldn't fail just due to having DV codec. We use
+  // `enforce_codec_specificity` to understand if we are servicing
+  // isTypeSupported (if true) vs addSourceBuffer or changeType (if false). When
+  // `enforce_codec_specificity` is false, we'll remove any detected DV codec
+  // from the codecs in the `filtered_content_type`.
+  if (!enforce_codec_specificity) {
+    // Remove any detected DolbyVision codec from the query to GetSupportsType.
+    std::string filtered_codecs;
+    std::vector<std::string> parsed_codec_ids;
+    media::SplitCodecs(codecs.Ascii(), &parsed_codec_ids);
+    bool first = true;
+    for (const auto& codec_id : parsed_codec_ids) {
+      bool is_codec_ambiguous;
+      media::VideoCodec video_codec = media::VideoCodec::kUnknown;
+      media::VideoCodecProfile profile;
+      uint8_t level = 0;
+      media::VideoColorSpace color_space;
+      if (media::ParseVideoCodecString(mime_type.Ascii(), codec_id,
+                                       &is_codec_ambiguous, &video_codec,
+                                       &profile, &level, &color_space) &&
+          !is_codec_ambiguous &&
+          video_codec == media::VideoCodec::kDolbyVision) {
+        continue;
+      }
+      if (first)
+        first = false;
+      else
+        filtered_codecs += ",";
+      filtered_codecs += codec_id;
+    }
+
+    std::string filtered_type =
+        mime_type.Ascii() + "; codecs=\"" + filtered_codecs + "\"";
+    DVLOG(1) << __func__ << " filtered_type=" << filtered_type;
+    filtered_content_type =
+        ContentType(String::FromUTF8(filtered_type.c_str()));
+  }
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION)
+
   // Note: MediaSource.isTypeSupported() returning true implies that
   // HTMLMediaElement.canPlayType() will return "maybe" or "probably" since it
   // does not make sense for a MediaSource to support a type the
   // HTMLMediaElement knows it cannot play.
   auto get_supports_type_result =
-      HTMLMediaElement::GetSupportsType(content_type);
-  if (get_supports_type_result == MIMETypeRegistry::kIsNotSupported) {
+      HTMLMediaElement::GetSupportsType(filtered_content_type);
+  if (get_supports_type_result == MIMETypeRegistry::kNotSupported) {
     DVLOG(1) << __func__ << "(" << type << ", "
              << (enforce_codec_specificity ? "true" : "false")
              << ") -> false (not supported by HTMLMediaElement)";
@@ -610,11 +658,10 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
   // specificity is and will be retained for isTypeSupported.
   // TODO(crbug.com/535738): Actually relax the codec-specifity for aSB() and
   // cT() (which is when |enforce_codec_specificity| is false).
-  String codecs = content_type.Parameter("codecs");
   MIMETypeRegistry::SupportsType supported =
       MIMETypeRegistry::SupportsMediaSourceMIMEType(mime_type, codecs);
 
-  bool result = supported == MIMETypeRegistry::kIsSupported;
+  bool result = supported == MIMETypeRegistry::kSupported;
 
   DVLOG(2) << __func__ << "(" << type << ", "
            << (enforce_codec_specificity ? "true" : "false") << ") -> "
@@ -707,6 +754,7 @@ void MediaSource::Trace(Visitor* visitor) const {
   // |attachment_link_lock_|.
   visitor->Trace(TS_UNCHECKED_READ(attachment_tracer_));
 
+  visitor->Trace(worker_media_source_handle_);
   visitor->Trace(source_buffers_);
   visitor->Trace(active_source_buffers_);
   EventTargetWithInlineData::Trace(visitor);
@@ -880,7 +928,6 @@ void MediaSource::OnTrackChanged(TrackBase* track) {
   // this method should only be called by an attachment.
   DCHECK(IsMainThread());
 
-  DCHECK(HTMLMediaElement::MediaTracksEnabledInternally());
   SourceBuffer* source_buffer =
       SourceBufferTrackBaseSupplement::sourceBuffer(*track);
   if (!source_buffer)
@@ -1200,7 +1247,7 @@ void MediaSource::ClearLiveSeekableRange_Locked(
   SendUpdatedInfoToMainThreadCache();
 }
 
-MediaSourceHandleImpl* MediaSource::getHandle(ExceptionState& exception_state) {
+MediaSourceHandleImpl* MediaSource::handle(ExceptionState& exception_state) {
   base::AutoLock lock(attachment_link_lock_);
 
   DVLOG(3) << __func__;
@@ -1225,53 +1272,36 @@ MediaSourceHandleImpl* MediaSource::getHandle(ExceptionState& exception_state) {
     return nullptr;
   }
 
-  // Per https://github.com/w3c/media-source/pull/306:
-  // 2. If the readyState attribute is not "closed" then throw an
-  //     InvalidStateError exception and abort these steps.
-  if (!IsClosed()) {
-    LogAndThrowDOMException(exception_state,
-                            DOMExceptionCode::kInvalidStateError,
-                            "The MediaSource's readyState is not 'closed'.");
-    return nullptr;
+  // Lazily create the handle, since it indirectly holds a
+  // CrossThreadMediaSourceAttachment (until attachment starts or the handle is
+  // transferred) which holds a strong reference to us until attachment is
+  // actually started and later closed.
+  // TODO(crbug.com/878133): Update MSE spec to create this handle either during
+  // construction of worker-owned MediaSource or lazily upon first read of this
+  // attribute at this point, e.g. "Create a new MediaSourceHandle object and
+  // associated resources, and link it internally to this MediaSource."
+  if (!worker_media_source_handle_) {
+    // PassKey provider usage here ensures that we are allowed to call the
+    // attachment constructor.
+    scoped_refptr<CrossThreadMediaSourceAttachment> attachment =
+        base::MakeRefCounted<CrossThreadMediaSourceAttachment>(
+            this, AttachmentCreationPassKeyProvider::GetPassKey());
+    scoped_refptr<HandleAttachmentProvider> attachment_provider =
+        base::MakeRefCounted<HandleAttachmentProvider>(std::move(attachment));
+
+    // Create, but don't "register" an internal blob URL with the security
+    // origin of the worker's execution context for use later in a window thread
+    // media element's attachment to the MediaSource leveraging existing URL
+    // security checks and logging for legacy MSE object URLs.
+    SecurityOrigin* origin = GetExecutionContext()->GetMutableSecurityOrigin();
+    String internal_blob_url = BlobURL::CreatePublicURL(origin).GetString();
+    DCHECK(!internal_blob_url.IsEmpty());
+    worker_media_source_handle_ = MakeGarbageCollected<MediaSourceHandleImpl>(
+        std::move(attachment_provider), std::move(internal_blob_url));
   }
 
-  // Per https://github.com/w3c/media-source/pull/306:
-  // 3. If [[handle already retrieved]] is true, then throw an InvalidStateError
-  //    exception and abort these steps.
-  if (handle_already_retrieved_) {
-    LogAndThrowDOMException(
-        exception_state, DOMExceptionCode::kInvalidStateError,
-        "The MediaSourceHandle has already been retrieved.");
-    return nullptr;
-  }
-
-  // Per https://github.com/w3c/media-source/pull/306:
-  // 4. Create a new MediaSourceHandle object and associated resources, and link
-  //    it internally to this MediaSource.
-  // 5. Set [[handle already retrieved]] to be true.
-  // 6. Return the new object.
-  // TODO(crbug.com/506273): Support MediaSource srcObject attachment idiom for
-  // main-thread-owned MediaSource objects.
-  DCHECK(GetExecutionContext()->IsDedicatedWorkerGlobalScope());
-
-  // PassKey provider usage here ensures that we are allowed to call the
-  // attachment constructor.
-  scoped_refptr<CrossThreadMediaSourceAttachment> attachment =
-      base::MakeRefCounted<CrossThreadMediaSourceAttachment>(
-          this, AttachmentCreationPassKeyProvider::GetPassKey());
-  scoped_refptr<HandleAttachmentProvider> attachment_provider =
-      base::MakeRefCounted<HandleAttachmentProvider>(std::move(attachment));
-  handle_already_retrieved_ = true;
-
-  // Create, but don't "register" an internal blob URL with the security origin
-  // of for the worker's execution context for use later in a window thread
-  // media element's attachment to the MediaSource leveraging existing URL
-  // security checks and logging for legacy MSE object URLs.
-  SecurityOrigin* origin = GetExecutionContext()->GetMutableSecurityOrigin();
-  String internal_blob_url = BlobURL::CreatePublicURL(origin).GetString();
-  DCHECK(!internal_blob_url.IsEmpty());
-  return MakeGarbageCollected<MediaSourceHandleImpl>(
-      std::move(attachment_provider), std::move(internal_blob_url));
+  DCHECK(worker_media_source_handle_);
+  return worker_media_source_handle_.Get();
 }
 
 bool MediaSource::IsOpen() const {

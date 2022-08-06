@@ -204,11 +204,11 @@
     readonly attribute boolean isSecureContext;
 
     // TrustedTypes API: http://github.com/wicg/trusted-types
-    [RuntimeEnabled=TrustedDOMTypes, CallWith=ScriptState] readonly attribute TrustedTypePolicyFactory trustedTypes;
+    [CallWith=ScriptState] readonly attribute TrustedTypePolicyFactory trustedTypes;
 
     // Anonymous iframe:
     // https://wicg.github.io/anonymous-iframe/#spec-window-attribute
-    [RuntimeEnabled=AnonymousIframe] readonly attribute boolean isAnonymouslyFramed;
+    [RuntimeEnabled=AnonymousIframe] readonly attribute boolean anonymouslyFramed;
 
     // Collection of fenced frame APIs
     // https://github.com/shivanigithub/fenced-frame/issues/14

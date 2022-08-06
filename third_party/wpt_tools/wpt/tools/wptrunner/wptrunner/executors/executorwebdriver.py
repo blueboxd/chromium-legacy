@@ -237,6 +237,9 @@ class WebDriverActionSequenceProtocolPart(ActionSequenceProtocolPart):
     def send_actions(self, actions):
         self.webdriver.actions.perform(actions['actions'])
 
+    def release(self):
+        self.webdriver.actions.release()
+
 
 class WebDriverTestDriverProtocolPart(TestDriverProtocolPart):
     def setup(self):
@@ -350,6 +353,18 @@ class WebDriverProtocol(Protocol):
                 self.capabilities = browser.capabilities
             else:
                 merge_dicts(self.capabilities, browser.capabilities)
+
+        pac = browser.pac
+        if pac is not None:
+            if self.capabilities is None:
+                self.capabilities = {}
+            merge_dicts(self.capabilities, {"proxy":
+                {
+                    "proxyType": "pac",
+                    "proxyAutoconfigUrl": urljoin(executor.server_url("http"), pac)
+                }
+            })
+
         self.url = browser.webdriver_url
         self.webdriver = None
 
@@ -615,6 +630,8 @@ class WebDriverRefTestExecutor(RefTestExecutor):
         self.protocol.base.execute_script(self.wait_script, True)
 
         screenshot = self.protocol.webdriver.screenshot()
+        if screenshot is None:
+            raise ValueError('screenshot is None')
 
         # strip off the data:img/png, part of the url
         if screenshot.startswith("data:image/png;base64,"):

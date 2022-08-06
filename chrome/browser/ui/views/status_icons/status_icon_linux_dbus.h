@@ -19,8 +19,8 @@
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/linux/status_icon_linux.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/linux_ui/status_icon_linux.h"
 
 namespace gfx {
 class ImageSkia;
@@ -31,7 +31,7 @@ class DbusProperties;
 
 // A status icon following the StatusNotifierItem specification.
 // https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem/
-class StatusIconLinuxDbus : public views::StatusIconLinux,
+class StatusIconLinuxDbus : public ui::StatusIconLinux,
                             public ui::SimpleMenuModel::Delegate,
                             public base::RefCounted<StatusIconLinuxDbus> {
  public:

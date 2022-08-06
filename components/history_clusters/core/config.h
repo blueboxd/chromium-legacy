@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/time/time.h"
 
 class PrefService;
@@ -43,7 +44,17 @@ struct Config {
   // and accessing clusters will retrieve them from the history DB. If disabled,
   // updating clusters is a no-op and accessing clusters will generate and
   // return new clusters without persisting them.
-  bool persist_clusters_in_history_db = false;
+  bool persist_clusters_in_history_db = true;
+
+  // No effect if `persist_clusters_in_history_db` is disabled. Determines how
+  // soon to update clusters after startup in minutes. E.g., by default, will
+  // update clusters 5 minutes after startup.
+  int persist_clusters_in_history_db_after_startup_delay_minutes = 5;
+
+  // No effect if `persist_clusters_in_history_db` is disabled. Determines how
+  // often to update clusters in minutes. E.g., by default, will update clusters
+  // every hour.
+  int persist_clusters_in_history_db_period_minutes = 60;
 
   // Enables the on-device clustering backend. Enabled by default, since this is
   // the production mode of the whole feature. The backend is only in official
@@ -94,7 +105,7 @@ struct Config {
   // `omnibox_action` is disabled.
   bool omnibox_action_on_navigation_intents = false;
 
-  // If `omnibox_action_on_navigation_intents` is enabled, this threshold
+  // If `omnibox_action_on_navigation_intents` is false, this threshold
   // helps determine when the user is intending to perform a navigation.
   int omnibox_action_navigation_intent_score_threshold = 1300;
 
@@ -118,11 +129,11 @@ struct Config {
 
   // If enabled, adds the keywords of categories for detected entities to a
   // cluster.
-  bool keyword_filter_on_categories = true;
+  bool keyword_filter_on_categories = false;
 
   // If enabled, adds the keywords of detected entities from noisy visits to a
   // cluster.
-  bool keyword_filter_on_noisy_visits = true;
+  bool keyword_filter_on_noisy_visits = false;
 
   // If enabled, adds the search terms of the visits that have them.
   bool keyword_filter_on_search_terms = false;
@@ -280,6 +291,11 @@ struct Config {
   Config(const Config& other);
   ~Config();
 };
+
+// Returns the set of mids that should be blocked from being used by the
+// clustering backend, particularly for potential keywords used for omnibox
+// triggering.
+base::flat_set<std::string> JourneysMidBlocklist();
 
 // Returns true if |application_locale| is supported by Journeys.
 // This is a costly check: Should be called only if

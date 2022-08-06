@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
@@ -522,6 +523,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     sequence_manager_->WillQueueTask(&pending_task, name_);
     MaybeReportIpcTaskQueuedFromMainThread(pending_task, name_);
   }
+  RecordQueuingDelayedTaskMetrics(pending_task, lazy_now);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
   UpdateWakeUp(lazy_now);
 
@@ -568,6 +570,34 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
                                                &lazy_now, false);
   }
   TraceQueueSize();
+}
+
+void TaskQueueImpl::RecordQueuingDelayedTaskMetrics(const Task& pending_task,
+                                                    LazyNow* lazy_now) {
+  // The sampling depends on having a high-resolution clock.
+  if (!base::TimeTicks::IsHighResolution())
+    return;
+
+  // A sample is taken on average every kSampleRate tasks.
+  static constexpr int kSampleRate = 10000;
+
+  // Use pseudorandom sampling to avoid "running jank," which may occur
+  // when emitting many samples to a histogram in parallel. (This function is
+  // called a lot in parallel.) See https://crbug/1254354 for more details. The
+  // current time is used as a source of pseudorandomness.
+  if (((lazy_now->Now() - TimeTicks::UnixEpoch()).InMicroseconds() ^
+       pending_task.sequence_num) %
+          kSampleRate ==
+      0) {
+    // The |delay| will be different than the delay passed to PostDelayedTask
+    // for cross-thread delayed tasks.
+    const TimeDelta delay = pending_task.delayed_run_time - lazy_now->Now();
+    UMA_HISTOGRAM_LONG_TIMES("Scheduler.TaskQueueImpl.PostDelayedTaskDelay",
+                             delay);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Scheduler.TaskQueueImpl.DelayedIncomingQueueSize",
+        static_cast<int>(main_thread_only().delayed_incoming_queue.size()));
+  }
 }
 
 void TaskQueueImpl::ReloadEmptyImmediateWorkQueue() {
@@ -819,69 +849,60 @@ TaskQueue::QueuePriority TaskQueueImpl::GetQueuePriority() const {
   return static_cast<TaskQueue::QueuePriority>(set_index);
 }
 
-Value TaskQueueImpl::AsValue(TimeTicks now, bool force_verbose) const {
+Value::Dict TaskQueueImpl::AsValue(TimeTicks now, bool force_verbose) const {
   base::internal::CheckedAutoLock lock(any_thread_lock_);
-  Value state(Value::Type::DICTIONARY);
-  state.SetStringKey("name", GetName());
+  Value::Dict state;
+  state.Set("name", GetName());
   if (any_thread_.unregistered) {
-    state.SetBoolKey("unregistered", true);
+    state.Set("unregistered", true);
     return state;
   }
   DCHECK(main_thread_only().delayed_work_queue);
   DCHECK(main_thread_only().immediate_work_queue);
 
-  state.SetStringKey(
-      "task_queue_id",
-      StringPrintf("0x%" PRIx64,
-                   static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this))));
-  state.SetBoolKey("enabled", IsQueueEnabled());
+  state.Set("task_queue_id",
+            StringPrintf("0x%" PRIx64, static_cast<uint64_t>(
+                                           reinterpret_cast<uintptr_t>(this))));
+  state.Set("enabled", IsQueueEnabled());
   // TODO(crbug.com/1334256): Make base::Value able to store an int64_t and
   // remove the various static_casts below.
-  state.SetIntKey(
-      "any_thread_.immediate_incoming_queuesize",
-      static_cast<int>(any_thread_.immediate_incoming_queue.size()));
-  state.SetIntKey(
-      "delayed_incoming_queue_size",
-      static_cast<int>(main_thread_only().delayed_incoming_queue.size()));
-  state.SetIntKey(
-      "immediate_work_queue_size",
-      static_cast<int>(main_thread_only().immediate_work_queue->Size()));
-  state.SetIntKey(
-      "delayed_work_queue_size",
-      static_cast<int>(main_thread_only().delayed_work_queue->Size()));
+  state.Set("any_thread_.immediate_incoming_queuesize",
+            static_cast<int>(any_thread_.immediate_incoming_queue.size()));
+  state.Set("delayed_incoming_queue_size",
+            static_cast<int>(main_thread_only().delayed_incoming_queue.size()));
+  state.Set("immediate_work_queue_size",
+            static_cast<int>(main_thread_only().immediate_work_queue->Size()));
+  state.Set("delayed_work_queue_size",
+            static_cast<int>(main_thread_only().delayed_work_queue->Size()));
 
-  state.SetIntKey(
-      "any_thread_.immediate_incoming_queuecapacity",
-      static_cast<int>(any_thread_.immediate_incoming_queue.capacity()));
-  state.SetIntKey("immediate_work_queue_capacity",
-                  static_cast<int>(immediate_work_queue()->Capacity()));
-  state.SetIntKey("delayed_work_queue_capacity",
-                  static_cast<int>(delayed_work_queue()->Capacity()));
+  state.Set("any_thread_.immediate_incoming_queuecapacity",
+            static_cast<int>(any_thread_.immediate_incoming_queue.capacity()));
+  state.Set("immediate_work_queue_capacity",
+            static_cast<int>(immediate_work_queue()->Capacity()));
+  state.Set("delayed_work_queue_capacity",
+            static_cast<int>(delayed_work_queue()->Capacity()));
 
   if (!main_thread_only().delayed_incoming_queue.empty()) {
     TimeDelta delay_to_next_task =
         (main_thread_only().delayed_incoming_queue.top().delayed_run_time -
          sequence_manager_->main_thread_clock()->NowTicks());
-    state.SetDoubleKey("delay_to_next_task_ms",
-                       delay_to_next_task.InMillisecondsF());
+    state.Set("delay_to_next_task_ms", delay_to_next_task.InMillisecondsF());
   }
   if (main_thread_only().current_fence) {
-    Value fence_state(Value::Type::DICTIONARY);
-    fence_state.SetIntKey(
+    Value::Dict fence_state;
+    fence_state.Set(
         "enqueue_order",
         static_cast<int>(
             main_thread_only().current_fence->task_order().enqueue_order()));
-    fence_state.SetBoolKey("activated_in_wake_up",
-                           !main_thread_only()
-                                .current_fence->task_order()
-                                .delayed_run_time()
-                                .is_null());
-    state.SetKey("current_fence", std::move(fence_state));
+    fence_state.Set("activated_in_wake_up", !main_thread_only()
+                                                 .current_fence->task_order()
+                                                 .delayed_run_time()
+                                                 .is_null());
+    state.Set("current_fence", std::move(fence_state));
   }
   if (main_thread_only().delayed_fence) {
-    state.SetDoubleKey(
-        "delayed_fence_seconds_from_now",
-        (main_thread_only().delayed_fence.value() - now).InSecondsF());
+    state.Set("delayed_fence_seconds_from_now",
+              (main_thread_only().delayed_fence.value() - now).InSecondsF());
   }
 
   bool verbose = false;
@@ -890,17 +911,16 @@ Value TaskQueueImpl::AsValue(TimeTicks now, bool force_verbose) const {
       &verbose);
 
   if (verbose || force_verbose) {
-    state.SetKey("immediate_incoming_queue",
-                 QueueAsValue(any_thread_.immediate_incoming_queue, now));
-    state.SetKey("delayed_work_queue",
-                 main_thread_only().delayed_work_queue->AsValue(now));
-    state.SetKey("immediate_work_queue",
-                 main_thread_only().immediate_work_queue->AsValue(now));
-    state.SetKey("delayed_incoming_queue",
-                 main_thread_only().delayed_incoming_queue.AsValue(now));
+    state.Set("immediate_incoming_queue",
+              QueueAsValue(any_thread_.immediate_incoming_queue, now));
+    state.Set("delayed_work_queue",
+              main_thread_only().delayed_work_queue->AsValue(now));
+    state.Set("immediate_work_queue",
+              main_thread_only().immediate_work_queue->AsValue(now));
+    state.Set("delayed_incoming_queue",
+              main_thread_only().delayed_incoming_queue.AsValue(now));
   }
-  state.SetStringKey("priority",
-                     TaskQueue::PriorityToString(GetQueuePriority()));
+  state.Set("priority", TaskQueue::PriorityToString(GetQueuePriority()));
   return state;
 }
 
@@ -916,9 +936,6 @@ void TaskQueueImpl::NotifyWillProcessTask(const Task& task,
                                           bool was_blocked_or_low_priority) {
   DCHECK(should_notify_observers_);
 
-  if (main_thread_only().blame_context)
-    main_thread_only().blame_context->Enter();
-
   for (auto& observer : main_thread_only().task_observers)
     observer.WillProcessTask(task, was_blocked_or_low_priority);
 }
@@ -927,12 +944,6 @@ void TaskQueueImpl::NotifyDidProcessTask(const Task& task) {
   DCHECK(should_notify_observers_);
   for (auto& observer : main_thread_only().task_observers)
     observer.DidProcessTask(task);
-  if (main_thread_only().blame_context)
-    main_thread_only().blame_context->Leave();
-}
-
-void TaskQueueImpl::SetBlameContext(trace_event::BlameContext* blame_context) {
-  main_thread_only().blame_context = blame_context;
 }
 
 void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
@@ -1065,30 +1076,30 @@ bool TaskQueueImpl::WasBlockedOrLowPriority(EnqueueOrder enqueue_order) const {
 }
 
 // static
-Value TaskQueueImpl::QueueAsValue(const TaskDeque& queue, TimeTicks now) {
-  Value state(Value::Type::LIST);
+Value::List TaskQueueImpl::QueueAsValue(const TaskDeque& queue, TimeTicks now) {
+  Value::List state;
   for (const Task& task : queue)
     state.Append(TaskAsValue(task, now));
   return state;
 }
 
 // static
-Value TaskQueueImpl::TaskAsValue(const Task& task, TimeTicks now) {
-  Value state(Value::Type::DICTIONARY);
-  state.SetStringKey("posted_from", task.posted_from.ToString());
+Value::Dict TaskQueueImpl::TaskAsValue(const Task& task, TimeTicks now) {
+  Value::Dict state;
+  state.Set("posted_from", task.posted_from.ToString());
   if (task.enqueue_order_set())
-    state.SetIntKey("enqueue_order", static_cast<int>(task.enqueue_order()));
-  state.SetIntKey("sequence_num", task.sequence_num);
-  state.SetBoolKey("nestable", task.nestable == Nestable::kNestable);
-  state.SetBoolKey("is_high_res", task.is_high_res);
-  state.SetBoolKey("is_cancelled", task.task.IsCancelled());
-  state.SetDoubleKey("delayed_run_time",
-                     (task.delayed_run_time - TimeTicks()).InMillisecondsF());
+    state.Set("enqueue_order", static_cast<int>(task.enqueue_order()));
+  state.Set("sequence_num", task.sequence_num);
+  state.Set("nestable", task.nestable == Nestable::kNestable);
+  state.Set("is_high_res", task.is_high_res);
+  state.Set("is_cancelled", task.task.IsCancelled());
+  state.Set("delayed_run_time",
+            (task.delayed_run_time - TimeTicks()).InMillisecondsF());
   const TimeDelta delayed_run_time_milliseconds_from_now =
       task.delayed_run_time.is_null() ? TimeDelta()
                                       : (task.delayed_run_time - now);
-  state.SetDoubleKey("delayed_run_time_milliseconds_from_now",
-                     delayed_run_time_milliseconds_from_now.InMillisecondsF());
+  state.Set("delayed_run_time_milliseconds_from_now",
+            delayed_run_time_milliseconds_from_now.InMillisecondsF());
   return state;
 }
 
@@ -1604,8 +1615,8 @@ void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks(
   });
 }
 
-Value TaskQueueImpl::DelayedIncomingQueue::AsValue(TimeTicks now) const {
-  Value state(Value::Type::LIST);
+Value::List TaskQueueImpl::DelayedIncomingQueue::AsValue(TimeTicks now) const {
+  Value::List state;
   for (const Task& task : queue_)
     state.Append(TaskAsValue(task, now));
   return state;

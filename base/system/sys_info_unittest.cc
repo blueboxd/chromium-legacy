@@ -85,7 +85,7 @@ TEST_F(SysInfoTest, MAYBE_AmountOfAvailablePhysicalMemory) {
     // On some android platforms, reserved is a substantial portion.
     const int available =
 #if BUILDFLAG(IS_ANDROID)
-        info.free - kReservedPhysicalMemory;
+        std::max(info.free - kReservedPhysicalMemory, 0);
 #else
         info.free;
 #endif  // BUILDFLAG(IS_ANDROID)

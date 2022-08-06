@@ -12,7 +12,7 @@
 #include "ash/projector/projector_annotation_tray.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/projector_metrics.h"
-#include "ash/projector/test/mock_projector_client.h"
+#include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -160,6 +160,18 @@ TEST_F(ProjectorUiControllerTest, EnablingDisablingMarker) {
   histogram_tester.ExpectUniqueSample(kProjectorToolbarHistogramName,
                                       ProjectorToolbar::kMarkerTool,
                                       /*count=*/1);
+}
+
+TEST_F(ProjectorUiControllerTest, ToggleMarkerWithKeyboardShortcut) {
+  controller_->ShowAnnotationTray(Shell::GetPrimaryRootWindow());
+  controller_->OnCanvasInitialized(true);
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressAndReleaseKey(ui::VKEY_OEM_3, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(controller_->is_annotator_enabled());
+
+  event_generator->PressAndReleaseKey(ui::VKEY_OEM_3, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(controller_->is_annotator_enabled());
 }
 
 TEST_F(ProjectorUiControllerTest, SetAnnotatorTool) {

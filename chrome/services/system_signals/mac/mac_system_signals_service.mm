@@ -4,16 +4,28 @@
 
 #include "chrome/services/system_signals/mac/mac_system_signals_service.h"
 
+#include <utility>
+
+#include "components/device_signals/core/common/common_types.h"
+#include "components/device_signals/core/system_signals/file_system_service.h"
+#include "components/device_signals/core/system_signals/mac/mac_platform_delegate.h"
+#include "components/device_signals/core/system_signals/platform_delegate.h"
+
 namespace system_signals {
 
-MacSystemSignalsService::MacSystemSignalsService() = default;
-MacSystemSignalsService::~MacSystemSignalsService() = default;
+MacSystemSignalsService::MacSystemSignalsService(
+    mojo::PendingReceiver<device_signals::mojom::SystemSignalsService> receiver)
+    : MacSystemSignalsService(
+          std::move(receiver),
+          device_signals::FileSystemService::Create(
+              std::make_unique<device_signals::MacPlatformDelegate>())) {}
 
-void MacSystemSignalsService::GetBinarySignals(
-    std::vector<device_signals::mojom::BinarySignalsRequestPtr> requests,
-    GetBinarySignalsCallback callback) {
-  // TODO(b/231326198): Implement this.
-  std::move(callback).Run({});
-}
+MacSystemSignalsService::MacSystemSignalsService(
+    mojo::PendingReceiver<device_signals::mojom::SystemSignalsService> receiver,
+    std::unique_ptr<device_signals::FileSystemService> file_system_service)
+    : BaseSystemSignalsService(std::move(receiver),
+                               std::move(file_system_service)) {}
+
+MacSystemSignalsService::~MacSystemSignalsService() = default;
 
 }  // namespace system_signals

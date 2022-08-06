@@ -5,11 +5,17 @@
 package org.chromium.components.browser_ui.accessibility;
 
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -22,6 +28,11 @@ public class PageZoomCoordinator {
     private final Delegate mDelegate;
     private final PropertyModel mModel;
     private final PageZoomMediator mMediator;
+
+    private WebContentsObserver mWebContentsObserver;
+    private GestureListenerManager mGestureListenerManager;
+    private GestureStateListener mGestureListener;
+
     private View mView;
 
     private static Boolean sShouldShowMenuItemForTesting;
@@ -53,17 +64,51 @@ public class PageZoomCoordinator {
      * @param webContents   WebContents that this zoom UI will control.
      */
     public void show(WebContents webContents) {
-        // If the view has not been created, lazily inflate from the view stub.
+        // If inflating for the first time or showing from hidden, start animation
         if (mView == null) {
+            // If the view has not been created, lazily inflate from the view stub.
             mView = mDelegate.getZoomControlView();
             PropertyModelChangeProcessor.create(mModel, mView, PageZoomViewBinder::bind);
-        } else {
+            mView.startAnimation(getInAnimation());
+        } else if (mView.getVisibility() != View.VISIBLE) {
             mView.setVisibility(View.VISIBLE);
+            mView.startAnimation(getInAnimation());
         }
-        mMediator.setWebContents(webContents);
 
-        // TODO(mschillaci): Remove this when proper dismiss conditions are added.
-        mView.postDelayed(this::hide, 50000);
+        mMediator.setWebContents(webContents);
+        mWebContentsObserver = new WebContentsObserver(webContents) {
+            @Override
+            public void navigationEntryCommitted(LoadCommittedDetails details) {
+                // When navigation occurs (i.e. navigate to another link, forward/backward
+                // navigation), hide the dialog
+                // Only on navigationEntryCommitted to avoid premature dismissal during transient
+                // didStartNavigation events
+                hide();
+            }
+
+            @Override
+            public void wasHidden() {
+                // When the web contents are hidden (i.e. navigate to another tab), hide the dialog
+                hide();
+            }
+
+            @Override
+            public void onWebContentsLostFocus() {
+                // When the web contents loses focus (i.e. omnibox selected), hide the dialog
+                hide();
+            }
+        };
+
+        mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
+        mGestureListener = new GestureStateListener() {
+            @Override
+            public void onScrollStarted(
+                    int scrollOffsetY, int scrollExtentY, boolean isDirectionUp) {
+                // On scroll, hide the dialog
+                hide();
+            }
+        };
+        mGestureListenerManager.addListener(mGestureListener);
     }
 
     /**
@@ -71,13 +116,25 @@ public class PageZoomCoordinator {
      */
     public void hide() {
         // TODO(mschillaci): Add a FrameLayout wrapper so the view can be removed.
-        mView.setVisibility(View.GONE);
+        if (mView != null && mView.getVisibility() == View.VISIBLE) {
+            Animation animation = getOutAnimation();
+            mView.startAnimation(animation);
+            mView.setVisibility(View.GONE);
+        }
     }
 
     /**
      * Clean-up views and children during destruction.
      */
-    public void destroy() {}
+    public void destroy() {
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.destroy();
+        }
+
+        if (mGestureListenerManager != null && mGestureListener != null) {
+            mGestureListenerManager.removeListener(mGestureListener);
+        }
+    }
 
     /**
      * Used for testing only, allows a mocked value for the {@link shouldShowMenuItem} method.
@@ -86,5 +143,17 @@ public class PageZoomCoordinator {
     @VisibleForTesting
     public static void setShouldShowMenuItemForTesting(@Nullable Boolean isEnabled) {
         sShouldShowMenuItemForTesting = isEnabled;
+    }
+
+    private Animation getInAnimation() {
+        Animation a = AnimationUtils.makeInChildBottomAnimation(mView.getContext());
+        return a;
+    }
+
+    private Animation getOutAnimation() {
+        Animation a =
+                AnimationUtils.loadAnimation(mView.getContext(), R.anim.slide_out_child_bottom);
+        a.setStartTime(AnimationUtils.currentAnimationTimeMillis());
+        return a;
     }
 }

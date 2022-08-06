@@ -144,10 +144,6 @@ const char* const kObsoleteComponentExtensionIds[] = {
     // The Video Player chrome app became obsolete in m93, but is preserved for
     // continued test coverage.
     "jcgeabjmjgoblfofpppfkcoakmfobdko",  // Video Player
-    // The Audio Player chrome app became obsolete in m97. This entry can be
-    // removed after references to kAudioPlayerAppId in component_loader.cc
-    // are removed.
-    "cjbfomnbifhcdnihkgipgfcihmgjfhbf"  // Audio Player
 };
 
 }  // namespace
@@ -803,8 +799,12 @@ bool ExtensionService::UninstallExtension(
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
   UnloadExtension(extension->id(), UnloadedExtensionReason::UNINSTALL);
+
+  // `UnloadExtension` ignores extensions that are `BLOCKLISTED` or `BLOCKED`
   if (registry_->blocklisted_extensions().Contains(extension->id()))
     registry_->RemoveBlocklisted(extension->id());
+  if (registry_->blocked_extensions().Contains(extension->id()))
+    registry_->RemoveBlocked(extension->id());
 
   // Prepare barrier closure for UninstallExtensionOnFileThread() task (if
   // applicable) and DataDeleter::StartDeleting().

@@ -34,7 +34,7 @@ using PartitionTlsKey = pthread_key_t;
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_64)
 namespace {
 
-PA_ALWAYS_INLINE void* FastTlsGet(intptr_t index) {
+PA_ALWAYS_INLINE void* FastTlsGet(PartitionTlsKey index) {
   // On macOS, pthread_getspecific() is in libSystem, so a call to it has to go
   // through PLT. However, and contrary to some other platforms, *all* TLS keys
   // are in a static array in the thread structure. So they are *always* at a
@@ -53,7 +53,10 @@ PA_ALWAYS_INLINE void* FastTlsGet(intptr_t index) {
   // This function is essentially inlining the content of pthread_getspecific()
   // here.
   intptr_t result;
-  asm("movq %%gs:(,%1,8), %0;" : "=r"(result) : "r"(index));
+  static_assert(sizeof index <= sizeof(intptr_t));
+  asm("movq %%gs:(,%1,8), %0;"
+      : "=r"(result)
+      : "r"(static_cast<intptr_t>(index)));
 
   return reinterpret_cast<void*>(result);
 }
@@ -139,19 +142,5 @@ PA_ALWAYS_INLINE void PartitionTlsSet(PartitionTlsKey key, void* value) {
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace partition_alloc::internal
-
-namespace base::internal {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::internal::PartitionTlsCreate;
-using ::partition_alloc::internal::PartitionTlsGet;
-using ::partition_alloc::internal::PartitionTlsKey;
-using ::partition_alloc::internal::PartitionTlsSet;
-#if BUILDFLAG(IS_WIN)
-using ::partition_alloc::internal::PartitionTlsSetOnDllProcessDetach;
-#endif  // BUILDFLAG(IS_WIN)
-
-}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TLS_H_

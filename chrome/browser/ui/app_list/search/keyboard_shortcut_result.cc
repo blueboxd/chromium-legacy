@@ -18,8 +18,11 @@
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/common/search_result_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/string_matching/tokenized_string_match.h"
+#include "chromeos/ash/components/string_matching/tokenized_string.h"
+#include "chromeos/ash/components/string_matching/tokenized_string_match.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -28,13 +31,11 @@ namespace app_list {
 
 namespace {
 
-using chromeos::string_matching::TokenizedString;
-using chromeos::string_matching::TokenizedStringMatch;
+using ::ash::string_matching::TokenizedString;
+using ::ash::string_matching::TokenizedStringMatch;
 using TextVector = ChromeSearchResult::TextVector;
-using TextItem = ash::SearchResultTextItem;
-using TextType = ash::SearchResultTextItemType;
-using IconCode = ash::SearchResultTextItem::IconCode;
-using KeyboardCode = ui::KeyboardCode;
+using IconCode = ::ash::SearchResultTextItem::IconCode;
+using ::ui::KeyboardCode;
 
 constexpr char kKeyboardShortcutScheme[] = "keyboard_shortcut://";
 
@@ -267,8 +268,13 @@ KeyboardShortcutResult::~KeyboardShortcutResult() = default;
 void KeyboardShortcutResult::Open(int event_flags) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-  proxy->Launch(ash::kInternalAppIdKeyboardShortcutViewer, event_flags,
-                apps::mojom::LaunchSource::kFromAppListQuery, nullptr);
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    proxy->Launch(ash::kInternalAppIdKeyboardShortcutViewer, event_flags,
+                  apps::LaunchSource::kFromAppListQuery, nullptr);
+  } else {
+    proxy->Launch(ash::kInternalAppIdKeyboardShortcutViewer, event_flags,
+                  apps::mojom::LaunchSource::kFromAppListQuery, nullptr);
+  }
 }
 
 double KeyboardShortcutResult::CalculateRelevance(

@@ -64,6 +64,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/events/test/test_event.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
@@ -83,11 +84,6 @@ const int kHighEngagement = 20;
 
 // An engagement score below MEDIUM.
 const int kLowEngagement = 1;
-
-class ClickEvent : public ui::Event {
- public:
-  ClickEvent() : ui::Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-};
 
 // A single test case for UKM collection on triggered heuristics.
 // |navigated_url| is the URL that will be navigated to, and |expected_results|
@@ -183,7 +179,7 @@ void OpenPageInfoBubble(Browser* browser) {
   LocationIconView* location_icon_view =
       browser_view->toolbar()->location_bar()->location_icon_view();
   ASSERT_TRUE(location_icon_view);
-  ClickEvent event;
+  ui::test::TestEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
       PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
@@ -848,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 
 // Tests that Safety Tips don't trigger when using a scoped allowlist.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       DoesntTriggersOnScopedAllowlist) {
+                       DoesntTriggerOnScopedAllowlist) {
   // This domain is one edit from google.com, but is allowed to spoof google.
   const GURL kNavigatedUrl = GetURL("googlee.com");
   const GURL kTargetUrl = GetURL("google.com");
@@ -1323,6 +1319,52 @@ IN_PROC_BROWSER_TEST_F(
   CheckRecordedHeuristicsUkmCount(2);
   CheckHeuristicsUkmRecord({kNavigatedUrl, {true, false, false}}, 0);
   CheckHeuristicsUkmRecord({kNavigatedUrl, {true, false, false}}, 1);
+}
+
+// Test that a Safety Tips is not shown and metrics are recorded when
+// a combo squatting url is flagged with a hard-coded brand name.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       DoesntTriggerOnComboSquatting) {
+  base::HistogramTester histograms;
+  const GURL kNavigatedUrl = GetURL("google-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+                               NavigationSuggestionEvent::kComboSquatting, 1);
+
+  // TODO(crbug.com/1343630): keyword (embedded keyword) heuristic should
+  // be removed from the code. The second `false` value in
+  // the input of CheckHeuristicsUkmRecord is correlated to this heuristic.
+  CheckRecordedHeuristicsUkmCount(1);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, false, true}}, 0);
+}
+
+// Test that a Safety Tips is not shown and metrics are recorded when
+// a combo squatting url is flagged with a brand name from engaged sites.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       DoesntTriggerOnComboSquattingSiteEngagement) {
+  base::HistogramTester histograms;
+  const GURL kEngagedUrl = GetURL("example.com");
+  const GURL kNavigatedUrl = GetURL("example-login.com");
+  SetEngagementScore(browser(), kEngagedUrl, kHighEngagement);
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(
+      lookalikes::kHistogramName,
+      NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
+
+  // Heuristics with no UI don't record Safety Tips UKM.
+  CheckRecordedHeuristicsUkmCount(0);
+  // TODO(crbug.com/1337475): Add CheckHeuristicsUkmRecord after showing the
+  // safety tip for this heuristic.
 }
 
 // Tests for Digital Asset Links for lookalike checks.

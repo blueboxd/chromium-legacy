@@ -30,7 +30,20 @@ namespace {
 const test::UIPath kSamlContainer = {"main-element", "body"};
 const test::UIPath kMainVerifyButton = {"main-element",
                                         "nextButtonVerifyScreen"};
+const test::UIPath kMainCancelButton = {"main-element",
+                                        "cancelButtonVerifyScreen"};
+const test::UIPath kErrorCancelButton = {"main-element",
+                                         "cancelButtonErrorScreen"};
+const test::UIPath kSamlCancelButton = {"main-element", "saml-close-button"};
 const test::UIPath kMainScreen = {"main-element", "verifyAccountScreen"};
+const test::UIPath kErrorScreen = {"main-element", "errorScreen"};
+const test::UIPath kSamlConfirmPasswordScreen = {"main-element",
+                                                 "samlConfirmPasswordScreen"};
+const test::UIPath kPasswordInput = {"main-element", "passwordInput"};
+const test::UIPath kPasswordConfirmInput = {"main-element",
+                                            "confirmPasswordInput"};
+const test::UIPath kPasswordSubmit = {"main-element",
+                                      "nextButtonSamlConfirmPassword"};
 const char kSigninFrame[] = "signin-frame";
 
 // Network dialog
@@ -116,6 +129,21 @@ void LockScreenReauthDialogTestHelper::ClickVerifyButton() {
   DialogJS().TapOnPath(kMainVerifyButton);
 }
 
+void LockScreenReauthDialogTestHelper::ClickCancelButtonOnVerifyScreen() {
+  ExpectVerifyAccountScreenVisible();
+  DialogJS().TapOnPath(kMainCancelButton);
+}
+
+void LockScreenReauthDialogTestHelper::ClickCancelButtonOnErrorScreen() {
+  ExpectErrorScreenVisible();
+  DialogJS().TapOnPath(kErrorCancelButton);
+}
+
+void LockScreenReauthDialogTestHelper::ClickCancelButtonOnSamlScreen() {
+  ExpectSamlScreenVisible();
+  DialogJS().TapOnPath(kSamlCancelButton);
+}
+
 void LockScreenReauthDialogTestHelper::WaitForSamlScreen() {
   WaitForAuthenticatorToLoad();
   DialogJS().CreateVisibilityWaiter(true, kSamlContainer)->Wait();
@@ -130,12 +158,50 @@ void LockScreenReauthDialogTestHelper::ExpectVerifyAccountScreenHidden() {
   DialogJS().ExpectHiddenPath(kMainScreen);
 }
 
+void LockScreenReauthDialogTestHelper::ExpectErrorScreenVisible() {
+  DialogJS().CreateVisibilityWaiter(true, kErrorScreen)->Wait();
+  DialogJS().ExpectVisiblePath(kErrorScreen);
+}
+
 void LockScreenReauthDialogTestHelper::ExpectSamlScreenVisible() {
   DialogJS().ExpectVisiblePath(kSamlContainer);
 }
 
+void LockScreenReauthDialogTestHelper::ExpectSamlScreenHidden() {
+  DialogJS().ExpectHiddenPath(kSamlContainer);
+}
+
+void LockScreenReauthDialogTestHelper::ExpectSamlConfirmPasswordVisible() {
+  DialogJS().CreateVisibilityWaiter(true, kSamlConfirmPasswordScreen)->Wait();
+  DialogJS().ExpectVisiblePath(kSamlConfirmPasswordScreen);
+}
+
+void LockScreenReauthDialogTestHelper::ExpectPasswordConfirmInputHidden() {
+  DialogJS().CreateVisibilityWaiter(false, kPasswordConfirmInput)->Wait();
+  DialogJS().ExpectHiddenPath(kPasswordConfirmInput);
+}
+
+void LockScreenReauthDialogTestHelper::ExpectPasswordConfirmInputVisible() {
+  DialogJS().CreateVisibilityWaiter(true, kPasswordConfirmInput)->Wait();
+  DialogJS().ExpectVisiblePath(kPasswordConfirmInput);
+}
+
+void LockScreenReauthDialogTestHelper::SendConfirmPassword(
+    const std::string& password_to_confirm) {
+  DialogJS().TypeIntoPath(password_to_confirm, kPasswordInput);
+  DialogJS().TapOnPath(kPasswordSubmit);
+}
+
+void LockScreenReauthDialogTestHelper::SetManualPasswords(
+    const std::string& password,
+    const std::string& confirm_password) {
+  DialogJS().TypeIntoPath(password, kPasswordInput);
+  DialogJS().TypeIntoPath(confirm_password, kPasswordConfirmInput);
+  DialogJS().TapOnPath(kPasswordSubmit);
+}
+
 void LockScreenReauthDialogTestHelper::WaitForIdpPageLoad() {
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(DialogWebContents());
   content::ExecuteScriptAsync(
       DialogWebContents(),
       R"($('main-element').authenticator_.addEventListener('authFlowChange',
@@ -175,6 +241,14 @@ test::JSChecker LockScreenReauthDialogTestHelper::SigninFrameJS() {
 void LockScreenReauthDialogTestHelper::WaitForAuthenticatorToLoad() {
   base::RunLoop run_loop;
   if (!main_handler_->IsAuthenticatorLoaded(run_loop.QuitClosure())) {
+    run_loop.Run();
+  }
+}
+
+void LockScreenReauthDialogTestHelper::WaitForReauthDialogToClose() {
+  base::RunLoop run_loop;
+  if (!password_sync_manager_->IsReauthDialogClosedForTesting(
+          run_loop.QuitClosure())) {
     run_loop.Run();
   }
 }

@@ -160,8 +160,8 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   ContentAutofillDriver* driver = it->second.get();
   DCHECK(driver);
 
-  if (render_frame_host->GetLifecycleState() !=
-          content::RenderFrameHost::LifecycleState::kPrerendering &&
+  if (!render_frame_host->IsInLifecycleState(
+          content::RenderFrameHost::LifecycleState::kPrerendering) &&
       driver->autofill_manager()) {
     driver->autofill_manager()->ReportAutofillWebOTPMetrics(
         render_frame_host->DocumentUsedWebOTP());
@@ -174,8 +174,8 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   // and therefore won't close the popup.
   bool is_iframe = !driver->IsInAnyMainFrame();
   if (is_iframe && router_.last_queried_source() == driver) {
-    DCHECK_NE(content::RenderFrameHost::LifecycleState::kPrerendering,
-              render_frame_host->GetLifecycleState());
+    DCHECK(!render_frame_host->IsInLifecycleState(
+        content::RenderFrameHost::LifecycleState::kPrerendering));
     router_.HidePopup(driver);
   }
 
@@ -208,8 +208,11 @@ void ContentAutofillDriverFactory::DidFinishNavigation(
        navigation_handle->HasSubframeNavigationEntryCommitted())) {
     if (auto* driver =
             DriverForFrame(navigation_handle->GetRenderFrameHost())) {
-      if (!navigation_handle->IsInPrerenderedMainFrame())
+      if (!navigation_handle->IsInPrerenderedMainFrame()) {
         client_->HideAutofillPopup(PopupHidingReason::kNavigation);
+        if (client_->IsTouchToFillCreditCardSupported())
+          client_->HideTouchToFillCreditCard();
+      }
       driver->DidNavigateFrame(navigation_handle);
     }
   }
@@ -217,29 +220,10 @@ void ContentAutofillDriverFactory::DidFinishNavigation(
 
 void ContentAutofillDriverFactory::OnVisibilityChanged(
     content::Visibility visibility) {
-  if (visibility == content::Visibility::HIDDEN)
+  if (visibility == content::Visibility::HIDDEN) {
     client_->HideAutofillPopup(PopupHidingReason::kTabGone);
-}
-
-void ContentAutofillDriverFactory::ReadyToCommitNavigation(
-    content::NavigationHandle* navigation_handle) {
-  content::RenderFrameHost* render_frame_host =
-      navigation_handle->GetRenderFrameHost();
-  content::GlobalRenderFrameHostId render_frame_host_id(
-      render_frame_host->GetProcess()->GetID(),
-      render_frame_host->GetRoutingID());
-  // No need to report the metrics here if navigating to a different
-  // RenderFrameHost. It will be reported in |RenderFrameDeleted|.
-  // TODO(crbug.com/936696): Remove this logic when RenderDocument is enabled
-  // everywhere.
-  if (render_frame_host_id !=
-      navigation_handle->GetPreviousRenderFrameHostId()) {
-    return;
-  }
-  // Do not report metrics if prerendering.
-  if (render_frame_host->GetLifecycleState() ==
-      content::RenderFrameHost::LifecycleState::kPrerendering) {
-    return;
+    if (client_->IsTouchToFillCreditCardSupported())
+      client_->HideTouchToFillCreditCard();
   }
 }
 

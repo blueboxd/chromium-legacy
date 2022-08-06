@@ -22,11 +22,12 @@
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
 #include "chrome/browser/policy/messaging_layer/upload/event_upload_size_controller.h"
 #include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
+#include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/reporting_util.h"
-#include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
+#include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/status_macros.h"
 #include "components/reporting/util/statusor.h"
@@ -66,15 +67,14 @@ absl::optional<Priority> GetPriorityProtoFromSequenceInformationValue(
 }
 }  // namespace
 
-// ReportUploader handles enqueuing events on the |report_queue_|,
-// and uploading those events with the |client_|.
+// ReportUploader handles enqueuing events on the `report_queue_`.
 class RecordHandlerImpl::ReportUploader
     : public TaskRunnerContext<DmServerUploadService::CompletionResponse> {
  public:
   ReportUploader(
       bool need_encryption_key,
       std::vector<EncryptedRecord> records,
-      policy::CloudPolicyClient* client,
+      ScopedReservation scoped_reservation,
       DmServerUploadService::CompletionCallback upload_complete_cb,
       DmServerUploadService::EncryptionKeyAttachedCallback
           encryption_key_attached_cb,
@@ -84,10 +84,11 @@ class RecordHandlerImpl::ReportUploader
   ~ReportUploader() override;
 
   void OnStart() override;
+  void OnCompletion() override;
 
   void StartUpload();
-  void OnUploadComplete(absl::optional<base::Value::Dict> response);
-  void HandleFailedUpload();
+  void OnUploadComplete(StatusOr<base::Value::Dict> response);
+  void HandleFailedUpload(Status status);
   void HandleSuccessfulUpload();
   void Complete(DmServerUploadService::CompletionResponse result);
 
@@ -109,7 +110,7 @@ class RecordHandlerImpl::ReportUploader
 
   bool need_encryption_key_;
   std::vector<EncryptedRecord> records_;
-  raw_ptr<policy::CloudPolicyClient> client_;
+  ScopedReservation scoped_reservation_;
 
   // Encryption key delivery callback.
   DmServerUploadService::EncryptionKeyAttachedCallback
@@ -135,29 +136,22 @@ class RecordHandlerImpl::ReportUploader
 RecordHandlerImpl::ReportUploader::ReportUploader(
     bool need_encryption_key,
     std::vector<EncryptedRecord> records,
-    policy::CloudPolicyClient* client,
-    DmServerUploadService::CompletionCallback client_cb,
+    ScopedReservation scoped_reservation,
+    DmServerUploadService::CompletionCallback completion_cb,
     DmServerUploadService::EncryptionKeyAttachedCallback
         encryption_key_attached_cb,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
     : TaskRunnerContext<DmServerUploadService::CompletionResponse>(
-          std::move(client_cb),
+          std::move(completion_cb),
           sequenced_task_runner),
       need_encryption_key_(need_encryption_key),
       records_(std::move(records)),
-      client_(client),
+      scoped_reservation_(std::move(scoped_reservation)),
       encryption_key_attached_cb_(std::move(encryption_key_attached_cb)) {}
 
 RecordHandlerImpl::ReportUploader::~ReportUploader() = default;
 
 void RecordHandlerImpl::ReportUploader::OnStart() {
-  if (client_ == nullptr) {
-    Status null_client = Status(error::INVALID_ARGUMENT, "Client was null");
-    LOG(ERROR) << null_client;
-    Complete(null_client);
-    return;
-  }
-
   if (records_.empty() && !need_encryption_key_) {
     Status empty_records =
         Status(error::INVALID_ARGUMENT, "records_ was empty");
@@ -176,7 +170,7 @@ void RecordHandlerImpl::ReportUploader::StartUpload() {
 
   UploadEncryptedReportingRequestBuilder request_builder{need_encryption_key_};
   for (auto record : records_) {
-    request_builder.AddRecord(std::move(record));
+    request_builder.AddRecord(std::move(record), scoped_reservation_);
   }
 
   // Assign random UUID as the request id for server side log correlation
@@ -185,7 +179,8 @@ void RecordHandlerImpl::ReportUploader::StartUpload() {
 
   auto request_result = request_builder.Build();
   if (!request_result.has_value()) {
-    std::move(response_cb).Run(absl::nullopt);
+    std::move(response_cb)
+        .Run(Status(error::FAILED_PRECONDITION, "Failure to build request"));
     return;
   }
 
@@ -195,30 +190,38 @@ void RecordHandlerImpl::ReportUploader::StartUpload() {
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](policy::CloudPolicyClient* client, base::Value::Dict request,
-             base::OnceCallback<void(absl::optional<base::Value::Dict>)>
-                 response_cb) {
-            client->UploadEncryptedReport(
+          [](base::Value::Dict request,
+             ReportingServerConnector::ResponseCallback response_cb) {
+            ReportingServerConnector::UploadEncryptedReport(
                 std::move(request),
-                reporting::GetContext(ProfileManager::GetPrimaryUserProfile()),
+                GetContext(ProfileManager::GetPrimaryUserProfile()),
                 std::move(response_cb));
           },
-          client_, std::move(request_result.value()), std::move(response_cb)));
+          std::move(request_result.value()), std::move(response_cb)));
+}
+
+void RecordHandlerImpl::ReportUploader::OnCompletion() {
+  // In case |OnUploadComplete| was skipped for whatever reason.
+  ScopedReservation release(std::move(scoped_reservation_));
 }
 
 void RecordHandlerImpl::ReportUploader::OnUploadComplete(
-    absl::optional<base::Value::Dict> response) {
-  if (!response.has_value()) {
+    StatusOr<base::Value::Dict> response) {
+  // Release reservation right away, since we no londer keep
+  // |base::Value::Dict request| it was referring to.
+  scoped_reservation_.Reduce(0uL);
+
+  if (!response.ok()) {
     Schedule(&RecordHandlerImpl::ReportUploader::HandleFailedUpload,
-             base::Unretained(this));
+             base::Unretained(this), response.status());
     return;
   }
-  last_response_ = std::move(response.value());
+  last_response_ = std::move(response.ValueOrDie());
   Schedule(&RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload,
            base::Unretained(this));
 }
 
-void RecordHandlerImpl::ReportUploader::HandleFailedUpload() {
+void RecordHandlerImpl::ReportUploader::HandleFailedUpload(Status status) {
   if (highest_sequence_information_.has_value()) {
     Complete(DmServerUploadService::SuccessfulUploadResponse{
         .sequence_information =
@@ -227,7 +230,7 @@ void RecordHandlerImpl::ReportUploader::HandleFailedUpload() {
     return;
   }
 
-  Complete(Status(error::INTERNAL, "Unable to upload any records"));
+  Complete(status);
 }
 
 void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload() {
@@ -430,20 +433,20 @@ RecordHandlerImpl::ReportUploader::SequenceInformationValueToProto(
   return proto;
 }
 
-RecordHandlerImpl::RecordHandlerImpl(policy::CloudPolicyClient* client)
-    : RecordHandler(client),
-      sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {}
+RecordHandlerImpl::RecordHandlerImpl()
+    : sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {}
 
 RecordHandlerImpl::~RecordHandlerImpl() = default;
 
 void RecordHandlerImpl::HandleRecords(
     bool need_encryption_key,
     std::vector<EncryptedRecord> records,
+    ScopedReservation scoped_reservation,
     DmServerUploadService::CompletionCallback upload_complete_cb,
     DmServerUploadService::EncryptionKeyAttachedCallback
         encryption_key_attached_cb) {
   Start<RecordHandlerImpl::ReportUploader>(
-      need_encryption_key, std::move(records), GetClient(),
+      need_encryption_key, std::move(records), std::move(scoped_reservation),
       std::move(upload_complete_cb), std::move(encryption_key_attached_cb),
       sequenced_task_runner_);
 }

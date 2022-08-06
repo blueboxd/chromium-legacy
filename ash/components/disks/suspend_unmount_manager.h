@@ -11,7 +11,7 @@
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 
 namespace ash {
@@ -32,8 +32,7 @@ class COMPONENT_EXPORT(ASH_DISKS) SuspendUnmountManager
   ~SuspendUnmountManager() override;
 
  private:
-  void OnUnmountComplete(const std::string& mount_path,
-                         chromeos::MountError error_code);
+  void OnUnmountComplete(const std::string& mount_path, MountError error_code);
 
   // PowerManagerClient::Observer
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;

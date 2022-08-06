@@ -4,8 +4,6 @@
 
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 
-import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
-
 import {DialogType} from '../../../common/js/dialog_type.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {str, util} from '../../../common/js/util.js';
@@ -74,7 +72,7 @@ export class DialogFooter {
         return this.getSelectValue();
       },
       enumerable: true,
-      configurable: true
+      configurable: true,
     });
     this.fileTypeSelector.getSelectValue = this.getSelectValue_.bind(this);
     this.fileTypeSelector.addEventListener(
@@ -260,8 +258,8 @@ export class DialogFooter {
    */
   static findDialogFooter(dialogType, document) {
     return new DialogFooter(
-        dialogType, queryRequiredElement('.dialog-footer'),
-        queryRequiredElement('#filename-input-box cr-input'));
+        dialogType, util.queryRequiredElement('.dialog-footer'),
+        util.queryRequiredElement('#filename-input-box cr-input'));
   }
 
   /**

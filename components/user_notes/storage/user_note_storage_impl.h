@@ -36,16 +36,16 @@ class UserNoteStorageImpl : public UserNoteStorage {
   void RemoveObserver(Observer* observer) override;
 
   void GetNoteMetadataForUrls(
-      const std::vector<GURL>& urls,
+      const UserNoteStorage::UrlSet& urls,
       base::OnceCallback<void(UserNoteMetadataSnapshot)> callback) override;
 
   void GetNotesById(
-      const std::vector<base::UnguessableToken>& ids,
+      const UserNoteStorage::IdSet& ids,
       base::OnceCallback<void(std::vector<std::unique_ptr<UserNote>>)> callback)
       override;
 
   void UpdateNote(const UserNote* model,
-                  std::string note_body_text,
+                  std::u16string note_body_text,
                   bool is_creation = false) override;
 
   void DeleteNote(const base::UnguessableToken& id) override;

@@ -9,9 +9,9 @@
 #include "ash/components/tether/tether_host_response_recorder.h"
 #include "base/bind.h"
 #include "base/timer/timer.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 
 namespace ash {
 
@@ -118,9 +118,8 @@ bool ConnectionPreserverImpl::IsConnectedToInternet() {
   // If a network is active (i.e., connecting or connected), it will be returned
   // at the front of the list, so using FirstNetworkByType() guarantees that we
   // will find an active network if there is one.
-  const chromeos::NetworkState* first_network =
-      network_state_handler_->FirstNetworkByType(
-          chromeos::NetworkTypePattern::Default());
+  const NetworkState* first_network =
+      network_state_handler_->FirstNetworkByType(NetworkTypePattern::Default());
   return first_network && first_network->IsConnectingOrConnected();
 }
 

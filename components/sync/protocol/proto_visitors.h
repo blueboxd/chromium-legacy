@@ -35,6 +35,7 @@
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
+#include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
@@ -298,6 +299,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
   VISIT(cookie_jar_mismatch);
   VISIT(single_client);
   VISIT_REP(devices_fcm_registration_tokens);
+  VISIT(single_client_with_standalone_invalidations);
+  VISIT_REP(fcm_registration_tokens_for_interested_clients);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientStatus& proto) {
@@ -541,7 +544,6 @@ VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesCallerInfo& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesMessage& proto) {
   VISIT(caller_info);
   VISIT(fetch_folders);
-  VISIT(batch_size);
   VISIT_REP(from_progress_marker);
   VISIT(streaming);
   VISIT(need_encryption_key);
@@ -681,7 +683,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WebauthnCredentialSpecifics& proto) {
   VISIT(creation_time);
   VISIT(user_name);
   VISIT(user_display_name);
-  VISIT_ENUM(payments_support);
+  VISIT(third_party_payments_support);
   // |private_key| is deliberately omitted to avoid including sensitive
   // information in debugging output, which might be included in bug reports
   // etc.
@@ -831,6 +833,26 @@ VISIT_PROTO_FIELDS(const sync_pb::ReadingListSpecifics& proto) {
   VISIT(first_read_time_us);
   VISIT(update_title_time_us);
   VISIT(estimated_read_time_seconds);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SavedTabGroupSpecifics& proto) {
+  VISIT(guid);
+  VISIT(creation_time_windows_epoch_micros);
+  VISIT(update_time_windows_epoch_micros);
+  VISIT(group);
+  VISIT(tab);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SavedTabGroup& proto) {
+  VISIT(position);
+  VISIT(title);
+  VISIT(color);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SavedTabGroupTab& proto) {
+  VISIT(position);
+  VISIT(group_guid);
+  VISIT(url);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {

@@ -264,6 +264,7 @@ CorsURLLoader::CorsURLLoader(
     const base::flat_set<std::string>* allowed_exempt_headers,
     bool allow_any_cors_exempt_header,
     NonWildcardRequestHeadersSupport non_wildcard_request_headers_support,
+    HasFactoryOverride has_factory_override,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
     const mojom::ClientSecurityState* factory_client_security_state,
@@ -286,6 +287,7 @@ CorsURLLoader::CorsURLLoader(
       allow_any_cors_exempt_header_(allow_any_cors_exempt_header),
       non_wildcard_request_headers_support_(
           non_wildcard_request_headers_support),
+      has_factory_override_(has_factory_override),
       isolation_info_(isolation_info),
       factory_client_security_state_(factory_client_security_state),
       memory_cache_(memory_cache),
@@ -857,10 +859,10 @@ void CorsURLLoader::StartNetworkRequest() {
 
   // Check whether a fresh entry exists in the in-memory cache.
   absl::optional<std::string> cache_key;
-  if (memory_cache_) {
-    cache_key = memory_cache_->CanServe(request_,
-                                        isolation_info_.network_isolation_key(),
-                                        cross_origin_embedder_policy_);
+  if (memory_cache_ && !has_factory_override_) {
+    cache_key = memory_cache_->CanServe(
+        options_, request_, isolation_info_.network_isolation_key(),
+        cross_origin_embedder_policy_, GetClientSecurityState());
   }
 
   if (cache_key.has_value()) {
@@ -895,7 +897,7 @@ void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   }
 
   if (status.error_code == net::OK) {
-    DCHECK_GT(status.completion_time, network_loader_start_time_);
+    DCHECK_GE(status.completion_time, network_loader_start_time_);
     base::TimeDelta elapsed =
         status.completion_time - network_loader_start_time_;
     if (memory_cache_was_used_) {

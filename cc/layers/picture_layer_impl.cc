@@ -230,10 +230,9 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
     Occlusion occlusion = draw_properties().occlusion_in_content_space;
 
     EffectNode* effect_node = GetEffectTree().Node(effect_tree_index());
-    // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
     SolidColorLayerImpl::AppendSolidQuads(
         render_pass, occlusion, shared_quad_state, scaled_visible_layer_rect,
-        SkColor4f::FromColor(raster_source_->GetSolidColor()),
+        raster_source_->GetSolidColor(),
         !layer_tree_impl()->settings().enable_edge_anti_aliasing,
         effect_node->blend_mode, append_quads_data);
     return;
@@ -489,17 +488,13 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
           break;
         }
         case TileDrawInfo::SOLID_COLOR_MODE: {
-          float alpha =
-              (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
-              shared_quad_state->opacity;
+          float alpha = draw_info.solid_color().fA * shared_quad_state->opacity;
           if (alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-            // TODO(crbug.com/1308932): draw_info.solid_color to SkColor4f
             quad->SetNew(
                 shared_quad_state, offset_geometry_rect,
-                offset_visible_geometry_rect,
-                SkColor4f::FromColor(draw_info.solid_color()),
+                offset_visible_geometry_rect, draw_info.solid_color(),
                 !layer_tree_impl()->settings().enable_edge_anti_aliasing);
             ValidateQuadResources(quad);
           }

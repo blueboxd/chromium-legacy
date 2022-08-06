@@ -75,31 +75,79 @@ class ExtensionDownloaderTest : public ExtensionsTest {
     return helper->downloader().pending_tasks_;
   }
 
-  // Creates an update manifest for several extensions. Provided values should
-  // be tuples of (extension id, version, URL to the CRX file).
+  // Struct for creating app entries in the update manifest XML.
+  struct UpdateManifestItem {
+    explicit UpdateManifestItem(ExtensionId id) : id(std::move(id)) {}
+
+    UpdateManifestItem&& codebase(std::string value) && {
+      updatecheck_params.emplace("codebase", std::move(value));
+      return std::move(*this);
+    }
+    UpdateManifestItem&& info(std::string value) && {
+      updatecheck_params.emplace("info", std::move(value));
+      return std::move(*this);
+    }
+    UpdateManifestItem&& prodversionmin(std::string value) && {
+      updatecheck_params.emplace("prodversionmin", std::move(value));
+      return std::move(*this);
+    }
+    UpdateManifestItem&& status(std::string value) && {
+      updatecheck_params.emplace("status", std::move(value));
+      return std::move(*this);
+    }
+    UpdateManifestItem&& version(std::string value) && {
+      updatecheck_params.emplace("version", std::move(value));
+      return std::move(*this);
+    }
+
+    ExtensionId id;
+    std::map<std::string, std::string> updatecheck_params;
+  };
+
+  // A generic method to create an XML update manifest. For each extension an
+  // extension ID should be provided along with parameters of the updatecheck
+  // tag.
   std::string CreateUpdateManifest(
-      const std::vector<std::tuple<ExtensionId, std::string, std::string>>&
-          extensions) {
+      const std::vector<UpdateManifestItem>& extensions) {
     std::string content =
         "<?xml version='1.0' encoding='UTF-8'?>"
         "<gupdate xmlns='http://www.google.com/update2/response'"
         "                protocol='2.0'>";
-    for (const auto& [id, version, codebase] : extensions) {
+    for (const auto& update_item : extensions) {
       content += base::StringPrintf(
           " <app appid='%s'>"
-          "  <updatecheck codebase='%s' version='%s' prodversionmin='1.1' />"
-          " </app>",
-          id.c_str(), codebase.c_str(), version.c_str());
+          "  <updatecheck",
+          update_item.id.c_str());
+      for (const auto& [name, value] : update_item.updatecheck_params) {
+        content += base::StringPrintf(" %s='%s'", name.c_str(), value.c_str());
+      }
+      content +=
+          " />"
+          " </app>";
     }
     content += "</gupdate>";
     return content;
   }
 
-  std::string CreateUpdateManifest(const std::string& extension_id,
-                                   const std::string& extension_version) {
-    return CreateUpdateManifest(
-        {std::make_tuple(extension_id, extension_version,
-                         "http://example.com/extension_1.2.3.4.crx")});
+  // Creates an update manifest for several extensions. Provided values should
+  // be tuples of (extension id, version, URL to the CRX file).
+  std::string CreateUpdateManifest(
+      const std::vector<std::tuple<ExtensionId, std::string, std::string>>&
+          extensions) {
+    std::vector<UpdateManifestItem> extensions_raw;
+    for (const auto& [id, version, codebase] : extensions) {
+      extensions_raw.emplace_back(UpdateManifestItem(id)
+                                      .codebase(codebase)
+                                      .version(version)
+                                      .prodversionmin("1.1"));
+    }
+    return CreateUpdateManifest(extensions_raw);
+  }
+
+  // Create an update manifest with one test extension.
+  std::string CreateDefaultUpdateManifest() {
+    return CreateUpdateManifest({std::make_tuple(
+        kTestExtensionId, "1.1", "http://example.com/extension_1.2.3.4.crx")});
   }
 
   void SetHelperHandlers(ExtensionDownloaderTestHelper* helper,
@@ -119,7 +167,7 @@ TEST_F(ExtensionDownloaderTest, TestStageChanges) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  const std::string manifest = CreateDefaultUpdateManifest();
   SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
@@ -175,7 +223,7 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesNoUpdates) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  const std::string manifest = CreateDefaultUpdateManifest();
   SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
@@ -313,15 +361,9 @@ TEST_F(ExtensionDownloaderTest, TestNoUpdatesManifestReports) {
   GURL fetch_url = fetch->full_url();
 
   const std::string kManifest =
-      "<?xml version='1.0' encoding='UTF-8'?>"
-      "<gupdate xmlns='http://www.google.com/update2/response'"
-      "                protocol='2.0'>"
-      " <app appid='" +
-      std::string(kTestExtensionId) +
-      "'>"
-      "  <updatecheck info='bandwidth limit' status='noupdate' />"
-      " </app>"
-      "</gupdate>";
+      CreateUpdateManifest({UpdateManifestItem(kTestExtensionId)
+                                .status("noupdate")
+                                .info("bandwidth limit")});
   helper.test_url_loader_factory().AddResponse(fetch_url.spec(), kManifest,
                                                net::HTTP_OK);
 
@@ -346,7 +388,7 @@ TEST_F(ExtensionDownloaderTest, TestCacheStatusMiss) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  const std::string manifest = CreateDefaultUpdateManifest();
   SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   // Create cache and provide it to downloader.
@@ -374,7 +416,7 @@ TEST_F(ExtensionDownloaderTest, TestCacheStatusOutdated) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  const std::string manifest = CreateDefaultUpdateManifest();
   SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   // Create cache and provide it to downloader.
@@ -406,7 +448,7 @@ TEST_F(ExtensionDownloaderTest, TestCacheStatusHit) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  const std::string manifest = CreateDefaultUpdateManifest();
   SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   // Create cache and provide it to downloader.
@@ -701,6 +743,132 @@ TEST_F(ExtensionDownloaderTest, TestMultipleRequestsSameExtension) {
   EXPECT_EQ(results[kTestExtensionId], std::set<int>({0, 1}));
 
   testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Tests that update manifest fetches with the same URLs will be actually
+// merged.
+TEST_F(ExtensionDownloaderTest, TestUpdateManifestURLMerged) {
+  ExtensionDownloaderTestHelper helper;
+
+  ExtensionDownloaderTask task1 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task1.request_id = 1;
+  ExtensionDownloaderTask task2 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task2.request_id = 2;
+
+  int number_of_fetches = 0;
+  helper.test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        if (request.url.spec() == "https://example.com/extension1.crx") {
+          helper.test_url_loader_factory().AddResponse(request.url.spec(), "",
+                                                       net::HTTP_OK);
+          return;
+        }
+        number_of_fetches++;
+        helper.test_url_loader_factory().AddResponse(
+            request.url.spec(),
+            CreateUpdateManifest(
+                {std::make_tuple(kTestExtensionId, "1.0",
+                                 "https://example.com/extension1.crx")}),
+            net::HTTP_OK);
+      }));
+
+  helper.downloader().AddPendingExtension(std::move(task1));
+  helper.downloader().StartAllPending(nullptr);
+  // We expect the downloader to merge two requests when the first one will be
+  // processed. For that we ensure that the first one becomes active before we
+  // add the second one.
+  EXPECT_NE(helper.downloader().GetActiveManifestFetchForTesting(), nullptr);
+  helper.downloader().AddPendingExtension(std::move(task2));
+  helper.downloader().StartAllPending(nullptr);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(number_of_fetches, 1);
+}
+
+// Tests that extension fetches with the same URLs will be actually merged.
+TEST_F(ExtensionDownloaderTest, TestExtensionURLMerged) {
+  ExtensionDownloaderTestHelper helper;
+
+  ExtensionDownloaderTask task1 = CreateDownloaderTask(
+      kTestExtensionId, GURL("https://example.com/update1"));
+  task1.request_id = 1;
+  ExtensionDownloaderTask task2 = CreateDownloaderTask(
+      kTestExtensionId, GURL("https://example.com/update2"));
+  task2.request_id = 2;
+
+  int number_of_fetches = 0;
+  helper.test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        if (request.url.spec() == "https://example.com/extension1.crx") {
+          number_of_fetches++;
+          // Don't reply on this request immediately, make sure that manifest
+          // fetches will happen first.
+          return;
+        }
+        helper.test_url_loader_factory().AddResponse(
+            request.url.spec(),
+            CreateUpdateManifest(
+                {std::make_tuple(kTestExtensionId, "1.0",
+                                 "https://example.com/extension1.crx")}),
+            net::HTTP_OK);
+      }));
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillRepeatedly(Return(true));
+
+  helper.downloader().AddPendingExtension(std::move(task1));
+  helper.downloader().AddPendingExtension(std::move(task2));
+  helper.downloader().StartAllPending(nullptr);
+
+  content::RunAllTasksUntilIdle();
+  helper.test_url_loader_factory().AddResponse(
+      "https://example.com/extension1.crx", "", net::HTTP_OK);
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(number_of_fetches, 1);
+}
+
+// Tests how the downloader uses the cache when there is no network.
+TEST_F(ExtensionDownloaderTest, TestMultipleCacheAccess) {
+  ExtensionDownloaderTestHelper helper;
+
+  // Two tasks for the same extension ID will end up in two different but
+  // completely identical manifest fetches in the downloader, so when we'll ask
+  // the cache about the extension after network fetch failure, they should be
+  // merged into one fetch and cache should be queried only once.
+  ExtensionDownloaderTask task1 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task1.install_location = mojom::ManifestLocation::kExternalPolicyDownload;
+  task1.request_id = 1;
+  ExtensionDownloaderTask task2 = CreateDownloaderTask(
+      kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
+  task2.install_location = mojom::ManifestLocation::kExternalPolicyDownload;
+  task2.request_id = 2;
+
+  helper.test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        network::mojom::URLResponseHeadPtr response_head(
+            network::CreateURLResponseHead(net::HTTP_OK));
+        helper.test_url_loader_factory().AddResponse(
+            request.url, std::move(response_head), "" /* content*/,
+            network::URLLoaderCompletionStatus(net::ERR_INTERNET_DISCONNECTED));
+      }));
+
+  MockExtensionCache mock_cache;
+
+  EXPECT_CALL(mock_cache, GetExtension(kTestExtensionId, _, _, _)).Times(1);
+
+  helper.downloader().AddPendingExtension(std::move(task1));
+  helper.downloader().AddPendingExtension(std::move(task2));
+  helper.downloader().StartAllPending(&mock_cache);
+
+  content::RunAllTasksUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_cache);
 }
 
 }  // namespace extensions

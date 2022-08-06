@@ -292,12 +292,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   scoped_refptr<const Extension> extension(ExtensionBuilder("Test").Build());
   function->set_extension(extension.get());
-  std::unique_ptr<base::ListValue> result = utils::ToList(
+  base::Value::List windows = utils::ToList(
       utils::RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
 
-  base::ListValue* windows = result.get();
-  EXPECT_EQ(window_ids.size(), windows->GetListDeprecated().size());
-  for (const base::Value& result_window : windows->GetListDeprecated()) {
+  EXPECT_EQ(window_ids.size(), windows.size());
+  for (const base::Value& result_window : windows) {
     result_ids.insert(GetWindowId(utils::ToDictionary(result_window)));
 
     // "populate" was not passed in so tabs are not populated.
@@ -310,12 +309,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   result_ids.clear();
   function = new WindowsGetAllFunction();
   function->set_extension(extension.get());
-  result = utils::ToList(utils::RunFunctionAndReturnSingleResult(
+  windows = utils::ToList(utils::RunFunctionAndReturnSingleResult(
       function.get(), "[{\"populate\": true}]", browser()));
 
-  windows = result.get();
-  EXPECT_EQ(window_ids.size(), windows->GetListDeprecated().size());
-  for (const base::Value& result_window : windows->GetListDeprecated()) {
+  EXPECT_EQ(window_ids.size(), windows.size());
+  for (const base::Value& result_window : windows) {
     result_ids.insert(GetWindowId(utils::ToDictionary(result_window)));
 
     // "populate" was enabled so tabs should be populated.
@@ -356,16 +354,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   scoped_refptr<const Extension> extension(ExtensionBuilder("Test").Build());
   function->set_extension(extension.get());
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List windows(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           function.get(),
           "[{\"windowTypes\": [\"app\", \"devtools\", \"normal\", \"panel\", "
           "\"popup\"]}]",
           browser())));
 
-  base::ListValue* windows = result.get();
-  EXPECT_EQ(window_ids.size(), windows->GetListDeprecated().size());
-  for (const base::Value& result_window : windows->GetListDeprecated()) {
+  EXPECT_EQ(window_ids.size(), windows.size());
+  for (const base::Value& result_window : windows) {
     result_ids.insert(GetWindowId(utils::ToDictionary(result_window)));
 
     // "populate" was not passed in so tabs are not populated.
@@ -378,15 +375,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
   result_ids.clear();
   function = new WindowsGetAllFunction();
   function->set_extension(extension.get());
-  result = utils::ToList(utils::RunFunctionAndReturnSingleResult(
+  windows = utils::ToList(utils::RunFunctionAndReturnSingleResult(
       function.get(),
       "[{\"populate\": true, \"windowTypes\": [\"app\", \"devtools\", "
       "\"normal\", \"panel\", \"popup\"]}]",
       browser()));
 
-  windows = result.get();
-  EXPECT_EQ(window_ids.size(), windows->GetListDeprecated().size());
-  for (const base::Value& result_window : windows->GetListDeprecated()) {
+  EXPECT_EQ(window_ids.size(), windows.size());
+  for (const base::Value& result_window : windows) {
     result_ids.insert(GetWindowId(utils::ToDictionary(result_window)));
 
     // "populate" was enabled so tabs should be populated.
@@ -597,27 +593,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   // Get tabs in the 'current' window called from non-focused browser.
   scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
   function->set_extension(ExtensionBuilder("Test").Build().get());
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List result_tabs(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           function.get(), "[{\"currentWindow\":true}]", browser())));
 
-  base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
-  EXPECT_EQ(2u, result_tabs->GetListDeprecated().size());
-  for (const base::Value& result_tab : result_tabs->GetListDeprecated()) {
+  EXPECT_EQ(2u, result_tabs.size());
+  for (const base::Value& result_tab : result_tabs) {
     EXPECT_EQ(window_id, GetTabWindowId(utils::ToDictionary(result_tab)));
   }
 
   // Get tabs NOT in the 'current' window called from non-focused browser.
   function = new TabsQueryFunction();
   function->set_extension(ExtensionBuilder("Test").Build().get());
-  result = utils::ToList(utils::RunFunctionAndReturnSingleResult(
+  result_tabs = utils::ToList(utils::RunFunctionAndReturnSingleResult(
       function.get(), "[{\"currentWindow\":false}]", browser()));
 
-  result_tabs = result.get();
   // We should have one tab for each extra window.
-  EXPECT_EQ(kExtraWindows, result_tabs->GetListDeprecated().size());
-  for (const base::Value& result_tab : result_tabs->GetListDeprecated()) {
+  EXPECT_EQ(kExtraWindows, result_tabs.size());
+  for (const base::Value& result_tab : result_tabs) {
     EXPECT_NE(window_id, GetTabWindowId(utils::ToDictionary(result_tab)));
   }
 }
@@ -638,15 +632,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryAllTabsWithDevTools) {
   // Get tabs in the 'current' window called from non-focused browser.
   scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
   function->set_extension(ExtensionBuilder("Test").Build().get());
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List result_tabs(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           function.get(), "[{}]", browser())));
 
   std::set<int> result_ids;
-  base::ListValue* result_tabs = result.get();
   // We should have one tab per browser except for DevTools.
-  EXPECT_EQ(kNumWindows, result_tabs->GetListDeprecated().size());
-  for (const base::Value& result_tab : result_tabs->GetListDeprecated()) {
+  EXPECT_EQ(kNumWindows, result_tabs.size());
+  for (const base::Value& result_tab : result_tabs) {
     result_ids.insert(GetTabWindowId(utils::ToDictionary(result_tab)));
   }
   EXPECT_EQ(window_ids, result_ids);
@@ -669,11 +662,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryTabGroups) {
   constexpr char kFormatQueryArgs[] = R"([{"groupId":%d}])";
   const std::string args = base::StringPrintf(
       kFormatQueryArgs, tab_groups_util::GetGroupId(group_id));
-  std::unique_ptr<base::ListValue> result(
+  base::Value::List result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(function.get(),
                                                             args, browser())));
 
-  EXPECT_EQ(2u, result->GetListDeprecated().size());
+  EXPECT_EQ(2u, result.size());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
@@ -1261,18 +1254,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Get non-discarded tabs.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": false}]"));
+    base::Value::List result(RunQueryFunction("[{\"discarded\": false}]"));
 
     // The two created plus the default tab.
-    EXPECT_EQ(3u, result->GetListDeprecated().size());
+    EXPECT_EQ(3u, result.size());
   }
 
   // Get discarded tabs.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": true}]"));
-    EXPECT_EQ(0u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(0u, result.size());
   }
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -1294,22 +1285,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Get non-discarded tabs after discarding one tab.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": false}]"));
-    EXPECT_EQ(2u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": false}]"));
+    EXPECT_EQ(2u, result.size());
   }
 
   // Get discarded tabs after discarding one tab.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": true}]"));
-    EXPECT_EQ(1u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(1u, result.size());
 
     // Make sure the returned tab is the correct one.
     int tab_id_a = ExtensionTabUtil::GetTabId(web_contents_a);
 
-    absl::optional<int> id =
-        result->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+    absl::optional<int> id = result[0].FindIntKey(keys::kIdKey);
     ASSERT_TRUE(id);
 
     EXPECT_EQ(tab_id_a, *id);
@@ -1320,16 +1308,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Get non-discarded tabs after discarding two created tabs.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": false}]"));
-    ASSERT_EQ(1u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": false}]"));
+    ASSERT_EQ(1u, result.size());
 
     // Make sure the returned tab is the correct one.
     int tab_id_c =
         ExtensionTabUtil::GetTabId(tab_strip_model->GetWebContentsAt(0));
 
-    absl::optional<int> id =
-        result->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+    absl::optional<int> id = result[0].FindIntKey(keys::kIdKey);
     ASSERT_TRUE(id);
 
     EXPECT_EQ(tab_id_c, *id);
@@ -1337,9 +1323,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Get discarded tabs after discarding two created tabs.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": true}]"));
-    EXPECT_EQ(2u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(2u, result.size());
   }
 
   // Activates the first created tab.
@@ -1347,16 +1332,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Get non-discarded tabs after activating a discarded tab.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": false}]"));
-    EXPECT_EQ(2u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": false}]"));
+    EXPECT_EQ(2u, result.size());
   }
 
   // Get discarded tabs after activating a discarded tab.
   {
-    std::unique_ptr<base::ListValue> result(
-        RunQueryFunction("[{\"discarded\": true}]"));
-    EXPECT_EQ(1u, result->GetListDeprecated().size());
+    base::Value::List result(RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(1u, result.size());
   }
 }
 
@@ -1504,21 +1487,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   // Queries and results used.
   const char* kAutoDiscardableQueryInfo = "[{\"autoDiscardable\": true}]";
   const char* kNonAutoDiscardableQueryInfo = "[{\"autoDiscardable\": false}]";
-  std::unique_ptr<base::ListValue> query_result;
-  base::Value::Dict update_result;
 
   // Get auto-discardable tabs. Returns all since tabs are auto-discardable
   // by default.
-  query_result = RunQueryFunction(kAutoDiscardableQueryInfo);
-  EXPECT_EQ(3u, query_result->GetListDeprecated().size());
+  base::Value::List query_result = RunQueryFunction(kAutoDiscardableQueryInfo);
+  EXPECT_EQ(3u, query_result.size());
 
   // Get non auto-discardable tabs.
   query_result = RunQueryFunction(kNonAutoDiscardableQueryInfo);
-  EXPECT_EQ(0u, query_result->GetListDeprecated().size());
+  EXPECT_EQ(0u, query_result.size());
 
   // Update the auto-discardable state of web contents A.
   int tab_id_a = ExtensionTabUtil::GetTabId(web_contents_a);
-  update_result = RunUpdateFunction(
+  base::Value::Dict update_result = RunUpdateFunction(
       base::StringPrintf("[%u, {\"autoDiscardable\": false}]", tab_id_a));
   EXPECT_EQ(tab_id_a, api_test_utils::GetInteger(update_result, "id"));
   EXPECT_FALSE(api_test_utils::GetBoolean(update_result, "autoDiscardable"));
@@ -1530,15 +1511,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
 
   // Get auto-discardable tabs after changing the status of web contents A.
   query_result = RunQueryFunction(kAutoDiscardableQueryInfo);
-  EXPECT_EQ(2u, query_result->GetListDeprecated().size());
+  EXPECT_EQ(2u, query_result.size());
 
   // Get non auto-discardable tabs after changing the status of web contents A.
   query_result = RunQueryFunction(kNonAutoDiscardableQueryInfo);
-  ASSERT_EQ(1u, query_result->GetListDeprecated().size());
+  ASSERT_EQ(1u, query_result.size());
 
   // Make sure the returned tab is the correct one.
-  absl::optional<int> tab_id =
-      query_result->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+  absl::optional<int> tab_id = query_result[0].FindIntKey(keys::kIdKey);
   ASSERT_TRUE(tab_id);
   EXPECT_EQ(tab_id_a, *tab_id);
 
@@ -1551,18 +1531,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
 
   // Get auto-discardable tabs after changing the status of both created tabs.
   query_result = RunQueryFunction(kAutoDiscardableQueryInfo);
-  EXPECT_EQ(1u, query_result->GetListDeprecated().size());
+  EXPECT_EQ(1u, query_result.size());
 
   // Make sure the returned tab is the correct one.
-  absl::optional<int> id_value =
-      query_result->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+  absl::optional<int> id_value = query_result[0].FindIntKey(keys::kIdKey);
   ASSERT_TRUE(id_value);
   EXPECT_EQ(ExtensionTabUtil::GetTabId(tab_strip_model->GetWebContentsAt(0)),
             *id_value);
 
   // Get auto-discardable tabs after changing the status of both created tabs.
   query_result = RunQueryFunction(kNonAutoDiscardableQueryInfo);
-  EXPECT_EQ(2u, query_result->GetListDeprecated().size());
+  EXPECT_EQ(2u, query_result.size());
 
   // Resets the first tab back to auto-discardable.
   update_result = RunUpdateFunction(
@@ -1572,11 +1551,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
 
   // Get auto-discardable tabs after resetting the status of web contents A.
   query_result = RunQueryFunction(kAutoDiscardableQueryInfo);
-  EXPECT_EQ(2u, query_result->GetListDeprecated().size());
+  EXPECT_EQ(2u, query_result.size());
 
   // Get non auto-discardable tabs after resetting the status of web contents A.
   query_result = RunQueryFunction(kNonAutoDiscardableQueryInfo);
-  EXPECT_EQ(1u, query_result->GetListDeprecated().size());
+  EXPECT_EQ(1u, query_result.size());
 }
 
 // Tester class for the tabs.zoom* api functions.

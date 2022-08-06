@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_view_state_observer.h"
+#include "chrome/common/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -131,6 +133,136 @@ TEST_F(SidePanelCoordinatorTest, ToggleSidePanel) {
 
   coordinator_->Toggle();
   EXPECT_FALSE(browser_view()->right_aligned_side_panel()->GetVisible());
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelWidth) {
+  // Set side panel to right-aligned
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, true);
+  coordinator_->Toggle();
+  const int starting_width = 500;
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  const int increment = 50;
+  browser_view()->right_aligned_side_panel()->OnResize(increment, true);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width - increment);
+
+  // Set side panel to left-aligned
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, false);
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  browser_view()->right_aligned_side_panel()->OnResize(increment, true);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width + increment);
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelWidthMaxMin) {
+  coordinator_->Toggle();
+  const int starting_width = 500;
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  // Use an increment large enough to hit side panel and browser contents
+  // minimum width constraints.
+  const int large_increment = 1000000000;
+  browser_view()->right_aligned_side_panel()->OnResize(large_increment, true);
+  browser_view()->Layout();
+  EXPECT_EQ(
+      browser_view()->right_aligned_side_panel()->width(),
+      browser_view()->right_aligned_side_panel()->GetMinimumSize().width());
+
+  browser_view()->right_aligned_side_panel()->OnResize(-large_increment, true);
+  browser_view()->Layout();
+  BrowserViewLayout* layout_manager =
+      static_cast<BrowserViewLayout*>(browser_view()->GetLayoutManager());
+  const int min_web_contents_width =
+      layout_manager->GetMinWebContentsWidthForTesting();
+  EXPECT_EQ(browser_view()->contents_web_view()->width(),
+            min_web_contents_width);
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelWidthWindowResize) {
+  coordinator_->Toggle();
+  const int starting_width = 500;
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  // Shrink browser window enough that side panel should also shrink in
+  // observance of web contents minimum width.
+  gfx::Rect original_bounds(browser_view()->GetBounds());
+  gfx::Size new_size(starting_width, starting_width);
+  gfx::Rect new_bounds(original_bounds);
+  new_bounds.set_size(new_size);
+  // Explicitly restore the browser window on ChromeOS, as it would otherwise
+  // be maximized and the SetBounds call would be a no-op.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  browser_view()->Restore();
+#endif
+  browser_view()->SetBounds(new_bounds);
+  EXPECT_LT(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+  BrowserViewLayout* layout_manager =
+      static_cast<BrowserViewLayout*>(browser_view()->GetLayoutManager());
+  const int min_web_contents_width =
+      layout_manager->GetMinWebContentsWidthForTesting();
+  EXPECT_EQ(browser_view()->contents_web_view()->width(),
+            min_web_contents_width);
+
+  // Return browser window to original size, side panel should also return to
+  // size prior to window resize.
+  browser_view()->SetBounds(original_bounds);
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelAlignment) {
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, true);
+  EXPECT_TRUE(browser_view()->right_aligned_side_panel()->IsRightAligned());
+  EXPECT_EQ(
+      browser_view()->right_aligned_side_panel()->GetHorizontalAlignment(),
+      SidePanel::kAlignRight);
+
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, false);
+  EXPECT_FALSE(browser_view()->right_aligned_side_panel()->IsRightAligned());
+  EXPECT_EQ(
+      browser_view()->right_aligned_side_panel()->GetHorizontalAlignment(),
+      SidePanel::kAlignLeft);
+}
+
+// Verify that right and left alignment works the same as when in LTR mode.
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelAlignmentRTL) {
+  // Forcing the language to hebrew causes the ui to enter RTL mode.
+  base::test::ScopedRestoreICUDefaultLocale scoped_locale_("he");
+
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, true);
+  EXPECT_TRUE(browser_view()->right_aligned_side_panel()->IsRightAligned());
+  EXPECT_EQ(
+      browser_view()->right_aligned_side_panel()->GetHorizontalAlignment(),
+      SidePanel::kAlignRight);
+
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, false);
+  EXPECT_FALSE(browser_view()->right_aligned_side_panel()->IsRightAligned());
+  EXPECT_EQ(
+      browser_view()->right_aligned_side_panel()->GetHorizontalAlignment(),
+      SidePanel::kAlignLeft);
 }
 
 TEST_F(SidePanelCoordinatorTest,

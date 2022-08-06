@@ -221,7 +221,8 @@ void PrintPreviewHandlerChromeOS::SendPrinterSetup(
 }
 
 PrintPreviewHandler* PrintPreviewHandlerChromeOS::GetPrintPreviewHandler() {
-  PrintPreviewUI* ui = static_cast<PrintPreviewUI*>(web_ui()->GetController());
+  PrintPreviewUI* ui = web_ui()->GetController()->GetAs<PrintPreviewUI>();
+  CHECK(ui);
   return ui->handler();
 }
 
@@ -258,8 +259,18 @@ void PrintPreviewHandlerChromeOS::HandleRequestPrinterStatusUpdate(
   PrinterHandler* handler = GetPrinterHandler(mojom::PrinterType::kLocal);
   handler->StartPrinterStatusRequest(
       printer_id,
-      base::BindOnce(&PrintPreviewHandlerChromeOS::ResolveJavascriptCallback,
+      base::BindOnce(&PrintPreviewHandlerChromeOS::
+                         HandleRequestPrinterStatusUpdateCompletion,
                      weak_factory_.GetWeakPtr(), base::Value(callback_id)));
+}
+
+void PrintPreviewHandlerChromeOS::HandleRequestPrinterStatusUpdateCompletion(
+    base::Value callback_id,
+    absl::optional<base::Value::Dict> result) {
+  if (result)
+    ResolveJavascriptCallback(callback_id, *result);
+  else
+    ResolveJavascriptCallback(callback_id, base::Value());
 }
 
 void PrintPreviewHandlerChromeOS::HandleChoosePrintServers(

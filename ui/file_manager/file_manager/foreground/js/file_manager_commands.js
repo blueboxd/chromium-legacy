@@ -5,8 +5,8 @@
 import './webui_command_extender.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.js';
+import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.js';
 import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 
 import {getHoldingSpaceState, startIOTask} from '../../common/js/api.js';
@@ -1000,7 +1000,7 @@ CommandHandler.COMMANDS_['new-window'] = new (class extends FilesCommand {
   execute(event, fileManager) {
     fileManager.launchFileManager({
       currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
-          fileManager.getCurrentDirectoryEntry().toURL()
+          fileManager.getCurrentDirectoryEntry().toURL(),
     });
   }
 
@@ -1180,6 +1180,12 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
     if (!permanentlyDelete &&
         fileManager.fileOperationManager.willUseTrash(
             fileManager.volumeManager, entries)) {
+      if (window.isSWA) {
+        chrome.fileManagerPrivate.startIOTask(
+            chrome.fileManagerPrivate.IOTaskType.TRASH, entries,
+            /*params=*/ {});
+        return;
+      }
       fileManager.fileOperationManager.deleteEntries(entries);
       return;
     }
@@ -1288,12 +1294,14 @@ CommandHandler.registerUndoDeleteToast = function(fileManager) {
       callback: () => {
         fileManager.fileOperationManager.restoreDeleted(
             assert(e.trashedEntries));
-      }
+      },
     });
   };
 
-  util.addEventListenerToBackgroundComponent(
-      assert(fileManager.fileOperationManager), 'delete', onDeleted);
+  if (!window.isSWA) {
+    util.addEventListenerToBackgroundComponent(
+        assert(fileManager.fileOperationManager), 'delete', onDeleted);
+  }
 };
 
 /**
@@ -1307,6 +1315,18 @@ CommandHandler.COMMANDS_['restore-from-trash'] =
       execute(event, fileManager) {
         const entries =
             CommandUtil.getCommandEntries(fileManager, event.target);
+
+        if (window.isSWA) {
+          const infoEntries = entries.map(e => {
+            const entry = /** @type {!TrashEntry} */ (e);
+            return entry.infoEntry;
+          });
+          startIOTask(
+              chrome.fileManagerPrivate.IOTaskType.RESTORE, infoEntries,
+              /*params=*/ {});
+          return;
+        }
+
         fileManager.fileOperationManager.restoreDeleted(entries.map(e => {
           return /** @type {!TrashEntry} */ (e);
         }));
@@ -1996,6 +2016,59 @@ CommandHandler.COMMANDS_['get-info'] = new (class extends FilesCommand {
 })();
 
 /**
+ * Displays the Data Leak Prevention (DLP) Restriction details.
+ */
+CommandHandler.COMMANDS_['dlp-restriction-details'] =
+    new (class extends FilesCommand {
+      execute(event, fileManager) {
+        const entries = fileManager.getSelection().entries;
+
+        const metadata =
+            fileManager.metadataModel.getCache(entries, ['sourceUrl']);
+        if (!metadata || metadata.length !== 1) {
+          return;
+        }
+        const sourceUrl = metadata[0].sourceUrl;
+        if (sourceUrl) {
+          try {
+            chrome.fileManagerPrivate.showDlpRestrictionDetails(sourceUrl);
+          } catch (error) {
+            console.warn('Error showing DlpRestrictionDetails ', error);
+          }
+        }
+      }
+
+      /** @override */
+      canExecute(event, fileManager) {
+        if (!util.isDlpEnabled()) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+          return;
+        }
+
+        const entries = fileManager.getSelection().entries;
+
+        // Show this item only when one file is selected.
+        if (entries.length !== 1) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+          return;
+        }
+
+        const metadata =
+            fileManager.metadataModel.getCache(entries, ['isDlpRestricted']);
+        if (!metadata || metadata.length !== 1) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+        }
+
+        const isDlpRestricted = metadata[0].isDlpRestricted;
+        event.canExecute = isDlpRestricted;
+        event.command.setHidden(!isDlpRestricted);
+      }
+    })();
+
+/**
  * Focuses search input box.
  */
 CommandHandler.COMMANDS_['search'] = new (class extends FilesCommand {
@@ -2413,7 +2486,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = new (class extends FilesCommand {
           chrome.fileManagerPrivate.openSettingsSubpage('crostini/sharedPaths');
           CommandHandler.recordMenuItemSelected(
               CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST);
-        }
+        },
       });
     }
     // Show a confirmation dialog if we are sharing the root of a volume.
@@ -2490,7 +2563,7 @@ CommandHandler
               'app-management/pluginVm/sharedPaths');
           CommandHandler.recordMenuItemSelected(
               CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING_TOAST);
-        }
+        },
       });
     }
     // Show a confirmation dialog if we are sharing the root of a volume.
@@ -2971,7 +3044,7 @@ CommandHandler.COMMANDS_['set-wallpaper'] = new (class extends FilesCommand {
                 {
                   data: arrayBuffer,
                   layout: chrome.wallpaper.WallpaperLayout.CENTER_CROPPED,
-                  filename: 'wallpaper'
+                  filename: 'wallpaper',
                 },
                 () => {
                   if (chrome.runtime.lastError) {

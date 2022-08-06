@@ -39,6 +39,7 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_paths.h"
@@ -51,6 +52,7 @@
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "media/mojo/services/webrtc_video_perf_history.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -62,7 +64,6 @@
 #include "base/threading/platform_thread.h"
 #endif
 #include "base/memory/scoped_refptr.h"
-#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/media/library_cdm_test_helper.h"
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -223,27 +224,9 @@ class BrowsingDataRemoverBrowserTest
   }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // TODO(crbug.com/1231162): Remove this method once we migrate completely to
-  // the new backend.
-  int GetMediaLicenseCount() {
-    base::RunLoop run_loop;
-    int count = -1;
-    content::StoragePartition* partition =
-        browser()->profile()->GetDefaultStoragePartition();
-    scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper =
-        BrowsingDataMediaLicenseHelper::Create(
-            partition->GetFileSystemContext());
-    media_license_helper->StartFetching(base::BindLambdaForTesting(
-        [&](const std::list<content::StorageUsageInfo>& licenses) {
-          count = licenses.size();
-          LOG(INFO) << "Found " << count << " licenses.";
-          for (const auto& license : licenses)
-            LOG(INFO) << license.last_modified;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return count;
-  }
+  // TODO(crbug.com/1307796): Include quota nodes in CookieTreeModelCount to
+  // allow testing media licenses with TestSiteData().
+  int GetMediaLicenseCount() { return 0; }
 #endif
 
   inline void ExpectCookieTreeModelCount(int expected) {
@@ -776,6 +759,23 @@ class BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest
         password_manager::features::kEnablePasswordsAccountStorage);
   }
 
+  void ClearSiteDataAndWait(
+      const url::Origin& origin,
+      const absl::optional<net::CookiePartitionKey>& cookie_partition_key) {
+    base::RunLoop loop;
+    content::ClearSiteData(base::BindRepeating(
+                               [](content::BrowserContext* browser_context) {
+                                 return browser_context;
+                               },
+                               base::Unretained(GetBrowser()->profile())),
+                           origin,
+                           /*clear_cookies=*/true, /*clear_storage=*/true,
+                           /*clear_cache=*/true,
+                           /*avoid_closing_connections=*/true,
+                           cookie_partition_key, loop.QuitClosure());
+    loop.Run();
+  }
+
  private:
   base::test::ScopedFeatureList features_;
 };
@@ -848,6 +848,63 @@ IN_PROC_BROWSER_TEST_F(
   }
   EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
       prefs, &sync_service));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest,
+    ClearSiteData) {
+  PrefService* prefs = GetBrowser()->profile()->GetPrefs();
+
+  CoreAccountInfo account;
+  account.email = "name@account.com";
+  account.gaia = "name";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+
+  syncer::TestSyncService sync_service;
+  sync_service.SetHasSyncConsent(false);
+  sync_service.SetAccountInfo(account);
+  ASSERT_EQ(sync_service.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+
+  const GURL kFirstPartyURL("https://google.com");
+  const GURL kCrossSiteURL("https://example.com");
+
+  const struct {
+    const url::Origin origin;
+    const absl::optional<net::CookiePartitionKey> cookie_partition_key;
+    bool expects_opted_in;
+  } test_cases[] = {
+      {
+          url::Origin::Create(kFirstPartyURL),
+          absl::nullopt,
+          false,
+      },
+      {
+          url::Origin::Create(kCrossSiteURL),
+          absl::nullopt,
+          true,
+      },
+      {
+          url::Origin::Create(kFirstPartyURL),
+          net::CookiePartitionKey::FromURLForTesting(kFirstPartyURL),
+          false,
+      },
+      {
+          url::Origin::Create(kFirstPartyURL),
+          net::CookiePartitionKey::FromURLForTesting(kCrossSiteURL),
+          true,
+      },
+  };
+  for (const auto& test_case : test_cases) {
+    password_manager::features_util::OptInToAccountStorage(prefs,
+                                                           &sync_service);
+
+    ClearSiteDataAndWait(test_case.origin, test_case.cookie_partition_key);
+
+    ASSERT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                  prefs, &sync_service),
+              test_case.expects_opted_in);
+  }
 }
 
 // Parameterized to run tests for different deletion time ranges.
@@ -1071,10 +1128,6 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MediaLicenseDeletion) {
   ExpectCookieTreeModelCount(0);
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
-  // The new media license backend will not store media licenses explicitly
-  // within CookieTreeModel, but the data will still be tracked through the
-  // quota system. GetMediaLicenseCount() is expected to always return 0 using
-  // the new backend.
   // TODO(crbug.com/1307796): Fix GetCookiesTreeModelCount() to include quota
   // nodes. `count` should be 1 here.
   int count = 0;
@@ -1121,10 +1174,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   ExpectCookieTreeModelCount(0);
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
-  // The new media license backend will not store media licenses explicitly
-  // within CookieTreeModel, but the data will still be tracked through the
-  // quota system. GetMediaLicenseCount() is expected to always return 0 using
-  // the new backend.
   // TODO(crbug.com/1307796): Fix GetCookiesTreeModelCount() to include quota
   // nodes. `count` should be 1 here.
   int count = 0;
@@ -1141,10 +1190,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        MediaLicenseTimedDeletion) {
   const std::string kMediaLicenseType = "MediaLicense";
 
-  // The new media license backend will not store media licenses explicitly
-  // within CookieTreeModel, but the data will still be tracked through the
-  // quota system. GetMediaLicenseCount() is expected to always return 0 using
-  // the new backend.
   // TODO(crbug.com/1307796): Fix GetCookiesTreeModelCount() to include quota
   // nodes. `count` should be 1 here.
   int count = 0;
@@ -1216,10 +1261,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_EQ(0, GetMediaLicenseCount());
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
-  // The new media license backend will not store media licenses explicitly
-  // within CookieTreeModel, but the data will still be tracked through the
-  // quota system. GetMediaLicenseCount() is expected to always return 0 using
-  // the new backend.
   // TODO(crbug.com/1307796): Fix GetCookiesTreeModelCount() to include quota
   // nodes. `count` should be 1 here.
   int count = 0;

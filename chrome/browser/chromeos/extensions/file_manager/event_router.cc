@@ -50,7 +50,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_system_provider_metrics_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
+#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_ash.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -201,6 +201,8 @@ file_manager_private::IOTaskType GetIOTaskType(
       return file_manager_private::IO_TASK_TYPE_EXTRACT;
     case file_manager::io_task::OperationType::kMove:
       return file_manager_private::IO_TASK_TYPE_MOVE;
+    case file_manager::io_task::OperationType::kRestore:
+      return file_manager_private::IO_TASK_TYPE_RESTORE;
     case file_manager::io_task::OperationType::kTrash:
       return file_manager_private::IO_TASK_TYPE_TRASH;
     case file_manager::io_task::OperationType::kZip:
@@ -485,60 +487,60 @@ void RecordFileSystemProviderMountMetrics(const Volume& volume) {
 file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
     chromeos::MountError error) {
   switch (error) {
-    case chromeos::MOUNT_ERROR_NONE:
+    case chromeos::MountError::kNone:
       return file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS;
-    case chromeos::MOUNT_ERROR_UNKNOWN:
+    case chromeos::MountError::kUnknown:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN;
-    case chromeos::MOUNT_ERROR_INTERNAL:
+    case chromeos::MountError::kInternal:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INTERNAL;
-    case chromeos::MOUNT_ERROR_INVALID_ARGUMENT:
+    case chromeos::MountError::kInvalidArgument:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARGUMENT;
-    case chromeos::MOUNT_ERROR_INVALID_PATH:
+    case chromeos::MountError::kInvalidPath:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_PATH;
-    case chromeos::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
+    case chromeos::MountError::kPathAlreadyMounted:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_PATH_ALREADY_MOUNTED;
-    case chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED:
+    case chromeos::MountError::kPathNotMounted:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_PATH_NOT_MOUNTED;
-    case chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
+    case chromeos::MountError::kDirectoryCreationFailed:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_DIRECTORY_CREATION_FAILED;
-    case chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
+    case chromeos::MountError::kInvalidMountOptions:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_MOUNT_OPTIONS;
-    case chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
+    case chromeos::MountError::kInvalidUnmountOptions:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_UNMOUNT_OPTIONS;
-    case chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
+    case chromeos::MountError::kInsufficientPermissions:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INSUFFICIENT_PERMISSIONS;
-    case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
+    case chromeos::MountError::kMountProgramNotFound:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_NOT_FOUND;
-    case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
+    case chromeos::MountError::kMountProgramFailed:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_FAILED;
-    case chromeos::MOUNT_ERROR_INVALID_DEVICE_PATH:
+    case chromeos::MountError::kInvalidDevicePath:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_DEVICE_PATH;
-    case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
+    case chromeos::MountError::kUnknownFilesystem:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN_FILESYSTEM;
-    case chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
+    case chromeos::MountError::kUnsupportedFilesystem:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM;
-    case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
+    case chromeos::MountError::kInvalidArchive:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARCHIVE;
-    case chromeos::MOUNT_ERROR_NEED_PASSWORD:
+    case chromeos::MountError::kNeedPassword:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_NEED_PASSWORD;
-    case chromeos::MOUNT_ERROR_IN_PROGRESS:
+    case chromeos::MountError::kInProgress:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_IN_PROGRESS;
-    case chromeos::MOUNT_ERROR_CANCELLED:
+    case chromeos::MountError::kCancelled:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_CANCELLED;
     // Not a real error.
-    case chromeos::MOUNT_ERROR_COUNT:
+    case chromeos::MountError::kCount:
       NOTREACHED();
   }
   NOTREACHED();
@@ -1035,7 +1037,7 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
   // TODO(mtomasz): Move VolumeManager and part of the event router outside of
   // file_manager, so there is no dependency between File System API and the
   // file_manager code.
-  extensions::file_system_api::DispatchVolumeListChangeEvent(profile_);
+  extensions::file_system_api::DispatchVolumeListChangeEventAsh(profile_);
 }
 
 void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
@@ -1044,6 +1046,11 @@ void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
   DispatchMountCompletedEvent(
       file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT, error_code,
       volume);
+
+  // TODO(mtomasz): Move VolumeManager and part of the event router outside of
+  // file_manager, so there is no dependency between File System API and the
+  // file_manager code.
+  extensions::file_system_api::DispatchVolumeListChangeEventAsh(profile_);
 }
 
 void EventRouter::DispatchMountCompletedEvent(

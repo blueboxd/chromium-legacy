@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#import "components/omnibox/common/omnibox_features.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
@@ -41,6 +42,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
+#import "ios/chrome/browser/ui/omnibox/zero_suggest_prefetch_helper.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -67,6 +69,10 @@
 
 // The return delegate.
 @property(nonatomic, strong) ForwardingReturnDelegate* returnDelegate;
+
+// Helper that starts ZPS prefetch when the user opens a NTP.
+@property(nonatomic, strong)
+    ZeroSuggestPrefetchHelper* zeroSuggestPrefetchHelper;
 
 @end
 
@@ -110,8 +116,8 @@
   id<OmniboxCommands> focuser =
       static_cast<id<OmniboxCommands>>(self.browser->GetCommandDispatcher());
   _editView = std::make_unique<OmniboxViewIOS>(
-      self.textField, self.editController, self.mediator,
-      self.browser->GetBrowserState(), focuser);
+      self.textField, self.editController, self.browser->GetBrowserState(),
+      focuser);
   self.pasteDelegate = [[OmniboxTextFieldPasteDelegate alloc] init];
   [self.textField setPasteDelegate:self.pasteDelegate];
 
@@ -134,6 +140,12 @@
   self.keyboardDelegate.omniboxTextField = self.textField;
   ConfigureAssistiveKeyboardViews(self.textField, kDotComTLD,
                                   self.keyboardDelegate);
+
+  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
+    self.zeroSuggestPrefetchHelper = [[ZeroSuggestPrefetchHelper alloc]
+          initWithWebStateList:self.browser->GetWebStateList()
+        autocompleteController:_editView->model()->autocomplete_controller()];
+  }
 }
 
 - (void)stop {
@@ -144,6 +156,7 @@
   self.viewController = nil;
   self.mediator = nil;
   self.returnDelegate = nil;
+  self.zeroSuggestPrefetchHelper = nil;
 
   [NSNotificationCenter.defaultCenter removeObserver:self];
 }
@@ -215,13 +228,9 @@
   self.returnDelegate = [[ForwardingReturnDelegate alloc] init];
   self.returnDelegate.acceptDelegate = _editView.get();
 
-  if (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
-    coordinator.pedalExtractor.matchPreviewDelegate = self.mediator;
-    coordinator.pedalExtractor.acceptDelegate = self.returnDelegate;
-    self.viewController.returnKeyDelegate = coordinator.pedalExtractor;
-  } else {
-    self.viewController.returnKeyDelegate = self.returnDelegate;
-  }
+  coordinator.pedalExtractor.matchPreviewDelegate = self.mediator;
+  coordinator.pedalExtractor.acceptDelegate = self.returnDelegate;
+  self.viewController.returnKeyDelegate = coordinator.pedalExtractor;
 
   return coordinator;
 }

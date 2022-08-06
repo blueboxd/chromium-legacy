@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,8 +39,7 @@ class ReadAnythingModelTest : public TestWithBrowserView {
         {features::kUnifiedSidePanel, features::kReadAnything}, {});
     TestWithBrowserView::SetUp();
 
-    std::string prefs_font_name;
-    model_ = std::make_unique<ReadAnythingModel>(prefs_font_name);
+    model_ = std::make_unique<ReadAnythingModel>();
   }
 
   // Wrapper methods around the ReadAnythingModel. These do nothing more
@@ -55,13 +55,20 @@ class ReadAnythingModelTest : public TestWithBrowserView {
   MockReadAnythingModelObserver model_observer_3_;
 };
 
+// TODO(crbug.com/1344891): Fix the memory leak on destruction observed on these
+// tests on asan mac.
+#if !BUILDFLAG(IS_MAC) || !defined(ADDRESS_SANITIZER)
+
 TEST_F(ReadAnythingModelTest, AddingModelObserverNotifiesAllObservers) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_, OnFontNameUpdated(_)).Times(1);
   EXPECT_CALL(model_observer_1_, OnAXTreeDistilled(_, _)).Times(1);
+  EXPECT_CALL(model_observer_1_, OnFontSizeChanged(_)).Times(1);
+
   EXPECT_CALL(model_observer_2_, OnFontNameUpdated(_)).Times(1);
   EXPECT_CALL(model_observer_2_, OnAXTreeDistilled(_, _)).Times(1);
+  EXPECT_CALL(model_observer_2_, OnFontSizeChanged(_)).Times(1);
 
   model_->AddObserver(&model_observer_2_);
 }
@@ -72,10 +79,15 @@ TEST_F(ReadAnythingModelTest, RemovedModelObserversDoNotReceiveNotifications) {
 
   EXPECT_CALL(model_observer_1_, OnFontNameUpdated(_)).Times(1);
   EXPECT_CALL(model_observer_1_, OnAXTreeDistilled(_, _)).Times(1);
+  EXPECT_CALL(model_observer_1_, OnFontSizeChanged(_)).Times(1);
+
   EXPECT_CALL(model_observer_2_, OnFontNameUpdated(_)).Times(0);
   EXPECT_CALL(model_observer_2_, OnAXTreeDistilled(_, _)).Times(0);
+  EXPECT_CALL(model_observer_2_, OnFontSizeChanged(_)).Times(0);
+
   EXPECT_CALL(model_observer_3_, OnFontNameUpdated(_)).Times(1);
   EXPECT_CALL(model_observer_3_, OnAXTreeDistilled(_, _)).Times(1);
+  EXPECT_CALL(model_observer_3_, OnFontSizeChanged(_)).Times(1);
 
   model_->RemoveObserver(&model_observer_2_);
   model_->AddObserver(&model_observer_3_);
@@ -102,10 +114,12 @@ TEST_F(ReadAnythingModelTest, NotifiationsOnSetDistilledAXTree) {
 TEST_F(ReadAnythingModelTest, NotificationsOnDecreasedFontSize) {
   model_->AddObserver(&model_observer_1_);
 
-  EXPECT_CALL(model_observer_1_, OnFontSizeChanged(FloatNear(15.0, 0.01)))
+  EXPECT_CALL(model_observer_1_, OnFontSizeChanged(FloatNear(14.4, 0.01)))
       .Times(1);
 
   model_->DecreaseTextSize();
+
+  EXPECT_NEAR(model_->GetFontScale(), 0.8, 0.01);
 }
 
 TEST_F(ReadAnythingModelTest, NotificationsOnIncreasedFontSize) {
@@ -115,15 +129,32 @@ TEST_F(ReadAnythingModelTest, NotificationsOnIncreasedFontSize) {
       .Times(1);
 
   model_->IncreaseTextSize();
+
+  EXPECT_NEAR(model_->GetFontScale(), 1.2, 0.01);
+}
+
+TEST_F(ReadAnythingModelTest, MinimumFontScaleIsEnforced) {
+  std::string font_name;
+  model_->Init(font_name, 0.3);
+  model_->DecreaseTextSize();
+  EXPECT_NEAR(model_->GetFontScale(), 0.2, 0.01);
+}
+
+TEST_F(ReadAnythingModelTest, MaximumFontScaleIsEnforced) {
+  std::string font_name;
+  model_->Init(font_name, 4.9);
+  model_->IncreaseTextSize();
+  EXPECT_NEAR(model_->GetFontScale(), 5.0, 0.01);
 }
 
 TEST_F(ReadAnythingModelTest, FontModelIsValidFontName) {
   EXPECT_TRUE(GetFontModel()->IsValidFontName("Standard font"));
   EXPECT_TRUE(GetFontModel()->IsValidFontName("Sans-serif"));
   EXPECT_TRUE(GetFontModel()->IsValidFontName("Serif"));
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Arial"));
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Open Sans"));
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Calibri"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Avenir"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Comic Neue"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Comic Sans MS"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Poppins"));
   EXPECT_FALSE(GetFontModel()->IsValidFontName("xxyyzz"));
 }
 
@@ -131,7 +162,10 @@ TEST_F(ReadAnythingModelTest, FontModelGetCurrentFontName) {
   EXPECT_EQ("Standard font", GetFontModel()->GetFontNameAt(0));
   EXPECT_EQ("Sans-serif", GetFontModel()->GetFontNameAt(1));
   EXPECT_EQ("Serif", GetFontModel()->GetFontNameAt(2));
-  EXPECT_EQ("Arial", GetFontModel()->GetFontNameAt(3));
-  EXPECT_EQ("Open Sans", GetFontModel()->GetFontNameAt(4));
-  EXPECT_EQ("Calibri", GetFontModel()->GetFontNameAt(5));
+  EXPECT_EQ("Avenir", GetFontModel()->GetFontNameAt(3));
+  EXPECT_EQ("Comic Neue", GetFontModel()->GetFontNameAt(4));
+  EXPECT_EQ("Comic Sans MS", GetFontModel()->GetFontNameAt(5));
+  EXPECT_EQ("Poppins", GetFontModel()->GetFontNameAt(6));
 }
+
+#endif  // !defined(ADDRESS_SANITIZER)

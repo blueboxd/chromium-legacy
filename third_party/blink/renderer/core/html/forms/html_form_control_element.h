@@ -88,7 +88,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   virtual bool IsActivatedSubmit() const { return false; }
   virtual void SetActivatedSubmit(bool) {}
 
-  struct TogglePopupElement final {
+  struct PopupTargetElement final {
    public:
     DISALLOW_NEW();
     WeakMember<Element> element;
@@ -99,14 +99,13 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   enum class PopupTriggerSupport {
     kNone,
-    kActivate,
-    kDownArrow,
+    kSupported,
   };
 
-  // Retrieves the element pointed to by 'togglepopup', 'showpopup', and/or
-  // 'hidepopup' content attributes, if any, and only if this form control
-  // element supports popup triggering.
-  TogglePopupElement togglePopupElement() const;
+  // Retrieves the element pointed to by 'popuptoggletarget', 'popupshowtarget',
+  // and/or 'popuphidetarget' content attributes, if any, and only if this form
+  // control element supports popup triggering.
+  PopupTargetElement popupTargetElement() const;
   virtual PopupTriggerSupport SupportsPopupTriggering() const {
     return PopupTriggerSupport::kNone;
   }
@@ -133,9 +132,8 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
     return autofill_state_ != WebAutofillState::kNotFilled;
   }
   bool HighlightAutofilled() const {
-    return autofill_state_ == WebAutofillState::kPreviewed ||
-           (autofill_state_ == WebAutofillState::kAutofilled &&
-            !PreventHighlightingOfAutofilledFields());
+    return autofill_state_ == WebAutofillState::kAutofilled &&
+           !PreventHighlightingOfAutofilledFields();
   }
   void SetAutofillState(WebAutofillState = WebAutofillState::kAutofilled);
   void SetPreventHighlightingOfAutofilledFields(bool prevent_highlighting);

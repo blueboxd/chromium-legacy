@@ -256,6 +256,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // response after simulating an unsatisfied touch for CTAP2 authenticators.
     FidoDevice::DeviceCallback transact_callback;
 
+    // device_id_override can be used to inject a return value for `GetId()` in
+    // unit tests where a stable device identifier is required.
+    absl::optional<std::string> device_id_override;
+
     // Adds a new credential to the authenticator. Returns true on success,
     // false if there already exists a credential with the given ID.
     bool InjectRegistration(base::span<const uint8_t> credential_id,
@@ -344,7 +348,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   // attestation statement and FIDO-U2F attestation statement.
   // https://w3c.github.io/webauthn/#defined-attestation-formats
   absl::optional<std::vector<uint8_t>> GenerateAttestationCertificate(
-      bool individual_attestation_requested) const;
+      bool individual_attestation_requested,
+      bool include_transports) const;
 
   void StoreNewKey(base::span<const uint8_t> key_handle,
                    VirtualFidoDevice::RegistrationData registration_data);

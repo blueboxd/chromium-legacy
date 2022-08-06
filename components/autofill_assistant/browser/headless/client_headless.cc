@@ -16,13 +16,13 @@
 #include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/display_strings_util.h"
-#include "components/autofill_assistant/browser/empty_website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/features.h"
-#include "components/autofill_assistant/browser/headless/headless_script_controller_impl.h"
+#include "components/autofill_assistant/browser/public/password_change/empty_website_login_manager_impl.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/public/ui_state.h"
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/switches.h"
-#include "components/autofill_assistant/browser/website_login_manager_impl.h"
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -45,26 +45,26 @@ ClientHeadless::ClientHeadless(
     content::WebContents* web_contents,
     const CommonDependencies* common_dependencies,
     ExternalActionDelegate* action_extension_delegate,
-    HeadlessScriptControllerImpl* external_script_controller)
+    WebsiteLoginManager* website_login_manager)
     : web_contents_(web_contents),
       common_dependencies_(common_dependencies),
-      external_script_controller_(external_script_controller) {
-  auto* password_manager_client =
-      common_dependencies_->GetPasswordManagerClient(web_contents);
-  if (password_manager_client) {
-    website_login_manager_ = std::make_unique<WebsiteLoginManagerImpl>(
-        password_manager_client, web_contents);
-  } else {
-    website_login_manager_ = std::make_unique<EmptyWebsiteLoginManagerImpl>();
-  }
+      website_login_manager_(website_login_manager) {
   headless_ui_controller_ =
       std::make_unique<HeadlessUiController>(action_extension_delegate);
 }
 
 ClientHeadless::~ClientHeadless() = default;
 
-void ClientHeadless::Start(const GURL& url,
-                           std::unique_ptr<TriggerContext> trigger_context) {
+void ClientHeadless::Start(
+    const GURL& url,
+    std::unique_ptr<TriggerContext> trigger_context,
+    base::OnceCallback<void(Metrics::DropOutReason reason)>
+        script_ended_callback) {
+  // Ignore the call if a script is already running.
+  if (script_ended_callback_) {
+    return;
+  }
+  script_ended_callback_ = std::move(script_ended_callback);
   controller_ = std::make_unique<Controller>(
       web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
       RuntimeManager::GetForWebContents(web_contents_)->GetWeakPtr(),
@@ -187,7 +187,9 @@ void ClientHeadless::Shutdown(Metrics::DropOutReason reason) {
 }
 
 void ClientHeadless::NotifyScriptEnded(Metrics::DropOutReason reason) {
-  external_script_controller_->NotifyScriptEnded(reason);
+  if (script_ended_callback_) {
+    std::move(script_ended_callback_).Run(reason);
+  }
 
   // This instance can be destroyed by the above call, so nothing should be
   // added here.

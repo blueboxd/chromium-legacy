@@ -18,10 +18,10 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -198,6 +198,12 @@ class DriveIntegrationService : public KeyedService,
 
   // Returns the total and free space available in the user's Drive.
   void GetQuotaUsage(drivefs::mojom::DriveFs::GetQuotaUsageCallback callback);
+
+  // Returns the total and free space available in the user's Drive.
+  // Additionally, if the user belongs to an organization, whether the
+  // organization quota is full or not, and the name of the organization.
+  void GetPooledQuotaUsage(
+      drivefs::mojom::DriveFs::GetPooledQuotaUsageCallback callback);
 
   void RestartDrive();
 
@@ -389,8 +395,7 @@ class DriveIntegrationService : public KeyedService,
 
 // Singleton that owns all instances of DriveIntegrationService and
 // associates them with Profiles.
-class DriveIntegrationServiceFactory
-    : public BrowserContextKeyedServiceFactory {
+class DriveIntegrationServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Factory function used by tests.
   using FactoryCallback =
@@ -422,8 +427,6 @@ class DriveIntegrationServiceFactory
   ~DriveIntegrationServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides.
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 

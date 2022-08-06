@@ -25,11 +25,13 @@ extern const char kUserName[];
 extern const char kChildAccountSUID[];
 
 // Keys for supervised user shared settings. These can be configured remotely or
-// locally, and are mapped to preferences by the
 // SupervisedUserPrefMappingService.
 extern const char kChromeAvatarIndex[];
 extern const char kChromeOSAvatarIndex[];
 extern const char kChromeOSPasswordData[];
+
+// A group of preferences of both primary and secondary custodians.
+extern const char* const kCustodianInfoPrefs[10];
 
 }  // namespace supervised_users
 

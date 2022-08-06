@@ -144,9 +144,15 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
 
   const SkPoint points[2] = { PointToSkPoint(text_rect.origin()),
                               PointToSkPoint(text_rect.top_right()) };
+  // TODO(crbug/1308932): Remove this helper vector colors4f and make all
+  // SkColor4f.
+  std::vector<SkColor4f> colors4f;
+  colors4f.reserve(colors.size());
+  for (auto& c : colors)
+    colors4f.push_back(SkColor4f::FromColor(c));
   return cc::PaintShader::MakeLinearGradient(
-      &points[0], &colors[0], &positions[0], static_cast<int>(colors.size()),
-      SkTileMode::kClamp);
+      &points[0], &colors4f[0], &positions[0],
+      static_cast<int>(colors4f.size()), SkTileMode::kClamp);
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
@@ -528,7 +534,7 @@ void RenderText::SetText(const std::u16string& text) {
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
     text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
-  obscured_reveal_index_ = -1;
+  obscured_reveal_index_ = absl::nullopt;
   OnTextAttributeChanged();
 }
 
@@ -536,7 +542,7 @@ void RenderText::AppendText(const std::u16string& text) {
   text_ += text;
   UpdateStyleLengths();
   cached_bounds_and_offset_valid_ = false;
-  obscured_reveal_index_ = -1;
+  obscured_reveal_index_ = absl::nullopt;
 
   // Invalidate the cached text direction if it depends on the text contents.
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
@@ -583,13 +589,13 @@ void RenderText::SetCursorEnabled(bool cursor_enabled) {
 void RenderText::SetObscured(bool obscured) {
   if (obscured != obscured_) {
     obscured_ = obscured;
-    obscured_reveal_index_ = -1;
+    obscured_reveal_index_ = absl::nullopt;
     cached_bounds_and_offset_valid_ = false;
     OnTextAttributeChanged();
   }
 }
 
-void RenderText::SetObscuredRevealIndex(int index) {
+void RenderText::SetObscuredRevealIndex(absl::optional<size_t> index) {
   if (obscured_reveal_index_ != index) {
     obscured_reveal_index_ = index;
     cached_bounds_and_offset_valid_ = false;
@@ -1544,8 +1550,8 @@ void RenderText::EnsureLayoutTextUpdated() const {
   // Ensures the reveal index is at a codepoint boundary (e.g. not in a middle
   // of a surrogate pairs).
   size_t reveal_index = text_.size();
-  if (obscured_reveal_index_ != -1) {
-    reveal_index = base::checked_cast<size_t>(obscured_reveal_index_);
+  if (obscured_reveal_index_.has_value()) {
+    reveal_index = obscured_reveal_index_.value();
     // Move |reveal_index| to the beginning of the surrogate pair, if needed.
     if (reveal_index < text_.size())
       U16_SET_CP_START(text_.data(), 0, reveal_index);

@@ -13,10 +13,6 @@ namespace ash {
 
 struct NewScreencastPrecondition;
 
-// File extension of Projector metadata file. It is used to identify Projector
-// screencasts at processing pending screencasts and fetching screencast list.
-constexpr char kProjectorMetadataFileExtension[] = "projector";
-
 class ProjectorClient;
 
 // Enum class used to notify the ProjectorController on the availability of
@@ -89,6 +85,12 @@ class ASH_PUBLIC_EXPORT ProjectorController {
                                              bool redo_available) = 0;
   // Called when the ink canvas has either succeeded or failed in initializing.
   virtual void OnCanvasInitialized(bool success) = 0;
+
+  // Returns if the annotatotion canvas is available.
+  virtual bool GetAnnotatorAvailability() = 0;
+
+  // Toggles the Projector annotation tray UI and marker enabled state.
+  virtual void ToggleAnnotationTray() = 0;
 };
 
 }  // namespace ash

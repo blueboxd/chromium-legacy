@@ -50,6 +50,9 @@ WaylandTest::WaylandTest()
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
+  disabled_features_.push_back(ui::kWaylandSurfaceSubmissionInPixelCoordinates);
+  disabled_features_.push_back(features::kWaylandScreenCoordinatesEnabled);
+
   feature_list_.InitWithFeatures(enabled_features_, disabled_features_);
 
   if (DeviceDataManager::HasInstance()) {
@@ -115,11 +118,20 @@ void WaylandTest::Sync() {
   server_.Pause();
 }
 
+void WaylandTest::SetPointerFocusedWindow(WaylandWindow* window) {
+  connection_->wayland_window_manager()->SetPointerFocusedWindow(window);
+}
+
+void WaylandTest::SetKeyboardFocusedWindow(WaylandWindow* window) {
+  connection_->wayland_window_manager()->SetKeyboardFocusedWindow(window);
+}
+
 void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
-                                     int width,
-                                     int height,
+                                     const gfx::Size& size,
                                      uint32_t serial,
                                      struct wl_array* states) {
+  const int32_t width = size.width();
+  const int32_t height = size.height();
   // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
   // surfaces send other data like states, heights and widths.
   // Please note that toplevel surfaces may not exist if the surface was created
@@ -149,7 +161,7 @@ void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
 
 void WaylandTest::ActivateSurface(wl::MockXdgSurface* xdg_surface) {
   wl::ScopedWlArray state({XDG_TOPLEVEL_STATE_ACTIVATED});
-  SendConfigureEvent(xdg_surface, 0, 0, 1, state.get());
+  SendConfigureEvent(xdg_surface, {0, 0}, 1, state.get());
 }
 
 void WaylandTest::InitializeSurfaceAugmenter() {

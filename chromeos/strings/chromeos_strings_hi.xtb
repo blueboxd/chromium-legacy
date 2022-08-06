@@ -86,12 +86,13 @@
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1621067168122174824">चार्ज टेस्ट चलाएं</translation>
 <translation id="1631385268983122904">डिवाइस में अभी बैटरी न लगाएं</translation>
-<translation id="1639239467298939599">लोड हो रहा है</translation>
+<translation id="1639239467298939599">लोड हो रही है</translation>
 <translation id="1641857168437328880">डॉक्यूमेंट फ़ीडर (एक तरफ़ वाला)</translation>
 <translation id="1643449475550628585">वॉलपेपर रोज़ बदलें</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645954272419197032">कृपया डिवाइस की जानकारी की पुष्टि करें</translation>
 <translation id="1662989795263954667">बंद हो गया - स्याही खत्म हो गई</translation>
+<translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> की झलक देखें</translation>
 <translation id="1668469839109562275">पहले से मौजूद वीपीएन</translation>
 <translation id="1672499492233627739">वेबकैम वीडियो फ़ीड</translation>
 <translation id="1676557873873341166">वीडियो रिकॉर्ड हो रहा है</translation>
@@ -118,6 +119,7 @@
 <translation id="1851218745569890714">वीडियो कॉन्फ़्रेंसिंग</translation>
 <translation id="1852934301711881861">ChromeOS Flex इंस्टॉल करें</translation>
 <translation id="1856388568474281774">डाउन ऐरो</translation>
+<translation id="1858620243986915808">स्क्रीनशॉट अटैच करें</translation>
 <translation id="1871569928317311284">गहरे रंग वाली थीम बंद करें</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">गहरे रंग वाला मोड बंद करें</translation>
@@ -132,6 +134,7 @@
 <translation id="1977994649430373166">Google खाते पर प्रोफ़ाइल फ़ोटो</translation>
 <translation id="1979103255016296513">पासवर्ड बदलने का समय निकल चुका है</translation>
 <translation id="1999615961760456652">कैप्टिव पोर्टल</translation>
+<translation id="200669432486043882">फ़ाइल प्रतिस्‍थापित करें</translation>
 <translation id="2006864819935886708">कनेक्टिविटी</translation>
 <translation id="2008685064673031089">प्राइम सर्च</translation>
 <translation id="2011174342667534258">SDK टूल का वर्शन:</translation>
@@ -194,6 +197,7 @@
 <translation id="2448312741937722512">प्रकार</translation>
 <translation id="2461822463642141190">मौजूदा</translation>
 <translation id="2480034874476596812">मैन्युअल तरीके से बंद करें</translation>
+<translation id="248546197012830854">डिवाइस ऑफ़लाइन है. सहायता कॉन्टेंट देखने के लिए, वाई-फ़ाई नेटवर्क से कनेक्ट करें.</translation>
 <translation id="2491955442992294626">दूसरी विंडो इस्तेमाल करने पर बटनों की जांच नहीं की जाती है</translation>
 <translation id="2493126929778606526">आपकी सबसे अच्छी फ़ोटो, अपने-आप चुन ली गईं</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -232,12 +236,12 @@
 <translation id="3008341117444806826">रीफ़्रेश करें</translation>
 <translation id="3009958530611748826">सेव करने के लिए कोई फ़ोल्डर चुनें</translation>
 <translation id="3017079585324758401">बैकग्राउंड</translation>
+<translation id="302435934487327038">फ़र्मवेयर इंस्टॉल हो गया है</translation>
 <translation id="3027578600144895987">कैमरा बंद करें</translation>
 <translation id="3031560714565892478">डिवाइस एक वीडियो कैमरा है.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">एंडपॉइंट</translation>
 <translation id="3069085583900247081">टेस्ट असफल रहा</translation>
-<translation id="3076243757415932261">कॉम्पोनेंट के मान्य होने की जांच की जा रही है...</translation>
 <translation id="3083667275341675831">कनेक्टिविटी डाइग्नोस्टिक्स</translation>
 <translation id="3084958266922136097">स्क्रीन सेवर बंद करें</translation>
 <translation id="3091839911843451378">प्रिंट नहीं हो पाया - प्रिंटर बंद हो गया</translation>
@@ -272,7 +276,6 @@
 <translation id="3369013195428705271">क्या आप वाकई अपना पूरा प्रिंट इतिहास मिटाना चाहते हैं? प्रिंट का जो काम अभी चल रहा है उसकी जानकारी (प्रिंट जॉब) नहीं मिटाई जाएगी.</translation>
 <translation id="3383751554789092165">ज़रूरत के मुताबिक डिवाइस की जानकारी बदलें.</translation>
 <translation id="3404249063913988450">स्क्रीन सेवर चालू करें</translation>
-<translation id="3404770484521709967">कॉम्पोनेंट सही तरीके से इंस्टॉल किए गए हैं.</translation>
 <translation id="3413935475507503304">अपडेट करने के लिए 'आगे बढ़ें' पर क्लिक करें.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">सुरक्षा</translation>
@@ -392,7 +395,6 @@
 <translation id="445059817448385655">पुराना पासवर्ड</translation>
 <translation id="4453205916657964690">सबनेट मास्क</translation>
 <translation id="4454245904991689773">स्कैन की हुई फ़ाइल यहां सेव करें</translation>
-<translation id="4472575034687746823">शुरू करें</translation>
 <translation id="4479639480957787382">ईथरनेट</translation>
 <translation id="4483049906298469269">ऐसे नेटवर्क गेटवे को पिंग नहीं किया जा सका जो डिफ़ॉल्ट के तौर पर सेट नहीं है</translation>
 <translation id="4500213108254186382">लिड एक्सलरोमीटर</translation>
@@ -660,14 +662,15 @@
 <translation id="6611280807952151149"><ph name="DEVICE_TYPE" /> को रिपेयर करने की प्रोसेस से बाहर निकलें</translation>
 <translation id="6618744767048954150">जांच चल रही है</translation>
 <translation id="6620487321149975369">प्रिंट की गई फ़ाइलें तब तक इतिहास में दिखेंगी, जब तक इन्हें मैन्युअल तरीके से हटा नहीं दिया जाता</translation>
+<translation id="6624819909909965616">10 एमबी से बड़ी फ़ाइल अपलोड नहीं की जा सकती</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
+<translation id="6644568396961840069">फ़ाइल सेव नहीं की जा सकी. दूसरी तरह के बाहरी स्टोरेज को प्लग इन करके देखें या बाद में कोशिश करें.</translation>
 <translation id="6647510110698214773">एन्क्रिप्शन का एल्गोरिदम</translation>
 <translation id="6650062777702288430">काना/अक्षर और अंक स्विच करने वाला बटन</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">ब्राउज़र टैब</translation>
 <translation id="6692996468359469499">चुनी हुई सामग्री से जुड़ी जानकारी पाएं</translation>
 <translation id="6704062477274546131">डीएनएस रिज़ॉल्यूशन</translation>
-<translation id="6721744718589119342">हम ज़्यादा जानकारी या अपडेट के लिए, आपको ईमेल भेज सकते हैं</translation>
 <translation id="6723839937902243910">पावर</translation>
 <translation id="6723847290197874913">कीबोर्ड की बैकलाइट</translation>
 <translation id="672609503628871915">देखें कि नया क्या है</translation>
@@ -695,6 +698,7 @@
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6977381486153291903">फ़र्मवेयर पुनरीक्षण</translation>
 <translation id="6995564396478647735">पक्का करें कि 'राइट प्रोटेक्ट' चालू हो</translation>
+<translation id="7005833343836210400">डिवाइस ऑफ़लाइन है</translation>
 <translation id="7028979494427204405">इस डिवाइस को <ph name="MANAGER" /> प्रबंधित करता है और इसके पास उपयोगकर्ता की सभी गतिविधियों का ऐक्सेस है. इन गतिविधियों में उपयोगकर्ता के पासवर्ड, ईमेल, और उन पेजों की जानकारी होती है जिन पर वह जाता है.</translation>
 <translation id="7040230719604914234">ऑपरेटर</translation>
 <translation id="7041549558901442110">डिवाइस कनेक्ट नहीं है.</translation>
@@ -720,6 +724,7 @@
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7212734716605298123">बाहरी डिवाइसों के लिए फ़र्मवेयर अपडेट</translation>
 <translation id="7216409898977639127">सेल्युलर सेवा देने वाली कंपनी</translation>
+<translation id="725133483556299729">ईमेल चुनें</translation>
 <translation id="7271040990581020067">स्कैनर पहले से इस्तेमाल में है. कुछ देर बाद कोशिश करें.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281209642468917121">एक या ज़्यादा कॉम्पोनेंट चुनें और फिर से कोशिश करें. इसके अलावा, कैलिब्रेट किए बिना आगे बढ़ा जा सकता है</translation>
@@ -797,6 +802,7 @@
 <translation id="7978412674231730200">निजी कुंजी</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="7994702968232966508">EAP विधि</translation>
+<translation id="8018928621986160031">"<ph name="FILE_LOCATION" />" में सेव किए गए</translation>
 <translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">अपने-आप रंग तय करने वाला मोड चालू करें</translation>
@@ -805,8 +811,8 @@
 <translation id="8063022551652308521">'राइट प्रोटेक्ट' अब भी बंद है. आगे बढ़ने के लिए, 'राइट प्रोटेक्ट' को चालू करें.</translation>
 <translation id="8075838845814659848">इतने प्रतिशत चार्ज होना बाकी है</translation>
 <translation id="8082366717211101304">Android ऐप्लिकेशन से डीएनएस की समस्या ठीक नहीं की जा सकती</translation>
-<translation id="8083281199617904460">यह रिपेयर प्रोसेस, किसी प्रशिक्षित रिपेयर टेक्नीशियन के लिए है. खराब कॉम्पोनेंट बदलने के बाद ही प्रोसेस शुरू करें.</translation>
 <translation id="808894953321890993">पासवर्ड बदलें</translation>
+<translation id="8094062939584182041">Google को इस समस्या के बारे में ईमेल भेजने की अनुमति दें</translation>
 <translation id="8104083085214006426">आप एक ओपन नेटवर्क का इस्तेमाल कर रहे हैं जो सुरक्षित नहीं है</translation>
 <translation id="8109786307828817014">क्या आपको कॉम्पोनेंट को कैलिब्रेट किए बिना आगे बढ़ना है?</translation>
 <translation id="811820734797650957">(Android) गेटवे को पिंग किया जा सकता है</translation>
@@ -821,6 +827,7 @@
 <translation id="8217675307824400706">वाई-फ़ाई से कनेक्ट हों</translation>
 <translation id="8221728673725659466">कैलिब्रेशन पूरा हुआ</translation>
 <translation id="8226628635270268143">अपनी पसंदीदा फ़ोटो और एल्बम चुनें</translation>
+<translation id="8227119283605456246">फ़ाइल अटैच करें</translation>
 <translation id="8230672074305416752">डिफ़ॉल्ट नेटवर्क गेटवे को पिंग नहीं किया जा सका</translation>
 <translation id="8246209727385807362">अज्ञात वाहक</translation>
 <translation id="827422111966801947">गहरा नीला</translation>
@@ -865,6 +872,7 @@
 <translation id="8576249514688522074">शुरू नहीं किया गया</translation>
 <translation id="8620617069779373398">रोमिंग की स्‍थिति</translation>
 <translation id="8655295600908251630">चैनल</translation>
+<translation id="8655828773034788261">यूआरएल शेयर करें:</translation>
 <translation id="8660881923941176839">पाउंड</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> नेटवर्क में शामिल हों</translation>
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> वर्शन में अपडेट करें और रीस्टार्ट करें</translation>

@@ -43,6 +43,11 @@ class WindowStateDelegate;
 class WindowStateObserver;
 class WMEvent;
 
+// TODO(crbug.com/1323394): Consider moving to a WindowState constants file.
+constexpr float kOneThirdPositionRatio = 0.33f;
+constexpr float kDefaultPositionRatio = 0.5f;
+constexpr float kTwoThirdPositionRatio = 0.67f;
+
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls
 // window manager behavior) and ash specific window behavior (such as
@@ -56,10 +61,6 @@ class WMEvent;
 // accessing the window using |window()| is cheap.
 class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
-  // The default duration for an animation between two sets of bounds.
-  static constexpr base::TimeDelta kBoundsChangeSlideDuration =
-      base::Milliseconds(120);
-
   // A subclass of State class represents one of the window's states
   // that corresponds to chromeos::WindowStateType in Ash environment, e.g.
   // maximized, minimized or side snapped, as subclass.
@@ -100,6 +101,25 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
         const WindowState* window_state) const;
 #endif  // DCHECK_IS_ON()
   };
+
+  // Type of animation type to be applied when changing bounds locally.
+  // TODO(oshima): Use transform animation for snapping.
+  enum class BoundsChangeAnimationType {
+    // No animation (`SetBoundsDirect()`).
+    kNone,
+    // Cross fade animation. Copies old layer, and fades it out while fading the
+    // new layer in.
+    kCrossFade,
+    // Bounds animation.
+    kAnimate,
+    // Bounds animation with zero tween. Updates the bounds once at the end of
+    // the animation.
+    kAnimateZero,
+  };
+
+  // The default duration for an animation between two sets of bounds.
+  static constexpr base::TimeDelta kBoundsChangeSlideDuration =
+      base::Milliseconds(120);
 
   // Returns the WindowState for |window|. Creates WindowState if it doesn't
   // exist. The returned value is owned by |window| (you should not delete it).
@@ -152,6 +172,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Returns true if the window's location can be controlled by the user.
   bool IsUserPositionable() const;
+
+  bool is_moving_to_another_display() const {
+    return is_moving_to_another_display_;
+  }
+  void set_is_moving_to_another_display(bool moving) {
+    is_moving_to_another_display_ = moving;
+  }
 
   // Checks if the window can change its state accordingly.
   bool CanMaximize() const;
@@ -236,8 +263,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // by this object and the returned object will be owned by the caller.
   std::unique_ptr<State> SetStateObject(std::unique_ptr<State> new_state);
 
-  // Updates |snap_ratio_| iff |event| is a snapping event or bounds event.
-  void MaybeUpdateSnapRatio(const WMEvent* event);
+  // Updates |snap_ratio_| with the current snapped window to screen ratio.
+  // Should be called by snap events and bound events, or when resizing a
+  // snapped window.
+  void UpdateSnapRatio();
   absl::optional<float> snap_ratio() const { return snap_ratio_; }
 
   // True if the window should be unminimized to the restore bounds, as
@@ -412,13 +441,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeHistograms);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
-  FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowMaskRecreated);
-  FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowHasMaskLayer);
-
-  // Animation type of updating window bounds. "IMMEDIATE" means update bounds
-  // directly without animation. "STEP_END" means update bounds at the end of
-  // the animation.
-  enum class BoundsChangeAnimationType { DEFAULT, IMMEDIATE, STEP_END };
 
   // A class can temporarily change the window bounds change animation type.
   class ScopedBoundsChangeAnimation : public aura::WindowObserver {
@@ -446,8 +468,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   BoundsChangeAnimationType bounds_animation_type() {
     return bounds_animation_type_;
   }
-
-  bool HasMaximumWidthOrHeight() const;
 
   // Returns the window's current z-ordering state.
   ui::ZOrderLevel GetZOrdering() const;
@@ -557,7 +577,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   std::unique_ptr<WindowStateDelegate> delegate_;
 
   bool bounds_changed_by_user_;
-  bool can_consume_system_keys_;
   std::unique_ptr<DragDetails> drag_details_;
 
   bool unminimize_to_restore_bounds_;
@@ -566,6 +585,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool autohide_shelf_when_maximized_or_fullscreen_;
   ui::ZOrderLevel cached_z_order_;
   bool allow_set_bounds_direct_ = false;
+  bool is_moving_to_another_display_ = false;
 
   // A property to save the ratio between snapped window width (or height
   // for vertical layout) and display workarea width (or height). The ratio
@@ -606,7 +626,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // The animation type for the bounds change.
   BoundsChangeAnimationType bounds_animation_type_ =
-      BoundsChangeAnimationType::DEFAULT;
+      BoundsChangeAnimationType::kAnimate;
 
   // When the current (or last) PIP session started.
   base::TimeTicks pip_start_time_;

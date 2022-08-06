@@ -15,7 +15,15 @@
 #include "components/url_matcher/url_matcher.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace storage {
+class FileSystemURL;
+}
+
 namespace enterprise_connectors {
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class SourceDestinationMatcherAsh;
+#endif
 
 // The settings for an analysis service obtained from a connector policy.
 class AnalysisServiceSettings {
@@ -30,6 +38,13 @@ class AnalysisServiceSettings {
   // analysis should take place.
   absl::optional<AnalysisSettings> GetAnalysisSettings(const GURL& url) const;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  absl::optional<AnalysisSettings> GetAnalysisSettings(
+      content::BrowserContext* context,
+      const storage::FileSystemURL& source_url,
+      const storage::FileSystemURL& destination_url) const;
+#endif
+
   // Get the block_until_verdict setting if the settings are valid.
   bool ShouldBlockUntilVerdict() const;
 
@@ -37,7 +52,7 @@ class AnalysisServiceSettings {
   // settings are invalid or if the message/URL are empty.
   absl::optional<std::u16string> GetCustomMessage(const std::string& tag);
   absl::optional<GURL> GetLearnMoreUrl(const std::string& tag);
-  absl::optional<bool> GetBypassJustificationRequired(const std::string& tag);
+  bool GetBypassJustificationRequired(const std::string& tag);
 
   std::string service_provider_name() const { return service_provider_name_; }
 
@@ -64,15 +79,29 @@ class AnalysisServiceSettings {
       const PatternSettings& patterns,
       base::MatcherStringPattern::ID match);
 
+  // Returns the analysis settings with the specified tags.
+  AnalysisSettings GetAnalysisSettingsWithTags(
+      std::map<std::string, TagSettings> tags) const;
+
   // Returns true if the settings were initialized correctly. If this returns
   // false, then GetAnalysisSettings will always return absl::nullopt.
   bool IsValid() const;
 
-  // Updates the states of |matcher_|, |enabled_patterns_settings_| and/or
-  // |disabled_patterns_settings_| from a policy value.
-  void AddUrlPatternSettings(const base::Value& url_settings_value,
+  // Updates the states of `matcher_`, `enabled_patterns_settings_` and/or
+  // `disabled_patterns_settings_` from a policy value.
+  void AddUrlPatternSettings(const base::Value::Dict& url_settings_dict,
                              bool enabled,
                              base::MatcherStringPattern::ID* id);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Updates the states of `source_destination_matcher_`,
+  // `enabled_patterns_settings_` and/or `disabled_patterns_settings_` from a
+  // policy value.
+  void AddSourceDestinationSettings(
+      const base::Value::Dict& source_destination_settings_value,
+      bool enabled,
+      base::MatcherStringPattern::ID* id);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Return tags found in |enabled_patterns_settings| corresponding to the
   // matches while excluding the ones in |disable_patterns_settings|.
@@ -89,6 +118,12 @@ class AnalysisServiceSettings {
   // check |enabled_patterns_settings| and |disable_patterns_settings| to
   // obtain URL-specific settings.
   std::unique_ptr<url_matcher::URLMatcher> matcher_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // A matcher to identify matching pairs of sources and destinations.
+  // Set for ChromeOS' OnFileTransferEnterpriseConnector.
+  std::unique_ptr<SourceDestinationMatcherAsh> source_destination_matcher_;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // These members map URL patterns to corresponding settings.  If an entry in
   // the "enabled" or "disabled" lists contains more than one pattern in its
@@ -111,6 +146,10 @@ class AnalysisServiceSettings {
   // and other settings associated to a specific tag.
   std::map<std::string, TagSettings> tags_;
   std::string service_provider_name_;
+
+  // Arrays of base64 encoded signing key signatures used to verify the
+  // authenticity of the service provider.
+  std::vector<std::string> verification_signatures_;
 };
 
 }  // namespace enterprise_connectors

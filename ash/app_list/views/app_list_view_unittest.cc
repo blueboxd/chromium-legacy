@@ -25,12 +25,12 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_container_view.h"
@@ -68,7 +68,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
@@ -387,7 +386,7 @@ class AppListViewTest : public views::ViewsTestBase {
   }
 
   RecentAppsView* recent_apps() {
-    return contents_view()->apps_container_view()->GetRecentApps();
+    return contents_view()->apps_container_view()->GetRecentAppsView();
   }
 
   views::View* assistant_page_view() {
@@ -1365,52 +1364,6 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   // Test traversal triggered by left.
   TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
                      ui::VKEY_LEFT, false);
-}
-
-TEST_F(AppListViewFocusTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
-  Show();
-
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
-  folder_item_view()->RequestFocus();
-  SimulateKeyPress(ui::VKEY_RETURN, false);
-  auto* apps_container_view = contents_view()->apps_container_view();
-  ASSERT_TRUE(apps_container_view->IsInFolderView());
-
-  // Note: For fullscreen app list, the search box is part of the focus cycle
-  // when a folder is open.
-  // ProductivityLauncher uses recent apps and continue section.
-  auto* recent_apps_view = apps_container_view->GetRecentApps();
-  auto* continue_section_view = apps_container_view->GetContinueSection();
-  // Non-ProductivityLauncher uses suggestion chips.
-  auto* suggestion_chip_container =
-      apps_container_view->suggestion_chip_container_view_for_test();
-  if (features::IsProductivityLauncherEnabled()) {
-    EXPECT_TRUE(recent_apps_view->GetViewAccessibility().IsIgnored());
-    EXPECT_TRUE(recent_apps_view->GetViewAccessibility().IsLeaf());
-    EXPECT_TRUE(continue_section_view->GetViewAccessibility().IsIgnored());
-    EXPECT_TRUE(continue_section_view->GetViewAccessibility().IsLeaf());
-  } else {
-    EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
-    EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
-  }
-  EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsIgnored());
-  EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsLeaf());
-
-  // Close the folder.
-  SimulateKeyPress(ui::VKEY_ESCAPE, false);
-
-  if (features::IsProductivityLauncherEnabled()) {
-    EXPECT_FALSE(recent_apps_view->GetViewAccessibility().IsIgnored());
-    EXPECT_FALSE(recent_apps_view->GetViewAccessibility().IsLeaf());
-    EXPECT_FALSE(continue_section_view->GetViewAccessibility().IsIgnored());
-    EXPECT_FALSE(continue_section_view->GetViewAccessibility().IsLeaf());
-  } else {
-    EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
-    EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
-  }
-  EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsIgnored());
-  EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsLeaf());
 }
 
 // Tests the vertical focus traversal by in PEEKING state.
@@ -2648,62 +2601,6 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
       ash::AppListState::kStateSearchResults)));
-}
-
-// Tests that the back button navigates through the app list correctly.
-TEST_F(AppListViewTest, DISABLED_BackTest) {
-  Initialize(false /*is_tablet_mode*/);
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
-
-  Show();
-
-  AppListMainView* main_view = view_->app_list_main_view();
-  ContentsView* contents_view = main_view->contents_view();
-  SearchBoxView* search_box_view = main_view->search_box_view();
-
-  // Show the apps grid.
-  SetAppListState(ash::AppListState::kStateApps);
-  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
-
-  // The back button should return to the apps page.
-  EXPECT_TRUE(contents_view->Back());
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
-
-  // Show the apps grid again.
-  SetAppListState(ash::AppListState::kStateApps);
-  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
-
-  // Pressing ESC should return to the apps page.
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
-
-  // Pressing ESC from the start page should close the app list.
-  EXPECT_EQ(0, delegate_->dismiss_count());
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  EXPECT_EQ(1, delegate_->dismiss_count());
-
-  // Show the search results.
-  std::u16string new_search_text = u"apple";
-  search_box_view->search_box()->SetText(std::u16string());
-  search_box_view->search_box()->InsertText(
-      new_search_text,
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
-  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
-
-  // The back button should return to the start page.
-  EXPECT_TRUE(contents_view->Back());
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
 }
 
 // Tests that a context menu can be shown between app icons in tablet mode.

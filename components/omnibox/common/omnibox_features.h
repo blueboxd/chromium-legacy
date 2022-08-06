@@ -19,7 +19,7 @@ extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
 extern const base::Feature kAndroidAuxiliarySearch;
 
 // Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
-// TODO(tommycli): There are more flags above that belong in this category.
+extern const base::Feature kAutocompleteStability;
 extern const base::Feature kOmniboxDemoteByType;
 
 // Features below this line should be sorted alphabetically by their comments.
@@ -36,14 +36,16 @@ extern const base::Feature kDynamicMaxAutocomplete;
 extern const base::Feature kRetainSuggestionsWithHeaders;
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
+extern const base::Feature kAdjustLocalHistoryZeroSuggestRelevanceScore;
 extern const base::Feature kClobberTriggersContextualWebZeroSuggest;
 extern const base::Feature kClobberTriggersSRPZeroSuggest;
 extern const base::Feature kFocusTriggersContextualWebZeroSuggest;
 extern const base::Feature kFocusTriggersSRPZeroSuggest;
 extern const base::Feature kLocalHistorySuggestRevamp;
 extern const base::Feature kOmniboxLocalZeroSuggestAgeThreshold;
-extern const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP;
+extern const base::Feature kZeroSuggestOnNTPForSignedOutUsers;
 extern const base::Feature kZeroSuggestPrefetching;
+extern const base::Feature kZeroSuggestPrefetchingOnSRP;
 // Related, kMaxZeroSuggestMatches.
 
 // On Device Head Suggest.
@@ -56,9 +58,9 @@ extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
 extern const base::Feature kDisableCGIParamMatching;
 extern const base::Feature kShortBookmarkSuggestions;
 extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
+extern const base::Feature kBookmarkPaths;
 extern const base::Feature kAggregateShortcuts;
 extern const base::Feature kShortcutExpanding;
-extern const base::Feature kBookmarkPaths;
 // TODO(crbug.com/1202964): Clean up feature flag used in staged roll-out of
 // various CLs related to the contents/description clean-up work.
 extern const base::Feature kStoreTitleInContentsAndUrlInDescription;
@@ -70,13 +72,20 @@ extern const base::Feature kDocumentProviderAso;
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kClipboardSuggestionContentHidden;
+extern const base::Feature kDocumentProviderDedupingOptimization;
 extern const base::Feature kSuggestionAnswersColorReverse;
 extern const base::Feature kMostVisitedTiles;
+extern const base::Feature kMostVisitedTilesDynamicSpacing;
+extern const base::Feature kMostVisitedTilesTitleWrapAround;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kNtpRealboxPedals;
 extern const base::Feature kNtpRealboxSuggestionAnswers;
 extern const base::Feature kNtpRealboxTailSuggest;
 extern const base::Feature kOmniboxFuzzyUrlSuggestions;
+extern const base::Feature kOmniboxRemoveSuggestionHeaderCapitalization;
+extern const base::Feature kOmniboxRemoveSuggestionHeaderChevron;
+extern const base::Feature kOmniboxMostVisitedTilesOnSrp;
+extern const base::Feature kStrippedGurlOptimization;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).
@@ -89,7 +98,6 @@ extern const base::Feature kBlurWithEscape;
 
 // Settings Page - these affect the appearance of the Search Engines settings
 // page
-extern const base::Feature kActiveSearchEngines;
 extern const base::Feature kSiteSearchStarterPack;
 
 // Experiment to introduce new security indicators for HTTPS.
@@ -98,7 +106,6 @@ extern const base::Feature kUpdatedConnectionSecurityIndicators;
 // Navigation experiments.
 extern const base::Feature kDefaultTypedNavigationsToHttps;
 extern const char kDefaultTypedNavigationsToHttpsTimeoutParam[];
-extern const base::Feature kOmniboxSpareRenderer;
 
 // Omnibox Logging.
 extern const base::Feature kReportAssistedQueryStats;

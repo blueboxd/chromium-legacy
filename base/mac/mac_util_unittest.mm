@@ -135,58 +135,10 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
   EXPECT_FALSE(IsAtLeastOS##V());
 
   if (major == 10) {
-<<<<<<< HEAD
-    if (minor == 10) {
-      EXPECT_TRUE(IsOS10_10());
-      EXPECT_TRUE(IsAtMostOS10_10());
-
-      TEST_FOR_FUTURE_10_OS(11);
-      TEST_FOR_FUTURE_10_OS(12);
-      TEST_FOR_FUTURE_10_OS(13);
-      TEST_FOR_FUTURE_10_OS(14);
-      TEST_FOR_FUTURE_10_OS(15);
-      TEST_FOR_FUTURE_OS(11);
-
-      EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
-    } else if (minor == 11) {
-      EXPECT_FALSE(IsOS10_10());
-      EXPECT_FALSE(IsAtMostOS10_10());
-
-      TEST_FOR_SAME_10_OS(11);
-      TEST_FOR_FUTURE_10_OS(12);
-      TEST_FOR_FUTURE_10_OS(13);
-      TEST_FOR_FUTURE_10_OS(14);
-      TEST_FOR_FUTURE_10_OS(15);
-      TEST_FOR_FUTURE_OS(11);
-      TEST_FOR_FUTURE_OS(12);
-
-      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
-    } else if (minor == 12) {
-      EXPECT_FALSE(IsOS10_10());
-      EXPECT_FALSE(IsAtMostOS10_10());
-
-      TEST_FOR_PAST_10_OS(11);
-      TEST_FOR_SAME_10_OS(12);
-      TEST_FOR_FUTURE_10_OS(13);
-      TEST_FOR_FUTURE_10_OS(14);
-      TEST_FOR_FUTURE_10_OS(15);
-      TEST_FOR_FUTURE_OS(11);
-      TEST_FOR_FUTURE_OS(12);
-
-      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
-    } else if (minor == 13) {
-      EXPECT_FALSE(IsOS10_10());
-      EXPECT_FALSE(IsAtMostOS10_10());
-
-      TEST_FOR_PAST_10_OS(11);
-      TEST_FOR_PAST_10_OS(12);
-      TEST_FOR_SAME_10_OS(13);
-=======
     if (minor == 13) {
       EXPECT_TRUE(IsOS10_13());
       EXPECT_TRUE(IsAtMostOS10_13());
 
->>>>>>> 27e77bbb044b3b0c341ae3053f993c417996979a
       TEST_FOR_FUTURE_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
@@ -194,18 +146,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
 
       EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 14) {
-<<<<<<< HEAD
-      EXPECT_FALSE(IsOS10_10());
-      EXPECT_FALSE(IsAtMostOS10_10());
-
-      TEST_FOR_PAST_10_OS(11);
-      TEST_FOR_PAST_10_OS(12);
-      TEST_FOR_PAST_10_OS(13);
-=======
       EXPECT_FALSE(IsOS10_13());
       EXPECT_FALSE(IsAtMostOS10_13());
 
->>>>>>> 27e77bbb044b3b0c341ae3053f993c417996979a
       TEST_FOR_SAME_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
@@ -213,18 +156,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
 
       EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 15) {
-<<<<<<< HEAD
-      EXPECT_FALSE(IsOS10_10());
-      EXPECT_FALSE(IsAtMostOS10_10());
-
-      TEST_FOR_PAST_10_OS(11);
-      TEST_FOR_PAST_10_OS(12);
-      TEST_FOR_PAST_10_OS(13);
-=======
       EXPECT_FALSE(IsOS10_13());
       EXPECT_FALSE(IsAtMostOS10_13());
 
->>>>>>> 27e77bbb044b3b0c341ae3053f993c417996979a
       TEST_FOR_PAST_10_OS(14);
       TEST_FOR_SAME_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
@@ -236,18 +170,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       FAIL() << "Unexpected 10.x macOS.";
     }
   } else if (major == 11) {
-<<<<<<< HEAD
-    EXPECT_FALSE(IsOS10_10());
-    EXPECT_FALSE(IsAtMostOS10_10());
-
-    TEST_FOR_PAST_10_OS(11);
-    TEST_FOR_PAST_10_OS(12);
-    TEST_FOR_PAST_10_OS(13);
-=======
     EXPECT_FALSE(IsOS10_13());
     EXPECT_FALSE(IsAtMostOS10_13());
 
->>>>>>> 27e77bbb044b3b0c341ae3053f993c417996979a
     TEST_FOR_PAST_10_OS(14);
     TEST_FOR_PAST_10_OS(15);
     TEST_FOR_SAME_OS(11);

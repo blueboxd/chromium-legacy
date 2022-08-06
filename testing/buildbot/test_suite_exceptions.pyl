@@ -229,6 +229,7 @@
   },
   'blink_web_tests': {
     'remove_from': [
+      'Mac10.11 Tests',
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win7 Tests (1)',
       'Win10 Tests x64 (dbg)',
@@ -259,6 +260,18 @@
           'shards': 30,
         },
       },
+<<<<<<< HEAD
+=======
+      # TODO (crbug.com/1294574) Re-enable once fixed
+      'Mac Builder Next': {
+        'experiment_percentage': 0,
+      },
+      'Mac10.12 Tests': {
+        'swarming': {
+          'shards': 25,
+        },
+      },
+>>>>>>> parent of 1850ac6c4e215... Remove Mac10.11-Tests and Mac10.12-Tests
       'Mac10.13 Tests': {
         'swarming': {
           'dimension_sets': [
@@ -519,6 +532,7 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
+      'Mac10.11 Tests', # https://crbug.com/1263696
       # TODO(crbug.com/1171053): Enable the suite in 'Mac10.15 Tests' once it's
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
@@ -618,6 +632,20 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
         ],
         'experiment_percentage': 100, # https://crbug.com/1251657
+      },
+      # TODO(crbug.com/1232535) Remove once the bug is resolved.
+      'Mac10.11 Tests': {
+        'args': [
+          '--test-launcher-print-timestamps',
+        ],
+      },
+      # crbug.com/1300822
+      'Mac10.12 Tests': {
+         # crbug.com/1307029
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 20,
+        },
       },
       'Mac10.15 Tests': {
         # crbug.com/1042757
@@ -1413,6 +1441,7 @@
   },
   'content_shell_crash_test': {
     'remove_from': [
+      'Mac10.11 Tests',  # crbug.com/1138050
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084353
     ],
     'modifications': {
@@ -2854,6 +2883,17 @@
           '--jobs=1',
         ],
       },
+      # Disable parallelism on all Mac bots.
+      'Mac10.11 Tests': {
+        'args': [
+          '--jobs=1',
+        ],
+      },
+      'Mac10.12 Tests': {
+        'args': [
+          '--jobs=1',
+        ],
+      },
       'Mac11 Tests': {
         'ci_only': True,
       },
@@ -2882,6 +2922,7 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # crbug.com/936540
+      'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
@@ -2908,6 +2949,9 @@
       'chromeos-eve-chrome',
       'chromeos-kevin-chrome',
       'chromeos-kevin-rel',
+
+      # crbug.com/936540
+      'Mac10.11 Tests',
 
       'Win10 Tests x64',
       'Win11 Tests x64',

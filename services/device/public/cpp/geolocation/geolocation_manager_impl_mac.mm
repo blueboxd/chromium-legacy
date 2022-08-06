@@ -101,10 +101,17 @@ LocationSystemPermissionStatus GeolocationManagerImpl::GetSystemPermission()
 - (void)locationManager:(CLLocationManager*)manager
     didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
   _permissionInitialized = YES;
-  if (status == kCLAuthorizationStatusAuthorizedAlways)
-    _hasPermission = YES;
-  else
-    _hasPermission = NO;
+  if (@available(macOS 10.12.0, *)) {
+    if (status == kCLAuthorizationStatusAuthorizedAlways)
+      _hasPermission = YES;
+    else
+      _hasPermission = NO;
+  } else {
+    if (status == kCLAuthorizationStatusAuthorized)
+      _hasPermission = YES;
+    else
+      _hasPermission = NO;
+  }
   _manager->PermissionUpdated();
 }
 

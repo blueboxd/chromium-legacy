@@ -14,6 +14,7 @@
 #include "ui/events/blink/did_overscroll_params.h"
 
 @interface HistorySwiper (MacHistorySwiperTest)
+- (BOOL)systemSettingsAllowHistorySwiping:(NSEvent*)event;
 - (BOOL)browserCanNavigateInDirection:
         (history_swiper::NavigationDirection)forward
                                 event:(NSEvent*)event;
@@ -40,6 +41,8 @@ class MacHistorySwiperTest : public CocoaTest {
     base::scoped_nsobject<HistorySwiper> historySwiper(
         [[HistorySwiper alloc] initWithDelegate:mockDelegate]);
     id mockHistorySwiper = [OCMockObject partialMockForObject:historySwiper];
+    [[[mockHistorySwiper stub] andReturnBool:YES]
+        systemSettingsAllowHistorySwiping:[OCMArg any]];
     [[[mockHistorySwiper stub] andReturnBool:YES]
         browserCanNavigateInDirection:history_swiper::kForwards
                                 event:[OCMArg any]];
@@ -222,6 +225,11 @@ void MacHistorySwiperTest::sendEndGestureEventAtPoint(NSPoint point) {
 
 // Test that a simple left-swipe causes navigation.
 TEST_F(MacHistorySwiperTest, SwipeLeft) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -244,6 +252,11 @@ TEST_F(MacHistorySwiperTest, SwipeLeft) {
 
 // Test that a simple right-swipe causes navigation.
 TEST_F(MacHistorySwiperTest, SwipeRight) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -267,6 +280,11 @@ TEST_F(MacHistorySwiperTest, SwipeRight) {
 // If the user doesn't swipe enough, the history swiper should begin, but the
 // browser should not navigate.
 TEST_F(MacHistorySwiperTest, SwipeLeftSmallAmount) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -281,6 +299,11 @@ TEST_F(MacHistorySwiperTest, SwipeLeftSmallAmount) {
 // Diagonal swipes with a slight horizontal bias should not start the history
 // swiper.
 TEST_F(MacHistorySwiperTest, SwipeDiagonal) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -297,6 +320,11 @@ TEST_F(MacHistorySwiperTest, SwipeDiagonal) {
 // Swiping left and then down should cancel the history swiper without
 // navigating.
 TEST_F(MacHistorySwiperTest, SwipeLeftThenDown) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -312,6 +340,11 @@ TEST_F(MacHistorySwiperTest, SwipeLeftThenDown) {
 // Sometimes Cocoa gets confused and sends us a momentum swipe event instead of
 // a swipe gesture event. Momentum events should not cause history swiping.
 TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
 
   // Send a momentum move gesture.
@@ -335,6 +368,11 @@ TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
 // Momentum scroll events for magic mouse should not attempt to trigger the
 // `trackSwipeEventWithOptions:` api, as that throws an exception.
 TEST_F(MacHistorySwiperTest, MagicMouseMomentumSwipe) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   // Magic mouse events don't generate 'touches*' callbacks.
   NSEvent* event = mockEventWithPoint(makePoint(0.5, 0.5), NSEventTypeGesture);
   [historySwiper_ beginGestureWithEvent:event];
@@ -355,6 +393,11 @@ TEST_F(MacHistorySwiperTest, MagicMouseMomentumSwipe) {
 
 // User starts a swipe but doesn't move.
 TEST_F(MacHistorySwiperTest, NoSwipe) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -374,6 +417,11 @@ TEST_F(MacHistorySwiperTest, NoSwipe) {
 // After a gesture is successfully recognized, momentum events should be
 // swallowed, but new events should pass through.
 TEST_F(MacHistorySwiperTest, TouchEventAfterGestureFinishes) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   // Successfully pass through a gesture.
   startGestureInMiddle();
   moveGestureInMiddle();
@@ -395,6 +443,11 @@ TEST_F(MacHistorySwiperTest, TouchEventAfterGestureFinishes) {
 // The history swipe logic should be resilient against the timing of the
 // different callbacks that result from scrolling.
 TEST_F(MacHistorySwiperTest, SwipeRightEventOrdering) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   // Touches began.
   NSEvent* scrollEvent = scrollWheelEventWithPhase(NSEventPhaseBegan);
   NSEvent* event = mockEventWithPoint(makePoint(0.5, 0.5), NSEventTypeGesture);
@@ -432,6 +485,11 @@ TEST_F(MacHistorySwiperTest, SwipeRightEventOrdering) {
 // Substantial vertical scrolling followed by horizontal scrolling should not
 // result in navigation.
 TEST_F(MacHistorySwiperTest, SubstantialVerticalThenHorizontal) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
   onOverscrolled(cc::OverscrollBehavior::Type::kAuto);
@@ -456,6 +514,11 @@ TEST_F(MacHistorySwiperTest, SubstantialVerticalThenHorizontal) {
 // swiper should still handle this gracefully. It should not turn vertical
 // motion into history swipes.
 TEST_F(MacHistorySwiperTest, MagicMouseStateResetsCorrectly) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   // Magic mouse events don't generate '-touches*WithEvent:' callbacks.
   // Send the following events:
   //  - beginGesture
@@ -507,6 +570,11 @@ TEST_F(MacHistorySwiperTest, MagicMouseStateResetsCorrectly) {
 // With overscroll-behavior value as contain, the page should not navigate,
 // nor should the history overlay appear.
 TEST_F(MacHistorySwiperTest, OverscrollBehaviorContainPreventsNavigation) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
   startGestureInMiddle();
   moveGestureInMiddle();
 

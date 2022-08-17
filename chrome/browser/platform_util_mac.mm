@@ -133,7 +133,9 @@ bool IsVisible(gfx::NativeView native_view) {
 }
 
 bool IsSwipeTrackingFromScrollEventsEnabled() {
-  return NSEvent.swipeTrackingFromScrollEventsEnabled;
+  SEL selector = @selector(isSwipeTrackingFromScrollEventsEnabled);
+  return [NSEvent respondsToSelector:selector]
+      && [NSEvent performSelector:selector];
 }
 
 NSWindow* GetActiveWindow() {

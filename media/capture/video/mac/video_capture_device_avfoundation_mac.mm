@@ -335,14 +335,20 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 
   AVCaptureConnection* captureConnection =
       [_captureVideoDataOutput connectionWithMediaType:AVMediaTypeVideo];
-  // CMTimeMake accepts integer arguments but |frameRate| is float, so round it.
-  if ([captureConnection isVideoMinFrameDurationSupported]) {
+  // Check selector existence, related to bugs http://crbug.com/327532 and
+  // http://crbug.com/328096.
+  // CMTimeMake accepts integer argumenst but |frameRate| is float, round it.
+  if ([captureConnection
+          respondsToSelector:@selector(isVideoMinFrameDurationSupported)] &&
+      [captureConnection isVideoMinFrameDurationSupported]) {
     [captureConnection
         setVideoMinFrameDuration:CMTimeMake(media::kFrameRatePrecision,
                                             (int)(frameRate *
                                                   media::kFrameRatePrecision))];
   }
-  if ([captureConnection isVideoMaxFrameDurationSupported]) {
+  if ([captureConnection
+          respondsToSelector:@selector(isVideoMaxFrameDurationSupported)] &&
+      [captureConnection isVideoMaxFrameDurationSupported]) {
     [captureConnection
         setVideoMaxFrameDuration:CMTimeMake(media::kFrameRatePrecision,
                                             (int)(frameRate *

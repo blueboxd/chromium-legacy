@@ -202,6 +202,8 @@ using base::scoped_nsobject;
 }
 
 - (void)didModifyServices:(NSArray*)invalidatedServices {
+  DCHECK(
+      [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
   [_delegate peripheral:self.peripheral didModifyServices:invalidatedServices];
 }
 

@@ -253,7 +253,8 @@ void SuspendObserverDelegate::DoOnDeviceChanged(NSArray* devices) {
     base::scoped_nsobject<AVCaptureDevice> device_ptr([device retain]);
     [suspend_observer_ startObserving:device_ptr];
 
-    BOOL suspended = [device isSuspended];
+    BOOL suspended = [device respondsToSelector:@selector(isSuspended)] &&
+                     [device isSuspended];
     DeviceInfo::DeviceType device_type = DeviceInfo::kUnknown;
     if ([device hasMediaType:AVMediaTypeVideo]) {
       if (suspended)

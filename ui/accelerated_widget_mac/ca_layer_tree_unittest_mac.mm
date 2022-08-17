@@ -194,7 +194,8 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
       EXPECT_EQ(properties.opacity, [content_layer opacity]);
       EXPECT_NSEQ(kCAFilterLinear, [content_layer minificationFilter]);
       EXPECT_NSEQ(kCAFilterLinear, [content_layer magnificationFilter]);
-      EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
+      if ([content_layer respondsToSelector:(@selector(contentsScale))])
+        EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
     }
 
     // Update just the clip rect and re-commit.
@@ -492,7 +493,8 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
           gfx::Rect([content_layer bounds]));
       EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
       EXPECT_EQ(properties.opacity, [content_layer opacity]);
-      EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
+      if ([content_layer respondsToSelector:(@selector(contentsScale))])
+        EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
     }
 
     // Remove the rounded corners. This should result in the rounded corners

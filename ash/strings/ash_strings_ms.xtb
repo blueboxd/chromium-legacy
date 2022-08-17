@@ -53,6 +53,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1225748608451425081">Chromebook anda dikunci kerana isu yang diketahui. Anda akan dapat log masuk selepas: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Berhenti memilih</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> disambungkan.</translation>
+<translation id="1240638468526743569">Apl</translation>
 <translation id="1246890715821376239">Apl tidak disokong</translation>
 <translation id="1247372569136754018">Mikrofon (dalaman)</translation>
 <translation id="1247519845643687288">Apl terbaharu</translation>
@@ -100,6 +101,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1455242230282523554">Tunjukkan tetapan bahasa</translation>
 <translation id="1460620680449458626">Kelantangan diredamkan.</translation>
 <translation id="1467432559032391204">Kiri</translation>
+<translation id="146902737843070955">Pentadbir anda telah meminta perubahan ini</translation>
 <translation id="147310119694673958">Bateri telefon <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">Menu kebolehaksesan terapung</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Tekan kekunci enter untuk membuka paparan Calendar</translation>
@@ -445,6 +447,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="3593039967545720377">Akses sejarah papan keratan anda dengan menekan <ph name="SHORTCUT_KEY_NAME" /> + V untuk melihat papan keratan anda. Salin item untuk bermula.</translation>
 <translation id="3593646411856133110">Leret ke atas dan tahan untuk melihat apl yang terbuka</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
+<translation id="3596012367874587041">Tetapan apl</translation>
 <translation id="3600061223661453002">Mati</translation>
 <translation id="3604801046548457007">Meja <ph name="DESK_TITILE" /> dihasilkan</translation>
 <translation id="3606978283550408104">Paparan Braille disambungkan.</translation>
@@ -537,6 +540,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4123259114412175274">Untuk membuka kunci Chromebook anda, pastikan Bluetooth telefon anda dihidupkan</translation>
 <translation id="4125970834901680537">Tidak dapat menstrim apl dalam mod tablet. Cuba lagi dalam mod komputer riba.</translation>
 <translation id="4129129681837227511">Untuk melihat pemberitahuan pada skrin kunci anda, buka kunci untuk menukar tetapan</translation>
+<translation id="4130035430755296270">Teruskan menuding untuk mendapatkan lagi pilihan reka letak</translation>
 <translation id="4136724716305260864">Dihidupkan sehingga matahari terbit</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
 <translation id="4165275524535002941">Kabel mungkin tidak menyokong paparan</translation>
@@ -685,6 +689,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="490788395437447240">Bateri <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
+<translation id="4919841137949306064"><ph name="APP_NAME" /> sedang menggunakan kamera anda pada masa ini</translation>
 <translation id="4925542575807923399">Pentadbir akaun ini memerlukan akaun ini menjadi akaun dilog masuk yang pertama dalam sesi berbilang log masuk.</translation>
 <translation id="4938176435186993759">Sembunyikan semua cadangan</translation>
 <translation id="4945196315133970626">Matikan pemberitahuan</translation>
@@ -838,6 +843,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5779721926447984944">Fail disemat</translation>
 <translation id="5788127256798019331">Fail Play</translation>
 <translation id="5790085346892983794">Berjaya</translation>
+<translation id="5804651031882187592">Matikan tetapan "Kunci SIM"</translation>
 <translation id="5805809050170488595">Klik untuk aktifkan <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Tetapan peranti yang bersambung</translation>
 <translation id="5837036133683224804">Hentikan <ph name="ROUTE_TITLE" /> pada <ph name="RECEIVER_NAME" /></translation>
@@ -913,6 +919,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6220928844947387476">Kini anda boleh merakam diri anda dan skrin anda secara serentak</translation>
 <translation id="622484624075952240">Bawah</translation>
 <translation id="6231419273573514727">Prestasi peranti persisian mungkin terhad</translation>
+<translation id="6232891689835436217"><ph name="APP_NAME" /> sedang menggunakan kamera dan mikrofon anda pada masa ini</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Dikunci mendatar</translation>
 <translation id="6259254695169772643">Gunakan stilus anda untuk memilih</translation>
@@ -1131,6 +1138,7 @@ Pemasangan baharu</translation>
 <translation id="7544300628205093162">Cahaya belakang papan kekunci dihidupkan</translation>
 <translation id="7548434653388805669">Masa untuk tidur</translation>
 <translation id="7551643184018910560">Sematkan pada rak</translation>
+<translation id="7557816257942363084"><ph name="APP_NAME" /> sedang menggunakan Mikrofon anda pada masa ini</translation>
 <translation id="7561982940498449837">Tutup menu</translation>
 <translation id="7564874036684306347">Tindakan memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka. Pemberitahuan, tetingkap dan dialog yang seterusnya mungkin dipisahkan antara desktop.</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox didayakan</translation>

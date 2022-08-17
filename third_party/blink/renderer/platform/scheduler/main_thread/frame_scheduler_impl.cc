@@ -396,6 +396,9 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
                  : LoadingTaskQueueTraits();
     case TaskType::kNetworkingControl:
       return LoadingControlTaskQueueTraits();
+    case TaskType::kLowPriorityScriptExecution:
+      return LoadingTaskQueueTraits().SetPrioritisationType(
+          QueueTraits::PrioritisationType::kBestEffort);
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -559,10 +562,7 @@ FrameSchedulerImpl::CreateResourceLoadingMaybeUnfreezableTaskRunnerHandle() {
 std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
 FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
   if (main_thread_scheduler_->scheduling_settings()
-          .use_resource_fetch_priority ||
-      (parent_page_scheduler_ && parent_page_scheduler_->IsLoading() &&
-       main_thread_scheduler_->scheduling_settings()
-           .use_resource_priorities_only_during_loading)) {
+          .use_resource_fetch_priority) {
     scoped_refptr<MainThreadTaskQueue> task_queue =
         frame_task_queue_controller_->NewResourceLoadingTaskQueue();
     resource_loading_task_queue_priorities_.insert(
@@ -672,6 +672,12 @@ WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
     const WTF::String& name,
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
   return WebScopedVirtualTimePauser(main_thread_scheduler_, duration, name);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+FrameSchedulerImpl::CompositorTaskRunner() {
+  return parent_page_scheduler_->GetAgentGroupScheduler()
+      .CompositorTaskRunner();
 }
 
 void FrameSchedulerImpl::ResetForNavigation() {

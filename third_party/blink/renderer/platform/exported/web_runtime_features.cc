@@ -260,6 +260,10 @@ void WebRuntimeFeatures::EnablePaymentApp(bool enable) {
   RuntimeEnabledFeatures::SetPaymentAppEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebPaymentAPICSP(bool enable) {
+  RuntimeEnabledFeatures::SetWebPaymentAPICSPEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
   RuntimeEnabledFeatures::SetPaymentRequestEnabled(enable);
   if (!enable) {
@@ -267,10 +271,6 @@ void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
     RuntimeEnabledFeatures::SetPaymentAppEnabled(false);
     RuntimeEnabledFeatures::SetPaymentMethodChangeEventEnabled(false);
   }
-}
-
-void WebRuntimeFeatures::EnablePaymentRequestBasicCard(bool enable) {
-  RuntimeEnabledFeatures::SetPaymentRequestBasicCardEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePercentBasedScrolling(bool enable) {
@@ -319,6 +319,14 @@ void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
 
 void WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationSameOriginVisibilityEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableTopicsAPI(bool enable) {
+  RuntimeEnabledFeatures::SetTopicsAPIEnabled(enable);
+}
+
+bool WebRuntimeFeatures::IsTopicsAPIEnabled() {
+  return RuntimeEnabledFeatures::TopicsAPIEnabledByRuntimeFlag();
 }
 
 void WebRuntimeFeatures::EnableTouchDragAndContextMenu(bool enable) {
@@ -645,6 +653,10 @@ void WebRuntimeFeatures::EnableFedCmIdpSignout(bool enable) {
 
 void WebRuntimeFeatures::EnableFedCmIframeSupport(bool enable) {
   RuntimeEnabledFeatures::SetFedCmIframeSupportEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableFedCmMultipleIdentityProviders(bool enable) {
+  RuntimeEnabledFeatures::SetFedCmMultipleIdentityProvidersEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableDocumentTransition(bool enable) {

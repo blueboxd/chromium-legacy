@@ -84,13 +84,12 @@ class StarterPlatformDelegate {
   // Changes whether the proactive help setting is enabled.
   virtual void SetProactiveHelpSettingEnabled(bool enabled) = 0;
 
-  // TODO(arbesser): Move this out of the platform delegate.
-  // Returns whether the MSBB seetting is enabled.
-  virtual bool GetMakeSearchesAndBrowsingBetterEnabled() const = 0;
   // Returns whether the user is logged in or not.
   virtual bool GetIsLoggedIn() = 0;
   // Returns whether the user is restricted to any supervision.
   virtual bool GetIsSupervisedUser() = 0;
+  // Returns whether the user is allowed for machine learning.
+  virtual bool GetIsAllowedForMachineLearning() = 0;
   // Returns whether this is a custom tab or not.
   virtual bool GetIsCustomTab() const = 0;
   // Returns whether this is running in WebLayer or not.

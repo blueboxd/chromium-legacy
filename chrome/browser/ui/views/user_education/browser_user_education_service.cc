@@ -27,6 +27,7 @@
 #include "components/user_education/common/tutorial_registry.h"
 #include "components/user_education/views/help_bubble_delegate.h"
 #include "components/user_education/views/help_bubble_factory_views.h"
+#include "components/user_education/webui/help_bubble_webui.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
@@ -127,6 +128,7 @@ void RegisterChromeHelpBubbleFactories(
   const user_education::HelpBubbleDelegate* const delegate =
       GetHelpBubbleDelegate();
   registry.MaybeRegister<user_education::HelpBubbleFactoryViews>(delegate);
+  registry.MaybeRegister<user_education::HelpBubbleFactoryWebUI>();
 #if BUILDFLAG(IS_MAC)
   registry.MaybeRegister<user_education::HelpBubbleFactoryMac>(delegate);
 #endif
@@ -259,6 +261,16 @@ void MaybeRegisterChromeFeaturePromos(
                     &feature_engagement::kIPHDesktopSharedHighlightingFeature,
                     kTopContainerElementId, IDS_SHARED_HIGHLIGHTING_PROMO)
                     .SetBubbleArrow(HelpBubbleArrow::kNone)));
+
+  // kIPHWebUiHelpBubbleTestFeature
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForSnoozePromo(
+          feature_engagement::kIPHWebUiHelpBubbleTestFeature,
+          kWebUIIPHDemoElementIdentifier,
+          IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_TO_ACCOUNT)
+          .SetBubbleTitleText(IDS_PASSWORD_MANAGER_IPH_TITLE_SAVE_TO_ACCOUNT)
+          .SetInAnyContext(true)
+          .SetBubbleArrow(HelpBubbleArrow::kBottomLeft)));
 }
 
 void MaybeRegisterChromeTutorials(
@@ -291,8 +303,6 @@ void MaybeRegisterChromeTutorials(
         0, IDS_TUTORIAL_ADD_TAB_TO_GROUP_WITH_EXISTING_GROUP_IN_TAB_STRIP,
         ui::InteractionSequence::StepType::kShown, kTabStripRegionElementId,
         std::string(), HelpBubbleArrow::kNone);
-    without_group_description.steps.emplace_back(
-        create_tabgroup_with_existing_group_step);
     with_group_description.steps.emplace_back(
         create_tabgroup_with_existing_group_step);
 

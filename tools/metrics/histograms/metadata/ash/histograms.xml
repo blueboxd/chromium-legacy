@@ -169,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.AmbientMode.Enabled" enum="BooleanEnabled"
-    expires_after="2022-12-01">
+    expires_after="2023-02-05">
   <owner>cowmoo@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <summary>
@@ -269,7 +269,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.AmbientMode.PhotoSource" enum="AmbientModePhotoSource"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>cowmoo@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <summary>
@@ -368,7 +368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BackGesture.EndScenarioType"
-    enum="BackGestureEndScenarioType" expires_after="2022-12-04">
+    enum="BackGestureEndScenarioType" expires_after="2023-02-12">
   <owner>minch@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -378,7 +378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BackGesture.StartScenarioType"
-    enum="BackGestureStartScenarioType" expires_after="2022-12-04">
+    enum="BackGestureStartScenarioType" expires_after="2023-02-12">
   <owner>minch@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -388,7 +388,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BackGesture.UnderneathWindowType"
-    enum="BackGestureUnderneathWindowType" expires_after="2022-12-04">
+    enum="BackGestureUnderneathWindowType" expires_after="2023-02-12">
   <owner>minch@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -889,7 +889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.TimeToSeeTodaysEventDots" units="ms"
-    expires_after="2022-11-10">
+    expires_after="2023-02-12">
   <owner>newcomer@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -996,7 +996,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CaptureModeController.BarButtons.{TabletOrClamshell}"
-    enum="CaptureModeBarButtonType" expires_after="2022-09-29">
+    enum="CaptureModeBarButtonType" expires_after="2023-08-15">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1009,7 +1009,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CaptureModeController.CameraDisconnectionsDuringRecordings.{TabletOrClamshell}"
-    units="camera disconnections" expires_after="2022-09-29">
+    units="camera disconnections" expires_after="2023-08-15">
   <owner>michelefan@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1021,7 +1021,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CaptureModeController.CameraReconnectDuration.{TabletOrClamshell}"
-    units="seconds" expires_after="2022-09-29">
+    units="seconds" expires_after="2023-08-15">
   <owner>michelefan@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1045,7 +1045,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CaptureModeController.CaptureConfiguration.{TabletOrClamshell}"
-    enum="CaptureModeConfiguration" expires_after="2022-09-29">
+    enum="CaptureModeConfiguration" expires_after="2023-08-15">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1058,7 +1058,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CaptureModeController.CaptureRegionAdjusted.{TabletOrClamshell}"
-    units="adjustments" expires_after="2022-09-29">
+    units="adjustments" expires_after="2023-08-15">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1116,7 +1116,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CaptureModeController.Projector.CaptureConfiguration.{TabletOrClamshell}"
-    enum="CaptureModeConfiguration" expires_after="2022-09-29">
+    enum="CaptureModeConfiguration" expires_after="2023-08-15">
   <owner>michelefan@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1131,7 +1131,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CaptureModeController.Projector.CaptureRegionAdjusted.{TabletOrClamshell}"
-    units="adjustments" expires_after="2022-09-29">
+    units="adjustments" expires_after="2023-08-15">
   <owner>michelefan@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1302,243 +1302,6 @@ chromium-metrics-reviews@google.com.
     leads to the switching.
   </summary>
   <token key="TabletOrClamshell" variants="DisplayModes"/>
-</histogram>
-
-<histogram name="Ash.Clipboard.ConsecutiveCopies" units="times"
-    expires_after="2022-10-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of consecutive copies in the user session, recorded when a paste
-    occurs. Warning: This histogram was expired from 2021-09-01 to 2022-01-05;
-    data may be missing.
-  </summary>
-</histogram>
-
-<histogram name="Ash.Clipboard.ConsecutivePastes" units="times"
-    expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of consecutive pastes in the user session, recorded when a copy
-    occurs. Includes pastes from Clipboard History.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ConsecutivePastes" units="times"
-    expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of consecutive pastes from the clipboard history menu. The count
-    is reset after a copy or a paste that is not through the clipboard history
-    menu (such as pressing ctrl-v accelerator or clicking at a context menu
-    option). Warning: This histogram was expired from 2022-01-02 to 2022-01-05;
-    data may be missing.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatDeleted"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The format of the ClipboardHistoryItemView that was deleted from the
-    Clipboard History menu. Logged on ClipboardHistoryItemView::ButtonPressed().
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatPasted"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The format of the ClipboardHistoryItemView that was pasted from the
-    Clipboard History menu. Logged on ClipboardHistoryItemView::ButtonPressed().
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatShown"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The format of the view used to display clipboard data. Logged when the view
-    is created.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.MenuOptionSelected"
-    units="index" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The command ID index within the Clipboard History contextual menu that was
-    selected by the user. Recorded when the menu item is selected.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.NumberOfItemsShown"
-    units="Items Shown" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of clipboard history items shown in the clipboard history
-    contextual menu. Recorded when the clipboard history contextual menu model
-    is built.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.ShowMenu"
-    enum="ClipboardHistoryTriggerType" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    It records how many times users trigger the clipboard history menu through
-    different ways respecitvely. Recorded when the clipboard history menu shows.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.ShowPlaceholderString"
-    enum="ClipboardHistoryPlaceholderStringType" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of placeholder strings shown to users in lieu of actual data,
-    broken down by placeholder string type. Recorded when the label is requested
-    from ClipboardHistoryResourceManager.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ContextMenu.UserJourneyTime" units="ms"
-    expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The length of the user journey of the context menu version of clipboard
-    history. Measured as time from starting to construct the menu, to time of
-    the menu being closed. Recorded every time the menu is closed, regardless of
-    whether the user selected one of the menu options.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ControlToVDelay" units="ms"
-    expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The time between a user pressing control and V when pasting via keyboard.
-    Recorded in AcceleratorHistory when a V is pressed. Only recorded for the
-    first pressed V in a sequence, for example: User holds control, waits 200ms,
-    presses V (histogram logged), presses V again without releasing control (no
-    histogram logged). This metric is used to set a baseline for an experimental
-    keyboard combination where a user holds control, then presses V after a
-    delay to show multipaste.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ImageModelRequest.Lifetime" units="ms"
-    expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The lifetime of the ClipboardImageModelRequest object. Logged in the dtor of
-    ClipboardImageModelRequest.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ImageModelRequest.Runtime" units="ms"
-    expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The runtime of a request in a ClipboardImageModelRequest. Logged from when
-    the ClipboardImageModelRequest is Start()-ed to when it is Stop()-ed.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ImageModelRequest.StopReason"
-    enum="RequestStopReason" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The reason a ClipboardImageModelRequest is stopped. Logged when a request is
-    Stop()-ed.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.Nudges.{NudgeType}.ShownCount"
-    enum="BooleanHit" expires_after="2022-10-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of times the clipboard history {NudgeType} has been shown. This
-    number will be used as the baseline against the number of emits of the
-    ToFeaturePasteTime and ToFeatureOpenTime histograms.
-  </summary>
-  <token key="NudgeType">
-    <variant name="NewFeatureBadge" summary="new feature badge"/>
-    <variant name="OnboardingNudge" summary="onboarding nudge"/>
-    <variant name="ScreenshotNotificationNudge"
-        summary="screenshot notification nudge"/>
-    <variant name="ZeroStateNudge" summary="zero state nudge"/>
-  </token>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.Nudges.{NudgeType}.ToFeature{Action}Time"
-    units="seconds" expires_after="2022-10-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    The number of seconds between the user being shown the clipboard history
-    {NudgeType} and {Action}. The number of emits to this histogram will also be
-    used to measure the conversion rate by comparing it to ShownCount histogram
-  </summary>
-  <token key="NudgeType">
-    <variant name="NewFeatureBadge" summary="new feature badge"/>
-    <variant name="OnboardingNudge" summary="onboarding nudge"/>
-    <variant name="ScreenshotNotificationNudge"
-        summary="screenshot notification nudge"/>
-    <variant name="ZeroStateNudge" summary="zero state nudge"/>
-  </token>
-  <token key="Action">
-    <variant name="Open" summary="opening the clipboard history menu"/>
-    <variant name="Paste"
-        summary="using the clipboard history to paste something"/>
-  </token>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.Operation"
-    enum="ClipboardHistoryOperation" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    Different operations detected by ClipboardHistory. Debounced, so different
-    than Clipboard.Read, Clipboard.Write. Any clipboard copy detected here will
-    result in a new entry in ClipboardHistory. Recorded after a clipboard read
-    or write is debounced in ClipboardHistory. Warning: This histogram was
-    expired from 2022-01-02 to 2022-01-05; data may be missing.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.PasteType"
-    enum="ClipboardHistoryPasteType" expires_after="2022-12-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    Emits information about the type (plain vs. rich text) and input source of
-    each clipboard history paste.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ClipboardHistory.ReorderType"
-    enum="ClipboardHistoryReorderType" expires_after="2022-10-25">
-  <owner>ckincaid@chromium.org</owner>
-  <owner>multipaste@google.com</owner>
-  <summary>
-    Each time the clipboard history list is reordered, the operation (copy or
-    paste) initiating that reorder is emitted here.
-  </summary>
 </histogram>
 
 <histogram name="Ash.DarkTheme.Settings.IsDarkModeEnabled" enum="Boolean"
@@ -1751,7 +1514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.DesksCount3" units="units"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -1773,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.MoveWindowFromActiveDesk"
-    enum="DesksMoveWindowFromActiveDeskSource" expires_after="2022-12-04">
+    enum="DesksMoveWindowFromActiveDeskSource" expires_after="2023-02-12">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -1790,7 +1553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.NewDesk2" enum="DesksCreationRemovalSource"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -1966,7 +1729,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.WeeklyActiveDesks" units="active desks"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>afakhry@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -2580,7 +2343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Lacros.Launch.ModeAndSource"
-    enum="LacrosLaunchModeAndSource" expires_after="2022-12-01">
+    enum="LacrosLaunchModeAndSource" expires_after="2023-02-12">
   <owner>skuhne@chromium.org</owner>
   <owner>lacros-team@google.com</owner>
   <summary>
@@ -2594,7 +2357,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Lock.AuthMethod.Switched"
-    enum="AuthMethodSwitchType" expires_after="2022-12-04">
+    enum="AuthMethodSwitchType" expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2603,7 +2366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Lock.AuthMethod.Used.ClamShellMode"
-    enum="AuthMethod" expires_after="2022-12-04">
+    enum="AuthMethod" expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2614,7 +2377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Lock.AuthMethod.Used.TabletMode" enum="AuthMethod"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2624,7 +2387,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Lock.NbPasswordAttempts.UntilFailure"
-    units="attempts" expires_after="2022-12-04">
+    units="attempts" expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2635,7 +2398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Lock.NbPasswordAttempts.UntilSuccess"
-    units="attempts" expires_after="2022-12-04">
+    units="attempts" expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2645,7 +2408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Lock.UserClicks" enum="LockScreenUserClickTarget"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2664,7 +2427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Login.AuthMethod.Used.ClamShellMode"
-    enum="AuthMethod" expires_after="2022-12-04">
+    enum="AuthMethod" expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2685,7 +2448,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Login.MigrationBanner" enum="BooleanShown"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2695,7 +2458,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Login.UserClicks" enum="LoginScreenUserClickTarget"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -2705,7 +2468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.OOBE.UserClicks" enum="OobeUserClickTarget"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>raleksandrov@google.com</owner>
   <owner>cros-lurs@google.com</owner>
@@ -2838,7 +2601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.MessageCenter.Scroll.PresentationTime.MaxLatency"
-    units="ms" expires_after="2022-12-04">
+    units="ms" expires_after="2023-02-12">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -2953,7 +2716,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.ClearAllStacked.AnimationSmoothness"
-    units="%" expires_after="2022-12-04">
+    units="%" expires_after="2023-02-12">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3197,6 +2960,22 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Ash.NotifierFramework.Toast.Dismissed.{TimeRange}"
+    enum="ToastCatalogName" expires_after="2023-02-10">
+  <owner>kradtke@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Tracks the time a specific toast spends on screen before being dismissed by
+    the user or system. Records the toast catalog name in one of the time
+    buckets available when toast is dismissed either manually or by time out.
+  </summary>
+  <token key="TimeRange">
+    <variant name="After7s"/>
+    <variant name="Within2s"/>
+    <variant name="Within7s"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.NotifierFramework.Toast.ShownCount"
     enum="ToastCatalogName" expires_after="2023-01-15">
   <owner>kradtke@chromium.org</owner>
@@ -3345,7 +3124,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Overview.Items" units="units" expires_after="2022-12-11">
+<histogram name="Ash.Overview.Items" units="units" expires_after="2023-02-12">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3431,7 +3210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.TimeBetweenUse" units="ms"
-    expires_after="2022-10-08">
+    expires_after="2023-02-12">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3712,6 +3491,16 @@ chromium-metrics-reviews@google.com.
     Tracks the interval between UI updates during screencast uploading. Recorded
     at each pending screencast's UI change except for the first one of current
     uploading phase.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Projector.PolicyChangeHandlingError"
+    enum="ProjectorPolicyChangeHandlingError" expires_after="2022-12-01">
+  <owner>llin@chromium.org</owner>
+  <owner>cros-projector@google.com</owner>
+  <summary>
+    Records the nullptr error that potentially caused a crash when handling
+    policy changes.
   </summary>
 </histogram>
 
@@ -4188,7 +3977,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.EntryPoint.DeviceOrientation"
-    enum="DeviceOrientation" expires_after="2022-12-04">
+    enum="DeviceOrientation" expires_after="2023-02-12">
   <owner>xdai@chromium.org</owner>
   <owner>zxdan@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>
@@ -4201,7 +3990,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.EntryPoint.DeviceUIMode" enum="DeviceMode"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>xdai@chromium.org</owner>
   <owner>zxdan@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>
@@ -4586,7 +4375,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TouchView.LidAngle" units="degrees"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>oshima@chromium.org</owner>
   <summary>
     Chrome OS only. The computed angle between the lid and the keyboard panel.
@@ -4860,7 +4649,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wallpaper.Image" enum="WallpaperImage"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>jasontt@chromium.org</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>
@@ -4880,7 +4669,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wallpaper.Source2" enum="WallpaperType"
-    expires_after="2022-12-03">
+    expires_after="2023-02-12">
   <owner>thuongphan@chromium.org</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>

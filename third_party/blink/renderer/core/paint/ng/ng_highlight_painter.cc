@@ -264,7 +264,7 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectionBackground(
     const ComputedStyle& style,
     const absl::optional<AffineTransform>& rotation) {
   const Color color = SelectionBackgroundColor(document, style, node,
-                                               selection_style_.fill_color);
+                                               selection_style_.current_color);
 
   AutoDarkMode auto_dark_mode(
       PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground));
@@ -287,13 +287,15 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectionBackground(
 // Paint the selected text only.
 void NGHighlightPainter::SelectionPaintState::PaintSelectedText(
     NGTextPainter& text_painter,
+    const NGTextFragmentPaintInfo& fragment_paint_info,
     unsigned length,
     const TextPaintStyle& text_style,
     DOMNodeId node_id,
     const AutoDarkMode& auto_dark_mode) {
-  text_painter.PaintSelectedText(
-      selection_status_.start, selection_status_.end, length, text_style,
-      selection_style_, RectInWritingModeSpace(), node_id, auto_dark_mode);
+  text_painter.PaintSelectedText(fragment_paint_info, selection_status_.start,
+                                 selection_status_.end, length, text_style,
+                                 selection_style_, RectInWritingModeSpace(),
+                                 node_id, auto_dark_mode);
 }
 
 // Paint the given text range in the given style, suppressing the text proper
@@ -301,28 +303,28 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectedText(
 void NGHighlightPainter::SelectionPaintState::
     PaintSuppressingTextProperWhereSelected(
         NGTextPainter& text_painter,
-        unsigned start_offset,
-        unsigned end_offset,
+        const NGTextFragmentPaintInfo& fragment_paint_info,
         unsigned length,
         const TextPaintStyle& text_style,
         DOMNodeId node_id,
         const AutoDarkMode& auto_dark_mode) {
   // First paint the shadows for the whole range.
   if (text_style.shadow) {
-    text_painter.Paint(start_offset, end_offset, length, text_style, node_id,
+    text_painter.Paint(fragment_paint_info, length, text_style, node_id,
                        auto_dark_mode, NGTextPainter::kShadowsOnly);
   }
 
   // Then paint the text proper for any unselected parts in storage order, so
   // that they’re always on top of the shadows.
-  if (start_offset < selection_status_.start) {
-    text_painter.Paint(start_offset, selection_status_.start, length,
-                       text_style, node_id, auto_dark_mode,
-                       NGTextPainter::kTextProperOnly);
+  if (fragment_paint_info.from < selection_status_.start) {
+    text_painter.Paint(
+        fragment_paint_info.WithEndOffset(selection_status_.start), length,
+        text_style, node_id, auto_dark_mode, NGTextPainter::kTextProperOnly);
   }
-  if (selection_status_.end < end_offset) {
-    text_painter.Paint(selection_status_.end, end_offset, length, text_style,
-                       node_id, auto_dark_mode, NGTextPainter::kTextProperOnly);
+  if (selection_status_.end < fragment_paint_info.to) {
+    text_painter.Paint(
+        fragment_paint_info.WithStartOffset(selection_status_.end), length,
+        text_style, node_id, auto_dark_mode, NGTextPainter::kTextProperOnly);
   }
 }
 
@@ -488,9 +490,10 @@ void NGHighlightPainter::Paint(Phase phase) {
           text_style.stroke_width = style_.TextStrokeWidth();
           text_style.color_scheme = style_.UsedColorScheme();
         }
-        text_painter_.Paint(paint_start_offset, paint_end_offset,
-                            paint_end_offset - paint_start_offset, text_style,
-                            kInvalidDOMNodeId, foreground_auto_dark_mode_);
+        text_painter_.Paint(
+            fragment_paint_info_.Slice(paint_start_offset, paint_end_offset),
+            paint_end_offset - paint_start_offset, text_style,
+            kInvalidDOMNodeId, foreground_auto_dark_mode_);
       } break;
 
       case DocumentMarker::kComposition:
@@ -569,12 +572,13 @@ void NGHighlightPainter::Paint(Phase phase) {
             decoration_rect, selection_);
 
         decoration_painter.Begin(NGTextDecorationPainter::kOriginating);
-        decoration_painter.PaintExceptLineThrough();
+        decoration_painter.PaintExceptLineThrough(
+            fragment_paint_info_.Slice(paint_start_offset, paint_end_offset));
 
-        text_painter_.Paint(paint_start_offset, paint_end_offset,
-                            paint_end_offset - paint_start_offset,
-                            final_text_style, kInvalidDOMNodeId,
-                            foreground_auto_dark_mode_);
+        text_painter_.Paint(
+            fragment_paint_info_.Slice(paint_start_offset, paint_end_offset),
+            paint_end_offset - paint_start_offset, final_text_style,
+            kInvalidDOMNodeId, foreground_auto_dark_mode_);
 
         decoration_painter.PaintOnlyLineThrough();
       } break;
@@ -687,7 +691,8 @@ void NGHighlightPainter::PaintOneSpellingGrammarDecoration(
       MarkerRectForForeground(fragment_item_, text, paint_start_offset,
                               paint_end_offset),
       HighlightPaintingUtils::HighlightTextDecorationColor(
-          style_, node_,
+          layout_object_->GetDocument(), style_, node_,
+          originating_text_style_.current_color,
           marker_type == DocumentMarker::kSpelling ? kPseudoIdSpellingError
                                                    : kPseudoIdGrammarError));
 }
@@ -698,7 +703,7 @@ void NGHighlightPainter::PaintOriginatingText(const TextPaintStyle& text_style,
 
   // First paint the shadows for the whole range.
   if (text_style.shadow) {
-    text_painter_.Paint(fragment_paint_info_.from, fragment_paint_info_.to,
+    text_painter_.Paint(fragment_paint_info_,
                         fragment_paint_info_.to - fragment_paint_info_.from,
                         text_style, node_id, foreground_auto_dark_mode_,
                         NGTextPainter::kShadowsOnly);
@@ -711,8 +716,9 @@ void NGHighlightPainter::PaintOriginatingText(const TextPaintStyle& text_style,
       continue;
 
     PaintDecorationsExceptLineThrough(part);
-    text_painter_.Paint(part.from, part.to, part.to - part.from, text_style,
-                        node_id, foreground_auto_dark_mode_,
+    text_painter_.Paint(fragment_paint_info_.Slice(part.from, part.to),
+                        part.to - part.from, text_style, node_id,
+                        foreground_auto_dark_mode_,
                         NGTextPainter::kTextProperOnly);
     PaintDecorationsOnlyLineThrough(part);
     PaintSpellingGrammarDecorations(part);
@@ -764,7 +770,7 @@ void NGHighlightPainter::PaintHighlightOverlays(
 
       const StringView text = cursor_.CurrentText();
       Color background_color = HighlightPaintingUtils::HighlightBackgroundColor(
-          document, style_, node_, layer.text_style.fill_color,
+          document, style_, node_, layer.text_style.current_color,
           layer.id.PseudoId(), layer.id.PseudoArgument());
 
       // TODO(dazabani@igalia.com) paint rects pixel-snapped in physical space,
@@ -775,8 +781,9 @@ void NGHighlightPainter::PaintHighlightOverlays(
 
       if (layer.text_style.shadow) {
         text_painter_.Paint(
-            clamped_start, clamped_end, length, layer.text_style, node_id,
-            foreground_auto_dark_mode_, TextPainterBase::kShadowsOnly);
+            fragment_paint_info_.Slice(clamped_start, clamped_end), length,
+            layer.text_style, node_id, foreground_auto_dark_mode_,
+            TextPainterBase::kShadowsOnly);
       }
     }
   }
@@ -806,8 +813,9 @@ void NGHighlightPainter::PaintHighlightOverlays(
       // paint with clipping (NGTextPainter::PaintSelectedText)
 
       PaintDecorationsExceptLineThrough(part);
-      text_painter_.Paint(part.from, part.to, part.to - part.from,
-                          layer.text_style, node_id, foreground_auto_dark_mode_,
+      text_painter_.Paint(fragment_paint_info_.Slice(part.from, part.to),
+                          part.to - part.from, layer.text_style, node_id,
+                          foreground_auto_dark_mode_,
                           TextPainterBase::kTextProperOnly);
       PaintDecorationsOnlyLineThrough(part);
       PaintSpellingGrammarDecorations(part);
@@ -824,7 +832,7 @@ void NGHighlightPainter::PaintHighlightOverlays(
     }
 
     selection_->PaintSelectedText(
-        text_painter_, fragment_paint_info_.to - fragment_paint_info_.from,
+        text_painter_, fragment_paint_info_, fragment_paint_info_.Length(),
         originating_text_style, node_id, foreground_auto_dark_mode_);
 
     for (const HighlightPart& part : parts_) {
@@ -903,17 +911,25 @@ void NGHighlightPainter::PaintDecorationsExceptLineThrough(
       ClipToPartDecorations(part);
     }
 
-    if (decoration_layer_id.type == HighlightLayerType::kOriginating &&
-        part.layer.type != HighlightLayerType::kOriginating) {
-      wtf_size_t part_layer_index = layers_.Find(part.layer);
-      decoration_layer.decoration_info->SetHighlightOverrideColor(
-          layers_[part_layer_index].text_style.fill_color);
+    if (part.layer.type != HighlightLayerType::kOriginating) {
+      if (decoration_layer_id.type == HighlightLayerType::kOriginating) {
+        wtf_size_t part_layer_index = layers_.Find(part.layer);
+        decoration_layer.decoration_info->SetHighlightOverrideColor(
+            layers_[part_layer_index].text_style.current_color);
+      } else {
+        decoration_layer.decoration_info->SetHighlightOverrideColor(
+            HighlightPaintingUtils::ResolveColor(
+                layout_object_->GetDocument(), style_,
+                decoration_layer.style.get(), decoration_layer.id.PseudoId(),
+                GetCSSPropertyTextDecorationColor(),
+                layers_[decoration_layer_index - 1].text_style.current_color));
+      }
     }
 
     text_painter_.PaintDecorationsExceptLineThrough(
-        fragment_item_, paint_info_, *decoration_layer.style,
-        decoration_layer.text_style, *decoration_layer.decoration_info,
-        lines_to_paint, decoration_rect_);
+        fragment_paint_info_.Slice(part.from, part.to), fragment_item_,
+        paint_info_, *decoration_layer.style, decoration_layer.text_style,
+        *decoration_layer.decoration_info, lines_to_paint, decoration_rect_);
   }
 }
 
@@ -947,11 +963,19 @@ void NGHighlightPainter::PaintDecorationsOnlyLineThrough(
       ClipToPartDecorations(part);
     }
 
-    if (decoration_layer_id.type == HighlightLayerType::kOriginating &&
-        part.layer.type != HighlightLayerType::kOriginating) {
-      wtf_size_t part_layer_index = layers_.Find(part.layer);
-      decoration_layer.decoration_info->SetHighlightOverrideColor(
-          layers_[part_layer_index].text_style.fill_color);
+    if (part.layer.type != HighlightLayerType::kOriginating) {
+      if (decoration_layer_id.type == HighlightLayerType::kOriginating) {
+        wtf_size_t part_layer_index = layers_.Find(part.layer);
+        decoration_layer.decoration_info->SetHighlightOverrideColor(
+            layers_[part_layer_index].text_style.current_color);
+      } else {
+        decoration_layer.decoration_info->SetHighlightOverrideColor(
+            HighlightPaintingUtils::ResolveColor(
+                layout_object_->GetDocument(), style_,
+                decoration_layer.style.get(), decoration_layer.id.PseudoId(),
+                GetCSSPropertyTextDecorationColor(),
+                layers_[decoration_layer_index - 1].text_style.current_color));
+      }
     }
 
     text_painter_.PaintDecorationsOnlyLineThrough(
@@ -993,7 +1017,8 @@ void NGHighlightPainter::PaintSpellingGrammarDecorations(
                 : DocumentMarker::kGrammar,
             *marker_rect,
             HighlightPaintingUtils::HighlightTextDecorationColor(
-                style_, node_,
+                layout_object_->GetDocument(), style_, node_,
+                layers_[i - 1].text_style.current_color,
                 decoration_layer_id.type == HighlightLayerType::kSpelling
                     ? kPseudoIdSpellingError
                     : kPseudoIdGrammarError));

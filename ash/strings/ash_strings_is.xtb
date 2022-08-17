@@ -100,6 +100,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1455242230282523554">Sýna tungumálastillingar</translation>
 <translation id="1460620680449458626">Slökkt er á hljóði.</translation>
 <translation id="1467432559032391204">Rangsælis</translation>
+<translation id="146902737843070955">Kerfisstjórinn bað um þessa breytingu</translation>
 <translation id="147310119694673958">Símarafhlaða <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">Fljótandi aðgengisvalmynd</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" /> – ýttu á Enter til að opna Dagatalsyfirlit</translation>
@@ -327,6 +328,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2894949423239620203">Snúra getur haft áhrif á afköst</translation>
 <translation id="2903844815300039659">Tengt við <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Skjámyndatökur</translation>
+<translation id="2925246975070834767">Prófaðu sjálfvirkan aðdrátt til að vera á miðjum skjánum. Kveiktu á honum í flýtistillingum.</translation>
 <translation id="2941112035454246133">Lítill</translation>
 <translation id="2942350706960889382">Stækkunargler í föstum glugga</translation>
 <translation id="2942516765047364088">Hillustaðsetning</translation>
@@ -444,6 +446,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="3593039967545720377">Opnaðu klippiborðsferilinn þinn með því að ýta á <ph name="SHORTCUT_KEY_NAME" /> + V til að skoða klippiborðið. Afritaðu atriði til að hefjast handa.</translation>
 <translation id="3593646411856133110">Strjúktu upp og haltu fingri þar til að sjá opin forrit</translation>
 <translation id="3595596368722241419">Rafhlaða fullhlaðin</translation>
+<translation id="3596012367874587041">Forritastillingar</translation>
 <translation id="3600061223661453002">Slökkt</translation>
 <translation id="3604801046548457007">Skjáborð <ph name="DESK_TITILE" /> búið til</translation>
 <translation id="3606978283550408104">Blindraletursskjár tengdur.</translation>
@@ -469,6 +472,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="3708186454126126312">Áður tengt</translation>
 <translation id="371370241367527062">Fremri hljóðnemi</translation>
 <translation id="3713734891607377840">Opna þegar niðurhali lýkur</translation>
+<translation id="3724279623330129812">Myndavélin var miðjusett með sjálfvirkum aðdrætti</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> og <ph name="UNAVAILABLE_APPS_COUNT" /> í viðbót eru ekki í þessu tæki.</translation>
 <translation id="3735740477244556633">Raða eftir</translation>
 <translation id="3742055079367172538">Skjámynd tekin</translation>
@@ -633,6 +637,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="4628757576491864469">Tæki</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, stjörnur: <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{Færa verður tækið í fyrri útgáfu innan eins dags}one{Færa verður tækið í fyrri útgáfu innan # dags}other{Færa verður tækið í fyrri útgáfu innan # daga}}</translation>
+<translation id="4633636853437260449">Ýttu á Ctrl+W til að eyða</translation>
 <translation id="4642092649622328492">Taka mynd af hluta skjás</translation>
 <translation id="4644727592819780893">Svæðið er of smátt til að hægt sé að mynda það</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, tillaga að forriti</translation>
@@ -834,6 +839,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="5779721926447984944">Festar skrár</translation>
 <translation id="5788127256798019331">Skrár frá Play</translation>
 <translation id="5790085346892983794">Tókst</translation>
+<translation id="5804651031882187592">Slökkva á stillingunni „læsa SIM-korti“</translation>
 <translation id="5805809050170488595">Smelltu til að kveikja á <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Stillingar tengdra tækja</translation>
 <translation id="5837036133683224804">Stöðva <ph name="ROUTE_TITLE" /> í <ph name="RECEIVER_NAME" /></translation>

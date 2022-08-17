@@ -234,6 +234,10 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
       }
     }
 
+    if (GetConfig().user_visible_debug && cluster.from_persistence) {
+      cluster_mojom->debug_info = "persisted";
+    }
+
     for (const auto& visit : cluster.visits) {
       cluster_mojom->visits.push_back(VisitToMojom(profile, visit));
     }
@@ -327,7 +331,8 @@ void HistoryClustersHandler::ToggleVisibility(
   std::move(callback).Run(visible);
 }
 
-void HistoryClustersHandler::StartQueryClusters(const std::string& query) {
+void HistoryClustersHandler::StartQueryClusters(const std::string& query,
+                                                bool recluster) {
   if (!query.empty()) {
     // If the query string is not empty, we assume that this clusters query
     // is user generated.
@@ -341,7 +346,7 @@ void HistoryClustersHandler::StartQueryClusters(const std::string& query) {
   auto* history_clusters_service =
       HistoryClustersServiceFactory::GetForBrowserContext(profile_);
   query_clusters_state_ = std::make_unique<QueryClustersState>(
-      history_clusters_service->GetWeakPtr(), query);
+      history_clusters_service->GetWeakPtr(), query, recluster);
   LoadMoreClusters(query);
 }
 

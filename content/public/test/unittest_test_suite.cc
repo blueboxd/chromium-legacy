@@ -135,13 +135,7 @@ UnitTestTestSuite::UnitTestTestSuite(
   listeners.Append(CreateTestEventListener());
   listeners.Append(new CheckForLeakedWebUIRegistrations);
 
-  // The ThreadPool created by the test launcher is never destroyed.
-  // Similarly, the FeatureList created here is never destroyed so it
-  // can safely be accessed by the ThreadPool.
-  std::unique_ptr<base::FeatureList> feature_list =
-      std::make_unique<base::FeatureList>();
-  feature_list->InitializeFromCommandLine(enabled, disabled);
-  base::FeatureList::SetInstance(std::move(feature_list));
+  scoped_feature_list_.InitFromCommandLine(enabled, disabled);
 
   // Do this here even though TestBlinkWebUnitTestSupport calls it since a
   // multi process unit test won't get to create TestBlinkWebUnitTestSupport.
@@ -165,6 +159,7 @@ int UnitTestTestSuite::Run() {
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> aura_env = aura::Env::CreateInstance();
 #endif
+  std::unique_ptr<url::ScopedSchemeRegistryForTests> scheme_registry;
 
   // TestEventListeners repeater event propagation is disabled in death test
   // child process so create and set the clients here for it.
@@ -179,7 +174,7 @@ int UnitTestTestSuite::Run() {
 
     // Since Blink initialization ended up using the SchemeRegistry, reset
     // that it was accessed before testSuite::Initialize registers its schemes.
-    new url::ScopedSchemeRegistryForTests();
+    scheme_registry = std::make_unique<url::ScopedSchemeRegistryForTests>();
 
     ui::ResourceBundle::CleanupSharedInstance();
   }

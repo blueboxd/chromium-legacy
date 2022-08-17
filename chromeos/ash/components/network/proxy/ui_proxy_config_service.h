@@ -8,21 +8,16 @@
 #include <string>
 
 #include "base/component_export.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chromeos/ash/components/network/network_profile_handler.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/components/network/network_state.h"
+#include "base/values.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proxy_config/proxy_prefs.h"
 
 class PrefService;
 
-namespace base {
-class Value;
-}
+namespace ash {
 
-namespace chromeos {
-
+class NetworkProfileHandler;
+class NetworkState;
 class NetworkStateHandler;
 
 // This class provides an interface to the UI for getting a network proxy
@@ -63,7 +58,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfigService {
   //
   // Returns whether |proxy_settings| have been changed.
   bool MergeEnforcedProxyConfig(const std::string& network_guid,
-                                base::Value* proxy_settings);
+                                base::Value::Dict* proxy_settings);
 
   // Returns true if there is a default network and it has a proxy configuration
   // with mode == MODE_FIXED_SERVERS.
@@ -91,11 +86,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfigService {
   NetworkProfileHandler* network_profile_handler_;  // unowned
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::UIProxyConfigService;
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::UIProxyConfigService;
+}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_PROXY_UI_PROXY_CONFIG_SERVICE_H_

@@ -24,7 +24,8 @@
 #include "ui/views/view.h"
 
 using PromptChoice = PasswordChangeRunDisplay::PromptChoice;
-using ::testing::StrictMock;
+using testing::IsEmpty;
+using testing::StrictMock;
 
 namespace {
 
@@ -86,6 +87,12 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
     views::ViewsTestBase::TearDown();
   }
 
+  views::View* GetBody() {
+    return view() ? view()->GetViewByID(static_cast<int>(
+                        PasswordChangeRunView::ChildrenViewsIds::kBody))
+                  : nullptr;
+  }
+
   views::View* GetButtonContainer() {
     if (view()) {
       return view()->GetViewByID(static_cast<int>(
@@ -131,7 +138,7 @@ TEST_F(PasswordChangeRunViewTest, CreateAndSetInTheProvidedDisplay) {
 
 TEST_F(PasswordChangeRunViewTest, CreateBasePromptAndClick) {
   std::vector<PromptChoice> choices = CreatePromptChoices();
-  view()->ShowBasePrompt(choices);
+  view()->ShowBasePrompt(kDescription, choices);
 
   views::View* container = GetButtonContainer();
   ASSERT_TRUE(container);
@@ -151,12 +158,31 @@ TEST_F(PasswordChangeRunViewTest, CreateBasePromptAndClick) {
   SimulateButtonClick(container->children()[0]);
 }
 
+TEST_F(PasswordChangeRunViewTest, CreateBasePromptWithoutButton) {
+  // Show a prompt with no choices.
+  view()->ShowBasePrompt({});
+
+  views::View* body = GetBody();
+  ASSERT_TRUE(body);
+  EXPECT_THAT(body->children(), IsEmpty());
+
+  // Show a prompt with only empty choices.
+  std::vector<PromptChoice> choices = CreatePromptChoices();
+  for (auto& choice : choices) {
+    choice.text = u"";
+  }
+  view()->ShowBasePrompt(choices);
+  body = GetBody();
+  ASSERT_TRUE(body);
+  EXPECT_THAT(body->children(), IsEmpty());
+}
+
 TEST_F(PasswordChangeRunViewTest, CreateBasePromptWithEmptyText) {
   std::vector<PromptChoice> choices = CreatePromptChoices();
   // Make the last button have no text.
   // This means our DSL call used a choice with selectIf and no title.
   choices.back().text = u"";
-  view()->ShowBasePrompt(choices);
+  view()->ShowBasePrompt(kDescription, choices);
 
   views::View* container = GetButtonContainer();
   ASSERT_TRUE(container);
@@ -201,7 +227,7 @@ TEST_F(PasswordChangeRunViewTest, CreateSuggestedPasswordPromptAndAccept) {
 
 TEST_F(PasswordChangeRunViewTest, ClearPrompt) {
   std::vector<PromptChoice> choices = CreatePromptChoices();
-  view()->ShowBasePrompt(choices);
+  view()->ShowBasePrompt(kDescription, choices);
 
   ASSERT_TRUE(GetButtonContainer());
 

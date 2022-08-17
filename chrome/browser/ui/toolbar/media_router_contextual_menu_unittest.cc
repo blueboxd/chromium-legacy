@@ -159,7 +159,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// "Report an issue" should be present for normal profiles but not for
+// "Report an issue" should be present for normal profiles as well as for
 // incognito.
 TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
   MediaRouterContextualMenu menu(browser(), kShownByPolicy, &observer_);
@@ -175,7 +175,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
 
   MediaRouterContextualMenu incognito_menu(incognito_browser.get(),
                                            kShownByPolicy, &observer_);
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       incognito_menu.CreateMenuModel()
           ->GetIndexOfCommandId(IDC_MEDIA_TOOLBAR_CONTEXT_REPORT_CAST_ISSUE)
           .has_value());

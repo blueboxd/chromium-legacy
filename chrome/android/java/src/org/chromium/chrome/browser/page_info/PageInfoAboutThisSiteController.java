@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import android.content.res.Resources;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,8 +130,10 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         boolean more_info_enabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO);
 
-        assert mSiteInfo.hasDescription();
-        String subtitle = mSiteInfo.getDescription().getDescription();
+        Resources resources = mRowView.getContext().getResources();
+        String subtitle = mSiteInfo.hasDescription()
+                ? mSiteInfo.getDescription().getDescription()
+                : resources.getString(R.string.page_info_about_this_page_description_placeholder);
         PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
         rowParams.title = getTitle();
         rowParams.subtitle = subtitle;
@@ -139,10 +142,7 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         rowParams.iconResId =
                 more_info_enabled ? R.drawable.ic_globe_24dp : R.drawable.ic_info_outline_grey_24dp;
         rowParams.decreaseIconSize = true;
-        rowParams.clickCallback = more_info_enabled ? ()
-                -> openUrl(mSiteInfo.getMoreAbout().getUrl(),
-                        PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED)
-                : this::launchSubpage;
+        rowParams.clickCallback = this::onAboutThisSiteRowClicked;
         mRowView.setParams(rowParams);
     }
 
@@ -166,6 +166,18 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         }
         return info;
     }
+
+    private void onAboutThisSiteRowClicked() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO)) {
+            openUrl(mSiteInfo.getMoreAbout().getUrl(),
+                    PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED);
+        } else {
+            launchSubpage();
+        }
+        PageInfoAboutThisSiteControllerJni.get().onAboutThisSiteRowClicked(
+                mSiteInfo.hasDescription());
+    }
+
     @Override
     public void clearData() {}
 
@@ -181,5 +193,6 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
     interface Natives {
         boolean isFeatureEnabled();
         byte[] getSiteInfo(BrowserContextHandle browserContext, GURL url, WebContents webContents);
+        void onAboutThisSiteRowClicked(boolean withDescription);
     }
 }

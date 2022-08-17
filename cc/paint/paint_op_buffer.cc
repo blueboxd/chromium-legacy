@@ -120,14 +120,6 @@ bool GrSlugAreEqual(sk_sp<GrSlug> left, sk_sp<GrSlug> right) {
   return false;
 }
 
-class ThreadsafePath : public SkPath {
- public:
-  explicit ThreadsafePath(const SkPath& path) : SkPath(path) {
-    updateBoundsCache();
-  }
-  ThreadsafePath() { updateBoundsCache(); }
-};
-
 }  // namespace
 
 #define TYPES(M)      \
@@ -469,7 +461,7 @@ size_t ClipPathOp::Serialize(const PaintOp* base_op,
                              const SkM44& original_ctm) {
   auto* op = static_cast<const ClipPathOp*>(base_op);
   PaintOpWriter helper(memory, size, options);
-  helper.Write(*op->path, op->use_cache);
+  helper.Write(op->path, op->use_cache);
   helper.Write(op->op);
   helper.Write(op->antialias);
   return helper.size();
@@ -685,7 +677,7 @@ size_t DrawPathOp::Serialize(const PaintOp* base_op,
   if (!flags_to_serialize)
     flags_to_serialize = &op->flags;
   helper.Write(*flags_to_serialize, current_ctm);
-  helper.Write(*op->path, op->use_cache);
+  helper.Write(op->path, op->use_cache);
   helper.Write(op->sk_path_fill_type);
   return helper.size();
 }
@@ -1056,7 +1048,7 @@ PaintOp* ClipPathOp::Deserialize(const volatile void* input,
   PaintOpDeserializer<ClipPathOp> deserializer(input, input_size, options,
                                                new (output) ClipPathOp);
 
-  deserializer.Read(deserializer->path.get());
+  deserializer.Read(&deserializer->path);
   deserializer.Read(&deserializer->op);
   deserializer.Read(&deserializer->antialias);
   return deserializer.FinalizeOp();
@@ -1236,9 +1228,9 @@ PaintOp* DrawPathOp::Deserialize(const volatile void* input,
   PaintOpDeserializer<DrawPathOp> deserializer(input, input_size, options,
                                                new (output) DrawPathOp);
   deserializer.Read(&deserializer->flags);
-  deserializer.Read(deserializer->path.get());
+  deserializer.Read(&deserializer->path);
   deserializer.Read(&deserializer->sk_path_fill_type);
-  deserializer->path->setFillType(
+  deserializer->path.setFillType(
       static_cast<SkPathFillType>(deserializer->sk_path_fill_type));
   return deserializer.FinalizeOp();
 }
@@ -1545,7 +1537,7 @@ void AnnotateOp::Raster(const AnnotateOp* op,
 void ClipPathOp::Raster(const ClipPathOp* op,
                         SkCanvas* canvas,
                         const PlaybackParams& params) {
-  canvas->clipPath(*op->path, op->op, op->antialias);
+  canvas->clipPath(op->path, op->op, op->antialias);
 }
 
 void ClipRectOp::Raster(const ClipRectOp* op,
@@ -1561,8 +1553,8 @@ void ClipRRectOp::Raster(const ClipRRectOp* op,
 }
 
 void ConcatOp::Raster(const ConcatOp* op,
-                      SkCanvas* canvas,
-                      const PlaybackParams& params) {
+                        SkCanvas* canvas,
+                        const PlaybackParams& params) {
   canvas->concat(op->matrix);
 }
 
@@ -1760,7 +1752,7 @@ void DrawPathOp::RasterWithFlags(const DrawPathOp* op,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
   flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
-    c->drawPath(*op->path, p);
+    c->drawPath(op->path, p);
   });
 }
 
@@ -1918,9 +1910,9 @@ void SaveLayerAlphaOp::Raster(const SaveLayerAlphaOp* op,
   // See PaintOp::kUnsetRect
   bool unset = op->bounds.left() == SK_ScalarInfinity;
   absl::optional<SkPaint> paint;
-  if (op->alpha != 0xFF) {
+  if (op->alpha != 1.0f) {
     paint.emplace();
-    paint->setAlpha(op->alpha);
+    paint->setAlpha(op->alpha * 255.0f);
   }
   SkCanvas::SaveLayerRec rec(unset ? nullptr : &op->bounds,
                              base::OptionalOrNullptr(paint));
@@ -1939,8 +1931,8 @@ void ScaleOp::Raster(const ScaleOp* op,
 }
 
 void SetMatrixOp::Raster(const SetMatrixOp* op,
-                         SkCanvas* canvas,
-                         const PlaybackParams& params) {
+                           SkCanvas* canvas,
+                           const PlaybackParams& params) {
   canvas->setMatrix(params.original_ctm * op->matrix);
 }
 
@@ -2073,7 +2065,7 @@ bool ClipPathOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   auto* right = static_cast<const ClipPathOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (*left->path != *right->path)
+  if (left->path != right->path)
     return false;
   if (left->op != right->op)
     return false;
@@ -2240,7 +2232,7 @@ bool DrawPathOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (*left->path != *right->path)
+  if (left->path != right->path)
     return false;
   return true;
 }
@@ -2555,7 +2547,7 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawPath: {
       auto* path_op = static_cast<const DrawPathOp*>(op);
-      *rect = path_op->path->getBounds();
+      *rect = path_op->path.getBounds();
       rect->sort();
       return true;
     }
@@ -2706,7 +2698,7 @@ void PaintOpWithFlags::RasterWithFlags(SkCanvas* canvas,
 }
 
 int ClipPathOp::CountSlowPaths() const {
-  return antialias && !path->isConvex() ? 1 : 0;
+  return antialias && !path.isConvex() ? 1 : 0;
 }
 
 int DrawLineOp::CountSlowPaths() const {
@@ -2726,17 +2718,17 @@ int DrawLineOp::CountSlowPaths() const {
 int DrawPathOp::CountSlowPaths() const {
   // This logic is copied from SkPathCounter instead of attempting to expose
   // that from Skia.
-  if (!flags.isAntiAlias() || path->isConvex())
+  if (!flags.isAntiAlias() || path.isConvex())
     return 0;
 
   PaintFlags::Style paintStyle = flags.getStyle();
-  const SkRect& pathBounds = path->getBounds();
+  const SkRect& pathBounds = path.getBounds();
   if (paintStyle == PaintFlags::kStroke_Style && flags.getStrokeWidth() == 0) {
     // AA hairline concave path is not slow.
     return 0;
   } else if (paintStyle == PaintFlags::kFill_Style &&
              pathBounds.width() < 64.f && pathBounds.height() < 64.f &&
-             !path->isVolatile()) {
+             !path.isVolatile()) {
     // AADF eligible concave path is not slow.
     return 0;
   } else {
@@ -2779,23 +2771,6 @@ AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
       data(std::move(data)) {}
 
 AnnotateOp::~AnnotateOp() = default;
-
-ClipPathOp::ClipPathOp()
-    : PaintOp(kType), path(std::make_unique<ThreadsafePath>()) {}
-
-ClipPathOp::ClipPathOp(SkPath path,
-                       SkClipOp op,
-                       bool antialias,
-                       UsePaintCache use_paint_cache)
-    : PaintOp(kType),
-      path(std::make_unique<ThreadsafePath>(path)),
-      op(op),
-      antialias(antialias),
-      use_cache(use_paint_cache) {}
-
-ClipPathOp::ClipPathOp(ClipPathOp&&) = default;
-
-ClipPathOp::~ClipPathOp() = default;
 
 DrawImageOp::DrawImageOp() : PaintOpWithFlags(kType) {}
 
@@ -2854,21 +2829,6 @@ bool DrawImageRectOp::HasDiscardableImages() const {
 }
 
 DrawImageRectOp::~DrawImageRectOp() = default;
-
-DrawPathOp::DrawPathOp()
-    : PaintOpWithFlags(kType), path(std::make_unique<ThreadsafePath>()) {}
-
-DrawPathOp::DrawPathOp(const SkPath& path,
-                       const PaintFlags& flags,
-                       UsePaintCache use_paint_cache)
-    : PaintOpWithFlags(kType, flags),
-      path(std::make_unique<ThreadsafePath>(path)),
-      sk_path_fill_type(static_cast<uint8_t>(path.getFillType())),
-      use_cache(use_paint_cache) {}
-
-DrawPathOp::DrawPathOp(DrawPathOp&&) = default;
-
-DrawPathOp::~DrawPathOp() = default;
 
 DrawRecordOp::DrawRecordOp(sk_sp<const PaintRecord> record)
     : PaintOp(kType), record(std::move(record)) {}
@@ -3059,7 +3019,7 @@ PaintOpBuffer::PlaybackFoldingIterator::PlaybackFoldingIterator(
 PaintOpBuffer::PlaybackFoldingIterator::~PlaybackFoldingIterator() = default;
 
 void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
-  current_alpha_ = 255u;
+  current_alpha_ = 1.0f;
   for (current_op_ = NextUnfoldedOp(); current_op_;
        current_op_ = NextUnfoldedOp()) {
     if (current_op_->GetType() != PaintOpType::SaveLayerAlpha)
@@ -3100,7 +3060,7 @@ void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
           auto* draw_color_op = static_cast<const DrawColorOp*>(draw_op);
           SkColor4f color = draw_color_op->color;
           folded_draw_color_.color = {color.fR, color.fG, color.fB,
-                                      save_op->alpha / 255 * color.fA};
+                                      save_op->alpha * color.fA};
           current_op_ = &folded_draw_color_;
           break;
         }
@@ -3183,7 +3143,7 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       auto* context = canvas->recordingContext();
       const ScopedRasterFlags scoped_flags(
           &flags_op->flags, new_params.image_provider, canvas->getTotalMatrix(),
-          context ? context->maxTextureSize() : 0, iter.alpha());
+          context ? context->maxTextureSize() : 0, iter.alpha() / 255.0f);
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op->RasterWithFlags(canvas, raster_flags, new_params);
     } else {

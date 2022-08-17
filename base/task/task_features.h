@@ -68,15 +68,19 @@ extern const BASE_EXPORT Feature kUseBackgroundNativeThreadPool;
 // minutes, instead of 30 seconds.
 extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
 
+// This feature controls whether wake ups are possible for canceled tasks.
+extern const BASE_EXPORT Feature kNoWakeUpsForCanceledTasks;
+
 // Controls whether or not canceled delayed tasks are removed from task queues.
 extern const BASE_EXPORT base::Feature kRemoveCanceledTasksInTaskQueue;
 
 // Under this feature, a non-zero leeway is added to delayed tasks. Along with
 // DelayPolicy, this affects the time at which a delayed task runs.
 extern const BASE_EXPORT Feature kAddTaskLeewayFeature;
+constexpr TimeDelta kDefaultLeeway = Milliseconds(8);
 extern const BASE_EXPORT base::FeatureParam<TimeDelta> kTaskLeewayParam;
 
-// Under this feature, wake ups are aligned at a 4ms boundary when allowed per
+// Under this feature, wake ups are aligned at a 8ms boundary when allowed per
 // DelayPolicy.
 extern const BASE_EXPORT base::Feature kAlignWakeUps;
 
@@ -86,6 +90,9 @@ extern const BASE_EXPORT base::Feature kExplicitHighResolutionTimerWin;
 
 // Feature to run tasks by batches before pumping out messages.
 extern const BASE_EXPORT base::Feature kRunTasksByBatches;
+
+BASE_EXPORT void InitializeTaskLeeway();
+BASE_EXPORT TimeDelta GetTaskLeeway();
 
 }  // namespace base
 

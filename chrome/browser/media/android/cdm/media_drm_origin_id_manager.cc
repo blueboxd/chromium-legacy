@@ -80,17 +80,14 @@ void SetExpirableTokenIfNeeded(PrefService* const pref_service) {
     return;
 
   DictionaryPrefUpdate update(pref_service, kMediaDrmOriginIds);
-  auto* origin_id_dict = update.Get();
-  origin_id_dict->SetKey(
-      kExpirableToken, base::TimeToValue(base::Time::Now() + kExpirationDelta));
+  auto& origin_id_dict = update->GetDict();
+  origin_id_dict.Set(kExpirableToken,
+                     base::TimeToValue(base::Time::Now() + kExpirationDelta));
 }
 
-void RemoveExpirableToken(base::Value* origin_id_dict) {
+void RemoveExpirableToken(base::Value::Dict& origin_id_dict) {
   DVLOG(3) << __func__;
-  DCHECK(origin_id_dict);
-  DCHECK(origin_id_dict->is_dict());
-
-  origin_id_dict->RemoveKey(kExpirableToken);
+  origin_id_dict.Remove(kExpirableToken);
 }
 
 // On devices that don't support per-application provisioning attempts to
@@ -101,7 +98,7 @@ void RemoveExpirableToken(base::Value* origin_id_dict) {
 // application provisioning pre-provisioning is always allowed. If
 // |kExpirableToken| is expired or corrupt, it will be removed for privacy
 // reasons.
-bool CanPreProvision(base::Value* origin_id_dict) {
+bool CanPreProvision(base::Value::Dict& origin_id_dict) {
   DVLOG(3) << __func__;
 
   // On devices that support per-application provisioning, this is always true.
@@ -110,15 +107,11 @@ bool CanPreProvision(base::Value* origin_id_dict) {
 
   // Device doesn't support per-application provisioning, so check if
   // "expirable_token" is still valid.
-  if (!origin_id_dict || !origin_id_dict->is_dict())
-    return false;
-
-  const base::Value* token_value =
-      origin_id_dict->FindKeyOfType(kExpirableToken, base::Value::Type::STRING);
+  const base::Value* token_value = origin_id_dict.Find(kExpirableToken);
   if (!token_value)
     return false;
 
-  absl::optional<base::Time> expiration_time = base::ValueToTime(token_value);
+  absl::optional<base::Time> expiration_time = base::ValueToTime(*token_value);
   if (!expiration_time) {
     RemoveExpirableToken(origin_id_dict);
     return false;
@@ -133,54 +126,44 @@ bool CanPreProvision(base::Value* origin_id_dict) {
   return true;
 }
 
-int CountAvailableOriginIds(const base::Value* origin_id_dict) {
+int CountAvailableOriginIds(const base::Value::Dict& origin_id_dict) {
   DVLOG(3) << __func__;
 
-  if (!origin_id_dict || !origin_id_dict->is_dict())
-    return 0;
-
-  const base::Value* origin_ids =
-      origin_id_dict->FindKeyOfType(kOriginIds, base::Value::Type::LIST);
+  const base::Value::List* origin_ids = origin_id_dict.FindList(kOriginIds);
   if (!origin_ids)
     return 0;
 
-  DVLOG(3) << "count: " << origin_ids->GetListDeprecated().size();
-  return origin_ids->GetListDeprecated().size();
+  DVLOG(3) << "count: " << origin_ids->size();
+  return origin_ids->size();
 }
 
 base::UnguessableToken TakeFirstOriginId(PrefService* const pref_service) {
   DVLOG(3) << __func__;
 
   DictionaryPrefUpdate update(pref_service, kMediaDrmOriginIds);
-  auto* origin_id_dict = update.Get();
-  DCHECK(origin_id_dict->is_dict());
+  base::Value::Dict& origin_id_dict = update->GetDict();
 
-  base::Value* origin_ids = origin_id_dict->FindListKey(kOriginIds);
+  base::Value::List* origin_ids = origin_id_dict.FindList(kOriginIds);
   if (!origin_ids)
     return base::UnguessableToken::Null();
 
-  if (origin_ids->GetListDeprecated().empty())
+  if (origin_ids->empty())
     return base::UnguessableToken::Null();
 
-  auto first_entry = origin_ids->GetListDeprecated().begin();
+  auto first_entry = origin_ids->begin();
   absl::optional<base::UnguessableToken> result =
       base::ValueToUnguessableToken(*first_entry);
   if (!result)
     return base::UnguessableToken::Null();
 
-  origin_ids->EraseListIter(first_entry);
+  origin_ids->erase(first_entry);
   return *result;
 }
 
-void AddOriginId(base::Value* origin_id_dict,
+void AddOriginId(base::Value::Dict& origin_id_dict,
                  const base::UnguessableToken& origin_id) {
   DVLOG(3) << __func__;
-  DCHECK(origin_id_dict);
-  DCHECK(origin_id_dict->is_dict());
-
-  base::Value* origin_ids = origin_id_dict->FindListKey(kOriginIds);
-  if (!origin_ids)
-    origin_ids = origin_id_dict->SetKey(kOriginIds, base::ListValue());
+  base::Value::List* origin_ids = origin_id_dict.EnsureList(kOriginIds);
   origin_ids->Append(base::UnguessableTokenToValue(origin_id));
 }
 
@@ -383,7 +366,7 @@ void MediaDrmOriginIdManager::PreProvisionIfNecessary() {
   // On devices that need to, check that the user has recently requested
   // an origin ID. If not, then skip pre-provisioning on those devices.
   DictionaryPrefUpdate update(pref_service_, kMediaDrmOriginIds);
-  if (!CanPreProvision(update.Get())) {
+  if (!CanPreProvision(update->GetDict())) {
     // Disable any network monitoring, if it exists.
     network_observer_.reset();
     return;
@@ -391,7 +374,8 @@ void MediaDrmOriginIdManager::PreProvisionIfNecessary() {
 
   // No need to pre-provision if there are already enough existing
   // pre-provisioned origin IDs.
-  if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds) {
+  if (CountAvailableOriginIds(update->GetDict()) >=
+      kMaxPreProvisionedOriginIds) {
     // Disable any network monitoring, if it exists.
     network_observer_.reset();
     return;
@@ -511,13 +495,14 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
     pending_provisioned_origin_id_cbs_.pop();
   } else {
     DictionaryPrefUpdate update(pref_service_, kMediaDrmOriginIds);
-    AddOriginId(update.Get(), origin_id.value());
+    AddOriginId(update->GetDict(), origin_id.value());
 
     // If we already have enough pre-provisioned origin IDs, we're done.
     // Stop watching for network change events.
-    if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds) {
+    if (CountAvailableOriginIds(update->GetDict()) >=
+        kMaxPreProvisionedOriginIds) {
       network_observer_.reset();
-      RemoveExpirableToken(update.Get());
+      RemoveExpirableToken(update->GetDict());
       is_provisioning_ = false;
       return;
     }
@@ -528,10 +513,8 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
 }
 
 void MediaDrmOriginIdManager::RecordCountOfPreprovisionedOriginIds() {
-  int available_origin_ids = 0;
-  const auto* pref = pref_service_->GetDictionary(kMediaDrmOriginIds);
-  if (pref)
-    available_origin_ids = CountAvailableOriginIds(pref);
+  const auto& pref = pref_service_->GetValueDict(kMediaDrmOriginIds);
+  int available_origin_ids = CountAvailableOriginIds(pref);
 
   if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
     UMA_HISTOGRAM_EXACT_LINEAR(

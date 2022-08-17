@@ -54,7 +54,7 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   // element during printing, or table header / footer). To be called once for
   // each container fragment in which it repeats.
   //
-  // NGConstraintSpace::IsRepeatable() will tell whether the node is
+  // NGConstraintSpace::ShouldRepeat() will tell whether the node is
   // (potentially [1]) going to repeat again (in which case an outgoing "repeat"
   // break token will be created, or if this is the last time (no outgoing break
   // token will be created).
@@ -138,7 +138,10 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   bool IsContainingBlockNGGrid() const {
     return box_->ContainingBlock()->IsLayoutNGGrid();
   }
-
+  bool IsFrameSet() const { return box_->IsLayoutNGFrameSet(); }
+  bool IsParentNGFrameSet() const {
+    return box_->Parent()->IsLayoutNGFrameSet();
+  }
   bool IsParentNGGrid() const { return box_->Parent()->IsLayoutNGGrid(); }
 
   // Return true if this block node establishes an inline formatting context.

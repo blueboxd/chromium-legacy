@@ -12,7 +12,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
@@ -449,8 +448,8 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
   ~ButtonSeparatorView() override = default;
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
     node_data->role = ax::mojom::Role::kSplitter;
+    node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
   }
 };
 using ButtonSeparatorView = BookmarkBarView::ButtonSeparatorView;
@@ -1335,23 +1334,19 @@ void BookmarkBarView::AppsPageShortcutPressed(const ui::Event& event) {
                                 ui::DispositionFromEventFlags(event.flags()),
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
   page_navigator_->OpenURL(params);
-  RecordBookmarkAppsPageOpen(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
+  RecordBookmarkAppsPageOpen(BookmarkLaunchLocation::kAttachedBar);
 }
 
 void BookmarkBarView::OnButtonPressed(const bookmarks::BookmarkNode* node,
                                       const ui::Event& event) {
-  DCHECK(page_navigator_);
-
   // Only URL nodes have regular buttons on the bookmarks bar; folder clicks
   // are directed to ::OnMenuButtonPressed().
   DCHECK(node->is_url());
   RecordAppLaunch(browser_->profile(), node->url());
-  content::OpenURLParams params(node->url(), content::Referrer(),
-                                ui::DispositionFromEventFlags(event.flags()),
-                                ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-  page_navigator_->OpenURL(params);
+  chrome::OpenAllIfAllowed(browser_, {node},
+                           ui::DispositionFromEventFlags(event.flags()), false);
   RecordBookmarkLaunch(
-      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR,
+      BookmarkLaunchLocation::kAttachedBar,
       profile_metrics::GetBrowserProfileType(browser_->profile()));
 }
 
@@ -1361,18 +1356,16 @@ void BookmarkBarView::OnMenuButtonPressed(const bookmarks::BookmarkNode* node,
   // opens all bookmarks in the folder in new tabs.
   if ((event.flags() & ui::EF_MIDDLE_MOUSE_BUTTON) ||
       (event.flags() & ui::EF_PLATFORM_ACCELERATOR)) {
-    RecordBookmarkFolderLaunch(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
-    chrome::OpenAllIfAllowed(browser_, GetPageNavigatorGetter(), {node},
-                             ui::DispositionFromEventFlags(event.flags()),
-                             false);
+    RecordBookmarkFolderLaunch(BookmarkLaunchLocation::kAttachedBar);
+    chrome::OpenAllIfAllowed(
+        browser_, {node}, ui::DispositionFromEventFlags(event.flags()), false);
   } else {
-    RecordBookmarkFolderOpen(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
+    RecordBookmarkFolderOpen(BookmarkLaunchLocation::kAttachedBar);
     const size_t start_index = (node == bookmark_model_->bookmark_bar_node())
                                    ? GetFirstHiddenNodeIndex()
                                    : 0;
-    bookmark_menu_ =
-        new BookmarkMenuController(browser_, GetPageNavigatorGetter(),
-                                   GetWidget(), node, start_index, false);
+    bookmark_menu_ = new BookmarkMenuController(browser_, GetWidget(), node,
+                                                start_index, false);
     bookmark_menu_->set_observer(this);
     bookmark_menu_->RunMenuAt(this);
   }
@@ -1418,8 +1411,8 @@ void BookmarkBarView::ShowContextMenuForViewImpl(
   const bool close_on_remove = true;
 
   context_menu_ = std::make_unique<BookmarkContextMenu>(
-      GetWidget(), browser_, browser_->profile(), GetPageNavigatorGetter(),
-      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR, parent, nodes, close_on_remove);
+      GetWidget(), browser_, browser_->profile(),
+      BookmarkLaunchLocation::kAttachedBar, parent, nodes, close_on_remove);
   context_menu_->RunMenuAt(point, source_type);
 }
 
@@ -1730,8 +1723,8 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     start_index = GetFirstHiddenNodeIndex();
 
   drop_info_->is_menu_showing = true;
-  bookmark_drop_menu_ = new BookmarkMenuController(
-      browser_, GetPageNavigatorGetter(), GetWidget(), node, start_index, true);
+  bookmark_drop_menu_ = new BookmarkMenuController(browser_, GetWidget(), node,
+                                                   start_index, true);
   bookmark_drop_menu_->set_observer(this);
   bookmark_drop_menu_->RunMenuAt(this);
 
@@ -2073,17 +2066,6 @@ size_t BookmarkBarView::GetIndexForButton(views::View* button) {
     return static_cast<size_t>(-1);
 
   return static_cast<size_t>(it - bookmark_buttons_.cbegin());
-}
-
-base::RepeatingCallback<content::PageNavigator*()>
-BookmarkBarView::GetPageNavigatorGetter() {
-  auto getter = [](base::WeakPtr<BookmarkBarView> bookmark_bar)
-      -> content::PageNavigator* {
-    if (!bookmark_bar)
-      return nullptr;
-    return bookmark_bar->page_navigator_;
-  };
-  return base::BindRepeating(getter, weak_ptr_factory_.GetWeakPtr());
 }
 
 const BookmarkNode* BookmarkBarView::GetParentNodeAndIndexForDrop(

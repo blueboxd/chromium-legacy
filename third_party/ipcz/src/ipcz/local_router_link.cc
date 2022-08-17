@@ -102,9 +102,20 @@ RemoteRouterLink* LocalRouterLink::AsRemoteRouterLink() {
   return nullptr;
 }
 
+void LocalRouterLink::AllocateParcelData(size_t num_bytes,
+                                         bool allow_partial,
+                                         Parcel& parcel) {
+  parcel.AllocateData(num_bytes, allow_partial, /*memory=*/nullptr);
+}
+
 void LocalRouterLink::AcceptParcel(Parcel& parcel) {
   if (Ref<Router> receiver = state_->GetRouter(side_.opposite())) {
-    receiver->AcceptInboundParcel(parcel);
+    if (state_->type() == LinkType::kCentral) {
+      receiver->AcceptInboundParcel(parcel);
+    } else {
+      ABSL_ASSERT(state_->type() == LinkType::kBridge);
+      receiver->AcceptOutboundParcel(parcel);
+    }
   }
 }
 
@@ -112,6 +123,27 @@ void LocalRouterLink::AcceptRouteClosure(SequenceNumber sequence_length) {
   if (Ref<Router> receiver = state_->GetRouter(side_.opposite())) {
     receiver->AcceptRouteClosureFrom(state_->type(), sequence_length);
   }
+}
+
+size_t LocalRouterLink::GetParcelCapacityInBytes(const IpczPutLimits& limits) {
+  return state_->GetRouter(side_.opposite())->GetInboundCapacityInBytes(limits);
+}
+
+RouterLinkState::QueueState LocalRouterLink::GetPeerQueueState() {
+  return state_->link_state().GetQueueState(side_.opposite());
+}
+
+bool LocalRouterLink::UpdateInboundQueueState(size_t num_parcels,
+                                              size_t num_bytes) {
+  return state_->link_state().UpdateQueueState(side_, num_parcels, num_bytes);
+}
+
+void LocalRouterLink::NotifyDataConsumed() {
+  state_->GetRouter(side_.opposite())->NotifyPeerConsumedData();
+}
+
+bool LocalRouterLink::EnablePeerMonitoring(bool enable) {
+  return state_->link_state().SetSideIsMonitoringPeer(side_, enable);
 }
 
 void LocalRouterLink::AcceptRouteDisconnected() {
@@ -129,10 +161,8 @@ bool LocalRouterLink::TryLockForBypass(const NodeName& bypass_request_source) {
     return false;
   }
 
-  state_->link_state().allowed_bypass_request_source = bypass_request_source;
-
-  // Balanced by an acquire in CanNodeRequestBypass().
-  std::atomic_thread_fence(std::memory_order_release);
+  state_->link_state().allowed_bypass_request_source.StoreRelease(
+      bypass_request_source);
   return true;
 }
 
@@ -156,10 +186,10 @@ bool LocalRouterLink::FlushOtherSideIfWaiting() {
 bool LocalRouterLink::CanNodeRequestBypass(
     const NodeName& bypass_request_source) {
   // Balanced by a release in TryLockForBypass().
-  std::atomic_thread_fence(std::memory_order_acquire);
+  const NodeName allowed_source =
+      state_->link_state().allowed_bypass_request_source.LoadAcquire();
   return state_->link_state().is_locked_by(side_.opposite()) &&
-         state_->link_state().allowed_bypass_request_source ==
-             bypass_request_source;
+         allowed_source == bypass_request_source;
 }
 
 void LocalRouterLink::BypassPeer(const NodeName& bypass_target_node,

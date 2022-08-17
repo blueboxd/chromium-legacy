@@ -41,6 +41,8 @@ import java.util.HashSet;
 import java.util.List;
 
 /** Utilities for use in power bookmarks. */
+// TODO(1351830): We should add a JNI layer for the native version of these utilities in
+//                price_tracking_utils and use those instead.
 public class PowerBookmarkUtils {
     /**
      * Possible results for the validation of client and server-side subscriptions. These need to
@@ -157,23 +159,26 @@ public class PowerBookmarkUtils {
             boolean enabled, Callback<Integer> callback) {
         if (bookmarkId == null || subscriptionsManager == null) return;
 
-        PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(bookmarkId);
-        if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING) return;
+        bookmarkBridge.finishLoadingBookmarkModel(() -> {
+            PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(bookmarkId);
+            if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING) return;
 
-        CommerceSubscription subscription = createCommerceSubscriptionForPowerBookmarkMeta(meta);
-        Callback<Integer> wrapperCallback = (status) -> {
-            if (bookmarkBridge.isDestroyed()) return;
-            if (status == SubscriptionsManager.StatusCode.OK) {
-                setPriceTrackingEnabledInMetadata(bookmarkBridge, bookmarkId, enabled);
+            CommerceSubscription subscription =
+                    createCommerceSubscriptionForPowerBookmarkMeta(meta);
+            Callback<Integer> wrapperCallback = (status) -> {
+                if (bookmarkBridge.isDestroyed()) return;
+                if (status == SubscriptionsManager.StatusCode.OK) {
+                    setPriceTrackingEnabledInMetadata(bookmarkBridge, bookmarkId, enabled);
+                }
+                callback.onResult(status);
+            };
+
+            if (enabled) {
+                subscriptionsManager.subscribe(subscription, wrapperCallback);
+            } else {
+                subscriptionsManager.unsubscribe(subscription, wrapperCallback);
             }
-            callback.onResult(status);
-        };
-
-        if (enabled) {
-            subscriptionsManager.subscribe(subscription, wrapperCallback);
-        } else {
-            subscriptionsManager.unsubscribe(subscription, wrapperCallback);
-        }
+        });
     }
 
     /**

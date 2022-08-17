@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fieldset_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_repeater.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_frame_set_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
@@ -191,11 +192,14 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
     CreateAlgorithmAndRun<NGReplacedLayoutAlgorithm>(params, callback);
   } else if (box.IsLayoutNGFieldset()) {
     CreateAlgorithmAndRun<NGFieldsetLayoutAlgorithm>(params, callback);
-    // If there's a legacy layout box, we can only do block fragmentation if
-    // we would have done block fragmentation with the legacy engine.
-    // Otherwise writing data back into the legacy tree will fail. Look for
-    // the flow thread.
-  } else if (GetFlowThread(box) && style.SpecifiesColumns()) {
+  } else if (box.IsLayoutNGFrameSet()) {
+    CreateAlgorithmAndRun<NGFrameSetLayoutAlgorithm>(params, callback);
+  }
+  // If there's a legacy layout box, we can only do block fragmentation if
+  // we would have done block fragmentation with the legacy engine.
+  // Otherwise writing data back into the legacy tree will fail. Look for
+  // the flow thread.
+  else if (GetFlowThread(box) && style.SpecifiesColumns()) {
     CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
   } else if (UNLIKELY(!box.Parent() && params.node.IsPaginatedRoot())) {
     DCHECK(RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
@@ -676,6 +680,12 @@ const NGLayoutResult* NGBlockNode::SimplifiedLayout(
 const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
     const NGConstraintSpace& constraint_space,
     const NGBlockBreakToken* break_token) const {
+  // We read and write the physical fragments vector in LayoutBox here, which
+  // isn't allowed if side-effects are disabled. However, if side-effects are
+  // disabled, we shouldn't be here anyway, since we shouldn't be performing
+  // block fragmentation then (and therefore never repeat content).
+  DCHECK(!NGDisableSideEffectsScope::IsDisabled());
+
   // When laying out repeatable content, we cannot at the same time allow it to
   // break inside.
   DCHECK(!constraint_space.HasBlockFragmentation());
@@ -704,16 +714,21 @@ const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
   // numbers right, which is important when adding the result to the LayoutBox,
   // and it's also needed by pre-paint / paint.
   const NGBlockBreakToken* outgoing_break_token = nullptr;
-  if (constraint_space.IsRepeatable())
+  if (constraint_space.ShouldRepeat())
     outgoing_break_token = NGBlockBreakToken::CreateRepeated(*this, index);
   auto mutator = fragment.GetMutableForCloning();
   mutator.SetBreakToken(outgoing_break_token);
   if (!is_first) {
     mutator.ClearIsFirstForNode();
+
+    // Any OOFs whose containing block is an ancestor of the repeated section is
+    // not to be repeated.
+    mutator.ClearPropagatedOOFs();
+
     box_->SetLayoutResult(result, index);
   }
 
-  if (!constraint_space.IsRepeatable()) {
+  if (!constraint_space.ShouldRepeat()) {
     // This is the last fragment. It won't be repeated again. We have already
     // created fragments for the repeated nodes, but the cloning was shallow.
     // We're now ready to deep-clone the entire subtree for each repeated
@@ -1839,9 +1854,11 @@ const NGLayoutResult* NGBlockNode::LayoutAtomicInline(
       parent_constraint_space.ReplacedPercentageResolutionSize());
   NGConstraintSpace constraint_space = builder.ToConstraintSpace();
   const NGLayoutResult* result = Layout(constraint_space);
-  // TODO(kojii): Investigate why ClearNeedsLayout() isn't called automatically
-  // when it's being laid out.
-  GetLayoutBox()->ClearNeedsLayout();
+  if (!NGDisableSideEffectsScope::IsDisabled()) {
+    // TODO(kojii): Investigate why ClearNeedsLayout() isn't called
+    // automatically when it's being laid out.
+    GetLayoutBox()->ClearNeedsLayout();
+  }
   return result;
 }
 

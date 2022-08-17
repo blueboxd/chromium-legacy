@@ -34,10 +34,13 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     basic_snapshot_.nodes[3].id = 4;
   }
 
-  void OnFontNameChange(const std::string& new_font_name) {
-    controller_->OnFontNameChange(new_font_name);
+  void SetThemeForTesting(const std::string& font_name,
+                          float font_size,
+                          SkColor foreground_color,
+                          SkColor background_color) {
+    controller_->SetThemeForTesting(font_name, font_size, foreground_color,
+                                    background_color);
   }
-
   void OnAXTreeDistilled(const ui::AXTreeUpdate& snapshot,
                          const std::vector<ui::AXNodeID>& content_node_ids) {
     controller_->OnAXTreeDistilled(snapshot, content_node_ids);
@@ -49,12 +52,18 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   std::string FontName() { return controller_->FontName(); }
 
+  float FontSize() { return controller_->FontSize(); }
+
+  SkColor ForegroundColor() { return controller_->ForegroundColor(); }
+
+  SkColor BackgroundColor() { return controller_->BackgroundColor(); }
+
   std::vector<ui::AXNodeID> GetChildren(ui::AXNodeID ax_node_id) {
     return controller_->GetChildren(ax_node_id);
   }
 
-  uint32_t GetHeadingLevel(ui::AXNodeID ax_node_id) {
-    return controller_->GetHeadingLevel(ax_node_id);
+  std::string GetHtmlTag(ui::AXNodeID ax_node_id) {
+    return controller_->GetHtmlTag(ax_node_id);
   }
 
   std::string GetTextContent(ui::AXNodeID ax_node_id) {
@@ -65,22 +74,6 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     return controller_->GetUrl(ax_node_id);
   }
 
-  bool IsHeading(ui::AXNodeID ax_node_id) {
-    return controller_->IsHeading(ax_node_id);
-  }
-
-  bool IsLink(ui::AXNodeID ax_node_id) {
-    return controller_->IsLink(ax_node_id);
-  }
-
-  bool IsParagraph(ui::AXNodeID ax_node_id) {
-    return controller_->IsParagraph(ax_node_id);
-  }
-
-  bool IsStaticText(ui::AXNodeID ax_node_id) {
-    return controller_->IsStaticText(ax_node_id);
-  }
-
   ui::AXTreeUpdate basic_snapshot_;
 
  private:
@@ -89,10 +82,16 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   ReadAnythingAppController* controller_ = nullptr;
 };
 
-TEST_F(ReadAnythingAppControllerTest, FontName) {
+TEST_F(ReadAnythingAppControllerTest, Theme) {
   std::string font_name = "Roboto";
-  OnFontNameChange(font_name);
+  float font_size = 18.0;
+  SkColor foreground = SkColorSetRGB(0x33, 0x36, 0x39);
+  SkColor background = SkColorSetRGB(0xFD, 0xE2, 0x93);
+  SetThemeForTesting(font_name, font_size, foreground, background);
   EXPECT_EQ(font_name, FontName());
+  EXPECT_EQ(font_size, FontSize());
+  EXPECT_EQ(foreground, ForegroundColor());
+  EXPECT_EQ(background, BackgroundColor());
 }
 
 TEST_F(ReadAnythingAppControllerTest, ContentNodeIds) {
@@ -116,23 +115,33 @@ TEST_F(ReadAnythingAppControllerTest, GetChildren) {
   EXPECT_EQ(4, GetChildren(1)[1]);
 }
 
-TEST_F(ReadAnythingAppControllerTest, GetHeadingLevel) {
-  uint32_t heading_level = 3;
-  basic_snapshot_.nodes[1].role = ax::mojom::Role::kHeading;
-  basic_snapshot_.nodes[1].AddIntAttribute(
-      ax::mojom::IntAttribute::kHierarchicalLevel, heading_level);
+TEST_F(ReadAnythingAppControllerTest, GetHtmlTag) {
+  std::string span = "span";
+  std::string h1 = "h1";
+  std::string ul = "ul";
+  basic_snapshot_.nodes[1].AddStringAttribute(
+      ax::mojom::StringAttribute::kHtmlTag, span);
+  basic_snapshot_.nodes[2].AddStringAttribute(
+      ax::mojom::StringAttribute::kHtmlTag, h1);
+  basic_snapshot_.nodes[3].AddStringAttribute(
+      ax::mojom::StringAttribute::kHtmlTag, ul);
   OnAXTreeDistilled(basic_snapshot_, {});
-  EXPECT_EQ(heading_level, GetHeadingLevel(2));
+  EXPECT_EQ(span, GetHtmlTag(2));
+  EXPECT_EQ(h1, GetHtmlTag(3));
+  EXPECT_EQ(ul, GetHtmlTag(4));
 }
 
 TEST_F(ReadAnythingAppControllerTest, GetTextContent) {
   std::string text_content = "Hello";
   std::string missing_text_content = "";
   std::string more_text_content = " world";
+  basic_snapshot_.nodes[1].role = ax::mojom::Role::kStaticText;
   basic_snapshot_.nodes[1].SetName(text_content);
   basic_snapshot_.nodes[1].SetNameFrom(ax::mojom::NameFrom::kContents);
+  basic_snapshot_.nodes[2].role = ax::mojom::Role::kStaticText;
   basic_snapshot_.nodes[2].SetName(missing_text_content);
   basic_snapshot_.nodes[2].SetNameFrom(ax::mojom::NameFrom::kContents);
+  basic_snapshot_.nodes[3].role = ax::mojom::Role::kStaticText;
   basic_snapshot_.nodes[3].SetName(more_text_content);
   basic_snapshot_.nodes[3].SetNameFrom(ax::mojom::NameFrom::kContents);
   OnAXTreeDistilled(basic_snapshot_, {});
@@ -156,54 +165,4 @@ TEST_F(ReadAnythingAppControllerTest, GetUrl) {
   EXPECT_EQ(url, GetUrl(2));
   EXPECT_EQ(invalid_url, GetUrl(3));
   EXPECT_EQ(missing_url, GetUrl(4));
-}
-
-TEST_F(ReadAnythingAppControllerTest, IsHeading) {
-  basic_snapshot_.nodes[1].role = ax::mojom::Role::kHeading;
-  basic_snapshot_.nodes[2].role = ax::mojom::Role::kDocSubtitle;
-  basic_snapshot_.nodes[3].role = ax::mojom::Role::kLink;
-  OnAXTreeDistilled(basic_snapshot_, {});
-  EXPECT_TRUE(IsHeading(2));
-  EXPECT_TRUE(IsHeading(3));
-  EXPECT_FALSE(IsHeading(4));
-}
-
-TEST_F(ReadAnythingAppControllerTest, IsLink) {
-  basic_snapshot_.nodes.resize(7);
-  for (int i = 4; i < 7; i++) {
-    basic_snapshot_.nodes[0].child_ids.push_back(i + 1);
-    basic_snapshot_.nodes[i].id = i + 1;
-  }
-
-  basic_snapshot_.nodes[1].role = ax::mojom::Role::kDocBackLink;
-  basic_snapshot_.nodes[2].role = ax::mojom::Role::kDocBiblioRef;
-  basic_snapshot_.nodes[3].role = ax::mojom::Role::kDocGlossRef;
-  basic_snapshot_.nodes[4].role = ax::mojom::Role::kDocNoteRef;
-  basic_snapshot_.nodes[5].role = ax::mojom::Role::kLink;
-  basic_snapshot_.nodes[6].role = ax::mojom::Role::kParagraph;
-  OnAXTreeDistilled(basic_snapshot_, {});
-  EXPECT_TRUE(IsLink(2));
-  EXPECT_TRUE(IsLink(3));
-  EXPECT_TRUE(IsLink(4));
-  EXPECT_TRUE(IsLink(5));
-  EXPECT_TRUE(IsLink(6));
-  EXPECT_FALSE(IsLink(7));
-}
-
-TEST_F(ReadAnythingAppControllerTest, IsParagraph) {
-  basic_snapshot_.nodes[1].role = ax::mojom::Role::kParagraph;
-  basic_snapshot_.nodes[2].role = ax::mojom::Role::kListBox;
-  OnAXTreeDistilled(basic_snapshot_, {});
-  EXPECT_TRUE(IsParagraph(2));
-  EXPECT_FALSE(IsParagraph(3));
-}
-
-TEST_F(ReadAnythingAppControllerTest, IsStaticText) {
-  basic_snapshot_.nodes[1].role = ax::mojom::Role::kStaticText;
-  basic_snapshot_.nodes[2].role = ax::mojom::Role::kInlineTextBox;
-  basic_snapshot_.nodes[3].role = ax::mojom::Role::kLabelText;
-  OnAXTreeDistilled(basic_snapshot_, {});
-  EXPECT_TRUE(IsStaticText(2));
-  EXPECT_FALSE(IsStaticText(3));
-  EXPECT_FALSE(IsStaticText(4));
 }

@@ -82,6 +82,11 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   Response SetFocusEmulationEnabled(bool) override;
 
+  Response SetEmulatedMedia(
+      Maybe<std::string> media,
+      Maybe<protocol::Array<protocol::Emulation::MediaFeature>> features)
+      override;
+
   blink::DeviceEmulationParams GetDeviceEmulationParams();
   void SetDeviceEmulationParams(const blink::DeviceEmulationParams& params);
 
@@ -89,9 +94,11 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   // Applies the network request header overrides on `headers`.  If the
   // User-Agent header was overridden, `user_agent_overridden` is set to true;
-  // otherwise, it's set to false.
+  // otherwise, it's set to false. If the Accept-Language header was overridden,
+  // `accept_language_overridden` is set to true; otherwise, it's set to false.
   void ApplyOverrides(net::HttpRequestHeaders* headers,
-                      bool* user_agent_overridden);
+                      bool* user_agent_overridden,
+                      bool* accept_language_overridden);
   bool ApplyUserAgentMetadataOverrides(
       absl::optional<blink::UserAgentMetadata>* override_out);
 
@@ -114,6 +121,9 @@ class EmulationHandler : public DevToolsDomainHandler,
   // non-nullopt value will be sent.
   absl::optional<blink::UserAgentMetadata> user_agent_metadata_;
   std::string accept_language_;
+  // If |prefers_color_scheme_| is either "light" or "dark", it is used to
+  // override the "prefers-color-scheme" client hint header, when present.
+  std::string prefers_color_scheme_;
 
   RenderFrameHostImpl* host_;
 

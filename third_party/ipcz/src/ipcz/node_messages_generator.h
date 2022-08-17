@@ -54,6 +54,135 @@ IPCZ_MSG_BEGIN(ConnectFromNonBrokerToBroker,
   IPCZ_MSG_PARAM(uint32_t, num_initial_portals)
 IPCZ_MSG_END()
 
+// Sent from a non-broker to its broker when calling ConnectNode() with
+// IPCZ_CONNECT_NODE_SHARE_BROKER. In this case the transport given to
+// ConnectNode() is passed along to the broker via this message, and the broker
+// assumes the other end of that transport belongs to a new non-broker node who
+// wishes to join the network.
+//
+// The broker performs an initial handshake with the referred node -- it waits
+// for a ConnectToReferredBroker message on the new transport and then sends a
+// ConnectToReferredNonBroker over the same transport, as well as a
+// NonBrokerReferralAccepted message back to the original referrer who sent this
+// request.
+//
+// If this request is invalid or the broker otherwise fails to establish a link
+// to the referred node, the broker instead responds to the referrer with a
+// NonBrokerReferralRejected message.
+IPCZ_MSG_BEGIN(ReferNonBroker, IPCZ_MSG_ID(2), IPCZ_MSG_VERSION(0))
+  // A unique (for the transmitting NodeLink) identifier for this referral, used
+  // to associate a corresponding NonBrokerReferralAccepted/Rejected response
+  // from the broker.
+  IPCZ_MSG_PARAM(uint64_t, referral_id)
+
+  // The number of initial portals the referrer will assume on its own transport
+  // to the referred node if the referral is successful and the broker responds
+  // with NonBrokerReferralAccepted. This value is passed along to the referred
+  // node via ConnectToReferredNonBroker.
+  IPCZ_MSG_PARAM(uint32_t, num_initial_portals)
+
+  // The transport given to ConnectNode() with IPCZ_CONNECT_NODE_SHARE_BROKER.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(transport)
+IPCZ_MSG_END()
+
+// Sent from a non-broker to its tentative broker when calling ConnectNode()
+// with IPCZ_CONNECT_NODE_INHERIT_BROKER. The other end of the transport given
+// to that ConnectNode() call must itself be given to ConnectNode() by some
+// other non-broker calling with IPCZ_CONNECT_NODE_SHARE_BROKER. That other node
+// will pass the transport to the broker using a ReferNonBroker message.
+//
+// Once ConnectToReferredBroker is received by the broker on the new transport,
+// the broker sends back a ConnectToReferredNonBroker to the sender of this
+// message, as well as a NonBrokerReferralAccepted message to the original
+// referrer.
+IPCZ_MSG_BEGIN(ConnectToReferredBroker, IPCZ_MSG_ID(3), IPCZ_MSG_VERSION(0))
+  // The highest protocol version known and desired by the sender.
+  IPCZ_MSG_PARAM(uint32_t, protocol_version)
+
+  // The number of initial portals assumed on the sender's end of the transport.
+  // This is passed along by the broker to the referrer via
+  // NonBrokerReferralAccepted.
+  IPCZ_MSG_PARAM(uint32_t, num_initial_portals)
+IPCZ_MSG_END()
+
+// Sent from a broker to a referred non-broker node over a transport that was
+// provided to the broker by some other non-broker via a ReferNonBroker message.
+//
+// This is sent to the referred node if and only if the referral has been
+// accepted by the broker, and only the broker has received a
+// ConnectToReferredBroker message over the same transport that sends this
+// message.
+IPCZ_MSG_BEGIN(ConnectToReferredNonBroker, IPCZ_MSG_ID(4), IPCZ_MSG_VERSION(0))
+  // The newly assigned name of the node receiving this message.
+  IPCZ_MSG_PARAM(NodeName, name)
+
+  // The name of the broker node which has accepted the referred recipient of
+  // this message.
+  IPCZ_MSG_PARAM(NodeName, broker_name)
+
+  // The name of the node which referred the recipient to the broker sending
+  // this message.
+  IPCZ_MSG_PARAM(NodeName, referrer_name)
+
+  // The highest protocol version known and desired by the sending broker.
+  IPCZ_MSG_PARAM(uint32_t, broker_protocol_version)
+
+  // The highest protocol version known and desired by the referrer.
+  IPCZ_MSG_PARAM(uint32_t, referrer_protocol_version)
+
+  // The number of initial portals assumed by the referred on its initial link
+  // to the receipient of this message.
+  IPCZ_MSG_PARAM(uint32_t, num_initial_portals)
+
+  // A driver memory object to serve as the primary NodeLinkMemory buffer for
+  // the NodeLink between the broker and the recipient of this message (i.e.
+  // the NodeLink established from the transport which carries this message.)
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(broker_link_buffer)
+
+  // A new transport and primary buffer the receipient can use to establish a
+  // new NodeLink to the referrer. The other end of the transport (and another
+  // handle to the same memory object) is given to the referrer via
+  // NonBrokerReferralAccepted.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(referrer_link_transport)
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(referrer_link_buffer)
+IPCZ_MSG_END()
+
+// Sent from a broker to a non-broker who previously referred another node via
+// ReferNonBroker. This message indicates that the referral was accepted, and it
+// provides objects and details necessary for the recipient (i.e. the referrer)
+// to establish a direct NodeLink to the referred node.
+IPCZ_MSG_BEGIN(NonBrokerReferralAccepted, IPCZ_MSG_ID(5), IPCZ_MSG_VERSION(0))
+  // A unique identifier for the referral in question, as provided by the
+  // original ReferNonBroker message sent by the receipient of this message.
+  IPCZ_MSG_PARAM(uint64_t, referral_id)
+
+  // The highest protocol version known and desired by the referred node.
+  IPCZ_MSG_PARAM(uint32_t, protocol_version)
+
+  // The number of initial portals assumed by the referred node on its end of
+  // the link conveyed by `transport` in this message.
+  IPCZ_MSG_PARAM(uint32_t, num_initial_portals)
+
+  // The name of the referred node, as assigned by the broker.
+  IPCZ_MSG_PARAM(NodeName, name)
+
+  // A driver transport and primary buffer memory object the receipient can use
+  // to establish a direct NodeLink to the referred node.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(transport)
+  IPCZ_MSG_PARAM_DRIVER_OBJECT(buffer)
+IPCZ_MSG_END()
+
+// Sent from a broker to a non-broker who previously referred another node via
+// ReferNonBroker. This message indicates that the referral was rejected. No
+// link to the referred node has been established by the broker, and none will
+// be provided to the referrer. This can occur for example if the referred node
+// disconnects from the broker before establishing a handshake.
+IPCZ_MSG_BEGIN(NonBrokerReferralRejected, IPCZ_MSG_ID(6), IPCZ_MSG_VERSION(0))
+  // A unique identifier for the referral in question, as provided by the
+  // original ReferNonBroker message sent by the receipient of this message.
+  IPCZ_MSG_PARAM(uint64_t, referral_id)
+IPCZ_MSG_END()
+
 // Sent by a non-broker node to a broker node, asking the broker to introduce
 // the non-broker to the node identified by `name`. If the broker is willing and
 // able to comply with this request, it will send an AcceptIntroduction message
@@ -123,8 +252,14 @@ IPCZ_MSG_BEGIN(AcceptParcel, IPCZ_MSG_ID(20), IPCZ_MSG_VERSION(0))
   // parcel sequence (and the receiving portal's inbound parcel sequence.)
   IPCZ_MSG_PARAM(SequenceNumber, sequence_number)
 
-  // Free-form array of application-provided data bytes for this parcel.
+  // Free-form array of application-provided data bytes for this parcel. This
+  // field is only meaningful if `parcel_fragment` is null.
   IPCZ_MSG_PARAM_ARRAY(uint8_t, parcel_data)
+
+  // An optional shared memory fragment containing this parcel's data. If this
+  // is null, the parcel data is instead inlined via the `parcel_data` array
+  // above.
+  IPCZ_MSG_PARAM(FragmentDescriptor, parcel_fragment)
 
   // Array of handle types, with each corresponding to a single IpczHandle
   // attached to the parcel.
@@ -137,6 +272,25 @@ IPCZ_MSG_BEGIN(AcceptParcel, IPCZ_MSG_ID(20), IPCZ_MSG_VERSION(0))
 
   // Every DriverObject boxed and attached to this parcel has an entry in this
   // array.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT_ARRAY(driver_objects)
+IPCZ_MSG_END()
+
+// Conveys partial parcel contents, namely just its attached driver objects.
+// When a parcel with driver objects cannot be transmitted directly to its
+// destination, this message is split off and relayed through the broker while
+// the rest of the parcel contents are sent directly, without the objects
+// attached. The receiving node can reconstitute the full parcel once both
+// messages are received.
+IPCZ_MSG_BEGIN(AcceptParcelDriverObjects, IPCZ_MSG_ID(21), IPCZ_MSG_VERSION(0))
+  // The SublinkId linking the source and destination Routers along the
+  // transmitting NodeLink.
+  IPCZ_MSG_PARAM(SublinkId, sublink)
+
+  // The SequenceNumber of this parcel within the transmitting portal's outbound
+  // parcel sequence (and the receiving portal's inbound parcel sequence.)
+  IPCZ_MSG_PARAM(SequenceNumber, sequence_number)
+
+  // The driver objects to be accepted.
   IPCZ_MSG_PARAM_DRIVER_OBJECT_ARRAY(driver_objects)
 IPCZ_MSG_END()
 
@@ -166,6 +320,13 @@ IPCZ_MSG_END()
 // essentially the same as route closure but without respect for complete parcel
 // sequence delivery.
 IPCZ_MSG_BEGIN(RouteDisconnected, IPCZ_MSG_ID(23), IPCZ_MSG_VERSION(0))
+  IPCZ_MSG_PARAM(SublinkId, sublink)
+IPCZ_MSG_END()
+
+// Notifies a Router that the other side of its route has consumed some parcels
+// or parcel data from its inbound queue.
+IPCZ_MSG_BEGIN(NotifyDataConsumed, IPCZ_MSG_ID(24), IPCZ_MSG_VERSION(0))
+  // Identifies the router to receive this message.
   IPCZ_MSG_PARAM(SublinkId, sublink)
 IPCZ_MSG_END()
 
@@ -366,6 +527,33 @@ IPCZ_MSG_END()
 IPCZ_MSG_BEGIN(ProvideMemory, IPCZ_MSG_ID(65), IPCZ_MSG_VERSION(0))
   IPCZ_MSG_PARAM(uint32_t, size)
   IPCZ_MSG_PARAM_DRIVER_OBJECT(buffer)
+IPCZ_MSG_END()
+
+// Sends a message payload to the broker to be relayed to another node. Used to
+// relay messages which carry driver objects through the broker when they cannot
+// be transmitted directly between their source and destination nodes.
+IPCZ_MSG_BEGIN(RelayMessage, IPCZ_MSG_ID(66), IPCZ_MSG_VERSION(0))
+  // The node to which this message's contents should ultimately be relayed.
+  IPCZ_MSG_PARAM(NodeName, destination)
+
+  // The actual serialized message to be relayed, including its own header.
+  IPCZ_MSG_PARAM_ARRAY(uint8_t, data)
+
+  // The set of driver objects to be relayed along with `data`.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT_ARRAY(driver_objects)
+IPCZ_MSG_END()
+
+// Relays a message payload from an intermediate broker to its destination. This
+// is the continuation of RelayMessage above. Must only be accepted on a broker.
+IPCZ_MSG_BEGIN(AcceptRelayedMessage, IPCZ_MSG_ID(67), IPCZ_MSG_VERSION(0))
+  // The node which originally requested that the broker relay this message.
+  IPCZ_MSG_PARAM(NodeName, source)
+
+  // The full serialized data of the relayed message.
+  IPCZ_MSG_PARAM_ARRAY(uint8_t, data)
+
+  // The set of driver objects relayed along with `data`.
+  IPCZ_MSG_PARAM_DRIVER_OBJECT_ARRAY(driver_objects)
 IPCZ_MSG_END()
 
 IPCZ_MSG_END_INTERFACE()

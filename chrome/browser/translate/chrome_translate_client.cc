@@ -260,8 +260,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
     if (!translate_message_) {
       translate_message_ = std::make_unique<translate::TranslateMessage>(
           web_contents(), translate_manager_->GetWeakPtr(),
-          base::BindOnce(&ChromeTranslateClient::OnTranslateMessageDismissed,
-                         base::Unretained(this)));
+          base::BindRepeating([]() {}));
     }
     translate_message_->ShowTranslateStep(step, source_language,
                                           target_language);
@@ -270,8 +269,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
     translate::TranslateInfoBarDelegate::Create(
         step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
         translate_manager_->GetWeakPtr(),
-        infobars::ContentInfoBarManager::FromWebContents(web_contents()),
-        web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
+        infobars::ContentInfoBarManager::FromWebContents(web_contents()), step,
         source_language, target_language, error_type, triggered_from_menu);
   }
 
@@ -433,11 +431,5 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
                                       error_type, is_user_gesture);
 }
 #endif
-
-#if BUILDFLAG(IS_ANDROID)
-void ChromeTranslateClient::OnTranslateMessageDismissed() {
-  translate_message_.reset();
-}
-#endif  // BUILDFLAG(IS_ANDROID)
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeTranslateClient);

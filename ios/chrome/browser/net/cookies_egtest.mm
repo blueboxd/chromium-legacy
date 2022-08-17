@@ -8,14 +8,15 @@
 
 #import <XCTest/XCTest.h>
 
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "url/gurl.h"
+#import "net/test/embedded_test_server/default_handlers.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -106,6 +107,13 @@ std::string IncognitoCookiePath() {
   GREYAssertEqual(1U, cookies.count,
                   @"Only one cookie should be found in normal mode.");
 
+  // Work around a TabGrid bug by opening and closing the grid before
+  // proceeding.
+  // TODO(crbug.com/1350742): Fix the underlying bug and remove this workaround.
+  [ChromeEarlGrey showTabSwitcher];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
+      performAction:grey_tap()];
+
   // Finally, closes all incognito tabs while still in normal tab.
   // Checks that incognito cookie is gone.
   [ChromeEarlGrey closeAllIncognitoTabs];
@@ -122,6 +130,9 @@ std::string IncognitoCookiePath() {
 // incognito tabs and then when new incognito tab is created the cookie will
 // not reappear.
 - (void)testClearIncognitoFromIncognito {
+  // TODO(crbug.com/1352084): Fix flakiness.
+  EARL_GREY_TEST_DISABLED(@"Test is flaky.")
+
   // Loads a page in normal tab.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 

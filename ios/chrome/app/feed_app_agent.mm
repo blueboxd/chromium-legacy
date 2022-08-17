@@ -130,10 +130,9 @@
 // interval in Experimental Settings.
 - (NSDate*)earliestBackgroundRefreshBeginDate {
   NSDate* earliestBeginDate = nil;
-  NSTimeInterval intervalOverride =
-      GetBackgroundRefreshIntervalOverrideInSeconds();
-  if (intervalOverride > 0) {
-    earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:intervalOverride];
+  if (IsFeedOverrideDefaultsEnabled()) {
+    earliestBeginDate = [NSDate
+        dateWithTimeIntervalSinceNow:GetBackgroundRefreshIntervalInSeconds()];
   } else {
     // This is expected to crash if FeedService is not available.
     earliestBeginDate =
@@ -153,9 +152,11 @@
     [self scheduleBackgroundRefresh];
   }
   task.expirationHandler = ^{
-    // This is expected to crash if FeedService is not available.
-    [self feedService]->HandleBackgroundRefreshTaskExpiration();
-    [self maybeNotifyRefreshSuccess:NO];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      // This is expected to crash if FeedService is not available.
+      [self feedService]->HandleBackgroundRefreshTaskExpiration();
+      [self maybeNotifyRefreshSuccess:NO];
+    });
   };
   // This is expected to crash if FeedService is not available.
   [self feedService]->PerformBackgroundRefreshes(^(BOOL success) {

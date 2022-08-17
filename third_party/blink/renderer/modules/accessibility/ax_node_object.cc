@@ -1245,7 +1245,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   }
 
   if (GetNode()->HasTagName(html_names::kAddressTag))
-    return RoleFromLayoutObjectOrNode();
+    return ax::mojom::blink::Role::kGroup;
 
   if (IsA<HTMLDialogElement>(*GetNode()))
     return ax::mojom::blink::Role::kDialog;
@@ -2522,19 +2522,19 @@ RGBA32 AXNodeObject::ColorValue() const {
 RGBA32 AXNodeObject::BackgroundColor() const {
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
-    return Color::kTransparent;
+    return Color::kTransparent.Rgb();
 
   if (IsWebArea()) {
     LocalFrameView* view = DocumentFrameView();
     if (view)
       return view->BaseBackgroundColor().Rgb();
     else
-      return Color::kWhite;
+      return Color::kWhite.Rgb();
   }
 
   const ComputedStyle* style = layout_object->Style();
   if (!style || !style->HasBackground())
-    return Color::kTransparent;
+    return Color::kTransparent.Rgb();
 
   return style->VisitedDependentColor(GetCSSPropertyBackgroundColor()).Rgb();
 }
@@ -4587,8 +4587,10 @@ bool AXNodeObject::OnNativeFocusAction() {
   // objects may have been deferred by display-locking.
   Document* document = GetDocument();
   Node* node = GetNode();
-  if (document && node)
-    document->UpdateStyleAndLayoutTreeForNode(node);
+  if (!document || !node)
+    return false;
+
+  document->UpdateStyleAndLayoutTreeForNode(node);
 
   if (!CanSetFocusAttribute())
     return false;
@@ -5378,7 +5380,8 @@ String AXNodeObject::Description(
     const AXObject* datetime_ancestor = DatetimeAncestor();
     ax::mojom::blink::NameFrom datetime_ancestor_name_from;
     datetime_ancestor->GetName(datetime_ancestor_name_from, nullptr);
-    description_objects->clear();
+    if (description_objects)
+      description_objects->clear();
     String ancestor_description = DatetimeAncestor()->Description(
         datetime_ancestor_name_from, description_from, description_objects);
     if (!result.IsEmpty() && !ancestor_description.IsEmpty())

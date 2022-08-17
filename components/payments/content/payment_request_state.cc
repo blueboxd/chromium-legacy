@@ -30,7 +30,6 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app.h"
-#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
@@ -80,8 +79,6 @@ PaymentRequestState::PaymentRequestState(
       delegate_(delegate),
       journey_logger_(journey_logger),
       personal_data_manager_(personal_data_manager),
-      are_requested_methods_supported_(
-          !spec_->supported_card_networks().empty()),
       payment_request_delegate_(payment_request_delegate),
       profile_comparator_(app_locale, *spec) {
   PopulateProfileCache();
@@ -166,21 +163,14 @@ bool PaymentRequestState::IsRequestedAutofillDataAvailable() {
   return is_requested_autofill_data_available_;
 }
 
-bool PaymentRequestState::MayCrawlForInstallablePaymentApps() {
-  return !spec_ || !spec_->supports_basic_card();
-}
-
 bool PaymentRequestState::IsOffTheRecord() const {
   return GetPaymentRequestDelegate()->IsOffTheRecord();
 }
 
 void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {
   if (journey_logger_) {
-    if (app->type() == PaymentApp::Type::AUTOFILL) {
-      journey_logger_->SetAvailableMethod(
-          JourneyLogger::PaymentMethodCategory::kBasicCard);
-    } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
-               base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
+    if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
+        base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
       journey_logger_->SetAvailableMethod(
           JourneyLogger::PaymentMethodCategory::kGoogle);
     } else {
@@ -674,20 +664,6 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   if (!available_apps_.empty() && available_apps_[0]->CanPreselect()) {
     selected_app_ = available_apps_[0]->AsWeakPtr();
     UpdateIsReadyToPayAndNotifyObservers();
-  }
-
-  // Record the missing required payment fields when no complete payment
-  // info exists.
-  if (available_apps_.empty()) {
-    if (spec_ && spec_->supports_basic_card()) {
-      // All fields are missing when basic-card is requested but no card exits.
-      base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
-                               CREDIT_CARD_EXPIRED | CREDIT_CARD_NO_CARDHOLDER |
-                                   CREDIT_CARD_NO_NUMBER |
-                                   CREDIT_CARD_NO_BILLING_ADDRESS);
-    }
-  } else if (available_apps_[0]->type() == PaymentApp::Type::AUTOFILL) {
-    NOTREACHED() << "Autofill app shouldn't be available";
   }
 
   SelectDefaultShippingAddressAndNotifyObservers();

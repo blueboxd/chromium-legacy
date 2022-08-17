@@ -26,8 +26,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "content/public/test/browser_test.h"
 
 namespace ash {
@@ -206,10 +206,6 @@ class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
     return network_portal_detector_;
   }
 
-  PortalDetectorStrategy::StrategyId strategy_id() {
-    return network_portal_detector_->strategy_id();
-  }
-
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_;
 
@@ -232,15 +228,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest,
   host->GetWizardController()->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
-  // Error screen asks portal detector to change detection strategy.
+  // Ensure that error_screen->ShowCaptivePortal() succeeds.
   ErrorScreen* error_screen = oobe->GetErrorScreen();
   ASSERT_TRUE(error_screen);
-
-  ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy_id());
   network_portal_detector()->NotifyObserversForTesting();
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
-  ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN, strategy_id());
-
   error_screen->ShowCaptivePortal();
 }
 

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
@@ -214,6 +215,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // present in the cache.
   absl::optional<int> GetSetSize(const AXNode& node) override;
 
+  // Returns the part of the current selection that falls within this
+  // accessibility tree, if any.
+  Selection GetSelection() const override;
+
+  // Returns the part of the current selection that falls within this
+  // accessibility tree, if any, adjusting its endpoints to be within unignored
+  // nodes. (An "ignored" node is a node that is not exposed to platform APIs:
+  // See `AXNode::IsIgnored`.)
   Selection GetUnignoredSelection() const override;
 
   bool GetTreeUpdateInProgressState() const override;
@@ -247,7 +256,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Accumulate errors as there can be more than one before Chrome is crashed
   // via AccessibilityFatalError();
-  void RecordError(std::string new_error);
+  // In an AX_FAIL_FAST_BUILD, will assert/crash immediately.
+  void RecordError(const AXTreeUpdateState& update_state,
+                   std::string new_error);
 
   // AXNode::OwnerTree override.
   //

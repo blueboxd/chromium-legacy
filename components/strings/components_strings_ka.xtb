@@ -191,6 +191,7 @@
 <translation id="1430915738399379752">ბეჭდვა</translation>
 <translation id="1432187715652018471">გვერდს სურს სერვისის დამმუშავებლის ინსტალაცია.</translation>
 <translation id="1432581352905426595">საძიებო სისტემების მართვა</translation>
+<translation id="1435940442311036198">წვდომის გასაღების გამოყენება სხვა მოწყობილობაზე</translation>
 <translation id="1436185428532214179">შეუძლია თქვენს მოწყობილობაზე არსებული ფაილებისა და საქაღალდეების რედაქტირების თხოვნა</translation>
 <translation id="1442386063175183758">მარჯვნივ დაკეცვა ჭიშკრის ფორმით</translation>
 <translation id="1442987760062738829">გახვრეტა</translation>
@@ -486,6 +487,7 @@
 <translation id="2219658597883514593">სახელმძღვანელოს თავიდან გაშვება</translation>
 <translation id="2219735899272417925">საჭიროა მოწყობილობის გადაყენება</translation>
 <translation id="2224337661447660594">ინტერნეტ-კავშირი არ არის</translation>
+<translation id="2225927550500503913">ვირტუალური ბარათი ჩაირთო</translation>
 <translation id="2230458221926704099">გაასწორეთ თქვენი კავშირი <ph name="BEGIN_LINK" />დიაგნოსტიკური აპის<ph name="END_LINK" /> მეშვეობით</translation>
 <translation id="2239100178324503013">ახლავე გაგზავნა</translation>
 <translation id="2241693394036365668">ფაილის ჩამოტვირთვა</translation>
@@ -520,7 +522,6 @@
 <translation id="2318594867107319532">წესების ბოლო დროის ანაბეჭდი:</translation>
 <translation id="2324604504973636700">საყოფაცხოვრებო ტექნიკა</translation>
 <translation id="2328651992442742497">დაშვებულია (ნაგულისხმევად)</translation>
-<translation id="2329182534073751090">ფანჯრის განლაგება</translation>
 <translation id="2329473609445770916">ეს საიტი განსაზღვრავს ინტერესებს, რომელთა გამოყენებაც შეუძლია სხვა საიტებს, რეკლამა რომ გაჩვენოთ</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, ძალაშია <ph name="EXPIRATION_DATE_ABBR" />-მდე</translation>
 <translation id="2337852623177822836">პარამეტრს აკონტროლებს თქვენი ადმინისტრატორი</translation>
@@ -632,7 +633,6 @@
             <ph name="LIST_ITEM" />ფორმებში მითითებული ინფორმაცია
           <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (კონვერტი)</translation>
-<translation id="2623663032199728144">შეიძლება გთხოვოთ თქვენი ეკრანების შესახებ ინფრმაციის გამოყენება</translation>
 <translation id="2625385379895617796">თქვენი საათი წინაა</translation>
 <translation id="262745152991669301">შეუძლია USB-მოწყობილობებთან დაკავშირების თხოვნა</translation>
 <translation id="2629325967560697240">Chrome-ის უსაფრთხოების ყველაზე ძლიერი ფუნქციებით სარგებლობისთვის <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />ჩართეთ გაძლიერებული დაცვა<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -711,7 +711,6 @@
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Safe Browsing-ისა და სხვა ფუნქციების Chrome-ის პარამეტრებიდან სამართავად დააჭირეთ კლავიშს Tab, შემდეგ კი Enter-ს</translation>
 <translation id="2878197950673342043">დაკეცვა პოსტერის ფორმით</translation>
 <translation id="2878424575911748999">A1</translation>
-<translation id="2880660355386638022">ფანჯრის განლაგება</translation>
 <translation id="2881276955470682203">გსურთ ბარათის შენახვა?</translation>
 <translation id="2882949212241984732">დაკეცვა ორმაგი ჭიშკრის ფორმით</translation>
 <translation id="2893773853358652045">მეოთხე რულონი</translation>
@@ -1242,6 +1241,7 @@
 <translation id="4329871760342656885">შეცდომა წესების გარჩევისას: <ph name="ERROR" /></translation>
 <translation id="4331519897422864041">სტეკერი 5</translation>
 <translation id="4331708818696583467">დაუცველი</translation>
+<translation id="4333561522337981382">ფანჯრების მართვა თქვენს ყველა ეკრანზე</translation>
 <translation id="4340575312453649552">ეს რეკლამა იყენებდა თქვენი მოწყობილობის მეტისმეტად ბევრ რესურს, ამიტომ Chrome-მა ამოშალა ის.</translation>
 <translation id="4340982228985273705">ამ კომპიუტერს არ მართავს ორგანიზაცია. შესაბამისად, წესების მეშვეობით ავტომატურად შეიძლება დაინსტალირდეს მხოლოდ Chrome Web Store-ში არსებული გაფართოებები. Chrome Web Store-ის განახლების URL: „<ph name="CWS_UPDATE_URL" />“.</translation>
 <translation id="4346197816712207223">მისაღები საკრედიტო ბარათები</translation>
@@ -1408,7 +1408,9 @@
 <translation id="4798078619018708837">თქვენი ბარათის დეტალების გასაახლებლად შეიყვანეთ <ph name="CREDIT_CARD" />-ის მოქმედების ვადის ამოწურვის თარიღი და CVC. დადასტურების შემდეგ ბარათის დეტალები თქვენი Google ანგარიშიდან გაზიარდება ამ საიტთან.</translation>
 <translation id="4800132727771399293">შეამოწმეთ ვადის გასვლის თარიღი, ასევე CVC კოდი და ხელახლა ცადეთ</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="4806051791961048632">Touch ID-ს გამოყენება</translation>
 <translation id="4809079943450490359">ინსტრუქცია თქვენი მოწყობილობის ადმინისტრატორისგან:</translation>
+<translation id="4811450222531576619">შეიტყვეთ მისი წყაროსა და თემის შესახებ</translation>
 <translation id="4812751092864334025">ტარებადი ტექნოლოგია</translation>
 <translation id="4813512666221746211">ქსელის შეცდომა</translation>
 <translation id="4816492930507672669">მოარგეთ გვერდს</translation>
@@ -1455,6 +1457,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" />-დან</translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, მოსაძიებლად დააჭირეთ Tab-ს, შემდეგ Enter-ს</translation>
 <translation id="4930153903256238152">დიდი მოცულობის</translation>
+<translation id="4934780484581617878">ფანჯრების მართვა</translation>
 <translation id="4936134414789135531">ჩასმული <ph name="VALUE_NAME" /> ვერ მოიძებნა.</translation>
 <translation id="4936675324097895694">ფინანსები</translation>
 <translation id="4940163644868678279">ინკოგნიტო რეჟიმი Chrome-ში</translation>
@@ -1467,6 +1470,7 @@
 <translation id="4958444002117714549">სიის გაშლა</translation>
 <translation id="4964505745997821360">ჯანმრთელობის დაზღვევა</translation>
 <translation id="4968522289500246572">ეს აპი შექმნილია მობილურისთვის და შესაძლოა, ზომა არასათანადოდ შეეცვალოს. მოსალოდნელია, აპს პრობლემები წარმოექმნას ან ხელახლა გაეშვას.</translation>
+<translation id="4968665849807487749">შეუძლია მოითხოვოს ფანჯრების მართვა თქვენს ყველა ეკრანზე</translation>
 <translation id="4969341057194253438">ჩანაწერის წაშლა</translation>
 <translation id="4973922308112707173">ორმაგად გახვრეტა ზემოთ</translation>
 <translation id="4976702386844183910">ბოლო ვიზიტი: <ph name="DATE" /></translation>
@@ -1679,6 +1683,7 @@
 <translation id="5509780412636533143">მართული სანიშნეები</translation>
 <translation id="5510481203689988000">ეს პარამეტრი იმართება ქუქი-ჩანაწერების პარამეტრებიდან.</translation>
 <translation id="5510766032865166053">შესაძლოა, ის გადაადგილდა ან წაიშალა.</translation>
+<translation id="5513528801833998679">მოწყობილობის შესვლის მეთოდის გამოყენება</translation>
 <translation id="5518670652865028077">ხელოვნება და გართობა</translation>
 <translation id="5519516356611866228">თქვენი ცვლილებებით</translation>
 <translation id="5523118979700054094">წესის სახელი</translation>
@@ -1706,6 +1711,7 @@
 <translation id="5571083550517324815">ამ მისამართიდან წამოღება ვერ მოხერხდება. აირჩიეთ სხვა მისამართი.</translation>
 <translation id="557886905979275351">სამართებლები და საპარსები</translation>
 <translation id="5580958916614886209">შეამოწმეთ ვადის გასვლის თვე და ხელახლა ცადეთ</translation>
+<translation id="558420943003240152">პაროლებისა და წვდომის გასაღებების მართვა…</translation>
 <translation id="5586446728396275693">შენახული მისამართები არ არის</translation>
 <translation id="5587987780934666589">პლატფორმის მომხმარებელი</translation>
 <translation id="5593349413089863479">კავშირი სრულად დაცული არ არის</translation>
@@ -1770,6 +1776,7 @@
 <translation id="5765072501007116331">მიწოდების მეთოდებისა და მოთხოვნების სანახავად აირჩიეთ მისამართი</translation>
 <translation id="57689295674415555">ვირტუალური ბარათის ნომერი არ არის შევსებული?</translation>
 <translation id="5776313857861697733">პრიორიტეტული</translation>
+<translation id="5778389256418062749">წვდომის გასაღების გამოყენება სხვა მოწყობილობაზე</translation>
 <translation id="5781136890105823427">ექსპერიმენტი ჩართულია</translation>
 <translation id="578305955206182703">ქარვისფერი</translation>
 <translation id="57838592816432529">დადუმება</translation>
@@ -1831,6 +1838,7 @@
 <translation id="5963413905009737549">სექცია</translation>
 <translation id="5967592137238574583">საკონტაქტო ინფორმაციის რედაქტირება</translation>
 <translation id="5967867314010545767">ამოშალეთ ისტორიიდან</translation>
+<translation id="5968022600320704045">ძიების შედეგები ვერ მოიძებნა</translation>
 <translation id="5968793460449681917">ყოველ ვიზიტზე</translation>
 <translation id="5974052231147553524">მეექვსე რულონი</translation>
 <translation id="5975083100439434680">დაშორება</translation>
@@ -1948,6 +1956,7 @@
 <translation id="6300452962057769623">{0,plural, =0{თქვენი მოწყობილობა ახლა გადაიტვირთება}=1{თქვენი მოწყობილობა გადაიტვირთება 1 წამში}other{თქვენი მოწყობილობა გადაიტვირთება # წამში}}</translation>
 <translation id="6302269476990306341">Google ასისტენტი Chrome-ში წყვეტს მუშაობას</translation>
 <translation id="6305205051461490394"><ph name="URL" /> მიუწვდომელია.</translation>
+<translation id="6311165245110979290">ხელმისაწვდომია ვირტუალური ბარათი</translation>
 <translation id="6312113039770857350">ვებგვერდი მიუწვდომელია</translation>
 <translation id="6316226860534107313">სკუტერები და მოპედები</translation>
 <translation id="63172326633386613">მარტივი წვდომის პარამეტრების მართვა</translation>
@@ -1969,6 +1978,7 @@
 <translation id="6361757823711327522">B7</translation>
 <translation id="6364095313648930329"><ph name="BEGIN_LINK" />პროქსის, ქსელის დაცვისა და დაცული DNS-ის კონფიგურაციის შემოწმება<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ორმაგად დასტეპლერება მარცხნივ</translation>
+<translation id="6374865374745447009">ფანჯრების მართვა</translation>
 <translation id="6377268785556383139">მოთხოვნაზე „<ph name="SEARCH_TEXT" />“ მოიძებნა 1 შედეგი</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">მოერიდეთ პოტენციურ ხარჯებს.</translation>
@@ -2292,6 +2302,7 @@
 <translation id="7305756307268530424">უფრო ნელა გაშვება</translation>
 <translation id="7308436126008021607">ფონური სინქრონიზაცია</translation>
 <translation id="7310392214323165548">მოწყობილობა ძალიან მალე გადაიტვირთება</translation>
+<translation id="7311244614769792472">შედეგები ვერ მოიძებნა</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">კავშირთან დაკავშირებული დახმარება</translation>
 <translation id="7323804146520582233">სექციის „<ph name="SECTION" />“ დამალვა</translation>
@@ -2525,6 +2536,7 @@
 <translation id="7880146494886811634">მისამართის შენახვა</translation>
 <translation id="7882421473871500483">ყავისფერი</translation>
 <translation id="7882995332186050355">სატვირთო მანქანები და ტრაილერები</translation>
+<translation id="788679692472636252">პაროლებისა და წვდომის გასაღებების მართვა…</translation>
 <translation id="7887683347370398519">შეამოწმეთ თქვენი CVC და ხელახლა სცადეთ</translation>
 <translation id="7887885240995164102">რეჟიმში „გამოსახულება გამოსახულებაში“ შესვლა</translation>
 <translation id="7888575728750733395">ბეჭდვის რენდერის სქემა</translation>
@@ -2779,7 +2791,6 @@
 <translation id="865032292777205197">მოძრაობის სენსორები</translation>
 <translation id="8663226718884576429">შეკვეთის რეზიუმე, <ph name="TOTAL_LABEL" />, დამატებითი ინფორმაცია</translation>
 <translation id="8666678546361132282">ინგლისური</translation>
-<translation id="8669306706049782872">გამოიყენოს ინფორმაცია თქვენი ეკრანების შესახებ ფანჯრების გასაღებად და განსათავსებლად</translation>
 <translation id="867224526087042813">ხელმოწერა</translation>
 <translation id="8672264262457010862">ბიზნესი და მრეწველობა</translation>
 <translation id="8676424191133491403">დაყოვნების გარეშე</translation>

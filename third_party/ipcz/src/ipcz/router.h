@@ -76,6 +76,16 @@ class Router : public RefCounted {
   // `this` and `router`.
   bool HasLocalPeer(Router& router);
 
+  // Allocates an outbound parcel with the intention of eventually sending it
+  // from this Router via SendOutboundParcel(). This will always try to allocate
+  // exactly `num_bytes` capacity unless `allow_partial` is true; in which case
+  // the allocated size may be less than requested. If available, this will also
+  // attempt to allocate the parcel data as a fragment of the router's outward
+  // link memory.
+  IpczResult AllocateOutboundParcel(size_t num_bytes,
+                                    bool allow_partial,
+                                    Parcel& parcel);
+
   // Attempts to send an outbound parcel originating from this Router. Called
   // only as a direct result of a Put() or EndPut() call on the router's owning
   // portal.
@@ -96,6 +106,16 @@ class Router : public RefCounted {
   // within this call.
   void SetOutwardLink(Ref<RouterLink> link);
 
+  // Returns a best-effort estimation of the maximum parcel size (in bytes) that
+  // can be sent outward from this router without the receiving portal exceeding
+  // any of the specified `limits`.
+  size_t GetOutboundCapacityInBytes(const IpczPutLimits& limits);
+
+  // Returns the maximum inbound parcel size (in bytes) that can be accepted by
+  // this router's inbound parcel queue without that queue exceeding any of the
+  // specified `limits`.
+  size_t GetInboundCapacityInBytes(const IpczPutLimits& limits);
+
   // Accepts an inbound parcel from the outward edge of this router, either to
   // queue it for retrieval or forward it further inward.
   bool AcceptInboundParcel(Parcel& parcel);
@@ -110,6 +130,10 @@ class Router : public RefCounted {
   // closing.
   bool AcceptRouteClosureFrom(LinkType link_type,
                               SequenceNumber sequence_length);
+
+  // Informs this router that its outward peer consumed some inbound parcels or
+  // parcel data.
+  void NotifyPeerConsumedData();
 
   // Accepts notification from a link bound to this Router that some node along
   // the route (in the direction of that link) has been disconnected, e.g. due
@@ -127,6 +151,17 @@ class Router : public RefCounted {
                                   IpczHandle* handles,
                                   size_t* num_handles);
 
+  // Begins a two-phase retrieval of the next available inbound parcel.
+  IpczResult BeginGetNextIncomingParcel(const void** data,
+                                        size_t* num_data_bytes,
+                                        size_t* num_handles);
+
+  // Terminates a two-phase retrieval of the next available inbound parcel,
+  // consuming some (possibly all) bytes and handles from that parcel. Once a
+  // parcel is fully consumed, it's removed from the inbound queue.
+  IpczResult CommitGetNextIncomingParcel(size_t num_data_bytes_consumed,
+                                         absl::Span<IpczHandle> handles);
+
   // Attempts to install a new trap on this Router, to invoke `handler` as soon
   // as one or more conditions in `conditions` is met. This method effectively
   // implements the ipcz Trap() API. See its description in ipcz.h for details.
@@ -135,6 +170,12 @@ class Router : public RefCounted {
                   uint64_t context,
                   IpczTrapConditionFlags* satisfied_condition_flags,
                   IpczPortalStatus* status);
+
+  // Attempts to merge this Router's route with the route terminated by `other`.
+  // Both `other` and this Router must be terminal routers on their own separate
+  // routes, and neither Router must have transmitted or retreived any parcels
+  // via Put or Get APIs.
+  IpczResult MergeRoute(const Ref<Router>& other);
 
   // Deserializes a new Router from `descriptor` received over `from_node_link`.
   static Ref<Router> Deserialize(const RouterDescriptor& descriptor,
@@ -296,6 +337,21 @@ class Router : public RefCounted {
                                   RemoteRouterLink& inward_link,
                                   FragmentRef<RouterLinkState> new_link_state);
 
+  // Attempts to start bypass of this Router, which must be on a bridge link, as
+  // well bypassing the bridge link itself and the bridge peer router on its
+  // other side. This method will attempt to lock this Router's outward link as
+  // well as the outward link of this Router's bridge peer. If either fails,
+  // both are left unlocked and this operation cannot yet proceed.
+  void MaybeStartBridgeBypass();
+
+  // Starts bypass of this Router, which must be on a bridge link and must have
+  // a local outward peer link. The router on the other side of the bridge must
+  // have a remote outward peer, and `link_state` if non-null will be used to
+  // establish a new remote link to that peer to bypass the entire bridge. If
+  // `link_state` is null, the operation will be deferred until a fragment can
+  // be allocated.
+  void StartBridgeBypassFromLocalPeer(FragmentRef<RouterLinkState> link_state);
+
   // Attempts to bypass the link identified by `requestor` in favor of a new
   // link that runs over `node_link`. If `new_link_state` is non-null, it will
   // be used for the RouterLinkState of the new RemoteRouterLink; otherwise one
@@ -333,6 +389,10 @@ class Router : public RefCounted {
   // our own side of the route. Only present for proxying routers: terminal
   // routers by definition can have no inward edge.
   absl::optional<RouteEdge> inward_edge_ ABSL_GUARDED_BY(mutex_);
+
+  // A special inward edge which when present bridges this route with another
+  // route. This is used only to implement route merging.
+  std::unique_ptr<RouteEdge> bridge_ ABSL_GUARDED_BY(mutex_);
 
   // Parcels received from the other end of the route. If this is a terminal
   // router, these may be retrieved by the application via a controlling portal;

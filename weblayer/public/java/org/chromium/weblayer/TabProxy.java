@@ -7,7 +7,6 @@ package org.chromium.weblayer;
 import android.os.Handler;
 import android.os.Looper;
 
-import org.chromium.browserfragment.interfaces.ITabNavigationControllerProxy;
 import org.chromium.browserfragment.interfaces.ITabProxy;
 
 /**
@@ -15,9 +14,7 @@ import org.chromium.browserfragment.interfaces.ITabProxy;
  * and the Tab implementation in WebLayer.
  */
 class TabProxy extends ITabProxy.Stub {
-    private Handler mHandler = new Handler(Looper.getMainLooper());
-
-    private final ITabNavigationControllerProxy mTabNavigationControllerProxy;
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private int mTabId;
     private String mGuid;
@@ -25,13 +22,23 @@ class TabProxy extends ITabProxy.Stub {
     TabProxy(Tab tab) {
         mTabId = tab.getId();
         mGuid = tab.getGuid();
+    }
 
-        mTabNavigationControllerProxy =
-                new TabNavigationControllerProxy(tab.getNavigationController());
+    void invalidate() {
+        mTabId = -1;
+        mGuid = null;
+    }
+
+    boolean isValid() {
+        return mGuid != null;
     }
 
     private Tab getTab() {
-        return Tab.getTabById(mTabId);
+        Tab tab = Tab.getTabById(mTabId);
+        if (tab == null) {
+            // TODO(swestphal): Raise exception.
+        }
+        return tab;
     }
 
     @Override
@@ -43,7 +50,10 @@ class TabProxy extends ITabProxy.Stub {
     }
 
     @Override
-    public ITabNavigationControllerProxy getNavigationController() {
-        return mTabNavigationControllerProxy;
+    public void close() {
+        mHandler.post(() -> {
+            getTab().dispatchBeforeUnloadAndClose();
+            invalidate();
+        });
     }
 }

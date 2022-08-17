@@ -54,6 +54,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/script/script_evaluation_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -89,7 +90,6 @@ class WebFrameWidgetImpl;
 class WebNode;
 class WebPerformance;
 class WebRemoteFrameImpl;
-class WebScriptExecutionCallback;
 class WebSpellCheckPanelHostClient;
 class WebView;
 class WebViewImpl;
@@ -181,14 +181,15 @@ class CORE_EXPORT WebLocalFrameImpl final
                                 v8::Local<v8::Value> receiver,
                                 int argc,
                                 v8::Local<v8::Value> argv[],
-                                WebScriptExecutionCallback*) override;
+                                WebScriptExecutionCallback) override;
   void RequestExecuteScript(int32_t world_id,
                             base::span<const WebScriptSource> sources,
-                            bool user_gesture,
-                            ScriptExecutionType,
-                            WebScriptExecutionCallback*,
+                            mojom::blink::UserActivationOption,
+                            mojom::blink::EvaluationTiming,
+                            mojom::blink::LoadEventBlockingOption,
+                            WebScriptExecutionCallback,
                             BackForwardCacheAware back_forward_cache_aware,
-                            PromiseBehavior) override;
+                            mojom::blink::PromiseResultOption) override;
   void Alert(const WebString& message) override;
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
@@ -198,8 +199,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   void UnmarkText() override;
   bool HasMarkedText() const override;
   WebRange MarkedRange() const override;
-  bool FirstRectForCharacterRange(unsigned location,
-                                  unsigned length,
+  bool FirstRectForCharacterRange(uint32_t location,
+                                  uint32_t length,
                                   gfx::Rect&) const override;
   bool ExecuteCommand(const WebString&) override;
   bool ExecuteCommand(const WebString&, const WebString& value) override;

@@ -21,7 +21,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/support_tool/data_collector.h"
-#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "components/feedback/pii_types.h"
 #include "components/feedback/redaction_tool.h"
 #include "content/public/test/browser_task_environment.h"
@@ -152,11 +152,11 @@ class ShillDataCollectorTest : public ::testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     // Creates default entries in shill logs
-    chromeos::shill_clients::InitializeFakes();
+    ash::shill_clients::InitializeFakes();
   }
 
   void TearDown() override {
-    chromeos::shill_clients::Shutdown();
+    ash::shill_clients::Shutdown();
     if (!temp_dir_.IsValid())
       return;
     EXPECT_TRUE(temp_dir_.Delete());

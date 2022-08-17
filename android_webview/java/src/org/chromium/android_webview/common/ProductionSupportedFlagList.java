@@ -167,8 +167,6 @@ public final class ProductionSupportedFlagList {
                     AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_ADDRESSES,
                     "Enables support for address with a rich structure including separate street "
                             + "names and house numberse."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_FIX_FILLABLE_FIELD_TYPES,
-                    "Fix how it is determined if a field type is fillable with Autofill"),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_AUGMENTED_PHONE_COUNTRY_CODE,
                     "Enables support for phone code number fields with additional text."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
@@ -344,6 +342,23 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkSchedulerFeatures.THREADED_SCROLL_PREVENT_RENDERING_STARVATION,
                     "Enable rendering starvation-prevention during threaded scrolling."
                             + " See https://crbug.com/1315279."),
+            Flag.baseFeature(BaseFeatures.NO_WAKE_UPS_FOR_CANCELED_TASKS,
+                    "Controls whether wake ups are possible for canceled tasks."),
+            Flag.baseFeature(BaseFeatures.REMOVE_CANCELED_TASKS_IN_TASK_QUEUE,
+                    "Controls whether or not canceled delayed tasks are removed from task queues."),
+            Flag.baseFeature(BlinkFeatures.THROTTLE_INTERSECTION_OBSERVER_UMA,
+                    "Reduces fine-grained UMA metrics for IntersectionObserver."),
+            Flag.baseFeature(BlinkFeatures.PRETOKENIZE_CSS,
+                    "If enabled, CSS will be tokenized in a background thread when possible."),
+            Flag.baseFeature(BlinkFeatures.DOCUMENT_TRANSITION,
+                    "Enables the experimental Shared Element Transitions API."
+                            + " See https://github.com/WICG/shared-element-transitions/blob/main/explainer.md."),
+            Flag.baseFeature(BlinkFeatures.CSS_OVERFLOW_FOR_REPLACED_ELEMENTS,
+                    "Enables respecting the CSS overflow property on replaced elements."
+                            + " See https://chromestatus.com/feature/5137515594383360."),
+            Flag.baseFeature(GpuFeatures.INCREASED_CMD_BUFFER_PARSE_SLICE,
+                    "Enable the use of an increased parse slice size per command buffer before"
+                            + " each forced context switch."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

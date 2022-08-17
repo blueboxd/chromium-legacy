@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 
 #include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
@@ -50,16 +51,26 @@ InlineScriptStreamer* GetInlineScriptStreamer(const String& source,
   return scriptable_parser->TakeInlineScriptStreamer(source);
 }
 
-}  // namespace
+bool CheckIfEligibleForDelay(const KURL& url,
+                             const Document& element_document,
+                             const ScriptElementBase& element) {
+  if (!base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
+    return false;
 
-namespace {
-// The base URL for external classic script is
-//
-// <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">
-// ... the URL from which the script was obtained, ...</spec>
-KURL BaseUrl(const ScriptResource& resource) {
-  return resource.GetResponse().ResponseUrl();
+  if (element.IsPotentiallyRenderBlocking())
+    return false;
+
+  if (features::kDelayAsyncScriptExecutionCrossSiteOnlyParam.Get()) {
+    ExecutionContext* context = element_document.GetExecutionContext();
+    scoped_refptr<const SecurityOrigin> src_security_origin =
+        SecurityOrigin::Create(url);
+    if (src_security_origin->IsSameSiteWith(context->GetSecurityOrigin()))
+      return false;
+  }
+
+  return true;
 }
+
 }  // namespace
 
 // <specdef href="https://html.spec.whatwg.org/C/#fetch-a-classic-script">
@@ -80,7 +91,8 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
       MakeGarbageCollected<ClassicPendingScript>(
           element, TextPosition::MinimumPosition(), KURL(), KURL(), String(),
           ScriptSourceLocationType::kExternalFile, options,
-          true /* is_external */);
+          true /* is_external */,
+          CheckIfEligibleForDelay(url, element_document, *element));
 
   // [Intervention]
   // For users on slow connections, we want to avoid blocking the parser in
@@ -114,7 +126,8 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
           element, starting_position, source_url, base_url, source_text,
-          source_location_type, options, false /* is_external */);
+          source_location_type, options, false /* is_external */,
+          false /* is_eligible_for_delay */);
   pending_script->CheckState();
   return pending_script;
 }
@@ -127,7 +140,8 @@ ClassicPendingScript::ClassicPendingScript(
     const String& source_text_for_inline_script,
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options,
-    bool is_external)
+    bool is_external,
+    bool is_eligible_for_delay)
     : PendingScript(element, starting_position),
       options_(options),
       source_url_for_inline_script_(source_url_for_inline_script),
@@ -136,7 +150,8 @@ ClassicPendingScript::ClassicPendingScript(
       source_location_type_(source_location_type),
       is_external_(is_external),
       ready_state_(is_external ? kWaitingForResource : kReady),
-      integrity_failure_(false) {
+      integrity_failure_(false),
+      is_eligible_for_delay_(is_eligible_for_delay) {
   CHECK(GetElement());
 
   if (is_external_) {
@@ -155,10 +170,23 @@ ClassicPendingScript::~ClassicPendingScript() = default;
 NOINLINE void ClassicPendingScript::CheckState() const {
   DCHECK(GetElement());
   DCHECK_EQ(is_external_, !!GetResource());
-  if (ready_state_ == kWaitingForCacheConsumer) {
-    DCHECK(cache_consumer_);
-  } else if (ready_state_ == kWaitingForResource) {
-    DCHECK(!cache_consumer_);
+  switch (ready_state_) {
+    case kWaitingForResource:
+      DCHECK(is_external_);
+      DCHECK(!classic_script_);
+      break;
+    case kWaitingForCacheConsumer:
+      DCHECK(is_external_);
+      DCHECK(classic_script_);
+      DCHECK(classic_script_->CacheConsumer());
+      break;
+    case kReady:
+      DCHECK(!is_external_ || classic_script_);
+      break;
+    case kErrorOccurred:
+      DCHECK(is_external_);
+      DCHECK(!classic_script_);
+      break;
   }
 }
 
@@ -169,12 +197,16 @@ void ClassicPendingScript::RecordThirdPartyRequestWithCookieIfNeeded(
   if (response.IsNull())
     return;
 
+  ExecutionContext* execution_context = OriginalExecutionContext();
+  Document* element_document = OriginalElementDocument();
+  if (!execution_context || !element_document)
+    return;
+
   scoped_refptr<SecurityOrigin> script_origin =
       SecurityOrigin::Create(response.ResponseUrl());
-  const SecurityOrigin* doc_origin =
-      GetElement()->GetExecutionContext()->GetSecurityOrigin();
+  const SecurityOrigin* doc_origin = execution_context->GetSecurityOrigin();
   scoped_refptr<const SecurityOrigin> top_frame_origin =
-      GetElement()->GetDocument().TopFrameOrigin();
+      element_document->TopFrameOrigin();
 
   // The use counter is meant to gather data for prerendering: how often do
   // pages make credentialed requests to third parties from first-party frames,
@@ -202,7 +234,7 @@ void ClassicPendingScript::RecordThirdPartyRequestWithCookieIfNeeded(
   if (GetSchedulingType() == ScriptSchedulingType::kAsync)
     return;
 
-  GetElement()->GetExecutionContext()->CountUse(
+  execution_context->CountUse(
       mojom::blink::WebFeature::
           kUndeferrableThirdPartySubresourceRequestWithCookie);
 }
@@ -219,8 +251,10 @@ bool ClassicPendingScript::IsEligibleForDelay() const {
   // We don't delay async scripts that have matched a resource in the preload
   // cache, because we're using <link rel=preload> as a signal that the script
   // is higher-than-usual priority, and therefore should be executed earlier
-  // rather than later.
-  return !GetResource()->IsLinkPreload();
+  // rather than later. IsLinkPreload() can't be checked in
+  // CheckIfEligibleForDelay() since ClassicPendingScript::Fetch() initialize
+  // the state.
+  return is_eligible_for_delay_ && !GetResource()->IsLinkPreload();
 }
 
 void ClassicPendingScript::NotifyFinished(Resource* resource) {
@@ -248,30 +282,39 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   // See https://crbug.com/500701 for more information.
   CheckState();
   DCHECK(GetResource());
-  ScriptElementBase* element = GetElement();
-  if (element) {
-    SubresourceIntegrityHelper::DoReport(*element->GetExecutionContext(),
-                                         GetResource()->IntegrityReportInfo());
 
-    // It is possible to get back a script resource with integrity metadata
-    // for a request with an empty integrity attribute. In that case, the
-    // integrity check should be skipped, as the integrity may not have been
-    // "meant" for this specific request. If the resource is being served from
-    // the preload cache however, we know any associated integrity metadata and
-    // checks were destined for this request, so we cannot skip the integrity
-    // check.
-    if (!options_.GetIntegrityMetadata().IsEmpty() ||
-        GetResource()->IsLinkPreload()) {
-      integrity_failure_ = GetResource()->IntegrityDisposition() !=
-                           ResourceIntegrityDisposition::kPassed;
-    }
+  // If the original execution context/element document is gone, consider this
+  // as network error. Anyway the script wouldn't evaluated / no events are
+  // fired, so this is not observable.
+  ExecutionContext* execution_context = OriginalExecutionContext();
+  Document* element_document = OriginalElementDocument();
+  if (!execution_context || execution_context->IsContextDestroyed() ||
+      !element_document || !element_document->IsActive()) {
+    AdvanceReadyState(kErrorOccurred);
+    return;
+  }
+
+  SubresourceIntegrityHelper::DoReport(*execution_context,
+                                       GetResource()->IntegrityReportInfo());
+
+  // It is possible to get back a script resource with integrity metadata
+  // for a request with an empty integrity attribute. In that case, the
+  // integrity check should be skipped, as the integrity may not have been
+  // "meant" for this specific request. If the resource is being served from
+  // the preload cache however, we know any associated integrity metadata and
+  // checks were destined for this request, so we cannot skip the integrity
+  // check.
+  if (!options_.GetIntegrityMetadata().IsEmpty() ||
+      GetResource()->IsLinkPreload()) {
+    integrity_failure_ = GetResource()->IntegrityDisposition() !=
+                         ResourceIntegrityDisposition::kPassed;
   }
 
   if (intervened_) {
     CrossOriginAttributeValue cross_origin =
-        GetCrossOriginAttributeValue(element->CrossOriginAttributeValue());
-    PossiblyFetchBlockedDocWriteScript(resource, element->GetDocument(),
-                                       options_, cross_origin);
+        GetCrossOriginAttributeValue(GetElement()->CrossOriginAttributeValue());
+    PossiblyFetchBlockedDocWriteScript(resource, *element_document, options_,
+                                       cross_origin);
   }
 
   // <specdef href="https://fetch.spec.whatwg.org/#concept-main-fetch">
@@ -283,7 +326,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   // nosniff</spec>
   // <spec step="17">then set response and internalResponse to a network
   // error.</spec>
-  auto* fetcher = GetElement()->GetExecutionContext()->Fetcher();
+  auto* fetcher = execution_context->Fetcher();
   const bool mime_type_failure = !AllowedByNosniff::MimeTypeAsScript(
       fetcher->GetUseCounter(), &fetcher->GetConsoleLogger(),
       resource->GetResponse(), AllowedByNosniff::MimeTypeCheck::kLaxForElement);
@@ -306,30 +349,19 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
     return;
   }
 
-  auto* script_resource = To<ScriptResource>(GetResource());
-  CHECK(!cache_consumer_);
-  cache_consumer_ = script_resource->TakeCacheConsumer();
+  // At this point, the load is successful, and ClassicScript is created.
+  classic_script_ =
+      ClassicScript::CreateFromResource(To<ScriptResource>(resource), options_);
 
-  if (cache_consumer_) {
-    ExecutionContext* execution_context = element->GetExecutionContext();
-    // Only wait for the cache consume if there is an execution context it can
-    // notify us on.
-    if (execution_context) {
-      AdvanceReadyState(kWaitingForCacheConsumer);
-      // TODO(leszeks): Decide whether kNetworking is the right task type here.
-      cache_consumer_->NotifyClientWaiting(
-          this, execution_context->GetTaskRunner(TaskType::kNetworking));
-
-    } else {
-      // Otherwise (probably when our Document isn't active anymore),
-      // we can simply drop the cache consumer and let it be cleaned up by the
-      // GC; no one is waiting on it so it's safe to just drop it without
-      // needing to cancel or dispose it in any way.
-      cache_consumer_ = nullptr;
-    }
-  }
-
-  if (!cache_consumer_) {
+  // We'll still wait for ScriptCacheConsumer before marking this PendingScript
+  // ready.
+  if (classic_script_->CacheConsumer()) {
+    AdvanceReadyState(kWaitingForCacheConsumer);
+    // TODO(leszeks): Decide whether kNetworking is the right task type here.
+    classic_script_->CacheConsumer()->NotifyClientWaiting(
+        this, classic_script_,
+        execution_context->GetTaskRunner(TaskType::kNetworking));
+  } else {
     // Either there was never a cache consume, or it was dropped. Either way, we
     // are ready.
     AdvanceReadyState(kReady);
@@ -341,45 +373,8 @@ void ClassicPendingScript::NotifyCacheConsumeFinished() {
   AdvanceReadyState(kReady);
 }
 
-const ParkableString& ClassicPendingScript::GetSourceText() {
-  // This method is an implementation of a virtual function defined by
-  // ScriptCacheConsumerClient, and is only used for external scripts.
-  CHECK(is_external_);
-
-  return To<ScriptResource>(GetResource())->SourceText();
-}
-
-v8::ScriptOrigin ClassicPendingScript::GetScriptOrigin() {
-  // This method is an implementation of a virtual function defined by
-  // ScriptCacheConsumerClient, and is only used for external scripts.
-  CHECK(is_external_);
-
-  v8::Isolate* isolate = GetElement()->GetExecutionContext()->GetIsolate();
-  auto* resource = To<ScriptResource>(GetResource());
-  const KURL& source_url = ClassicScript::SourceUrlFromResource(*resource);
-  TextPosition script_start_position = TextPosition::MinimumPosition();
-  SanitizeScriptErrors sanitize_script_errors =
-      ClassicScript::ShouldSanitizeScriptErrors(resource->GetResponse());
-  String source_map_url =
-      ClassicScript::SourceMapUrlFromResponse(resource->GetResponse());
-  const KURL& base_url = BaseUrl(*resource);
-  const ReferrerScriptInfo referrer_info(base_url, options_);
-  v8::Local<v8::Data> host_defined_options =
-      referrer_info.ToV8HostDefinedOptions(isolate, source_url);
-  return v8::ScriptOrigin(
-      isolate, V8String(isolate, source_url),
-      script_start_position.line_.ZeroBasedInt(),
-      script_start_position.column_.ZeroBasedInt(),
-      sanitize_script_errors == SanitizeScriptErrors::kDoNotSanitize, -1,
-      V8String(isolate, source_map_url),
-      sanitize_script_errors == SanitizeScriptErrors::kSanitize,
-      false,  // is_wasm
-      false,  // is_module
-      host_defined_options);
-}
-
 void ClassicPendingScript::Trace(Visitor* visitor) const {
-  visitor->Trace(cache_consumer_);
+  visitor->Trace(classic_script_);
   ResourceClient::Trace(visitor);
   MemoryPressureListener::Trace(visitor);
   PendingScript::Trace(visitor);
@@ -423,11 +418,13 @@ ClassicScript* ClassicPendingScript::GetSource() const {
     // behaviour. We should decide whether it is ok for this parameter to be
     // used for behavioural changes (and if yes, update its documentation), or
     // otherwise trigger this behaviour differently.
-    if (source_location_type_ == ScriptSourceLocationType::kInline) {
+    Document* element_document = OriginalElementDocument();
+    if (source_location_type_ == ScriptSourceLocationType::kInline &&
+        element_document && element_document->IsActive()) {
       cache_handler = GetInlineCacheHandler(source_text_for_inline_script_,
-                                            GetElement()->GetDocument());
+                                            *element_document);
       streamer = GetInlineScriptStreamer(source_text_for_inline_script_,
-                                         GetElement()->GetDocument());
+                                         *element_document);
     }
 
     DCHECK(!GetResource());
@@ -445,34 +442,23 @@ ClassicScript* ClassicPendingScript::GetSource() const {
         streamer);
   }
 
+  DCHECK(classic_script_);
+
+  // Record histograms here, because these uses `GetSchedulingType()` but it
+  // might be unavailable yet at the time of `NotifyFinished()`.
   DCHECK(GetResource()->IsLoaded());
-  auto* resource = To<ScriptResource>(GetResource());
-  RecordThirdPartyRequestWithCookieIfNeeded(resource->GetResponse());
+  RecordThirdPartyRequestWithCookieIfNeeded(GetResource()->GetResponse());
 
-  // Check if we can use the script streamer.
-  ResourceScriptStreamer* streamer;
-  ScriptStreamer::NotStreamingReason not_streamed_reason;
-  std::tie(streamer, not_streamed_reason) = ResourceScriptStreamer::TakeFrom(
-      resource, mojom::blink::ScriptType::kClassic);
-
-  if (ready_state_ == kErrorOccurred) {
-    not_streamed_reason = ScriptStreamer::NotStreamingReason::kErrorOccurred;
-    streamer = nullptr;
-  }
-  if (streamer)
-    CHECK_EQ(ready_state_, kReady);
-  ScriptStreamer::RecordStreamingHistogram(GetSchedulingType(), streamer,
-                                           not_streamed_reason);
+  ScriptStreamer::RecordStreamingHistogram(
+      GetSchedulingType(), classic_script_->Streamer(),
+      classic_script_->NotStreamingReason());
 
   TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
                          "ClassicPendingScript::GetSource", this,
                          TRACE_EVENT_FLAG_FLOW_IN, "not_streamed_reason",
-                         not_streamed_reason);
+                         classic_script_->NotStreamingReason());
 
-  const KURL& base_url = BaseUrl(*resource);
-  return ClassicScript::CreateFromResource(resource, base_url, options_,
-                                           streamer, not_streamed_reason,
-                                           cache_consumer_);
+  return classic_script_;
 }
 
 // static

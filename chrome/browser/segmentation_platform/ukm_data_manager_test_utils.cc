@@ -8,6 +8,7 @@
 #include "chrome/browser/segmentation_platform/segmentation_platform_config.h"
 #include "chrome/browser/segmentation_platform/ukm_database_client.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/segmentation_platform/embedder/model_provider_factory_impl.h"
 #include "components/segmentation_platform/internal/database/ukm_database.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager_impl.h"
@@ -86,7 +87,7 @@ void UkmDataManagerTestUtils::PreProfileInit(
 
     default_overrides_[segment_id] = provider.get();
     // Default model must be overridden before the platform is created:
-    DefaultModelsRegister::GetInstance().SetModelForTesting(
+    TestDefaultModelOverride::GetInstance().SetModelForTesting(
         segment_id, std::move(provider));
   }
 }

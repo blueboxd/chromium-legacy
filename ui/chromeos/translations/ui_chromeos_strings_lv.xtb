@@ -5,6 +5,7 @@
 <translation id="1047956942837015229">Notiek <ph name="COUNT" /> vienumu dzēšana...</translation>
 <translation id="1049926623896334335">Word dokuments</translation>
 <translation id="1056775291175587022">Nav tīklu</translation>
+<translation id="1056898198331236512">Brīdinājums</translation>
 <translation id="1060368002126861100">Lai atvērtu failus, izmantojot lietotni <ph name="APP_NAME" />, vispirms pārvietojiet tos uz Windows failu mapi.</translation>
 <translation id="1062407476771304334">Aizstāt</translation>
 <translation id="1119447706177454957">Iekšēja kļūda</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">Tīkls noraidīja autentifikācijas sertifikātu.</translation>
 <translation id="255937426064304553">ASV starptautiskā</translation>
 <translation id="2563185590376525700">Varde</translation>
-<translation id="2570012981255377263">Jaunākie faili tiks rādīti šeit</translation>
 <translation id="2578394532502990878">Tamilu, fonētiskā</translation>
 <translation id="2579959351793446050">Oriju</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />%, bloķēja jūsu administrators, detalizēta informācija</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">PIN nav derīgs. Atlikuši <ph name="RETRIES" /> mēģinājumi.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ar krātuvi aparatūrā)</translation>
 <translation id="3188257591659621405">Mani faili</translation>
+<translation id="3194553149358267393">Nav nesenu audio failu</translation>
 <translation id="3197563288998582412">Lielbritānijas Dvorak</translation>
 <translation id="3202131003361292969">Ceļš</translation>
 <translation id="3205852408225871810">Portugāļu (Brazīlija)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">Vēlāk</translation>
 <translation id="3486821258960016770">Mongoļu</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> kļūdas.</translation>
+<translation id="3495810061346586977">Šis fails ir konfidenciāls, un uz to attiecas administratora politikas ierobežojumi. <ph name="BEGIN_LINK_HELP" />Uzziniet vairāk<ph name="END_LINK_HELP" />.</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signāla stiprums:<ph name="SIGNAL_STRENGTH" />%, informācija</translation>
 <translation id="3522708245912499433">Portugāļu valoda</translation>
 <translation id="3524311639100184459">Uzmanību! Šie ir pagaidu faili un var tikt automātiski izdzēsti, lai atbrīvotu vietu diskā.  <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="3527085408025491307">Mape</translation>
+<translation id="3548125359243647069">Pārāk daudz reižu tika ievadīts nepareizs PIN.</translation>
 <translation id="3549797760399244642">Doties uz drive.google.com...</translation>
 <translation id="3553048479571901246">Lai atvērtu failus, izmantojot lietotni <ph name="APP_NAME" />, vispirms kopējiet tos uz Windows failu mapi.</translation>
 <translation id="3556731189587832921">Angļu (ASV), ar starptautisko datora tastatūru</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">Turku-F</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3619115746895587757">Kapučīno</translation>
+<translation id="3619593063686672873">Nav nesenu videoklipu</translation>
 <translation id="3620292326130836921">Visi faili ir dublēti.</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, pārvalda jūsu administrators, informācija</translation>
 <translation id="3645233063072417428">Pārvietoti vienumi: <ph name="NUMBER_OF_ITEMS" />.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fails</translation>
 <translation id="457386861538956877">Vēl...</translation>
 <translation id="4579744207439506346">Vienums “<ph name="ENTRY_NAME" />” ir pievienots atlasei.</translation>
+<translation id="4583436353463424810">Nav nesenu dokumentu</translation>
 <translation id="4594543368593301662">Tiek rādīti rezultāti šādam vaicājumam: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4599600860674643278">Filtrs ir atiestatīts.</translation>
 <translation id="4603392156942865207">Fails “<ph name="FILE_NAME" />” tiek kopēts uz mapi “<ph name="FOLDER_NAME" />”</translation>
@@ -485,7 +490,9 @@
 <translation id="5159560892333415631">Iztukšot atkritni</translation>
 <translation id="5163869187418756376">Kopīgošana neizdevās. Pārbaudiet savienojumu un vēlāk mēģiniet vēlreiz.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
+<translation id="5172749059808361023">Informācija par ierobežojumiem</translation>
 <translation id="5177526793333269655">Sīktēlu skatījums</translation>
+<translation id="5181896909298187506">Nav nesenu failu</translation>
 <translation id="5194713942430106590">Noklikšķiniet, lai kārtotu kolonnas augošā secībā.</translation>
 <translation id="5211614973734216083">Fēru</translation>
 <translation id="5218183485292899140">Šveices franču</translation>
@@ -541,7 +548,6 @@
 <translation id="5625294776298156701">Tamilu, ar Tamil99 tastatūru</translation>
 <translation id="5633226425545095130">Pārvietojot šo failu, tas tiks kopīgots ar ikvienu, kas var skatīt kopīgoto mapi “<ph name="DESTINATION_NAME" />”.</translation>
 <translation id="5649768706273821470">Klausīties</translation>
-<translation id="5665074015635552640">Jaunākie videoklipi tiks rādīti šeit</translation>
 <translation id="5669691691057771421">Ievadiet jauno PIN.</translation>
 <translation id="5678784840044122290">Linux lietojumprogramma būs pieejama jūsu terminālī, un programmā Palaidējs var būt redzama arī tās ikona.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Nevar pārtraukt savienojumu ar arhīvu vai virtuālo disku<ph name="END_BOLD" />
@@ -614,6 +620,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />%, tālruņa akumulatora statuss: <ph name="BATTERY_STATUS" />%, savienojums</translation>
 <translation id="6269630227984243955">Malajiešu</translation>
 <translation id="6287852322318138013">Lietotnes atlasīšana šī faila atvēršanai</translation>
+<translation id="6295542640242147836">Bloķēt SIM karti</translation>
 <translation id="6296410173147755564">PUK kods nav derīgs</translation>
 <translation id="6312403991423642364">Nezināma tīkla kļūda</translation>
 <translation id="6317608858038767920">Pielāgots nosaukuma serveris <ph name="INPUT_INDEX" /></translation>
@@ -686,7 +693,6 @@
     Atrasts: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Otrādi</translation>
 <translation id="6943836128787782965">Neizdevās iegūt HTTP</translation>
-<translation id="6945604978460872381">Jaunākie dokumenti tiks rādīti šeit</translation>
 <translation id="6949408524333579394">Serbu, transliterācija</translation>
 <translation id="6954309393500027528">Jūsu administrators is bloķējis šī faila ielīmēšanu.</translation>
 <translation id="6960565108681981554">Nav aktivizēts. Sazinieties ar mobilo sakaru operatoru.</translation>
@@ -723,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Saglabāt failu kā</translation>
 <translation id="7229570126336867161">Nepieciešams EVDO</translation>
+<translation id="7230898482850090046">Jūsu administrators pieprasīja jums izslēgt iestatījumu “Bloķēt SIM karti”.</translation>
 <translation id="7238097264433196391">Diska nosaukums</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, informācija</translation>
 <translation id="7246947237293279874">FTP starpniekserveris</translation>
@@ -734,7 +741,6 @@
 <translation id="7295662345261934369">Kopīgot ar citiem</translation>
 <translation id="7297443947353982503">Lietotājvārds/parole nav pareiza vai arī EAP autentifikācija neizdevās</translation>
 <translation id="7309413087278791451">Vācu (Beļģija)</translation>
-<translation id="7313374447885864533">Jaunākie audio faili tiks rādīti šeit</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
 <translation id="7343393116438664539">Vjetnamiešu, telekss</translation>
 <translation id="7357762654218998920">Šis faila tips netiek atbalstīts. <ph name="BEGIN_LINK_HELP" />Uzziniet vairāk<ph name="END_LINK_HELP" /> par failu atvēršanu operētājsistēmā Chrome OS.</translation>
@@ -744,6 +750,7 @@
 <translation id="7408870451288633753">Čehu</translation>
 <translation id="7417453074306512035">Gēzu rakstības tastatūra</translation>
 <translation id="7417705661718309329">Google karte</translation>
+<translation id="7458955835361612701">Nav nesenu attēlu</translation>
 <translation id="7460898608667578234">Ukraiņu valoda</translation>
 <translation id="7469894403370665791">Automātiski pievienoties šim tīklam</translation>
 <translation id="7486315294984620427">Lai nomestu failus darbvirsmā Parallels Desktop, attiecīgajam failam ir jābūt kopētam Windows failos.</translation>
@@ -755,6 +762,7 @@
 <translation id="7505167922889582512">Rādīt paslēptos failus</translation>
 <translation id="7514365320538308">Lejupielādēt</translation>
 <translation id="751507702149411736">Baltkrievu valoda</translation>
+<translation id="7521790570754130607">Lai izmantotu mobilos datus, jānorāda PIN.</translation>
 <translation id="7532029025027028521">Persiešu, transliterācija</translation>
 <translation id="7544830582642184299">Linux lietotnes saņems atļauju piekļūt failiem jūsu Google diskā. Izmaiņas tiks sinhronizētas ar citām jūsu ierīcēm.</translation>
 <translation id="7547009467130558110">Sporta kurpe</translation>
@@ -779,6 +787,7 @@
 <translation id="76959938259365003">Neizdevās iztukšot atkritni.</translation>
 <translation id="770015031906360009">Grieķu valoda</translation>
 <translation id="7705251383879779343">Nokopēts vienums: <ph name="FILE_NAME" />.</translation>
+<translation id="7708271999969613024">Lai izmantotu šo tīklu, jums ir jāievada astoņu ciparu personiskā atbloķēšanas atslēga (Personal Unblocking Key — PUK), ko nodrošina mobilo sakaru operators.</translation>
 <translation id="7711920809702896782">Attēla informācija</translation>
 <translation id="7724603315864178912">Izgriezt</translation>
 <translation id="7730494089396812859">Rādīt detalizētu informāciju par dublēšanu mākonī</translation>
@@ -864,7 +873,6 @@
 <translation id="8342318071240498787">Fails vai direktorijs ar šādu nosaukumu jau pastāv.</translation>
 <translation id="8372369524088641025">Neatbilstoša WEP atslēga</translation>
 <translation id="8372852072747894550">Grieķu</translation>
-<translation id="8384716930968677505">Jaunākie attēli tiks rādīti šeit</translation>
 <translation id="8386903983509584791">Meklēšana ir pabeigta</translation>
 <translation id="8387733224523483503">Vienums <ph name="FILE_NAME" /> ir izvilkts.</translation>
 <translation id="8395901698320285466">Izmēri</translation>
@@ -874,6 +882,7 @@
 <translation id="8437209419043462667">ASV</translation>
 <translation id="8452135315243592079">Nav SIM kartes.</translation>
 <translation id="8456681095658380701">Nederīgs nosaukums</translation>
+<translation id="8457767749626250697">Jūsu SIM karte ir bloķēta</translation>
 <translation id="8459404855768962328">Kopējot šo failu, tas tiks kopīgots ar ikvienu, kas var skatīt kopīgoto mapi “<ph name="DESTINATION_NAME" />”.</translation>
 <translation id="8461467696380332069">Lai varētu ātri piekļūt failiem plauktā, ar labo peles pogu noklikšķiniet uz faila un atlasiet Piespraust plauktam.</translation>
 <translation id="8461914792118322307">Starpniekserveris</translation>

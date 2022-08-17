@@ -15,7 +15,7 @@ namespace blink {
 class NGGridPlacement;
 
 enum class AxisEdge { kStart, kCenter, kEnd, kBaseline };
-enum class BaselineType { kMajor, kMinor };
+enum class BaselineGroup { kMajor, kMinor };
 enum class SizingConstraint { kLayout, kMinContent, kMaxContent };
 
 struct GridItemIndices {
@@ -29,9 +29,7 @@ struct OutOfFlowItemPlacement {
 };
 
 struct CORE_EXPORT GridItemData : public GarbageCollected<GridItemData> {
-  GridItemData(const NGBlockNode node,
-               const ComputedStyle& container_style,
-               const WritingMode container_writing_mode);
+  GridItemData(const NGBlockNode node, const ComputedStyle& container_style);
 
   void SetAlignmentFallback(const GridTrackSizingDirection track_direction,
                             const ComputedStyle& container_style,
@@ -68,6 +66,21 @@ struct CORE_EXPORT GridItemData : public GarbageCollected<GridItemData> {
   void ComputeOutOfFlowItemPlacement(
       const NGGridLayoutTrackCollection& track_collection,
       const NGGridPlacement& grid_placement);
+
+  enum BaselineGroup BaselineGroup(
+      const GridTrackSizingDirection track_direction) const {
+    return (track_direction == kForColumns) ? column_baseline_group
+                                            : row_baseline_group;
+  }
+
+  WritingDirectionMode BaselineWritingDirection(
+      const GridTrackSizingDirection track_direction) const {
+    // NOTE: For reading the baseline from a fragment the direction doesn't
+    // matter - just use the default.
+    return {(track_direction == kForColumns) ? column_baseline_writing_mode
+                                             : row_baseline_writing_mode,
+            TextDirection::kLtr};
+  }
 
   const GridItemIndices& SetIndices(
       const GridTrackSizingDirection track_direction) const {
@@ -178,8 +191,11 @@ struct CORE_EXPORT GridItemData : public GarbageCollected<GridItemData> {
   NGAutoBehavior inline_auto_behavior;
   NGAutoBehavior block_auto_behavior;
 
-  BaselineType column_baseline_type;
-  BaselineType row_baseline_type;
+  enum BaselineGroup column_baseline_group;
+  enum BaselineGroup row_baseline_group;
+
+  WritingMode column_baseline_writing_mode;
+  WritingMode row_baseline_writing_mode;
 
   TrackSpanProperties column_span_properties;
   TrackSpanProperties row_span_properties;

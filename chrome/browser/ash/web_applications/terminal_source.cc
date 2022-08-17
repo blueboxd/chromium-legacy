@@ -212,6 +212,10 @@ std::string TerminalSource::GetContentSecurityPolicy(
         return "frame-src 'self';";
       case network::mojom::CSPDirectiveName::ObjectSrc:
         return "object-src 'self';";
+      case network::mojom::CSPDirectiveName::ScriptSrc:
+        return "script-src 'self' 'wasm-unsafe-eval';";
+      case network::mojom::CSPDirectiveName::WorkerSrc:
+        return "worker-src 'self';";
       default:
         break;
     }
@@ -234,4 +238,14 @@ std::string TerminalSource::GetContentSecurityPolicy(
     default:
       return content::URLDataSource::GetContentSecurityPolicy(directive);
   }
+}
+
+// Required for wasm SharedArrayBuffer.
+std::string TerminalSource::GetCrossOriginOpenerPolicy() {
+  return "same-origin";
+}
+
+// Required for wasm SharedArrayBuffer.
+std::string TerminalSource::GetCrossOriginEmbedderPolicy() {
+  return "require-corp";
 }

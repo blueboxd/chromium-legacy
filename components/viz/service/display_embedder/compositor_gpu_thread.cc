@@ -23,6 +23,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -108,7 +109,8 @@ CompositorGpuThread::GetSharedContextState() {
   // Create a new share group. Note that this share group is different from the
   // share group which gpu main thread uses.
   auto share_group = base::MakeRefCounted<gl::GLShareGroup>();
-  auto surface = gl::init::CreateOffscreenGLSurface(gfx::Size());
+  auto surface =
+      gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(), gfx::Size());
 
   const auto& gpu_preferences = gpu_channel_manager_->gpu_preferences();
 
@@ -123,6 +125,14 @@ CompositorGpuThread::GetSharedContextState() {
       attribs_helper, use_passthrough_decoder);
   attribs.angle_context_virtualization_group_number =
       gl::AngleContextVirtualizationGroup::kDrDc;
+
+  bool enable_angle_validation = features::IsANGLEValidationEnabled();
+#if DCHECK_IS_ON()
+  // Force validation on for all debug builds and testing
+  enable_angle_validation = true;
+#endif
+
+  attribs.can_skip_validation = !enable_angle_validation;
 
   // Compositor thread context doesn't need access textures and semaphores
   // created with other contexts.

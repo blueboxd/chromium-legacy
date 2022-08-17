@@ -9,8 +9,10 @@
 #include "base/process/process.h"
 #include "components/services/screen_ai/proto/proto_convertor.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
+#include "components/services/screen_ai/screen_ai_ax_tree_serializer.h"
 #include "sandbox/policy/switches.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace screen_ai {
@@ -18,12 +20,17 @@ namespace screen_ai {
 namespace {
 
 base::FilePath GetLibraryFilePath() {
-  base::FilePath library_path = GetPreloadedLibraryFilePath();
-  if (library_path.empty() && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                  sandbox::policy::switches::kNoSandbox)) {
-    library_path = GetLatestLibraryFilePath();
-    SetPreloadedLibraryFilePath(library_path);
-  }
+  base::FilePath library_path = GetStoredComponentBinaryPath();
+
+  if (!library_path.empty())
+    return library_path;
+
+  // Binary file path is set while setting the sandbox on Linux, or the first
+  // time this function is called. So in all other cases we need to look for
+  // the library binary in its component folder.
+  library_path = GetLatestComponentBinaryPath();
+  StoreComponentBinaryPath(library_path);
+
   return library_path;
 }
 
@@ -92,6 +99,12 @@ void ScreenAIService::Annotate(const SkBitmap& image,
     gfx::Rect image_rect(image.width(), image.height());
     update =
         ScreenAIVisualAnnotationToAXTreeUpdate(proto_as_string, image_rect);
+    // TODO(nektar): Get the parent tree ID from the calling process (i.e.
+    // browser or renderer).
+    ScreenAIAXTreeSerializer serializer(
+        /* parent_tree_id */ ui::AXTreeID::CreateNewAXTreeID(),
+        std::move(update.nodes));
+    update = serializer.Serialize();
   } else {
     VLOG(1) << "Screen AI library could not process snapshot.";
   }

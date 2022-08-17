@@ -47,8 +47,8 @@
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -332,9 +332,9 @@ class ThreadedTesterBase {
  protected:
   static void Test(ThreadedTesterBase* tester) {
     HeapTestingPlatformAdapter platform_for_threads(gin::V8Platform::Get());
-    std::unique_ptr<Thread> threads[kNumberOfThreads];
+    std::unique_ptr<NonMainThread> threads[kNumberOfThreads];
     for (auto& thread : threads) {
-      thread = Thread::CreateThread(
+      thread = NonMainThread::CreateThread(
           ThreadCreationParams(ThreadType::kTestThread)
               .SetThreadNameForTest("blink gc testing thread"));
       PostCrossThreadTask(
@@ -3265,7 +3265,7 @@ TEST_F(HeapTest, ContainerAnnotationOnTinyBacking) {
   HeapVector<uint32_t> vector;
   DCHECK_EQ(0u, vector.capacity());
   vector.ReserveCapacity(1);
-  DCHECK_EQ(1u, vector.capacity());
+  DCHECK_LE(1u, vector.capacity());
   // The following push_back() should not crash, even with container
   // annotations. The critical path expands the backing without allocating a new
   // one.

@@ -21,8 +21,6 @@ assert(is_chromeos_ash, "ChromeOS Settings is ChromeOS only")
 
 preprocessed_folder = "preprocessed"
 preprocessed_ts_folder = "preprocessed_ts"
-web_components_manifest = "web_components_manifest.json"
-non_web_component_files_manifest = "non_web_component_files_manifest.json"
 browser_settings_tsc_manifest = "browser_settings_tsc_manifest.json"
 external_mojo_manifest = "external_mojo_manifest.json"
 
@@ -46,8 +44,6 @@ if (optimize_webui) {
     deps = [
       ":build_ts",
       ":preprocess_browser_settings_tsc",
-      ":preprocess_gen_js_files",
-      ":preprocess_src_js_files",
       "//chrome/browser/resources/nearby_share/shared:preprocess_v3",
       "//ui/webui/resources:preprocess",
       "//ui/webui/resources/cr_components/app_management:build_ts",
@@ -98,9 +94,6 @@ if (optimize_webui) {
 }
 
 # TypeScript Build Configuration
-# TODO(crbug/1315757) Gradually remove JS files from pending_src_js_files
-# and pending_gen_js_files, and add them as input files here.
-# Eventually, ts_library() will be the only build path for all JS/TS files.
 ts_library("build_ts") {
   tsconfig_base = "tsconfig_base.json"
   deps = [
@@ -148,25 +141,6 @@ html_to_wrapper("generate_web_component_html_wrapper_files") {
   out_folder = get_path_info("../", "gen_dir")
 }
 
-# TODO(crbug/1315757) Transfer these JS files into ts_library() when
-# ready for TS conversion
-preprocess_if_expr("preprocess_src_js_files") {
-  defines = chrome_grit_defines
-  in_folder = "../"
-  out_folder = "$target_gen_dir/$preprocessed_folder"
-  out_manifest = "$target_gen_dir/$non_web_component_files_manifest"
-  in_files = pending_src_js_files
-}
-
-preprocess_if_expr("preprocess_gen_js_files") {
-  defines = chrome_grit_defines
-  deps = [ ":generate_web_components" ]
-  in_folder = get_path_info("../", "gen_dir")
-  out_folder = "$target_gen_dir/$preprocessed_folder"
-  out_manifest = "$target_gen_dir/$web_components_manifest"
-  in_files = pending_gen_js_files
-}
-
 # Generate all WebUI mojom files and copy them to preprocessed_ts_folder to be
 # input to ts_library(). These files are bundled in optimized builds.
 group("generate_mojom_webui") {
@@ -179,8 +153,8 @@ group("generate_mojom_webui") {
 }
 
 copy("generate_cros_audio_config_mojo_webui") {
-  deps = [ "//ash/components/audio/public/mojom:mojom_webui_js" ]
-  sources = [ "$root_gen_dir/mojom-webui/ash/components/audio/public/mojom/cros_audio_config.mojom-webui.js" ]
+  deps = [ "//chromeos/ash/components/audio/public/mojom:mojom_webui_js" ]
+  sources = [ "$root_gen_dir/mojom-webui/chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom-webui.js" ]
   outputs = [ "$target_gen_dir/$preprocessed_ts_folder/mojom-webui/audio/{{source_file_part}}" ]
 }
 
@@ -340,15 +314,11 @@ generate_grd("build_grd") {
     deps += [
       ":build_ts",
       ":preprocess_browser_settings_tsc",
-      ":preprocess_gen_js_files",
-      ":preprocess_src_js_files",
       "//chrome/browser/resources/nearby_share/shared:build_v3_grdp",
       "//ui/webui/resources/cr_components/app_management:build_ts",
     ]
     grdp_files += [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_share_resources_v3.grdp" ]
     manifest_files += [
-      "$target_gen_dir/$web_components_manifest",
-      "$target_gen_dir/$non_web_component_files_manifest",
       "$target_gen_dir/$browser_settings_tsc_manifest",
       "$target_gen_dir/build_ts.manifest",
     ]
@@ -400,9 +370,7 @@ preprocess_if_expr("preprocess_browser_settings_tsc") {
     "controls/pref_control_mixin.js",
     "controls/settings_boolean_control_mixin.js",
     "extension_control_browser_proxy.js",
-    "i18n_setup.js",
     "icons.html.js",
-    "lifetime_browser_proxy.js",
     "open_window_proxy.js",
     "people_page/profile_info_browser_proxy.js",
     "people_page/sync_browser_proxy.js",
@@ -439,7 +407,6 @@ group("generate_web_components") {
     ":web_components",
 
     # Sub-folder targets
-    "ambient_mode_page:web_components",
     "bluetooth_page:web_components",
     "crostini_page:web_components",
     "date_time_page:web_components",
@@ -465,12 +432,7 @@ group("generate_web_components") {
     "os_privacy_page:web_components",
     "os_reset_page:web_components",
     "os_search_page:web_components",
-    "os_settings_main:web_components",
-    "os_settings_menu:web_components",
-    "os_settings_page:web_components",
     "os_settings_search_box:web_components",
-    "os_settings_ui:web_components",
-    "os_toolbar:web_components",
     "parental_controls_page:web_components",
     "personalization_page:web_components",
     "settings_scheduler_slider:web_components",
@@ -482,7 +444,6 @@ group("generate_web_components") {
 group("closure_compile_module") {
   deps = [
     ":closure_compile_local_module",
-    "ambient_mode_page:closure_compile_module",
     "bluetooth_page:closure_compile_module",
     "crostini_page:closure_compile_module",
     "date_time_page:closure_compile_module",
@@ -494,7 +455,6 @@ group("closure_compile_module") {
     "keyboard_shortcut_banner:closure_compile_module",
     "multidevice_page:closure_compile_module",
     "os_a11y_page:closure_compile_module",
-    "os_about_page:closure_compile_module",
     "os_apps_page:closure_compile_module",
     "os_apps_page/app_management_page:closure_compile_module",
     "os_apps_page/app_management_page/borealis_page:closure_compile_module",

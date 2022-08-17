@@ -10,12 +10,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_ui_data.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -224,7 +224,7 @@ class EuiccStatusUploaderTest : public testing::Test {
               kAddProfileWithService);
 
       if (test_profile.managed) {
-        chromeos::NetworkHandler::Get()
+        ash::NetworkHandler::Get()
             ->managed_cellular_pref_handler()
             ->AddIccidSmdpPair(test_profile.iccid, test_profile.smdp_address);
       }
@@ -472,14 +472,14 @@ TEST_F(EuiccStatusUploaderTest, UnexpectedNetworkHandlerShutdown) {
 
   // NetworkHandler::Shutdown() has already been called before
   // EuiccStatusUploader is deleted
-  chromeos::NetworkHandler::Shutdown();
+  ash::NetworkHandler::Shutdown();
 
   // No requests made as NetworkHandler is not available.
   UpdateUploader(status_uploader.get());
   EXPECT_EQ(GetRequestCount(), 2);
 
   // Need to reinitialize before exiting test.
-  chromeos::NetworkHandler::Initialize();
+  ash::NetworkHandler::Initialize();
 }
 
 }  // namespace policy

@@ -13,8 +13,6 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "ash/components/audio/audio_devices_pref_handler_impl.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/device_activity/device_active_use_case.h"
@@ -112,7 +110,6 @@
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
-#include "chrome/browser/ash/login/login_screen_extensions_lifetime_manager.h"
 #include "chrome/browser/ash/login/login_screen_extensions_storage_cleaner.h"
 #include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
@@ -197,6 +194,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/audio/audio_devices_pref_handler_impl.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
@@ -916,7 +915,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&version_loader::GetVersion, version_loader::VERSION_FULL),
+      base::BindOnce(&chromeos::version_loader::GetVersion,
+                     chromeos::version_loader::VERSION_FULL),
       base::BindOnce(&ChromeOSVersionCallback));
 
   arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
@@ -1236,8 +1236,6 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
         g_browser_process->local_state());
 
-    login_screen_extensions_lifetime_manager_ =
-        std::make_unique<LoginScreenExtensionsLifetimeManager>();
     login_screen_extensions_storage_cleaner_ =
         std::make_unique<LoginScreenExtensionsStorageCleaner>();
   }
@@ -1478,7 +1476,6 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   lock_to_single_user_manager_.reset();
   wilco_dtc_supportd_manager_.reset();
   gnubby_notification_.reset();
-  login_screen_extensions_lifetime_manager_.reset();
   login_screen_extensions_storage_cleaner_.reset();
   debugd_notification_handler_.reset();
   shortcut_mapping_pref_service_.reset();

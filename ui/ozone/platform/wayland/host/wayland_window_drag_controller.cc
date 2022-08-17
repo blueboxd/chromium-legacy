@@ -40,6 +40,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
@@ -229,10 +230,12 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
 
   DCHECK(drag_source_.has_value());
   // Check if this is necessary.
-  if (*drag_source_ == DragSource::kMouse)
-    pointer_delegate_->OnPointerFocusChanged(window, location);
-  else
+  if (*drag_source_ == DragSource::kMouse) {
+    pointer_delegate_->OnPointerFocusChanged(
+        window, location, wl::EventDispatchPolicy::kImmediate);
+  } else {
     touch_delegate_->OnTouchFocusChanged(window);
+  }
 
   DVLOG(1) << "OnEnter. widget=" << window->GetWidget();
 
@@ -270,9 +273,9 @@ void WaylandWindowDragController::OnDragMotion(const gfx::PointF& location) {
     base::TimeTicks timestamp = base::TimeTicks::Now();
     auto touch_pointer_ids = touch_delegate_->GetActiveTouchPointIds();
     DCHECK_EQ(touch_pointer_ids.size(), 1u);
-    touch_delegate_->OnTouchMotionEvent(
-        location, timestamp, touch_pointer_ids[0],
-        WaylandTouch::Delegate::EventDispatchPolicy::kImmediate);
+    touch_delegate_->OnTouchMotionEvent(location, timestamp,
+                                        touch_pointer_ids[0],
+                                        wl::EventDispatchPolicy::kImmediate);
   }
 }
 
@@ -329,8 +332,7 @@ void WaylandWindowDragController::OnDragLeave() {
     // the drag event is discarded.
     touch_delegate_->OnTouchMotionEvent(
         {pointer_location_.x(), kHorizontalRailExitThreshold}, timestamp,
-        touch_pointer_ids[0],
-        WaylandTouch::Delegate::EventDispatchPolicy::kImmediate);
+        touch_pointer_ids[0], wl::EventDispatchPolicy::kImmediate);
   }
 }
 
@@ -376,8 +378,9 @@ void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
     if (*drag_source_ == DragSource::kMouse) {
       // TODO: check if this usage is correct.
 
-      pointer_delegate_->OnPointerFocusChanged(dragged_window_,
-                                               pointer_location_);
+      pointer_delegate_->OnPointerFocusChanged(
+          dragged_window_, pointer_location_,
+          wl::EventDispatchPolicy::kImmediate);
     } else {
       touch_delegate_->OnTouchFocusChanged(dragged_window_);
     }
@@ -495,9 +498,9 @@ void WaylandWindowDragController::HandleDropAndResetState() {
   } else {
     auto touch_pointer_ids = touch_delegate_->GetActiveTouchPointIds();
     DCHECK_EQ(touch_pointer_ids.size(), 1u);
-    touch_delegate_->OnTouchReleaseEvent(
-        base::TimeTicks::Now(), touch_pointer_ids[0],
-        WaylandTouch::Delegate::EventDispatchPolicy::kImmediate);
+    touch_delegate_->OnTouchReleaseEvent(base::TimeTicks::Now(),
+                                         touch_pointer_ids[0],
+                                         wl::EventDispatchPolicy::kImmediate);
   }
 
   pointer_grab_owner_ = nullptr;

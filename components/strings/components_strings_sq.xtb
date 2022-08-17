@@ -486,6 +486,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2219658597883514593">Rinis udhëzuesin</translation>
 <translation id="2219735899272417925">Kërkohet rivendosja e pajisjes</translation>
 <translation id="2224337661447660594">Nuk ka internet</translation>
+<translation id="2225927550500503913">Karta virtuale është aktivizuar</translation>
 <translation id="2230458221926704099">Rregullo lidhjen duke përdorur <ph name="BEGIN_LINK" />aplikacionin e diagnostikimit<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Dërgo tani</translation>
 <translation id="2241693394036365668">Skedari është shkarkuar</translation>
@@ -520,7 +521,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2318594867107319532">Vula kohore e politikës së fundit:</translation>
 <translation id="2324604504973636700">Elektroshtëpiaket</translation>
 <translation id="2328651992442742497">Lejohet (e parazgjedhur)</translation>
-<translation id="2329182534073751090">vendosja e dritareve</translation>
 <translation id="2329473609445770916">Ky sajt përcakton interesat që sajtet e tjera mund të përdorin për të të shfaqur reklama</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, skadon më <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Cilësim i kontrolluar nga administratori yt</translation>
@@ -632,7 +632,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
             <ph name="LIST_ITEM" />Informacionet e futura në formularë
           <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (Zarf)</translation>
-<translation id="2623663032199728144">Mund të kërkojë të përdorë informacione rreth ekraneve të tua</translation>
 <translation id="2625385379895617796">Ora jote është përpara</translation>
 <translation id="262745152991669301">Mund të kërkojë të lidhet me pajisjet me USB</translation>
 <translation id="2629325967560697240">Për të marrë nivelin më të lartë të sigurisë së Chrome, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />aktivizo mbrojtjen e përmirësuar<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -711,7 +710,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Shtyp "Tab" dhe më pas "Enter" për të menaxhuar "Shfletimin e sigurt" dhe më shumë te cilësimet e Chrome</translation>
 <translation id="2878197950673342043">Palosje posteri</translation>
 <translation id="2878424575911748999">A1</translation>
-<translation id="2880660355386638022">Vendosja e dritareve</translation>
 <translation id="2881276955470682203">Të ruhet karta?</translation>
 <translation id="2882949212241984732">Palosje me dy dritare</translation>
 <translation id="2893773853358652045">Ruli i katërt</translation>
@@ -1242,6 +1240,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4329871760342656885">Gabim i analizimit të politikës: <ph name="ERROR" /></translation>
 <translation id="4331519897422864041">Stivuesi 5</translation>
 <translation id="4331708818696583467">Jo e sigurt</translation>
+<translation id="4333561522337981382">Të menaxhojë dritaret në të gjitha ekranet e tua</translation>
 <translation id="4340575312453649552">Kjo reklamë përdorte shumë burime për pajisjen tënde, prandaj Chrome e hoqi.</translation>
 <translation id="4340982228985273705">Ky kompjuter nuk është zbuluar si i menaxhuar nga ndërmarrja, prandaj politika mund të instalojë automatikisht vetëm shtesat e strehuara në "Dyqanin e uebit të Chrome". URL-ja e përditësimit të "Dyqanit të uebit të Chrome" është "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Kartat e pranuara të kreditit</translation>
@@ -1455,6 +1454,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, shtyp "Tab", më pas "Enter" për të kërkuar</translation>
 <translation id="4930153903256238152">Kapaciteti i madh</translation>
+<translation id="4934780484581617878">Menaxhimi i dritareve</translation>
 <translation id="4936134414789135531"><ph name="VALUE_NAME" /> që është futur nuk mund të gjendej.</translation>
 <translation id="4936675324097895694">Financa</translation>
 <translation id="4940163644868678279">Modaliteti "I fshehtë" në Chrome</translation>
@@ -1467,6 +1467,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4958444002117714549">Zgjero listën</translation>
 <translation id="4964505745997821360">Sigurimi shëndetësor</translation>
 <translation id="4968522289500246572">Ky aplikacion është projektuar për celular dhe përmasat mund të mos ndryshohen si duhet. Aplikacioni mund të ketë probleme ose të riniset.</translation>
+<translation id="4968665849807487749">Mund të kërkojë të menaxhojë dritaret në të gjitha ekranet e tua</translation>
 <translation id="4969341057194253438">Fshi regjistrimin</translation>
 <translation id="4973922308112707173">Dy shpime lart</translation>
 <translation id="4976702386844183910">Vizituar së fundi më <ph name="DATE" /></translation>
@@ -1831,6 +1832,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5963413905009737549">Seksioni</translation>
 <translation id="5967592137238574583">Modifiko informacionet e kontaktit</translation>
 <translation id="5967867314010545767">Hiqe nga historiku</translation>
+<translation id="5968022600320704045">Asnjë rezultat kërkimi</translation>
 <translation id="5968793460449681917">Në çdo vizitë</translation>
 <translation id="5974052231147553524">Ruli i gjashtë</translation>
 <translation id="5975083100439434680">Zvogëlo</translation>
@@ -1947,6 +1949,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6300452962057769623">{0,plural, =0{Pajisja do të riniset tani}=1{Pajisja do të riniset pas 1 sekonde}other{Pajisja do të riniset pas # sekondash}}</translation>
 <translation id="6302269476990306341">"Asistenti i Google" në Chrome po ndalon</translation>
 <translation id="6305205051461490394"><ph name="URL" /> është i paarritshëm.</translation>
+<translation id="6311165245110979290">Karta virtuale është e disponueshme</translation>
 <translation id="6312113039770857350">Faqja e uebit nuk është e disponueshme</translation>
 <translation id="6316226860534107313">Motoçikletat dhe skuterat elektrikë</translation>
 <translation id="63172326633386613">Menaxho cilësimet e qasshmërisë</translation>
@@ -1968,6 +1971,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6361757823711327522">B7</translation>
 <translation id="6364095313648930329"><ph name="BEGIN_LINK" />Të kontrollosh përfaqësuesin, murin mbrojtës dhe konfigurimin e DNS-së së sigurt<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dy kapje me tel majtas</translation>
+<translation id="6374865374745447009">menaxhimi i dritareve</translation>
 <translation id="6377268785556383139">1 rezultat për "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Tarifime të mundshme përpara.</translation>
@@ -2291,6 +2295,7 @@ Detaje shtesë:
 <translation id="7305756307268530424">Fillo më ngadalë</translation>
 <translation id="7308436126008021607">sinkronizimi në sfond</translation>
 <translation id="7310392214323165548">Pajisja do të riniset së shpejti</translation>
+<translation id="7311244614769792472">Nuk u gjet asnjë rezultat</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ndihma e lidhjes</translation>
 <translation id="7323804146520582233">Fshihe seksionin "<ph name="SECTION" />"</translation>
@@ -2778,7 +2783,6 @@ Detaje shtesë:
 <translation id="865032292777205197">sensorët e lëvizjes</translation>
 <translation id="8663226718884576429">Përmbledhje e porosisë, <ph name="TOTAL_LABEL" />, detaje të tjera</translation>
 <translation id="8666678546361132282">Anglisht</translation>
-<translation id="8669306706049782872">Të përdorë informacionet rreth ekraneve të tua për të hapur dhe për të vendosur dritare</translation>
 <translation id="867224526087042813">Nënshkrimi</translation>
 <translation id="8672264262457010862">Biznesi dhe industrialet</translation>
 <translation id="8676424191133491403">Pa vonesë</translation>

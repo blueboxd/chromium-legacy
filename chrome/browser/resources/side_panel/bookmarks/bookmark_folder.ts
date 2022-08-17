@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/mwb_element_shared_style.css.js';
 
@@ -48,7 +49,8 @@ export class BookmarkFolderElement extends PolymerElement {
       open_: {
         type: Boolean,
         value: false,
-        computed: 'computeIsOpen_(openFolders, folder.id)',
+        computed:
+            'computeIsOpen_(openFolders, folder.id, folder.children.length)',
       },
 
       openFolders: Array,
@@ -168,7 +170,8 @@ export class BookmarkFolderElement extends PolymerElement {
 
   private computeIsOpen_() {
     return Boolean(this.openFolders) &&
-        this.openFolders.includes(this.folder.id);
+        this.openFolders.includes(this.folder.id) && this.folder.children &&
+        this.folder.children.length > 0;
   }
 
   private getFocusableRows_(): HTMLElement[] {

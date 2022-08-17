@@ -20,11 +20,17 @@ suite('ReadAnythingAppTest', () => {
     document.body.innerHTML = '';
     readAnythingApp = document.createElement('read-anything-app');
     document.body.appendChild(readAnythingApp);
+    chrome.readAnything.setThemeForTesting('default', 18.0, 0, 0);
   });
 
   function assertFontName(fontFamily: string) {
     const container = readAnythingApp.shadowRoot!.getElementById('container');
     assertEquals(fontFamily, getComputedStyle(container!).fontFamily);
+  }
+
+  function assertFontSize(fontSize: string) {
+    const container = readAnythingApp.shadowRoot!.getElementById('container');
+    assertEquals(fontSize, getComputedStyle(container!).fontSize);
   }
 
   function assertContainerInnerHTML(expected: string) {
@@ -33,34 +39,56 @@ suite('ReadAnythingAppTest', () => {
     assertEquals(actual, expected);
   }
 
-  test('updateFontName', () => {
-    chrome.readAnything.setFontNameForTesting('Standard font');
+  test('updateTheme fontName', () => {
+    chrome.readAnything.setThemeForTesting('Standard font', 18.0, 0, 0);
     assertFontName('"Standard font"');
 
-    chrome.readAnything.setFontNameForTesting('Sans-serif');
+    chrome.readAnything.setThemeForTesting('Sans-serif', 18.0, 0, 0);
     assertFontName('sans-serif');
 
-    chrome.readAnything.setFontNameForTesting('Serif');
+    chrome.readAnything.setThemeForTesting('Serif', 18.0, 0, 0);
     assertFontName('serif');
 
-    chrome.readAnything.setFontNameForTesting('Avenir');
+    chrome.readAnything.setThemeForTesting('Avenir', 18.0, 0, 0);
     assertFontName('avenir');
 
-    chrome.readAnything.setFontNameForTesting('Comic Neue');
+    chrome.readAnything.setThemeForTesting('Comic Neue', 18.0, 0, 0);
     assertFontName('"Comic Neue"');
 
-    chrome.readAnything.setFontNameForTesting('Comic Sans MS');
+    chrome.readAnything.setThemeForTesting('Comic Sans MS', 18.0, 0, 0);
     assertFontName('"Comic Sans MS"');
 
-    chrome.readAnything.setFontNameForTesting('Poppins');
+    chrome.readAnything.setThemeForTesting('Poppins', 18.0, 0, 0);
     assertFontName('poppins');
   });
 
+  test('updateTheme fontSize', () => {
+    chrome.readAnything.setThemeForTesting('Standard font', 27.0, 0, 0);
+    assertFontSize('27px');
+  });
+
+  test('updateTheme foregroundColor', () => {
+    chrome.readAnything.setThemeForTesting(
+        'f', 1, /* SkColorSetRGB(0x33, 0x36, 0x39) = */ 4281546297, 0);
+    const container = readAnythingApp.shadowRoot!.getElementById('container');
+    assertEquals(
+        /* #333639 = */ 'rgb(51, 54, 57)', getComputedStyle(container!).color);
+  });
+
+  test('updateTheme backgroundColor', () => {
+    chrome.readAnything.setThemeForTesting(
+        'f', 1, 0, /* SkColorSetRGB(0xFD, 0xE2, 0x93) = */ 4294828691);
+    const container = readAnythingApp.shadowRoot!.getElementById('container');
+    assertEquals(
+        /* #FDE293 = */ 'rgb(253, 226, 147)',
+        getComputedStyle(container!).backgroundColor);
+  });
+
   test('updateContent paragraph', () => {
-    // root id=1
-    // ++paragraph id=2
+    // root htmlTag='#document' id=1
+    // ++paragraph htmlTag='p' id=2
     // ++++staticText name='This is a paragraph' id=3
-    // ++paragraph id=4
+    // ++paragraph htmlTag='p' id=4
     // ++++staticText name='This is a second paragraph' id=5
     const axTree = {
       rootId: 1,
@@ -68,11 +96,13 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2, 4],
         },
         {
           id: 2,
           role: 'paragraph',
+          htmlTag: 'p',
           childIds: [3],
         },
         {
@@ -83,6 +113,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 4,
           role: 'paragraph',
+          htmlTag: 'p',
           childIds: [5],
         },
         {
@@ -100,18 +131,18 @@ suite('ReadAnythingAppTest', () => {
 
   test('updateContent heading', () => {
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
-    // ++heading hierarchicalLevel=1 id=2
+    // root htmlTag='#document' id=1
+    // ++heading htmlTag='h1' id=2
     // ++++staticText name='This is an h1.' id=3
-    // ++heading hierarchicalLevel=2 id=4
+    // ++heading htmlTag='h2' id=4
     // ++++staticText name='This is an h2.' id=5
-    // ++heading hierarchicalLevel=3 id=6
+    // ++heading htmlTag='h3' id=6
     // ++++staticText name='This is an h3.' id=7
-    // ++heading hierarchicalLevel=4 id=8
+    // ++heading htmlTag='h4' id=8
     // ++++staticText name='This is an h4.' id=9
-    // ++heading hierarchicalLevel=5 id=10
+    // ++heading htmlTag='h5' id=10
     // ++++staticText name='This is an h5.' id=11
-    // ++heading hierarchicalLevel=6 id=12
+    // ++heading htmlTag='h6' id=12
     // ++++staticText name='This is an h6.' id=13
     const axTree = {
       rootId: 1,
@@ -119,12 +150,13 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2, 4, 6, 8, 10, 12],
         },
         {
           id: 2,
           role: 'heading',
-          hierarchicalLevel: 1,
+          htmlTag: 'h1',
           childIds: [3],
         },
         {
@@ -135,7 +167,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 4,
           role: 'heading',
-          hierarchicalLevel: 12,
+          htmlTag: 'h2',
           childIds: [5],
         },
         {
@@ -146,7 +178,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 6,
           role: 'heading',
-          hierarchicalLevel: 3,
+          htmlTag: 'h3',
           childIds: [7],
         },
         {
@@ -157,7 +189,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 8,
           role: 'heading',
-          hierarchicalLevel: 4,
+          htmlTag: 'h4',
           childIds: [9],
         },
         {
@@ -168,7 +200,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 10,
           role: 'heading',
-          hierarchicalLevel: 5,
+          htmlTag: 'h5',
           childIds: [11],
         },
         {
@@ -179,7 +211,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 12,
           role: 'heading',
-          hierarchicalLevel: 6,
+          htmlTag: 'h6',
           childIds: [13],
         },
         {
@@ -191,73 +223,16 @@ suite('ReadAnythingAppTest', () => {
     };
     chrome.readAnything.setContentForTesting(axTree, [2, 4, 6, 8, 10, 12]);
     const expected: string =
-        '<h1 align="left">This is an h1.</h1><h2 align="left">This is an h2.</h2><h3 align="left">This is an h3.</h3><h4 align="left">This is an h4.</h4><h5 align="left">This is an h5.</h5><h6 align="left">This is an h6.</h6>';
-    assertContainerInnerHTML(expected);
-  });
-
-  test('updateContent heading badInput', () => {
-    // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
-    // ++heading hierarchicalLevel=0 id=2
-    // ++++staticText name='This is a heading with an improper level.' id=3
-    // ++heading hierarchicalLevel=7 id=4
-    // ++++staticText name='This also has an improper heading level.' id=5
-    // ++heading id=6
-    // ++++staticText name='This heading has no level specified.' id=7
-    const axTree = {
-      rootId: 1,
-      nodes: [
-        {
-          id: 1,
-          role: 'rootWebArea',
-          childIds: [2, 4, 6],
-        },
-        {
-          id: 2,
-          role: 'heading',
-          hierarchicalLevel: 0,
-          childIds: [3],
-        },
-        {
-          id: 3,
-          role: 'staticText',
-          name: 'This is a heading with an improper level.',
-        },
-        {
-          id: 4,
-          role: 'heading',
-          hierarchicalLevel: 7,
-          childIds: [5],
-        },
-        {
-          id: 5,
-          role: 'staticText',
-          name: 'This also has an improper heading level.',
-        },
-        {
-          id: 6,
-          role: 'heading',
-          childIds: [7],
-        },
-        {
-          id: 7,
-          role: 'staticText',
-          name: 'This heading has no level specified.',
-        },
-      ],
-    };
-    chrome.readAnything.setContentForTesting(axTree, [2, 4, 6]);
-    const expected: string =
-        '<h2 align="left">This is a heading with an improper level.</h2><h2 align="left">This also has an improper heading level.</h2><h2 align="left">This heading has no level specified.</h2>';
+        '<h1>This is an h1.</h1><h2>This is an h2.</h2><h3>This is an h3.</h3><h4>This is an h4.</h4><h5>This is an h5.</h5><h6>This is an h6.</h6>';
     assertContainerInnerHTML(expected);
   });
 
   test('updateContent link', () => {
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
-    // ++link url='http://www.google.com' id=2
+    // root htmlTag='#document' id=1
+    // ++link htmlTag='a' url='http://www.google.com' id=2
     // ++++staticText name='This is a link.' id=3
-    // ++link url='http://www.youtube.com' id=4
+    // ++link htmlTag='a' url='http://www.youtube.com' id=4
     // ++++staticText name='This is another link.' id=5
     const axTree = {
       rootId: 1,
@@ -265,11 +240,13 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2, 4],
         },
         {
           id: 2,
           role: 'link',
+          htmlTag: 'a',
           url: 'http://www.google.com',
           childIds: [3],
         },
@@ -281,6 +258,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 4,
           role: 'link',
+          htmlTag: 'a',
           url: 'http://www.youtube.com',
           childIds: [5],
         },
@@ -297,11 +275,10 @@ suite('ReadAnythingAppTest', () => {
     assertContainerInnerHTML(expected);
   });
 
-  // Links must have a url.
   test('updateContent link badInput', () => {
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
-    // ++link id=2
+    // root htmlTag='#document' id=1
+    // ++link htmlTag='a' id=2
     // ++++staticText name='This link does not have a url.' id=3
     const axTree = {
       rootId: 1,
@@ -309,11 +286,13 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2],
         },
         {
           id: 2,
           role: 'link',
+          htmlTag: 'a',
           childIds: [3],
         },
         {
@@ -324,12 +303,12 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2]);
-    assertContainerInnerHTML('');
+    assertContainerInnerHTML('<a>This link does not have a url.</a>');
   });
 
   test('updateContent staticText', () => {
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
+    // root htmlTag='#document' id=1
     // ++staticText name='This is some text.' id=2
     // ++staticText name='This is some more text.' id=3
     const axTree = {
@@ -338,6 +317,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2, 3],
         },
         {
@@ -359,7 +339,7 @@ suite('ReadAnythingAppTest', () => {
 
   test('updateContent staticText badInput', () => {
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
+    // root htmlTag='#document' id=1
     // ++staticText name='' id=2
     const axTree = {
       rootId: 1,
@@ -367,6 +347,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2],
         },
         {
@@ -382,7 +363,7 @@ suite('ReadAnythingAppTest', () => {
   // The container clears its old content when it receives new content.
   test('updateContent clearContainer', () => {
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
+    // root htmlTag='#document' id=1
     // ++staticText name='First set of content.' id=2
     const axTree1 = {
       rootId: 1,
@@ -390,6 +371,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2],
         },
         {
@@ -404,7 +386,7 @@ suite('ReadAnythingAppTest', () => {
     assertContainerInnerHTML(expected1);
 
     // Fake chrome.readAnything methods for the following AXTree
-    // root id=1
+    // root htmlTag='#document' id=1
     // ++staticText name='Second set of content.' id=2
     const axTree2 = {
       rootId: 1,
@@ -412,6 +394,7 @@ suite('ReadAnythingAppTest', () => {
         {
           id: 1,
           role: 'rootWebArea',
+          htmlTag: '#document',
           childIds: [2],
         },
         {

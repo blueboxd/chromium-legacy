@@ -14,7 +14,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/url_and_id.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -33,6 +35,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,35 +49,52 @@ namespace chrome {
 
 size_t kNumBookmarkUrlsBeforePrompting = 15;
 
+static BookmarkNavigationWrapper* g_nav_wrapper_test_instance = nullptr;
+
+base::WeakPtr<content::NavigationHandle> BookmarkNavigationWrapper::NavigateTo(
+    NavigateParams* params) {
+  return g_nav_wrapper_test_instance
+             ? g_nav_wrapper_test_instance->NavigateTo(params)
+             : Navigate(params);
+}
+
+// static
+void BookmarkNavigationWrapper::SetInstanceForTesting(
+    BookmarkNavigationWrapper* instance) {
+  g_nav_wrapper_test_instance = instance;
+}
+
 namespace {
 
 // Returns a vector of all URLs in |nodes| and their immediate children.  Only
 // recurses one level deep, not infinitely.  TODO(pkasting): It's not clear why
 // this shouldn't just recurse infinitely.
-std::vector<GURL> GetURLsToOpen(
+std::vector<UrlAndId> GetURLsToOpen(
     const std::vector<const BookmarkNode*>& nodes,
     content::BrowserContext* browser_context = nullptr,
     bool incognito_urls_only = false) {
-  std::vector<GURL> urls;
-
-  const auto AddUrlIfLegal = [&](const GURL url) {
-    if (!incognito_urls_only || IsURLAllowedInIncognito(url, browser_context))
-      urls.push_back(url);
+  std::vector<UrlAndId> url_and_ids;
+  const auto AddUrlIfLegal = [&](const GURL url, int64_t id) {
+    if (!incognito_urls_only || IsURLAllowedInIncognito(url, browser_context)) {
+      UrlAndId url_and_id;
+      url_and_id.url = url;
+      url_and_id.id = id;
+      url_and_ids.push_back(url_and_id);
+    }
   };
-
   for (const BookmarkNode* node : nodes) {
     if (node->is_url()) {
-      AddUrlIfLegal(node->url());
+      AddUrlIfLegal(node->url(), node->id());
     } else {
       // If the node is not a URL, it is a folder. We want to add those of its
       // children which are URLs.
       for (const auto& child : node->children()) {
         if (child->is_url())
-          AddUrlIfLegal(child->url());
+          AddUrlIfLegal(child->url(), child->id());
       }
     }
   }
-  return urls;
+  return url_and_ids;
 }
 
 // Returns the total number of descendants nodes.
@@ -123,22 +143,38 @@ using OpenedWebContentsSet = base::flat_set<const content::WebContents*>;
 // Opens all of the URLs in `bookmark_urls` using `navigator` and
 // `initial_disposition` as a starting point. Returns a reference set of the
 // WebContents created; see OpenedWebContentsSet.
-OpenedWebContentsSet OpenAllHelper(content::PageNavigator* navigator,
-                                   std::vector<GURL> bookmark_urls,
+OpenedWebContentsSet OpenAllHelper(Browser* browser,
+                                   std::vector<UrlAndId> bookmark_urls,
                                    WindowOpenDisposition initial_disposition) {
   OpenedWebContentsSet::container_type opened_tabs;
   WindowOpenDisposition disposition = initial_disposition;
-  for (std::vector<GURL>::const_iterator url_it = bookmark_urls.begin();
-       url_it != bookmark_urls.end(); ++url_it) {
-    content::WebContents* opened_tab = navigator->OpenURL(
-        content::OpenURLParams(*url_it, content::Referrer(), disposition,
-                               ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-    if (url_it == bookmark_urls.begin()) {
+  Profile* profile = nullptr;
+  BookmarkNavigationWrapper nav_wrapper;
+  for (std::vector<UrlAndId>::const_iterator url_and_id_it =
+           bookmark_urls.begin();
+       url_and_id_it != bookmark_urls.end(); ++url_and_id_it) {
+    NavigateParams params(profile, url_and_id_it->url,
+                          ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = disposition;
+    params.browser = browser;
+    base::WeakPtr<content::NavigationHandle> handle =
+        nav_wrapper.NavigateTo(&params);
+    content::WebContents* opened_tab =
+        handle ? handle->GetWebContents() : nullptr;
+    if (handle && url_and_id_it->id != -1) {
+      ChromeNavigationUIData* ui_data =
+          static_cast<ChromeNavigationUIData*>(handle->GetNavigationUIData());
+      if (ui_data)
+        ui_data->set_bookmark_id(url_and_id_it->id);
+    }
+    if (url_and_id_it == bookmark_urls.begin()) {
       // We opened the first URL which may have opened a new window or clobbered
-      // the current page, reset the navigator just to be sure. |opened_tab| may
-      // be null in tests.
-      if (opened_tab)
-        navigator = opened_tab;
+      // the current page, reset the browser instance and assign the profile for
+      // the other navigations.
+      if (opened_tab) {
+        profile = Profile::FromBrowserContext(opened_tab->GetBrowserContext());
+        browser = nullptr;
+      }
       disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
     }
 
@@ -153,31 +189,21 @@ OpenedWebContentsSet OpenAllHelper(content::PageNavigator* navigator,
 }  // namespace
 
 #if !BUILDFLAG(IS_ANDROID)
-void OpenAllIfAllowed(
-    Browser* browser,
-    base::OnceCallback<content::PageNavigator*()> get_navigator,
-    const std::vector<const bookmarks::BookmarkNode*>& nodes,
-    WindowOpenDisposition initial_disposition,
-    bool add_to_group) {
-  std::vector<GURL> urls = GetURLsToOpen(
+void OpenAllIfAllowed(Browser* browser,
+                      const std::vector<const bookmarks::BookmarkNode*>& nodes,
+                      WindowOpenDisposition initial_disposition,
+                      bool add_to_group) {
+  std::vector<UrlAndId> url_and_ids = GetURLsToOpen(
       nodes, browser->profile(),
       initial_disposition == WindowOpenDisposition::OFF_THE_RECORD);
-
-  auto do_open = [](Browser* browser,
-                    base::OnceCallback<content::PageNavigator*()> get_navigator,
-                    std::vector<GURL> urls,
+  auto do_open = [](Browser* browser, std::vector<UrlAndId> url_and_ids_to_open,
                     WindowOpenDisposition initial_disposition,
                     absl::optional<std::u16string> folder_title,
                     chrome::MessageBoxResult result) {
     if (result != chrome::MESSAGE_BOX_RESULT_YES)
       return;
-    if (!get_navigator)
-      return;
-    content::PageNavigator* navigator = std::move(get_navigator).Run();
-    if (!navigator)
-      return;
-    const auto opened_web_contents =
-        OpenAllHelper(navigator, std::move(urls), initial_disposition);
+    const auto opened_web_contents = OpenAllHelper(
+        browser, std::move(url_and_ids_to_open), initial_disposition);
     if (folder_title.has_value()) {
       TabStripModel* model = browser->tab_strip_model();
 
@@ -213,14 +239,13 @@ void OpenAllIfAllowed(
   };
 
   // Skip the prompt if there are few bookmarks.
-  size_t child_count = urls.size();
+  size_t child_count = url_and_ids.size();
   if (child_count < kNumBookmarkUrlsBeforePrompting) {
-    do_open(
-        browser, std::move(get_navigator), std::move(urls), initial_disposition,
-        add_to_group
-            ? absl::optional<std::u16string>(nodes[0]->GetTitledUrlNodeTitle())
-            : absl::nullopt,
-        chrome::MESSAGE_BOX_RESULT_YES);
+    do_open(browser, std::move(url_and_ids), initial_disposition,
+            add_to_group ? absl::optional<std::u16string>(
+                               nodes[0]->GetTitledUrlNodeTitle())
+                         : absl::nullopt,
+            chrome::MESSAGE_BOX_RESULT_YES);
     return;
   }
 
@@ -233,14 +258,14 @@ void OpenAllIfAllowed(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
                                  base::NumberToString16(child_count)),
-      base::BindOnce(do_open, browser, std::move(get_navigator),
-                     std::move(urls), initial_disposition,
+      base::BindOnce(do_open, browser, std::move(url_and_ids),
+                     initial_disposition,
                      add_to_group ? absl::optional<std::u16string>(
                                         nodes[0]->GetTitledUrlNodeTitle())
                                   : absl::nullopt));
 }
 
-void OpenAllNow(content::PageNavigator* navigator,
+void OpenAllNow(Browser* browser,
                 const std::vector<const BookmarkNode*>& nodes,
                 WindowOpenDisposition initial_disposition,
                 content::BrowserContext* browser_context) {
@@ -249,25 +274,17 @@ void OpenAllNow(content::PageNavigator* navigator,
   // url is opened |navigator| is set to the PageNavigator of the last active
   // tab. This is done to handle a window disposition of new window, in which
   // case we want subsequent tabs to open in that window.
-
-  std::vector<GURL> urls = GetURLsToOpen(
-      nodes, browser_context,
-      initial_disposition == WindowOpenDisposition::OFF_THE_RECORD);
-
-  OpenAllHelper(navigator, std::move(urls), initial_disposition);
+  OpenAllHelper(browser,
+                GetURLsToOpen(nodes, browser_context,
+                              initial_disposition ==
+                                  WindowOpenDisposition::OFF_THE_RECORD),
+                initial_disposition);
 }
 
-void OpenSavedTabGroupHelper(
-    Browser* browser,
-    base::OnceCallback<content::PageNavigator*()> get_navigator,
-    const base::GUID& saved_group_id,
-    chrome::MessageBoxResult result) {
+void OpenSavedTabGroupHelper(Browser* browser,
+                             const base::GUID& saved_group_id,
+                             chrome::MessageBoxResult result) {
   if (result != chrome::MESSAGE_BOX_RESULT_YES)
-    return;
-  if (!get_navigator)
-    return;
-  content::PageNavigator* navigator = std::move(get_navigator).Run();
-  if (!navigator)
     return;
 
   SavedTabGroupKeyedService* service =
@@ -303,15 +320,20 @@ void OpenSavedTabGroupHelper(
   // this browser's tabstrip model.
   TabStripModel* model_for_creation = browser->tab_strip_model();
 
-  std::vector<GURL> urls;
-  auto get_urls = [&](SavedTabGroupTab saved_tab) { return saved_tab.url(); };
-  base::ranges::transform(saved_group->saved_tabs(), std::back_inserter(urls),
-                          get_urls);
-  if (urls.empty())
+  std::vector<UrlAndId> url_and_ids;
+  auto get_url_and_ids = [&](const SavedTabGroupTab& saved_tab) {
+    UrlAndId url_and_id;
+    url_and_id.url = saved_tab.url();
+    url_and_id.id = -1;
+    return url_and_id;
+  };
+  base::ranges::transform(saved_group->saved_tabs(),
+                          std::back_inserter(url_and_ids), get_url_and_ids);
+  if (url_and_ids.empty())
     return;
-
-  const auto opened_web_contents = OpenAllHelper(
-      navigator, std::move(urls), WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  const auto opened_web_contents =
+      OpenAllHelper(browser, std::move(url_and_ids),
+                    WindowOpenDisposition::NEW_BACKGROUND_TAB);
 
   // Figure out which tabs we actually opened in this browser that aren't
   // already in groups.
@@ -347,14 +369,12 @@ void OpenSavedTabGroupHelper(
   model_for_creation->ActivateTabAt(first_tab.value());
 }
 
-void OpenSavedTabGroup(
-    Browser* browser,
-    base::OnceCallback<content::PageNavigator*()> get_navigator,
-    const base::GUID& saved_group_id,
-    const size_t num_tabs) {
+void OpenSavedTabGroup(Browser* browser,
+                       const base::GUID& saved_group_id,
+                       const size_t num_tabs) {
   // Skip the prompt if there are few bookmarks.
   if (num_tabs < kNumBookmarkUrlsBeforePrompting) {
-    OpenSavedTabGroupHelper(browser, std::move(get_navigator), saved_group_id,
+    OpenSavedTabGroupHelper(browser, saved_group_id,
                             chrome::MESSAGE_BOX_RESULT_YES);
     return;
   }
@@ -367,8 +387,7 @@ void OpenSavedTabGroup(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
                                  base::NumberToString16(num_tabs)),
-      base::BindOnce(&OpenSavedTabGroupHelper, browser,
-                     std::move(get_navigator), saved_group_id));
+      base::BindOnce(&OpenSavedTabGroupHelper, browser, saved_group_id));
 }
 
 int OpenCount(gfx::NativeWindow parent,

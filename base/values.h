@@ -460,6 +460,13 @@ class BASE_EXPORT GSL_OWNER Value {
     const List* FindList(StringPiece key) const;
     List* FindList(StringPiece key);
 
+    // If there's a value of the specified type at `key` in this dictionary,
+    // returns it. Otherwise, creates an empty container of the specified type,
+    // inserts it at `key`, and returns it. If there's a value of some other
+    // type at `key`, will overwrite that entry.
+    Dict* EnsureDict(StringPiece key);
+    List* EnsureList(StringPiece key);
+
     // Sets an entry with `key` and `value` in this dictionary, overwriting any
     // existing entry with the same `key`. Returns a pointer to the set `value`.
     Value* Set(StringPiece key, Value&& value);
@@ -720,13 +727,6 @@ class BASE_EXPORT GSL_OWNER Value {
   void Append(const char* value);
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(std::string&& value);
-
-  // Inserts `value` before `pos`.
-  //
-  // DEPRECATED: prefer `Value::List::Insert()`.
-  CheckedContiguousIterator<Value> Insert(
-      CheckedContiguousConstIterator<Value> pos,
-      Value&& value);
 
   // Erases the Value pointed to by `iter`. Returns false if `iter` is out of
   // bounds.
@@ -1347,10 +1347,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // otherwise.
   bool GetList(StringPiece path, const ListValue** out_value) const;
   bool GetList(StringPiece path, ListValue** out_value);
-
-  // Makes a copy of `this` but doesn't include empty dictionaries and lists in
-  // the copy.  This never returns NULL, even if `this` itself is empty.
-  std::unique_ptr<DictionaryValue> DeepCopyWithoutEmptyChildren() const;
 
   // Swaps contents with the `other` dictionary.
   void Swap(DictionaryValue* other);

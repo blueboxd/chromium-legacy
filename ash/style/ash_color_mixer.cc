@@ -40,6 +40,28 @@ constexpr int kDisabledColorOpacity = SK_AlphaOPAQUE * 0.38f;
 
 void AddShieldAndBaseColors(ui::ColorMixer& mixer,
                             const ui::ColorProviderManager::Key& key) {
+  if (ash::features::IsJellyEnabled()) {
+    // Generally, shield and base colors are cros.sys.sys-base-elevated.  That
+    // is cros.sys.surface3 @ 90%.  So, map all shield colors to surface3 and
+    // keep all the opacities.
+    //
+    // New users should use cros.sys.sys-base-elevated directly.
+    mixer[kColorAshShieldAndBase20] =
+        ui::SetAlpha(cros_tokens::kCrosSysSurface3, kAlpha20);
+    mixer[kColorAshShieldAndBase40] =
+        ui::SetAlpha(cros_tokens::kCrosSysSurface3, kAlpha40);
+    mixer[kColorAshShieldAndBase60] =
+        ui::SetAlpha(cros_tokens::kCrosSysSurface3, kAlpha60);
+    mixer[kColorAshShieldAndBase80] =
+        ui::SetAlpha(cros_tokens::kCrosSysSurface3, kAlpha80);
+    mixer[kColorAshShieldAndBase90] =
+        ui::SetAlpha(cros_tokens::kCrosSysSurface3, kAlpha90);
+    mixer[kColorAshShieldAndBase95] =
+        ui::SetAlpha(cros_tokens::kCrosSysSurface3, kAlpha95);
+    mixer[kColorAshShieldAndBaseOpaque] = {cros_tokens::kCrosSysSurface3};
+    return;
+  }
+
   const bool use_dark_color =
       features::IsDarkLightModeEnabled()
           ? key.color_mode == ui::ColorProviderManager::ColorMode::kDark
@@ -52,6 +74,7 @@ void AddShieldAndBaseColors(ui::ColorMixer& mixer,
   // the value of `use_color` here.
   const SkColor background_color =
       key.user_color.value_or(default_background_color);
+
   mixer[kColorAshShieldAndBase20] = {SkColorSetA(background_color, kAlpha20)};
   mixer[kColorAshShieldAndBase40] = {SkColorSetA(background_color, kAlpha40)};
   mixer[kColorAshShieldAndBase60] = {SkColorSetA(background_color, kAlpha60)};
@@ -81,11 +104,7 @@ void AddControlsColors(ui::ColorMixer& mixer,
       use_dark_color ? ui::ColorTransform(SkColorSetA(SK_ColorWHITE, 0x1A))
                      : ui::ColorTransform(SkColorSetA(SK_ColorBLACK, 0x0D));
   mixer[kColorAshControlBackgroundColorAlert] = {cros_tokens::kColorAlert};
-  // TOOD(skau): Replace with kColorWarning when it's determined that light can
-  // be Yellow900 instead.
-  mixer[kColorAshControlBackgroundColorWarning] =
-      use_dark_color ? ui::ColorTransform(gfx::kGoogleYellow300)
-                     : ui::ColorTransform(gfx::kGoogleYellow600);
+  mixer[kColorAshControlBackgroundColorWarning] = {cros_tokens::kColorWarning};
   mixer[kColorAshControlBackgroundColorPositive] = {
       cros_tokens::kColorPositive};
   mixer[kColorAshFocusAuraColor] =
@@ -115,7 +134,8 @@ void AddContentColors(ui::ColorMixer& mixer,
   mixer[kColorAshTextColorPositive] = {cros_tokens::kColorPositive};
   mixer[kColorAshTextColorURL] = {cros_tokens::kColorProminent};
   mixer[kColorAshIconColorPrimary] = {kColorAshTextColorPrimary};
-  mixer[kColorAshIconColorSecondary] = {kColorAshTextColorSecondary};
+  // TODO(skau): Figure out if this should be kColorSecondary instead.
+  mixer[kColorAshIconColorSecondary] = {cros_tokens::kColorDisabledDark};
   mixer[kColorAshIconColorAlert] = {kColorAshTextColorAlert};
   mixer[kColorAshIconColorWarning] = {kColorAshTextColorWarning};
   mixer[kColorAshIconColorPositive] = {kColorAshTextColorPositive};
@@ -128,6 +148,7 @@ void AddContentColors(ui::ColorMixer& mixer,
       cros_tokens::kColorPrimaryInverted};
   mixer[kColorAshInvertedTextColorPrimary] = {kColorAshButtonLabelColorPrimary};
   mixer[kColorAshInvertedButtonLabelColor] = {kColorAshButtonLabelColorPrimary};
+  mixer[kColorAshTextColorSuggestion] = {cros_tokens::kColorDisabled};
   mixer[kColorAshButtonLabelColorBlue] = {kColorAshTextColorURL};
   mixer[kColorAshButtonIconColor] = {kColorAshTextColorPrimary};
   mixer[kColorAshButtonIconColorPrimary] = {kColorAshButtonLabelColorPrimary};
@@ -359,12 +380,23 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   AddControlsColors(mixer, key);
   AddContentColors(mixer, key);
 
+  if (!features::IsProductivityLauncherEnabled() &&
+      !features::IsDarkLightModeEnabled()) {
+    mixer[kColorAshAssistantGreetingEnabled] = {
+        cros_tokens::kColorPrimaryLight};
+  } else {
+    mixer[kColorAshAssistantGreetingEnabled] = {cros_tokens::kColorPrimary};
+  }
+
   mixer[ui::kColorAshActionLabelFocusRingEdit] = {
       cros_tokens::kColorProminentDark};
   mixer[ui::kColorAshActionLabelFocusRingError] = {
       cros_tokens::kColorAlertDark};
   mixer[ui::kColorAshActionLabelFocusRingHover] =
       ui::SetAlpha(cros_tokens::kColorPrimaryDark, 0x60);
+
+  mixer[ui::kColorAshPrivacyIndicatorsBackground] = {
+      cros_tokens::kCrosSysPrivacyIndicator};
 
   mixer[ui::kColorAshAppListFocusRingNoKeyboard] = {SK_AlphaTRANSPARENT};
   mixer[ui::kColorAshAppListSeparatorLight] = {

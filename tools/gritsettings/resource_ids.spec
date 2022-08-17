@@ -216,6 +216,10 @@
     "META": {"sizes": {"includes": [20]}},
     "includes": [1640],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/intro/resources.grd": {
+    "META": {"sizes": {"includes": [20],}},
+    "includes": [1650],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/management/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [1660],
@@ -324,6 +328,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/whats_new/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2140],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/password_manager/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2150],
   },
   # END chrome/browser section.
 

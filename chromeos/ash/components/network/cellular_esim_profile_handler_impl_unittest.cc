@@ -16,15 +16,15 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/ash/components/network/cellular_inhibitor.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
-#include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 const char kDefaultCellularDevicePath[] = "stub_cellular_device";
@@ -593,4 +593,4 @@ TEST_F(CellularESimProfileHandlerImplTest, DisableActiveESimProfile) {
                                      /*expected_count=*/1);
 }
 
-}  // namespace chromeos
+}  // namespace ash

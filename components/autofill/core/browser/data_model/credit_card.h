@@ -134,7 +134,7 @@ class CreditCard : public AutofillDataModel {
   // AutofillDataModel:
   AutofillMetadata GetMetadata() const override;
   double GetRankingScore(base::Time current_time) const override;
-  bool SetMetadata(const AutofillMetadata metadata) override;
+  bool SetMetadata(const AutofillMetadata& metadata) override;
   // Returns whether the card is deletable: if it is expired and has not been
   // used for longer than |kDisusedCreditCardDeletionTimeDelta|.
   bool IsDeletable() const override;
@@ -275,11 +275,11 @@ class CreditCard : public AutofillDataModel {
 
   // Various display functions.
 
-  // Card preview summary, for example: "Nickname/Network - ****1234",
-  // ", 01/2020".
-  const std::pair<std::u16string, std::u16string> LabelPieces() const;
+  // Card preview summary, for example: "Nickname/Network - ****1234 John
+  // Smith".
+  std::pair<std::u16string, std::u16string> LabelPieces() const;
   // Like LabelPieces, but appends the two pieces together.
-  const std::u16string Label() const;
+  std::u16string Label() const;
   // The last four digits of the card number (or possibly less if there aren't
   // enough characters).
   std::u16string LastFourDigits() const;
@@ -401,6 +401,12 @@ class CreditCard : public AutofillDataModel {
   // digits of the card.
   std::u16string NicknameAndLastFourDigits(
       std::u16string customized_nickname = std::u16string(),
+      int obfuscation_length = 4) const;
+
+  // A label for the card formatted as 'Product description  ****LastFour' like
+  // 'ABC Bank XYZ Card  ****1234'. Check that product description exists before
+  // calling this method. By default, the `obfuscation_length` is set to 4.
+  std::u16string ProductDescriptionAndLastFourdigits(
       int obfuscation_length = 4) const;
 
   // Sets the name_on_card_ value based on the saved name parts.

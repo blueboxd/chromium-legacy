@@ -845,6 +845,7 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(single_partition_format)
   PRINT_IF_NOT_DEFAULT(tablet_mode)
   PRINT_IF_NOT_DEFAULT(enable_guest_os_files)
+  PRINT_IF_NOT_DEFAULT(enable_virtio_blk_for_data)
 
 #undef PRINT_IF_NOT_DEFAULT
 
@@ -1960,6 +1961,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(chromeos::features::kGuestOsFiles);
   }
 
+  if (options.enable_virtio_blk_for_data) {
+    enabled_features.push_back(arc::kEnableVirtioBlkForData);
+  } else {
+    disabled_features.push_back(arc::kEnableVirtioBlkForData);
+  }
+
   if (options.enable_filters_in_recents) {
     enabled_features.push_back(chromeos::features::kFiltersInRecents);
   } else {
@@ -2056,13 +2063,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
                                 "testuser", "/home/testuser",
                                 "PLACEHOLDER_IP"));
-    static_cast<chromeos::FakeCrosDisksClient*>(
-        chromeos::CrosDisksClient::Get())
+    static_cast<ash::FakeCrosDisksClient*>(ash::CrosDisksClient::Get())
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
                                 base::Unretained(this)));
-    static_cast<chromeos::FakeCrosDisksClient*>(
-        chromeos::CrosDisksClient::Get())
+    static_cast<ash::FakeCrosDisksClient*>(ash::CrosDisksClient::Get())
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountGuestOs,
                                 base::Unretained(this)));
@@ -3163,8 +3168,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "blockMounts") {
-    static_cast<chromeos::FakeCrosDisksClient*>(
-        chromeos::CrosDisksClient::Get())
+    static_cast<ash::FakeCrosDisksClient*>(ash::CrosDisksClient::Get())
         ->BlockMount();
     return;
   }

@@ -58,6 +58,7 @@
 #include "content/common/debug_utils.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.mojom.h"
+#include "content/common/main_frame_counter.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params_utils.h"
@@ -1012,6 +1013,8 @@ void FillMiscNavigationParams(
   navigation_params->origin_agent_cluster_left_as_default =
       commit_params.origin_agent_cluster_left_as_default;
 
+  navigation_params->reduced_accept_language =
+      WebString::FromASCII(commit_params.reduced_accept_language);
   navigation_params->enabled_client_hints.reserve(
       commit_params.enabled_client_hints.size());
   for (auto enabled_hint : commit_params.enabled_client_hints)
@@ -1572,7 +1575,7 @@ void RenderFrameImpl::CreateFrame(
     bool is_on_initial_empty_document,
     blink::mojom::PolicyContainerPtr policy_container) {
   // TODO(danakj): Split this method into two pieces. The first block makes a
-  // WebLocalFrame and collects the RenderView and RenderFrame for it. The
+  // WebLocalFrame and collects the `blink::WebView` and RenderFrame for it. The
   // second block uses that to make a RenderWidget, if needed.
   blink::WebView* web_view = nullptr;
   RenderFrameImpl* render_frame = nullptr;
@@ -1886,6 +1889,9 @@ RenderFrameImpl::~RenderFrameImpl() {
 
   web_media_stream_device_observer_.reset();
 
+  if (initialized_ && is_main_frame_)
+    MainFrameCounter::DecrementCount();
+
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
   g_routing_id_frame_map.Get().erase(routing_id_);
   agent_scheduling_group_.RemoveRoute(routing_id_);
@@ -1894,6 +1900,8 @@ RenderFrameImpl::~RenderFrameImpl() {
 void RenderFrameImpl::Initialize(blink::WebFrame* parent) {
   initialized_ = true;
   is_main_frame_ = !parent;
+  if (is_main_frame_)
+    MainFrameCounter::IncrementCount();
 
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::Initialize", "routing_id",
                routing_id_);
@@ -2158,12 +2166,12 @@ void RenderFrameImpl::Delete(mojom::FrameDeleteIntention intent) {
       // navigation. The renderer *should* undo the SwapIn() but the old state
       // has already been destroyed. Both ignoring the message or handling it
       // would leave the renderer in an inconsistent state now. If we ignore it
-      // then the browser thinks the RenderView has a remote main frame, but it
-      // is incorrect. If we handle it, then we are deleting a local main frame
-      // out from under the RenderView and we will have bad pointers in the
-      // renderer. So all we can do is crash. We should instead prevent this
-      // scenario by blocking the browser from dropping the speculative main
-      // frame when a commit (and ownership transfer) is imminent.
+      // then the browser thinks the `blink::WebView` has a remote main frame,
+      // but it is incorrect. If we handle it, then we are deleting a local main
+      // frame out from under the `blink::WebView` and we will have bad pointers
+      // in the renderer. So all we can do is crash. We should instead prevent
+      // this scenario by blocking the browser from dropping the speculative
+      // main frame when a commit (and ownership transfer) is imminent.
       // TODO(dcheng): This is the case of https://crbug.com/838348.
       DCHECK(is_main_frame_);
 #if !BUILDFLAG(IS_ANDROID)

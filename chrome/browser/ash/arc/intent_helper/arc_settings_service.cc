@@ -254,7 +254,7 @@ class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
   // automatically unregisters a callback when it's destructed.
   base::CallbackListSubscription default_zoom_level_subscription_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
+  base::ScopedObservation<ash::NetworkStateHandler,
                           ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
@@ -434,7 +434,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   TimezoneSettings::GetInstance()->AddObserver(this);
 
   network_state_handler_observer_.Observe(
-      chromeos::NetworkHandler::Get()->network_state_handler());
+      ash::NetworkHandler::Get()->network_state_handler());
 }
 
 void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
@@ -568,7 +568,7 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
 // multi-network support so we should sync per-network proxy configuration.
 void ArcSettingsServiceImpl::SyncProxySettings() const {
   std::unique_ptr<ProxyConfigDictionary> proxy_config_dict =
-      chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
+      ash::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
           GetPrefs(), g_browser_process->local_state());
 
   ProxyPrefs::ProxyMode mode;

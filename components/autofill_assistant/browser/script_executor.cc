@@ -480,6 +480,7 @@ void ScriptExecutor::SetBrowseDomainsAllowlist(
 void ScriptExecutor::RetrieveElementFormAndFieldData(
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&,
+                            content::RenderFrameHost* rfh,
                             const autofill::FormData&,
                             const autofill::FormFieldData&)> callback) {
   delegate_->GetWebController()->RetrieveElementFormAndFieldData(
@@ -762,6 +763,16 @@ void ScriptExecutor::SetOverlayBehavior(
   delegate_->SetOverlayBehavior(overlay_behavior);
 }
 
+bool ScriptExecutor::IsXmlSigned(const std::string& xml_string) const {
+  return delegate_->IsXmlSigned(xml_string);
+}
+
+const std::vector<std::string> ScriptExecutor::ExtractValuesFromSingleTagXml(
+    const std::string& xml_string,
+    const std::vector<std::string>& keys) const {
+  return delegate_->ExtractValuesFromSingleTagXml(xml_string, keys);
+}
+
 void ScriptExecutor::MaybeShowSlowWebsiteWarning(
     base::OnceCallback<void(bool)> callback) {
   bool should_show_warning =
@@ -896,7 +907,8 @@ bool ScriptExecutor::ProcessNextActionResponse(
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseActions(
       this, response, &run_id_, &last_global_payload_, &last_script_payload_,
-      &actions_, &scripts, &should_update_scripts, &js_flow_library);
+      &actions_, &scripts, &should_update_scripts, &js_flow_library,
+      &report_token_);
   if (!parse_result) {
     return false;
   }
@@ -1203,6 +1215,24 @@ TriggerContext ScriptExecutor::GetMergedTriggerContext() const {
 
 const std::string ScriptExecutor::GetLocale() const {
   return delegate_->GetLocale();
+}
+
+void ScriptExecutor::ReportProgress(const std::string& payload,
+                                    base::OnceCallback<void(bool)> callback) {
+  auto* service = delegate_->GetService();
+  DCHECK(service);
+  service->ReportProgress(
+      report_token_, payload,
+      base::BindOnce(&ScriptExecutor::OnReportProgress,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ScriptExecutor::OnReportProgress(
+    base::OnceCallback<void(bool)> callback,
+    int http_status,
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info) {
+  std::move(callback).Run(http_status == net::HTTP_OK);
 }
 
 }  // namespace autofill_assistant

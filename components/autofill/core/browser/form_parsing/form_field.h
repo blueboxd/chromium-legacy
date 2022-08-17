@@ -46,24 +46,25 @@ class FormField {
   virtual ~FormField() = default;
 
   // Classifies each field in |fields| with its heuristically detected type.
-  // Each field has a derived unique name that is used as the key into the
-  // returned FieldCandidatesMap.
-  static FieldCandidatesMap ParseFormFields(
+  // Each field has a derived unique name that is used as the key into
+  // |field_candidates|.
+  static void ParseFormFields(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
       const LanguageCode& page_language,
       bool is_form_tag,
       PatternSource pattern_source,
+      FieldCandidatesMap& field_candidates,
       LogManager* log_manager = nullptr);
 
   // Looks for types that are allowed to appear in solitary (such as merchant
   // promo codes) inside |fields|. Each field has a derived unique name that is
-  // used as the key into the |field_candidates| parameter.
+  // used as the key into |field_candidates|.
   static void ParseSingleFieldForms(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
       const LanguageCode& page_language,
       bool is_form_tag,
       PatternSource pattern_source,
-      FieldCandidatesMap* field_candidates,
+      FieldCandidatesMap& field_candidates,
       LogManager* log_manager = nullptr);
 
 #if defined(UNIT_TEST)
@@ -83,7 +84,7 @@ class FormField {
 
   // Assign types to the fields for the testing purposes.
   void AddClassificationsForTesting(
-      FieldCandidatesMap* field_candidates_for_testing) const {
+      FieldCandidatesMap& field_candidates_for_testing) const {
     AddClassifications(field_candidates_for_testing);
   }
 #endif
@@ -92,17 +93,19 @@ class FormField {
   // Initial values assigned to FieldCandidates by their corresponding parsers.
   // There's an implicit precedence determined by the values assigned here.
   // Email is currently the most important followed by Phone, Travel, Address,
-  // Birthdate, Credit Card, Price, Name, Merchant promo code, and Search.
+  // Birthdate, Credit Card, IBAN, Price, Name, Merchant promo code, and Search.
   static constexpr float kBaseEmailParserScore = 1.4f;
   static constexpr float kBasePhoneParserScore = 1.3f;
   static constexpr float kBaseTravelParserScore = 1.2f;
   static constexpr float kBaseAddressParserScore = 1.1f;
   static constexpr float kBaseBirthdateParserScore = 1.05f;
   static constexpr float kBaseCreditCardParserScore = 1.0f;
+  static constexpr float kBaseIBANParserScore = 0.975f;
   static constexpr float kBasePriceParserScore = 0.95f;
   static constexpr float kBaseNameParserScore = 0.9f;
   static constexpr float kBaseMerchantPromoCodeParserScore = 0.85f;
   static constexpr float kBaseSearchParserScore = 0.8f;
+  static constexpr float kBaseAutocompleteParserScore = 0.05f;
 
   // Only derived classes may instantiate.
   FormField() = default;
@@ -155,7 +158,7 @@ class FormField {
   static void AddClassification(const AutofillField* field,
                                 ServerFieldType type,
                                 float score,
-                                FieldCandidatesMap* field_candidates);
+                                FieldCandidatesMap& field_candidates);
 
   // Returns true iff |type| matches |match_type|.
   static bool MatchesFormControlType(base::StringPiece type,
@@ -169,7 +172,7 @@ class FormField {
   // of types from an input vector of |AutofillField| objects and delegates
   // the type extraction via this method.
   virtual void AddClassifications(
-      FieldCandidatesMap* field_candidates) const = 0;
+      FieldCandidatesMap& field_candidates) const = 0;
 
  private:
   // Function pointer type for the parsing function that should be passed to the
@@ -228,10 +231,16 @@ class FormField {
   // |field_candidates|.
   static void ParseFormFieldsPass(ParseFunction parse,
                                   const std::vector<AutofillField*>& fields,
-                                  FieldCandidatesMap* field_candidates,
+                                  FieldCandidatesMap& field_candidates,
                                   const LanguageCode& page_language,
                                   PatternSource pattern_source,
                                   LogManager* log_manager);
+
+  // Interpret the fields' `parsable_name()` (id or name attribute) as an
+  // autocomplete type and classify them by it. E.g. <input id=given-name>.
+  static void ParseUsingAutocompleteAttributes(
+      const std::vector<AutofillField*>& fields,
+      FieldCandidatesMap& field_candidates);
 };
 
 }  // namespace autofill

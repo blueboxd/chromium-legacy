@@ -41,7 +41,6 @@ consoles.console_view(
             "win10",
             "win11",
             "win32",
-            "paeverywhere",
             "backuprefptr",
             "buildperf",
         ],
@@ -757,7 +756,7 @@ ci.thin_tester(
     builderless = False,
     os = os.MAC_DEFAULT,
     cores = 12,
-    triggered_by = ["ci/Mac Builder"],
+    triggered_by = ["ci/Mac Builder (dbg)"],
 )
 
 ci.builder(
@@ -773,28 +772,54 @@ ci.builder(
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
+# TODO(crbug.com/1320004): Remove this builder after experimentation.
 ci.builder(
-    name = "mac-paeverywhere-x64-fyi-dbg",
-    builderless = True,
+    name = "linux-rel-no-external-ip",
+    builderless = False,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|mac",
-        short_name = "64dbg",
+        category = "linux",
     ),
-    cores = None,
-    notifies = ["chrome-memory-safety"],
-    os = os.MAC_ANY,
+    os = os.LINUX_DEFAULT,
+    builder_spec = builder_config.copy_from(
+        "ci/Linux Builder",
+    ),
+    # Limited test pool is likely to cause long build times.
+    execution_timeout = 24 * time.hour,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
-    name = "mac-paeverywhere-x64-fyi-rel",
+    name = "mac-backuprefptr-x64-fyi-rel",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|mac",
+        category = "backuprefptr|mac",
         short_name = "64rel",
     ),
-    cores = None,
     notifies = ["chrome-memory-safety"],
     os = os.MAC_ANY,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -822,6 +847,24 @@ ci.builder(
     os = os.WINDOWS_ANY,
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+# TODO(crbug.com/1320004): Remove this builder after experimentation.
+ci.builder(
+    name = "win10-rel-no-external-ip",
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+    ),
+    os = os.WINDOWS_ANY,
+    builder_spec = builder_config.copy_from(
+        "ci/Win x64 Builder",
+    ),
+    # Limited test pool is likely to cause long build times.
+    execution_timeout = 24 * time.hour,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
@@ -913,10 +956,13 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Mac - cache siloed",
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_instance = reclient.instance.TEST_TRUSTED,
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
+    reclient_rewrapper_env = {
+        "RBE_exec_strategy": "racing",
+    },
 )
 
 ci.builder(
@@ -930,10 +976,13 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Mac - cache siloed",
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_instance = reclient.instance.TEST_TRUSTED,
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
+    reclient_rewrapper_env = {
+        "RBE_exec_strategy": "racing",
+    },
 )
 
 ci.builder(
@@ -998,11 +1047,14 @@ ci.builder(
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison ios - cache siloed",
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_instance = reclient.instance.TEST_TRUSTED,
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
     xcode = xcode.x14main,
+    reclient_rewrapper_env = {
+        "RBE_exec_strategy": "racing",
+    },
 )
 
 ci.builder(

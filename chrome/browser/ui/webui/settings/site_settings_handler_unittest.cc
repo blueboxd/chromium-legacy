@@ -60,6 +60,7 @@
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/test/object_permission_context_base_mock_permission_observer.h"
+#include "components/permissions/test/permission_test_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -183,10 +184,7 @@ class ContentSettingSourceSetter {
  public:
   ContentSettingSourceSetter(TestingProfile* profile,
                              ContentSettingsType content_type)
-      : prefs_(profile->GetTestingPrefService()),
-        host_content_settings_map_(
-            HostContentSettingsMapFactory::GetForProfile(profile)),
-        content_type_(content_type) {}
+      : prefs_(profile->GetTestingPrefService()), content_type_(content_type) {}
   ContentSettingSourceSetter(const ContentSettingSourceSetter&) = delete;
   ContentSettingSourceSetter& operator=(const ContentSettingSourceSetter&) =
       delete;
@@ -209,7 +207,6 @@ class ContentSettingSourceSetter {
 
  private:
   raw_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
-  raw_ptr<HostContentSettingsMap> host_content_settings_map_;
   ContentSettingsType content_type_;
 };
 
@@ -251,7 +248,11 @@ class SiteSettingsHandlerTest : public testing::Test,
     mock_privacy_sandbox_service_ = static_cast<MockPrivacySandboxService*>(
         PrivacySandboxServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildMockPrivacySandboxService)));
-    handler_ = std::make_unique<SiteSettingsHandler>(profile_.get());
+
+    profile()->SetPermissionControllerDelegate(
+        permissions::GetPermissionControllerDelegate(profile()));
+
+    handler_ = std::make_unique<SiteSettingsHandler>(profile());
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     // AllowJavascript() adds a callback to create leveldb_env::ChromiumEnv
@@ -2742,6 +2743,85 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
   EXPECT_EQ(0U, client_hints_settings.size());
+}
+
+TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
+  // Confirm that when the user clears unpartitioned storage, or the eTLD+1
+  // group, reduce accept language are also cleared.
+  SetUpCookiesTreeModel();
+  handler()->OnStorageFetched();
+
+  GURL hosts[] = {GURL("https://example.com/"), GURL("https://www.example.com"),
+                  GURL("https://google.com/"), GURL("https://www.google.com/")};
+
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType accept_language_settings;
+
+  std::string language = "en-us";
+  base::Value accept_language_dictionary(base::Value::Type::DICTIONARY);
+  accept_language_dictionary.SetKey("reduce-accept-language",
+                                    base::Value(language));
+
+  // Add setting for the hosts.
+  for (const auto& host : hosts) {
+    host_content_settings_map->SetWebsiteSettingDefaultScope(
+        host, GURL(), ContentSettingsType::REDUCED_ACCEPT_LANGUAGE,
+        accept_language_dictionary.Clone());
+  }
+
+  // Clear at the eTLD+1 level and ensure affected origins are cleared.
+  base::Value args(base::Value::Type::LIST);
+  args.Append("example.com");
+  handler()->HandleClearEtldPlus1DataAndCookies(args.GetList());
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  EXPECT_EQ(2U, accept_language_settings.size());
+
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[2]),
+            accept_language_settings.at(0).primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            accept_language_settings.at(0).secondary_pattern);
+  EXPECT_EQ(accept_language_dictionary,
+            accept_language_settings.at(0).setting_value);
+
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[3]),
+            accept_language_settings.at(1).primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            accept_language_settings.at(1).secondary_pattern);
+  EXPECT_EQ(accept_language_dictionary,
+            accept_language_settings.at(1).setting_value);
+
+  // Clear unpartitioned usage data, which should only affect the specific
+  // origin.
+  args.ClearList();
+  args.Append("https://google.com/");
+  handler()->HandleClearUnpartitionedUsage(args.GetList());
+
+  // Validate the reduce accept language has been cleared.
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  EXPECT_EQ(1U, accept_language_settings.size());
+
+  // www.google.com should be the only remainining entry.
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[3]),
+            accept_language_settings.at(0).primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            accept_language_settings.at(0).secondary_pattern);
+  EXPECT_EQ(accept_language_dictionary,
+            accept_language_settings.at(0).setting_value);
+
+  // Clear unpartitioned usage data through HTTPS scheme, make sure https site
+  // reduced accept language have been cleared when the specific origin HTTPS
+  // scheme exist.
+  args.ClearList();
+  args.Append("http://www.google.com/");
+  handler()->HandleClearUnpartitionedUsage(args.GetList());
+
+  // Validate the reduced accept language has been cleared.
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  EXPECT_EQ(0U, accept_language_settings.size());
 }
 
 TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {

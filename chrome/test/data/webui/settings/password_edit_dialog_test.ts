@@ -701,7 +701,10 @@ suite('PasswordEditDialog', function() {
     assertEquals(expectedParams.note, params.note);
 
     await dispatchedEvent.then((event) => {
-      assertEquals(43, event.detail);
+      assertEquals(43, event.detail.id);
+      assertEquals(expectedParams.username, event.detail.username);
+      assertEquals(expectedParams.password, event.detail.password);
+      assertEquals(expectedParams.note, event.detail.note);
     });
   });
 
@@ -813,7 +816,7 @@ suite('PasswordEditDialog', function() {
     assertEquals('', noteElement!.value);
   });
 
-  // <if expr="not chromeos_ash and not chromeos_lacros">
+  // <if expr="not is_chromeos">
   // On ChromeOS/Lacros the behavior is different (on failure we request token
   // and retry).
   test(
@@ -839,6 +842,56 @@ suite('PasswordEditDialog', function() {
         await flushTasks();
 
         assertAddDialogParts(addDialog);
+      });
+  // </if>
+
+  // <if expr="is_chromeos">
+  test(
+      'requestsPlaintextPasswordAndSwitchesToEditModeOnViewPasswordClickInCros',
+      async function() {
+        const existingEntry = createPasswordEntry(
+            {url: 'website.com', username: 'username', id: 0});
+        const addDialog =
+            elementFactory.createPasswordEditDialog(null, [existingEntry]);
+        assertFalse(isElementVisible(addDialog.$.viewExistingPasswordLink));
+
+        await updateWebsiteInput(
+            addDialog, passwordManager, existingEntry.urls.shown);
+        addDialog.$.usernameInput.value = existingEntry.username;
+        assertTrue(isElementVisible(addDialog.$.viewExistingPasswordLink));
+
+        addDialog.$.viewExistingPasswordLink.click();
+        await flushTasks();
+
+        const passwordDialog = addDialog.shadowRoot!.querySelector(
+            'settings-password-prompt-dialog');
+        assertTrue(!!passwordDialog);
+
+        // if the user clicks cancel, add dialog is still visible.
+        passwordDialog.dispatchEvent(new CustomEvent('close'));
+        await flushTasks();
+        debugger;
+
+        assertAddDialogParts(addDialog);
+        assertFalse(!!addDialog.shadowRoot!.querySelector(
+            'settings-password-prompt-dialog'));
+
+        // if the user re-clicks view exiting password and auths, edit dialog is
+        // visible.
+        existingEntry.password = 'plaintext password';
+        passwordManager.setPlaintextPassword(existingEntry.password);
+        addDialog.$.viewExistingPasswordLink.click();
+
+        const {id, reason} =
+            await passwordManager.whenCalled('requestPlaintextPassword');
+        assertEquals(existingEntry.id, id);
+        assertEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
+        await flushTasks();
+
+        assertEditDialogParts(addDialog);
+        assertEquals(existingEntry.urls.link, addDialog.$.websiteInput.value);
+        assertEquals(existingEntry.username, addDialog.$.usernameInput.value);
+        assertEquals(existingEntry.password, addDialog.$.passwordInput.value);
       });
   // </if>
 });

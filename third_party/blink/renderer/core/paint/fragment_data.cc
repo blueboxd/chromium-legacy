@@ -71,9 +71,12 @@ void FragmentData::SetLayer(PaintLayer* layer) {
 
 const TransformPaintPropertyNodeOrAlias& FragmentData::PreTransform() const {
   if (const auto* properties = PaintProperties()) {
-    if (const auto* transform = properties->Transform()) {
-      DCHECK(transform->Parent());
-      return *transform->Parent();
+    for (const TransformPaintPropertyNode* transform :
+         properties->AllCSSTransformPropertiesOutsideToInside()) {
+      if (transform) {
+        DCHECK(transform->Parent());
+        return *transform->Parent();
+      }
     }
   }
   return LocalBorderBoxProperties().Transform();
@@ -126,6 +129,20 @@ const ClipPaintPropertyNodeOrAlias& FragmentData::ContentsClip() const {
       return *properties->InnerBorderRadiusClip();
   }
   return LocalBorderBoxProperties().Clip();
+}
+
+const EffectPaintPropertyNodeOrAlias& FragmentData::PreEffect() const {
+  if (const auto* properties = PaintProperties()) {
+    if (const auto* effect = properties->Effect()) {
+      DCHECK(effect->Parent());
+      return *effect->Parent();
+    }
+    if (const auto* filter = properties->Filter()) {
+      DCHECK(filter->Parent());
+      return *filter->Parent();
+    }
+  }
+  return LocalBorderBoxProperties().Effect();
 }
 
 const EffectPaintPropertyNodeOrAlias& FragmentData::ContentsEffect() const {

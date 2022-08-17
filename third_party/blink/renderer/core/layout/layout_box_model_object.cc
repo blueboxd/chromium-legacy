@@ -1135,6 +1135,9 @@ PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(
         reference_point +=
             To<LayoutBox>(offset_parent_object)->PhysicalLocation();
       }
+    } else if (UNLIKELY(IsBox() &&
+                        To<LayoutBox>(this)->AnchorScrollContainer())) {
+      reference_point += To<LayoutBox>(this)->ComputeAnchorScrollOffset();
     }
 
     if (offset_parent_object->IsLayoutInline()) {

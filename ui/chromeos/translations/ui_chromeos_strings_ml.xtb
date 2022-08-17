@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> ഇനങ്ങൾ ഇല്ലാതാക്കുന്നു...</translation>
 <translation id="1049926623896334335">Word പ്രമാണം</translation>
 <translation id="1056775291175587022">നെറ്റ്‌വർക്കില്ല</translation>
+<translation id="1056898198331236512">മുന്നറിയിപ്പ്</translation>
 <translation id="1060368002126861100"><ph name="APP_NAME" /> ഉപയോഗിച്ച് ഫയലുകൾ തുറക്കാൻ, ആദ്യം അവയെ Windows ഫയലുകൾ എന്ന ഫോൾഡറിലേക്ക് മാറ്റുക.</translation>
 <translation id="1062407476771304334">മാറ്റിസ്ഥാപിക്കുക</translation>
 <translation id="1119447706177454957">ആന്തരിക പിശക്</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">നെറ്റ്‌വർക്ക്, പരിശോധിച്ചുറപ്പിക്കൽ സർട്ടിഫിക്കറ്റ് നിരസിച്ചു</translation>
 <translation id="255937426064304553">യുഎസ് ഇന്റർനാഷണൽ</translation>
 <translation id="2563185590376525700">തവള</translation>
-<translation id="2570012981255377263">നിങ്ങളുടെ അടുത്തിടെയുള്ള ഫയലുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="2578394532502990878">തമിഴ് ഉച്ചാരണ ശബ്‌ദം</translation>
 <translation id="2579959351793446050">ഒഡിയ</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" />-ൽ <ph name="NETWORK_COUNT" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു, വിശദാംശങ്ങൾ</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">പിൻ അസാധുവാണ്. നിങ്ങൾക്ക് <ph name="RETRIES" /> ശ്രമങ്ങൾ കൂടി ബാക്കിയുണ്ട്.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ഹാർഡ്‌വെയർ പിന്തുണയുള്ളത്)</translation>
 <translation id="3188257591659621405">എൻ്റെ ഫയലുകൾ</translation>
+<translation id="3194553149358267393">അടുത്തിടെയുള്ള ഓഡിയോ ഫയലുകളൊന്നുമില്ല</translation>
 <translation id="3197563288998582412">യുകെ ദ്വരോക്ക്</translation>
 <translation id="3202131003361292969">പാത</translation>
 <translation id="3205852408225871810">പോർച്ചുഗീസ് (ബ്രസീൽ)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3486821258960016770">മംഗോളിയൻ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> പിശകുകൾ.</translation>
+<translation id="3495810061346586977">ഈ ഫയൽ രഹസ്യാത്മകമാണ്, കൂടാതെ അഡ്‌മിൻ നയത്തിന്റെ നിയന്ത്രണങ്ങൾക്ക് വിധേയവുമാണ്. <ph name="BEGIN_LINK_HELP" />കൂടുതലറിയുക<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, വിശദാംശങ്ങൾ</translation>
 <translation id="3522708245912499433">പോര്‍ച്ചുഗീസ്</translation>
 <translation id="3524311639100184459">മുന്നറിയിപ്പ്: ഇവ താൽക്കാലിക ഫയലുകളാണ് ഡിസ്ക്കിൽ ഇടമുണ്ടാക്കാൻ സ്വയമേവ ഇല്ലാതാക്കിയേക്കാം.  <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ഫോൾഡർ</translation>
+<translation id="3548125359243647069">തെറ്റായ പിൻ നിരവധി തവണ നൽകി.</translation>
 <translation id="3549797760399244642">drive.google.com-ലേക്ക് പോകുക...</translation>
 <translation id="3553048479571901246"><ph name="APP_NAME" /> ഉപയോഗിച്ച് ഫയലുകൾ തുറക്കാൻ, ആദ്യം അവയെ Windows ഫയലുകൾ എന്ന ഫോൾഡറിലേക്ക് പകർത്തുക.</translation>
 <translation id="3556731189587832921">അന്താരാഷ്ട്ര PC കീബോർഡ് ഉള്ള ഇംഗ്ലീഷ് (യുഎസ്)</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">ടർക്കിഷ്-എഫ്</translation>
 <translation id="3616113530831147358">ഓഡിയോ</translation>
 <translation id="3619115746895587757">കാപ്പുചീനോ</translation>
+<translation id="3619593063686672873">അടുത്തിടെയുള്ള വീഡിയോകളൊന്നുമില്ല</translation>
 <translation id="3620292326130836921">എല്ലാം ബാക്കപ്പുചെയ്‌തു!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, വിശദാംശങ്ങൾ</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ നീക്കി.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ഫയൽ</translation>
 <translation id="457386861538956877">കൂടുതൽ‍‌...</translation>
 <translation id="4579744207439506346">തിരഞ്ഞെടുക്കലിലേക്ക് <ph name="ENTRY_NAME" /> ചേർത്തു.</translation>
+<translation id="4583436353463424810">അടുത്തിടെയുള്ള ഡോക്യുമെന്റുകളൊന്നുമില്ല</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> എന്നതിനുള്ള ഫലങ്ങൾ കാണിക്കുന്നു.</translation>
 <translation id="4599600860674643278">ഫിൽട്ടർ റീസെറ്റ് ചെയ്തു.</translation>
 <translation id="4603392156942865207"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="FILE_NAME" /> പകർത്തുന്നു</translation>
@@ -487,6 +492,7 @@
 <translation id="516592729076796170">യുഎസ് പ്രോഗ്രാമർ ഡൊറാക്ക്</translation>
 <translation id="5172749059808361023">നിയന്ത്രണ വിശദാംശങ്ങള്‍</translation>
 <translation id="5177526793333269655">ലഘുചിത്ര കാഴ്‌ച</translation>
+<translation id="5181896909298187506">അടുത്തിടെയുള്ള ഫയലുകളൊന്നുമില്ല</translation>
 <translation id="5194713942430106590">കോളം ആരോഹണക്രമത്തിൽ അടുക്കാൻ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="5211614973734216083">ഫാറോസി</translation>
 <translation id="5218183485292899140">സ്വിസ് ഫ്രഞ്ച്</translation>
@@ -542,7 +548,6 @@
 <translation id="5625294776298156701">Tamil99 കീബോർഡ് ഉള്ള തമിഴ്</translation>
 <translation id="5633226425545095130">ഈ ഇനം നീക്കുന്നതിലൂടെ, '<ph name="DESTINATION_NAME" />' എന്ന പങ്കിട്ട ഫോൾഡർ കാണാനാകുന്ന എല്ലാവരുമായും അത് പങ്കിടും.</translation>
 <translation id="5649768706273821470">കേൾക്കുക</translation>
-<translation id="5665074015635552640">നിങ്ങളുടെ അടുത്തിടെയുള്ള വീഡിയോകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="5669691691057771421">പുതിയ പിൻ നൽകുക</translation>
 <translation id="5678784840044122290">നിങ്ങളുടെ ടെർമിനലിനുള്ളിൽ Linux ആപ്പ് ലഭ്യമാകും, നിങ്ങളുടെ ലോഞ്ചറിൽ അതിന്റെ ഐക്കൺ കാണിച്ചേക്കാം.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />ഒരു ആർക്കൈവിൽ നിന്നോ വെർച്വൽ ഡിസ്‌ക്കിൽ നിന്നോ വിച്ഛേദിക്കാനാവുന്നില്ല<ph name="END_BOLD" />
@@ -615,6 +620,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="PHONE_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" />%, കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="6269630227984243955">മലെയ്</translation>
 <translation id="6287852322318138013">ഈ ഫയൽ തുറക്കാനായി ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക</translation>
+<translation id="6295542640242147836">സിം ലോക്ക് ചെയ്യുക</translation>
 <translation id="6296410173147755564">PUK അസാധുവാണ്</translation>
 <translation id="6312403991423642364">അറിയാത്ത നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="6317608858038767920">ഇഷ്‌ടാനുസൃത nameserver <ph name="INPUT_INDEX" /></translation>
@@ -687,7 +693,6 @@
     <ph name="FILE_COUNT" /> കണ്ടെത്തി</translation>
 <translation id="6935521024859866267">അപ്‌സൈഡ് ഡൗൺ</translation>
 <translation id="6943836128787782965">HTTP പരാജയപ്പെട്ടു</translation>
-<translation id="6945604978460872381">നിങ്ങളുടെ അടുത്തിടെയുള്ള ഡോക്യുമെന്റുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="6949408524333579394">സെർബിയൻ ലിപ്യന്തരണം</translation>
 <translation id="6954309393500027528">ഈ ഫയൽ ഒട്ടിക്കുന്നത് നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു</translation>
 <translation id="6960565108681981554">സജീവമാക്കിയിട്ടില്ല. നിങ്ങളുടെ സേവനദാതാവിനെ ബന്ധപ്പെടുക.</translation>
@@ -724,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">ഇതായി ഫയൽ സംരക്ഷിക്കുക</translation>
 <translation id="7229570126336867161">EVDO ആവശ്യമുണ്ട്</translation>
+<translation id="7230898482850090046">"സിം ലോക്ക് ചെയ്യുക" ക്രമീകരണം ഓഫാക്കാൻ നിങ്ങളുടെ അഡ്‌മിൻ അഭ്യർത്ഥിച്ചു</translation>
 <translation id="7238097264433196391">ഡ്രൈവിൻ്റെ പേര്</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, വിശദാംശങ്ങൾ</translation>
 <translation id="7246947237293279874">FTP പ്രോക്‌സി</translation>
@@ -735,7 +741,6 @@
 <translation id="7295662345261934369">മറ്റുള്ളവരുമായി പങ്കിടുക</translation>
 <translation id="7297443947353982503">ഉപയോക്തൃനാമം/പാസ്‌വേഡ് ശരിയല്ല അല്ലെങ്കിൽ EAP പരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു</translation>
 <translation id="7309413087278791451">ജർമ്മൻ (ബെൽജിയം)</translation>
-<translation id="7313374447885864533">നിങ്ങളുടെ അടുത്തിടെയുള്ള ഓഡിയോ ഫയലുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="7339898014177206373">പുതിയ വിന്‍ഡോ</translation>
 <translation id="7343393116438664539">വിയറ്റ്നാമീസ് ടെലക്‌സ്</translation>
 <translation id="7357762654218998920">ഈ ഫയൽ തരം പിന്തുണയ്ക്കുന്നില്ല. ChromeOS-ൽ ഫയലുകൾ തുറക്കുന്നതിനെ കുറിച്ച് <ph name="BEGIN_LINK_HELP" />കൂടുതലറിയുക<ph name="END_LINK_HELP" />.</translation>
@@ -745,6 +750,7 @@
 <translation id="7408870451288633753">ചെക്ക്</translation>
 <translation id="7417453074306512035">എത്യോപിക് കീബോർഡ്</translation>
 <translation id="7417705661718309329">Google മാപ്പ്</translation>
+<translation id="7458955835361612701">അടുത്തിടെയുള്ള ചിത്രങ്ങളൊന്നുമില്ല</translation>
 <translation id="7460898608667578234">ഉക്രേനിയന്‍</translation>
 <translation id="7469894403370665791">ഈ നെറ്റ്‍വര്‍ക്കിലേക്ക് സ്വപ്രേരിതമായി ബന്ധിപ്പിക്കുന്നു</translation>
 <translation id="7486315294984620427">Parallels Desktop-ലേക്ക് ഫയലുകൾ ചേർക്കാൻ അവയെ Windows ഫയലുകൾ എന്ന ഫോൾഡറിലേക്ക് പകർത്തണം.</translation>
@@ -756,6 +762,7 @@
 <translation id="7505167922889582512">ഒളിപ്പിച്ചിരിക്കുന്ന ഫയലുകൾ കാണിക്കുക</translation>
 <translation id="7514365320538308">ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="751507702149411736">ബെലാറുഷ്യൻ</translation>
+<translation id="7521790570754130607">മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കാൻ ഒരു പിൻ ആവശ്യമാണ്</translation>
 <translation id="7532029025027028521">പേർഷ്യൻ ലിപ്യന്തരണം</translation>
 <translation id="7544830582642184299">നിങ്ങളുടെ Google Drive-ലെ ഫയലുകൾ ആക്‌സസ് ചെയ്യാൻ Linux ആപ്പുകൾക്ക് അനുമതി നൽകുക. മാറ്റങ്ങൾ, നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിലേക്ക് സമന്വയിപ്പിക്കും.</translation>
 <translation id="7547009467130558110">സ്‌നീക്കർ</translation>
@@ -780,6 +787,7 @@
 <translation id="76959938259365003">ട്രാഷിലുള്ളവ എല്ലാം ഇല്ലാതാക്കാനായില്ല.</translation>
 <translation id="770015031906360009">ഗ്രീക്ക്</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> പകർത്തി.</translation>
+<translation id="7708271999969613024">ഈ നെറ്റ്‌വർക്ക് ഉപയോഗിക്കുന്നതിന്, സേവനദാതാവ് നൽകിയ 8 അക്ക പേഴ്‌സണൽ അൺബ്ലോക്കിംഗ് കീ (PUK) നൽകേണ്ടതുണ്ട്.</translation>
 <translation id="7711920809702896782">ചിത്രത്തിന്റെ വിവരം</translation>
 <translation id="7724603315864178912">മുറിക്കുക</translation>
 <translation id="7730494089396812859">ക്ലൗഡ് ബാക്കപ്പ് വിശദാംശങ്ങൾ കാണിക്കുക</translation>
@@ -865,7 +873,6 @@
 <translation id="8342318071240498787">സമാന പേരിലുള്ള ഫയൽ അല്ലെങ്കിൽ ഡയറക്‌റ്ററി ഇതിനകം നിലവിലുണ്ട്.</translation>
 <translation id="8372369524088641025">മോശം WEP കീ</translation>
 <translation id="8372852072747894550">ഗ്രീക്ക്</translation>
-<translation id="8384716930968677505">നിങ്ങളുടെ അടുത്തിടെയുള്ള ചിത്രങ്ങൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="8386903983509584791">സ്‌കാൻ ചെയ്യുന്നത് പൂർത്തിയായി</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> എക്സ്‌ട്രാക്റ്റ് ചെയ്തു.</translation>
 <translation id="8395901698320285466">തലങ്ങൾ</translation>
@@ -875,6 +882,7 @@
 <translation id="8437209419043462667">യുഎസ്</translation>
 <translation id="8452135315243592079">സിം കാർഡ് കാണുന്നില്ല</translation>
 <translation id="8456681095658380701">അസാധുവായ പേര്</translation>
+<translation id="8457767749626250697">നിങ്ങളുടെ സിം ലോക്ക് ചെയ്തിരിക്കുന്നു</translation>
 <translation id="8459404855768962328">ഈ ഇനം പകർത്തുന്നതിലൂടെ, '<ph name="DESTINATION_NAME" />' എന്ന പങ്കിട്ട ഫോൾഡർ കാണാനാകുന്ന എല്ലാവരുമായും അത് പങ്കിടും.</translation>
 <translation id="8461467696380332069">ഷെൽഫിലെ നിങ്ങളുടെ ഫയലുകളിലേക്ക് അതിവേഗ ആക്‌സസ് ലഭിക്കാൻ, ഫയലിൽ വലത്-ക്ലിക്ക് ചെയ്ത് "ഷെൽഫിലേക്ക് പിൻ ചെയ്യുക" തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="8461914792118322307">പ്രോക്സി</translation>

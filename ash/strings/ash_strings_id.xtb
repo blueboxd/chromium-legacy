@@ -49,10 +49,12 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1210557957257435379">perekaman layar</translation>
 <translation id="121097972571826261">Maju per kata</translation>
+<translation id="1217633719248931900">Buka aplikasi</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Aplikasi Play Store</translation>
 <translation id="1225748608451425081">Chromebook Anda terkunci karena masalah umum. Anda akan dapat login setelah: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Berhenti memilih</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> terhubung.</translation>
+<translation id="1240638468526743569">Aplikasi</translation>
 <translation id="1246890715821376239">Aplikasi yang tidak didukung</translation>
 <translation id="1247372569136754018">Mikrofon (internal)</translation>
 <translation id="1247519845643687288">Aplikasi terbaru</translation>
@@ -100,6 +102,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1455242230282523554">Tampilkan setelan bahasa</translation>
 <translation id="1460620680449458626">Volume dibisukan.</translation>
 <translation id="1467432559032391204">Kiri</translation>
+<translation id="146902737843070955">Administrator Anda telah meminta perubahan ini</translation>
 <translation id="147310119694673958">Baterai ponsel <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">Menu aksesibilitas mengambang</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Tekan tombol Enter untuk membuka tampilan Kalender</translation>
@@ -222,7 +225,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2224075387478458881">Perekaman layar tidak diizinkan saat konten yang dilindungi terlihat</translation>
 <translation id="2227179592712503583">Hapus saran</translation>
 <translation id="225680501294068881">Memindai perangkat...</translation>
-<translation id="2257486738914982088">Terjadi masalah saat mendownload <ph name="FILENAME" /></translation>
+<translation id="2257486738914982088">Terjadi error saat mendownload <ph name="FILENAME" /></translation>
 <translation id="2268130516524549846">Bluetooth dinonaktifkan</translation>
 <translation id="2268813581635650749">Keluarkan semua</translation>
 <translation id="2269016722240250274">Aplikasi sedang menggunakan mikrofon Anda</translation>
@@ -261,7 +264,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2450205753526923158">Mode screenshot</translation>
 <translation id="2456008742792828469">Kalender, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">Konfirmasi Resolusi</translation>
-<translation id="2475982808118771221">Terjadi kesalahan</translation>
+<translation id="2475982808118771221">Terjadi error</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk mengganti tata letak keyboard.</translation>
 <translation id="2501920221385095727">Tombol sticky</translation>
@@ -327,12 +330,13 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2894949423239620203">Kabel dapat memengaruhi performa</translation>
 <translation id="2903844815300039659">Terhubung ke <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Screenshot</translation>
+<translation id="2925246975070834767">Coba zoom otomatis agar Anda berada di tengah layar. Aktifkan di Setelan Cepat.</translation>
 <translation id="2941112035454246133">Rendah</translation>
 <translation id="2942350706960889382">Kaca Pembesar Tersemat</translation>
 <translation id="2942516765047364088">Posisi rak</translation>
 <translation id="2946119680249604491">Tambahkan koneksi</translation>
 <translation id="2960314608273155470">Mode Tangkapan Layar, opsi defaultnya adalah <ph name="TYPE" /> <ph name="SOURCE" />. Tekan tab untuk menavigasi dengan keyboard.</translation>
-<translation id="2961963223658824723">Terjadi kesalahan. Coba lagi dalam beberapa detik.</translation>
+<translation id="2961963223658824723">Terjadi error. Coba lagi dalam beberapa detik.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="296762781903199866">Tidak dapat mendownload file ucapan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instal aplikasi, ekstensi, dan tema</translation>
@@ -444,6 +448,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3593039967545720377">Akses histori papan klip dengan menekan <ph name="SHORTCUT_KEY_NAME" /> + V untuk menampilkan papan klip. Salin item untuk memulai.</translation>
 <translation id="3593646411856133110">Geser ke atas dan tahan untuk melihat aplikasi yang terbuka</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
+<translation id="3596012367874587041">Setelan aplikasi</translation>
 <translation id="3600061223661453002">Nonaktif</translation>
 <translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> dibuat</translation>
 <translation id="3606978283550408104">Penampil Braille terhubung.</translation>
@@ -469,6 +474,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="3708186454126126312">Terhubung sebelumnya</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
 <translation id="3713734891607377840">Buka saat selesai</translation>
+<translation id="3724279623330129812">Zoom otomatis memusatkan fokus kamera</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" />, dan <ph name="UNAVAILABLE_APPS_COUNT" /> lainnya tidak ada di perangkat ini.</translation>
 <translation id="3735740477244556633">Urutkan menurut</translation>
 <translation id="3742055079367172538">Screenshot telah diambil</translation>
@@ -534,6 +540,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="4123259114412175274">Untuk membuka kunci Chromebook, pastikan Bluetooth ponsel Anda aktif</translation>
 <translation id="4125970834901680537">Mode tablet tidak mendukung streaming aplikasi. Coba lagi dengan mode laptop.</translation>
 <translation id="4129129681837227511">Untuk melihat notifikasi di layar kunci, buka kunci untuk mengubah setelan</translation>
+<translation id="4130035430755296270">Terus gerakkan kursor untuk melihat opsi tata letak lainnya</translation>
 <translation id="4136724716305260864">Aktif sampai matahari terbit</translation>
 <translation id="4146833061457621061">Putar musik</translation>
 <translation id="4165275524535002941">Kabel mungkin tidak mendukung layar</translation>
@@ -633,6 +640,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="4628757576491864469">Perangkat</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Rating bintang <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{Ubah perangkat ke versi sebelumnya dalam 1 hari}other{Ubah perangkat ke versi sebelumnya dalam # hari}}</translation>
+<translation id="4633636853437260449">Tekan Ctrl+W untuk menghapus</translation>
 <translation id="4642092649622328492">Mengambil screenshot sebagian</translation>
 <translation id="4644727592819780893">Wilayah terlalu kecil untuk ditampilkan di pratinjau kamera</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Rekomendasi aplikasi</translation>
@@ -681,6 +689,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="490788395437447240">Baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
+<translation id="4919841137949306064"><ph name="APP_NAME" /> sedang menggunakan kamera Anda</translation>
 <translation id="4925542575807923399">Administrator akun ini mewajibkan akun ini untuk menjadi akun masuk pertama dalam sesi fitur masuk banyak akun.</translation>
 <translation id="4938176435186993759">Sembunyikan semua saran</translation>
 <translation id="4945196315133970626">Nonaktifkan notifikasi</translation>
@@ -834,6 +843,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5779721926447984944">File tersemat</translation>
 <translation id="5788127256798019331">File Play</translation>
 <translation id="5790085346892983794">Berhasil</translation>
+<translation id="5804651031882187592">Nonaktifkan setelan "Kunci SIM"</translation>
 <translation id="5805809050170488595">Klik untuk mengaktifkan <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Setelan perangkat yang terhubung</translation>
 <translation id="5837036133683224804">Hentikan <ph name="ROUTE_TITLE" /> di <ph name="RECEIVER_NAME" /></translation>
@@ -909,6 +919,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="6220928844947387476">Anda kini dapat merekam diri Anda dan layar secara bersamaan</translation>
 <translation id="622484624075952240">Bawah</translation>
 <translation id="6231419273573514727">Performa periferal mungkin dibatasi</translation>
+<translation id="6232891689835436217"><ph name="APP_NAME" /> sedang menggunakan kamera dan mikrofon Anda</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Terkunci ke horizontal</translation>
 <translation id="6259254695169772643">Gunakan stilus untuk memilih</translation>
@@ -1127,6 +1138,7 @@ Baru diinstal</translation>
 <translation id="7544300628205093162">Lampu latar keyboard mati</translation>
 <translation id="7548434653388805669">Waktunya tidur</translation>
 <translation id="7551643184018910560">Sematkan ke rak</translation>
+<translation id="7557816257942363084"><ph name="APP_NAME" /> sedang menggunakan mikrofon Anda</translation>
 <translation id="7561982940498449837">Tutup menu</translation>
 <translation id="7564874036684306347">Memindahkan jendela ke desktop lain dapat mengakibatkan perilaku tak terduga. Notifikasi, jendela, dan dialog berikutnya dapat terpisah antardesktop.</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox diaktifkan</translation>

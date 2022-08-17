@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
@@ -42,6 +43,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -155,18 +157,23 @@ std::unique_ptr<SearchController> CreateSearchController(
 
   if (ash::features::IsProductivityLauncherEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
-          ash::features::kProductivityLauncher, "enable_continue", true)) {
+          ash::features::kProductivityLauncher, "enable_continue", false)) {
     size_t zero_state_files_group_id =
         controller->AddGroup(kMaxZeroStateFileResults);
     controller->AddProvider(zero_state_files_group_id,
                             std::make_unique<ZeroStateFileProvider>(profile));
+
     size_t drive_zero_state_group_id =
         controller->AddGroup(kMaxZeroStateDriveResults);
-    controller->AddProvider(drive_zero_state_group_id,
-                            std::make_unique<ZeroStateDriveProvider>(
-                                profile, controller.get(),
-                                profile->GetDefaultStoragePartition()
-                                    ->GetURLLoaderFactoryForBrowserProcess()));
+    controller->AddProvider(
+        drive_zero_state_group_id,
+        std::make_unique<ZeroStateDriveProvider>(
+            profile, controller.get(),
+            drive::DriveIntegrationServiceFactory::GetForProfile(profile),
+            session_manager::SessionManager::Get(),
+            std::make_unique<ItemSuggestCache>(
+                profile, profile->GetDefaultStoragePartition()
+                             ->GetURLLoaderFactoryForBrowserProcess())));
   }
 
   if (app_list_features::IsLauncherSettingsSearchEnabled()) {

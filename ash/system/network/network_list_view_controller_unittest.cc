@@ -433,7 +433,7 @@ class NetworkListViewControllerTest : public AshTestBase {
   // hotspot, and associates the two networks.
   void AddTetherNetworkState() {
     network_state_handler()->SetTetherTechnologyState(
-        chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
+        NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
     network_state_handler()->AddTetherNetworkState(
         kTetherGuid, kTetherName, kTetherCarrier, /*battery_percentage=*/100,
         kSignalStrength, /*has_connected_to_host=*/false);
@@ -528,7 +528,7 @@ class NetworkListViewControllerTest : public AshTestBase {
         .IsRunning();
   }
 
-  chromeos::NetworkStateHandler* network_state_handler() {
+  NetworkStateHandler* network_state_handler() {
     return network_state_helper()->network_state_handler();
   }
 
@@ -606,7 +606,7 @@ TEST_F(NetworkListViewControllerTest, MobileDataSectionIsShown) {
 
   // Tether device is prohibited.
   network_state_handler()->SetTetherTechnologyState(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_PROHIBITED);
+      NetworkStateHandler::TechnologyState::TECHNOLOGY_PROHIBITED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, GetMobileSubHeader());
   histogram_tester.ExpectBucketCount("ChromeOS.SystemTray.Network.SectionShown",
@@ -614,7 +614,7 @@ TEST_F(NetworkListViewControllerTest, MobileDataSectionIsShown) {
 
   // Tether device is uninitialized but is primary user.
   network_state_handler()->SetTetherTechnologyState(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED);
+      NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED);
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(nullptr, GetMobileSubHeader());
   histogram_tester.ExpectBucketCount("ChromeOS.SystemTray.Network.SectionShown",
@@ -1004,7 +1004,7 @@ TEST_F(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
 
   // Tether is enabled but no devices are added.
   network_state_handler()->SetTetherTechnologyState(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
+      NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, GetMobileStatusMessage());
@@ -1017,7 +1017,7 @@ TEST_F(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
 
   // Tether network is uninitialized and Bluetooth state enabling.
   network_state_handler()->SetTetherTechnologyState(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED);
+      NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED);
   base::RunLoop().RunUntilIdle();
 
   SetBluetoothAdapterState(BluetoothSystemState::kEnabling);
@@ -1112,44 +1112,49 @@ TEST_F(NetworkListViewControllerTest, NetworkScanning) {
   network_state_helper()->manager_test()->SetInteractiveDelay(
       kInteractiveDelay);
 
+  // ClearDevices() calls RunUntilIdle which performs some initial scans.
+  size_t initial_wifi_count = 1u;
+  size_t initial_tether_count = 1u;
+  size_t initial_scan_count = 2u;
+
   // Scanning bar is not visible if WiFi is not enabled.
   EXPECT_FALSE(HasScanTimerStarted());
   EXPECT_FALSE(getScanningBarVisibility());
-  EXPECT_EQ(0u, GetScanCount());
-  EXPECT_EQ(0u, GetWifiScanCount());
-  EXPECT_EQ(0u, GetTetherScanCount());
+  EXPECT_EQ(initial_scan_count + 0u, GetScanCount());
+  EXPECT_EQ(initial_wifi_count + 0u, GetWifiScanCount());
+  EXPECT_EQ(initial_tether_count + 0u, GetTetherScanCount());
 
   // Add an enabled WiFi device.
   AddWifiDevice();
   EXPECT_TRUE(HasScanTimerStarted());
   EXPECT_TRUE(getScanningBarVisibility());
-  EXPECT_EQ(2u, GetScanCount());
-  EXPECT_EQ(1u, GetWifiScanCount());
-  EXPECT_EQ(1u, GetTetherScanCount());
+  EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
+  EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
+  EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
 
   // Simulate scanning finishing.
   task_environment()->FastForwardBy(kInteractiveDelay);
 
   EXPECT_FALSE(getScanningBarVisibility());
   EXPECT_TRUE(HasScanTimerStarted());
-  EXPECT_EQ(2u, GetScanCount());
-  EXPECT_EQ(1u, GetWifiScanCount());
-  EXPECT_EQ(1u, GetTetherScanCount());
+  EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
+  EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
+  EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
 
   // Make sure scan timer is still running.
   task_environment()->FastForwardBy(kInteractiveDelay);
   EXPECT_TRUE(HasScanTimerStarted());
   EXPECT_FALSE(getScanningBarVisibility());
-  EXPECT_EQ(2u, GetScanCount());
-  EXPECT_EQ(1u, GetWifiScanCount());
-  EXPECT_EQ(1u, GetTetherScanCount());
+  EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
+  EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
+  EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
 
   task_environment()->FastForwardBy(kInteractiveDelay);
   EXPECT_TRUE(HasScanTimerStarted());
   EXPECT_FALSE(getScanningBarVisibility());
-  EXPECT_EQ(2u, GetScanCount());
-  EXPECT_EQ(1u, GetWifiScanCount());
-  EXPECT_EQ(1u, GetTetherScanCount());
+  EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
+  EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
+  EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
 
   // Disabling WiFi device ends scan timer.
   network_state_handler()->SetTechnologyEnabled(
@@ -1158,9 +1163,9 @@ TEST_F(NetworkListViewControllerTest, NetworkScanning) {
 
   EXPECT_FALSE(getScanningBarVisibility());
   EXPECT_FALSE(HasScanTimerStarted());
-  EXPECT_EQ(2u, GetScanCount());
-  EXPECT_EQ(1u, GetWifiScanCount());
-  EXPECT_EQ(1u, GetTetherScanCount());
+  EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
+  EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
+  EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
 }
 
 }  // namespace ash

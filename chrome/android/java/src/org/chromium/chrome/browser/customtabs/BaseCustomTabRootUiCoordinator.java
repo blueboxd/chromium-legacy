@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
@@ -167,8 +169,13 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
 
         if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CCT_BRAND_TRANSPARENCY)
                 && intentDataProvider.get().getActivityType() == ActivityType.CUSTOM_TAB
+                && !intentDataProvider.get().isOpenedByChrome()
                 && !intentDataProvider.get().isIncognito()) {
-            mBrandingController = new BrandingController();
+            String packageName = mIntentDataProvider.get().getClientPackageName();
+            if (TextUtils.isEmpty(packageName)) {
+                packageName = CustomTabIntentDataProvider.getReferrerPackageName(activity);
+            }
+            mBrandingController = new BrandingController(activity, packageName);
         }
         mTabController = tabController;
     }
@@ -308,5 +315,13 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      */
     void handleCloseAnimation(Runnable finishRunnable) {
         mCustomTabHeightStrategy.handleCloseAnimation(finishRunnable);
+    }
+
+    /**
+     * Runs a set of deferred startup tasks.
+     */
+    void onDeferredStartup() {
+        RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
+                Profile.getLastUsedRegularProfile(), mMessageDispatcher, mActivity);
     }
 }

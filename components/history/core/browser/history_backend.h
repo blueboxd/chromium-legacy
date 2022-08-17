@@ -153,9 +153,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
     // Notify HistoryService that the user is visiting a URL. The event will
     // be forwarded to the HistoryServiceObservers in the correct thread.
-    virtual void NotifyURLVisited(ui::PageTransition transition,
-                                  const URLRow& row,
-                                  base::Time visit_time) = 0;
+    virtual void NotifyURLVisited(const URLRow& url_row,
+                                  const VisitRow& visit_row) = 0;
 
     // Notify HistoryService that some URLs have been modified. The event will
     // be forwarded to the HistoryServiceObservers in the correct thread.
@@ -484,10 +483,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   std::vector<Cluster> GetMostRecentClusters(base::Time inclusive_min_time,
                                              base::Time exclusive_max_time,
-                                             int max_clusters);
+                                             int max_clusters,
+                                             bool include_keywords = true);
 
-  // Get a `Cluster`.
-  Cluster GetCluster(int64_t cluster_id);
+  // Get a `Cluster`. `keyword_to_data_map` isn't always useful, and it requires
+  // an extra SQL execution. It's only populated If `include_keywords` is true.
+  Cluster GetCluster(int64_t cluster_id, bool include_keywords = true);
 
   // Finds the 1st visit in the redirect chain containing `visit`.
   // Unlike `GetRedirectsToSpecificVisit()`, this only considers actual

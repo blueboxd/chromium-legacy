@@ -171,6 +171,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
       int32_t restore_id,
       const std::string& restore_window_id_source);
 
+  // Floats (place on top of other surfaces) or unfloats the shell surface.
+  void SetFloat();
+  void UnsetFloat();
+
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
@@ -260,6 +264,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  // This returns the surface's min/max size. If you want to know the
+  // widget/window's min/mx size, you must use
+  // ShellSurfaceBase::GetWidget()->GetXxxSize.
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -320,8 +327,14 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
 
-  // Called by UpdateWidgetBounds to set widget bounds.
-  virtual void SetWidgetBounds(const gfx::Rect& bounds) = 0;
+  // Returns a bounds that WindowManager might have applied the constraints to.
+  virtual gfx::Rect ComputeAdjustedBounds(const gfx::Rect& bounds) const;
+
+  // Called by UpdateWidgetBounds to set widget bounds. If the
+  // `adjusted_by_server` is true, the bounds requested by a client is updated
+  // to satisfy the constraints.
+  virtual void SetWidgetBounds(const gfx::Rect& bounds,
+                               bool adjusted_by_server) = 0;
 
   // Updates the bounds of surface to match the current widget bounds.
   void UpdateSurfaceBounds();

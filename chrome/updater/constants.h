@@ -79,6 +79,7 @@ extern const char kUpdateSwitch[];
 
 // Installs the updater.
 extern const char kInstallSwitch[];
+extern const char kRuntimeSwitch[];
 
 // Contains the meta installer tag. The tag is a string of arguments, separated
 // by a delimiter (in this case, the delimiter is =). The tag is typically
@@ -204,6 +205,10 @@ extern const char kDevOverrideFileName[];
 // How long to wait for an application installer (such as chrome_installer.exe)
 // to complete.
 constexpr base::TimeDelta kWaitForAppInstaller = base::Minutes(15);
+
+// The default last check period is 4.5 hours.
+constexpr base::TimeDelta kDefaultLastCheckPeriod =
+    base::Hours(4) + base::Minutes(30);
 
 #if BUILDFLAG(IS_WIN)
 // How often the installer progress from registry is sampled. This value may

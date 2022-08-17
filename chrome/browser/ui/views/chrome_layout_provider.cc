@@ -147,8 +147,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
     case DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING:
       return 4;
     case DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE:
-      return 18;
-    case DISTANCE_SIDE_PANEL_HEADER_RIGHT_MARGIN:
+      return 16;
+    case DISTANCE_SIDE_PANEL_HEADER_INTERIOR_MARGIN_HORIZONTAL:
       return 8;
   }
   NOTREACHED();

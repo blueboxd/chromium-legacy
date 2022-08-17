@@ -16,15 +16,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,12 +42,10 @@
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
-#include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/history/core/test/visit_annotations_test_utils.h"
-#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -69,7 +62,6 @@ namespace history {
 
 namespace {
 
-using base::HistogramBase;
 using favicon::FaviconBitmap;
 using favicon::FaviconBitmapType;
 using favicon::IconMapping;
@@ -97,16 +89,15 @@ void SimulateNotificationURLVisited(HistoryServiceObserver* observer,
                                     const URLRow* row1,
                                     const URLRow* row2,
                                     const URLRow* row3) {
-  URLRows rows;
+  std::vector<URLRow> rows;
   rows.push_back(*row1);
   if (row2)
     rows.push_back(*row2);
   if (row3)
     rows.push_back(*row3);
 
-  base::Time visit_time;
   for (const URLRow& row : rows) {
-    observer->OnURLVisited(nullptr, ui::PAGE_TRANSITION_LINK, row, visit_time);
+    observer->OnURLVisited(nullptr, row, VisitRow());
   }
 }
 
@@ -122,6 +113,12 @@ void SimulateNotificationURLsModified(HistoryServiceObserver* observer,
     rows.push_back(*row3);
 
   observer->OnURLsModified(nullptr, rows);
+}
+
+VisitContextAnnotations MakeContextAnnotations(bool omnibox_url_copied) {
+  VisitContextAnnotations result;
+  result.omnibox_url_copied = omnibox_url_copied;
+  return result;
 }
 
 }  // namespace
@@ -144,9 +141,8 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
       std::unique_ptr<InMemoryHistoryBackend> backend) override;
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url) override;
-  void NotifyURLVisited(ui::PageTransition transition,
-                        const URLRow& row,
-                        base::Time visit_time) override;
+  void NotifyURLVisited(const URLRow& url_row,
+                        const VisitRow& visit_row) override;
   void NotifyURLsModified(const URLRows& changed_urls) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
@@ -185,7 +181,7 @@ class TestHistoryBackend : public HistoryBackend {
 
 class HistoryBackendTestBase : public testing::Test {
  public:
-  typedef std::vector<std::pair<ui::PageTransition, URLRow>> URLVisitedList;
+  typedef std::vector<std::pair<URLRow, VisitRow>> URLVisitedList;
   typedef std::vector<URLRows> URLsModifiedList;
   typedef std::vector<std::pair<bool, bool>> URLsDeletedList;
 
@@ -248,12 +244,10 @@ class HistoryBackendTestBase : public testing::Test {
       favicon_changed_notifications_icon_urls_.push_back(icon_url);
   }
 
-  void NotifyURLVisited(ui::PageTransition transition,
-                        const URLRow& row,
-                        base::Time visit_time) {
+  void NotifyURLVisited(const URLRow& url_row, const VisitRow& new_visit) {
     // Send the notifications directly to the in-memory database.
-    mem_backend_->OnURLVisited(nullptr, transition, row, visit_time);
-    url_visited_notifications_.push_back(std::make_pair(transition, row));
+    mem_backend_->OnURLVisited(nullptr, url_row, new_visit);
+    url_visited_notifications_.push_back(std::make_pair(url_row, new_visit));
   }
 
   void NotifyURLsModified(const URLRows& changed_urls) {
@@ -341,10 +335,9 @@ void HistoryBackendTestDelegate::NotifyFaviconsChanged(
   test_->NotifyFaviconsChanged(page_urls, icon_url);
 }
 
-void HistoryBackendTestDelegate::NotifyURLVisited(ui::PageTransition transition,
-                                                  const URLRow& row,
-                                                  base::Time visit_time) {
-  test_->NotifyURLVisited(transition, row, visit_time);
+void HistoryBackendTestDelegate::NotifyURLVisited(const URLRow& url_row,
+                                                  const VisitRow& new_visit) {
+  test_->NotifyURLVisited(url_row, new_visit);
 }
 
 void HistoryBackendTestDelegate::NotifyURLsModified(
@@ -1148,7 +1141,7 @@ TEST_F(HistoryBackendTest, FormSubmitRedirect) {
   ASSERT_EQ(1, num_url_visited_notifications());
   const URLVisitedList& visited_url_list = url_visited_notifications();
   ASSERT_EQ(1u, visited_url_list.size());
-  const URLRow& visited_url = visited_url_list[0].second;
+  const URLRow& visited_url = visited_url_list[0].first;
   EXPECT_EQ(page1_title, visited_url.title());
   ClearBroadcastedNotifications();
 
@@ -1165,7 +1158,7 @@ TEST_F(HistoryBackendTest, FormSubmitRedirect) {
   ASSERT_EQ(1, num_url_visited_notifications());
   const URLVisitedList& visited_url_list2 = url_visited_notifications();
   ASSERT_EQ(1u, visited_url_list2.size());
-  const URLRow& visited_url2 = visited_url_list2[0].second;
+  const URLRow& visited_url2 = visited_url_list2[0].first;
   EXPECT_EQ(page2_title, visited_url2.title());
 }
 
@@ -1610,20 +1603,23 @@ TEST_F(HistoryBackendTest, AddPageVisitFiresNotificationWithCorrectDetails) {
   // Expect that HistoryServiceObserver::OnURLVisited has been called 3 times,
   // and that each time the URLRows have the correct URLs and IDs set.
   ASSERT_EQ(3, num_url_visited_notifications());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(url_visited_notifications()[0].first,
-                                           ui::PAGE_TRANSITION_LINK));
-  EXPECT_EQ(stored_row1.id(), url_visited_notifications()[0].second.id());
-  EXPECT_EQ(stored_row1.url(), url_visited_notifications()[0].second.url());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      url_visited_notifications()[0].second.transition,
+      ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(stored_row1.id(), url_visited_notifications()[0].first.id());
+  EXPECT_EQ(stored_row1.url(), url_visited_notifications()[0].first.url());
 
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(url_visited_notifications()[1].first,
-                                           ui::PAGE_TRANSITION_TYPED));
-  EXPECT_EQ(stored_row2.id(), url_visited_notifications()[1].second.id());
-  EXPECT_EQ(stored_row2.url(), url_visited_notifications()[1].second.url());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      url_visited_notifications()[1].second.transition,
+      ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(stored_row2.id(), url_visited_notifications()[1].first.id());
+  EXPECT_EQ(stored_row2.url(), url_visited_notifications()[1].first.url());
 
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(url_visited_notifications()[2].first,
-                                           ui::PAGE_TRANSITION_TYPED));
-  EXPECT_EQ(stored_row2.id(), url_visited_notifications()[2].second.id());
-  EXPECT_EQ(stored_row2.url(), url_visited_notifications()[2].second.url());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      url_visited_notifications()[2].second.transition,
+      ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(stored_row2.id(), url_visited_notifications()[2].first.id());
+  EXPECT_EQ(stored_row2.url(), url_visited_notifications()[2].first.url());
 }
 
 TEST_F(HistoryBackendTest, AddPageArgsSource) {
@@ -3694,18 +3690,18 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
             (std::pair<URLID, VisitID>{2, 2}));
   ASSERT_EQ(add_url_and_visit("http://1.com/"),
             (std::pair<URLID, VisitID>{1, 3}));
-  backend_->AddContextAnnotationsForVisit(1, {true});
-  backend_->AddContextAnnotationsForVisit(3, {false});
-  backend_->AddContextAnnotationsForVisit(2, {true});
+  backend_->AddContextAnnotationsForVisit(1, MakeContextAnnotations(true));
+  backend_->AddContextAnnotationsForVisit(3, MakeContextAnnotations(false));
+  backend_->AddContextAnnotationsForVisit(2, MakeContextAnnotations(true));
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
 
   // Annotated visits should have a visit IDs.
-  EXPECT_DCHECK_DEATH(backend_->AddContextAnnotationsForVisit(0, {true}));
+  EXPECT_DCHECK_DEATH(
+      backend_->AddContextAnnotationsForVisit(0, MakeContextAnnotations(true)));
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
 
   // `GetAnnotatedVisits()` should still succeed to fetch visits that lack
   // annotations. They just won't have annotations attached.
-  backend_->AddContextAnnotationsForVisit(4, {true});
   EXPECT_EQ(add_url_and_visit("http://3.com/"),
             (std::pair<URLID, VisitID>{3, 4}));
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 4u);
@@ -3714,7 +3710,7 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   EXPECT_EQ(add_url_and_visit("http://4.com/"),
             (std::pair<URLID, VisitID>{4, 5}));
   delete_visit(5);
-  backend_->AddContextAnnotationsForVisit(5, {true});
+  backend_->AddContextAnnotationsForVisit(5, MakeContextAnnotations(true));
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 4u);
 
   // Verify only the correct annotated visits are retrieved ordered recent
@@ -3758,6 +3754,68 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   EXPECT_EQ(annotated_visits[0].visit_row.visit_id, 1);
   EXPECT_EQ(annotated_visits[0].visit_row.url_id, 1);
   EXPECT_EQ(annotated_visits[0].context_annotations.omnibox_url_copied, true);
+}
+
+TEST_F(HistoryBackendTest, PreservesAllContextAnnotationsFields) {
+  auto [url_id, visit_id] = backend_->AddPageVisit(
+      GURL("https://url.com"), base::Time::Now(), /*referring_visit=*/0,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_CHAIN_START |
+                                ui::PAGE_TRANSITION_CHAIN_END),
+      /*hidden=*/false, SOURCE_BROWSED, /*should_increment_typed_count=*/true,
+      /*opener_visit=*/0);
+
+  // Add context annotations with non-default values for all fields.
+  VisitContextAnnotations annotations_in;
+  annotations_in.immediate_fields.browser_type = 1;
+  annotations_in.immediate_fields.window_id = SessionID::FromSerializedValue(2);
+  annotations_in.immediate_fields.tab_id = SessionID::FromSerializedValue(3);
+  annotations_in.immediate_fields.task_id = 4;
+  annotations_in.immediate_fields.root_task_id = 5;
+  annotations_in.immediate_fields.parent_task_id = 6;
+  annotations_in.immediate_fields.response_code = 200;
+  annotations_in.omnibox_url_copied = true;
+  annotations_in.is_existing_part_of_tab_group = true;
+  annotations_in.is_placed_in_tab_group = true;
+  annotations_in.is_existing_bookmark = true;
+  annotations_in.is_new_bookmark = true;
+  annotations_in.is_ntp_custom_link = true;
+  annotations_in.duration_since_last_visit = base::Seconds(7);
+  annotations_in.page_end_reason = 8;
+  annotations_in.duration_since_last_visit = base::Seconds(9);
+
+  backend_->AddContextAnnotationsForVisit(visit_id, annotations_in);
+
+  // Verify that we can read all the fields back from the DB.
+  history::QueryOptions query_options;
+  query_options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  std::vector<AnnotatedVisit> annotated_visits =
+      backend_->GetAnnotatedVisits(query_options);
+  ASSERT_EQ(annotated_visits.size(), 1u);
+
+  VisitContextAnnotations annotations_out =
+      annotated_visits[0].context_annotations;
+  EXPECT_EQ(annotations_in, annotations_out);
+}
+
+TEST_F(HistoryBackendTest, FindMostRecentClusteredTime) {
+  // Should return `Min()` when there are no clusters
+  EXPECT_EQ(backend_->FindMostRecentClusteredTime(), base::Time::Min());
+
+  // Add 1 cluster with multiple visits.
+  AddAnnotatedVisit(50);
+  AddAnnotatedVisit(20);
+  AddAnnotatedVisit(60);
+  backend_->ReplaceClusters({}, CreateClusters({{1, 2, 3}}));
+
+  // Should return the max time across all visits in the cluster.
+  EXPECT_EQ(backend_->FindMostRecentClusteredTime(), GetRelativeTime(20));
+
+  // Add another cluster.
+  backend_->ReplaceClusters({}, CreateClusters({{1}}));
+
+  // Should return the max time across all clusters.
+  EXPECT_EQ(backend_->FindMostRecentClusteredTime(), GetRelativeTime(20));
 }
 
 TEST_F(HistoryBackendTest, ReplaceClusters) {
@@ -3850,16 +3908,50 @@ TEST_F(HistoryBackendTest, GetCluster) {
   // returned.
   ClusterVisit visit_3;
   visit_3.annotated_visit.visit_row.visit_id = 3;
-  backend_->db_->AddClusters(
-      {{0, {visit_1, visit_2, visit_3}, {}, false, u"label"}});
 
-  const auto cluster = backend_->GetCluster(1);
+  ClusterKeywordData keyword_data_1 = {
+      ClusterKeywordData::ClusterKeywordType::kEntityAlias,
+      .4,
+      {"entity1", "entity2"}};
+  ClusterKeywordData keyword_data_2 = {
+      ClusterKeywordData::ClusterKeywordType::kEntityCategory, .6, {}};
+
+  backend_->db_->AddClusters(
+      {{0,
+        {visit_1, visit_2, visit_3},
+        {{u"keyword1", keyword_data_1}, {u"keyword2", keyword_data_2}},
+        false,
+        u"label"}});
+
+  auto cluster = backend_->GetCluster(1, true);
   VerifyCluster(cluster, {1, {2, 1}});
   EXPECT_EQ(cluster.cluster_id, 1);
   EXPECT_EQ(cluster.label, u"label");
   EXPECT_EQ(cluster.visits[1].url_for_display, u"url_for_display");
+  EXPECT_EQ(cluster.keyword_to_data_map.size(), 2u);
+  EXPECT_EQ(cluster.keyword_to_data_map[u"keyword1"].type,
+            ClusterKeywordData::ClusterKeywordType::kEntityAlias);
+  EXPECT_EQ(cluster.keyword_to_data_map[u"keyword1"].score, .4f);
+  // Only the 1st keyword entity should be preserved.
+  EXPECT_THAT(cluster.keyword_to_data_map[u"keyword1"].entity_collections,
+              UnorderedElementsAre("entity1"));
+  EXPECT_EQ(cluster.keyword_to_data_map[u"keyword2"].type,
+            ClusterKeywordData::ClusterKeywordType::kEntityCategory);
+  EXPECT_EQ(cluster.keyword_to_data_map[u"keyword2"].score, .6f);
+  EXPECT_TRUE(
+      cluster.keyword_to_data_map[u"keyword2"].entity_collections.empty());
 
-  VerifyCluster(backend_->GetCluster(3), {3});
+  // Verify keywords are not returned, but other info is, when the
+  // `include_keywords` param is false.
+  cluster = backend_->GetCluster(1, false);
+  VerifyCluster(cluster, {1, {2, 1}});
+  EXPECT_EQ(cluster.cluster_id, 1);
+  EXPECT_EQ(cluster.label, u"label");
+  EXPECT_EQ(cluster.visits[1].url_for_display, u"url_for_display");
+  EXPECT_TRUE(cluster.keyword_to_data_map.empty());
+
+  // Verify non-existent clusters aren't returned.
+  VerifyCluster(backend_->GetCluster(2, true), {0});
 }
 
 TEST_F(HistoryBackendTest, GetRedirectChainStart) {
@@ -3880,7 +3972,8 @@ TEST_F(HistoryBackendTest, GetRedirectChainStart) {
     auto ids = backend_->AddPageVisit(GURL(url), last_visit_time,
                                       referring_visit, transition, false,
                                       SOURCE_BROWSED, false, opener_visit);
-    backend_->AddContextAnnotationsForVisit(ids.second, {});
+    backend_->AddContextAnnotationsForVisit(ids.second,
+                                            VisitContextAnnotations());
   };
 
   // Navigate to 'google.com'.

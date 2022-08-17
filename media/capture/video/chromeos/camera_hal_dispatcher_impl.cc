@@ -23,6 +23,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -151,7 +152,8 @@ void FailedCameraHalServerCallbacks::CameraDeviceActivityChange(
     cros::mojom::CameraClientType type) {}
 
 void FailedCameraHalServerCallbacks::CameraPrivacySwitchStateChange(
-    cros::mojom::CameraPrivacySwitchState state) {}
+    cros::mojom::CameraPrivacySwitchState state,
+    int32_t camera_id) {}
 
 void FailedCameraHalServerCallbacks::CameraSWPrivacySwitchStateChange(
     cros::mojom::CameraPrivacySwitchState state) {}
@@ -330,14 +332,13 @@ void CameraHalDispatcherImpl::RemoveActiveClientObserver(
 cros::mojom::CameraPrivacySwitchState
 CameraHalDispatcherImpl::AddCameraPrivacySwitchObserver(
     CameraPrivacySwitchObserver* observer) {
-  base::AutoLock lock(privacy_switch_lock_);
   privacy_switch_observers_->AddObserver(observer);
-  return current_privacy_switch_state_;
+  base::AutoLock lock(hw_privacy_switch_lock_);
+  return current_hw_privacy_switch_state_;
 }
 
 void CameraHalDispatcherImpl::RemoveCameraPrivacySwitchObserver(
     CameraPrivacySwitchObserver* observer) {
-  base::AutoLock lock(privacy_switch_lock_);
   privacy_switch_observers_->RemoveObserver(observer);
 }
 
@@ -375,20 +376,6 @@ void CameraHalDispatcherImpl::SetCameraSWPrivacySwitchState(
           base::Unretained(this), state));
 }
 
-cros::mojom::CameraPrivacySwitchState
-CameraHalDispatcherImpl::AddCameraSWPrivacySwitchObserver(
-    CameraPrivacySwitchObserver* observer) {
-  base::AutoLock lock(sw_privacy_switch_lock_);
-  sw_privacy_switch_observers_->AddObserver(observer);
-  return current_sw_privacy_switch_state_;
-}
-
-void CameraHalDispatcherImpl::RemoveCameraSWPrivacySwitchObserver(
-    CameraPrivacySwitchObserver* observer) {
-  base::AutoLock lock(sw_privacy_switch_lock_);
-  sw_privacy_switch_observers_->RemoveObserver(observer);
-}
-
 void CameraHalDispatcherImpl::RegisterPluginVmToken(
     const base::UnguessableToken& token) {
   token_manager_.RegisterPluginVmToken(token);
@@ -410,13 +397,7 @@ CameraHalDispatcherImpl::CameraHalDispatcherImpl()
       camera_hal_server_callbacks_(this),
       active_client_observers_(
           new base::ObserverListThreadSafe<CameraActiveClientObserver>()),
-      current_privacy_switch_state_(
-          cros::mojom::CameraPrivacySwitchState::UNKNOWN),
-      current_sw_privacy_switch_state_(
-          cros::mojom::CameraPrivacySwitchState::UNKNOWN),
       privacy_switch_observers_(
-          new base::ObserverListThreadSafe<CameraPrivacySwitchObserver>()),
-      sw_privacy_switch_observers_(
           new base::ObserverListThreadSafe<CameraPrivacySwitchObserver>()) {}
 
 CameraHalDispatcherImpl::~CameraHalDispatcherImpl() {
@@ -460,6 +441,10 @@ void CameraHalDispatcherImpl::RegisterServerWithToken(
   camera_hal_server_.set_disconnect_handler(
       base::BindOnce(&CameraHalDispatcherImpl::OnCameraHalServerConnectionError,
                      base::Unretained(this)));
+  if (auto_framing_supported_callback_) {
+    camera_hal_server_->GetAutoFramingSupported(
+        std::move(auto_framing_supported_callback_));
+  }
   camera_hal_server_->SetAutoFramingState(current_auto_framing_state_);
   CAMERA_LOG(EVENT) << "Camera HAL server registered";
   std::move(callback).Run(
@@ -567,31 +552,30 @@ void CameraHalDispatcherImpl::CameraDeviceActivityChange(
 }
 
 void CameraHalDispatcherImpl::CameraPrivacySwitchStateChange(
-    cros::mojom::CameraPrivacySwitchState state) {
+    cros::mojom::CameraPrivacySwitchState state,
+    int32_t camera_id) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
-  base::AutoLock lock(privacy_switch_lock_);
-  current_privacy_switch_state_ = state;
+  base::AutoLock lock(hw_privacy_switch_lock_);
+  current_hw_privacy_switch_state_ = state;
   privacy_switch_observers_->Notify(
       FROM_HERE,
-      &CameraPrivacySwitchObserver::OnCameraPrivacySwitchStatusChanged,
-      current_privacy_switch_state_);
+      &CameraPrivacySwitchObserver::OnCameraHWPrivacySwitchStatusChanged,
+      camera_id, current_hw_privacy_switch_state_);
   CAMERA_LOG(EVENT) << "Camera privacy switch state changed: "
-                    << current_privacy_switch_state_;
+                    << current_hw_privacy_switch_state_;
 }
 
 void CameraHalDispatcherImpl::CameraSWPrivacySwitchStateChange(
     cros::mojom::CameraPrivacySwitchState state) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
-  base::AutoLock lock(sw_privacy_switch_lock_);
-  current_sw_privacy_switch_state_ = state;
-  sw_privacy_switch_observers_->Notify(
+  privacy_switch_observers_->Notify(
       FROM_HERE,
-      &CameraPrivacySwitchObserver::OnCameraPrivacySwitchStatusChanged,
-      current_sw_privacy_switch_state_);
+      &CameraPrivacySwitchObserver::OnCameraSWPrivacySwitchStatusChanged,
+      state);
   CAMERA_LOG(EVENT) << "Camera software privacy switch state changed: "
-                    << current_sw_privacy_switch_state_;
+                    << state;
 }
 
 base::UnguessableToken CameraHalDispatcherImpl::GetTokenForTrustedClient(
@@ -816,13 +800,13 @@ void CameraHalDispatcherImpl::OnCameraHalServerConnectionError() {
     opened_camera_id_map_.clear();
   }
 
-  base::AutoLock lock(privacy_switch_lock_);
-  current_privacy_switch_state_ =
+  base::AutoLock lock(hw_privacy_switch_lock_);
+  current_hw_privacy_switch_state_ =
       cros::mojom::CameraPrivacySwitchState::UNKNOWN;
   privacy_switch_observers_->Notify(
       FROM_HERE,
-      &CameraPrivacySwitchObserver::OnCameraPrivacySwitchStatusChanged,
-      current_privacy_switch_state_);
+      &CameraPrivacySwitchObserver::OnCameraHWPrivacySwitchStatusChanged, -1,
+      current_hw_privacy_switch_state_);
 }
 
 void CameraHalDispatcherImpl::OnCameraHalClientConnectionError(
@@ -952,6 +936,38 @@ void CameraHalDispatcherImpl::SetAutoFramingStateOnProxyThread(
   if (camera_hal_server_) {
     camera_hal_server_->SetAutoFramingState(state);
   }
+}
+
+void CameraHalDispatcherImpl::GetAutoFramingSupported(
+    cros::mojom::CameraHalServer::GetAutoFramingSupportedCallback callback) {
+  if (!proxy_thread_.IsRunning()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  // Unretained reference is safe here because CameraHalDispatcherImpl owns
+  // |proxy_thread_|.
+  proxy_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CameraHalDispatcherImpl::GetAutoFramingSupportedOnProxyThread,
+          base::Unretained(this),
+          // Make sure to hop back to the current thread for the reply.
+          base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+                             std::move(callback), FROM_HERE)));
+}
+
+void CameraHalDispatcherImpl::GetAutoFramingSupportedOnProxyThread(
+    cros::mojom::CameraHalServer::GetAutoFramingSupportedCallback callback) {
+  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+  if (!camera_hal_server_) {
+    // TODO(pihsun): Currently only AutozoomControllerImpl calls
+    // GetAutoFramingSupported. Support multiple call to the function using
+    // CallbackList if it's needed.
+    DCHECK(!auto_framing_supported_callback_);
+    auto_framing_supported_callback_ = std::move(callback);
+    return;
+  }
+  camera_hal_server_->GetAutoFramingSupported(std::move(callback));
 }
 
 TokenManager* CameraHalDispatcherImpl::GetTokenManagerForTesting() {

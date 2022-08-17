@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/login/auth/auth_session_authenticator.h"
@@ -127,10 +126,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -480,12 +479,19 @@ bool MaybeShowNewTermsAfterUpdateToFlex(Profile* profile) {
   // Check if the device has been recently updated from CloudReady to show new
   // license agreement and data collection consent. This applies only for
   // existing users of not managed reven boards.
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!switches::IsRevenBranding() || user_manager->IsCurrentUserNew()) {
+    return false;
+  }
+  // Reven devices can be updated from non-branded versions to Flex. Make sure
+  // that the EULA is marked as accepted when reven device is managed. For
+  // managed devices all the terms are accepted by the admin so we can simply
+  // mark it here.
   policy::BrowserPolicyConnectorAsh* connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   bool is_device_managed = connector->IsDeviceEnterpriseManaged();
-  if (!switches::IsRevenBranding() || user_manager->IsCurrentUserNew() ||
-      is_device_managed) {
+  if (is_device_managed) {
+    StartupUtils::MarkEulaAccepted();
     return false;
   }
   if (!IsRevenUpdatedToFlex())
@@ -750,11 +756,6 @@ void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
 void UserSessionManager::PerformPostUserLoggedInActions() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->GetLoggedInUsers().size() == 1) {
-    if (network_portal_detector::IsInitialized()) {
-      network_portal_detector::GetInstance()->SetStrategy(
-          PortalDetectorStrategy::STRATEGY_ID_SESSION);
-    }
-
     InitNonKioskExtensionFeaturesSessionType(user_manager->GetPrimaryUser());
   }
 }
@@ -850,29 +851,6 @@ void UserSessionManager::SetFirstLoginPrefs(
   VLOG(1) << "Setting first login prefs";
   InitLocaleAndInputMethodsForNewUser(this, profile, public_session_locale,
                                       public_session_input_method);
-}
-
-bool UserSessionManager::GetAppModeChromeClientOAuthInfo(
-    std::string* chrome_client_id,
-    std::string* chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode() || chrome_client_id_.empty() ||
-      chrome_client_secret_.empty()) {
-    return false;
-  }
-
-  *chrome_client_id = chrome_client_id_;
-  *chrome_client_secret = chrome_client_secret_;
-  return true;
-}
-
-void UserSessionManager::SetAppModeChromeClientOAuthInfo(
-    const std::string& chrome_client_id,
-    const std::string& chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode())
-    return;
-
-  chrome_client_id_ = chrome_client_id;
-  chrome_client_secret_ = chrome_client_secret;
 }
 
 void UserSessionManager::DoBrowserLaunch(Profile* profile) {
@@ -1716,6 +1694,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       PersistChallengeResponseKeys(user_context_);
       login::SecurityTokenSessionControllerFactory::GetForBrowserContext(
           profile)
+          ->OnChallengeResponseKeysUpdated();
+      login::SecurityTokenSessionControllerFactory::GetForBrowserContext(
+          ProfileHelper::GetSigninProfile())
           ->OnChallengeResponseKeysUpdated();
     }
 

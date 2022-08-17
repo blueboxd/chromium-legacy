@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" />ଟି ଆଇଟମ୍‍କୁ ଡିଲିଟ୍ କରାଯାଉଛି...</translation>
 <translation id="1049926623896334335">Word ଡକ୍ୟୁମେଣ୍ଟ</translation>
 <translation id="1056775291175587022">ନେଟୱାର୍କ ନାହିଁ</translation>
+<translation id="1056898198331236512">ଚେତାବନୀ</translation>
 <translation id="1060368002126861100"><ph name="APP_NAME" /> ମାଧ୍ୟମରେ ଫାଇଲଗୁଡ଼ିକ ଖୋଲିବାକୁ, ପ୍ରଥମେ ସେଗୁଡ଼ିକୁ Windows ଫାଇଲ୍ ଫୋଲ୍ଡରକୁ ମୁଭ୍ କରନ୍ତୁ।</translation>
 <translation id="1062407476771304334">ପ୍ରତିସ୍ଥାପନ କରନ୍ତୁ</translation>
 <translation id="1119447706177454957">ଇଣ୍ଟର୍ନଲ୍‌ ତ୍ରୁଟି</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">ନେଟ୍‌ୱର୍କ ଦ୍ବାରା ପ୍ରମାଣିକିକରଣ ସର୍ଟିଫିକେଟ୍‌ ଖାରଜ କରାଯାଇଛି</translation>
 <translation id="255937426064304553">US ଆନ୍ତର୍ଜାତିକ</translation>
 <translation id="2563185590376525700">ବେଙ୍ଗ</translation>
-<translation id="2570012981255377263">ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ଫାଇଲଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="2578394532502990878">ତାମିଲ ଫୋନେଟିକ୍</translation>
 <translation id="2579959351793446050">ଓଡ଼ିଆ</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" />ଟିରୁ <ph name="NETWORK_INDEX" /> ନମ୍ବର ନେଟୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ସିଗନାଲ କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ବ୍ଲକ କରାଯାଇଛି, ବିବରଣୀ</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">ଅବୈଧ PIN। ଆପଣଙ୍କ ପାଖରେ <ph name="RETRIES" />ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି।</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ହାର୍ଡୱେୟାର-ସମର୍ଥିତ)</translation>
 <translation id="3188257591659621405">ମୋ ଫାଇଲ୍‌ଗୁଡ଼ିକ</translation>
+<translation id="3194553149358267393">ବର୍ତ୍ତମାନର କୌଣସି ଅଡିଓ ଫାଇଲ ନାହିଁ</translation>
 <translation id="3197563288998582412">US ଡିଭୋରାକ୍</translation>
 <translation id="3202131003361292969">ପାଥ୍</translation>
 <translation id="3205852408225871810">ପର୍ତ୍ତୁଗୀଜ୍ (ବ୍ରାଜିଲ୍)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">ଏବେ ନୁହେଁ</translation>
 <translation id="3486821258960016770">ମଙ୍ଗୋଲିଆନ୍</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />ଟି ତ୍ରୁଟି।</translation>
+<translation id="3495810061346586977">ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ନୀତି ଅନୁସାରେ ଏହି ଫାଇଲ ଗୋପନୀୟ ଏବଂ ପ୍ରତିବନ୍ଧକଗୁଡ଼ିକର ଅଧୀନ ଅଟେ। <ph name="BEGIN_LINK_HELP" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" /> ସିଗ୍‌ନାଲ୍‌ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ବିବରଣୀ</translation>
 <translation id="3522708245912499433">ପର୍ତ୍ତୁଗୀଜ୍</translation>
 <translation id="3524311639100184459">ସାବଧାନ: ଏହି ଫାଇଲଗୁଡ଼ିକ ଅସ୍ଥାୟୀ ଅଟେ ଏବଂ ଡିସ୍କରେ ଜାଗା ଖାଲି କରିବା ପାଇଁ ଏଗୁଡ଼ିକ ସ୍ୱଚାଳିତ ଭାବେ ଡିଲିଟ୍ ହୋଇଯାଇପାରେ।  <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ଫୋଲ୍ଡର୍</translation>
+<translation id="3548125359243647069">ଏକ ଭୁଲ PIN ବହୁତ ଥର ଲେଖାଯାଇଛି।</translation>
 <translation id="3549797760399244642">drive.google.comକୁ ଯାଆନ୍ତୁ …</translation>
 <translation id="3553048479571901246"><ph name="APP_NAME" /> ମାଧ୍ୟମରେ ଫାଇଲଗୁଡ଼ିକ ଖୋଲିବାକୁ, ପ୍ରଥମେ ସେଗୁଡ଼ିକୁ Windows ଫାଇଲ୍ ଫୋଲ୍ଡରରେ କପି କରନ୍ତୁ।</translation>
 <translation id="3556731189587832921">ଆନ୍ତର୍ଜାତୀୟ PC କୀବୋର୍ଡ ସହ ଇଂରାଜୀ (US)</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">ତୁର୍କୀସ୍-F</translation>
 <translation id="3616113530831147358">ଅଡିଓ</translation>
 <translation id="3619115746895587757">କ୍ୟାପାଚିନୋ</translation>
+<translation id="3619593063686672873">ବର୍ତ୍ତମାନର କୌଣସି ଭିଡିଓ ନାହିଁ</translation>
 <translation id="3620292326130836921">ସମସ୍ତ ବ୍ୟାକ୍‍ଅପ୍‍ ନିଆଯାଇଛି!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> ଆପଣଙ୍କ ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‌ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ବିବରଣୀ</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍ ମୁଭ୍ କରାଯାଇଛି।</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ଫାଇଲ୍‍</translation>
 <translation id="457386861538956877">ଅଧିକ...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" />କୁ ବଛାଯାଇଛି।</translation>
+<translation id="4583436353463424810">ବର୍ତ୍ତମାନର କୌଣସି ଡକ୍ୟୁମେଣ୍ଟ ନାହିଁ</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> ପାଇଁ ଫଳାଫଳ ଦେଖାଉଛି।</translation>
 <translation id="4599600860674643278">ଫିଲ୍ଟର ରିସେଟ କରାଯାଇଛି।</translation>
 <translation id="4603392156942865207"><ph name="FOLDER_NAME" />କୁ <ph name="FILE_NAME" /> କପି କରାଯାଉଛି</translation>
@@ -485,7 +490,9 @@
 <translation id="5159560892333415631">ଟ୍ରାସକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="5163869187418756376">ସେୟାର୍ ହେଇପାରିଲା ନାହିଁ ନିଜ ସଂଯୋଗ ଯାଞ୍ଚ କରି ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="516592729076796170">US ପ୍ରୋଗ୍ରାମର୍ ଡିଭୋରାକ୍</translation>
+<translation id="5172749059808361023">ପ୍ରତିବନ୍ଧକ ବିବରଣୀ</translation>
 <translation id="5177526793333269655">ଥମ୍ଵନେଲ୍ ଦର୍ଶନ</translation>
+<translation id="5181896909298187506">ବର୍ତ୍ତମାନର କୌଣସି ଫାଇଲ ନାହିଁ</translation>
 <translation id="5194713942430106590">କଲମ୍‍କୁ ସାନରୁ ବଡ଼ କ୍ରମରେ ସଜାଇବା ପାଇଁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="5211614973734216083">ଫାରୋସି</translation>
 <translation id="5218183485292899140">ସୁଇସ୍ ଫ୍ରେଞ୍ଚ</translation>
@@ -535,7 +542,6 @@
 <translation id="5625294776298156701">ତାମିଲ99 କୀବୋର୍ଡ ସହ ତାମିଲ</translation>
 <translation id="5633226425545095130">ଏହି ଆଇଟମକୁ ମୁଭ୍ କରିବା ଫଳରେ, ସେୟାର୍ କରାଯାଇଥିବା ଫୋଲ୍ଡର୍ '<ph name="DESTINATION_NAME" />'କୁ ଦେଖିପାରୁଥିବା ସମସ୍ତ ଲୋକଙ୍କ ସହିତ ଏହା ସେୟାର୍ ହେବ।</translation>
 <translation id="5649768706273821470">ଶୁଣନ୍ତୁ</translation>
-<translation id="5665074015635552640">ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ଭିଡିଓଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="5669691691057771421">ନୂଆ ପିନ୍‍ ଲେଖନ୍ତୁ</translation>
 <translation id="5678784840044122290">Linux ଆପ୍ଲିକେସନ୍‌ଟି ଆପଣଙ୍କର ଟର୍ମିନାଲ୍ ଭିତରେ ଉପଲବ୍ଧ ହେବ ଏବଂ ଆପଣଙ୍କର ଲଞ୍ଚର୍‌ରେ ହୁଏତ ଏକ ଆଇକନ୍ ମଧ୍ୟ ଦେଖାଇବ।</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />ଏକ ଆର୍କାଇଭ୍‍ କିମ୍ବା ଭର୍ଚୁଆଲ୍‌ ଡିକ୍ସରୁ ବିଚ୍ଛିନ୍ନ କରାଯାଇପାରିବ ନାହିଁ<ph name="END_BOLD" />
@@ -608,6 +614,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="PHONE_NAME" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଫୋନ୍‌ ବ୍ୟାଟେରୀ <ph name="BATTERY_STATUS" />%, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="6269630227984243955">ମଲୟ</translation>
 <translation id="6287852322318138013">ଏହି ଫାଇଲ୍ ଖୋଲିବା ପାଇଁ ଗୋଟିଏ ଆପ୍ ଚୟନ କରନ୍ତୁ</translation>
+<translation id="6295542640242147836">SIMକୁ ଲକ କରନ୍ତୁ</translation>
 <translation id="6296410173147755564">ଅବୈଧ PUK</translation>
 <translation id="6312403991423642364">ଅଜଣା ନେଟ୍‌ୱର୍କ ତ୍ରୁଟି</translation>
 <translation id="6317608858038767920">କଷ୍ଟମ୍ ନେମ୍‌ସର୍ଭର୍ <ph name="INPUT_INDEX" /></translation>
@@ -680,7 +687,6 @@
     <ph name="FILE_COUNT" />ଟି ମିଳିଲା</translation>
 <translation id="6935521024859866267">ଓଲଟା</translation>
 <translation id="6943836128787782965">HTTP ବିଫଳ ହୋଇଛି</translation>
-<translation id="6945604978460872381">ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ଡକ୍ୟୁମେଣ୍ଟଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="6949408524333579394">ସର୍ବିଆନ୍ ଟ୍ରାନ୍ସଲିଟ୍ରେସନ୍</translation>
 <translation id="6954309393500027528">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ଏହି ଫାଇଲକୁ ପେଷ୍ଟ କରିବା ସୁବିଧାକୁ ବ୍ଲକ କରାଯାଇଛି</translation>
 <translation id="6960565108681981554">ସକ୍ରିୟ କରାଯାଇନାହିଁ। ଆପଣଙ୍କ କ୍ୟାରିଅର୍ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
@@ -717,6 +723,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">ଏପରି ଭାବରେ ଫାଇଲ୍‌ ସେଭ୍‌ କରନ୍ତୁ</translation>
 <translation id="7229570126336867161">EVDO ଆବଶ୍ୟକ କରେ</translation>
+<translation id="7230898482850090046">"SIMକୁ ଲକ କରନ୍ତୁ" ସେଟିଂ ବନ୍ଦ କରିବାକୁ ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟର ଆପଣଙ୍କୁ ଅନୁରୋଧ କରିଛନ୍ତି</translation>
 <translation id="7238097264433196391">ଡ୍ରାଇଭ୍ ନାମ</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, ବିବରଣୀ</translation>
 <translation id="7246947237293279874">FTP ପ୍ରୋକ୍ସି</translation>
@@ -728,7 +735,6 @@
 <translation id="7295662345261934369">ଅନ୍ୟମାନଙ୍କ ସହ ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="7297443947353982503">ଉପଯୋଗକର୍ତ୍ତାନାମ /ପାସ୍‌ୱର୍ଡ ଭୁଲ ଅଛି କିମ୍ବା EAP-ପ୍ରାମାଣିକରଣ ବିଫଳ ହେଲା</translation>
 <translation id="7309413087278791451">ଜର୍ମାନ (ବେଲଜିୟମ୍)</translation>
-<translation id="7313374447885864533">ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ଅଡିଓ ଫାଇଲଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="7339898014177206373">ନୂଆ ୱିଣ୍ଡୋ</translation>
 <translation id="7343393116438664539">ଭିଏତନାମିଜ୍ ଟେଲେକ୍ସ</translation>
 <translation id="7357762654218998920">ଏହି ଫାଇଲର ପ୍ରକାର ସମର୍ଥିତ ନୁହେଁ। ChromeOSରେ ଫାଇଲଗୁଡ଼ିକୁ ଖୋଲିବା ବିଷୟରେ <ph name="BEGIN_LINK_HELP" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK_HELP" />।</translation>
@@ -738,6 +744,7 @@
 <translation id="7408870451288633753">ଚେକ୍</translation>
 <translation id="7417453074306512035">ଇଥିଓପିକ୍ କୀବୋର୍ଡ</translation>
 <translation id="7417705661718309329">Google ମ୍ୟାପ୍‌</translation>
+<translation id="7458955835361612701">ବର୍ତ୍ତମାନର କୌଣସି ଇମେଜ ନାହିଁ</translation>
 <translation id="7460898608667578234">ୟୁକ୍ରାନିଆନ୍</translation>
 <translation id="7469894403370665791">ସ୍ୱଚାଳିତ ଭାବେ ଏହି ନେଟ୍‍ୱର୍କ ସହ ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="7486315294984620427">Parallels Desktopରେ ଫାଇଲଗୁଡ଼ିକୁ ଡ୍ରପ୍ କରିବା ପାଇଁ ଫାଇଲକୁ Windows ଫାଇଲ୍ ଫୋଲ୍ଡରରେ କପି କରିବା ଆବଶ୍ୟକ।</translation>
@@ -749,6 +756,7 @@
 <translation id="7505167922889582512">ଲୁଚିଥିବା ଫାଇଲ୍ ଦେଖାନ୍ତୁ</translation>
 <translation id="7514365320538308">ଡାଉନ୍‌‌ଲୋଡ୍‌ କରନ୍ତୁ</translation>
 <translation id="751507702149411736">ବେଲାରଷୀୟ</translation>
+<translation id="7521790570754130607">ମୋବାଇଲ ଡାଟା ବ୍ୟବହାର କରିବା ପାଇଁ ଏକ PIN ଆବଶ୍ୟକ</translation>
 <translation id="7532029025027028521">ପାର୍ସି ଟ୍ରାନ୍ସଲିଟ୍ରେସନ୍</translation>
 <translation id="7544830582642184299">ଆପଣଙ୍କର Google Driveରେ ଥିବା ଫାଇଲଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାକୁ Linux ଆପ୍ସକୁ ଅନୁମତି ଦିଅନ୍ତୁ। ପରିବର୍ତ୍ତନଗୁଡ଼ିକ ଆପଣଙ୍କ ଅନ୍ୟ ଡିଭାଇସଗୁଡ଼ିକ ସହିତ ସିଙ୍କ୍ ହୋଇଯିବ।</translation>
 <translation id="7547009467130558110">ସ୍ନିକର୍</translation>
@@ -773,6 +781,7 @@
 <translation id="76959938259365003">ଟ୍ରାସକୁ ଖାଲି କରିବାରେ ବିଫଳ ହୋଇଛି।</translation>
 <translation id="770015031906360009">ଗ୍ରୀକ୍</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> କପି କରାଯାଇଛି।</translation>
+<translation id="7708271999969613024">ଏହି ନେଟୱାର୍କ ବ୍ୟବହାର କରିବାକୁ ଆପଣଙ୍କୁ କ୍ୟାରିଅର ଦ୍ୱାରା ପ୍ରଦାନ କରାଯାଇଥିବା 8-ଅଙ୍କ ବିଶିଷ୍ଟ ବ୍ୟକ୍ତିଗତ ଅନବ୍ଲକ କରିବା କୀ (PUK) ଲେଖିବା ଆବଶ୍ୟକ।</translation>
 <translation id="7711920809702896782">ଛବି ସୂଚନା</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="7730494089396812859">କ୍ଲାଉଡ୍‌ ବ୍ୟାକ୍‍ଅପ୍‌ ବିବରଣୀ ଦେଖାନ୍ତୁ</translation>
@@ -858,7 +867,6 @@
 <translation id="8342318071240498787">ସମାନ ନାମ ଥିବା ଗୋଟିଏ ଫାଇଲ୍ କିମ୍ବା ଡିରେକ୍ଟୋରୀ ପୂର୍ବରୁ ବିଦ୍ୟମାନ ଅଛି।</translation>
 <translation id="8372369524088641025">ଖରାପ WEP କୀ</translation>
 <translation id="8372852072747894550">ଗ୍ରୀକ୍</translation>
-<translation id="8384716930968677505">ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ଇମେଜଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="8386903983509584791">ସ୍କାନ୍ ସମ୍ପୂର୍ଣ୍ଣ ହେଲା</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" />କୁ ଏକ୍ସଟ୍ରାକ୍ଟ କରାଯାଇଛି।</translation>
 <translation id="8395901698320285466">ପରିମେୟ ପରିସର</translation>
@@ -868,6 +876,7 @@
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">ଅନୁପଲବ୍ଧ ଥିବା SIM କାର୍ଡ</translation>
 <translation id="8456681095658380701">ଅବୈଧ ନାମ</translation>
+<translation id="8457767749626250697">ଆପଣଙ୍କ SIMକୁ ଲକ କରାଯାଇଛି</translation>
 <translation id="8459404855768962328">ଏହି ଆଇଟମକୁ କପି କରିବା ଫଳରେ, ସେୟାର୍ କରାଯାଇଥିବା ଫୋଲ୍ଡର୍ '<ph name="DESTINATION_NAME" />'କୁ ଦେଖିପାରୁଥିବା ସମସ୍ତ ଲୋକଙ୍କ ସହିତ ଏହା ସେୟାର୍ ହେବ।</translation>
 <translation id="8461467696380332069">ସେଲ୍ଫରେ ଆପଣଙ୍କ ଫାଇଲଗୁଡ଼ିକୁ ଦ୍ରୁତ ଆକ୍ସେସ୍ କରିବା ପାଇଁ ଏକ ଫାଇଲରେ ଡାହାଣ-କ୍ଲିକ୍ କରନ୍ତୁ ଏବଂ "ସେଲ୍ଫରେ ପିନ୍ କରନ୍ତୁ"କୁ ଚୟନ କରନ୍ତୁ।</translation>
 <translation id="8461914792118322307">ପ୍ରକ୍ସି</translation>

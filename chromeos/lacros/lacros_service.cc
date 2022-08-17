@@ -35,6 +35,7 @@
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "chromeos/crosapi/mojom/device_oauth2_token_service.mojom.h"
 #include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "chromeos/crosapi/mojom/digital_goods.mojom.h"
 #include "chromeos/crosapi/mojom/dlp.mojom.h"
 #include "chromeos/crosapi/mojom/document_scan.mojom.h"
@@ -48,6 +49,7 @@
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
+#include "chromeos/crosapi/mojom/fullscreen_controller.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
@@ -70,6 +72,7 @@
 #include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "chromeos/crosapi/mojom/printing_metrics.mojom.h"
+#include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
 #include "chromeos/crosapi/mojom/resource_manager.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
@@ -173,9 +176,7 @@ LacrosService* LacrosService::Get() {
 }
 
 LacrosService::LacrosService()
-    :  // If crosapi is disabled, use the empty params.
-       // Otherwise, read the startup data from the inherited FD.
-      never_blocking_sequence_(base::ThreadPool::CreateSequencedTaskRunner(
+    : never_blocking_sequence_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       sequenced_state_(new LacrosServiceNeverBlockingState(),
@@ -290,6 +291,9 @@ LacrosService::LacrosService()
       &Crosapi::BindDeviceSettingsService,
       Crosapi::MethodMinVersions::kBindDeviceSettingsServiceMinVersion>();
   ConstructRemote<
+      crosapi::mojom::DiagnosticsService, &Crosapi::BindDiagnosticsService,
+      Crosapi::MethodMinVersions::kBindDiagnosticsServiceMinVersion>();
+  ConstructRemote<
       crosapi::mojom::DigitalGoodsFactory, &Crosapi::BindDigitalGoodsFactory,
       Crosapi::MethodMinVersions::kBindDigitalGoodsFactoryMinVersion>();
   ConstructRemote<crosapi::mojom::Dlp, &Crosapi::BindDlp,
@@ -331,6 +335,9 @@ LacrosService::LacrosService()
       crosapi::mojom::ForceInstalledTracker,
       &crosapi::mojom::Crosapi::BindForceInstalledTracker,
       Crosapi::MethodMinVersions::kBindForceInstalledTrackerMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::FullscreenController, &Crosapi::BindFullscreenController,
+      Crosapi::MethodMinVersions::kBindFullscreenControllerMinVersion>();
   ConstructRemote<
       crosapi::mojom::GeolocationService,
       &crosapi::mojom::Crosapi::BindGeolocationService,
@@ -453,6 +460,10 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::TaskManager,
                   &crosapi::mojom::Crosapi::BindTaskManager,
                   Crosapi::MethodMinVersions::kBindTaskManagerMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::TelemetryProbeService,
+      &crosapi::mojom::Crosapi::BindTelemetryProbeService,
+      Crosapi::MethodMinVersions::kBindTelemetryProbeServiceMinVersion>();
   ConstructRemote<crosapi::mojom::TimeZoneService,
                   &crosapi::mojom::Crosapi::BindTimeZoneService,
                   Crosapi::MethodMinVersions::kBindTimeZoneServiceMinVersion>();

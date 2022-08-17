@@ -31,7 +31,7 @@
 #include "chromeos/ash/components/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -42,6 +42,7 @@ constexpr char kReasonUpdate[] = "Update";
 constexpr char kReasonUpdateIPConfig[] = "UpdateIPConfig";
 constexpr char kReasonUpdateDeviceIPConfig[] = "UpdateDeviceIPConfig";
 constexpr char kReasonTether[] = "Tether Change";
+constexpr char kReasonPortal[] = "Portal State Change";
 
 bool ConnectionStateChanged(const NetworkState* network,
                             const std::string& prev_connection_state) {
@@ -93,7 +94,7 @@ bool ShouldIncludeNetworkInList(const NetworkState* network_state,
 
   if (network_state->type() == shill::kTypeVPN) {
     if (network_state->GetVpnProviderType() == shill::kProviderIKEv2 &&
-        !base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
+        !base::FeatureList::IsEnabled(features::kEnableIkev2Vpn)) {
       return false;
     }
   }
@@ -567,12 +568,15 @@ void NetworkStateHandler::SetNetworkChromePortalState(
   NetworkState* network = GetModifiableNetworkState(service_path);
   if (!network)
     return;
+  NET_LOG(USER) << "Setting Chrome PortalState for "
+                << NetworkPathId(service_path) << " = " << portal_state;
   auto prev_portal_state = network->GetPortalState();
   network->set_chrome_portal_state(portal_state);
-  if (prev_portal_state == network->GetPortalState())
+  if (prev_portal_state == network->GetPortalState() ||
+      service_path != default_network_path_) {
     return;
-  network_list_sorted_ = false;
-  OnNetworkConnectionStateChanged(network);
+  }
+  NotifyDefaultNetworkChanged(kReasonPortal);
 }
 
 std::string NetworkStateHandler::FormattedHardwareAddressForType(
@@ -1621,7 +1625,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     ManagedState::ManagedType type,
     const std::string& path,
     const std::string& ip_config_path,
-    const base::Value& properties) {
+    base::Value properties) {
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     NetworkState* network = GetModifiableNetworkState(path);
     if (!network)
@@ -1636,7 +1640,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     DeviceState* device = GetModifiableDeviceState(path);
     if (!device)
       return;
-    device->IPConfigPropertiesChanged(ip_config_path, properties);
+    device->IPConfigPropertiesChanged(ip_config_path, std::move(properties));
     NotifyDevicePropertiesUpdated(device);
     if (!default_network_path_.empty()) {
       const NetworkState* default_network =
@@ -2071,10 +2075,12 @@ void NetworkStateHandler::NotifyDefaultNetworkChanged(
     observer.DefaultNetworkChanged(default_network);
 
   if (default_network &&
-      (default_network->GetPortalState() != default_network_portal_state_ ||
+      (default_network->shill_portal_state() != default_network_portal_state_ ||
        default_network->proxy_config() != default_network_proxy_config_)) {
-    default_network_portal_state_ = default_network->GetPortalState();
+    default_network_portal_state_ = default_network->shill_portal_state();
     default_network_proxy_config_ = default_network->proxy_config().Clone();
+    NET_LOG(EVENT) << "NOTIFY: PortalStateChanged: "
+                   << default_network_portal_state_;
     for (auto& observer : observers_) {
       observer.PortalStateChanged(default_network,
                                   default_network_portal_state_);
@@ -2084,6 +2090,7 @@ void NetworkStateHandler::NotifyDefaultNetworkChanged(
                                   !default_network_proxy_config_.is_none())) {
     default_network_portal_state_ = NetworkState::PortalState::kUnknown;
     default_network_proxy_config_ = base::Value();
+    NET_LOG(EVENT) << "NOTIFY: PortalStateChanged: Unknown (no network)";
     for (auto& observer : observers_)
       observer.PortalStateChanged(nullptr, NetworkState::PortalState::kUnknown);
   }
@@ -2246,4 +2253,4 @@ void NetworkStateHandler::ProcessIsUserLoggedIn(
   is_user_logged_in_ = profile_list.GetListDeprecated().size() > 1;
 }
 
-}  // namespace chromeos
+}  // namespace ash

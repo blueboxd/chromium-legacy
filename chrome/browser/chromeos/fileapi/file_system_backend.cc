@@ -105,11 +105,11 @@ void FileSystemBackend::AddSystemMountPoints() {
   system_mount_points_->RegisterFileSystem(
       kSystemMountNameArchive, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(),
-      chromeos::CrosDisksClient::GetArchiveMountPoint());
+      ash::CrosDisksClient::GetArchiveMountPoint());
   system_mount_points_->RegisterFileSystem(
       kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(storage::FlushPolicy::FLUSH_ON_COMPLETION),
-      chromeos::CrosDisksClient::GetRemovableDiskMountPoint());
+      ash::CrosDisksClient::GetRemovableDiskMountPoint());
   system_mount_points_->RegisterFileSystem(
       kSystemMountNameOem, storage::kFileSystemTypeRestrictedLocal,
       storage::FileSystemMountOption(),
@@ -175,7 +175,7 @@ void FileSystemBackend::ResolveURL(const storage::FileSystemURL& url,
                               base::File::FILE_ERROR_SECURITY);
       return;
     }
-    std::string inner_mount_name = components[1];
+    std::string inner_mount_name = base::EscapePath(components[1]);
     root_url += inner_mount_name + "/";
     name = inner_mount_name;
   } else if (id == arc::kDocumentsProviderMountPointName) {

@@ -5,6 +5,7 @@
 <translation id="1047956942837015229">ກໍາລັງລຶບ <ph name="COUNT" /> ​ລາຍ​ການ...</translation>
 <translation id="1049926623896334335">ເອ​ກະ​ສານ Word</translation>
 <translation id="1056775291175587022">ບໍ່ມີເຄືອຂ່າຍ</translation>
+<translation id="1056898198331236512">ຄໍາເຕືອນ</translation>
 <translation id="1060368002126861100">ເພື່ອເປີດໄຟລ໌ດ້ວຍ <ph name="APP_NAME" />, ກະລຸນາຍ້າຍພວກມັນໄປໃສ່ໂຟນເດີໄຟລ໌ຂອງ Windows ກ່ອນ.</translation>
 <translation id="1062407476771304334">​ປ່ຽນ​ແທນ​</translation>
 <translation id="1119447706177454957">ຜິດພາດພາຍໃນ</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">ໃບ​ຢັ້ງ​ຢືນ​ການ​ຮັບຮອງຖືກ​ເຄືອ​ຂ່າຍ​ປະ​ຕິ​ເສດ</translation>
 <translation id="255937426064304553">US ສາ​ກົນ</translation>
 <translation id="2563185590376525700">ກົບ</translation>
-<translation id="2570012981255377263">ໄຟລ໌ຫຼ້າສຸດຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="2578394532502990878">ພາສາທາມິລ (ຕາມການອອກສຽງ)</translation>
 <translation id="2579959351793446050">ພາສາໂອເດຍ</translation>
 <translation id="2602810353103180630">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ຖືກບລັອກໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">PIN ບໍ່ຖືກຕ້ອງ. ທ່ານລອງໄດ້ອີກ <ph name="RETRIES" /> ເທື່ອ.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ສະໜັບສະໜູນຈາກຮາດແວ)</translation>
 <translation id="3188257591659621405">ໄຟລ໌ຂອງຂ້ອຍ</translation>
+<translation id="3194553149358267393">ບໍ່ມີໄຟລ໌ສຽງຫຼ້າສຸດ</translation>
 <translation id="3197563288998582412">ດີ​ໂວຣັກ ອັງ​ກິດ</translation>
 <translation id="3202131003361292969">ເສັ້ນທາງ</translation>
 <translation id="3205852408225871810">ພາສາປໍຕູກີສ (ບຣາຊິວ)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">ບໍ່ແມ່ນດຽວນີ້</translation>
 <translation id="3486821258960016770">ພາສາມອງໂກລຽນ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ຄວາມ​ຜິດ​ພາດ​.</translation>
+<translation id="3495810061346586977">ໄຟລ໌ນີ້ເປັນຄວາມລັບ ແລະ ຢູ່ພາຍໃຕ້ຂໍ້ຈຳກັດຕາມນະໂຍບາຍຂອງຜູ້ເບິ່ງແຍງລະບົບ. <ph name="BEGIN_LINK_HELP" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ລາຍລະອຽດ</translation>
 <translation id="3522708245912499433">ພາສາປັອກຕຸຍການ</translation>
 <translation id="3524311639100184459">ລະວັງ: ໄຟລ໌ເຫຼົ່ານີ້ເປັນໄຟລ໌ຊົ່ວຄາວ ແລະອາດຈະຖືກລຶບໄປໂດຍອັດຕະໂນມັດເພື່ອຂະຫຍາຍພື້ນທີ່ດິສ.  <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ໂຟລເດີ</translation>
+<translation id="3548125359243647069">ລະບຸ PIN ບໍ່ຖືກຕ້ອງຫຼາຍເທື່ອເກີນໄປແລ້ວ.</translation>
 <translation id="3549797760399244642">ໄປທີ່ drive.google.com...</translation>
 <translation id="3553048479571901246">ເພື່ອເປີດໄຟລ໌ດ້ວຍ <ph name="APP_NAME" />, ກະລຸນາສຳເນົາພວກມັນໄປໃສ່ໂຟນເດີໄຟລ໌ຂອງ Windows ກ່ອນ.</translation>
 <translation id="3556731189587832921">ພາສາອັງກິດ (ສະຫະລັດ) ທີ່ໃຊ້ແປ້ນພິມຄອມພິວເຕີສາກົນ</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">ພາ​ສາ​ຕວກ​ກີ-F</translation>
 <translation id="3616113530831147358">ສຽງ</translation>
 <translation id="3619115746895587757">ຄາປູຊິໂນ</translation>
+<translation id="3619593063686672873">ບໍ່ມີວິດີໂອຫຼ້າສຸດ</translation>
 <translation id="3620292326130836921">ສຳ​ຮອງ​ທັງ​ໝົດ​ແລ້ວ!</translation>
 <translation id="3634507049637220048">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
 <translation id="3645233063072417428">ຍ້າຍ <ph name="NUMBER_OF_ITEMS" /> ລາຍການແລ້ວ.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ໄຟລ​໌</translation>
 <translation id="457386861538956877">ເພີ່ມເຕີມ...</translation>
 <translation id="4579744207439506346">ເພີ່ມ <ph name="ENTRY_NAME" /> ໃສ່ການເລືອກແລ້ວ.</translation>
+<translation id="4583436353463424810">ບໍ່ມີເອກະສານຫຼ້າສຸດ</translation>
 <translation id="4594543368593301662">ກຳລັງສະແດງຜົນການຊອກຫາສຳລັບ <ph name="SEARCH_TERM" />.</translation>
 <translation id="4599600860674643278">ຣີເຊັດຕົວກັ່ນຕອງແລ້ວ.</translation>
 <translation id="4603392156942865207">ກຳລັງສຳເນົາ <ph name="FILE_NAME" /> ໄວ້ໃນ <ph name="FOLDER_NAME" /></translation>
@@ -485,7 +490,9 @@
 <translation id="5159560892333415631">ລ້າງຖັງຂີ້ເຫຍື້ອ</translation>
 <translation id="5163869187418756376">ການແຊຣ໌ລົ້ມເຫຼວ.ກວດເບິ່ງການເຊື່ອມຕໍ່ຂອງທ່ານ ແລະລອງໃໝ່ອີກພາຍຫຼັງ.</translation>
 <translation id="516592729076796170">Dvorak ຜູ້​ຂຽນ​ໂປ​ຣ​ແກ​ຣມ​ສະ​ຫະ​ລັດ</translation>
+<translation id="5172749059808361023">ລາຍລະອຽດການຈຳກັດ</translation>
 <translation id="5177526793333269655">ມຸມມອງຮູບນ້ອຍ</translation>
+<translation id="5181896909298187506">ບໍ່ມີໄຟລ໌ຫຼ້າສຸດ</translation>
 <translation id="5194713942430106590">ຄລິກເພື່ອຮຽງລຳດັບຖັນແຕ່ນ້ອຍຫາໃຫຍ່.</translation>
 <translation id="5211614973734216083">ພາສາຟາໂຣສ</translation>
 <translation id="5218183485292899140">ພາສາຝຣັ່ງຂອງສະວິດ</translation>
@@ -540,7 +547,6 @@
 <translation id="5625294776298156701">ພາສາທາມິລທີ່ໃຊ້ແປ້ນພິມ Tamil99</translation>
 <translation id="5633226425545095130">ການຍ້າຍລາຍການນີ້ຈະແບ່ງປັນມັນໃຫ້ກັບທຸກຄົນທີ່ສາມາດເບິ່ງເຫັນໂຟນເດີທີ່ແບ່ງປັນ '<ph name="DESTINATION_NAME" />' ໄດ້.</translation>
 <translation id="5649768706273821470">​ຟັງ</translation>
-<translation id="5665074015635552640">ວິດີໂອຫຼ້າສຸດຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="5669691691057771421">ປ້ອນ PIN ໃໝ່</translation>
 <translation id="5678784840044122290">ແອັບພລິເຄຊັນ Linux ຈະສາມາດໃຊ້ໄດ້ພາຍໃນອຸປະກອນປາຍທາງຂອງທ່ານ ແລະ ອາດຈະສະແດງໄອຄອນໃນຕົວເປີດໃຊ້ຂອງທ່ານນຳອີກ.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />ບໍ່ສາມາດຕັດເຊື່ອມຕໍ່ຈາກແຟ້ມຈັດເກັບ ຫຼື ດິສສະເໝືອນຈິງໄດ້<ph name="END_BOLD" />
@@ -613,6 +619,7 @@
 <translation id="6267547857941397424">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, ສັນຍານຄວາມແຮງ <ph name="SIGNAL_STRENGTH" />%, ແບັດເຕີຣີໂທລະສັບ <ph name="BATTERY_STATUS" />%, ເຊື່ອມຕໍ່</translation>
 <translation id="6269630227984243955">ມາເລ</translation>
 <translation id="6287852322318138013">ເລືອກແອັບທີ່ຈະເປີດຢູ່ໃນໄຟລ໌ນີ້</translation>
+<translation id="6295542640242147836">ລັອກຊິມ</translation>
 <translation id="6296410173147755564">PUK ບໍ່ຖືກຕ້ອງ</translation>
 <translation id="6312403991423642364">ຄວາມຜິດພາດ​ຂອງເຄືອຂ່າຍທີ່ບໍ່ຮູ້ຈັກ</translation>
 <translation id="6317608858038767920"><ph name="INPUT_INDEX" /> ຂອງ nameserver ທີ່ກຳນົດເອງ</translation>
@@ -685,7 +692,6 @@
     ພົບ <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">ປີ້ນດ້ານ</translation>
 <translation id="6943836128787782965">HTTP ລົ້ມເຫຼວ</translation>
-<translation id="6945604978460872381">ເອກະສານຫຼ້າສຸດຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="6949408524333579394">ການແປທັບສັບພາສາເຊີບຽນ</translation>
 <translation id="6954309393500027528">ການວາງໄຟລ໌ນີ້ແມ່ນຖືກບລັອກໄວ້ໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ</translation>
 <translation id="6960565108681981554">ບໍ່ໄດ້ເປີດນຳໃຊ້. ກະລຸນາຕິດຕໍ່ຜູ້ໃຫ້ບໍລິການຂອງທ່ານ.</translation>
@@ -722,6 +728,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">ບັນທຶກໄຟລ໌ເປັນ</translation>
 <translation id="7229570126336867161">ຕ້ອງການ EVDO</translation>
+<translation id="7230898482850090046">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ຮ້ອງຂໍໃຫ້ທ່ານປິດການຕັ້ງຄ່າ "ລັອກຊິມ"</translation>
 <translation id="7238097264433196391">ຊື່ໄດຣຟ໌</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, ລາຍລະອຽດ</translation>
 <translation id="7246947237293279874">ພຣັອກຊີ FTP</translation>
@@ -733,7 +740,6 @@
 <translation id="7295662345261934369">ແບ່ງປັນກັບຄົນອື່ນ</translation>
 <translation id="7297443947353982503">ຊື່ຜູ້ໃຊ້/ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ ຫຼືການອະນຸຍາດ EAP ລົ້ມເຫຼວ</translation>
 <translation id="7309413087278791451">ເຢຍລະມັນ (ເບວຢຽມ)</translation>
-<translation id="7313374447885864533">ໄຟລ໌ສຽງຫຼ້າສຸດຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="7339898014177206373">ໜ້າ​ຕ່າງໃໝ່</translation>
 <translation id="7343393116438664539">ພາສາຫວຽດເທເລັກ</translation>
 <translation id="7357762654218998920">ບໍ່ຮອງຮັບໄຟລ໌ປະເພດນີ້. <ph name="BEGIN_LINK_HELP" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK_HELP" /> ກ່ຽວກັບການເປີດໄຟລ໌ຢູ່ ChromeOS.</translation>
@@ -743,6 +749,7 @@
 <translation id="7408870451288633753">ພາສາເຊັກ</translation>
 <translation id="7417453074306512035">ຄີບອດພາສາເອທິໂອເປຍ</translation>
 <translation id="7417705661718309329">ແຜນ​ທີ່ Google</translation>
+<translation id="7458955835361612701">ບໍ່ມີຮູບຫຼ້າສຸດ</translation>
 <translation id="7460898608667578234">ພາສາຢູ​ເຄຣນ</translation>
 <translation id="7469894403370665791">ເຊື່ອມຕໍ່ກັບເຄືອຂ່າຍນີ້ອັດຕະໂນມັດ</translation>
 <translation id="7486315294984620427">ເພື່ອວາງໄຟລ໌ໃນ Parallels Desktop, ໄຟລ໌ນັ້ນຈະຕ້ອງຖືກສຳເນົາໄປໃສ່ໄຟລ໌ Windows ກ່ອນ.</translation>
@@ -754,6 +761,7 @@
 <translation id="7505167922889582512">ສະ​ແດງ​ໄຟ​ລ໌​ທີ່​ເຊື່ອງ​ໄວ້</translation>
 <translation id="7514365320538308">ດາວ​ໂຫລດ</translation>
 <translation id="751507702149411736">ພາສາ​ເບ​ລາຣຸສ</translation>
+<translation id="7521790570754130607">ຕ້ອງໃຊ້ PIN ໃນການໃຊ້ອິນເຕີເນັດມືຖື</translation>
 <translation id="7532029025027028521">ການແປທັບສັບພາສາເປີຊຽນ</translation>
 <translation id="7544830582642184299">ອະນຸຍາດໃຫ້ແອັບ Linux ເຂົ້າເຖິງໄຟລ໌ຕ່າງໆໃນ Google Drive ຂອງທ່ານ. ການປ່ຽນແປງຈະຊິ້ງຂໍ້ມູນກັບອຸປະກອນອື່ນຂອງທ່ານ.</translation>
 <translation id="7547009467130558110">ເກີບສະນີກເກີ</translation>
@@ -778,6 +786,7 @@
 <translation id="76959938259365003">ລ້າງຖັງຂີ້ເຫຍື້ອບໍ່ສຳເລັດ.</translation>
 <translation id="770015031906360009">ພາສາເກຼັກ</translation>
 <translation id="7705251383879779343">ສຳເນົາ <ph name="FILE_NAME" /> ແລ້ວ.</translation>
+<translation id="7708271999969613024">ເພື່ອໃຊ້ເຄືອຂ່າຍນີ້, ທ່ານຕ້ອງໃສ່ລະຫັດຍົກເລີກການບລັອກສ່ວນຕົວ (PUK) 8 ຕົວເລກທີ່ຜູ້ໃຫ້ບໍລິການສະໜອງໃຫ້.</translation>
 <translation id="7711920809702896782">ຂໍ້ມູນຮູບ</translation>
 <translation id="7724603315864178912">ຕັດ</translation>
 <translation id="7730494089396812859">ສະ​ແດງ​ລາຍ​ລະ​ອຽດການ​ສຳ​ຮອງ​ຄ​ລາວ</translation>
@@ -863,7 +872,6 @@
 <translation id="8342318071240498787">ມີໄຟລ໌ ຫຼືໄດເຣັກຕໍຣີທີ່ມີຊື່ດຽວກັນຢູ່ແລ້ວ.</translation>
 <translation id="8372369524088641025">ປຸ່ມ WEP ບໍ່ດີ</translation>
 <translation id="8372852072747894550">ພາສາກຣີກ</translation>
-<translation id="8384716930968677505">ຮູບພາບຫຼ້າສຸດຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="8386903983509584791">ສຳເລັດການສະແກນແລ້ວ</translation>
 <translation id="8387733224523483503">ແຕກໄຟລ໌ <ph name="FILE_NAME" /> ແລ້ວ.</translation>
 <translation id="8395901698320285466">ຂະໜາດພາບ</translation>
@@ -873,6 +881,7 @@
 <translation id="8437209419043462667">ສະ​ຫະ​ລັດ</translation>
 <translation id="8452135315243592079">ແຜ່ນ SIM ຫາຍໄປ</translation>
 <translation id="8456681095658380701">ຊື່ໃຊ້ບໍ່ໄດ້</translation>
+<translation id="8457767749626250697">ຊິມຂອງທ່ານຖືກລັອກ</translation>
 <translation id="8459404855768962328">ການສຳເນົາລາຍການນີ້ຈະແບ່ງປັນມັນໃຫ້ກັບທຸກຄົນທີ່ສາມາດເບິ່ງເຫັນໂຟນເດີທີ່ແບ່ງປັນ '<ph name="DESTINATION_NAME" />' ໄດ້.</translation>
 <translation id="8461467696380332069">ຄລິກຂວາໃສ່ໄຟລ໌ ແລ້ວເລືອກ "ປັກໝຸດໃສ່ຖ້ານ" ເພື່ອເຂົ້າເຖິງໄຟລ໌ໃນຖ້ານໄດ້ຢ່າງວ່ອງໄວ.</translation>
 <translation id="8461914792118322307">ພຣັອກຊີ</translation>

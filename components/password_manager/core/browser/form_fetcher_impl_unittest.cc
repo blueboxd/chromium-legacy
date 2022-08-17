@@ -638,7 +638,7 @@ TEST_P(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
 
   Fetch();
   EXPECT_CALL(*profile_mock_store_, GetLogins(_, _)).Times(0);
-  EXPECT_CALL(*profile_mock_store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(*profile_mock_store_, AddLogin).Times(0);
   EXPECT_CALL(consumer_, OnFetchCompleted);
   DeliverPasswordStoreResults(
       /*profile_store_results=*/MakeResults(empty_forms),
@@ -751,7 +751,7 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
     ASSERT_TRUE(account_store_migrator);
   }
   // Now perform the actual migration.
-  EXPECT_CALL(*profile_mock_store_, AddLogin(https_form));
+  EXPECT_CALL(*profile_mock_store_, AddLogin(https_form, _));
   EXPECT_CALL(consumer_, OnFetchCompleted);
   profile_store_migrator->OnGetPasswordStoreResultsFrom(
       profile_mock_store_.get(), MakeResults({http_form}));
@@ -767,7 +767,7 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   // No migration should happen when results are present.
   Fetch();
   EXPECT_CALL(*profile_mock_store_, GetLogins(_, _)).Times(0);
-  EXPECT_CALL(*profile_mock_store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(*profile_mock_store_, AddLogin).Times(0);
   EXPECT_CALL(consumer_, OnFetchCompleted);
   DeliverPasswordStoreResults(
       /*profile_store_results=*/MakeResults({https_form}),
@@ -859,7 +859,7 @@ TEST_P(FormFetcherImplTest, StateIsWaitingDuringMigration) {
   EXPECT_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
 
   // Now perform the actual migration.
-  EXPECT_CALL(*profile_mock_store_, AddLogin(https_form));
+  EXPECT_CALL(*profile_mock_store_, AddLogin(https_form, _));
   profile_store_migrator->OnGetPasswordStoreResultsFrom(
       profile_mock_store_.get(), MakeResults({http_form}));
   if (account_mock_store_) {
@@ -896,6 +896,8 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
   Fetch();
   PasswordForm non_federated = CreateNonFederated();
   PasswordForm federated = CreateFederated();
+  federated.password_issues.insert(
+      {InsecureType::kLeaked, InsecurityMetadata()});
   PasswordForm android_federated = CreateAndroidFederated();
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(std::make_unique<PasswordForm>(non_federated));
@@ -909,6 +911,8 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
   EXPECT_THAT(
       form_fetcher_->GetFederatedMatches(),
       UnorderedElementsAre(Pointee(federated), Pointee(android_federated)));
+  EXPECT_THAT(form_fetcher_->GetInsecureCredentials(),
+              UnorderedElementsAre(Pointee(federated)));
   EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 
   ASSERT_TRUE(
@@ -929,6 +933,8 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
   EXPECT_THAT(
       clone->GetFederatedMatches(),
       UnorderedElementsAre(Pointee(federated), Pointee(android_federated)));
+  EXPECT_THAT(clone->GetInsecureCredentials(),
+              UnorderedElementsAre(Pointee(federated)));
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnFetchCompleted);
   clone->AddConsumer(&consumer);

@@ -308,10 +308,6 @@
       status: "experimental",
     },
     {
-      name: "CancelFormSubmissionInDefaultHandler",
-      status: "stable",
-    },
-    {
       name: "Canvas2dImageChromium",
     },
     {
@@ -394,12 +390,6 @@
     {
       name: "CoepReflection",
       status: "test",
-
-      // If a feature is implied by one supporting an origin trial, it must also
-      // support origin trial.
-      implied_by: ["AnonymousIframe"],
-      origin_trial_allows_third_party: true,
-      origin_trial_feature_name: "CoepReflection",
     },
     {
       name: "CompositeBGColorAnimation",
@@ -544,10 +534,6 @@
       implied_by: ["CSSContainerQueries"]
     },
     {
-      name: "CSSDynamicRangeMediaQueries",
-      status: "stable"
-    },
-    {
       // Include custom properties in CSSComputedStyleDeclaration::item/length.
       // https://crbug.com/949807
       name: "CSSEnumeratedCustomProperties",
@@ -590,7 +576,7 @@
     },
     {
       name: "CSSIcUnit",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSIndependentTransformProperties",
@@ -712,14 +698,12 @@
       name: "CSSScrollbars",
       status: "test",
     },
-    // Support for declarative parts of scroll-animations-1, i.e.
-    // the animation-timeline property and the @scroll-timeline rule.
+    // Support for declarative parts of scroll-animations-1.
     //
-    // https://drafts.csswg.org/scroll-animations-1/#animation-timeline
-    // https://drafts.csswg.org/scroll-animations-1/#scroll-timeline-at-rule
+    // https://drafts.csswg.org/scroll-animations-1/
     {
       name: "CSSScrollTimeline",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "CSSSelectorFragmentAnchor",
@@ -830,10 +814,6 @@
     {
       name: "DevicePosture",
       status: "experimental",
-    },
-    {
-      name: "DialogFocusNewSpecBehavior",
-      status: "stable",
     },
     {
       name: "DigitalGoods",
@@ -1014,6 +994,10 @@
       status: "test",
     },
     {
+      name: "FedCmMultipleIdentityProviders",
+      status: "test",
+    },
+    {
       name: "FencedFrames",
       // This helps enable and expose the <fencedframe> element, but note that
       // blink::features::kFencedFrames must be enabled as well, similar to
@@ -1095,6 +1079,9 @@
       // a Chromium level feature.
     },
     {
+      // TODO(crbug.com/1231644): This flag is being kept (even though the
+      // feature has shipped) until there are settings to allow users to
+      // customize the feature.
       name: "ForcedColors",
       status: "stable",
     },
@@ -1201,6 +1188,7 @@
     {
       name: "HTMLPopupAttribute",
       status: "experimental",
+      origin_trial_feature_name: "HTMLPopupAttribute",
       implied_by: ["HTMLSelectMenuElement"],
     },
     {
@@ -1266,7 +1254,7 @@
     },
     {
       name: "LayoutNGBlockFragmentation",
-      implied_by: ["LayoutNGPrinting", "LayoutNGTableFragmentation"],
+      implied_by: ["LayoutNGPrinting"],
       status: "stable",
     },
     {
@@ -1311,8 +1299,8 @@
       // Block fragmentation support in the table layout algorithm.
       // https://drafts.csswg.org/css-tables-3/#fragmentation
       name: "LayoutNGTableFragmentation",
-      depends_on: ["LayoutNG"],
-      status: "test",
+      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
+      status: "stable",
     },
     {
       name: "LayoutNGView",
@@ -1382,10 +1370,6 @@
     {
       name: "MediaCapabilitiesEncodingInfo",
       status: "experimental",
-    },
-    {
-      name: "MediaCapabilitiesEncryptedMedia",
-      status: "stable",
     },
     {
       name: "MediaCapabilitiesSpatialAudio",
@@ -1726,10 +1710,6 @@
       name: "PaymentRequest",
       status: "experimental",
     },
-    // TODO(crbug.com/1209835): this feature is getting deprecated.
-    {
-      name: "PaymentRequestBasicCard",
-    },
     {
       name: "PaymentRequestMerchantValidationEvent",
       status: "experimental",
@@ -1738,6 +1718,7 @@
       name: "PendingBeaconAPI",
       origin_trial_feature_name: "PendingBeaconAPI",
       origin_trial_allows_third_party: true,
+      status: "experimental",
     },
     {
       name: "PercentBasedScrolling",
@@ -1758,6 +1739,11 @@
     {
       name: "Permissions",
       status: "stable",
+    },
+    // See https://crbug.com/1324111
+    {
+      name: "PermissionsPolicyUnload",
+      status: "experimental"
     },
     {
       name: "PermissionsRequestRevoke",
@@ -1809,11 +1795,6 @@
     },
     {
       name: "PrefersColorSchemeClientHintHeader",
-      status: "stable",
-    },
-    {
-      name: "PrefersContrast",
-      depends_on: ["ForcedColors"],
       status: "stable",
     },
     {
@@ -2064,13 +2045,6 @@
       origin_trial_feature_name: "SecurePaymentConfirmationOptOut",
       origin_trial_allows_third_party: true
     },
-    // Relaxes the resident key requirement for SPC. This is necessary to ship
-    // SPC on Android, and will be enabled on all platforms for simplicity,
-    // with the assumption that desktop platforms will always create a
-    // resident key/discoverable credential.
-    {
-      name: "SecurePaymentConfirmationRelaxResidentKey",
-    },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "stable",
@@ -2287,7 +2261,7 @@
     // https://crbug.com/1314739
     {
       name: "TouchActionEffectiveAtPointerDown",
-      status: "experimental",
+      status: "stable",
     },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without
@@ -2425,10 +2399,6 @@
     {
       name: "ViewportSegments",
       status: "experimental",
-    },
-    {
-      name: "VirtualKeyboard",
-      status: "stable",
     },
     {
       name: "VisibilityCollapseColumn",
@@ -2572,7 +2542,7 @@
     },
     {
       name: "WebCodecsDequeueEvent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebGLColorManagement",
@@ -2622,6 +2592,12 @@
       name: "WebHIDOnServiceWorkers",
       depends_on: ["WebHID"],
     },
+    // Legacy ::-webkit-scrollbar* pseudo element styling. Enabled for stable
+    // but configurable via WebPreferences.
+    {
+      name: "WebKitScrollbarStyling",
+      status: "stable",
+    },
     {
       name: "WebNFC",
       status: {"Android": "stable", "default": "test"},
@@ -2639,6 +2615,11 @@
       name: "WebOTPAssertionFeaturePolicy",
       depends_on: ["WebOTP"],
       status: "stable",
+    },
+    {
+      name: "WebPaymentAPICSP",
+      origin_trial_feature_name: "WebPaymentAPICSP",
+      origin_trial_allows_third_party: true,
     },
     // WebShare is enabled by default on Android.
     {

@@ -36,6 +36,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHChromeReengagementNotification2Feature,
     &kIPHChromeReengagementNotification3Feature,
     &kIPHContextualPageActionsPriceTrackingFeature,
+    &kIPHContextualPageActionsPriceTrackingActionChipFeature,
     &kIPHCrowFeature,
     &kIPHDownloadSettingsFeature,
     &kIPHDownloadInfoBarDownloadContinuingFeature,
@@ -113,6 +114,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDefaultSiteViewFeature,
     &kIPHPasswordSuggestionsFeature,
     &kIPHFollowWhileBrowsingFeature,
+    &kIPHOverflowMenuTipFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -133,6 +135,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHProfileSwitchFeature,
     &kIPHDesktopSharedHighlightingFeature,
     &kIPHIntentChipFeature,
+    &kIPHWebUiHelpBubbleTestFeature,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 

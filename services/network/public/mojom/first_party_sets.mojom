@@ -6,9 +6,23 @@ module network.mojom;
 
 import "services/network/public/mojom/schemeful_site.mojom";
 
+// This struct should match net::FirstPartySetEntry::SiteIndex in
+// //net/cookies/first_party_set_entry.h
+struct SiteIndex {
+  uint32 value;
+};
+
+// This enum should match //net/cookies/first_party_set_entry.h.
+enum SiteType {
+  kPrimary,
+  kAssociated,
+};
+
 // This struct should match //net/cookies/first_party_set_entry.h.
 struct FirstPartySetEntry {
   SchemefulSite primary;
+  SiteType site_type;
+  SiteIndex? site_index;
 };
 
 // Computed for every cookie access attempt but is only relevant for SameParty
@@ -36,4 +50,15 @@ struct FirstPartySetMetadata {
   // absl::nullopt indicates that the top frame's site is not associated with
   // any First-Party Set.
   FirstPartySetEntry? top_frame_entry;
+};
+
+// This struct holds all of the info associated with the public First-Party
+// Sets, after they've been parsed. This is suitable for plumbing from the
+// browser process to the network service.
+struct PublicFirstPartySets {
+  // The mapping from site to FPS entry.
+  map<SchemefulSite, FirstPartySetEntry> sets;
+
+  // The mapping from site alias to canonical site.
+  map<SchemefulSite, SchemefulSite> aliases;
 };

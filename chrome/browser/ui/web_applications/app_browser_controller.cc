@@ -49,6 +49,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/resize_utils.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -402,10 +403,11 @@ void AppBrowserController::OnTabStripModelChanged(
   if (selection.active_tab_changed()) {
     content::WebContentsObserver::Observe(selection.new_contents);
     // Update themes when we switch tabs, or create the first tab, but not
-    // when we create 2nd or subsequent tabs. They should keep current theme
-    // until page loads. See |DOMContentLoaded|.
+    // when we create 2nd or subsequent tabs. Don't update the theme if the
+    // tab has not finished loading to avoid using uninitialized colors,
+    // wait for |DOMContentLoaded| before updating.
     if (change.type() != TabStripModelChange::kInserted ||
-        tab_strip_model->count() == 1) {
+        tab_strip_model->count() == 1 || !selection.new_contents->IsLoading()) {
       UpdateThemePack();
     }
   }
@@ -487,6 +489,9 @@ void AppBrowserController::AddColorMixers(
       ui::SetAlpha(kColorPwaToolbarButtonIcon, gfx::kDisabledControlAlpha);
   if (bg_color)
     mixer[kColorWebContentsBackground] = {kColorPwaBackground};
+
+  mixer[kColorInfoBarBackground] = {kColorPwaToolbarBackground};
+  mixer[kColorInfoBarForeground] = {kColorPwaToolbarButtonIcon};
 }
 
 void AppBrowserController::OnReceivedInitialURL() {
@@ -578,10 +583,14 @@ void AppBrowserController::UpdateThemePack() {
     return;
   }
 
-  if (!theme_color)
+  if (!theme_color) {
     theme_color = GetAltColor(*background_color);
-  else if (!background_color)
-    background_color = GetAltColor(*theme_color);
+  } else if (!background_color) {
+    background_color =
+        ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
+            ? gfx::kGoogleGrey900
+            : SK_ColorWHITE;
+  }
 
   // For regular web apps, frame gets theme color and active tab gets
   // background color.

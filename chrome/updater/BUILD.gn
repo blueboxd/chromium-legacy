@@ -94,6 +94,8 @@ if (is_win || is_mac || is_linux) {
       "device_management/dm_response_validator.h",
       "device_management/dm_storage.cc",
       "device_management/dm_storage.h",
+      "device_management_task.cc",
+      "device_management_task.h",
       "enum_traits.h",
       "external_constants.cc",
       "external_constants.h",
@@ -666,6 +668,7 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/win:updater_test",
         "//chrome/updater/win/installer:installer_test",
         "//chrome/updater/win/installer:installer_unittest",
+        "//chrome/updater/win/test:updater_test_process",
       ]
 
       data = [

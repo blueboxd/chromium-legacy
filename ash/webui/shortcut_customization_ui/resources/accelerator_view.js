@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import './input_key.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -73,10 +73,6 @@ function CreateEmptyAcceleratorInfo() {
 export class AcceleratorViewElement extends PolymerElement {
   static get is() {
     return 'accelerator-view';
-  }
-
-  static get template() {
-    return html`{__html_template__}`;
   }
 
   static get properties() {
@@ -533,6 +529,10 @@ export class AcceleratorViewElement extends PolymerElement {
 
     // Always end input capturing if an update event was fired.
     this.endCapture_();
+  }
+
+  static get template() {
+    return html`{__html_template__}`;
   }
 }
 

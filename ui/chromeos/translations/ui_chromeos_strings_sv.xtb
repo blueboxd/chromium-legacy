@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> objekt tas bort ...</translation>
 <translation id="1049926623896334335">Word-dokument</translation>
 <translation id="1056775291175587022">Inga nätverk</translation>
+<translation id="1056898198331236512">Varning</translation>
 <translation id="1060368002126861100">Om du vill öppna filer med <ph name="APP_NAME" /> måste du först flytta dem till Windows-mappen.</translation>
 <translation id="1062407476771304334">Ersätt</translation>
 <translation id="1119447706177454957">Internt fel</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">Autentiseringscertifikatet godkändes inte av nätverket</translation>
 <translation id="255937426064304553">USA (internationell)</translation>
 <translation id="2563185590376525700">Groda</translation>
-<translation id="2570012981255377263">De senaste filerna visas här</translation>
 <translation id="2578394532502990878">tamil, fonetiskt</translation>
 <translation id="2579959351793446050">odia</translation>
 <translation id="2602810353103180630">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, blockerat av administratören, information</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">Ogiltig pinkod. Du har <ph name="RETRIES" /> försök kvar.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (med maskinvarustöd)</translation>
 <translation id="3188257591659621405">Mina filer</translation>
+<translation id="3194553149358267393">Inga nya ljudfiler</translation>
 <translation id="3197563288998582412">Storbritannien (dvorak)</translation>
 <translation id="3202131003361292969">Sökväg</translation>
 <translation id="3205852408225871810">portugisiska (Brasilien)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="3486821258960016770">mongoliska</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fel.</translation>
+<translation id="3495810061346586977">Den här filen är konfidentiell och omfattas av begränsningar enligt en administratörspolicy. <ph name="BEGIN_LINK_HELP" />Läs mer<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signalstyrka <ph name="SIGNAL_STRENGTH" /> %, information</translation>
 <translation id="3522708245912499433">portugisiska</translation>
 <translation id="3524311639100184459">Obs! De här filerna är tillfälliga och kan tas bort automatiskt för att frigöra utrymme på hårddisken.  <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mapp</translation>
+<translation id="3548125359243647069">Fel pinkod har angetts för många gånger.</translation>
 <translation id="3549797760399244642">Besök drive.google.com ...</translation>
 <translation id="3553048479571901246">Om du vill öppna filer med <ph name="APP_NAME" /> måste du först kopiera dem till Windows-mappen.</translation>
 <translation id="3556731189587832921">engelska (USA) med internationellt PC-tangentbord</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">Turkiska F</translation>
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3619593063686672873">Inga nya videor</translation>
 <translation id="3620292326130836921">Allt har säkerhetskopierats!</translation>
 <translation id="3634507049637220048">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, hanteras av administratören, information</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> objekt flyttades.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> har lagts till som markerad.</translation>
+<translation id="4583436353463424810">Inga nya dokument</translation>
 <translation id="4594543368593301662">Visar resultat för <ph name="SEARCH_TERM" />.</translation>
 <translation id="4599600860674643278">Filtret har återställts.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> kopieras till <ph name="FOLDER_NAME" /></translation>
@@ -485,7 +490,9 @@
 <translation id="5159560892333415631">Töm papperskorgen</translation>
 <translation id="5163869187418756376">Delningen misslyckades. Kontrollera anslutningen och försök igen senare.</translation>
 <translation id="516592729076796170">Dvorak för programmerare i USA</translation>
+<translation id="5172749059808361023">Begränsningsdetaljer</translation>
 <translation id="5177526793333269655">Miniatyrvy</translation>
+<translation id="5181896909298187506">Inga nya filer</translation>
 <translation id="5194713942430106590">Klicka här om kolumnen ska sorteras i stigande ordning.</translation>
 <translation id="5211614973734216083">färöiska</translation>
 <translation id="5218183485292899140">Schweizisk franska</translation>
@@ -541,7 +548,6 @@
 <translation id="5625294776298156701">tamilskt tangentbord (Tamil99)</translation>
 <translation id="5633226425545095130">Om du flyttar det här objektet delas det med alla som har åtkomst till den delade mappen <ph name="DESTINATION_NAME" />.</translation>
 <translation id="5649768706273821470">Lyssna</translation>
-<translation id="5665074015635552640">Dina senaste videor visas här</translation>
 <translation id="5669691691057771421">Ange en ny pinkod</translation>
 <translation id="5678784840044122290">Linux-programmet blir tillgängligt via terminalen och det kan också finnas en ikon för det i startprogrammet.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Det gick inte att koppla från ett arkiv eller en virtuell hårddisk<ph name="END_BOLD" />
@@ -614,6 +620,7 @@
 <translation id="6267547857941397424">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, telefonens batterinivå <ph name="BATTERY_STATUS" /> %, anslut</translation>
 <translation id="6269630227984243955">malajiska</translation>
 <translation id="6287852322318138013">Välj en app om du vill öppna filen</translation>
+<translation id="6295542640242147836">Lås SIM</translation>
 <translation id="6296410173147755564">Ogiltig PUK-kod</translation>
 <translation id="6312403991423642364">Okänt nätverksfel</translation>
 <translation id="6317608858038767920">Anpassad namnserver <ph name="INPUT_INDEX" /></translation>
@@ -686,7 +693,6 @@
     <ph name="FILE_COUNT" /> hittades</translation>
 <translation id="6935521024859866267">Uppochned</translation>
 <translation id="6943836128787782965">HTTP GET misslyckades</translation>
-<translation id="6945604978460872381">De senaste dokumenten visas här</translation>
 <translation id="6949408524333579394">serbiska, translitterering</translation>
 <translation id="6954309393500027528">Möjligheten att klistra in den här filen här blockeras av administratören</translation>
 <translation id="6960565108681981554">Inte aktiverat. Kontakta operatören.</translation>
@@ -723,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Spara filen som</translation>
 <translation id="7229570126336867161">Behöver EVDO</translation>
+<translation id="7230898482850090046">Administratören har begärt att du inaktiverar inställningen Lås SIM</translation>
 <translation id="7238097264433196391">Enhetens namn</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, information</translation>
 <translation id="7246947237293279874">FTP-proxy</translation>
@@ -734,7 +741,6 @@
 <translation id="7295662345261934369">Dela med andra</translation>
 <translation id="7297443947353982503">Användarnamnet eller lösenordet är felaktigt, eller så misslyckades EAP-auktoriseringen</translation>
 <translation id="7309413087278791451">tyska (Belgien)</translation>
-<translation id="7313374447885864533">De senaste ljudfilerna visas här</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="7343393116438664539">vietnamesiska (telex)</translation>
 <translation id="7357762654218998920">Den här filtypen stöds inte. <ph name="BEGIN_LINK_HELP" />Läs mer<ph name="END_LINK_HELP" /> om att öppna filer i Chrome OS.</translation>
@@ -744,6 +750,7 @@
 <translation id="7408870451288633753">tjeckiska</translation>
 <translation id="7417453074306512035">Tangentbord för etiopiska</translation>
 <translation id="7417705661718309329">Google-karta</translation>
+<translation id="7458955835361612701">Inga nya bilder</translation>
 <translation id="7460898608667578234">ukrainska</translation>
 <translation id="7469894403370665791">Anslut automatiskt till det här nätverket.</translation>
 <translation id="7486315294984620427">För att kunna släppa en fil i Parallels Desktop behöver du först kopiera den till Windows.</translation>
@@ -755,6 +762,7 @@
 <translation id="7505167922889582512">Visa dolda filer</translation>
 <translation id="7514365320538308">Ladda ned</translation>
 <translation id="751507702149411736">vitryska</translation>
+<translation id="7521790570754130607">En pinkod krävs för att använda mobildata</translation>
 <translation id="7532029025027028521">persisk translitterering</translation>
 <translation id="7544830582642184299">Ge Linux-appar behörighet att öppna filer på din Google Drive. Ändringarna synkroniseras med dina andra enheter.</translation>
 <translation id="7547009467130558110">Gympasko</translation>
@@ -779,6 +787,7 @@
 <translation id="76959938259365003">Det gick inte att tömma papperskorgen.</translation>
 <translation id="770015031906360009">grekiska</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> har kopierats.</translation>
+<translation id="7708271999969613024">För att använda det här nätverket måste du ange den åttasiffriga PUK-koden (Personal Unblocking Key) som du har fått från operatören.</translation>
 <translation id="7711920809702896782">Bildinformation</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7730494089396812859">Visa information om säkerhetskopiering i molnet</translation>
@@ -864,7 +873,6 @@
 <translation id="8342318071240498787">Det finns redan en fil eller en katalog med samma namn.</translation>
 <translation id="8372369524088641025">Felaktig WEP-nyckel</translation>
 <translation id="8372852072747894550">grekiska</translation>
-<translation id="8384716930968677505">De senaste bilderna visas här</translation>
 <translation id="8386903983509584791">Sökningen har slutförts</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> har extraherats.</translation>
 <translation id="8395901698320285466">Dimensioner</translation>
@@ -874,6 +882,7 @@
 <translation id="8437209419043462667">USA</translation>
 <translation id="8452135315243592079">SIM-kort saknas</translation>
 <translation id="8456681095658380701">Ogiltigt namn</translation>
+<translation id="8457767749626250697">SIM-kortet är låst</translation>
 <translation id="8459404855768962328">Om du kopierar det här objektet delas det med alla som har åtkomst till den delade mappen <ph name="DESTINATION_NAME" />.</translation>
 <translation id="8461467696380332069">Högerklicka på en fil som du vill ha snabbt tillgänglig i hyllan och välj Fäst på hyllan.</translation>
 <translation id="8461914792118322307">Proxy</translation>

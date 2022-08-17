@@ -14,36 +14,24 @@ declare namespace chrome {
     // the AXTree distillation process.
     let contentNodeIds: number[];
 
-    // A font name, defined in ReadAnythingFontModel.
+    // Items in the ReadAnythingTheme struct, see read_anything.mojom for info.
     let fontName: string;
-
     let fontSize: number;
+    let foregroundColor: number;
+    let backgroundColor: number;
 
     // Returns a list of AXNodeIDs corresponding to the unignored children of
     // the AXNode for the provided AXNodeID.
     function getChildren(nodeId: number): number[];
 
-    // Returns the heading level of the AXNode for the provided AXNodeID.
-    function getHeadingLevel(nodeId: number): number;
+    // Returns the HTML tag of the AXNode for the provided AXNodeID.
+    function getHtmlTag(nodeId: number): string;
 
     // Returns the text content of the AXNode for the provided AXNodeID.
     function getTextContent(nodeId: number): string;
 
     // Returns the url of the AXNode for the provided AXNodeID.
     function getUrl(nodeId: number): string;
-
-    // Returns whether the AXNode for the provided AXNodeID is a heading.
-    function isHeading(nodeId: number): boolean;
-
-    // Returns whether the AXNode for the provided AXNodeID is a link,
-    // represented by the anchor tag in HTML.
-    function isLink(nodeId: number): boolean;
-
-    // Returns whether the AXNode for the provided AXNodeID is a paragraph.
-    function isParagraph(nodeId: number): boolean;
-
-    // Returns whether the AXNode for the provided AXNodeID is a static text.
-    function isStaticText(nodeId: number): boolean;
 
     // Connects to the browser process. Called by ts when the read anything
     // element is added to the document.
@@ -69,8 +57,10 @@ declare namespace chrome {
     function setContentForTesting(
         snapshotLite: Object, contentNodeIds: number[]): void;
 
-    // Set the font name. Used by tests only.
-    function setFontNameForTesting(newFontName: string): void;
+    // Set the theme. Used by tests only.
+    function setThemeForTesting(
+        fontName: string, fontSize: number, foregroundColor: number,
+        backgroundColor: number): void;
 
     ////////////////////////////////////////////////////////////////
     // Implemented in read_anything/app.ts and called by native c++.
@@ -80,12 +70,8 @@ declare namespace chrome {
     // and is available to consume.
     function updateContent(): void;
 
-    // Ping that the font name has been changed in the ReadAnythingToolbar and
-    // is available to consume.
-    function updateFontName(): void;
-
-    // Ping that the font size has been changed for the distilled contents and
-    // is available to consume.
-    function updateFontSize(): void;
+    // Ping that the theme choices of the user have been changed using the
+    // toolbar and are ready to consume.
+    function updateTheme(): void;
   }
 }

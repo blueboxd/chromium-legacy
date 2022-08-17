@@ -620,17 +620,22 @@ void LocalFrame::CheckCompleted() {
 
 BackgroundColorPaintImageGenerator*
 LocalFrame::GetBackgroundColorPaintImageGenerator() {
-  // There is no compositor thread in certain testing environment, and we should
-  // not composite background color animation in those cases.
-  if (!Thread::CompositorThread())
-    return nullptr;
   LocalFrame& local_root = LocalFrameRoot();
   // One background color paint worklet per root frame.
-  if (!local_root.background_color_paint_image_generator_) {
+  // There is no compositor thread in certain testing environment, and we
+  // should not composite background color animation in those cases.
+  if (Thread::CompositorThread() &&
+      !local_root.background_color_paint_image_generator_) {
     local_root.background_color_paint_image_generator_ =
         BackgroundColorPaintImageGenerator::Create(local_root);
   }
   return local_root.background_color_paint_image_generator_.Get();
+}
+
+void LocalFrame::SetBackgroundColorPaintImageGeneratorForTesting(
+    BackgroundColorPaintImageGenerator* generator_for_testing) {
+  LocalFrame& local_root = LocalFrameRoot();
+  local_root.background_color_paint_image_generator_ = generator_for_testing;
 }
 
 BoxShadowPaintImageGenerator* LocalFrame::GetBoxShadowPaintImageGenerator() {
@@ -2294,7 +2299,7 @@ void LocalFrame::UpdateAdHighlight() {
   if (IsAdRoot() && GetPage()->GetSettings().GetHighlightAds())
     SetSubframeColorOverlay(SkColorSetARGB(128, 255, 0, 0));
   else
-    SetSubframeColorOverlay(Color::kTransparent);
+    SetSubframeColorOverlay(SK_ColorTRANSPARENT);
 }
 
 void LocalFrame::PauseSubresourceLoading(
@@ -2433,16 +2438,22 @@ class FrameColorOverlay final : public FrameOverlay::Delegate {
                              gfx::Rect(view->Size()));
     gfx::RectF rect(0, 0, view->Width(), view->Height());
     graphics_context.FillRect(
-        rect, color_,
+        rect, Color::FromSkColor(color_),
         PaintAutoDarkMode(view->GetLayoutView()->StyleRef(),
                           DarkModeFilter::ElementRole::kBackground));
   }
 
+  // TODO(https://crbug.com/1351544): This should be an SkColor4f or a Color.
   SkColor color_;
   Persistent<LocalFrame> frame_;
 };
 
 }  // namespace
+
+void LocalFrame::SetReducedAcceptLanguage(
+    const AtomicString& reduced_accept_language) {
+  reduced_accept_language_ = reduced_accept_language;
+}
 
 void LocalFrame::SetMainFrameColorOverlay(SkColor color) {
   DCHECK(IsMainFrame() && !IsInFencedFrameTree());
@@ -2458,7 +2469,7 @@ void LocalFrame::SetFrameColorOverlay(SkColor color) {
   if (frame_color_overlay_)
     frame_color_overlay_.Release()->Destroy();
 
-  if (color == Color::kTransparent)
+  if (color == SK_ColorTRANSPARENT)
     return;
 
   frame_color_overlay_ = MakeGarbageCollected<FrameOverlay>(

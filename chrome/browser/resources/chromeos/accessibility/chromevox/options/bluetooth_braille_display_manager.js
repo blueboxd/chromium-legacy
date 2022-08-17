@@ -8,11 +8,8 @@
  * to interact with a bluetooth braille display.
  */
 
-goog.provide('BluetoothBrailleDisplayManager');
-goog.provide('BluetoothBrailleDisplayListener');
-
 /** @interface */
-BluetoothBrailleDisplayListener = class {
+export class BluetoothBrailleDisplayListener {
   constructor() {}
 
   /**
@@ -26,7 +23,7 @@ BluetoothBrailleDisplayListener = class {
    * @param {!chrome.bluetooth.Device} display
    */
   onPincodeRequested(display) {}
-};
+}
 
 
 /**
@@ -42,7 +39,7 @@ BluetoothBrailleDisplayListener = class {
  *                          // listenerObject, this is how a caller can respond.
  * manager.stop(); // Stops discovery, but persists connections.
  */
-BluetoothBrailleDisplayManager = class {
+export class BluetoothBrailleDisplayManager {
   constructor() {
     /** @private {!Array<BluetoothBrailleDisplayListener>} */
     this.listeners_ = [];
@@ -239,9 +236,8 @@ BluetoothBrailleDisplayManager = class {
           this.handlePreferredDisplayConnectionStateChanged(display);
         }
       });
-      this.listeners_.forEach(listener => {
-        listener.onDisplayListChanged(displayList);
-      });
+      this.listeners_.forEach(
+          listener => listener.onDisplayListChanged(displayList));
     });
   }
 
@@ -276,4 +272,4 @@ BluetoothBrailleDisplayManager = class {
           display.address);
     }
   }
-};
+}

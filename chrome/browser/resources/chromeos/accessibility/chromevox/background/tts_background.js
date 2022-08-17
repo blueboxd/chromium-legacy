@@ -7,10 +7,12 @@
  * extension API.
  */
 
+import {constants} from '../../common/constants.js';
 import {AbstractTts} from '../common/abstract_tts.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {ChromeTtsBase} from '../common/tts_base.js';
+import {QueueMode, TtsCapturingEventListener, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
 
 import {ChromeVox} from './chromevox.js';
 import {PhoneticData} from './phonetic_data.js';
@@ -435,9 +437,8 @@ export class TtsBackground extends ChromeTtsBase {
 
     switch (event.type) {
       case 'start':
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsStart();
-        });
+        this.capturingTtsEventListeners_.forEach(
+            listener => listener.onTtsStart());
         if (utterance.properties['startCallback']) {
           try {
             utterance.properties['startCallback']();
@@ -448,9 +449,8 @@ export class TtsBackground extends ChromeTtsBase {
       case 'end':
         // End callbacks could cause additional speech to queue up.
         this.currentUtterance_ = null;
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsEnd();
-        });
+        this.capturingTtsEventListeners_.forEach(
+            listener => listener.onTtsEnd());
         if (utterance.properties['endCallback']) {
           try {
             utterance.properties['endCallback']();
@@ -466,9 +466,8 @@ export class TtsBackground extends ChromeTtsBase {
           this.cancelUtterance_(this.utteranceQueue_[i]);
         }
         this.utteranceQueue_.length = 0;
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsInterrupted();
-        });
+        this.capturingTtsEventListeners_.forEach(
+            listener => listener.onTtsInterrupted());
         break;
       case 'error':
         this.onError_(event['errorMessage']);
@@ -577,9 +576,8 @@ export class TtsBackground extends ChromeTtsBase {
     (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
     chrome.tts.stop();
 
-    this.capturingTtsEventListeners_.forEach(function(listener) {
-      listener.onTtsInterrupted();
-    });
+    this.capturingTtsEventListeners_.forEach(
+        listener => listener.onTtsInterrupted());
   }
 
   /** @override */

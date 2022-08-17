@@ -12,7 +12,6 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_service.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
@@ -39,6 +38,7 @@
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
 #include "base/system/system_monitor.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
@@ -375,13 +375,11 @@ void AshTestHelper::SetUp(InitParams init_params) {
   AccelerometerReader::GetInstance()->SetECLidAngleDriverStatusForTesting(
       ECLidAngleDriverStatus::NOT_SUPPORTED);
 
+  // Call `StabilizeUIForPixelTest()` after the user session is activated (if
+  // any) in the test setup.
   if (ui_stabilizer_) {
     DCHECK(init_params.pixel_test_init_params);
-    const gfx::Size primary_display_size =
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow())
-            .size();
-    ui_stabilizer_->StabilizeUi(primary_display_size);
+    StabilizeUIForPixelTest();
   }
 }
 
@@ -397,6 +395,14 @@ void AshTestHelper::SimulateUserLogin(const AccountId& account_id,
   session_controller_client_->SwitchActiveUser(account_id);
   session_controller_client_->SetSessionState(
       session_manager::SessionState::ACTIVE);
+}
+
+void AshTestHelper::StabilizeUIForPixelTest() {
+  const gfx::Size primary_display_size =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow())
+          .size();
+  ui_stabilizer_->StabilizeUi(primary_display_size);
 }
 
 }  // namespace ash

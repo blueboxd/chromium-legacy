@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom-forward.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
@@ -16,9 +17,9 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+using ::ash::NetworkHandler;
 using ::ash::NetworkState;
-using chromeos::NetworkHandler;
-using chromeos::NetworkStateHandler;
+using ::ash::NetworkStateHandler;
 
 namespace crosapi {
 

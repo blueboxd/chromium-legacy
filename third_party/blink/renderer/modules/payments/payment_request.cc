@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_address_errors.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_android_pay_method_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_basic_card_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payer_errors.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_modifier.h"
@@ -45,7 +44,6 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
-#include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
 #include "third_party/blink/renderer/modules/payments/html_iframe_element_payments.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_change_event.h"
@@ -434,14 +432,9 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
   }
 
   // Parse method data to avoid parsing JSON in the browser.
-  if (RuntimeEnabledFeatures::PaymentRequestBasicCardEnabled(
-          &execution_context) &&
-      supported_method == "basic-card") {
-    BasicCardHelper::ParseBasiccardData(input, output->supported_networks,
-                                        exception_state);
-  } else if (supported_method == kSecurePaymentConfirmationMethod &&
-             RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
-                 &execution_context)) {
+  if (supported_method == kSecurePaymentConfirmationMethod &&
+      RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
+          &execution_context)) {
     UseCounter::Count(&execution_context,
                       WebFeature::kSecurePaymentConfirmation);
     output->secure_payment_confirmation =
@@ -638,6 +631,32 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate* input,
   }
 }
 
+// Checks whether Content Securituy Policy (CSP) allows a connection to the
+// given `url`.
+//
+// If CSP is being enforced, then a CSP violation will be reported in the
+// developer console.
+//
+// If CSP is not being enforced, then a CSP violation will be counted, but not
+// reported to the web developer.
+bool CSPAllowsConnectToSource(const KURL& url, ExecutionContext& context) {
+  const bool enforce_csp =
+      RuntimeEnabledFeatures::WebPaymentAPICSPEnabled(&context);
+
+  if (context.GetContentSecurityPolicy()->AllowConnectToSource(
+          url, /*url_before_redirects=*/url, RedirectStatus::kNoRedirect,
+          enforce_csp ? ReportingDisposition::kReport
+                      : ReportingDisposition::kSuppressReporting)) {
+    return true;  // Allow request.
+  }
+
+  if (enforce_csp)
+    return false;  // Block request.
+
+  UseCounter::Count(context, WebFeature::kPaymentRequestCSPViolation);
+  return true;  // Allow request.
+}
+
 void ValidateAndConvertPaymentMethodData(
     const HeapVector<Member<PaymentMethodData>>& input,
     const PaymentOptions* options,
@@ -692,12 +711,11 @@ void ValidateAndConvertPaymentMethodData(
     }
 
     KURL url(payment_method_data->supportedMethod());
-    if (url.IsValid() &&
-        !execution_context.GetContentSecurityPolicy()->AllowConnectToSource(
-            url, url, RedirectStatus::kNoRedirect,
-            ReportingDisposition::kSuppressReporting)) {
-      UseCounter::Count(&execution_context,
-                        WebFeature::kPaymentRequestCSPViolation);
+    if (url.IsValid() && !CSPAllowsConnectToSource(url, execution_context)) {
+      exception_state.ThrowRangeError(
+          payment_method_data->supportedMethod() +
+          " payment method identifier violates Content Security Policy.");
+      return;
     }
 
     method_names.insert(payment_method_data->supportedMethod());
@@ -1693,9 +1711,9 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
   // could have destroyed it.
   if (GetExecutionContext() && !event->is_waiting_for_update()) {
     // DispatchEvent runs synchronously. The method is_waiting_for_update()
-    // returns false if the merchant did not call event.updateWith() within the
-    // event handler, which is optional, so the renderer sends a message to the
-    // browser to re-enable UI interactions.
+    // returns false if the merchant did not call event.updateWith() within
+    // the event handler, which is optional, so the renderer sends a message
+    // to the browser to re-enable UI interactions.
     const String& message = String::Format(
         "No updateWith() call in '%s' event handler. User may see outdated "
         "line items and total.",
@@ -1705,8 +1723,8 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning, message));
     payment_provider_->OnPaymentDetailsNotUpdated();
-    // Make sure that updateWith() is only allowed to be called within the same
-    // event loop as the event dispatch. See
+    // Make sure that updateWith() is only allowed to be called within the
+    // same event loop as the event dispatch. See
     // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
     event->start_waiting_for_update(true);
   }

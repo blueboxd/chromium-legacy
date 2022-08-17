@@ -202,7 +202,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -248,18 +247,19 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/open_with_menu.h"
 #include "chrome/browser/chromeos/arc/start_smart_selection_action_menu.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/renderer_context_menu/quick_answers_menu_observer.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
@@ -723,7 +723,8 @@ RenderViewContextMenu::RenderViewContextMenu(
               GetProfile()->GetOriginalProfile()),
           this,
           &menu_model_,
-          GetBrowser()) {
+          GetBrowser(),
+          GetRenderFrameHost()) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -941,12 +942,6 @@ void RenderViewContextMenu::InitMenu() {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_AUTOFILL)) {
-    autofill_context_menu_manager_.AppendItems();
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  }
-
   bool media_image = content_type_->SupportsGroup(
       ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE);
   if (media_image)
@@ -986,8 +981,18 @@ void RenderViewContextMenu::InitMenu() {
 
   bool editable =
       content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_EDITABLE);
+
   if (editable)
-    AppendEditableItems();
+    AppendSpellingAndSearchSuggestionItems();
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_AUTOFILL)) {
+    autofill_context_menu_manager_.AppendItems();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
+
+  if (editable)
+    AppendOtherEditableItems();
 
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
@@ -1952,7 +1957,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
   }
 }
 
-void RenderViewContextMenu::AppendEditableItems() {
+void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
   const bool use_spelling = !chrome::IsRunningInForcedAppMode();
   if (use_spelling)
     AppendSpellingSuggestionItems();
@@ -1968,7 +1973,9 @@ void RenderViewContextMenu::AppendEditableItems() {
                                     IDS_CONTENT_CONTEXT_EMOJI);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
+}
 
+void RenderViewContextMenu::AppendOtherEditableItems() {
 // 'Undo' and 'Redo' for text input with no suggestions and no text selected.
 // We make an exception for OS X as context clicking will select the closest
 // word. In this case both items are always shown.
@@ -2314,7 +2321,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
     case IDC_CONTENT_CONTEXT_OPENLINKINPROFILE:
     case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
-      return params_.link_url.is_valid();
+      return params_.link_url.is_valid() &&
+             IsOpenLinkAllowedByDlp(params_.link_url);
 
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       return params_.unfiltered_link_url.is_valid();
@@ -2424,9 +2432,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsPrintPreviewEnabled();
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
-      return IsSearchWebForEnabled();
-
     case IDC_CONTENT_CONTEXT_GOTOURL:
+      return IsOpenLinkAllowedByDlp(selection_navigation_url_);
+
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDC_SEND_TAB_TO_SELF:
@@ -2568,12 +2576,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
   if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
           autofill::AutofillContextMenuManager::CommandId(id))) {
-    RenderFrameHost* render_frame_host = GetRenderFrameHost();
-    if (render_frame_host) {
-      autofill_context_menu_manager_.ExecuteCommand(
-          autofill::AutofillContextMenuManager::CommandId(id),
-          render_frame_host, params_);
-    }
+    autofill_context_menu_manager_.ExecuteCommand(
+        autofill::AutofillContextMenuManager::CommandId(id), params_);
     return;
   }
 
@@ -2838,12 +2842,29 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
-    case IDC_CONTENT_CONTEXT_GOTOURL:
-      OpenURL(selection_navigation_url_, GURL(),
-              ui::DispositionFromEventFlags(
-                  event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB),
+    case IDC_CONTENT_CONTEXT_GOTOURL: {
+      auto disposition = ui::DispositionFromEventFlags(
+          event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
+        // TODO(neis): Support the other possible dispositions in crosapi and
+        // then preserve them here.
+        auto nwd_disposition =
+            ash::NewWindowDelegate::Disposition::kNewForegroundTab;
+        if (disposition == WindowOpenDisposition::NEW_WINDOW) {
+          nwd_disposition = ash::NewWindowDelegate::Disposition::kNewWindow;
+        }
+        ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+            selection_navigation_url_,
+            ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+            nwd_disposition);
+        break;
+      }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+      OpenURL(selection_navigation_url_, GURL(), disposition,
               ui::PAGE_TRANSITION_LINK);
       break;
+    }
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
       ExecLanguageSettings(event_flags);
@@ -3004,7 +3025,7 @@ void RenderViewContextMenu::EscapeAmpersands(std::u16string* text) {
   base::ReplaceChars(*text, u"&", u"&&", text);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 const policy::DlpRulesManager* RenderViewContextMenu::GetDlpRulesManager()
     const {
   return policy::DlpRulesManagerFactory::GetForPrimaryProfile();
@@ -3168,15 +3189,15 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
   return !types.empty();
 }
 
-bool RenderViewContextMenu::IsSearchWebForEnabled() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool RenderViewContextMenu::IsOpenLinkAllowedByDlp(const GURL& link_url) const {
+#if BUILDFLAG(IS_CHROMEOS)
   const policy::DlpRulesManager* dlp_rules_manager = GetDlpRulesManager();
   if (!dlp_rules_manager) {
     return true;
   }
   policy::DlpRulesManager::Level level =
       dlp_rules_manager->IsRestrictedDestination(
-          params_.page_url, selection_navigation_url_,
+          params_.page_url, link_url,
           policy::DlpRulesManager::Restriction::kClipboard,
           /*out_source_pattern=*/nullptr, /*out_destination_pattern=*/nullptr);
   // TODO(crbug.com/1222057): show a warning if the level is kWarn
@@ -3232,12 +3253,17 @@ bool RenderViewContextMenu::IsRegionSearchEnabled() const {
   if (!service)
     return false;
 
+  if (!base::FeatureList::IsEnabled(
+          lens::features::kEnableRegionSearchOnPdfViewer) &&
+      IsFrameInPdfViewer(GetRenderFrameHost())) {
+    return false;
+  }
+
   const TemplateURL* provider = service->GetDefaultSearchProvider();
   const bool provider_supports_image_search =
       provider && !provider->image_url().empty() &&
       provider->image_url_ref().IsValid(service->search_terms_data());
   return base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
-         !IsFrameInPdfViewer(GetRenderFrameHost()) &&
          provider_supports_image_search &&
          !GetDocumentURL(params_).SchemeIs(content::kChromeUIScheme) &&
          !in_app &&
@@ -3300,7 +3326,7 @@ void RenderViewContextMenu::AppendSendTabToSelfItem(bool add_separator) {
   menu_model_.AddItemWithIcon(
       IDC_SEND_TAB_TO_SELF,
       l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF),
-      ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
+      ui::ImageModel::FromVectorIcon(kLaptopAndSmartphoneIcon));
 #endif
 }
 
@@ -3574,10 +3600,19 @@ void RenderViewContextMenu::ExecRegionSearch(
     int event_flags,
     bool is_google_default_search_provider) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (!lens_region_search_controller_)
+  if (!lens_region_search_controller_) {
+    Browser* browser = GetBrowser();
+    WebContents* web_contents = source_web_contents_;
+    if (base::FeatureList::IsEnabled(
+            lens::features::kEnableRegionSearchOnPdfViewer)) {
+      // We don't use `source_web_contents_` here because it doesn't work with
+      // the PDF reader.
+      web_contents = browser->tab_strip_model()->GetActiveWebContents();
+    }
     lens_region_search_controller_ =
-        std::make_unique<lens::LensRegionSearchController>(source_web_contents_,
-                                                           GetBrowser());
+        std::make_unique<lens::LensRegionSearchController>(web_contents,
+                                                           browser);
+  }
   // If Lens fullscreen search is enabled, we want to send every region search
   // as a fullscreen capture.
   bool use_fullscreen_capture =

@@ -282,16 +282,20 @@ void AppServiceProxyLacros::LaunchAppWithParams(AppLaunchParams&& params,
   std::move(callback).Run(LaunchResult());
 }
 
+void AppServiceProxyLacros::SetPermission(const std::string& app_id,
+                                          PermissionPtr permission) {
+  NOTIMPLEMENTED();
+}
+
 void AppServiceProxyLacros::SetPermission(
     const std::string& app_id,
     apps::mojom::PermissionPtr permission) {
   NOTIMPLEMENTED();
 }
 
-void AppServiceProxyLacros::Uninstall(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    gfx::NativeWindow parent_window) {
+void AppServiceProxyLacros::Uninstall(const std::string& app_id,
+                                      UninstallSource uninstall_source,
+                                      gfx::NativeWindow parent_window) {
   // On non-ChromeOS, publishers run the remove dialog.
   auto app_type = app_registry_cache_.GetAppType(app_id);
   if (app_type == AppType::kWeb) {
@@ -302,10 +306,40 @@ void AppServiceProxyLacros::Uninstall(
   }
 }
 
+void AppServiceProxyLacros::Uninstall(
+    const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source,
+    gfx::NativeWindow parent_window) {
+  Uninstall(app_id,
+            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
+            parent_window);
+}
+
+void AppServiceProxyLacros::UninstallSilently(
+    const std::string& app_id,
+    UninstallSource uninstall_source) {
+  if (!remote_crosapi_app_service_proxy_) {
+    return;
+  }
+
+  if (crosapi_app_service_proxy_version_ <
+      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+              kUninstallSilentlyMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << crosapi_app_service_proxy_version_
+                 << " does not support UninstallSilently().";
+    return;
+  }
+
+  remote_crosapi_app_service_proxy_->UninstallSilently(app_id,
+                                                       uninstall_source);
+}
+
 void AppServiceProxyLacros::UninstallSilently(
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {
-  NOTIMPLEMENTED();
+  UninstallSilently(
+      app_id, ConvertMojomUninstallSourceToUninstallSource(uninstall_source));
 }
 
 void AppServiceProxyLacros::StopApp(const std::string& app_id) {

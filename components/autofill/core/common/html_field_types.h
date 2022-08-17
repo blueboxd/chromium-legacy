@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_HTML_FIELD_TYPES_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_HTML_FIELD_TYPES_H_
 
+#include <stdint.h>
 #include "base/strings/string_piece_forward.h"
 
 namespace autofill {
@@ -90,13 +91,16 @@ enum HtmlFieldType {
   // Promo code for merchant sites.
   HTML_TYPE_MERCHANT_PROMO_CODE,
 
+  // International Bank Account Number (IBAN) for banking and merchant sites.
+  HTML_TYPE_IBAN,
+
   // Non-standard autocomplete types.
   HTML_TYPE_UNRECOGNIZED,
 };
 
 // The list of all HTML autocomplete field mode hints supported by Chrome.
 // See [ http://is.gd/whatwg_autocomplete ] for the full list of specced hints.
-enum HtmlFieldMode {
+enum HtmlFieldMode : uint8_t {
   HTML_MODE_NONE,
   HTML_MODE_BILLING,
   HTML_MODE_SHIPPING,

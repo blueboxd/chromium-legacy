@@ -23,6 +23,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/certificate_helper.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
@@ -30,7 +31,6 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/onc/onc_certificate_pattern.h"
 #include "chromeos/components/onc/variable_expander.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
@@ -41,7 +41,7 @@
 #include "third_party/cros_system_api/constants/pkcs11_custom_attributes.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -769,4 +769,4 @@ base::Time ClientCertResolver::Now() const {
   return base::Time::Now();
 }
 
-}  // namespace chromeos
+}  // namespace ash

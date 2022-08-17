@@ -15,7 +15,7 @@ import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
 
 /** @type {string} */
@@ -121,6 +121,10 @@ export function shareDataPageTestSuite() {
     // Verify the attach files label is in the page.
     assertTrue(page.i18nExists('attachFilesLabel'));
     assertEquals('Attach files', getElementContent('#attachFilesLabel'));
+
+    // Verify the add files Icon is in the page.
+    const addFilesIcon = getElement('#attachFilesIcon');
+    assertTrue(!!addFilesIcon);
 
     // Verify the user email label is in the page.
     assertTrue(page.i18nExists('userEmailLabel'));
@@ -590,30 +594,106 @@ export function shareDataPageTestSuite() {
   });
 
   /**
-   * Test that feedbackServiceProvider.openMetricsDialog is called
-   * when #histogramsLink ("metrics") link is clicked.
+   * Test that openMetricsDialog and recordPreSubmitAction are called when
+   * #histogramsLink ("metrics") link is clicked.
    */
   test('openMetricsDialog', async () => {
     await initializePage();
 
     assertEquals(0, feedbackServiceProvider.getOpenMetricsDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        0, FeedbackAppPreSubmitAction.kViewedMetrics);
 
     getElement('#histogramsLink').click();
 
     assertEquals(1, feedbackServiceProvider.getOpenMetricsDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        1, FeedbackAppPreSubmitAction.kViewedMetrics);
   });
 
   /**
-   * Test that feedbackServiceProvider.openSystemInfoDialog is called
-   * when #sysInfoLink ("system and app info") link is clicked.
+   * Test that openSystemInfoDialog and recordPreSubmitAction are called when
+   * #sysInfoLink ("system and app info") link is clicked.
    */
   test('openSystemInfoDialog', async () => {
     await initializePage();
 
     assertEquals(0, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        0, FeedbackAppPreSubmitAction.kViewedSystemAndAppInfo);
 
     getElement('#sysInfoLink').click();
 
     assertEquals(1, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        1, FeedbackAppPreSubmitAction.kViewedSystemAndAppInfo);
+  });
+
+  /**
+   * Test that feedbackServiceProvider.openBluetoothLogsInfoDialog is called
+   * when #bluetoothLogsLink link is clicked.
+   */
+  test('openBluetoothLogsInfoDialog', async () => {
+    await initializePage();
+
+    assertEquals(
+        0, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+
+    getElement('#bluetoothLogsInfoLink').click();
+
+    assertEquals(
+        1, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+  });
+
+  /**
+   * Test that sendBluetoothLogs flag is true and categoryTag is marked as
+   * 'BluetoothReportWithLogs' when bluetooth logs checkbox is checked.
+   */
+  test('sendReportWithBluetoothLogsFlagChecked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
+
+    // Check the bluetoothLogs checkbox, it is default to be checked.
+    assertTrue(!!bluetoothLogsCheckbox);
+    assertTrue(bluetoothLogsCheckbox.checked);
+
+    // Report should have sendBluetoothLogs flag true,and category marked as
+    // "BluetoothReportWithLogs".
+    const requestWithBluetoothFlag = (await clickSendAndWait(page)).report;
+
+    assertTrue(requestWithBluetoothFlag.sendBluetoothLogs);
+    assertTrue(!!requestWithBluetoothFlag.feedbackContext.categoryTag);
+    assertEquals(
+        'BluetoothReportWithLogs',
+        requestWithBluetoothFlag.feedbackContext.categoryTag);
+  });
+
+  /**
+   * Test that sendBluetoothLogs flag is false and categoryTag is not marked as
+   * 'BluetoothReportWithLogs' when bluetooth logs checkbox is unchecked.
+   */
+  test('sendReportWithoutBluetoothLogsFlagChecked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
+
+    // BluetoothLogs checkbox is default to be checked.
+    assertTrue(!!bluetoothLogsCheckbox);
+    assertTrue(bluetoothLogsCheckbox.checked);
+
+    // Verify that unchecking the checkbox will remove the flag in the report.
+    bluetoothLogsCheckbox.click();
+    assertFalse(bluetoothLogsCheckbox.checked);
+    await flushTasks();
+
+    // Report should not have sendBluetoothLogs flag,
+    // and category marked as "BluetoothReportWithLogs".
+    const requestWithoutBluetoothFlag = (await clickSendAndWait(page)).report;
+
+    assertFalse(requestWithoutBluetoothFlag.sendBluetoothLogs);
+    assertFalse(!!requestWithoutBluetoothFlag.feedbackContext.categoryTag);
   });
 }

@@ -29,6 +29,13 @@ public final class TrackerFactory {
      */
     public static Tracker getTrackerForProfile(Profile profile) {
         if (sTestTracker != null) return sTestTracker;
+        if (profile == null) {
+            throw new IllegalArgumentException("Profile is required for retrieving tracker.");
+        }
+        if (!profile.isNativeInitialized()) {
+            // Temporary to debug https://crbug.com/1346710.
+            throw new IllegalArgumentException("Profile must have a valid native pointer.");
+        }
 
         return TrackerFactoryJni.get().getTrackerForProfile(profile);
     }

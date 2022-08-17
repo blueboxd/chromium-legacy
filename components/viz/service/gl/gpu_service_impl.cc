@@ -12,12 +12,15 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -125,6 +128,12 @@
 namespace viz {
 
 namespace {
+
+// The names emitted for GPU initialization trace events.
+// This code may be removed after the following investigation:
+// crbug.com/1350257
+constexpr char kGpuInitializationEventCategory[] = "latency";
+constexpr char kGpuInitializationEvent[] = "GpuInitialization";
 
 using LogCallback = base::RepeatingCallback<
     void(int severity, const std::string& header, const std::string& message)>;
@@ -505,11 +514,23 @@ void GpuServiceImpl::UpdateGPUInfo() {
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::TimeTicks::Now() - start_time_;
+
+  // This metric code may be removed after the following investigation:
+  // crbug.com/1350257
+  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUInitializationTime.V4",
+                             gpu_info_.initialization_time,
+                             base::Milliseconds(5), base::Seconds(90), 100);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      kGpuInitializationEventCategory, kGpuInitializationEvent,
+      TRACE_ID_LOCAL(this), start_time_);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      kGpuInitializationEventCategory, kGpuInitializationEvent,
+      TRACE_ID_LOCAL(this), base::TimeTicks::Now());
 }
 
 void GpuServiceImpl::UpdateGPUInfoGL() {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  gpu::CollectGraphicsInfoGL(&gpu_info_);
+  gpu::CollectGraphicsInfoGL(&gpu_info_, gl::GetDefaultDisplay());
   gpu_host_->DidUpdateGPUInfo(gpu_info_);
 }
 
@@ -933,10 +954,10 @@ void GpuServiceImpl::DidLoseContext(bool offscreen,
   gpu_host_->DidLoseContext(offscreen, reason, active_url);
 }
 
-void GpuServiceImpl::StoreShaderToDisk(int client_id,
-                                       const std::string& key,
-                                       const std::string& shader) {
-  gpu_host_->StoreShaderToDisk(client_id, key, shader);
+void GpuServiceImpl::StoreBlobToDisk(const gpu::GpuDiskCacheHandle& handle,
+                                     const std::string& key,
+                                     const std::string& shader) {
+  gpu_host_->StoreBlobToDisk(handle, key, shader);
 }
 
 void GpuServiceImpl::MaybeExitOnContextLost() {
@@ -970,7 +991,6 @@ void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
 void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          uint64_t client_tracing_id,
                                          bool is_gpu_host,
-                                         bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
   // This should always be called on the IO thread first.
   if (io_runner_->BelongsToCurrentThread()) {
@@ -989,28 +1009,18 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
       return;
     }
 
-    EstablishGpuChannelCallback wrap_callback = base::BindOnce(
-        [](scoped_refptr<base::SingleThreadTaskRunner> runner,
-           EstablishGpuChannelCallback cb, mojo::ScopedMessagePipeHandle handle,
-           const gpu::GPUInfo& gpu_info,
-           const gpu::GpuFeatureInfo& gpu_feature_info) {
-          runner->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(cb), std::move(handle),
-                                          gpu_info, gpu_feature_info));
-        },
-        io_runner_, std::move(callback));
+    EstablishGpuChannelCallback wrap_callback =
+        base::BindPostTask(io_runner_, std::move(callback));
     main_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GpuServiceImpl::EstablishGpuChannel, weak_ptr_,
-                       client_id, client_tracing_id, is_gpu_host,
-                       cache_shaders_on_disk, std::move(wrap_callback)));
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::EstablishGpuChannel,
+                                  weak_ptr_, client_id, client_tracing_id,
+                                  is_gpu_host, std::move(wrap_callback)));
     return;
   }
 
   auto channel_token = base::UnguessableToken::Create();
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
-      channel_token, client_id, client_tracing_id, is_gpu_host,
-      cache_shaders_on_disk);
+      channel_token, client_id, client_tracing_id, is_gpu_host);
 
   if (!gpu_channel) {
     // This returns a null handle, which is treated by the client as a failure
@@ -1043,6 +1053,18 @@ void GpuServiceImpl::SetChannelClientPid(int32_t client_id,
   gpu_channel_manager_->SetChannelClientPid(client_id, client_pid);
 }
 
+void GpuServiceImpl::SetChannelDiskCacheHandle(
+    int32_t client_id,
+    const gpu::GpuDiskCacheHandle& handle) {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::SetChannelDiskCacheHandle,
+                                  weak_ptr_, client_id, handle));
+    return;
+  }
+  gpu_channel_manager_->SetChannelDiskCacheHandle(client_id, handle);
+}
+
 void GpuServiceImpl::CloseChannel(int32_t client_id) {
   if (!main_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(
@@ -1053,16 +1075,16 @@ void GpuServiceImpl::CloseChannel(int32_t client_id) {
   gpu_channel_manager_->RemoveChannel(client_id);
 }
 
-void GpuServiceImpl::LoadedShader(int32_t client_id,
-                                  const std::string& key,
-                                  const std::string& data) {
+void GpuServiceImpl::LoadedBlob(const gpu::GpuDiskCacheHandle& handle,
+                                const std::string& key,
+                                const std::string& data) {
   if (!main_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GpuServiceImpl::LoadedShader, weak_ptr_,
-                                  client_id, key, data));
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::LoadedBlob, weak_ptr_,
+                                  handle, key, data));
     return;
   }
-  gpu_channel_manager_->PopulateShaderCache(client_id, key, data);
+  gpu_channel_manager_->PopulateCache(handle, key, data);
 }
 
 void GpuServiceImpl::SetWakeUpGpuClosure(base::RepeatingClosure closure) {

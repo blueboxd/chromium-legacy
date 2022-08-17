@@ -329,7 +329,7 @@
       },
       'Comparison Mac (reclient)': {
         'goma': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
-        'reclient': 'gpu_tests_release_bot_minimal_symbols_reclient',
+        'reclient': 'gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
       },
       'Comparison Mac arm64 (reclient)': {
         'goma': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl',
@@ -372,7 +372,7 @@
       'Mac Builder Next': 'mac_arm64_gpu_tests_debug_bot_minimal_symbols_no_nacl',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols',
       'Mac deterministic (dbg)': 'debug_bot',
-      'Mac deterministic (reclient shadow)': 'release_bot_mac_strip_minimal_symbols_reclient',
+      'Mac deterministic (reclient shadow)': 'release_bot_mac_strip_minimal_symbols_no_nacl_reclient',
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64_reclient',
       'VR Linux': 'vr_release_bot_reclient',
       'Win 10 Fast Ring': 'release_trybot_minimal_symbols_reclient',
@@ -446,17 +446,17 @@
       'linux-lacros-tester-fyi-rel': 'lacros_on_linux_release_bot',
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot_reclient',
       'linux-perfetto-rel': 'perfetto_release_bot_reclient',
+      'linux-rel-no-external-ip': 'gpu_tests_release_bot_do_typecheck_reclient',
       'linux-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'linux-wpt-fyi-rel': 'release_trybot_minimal_symbols_reclient',
       'linux-wpt-identity-fyi-rel': 'release_bot_minimal_symbols_reclient',
       'linux-wpt-input-fyi-rel': 'release_bot_minimal_symbols_reclient',
       # TODO(crbug.com/1252626): remove this after the migration.
       'mac-arm64-on-arm64-rel-reclient': 'mac_arm64_release_bot_reclient',
+      'mac-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64_reclient',
       'mac-code-coverage': 'clang_code_coverage',
       'mac-fieldtrial-rel': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl',
       'mac-hermetic-upgrade-rel': 'release_bot',
-      'mac-paeverywhere-x64-fyi-dbg': 'debug_bot_paeverywhere_x64',
-      'mac-paeverywhere-x64-fyi-rel': 'release_trybot_paeverywhere_x64',
       'mac-upload-perfetto': 'release_bot_perfetto_zlib',
       'win-annotator-rel': 'release_bot_reclient',
       'win-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64_reclient',
@@ -465,6 +465,7 @@
       'win-fieldtrial-rel': 'release_bot_minimal_symbols_reclient',
       'win-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'win10-code-coverage': 'clang_code_coverage_reclient',
+      'win10-rel-no-external-ip': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'win32-archive-rel-goma-rbe-canary': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-archive-rel-goma-rbe-latest': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-arm64-rel': 'win32_arm64_release_bot_reclient',
@@ -653,6 +654,8 @@
       'chromecast-linux-builder-perf': 'cast_binary_size',
       'chromeos-amd64-generic-lacros-builder-perf': 'chromeos_amd64-generic_lacros_official',
       'chromeos-arm-generic-lacros-builder-perf': 'chromeos_arm-generic_lacros_official',
+      'fuchsia-builder-perf-arm64': 'official_goma_fuchsia_arm64_perf',
+      'fuchsia-builder-perf-x64': 'official_goma_fuchsia_x64_perf',
       'linux-builder-perf': 'official_goma_linux_perf',
       'linux-builder-perf-pgo': 'official_goma_linux_perf_pgo',
       'linux-builder-perf-rel': 'official_goma_linux_perf',
@@ -674,7 +677,6 @@
       'android_arm64-cfi-builder-perf-fyi': 'official_goma_minimal_symbols_android_thin_lto_opt_arm64',
       'chromeos-kevin-builder-perf-fyi': 'chromeos_kevin_include_unwind_tables_official',
       'fuchsia-builder-perf-fyi': 'official_goma_fuchsia_arm64_perf',
-      'fuchsia-builder-perf-x64': 'official_goma_fuchsia_x64_perf',
     },
 
     'chromium.reclient.fyi': {
@@ -1947,19 +1949,19 @@
     ],
 
     'cast_arm64_release_bot': [
-      'cast', 'release_bot', 'arm64', 'minimal_symbols',
+      'cast_receiver', 'cast_os', 'release_bot', 'arm64', 'minimal_symbols',
     ],
 
     'cast_arm64_release_bot_reclient': [
-      'cast', 'release_bot_reclient', 'arm64', 'minimal_symbols',
+      'cast_receiver', 'cast_os', 'release_bot_reclient', 'arm64', 'minimal_symbols',
     ],
 
     'cast_audio_release_bot_reclient': [
-      'cast', 'cast_audio', 'release_bot_reclient', 'minimal_symbols',
+      'cast_receiver', 'cast_os', 'cast_audio', 'release_bot_reclient', 'minimal_symbols',
     ],
 
     'cast_audio_release_trybot': [
-      'cast', 'cast_audio', 'release_trybot',
+      'cast_receiver', 'cast_os', 'cast_audio', 'release_trybot',
     ],
 
     'cast_binary_size': [
@@ -1967,21 +1969,21 @@
     ],
 
     'cast_debug_bot': [
-      'cast', 'debug_bot',
+      'cast_receiver', 'cast_os', 'debug_bot',
     ],
 
     'cast_debug_bot_reclient': [
-      'cast', 'debug_bot_reclient',
+      'cast_receiver', 'cast_os', 'debug_bot_reclient',
     ],
 
     # Cast Linux takes very long in linking, possibly due to being on GCE
     # (crbug/794423).
     'cast_release_bot_reclient': [
-      'cast', 'release_bot_reclient', 'minimal_symbols',
+      'cast_receiver', 'cast_os', 'release_bot_reclient', 'minimal_symbols',
     ],
 
     'cast_release_trybot': [
-      'cast', 'release_trybot',
+      'cast_receiver', 'cast_os', 'release_trybot',
     ],
 
     'cfi_full_cfi_icall_cfi_diag_recover_release_static_reclient': [
@@ -2472,10 +2474,6 @@
       'debug_bot_local_build',
     ],
 
-    'debug_bot_paeverywhere_x64': [
-      'debug_bot', 'paeverywhere', 'x64',
-    ],
-
     'debug_bot_reclient': [
       'debug_bot_reclient',
     ],
@@ -2738,6 +2736,10 @@
 
     'gpu_tests_release_bot_minimal_symbols_no_nacl': [
       'gpu_tests', 'release_bot', 'minimal_symbols', 'disable_nacl',
+    ],
+
+    'gpu_tests_release_bot_minimal_symbols_no_nacl_reclient': [
+      'gpu_tests', 'release_bot_reclient', 'minimal_symbols', 'disable_nacl',
     ],
 
     'gpu_tests_release_bot_minimal_symbols_reclient': [
@@ -3422,8 +3424,8 @@
       'release_bot', 'mac_strip', 'minimal_symbols', 'arm64',
     ],
 
-    'release_bot_mac_strip_minimal_symbols_reclient': [
-      'release_bot_reclient', 'mac_strip', 'minimal_symbols',
+    'release_bot_mac_strip_minimal_symbols_no_nacl_reclient': [
+      'release_bot_reclient', 'mac_strip', 'minimal_symbols', 'disable_nacl',
     ],
 
     'release_bot_minimal_symbols': [
@@ -3564,10 +3566,6 @@
 
     'release_trybot_no_nacl': [
       'release_trybot', 'disable_nacl',
-    ],
-
-    'release_trybot_paeverywhere_x64': [
-      'release_trybot_minimal_symbols', 'paeverywhere', 'x64',
     ],
 
     'release_trybot_tsan': [
@@ -3798,6 +3796,10 @@
 
     'cast_audio': {
       'gn_args': 'is_cast_audio_only=true'
+    },
+
+    'cast_os': {
+      'gn_args': 'is_castos=true'
     },
 
     'cast_receiver': {
@@ -4410,10 +4412,6 @@
     # https://crbug.com/dawn/1200: Used to disable partition alloc while we
     # investigate a crash in the mac AMD shader compiler.
     'padisabled': {
-      'gn_args': 'use_allocator="none"',
-    },
-
-    'paeverywhere': {
       'gn_args': 'use_allocator="none"',
     },
 

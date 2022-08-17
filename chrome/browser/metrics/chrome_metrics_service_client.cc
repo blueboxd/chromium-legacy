@@ -20,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -127,7 +128,7 @@
 #include "components/metrics/android_metrics_provider.h"
 #else
 #include "chrome/browser/metrics/browser_activity_watcher.h"
-#include "components/performance_manager/public/metrics/metrics_provider.h"
+#include "chrome/browser/performance_manager/metrics/metrics_provider.h"
 #endif
 
 #if BUILDFLAG(IS_POSIX)
@@ -171,6 +172,10 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/notification_helper/notification_helper_constants.h"
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+#include "components/metrics/motherboard_metrics_provider.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
@@ -716,6 +721,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::CPUMetricsProvider>());
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::MotherboardMetricsProvider>());
+#endif
+
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::EntropyStateProvider>(local_state));
 
@@ -776,7 +786,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::make_unique<FamilyLinkUserMetricsProvider>());
 #else
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<performance_manager::MetricsProvider>(local_state));
+      base::WrapUnique(new performance_manager::MetricsProvider(local_state)));
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)

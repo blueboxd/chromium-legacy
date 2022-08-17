@@ -50,6 +50,9 @@ export class Dictation {
     /** @private {Audio} */
     this.endTone_ = new Audio('dictation/earcons/audio_end.wav');
 
+    /** @private {number} */
+    this.noSpeechTimeoutMs_ = Dictation.Timeouts.NO_SPEECH_NETWORK_MS;
+
     /** @private {?number} */
     this.stopTimeoutId_ = null;
 
@@ -144,7 +147,13 @@ export class Dictation {
   /** @private */
   startDictation_() {
     this.active_ = true;
-    this.startTone_.play();
+    if (this.chromeVoxEnabled_) {
+      // Silence ChromeVox in case it was speaking. It can speak over the start
+      // tone and also cause a feedback loop if the user is not using
+      // headphones. This does not stop ChromeVox from speaking additional
+      // utterances added to the queue later.
+      chrome.accessibilityPrivate.silenceSpokenFeedback();
+    }
     this.setStopTimeout_(
         Dictation.Timeouts.NO_FOCUSED_IME_MS,
         'Dictation stopped automatically: No focused IME');
@@ -162,7 +171,6 @@ export class Dictation {
       chrome.speechRecognitionPrivate.start(
           /** @type {!StartOptions} */ (this.speechRecognitionOptions_),
           type => this.onSpeechRecognitionStarted_(type));
-      this.setStopTimeout_(Dictation.Timeouts.NO_SPEECH_MS);
     } else {
       // We are no longer starting up - perhaps a stop came
       // through during the async callbacks. Ensure cleanup
@@ -238,7 +246,7 @@ export class Dictation {
     const transcript = event.transcript;
     const isFinal = event.isFinal;
     this.setStopTimeout_(
-        isFinal ? Dictation.Timeouts.NO_SPEECH_MS :
+        isFinal ? this.noSpeechTimeoutMs_ :
                   Dictation.Timeouts.NO_NEW_SPEECH_MS);
     await this.processSpeechRecognitionResult_(transcript, isFinal);
   }
@@ -303,6 +311,12 @@ export class Dictation {
       return;
     }
 
+    this.noSpeechTimeoutMs_ = type === SpeechRecognitionType.NETWORK ?
+        Dictation.Timeouts.NO_SPEECH_NETWORK_MS :
+        Dictation.Timeouts.NO_SPEECH_ONDEVICE_MS;
+    this.setStopTimeout_(this.noSpeechTimeoutMs_);
+
+    this.startTone_.play();
     this.clearInterimText_();
 
     // Record metrics.
@@ -362,6 +376,8 @@ export class Dictation {
           } else {
             this.chromeVoxEnabled_ = false;
           }
+          // Use a longer hints timeout when ChromeVox is enabled.
+          this.uiController_.setHintsTimeoutDuration(this.chromeVoxEnabled_);
           break;
         default:
           return;
@@ -520,7 +536,8 @@ Dictation.SPOKEN_FEEDBACK_PREF = 'settings.accessibility';
  * @type {!Object<string, number>}
  */
 Dictation.Timeouts = {
-  NO_SPEECH_MS: 10 * 1000,
+  NO_SPEECH_NETWORK_MS: 10 * 1000,
+  NO_SPEECH_ONDEVICE_MS: 20 * 1000,
   NO_NEW_SPEECH_MS: 5 * 1000,
   NO_FOCUSED_IME_MS: 500,
 };

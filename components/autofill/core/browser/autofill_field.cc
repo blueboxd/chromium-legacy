@@ -204,8 +204,14 @@ AutofillType AutofillField::ComputedType() const {
           (heuristic_type() == ADDRESS_HOME_STREET_NAME ||
            heuristic_type() == ADDRESS_HOME_HOUSE_NUMBER));
 
+    // For merchant promo code fields the heuristic predictions get precedence
+    // over the server predictions.
     believe_server =
-        believe_server && !(heuristic_type() == MERCHANT_PROMO_CODE);
+        believe_server && (heuristic_type() != MERCHANT_PROMO_CODE);
+
+    // For international bank account number (IBAN) fields the heuristic
+    // predictions get precedence over the server predictions.
+    believe_server = believe_server && (heuristic_type() != IBAN_VALUE);
 
     if (believe_server)
       return AutofillType(server_type());
@@ -244,9 +250,6 @@ std::string AutofillField::FieldSignatureAsStr() const {
 }
 
 bool AutofillField::IsFieldFillable() const {
-  if (!base::FeatureList::IsEnabled(features::kAutofillFixFillableFieldTypes))
-    return !Type().IsUnknown();
-
   ServerFieldType field_type = Type().GetStorableType();
   return IsFillableFieldType(field_type);
 }

@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> öğe siliniyor...</translation>
 <translation id="1049926623896334335">Word belgesi</translation>
 <translation id="1056775291175587022">Ağ yok</translation>
+<translation id="1056898198331236512">Uyarı</translation>
 <translation id="1060368002126861100">Dosyaları <ph name="APP_NAME" /> ile açmak için önce dosyaları Windows dosyaları klasörüne taşıyın.</translation>
 <translation id="1062407476771304334">Değiştir</translation>
 <translation id="1119447706177454957">Dahili hata</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
 <translation id="255937426064304553">ABD uluslararası</translation>
 <translation id="2563185590376525700">Kurbağa</translation>
-<translation id="2570012981255377263">Son dosyalarınız burada gösterilir</translation>
 <translation id="2578394532502990878">Tamilce Fonetik</translation>
 <translation id="2579959351793446050">Oriya</translation>
 <translation id="2602810353103180630">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">Geçersiz PIN. <ph name="RETRIES" /> deneme hakkınız kaldı.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (donanım destekli)</translation>
 <translation id="3188257591659621405">Dosyalarım</translation>
+<translation id="3194553149358267393">Yakın tarihli ses dosyası yok</translation>
 <translation id="3197563288998582412">İngiltere Dvorak</translation>
 <translation id="3202131003361292969">Yol</translation>
 <translation id="3205852408225871810">Portekizce (Brezilya)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="3486821258960016770">Moğolca</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hata.</translation>
+<translation id="3495810061346586977">Bu dosya gizli olup yönetici politikasından kaynaklı kısıtlamalara tabidir. <ph name="BEGIN_LINK_HELP" />Daha fazla bilgi<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Ayrıntılar</translation>
 <translation id="3522708245912499433">Portekizce</translation>
 <translation id="3524311639100184459">Dikkat: Bu dosyalar geçicidir ve disk alanından kazanmak için otomatik olarak silinebilir.  <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Klasör</translation>
+<translation id="3548125359243647069">Çok sayıda yanlış PIN girildi.</translation>
 <translation id="3549797760399244642">drive.google.com'a git...</translation>
 <translation id="3553048479571901246">Dosyaları <ph name="APP_NAME" /> ile açmak için önce dosyaları Windows dosyaları klasörüne kopyalayın.</translation>
 <translation id="3556731189587832921">Uluslararası PC klavye ile İngilizce (ABD)</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">Türkçe-F</translation>
 <translation id="3616113530831147358">Ses</translation>
 <translation id="3619115746895587757">Kapuçino</translation>
+<translation id="3619593063686672873">Yakın tarihli video yok</translation>
 <translation id="3620292326130836921">Tümü yedeklendi!</translation>
 <translation id="3634507049637220048">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Yöneticiniz tarafından yönetiliyor, Ayrıntılar</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> öğe taşındı.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> dosyası</translation>
 <translation id="457386861538956877">Diğer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> seçime eklendi.</translation>
+<translation id="4583436353463424810">Yakın tarihli doküman yok</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> için sonuçlar gösteriliyor.</translation>
 <translation id="4599600860674643278">Filtre sıfırlandı.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> adlı dosya <ph name="FOLDER_NAME" /> klasörüne kopyalanıyor</translation>
@@ -485,7 +490,9 @@
 <translation id="5159560892333415631">Çöp Kutusunu Boşalt</translation>
 <translation id="5163869187418756376">Paylaşılamadı. Bağlantınızı kontrol edin ve daha sonra tekrar deneyin.</translation>
 <translation id="516592729076796170">ABD Programcı Dvorak</translation>
+<translation id="5172749059808361023">Kısıtlama ayrıntıları</translation>
 <translation id="5177526793333269655">Küçük resim görünümü</translation>
+<translation id="5181896909298187506">Yakın tarihli dosya yok</translation>
 <translation id="5194713942430106590">Sütunu artan düzende sıralamak için tıklayın.</translation>
 <translation id="5211614973734216083">Faroe dili</translation>
 <translation id="5218183485292899140">İsviçre Fransızcası</translation>
@@ -541,7 +548,6 @@
 <translation id="5625294776298156701">Tamil99 klavye ile Tamilce</translation>
 <translation id="5633226425545095130">Bu öğe, "<ph name="DESTINATION_NAME" />" adlı paylaşılan klasöre taşınırsa bu klasörü görebilen herkesle paylaşılır.</translation>
 <translation id="5649768706273821470">Dinle</translation>
-<translation id="5665074015635552640">Son videolarınız burada gösterilir</translation>
 <translation id="5669691691057771421">Yeni PIN'i girin</translation>
 <translation id="5678784840044122290">Linux uygulaması sizin Terminalinizde mevcut. Ayrıca Başlatıcınızda bir simgesini görebilirsiniz.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Arşivle veya sanal diskle olan bağlantı kesilemiyor<ph name="END_BOLD" />
@@ -614,6 +620,7 @@
 <translation id="6267547857941397424">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, %<ph name="BATTERY_STATUS" /> Telefon Pili, Bağlan</translation>
 <translation id="6269630227984243955">Malayca</translation>
 <translation id="6287852322318138013">Bu dosyayı açmak için bir uygulama seçin</translation>
+<translation id="6295542640242147836">SIM kilidi</translation>
 <translation id="6296410173147755564">Geçersiz PUK</translation>
 <translation id="6312403991423642364">Bilinmeyen ağ hatası</translation>
 <translation id="6317608858038767920">Özel alan adı sunucusu <ph name="INPUT_INDEX" /></translation>
@@ -686,7 +693,6 @@
     <ph name="FILE_COUNT" /> bulundu</translation>
 <translation id="6935521024859866267">Baş Aşağı</translation>
 <translation id="6943836128787782965">HTTP get işlevi başarısız oldu</translation>
-<translation id="6945604978460872381">Son dokümanlarınız burada gösterilir</translation>
 <translation id="6949408524333579394">Sırpça Harf Çevirisi</translation>
 <translation id="6954309393500027528">Bu dosyayı yapıştırma işlevi, yöneticiniz tarafından engellendi</translation>
 <translation id="6960565108681981554">Etkin değil. Operatörünüzle iletişime geçin.</translation>
@@ -723,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Dosyayı farklı kaydet</translation>
 <translation id="7229570126336867161">EVDO gerekli</translation>
+<translation id="7230898482850090046">Yöneticiniz "SIM kilidi" ayarını devre dışı bırakmanızı istedi</translation>
 <translation id="7238097264433196391">Sürücü adı</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Ayrıntılar</translation>
 <translation id="7246947237293279874">FTP Proxy'si</translation>
@@ -734,7 +741,6 @@
 <translation id="7295662345261934369">Başkalarıyla paylaş</translation>
 <translation id="7297443947353982503">Kullanıcı adı/şifre yanlış veya EAP yetkilendirmesi başarısız oldu</translation>
 <translation id="7309413087278791451">Almanca (Belçika)</translation>
-<translation id="7313374447885864533">Son ses dosyalarınız burada gösterilir</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="7343393116438664539">Vietnamca Teleks</translation>
 <translation id="7357762654218998920">Bu dosya türü desteklenmiyor. ChromeOS'de dosya açma hakkında <ph name="BEGIN_LINK_HELP" />daha fazla bilgi alın<ph name="END_LINK_HELP" />.</translation>
@@ -744,6 +750,7 @@
 <translation id="7408870451288633753">Çekçe</translation>
 <translation id="7417453074306512035">Etiyopya dili klavye</translation>
 <translation id="7417705661718309329">Google harita</translation>
+<translation id="7458955835361612701">Yakın tarihli resim yok</translation>
 <translation id="7460898608667578234">Ukraynaca</translation>
 <translation id="7469894403370665791">Bu ağa otomatik olarak bağlan</translation>
 <translation id="7486315294984620427">Dosyaları Parallels Desktop'a bırakabilmek için Windows dosyalarına kopyalamak gerekir.</translation>
@@ -755,6 +762,7 @@
 <translation id="7505167922889582512">Gizli dosyaları göster</translation>
 <translation id="7514365320538308">İndir</translation>
 <translation id="751507702149411736">Belarusça</translation>
+<translation id="7521790570754130607">Mobil veri kullanmak için PIN gerekir</translation>
 <translation id="7532029025027028521">Farsça Harf Çevirisi</translation>
 <translation id="7544830582642184299">Linux uygulamalarının Google Drive'ınızdaki dosyalara erişmesine izin verin. Değişiklikler, diğer cihazlarınızla senkronize edilecektir.</translation>
 <translation id="7547009467130558110">Spor ayakkabı</translation>
@@ -779,6 +787,7 @@
 <translation id="76959938259365003">Çöp kutusu boşaltılamadı.</translation>
 <translation id="770015031906360009">Yunanca</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> dosyası kopyalandı.</translation>
+<translation id="7708271999969613024">Bu ağı kullanmak için operatör tarafından sağlanan 8 basamaklı Kişisel Engelleme Kaldırma Anahtarını (PUK) girmeniz gerekir.</translation>
 <translation id="7711920809702896782">Resim bilgileri</translation>
 <translation id="7724603315864178912">Kes</translation>
 <translation id="7730494089396812859">Bulut yedekleme ile ilgili ayrıntıları göster</translation>
@@ -864,7 +873,6 @@
 <translation id="8342318071240498787">Aynı adda bir dosya veya dizin zaten var.</translation>
 <translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
 <translation id="8372852072747894550">Yunanca</translation>
-<translation id="8384716930968677505">Son resimleriniz burada gösterilir</translation>
 <translation id="8386903983509584791">Tarama tamamlandı</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> çıkarıldı.</translation>
 <translation id="8395901698320285466">Boyutlar</translation>
@@ -874,6 +882,7 @@
 <translation id="8437209419043462667">ABD</translation>
 <translation id="8452135315243592079">SIM kart yok</translation>
 <translation id="8456681095658380701">Geçersiz ad</translation>
+<translation id="8457767749626250697">SIM'iniz kilitli</translation>
 <translation id="8459404855768962328">Bu öğe, "<ph name="DESTINATION_NAME" />" adlı paylaşılan klasöre kopyalanırsa bu klasörü görebilen herkesle paylaşılır.</translation>
 <translation id="8461467696380332069">Raftaki dosyalarınıza hızlı erişim için dosyayı sağ tıklayıp "Rafa sabitle"yi seçin.</translation>
 <translation id="8461914792118322307">Proxy</translation>

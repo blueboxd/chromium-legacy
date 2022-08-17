@@ -1932,7 +1932,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R105-14989.11.0",
+        "cros_img": "atlas-release/R106-15048.0.0",
         "name": "lacros_all_tast_tests ATLAS_RELEASE_DEV",
         "resultdb": {
           "enable": true,
@@ -1948,7 +1948,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R105-14989.26.0",
+        "cros_img": "atlas-release/R105-14989.36.0",
         "name": "lacros_all_tast_tests ATLAS_RELEASE_BETA",
         "resultdb": {
           "enable": true,
@@ -1996,7 +1996,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R105-14989.11.0",
+        "cros_img": "eve-release/R106-15048.0.0",
         "name": "lacros_all_tast_tests EVE_RELEASE_DEV",
         "resultdb": {
           "enable": true,
@@ -2086,70 +2086,6 @@
     "skylab_tests": [
       {
         "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R106-15019.0.0",
-        "name": "lacros_all_tast_tests HANA_RELEASE_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800,
-        "variant_id": "HANA_RELEASE_LKGM"
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R105-14989.11.0",
-        "name": "lacros_all_tast_tests HANA_RELEASE_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800,
-        "variant_id": "HANA_RELEASE_DEV"
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R105-14989.26.0",
-        "name": "lacros_all_tast_tests HANA_RELEASE_BETA",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800,
-        "variant_id": "HANA_RELEASE_BETA"
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R104-14909.100.0",
-        "name": "lacros_all_tast_tests HANA_RELEASE_STABLE",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800,
-        "variant_id": "HANA_RELEASE_STABLE"
-      },
-      {
-        "args": [],
         "cros_board": "jacuzzi",
         "cros_img": "jacuzzi-release/R106-15019.0.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_LKGM",
@@ -2167,7 +2103,7 @@
       {
         "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R105-14989.11.0",
+        "cros_img": "jacuzzi-release/R106-15048.0.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_DEV",
         "resultdb": {
           "enable": true,
@@ -2183,7 +2119,7 @@
       {
         "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R105-14989.26.0",
+        "cros_img": "jacuzzi-release/R105-14989.36.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_BETA",
         "resultdb": {
           "enable": true,
@@ -2257,15 +2193,15 @@
         "args": [],
         "cros_board": "herobrine",
         "cros_img": "herobrine-release/R106-15019.0.0",
-        "name": "lacros_all_tast_tests HEROBRINE_RELEASE_LKGM",
+        "name": "lacros_fyi_tast_tests HEROBRINE_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
         },
         "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros_unstable\" && !informational)",
+        "test": "lacros_fyi_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_fyi_tast_tests/",
         "timeout_sec": 10800,
         "variant_id": "HEROBRINE_RELEASE_LKGM"
       }

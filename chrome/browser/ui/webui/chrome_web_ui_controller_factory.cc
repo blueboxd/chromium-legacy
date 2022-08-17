@@ -27,6 +27,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/apc_internals/apc_internals_ui.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
+#include "chrome/browser/ui/webui/intro/intro_ui.h"
 #include "chrome/browser/ui/webui/invalidations/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
@@ -147,6 +149,7 @@
 #include "chrome/browser/ui/webui/new_tab_page_third_party/new_tab_page_third_party_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/page_not_available_for_guest/page_not_available_for_guest_ui.h"
+#include "chrome/browser/ui/webui/password_manager/password_manager_ui.h"
 #include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_dialog_ui.h"
 #include "chrome/browser/ui/webui/profile_internals/profile_internals_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
@@ -164,6 +167,7 @@
 #include "chrome/browser/ui/webui/webui_gallery/webui_gallery_ui.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "media/base/media_switches.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -209,8 +213,6 @@
 #include "ash/webui/scanning/url_constants.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
 #include "ash/webui/shimless_rma/url_constants.h"
-#include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
-#include "ash/webui/shortcut_customization_ui/url_constants.h"
 #include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
 #include "ash/webui/system_extensions_internals_ui/url_constants.h"
 #include "base/system/sys_info.h"
@@ -284,7 +286,6 @@
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
 #include "content/public/common/content_switches.h"
@@ -313,6 +314,7 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/webui/app_home/app_home_ui.h"
 #include "chrome/browser/ui/webui/app_settings/web_app_settings_ui.h"
 #include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
@@ -822,7 +824,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
       extensions::ExtensionSystem::Get(profile)->extension_service() &&
       !profile->IsGuestSession()) {
-    return &NewWebUI<AppLauncherPageUI>;
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsAppHomePage)) {
+      return &NewWebUI<webapps::AppHomeUI>;
+    } else {
+      return &NewWebUI<AppLauncherPageUI>;
+    }
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
   if (profile->IsGuestSession() &&
@@ -839,6 +845,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Bookmarks are part of NTP on Android.
   if (url.host_piece() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
+  if (url.host_piece() == chrome::kChromeUIPasswordManagerHost &&
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign))
+    return &NewWebUI<PasswordManagerUI>;
   if (url.host_piece() == chrome::kChromeUICommanderHost)
     return &NewWebUI<CommanderUI>;
   // Downloads list on Android uses the built-in download manager.
@@ -1028,10 +1038,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == ash::kChromeUIMediaAppHost)
     return &NewComponentUI<ash::MediaAppUI, ChromeMediaAppUIDelegate>;
-  if (features::IsShortcutCustomizationAppEnabled()) {
-    if (url.host_piece() == ash::kChromeUIShortcutCustomizationAppHost)
-      return &NewWebUI<ash::ShortcutCustomizationAppUI>;
-  }
   if (ash::features::IsFirmwareUpdaterAppEnabled()) {
     if (url.host_piece() == ash::kChromeUIFirmwareUpdateAppHost)
       return &NewWebUI<ash::FirmwareUpdateAppUI>;
@@ -1168,6 +1174,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
   if (url.host_piece() == chrome::kChromeUIEnterpriseProfileWelcomeHost)
     return &NewWebUI<EnterpriseProfileWelcomeUI>;
+  if (url.host_piece() == chrome::kChromeUIIntroHost &&
+      base::FeatureList::IsEnabled(kForYouFre))
+    return &NewWebUI<IntroUI>;
   if (url.host_piece() == chrome::kChromeUIProfileCustomizationHost)
     return &NewWebUI<ProfileCustomizationUI>;
   if (url.host_piece() == chrome::kChromeUIProfilePickerHost)

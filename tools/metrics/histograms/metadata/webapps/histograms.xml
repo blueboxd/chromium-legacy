@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="AppBanners.BeforeInstallEvent"
-    enum="AppBannersBeforeInstallEvent" expires_after="2022-12-04">
+    enum="AppBannersBeforeInstallEvent" expires_after="2023-02-05">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -100,7 +100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.UserResponse" enum="AppBannersUserResponse"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <summary>
@@ -167,7 +167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AddToHomescreenMediator.AppTypeToMenuEntry"
-    enum="AppTypeToMenuEntry" expires_after="2022-12-11">
+    enum="AppTypeToMenuEntry" expires_after="2023-02-12">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -503,7 +503,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.Install.InstallEvent" enum="WebappInstallSource"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>dominickn@chromium.org</owner>
   <owner>loyso@chromium.org</owner>
   <owner>calamity@chromium.org</owner>
@@ -574,7 +574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.InstallResult" enum="WebAppInstallResultCode"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="WebAppType" -->
 
   <owner>calamity@chromium.org</owner>
@@ -583,7 +583,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Launcher.LaunchResult"
-    enum="WebAppLauncherLaunchResult" expires_after="2022-11-27">
+    enum="WebAppLauncherLaunchResult" expires_after="2023-02-12">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>jessemckenna@google.com</owner>
   <summary>
@@ -614,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.AppDuplicationFixApplied" units="apps"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -679,7 +679,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.ConfigErrorCount" units="apps"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -788,7 +788,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Shortcuts.Creation.Result"
-    enum="ShortcutsCreationResult" expires_after="2022-11-20">
+    enum="ShortcutsCreationResult" expires_after="2023-02-12">
   <owner>phillis@chromium.org</owner>
   <owner>dmurph@chromium.org</owner>
   <summary>Records the result of shortcut creation for PWA.</summary>
@@ -909,36 +909,6 @@ chromium-metrics-reviews@google.com.
     navigations. Note that &quot;No app in scope&quot; results are ignored due
     to the expected several orders of magnitude higher volume than all other
     update results.
-  </summary>
-</histogram>
-
-<histogram name="WebApp.UrlHandling.DialogState"
-    enum="WebAppUrlHandlingDialogState" expires_after="2022-06-25">
-  <owner>mek@chromium.org</owner>
-  <owner>desktop-pwas-team@google.com</owner>
-  <summary>
-    Records the user action taken on the URL Handling intent picker dialog.
-  </summary>
-</histogram>
-
-<histogram name="WebApp.UrlHandling.GetValidProfilesAtStartUp"
-    units="microseconds" expires_after="2022-06-20">
-  <owner>mek@chromium.org</owner>
-  <owner>desktop-pwas-team@google.com</owner>
-  <summary>
-    Measure the time it takes to collect (loading as needed) the set of profiles
-    eligible to handle a URL by a PWA at startup for URL Handling. Emitted for
-    users with high resolution clocks only.
-  </summary>
-</histogram>
-
-<histogram name="WebApp.UrlHandling.LoadWebAppRegistrarsAtStartUp"
-    units="microseconds" expires_after="2022-06-20">
-  <owner>mek@chromium.org</owner>
-  <owner>desktop-pwas-team@google.com</owner>
-  <summary>
-    Measure the time it takes to load all the web app registrars for URL
-    Handling at startup. Emitted for users with high resolution clocks only.
   </summary>
 </histogram>
 

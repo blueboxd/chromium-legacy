@@ -19,8 +19,6 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using autofill::features::kAutofillFixFillableFieldTypes;
-
 namespace autofill {
 
 class FormFieldTest
@@ -35,10 +33,10 @@ class FormFieldTest
   // Parses all added fields using `ParseFormFields`.
   // Returns the number of fields parsed.
   int ParseFormFields() {
-    field_candidates_map_ = FormField::ParseFormFields(list_, LanguageCode(""),
-                                                       /*is_form_tag=*/true,
-                                                       GetActivePatternSource(),
-                                                       /*log_manager=*/nullptr);
+    FormField::ParseFormFields(list_, LanguageCode(""),
+                               /*is_form_tag=*/true, GetActivePatternSource(),
+                               field_candidates_map_,
+                               /*log_manager=*/nullptr);
     return field_candidates_map_.size();
   }
 
@@ -46,7 +44,7 @@ class FormFieldTest
   int ParseSingleFieldForms() {
     FormField::ParseSingleFieldForms(
         list_, LanguageCode(""),
-        /*is_form_tag=*/true, GetActivePatternSource(), &field_candidates_map_);
+        /*is_form_tag=*/true, GetActivePatternSource(), field_candidates_map_);
     return field_candidates_map_.size();
   }
 
@@ -135,26 +133,25 @@ TEST_P(FormFieldTest, ParseFormFieldsIgnoreCheckableElements) {
 TEST_P(FormFieldTest, ParseFormFieldsEnforceMinFillableFields) {
   AddTextFormFieldData("", "Address line 1", ADDRESS_HOME_LINE1);
   AddTextFormFieldData("", "Address line 2", ADDRESS_HOME_LINE2);
-  // Don't parse forms with 2 fields.
-  EXPECT_EQ(0, ParseFormFields());
-
   AddTextFormFieldData("", "Search", SEARCH_TERM);
-  // Before the fix in kAutofillFixFillableFieldTypes, we would parse the form
-  // now, although a search field is not fillable.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(kAutofillFixFillableFieldTypes);
-    EXPECT_EQ(3, ParseFormFields());
-    TestClassificationExpectations();
-  }
+  // We don't parse the form because search fields are not fillable (therefore,
+  // the form has only 2 fillable fields).
+  EXPECT_EQ(0, ParseFormFields());
+}
 
-  // With the fix, we don't parse the form because search fields are not
-  // fillable (therefore, the form has only 2 fillable fields).
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(kAutofillFixFillableFieldTypes);
-    EXPECT_EQ(0, ParseFormFields());
-  }
+// Tests that the `parseable_name()` is parsed as an autocomplete type.
+TEST_P(FormFieldTest, ParseNameAsAutocompleteType) {
+  base::test::ScopedFeatureList autocomplete_feature;
+  autocomplete_feature.InitAndEnableFeature(
+      features::kAutofillParseNameAsAutocompleteType);
+
+  AddTextFormFieldData("given-name", "", NAME_FIRST);
+  AddTextFormFieldData("family-name", "", NAME_LAST);
+  AddTextFormFieldData("cc-exp-month", "", CREDIT_CARD_EXP_MONTH);
+  // The label is not parsed as an autocomplete type.
+  AddTextFormFieldData("", "cc-exp-month", UNKNOWN_TYPE);
+  EXPECT_EQ(3, ParseFormFields());
+  TestClassificationExpectations();
 }
 
 // Test that the parseable label is used when the feature is enabled.
@@ -196,13 +193,31 @@ TEST_P(FormFieldTest, ParseSingleFieldFormsInsideParseFormField) {
 }
 
 // Test that `ParseSingleFieldForms` parses single field promo codes.
-TEST_P(FormFieldTest, ParseSingleFieldFormsPromoCode) {
+TEST_P(FormFieldTest, ParseFormFieldsForSingleFieldPromoCode) {
   base::test::ScopedFeatureList scoped_feature;
   scoped_feature.InitAndEnableFeature(
       features::kAutofillParseMerchantPromoCodeFields);
 
   // Parse single field promo code.
   AddTextFormFieldData("", "Promo code", MERCHANT_PROMO_CODE);
+  EXPECT_EQ(1, ParseSingleFieldForms());
+  TestClassificationExpectations();
+
+  // Don't parse other fields.
+  // UNKNOWN_TYPE is used as the expected type, which prevents it from being
+  // part of the expectations in `TestClassificationExpectations()`.
+  AddTextFormFieldData("", "Address line 1", UNKNOWN_TYPE);
+  EXPECT_EQ(1, ParseSingleFieldForms());
+  TestClassificationExpectations();
+}
+
+// Test that `ParseSingleFieldForms` parses single field IBAN.
+TEST_P(FormFieldTest, ParseSingleFieldFormsIban) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(features::kAutofillParseIBANFields);
+
+  // Parse single field IBAN.
+  AddTextFormFieldData("", "IBAN", IBAN_VALUE);
   EXPECT_EQ(1, ParseSingleFieldForms());
   TestClassificationExpectations();
 

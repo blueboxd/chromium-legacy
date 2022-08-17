@@ -147,15 +147,6 @@ bool DatabaseKey::operator<(const DatabaseKey& other) const {
 
 // end DatabaseKey implementation.
 
-// TODO(https://crbug.com/1248104): This class will eventually interface with
-// Storage Buckets instead of directly interfacing with LevelDB. Thus, the below
-// functions were converted from url::Origin to blink::StorageKey to prepare for
-// Storage Partitioning of the FileSystem APIs. However, it is important to note
-// that, until the refactor to use Storage Buckets, the LevelDB structure above
-// is still used, and the entries are still keyed per-origin (achieved by
-// storage_key.origin()) and per-type. Going forward, OriginRecords will be
-// retrieved from the database and converted into StorageKey values until
-// Storage Buckets are implemented instead.
 class ObfuscatedFileEnumerator final
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
@@ -254,6 +245,14 @@ class ObfuscatedFileEnumerator final
   base::File::Info current_platform_file_info_;
 };
 
+// NOTE: currently, ObfuscatedFileUtil still relies on SandboxOriginDatabases
+// for first-party StorageKeys/default buckets. The AbstractStorageKeyEnumerator
+// class is only used in these cases. While this class stores and iterates
+// through StorageKeys types, it works by retrieving OriginRecords from the
+// SandboxOriginDatabase and converting those origins into first-party
+// StorageKey values (e.g. blink::StorageKey(origin)). The goal is to eventually
+// deprecate SandboxOriginDatabases and AbstractStorageKeyEnumerators and rely
+// entirely on Storage Buckets.
 class ObfuscatedStorageKeyEnumerator
     : public ObfuscatedFileUtil::AbstractStorageKeyEnumerator {
  public:
@@ -307,15 +306,17 @@ class ObfuscatedStorageKeyEnumerator
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_;
 };
 
+const base::FilePath::CharType ObfuscatedFileUtil::kFileSystemDirectory[] =
+    FILE_PATH_LITERAL("File System");
+
 ObfuscatedFileUtil::ObfuscatedFileUtil(
     scoped_refptr<SpecialStoragePolicy> special_storage_policy,
-    const base::FilePath& file_system_directory,
+    const base::FilePath& profile_path,
     leveldb::Env* env_override,
     const std::set<std::string>& known_type_strings,
     SandboxFileSystemBackendDelegate* sandbox_delegate,
     bool is_incognito)
     : special_storage_policy_(std::move(special_storage_policy)),
-      file_system_directory_(file_system_directory),
       env_override_(env_override),
       is_incognito_(is_incognito),
       db_flush_delay_seconds_(10 * 60),  // 10 mins.
@@ -324,10 +325,15 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(!is_incognito_ ||
          (env_override && leveldb_chrome::IsMemEnv(env_override)));
+  file_system_directory_ = profile_path.Append(kFileSystemDirectory);
 
   if (is_incognito_) {
-    delegate_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>(
-        file_system_directory_);
+    // profile_path is passed here, so that the delegate is able to accommodate
+    // both codepaths of {{profile_path}}/File System (first-party) and
+    // {{profile_path}}/WebStorage (buckets-based).
+    // See https://crrev.com/c/3817542 for more context.
+    delegate_ =
+        std::make_unique<ObfuscatedFileUtilMemoryDelegate>(profile_path);
   } else {
     delegate_ = std::make_unique<ObfuscatedFileUtilDiskDelegate>();
   }
@@ -899,15 +905,15 @@ bool ObfuscatedFileUtil::IsDirectoryEmpty(FileSystemOperationContext* context,
 }
 
 base::FileErrorOr<base::FilePath>
-ObfuscatedFileUtil::GetDirectoryForBucketAndType(const BucketLocator& bucket,
-                                                 const std::string& type_string,
-                                                 bool create) {
+ObfuscatedFileUtil::GetDirectoryForBucketAndType(
+    const BucketLocator& bucket,
+    const absl::optional<FileSystemType>& type,
+    bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // A default bucket in a first-party context uses
   // GetDirectoryForStorageKeyAndType() to determine its file path.
   if (bucket.storage_key.IsFirstPartyContext() && bucket.is_default) {
-    return GetDirectoryForStorageKeyAndType(bucket.storage_key, type_string,
-                                            create);
+    return GetDirectoryForStorageKeyAndType(bucket.storage_key, type, create);
   }
   // All other contexts use the provided bucket information to construct the
   // file path.
@@ -915,7 +921,10 @@ ObfuscatedFileUtil::GetDirectoryForBucketAndType(const BucketLocator& bucket,
       sandbox_delegate_->quota_manager_proxy()->GetClientBucketPath(
           bucket, QuotaClientType::kFileSystem);
   // Append the file system type and verify the path is valid.
-  path = path.AppendASCII(type_string);
+  if (type) {
+    path = path.AppendASCII(
+        SandboxFileSystemBackendDelegate::GetTypeString(type.value()));
+  }
   base::File::Error error = GetDirectoryHelper(path, create);
   if (error != base::File::FILE_OK)
     return error;
@@ -925,7 +934,7 @@ ObfuscatedFileUtil::GetDirectoryForBucketAndType(const BucketLocator& bucket,
 base::FileErrorOr<base::FilePath>
 ObfuscatedFileUtil::GetDirectoryForStorageKeyAndType(
     const blink::StorageKey& storage_key,
-    const std::string& type_string,
+    const absl::optional<FileSystemType>& type,
     bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::FileErrorOr<base::FilePath> dir =
@@ -934,11 +943,15 @@ ObfuscatedFileUtil::GetDirectoryForStorageKeyAndType(
     return dir;
   }
   DCHECK(!dir->empty());
-  if (type_string.empty()) {
+  if (!type) {
     return dir;
   }
   // Append the file system type and verify the path is valid.
-  base::FilePath path = dir->AppendASCII(type_string);
+  base::FilePath path = dir.value();
+  if (type) {
+    path = path.AppendASCII(
+        SandboxFileSystemBackendDelegate::GetTypeString(type.value()));
+  }
   base::File::Error error = GetDirectoryHelper(path, create);
   if (error != base::File::FILE_OK)
     return error;
@@ -957,11 +970,9 @@ bool ObfuscatedFileUtil::DeleteDirectoryForStorageKeyAndType(
     return true;
 
   if (type) {
-    const std::string type_string =
-        SandboxFileSystemBackendDelegate::GetTypeString(type.value());
     // Delete the filesystem type directory.
     const base::FileErrorOr<base::FilePath> origin_type_path =
-        GetDirectoryForStorageKeyAndType(storage_key, type_string, false);
+        GetDirectoryForStorageKeyAndType(storage_key, type.value(), false);
     if (origin_type_path.is_error() &&
         origin_type_path.error() == base::File::FILE_ERROR_FAILED) {
       return false;
@@ -975,6 +986,8 @@ bool ObfuscatedFileUtil::DeleteDirectoryForStorageKeyAndType(
     // At this point we are sure we had successfully deleted the origin/type
     // directory (i.e. we're ready to just return true).
     // See if we have other directories in this origin directory.
+    const std::string type_string =
+        SandboxFileSystemBackendDelegate::GetTypeString(type.value());
     for (const std::string& known_type : known_type_strings_) {
       if (known_type == type_string)
         continue;
@@ -1018,11 +1031,9 @@ bool ObfuscatedFileUtil::DeleteDirectoryForBucketAndType(
     return true;
 
   if (type) {
-    const std::string type_string =
-        SandboxFileSystemBackendDelegate::GetTypeString(type.value());
     // Delete the filesystem type directory.
     const base::FileErrorOr<base::FilePath> path_with_type =
-        GetDirectoryForBucketAndType(bucket_locator, type_string, false);
+        GetDirectoryForBucketAndType(bucket_locator, type.value(), false);
     if (path_with_type.is_error())
       return false;
     if (!path_with_type->empty() &&
@@ -1035,6 +1046,8 @@ bool ObfuscatedFileUtil::DeleteDirectoryForBucketAndType(
     // directory. Now we need to see if we have other sub-type-directories under
     // the higher-level `path` directory. If so, we need to return early to
     // avoid deleting the higher-level `path` directory.
+    const std::string type_string =
+        SandboxFileSystemBackendDelegate::GetTypeString(type.value());
     for (const std::string& known_type : known_type_strings_) {
       if (known_type == type_string)
         continue;
@@ -1140,14 +1153,11 @@ base::FileErrorOr<base::FilePath> ObfuscatedFileUtil::GetDirectoryForURL(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!url.bucket().has_value()) {
     // Access the SandboxDirectoryDatabase to construct the file path.
-    return GetDirectoryForStorageKeyAndType(
-        url.storage_key(),
-        SandboxFileSystemBackendDelegate::GetTypeString(url.type()), create);
+    return GetDirectoryForStorageKeyAndType(url.storage_key(), url.type(),
+                                            create);
   }
   // Construct the file path using the provided bucket information.
-  return GetDirectoryForBucketAndType(
-      url.bucket().value(),
-      SandboxFileSystemBackendDelegate::GetTypeString(url.type()), create);
+  return GetDirectoryForBucketAndType(url.bucket().value(), url.type(), create);
 }
 
 QuotaErrorOr<BucketLocator> ObfuscatedFileUtil::GetOrCreateDefaultBucket(

@@ -84,7 +84,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   String ContentHint() const override;
   void SetContentHint(const String&) override;
   String readyState() const override;
-  MediaStreamTrack* clone(ScriptState*) override;
+  MediaStreamTrack* clone(ExecutionContext*) override;
   void stopTrack(ExecutionContext*) override;
   MediaTrackCapabilities* getCapabilities() const override;
   MediaTrackConstraints* getConstraints() const override;
@@ -95,7 +95,9 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
 
   // This function is called when constrains have been successfully applied.
   // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
-  void SetConstraints(const MediaConstraints&) override;
+  void SetConstraints(const MediaConstraints& constraints) override {
+    constraints_ = constraints;
+  }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mute, kMute)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute)
@@ -130,6 +132,8 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   absl::optional<base::UnguessableToken> serializable_session_id()
       const override;
 
+  void BeingTransferred(const base::UnguessableToken& transfer_id) override;
+
 #if !BUILDFLAG(IS_ANDROID)
   // Only relevant for focusable streams (FocusableMediaStreamTrack).
   // When called on one of these, it signals that Conditional Focus
@@ -149,6 +153,8 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   // Useful for sub-classes, as they need to clone both state from
   // this class as well as of their own class.
   void CloneInternal(MediaStreamTrackImpl*);
+
+  std::unique_ptr<MediaStreamTrackPlatform> ClonePlatformTrack();
 
  private:
   friend class CanvasCaptureMediaStreamTrack;
@@ -185,6 +191,8 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   Member<ImageCapture> image_capture_;
   WeakMember<ExecutionContext> execution_context_;
   HeapHashSet<WeakMember<MediaStreamTrack::Observer>> observers_;
+  bool muted_ = false;
+  MediaConstraints constraints_;
 };
 
 }  // namespace blink

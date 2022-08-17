@@ -5193,6 +5193,82 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ChromeOS.WebsiteUsageTime">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the amount of time that the focused and activated website was
+    accessed in last two hours on Chrome OS. This is logged each two hours, and
+    only when the website is not installed as a PWA or Chrome app.
+  </summary>
+  <metric name="Duration">
+    <summary>
+      The milliseconds that the website was accessed in the focused tab and the
+      activated browser window. The accessing time is calculated each five
+      minutes, then the noise is applied, and sum the running time for five
+      minutes with noise to calculate the two hours accessing time. For example
+      the running time in the past 2 hours = time1 * noise1 + time2 * noise2 +
+      time3 * noise3....
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IsFromLastLogin" enum="Boolean">
+    <summary>
+      Whether the metrics is read from the user pref on disk, recorded for the
+      last login.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Promotable" enum="Boolean">
+    <summary>
+      Whether the website can be an installable web app.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UrlContent" enum="URLContent">
+    <summary>
+      The url content, e.g. full url, scope.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="ChromeOSApp.InputEvent">
   <owner>nancylingwang@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -12836,6 +12912,36 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationThrottleDeferredTime" singular="False">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <summary>
+    Information recorded about a navigation throttle when a navigation is
+    deferred at any stage of the navigation. Only recorded for main frame
+    navigations that were deferred and later resumed.
+  </summary>
+  <metric name="DurationOfNavigationDeferralMs">
+    <summary>
+      The duration from the start of the navigation deferral until the throttle
+      resumes the navigation recorded in milliseconds.
+    </summary>
+  </metric>
+  <metric name="NavigationThrottleEventType">
+    <summary>
+      An enum representing each event that can cause deferral method
+      (WillFailRequest, WillProcessResponse, WillRedirectRequest,
+      WillStartRequest). See NavigationThrottleRunner::Event for enum details.
+    </summary>
+  </metric>
+  <metric name="NavigationThrottleNameHash">
+    <summary>
+      A (MD5) hash of the logging name string which represents a unique
+      navigation throttle class (subclass of NavigationThrottle). See
+      NavigationThrottle::GetNameForLogging().
+    </summary>
+  </metric>
+</event>
+
 <event name="NavigationTiming" singular="True">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
@@ -15784,6 +15890,21 @@ be describing additional metrics about the same event.
   <metric name="PasswordChangeType" enum="PasswordChangeType">
     <summary>
       Records what type of password change the user triggers.
+    </summary>
+  </metric>
+</event>
+
+<event name="PasswordManager.PasswordFillingIOS">
+  <owner>theocristea@google.com</owner>
+  <owner>kazinova@google.com</owner>
+  <owner>vsemeniuk@google.com</owner>
+  <summary>
+    Records password filling for IOS. The metric records whether the password
+    filling is successful upon suggestion click.
+  </summary>
+  <metric name="FillingSuccess" enum="BooleanSuccess">
+    <summary>
+      A boolean indicating success or failure.
     </summary>
   </metric>
 </event>
@@ -21714,17 +21835,38 @@ be describing additional metrics about the same event.
     <summary>
       Records the display mode of the added Webapp.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SameAsManifestStartUrl" enum="Boolean">
     <summary>
       Record whether `start_url` for the Shortcuts is the same as the current
       page url.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ShortcutReason" enum="InstallableStatusCode">
     <summary>
       Record an StatusCode for why this site is not WebAPK compatible.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

@@ -229,7 +229,6 @@ void AppListBubbleView::UpdateSuggestions() {
 
 void AppListBubbleView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
-  DCHECK(drag_and_drop_host);
   apps_page_->scrollable_apps_grid_view()->SetDragAndDropHostOfCurrentAppList(
       drag_and_drop_host);
   folder_view_->items_grid_view()->SetDragAndDropHostOfCurrentAppList(
@@ -614,6 +613,7 @@ void AppListBubbleView::Layout() {
 void AppListBubbleView::QueryChanged(const std::u16string& trimmed_query,
                                      bool initiated_by_user) {
   if (current_page_ != AppListBubblePage::kNone) {
+    search_page_->search_view()->UpdateForNewSearch(!trimmed_query.empty());
     if (!trimmed_query.empty())
       ShowPage(AppListBubblePage::kSearch);
     else

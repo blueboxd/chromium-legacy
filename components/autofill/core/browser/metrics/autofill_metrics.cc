@@ -377,6 +377,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case BIRTHDATE_4_DIGIT_YEAR:
         case IBAN_VALUE:
         case MAX_VALID_FIELD_TYPE:
+        case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
           NOTREACHED() << field_type << " type is not in that group.";
           group = GROUP_AMBIGUOUS;
           break;
@@ -3131,16 +3132,6 @@ void AutofillMetrics::LogProfileUpdateWithRemovedPhoneNumberImportDecision(
 void AutofillMetrics::LogProfileUpdateAffectedType(
     ServerFieldType affected_type,
     AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  // TODO(crbug.com/1253798): Remove the special-case metric in favor of more
-  // general one once the majority of clients contribute to the more general
-  // one.
-  if (decision ==
-      AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted) {
-    base::UmaHistogramEnumeration(
-        "Autofill.ProfileImport.UpdateProfileAffectedType",
-        ConvertSettingsVisibleFieldTypeForMetrics(affected_type));
-  }
-
   // Record the decision-specific metric.
   base::UmaHistogramEnumeration(
       base::StrCat({"Autofill.ProfileImport.UpdateProfileAffectedType",
@@ -3175,25 +3166,16 @@ void AutofillMetrics::LogUpdateProfileNumberOfEditedFields(
 void AutofillMetrics::LogUpdateProfileNumberOfAffectedFields(
     int number_of_edited_fields,
     AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  // TODO(crbug.com/1253798): Remove the special-case metric in favor of more
-  // general one once the majority of clients contribute to the more general
-  // one.
-  if (decision ==
-      AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted) {
-    base::UmaHistogramExactLinear(
-        "Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields",
-        number_of_edited_fields, /*exclusive_max=*/15);
-  }
-
   // Record the decision-specific metric.
   base::UmaHistogramExactLinear(
-      base::StrCat({"Autofill.ProfileImport.UpdateProfileAffectedType",
-                    GetSaveAndUpdatePromptDecisionMetricsSuffix(decision)}),
+      base::StrCat(
+          {"Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields",
+           GetSaveAndUpdatePromptDecisionMetricsSuffix(decision)}),
       number_of_edited_fields, /*exclusive_max=*/15);
 
   // But also collect an histogram for any decision.
   base::UmaHistogramExactLinear(
-      "Autofill.ProfileImport.UpdateProfileAffectedType.Any",
+      "Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields.Any",
       number_of_edited_fields, /*exclusive_max=*/15);
 }
 

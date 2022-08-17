@@ -10,24 +10,12 @@
 
 namespace ash::string_matching {
 
-namespace {
-
-// TODO(crbug.com/1336160): Add unit tests.
-//
 // TODO(crbug.com/1336160): Paradigm shift 1: Reconsider the value of
-// search-via-acronym, i.e. the logic around `kIsFrontOfWordMultiplier`.
+// search-via-acronym, i.e. the logic around `kIsFrontOfTokenCharScore`.
 //
 // TODO(crbug.com/1336160): Paradigm shift 2: Consider scoring matching prefixes
 // of tokens with equal value, regardless of whether the token is a first token
-// or non-first token. Currently, PrefixMatcher advances monotonically through
-// the chars of the query. This means that a strong prefix match in a non-first
-// text token will be missed if there is a weaker match in the first text token.
-// Consider modifying algorithm such that these matches won't be missed. Example
-// of current behavior:
-//
-//   Query `abcde` and text `aff abcde`. The first `a` of query and text match,
-//   therefore the `a` of query is consumed and is never considered for rematch
-//   elsewhere.
+// or non-first token.
 //
 // PrefixMatcher:
 //
@@ -35,7 +23,7 @@ namespace {
 // the current char of the text to be matched. Different factors are chosen
 // based on where the match happens:
 //
-// 1) `kIsPrefixMultiplier` is used when the matched portion is a prefix of both
+// 1) `kIsPrefixCharScore` is used when the matched portion is a prefix of both
 // the query and the text, which implies that the matched chars are at the same
 // position in query and text. This is the most preferred case thus it has the
 // highest score.
@@ -43,42 +31,36 @@ namespace {
 // When the current char of the query and the text do not match, the algorithm
 // moves to the next token in the text and tries to match from there.
 //
-// 2) `kIsFrontOfWordMultiplier` will be used if the first char of the token
+// 2) `kIsFrontOfTokenCharScore` will be used if the first char of the token
 // matches the current char of the query.
 //
-// 3) Otherwise, the match is considered as weak, and `kIsWeakHitMultiplier` is
+// 3) Otherwise, the match is considered as weak, and `kIsWeakHitCharScore` is
 // used.
 //
 // Examples:
 //
 //   For text: 'Google Chrome'.
 //
-//   Query 'go' would yield kIsPrefixMultiplier for each char.
-//   Query 'gc' would use kIsPrefixMultiplier for 'g' and
-//       kIsFrontOfWordMultiplier for 'c'.
-//   Query 'ch' would use kIsFrontOfWordMultiplier for 'c' and
-//       kIsWeakHitMultiplier for 'h'.
-const double kIsPrefixMultiplier = 1.0;
-const double kIsFrontOfWordMultiplier = 0.8;
-const double kIsWeakHitMultiplier = 0.6;
+//   Query 'go' would yield kIsPrefixCharScore for each char.
+//   Query 'gc' would use kIsPrefixCharScore for 'g' and
+//       kIsFrontOfTokenCharScore for 'c'.
+//   Query 'ch' would use kIsFrontOfTokenCharScore for 'c' and
+//       kIsWeakHitCharScore for 'h'.
 
-// A relevance score that represents no match.
-const double kNoMatchScore = 0.0;
-
-}  // namespace
+// kNoMatchScore is a relevance score that represents no match.
 
 PrefixMatcher::PrefixMatcher(const TokenizedString& query,
                              const TokenizedString& text)
     : query_iter_(query),
       text_iter_(text),
       current_match_(gfx::Range::InvalidRange()),
-      current_relevance_(kNoMatchScore) {}
+      current_relevance_(constants::kNoMatchScore) {}
 
 bool PrefixMatcher::Match() {
   while (!RunMatch()) {
     // No match found and no more states to try. Bail out.
     if (states_.empty()) {
-      current_relevance_ = kNoMatchScore;
+      current_relevance_ = constants::kNoMatchScore;
       current_hits_.clear();
       return false;
     }
@@ -95,7 +77,7 @@ bool PrefixMatcher::Match() {
   return true;
 }
 
-PrefixMatcher::State::State() : relevance(kNoMatchScore) {}
+PrefixMatcher::State::State() : relevance(constants::kNoMatchScore) {}
 PrefixMatcher::State::~State() = default;
 PrefixMatcher::State::State(double relevance,
                             const gfx::Range& current_match,
@@ -116,11 +98,11 @@ bool PrefixMatcher::RunMatch() {
       PushState();
 
       if (query_iter_.GetArrayPos() == text_iter_.GetArrayPos())
-        current_relevance_ += kIsPrefixMultiplier;
+        current_relevance_ += constants::kIsPrefixCharScore;
       else if (text_iter_.IsFirstCharOfToken())
-        current_relevance_ += kIsFrontOfWordMultiplier;
+        current_relevance_ += constants::kIsFrontOfTokenCharScore;
       else
-        current_relevance_ += kIsWeakHitMultiplier;
+        current_relevance_ += constants::kIsWeakHitCharScore;
 
       if (!current_match_.IsValid())
         current_match_.set_start(text_iter_.GetArrayPos());
@@ -131,18 +113,27 @@ bool PrefixMatcher::RunMatch() {
       text_iter_.NextChar();
       have_match_already = true;
     } else {
-      // There are two possibilities here:
-      // 1. Need to AdvanceToNextTextToken() after having at least a match in
-      // current token (e.g. match the first character of the token) and the
-      // next character doesn't match.
-      // 2. Need to AdvanceToNextTextToken() because there is no match in
-      // current token.
-      // If there is no match in current token and we already have match (in
-      // previous tokens) before, a token is skipped and we consider this as no
-      // match.
-      if (text_iter_.IsFirstCharOfToken() && have_match_already)
+      // Character mismatch. Multiple possibilities:
+
+      if (text_iter_.IsFirstCharOfToken()) {
+        if (have_match_already) {
+          // We have a mismatch in the first letter of the current token, and
+          // have observed matches in previous tokens. Consider this a no match.
+          return false;
+        } else {
+          // No matches have been found so far. Skip over current token.
+          AdvanceToNextTextToken();
+        }
+      } else if (text_iter_.IsSecondCharOfToken()) {
+        // We have a match in the first letter of the current token, and the
+        // next character doesn't match. In this case we can
+        // AdvanceToNextTextToken().
+        AdvanceToNextTextToken();
+      } else {
+        // Mismatch is in the third or further char of the text token. Consider
+        // this a no match.
         return false;
-      AdvanceToNextTextToken();
+      }
     }
   }
 

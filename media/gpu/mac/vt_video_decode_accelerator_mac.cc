@@ -85,6 +85,10 @@ constexpr VideoCodecProfile kSupportedProfiles[] = {
 
     // These are only supported on macOS 11+.
     HEVCPROFILE_MAIN, HEVCPROFILE_MAIN10, HEVCPROFILE_MAIN_STILL_PICTURE,
+    // This is partially supported on macOS 11+, Apple Silicon Mac only supports
+    // 8 ~ 10 bit 400, 420, 422, 444 HW decoding, and Intel Mac supports 8 ~ 12
+    // bit 400, 420, 422 SW decoding, 444 content is decodable but has a green
+    // stripe issue.
     HEVCPROFILE_REXT,
 
     // TODO(sandersd): Hi10p fails during
@@ -1347,9 +1351,8 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
 
     // 8.1.2 We only want nuh_layer_id of zero.
     if (nalu.nuh_layer_id) {
-      WriteToMediaLog(MediaLogMessageLevel::kINFO,
-                      "Skipping NALU with nuh_layer_id=");
-      DVLOG(4) << "Skipping NALU with nuh_layer_id=" << nalu.nuh_layer_id;
+      MEDIA_LOG(INFO, media_log_)
+          << "Skipping NALU with nuh_layer_id=" << nalu.nuh_layer_id;
       continue;
     }
 
@@ -1436,6 +1439,22 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
       case H265NALU::RASL_N:
       case H265NALU::RASL_R:
       case H265NALU::CRA_NUT: {
+        // The VT session will report a OsStatus=12909 kVTVideoDecoderBadDataErr
+        // if you send a RASL frame just after a CRA frame, so we wait until the
+        // total output count is enough
+        if (output_count_for_cra_rasl_workaround_ < kMinOutputsBeforeRASL &&
+            (nalu.nal_unit_type == H265NALU::RASL_N ||
+             nalu.nal_unit_type == H265NALU::RASL_R)) {
+          continue;
+        }
+        // Just like H264, only the first slice is examined. Other slices are at
+        // least one of: the same frame, not decoded, invalid so no need to
+        // parse again.
+        if (frame->has_slice) {
+          nalus.push_back(nalu);
+          data_size += kNALUHeaderLength + nalu.size;
+          break;
+        }
         curr_slice_hdr.reset(new H265SliceHeader());
         result = hevc_parser_.ParseSliceHeader(nalu, curr_slice_hdr.get(),
                                                last_slice_hdr.get());
@@ -1455,15 +1474,6 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
                           "Could not parse slice header");
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
-        }
-
-        // The VT session will report a OsStatus=12909 kVTVideoDecoderBadDataErr
-        // if you send a RASL frame just after a CRA frame, so we wait until the
-        // total output count is enough
-        if (output_count_for_cra_rasl_workaround_ < kMinOutputsBeforeRASL &&
-            (nalu.nal_unit_type == H265NALU::RASL_N ||
-             nalu.nal_unit_type == H265NALU::RASL_R)) {
-          continue;
         }
 
         const H265PPS* pps =
@@ -2161,7 +2171,6 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       gl_params.format = gl_format;
       gl_params.type = GL_UNSIGNED_BYTE;
       gl_params.is_cleared = true;
-      gpu::GLTextureImageBackingHelper::UnpackStateAttribs gl_attribs;
 
       // Making the GL context current before performing below shared image
       // tasks.
@@ -2175,7 +2184,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       auto shared_image = std::make_unique<gpu::GLImageBacking>(
           gl_image, mailbox, viz_resource_format, plane_size, color_space,
           kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage,
-          gl_params, gl_attribs, gl_client_.is_passthrough);
+          gl_params, gl_client_.is_passthrough);
 
       const bool success = shared_image_stub->factory()->RegisterBacking(
           std::move(shared_image), /*allow_legacy_mailbox=*/false);

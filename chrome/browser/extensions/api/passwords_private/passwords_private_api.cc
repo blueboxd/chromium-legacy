@@ -124,6 +124,40 @@ void PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword(
           ->id)));
 }
 
+// PasswordsPrivateRequestCredentialDetailsFunction
+ResponseAction PasswordsPrivateRequestCredentialDetailsFunction::Run() {
+  auto parameters =
+      api::passwords_private::RequestCredentialDetails::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  GetDelegate(browser_context())
+      ->RequestCredentialDetails(
+          parameters->id,
+          base::BindOnce(&PasswordsPrivateRequestCredentialDetailsFunction::
+                             GotPasswordUiEntry,
+                         this),
+          GetSenderWebContents());
+
+  // GotPasswordUiEntry() might have responded before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateRequestCredentialDetailsFunction::GotPasswordUiEntry(
+    absl::optional<api::passwords_private::PasswordUiEntry> password_ui_entry) {
+  if (password_ui_entry) {
+    Respond(ArgumentList(
+        api::passwords_private::RequestCredentialDetails::Results::Create(
+            std::move(*password_ui_entry))));
+    return;
+  }
+
+  Respond(Error(base::StringPrintf(
+      "Could not obtain password entry. Either the user is not "
+      "authenticated or no credential with id = %d could be found.",
+      api::passwords_private::RequestCredentialDetails::Params::Create(args())
+          ->id)));
+}
+
 // PasswordsPrivateGetSavedPasswordListFunction
 ResponseAction PasswordsPrivateGetSavedPasswordListFunction::Run() {
   // GetList() can immediately call GotList() (which would Respond() before
@@ -186,14 +220,22 @@ ResponseAction PasswordsPrivateImportPasswordsFunction::Run() {
   auto parameters =
       api::passwords_private::ImportPasswords::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
-  // TODO(crbug/1325290): Introduce callback for filling ImportResults with
-  // real data.
-  GetDelegate(browser_context())->ImportPasswords(GetSenderWebContents());
-  api::passwords_private::ImportResults results;
-  results.status =
-      extensions::api::passwords_private::IMPORT_RESULTS_STATUS_SUCCESS;
-  return RespondNow(ArgumentList(
-      api::passwords_private::ImportPasswords::Results::Create(results)));
+  GetDelegate(browser_context())
+      ->ImportPasswords(
+          parameters->to_store,
+          base::BindOnce(
+              &PasswordsPrivateImportPasswordsFunction::ImportRequestCompleted,
+              this),
+          GetSenderWebContents());
+
+  // `ImportRequestCompleted()` might respond before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateImportPasswordsFunction::ImportRequestCompleted(
+    const api::passwords_private::ImportResults& result) {
+  Respond(ArgumentList(
+      api::passwords_private::ImportPasswords::Results::Create(result)));
 }
 
 // PasswordsPrivateExportPasswordsFunction

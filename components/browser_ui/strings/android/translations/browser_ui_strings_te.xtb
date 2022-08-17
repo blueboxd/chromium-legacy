@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">డౌన్‌లోడ్ పాజ్ చేయబడింది</translation>
 <translation id="1409426117486808224">తెరిచిన ట్యాబ్‌ల కోసం సరళమైన వీక్షణ</translation>
 <translation id="1415402041810619267">URL కుదించబడింది</translation>
+<translation id="1426410128494586442">అవును</translation>
 <translation id="1446450296470737166">MIDI పరికరాల పూర్తి నియం. అనుమ.</translation>
 <translation id="1620510694547887537">కెమెరా</translation>
 <translation id="1644574205037202324">హిస్టరీ</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4670064810192446073">వర్చువల్ రియాలిటీ</translation>
 <translation id="4751476147751820511">కదలిక లేదా కాంతి సెన్సార్‌లు</translation>
+<translation id="4811450222531576619">సోర్స్, టాపిక్ గురించి తెలుసుకోండి</translation>
 <translation id="4836046166855586901">మీరు ఈ పరికరాన్ని యాక్టివ్‌గా ఉపయోగిస్తున్నప్పుడు ఆ విషయాన్ని సైట్ తెలుసుకోవాలంటే సైట్ మీ అనుమతిని అడగాలి</translation>
 <translation id="4883854917563148705">నిర్వహిత సెట్టింగ్‌లు రీసెట్ చేయబడవు</translation>
 <translation id="4887024562049524730">మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను ఉపయోగించడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
@@ -243,6 +245,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను ఉపయోగించనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
+<translation id="6467852467360539617">డేటాను క్లియర్ చేయండి &amp; అనుమతులను రీసెట్ చేయండి</translation>
 <translation id="6527303717912515753">షేర్ చేయండి</translation>
 <translation id="6545864417968258051">బ్లూటూత్ స్కానింగ్</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, ఇంకా మరో <ph name="NUM_MORE" /> బ్లాక్ చేయబడ్డాయి}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, ఇంకా మరో <ph name="NUM_MORE" /> బ్లాక్ చేయబడ్డాయి}}</translation>
@@ -282,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> అనుమతించబడ్డాయి</translation>
 <translation id="7302486331832100261">మీరు సాధారణంగా నోటిఫికేషన్‌లను బ్లాక్ చేస్తుంటారు. అనుమతించడానికి, 'వివరాలు'ను నొక్కండి.</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> కోసం సెట్టింగ్‌లు</translation>
 <translation id="7423098979219808738">ముందుగా అడుగుతుంది</translation>
 <translation id="7423538860840206698">క్లిప్‌బోర్డ్‌ని చదవకుండా బ్లాక్ చేశారు</translation>
 <translation id="7425915948813553151">సైట్‌ల కోసం ముదురు రంగు రూపం</translation>

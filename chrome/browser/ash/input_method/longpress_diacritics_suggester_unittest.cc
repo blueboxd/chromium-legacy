@@ -8,7 +8,9 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/input_method/fake_suggestion_handler.h"
+#include "chrome/browser/ash/input_method/suggestion_enums.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -33,6 +35,19 @@ using LongpressDiacriticsSuggesterTest =
 using AssistiveWindowButton = ui::ime::AssistiveWindowButton;
 
 const int kContextId = 24601;
+
+const auto kDigitToDomCode = base::MakeFixedFlatMap<int, ui::DomCode>({
+    {0, ui::DomCode::DIGIT0},
+    {1, ui::DomCode::DIGIT1},
+    {2, ui::DomCode::DIGIT2},
+    {3, ui::DomCode::DIGIT3},
+    {4, ui::DomCode::DIGIT4},
+    {5, ui::DomCode::DIGIT5},
+    {6, ui::DomCode::DIGIT6},
+    {7, ui::DomCode::DIGIT7},
+    {8, ui::DomCode::DIGIT8},
+    {9, ui::DomCode::DIGIT9},
+});
 
 ui::KeyEvent CreateKeyEventFromCode(const ui::DomCode& code) {
   return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code, ui::EF_NONE,
@@ -612,6 +627,102 @@ TEST_P(LongpressDiacriticsSuggesterTest, NoDismissSuggestionOnRepeatKeyPress) {
   EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
 }
 
+TEST_P(LongpressDiacriticsSuggesterTest, ReturnsDiacriticsProposeActionType) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  EXPECT_EQ(suggester.GetProposeActionType(),
+            AssistiveType::kLongpressDiacritics);
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, RecordsAcceptanceCharCodeMetric) {
+  base::HistogramTester histogram_tester;
+
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  int histogram_accept_count = 0;
+  for (int i = 0; i < 9 && i < GetParam().candidates.size(); i++) {
+    // Insert using dom code for index + 1 (i.e. DIGIT1 inserts 0th index
+    // candidate)
+    ui::DomCode dom_code = kDigitToDomCode.find(i + 1)->second;
+    suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+    suggester.HandleKeyEvent(CreateKeyEventFromCode(dom_code));
+
+    histogram_tester.ExpectTotalCount(
+        "InputMethod.PhysicalKeyboard.LongpressDiacritics.AcceptedChar",
+        ++histogram_accept_count);
+    int char_code = int(GetParam().candidates[i][0]);
+    histogram_tester.ExpectBucketCount(
+        "InputMethod.PhysicalKeyboard.LongpressDiacritics.AcceptedChar",
+        char_code, 1);
+  }
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, RecordsShowWindowActionMetric) {
+  base::HistogramTester histogram_tester;
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.LongpressDiacritics.Action",
+      IMEPKLongpressDiacriticAction::kShowWindow, 1);
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, RecordsAcceptActionMetric) {
+  base::HistogramTester histogram_tester;
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::DIGIT1));
+
+  histogram_tester.ExpectBucketCount(
+      "InputMethod.PhysicalKeyboard.LongpressDiacritics.Action",
+      IMEPKLongpressDiacriticAction::kAccept, 1);
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, RecordsDismissActionMetricOnEsc) {
+  base::HistogramTester histogram_tester;
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ESCAPE));
+
+  histogram_tester.ExpectBucketCount(
+      "InputMethod.PhysicalKeyboard.LongpressDiacritics.Action",
+      IMEPKLongpressDiacriticAction::kDismiss, 1);
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest,
+       RecordsDismissActionMetricOnOtherKeyPress) {
+  base::HistogramTester histogram_tester;
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(GetParam().code));
+
+  histogram_tester.ExpectBucketCount(
+      "InputMethod.PhysicalKeyboard.LongpressDiacritics.Action",
+      IMEPKLongpressDiacriticAction::kDismiss, 1);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     LongpressDiacriticsSuggesterTest,
@@ -621,13 +732,13 @@ INSTANTIATE_TEST_SUITE_P(
           false,
           u"ca",
           u"caf",
-          {u"à", u"á", u"â", u"ã", u"ã", u"ä", u"å", u"ā"}},
+          {u"à", u"á", u"â", u"ä", u"æ", u"ã", u"å", u"ā"}},
          {'A',
           ui::DomCode::US_A,
           true,
           u"cA",
           u"cAf",
-          {u"À", u"Á", u"Â", u"Ã", u"Ä", u"Å", u"Æ", u"Ā"}},
+          {u"À", u"Á", u"Â", u"Ä", u"Æ", u"Ã", u"Å", u"Ā"}},
          {'c', ui::DomCode::US_C, false, u"c", u"ca", {u"ç"}},
          {'C', ui::DomCode::US_C, true, u"C", u"Ca", {u"Ç"}},
          {'e',
@@ -635,13 +746,13 @@ INSTANTIATE_TEST_SUITE_P(
           false,
           u"soufle",
           u"soufles",
-          {u"è", u"é", u"ê", u"ë", u"ē"}},
+          {u"é", u"è", u"ê", u"ë", u"ē"}},
          {'E',
           ui::DomCode::US_E,
           true,
           u"SOUFLE",
           u"SOUFLES",
-          {u"È", u"É", u"Ê", u"Ë", u"Ē"}}}),
+          {u"É", u"È", u"Ê", u"Ë", u"Ē"}}}),
     [](const testing::TestParamInfo<
         LongpressDiacriticsSuggesterTest::ParamType>& info) {
       return std::string(1, info.param.longpress_char);

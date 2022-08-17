@@ -5,6 +5,7 @@
 /**
  * @fileoverview The ChromeVox panel and menus.
  */
+import {constants} from '../../common/constants.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
 import {BackgroundBridge} from '../common/background_bridge.js';
@@ -19,6 +20,8 @@ import {KeyUtil} from '../common/key_util.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeMenuItemData} from '../common/panel_menu_data.js';
+import {QueueMode} from '../common/tts_interface.js';
 
 import {ISearchUI} from './i_search_ui.js';
 import {PanelInterface} from './panel_interface.js';
@@ -493,7 +496,7 @@ export class Panel extends PanelInterface {
             Panel.onClose();
           });
 
-      for (const menuData of ALL_NODE_MENU_DATA) {
+      for (const menuData of ALL_PANEL_MENU_NODE_DATA) {
         Panel.addNodeMenu(menuData);
       }
       await BackgroundBridge.PanelBackground.createAllNodeMenuBackgrounds(
@@ -604,10 +607,8 @@ export class Panel extends PanelInterface {
       if (cell.tagName === 'TD') {
         cell.className = 'highlighted-cell';
         const companionIDs = cell.getAttribute('data-companionIDs');
-        companionIDs.split(' ').map(function(companionID) {
-          const companion = $(companionID);
-          companion.className = 'highlighted-cell';
-        });
+        companionIDs.split(' ').forEach(
+            companionID => $(companionID).className = 'highlighted-cell');
       }
     };
 
@@ -616,10 +617,8 @@ export class Panel extends PanelInterface {
       if (cell.tagName === 'TD') {
         cell.className = 'unhighlighted-cell';
         const companionIDs = cell.getAttribute('data-companionIDs');
-        companionIDs.split(' ').map(function(companionID) {
-          const companion = $(companionID);
-          companion.className = 'unhighlighted-cell';
-        });
+        companionIDs.split(' ').forEach(
+            companionID => $(companionID).className = 'unhighlighted-cell');
       }
     };
 
@@ -1270,7 +1269,8 @@ window.addEventListener('hashchange', function() {
   const bkgnd = chrome.extension.getBackgroundPage();
 
   // Save the sticky state when a user first focuses the panel.
-  if (location.hash === '#fullscreen' || location.hash === '#focus') {
+  if (bkgnd['ChromeVox'] &&
+      (location.hash === '#fullscreen' || location.hash === '#focus')) {
     Panel.originalStickyState_ = bkgnd['ChromeVox']['isStickyPrefOn'];
   }
 

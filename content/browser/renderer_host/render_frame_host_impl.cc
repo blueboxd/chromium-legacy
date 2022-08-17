@@ -771,8 +771,9 @@ DetermineWhetherToForbidTrustTokenRedemption(
   if (frame->IsNestedWithinFencedFrame()) {
     // In Fenced Frames, all permission policy gated features must be disabled
     // for privacy reasons.
-    subframe_policy =
-        blink::PermissionsPolicy::CreateForFencedFrame(subframe_origin);
+    subframe_policy = blink::PermissionsPolicy::CreateForFencedFrame(
+        subframe_origin,
+        frame->frame_tree_node()->GetFencedFrameMode().value());
   } else {
     // For main frame loads, the frame's permissions policy is determined
     // entirely by response headers, which are provided by the renderer.
@@ -1741,12 +1742,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   // IdleManager should be unique per RenderFrame to provide proper isolation
   // of overrides.
   idle_manager_ = std::make_unique<IdleManagerImpl>(this);
-
-  preferred_color_scheme_ =
-      ui::NativeTheme::GetInstanceForWeb()->GetPreferredColorScheme() ==
-              ui::NativeTheme::PreferredColorScheme::kDark
-          ? blink::mojom::PreferredColorScheme::kDark
-          : blink::mojom::PreferredColorScheme::kLight;
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -1825,8 +1820,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // Once a RenderFrame is created in the renderer, there are three possible
   // clean-up paths:
   // 1. The RenderFrame can be the main frame. In this case, closing the
-  //    associated RenderView will clean up the resources associated with the
-  //    main RenderFrame.
+  //    associated `blink::WebView` will clean up the resources associated with
+  //    the main RenderFrame.
   // 2. The RenderFrame can be unloaded. In this case, the browser sends a
   //    mojom::FrameNavigationControl::UnloadFrame message for the RenderFrame
   //    to replace itself with a `blink::RemoteFrame`and release its associated
@@ -1871,7 +1866,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //
   // Note that this logic is fairly subtle. It needs to include all subframes
   // and all speculative frames, but it should exclude case #1 (a main
-  // RenderFrame owned by the RenderView). It can't simply check
+  // RenderFrame owned by the `blink::WebView`). It can't simply check
   // |frame_tree_node_->render_manager()->speculative_frame_host()| for
   // equality against |this|. The speculative frame host is unset before the
   // speculative frame host is destroyed, so this condition would never be
@@ -3398,11 +3393,9 @@ void RenderFrameHostImpl::DeleteRenderFrame(
 
       if (!subframe_shutdown_timeout.is_zero() ||
           !unload_handler_timeout.is_zero()) {
-        RenderProcessHostImpl* process =
-            static_cast<RenderProcessHostImpl*>(GetProcess());
-        process->DelayProcessShutdown(subframe_shutdown_timeout,
-                                      unload_handler_timeout,
-                                      site_instance_->GetSiteInfo());
+        GetProcess()->DelayProcessShutdown(subframe_shutdown_timeout,
+                                           unload_handler_timeout,
+                                           site_instance_->GetSiteInfo());
       }
       // If the subframe takes too long to unload, force its removal from the
       // tree. See https://crbug.com/950625.
@@ -4352,11 +4345,12 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
   TRACE_EVENT("navigation", "RenderFrameHostImpl::DidFailLoadWithError",
               ChromeTrackEvent::kRenderFrameHost, *this, "error", error_code);
 
-  // Cancel prerendering if DidFailLoadWithError is called during prerendering.
-  // Don't dispatch the DidFailLoad event in such a case as the embedders are
-  // unaware of prerender page yet and shouldn't show any user-visible changes
-  // from an inactive RenderFrameHost.
-  if (CancelPrerendering(PrerenderHost::FinalStatus::kDidFailLoad)) {
+  // Cancel prerendering if DidFailLoadWithError is called on the outermost main
+  // document during prerendering. Don't dispatch the DidFailLoad event in such
+  // a case as the embedders are unaware of prerender page yet and shouldn't
+  // show any user-visible changes from an inactive RenderFrameHost.
+  if (!GetParentOrOuterDocument() &&
+      CancelPrerendering(PrerenderHost::FinalStatus::kDidFailLoad)) {
     return;
   }
 
@@ -5189,8 +5183,7 @@ void RenderFrameHostImpl::RunJavaScriptDialog(
   // shadow DOM to MPArch is complete, remove the last part of the condition.
   // TODO(crbug.com/1244137): We have to check portals explicitly as they are
   // considered primary. Remove check after we migrate portals to MPArch.
-  if (!IsActive() || !GetPage().IsPrimary() ||
-      frame_tree_node_->IsInFencedFrameTree() ||
+  if (!IsActive() || !GetPage().IsPrimary() || IsNestedWithinFencedFrame() ||
       frame_tree()->delegate()->IsPortal()) {
     std::move(ipc_response_callback).Run(/*success=*/false, std::u16string());
     return;
@@ -5220,8 +5213,7 @@ void RenderFrameHostImpl::RunBeforeUnloadConfirm(
   // TODO(https://crbug.com/1262022): Have to check fenced frames explicitly
   // since they are not yet implemented with MPArch. Once the transition from
   // shadow DOM to MPArch is complete, remove the last part of the condition.
-  if (!IsActive() || !GetPage().IsPrimary() ||
-      frame_tree_node_->IsInFencedFrameTree() ||
+  if (!IsActive() || !GetPage().IsPrimary() || IsNestedWithinFencedFrame() ||
       frame_tree()->delegate()->IsPortal()) {
     std::move(ipc_response_callback).Run(/*success=*/false);
     return;
@@ -5904,11 +5896,6 @@ void RenderFrameHostImpl::UpdateTitle(
   delegate_->UpdateTitle(this, received_title, title_direction);
 }
 
-void RenderFrameHostImpl::DidUpdatePreferredColorScheme(
-    blink::mojom::PreferredColorScheme preferred_color_scheme) {
-  preferred_color_scheme_ = preferred_color_scheme;
-}
-
 void RenderFrameHostImpl::DidInferColorScheme(
     blink::mojom::PreferredColorScheme color_scheme) {
   if (is_main_frame()) {
@@ -6084,6 +6071,9 @@ void RenderFrameHostImpl::DidBlockNavigation(
     const GURL& blocked_url,
     const GURL& initiator_url,
     blink::mojom::NavigationBlockedReason reason) {
+  // Cross-origin navigations are not allowed in prerendering so we can not
+  // reach here while prerendering.
+  DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kPrerendering);
   delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
@@ -7490,8 +7480,8 @@ void RenderFrameHostImpl::CreateNewWindow(
           .InitWithNewEndpointAndPassReceiver());
 
   // With this path, RenderViewHostImpl::CreateRenderView is never called
-  // because RenderView is already created on the renderer side. Thus we need to
-  // establish the connection here.
+  // because `blink::WebView` is already created on the renderer side. Thus we
+  // need to establish the connection here.
   mojo::PendingAssociatedRemote<blink::mojom::PageBroadcast> page_broadcast;
   mojo::PendingAssociatedReceiver<blink::mojom::PageBroadcast>
       page_broadcast_receiver =
@@ -7709,7 +7699,7 @@ void RenderFrameHostImpl::CreateFencedFrame(
       weak_ptr_factory_.GetSafeRef(), mode, devtools_frame_token));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   RenderFrameProxyHost* proxy_host =
-      fenced_frame->CreateProxyAndAttachToOuterFrameTree(
+      fenced_frame->InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
           std::move(remote_frame_interfaces), frame_token);
   fenced_frame->Bind(std::move(pending_receiver));
 
@@ -8253,24 +8243,30 @@ bool RenderFrameHostImpl::CanSubframeCommitOriginAndUrl(
   if (nav_entry_id == 0)
     return true;
 
-  const int last_nav_entry_index =
-      frame_tree_node_->navigator().controller().GetLastCommittedEntryIndex();
-  const int dest_nav_entry_index =
-      frame_tree_node_->navigator().controller().GetEntryIndexWithUniqueID(
-          nav_entry_id);
+  const int last_nav_entry_index = navigation_request->frame_tree_node()
+                                       ->navigator()
+                                       .controller()
+                                       .GetLastCommittedEntryIndex();
+  const int dest_nav_entry_index = navigation_request->frame_tree_node()
+                                       ->navigator()
+                                       .controller()
+                                       .GetEntryIndexWithUniqueID(nav_entry_id);
   if (dest_nav_entry_index <= 0 || dest_nav_entry_index == last_nav_entry_index)
     return true;
 
   NavigationEntryImpl* dest_nav_entry =
-      frame_tree_node_->navigator().controller().GetEntryAtIndex(
-          dest_nav_entry_index);
+      navigation_request->frame_tree_node()
+          ->navigator()
+          .controller()
+          .GetEntryAtIndex(dest_nav_entry_index);
   auto dest_main_frame_fne = dest_nav_entry->root_node()->frame_entry;
 
   // A subframe navigation should never lead to a NavigationEntry that looks
   // like a cross-document navigation in the main frame, since cross-document
   // navigations destroy all subframes.
   int64_t dest_main_frame_dsn = dest_main_frame_fne->document_sequence_number();
-  int64_t actual_main_frame_dsn = frame_tree_node_->navigator()
+  int64_t actual_main_frame_dsn = navigation_request->frame_tree_node()
+                                      ->navigator()
                                       .controller()
                                       .GetLastCommittedEntry()
                                       ->root_node()
@@ -8757,7 +8753,8 @@ void RenderFrameHostImpl::CommitNavigation(
 
   bool is_srcdoc = common_params->url.IsAboutSrcdoc();
   if (is_srcdoc) {
-    commit_params->srcdoc_value = frame_tree_node_->srcdoc_value();
+    commit_params->srcdoc_value =
+        navigation_request->frame_tree_node()->srcdoc_value();
     // Main frame srcdoc navigation are meaningless. They are blocked whenever a
     // navigation attempt is made. It shouldn't reach CommitNavigation.
     CHECK(!is_main_frame());
@@ -9144,7 +9141,9 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(container_info), std::move(prefetch_loader_factory),
         manifest_policy, std::move(policy_container),
         devtools_navigation_token);
-    frame_tree_node_->navigator().LogCommitNavigationSent();
+    navigation_request->frame_tree_node()
+        ->navigator()
+        .LogCommitNavigationSent();
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
     // it until its request endpoint is sent. Now that the request endpoint was
@@ -9816,7 +9815,8 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
   bool is_live =
       GetProcess()->IsInitializedAndNotDead() && is_render_frame_created();
 
-  // Sanity check: the RenderView should always be live if the RenderFrame is.
+  // Sanity check: the `blink::WebView` should always be live if the RenderFrame
+  // is.
   DCHECK(!is_live || render_view_host_->IsRenderViewLive());
 
   return is_live;
@@ -10347,8 +10347,9 @@ void RenderFrameHostImpl::ResetPermissionsPolicy() {
   if (IsNestedWithinFencedFrame()) {
     // In Fenced Frames, all permission policy gated features must be disabled
     // for privacy reasons.
-    permissions_policy_ =
-        blink::PermissionsPolicy::CreateForFencedFrame(last_committed_origin_);
+    permissions_policy_ = blink::PermissionsPolicy::CreateForFencedFrame(
+        last_committed_origin_,
+        frame_tree_node()->GetFencedFrameMode().value());
     return;
   }
 
@@ -10394,8 +10395,8 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
       BrowserMainLoop::GetInstance()->media_stream_manager();
 
   // This message can be received before navigation commit, because the renderer
-  // requests this when initializing the main frame of RenderView which happens
-  // before commit. Use FrameTree::is_prerendering() rather than
+  // requests this when initializing the main frame of `blink::WebView` which
+  // happens before commit. Use FrameTree::is_prerendering() rather than
   // lifecycle_state() because prerendering lifecycle state only is set after
   // navigation commit.
   bool restricted_mode = frame_tree()->is_prerendering();
@@ -11933,7 +11934,7 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   }
 
   CrossOriginOpenerPolicyAccessReportManager::InstallAccessMonitorsIfNeeded(
-      frame_tree_node_);
+      navigation_request->frame_tree_node());
 
   // Reset the salt so that media device IDs are reset for the new document
   // if necessary.
@@ -12184,7 +12185,11 @@ void RenderFrameHostImpl::SendCommitNavigation(
     // otherwise the cookie manager will crash. Sending the cookie manager here
     // is just an optimization, so it is fine for it to be null in the case
     // where these don't match.
-    if (common_params->url.SchemeIsHTTPOrHTTPS() &&
+
+    absl::optional<url::Origin> isolation_info_frame_origin =
+        navigation_request->isolation_info_for_subresources().frame_origin();
+    if (net::IsolationInfo::IsFrameSiteEnabled() &&
+        common_params->url.SchemeIsHTTPOrHTTPS() &&
         !origin_to_commit.opaque() &&
         navigation_request->isolation_info_for_subresources()
                 .frame_origin()
@@ -13106,9 +13111,8 @@ void RenderFrameHostImpl::
                                        browser_should_replace_current_entry,
                                        renderer_load_type);
 
-  const ui::PageTransition browser_transition =
-      CalculateTransition(request, renderer_load_type, params,
-                          frame_tree_node_->IsInFencedFrameTree());
+  const ui::PageTransition browser_transition = CalculateTransition(
+      request, renderer_load_type, params, IsNestedWithinFencedFrame());
 
   const bool browser_history_list_was_cleared =
       request->commit_params().should_clear_history_list;

@@ -41,6 +41,7 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/progress_reporter.h"
 
@@ -54,7 +55,8 @@ void CreateSharedContext(const GpuDriverBugWorkarounds& workarounds,
                          scoped_refptr<gl::GLContext>& context,
                          scoped_refptr<SharedContextState>& context_state,
                          scoped_refptr<gles2::FeatureInfo>& feature_info) {
-  surface = gl::init::CreateOffscreenGLSurface(gfx::Size());
+  surface =
+      gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(), gfx::Size());
   ASSERT_TRUE(surface);
   context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -765,7 +767,7 @@ TEST_P(GLImageBackingFactoryWithGMBTest, GpuMemoryBufferImportSharedMemory) {
   handle.region = base::UnsafeSharedMemoryRegion::Create(shm_size);
   ASSERT_TRUE(handle.region.IsValid());
   handle.offset = 0;
-  handle.stride = static_cast<int32_t>(
+  handle.stride = static_cast<uint32_t>(
       gfx::RowSizeForBufferFormat(size.width(), format, 0));
 
   auto backing = backing_factory_shmem_->CreateSharedImage(

@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Allalaadimine peatatud</translation>
 <translation id="1409426117486808224">Avatud vahelehtede lihtsustatud vaade</translation>
 <translation id="1415402041810619267">Lühendatud URL</translation>
+<translation id="1426410128494586442">Jah</translation>
 <translation id="1446450296470737166">MIDI-seadm. täieliku juht. lub.</translation>
 <translation id="1620510694547887537">Kaamera</translation>
 <translation id="1644574205037202324">Ajalugu</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">Vanema hallatud</translation>
 <translation id="4670064810192446073">Virtuaalreaalsus</translation>
 <translation id="4751476147751820511">Liikumis- või valgusandurid</translation>
+<translation id="4811450222531576619">Teave selle allika ja teema kohta</translation>
 <translation id="4836046166855586901">Küsi, kui sait soovib teada, millal kasutate aktiivselt seda seadet</translation>
 <translation id="4883854917563148705">Hallatud seadeid ei saa lähtestada</translation>
 <translation id="4887024562049524730">Küsi enne saitidele loa andmist virtuaalreaalsuse seadme ja andmete kasutamiseks (soovitatav)</translation>
@@ -243,6 +245,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blokeeri saitidel virtuaalreaalsuse seadme ja andmete kasutamine</translation>
 <translation id="6447842834002726250">Küpsised</translation>
+<translation id="6467852467360539617">Kustuta andmed ja lähtesta load</translation>
 <translation id="6527303717912515753">Jaga</translation>
 <translation id="6545864417968258051">Bluetoothi otsimine</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ja veel <ph name="NUM_MORE" /> on blokeeritud}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ja veel <ph name="NUM_MORE" /> on blokeeritud}}</translation>
@@ -282,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> on valitud</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> ja <ph name="PERMISSION_2" /> on lubatud</translation>
 <translation id="7302486331832100261">Tavaliselt blokeerite märguanded. Lubamiseks puudutage valikut Üksikasjad.</translation>
+<translation id="7383715096023715447">Domeeni <ph name="DOMAIN" /> seaded</translation>
 <translation id="7423098979219808738">Esmalt küsib</translation>
 <translation id="7423538860840206698">Lõikelaua lugemine on blokeeritud</translation>
 <translation id="7425915948813553151">Tume teema saitide jaoks</translation>

@@ -25,13 +25,14 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
-#include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
@@ -147,29 +148,10 @@ class LockscreenWebUiTest : public MixinBasedInProcessBrowserTest {
 
   AccountId GetAccountId() { return logged_in_user_mixin_.GetAccountId(); }
 
-  absl::optional<LockScreenReauthDialogTestHelper>
-  StartSamlAndWaitForIdpPageLoad() {
-    absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-        LockScreenReauthDialogTestHelper::ShowDialogAndWait();
-    DCHECK(reauth_dialog_helper);
-    reauth_dialog_helper->ForceSamlRedirect();
-
-    // Expect the 'Verify Account' screen (the first screen the dialog shows) to
-    // be visible and proceed to the SAML page.
-    reauth_dialog_helper->WaitForVerifyAccountScreen();
-    reauth_dialog_helper->ClickVerifyButton();
-
-    reauth_dialog_helper->WaitForSamlScreen();
-    reauth_dialog_helper->ExpectVerifyAccountScreenHidden();
-
-    reauth_dialog_helper->WaitForIdpPageLoad();
-    return reauth_dialog_helper;
-  }
-
   // Go through online authentication (with saml) flow on the lock screen.
   void UnlockWithSAML() {
     absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-        StartSamlAndWaitForIdpPageLoad();
+        LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
     // Fill-in the SAML IdP form and submit.
     test::JSChecker signin_frame_js = reauth_dialog_helper->SigninFrameJS();
@@ -253,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, SamlScreenCancel) {
   ScreenLockerTester().Lock();
 
   absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-      StartSamlAndWaitForIdpPageLoad();
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
   reauth_dialog_helper->ClickCancelButtonOnSamlScreen();
 
@@ -272,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, ScrapedSingle) {
   ScreenLockerTester().Lock();
 
   absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-      StartSamlAndWaitForIdpPageLoad();
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
   content::DOMMessageQueue message_queue(
       reauth_dialog_helper->DialogWebContents());
@@ -315,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, ScrapedDynamic) {
   ScreenLockerTester().Lock();
 
   absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-      StartSamlAndWaitForIdpPageLoad();
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
   test::JSChecker signin_frame_js = reauth_dialog_helper->SigninFrameJS();
   signin_frame_js.Evaluate(
@@ -349,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, ScrapedMultiple) {
   ScreenLockerTester().Lock();
 
   absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-      StartSamlAndWaitForIdpPageLoad();
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
   // Fill-in the SAML IdP form and submit.
   test::JSChecker signin_frame_js = reauth_dialog_helper->SigninFrameJS();
@@ -386,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, ScrapedNone) {
   ScreenLockerTester().Lock();
 
   absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-      StartSamlAndWaitForIdpPageLoad();
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
   // Fill-in the SAML IdP form and submit.
   test::JSChecker signin_frame_js = reauth_dialog_helper->SigninFrameJS();
@@ -426,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, VerifyAgainFlow) {
   ScreenLockerTester().Lock();
 
   absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
-      StartSamlAndWaitForIdpPageLoad();
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
 
   // Authenticate in the IdP with another account other than the one used in
   // sign in.
@@ -721,8 +703,7 @@ class ProxyAuthLockscreenWebUiTest : public LockscreenWebUiTest {
     ASSERT_EQ(network->guid(),
               FakeShillManagerClient::kFakeEthernetNetworkGuid);
 
-    chromeos::proxy_config::SetProxyConfigForNetwork(proxy_config_dict,
-                                                     *network);
+    proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
     base::RunLoop().RunUntilIdle();
   }
 

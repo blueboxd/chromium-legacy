@@ -15,8 +15,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
@@ -289,8 +292,8 @@ void AddDeviceReportingElement(base::Value::List* report_sources,
                                const std::string& message_id,
                                const DeviceReportingType& type) {
   base::Value::Dict data;
-  data.Set("messageId", base::Value(message_id));
-  data.Set("reportingType", base::Value(ToJSDeviceReportingType(type)));
+  data.Set("messageId", message_id);
+  data.Set("reportingType", ToJSDeviceReportingType(type));
   report_sources->Append(std::move(data));
 }
 
@@ -446,7 +449,8 @@ base::Value::List GetPermissionsForExtension(
   return permission_messages;
 }
 
-base::Value GetPowerfulExtensions(const extensions::ExtensionSet& extensions) {
+base::Value::List GetPowerfulExtensions(
+    const extensions::ExtensionSet& extensions) {
   base::Value::List powerful_extensions;
 
   for (const auto& extension : extensions) {
@@ -456,15 +460,14 @@ base::Value GetPowerfulExtensions(const extensions::ExtensionSet& extensions) {
     // Only show extension on page if there is at least one permission
     // message to show.
     if (!permission_messages.empty()) {
-      std::unique_ptr<base::DictionaryValue> extension_to_add =
+      base::Value::Dict extension_to_add =
           extensions::util::GetExtensionInfo(extension.get());
-      extension_to_add->SetKey("permissions",
-                               base::Value(std::move(permission_messages)));
-      powerful_extensions.Append(std::move(*extension_to_add));
+      extension_to_add.Set("permissions", std::move(permission_messages));
+      powerful_extensions.Append(std::move(extension_to_add));
     }
   }
 
-  return base::Value(std::move(powerful_extensions));
+  return powerful_extensions;
 }
 
 const char* GetReportingTypeValue(ReportingType reportingType) {
@@ -494,7 +497,14 @@ void AddThreatProtectionPermission(const char* title,
 }
 
 std::string GetAccountManager(Profile* profile) {
-  return chrome::GetAccountManagerIdentity(profile).value_or(std::string());
+  absl::optional<std::string> manager =
+      chrome::GetAccountManagerIdentity(profile);
+  if (!manager &&
+      base::FeatureList::IsEnabled(features::kFlexOrgManagementDisclosure)) {
+    manager = chrome::GetDeviceManagerIdentity();
+  }
+
+  return manager.value_or(std::string());
 }
 
 }  // namespace
@@ -676,11 +686,10 @@ void ManagementUIHandler::AddReportingInfo(base::Value::List* report_sources) {
     }
 
     base::Value::Dict data;
-    data.Set("messageId", base::Value(report_definition.message));
-    data.Set(
-        "reportingType",
-        base::Value(GetReportingTypeValue(report_definition.reporting_type)));
-    report_sources->Append(base::Value(std::move(data)));
+    data.Set("messageId", report_definition.message);
+    data.Set("reportingType",
+             GetReportingTypeValue(report_definition.reporting_type));
+    report_sources->Append(std::move(data));
   }
 }
 
@@ -724,28 +733,28 @@ void ManagementUIHandler::AddUpdateRequiredEolInfo(
 void ManagementUIHandler::AddProxyServerPrivacyDisclosure(
     base::Value::Dict* response) const {
   bool showProxyDisclosure = false;
-  chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
-  base::Value proxy_settings(base::Value::Type::DICTIONARY);
+  ash::NetworkHandler* network_handler = ash::NetworkHandler::Get();
+  base::Value::Dict proxy_settings;
   // |ui_proxy_config_service| may be missing in tests. If the device is offline
   // (no network connected) the |DefaultNetwork| is null.
-  if (chromeos::NetworkHandler::HasUiProxyConfigService() &&
+  if (ash::NetworkHandler::HasUiProxyConfigService() &&
       network_handler->network_state_handler()->DefaultNetwork()) {
     // Check if proxy is enforced by user policy, a forced install extension or
     // ONC policies. This will only read managed settings.
-    chromeos::NetworkHandler::GetUiProxyConfigService()
-        ->MergeEnforcedProxyConfig(
-            network_handler->network_state_handler()->DefaultNetwork()->guid(),
-            &proxy_settings);
+    ash::NetworkHandler::GetUiProxyConfigService()->MergeEnforcedProxyConfig(
+        network_handler->network_state_handler()->DefaultNetwork()->guid(),
+        &proxy_settings);
   }
-  if (!proxy_settings.DictEmpty()) {
+  if (!proxy_settings.empty()) {
     // Proxies can be specified by web server url, via a PAC script or via the
     // web proxy auto-discovery protocol. Chrome also supports the "direct"
     // mode, in which no proxy is used.
-    base::Value* proxy_specification_mode = proxy_settings.FindPath(
-        {::onc::network_config::kType, ::onc::kAugmentationActiveSetting});
-    showProxyDisclosure =
-        proxy_specification_mode &&
-        proxy_specification_mode->GetString() != ::onc::proxy::kDirect;
+    std::string* proxy_specification_mode =
+        proxy_settings.FindStringByDottedPath(base::JoinString(
+            {::onc::network_config::kType, ::onc::kAugmentationActiveSetting},
+            "."));
+    showProxyDisclosure = proxy_specification_mode &&
+                          *proxy_specification_mode != ::onc::proxy::kDirect;
   }
   response->Set("showProxyServerPrivacyDisclosure", showProxyDisclosure);
 }
@@ -786,7 +795,8 @@ void ManagementUIHandler::AddDeviceReportingInfoForTesting(
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
+base::Value::Dict ManagementUIHandler::GetContextualManagedData(
+    Profile* profile) {
   base::Value::Dict response;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string enterprise_manager = GetDeviceManager();
@@ -862,10 +872,11 @@ base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
   AsyncUpdateLogo();
   if (!fetched_image_.empty())
     response.Set(kCustomerLogo, base::Value(fetched_image_));
-  return base::Value(std::move(response));
+  return response;
 }
 
-base::Value ManagementUIHandler::GetThreatProtectionInfo(Profile* profile) {
+base::Value::Dict ManagementUIHandler::GetThreatProtectionInfo(
+    Profile* profile) {
   base::Value::List info;
 
   constexpr struct {
@@ -923,7 +934,7 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(Profile* profile) {
                        IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY,
                        base::UTF8ToUTF16(enterprise_manager)));
   result.Set("info", std::move(info));
-  return base::Value(std::move(result));
+  return result;
 }
 
 base::Value::List ManagementUIHandler::GetManagedWebsitesInfo(
@@ -1059,12 +1070,12 @@ void ManagementUIHandler::HandleGetExtensions(const base::Value::List& args) {
       extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
           ->enabled_extensions();
 
-  base::Value powerful_extensions = GetPowerfulExtensions(extensions);
+  base::Value::List powerful_extensions = GetPowerfulExtensions(extensions);
 
   // The number of extensions to be reported in chrome://management with
   // powerful permissions.
   base::UmaHistogramCounts1000(kPowerfulExtensionsCountHistogram,
-                               powerful_extensions.GetListDeprecated().size());
+                               powerful_extensions.size());
 
   ResolveJavascriptCallback(args[0] /* callback_id */, powerful_extensions);
 }
@@ -1100,11 +1111,9 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   base::Value::List report_sources = GetDeviceReportingInfo(
       GetDeviceCloudPolicyManager(), Profile::FromWebUI(web_ui()));
-  ResolveJavascriptCallback(args[0] /* callback_id */,
-                            base::Value(std::move(report_sources)));
+  ResolveJavascriptCallback(args[0] /* callback_id */, report_sources);
 #else
-  ResolveJavascriptCallback(args[0] /* callback_id */,
-                            base::Value(report_sources_.Clone()));
+  ResolveJavascriptCallback(args[0] /* callback_id */, report_sources_);
 #endif
 }
 
@@ -1129,7 +1138,7 @@ void ManagementUIHandler::HandleGetContextualManagedData(
     const base::Value::List& args) {
   AllowJavascript();
   auto result = GetContextualManagedData(Profile::FromWebUI(web_ui()));
-  ResolveJavascriptCallback(args[0] /* callback_id */, std::move(result));
+  ResolveJavascriptCallback(args[0] /* callback_id */, result);
 }
 
 void ManagementUIHandler::HandleGetThreatProtectionInfo(
@@ -1146,7 +1155,7 @@ void ManagementUIHandler::HandleGetManagedWebsites(
 
   ResolveJavascriptCallback(
       args[0] /* callback_id */,
-      base::Value(GetManagedWebsitesInfo(Profile::FromWebUI(web_ui()))));
+      GetManagedWebsitesInfo(Profile::FromWebUI(web_ui())));
 }
 
 void ManagementUIHandler::HandleInitBrowserReportingInfo(
@@ -1154,15 +1163,13 @@ void ManagementUIHandler::HandleInitBrowserReportingInfo(
   base::Value::List report_sources;
   AllowJavascript();
   AddReportingInfo(&report_sources);
-  ResolveJavascriptCallback(args[0] /* callback_id */,
-                            base::Value(std::move(report_sources)));
+  ResolveJavascriptCallback(args[0] /* callback_id */, report_sources);
 }
 
 void ManagementUIHandler::NotifyBrowserReportingInfoUpdated() {
   base::Value::List report_sources;
   AddReportingInfo(&report_sources);
-  FireWebUIListener("browser-reporting-info-updated",
-                    base::Value(std::move(report_sources)));
+  FireWebUIListener("browser-reporting-info-updated", report_sources);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

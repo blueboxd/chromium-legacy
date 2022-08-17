@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/public/ash_interfaces.h"
 #include "base/dcheck_is_on.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
 #include "chrome/browser/ash/crosapi/file_system_provider_service_ash.h"
 #include "chrome/browser/ash/crosapi/force_installed_tracker_ash.h"
+#include "chrome/browser/ash/crosapi/fullscreen_controller_ash.h"
 #include "chrome/browser/ash/crosapi/geolocation_service_ash.h"
 #include "chrome/browser/ash/crosapi/identity_manager_ash.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
@@ -98,6 +98,8 @@
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/sync/sync_service_ash.h"
 #include "chrome/browser/ash/sync/sync_service_factory_ash.h"
+#include "chrome/browser/ash/telemetry_extension/diagnostics_service_ash.h"
+#include "chrome/browser/ash/telemetry_extension/probe_service_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
@@ -107,6 +109,7 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
@@ -182,6 +185,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       device_oauth2_token_service_ash_(
           std::make_unique<DeviceOAuth2TokenServiceAsh>()),
       device_settings_ash_(std::make_unique<DeviceSettingsAsh>()),
+      diagnostics_service_ash_(std::make_unique<ash::DiagnosticsServiceAsh>()),
       digital_goods_factory_ash_(
           std::make_unique<apps::DigitalGoodsFactoryAsh>()),
       dlp_ash_(std::make_unique<DlpAsh>()),
@@ -199,6 +203,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           std::make_unique<FileSystemProviderServiceAsh>()),
       force_installed_tracker_ash_(
           std::make_unique<ForceInstalledTrackerAsh>()),
+      fullscreen_controller_ash_(std::make_unique<FullscreenControllerAsh>()),
       geolocation_service_ash_(std::make_unique<GeolocationServiceAsh>()),
       identity_manager_ash_(std::make_unique<IdentityManagerAsh>()),
       idle_service_ash_(std::make_unique<IdleServiceAsh>()),
@@ -229,6 +234,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
 #if defined(USE_CUPS)
       printing_metrics_ash_(std::make_unique<PrintingMetricsAsh>()),
 #endif  // defined(USE_CUPS)
+      probe_service_ash_(std::make_unique<ash::ProbeServiceAsh>()),
       remoting_ash_(std::make_unique<RemotingAsh>()),
       resource_manager_ash_(std::make_unique<ResourceManagerAsh>()),
       screen_manager_ash_(std::make_unique<ScreenManagerAsh>()),
@@ -388,6 +394,11 @@ void CrosapiAsh::BindFileSystemProviderService(
 void CrosapiAsh::BindForceInstalledTracker(
     mojo::PendingReceiver<crosapi::mojom::ForceInstalledTracker> receiver) {
   force_installed_tracker_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindFullscreenController(
+    mojo::PendingReceiver<crosapi::mojom::FullscreenController> receiver) {
+  fullscreen_controller_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindGeolocationService(
@@ -559,6 +570,11 @@ void CrosapiAsh::BindTaskManager(
   task_manager_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindTelemetryProbeService(
+    mojo::PendingReceiver<mojom::TelemetryProbeService> receiver) {
+  probe_service_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindTimeZoneService(
     mojo::PendingReceiver<mojom::TimeZoneService> receiver) {
   time_zone_service_ash_->BindReceiver(std::move(receiver));
@@ -632,6 +648,11 @@ void CrosapiAsh::BindDeviceOAuth2TokenService(
 void CrosapiAsh::BindDeviceSettingsService(
     mojo::PendingReceiver<mojom::DeviceSettingsService> receiver) {
   device_settings_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindDiagnosticsService(
+    mojo::PendingReceiver<mojom::DiagnosticsService> receiver) {
+  diagnostics_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindDigitalGoodsFactory(

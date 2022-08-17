@@ -13,8 +13,8 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/adapters.h"
-#include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
@@ -26,9 +26,14 @@
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_tree_data.h"
-#include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/base/buildflags.h"
+
+#if defined(AX_FAIL_FAST_BUILD)
+#include "base/command_line.h"
+#include "content/public/browser/ax_inspect_factory.h"
+#include "content/public/common/content_switches.h"
+#endif
 
 namespace content {
 
@@ -164,41 +169,36 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
     ui::AXTreeID ax_tree_id) {
   DCHECK(ax_tree_id != ui::AXTreeIDUnknown());
   return static_cast<BrowserAccessibilityManager*>(
-      ui::AXTreeManagerMap::GetInstance().GetManager(ax_tree_id));
+      ui::AXTreeManager::FromID(ax_tree_id));
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate)
-    : WebContentsObserver(delegate
+    : AXPlatformTreeManager(ui::AXTreeIDUnknown(),
+                            std::make_unique<ui::AXSerializableTree>()),
+      WebContentsObserver(delegate
                               ? WebContents::FromRenderFrameHost(
                                     delegate->AccessibilityRenderFrameHost())
                               : nullptr),
       delegate_(delegate),
       user_is_navigating_away_(false),
       connected_to_parent_tree_node_(false),
-      ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
-      use_custom_device_scale_factor_for_testing_(false),
-      tree_(std::make_unique<ui::AXSerializableTree>()),
-      event_generator_(ax_tree()) {
-  tree_observation_.Observe(ax_tree());
-}
+      use_custom_device_scale_factor_for_testing_(false) {}
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate)
-    : WebContentsObserver(delegate
+    : AXPlatformTreeManager(ui::AXTreeIDUnknown(),
+                            std::make_unique<ui::AXSerializableTree>()),
+      WebContentsObserver(delegate
                               ? WebContents::FromRenderFrameHost(
                                     delegate->AccessibilityRenderFrameHost())
                               : nullptr),
       delegate_(delegate),
       user_is_navigating_away_(false),
-      ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
-      use_custom_device_scale_factor_for_testing_(false),
-      tree_(std::make_unique<ui::AXSerializableTree>()),
-      event_generator_(ax_tree()) {
-  tree_observation_.Observe(ax_tree());
+      use_custom_device_scale_factor_for_testing_(false) {
   Initialize(initial_tree);
 }
 
@@ -218,37 +218,17 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
     SetLastFocusedNode(nullptr);
   }
 
-  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
+  RemoveFromMap();
 
   ParentConnectionChanged(parent);
 }
 
-bool BrowserAccessibilityManager::Unserialize(
-    const ui::AXTreeUpdate& tree_update) {
-  if (ax_tree()->Unserialize(tree_update))
-    return true;
-
-  LOG(ERROR) << ax_tree()->error();
-  LOG(ERROR) << tree_update.ToString();
-
-  static auto* const ax_tree_error = base::debug::AllocateCrashKeyString(
-      "ax_tree_error", base::debug::CrashKeySize::Size256);
-  static auto* const ax_tree_update = base::debug::AllocateCrashKeyString(
-      "ax_tree_update", base::debug::CrashKeySize::Size256);
-  // Temporarily log some additional crash keys so we can try to
-  // figure out why we're getting bad accessibility trees here.
-  // http://crbug.com/765490, https://crbug.com/1094848.
-  // Be sure to re-enable BrowserAccessibilityManagerTest.TestFatalError
-  // when done (or delete it if no longer needed).
-  base::debug::SetCrashKeyString(ax_tree_error, ax_tree()->error());
-  base::debug::SetCrashKeyString(ax_tree_update, tree_update.ToString());
-  return false;
-}
-
 void BrowserAccessibilityManager::Initialize(
     const ui::AXTreeUpdate& initial_tree) {
-  if (!Unserialize(initial_tree))
-    LOG(FATAL) << ax_tree()->error();
+  if (!ax_tree()->Unserialize(initial_tree)) {
+    LOG(FATAL) << "No recovery is possible if the initial tree is broken: "
+               << ax_tree()->error();
+  }
 }
 
 // A flag for use in tests to ensure events aren't suppressed or delayed.
@@ -477,10 +457,6 @@ const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() const {
   return ax_tree()->data();
 }
 
-std::string BrowserAccessibilityManager::ToString() const {
-  return GetTreeData().ToString();
-}
-
 void BrowserAccessibilityManager::OnWindowFocused() {
   if (IsRootTree())
     FireFocusEventsIfNeeded();
@@ -529,6 +505,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     const AXEventNotificationDetails& details) {
   TRACE_EVENT0("accessibility",
                "BrowserAccessibilityManager::OnAccessibilityEvents");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Accessibility.Performance.BrowserAccessibilityManager::"
+      "OnAccessibilityEvents");
 
 #if DCHECK_IS_ON()
   base::AutoReset<bool> auto_reset(&in_on_accessibility_events_, true);
@@ -546,7 +525,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // Process all changes to the accessibility tree first.
   for (const ui::AXTreeUpdate& tree_update : *tree_updates) {
-    if (!Unserialize(tree_update)) {
+    if (!ax_tree()->Unserialize(tree_update)) {
       // This is a fatal error, but if there is a delegate, it will handle the
       // error result and recover by re-creating the manager. After a max
       // threshold number of errors is reached, it will crash the browser.
@@ -691,6 +670,14 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     if (event.event_type == ax::mojom::Event::kLoadComplete) {
       DCHECK_EQ(event_target, GetRoot());
       DCHECK(event_target->IsPlatformDocument());
+
+      // Don't fire multiple load-complete events. One may have been added by
+      // RenderAccessibilityImpl::SendPendingAccessibilityEvents, and firing
+      // multiple events can result in screen readers double-presenting the
+      // load and/or interrupting speech. See, for instance, crbug.com/1352464.
+      if (received_load_complete_event)
+        continue;
+
       received_load_complete_event = true;
     }
 
@@ -729,6 +716,30 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // Allow derived classes to do event post-processing.
   FinalizeAccessibilityEvents();
+
+#if defined(AX_FAIL_FAST_BUILD)
+  // When running a debugging/sanitizer build with
+  // --force-renderer-accessibility, exercise the properties for every node, to
+  // ensure no crashes or assertions are triggered. This helpfully runs for all
+  // web tests on builder linux-blink-web-tests-force-accessibility-rel, as well
+  // as for some clusterfuzz runs.
+  static int g_max_ax_tree_exercise_iterations = 3;  // Avoid timeouts.
+  static int count = 0;
+  if (GetRoot()->GetChildCount() > 0 &&
+      !GetRoot()->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
+      ++count <= g_max_ax_tree_exercise_iterations) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(::switches::kForceRendererAccessibility)) {
+      std::unique_ptr<ui::AXTreeFormatter> formatter(
+          AXInspectFactory::CreatePlatformFormatter());
+      formatter->SetPropertyFilters({{"*", ui::AXPropertyFilter::ALLOW}});
+      std::string formatted_tree = formatter->Format(GetRoot());
+      VLOG(1) << "\n\n******** Formatted tree ********\n\n"
+              << formatted_tree << "\n*********************************\n\n";
+    }
+  }
+#endif
+
   return true;
 }
 
@@ -1577,9 +1588,7 @@ void BrowserAccessibilityManager::OnTreeDataChanged(
     SetLastFocusedNode(nullptr);
   }
 
-  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
-  ax_tree_id_ = new_data.tree_id;
-  ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
+  ui::AXTreeManager::OnTreeDataChanged(tree, old_data, new_data);
 }
 
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
@@ -1691,31 +1700,6 @@ ui::AXPlatformNode* BrowserAccessibilityManager::GetPlatformNodeFromTree(
   return GetPlatformNodeFromTree(node.id());
 }
 
-void BrowserAccessibilityManager::AddObserver(ui::AXTreeObserver* observer) {
-  ax_tree()->AddObserver(observer);
-}
-
-void BrowserAccessibilityManager::RemoveObserver(ui::AXTreeObserver* observer) {
-  ax_tree()->RemoveObserver(observer);
-}
-
-ui::AXTreeID BrowserAccessibilityManager::GetTreeID() const {
-  return ax_tree_id();
-}
-
-ui::AXTreeID BrowserAccessibilityManager::GetParentTreeID() const {
-  return GetTreeData().parent_tree_id;
-}
-
-ui::AXNode* BrowserAccessibilityManager::GetRootAsAXNode() const {
-  // tree_ is nullptr after destruction.
-  if (!ax_tree())
-    return nullptr;
-
-  // tree_->root() can be null during AXTreeObserver callbacks.
-  return ax_tree()->root();
-}
-
 ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
     const {
   BrowserAccessibilityManager* parent_manager = GetParentManager();
@@ -1746,13 +1730,6 @@ ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
          "`kChildTreeId` attribute.";
 
   return parent_node;
-}
-
-void BrowserAccessibilityManager::WillBeRemovedFromMap() {
-  if (!ax_tree())
-    return;
-
-  ax_tree()->NotifyTreeManagerWillBeRemoved(ax_tree_id_);
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager()
@@ -1850,7 +1827,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetLastFocusedNode() {
 
 ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
   std::unique_ptr<ui::AXTreeSource<const ui::AXNode*>> tree_source(
-      tree_->CreateTreeSource());
+      ax_serializable_tree()->CreateTreeSource());
   ui::AXTreeSerializer<const ui::AXNode*> serializer(tree_source.get());
   ui::AXTreeUpdate update;
   serializer.SerializeChanges(GetRootAsAXNode(), &update);

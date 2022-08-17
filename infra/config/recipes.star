@@ -167,6 +167,11 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium_expectation_files/expectation_file_scripts",
+    bootstrappable = True,
+)
+
+build_recipe(
     name = "recipe:chromium_export_metadata",
 )
 
@@ -197,6 +202,10 @@ build_recipe(
 
 build_recipe(
     name = "recipe:flakiness/generate_builder_test_data",
+)
+
+build_recipe(
+    name = "recipe:flakiness/reproducer",
 )
 
 build_recipe(

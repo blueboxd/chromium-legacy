@@ -93,8 +93,8 @@
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
-#include "components/sync/test/model/fake_sync_change_processor.h"
-#include "components/sync/test/model/sync_error_factory_mock.h"
+#include "components/sync/test/fake_sync_change_processor.h"
+#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -3344,7 +3344,8 @@ TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
 }
 
 TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceEnabled) {
-  EXPECT_TRUE(SyncServiceFactory::GetAsSyncServiceImplForProfile(profile_.get())
+  EXPECT_TRUE(SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+                  profile_.get())
                   ->GetRegisteredDataTypesForTest()
                   .Has(syncer::ARC_PACKAGE));
 }
@@ -3353,10 +3354,10 @@ TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceDisabled) {
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
       ash::switches::kArcDisableAppSync);
-  EXPECT_FALSE(
-      SyncServiceFactory::GetAsSyncServiceImplForProfile(profile_.get())
-          ->GetRegisteredDataTypesForTest()
-          .Has(syncer::ARC_PACKAGE));
+  EXPECT_FALSE(SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+                   profile_.get())
+                   ->GetRegisteredDataTypesForTest()
+                   .Has(syncer::ARC_PACKAGE));
 }
 
 TEST_P(ArcDefaultAppTest, DefaultApps) {

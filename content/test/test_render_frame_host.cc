@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
@@ -183,6 +184,15 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
       child_creation_observer_.last_created_frame());
 }
 
+TestRenderFrameHost* TestRenderFrameHost::AppendAnonymousChild(
+    const std::string& frame_name) {
+  TestRenderFrameHost* rfh = AppendChildWithPolicy(frame_name, {});
+  auto attributes = blink::mojom::IframeAttributes::New();
+  attributes->anonymous = true;
+  rfh->frame_tree_node()->SetAttributes(std::move(attributes));
+  return rfh;
+}
+
 void TestRenderFrameHost::Detach() {
   if (IsFencedFrameRoot()) {
     // In production code, detaching Fenced Frames is intiated in a renderer
@@ -281,7 +291,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame(
   mojo::AssociatedRemote<blink::mojom::RemoteFrame> frame;
   std::ignore = frame.BindNewEndpointAndPassDedicatedReceiver();
   remote_frame_interfaces->frame = frame.Unbind();
-  fenced_frame->CreateProxyAndAttachToOuterFrameTree(
+  fenced_frame->InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
       std::move(remote_frame_interfaces), blink::RemoteFrameToken());
   return static_cast<TestRenderFrameHost*>(fenced_frame->GetInnerRoot());
 }

@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
@@ -84,6 +85,7 @@ import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorLi
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -348,7 +350,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     public ToolbarPhone(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mToolbarSidePadding = getResources().getDimensionPixelOffset(R.dimen.toolbar_edge_padding);
+        final int edgePaddingRes = OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+                ? R.dimen.toolbar_edge_padding_modern
+                : R.dimen.toolbar_edge_padding;
+        mToolbarSidePadding = getResources().getDimensionPixelOffset(edgePaddingRes);
     }
 
     @Override
@@ -744,13 +749,13 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     private int getBoundsAfterAccountingForRightButtons() {
         if (mStartSurfaceScrollFraction == 1.0f) return mToolbarSidePadding;
 
-        int toolbarButtonsContainerWidth = mToolbarButtonsContainer.getWidth();
+        int toolbarButtonsContainerWidth = mToolbarButtonsContainer.getMeasuredWidth();
 
-        // If the button container changed but there's no optional button animation running then we
-        // must have shown the optional button without an animation, use measuredWidth() to take
-        // into account the optional button's space.
-        if (mToolbarButtonsContainer.isDirty() && !mOptionalButtonAnimationRunning) {
-            toolbarButtonsContainerWidth = mToolbarButtonsContainer.getMeasuredWidth();
+        // MeasuredWidth() represents the desired width of the container which is accurate most
+        // time, except during the optional button animations, where the MeasuredWidth changes
+        // instantly to the final size and Width() represents the actual size at that frame.
+        if (mOptionalButtonAnimationRunning) {
+            toolbarButtonsContainerWidth = mToolbarButtonsContainer.getWidth();
         }
 
         return Math.max(mToolbarSidePadding, toolbarButtonsContainerWidth);
@@ -2565,8 +2570,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 }
             };
 
+            Profile profile = Profile.getLastUsedRegularProfile();
+            Tracker featureEngagementTracker = TrackerFactory.getTrackerForProfile(profile);
             mOptionalButton = new OptionalButtonCoordinator(optionalButton, userEducationHelper,
-                    /* transitionRoot= */ mToolbarButtonsContainer, isAnimationAllowedPredicate);
+                    /* transitionRoot= */ mToolbarButtonsContainer, isAnimationAllowedPredicate,
+                    featureEngagementTracker);
 
             // Set the button's background to the same color as the URL bar background. This color
             // is only used when showing dynamic actions.

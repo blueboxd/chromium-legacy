@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/audio/sounds.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/audio/sounds.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
@@ -239,13 +239,12 @@ void ChangePictureHandler::SendSelectedImage() {
         result.Set("url",
                    default_user_image::GetDefaultImageUrl(previous_image_index_)
                        .spec());
-        auto source_info = default_user_image::GetDefaultImageSourceInfo(
-            previous_image_index_);
+        auto source_info =
+            default_user_image::GetDeprecatedDefaultImageSourceInfo(
+                previous_image_index_);
         if (source_info.has_value()) {
-          result.Set("author", l10n_util::GetStringUTF16(
-                                   std::move(source_info.value().author_id)));
-          result.Set("website", l10n_util::GetStringUTF16(
-                                    std::move(source_info.value().website_id)));
+          result.Set("author", std::move(source_info.value().author));
+          result.Set("website", source_info.value().website.spec());
         }
         FireWebUIListener("preview-deprecated-image", result);
       }

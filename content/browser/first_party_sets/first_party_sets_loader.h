@@ -12,6 +12,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/first_party_sets.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -24,7 +25,7 @@ namespace content {
 class CONTENT_EXPORT FirstPartySetsLoader {
  public:
   using LoadCompleteOnceCallback =
-      base::OnceCallback<void(FirstPartySetParser::SetsMap)>;
+      base::OnceCallback<void(network::mojom::PublicFirstPartySetsPtr)>;
   using FlattenedSets = FirstPartySetParser::SetsMap;
   using SingleSet = FirstPartySetParser::SingleSet;
 
@@ -77,12 +78,17 @@ class CONTENT_EXPORT FirstPartySetsLoader {
   // manually specified) have been merged, and then holds the merged data.
   FlattenedSets sets_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // Aliases that were defined by the public set declarations.
+  FirstPartySetParser::Aliases aliases_ GUARDED_BY_CONTEXT(sequence_checker_);
+
   // Holds the set that was provided on the command line (if any). There are two
   // layers of absl::optional here because the value is initially unset (outer
   // optional), and may be empty if no command-line flag was provided (or one
-  // was provided but invalid) (inner optional).
-  absl::optional<absl::optional<SingleSet>> manually_specified_set_
-      GUARDED_BY_CONTEXT(sequence_checker_);
+  // was provided but invalid) (inner optional). For convenience, we store the
+  // primary domain separately, *and* store it and its entry within the
+  // `FlattenedSets`.
+  absl::optional<absl::optional<std::pair<net::SchemefulSite, FlattenedSets>>>
+      manually_specified_set_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   enum Progress {
     kNotStarted,

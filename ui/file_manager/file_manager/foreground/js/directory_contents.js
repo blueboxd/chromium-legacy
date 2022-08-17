@@ -683,38 +683,15 @@ export class FileListContext {
      * @public {!Array<string>}
      * @const
      */
-    this.prefetchPropertyNames = FileListContext.createPrefetchPropertyNames_();
+    this.prefetchPropertyNames = Array.from(new Set([
+      ...constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES,
+    ]));
 
     /** @public {!VolumeManager} */
     this.volumeManager = volumeManager;
-  }
-
-  /**
-   * @return {!Array<string>}
-   * @private
-   */
-  static createPrefetchPropertyNames_() {
-    const set = {};
-    for (let i = 0;
-         i < constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES.length;
-         i++) {
-      set[constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
-    }
-    for (let i = 0;
-         i < constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES.length;
-         i++) {
-      set[constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
-    }
-    for (let i = 0;
-         i < constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES.length;
-         i++) {
-      set[constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
-    }
-    for (let i = 0; i < constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES.length;
-         i++) {
-      set[constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
-    }
-    return Object.keys(set);
   }
 }
 
@@ -1057,6 +1034,10 @@ export class DirectoryContents extends EventTarget {
       return;
     }
 
+    if (entries.length === 0) {
+      return;
+    }
+
     // Caching URL to reduce a number of calls of toURL in sort.
     // This is a temporary solution. We need to fix a root cause of slow toURL.
     // See crbug.com/370908 for detail.
@@ -1064,26 +1045,19 @@ export class DirectoryContents extends EventTarget {
       entry['cachedUrl'] = entry.toURL();
     });
 
-    if (entries.length === 0) {
-      return;
-    }
-
     this.processNewEntriesQueue_.run(callbackOuter => {
       const finish = () => {
         if (!this.scanCancelled_) {
-          let entriesFiltered = [].filter.call(
-              entries,
-              this.context_.fileFilter.filter.bind(this.context_.fileFilter));
-
-          // Just before inserting entries into the file list, check and avoid
-          // duplication.
+          // From new entries remove all entries that are rejected by the
+          // filters or are already present in the current file list.
           const currentURLs = {};
-          for (let i = 0; i < this.fileList_.length; i++) {
+          for (let i = 0; i < this.fileList_.length; ++i) {
             currentURLs[this.fileList_.item(i).toURL()] = true;
           }
-          entriesFiltered = entriesFiltered.filter(entry => {
-            return !currentURLs[entry.toURL()];
-          });
+          const entriesFiltered = entries.filter(
+              (e) => this.context_.fileFilter.filter(e) &&
+                  !(e['cachedUrl'] in currentURLs));
+
           // Update the filelist without waiting the metadata.
           this.fileList_.push.apply(this.fileList_, entriesFiltered);
           dispatchSimpleEvent(this, 'scan-updated');

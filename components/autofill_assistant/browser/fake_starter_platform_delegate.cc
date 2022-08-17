@@ -98,17 +98,16 @@ void FakeStarterPlatformDelegate::SetProactiveHelpSettingEnabled(bool enabled) {
   proactive_help_enabled_ = enabled;
 }
 
-bool FakeStarterPlatformDelegate::GetMakeSearchesAndBrowsingBetterEnabled()
-    const {
-  return msbb_enabled_;
-}
-
 bool FakeStarterPlatformDelegate::GetIsLoggedIn() {
   return is_logged_in_;
 }
 
 bool FakeStarterPlatformDelegate::GetIsSupervisedUser() {
   return is_supervised_user_;
+}
+
+bool FakeStarterPlatformDelegate::GetIsAllowedForMachineLearning() {
+  return is_allowed_for_machine_learning_;
 }
 
 bool FakeStarterPlatformDelegate::GetIsCustomTab() const {
@@ -142,7 +141,7 @@ FakeStarterPlatformDelegate::GetCommonDependencies() const {
 
 const PlatformDependencies*
 FakeStarterPlatformDelegate::GetPlatformDependencies() const {
-  return nullptr;
+  return &fake_platform_dependencies_;
 }
 
 base::WeakPtr<StarterPlatformDelegate>

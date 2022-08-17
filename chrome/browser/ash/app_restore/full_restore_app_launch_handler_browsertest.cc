@@ -35,6 +35,7 @@
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_integration_test.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -248,8 +249,6 @@ void ClickSaveDeskAsTemplateButton() {
 
 void ClickTemplateItem(int index) {
   ClickButton(ash::GetTemplateItemButton(/*index=*/0));
-  // We need to wait for the template to be fetched from the model.
-  ash::WaitForDesksTemplatesUI();
 }
 
 }  // namespace

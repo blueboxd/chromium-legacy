@@ -4,6 +4,7 @@
 
 module auction_worklet.mojom;
 
+import "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
@@ -36,6 +37,8 @@ struct PreviousWin {
 // See blink.mojom.InterestGroup for documentation on individual fields.
 struct BidderWorkletNonSharedParams {
   string name;
+  blink.mojom.InterestGroup.ExecutionMode execution_mode;
+
   url.mojom.Url? daily_update_url;
   array<string>? trusted_bidding_signals_keys;
   string? user_bidding_signals;
@@ -103,6 +106,9 @@ interface BidderWorklet {
   //  InterestGroup definitions of the InterestGroups that can share this
   //  BidderWorklet.
   //
+  // `interest_group_join_origin` is the origin from which the interest group
+  //  was joined; can affect context reuse in certain execution modes.
+  //
   // `auction_signals_json` The JSON representation of the auction signals for
   //  the auction, specified by the publisher page and provided to bidder
   //  worklets competing in an auction.
@@ -161,12 +167,15 @@ interface BidderWorklet {
   //  update to the interest group priority.
   //  TODO(https://crbug.com/657632): Update when optional integers supported.
   //
+  // `pa_requests` The various requests made to the Private Aggregation API.
+  //
   // `errors` The various error messages to be used for debugging. These are too
   //  sensitive for the renderer to see. There may be errors even when a bid
   //  is offered, and there may be no errors when there's no bid. Includes
   //  errors from failing to load the worklet script.
   GenerateBid(
       BidderWorkletNonSharedParams bidder_worklet_non_shared_params,
+      url.mojom.Origin interest_group_join_origin,
       string? auction_signals_json,
       string? per_buyer_signals_json,
       mojo_base.mojom.TimeDelta? per_buyer_timeout,
@@ -182,6 +191,7 @@ interface BidderWorklet {
           url.mojom.Url? debug_win_report_url,
           double set_priority,
           bool has_set_priority,
+          array<PrivateAggregationRequest> pa_requests,
           array<string> errors);
 
   // Sends pending bidding signals URL requests, if any. Unlike with
@@ -252,6 +262,8 @@ interface BidderWorklet {
   // `ad_beacon_map` The map of ad reporting events to URLs for fenced frame
   //  reporting.
   //
+  // `pa_requests` The various requests made to the Private Aggregation API.
+  //
   // `errors` is an array of any errors that occurred while attempting
   //  to run the worklet's reportWin() method. These are too sensitive for
   //  the renderer to see. There may be errors even when a `report_url` is
@@ -272,6 +284,7 @@ interface BidderWorklet {
             uint64 trace_id) => (
                 url.mojom.Url? report_url,
                 map<string, url.mojom.Url> ad_beacon_map,
+                array<PrivateAggregationRequest> pa_requests,
                 array<string> errors);
 
   // Establishes a debugger connection to the worklet.

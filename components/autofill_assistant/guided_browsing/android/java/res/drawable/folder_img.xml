@@ -6,11 +6,13 @@
 <vector
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:height="104dp"
-    android:tint="@macro/default_icon_color_accent1"
-    android:viewportHeight="24"
-    android:viewportWidth="24"
     android:width="104dp"
+    android:height="104dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@macro/default_icon_color_accent1"
     tools:ignore="UnusedResources">
-  <path android:fillColor="@macro/default_icon_color_accent1" android:pathData="M10,4H4c-1.1,0 -1.99,0.9 -1.99,2L2,18c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V8c0,-1.1 -0.9,-2 -2,-2h-8l-2,-2z"/>
+  <path
+        android:fillColor="@macro/default_icon_color_accent1"
+        android:pathData="M4,20Q3.175,20 2.588,19.413Q2,18.825 2,18V6Q2,5.175 2.588,4.588Q3.175,4 4,4H10L12,6H20Q20.825,6 21.413,6.588Q22,7.175 22,8V18Q22,18.825 21.413,19.413Q20.825,20 20,20ZM4,18H20Q20,18 20,18Q20,18 20,18V8Q20,8 20,8Q20,8 20,8H4V18Q4,18 4,18Q4,18 4,18ZM4,18Q4,18 4,18Q4,18 4,18V8Q4,8 4,8Q4,8 4,8V18Q4,18 4,18Q4,18 4,18Z"/>
 </vector>

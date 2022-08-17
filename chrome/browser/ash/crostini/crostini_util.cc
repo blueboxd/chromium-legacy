@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/constants/app_types.h"
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -334,6 +336,20 @@ void LaunchCrostiniApp(Profile* profile,
                               std::move(callback));
 }
 
+std::vector<vm_tools::cicerone::ContainerFeature> GetContainerFeatures() {
+  std::vector<vm_tools::cicerone::ContainerFeature> result;
+  if (base::FeatureList::IsEnabled(ash::features::kCrostiniImeSupport)) {
+    result.push_back(
+        vm_tools::cicerone::ContainerFeature::ENABLE_GTK3_IME_SUPPORT);
+    if (base::FeatureList::IsEnabled(
+            ash::features::kCrostiniVirtualKeyboardSupport)) {
+      result.push_back(vm_tools::cicerone::ContainerFeature::
+                           ENABLE_VIRTUAL_KEYBOARD_SUPPORT);
+    }
+  }
+  return result;
+}
+
 std::string CryptohomeIdForProfile(Profile* profile) {
   std::string id = ash::ProfileHelper::GetUserIdHashFromProfile(profile);
   // Empty id means we're running in a test.
@@ -500,7 +516,7 @@ bool ShouldStopVm(Profile* profile, const guest_os::GuestId& container_id) {
        guest_os::GetContainers(profile, kCrostiniDefaultVmType)) {
     if (container.container_name != container_id.container_name &&
         container.vm_name == container_id.vm_name) {
-      if (CrostiniManager::GetForProfile(profile)->GetContainerInfo(
+      if (guest_os::GuestOsSessionTracker::GetForProfile(profile)->IsRunning(
               container)) {
         return false;
       }

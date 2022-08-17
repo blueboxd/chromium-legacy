@@ -111,6 +111,7 @@ _CONFIG = [
             'base::SysInfo',
             'base::ThreadChecker',
             'base::ThreadTicks',
+            'base::ThreadType',
             'base::TickClock',
             'base::Time',
             'base::TimeDelta',
@@ -138,6 +139,10 @@ _CONFIG = [
 
             # //base/task/bind_post_task.h
             'base::BindPostTask',
+
+            # //base/types/expected.h
+            'base::expected',
+            'base::unexpected',
 
             # //base/bind.h
             'base::IgnoreResult',
@@ -358,6 +363,7 @@ _CONFIG = [
             'gfx::RectToSkIRect',
             'gfx::RectToSkRect',
             'gfx::ScaleToCeiledSize',
+            'gfx::ScaleToEnclosedRect',
             'gfx::ScaleToEnclosingRect',
             'gfx::ScaleToFlooredSize',
             'gfx::ScaleToRoundedRect',

@@ -157,7 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.2DLayerBridge.WillReadFrequently"
-    enum="BooleanWillReadFrequently" expires_after="2023-01-24">
+    enum="BooleanWillReadFrequently" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>junov@chromium.org</owner>
   <summary>
@@ -168,7 +168,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.2DPrintingAsVector" enum="BooleanSuccess"
-    expires_after="2023-06-26">
+    expires_after="2023-04-01">
   <owner>fserb@chromium.org</owner>
   <owner>juanmihd@chromium.org</owner>
   <summary>
@@ -177,8 +177,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.ContentChangeMode"
-    enum="BooleanContentChangeMode" expires_after="2023-06-26">
-  <owner>yiyix@chromium.org</owner>
+    enum="BooleanContentChangeMode" expires_after="2023-04-01">
+  <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
     Records whether the contents in the canvas buffer needed to be preserved via
@@ -189,7 +189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.CreateImageBitmapSource"
-    enum="CanvasCreateImageBitmapSource" expires_after="2022-06-05">
+    enum="CanvasCreateImageBitmapSource" expires_after="2023-04-01">
   <owner>fserb@chromium.org</owner>
   <owner>aaronhk@chromium.org</owner>
   <summary>
@@ -198,7 +198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.GetImageData.WillReadFrequently"
-    enum="BooleanWillReadFrequently" expires_after="2023-01-24">
+    enum="BooleanWillReadFrequently" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>junov@chromium.org</owner>
   <summary>
@@ -207,13 +207,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.GPUFallbackToCPU"
-    enum="CanvasGPUFallbackToCPUScenario" expires_after="2022-12-18">
+    enum="CanvasGPUFallbackToCPUScenario" expires_after="2023-04-01">
+  <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>Logs the occurrences of canvas fallback from GPU to CPU.</summary>
 </histogram>
 
 <histogram name="Blink.Canvas.HasRendered" enum="Boolean"
-    expires_after="2023-06-26">
+    expires_after="2023-04-01">
   <owner>juanmihd@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -222,7 +223,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.HibernationEvents" enum="CanvasHibernationEvent"
-    expires_after="2022-11-13">
+    expires_after="2023-04-01">
+  <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
     Records the occurrence of events related to 2D canvas GPU resource
@@ -231,7 +233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.MaximumInflightResources"
-    units="canvas resources" expires_after="2022-08-28">
+    units="canvas resources" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -242,7 +244,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.NumCanvasesPerPage" units="canvases"
-    expires_after="2022-04-24">
+    expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -251,7 +253,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.OverdrawOp" enum="CanvasOverdrawOp"
-    expires_after="2022-08-31">
+    expires_after="2023-04-01">
   <owner>junov@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -260,7 +262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.RasterDuration{BlinkCanvasRasterDurationType}"
-    units="microseconds" expires_after="2023-01-31">
+    units="microseconds" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -285,7 +287,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Blink.Canvas.RequestedImageMimeTypes{CanvasRequestedImageMimeTypeFunctions}"
-    enum="RequestedImageMimeType" expires_after="2022-04-04">
+    enum="RequestedImageMimeType" expires_after="2023-04-01">
   <owner>fserb@chromium.org</owner>
   <owner>aaronhk@chromium.org</owner>
   <summary>
@@ -304,21 +306,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.ResourceProviderIsAccelerated"
-    enum="BooleanHardwareAccelerated" expires_after="2022-12-11">
+    enum="BooleanHardwareAccelerated" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>Logs if the canvas resource provider is accelerated or not.</summary>
 </histogram>
 
 <histogram name="Blink.Canvas.ResourceProviderType"
-    enum="CanvasResourceProviderType" expires_after="2022-12-11">
+    enum="CanvasResourceProviderType" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>Records the type of resource provider used for a canvas.</summary>
 </histogram>
 
 <histogram name="Blink.Canvas.ResourceProviderUsage"
-    enum="CanvasResourceProviderUsage" expires_after="2022-04-04">
+    enum="CanvasResourceProviderUsage" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -327,7 +329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.SqrtNumberOfPixels" units="sqrt(pixels)"
-    expires_after="2022-12-11">
+    expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -336,8 +338,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram base="true" name="Blink.Canvas.ToBlob.IdleTaskStatus"
+    enum="IdleTaskStatus" expires_after="2023-04-01">
+  <owner>fserb@chromium.org</owner>
+  <owner>aaronhk@chromium.org</owner>
+  <summary>
+    Records the status of the idle task when finishing a toBlob call.
+
+    In addition, metric values from OffscreenCanvas.convertToBlob API call are
+    also gathered into this histogram, because the logic flow is exactly the
+    same as canvas.toBlob. It's worth to note that the values can come from idle
+    tasks on either main or worker thread.
+  </summary>
+</histogram>
+
 <histogram name="Blink.Canvas.ToBlob.InitialEncodingDelay.{Type}"
-    units="microseconds" expires_after="2022-04-04">
+    units="microseconds" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -369,7 +385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.ToBlob.ScaledDuration{BlinkCanvasToBlobType}"
-    units="microseconds/sqrt(pixels)" expires_after="2022-04-04">
+    units="microseconds/sqrt(pixels)" expires_after="2023-04-01">
   <owner>fserb@chromium.org</owner>
   <owner>aaronhk@chromium.org</owner>
   <summary>
@@ -394,7 +410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Canvas.ToBlob.TotalEncodingDelay.{Type}"
-    units="microseconds" expires_after="2022-04-04">
+    units="microseconds" expires_after="2023-04-01">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -430,7 +446,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Blink.Canvas.ToDataURLScaledDuration{BlinkCanvasToDataURLMimeType}"
-    units="microseconds/sqrt(pixels)" expires_after="2022-04-04">
+    units="microseconds/sqrt(pixels)" expires_after="2023-04-01">
   <owner>fserb@chromium.org</owner>
   <owner>aaronhk@chromium.org</owner>
   <summary>
@@ -684,7 +700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.CullRect.UpdateTime" units="microseconds"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>pdr@chromium.org</owner>
   <owner>wangxianzhu@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -697,7 +713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.DarkMode.ApplyToImageOnMainThread" units="microseconds"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -724,7 +740,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.DecodedImage.JpegDensity.KiBWeighted"
-    units="0.01 bits per pixel" expires_after="2022-12-04">
+    units="0.01 bits per pixel" expires_after="2023-02-12">
   <owner>jyrki@google.com</owner>
   <owner>compression-dev@google.com</owner>
   <summary>
@@ -770,7 +786,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.DisplayLockIntersectionObserver.UpdateTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1131,7 +1147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.HandleInputEvents.UpdateTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1197,6 +1213,21 @@ chromium-metrics-reviews@google.com.
     The number of characters processed while parsing a document during page
     load. This is computed as the sum of all the characters appended to the
     input string sequence for the parser.
+
+    This histogram does not record metrics on machines with low-resolution
+    clocks.
+  </summary>
+</histogram>
+
+<histogram name="Blink.HTMLParsing.NextTokenTimeTotal" units="microseconds"
+    expires_after="2023-06-30">
+  <owner>sky@chromium.org</owner>
+  <owner>masonf@chromium.org</owner>
+  <owner>dom-dev@chromium.org</owner>
+  <summary>
+    While parsing a page, the total amount of time spent in
+    HTMLTokenizer::NextToken, in microseconds. This is a sub-interval of the
+    various Blink.HTMLParsing.ParsingTime histograms.
 
     This histogram does not record metrics on machines with low-resolution
     clocks.
@@ -1493,7 +1524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.IntersectionObservation.UpdateTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1550,7 +1581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.JavascriptIntersectionObserver.UpdateTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1582,7 +1613,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Layout.NGRatio.Blocks" units="%"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>tkent@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1597,7 +1628,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Layout.NGRatio.Calls" units="%"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>tkent@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1682,7 +1713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.LazyLoadIntersectionObserver.UpdateTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1828,8 +1859,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Navigator.ReducedUserAgent" enum="Boolean"
-    expires_after="2022-09-25">
+    expires_after="M110">
   <owner>miketaylr@chromium.org</owner>
+  <owner>victortan@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
     Whether the navigator.userAgent and navigator.appVersion JavaScript getters
@@ -1896,13 +1928,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.Paint.PaintArtifactCompositorUpdateReason"
+<histogram name="Blink.Paint.PaintArtifactCompositorUpdateFirstReason"
     enum="PaintArtifactCompositorUpdateReason" expires_after="2022-12-01">
   <owner>pdr@chromium.org</owner>
   <owner>rego@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
-    Records the reaons to set PaintArtifactCompositor as needing update.
+    Records the first reason to set PaintArtifactCompositor as needing update.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Paint.PaintArtifactCompositorUpdateReason"
+    enum="PaintArtifactCompositorUpdateReason" expires_after="2023-02-12">
+  <owner>pdr@chromium.org</owner>
+  <owner>rego@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Records the reason to set PaintArtifactCompositor as needing update.
   </summary>
 </histogram>
 
@@ -1971,7 +2013,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.PreloadRequestWaitTime" units="ms"
-    expires_after="2022-12-07">
+    expires_after="2023-02-12">
   <owner>cduvall@chromium.org</owner>
   <owner>swarm-team@google.com</owner>
   <summary>
@@ -2005,7 +2047,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.RenderThrottling.PaintUpdateTime" units="microseconds"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>pdr@chromium.org</owner>
   <owner>tcaptan@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -2178,7 +2220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Script.SchedulingType" enum="ScriptSchedulingType"
-    expires_after="2022-11-25">
+    expires_after="2023-02-12">
   <owner>kouhei@chromium.org</owner>
   <owner>hiroshige@chromium.org</owner>
   <owner>chikamune@chromium.org</owner>
@@ -2230,20 +2272,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Blink.ServiceDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2022-09-11">
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
-
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
-
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
-
+<histogram base="true" name="Blink.ServiceDocumentUpdate.UpdateTime.{Period}"
+    units="microseconds" expires_after="2023-01-15">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent preparing the document to service browser driven behaviors.
     Examples include accessibility, intersection observer, display locking and
-    spell checking. Includes time spent in style update and layout.
+    spell checking. Includes time spent in style update and layout. {Period}
 
     This histogram does not record metrics on machines with low-resolution
     clocks.
@@ -2252,6 +2288,11 @@ chromium-metrics-reviews@google.com.
     105.0.5175.0 were impacted by https://crbug.com/1330675. Be careful when
     aggregating or comparing these histograms across the version.
   </summary>
+  <token key="Period">
+    <variant name="AggregatedPreFCP"/>
+    <variant name="PostFCP"/>
+    <variant name="PreFCP"/>
+  </token>
 </histogram>
 
 <histogram name="Blink.Sms.BackendAvailability"
@@ -2286,7 +2327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.Infobar" enum="WebOTPServiceInfobarAction"
-    expires_after="2022-10-30">
+    expires_after="2023-02-12">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2350,7 +2391,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeContinueOnSuccess" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-02-12">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2384,7 +2425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeUserCancel" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-02-12">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>fedcm-core@google.com</owner>
@@ -2407,7 +2448,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.Style.UpdateTime" units="microseconds"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2429,7 +2470,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.SVGImage.DataChanged" units="microseconds"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -2451,42 +2492,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.Tokenizer.MainDocument.ATypicalStates" units="bitmask"
-    expires_after="2022-09-01">
-  <owner>sky@chromium.org</owner>
-  <owner>swarm-team@google.com</owner>
-  <summary>
-    This metric is reported for the main document when tokenizing of the input
-    completes. The histogram is a bitmask of values capturing how often
-    non-typical states are encountered. A value of 0 means none were
-    encountered. Bitmask values are:
-
-    Bit 1: Set if document.write() is encountered.
-
-    Bit 2: Set if the tokenizer state as determined by HTMLTreeBuilder does not
-    match the speculative state from HTMLTokenizer.
-
-    Bit 3: Set if the input contains a null character.
-
-    Bit 4: Set if input contains CDATA.
-  </summary>
-</histogram>
-
-<histogram name="Blink.Tokenizer.MainDocument.LocationOfFirstATypicalState"
-    units="location" expires_after="2022-09-01">
-  <owner>sky@chromium.org</owner>
-  <owner>swarm-team@google.com</owner>
-  <summary>
-    This metric is reported for the main document when tokenizing of the input
-    completes. This is emitted if a non-typical tokenization state is
-    encountered (see Blink.Tokenizer.MainDocument.ATypicalStates for more
-    details). The value is the location in the input stream of the first
-    non-typical state.
-  </summary>
-</histogram>
-
 <histogram name="Blink.UpdateViewportIntersection.UpdateTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2653,7 +2660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.FeaturePolicy.Header"
-    enum="FeaturePolicyFeature" expires_after="2022-11-27">
+    enum="FeaturePolicyFeature" expires_after="2023-02-12">
   <owner>iclelland@chromium.org</owner>
   <owner>feature-control@chromium.org</owner>
   <summary>
@@ -2862,7 +2869,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.PermissionsPolicy.Allow2"
-    enum="FeaturePolicyFeature" expires_after="2022-12-04">
+    enum="FeaturePolicyFeature" expires_after="2023-02-12">
   <owner>iclelland@chromium.org</owner>
   <owner>feature-control@chromium.org</owner>
   <summary>
@@ -2911,20 +2918,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Blink.UserDrivenDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2022-09-11">
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
-
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
-
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
-
+<histogram base="true"
+    name="Blink.UserDrivenDocumentUpdate.UpdateTime.{Period}"
+    units="microseconds" expires_after="2023-01-15">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent preparing the document to service user driven behaviors. Examples
     include inspector, selection, editing, find-in-page and focus. Includes time
-    spent in style update and layout.
+    spent in style update and layout. {Period}
 
     This histogram does not record metrics on machines with low-resolution
     clocks.
@@ -2933,6 +2935,11 @@ chromium-metrics-reviews@google.com.
     105.0.5175.0 were impacted by https://crbug.com/1330675. Be careful when
     aggregating or comparing these histograms across the version.
   </summary>
+  <token key="Period">
+    <variant name="AggregatedPreFCP"/>
+    <variant name="PostFCP"/>
+    <variant name="PreFCP"/>
+  </token>
 </histogram>
 
 <histogram name="Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold"
@@ -2956,7 +2963,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.VisibleBeforeLoaded.LazyLoadImages.BelowTheFold"
-    enum="NQEEffectiveConnectionType" expires_after="2022-11-20">
+    enum="NQEEffectiveConnectionType" expires_after="2023-02-12">
   <owner>sclittle@chromium.org</owner>
   <owner>rajendrant@chromium.org</owner>
   <summary>

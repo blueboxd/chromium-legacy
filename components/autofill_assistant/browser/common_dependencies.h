@@ -61,6 +61,9 @@ class CommonDependencies {
   virtual bool IsSupervisedUser(
       content::BrowserContext* browser_context) const = 0;
 
+  virtual bool IsAllowedForMachineLearning(
+      content::BrowserContext* browser_context) const;
+
   virtual AnnotateDomModelService* GetOrCreateAnnotateDomModelService(
       content::BrowserContext* browser_context) const = 0;
 
@@ -70,6 +73,12 @@ class CommonDependencies {
       content::BrowserContext* browser_context) const = 0;
 
   virtual version_info::Channel GetChannel() const = 0;
+
+  virtual bool GetMakeSearchesAndBrowsingBetterEnabled(
+      content::BrowserContext* browser_context) const;
+
+  virtual bool GetMetricsReportingEnabled(
+      content::BrowserContext* browser_context) const;
 };
 
 }  // namespace autofill_assistant

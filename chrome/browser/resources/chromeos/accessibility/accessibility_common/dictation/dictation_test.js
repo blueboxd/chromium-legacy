@@ -116,11 +116,32 @@ AX_TEST_F('DictationE2ETest', 'TimesOutWithNoImeContext', async function() {
   assertFalse(Boolean(this.mockInputIme.getLastCommittedParameters()));
 });
 
-AX_TEST_F('DictationE2ETest', 'TimesOutWithNoSpeech', async function() {
+AX_TEST_F('DictationE2ETest', 'TimesOutWithNoSpeechNetwork', async function() {
+  this.mockSpeechRecognitionPrivate.setSpeechRecognitionType(
+      SpeechRecognitionType.NETWORK);
   this.mockSetTimeoutMethod();
   this.toggleDictationOn();
 
-  const callback = this.getCallbackWithDelay(Dictation.Timeouts.NO_SPEECH_MS);
+  const callback =
+      this.getCallbackWithDelay(Dictation.Timeouts.NO_SPEECH_NETWORK_MS);
+  assertNotNullNorUndefined(callback);
+
+  // Triggering the timeout should cause a request to toggle Dictation, but
+  // nothing should be committed after AccessibilityPrivate toggle is received.
+  callback();
+  this.clearSetTimeoutData();
+  assertFalse(this.getDictationActive());
+  assertFalse(Boolean(this.mockInputIme.getLastCommittedParameters()));
+});
+
+AX_TEST_F('DictationE2ETest', 'TimesOutWithNoSpeechOnDevice', async function() {
+  this.mockSpeechRecognitionPrivate.setSpeechRecognitionType(
+      SpeechRecognitionType.ON_DEVICE);
+  this.mockSetTimeoutMethod();
+  this.toggleDictationOn();
+
+  const callback =
+      this.getCallbackWithDelay(Dictation.Timeouts.NO_SPEECH_ONDEVICE_MS);
   assertNotNullNorUndefined(callback);
 
   // Triggering the timeout should cause a request to toggle Dictation, but
@@ -161,7 +182,8 @@ AX_TEST_F('DictationE2ETest', 'TimesOutAfterFinalResults', async function() {
   this.mockInputIme.clearLastParameters();
 
   // The timeout should be set based on the final result.
-  const callback = this.getCallbackWithDelay(Dictation.Timeouts.NO_SPEECH_MS);
+  const callback =
+      this.getCallbackWithDelay(Dictation.Timeouts.NO_SPEECH_NETWORK_MS);
 
   // Triggering the timeout should stop listening.
   callback();
@@ -237,3 +259,40 @@ AX_TEST_F('DictationE2ETest', 'NoCommandsWhenNotSupported', async function() {
   await this.assertCommittedText('New line');
   this.mockInputIme.clearLastParameters();
 });
+
+AX_TEST_F(
+    'DictationE2ETest', 'SilencesSpokenFeedbackWhenStarting', async function() {
+      assertEquals(
+          0, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+
+      // Turn on ChromeVox
+      await this.setPref(Dictation.SPOKEN_FEEDBACK_PREF, true);
+      // Wait for the callbacks to Dictation.
+      await this.getPref(Dictation.SPOKEN_FEEDBACK_PREF);
+
+      // Now silenceSpokenFeedback should get called when toggling Dictation on.
+      this.toggleDictationOn();
+      assertEquals(
+          1, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+
+      // It should not be called when turning Dictation off.
+      this.toggleDictationOff();
+      assertEquals(
+          1, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+    });
+
+AX_TEST_F(
+    'DictationE2ETest', 'DoesNotSilenceSpokenFeedbackUnnecessarily',
+    async function() {
+      assertEquals(
+          0, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+
+      // Check that when ChromeVox is disabled we don't try to silence it when
+      // Dictation gets toggled.
+      this.toggleDictationOn();
+      assertEquals(
+          0, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+      this.toggleDictationOff();
+      assertEquals(
+          0, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+    });

@@ -52,7 +52,6 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
@@ -63,7 +62,6 @@
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/form_processing/autocomplete_attribute_processing_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
@@ -78,6 +76,7 @@
 #include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
@@ -86,6 +85,7 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -1842,22 +1842,23 @@ bool BrowserAutofillManager::RefreshDataModels() {
 
 CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
   // Unpack the |unique_id| into component parts.
-  std::string credit_card_id;
-  std::string profile_id;
+  Suggestion::BackendId credit_card_id;
+  Suggestion::BackendId profile_id;
   suggestion_generator_->SplitFrontendId(unique_id, &credit_card_id,
                                          &profile_id);
-  return personal_data_->GetCreditCardByGUID(credit_card_id);
+  return personal_data_->GetCreditCardByGUID(credit_card_id.value());
 }
 
 AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
   // Unpack the |unique_id| into component parts.
-  std::string credit_card_id;
-  std::string profile_id;
+  Suggestion::BackendId credit_card_id;
+  Suggestion::BackendId profile_id;
   suggestion_generator_->SplitFrontendId(unique_id, &credit_card_id,
                                          &profile_id);
 
-  if (base::IsValidGUID(profile_id))
-    return personal_data_->GetProfileByGUID(profile_id);
+  std::string guid = profile_id.value();
+  if (base::IsValidGUID(guid))
+    return personal_data_->GetProfileByGUID(guid);
   return nullptr;
 }
 
@@ -2727,6 +2728,8 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   // warning message and don't offer autofill. The warning is shown even if
   // there are no autofill suggestions available.
   if (IsFormMixedContent(client(), form) &&
+      client()->GetPrefs()->FindPreference(
+          ::prefs::kMixedFormsWarningsEnabled) &&
       client()->GetPrefs()->GetBoolean(::prefs::kMixedFormsWarningsEnabled)) {
     suggestions->clear();
     // If the user begins typing, we interpret that as dismissing the warning.

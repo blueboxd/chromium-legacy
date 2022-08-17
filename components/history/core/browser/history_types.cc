@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "components/history/core/browser/page_usage_data.h"
 
 namespace history {
@@ -397,6 +398,40 @@ DeletionInfo& DeletionInfo::operator=(DeletionInfo&& rhs) noexcept = default;
 
 // Clusters --------------------------------------------------------------------
 
+VisitContextAnnotations::VisitContextAnnotations() = default;
+
+VisitContextAnnotations::VisitContextAnnotations(
+    const VisitContextAnnotations& other) = default;
+
+VisitContextAnnotations::~VisitContextAnnotations() = default;
+
+bool VisitContextAnnotations::operator==(
+    const VisitContextAnnotations& other) const {
+  return immediate_fields.browser_type == other.immediate_fields.browser_type &&
+         immediate_fields.window_id == other.immediate_fields.window_id &&
+         immediate_fields.tab_id == other.immediate_fields.tab_id &&
+         immediate_fields.task_id == other.immediate_fields.task_id &&
+         immediate_fields.root_task_id == other.immediate_fields.root_task_id &&
+         immediate_fields.parent_task_id ==
+             other.immediate_fields.parent_task_id &&
+         immediate_fields.response_code ==
+             other.immediate_fields.response_code &&
+         omnibox_url_copied == other.omnibox_url_copied &&
+         is_existing_part_of_tab_group == other.is_existing_part_of_tab_group &&
+         is_placed_in_tab_group == other.is_placed_in_tab_group &&
+         is_existing_bookmark == other.is_existing_bookmark &&
+         is_new_bookmark == other.is_new_bookmark &&
+         is_ntp_custom_link == other.is_ntp_custom_link &&
+         duration_since_last_visit == other.duration_since_last_visit &&
+         page_end_reason == other.page_end_reason &&
+         total_foreground_duration == other.total_foreground_duration;
+}
+
+bool VisitContextAnnotations::operator!=(
+    const VisitContextAnnotations& other) const {
+  return !(*this == other);
+}
+
 AnnotatedVisit::AnnotatedVisit() = default;
 AnnotatedVisit::AnnotatedVisit(URLRow url_row,
                                VisitRow visit_row,
@@ -497,6 +532,14 @@ Cluster::Cluster(Cluster&&) = default;
 Cluster& Cluster::operator=(const Cluster&) = default;
 Cluster& Cluster::operator=(Cluster&&) = default;
 Cluster::~Cluster() = default;
+
+const ClusterVisit& Cluster::GetMostRecentVisit() const {
+  return *base::ranges::min_element(
+      visits, [](auto time1, auto time2) { return time1 < time2; },
+      [](const auto& cluster_visit) {
+        return cluster_visit.annotated_visit.visit_row.visit_time;
+      });
+}
 
 std::vector<std::u16string> Cluster::GetKeywords() const {
   std::vector<std::u16string> keywords;

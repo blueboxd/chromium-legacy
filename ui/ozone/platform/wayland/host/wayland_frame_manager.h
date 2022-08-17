@@ -122,6 +122,8 @@ class WaylandFrameManager {
 
  private:
   void PlayBackFrame(std::unique_ptr<WaylandFrame> frame);
+  void DiscardFrame(std::unique_ptr<WaylandFrame> frame);
+
   // Configures |surface| but does not commit wl_surface states yet.
   void ApplySurfaceConfigure(WaylandFrame* frame,
                              WaylandSurface* surface,

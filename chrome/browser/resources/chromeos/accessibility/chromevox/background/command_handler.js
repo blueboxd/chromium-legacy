@@ -5,10 +5,14 @@
 /**
  * @fileoverview ChromeVox commands.
  */
+import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {AutomationUtil} from '../../common/automation_util.js';
+import {constants} from '../../common/constants.js';
 import {Cursor, CursorUnit} from '../../common/cursors/cursor.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
+import {Earcon} from '../common/abstract_earcons.js';
 import {AbstractTts} from '../common/abstract_tts.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
@@ -21,6 +25,8 @@ import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
 import {LogType} from '../common/log_types.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {TreeDumper} from '../common/tree_dumper.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
 
 import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {BrailleBackground} from './braille/braille_background.js';
@@ -92,14 +98,12 @@ export class CommandHandler extends CommandHandlerInterface {
         chrome.automation.getDesktop(function(d) {
           // First, try speaking the on-screen time.
           const allTime = d.findAll({role: RoleType.TIME});
-          allTime.filter(function(t) {
-            return t.root.role === RoleType.DESKTOP;
-          });
+          allTime.filter(time => time.root.role === RoleType.DESKTOP);
 
           let timeString = '';
-          allTime.forEach(function(t) {
-            if (t.name) {
-              timeString = t.name;
+          allTime.forEach(time => {
+            if (time.name) {
+              timeString = time.name;
             }
           });
           if (timeString) {

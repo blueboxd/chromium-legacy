@@ -5,14 +5,19 @@
 /**
  * @fileoverview Provides output services for ChromeVox.
  */
+import {AutomationPredicate} from '../../../common/automation_predicate.js';
+import {AutomationUtil} from '../../../common/automation_util.js';
+import {constants} from '../../../common/constants.js';
 import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
+import {AutomationTreeWalker} from '../../../common/tree_walker.js';
 import {NavBraille} from '../../common/braille/nav_braille.js';
 import {EventSourceType} from '../../common/event_source_type.js';
 import {LocaleOutputHelper} from '../../common/locale_output_helper.js';
 import {LogType} from '../../common/log_types.js';
 import {Msgs} from '../../common/msgs.js';
 import {Spannable} from '../../common/spannable.js';
+import {QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_interface.js';
 import {ValueSelectionSpan, ValueSpan} from '../braille/spans.js';
 import {ChromeVox} from '../chromevox.js';
 import {EventSourceState} from '../event_source.js';
@@ -202,9 +207,7 @@ export class Output {
    * @return {boolean} True if there is only whitespace in this output.
    */
   get isOnlyWhitespace() {
-    return this.speechBuffer_.every(function(buff) {
-      return !/\S+/.test(buff.toString());
-    });
+    return this.speechBuffer_.every(buff => !/\S+/.test(buff.toString()));
   }
 
   /** @return {Spannable} */
@@ -524,9 +527,7 @@ export class Output {
         speechProps.startCallback = function() {
           const actions = scopedBuff.getSpansInstanceOf(OutputAction);
           if (actions) {
-            actions.forEach(function(a) {
-              a.run();
-            });
+            actions.forEach(action => action.run());
           }
         };
       }());
@@ -973,9 +974,7 @@ export class Output {
     options.annotation.push(token);
     if (node.name &&
         (node.nameFrom !== NameFromType.CONTENTS ||
-         node.children.every(function(child) {
-           return child.role === RoleType.STATIC_TEXT;
-         }))) {
+         node.children.every(child => child.role === RoleType.STATIC_TEXT))) {
       this.append_(buff, node.name || '', options);
       ruleStr.writeTokenWithValue(token, node.name);
     } else {
@@ -1087,18 +1086,18 @@ export class Output {
    */
   formatState_(node, token, buff, ruleStr) {
     if (node.state) {
-      Object.getOwnPropertyNames(node.state).forEach(function(s) {
-        const stateInfo = Output.STATE_INFO_[s];
+      Object.getOwnPropertyNames(node.state).forEach(state => {
+        const stateInfo = Output.STATE_INFO_[state];
         if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on) {
           ruleStr.writeToken(token);
           this.format_({
             node,
-            outputFormat: '$' + s,
+            outputFormat: '$' + state,
             outputBuffer: buff,
             outputRuleString: ruleStr,
           });
         }
-      }.bind(this));
+      });
     }
   }
 
@@ -1562,13 +1561,13 @@ export class Output {
     }
     // Tokens can have substitutions.
     const pieces = token.split('+');
-    token = pieces.reduce(function(prev, cur) {
+    token = pieces.reduce((prev, cur) => {
       let lookup = cur;
       if (cur[0] === '$') {
         lookup = node[cur.slice(1)];
       }
       return prev + lookup;
-    }.bind(this), '');
+    }, '');
     const msgId = token;
     let msgArgs = [];
     ruleStr.write(token + '{');
@@ -2349,33 +2348,30 @@ export class Output {
 
     // Reject empty values without meaningful annotations.
     if ((!value || value.length === 0) &&
-        opt_options.annotation.every(function(a) {
-          return !(a instanceof OutputAction) &&
-              !(a instanceof OutputSelectionSpan);
-        })) {
+        opt_options.annotation.every(
+            annotation => !(annotation instanceof OutputAction) &&
+                !(annotation instanceof OutputSelectionSpan))) {
       return;
     }
 
     const spannableToAdd = new Spannable(value);
-    opt_options.annotation.forEach(function(a) {
-      spannableToAdd.setSpan(a, 0, spannableToAdd.length);
-    });
+    opt_options.annotation.forEach(
+        annotation =>
+            spannableToAdd.setSpan(annotation, 0, spannableToAdd.length));
 
     // |isUnique| specifies an annotation that cannot be duplicated.
     if (opt_options.isUnique) {
-      const annotationSansNodes =
-          opt_options.annotation.filter(function(annotation) {
-            return !(annotation instanceof OutputNodeSpan);
-          });
+      const annotationSansNodes = opt_options.annotation.filter(
+          annotation => !(annotation instanceof OutputNodeSpan));
 
-      const alreadyAnnotated = buff.some(function(s) {
-        return annotationSansNodes.some(function(annotation) {
-          if (!s.hasSpan(annotation)) {
+      const alreadyAnnotated = buff.some(spannable => {
+        annotationSansNodes.some(annotation => {
+          if (!spannable.hasSpan(annotation)) {
             return false;
           }
-          const start = s.getSpanStart(annotation);
-          const end = s.getSpanEnd(annotation);
-          const substr = s.substring(start, end);
+          const start = spannable.getSpanStart(annotation);
+          const end = spannable.getSpanEnd(annotation);
+          const substr = spannable.substring(start, end);
           if (substr && value) {
             return substr.toString() === value.toString();
           } else {
@@ -2401,7 +2397,7 @@ export class Output {
     let separator = '';  // Changes to space as appropriate.
     let prevHasInlineNode = false;
     let prevIsName = false;
-    return spans.reduce(function(result, cur) {
+    return spans.reduce((result, cur) => {
       // Ignore empty spans except when they contain a selection.
       const hasSelection = cur.getSpanInstanceOf(OutputSelectionSpan);
       if (cur.length === 0 && !hasSelection) {
@@ -2420,12 +2416,12 @@ export class Output {
       // Keep track of if there's an inline node associated with
       // |cur|.
       const hasInlineNode =
-          cur.getSpansInstanceOf(OutputNodeSpan).some(function(s) {
-            if (!s.node) {
+          cur.getSpansInstanceOf(OutputNodeSpan).some(spannable => {
+            if (!spannable.node) {
               return false;
             }
-            return s.node.display === 'inline' ||
-                s.node.role === RoleType.INLINE_TEXT_BOX;
+            return spannable.node.display === 'inline' ||
+                spannable.node.role === RoleType.INLINE_TEXT_BOX;
           });
 
       const isName = cur.hasSpan('name');
@@ -2496,7 +2492,7 @@ export class Output {
    * @return {string}
    */
   toString() {
-    return this.speechBuffer_.reduce(function(prev, cur) {
+    return this.speechBuffer_.reduce((prev, cur) => {
       if (prev === null || prev === '') {
         return cur.toString();
       }
@@ -2510,7 +2506,7 @@ export class Output {
    * @return {!Spannable}
    */
   get speechOutputForTest() {
-    return this.speechBuffer_.reduce(function(prev, cur) {
+    return this.speechBuffer_.reduce((prev, cur) => {
       if (prev === null) {
         return cur;
       }
@@ -2834,8 +2830,10 @@ Output.RULES = {
     rootWebArea: {enter: `$name`, speak: `$if($name, $name, @web_content)`},
     region: {speak: `$state $nameOrTextContent $description $roleDescription`},
     row: {
-      startOf: `$node(tableRowHeader) $roleDescription`,
-      speak: `$name $node(activeDescendant) $value $state $restriction $role
+      startOf: `$node(tableRowHeader) $roleDescription
+          $if($hierarchicalLevel, @describe_depth($hierarchicalLevel))`,
+      speak: ` $if($hierarchicalLevel, @describe_depth($hierarchicalLevel))
+          $name $node(activeDescendant) $value $state $restriction $role
           $if($selected, @aria_selected_true) $description`,
     },
     staticText: {speak: `$precedingBullet $name= $description`},

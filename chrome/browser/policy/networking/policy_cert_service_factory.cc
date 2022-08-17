@@ -12,10 +12,8 @@
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
 
@@ -33,8 +31,7 @@ namespace {
 // Returns the PolicyCertificateProvider that should be used for |profile|.
 // May return nullptr, which should be treated as no policy-provided
 // certificates set.
-chromeos::PolicyCertificateProvider* GetPolicyCertificateProvider(
-    Profile* profile) {
+ash::PolicyCertificateProvider* GetPolicyCertificateProvider(Profile* profile) {
   if (ash::ProfileHelper::Get()->IsSigninProfile(profile)) {
     return g_browser_process->platform_part()
         ->browser_policy_connector_ash()
@@ -47,7 +44,7 @@ chromeos::PolicyCertificateProvider* GetPolicyCertificateProvider(
 KeyedService* BuildServiceInstanceAsh(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  chromeos::PolicyCertificateProvider* policy_certificate_provider =
+  ash::PolicyCertificateProvider* policy_certificate_provider =
       GetPolicyCertificateProvider(profile);
   if (!policy_certificate_provider)
     return nullptr;
@@ -87,7 +84,7 @@ KeyedService* BuildServiceInstanceAsh(content::BrowserContext* context) {
 KeyedService* BuildServiceInstanceLacros(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  chromeos::PolicyCertificateProvider* policy_certificate_provider =
+  ash::PolicyCertificateProvider* policy_certificate_provider =
       UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(profile);
   if (!policy_certificate_provider)
     return nullptr;
@@ -122,7 +119,7 @@ bool PolicyCertServiceFactory::ClearUsedPolicyCertificates(
     const std::string& user_email) {
   ListPrefUpdate update(g_browser_process->local_state(),
                         prefs::kUsedPolicyCertificates);
-  return (update->EraseListValue(base::Value(user_email)) > 0);
+  return (update->GetList().EraseValue(base::Value(user_email)) > 0);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -145,9 +142,9 @@ PolicyCertServiceFactory* PolicyCertServiceFactory::GetInstance() {
 }
 
 PolicyCertServiceFactory::PolicyCertServiceFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "PolicyCertService",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildForRegularAndIncognito()) {
   DependsOn(UserNetworkConfigurationUpdaterFactory::GetInstance());
 }
 
@@ -162,11 +159,6 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return BuildServiceInstanceLacros(context);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-}
-
-content::BrowserContext* PolicyCertServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 bool PolicyCertServiceFactory::ServiceIsNULLWhileTesting() const {

@@ -21,10 +21,6 @@ bool SimpleMainThreadScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
-bool SimpleMainThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
-  return false;
-}
-
 void SimpleMainThreadScheduler::PostIdleTask(const base::Location& location,
                                              Thread::IdleTask task) {}
 
@@ -44,11 +40,6 @@ void SimpleMainThreadScheduler::RemoveRAILModeObserver(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 SimpleMainThreadScheduler::V8TaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-SimpleMainThreadScheduler::CompositorTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
@@ -82,11 +73,6 @@ void SimpleMainThreadScheduler::AddTaskObserver(
 
 void SimpleMainThreadScheduler::RemoveTaskObserver(
     base::TaskObserver* task_observer) {}
-
-NonMainThreadSchedulerImpl*
-SimpleMainThreadScheduler::AsNonMainThreadScheduler() {
-  return nullptr;
-}
 
 MainThreadScheduler* SimpleMainThreadScheduler::ToMainThreadScheduler() {
   return this;

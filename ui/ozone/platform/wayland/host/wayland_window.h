@@ -126,9 +126,9 @@ class WaylandWindow : public PlatformWindow,
   WaylandWindow* child_window() const { return child_window_; }
 
   // Sets the window_scale for this window with respect to a display this window
-  // is located at. This determines how events can be translated and how size of
-  // the surface is treated (px to DIP conversion and vice versa.)
-  void SetWindowScale(float new_scale);
+  // is located at. Returns true if the scale has changed. This determines how
+  // events can be translated and how pixel size of the surface is treated.
+  bool SetWindowScale(float new_scale);
   float window_scale() const { return window_scale_; }
   float ui_scale() const { return ui_scale_; }
 
@@ -142,6 +142,10 @@ class WaylandWindow : public PlatformWindow,
   // Returns current type of the window.
   PlatformWindowType type() const { return type_; }
 
+  // The pixel size of the surface.
+  gfx::Size size_px() const { return size_px_; }
+
+  // The pixel size of the buffer for the surface.
   gfx::Size visual_size_px() const { return visual_size_px_; }
 
   absl::optional<gfx::Insets> frame_insets_px() const {
@@ -149,7 +153,7 @@ class WaylandWindow : public PlatformWindow,
   }
   void set_frame_insets_px(gfx::Insets insets) { frame_insets_px_ = insets; }
 
-  bool can_submit_frames() const { return can_submit_frames_; }
+  bool received_configure_event() const { return received_configure_event_; }
 
   // Remove WaylandOutput associated with WaylandSurface of this window.
   void RemoveEnteredOutput(uint32_t output_id);
@@ -231,7 +235,7 @@ class WaylandWindow : public PlatformWindow,
                                            bool is_activated);
   virtual void HandlePopupConfigure(const gfx::Rect& bounds);
   // The final size of the Wayland surface is determined by the buffer size in
-  // px * scale that the Chromium compositor renders at. If the window changes a
+  // px that the Chromium compositor renders at. If the window changes a
   // display (and scale changes from 1 to 2), the buffers are recreated with
   // some delays. Thus, applying a visual size using window_scale (which is the
   // current scale of a wl_output where the window is located at) is wrong, as
@@ -247,7 +251,7 @@ class WaylandWindow : public PlatformWindow,
   // factor than the primary display's one. Thus, this method gets a scale
   // factor that helps to determine size of the surface in dip respecting
   // size that GPU renders at.
-  virtual void UpdateVisualSize(const gfx::Size& size_px, float scale_factor);
+  virtual void UpdateVisualSize(const gfx::Size& size_px);
 
   // Handles close requests.
   virtual void OnCloseRequest();
@@ -335,6 +339,8 @@ class WaylandWindow : public PlatformWindow,
   }
 #endif
 
+  bool has_pending_configures() const { return !pending_configures_.empty(); }
+
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
@@ -366,17 +372,17 @@ class WaylandWindow : public PlatformWindow,
 
   // Processes the size information form visual size update and returns true if
   // any pending configure is fulfilled.
-  bool ProcessVisualSizeUpdate(const gfx::Size& size_px, float scale_factor);
+  bool ProcessVisualSizeUpdate(const gfx::Size& size_px);
 
   // Applies pending bounds.
   virtual void ApplyPendingBounds();
 
-  bool HasPendingConfigures() const;
-
   gfx::Rect pending_bounds_dip() const { return pending_bounds_dip_; }
-  void set_pending_bounds_dip(const gfx::Rect rect) {
+  void set_pending_bounds_dip(const gfx::Rect& rect) {
     pending_bounds_dip_ = rect;
   }
+  gfx::Size pending_size_px() const { return pending_size_px_; }
+  void set_pending_size_px(const gfx::Size& size) { pending_size_px_ = size; }
 
   const gfx::Size& restored_size_dip() const { return restored_size_dip_; }
 
@@ -414,7 +420,7 @@ class WaylandWindow : public PlatformWindow,
   raw_ptr<WaylandWindow> child_window_ = nullptr;
 
   std::unique_ptr<WaylandFrameManager> frame_manager_;
-  bool can_submit_frames_ = false;
+  bool received_configure_event_ = false;
 
   // |root_surface_| is a surface for the opaque background. Its z-order is
   // INT32_MIN.
@@ -444,7 +450,10 @@ class WaylandWindow : public PlatformWindow,
   // delegate_->OnBoundsChanged() is called and updates current_surface_size in
   // Viz. However, it is not guaranteed that the next arriving frame will match
   // |bounds_px_|.
-  gfx::Rect bounds_px_;
+  // gfx::Rect bounds_px_;
+
+  gfx::Rect bounds_dip_;
+  gfx::Size size_px_;
 
   // The size presented by the gpu process. This is the visible size of the
   // window, which can be different from |bounds_px_| due to renderers taking
@@ -500,6 +509,7 @@ class WaylandWindow : public PlatformWindow,
   // bounds via |ApplyPendingBounds|. Measured in DIP because updated in the
   // handler that receives DIP from Wayland.
   gfx::Rect pending_bounds_dip_;
+  gfx::Size pending_size_px_;
 
   // The size of the platform window before it went maximized or fullscreen in
   // dip.
@@ -509,6 +519,7 @@ class WaylandWindow : public PlatformWindow,
   // ack_configure request with |serial| will be sent to the Wayland compositor.
   struct PendingConfigure {
     gfx::Rect bounds_dip;
+    gfx::Size size_px;
     uint32_t serial;
     // True if this configure has been passed to the compositor for rendering.
     bool set = false;

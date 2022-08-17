@@ -76,8 +76,8 @@ const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
 
-const char kAutofillParseIbanFieldsName[] = "Parse IBAN fields in forms";
-const char kAutofillParseIbanFieldsDescription[] =
+const char kAutofillParseIBANFieldsName[] = "Parse IBAN fields in forms";
+const char kAutofillParseIBANFieldsDescription[] =
     "When enabled, Autofill will attempt to find International Bank Account "
     "Number (IBAN) fields when parsing forms.";
 
@@ -204,12 +204,6 @@ const char kAddSettingForDefaultPageModeDescription[] =
     "When enabled, the user can choose if they want the page in Desktop or "
     "Mobile mode.";
 
-const char kDefaultWebViewContextMenuName[] =
-    "Use the default WebKit context menus";
-const char kDefaultWebViewContextMenuDescription[] =
-    "When enabled, the default context menus from WebKit will be used in web "
-    "content.";
-
 const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
     "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
 const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[] =
@@ -273,11 +267,6 @@ const char kEnableDiscoverFeedGhostCardsName[] =
 const char kEnableDiscoverFeedGhostCardsDescription[] =
     "Show ghost cards when refreshing the discover feed.";
 
-const char kEnableDiscoverFeedShorterCacheName[] =
-    "Enable discover feed shorter cache";
-const char kEnableDiscoverFeedShorterCacheDescription[] =
-    "Enable more ghost cards by using a shorter cache.";
-
 const char kEnableDiscoverFeedStaticResourceServingName[] =
     "Enable discover feed static resource serving";
 const char kEnableDiscoverFeedStaticResourceServingDescription[] =
@@ -315,11 +304,10 @@ const char kEnableUnicornAccountSupportName[] =
 const char kEnableUnicornAccountSupportDescription[] =
     "Allows users to sign-in with their Unicorn account.";
 
-const char kEnableShortenedPasswordAutoFillInstructionName[] =
-    "Enable shortened instructions to turn on Password AutoFill for Chrome";
-const char kEnableShortenedPasswordAutoFillInstructionDescription[] =
-    "When enabled, the instructions to turn on Password AutoFill will have "
-    "shorter steps and come with a button that links the user to iOS Settings.";
+const char kEnableWebPageAnnotationsName[] = "Enable Web Page Intent Detection";
+const char kEnableWebPageAnnotationsDescription[] =
+    "Prototype to detect and highlight data with possible intent in a web "
+    "page.";
 
 const char kEnableSuggestionsScrollingOnIPadName[] =
     "Enable omnibox suggestions scrolling on iPad";
@@ -379,12 +367,6 @@ const char kFullscreenSmoothScrollingDescription[] =
 
 const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
 const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
-
-const char kIncognitoBrandConsistencyForIOSName[] =
-    "Enable Incognito brand consistency in iOS.";
-const char kIncognitoBrandConsistencyForIOSDescription[] =
-    "When enabled, keeps Incognito UI consistent regardless of any selected "
-    "theme.";
 
 const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
@@ -451,6 +433,12 @@ const char kLockBottomToolbarDescription[] =
 const char kLogBreadcrumbsName[] = "Log Breadcrumb Events";
 const char kLogBreadcrumbsDescription[] =
     "When enabled, breadcrumb events will be logged.";
+
+const char kMediaPermissionsControlName[] =
+    "Camera and Microphone Access Permissions Control";
+const char kMediaPermissionsControlDescription[] =
+    "Enables user control for camera and/or microphone access for a specific "
+    "site through site settings during its lifespan.";
 
 const char kMetrickitCrashReportName[] = "Metrickit crash reports";
 const char kMetrickitCrashReportDescription[] =
@@ -545,6 +533,12 @@ const char kOmniboxPasteButtonDescription[] =
     "Add a paste button when showing clipboard suggestions in the omnibox. iOS "
     "16 and above.";
 
+const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[] =
+    "Allow local history zero-prefix suggestions beyond NTP";
+const char kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription[] =
+    "Enables local history zero-prefix suggestions in every context in which "
+    "the remote zero-prefix suggestions are enabled.";
+
 const char kOmniboxZeroSuggestPrefetchingName[] =
     "Omnibox Zero Prefix Suggestion Prefetching on NTP";
 const char kOmniboxZeroSuggestPrefetchingDescription[] =
@@ -553,7 +547,7 @@ const char kOmniboxZeroSuggestPrefetchingDescription[] =
 
 const char kIOSOmniboxUpdatedPopupUIName[] = "Popup refresh";
 const char kIOSOmniboxUpdatedPopupUIDescription[] =
-    "Enable the new SwiftUI Popup implementation";
+    "Enable the new Popup implementation with Actions";
 
 const char kOptimizationGuideModelDownloadingName[] =
     "Allow optimization guide model downloads";

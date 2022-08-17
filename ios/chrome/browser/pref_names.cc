@@ -53,6 +53,9 @@ const char kDefaultCharset[] = "intl.charset_default";
 // Whether to send the DNT header.
 const char kEnableDoNotTrack[] = "enable_do_not_track";
 
+// Number of times the First Follow UI has been shown.
+const char kFirstFollowUIShownCount[] = "follow.first_follow_ui_modal_count";
+
 // Prefs for persisting HttpServerProperties.
 const char kHttpServerProperties[] = "net.http_server_properties";
 
@@ -92,9 +95,8 @@ const char kIosDiscoverFeedLastRefreshTime[] =
 // List preference maintaining the list of active promo campaigns.
 const char kIosPromosManagerActivePromos[] = "ios.promos_manager.active_promos";
 
-// Dictionary preference containing the promo impression history.
-const char kIosPromosManagerImpressionHistory[] =
-    "ios.promos_manager.impression_history";
+// List preference containing the promo impression history.
+const char kIosPromosManagerImpressions[] = "ios.promos_manager.impressions";
 
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in settings view.

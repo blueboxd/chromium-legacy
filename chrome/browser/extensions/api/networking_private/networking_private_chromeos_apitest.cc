@@ -47,6 +47,11 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
@@ -59,11 +64,6 @@
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -83,12 +83,12 @@ using testing::Return;
 using testing::_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+using ash::ShillDeviceClient;
+using ash::ShillIPConfigClient;
+using ash::ShillManagerClient;
+using ash::ShillProfileClient;
+using ash::ShillServiceClient;
 using ash::UserDataAuthClient;
-using chromeos::ShillDeviceClient;
-using chromeos::ShillIPConfigClient;
-using chromeos::ShillManagerClient;
-using chromeos::ShillProfileClient;
-using chromeos::ShillServiceClient;
 
 using extensions::NetworkingPrivateDelegate;
 using extensions::NetworkingPrivateDelegateFactory;
@@ -335,10 +335,10 @@ class NetworkingPrivateChromeOSApiTestAsh
   }
 
   void SetupTether() {
-    chromeos::NetworkStateHandler* network_state_handler =
-        chromeos::NetworkHandler::Get()->network_state_handler();
+    ash::NetworkStateHandler* network_state_handler =
+        ash::NetworkHandler::Get()->network_state_handler();
     network_state_handler->SetTetherTechnologyState(
-        chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
+        ash::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
     network_state_handler->AddTetherNetworkState(
         "tetherGuid1", "tetherName1", "tetherCarrier1",
         50 /* battery_percentage */, 75 /* signal_strength */,
@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetErrorState) {
-  chromeos::NetworkHandler::Get()->network_state_handler()->SetErrorForTest(
+  ash::NetworkHandler::Get()->network_state_handler()->SetErrorForTest(
       kWifi1ServicePath, "TestErrorState");
   EXPECT_TRUE(RunNetworkingSubtest("getErrorState")) << message_;
 }
@@ -1007,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
   ExtensionTestMessageListener listener("eventListenerReady");
   listener.SetOnSatisfied(base::BindOnce([](const std::string& message) {
-    chromeos::NetworkHandler::Get()
+    ash::NetworkHandler::Get()
         ->network_certificate_handler()
         ->AddAuthorityCertificateForTest("authority_cert");
   }));
@@ -1117,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetGlobalPolicy) {
       ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect,
       base::Value(false));
   global_config.SetKey("SomeNewGlobalPolicy", base::Value(false));
-  chromeos::NetworkHandler::Get()
+  ash::NetworkHandler::Get()
       ->managed_network_configuration_handler()
       ->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
                   std::string() /* no username hash */, base::ListValue(),
@@ -1153,7 +1153,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetCertificateLists) {
-  chromeos::NetworkHandler::Get()
+  ash::NetworkHandler::Get()
       ->network_certificate_handler()
       ->AddAuthorityCertificateForTest("authority_cert");
   EXPECT_TRUE(RunNetworkingSubtest("getCertificateLists")) << message_;

@@ -17,14 +17,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/common/extensions/api/vpn_provider.h"
+#include "chromeos/ash/components/dbus/shill/shill_third_party_vpn_driver_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_third_party_vpn_observer.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_observer.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/crosapi/mojom/vpn_service.mojom.h"
-#include "chromeos/dbus/shill/shill_third_party_vpn_driver_client.h"
-#include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -205,7 +205,7 @@ class VpnServiceForExtensionAsh : public crosapi::mojom::VpnServiceForExtension,
   // Configuration that is currently in use.
   raw_ptr<VpnConfiguration> active_configuration_ = nullptr;
 
-  base::ScopedObservation<chromeos::NetworkConfigurationHandler,
+  base::ScopedObservation<ash::NetworkConfigurationHandler,
                           ash::NetworkConfigurationObserver>
       network_configuration_observer_{this};
 
@@ -250,7 +250,7 @@ class VpnServiceAsh : public crosapi::mojom::VpnService,
   friend class VpnServiceForExtensionAsh;
 
   // Callback for
-  // chromeos::NetworkConfigurationHandler::GetShillProperties(...); parses
+  // ash::NetworkConfigurationHandler::GetShillProperties(...); parses
   // the |configuration_properties| dictionary and tries to add a new
   // configuration provided that it belongs to some enabled extension.
   void OnGetShillProperties(
@@ -264,7 +264,7 @@ class VpnServiceAsh : public crosapi::mojom::VpnService,
   // Ids of enabled vpn extensions.
   base::flat_set<std::string> vpn_extensions_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
+  base::ScopedObservation<ash::NetworkStateHandler,
                           ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
@@ -283,7 +283,7 @@ class VpnServiceAsh : public crosapi::mojom::VpnService,
 };
 
 class VpnServiceForExtensionAsh::VpnConfiguration
-    : public chromeos::ShillThirdPartyVpnObserver {
+    : public ash::ShillThirdPartyVpnObserver {
  public:
   virtual const std::string& configuration_name() const = 0;
   virtual const std::string& key() const = 0;

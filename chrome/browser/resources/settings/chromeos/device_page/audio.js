@@ -107,12 +107,6 @@ class SettingsAudioElement extends SettingsAudioElementBase {
             .bindNewPipeAndPassRemote());
   }
 
-  // TODO(crbug.com/1092970): Create onCrSliderChanged_ method for setting
-  // output volume.
-
-  // TODO(crbug.com/1092970): Create onOutputMuteTap_ method for setting output
-  // mute state.
-
   /**
    * @protected
    * @return {boolean}
@@ -121,6 +115,22 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     return this.audioSystemProperties_.outputMuteState ===
         MuteState.kMutedByPolicy;
   }
+
+  /**
+   * Handles the event where the output volume slider is being changed.
+   * @private
+   */
+  onOutputVolumeSliderChanged_() {
+    const sliderValue =
+        this.shadowRoot.querySelector('#outputVolumeSlider').value;
+    this.crosAudioConfig_.setOutputVolumePercent(sliderValue);
+  }
+
+  // TODO(crbug.com/1092970): Create onOutputMuteTap_ method for setting output
+  // mute state.
+
+  // TODO(crbug.com/1092970): Create onOutputDeviceChanged_ method for setting
+  // active output device.
 
   /**
    * @param {!Route} route

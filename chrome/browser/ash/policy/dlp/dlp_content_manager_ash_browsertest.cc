@@ -116,7 +116,9 @@ content::MediaStreamRequest CreateMediaStreamRequest(
 
 }  // namespace
 
-// TODO(crbug.com/1262948): Enable and modify for lacros.
+// These tests are for Ash-only features.
+// Other features should be tested in dlp_content_manager_browsertest.cc or
+// dlp_content_manager_lacros_browsertest.cc.
 // TODO(crbug.com/1322094): Add tests for OnWindowTitleChanged().
 class DlpContentManagerAshBrowserTest : public InProcessBrowserTest {
  public:
@@ -1611,7 +1613,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
   std::unique_ptr<content::WebContents> moved_web_contents =
       browser2->tab_strip_model()->DetachWebContentsAtForInsertion(0);
   browser1->tab_strip_model()->InsertWebContentsAt(
-      0, std::move(moved_web_contents), TabStripModel::ADD_NONE);
+      0, std::move(moved_web_contents), AddTabTypes::ADD_NONE);
   browser1->tab_strip_model()->ActivateTabAt(0);
 
   // Cleanup and check reporting.

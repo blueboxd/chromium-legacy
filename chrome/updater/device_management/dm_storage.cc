@@ -11,8 +11,11 @@
 
 #include "base/base64.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
@@ -43,9 +46,6 @@ constexpr char kPolicyInfoFileName[] = "CachedPolicyInfo";
 // {policy_type} that it receives from the DMServer.
 constexpr char kPolicyFileName[] = "PolicyFetchResponse";
 
-// Policy subfolder in the updater installation path.
-constexpr char kPolicyCacheSubfolder[] = "Policies";
-
 // Deletes the child directories in cache root if they do not appear in
 // set |policy_types_base64|.
 bool DeleteObsoletePolicies(const base::FilePath& cache_root,
@@ -71,9 +71,10 @@ bool DeleteObsoletePolicies(const base::FilePath& cache_root,
 }  // namespace
 
 #if BUILDFLAG(IS_LINUX)
-// crbug.com/1276162 - implement.
+// TODO(crbug.com/1276162) - implement.
 DMStorage::DMStorage(const base::FilePath& policy_cache_root)
-    : policy_cache_root_(policy_cache_root) {
+    : policy_cache_root_(policy_cache_root),
+      policy_info_file_(policy_cache_root_.AppendASCII(kPolicyInfoFileName)) {
   NOTIMPLEMENTED();
 }
 #endif  // BUILDFLAG(IS_LINUX)
@@ -81,6 +82,7 @@ DMStorage::DMStorage(const base::FilePath& policy_cache_root)
 DMStorage::DMStorage(const base::FilePath& policy_cache_root,
                      std::unique_ptr<TokenServiceInterface> token_service)
     : policy_cache_root_(policy_cache_root),
+      policy_info_file_(policy_cache_root_.AppendASCII(kPolicyInfoFileName)),
       token_service_(std::move(token_service)) {
   DCHECK(token_service_);
 }
@@ -110,6 +112,15 @@ bool DMStorage::IsDeviceDeregistered() const {
   return GetDmToken() == kInvalidTokenValue;
 }
 
+bool DMStorage::CanPersistPolicies() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return base::PathExists(policy_info_file_)
+             ? base::PathIsWritable(policy_info_file_)
+             : base::ScopedTempDir().CreateUniqueTempDirUnderPath(
+                   policy_cache_root_);
+}
+
 bool DMStorage::PersistPolicies(const DMPolicyMap& policy_map) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (policy_map.empty())
@@ -123,9 +134,7 @@ bool DMStorage::PersistPolicies(const DMPolicyMap& policy_map) const {
   CachedPolicyInfo cached_info;
   if (cached_info.Populate(policy_info_data) &&
       !cached_info.public_key().empty()) {
-    base::FilePath policy_info_file =
-        policy_cache_root_.AppendASCII(kPolicyInfoFileName);
-    if (!base::ImportantFileWriter::WriteFileAtomically(policy_info_file,
+    if (!base::ImportantFileWriter::WriteFileAtomically(policy_info_file_,
                                                         policy_info_data)) {
       return false;
     }
@@ -164,11 +173,9 @@ std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() const {
   if (!IsValidDMToken())
     return cached_info;
 
-  base::FilePath policy_info_file =
-      policy_cache_root_.AppendASCII(kPolicyInfoFileName);
   std::string policy_info_data;
-  if (!base::PathExists(policy_info_file) ||
-      !base::ReadFileToString(policy_info_file, &policy_info_data) ||
+  if (!base::PathExists(policy_info_file_) ||
+      !base::ReadFileToString(policy_info_file_, &policy_info_data) ||
       !cached_info->Populate(policy_info_data)) {
     return cached_info;
   }
@@ -208,16 +215,12 @@ DMStorage::GetOmahaPolicySettings() const {
   return omaha_settings;
 }
 
+#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1276162) - implement.
 scoped_refptr<DMStorage> GetDefaultDMStorage() {
-  const absl::optional<base::FilePath> updater_versioned_path =
-      GetVersionedDataDirectory(GetUpdaterScope());
-  if (!updater_versioned_path)
-    return nullptr;
-
-  base::FilePath policy_cache_folder =
-      updater_versioned_path->AppendASCII(kPolicyCacheSubfolder);
-
-  return base::MakeRefCounted<DMStorage>(policy_cache_folder);
+  NOTIMPLEMENTED();
+  return nullptr;
 }
+#endif
 
 }  // namespace updater

@@ -26,6 +26,11 @@ namespace apps {
 class DigitalGoodsFactoryAsh;
 }
 
+namespace ash {
+class DiagnosticsServiceAsh;
+class ProbeServiceAsh;
+}  // namespace ash
+
 namespace crosapi {
 
 class ArcAsh;
@@ -58,6 +63,7 @@ class FieldTrialServiceAsh;
 class FileManagerAsh;
 class FileSystemProviderServiceAsh;
 class ForceInstalledTrackerAsh;
+class FullscreenControllerAsh;
 class GeolocationServiceAsh;
 class IdentityManagerAsh;
 class IdleServiceAsh;
@@ -168,6 +174,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::DeviceOAuth2TokenService> receiver) override;
   void BindDeviceSettingsService(
       mojo::PendingReceiver<mojom::DeviceSettingsService> receiver) override;
+  void BindDiagnosticsService(
+      mojo::PendingReceiver<mojom::DiagnosticsService> receiver) override;
   void BindDigitalGoodsFactory(
       mojo::PendingReceiver<mojom::DigitalGoodsFactory> receiver) override;
   void BindDlp(mojo::PendingReceiver<mojom::Dlp> receiver) override;
@@ -196,6 +204,8 @@ class CrosapiAsh : public mojom::Crosapi {
       override;
   void BindForceInstalledTracker(
       mojo::PendingReceiver<mojom::ForceInstalledTracker> receiver) override;
+  void BindFullscreenController(
+      mojo::PendingReceiver<mojom::FullscreenController> receiver) override;
   void BindGeolocationService(
       mojo::PendingReceiver<mojom::GeolocationService> receiver) override;
   void BindIdentityManager(
@@ -286,6 +296,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::WebPageInfoFactory> receiver) override;
   void BindTaskManager(
       mojo::PendingReceiver<mojom::TaskManager> receiver) override;
+  void BindTelemetryProbeService(
+      mojo::PendingReceiver<mojom::TelemetryProbeService> receiver) override;
   void BindTestController(
       mojo::PendingReceiver<mojom::TestController> receiver) override;
   void BindTimeZoneService(
@@ -341,6 +353,10 @@ class CrosapiAsh : public mojom::Crosapi {
     return force_installed_tracker_ash_.get();
   }
 
+  FullscreenControllerAsh* fullscreen_controller_ash() {
+    return fullscreen_controller_ash_.get();
+  }
+
   KioskSessionServiceAsh* kiosk_session_service() {
     return kiosk_session_service_ash_.get();
   }
@@ -390,6 +406,8 @@ class CrosapiAsh : public mojom::Crosapi {
   FileSystemProviderServiceAsh* file_system_provider_service_ash() {
     return file_system_provider_service_ash_.get();
   }
+
+  FileManagerAsh* file_manager_ash() { return file_manager_ash_.get(); }
 
   CertProvisioningAsh* cert_provisioning_ash() {
     return cert_provisioning_ash_.get();
@@ -443,6 +461,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<DeviceAttributesAsh> device_attributes_ash_;
   std::unique_ptr<DeviceOAuth2TokenServiceAsh> device_oauth2_token_service_ash_;
   std::unique_ptr<DeviceSettingsAsh> device_settings_ash_;
+  std::unique_ptr<ash::DiagnosticsServiceAsh> diagnostics_service_ash_;
   std::unique_ptr<apps::DigitalGoodsFactoryAsh> digital_goods_factory_ash_;
   std::unique_ptr<DlpAsh> dlp_ash_;
   std::unique_ptr<DocumentScanAsh> document_scan_ash_;
@@ -457,6 +476,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<FileSystemProviderServiceAsh>
       file_system_provider_service_ash_;
   std::unique_ptr<ForceInstalledTrackerAsh> force_installed_tracker_ash_;
+  std::unique_ptr<FullscreenControllerAsh> fullscreen_controller_ash_;
   std::unique_ptr<GeolocationServiceAsh> geolocation_service_ash_;
   std::unique_ptr<IdentityManagerAsh> identity_manager_ash_;
   std::unique_ptr<IdleServiceAsh> idle_service_ash_;
@@ -480,6 +500,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<PowerAsh> power_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
   std::unique_ptr<PrintingMetricsAsh> printing_metrics_ash_;
+  std::unique_ptr<ash::ProbeServiceAsh> probe_service_ash_;
   std::unique_ptr<RemotingAsh> remoting_ash_;
   std::unique_ptr<ResourceManagerAsh> resource_manager_ash_;
   std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;

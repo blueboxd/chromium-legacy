@@ -15,8 +15,10 @@
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class DevToolsClient;
+class DevToolsClientImpl;
 class DevToolsEventListener;
 class DevToolsHttpClient;
+class PageTracker;
 class Status;
 class WebView;
 class WebViewImpl;
@@ -57,6 +59,7 @@ class ChromeImpl : public Chrome {
   bool HasTouchScreen() const override;
   std::string page_load_strategy() const override;
   Status Quit() override;
+  DevToolsClient* Client() const;
 
  protected:
   ChromeImpl(std::unique_ptr<DevToolsHttpClient> http_client,
@@ -69,7 +72,8 @@ class ChromeImpl : public Chrome {
 
   virtual Status QuitImpl() = 0;
 
-  std::unique_ptr<DevToolsClient> CreateClient(const std::string& id);
+  Status CreateClient(const std::string& id,
+                      std::unique_ptr<DevToolsClientImpl>* client);
   Status CloseFrontends(const std::string& for_client_id);
   Status CloseTarget(const std::string& id);
 
@@ -88,6 +92,7 @@ class ChromeImpl : public Chrome {
   Status SetWindowBounds(Window* window,
                          const std::string& target_id,
                          std::unique_ptr<base::DictionaryValue> bounds);
+  Status GetWebViewsInfo(WebViewsInfo* views_info);
 
   bool quit_ = false;
   std::unique_ptr<DeviceMetrics> device_metrics_;
@@ -101,10 +106,11 @@ class ChromeImpl : public Chrome {
       Chrome::PermissionState setting,
       std::vector<std::string>* chrome_permissions);
 
-  void UpdateWebViews(const WebViewsInfo& views_info, bool w3c_compliant);
+  Status UpdateWebViews(const WebViewsInfo& views_info, bool w3c_compliant);
 
   // Web views in this list are in the same order as they are opened.
   std::list<std::unique_ptr<WebViewImpl>> web_views_;
+  std::unique_ptr<PageTracker> page_tracker_;
   std::vector<std::unique_ptr<DevToolsEventListener>> devtools_event_listeners_;
   std::string page_load_strategy_;
 };

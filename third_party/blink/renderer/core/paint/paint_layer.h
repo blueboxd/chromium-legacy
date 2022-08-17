@@ -340,15 +340,10 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
                HitTestResult&,
                const PhysicalRect& hit_test_area);
 
-  bool IntersectsDamageRect(const PhysicalRect& layer_bounds,
-                            const PhysicalRect& damage_rect,
-                            const PhysicalOffset& offset_from_root) const;
-
   // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
   PhysicalRect PhysicalBoundingBox(
       const PhysicalOffset& offset_from_root) const;
   PhysicalRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
-  PhysicalRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
   // Static position is set in parent's coordinate space.
   LayoutUnit StaticInlinePosition() const { return static_inline_position_; }
@@ -561,12 +556,9 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool DescendantNeedsCullRectUpdate() const {
     return descendant_needs_cull_rect_update_;
   }
-  bool SelfOrDescendantNeedsCullRectUpdate() const {
-    return needs_cull_rect_update_ || descendant_needs_cull_rect_update_;
-  }
   void SetNeedsCullRectUpdate();
   void SetForcesChildrenCullRectUpdate();
-  void MarkCompositingContainerChainForNeedsCullRectUpdate();
+  void SetDescendantNeedsCullRectUpdate();
   void ClearNeedsCullRectUpdate() {
     needs_cull_rect_update_ = false;
     forces_children_cull_rect_update_ = false;

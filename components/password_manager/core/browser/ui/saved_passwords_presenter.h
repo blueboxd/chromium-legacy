@@ -59,7 +59,7 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   };
 
   // Result of EditSavedCredentials.
-  enum EditResult {
+  enum class EditResult {
     // Some credentials were successfully updated.
     kSuccess,
     // New credential matches the old one so nothing was changed.
@@ -72,6 +72,24 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
     kEmptyPassword,
     kMaxValue = kEmptyPassword,
   };
+
+  // Result of AddCredentialsCallback.
+  enum class AddResult {
+    // Credential is expected to be added successfully.
+    kSuccess,
+    // Credential is invalid.
+    kInvalid,
+    // Credential already exists in the profile store.
+    kExistsInProfileStore,
+    // Credential already exists in the account store.
+    kExistsInAccountStore,
+    // Credential already exists in the profile and account store.
+    kExistsInProfileAndAccountStore,
+    kMaxValue = kExistsInProfileAndAccountStore,
+  };
+
+  using AddCredentialsCallback =
+      base::OnceCallback<void(const std::vector<AddResult>&)>;
 
   explicit SavedPasswordsPresenter(
       scoped_refptr<PasswordStoreInterface> profile_store,
@@ -95,6 +113,20 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   bool AddCredential(const CredentialUIEntry& credential,
                      password_manager::PasswordForm::Type type =
                          password_manager::PasswordForm::Type::kManuallyAdded);
+
+  // Adds |credentials| to the specified store.
+  // Credentials that have invalid data or already exist are ignored.
+  //
+  // NOTE: Informing observers of credentials belonging to mixed types of stores
+  // is not supported.
+  //
+  // For a single credential the behaviour is identical to AddCredential method.
+  //
+  // The result is conveyed in AddCredentialsCallback: a vector of corresponding
+  // AddResult statuses.
+  void AddCredentials(const std::vector<CredentialUIEntry>& credentials,
+                      password_manager::PasswordForm::Type type,
+                      AddCredentialsCallback completion);
 
   // Modifies all the saved credentials matching |original_credential| to
   // |updated_credential|. Only username, password, notes and password issues
@@ -122,6 +154,14 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   void RemoveObserver(Observer* observer);
 
  private:
+  // Adds the |credential| to the specified store.
+  // Expects a credential that is valid to be added - can be verified by
+  // calling `GetExpectedAddResult()` before. `completion` callback wil be run
+  // after the DB call is completed.
+  void AddCredentialAsync(const CredentialUIEntry& credential,
+                          password_manager::PasswordForm::Type type,
+                          base::OnceClosure completion);
+
   using DuplicatePasswordsMap = std::multimap<std::string, PasswordForm>;
   // PasswordStoreInterface::Observer
   void OnLoginsChanged(PasswordStoreInterface* store,
@@ -141,10 +181,22 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   void NotifyEdited(const PasswordForm& password);
   void NotifySavedPasswordsChanged();
 
-  // Returns the `profile_store_` or `account_store_` if `form` is stored in the
-  // profile store or the account store accordingly. This function should be
-  // used only for credential stored in a single store.
+  void RemoveObservers();
+  void AddObservers();
+
+  // Returns the expected result for adding |credential|, looks for
+  // missing/invalid fields and checks if the credential already exists in the
+  // memory cache.
+  AddResult GetExpectedAddResult(const CredentialUIEntry& credential) const;
+
+  // Returns the `profile_store_` or `account_store_` if `form` is stored in
+  // the profile store or the account store accordingly. This function should
+  // be used only for credential stored in a single store.
   PasswordStoreInterface& GetStoreFor(const PasswordForm& form);
+
+  // Try to unblocklist in both stores.If credentials don't
+  // exist, the unblocklist operation is a no-op.
+  void UnblocklistBothStores(const CredentialUIEntry& credential);
 
   // The password stores containing the saved passwords.
   scoped_refptr<PasswordStoreInterface> profile_store_;

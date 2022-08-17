@@ -1465,11 +1465,10 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
 
     if (is_cable_device) {
       virtual_device_factory_->SetTransport(
-          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+          device::FidoTransportProtocol::kHybrid);
       for (auto& cred : options->allow_credentials) {
         cred.transports.clear();
-        cred.transports.emplace(
-            device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+        cred.transports.emplace(device::FidoTransportProtocol::kHybrid);
       }
     }
 
@@ -3418,7 +3417,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       GetTestPublicKeyCredentialRequestOptions();
   std::vector<uint8_t> id(32u, 1u);
   base::flat_set<device::FidoTransportProtocol> transports{
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+      device::FidoTransportProtocol::kHybrid};
   options->allow_credentials.clear();
   options->allow_credentials.emplace_back(device::CredentialType::kPublicKey,
                                           std::move(id), std::move(transports));
@@ -8504,9 +8503,7 @@ class AuthenticatorCableV2Test
 
     std::vector<std::unique_ptr<device::FidoDiscoveryBase>> Create(
         device::FidoTransportProtocol transport) override {
-      if (transport !=
-              device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy ||
-          !discovery_) {
+      if (transport != device::FidoTransportProtocol::kHybrid || !discovery_) {
         return {};
       }
 
@@ -8998,7 +8995,7 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, GetAssertion) {
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
   options->allow_credentials[0].transports.insert(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+      device::FidoTransportProtocol::kHybrid);
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
       options->allow_credentials[0].id, options->relying_party_id));
 
@@ -9017,7 +9014,7 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, MakeDiscoverableCredential) {
   ASSERT_TRUE(did_complete_);
   ASSERT_TRUE(error_.has_value());
   EXPECT_EQ(*error_, device::cablev2::authenticator::Platform::Error::
-                         AUTHENTICATOR_SELECTION_RECEIVED);
+                         DISCOVERABLE_CREDENTIALS_REQUEST);
 }
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, EmptyAllowList) {

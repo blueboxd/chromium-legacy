@@ -83,14 +83,13 @@ class GuestOsMountProviderTest : public testing::Test {
       const std::string& mount_label,
       const std::vector<std::string>& mount_options,
       ash::MountType type,
-      chromeos::MountAccessMode access_mode,
+      ash::MountAccessMode access_mode,
       ash::disks::DiskMountManager::MountPathCallback callback) {
     auto event = DiskMountManager::MountEvent::MOUNTING;
     auto code = ash::MountError::kNone;
-    auto info = DiskMountManager::MountPointInfo(
+    auto info = DiskMountManager::MountPoint{
         base::StringPrintf("sftp://%d:%d", cid_, port_),
-        "/media/fuse/" + kMountName, ash::MountType::kNetworkStorage,
-        ash::disks::MOUNT_CONDITION_NONE);
+        "/media/fuse/" + kMountName, ash::MountType::kNetworkStorage};
     disk_manager_->NotifyMountEvent(event, code, info);
     std::move(callback).Run(code, info);
   }
@@ -101,7 +100,7 @@ class GuestOsMountProviderTest : public testing::Test {
                 MountPath(base::StringPrintf("sftp://%d:%d", cid_, port_), "",
                           kMountName, default_mount_options,
                           ash::MountType::kNetworkStorage,
-                          chromeos::MOUNT_ACCESS_MODE_READ_WRITE, _))
+                          ash::MountAccessMode::kReadWrite, _))
         .Times(n)
         .WillRepeatedly(
             Invoke(this, &GuestOsMountProviderTest::NotifyMountEvent));

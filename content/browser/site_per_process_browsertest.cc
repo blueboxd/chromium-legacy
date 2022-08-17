@@ -112,6 +112,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/main_frame_counter_test_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
@@ -194,6 +195,20 @@ using ::testing::ElementsAre;
 namespace content {
 
 namespace {
+
+void VerifyChildProcessHasMainFrame(
+    mojo::Remote<mojom::MainFrameCounterTest>& main_frame_counter,
+    bool expected_state) {
+  main_frame_counter.FlushForTesting();
+  base::RunLoop run_loop;
+  main_frame_counter->HasMainFrame(base::BindOnce(
+      [](base::RunLoop* loop, bool expected_state, bool has_main_frame) {
+        EXPECT_EQ(expected_state, has_main_frame);
+        loop->Quit();
+      },
+      &run_loop, expected_state));
+  run_loop.Run();
+}
 
 using CrashVisibility = CrossProcessFrameConnector::CrashVisibility;
 
@@ -586,6 +601,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossSiteIframe) {
         web_contents()->GetRenderWidgetHostViewsInWebContentsTree();
     EXPECT_EQ(2U, views_set.size());
   }
+  mojo::Remote<mojom::MainFrameCounterTest> main_frame_counter;
+  shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->BindReceiver(
+      main_frame_counter.BindNewPipeAndPassReceiver());
+
+  VerifyChildProcessHasMainFrame(main_frame_counter, true);
+
+  mojo::Remote<mojom::MainFrameCounterTest> main_frame_counter_child;
+  rph->BindReceiver(main_frame_counter_child.BindNewPipeAndPassReceiver());
+
+  VerifyChildProcessHasMainFrame(main_frame_counter_child, false);
+
   RenderFrameProxyHost* proxy_to_parent =
       child->render_manager()->GetProxyToParent();
   EXPECT_TRUE(proxy_to_parent);
@@ -632,6 +658,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossSiteIframe) {
   EXPECT_NE(shell()->web_contents()->GetPrimaryMainFrame()->GetProcess(),
             child->current_frame_host()->GetProcess());
   EXPECT_NE(rph, child->current_frame_host()->GetProcess());
+  VerifyChildProcessHasMainFrame(main_frame_counter, true);
   {
     std::set<RenderWidgetHostViewBase*> views_set =
         web_contents()->GetRenderWidgetHostViewsInWebContentsTree();
@@ -654,6 +681,61 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossSiteIframe) {
       "Where A = http://a.com/\n"
       "      C = http://bar.com/",
       DepictFrameTree(root));
+}
+
+// Ensure that processes for iframes correctly track whether or not they have a
+// local main frame.
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+                       CrossSiteIframeMainFrameCount) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,a,a(a,a))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  EXPECT_EQ(
+      " Site A\n"
+      "   |--Site A\n"
+      "   |--Site A\n"
+      "   +--Site A\n"
+      "        |--Site A\n"
+      "        +--Site A\n"
+      "Where A = http://a.com/",
+      DepictFrameTree(root));
+
+  mojo::Remote<mojom::MainFrameCounterTest> main_frame_counter;
+  shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->BindReceiver(
+      main_frame_counter.BindNewPipeAndPassReceiver());
+  VerifyChildProcessHasMainFrame(main_frame_counter, true);
+
+  GURL url = embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(a,a)");
+  {
+    RenderFrameDeletedObserver deleted_observer(
+        root->child_at(2)->current_frame_host());
+    EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(2), url));
+    deleted_observer.WaitUntilDeleted();
+  }
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site A ------- proxies for B\n"
+      "   |--Site A ------- proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        |--Site A -- proxies for B\n"
+      "        +--Site A -- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  VerifyChildProcessHasMainFrame(main_frame_counter, true);
+
+  mojo::Remote<mojom::MainFrameCounterTest> main_frame_counter_child;
+  root->child_at(2)->current_frame_host()->GetProcess()->BindReceiver(
+      main_frame_counter_child.BindNewPipeAndPassReceiver());
+  VerifyChildProcessHasMainFrame(main_frame_counter_child, false);
 }
 
 // Ensure that title updates affect the correct NavigationEntry after a new
@@ -5289,9 +5371,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // B process to process the subframe's detached event and the disconnect
 // of the blink::WebView's blink::mojom::PageBroadcast mojo channel. In the bug,
 // the latter crashed while detaching the subframe's LocalFrame (triggered as
-// part of closing the RenderView), because this tried to access the subframe's
-// WebFrameWidget (from RenderFrameImpl::didChangeSelection), which had already
-// been cleared by the former.
+// part of closing the `blink::WebView`), because this tried to access the
+// subframe's WebFrameWidget (from RenderFrameImpl::didChangeSelection), which
+// had already been cleared by the former.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CloseSubframeWidgetAndViewOnProcessExit) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -5312,17 +5394,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Prevent b.com process from terminating right away once the subframe
   // navigates away from b.com below.  This is necessary so that the renderer
-  // process has time to process the closings of RenderWidget and RenderView,
-  // which is where the original bug was triggered.  Incrementing the keep alive
-  // ref count will cause RenderProcessHostImpl::Cleanup to forego process
-  // termination.
+  // process has time to process the closings of RenderWidget and
+  // `blink::WebView`, which is where the original bug was triggered.
+  // Incrementing the keep alive ref count will cause
+  // RenderProcessHostImpl::Cleanup to forego process termination.
   RenderProcessHost* subframe_process =
       root->child_at(0)->current_frame_host()->GetProcess();
   subframe_process->IncrementKeepAliveRefCount(0);
 
   // Navigate the subframe away from b.com.  Since this is the last active
-  // frame in the b.com process, this causes the RenderWidget and RenderView to
-  // be closed.
+  // frame in the b.com process, this causes the RenderWidget and
+  // `blink::WebView` to be closed.
   EXPECT_TRUE(NavigateToURLFromRenderer(
       root->child_at(0),
       embedded_test_server()->GetURL("a.com", "/title1.html")));
@@ -6283,8 +6365,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Navigate popup to b.com to recreate the b.com process.  When creating
   // opener proxies, |rvh| should be reused as a swapped out RVH.  In
-  // https://crbug.com/627893, recreating the opener RenderView was hitting a
-  // CHECK(params.swapped_out) in the renderer process, since its
+  // https://crbug.com/627893, recreating the opener `blink::WebView` was
+  // hitting a CHECK(params.swapped_out) in the renderer process, since its
   // RenderViewHost was brought into an active state by the navigation to
   // |stall_url| above, even though it never committed.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
@@ -6563,10 +6645,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 }
 
 // Test that when canceling a pending RenderFrameHost in the middle of a
-// redirect, and then killing the corresponding RenderView's renderer process,
-// the RenderViewHost isn't reused in an improper state later.  Previously this
-// led to a crash in CreateRenderView when recreating the RenderView due to a
-// stale main frame routing ID.  See https://crbug.com/627400.
+// redirect, and then killing the corresponding `blink::WebView`'s renderer
+// process, the RenderViewHost isn't reused in an improper state later.
+// Previously this led to a crash in CreateRenderView when recreating the
+// `blink::WebView` due to a stale main frame routing ID.  See
+// https://crbug.com/627400.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ReuseNonLiveRenderViewHostAfterCancelPending) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -6603,9 +6686,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   crash_observer.Wait();
 
   // Navigate the second popup to b.com.  This used to crash when creating the
-  // RenderView, because it reused the RenderViewHost created by the canceled
-  // navigation to b.com, and that RenderViewHost had a stale main frame
-  // routing ID and active state.
+  // `blink::WebView`, because it reused the RenderViewHost created by the
+  // canceled navigation to b.com, and that RenderViewHost had a stale main
+  // frame routing ID and active state.
   EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(popup2, b_url));
 }
 

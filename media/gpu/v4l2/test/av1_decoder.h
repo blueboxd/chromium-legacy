@@ -22,11 +22,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libgav1/src/src/obu_parser.h"
 
-// TODO(stevecho): Remove ANALYZER_ALLOW_UNUSED() later if this is added later
-// in base/logging.h for Chromium. Note that this already exists in
-// base/logging.h for ChromeOS.
-#define ANALYZER_ALLOW_UNUSED(var) static_cast<void>(var);
-
 // TODO(stevecho): RESTORATION_TILESIZE_MAX in the spec is not available in the
 // AV1 uAPI. It was recommended to be added in the userspace code. If the uAPI
 // stays as it is for upstreaming, then #ifndef can be removed. If the uAPI ends
@@ -87,6 +82,13 @@ class Av1Decoder : public VideoDecoder {
   // Copies the frame data into the V4L2 buffer of OUTPUT |queue|.
   void CopyFrameData(const libgav1::ObuFrameHeader& frame_hdr,
                      std::unique_ptr<V4L2Queue>& queue);
+
+  // Sets up per frame parameters |v4l2_frame_params| needed for AV1 decoding
+  // with VIDIOC_S_EXT_CTRLS ioctl call.
+  void SetupFrameParams(
+      struct v4l2_ctrl_av1_frame_header* v4l2_frame_params,
+      const absl::optional<libgav1::ObuSequenceHeader>& seq_header,
+      const libgav1::ObuFrameHeader& frm_header);
 
   // Refreshes |ref_frames_| slots with the current |buffer| and refreshes
   // |state_| with |current_frame|. Returns |reusable_buffer_slots| to indicate

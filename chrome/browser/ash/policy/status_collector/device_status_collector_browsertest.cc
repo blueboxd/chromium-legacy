@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
@@ -64,11 +63,16 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
@@ -81,12 +85,7 @@
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -884,11 +883,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     ash::KioskCryptohomeRemover::RegisterPrefs(local_state_.registry());
 
     // Use FakeUpdateEngineClient.
-    chromeos::DBusThreadManager::Initialize();
     update_engine_client_ = ash::UpdateEngineClient::InitializeFakeForTest();
-    // Async tasks posted when calling `chromeos::DBusThreadManager::Initialize`
-    // need to be flushed.
-    base::RunLoop().RunUntilIdle();
 
     chromeos::CrasAudioHandler::InitializeForTesting();
     ash::UserDataAuthClient::InitializeFake();
@@ -947,10 +942,8 @@ class DeviceStatusCollectorTest : public testing::Test {
 
  protected:
   void AddMountPoint(const std::string& mount_point) {
-    mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
-        mount_point, DiskMountManager::MountPointInfo(
-                         mount_point, mount_point, ash::MountType::kDevice,
-                         ash::disks::MOUNT_CONDITION_NONE)));
+    mount_point_map_.insert(
+        {mount_point, mount_point, ash::MountType::kDevice});
   }
 
   virtual void RestartStatusCollector(
@@ -1179,7 +1172,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   ChromeContentClient content_client_;
   ChromeContentBrowserClient browser_content_client_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  DiskMountManager::MountPointMap mount_point_map_;
+  DiskMountManager::MountPoints mount_point_map_;
   ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::FakeOwnerSettingsService owner_settings_service_{
@@ -1845,7 +1838,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   int size = 12345678;
   for (const auto& mount_info :
        DiskMountManager::GetInstance()->mount_points()) {
-    expected_mount_points.push_back(mount_info.first);
+    expected_mount_points.push_back(mount_info.mount_path);
   }
   expected_mount_points.push_back(kExternalMountPoint);
 
@@ -3861,11 +3854,11 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
   void SetUp() override {
     RestartStatusCollector();
 
-    chromeos::ShillDeviceClient::TestInterface* device_client =
+    ash::ShillDeviceClient::TestInterface* device_client =
         network_handler_test_helper_.device_test();
-    chromeos::ShillServiceClient::TestInterface* service_client =
+    ash::ShillServiceClient::TestInterface* service_client =
         network_handler_test_helper_.service_test();
-    chromeos::ShillIPConfigClient::TestInterface* ip_config_client =
+    ash::ShillIPConfigClient::TestInterface* ip_config_client =
         network_handler_test_helper_.ip_config_test();
 
     device_client->ClearDevices();
@@ -3959,9 +3952,9 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
     // Flush out pending state updates.
     base::RunLoop().RunUntilIdle();
 
-    chromeos::NetworkStateHandler::NetworkStateList state_list;
-    chromeos::NetworkStateHandler* network_state_handler =
-        chromeos::NetworkHandler::Get()->network_state_handler();
+    ash::NetworkStateHandler::NetworkStateList state_list;
+    ash::NetworkStateHandler* network_state_handler =
+        ash::NetworkHandler::Get()->network_state_handler();
     network_state_handler->GetNetworkListByType(
         ash::NetworkTypePattern::Default(),
         true,   // configured_only
@@ -3974,9 +3967,9 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
   void TearDown() override { DeviceStatusCollectorTest::TearDown(); }
 
   void ClearNetworkData() {
-    chromeos::ShillDeviceClient::TestInterface* device_client =
+    ash::ShillDeviceClient::TestInterface* device_client =
         network_handler_test_helper_.device_test();
-    chromeos::ShillServiceClient::TestInterface* service_client =
+    ash::ShillServiceClient::TestInterface* service_client =
         network_handler_test_helper_.service_test();
 
     device_client->ClearDevices();

@@ -1048,6 +1048,10 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   // NOTE, avoid using this method as it indicates an error-prone memory
   // ownership pattern. If possible, use smart pointers like std::unique_ptr<>
   // instead of raw_ptr<>.
+  // If you have to use it, avoid saving the return value in a long-lived
+  // variable (or worse, a field)! It's meant to be used as a temporary, to be
+  // passed into a cleanup & freeing function, and destructed at the end of the
+  // statement.
   ALWAYS_INLINE DanglingRawPtr ExtractAsDangling() noexcept {
     if constexpr (std::is_same_v<
                       typename std::remove_reference<decltype(*this)>::type,
@@ -1287,7 +1291,7 @@ using DisableDanglingPtrDetection = base::RawPtrMayDangle;
 
 // See `docs/dangling_ptr.md`
 // Annotates known dangling raw_ptr. Those haven't been triaged yet. All the
-// occurrences are meant to be removed. See https://cbug.com/1291138.
+// occurrences are meant to be removed. See https://crbug.com/1291138.
 using DanglingUntriaged = DisableDanglingPtrDetection;
 
 // The following template parameters are only meaningful when `raw_ptr`

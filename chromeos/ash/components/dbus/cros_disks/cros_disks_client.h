@@ -40,6 +40,10 @@ enum class MountType {
   kNetworkStorage,
 };
 
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, MountType type);
+
 // Type of device.
 enum class DeviceType {
   kUnknown,
@@ -49,6 +53,10 @@ enum class DeviceType {
   kMobile,       // Storage on a mobile device (e.g. Android).
   kDVD,          // DVD.
 };
+
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, DeviceType type);
 
 // Mount error code used by cros-disks.
 // These values are NOT the same as cros_disks::MountErrorType.
@@ -82,87 +90,80 @@ enum class MountError {
 COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
 std::ostream& operator<<(std::ostream& out, MountError error);
 
-}  // namespace ash
-
-namespace chromeos {
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-using ::ash::DeviceType;
-using ::ash::MountError;
-using ::ash::MountType;
-
 // Rename error reported by cros-disks.
-enum RenameError {
-  RENAME_ERROR_NONE,
-  RENAME_ERROR_UNKNOWN,
-  RENAME_ERROR_INTERNAL,
-  RENAME_ERROR_INVALID_DEVICE_PATH,
-  RENAME_ERROR_DEVICE_BEING_RENAMED,
-  RENAME_ERROR_UNSUPPORTED_FILESYSTEM,
-  RENAME_ERROR_RENAME_PROGRAM_NOT_FOUND,
-  RENAME_ERROR_RENAME_PROGRAM_FAILED,
-  RENAME_ERROR_DEVICE_NOT_ALLOWED,
-  RENAME_ERROR_LONG_NAME,
-  RENAME_ERROR_INVALID_CHARACTER,
+enum class RenameError {
+  kNone,
+  kUnknown,
+  kInternal,
+  kInvalidDevicePath,
+  kDeviceBeingRenamed,
+  kUnsupportedFilesystem,
+  kRenameProgramNotFound,
+  kRenameProgramFailed,
+  kDeviceNotAllowed,
+  kLongName,
+  kInvalidCharacter,
 };
 
 // Format error reported by cros-disks.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum FormatError {
-  FORMAT_ERROR_NONE,
-  FORMAT_ERROR_UNKNOWN,
-  FORMAT_ERROR_INTERNAL,
-  FORMAT_ERROR_INVALID_DEVICE_PATH,
-  FORMAT_ERROR_DEVICE_BEING_FORMATTED,
-  FORMAT_ERROR_UNSUPPORTED_FILESYSTEM,
-  FORMAT_ERROR_FORMAT_PROGRAM_NOT_FOUND,
-  FORMAT_ERROR_FORMAT_PROGRAM_FAILED,
-  FORMAT_ERROR_DEVICE_NOT_ALLOWED,
-  FORMAT_ERROR_INVALID_OPTIONS,
-  FORMAT_ERROR_LONG_NAME,
-  FORMAT_ERROR_INVALID_CHARACTER,
-  FORMAT_ERROR_COUNT,
+enum class FormatError {
+  kNone,
+  kUnknown,
+  kInternal,
+  kInvalidDevicePath,
+  kDeviceBeingFormatted,
+  kUnsupportedFilesystem,
+  kFormatProgramNotFound,
+  kFormatProgramFailed,
+  kDeviceNotAllowed,
+  kInvalidOptions,
+  kLongName,
+  kInvalidCharacter,
+  kCount,
 };
 
 // Partition error reported by cros-disks.
-enum PartitionError {
-  PARTITION_ERROR_NONE = 0,
-  PARTITION_ERROR_UNKNOWN = 1,
-  PARTITION_ERROR_INTERNAL = 2,
-  PARTITION_ERROR_INVALID_DEVICE_PATH = 3,
-  PARTITION_ERROR_DEVICE_BEING_PARTITIONED = 4,
-  PARTITION_ERROR_PROGRAM_NOT_FOUND = 5,
-  PARTITION_ERROR_PROGRAM_FAILED = 6,
-  PARTITION_ERROR_DEVICE_NOT_ALLOWED = 7,
+enum class PartitionError {
+  kNone = 0,
+  kUnknown = 1,
+  kInternal = 2,
+  kInvalidDevicePath = 3,
+  kDeviceBeingPartitioned = 4,
+  kProgramNotFound = 5,
+  kProgramFailed = 6,
+  kDeviceNotAllowed = 7,
 };
 
 // Event type each corresponding to a signal sent from cros-disks.
-enum MountEventType {
-  CROS_DISKS_DISK_ADDED,
-  CROS_DISKS_DISK_REMOVED,
-  CROS_DISKS_DISK_CHANGED,
-  CROS_DISKS_DEVICE_ADDED,
-  CROS_DISKS_DEVICE_REMOVED,
-  CROS_DISKS_DEVICE_SCANNED,
+enum class MountEventType {
+  kDiskAdded,
+  kDiskRemoved,
+  kDiskChanged,
+  kDeviceAdded,
+  kDeviceRemoved,
+  kDeviceScanned,
 };
 
 // Mount option to control write permission to a device.
-enum MountAccessMode {
-  MOUNT_ACCESS_MODE_READ_WRITE,
-  MOUNT_ACCESS_MODE_READ_ONLY,
+enum class MountAccessMode {
+  kReadWrite,
+  kReadOnly,
 };
 
 // Whether to mount to a new path or remount a device already mounted.
 enum RemountOption {
-  // Mount a new device. If the device is already mounted, the mount status is
+  // Mount a new device. If the device is already mounted, the mount status
+  // is
   // unchanged and the callback for MountCompleted will receive
   // MountError::kPathAlreadyMounted error code.
-  REMOUNT_OPTION_MOUNT_NEW_DEVICE,
+  kMountNewDevice,
   // Remount a device that is already mounted. If the device is not mounted
-  // yet, it will do nothing and the callback for MountCompleted will receive
+  // yet, it will do nothing and the callback for MountCompleted will
+  // receive
   // MountError::kPathNotMounted error code.
-  REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE,
+  kRemountExistingDevice,
 };
 
 // A class to represent information about a disk sent from cros-disks.
@@ -282,7 +283,12 @@ struct MountEntry {
   std::string source_path;
   MountType mount_type = MountType::kInvalid;
   std::string mount_path;
+  int progress_percent = 0;
 };
+
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, const MountEntry& entry);
 
 // A class to make the actual DBus calls for cros-disks service.
 // This class only makes calls, result/error handling should be done
@@ -321,6 +327,9 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
 
     // Called when a MountCompleted signal is received.
     virtual void OnMountCompleted(const MountEntry& entry) = 0;
+
+    // Called when a MountProgress signal is received.
+    virtual void OnMountProgress(const MountEntry& entry) = 0;
 
     // Called when a FormatCompleted signal is received.
     virtual void OnFormatCompleted(FormatError error_code,
@@ -427,37 +436,6 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
   ~CrosDisksClient() override;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when //chromeos/dbus moved to ash.
-namespace ash {
-using ::chromeos::CROS_DISKS_DEVICE_ADDED;
-using ::chromeos::CROS_DISKS_DEVICE_REMOVED;
-using ::chromeos::CROS_DISKS_DEVICE_SCANNED;
-using ::chromeos::CROS_DISKS_DISK_ADDED;
-using ::chromeos::CROS_DISKS_DISK_REMOVED;
-using ::chromeos::CrosDisksClient;
-using ::chromeos::DiskInfo;
-using ::chromeos::FORMAT_ERROR_DEVICE_NOT_ALLOWED;
-using ::chromeos::FORMAT_ERROR_NONE;
-using ::chromeos::FORMAT_ERROR_UNKNOWN;
-using ::chromeos::FORMAT_ERROR_UNSUPPORTED_FILESYSTEM;
-using ::chromeos::FormatError;
-using ::chromeos::MOUNT_ACCESS_MODE_READ_ONLY;
-using ::chromeos::MOUNT_ACCESS_MODE_READ_WRITE;
-using ::chromeos::MountAccessMode;
-using ::chromeos::MountEntry;
-using ::chromeos::MountEventType;
-using ::chromeos::PARTITION_ERROR_INVALID_DEVICE_PATH;
-using ::chromeos::PARTITION_ERROR_NONE;
-using ::chromeos::PARTITION_ERROR_UNKNOWN;
-using ::chromeos::PartitionError;
-using ::chromeos::REMOUNT_OPTION_MOUNT_NEW_DEVICE;
-using ::chromeos::REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE;
-using ::chromeos::RENAME_ERROR_DEVICE_NOT_ALLOWED;
-using ::chromeos::RENAME_ERROR_NONE;
-using ::chromeos::RENAME_ERROR_UNKNOWN;
-using ::chromeos::RenameError;
 }  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_CROS_DISKS_CROS_DISKS_CLIENT_H_

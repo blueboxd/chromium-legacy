@@ -129,9 +129,9 @@ bool ChromeOmniboxClient::IsPasteAndGoEnabled() const {
 }
 
 bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {
-  const base::Value* url_dict = profile_->GetPrefs()->GetDictionary(
+  const base::Value::Dict& url_dict = profile_->GetPrefs()->GetValueDict(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
-  return !url_dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy)
+  return !url_dict.FindBool(DefaultSearchManager::kDisabledByPolicy)
               .value_or(false);
 }
 
@@ -394,7 +394,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+  RecordBookmarkLaunch(BookmarkLaunchLocation::kOmnibox,
                        profile_metrics::GetBrowserProfileType(profile_));
 }
 

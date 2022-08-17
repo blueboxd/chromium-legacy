@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
@@ -51,6 +50,7 @@ using blink::mojom::FileChooserFileInfoPtr;
 using blink::mojom::FileSystemFileInfo;
 using blink::mojom::NativeFileInfo;
 using testing::_;
+using testing::Mock;
 
 namespace policy {
 
@@ -68,6 +68,9 @@ bool CreateDummyFile(const base::FilePath& path) {
 }
 
 }  // namespace
+
+using MockIsFilesTransferRestrictedCallback = testing::StrictMock<
+    base::MockCallback<DlpFilesController::IsFilesTransferRestrictedCallback>>;
 
 class DlpFilesControllerTest : public testing::Test {
  public:
@@ -392,6 +395,71 @@ TEST_F(DlpFilesControllerTest, GetDlpMetadata_FileNotAvailable) {
   EXPECT_EQ(dlp_metadata, future.Take());
 }
 
+TEST_F(DlpFilesControllerTest, GetDlpRestrictionDetails_Mixed) {
+  DlpRulesManager::AggregatedDestinations destinations;
+  destinations[DlpRulesManager::Level::kBlock].insert(kExample2);
+  destinations[DlpRulesManager::Level::kAllow].insert(kExample3);
+
+  DlpRulesManager::AggregatedComponents components;
+  components[DlpRulesManager::Level::kBlock].insert(
+      DlpRulesManager::Component::kUsb);
+  components[DlpRulesManager::Level::kWarn].insert(
+      DlpRulesManager::Component::kDrive);
+
+  EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
+      .WillOnce(testing::Return(destinations));
+  EXPECT_CALL(*rules_manager_, GetAggregatedComponents)
+      .WillOnce(testing::Return(components));
+
+  auto result = files_controller_.GetDlpRestrictionDetails(kExample1);
+
+  ASSERT_EQ(result.size(), 3);
+  std::vector<std::string> expected_urls;
+  std::vector<DlpRulesManager::Component> expected_components;
+  // Block:
+  expected_urls.push_back(kExample2);
+  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
+  EXPECT_EQ(result[0].urls, expected_urls);
+  EXPECT_EQ(result[0].components, expected_components);
+  // Allow:
+  expected_urls.clear();
+  expected_urls.push_back(kExample3);
+  expected_components.clear();
+  EXPECT_EQ(result[1].level, DlpRulesManager::Level::kAllow);
+  EXPECT_EQ(result[1].urls, expected_urls);
+  EXPECT_EQ(result[1].components, expected_components);
+  // Warn:
+  expected_urls.clear();
+  expected_components.clear();
+  expected_components.push_back(DlpRulesManager::Component::kDrive);
+  EXPECT_EQ(result[2].level, DlpRulesManager::Level::kWarn);
+  EXPECT_EQ(result[2].urls, expected_urls);
+  EXPECT_EQ(result[2].components, expected_components);
+}
+
+TEST_F(DlpFilesControllerTest, GetDlpRestrictionDetails_Components) {
+  DlpRulesManager::AggregatedDestinations destinations;
+  DlpRulesManager::AggregatedComponents components;
+  components[DlpRulesManager::Level::kBlock].insert(
+      DlpRulesManager::Component::kUsb);
+
+  EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
+      .WillOnce(testing::Return(destinations));
+  EXPECT_CALL(*rules_manager_, GetAggregatedComponents)
+      .WillOnce(testing::Return(components));
+
+  auto result = files_controller_.GetDlpRestrictionDetails(kExample1);
+
+  ASSERT_EQ(result.size(), 1);
+  std::vector<std::string> expected_urls;
+  std::vector<DlpRulesManager::Component> expected_components;
+  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
+  EXPECT_EQ(result[0].urls, expected_urls);
+  EXPECT_EQ(result[0].components, expected_components);
+}
+
 class DlpFilesExternalDestinationTest
     : public DlpFilesControllerTest,
       public ::testing::WithParamInterface<
@@ -500,6 +568,9 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
       {GURL(kExample1), GURL(kExample2), GURL(kExample3)});
   std::vector<GURL> disallowed_sources({GURL(kExample1), GURL(kExample3)});
 
+  MockIsFilesTransferRestrictedCallback cb;
+  EXPECT_CALL(cb, Run(disallowed_sources)).Times(1);
+
   EXPECT_CALL(*rules_manager_,
               IsRestrictedComponent(_, expected_component, _, _))
       .WillOnce(testing::Return(DlpRulesManager::Level::kBlock))
@@ -510,9 +581,8 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
       blink::StorageKey(), mount_name, base::FilePath(path));
   ASSERT_TRUE(dst_url.is_valid());
 
-  EXPECT_EQ(disallowed_sources,
-            files_controller_.IsFilesTransferRestricted(
-                profile_.get(), files_sources, dst_url.path().value()));
+  files_controller_.IsFilesTransferRestricted(profile_.get(), files_sources,
+                                              dst_url.path().value(), cb.Get());
 }
 
 }  // namespace policy

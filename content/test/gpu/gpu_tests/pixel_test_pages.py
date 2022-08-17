@@ -194,10 +194,15 @@ class PixelTestPages():
                       base_name +
                       '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
                       test_rect=[0, 0, 300, 300]),
-        PixelTestPage('pixel_webgl_sad_canvas.html',
-                      base_name + '_WebGLSadCanvas',
+        PixelTestPage('pixel_webgl_context_restored.html',
+                      base_name + '_WebGLContextRestored',
                       test_rect=[0, 0, 300, 300],
                       optional_action='CrashGpuProcess'),
+        PixelTestPage(
+            'pixel_webgl_sad_canvas.html',
+            base_name + '_WebGLSadCanvas',
+            test_rect=[0, 0, 300, 300],
+            optional_action='CrashGpuProcessTwiceWaitForContextRestored'),
         PixelTestPage('pixel_scissor.html',
                       base_name + '_ScissorTestWithPreserveDrawingBuffer',
                       test_rect=[0, 0, 300, 300]),
@@ -1145,7 +1150,7 @@ class PixelTestPages():
     # All these tests contain 4 or 8 solid colored rectangles
     # around 50x100 pixels, this should account for possible antialiasing and
     # color cenversion during RGB<->YUV conversions.
-    match_algo = algo.SobelMatchingAlgorithm(max_different_pixels=5000,
+    match_algo = algo.SobelMatchingAlgorithm(max_different_pixels=11000,
                                              pixel_delta_threshold=50,
                                              edge_threshold=30,
                                              ignored_border_thickness=1)
@@ -1178,6 +1183,39 @@ class PixelTestPages():
             test_rect=[0, 0, 200, 200],
             browser_args=['--disable-features=CanvasOopRasterization'],
             matching_algorithm=match_algo),
+
+        # Test OneCopyCanvasCapture
+        PixelTestPage('pixel_video_from_canvas_webgl2.html',
+                      base_name + '_VideoStreamFromWebGLCanvas_OneCopy',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=['--enable-features=OneCopyCanvasCapture'],
+                      other_args={'one_copy': True},
+                      matching_algorithm=match_algo,
+                      grace_period_end=date(2022, 8, 30)),
+        # TwoCopyCanvasCapture
+        PixelTestPage('pixel_video_from_canvas_webgl2.html',
+                      base_name +
+                      '_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=['--disable-features=OneCopyCanvasCapture'],
+                      other_args={
+                          'one_copy': False,
+                          'accelerated_two_copy': True
+                      },
+                      matching_algorithm=match_algo,
+                      grace_period_end=date(2022, 8, 30)),
+        # Having alpha channel would disable TwoCopy's accelerated path
+        PixelTestPage('pixel_video_from_canvas_webgl2_alpha.html',
+                      base_name +
+                      '_VideoStreamFromWebGLAlphaCanvas_TwoCopy_CpuReadback',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=['--disable-features=OneCopyCanvasCapture'],
+                      other_args={
+                          'one_copy': False,
+                          'accelerated_two_copy': False
+                      },
+                      matching_algorithm=match_algo,
+                      grace_period_end=date(2022, 8, 30)),
     ]
 
   @staticmethod

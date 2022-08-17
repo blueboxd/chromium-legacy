@@ -2028,14 +2028,8 @@ CommandHandler.COMMANDS_['dlp-restriction-details'] =
         if (!metadata || metadata.length !== 1) {
           return;
         }
-        const sourceUrl = metadata[0].sourceUrl;
-        if (sourceUrl) {
-          try {
-            chrome.fileManagerPrivate.showDlpRestrictionDetails(sourceUrl);
-          } catch (error) {
-            console.warn('Error showing DlpRestrictionDetails ', error);
-          }
-        }
+        // TODO(crbug.com/1346254): Get the details and show the modal with the
+        // returned information.
       }
 
       /** @override */
@@ -3104,6 +3098,8 @@ CommandHandler.COMMANDS_['volume-storage'] = new (class extends FilesCommand {
             VolumeManagerCommon.VolumeType.DOWNLOADS ||
         currentVolumeInfo.volumeType ==
             VolumeManagerCommon.VolumeType.CROSTINI ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.GUEST_OS ||
         currentVolumeInfo.volumeType ==
             VolumeManagerCommon.VolumeType.ANDROID_FILES ||
         currentVolumeInfo.volumeType ==

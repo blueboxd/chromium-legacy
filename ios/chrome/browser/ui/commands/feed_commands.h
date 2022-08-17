@@ -5,13 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_COMMANDS_FEED_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_COMMANDS_FEED_COMMANDS_H_
 
-@class FollowedWebChannel;
+@class FollowedWebSite;
 
 // Commands related to feed.
 @protocol FeedCommands
 
-// Displays the First Follow UI with `followedWebChannel`.
-- (void)showFirstFollowUIForWebChannel:(FollowedWebChannel*)followedWebChannel;
+// Displays the First Follow UI with `followedWebSite`.
+- (void)showFirstFollowUIForWebSite:(FollowedWebSite*)followedWebSite;
 
 @end
 

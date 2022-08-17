@@ -610,7 +610,7 @@ void CrosUsbDetector::OnVmStateChanged(
 void CrosUsbDetector::OnMountEvent(
     disks::DiskMountManager::MountEvent event,
     MountError error_code,
-    const disks::DiskMountManager::MountPointInfo& mount_info) {
+    const disks::DiskMountManager::MountPoint& mount_info) {
   if (mount_info.mount_type != MountType::kDevice ||
       error_code != MountError::kNone) {
     return;
@@ -672,13 +672,13 @@ void CrosUsbDetector::OnDeviceChecked(
       has_supported_interface || new_device.allowed_interfaces_mask != 0;
 
   // Storage devices already plugged in at log-in time will already be mounted.
-  for (const auto& iter : disks::DiskMountManager::GetInstance()->disks()) {
-    if (iter.second->bus_number() ==
+  for (const auto& disk : disks::DiskMountManager::GetInstance()->disks()) {
+    if (disk->bus_number() ==
             base::checked_cast<int64_t>(device_info->bus_number) &&
-        iter.second->device_number() ==
+        disk->device_number() ==
             base::checked_cast<int64_t>(device_info->port_number) &&
-        iter.second->is_mounted()) {
-      new_device.mount_points.insert(iter.second->mount_path());
+        disk->is_mounted()) {
+      new_device.mount_points.insert(disk->mount_path());
     }
   }
 

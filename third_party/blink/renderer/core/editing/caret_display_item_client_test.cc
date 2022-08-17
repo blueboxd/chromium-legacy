@@ -420,6 +420,37 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
   EXPECT_EQ(PhysicalRect(50, 50, 1, 1), CaretLocalRect());
 }
 
+TEST_P(CaretDisplayItemClientTest, PlainTextRTLCaretPosition) {
+  // LayoutNG-only test
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadNoto();
+  SetBodyInnerHTML(
+      "<style>"
+      "  div { width: 100px; padding: 5px; font: 20px NotoArabic }"
+      "  #plaintext { unicode-bidi: plaintext }"
+      "</style>"
+      "<div id='regular' dir='rtl'>&#1575;&#1582;&#1578;&#1576;&#1585;</div>"
+      "<div id='plaintext'>&#1575;&#1582;&#1578;&#1576;&#1585;</div>");
+
+  auto* regular = GetDocument().getElementById("regular");
+  auto* regular_text_node = regular->firstChild();
+  const Position& regular_position =
+      Position::FirstPositionInNode(*regular_text_node);
+  const PhysicalRect regular_caret_rect =
+      ComputeCaretRect(PositionWithAffinity(regular_position));
+
+  auto* plaintext = GetDocument().getElementById("plaintext");
+  auto* plaintext_text_node = plaintext->firstChild();
+  const Position& plaintext_position =
+      Position::FirstPositionInNode(*plaintext_text_node);
+  const PhysicalRect plaintext_caret_rect =
+      ComputeCaretRect(PositionWithAffinity(plaintext_position));
+
+  EXPECT_EQ(regular_caret_rect, plaintext_caret_rect);
+}
+
 // http://crbug.com/1278559
 TEST_P(CaretDisplayItemClientTest, InsertSpaceToWhiteSpacePreWrapRTL) {
   LoadNoto();
@@ -514,6 +545,24 @@ TEST_P(CaretDisplayItemClientTest, InsertSpaceToWhiteSpacePreWrap) {
   GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForCaretTest();
   EXPECT_EQ(PhysicalRect(70, 0, 1, 10), CaretLocalRect());
+}
+
+// http://crbug.com/1330093
+TEST_P(CaretDisplayItemClientTest, CaretAtStartInWhiteSpacePreWrapRTL) {
+  LoadNoto();
+  SetBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0; padding: 0; }"
+      "  div { white-space: pre-wrap; width: 90px; margin: 0; padding: 5px; "
+      "  font: 20px NotoArabic }"
+      "</style>"
+      "<div dir=rtl contenteditable>&#1575;&#1582;&#1578;&#1576;&#1585; "
+      "</div>");
+
+  const Element& div = *GetDocument().QuerySelector("div");
+  const Position& position = Position::FirstPositionInNode(div);
+  const PhysicalRect& rect = ComputeCaretRect(PositionWithAffinity(position));
+  EXPECT_EQ(94, rect.X());
 }
 
 class ParameterizedComputeCaretRectTest

@@ -24,6 +24,7 @@
 #include "net/cookies/first_party_set_entry.h"
 #include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
+#include "services/network/public/mojom/first_party_sets.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
@@ -43,7 +44,7 @@ FirstPartySetsManager::FirstPartySetsManager(bool enabled)
           enabled ? std::make_unique<base::circular_deque<base::OnceClosure>>()
                   : nullptr) {
   if (!enabled)
-    SetCompleteSets({});
+    SetCompleteSets(mojom::PublicFirstPartySets::New());
 }
 
 FirstPartySetsManager::~FirstPartySetsManager() {
@@ -54,18 +55,18 @@ bool FirstPartySetsManager::IsContextSamePartyWithSite(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
-    const FirstPartySetsContextConfig& fps_context_config) const {
+    const net::FirstPartySetsContextConfig& fps_context_config) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const FirstPartySetsManager::OwnerResult site_entry =
-      FindOwnerInternal(site, fps_context_config);
+  const absl::optional<net::FirstPartySetEntry> site_entry =
+      FindEntry(site, fps_context_config);
   if (!site_entry.has_value())
     return false;
 
   const auto is_in_same_set_as_frame_site =
       [this, &site_entry,
        &fps_context_config](const net::SchemefulSite& context_site) -> bool {
-    const FirstPartySetsManager::OwnerResult context_entry =
-        FindOwnerInternal(context_site, fps_context_config);
+    const absl::optional<net::FirstPartySetEntry> context_entry =
+        FindEntry(context_site, fps_context_config);
     return context_entry.has_value() &&
            context_entry->primary() == site_entry->primary();
   };
@@ -81,7 +82,7 @@ FirstPartySetsManager::ComputeMetadata(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
-    const FirstPartySetsContextConfig& fps_context_config,
+    const net::FirstPartySetsContextConfig& fps_context_config,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -90,7 +91,7 @@ FirstPartySetsManager::ComputeMetadata(
         &FirstPartySetsManager::ComputeMetadataAndInvoke,
         weak_factory_.GetWeakPtr(), site, base::OptionalFromPtr(top_frame_site),
         party_context, fps_context_config, std::move(callback),
-        base::TimeTicks::Now()));
+        base::ElapsedTimer()));
     return absl::nullopt;
   }
 
@@ -102,14 +103,14 @@ void FirstPartySetsManager::ComputeMetadataAndInvoke(
     const net::SchemefulSite& site,
     const absl::optional<net::SchemefulSite> top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
-    const FirstPartySetsContextConfig& fps_context_config,
+    const net::FirstPartySetsContextConfig& fps_context_config,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback,
-    base::TimeTicks enqueued_at) const {
+    base::ElapsedTimer timer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
 
   UMA_HISTOGRAM_TIMES("Cookie.FirstPartySets.EnqueueingDelay.ComputeMetadata",
-                      base::TimeTicks::Now() - enqueued_at);
+                      timer.Elapsed());
 
   std::move(callback).Run(
       ComputeMetadataInternal(site, base::OptionalOrNullptr(top_frame_site),
@@ -120,7 +121,7 @@ net::FirstPartySetMetadata FirstPartySetsManager::ComputeMetadataInternal(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
-    const FirstPartySetsContextConfig& fps_context_config) const {
+    const net::FirstPartySetsContextConfig& fps_context_config) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
   DCHECK(fps_context_config.is_enabled());
@@ -137,19 +138,18 @@ net::FirstPartySetMetadata FirstPartySetsManager::ComputeMetadataInternal(
       "Cookie.FirstPartySets.ComputeContext.Latency", timer.Elapsed(),
       base::Microseconds(1), base::Milliseconds(100), 50);
 
-  FirstPartySetsManager::OwnerResult top_frame_owner =
-      top_frame_site ? FindOwnerInternal(*top_frame_site, fps_context_config)
+  absl::optional<net::FirstPartySetEntry> top_frame_owner =
+      top_frame_site ? FindEntry(*top_frame_site, fps_context_config)
                      : absl::nullopt;
 
   return net::FirstPartySetMetadata(
-      context,
-      base::OptionalOrNullptr(FindOwnerInternal(site, fps_context_config)),
+      context, base::OptionalOrNullptr(FindEntry(site, fps_context_config)),
       base::OptionalOrNullptr(top_frame_owner));
 }
 
-FirstPartySetsManager::OwnerResult FirstPartySetsManager::FindOwnerInternal(
+absl::optional<net::FirstPartySetEntry> FirstPartySetsManager::FindEntry(
     const net::SchemefulSite& site,
-    const FirstPartySetsContextConfig& fps_context_config) const {
+    const net::FirstPartySetsContextConfig& fps_context_config) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
   DCHECK(fps_context_config.is_enabled());
@@ -158,7 +158,7 @@ FirstPartySetsManager::OwnerResult FirstPartySetsManager::FindOwnerInternal(
   net::SchemefulSite normalized_site = site;
   normalized_site.ConvertWebSocketToHttp();
 
-  FirstPartySetsManager::OwnerResult entry;
+  absl::optional<net::FirstPartySetEntry> entry;
 
   if (is_enabled()) {
     // Check if `normalized_site` can be found in the customizations first.
@@ -166,12 +166,10 @@ FirstPartySetsManager::OwnerResult FirstPartySetsManager::FindOwnerInternal(
     if (const auto it =
             fps_context_config.customizations().find(normalized_site);
         it != fps_context_config.customizations().end()) {
-      if (it->second.has_value()) {
-        entry = net::FirstPartySetEntry(it->second.value());
-      }
+      entry = it->second;
     } else if (const auto it = sets_->find(normalized_site);
                it != sets_->end()) {
-      entry = net::FirstPartySetEntry(it->second);
+      entry = it->second;
     }
   }
 
@@ -181,49 +179,17 @@ FirstPartySetsManager::OwnerResult FirstPartySetsManager::FindOwnerInternal(
   return entry;
 }
 
-absl::optional<FirstPartySetsManager::OwnerResult>
-FirstPartySetsManager::FindOwner(
-    const net::SchemefulSite& site,
-    const FirstPartySetsContextConfig& fps_context_config,
-    base::OnceCallback<void(FirstPartySetsManager::OwnerResult)> callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!sets_.has_value()) {
-    EnqueuePendingQuery(base::BindOnce(
-        &FirstPartySetsManager::FindOwnerAndInvoke, weak_factory_.GetWeakPtr(),
-        site, fps_context_config, std::move(callback), base::TimeTicks::Now()));
-    return absl::nullopt;
-  }
-
-  return FindOwnerInternal(site, fps_context_config);
-}
-
-void FirstPartySetsManager::FindOwnerAndInvoke(
-    const net::SchemefulSite& site,
-    const FirstPartySetsContextConfig& fps_context_config,
-    base::OnceCallback<void(FirstPartySetsManager::OwnerResult)> callback,
-    base::TimeTicks enqueued_at) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(sets_.has_value());
-
-  UMA_HISTOGRAM_TIMES("Cookie.FirstPartySets.EnqueueingDelay.FindOwner",
-                      base::TimeTicks::Now() - enqueued_at);
-
-  std::move(callback).Run(FindOwnerInternal(site, fps_context_config));
-}
-
 absl::optional<FirstPartySetsManager::OwnersResult>
 FirstPartySetsManager::FindOwners(
     const base::flat_set<net::SchemefulSite>& sites,
-    const FirstPartySetsContextConfig& fps_context_config,
+    const net::FirstPartySetsContextConfig& fps_context_config,
     base::OnceCallback<void(FirstPartySetsManager::OwnersResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!sets_.has_value()) {
-    EnqueuePendingQuery(
-        base::BindOnce(&FirstPartySetsManager::FindOwnersAndInvoke,
-                       weak_factory_.GetWeakPtr(), sites, fps_context_config,
-                       std::move(callback), base::TimeTicks::Now()));
+    EnqueuePendingQuery(base::BindOnce(
+        &FirstPartySetsManager::FindOwnersAndInvoke, weak_factory_.GetWeakPtr(),
+        sites, fps_context_config, std::move(callback), base::ElapsedTimer()));
     return absl::nullopt;
   }
 
@@ -232,21 +198,21 @@ FirstPartySetsManager::FindOwners(
 
 void FirstPartySetsManager::FindOwnersAndInvoke(
     const base::flat_set<net::SchemefulSite>& sites,
-    const FirstPartySetsContextConfig& fps_context_config,
+    const net::FirstPartySetsContextConfig& fps_context_config,
     base::OnceCallback<void(FirstPartySetsManager::OwnersResult)> callback,
-    base::TimeTicks enqueued_at) const {
+    base::ElapsedTimer timer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
 
   UMA_HISTOGRAM_TIMES("Cookie.FirstPartySets.EnqueueingDelay.FindOwners",
-                      base::TimeTicks::Now() - enqueued_at);
+                      timer.Elapsed());
 
   std::move(callback).Run(FindOwnersInternal(sites, fps_context_config));
 }
 
 FirstPartySetsManager::OwnersResult FirstPartySetsManager::FindOwnersInternal(
     const base::flat_set<net::SchemefulSite>& sites,
-    const FirstPartySetsContextConfig& fps_context_config) const {
+    const net::FirstPartySetsContextConfig& fps_context_config) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
   DCHECK(fps_context_config.is_enabled());
@@ -254,8 +220,8 @@ FirstPartySetsManager::OwnersResult FirstPartySetsManager::FindOwnersInternal(
   std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>>
       sites_to_entries;
   for (const net::SchemefulSite& site : sites) {
-    const FirstPartySetsManager::OwnerResult entry =
-        FindOwnerInternal(site, fps_context_config);
+    const absl::optional<net::FirstPartySetEntry> entry =
+        FindEntry(site, fps_context_config);
     if (entry.has_value()) {
       sites_to_entries.emplace_back(site, entry.value());
     }
@@ -276,11 +242,10 @@ void FirstPartySetsManager::InvokePendingQueries() {
 
   base::UmaHistogramCounts10000("Cookie.FirstPartySets.DelayedQueriesCount",
                                 pending_queries_->size());
-  base::UmaHistogramTimes(
-      "Cookie.FirstPartySets.MostDelayedQueryDelta2",
-      first_async_query_time_.has_value()
-          ? base::TimeTicks::Now() - first_async_query_time_.value()
-          : base::TimeDelta());
+  base::UmaHistogramTimes("Cookie.FirstPartySets.MostDelayedQueryDelta2",
+                          first_async_query_timer_.has_value()
+                              ? first_async_query_timer_->Elapsed()
+                              : base::TimeDelta());
 
   while (!pending_queries_->empty()) {
     base::OnceClosure query_task = std::move(pending_queries_->front());
@@ -292,11 +257,13 @@ void FirstPartySetsManager::InvokePendingQueries() {
 }
 
 void FirstPartySetsManager::SetCompleteSets(
-    FirstPartySetsManager::FlattenedSets sets) {
+    mojom::PublicFirstPartySetsPtr public_sets) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (sets_.has_value())
     return;
-  sets_ = std::move(sets);
+  sets_ = std::move(public_sets->sets);
+  // TODO(https://crbug.com/1349781): store aliases and read them when resolving
+  // queries.
   InvokePendingQueries();
 }
 
@@ -310,8 +277,8 @@ void FirstPartySetsManager::EnqueuePendingQuery(base::OnceClosure run_query) {
   DCHECK(!sets_.has_value());
   DCHECK(pending_queries_);
 
-  if (!first_async_query_time_.has_value())
-    first_async_query_time_ = {base::TimeTicks::Now()};
+  if (!first_async_query_timer_.has_value())
+    first_async_query_timer_ = {base::ElapsedTimer()};
 
   pending_queries_->push_back(std::move(run_query));
 }

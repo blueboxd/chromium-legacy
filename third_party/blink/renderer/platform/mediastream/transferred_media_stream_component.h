@@ -10,7 +10,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -18,19 +17,26 @@
 namespace blink {
 
 class MediaStreamSource;
-class WebAudioSourceProvider;
 class WebLocalFrame;
 
 class PLATFORM_EXPORT TransferredMediaStreamComponent final
     : public GarbageCollected<TransferredMediaStreamComponent>,
       public MediaStreamComponent {
  public:
-  TransferredMediaStreamComponent() = default;
+  // For carrying deserialized data to the TransferredMediaStreamComponent
+  // constructor.
+  struct TransferredValues {
+    String id;
+  };
+
+  explicit TransferredMediaStreamComponent(const TransferredValues& data);
 
   TransferredMediaStreamComponent(const TransferredMediaStreamComponent&) =
       delete;
   TransferredMediaStreamComponent& operator=(
       const TransferredMediaStreamComponent&) = delete;
+
+  void SetImplementation(MediaStreamComponent* component);
 
   MediaStreamComponent* Clone(
       std::unique_ptr<MediaStreamTrackPlatform> cloned_platform_track =
@@ -40,16 +46,14 @@ class PLATFORM_EXPORT TransferredMediaStreamComponent final
 
   String Id() const override;
   int UniqueId() const override;
+  MediaStreamSource::StreamType GetSourceType() const override;
+  const String& GetSourceName() const override;
+  MediaStreamSource::ReadyState GetReadyState() const override;
+  bool Remote() const override;
   bool Enabled() const override;
   void SetEnabled(bool enabled) override;
-  bool Muted() const override;
-  void SetMuted(bool muted) override;
   WebMediaStreamTrack::ContentHintType ContentHint() override;
   void SetContentHint(WebMediaStreamTrack::ContentHintType) override;
-  const MediaConstraints& Constraints() const override;
-  void SetConstraints(const MediaConstraints& constraints) override;
-  AudioSourceProvider* GetAudioSourceProvider() override;
-  void SetSourceProvider(WebAudioSourceProvider* provider) override;
 
   MediaStreamTrackPlatform* GetPlatformTrack() const override;
 
@@ -67,6 +71,7 @@ class PLATFORM_EXPORT TransferredMediaStreamComponent final
 
  private:
   Member<MediaStreamComponent> component_;
+  TransferredValues data_;
 };
 
 }  // namespace blink

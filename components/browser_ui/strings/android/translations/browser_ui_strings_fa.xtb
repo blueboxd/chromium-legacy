@@ -18,12 +18,13 @@
 <translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
 <translation id="1409426117486808224">نمای ساده‌شده برای برگه‌های باز</translation>
 <translation id="1415402041810619267">نشانی وب کوتاه‌شده</translation>
+<translation id="1426410128494586442">بله</translation>
 <translation id="1446450296470737166">‏اجازه کنترل کامل دستگاه‌های MIDI</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1647582022260550163">مطمئنید می‌خواهید اجازه‌ها را بازنشانی کنید و کوکی‌ها و داده‌های سایت را پاک کنید؟</translation>
 <translation id="1660204651932907780">به سایت‌ها اجازه داده شود صدا پخش کنند (توصیه می‌شود)</translation>
-<translation id="1677097821151855053">از کوکی‌ها و دیگر داده‌های سایت برای به‌خاطر سپردن شما استفاده می‌شود؛ برای مثال ورود به سیستم یا نمایش آگهی‌های شخصی‌شده. برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بروید.</translation>
+<translation id="1677097821151855053">از کوکی‌ها و دیگر داده‌های سایت برای به‌خاطر سپردن شما استفاده می‌شود؛ برای مثال ورود به سیستم یا نمایش آگهی‌های شخصی‌‏سازی‌‏شده. برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بروید.</translation>
 <translation id="1688867105868176567">داده‌های سایت پاک شود؟</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4670064810192446073">واقعیت مجازی</translation>
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
+<translation id="4811450222531576619">با منبع و موضوعش آشنا شوید</translation>
 <translation id="4836046166855586901">وقتی سایتی می‌خواهد بداند چه زمانی به‌صورت فعال از این دستگاه استفاده می‌کنید سؤال می‌شود</translation>
 <translation id="4883854917563148705">تنظیمات مدیریت‌شده بازنشانی نشدند</translation>
 <translation id="4887024562049524730">قبل از اینکه به سایت‌ها اجازه داده شود به دستگاه و داده‌های واقعیت مجازی دسترسی یابند سؤال شود (توصیه می‌شود)</translation>
@@ -243,6 +245,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">دسترسی سایت‌ها به دستگاه و داده‌های واقعیت مجازی مسدود شود</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
+<translation id="6467852467360539617">پاک کردن داده‌ها و بازنشانی اجازه‌ها</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مسدود هستند}one{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مسدود هستند}other{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مسدود هستند}}</translation>
@@ -282,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> و <ph name="PERMISSION_2" /> مجاز هستند</translation>
 <translation id="7302486331832100261">معمولاً اعلان‌ها را مسدود می‌کنید. برای مجاز کردن، روی «جزئیات» ضربه بزنید.</translation>
+<translation id="7383715096023715447">تنظیمات <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
 <translation id="7425915948813553151">زمینه تیره برای سایت‌ها</translation>

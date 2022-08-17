@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,8 +26,8 @@ class ShillLogSourceTest : public ::testing::Test {
   ShillLogSourceTest(const ShillLogSourceTest&) = delete;
   ShillLogSourceTest*& operator=(const ShillLogSourceTest&) = delete;
 
-  void SetUp() override { chromeos::shill_clients::InitializeFakes(); }
-  void TearDown() override { chromeos::shill_clients::Shutdown(); }
+  void SetUp() override { ash::shill_clients::InitializeFakes(); }
+  void TearDown() override { ash::shill_clients::Shutdown(); }
 
   std::unique_ptr<SystemLogsResponse> Fetch(bool scrub) {
     std::unique_ptr<SystemLogsResponse> result;

@@ -559,28 +559,20 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
   VLOG(1) << "Looking for default for MIME type: " << mime_type
           << " and suffix: " << suffix;
   if (!mime_type.empty()) {
-    const base::Value* mime_task_prefs =
-        pref_service.GetDictionary(prefs::kDefaultTasksByMimeType);
-    DCHECK(mime_task_prefs);
-    LOG_IF(ERROR, !mime_task_prefs) << "Unable to open MIME type prefs";
-    if (mime_task_prefs) {
-      const std::string* task_id = mime_task_prefs->FindStringKey(mime_type);
-      if (task_id) {
-        VLOG(1) << "Found MIME default handler: " << *task_id;
-        return ParseTaskID(*task_id, task_out);
-      }
+    const base::Value::Dict& mime_task_prefs =
+        pref_service.GetValueDict(prefs::kDefaultTasksByMimeType);
+    const std::string* task_id = mime_task_prefs.FindString(mime_type);
+    if (task_id) {
+      VLOG(1) << "Found MIME default handler: " << *task_id;
+      return ParseTaskID(*task_id, task_out);
     }
   }
 
-  const base::Value* suffix_task_prefs =
-      pref_service.GetDictionary(prefs::kDefaultTasksBySuffix);
-  DCHECK(suffix_task_prefs);
-  LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";
+  const base::Value::Dict& suffix_task_prefs =
+      pref_service.GetValueDict(prefs::kDefaultTasksBySuffix);
   std::string lower_suffix = base::ToLowerASCII(suffix);
-  if (!suffix_task_prefs)
-    return false;
 
-  const std::string* task_id = suffix_task_prefs->FindStringKey(lower_suffix);
+  const std::string* task_id = suffix_task_prefs.FindString(lower_suffix);
 
   if (!task_id || task_id->empty())
     return false;
@@ -659,7 +651,8 @@ bool ExecuteFileTask(Profile* profile,
 
   if (IsFilesAppId(task.app_id) &&
       (parsed_action_id == "upload-office-to-drive")) {
-    const bool opened = chromeos::cloud_upload::CloudUploadDialog::Show();
+    const bool opened =
+        chromeos::cloud_upload::CloudUploadDialog::Show(file_urls);
     if (done) {
       if (opened) {
         std::move(done).Run(
@@ -717,10 +710,12 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  // ARC apps and web apps need mime types for launching. Retrieve them first.
+  // Apps from App Service need mime types for launching. Retrieve them first.
   if (task.task_type == TASK_TYPE_ARC_APP ||
       task.task_type == TASK_TYPE_WEB_APP ||
-      task.task_type == TASK_TYPE_FILE_HANDLER) {
+      task.task_type == TASK_TYPE_FILE_HANDLER ||
+      (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+       task.task_type == TASK_TYPE_CROSTINI_APP)) {
     // TODO(petermarshall): Implement GetProfileForExtensionTask in Lacros if
     // necessary, for Chrome Apps.
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
@@ -732,8 +727,9 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  if (task.task_type == TASK_TYPE_CROSTINI_APP ||
-      task.task_type == TASK_TYPE_PLUGIN_VM_APP) {
+  if (!ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+      (task.task_type == TASK_TYPE_CROSTINI_APP ||
+       task.task_type == TASK_TYPE_PLUGIN_VM_APP)) {
     DCHECK_EQ(kGuestOsAppActionID, task.action_id);
     ExecuteGuestOsTask(profile, task, file_urls, std::move(done));
     return true;
@@ -817,9 +813,11 @@ void FindAllTypesOfTasks(Profile* profile,
       new std::vector<FullTaskDescriptor>);
 
   if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
-    // Skip FindArcTasks since ARC tasks are now found in App Service.
-    FindExtensionAndAppTasks(profile, entries, file_urls, std::move(callback),
-                             std::move(result_list));
+    // Skip FindArcTasks and FindGuestOsTasks since these tasks are now found in
+    // App Service.
+    FindAppServiceTasks(profile, entries, file_urls, result_list.get());
+    PostProcessFoundTasks(profile, entries, std::move(callback),
+                          std::move(result_list));
   } else {
     // 1. Find and append ARC handler tasks.
     FindArcTasks(profile, entries, file_urls, std::move(result_list),

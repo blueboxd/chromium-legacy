@@ -14,6 +14,15 @@
     "args": ["--enable-features=PrivateNetworkAccessPermissionPrompt"]
   },
   {
+    "prefix": "reduce-accept-language",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/navigation/language",
+              "http/tests/inspector-protocol/network",
+              "http/tests/serviceworker/reduce-accept-language/fetch-event-headers.html",
+              "navigator_language/reduce_accept_language"],
+    "args": ["--enable-features=ReduceAcceptLanguage"]
+  },
+  {
     "prefix": "gpu",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["fast/canvas"],
@@ -223,7 +232,7 @@
   },
   {
     "prefix": "compute-pressure",
-    "platforms": ["Linux", "Mac", "Win"],
+    "platforms": ["Linux", "Mac"],
     "bases": ["external/wpt/compute-pressure"],
     "args": ["--enable-features=ComputePressure"]
   },
@@ -295,13 +304,6 @@
     "bases": ["dark-mode/images"],
     "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
              "--dark-mode-settings=ImagePolicy=1"]
-  },
-  {
-    "prefix": "dark-mode-increase-text-contrast",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["dark-mode/colors"],
-    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
-             "--dark-mode-settings=IncreaseTextContrast=1"]
   },
   {
     "prefix": "presentation",
@@ -616,12 +618,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/payments/payment-request-app-store-billing-mandatory-total.html"],
     "args": ["--disable-blink-features=PaymentRequestTotalOptional"]
-  },
-  {
-    "prefix": "basic-card-enabled",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["payments/payment-request-interface.html", "http/tests/payments/payment-instruments.html"],
-    "args": ["--enable-blink-features=PaymentRequestBasicCard", "--enable-features=PaymentRequestBasicCard"]
   },
   {
     "prefix": "json-modules",
@@ -1042,27 +1038,14 @@
     "prefix": "popup-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "dialogfocus-old-behavior",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/html/semantics/interactive-elements/the-dialog-element"
-    ],
-    "args": ["--disable-features=DialogFocusNewSpecBehavior"]
+    "args": ["--stable-release-mode",
+             "--disable-features=HTMLPopupAttribute"]
   },
   {
     "prefix": "object-param-url",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/semantics/embedded-content/the-object-element/object-param-url.html"],
     "args": ["--disable-features=HTMLParamElementUrlSupport"]
-  },
-  {
-    "prefix": "virtual-keyboard",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/virtual-keyboard"],
-    "args": ["--enable-blink-features=VirtualKeyboard"]
   },
   {
     "prefix": "parakeet",
@@ -1105,6 +1088,12 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/async-script-scheduling"],
     "args": ["--disable-features=DelayAsyncScriptExecution"]
+  },
+  {
+    "prefix": "async-script-scheduling-apply-to-cross-site-only",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/async-script-scheduling"],
+    "args": ["--enable-features=DelayAsyncScriptExecution:cross_site_only/true"]
   },
   {
     "prefix": "async-script-scheduling-finished-parsing",
@@ -1229,7 +1218,10 @@
   {
     "prefix": "no-forced-frame-updates",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/html/dom/render-blocking"],
+    "bases": [
+      "external/wpt/css/css-transitions/render-blocking",
+      "external/wpt/html/dom/render-blocking"
+    ],
     "args": ["--enable-features=NoForcedFrameUpdatesForWebTests"]
   },
   {
@@ -1305,6 +1297,12 @@
     "args": ["--enable-features=ThreadedPreloadScanner,PrecompileInlineScripts"]
   },
   {
+    "prefix": "isolate-sandboxed-iframes",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "external/wpt/html/infrastructure/urls/terminology-0/" ],
+    "args": [ "--enable-features=IsolateSandboxedIframes" ]
+  },
+  {
     "prefix": "coop-restrict-properties",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "external/wpt/html/cross-origin-opener-policy/tentative/restrict-properties" ],
@@ -1325,9 +1323,25 @@
     ]
   },
   {
+    "prefix": "sanitizer-api-namespaces",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/sanitizer-api/sanitizer-names.https.html",
+      "external/wpt/sanitizer-api/sanitizer-names.https.tentative.html",
+      "virtual/mathml-disabled/sanitizer-api-math-namespace-designator.html"
+    ],
+    "args": ["--enable-features=SanitizerAPINamespacesForTesting"]
+  },
+  {
     "prefix": "cookie-reject-domain-non-ascii",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "http/tests/inspector-protocol/issues/cookie-domain-non-ascii.js" ],
     "args": ["--enable-features=CookieDomainRejectNonASCII"]
+  },
+  {
+    "prefix": "pending-beacon",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/pending_beacon"],
+    "args": ["--enable-features=PendingBeaconAPI"]
   }
 ]

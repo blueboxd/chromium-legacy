@@ -61,6 +61,9 @@ class PasswordChangeRunView : public views::View,
   void SetDescription(const std::u16string& progress_description) override;
   void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) override;
+  autofill_assistant::password_change::ProgressStep GetProgressStep() override;
+  void ShowBasePrompt(const std::u16string& description,
+                      const std::vector<PromptChoice>& options) override;
   void ShowBasePrompt(const std::vector<PromptChoice>& options) override;
   void ShowUseGeneratedPasswordPrompt(
       const std::u16string& title,
@@ -72,6 +75,7 @@ class PasswordChangeRunView : public views::View,
   void ShowStartingScreen(const GURL& url) override;
   void ShowCompletionScreen(
       base::RepeatingClosure done_button_callback) override;
+  void ShowErrorScreen() override;
   void OnControllerGone() override;
 
   // Returns a weak pointer to itself.
@@ -80,6 +84,9 @@ class PasswordChangeRunView : public views::View,
  private:
   // Creates/initialises the view.
   void CreateView();
+
+  // Renders the options for a base prompt.
+  void CreateBasePromptOptions(const std::vector<PromptChoice>& choices);
 
   // Closes the view by removing itself from the display.
   // This method destroys an instance of this class.

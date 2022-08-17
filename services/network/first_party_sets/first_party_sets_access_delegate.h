@@ -15,7 +15,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/network/first_party_sets/first_party_sets_context_config.h"
+#include "net/cookies/first_party_sets_context_config.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -30,7 +30,6 @@ namespace network {
 class FirstPartySetsAccessDelegate
     : public mojom::FirstPartySetsAccessDelegate {
  public:
-  using OwnerResult = FirstPartySetsManager::OwnerResult;
   using OwnersResult = FirstPartySetsManager::OwnersResult;
   using FlattenedSets = FirstPartySetsManager::FlattenedSets;
 
@@ -68,22 +67,6 @@ class FirstPartySetsAccessDelegate
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback);
 
-  // Returns optional(nullopt) if First-Party Sets is disabled or if the input
-  // is not in a nontrivial set.
-  // If FPS is enabled and the input site is in a nontrivial set, then this
-  // returns a non-empty optional containing the owner site of that set.
-  //
-  // This may return a result synchronously, or asynchronously invoke `callback`
-  // with the result. The callback will be invoked iff the return value is
-  // nullopt; i.e. a result will be provided via return value or callback, but
-  // not both, and not neither.
-  //
-  // Note that there is a semantic difference between optional(nullopt) and
-  // nullopt.
-  [[nodiscard]] absl::optional<OwnerResult> FindOwner(
-      const net::SchemefulSite& site,
-      base::OnceCallback<void(OwnerResult)> callback);
-
   // Batched version of `FindOwner`. Returns the mapping of sites to owners for
   // the given input sites (if an owner exists).
   //
@@ -109,11 +92,6 @@ class FirstPartySetsAccessDelegate
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const;
 
-  // Same as `FindOwner`, but plumbs the result into the callback. Must only be
-  // called once the instance is fully initialized.
-  void FindOwnerAndInvoke(const net::SchemefulSite& site,
-                          base::OnceCallback<void(OwnerResult)> callback) const;
-
   // Same as `FindOwners`, but plumbs the result into the callback. Must only be
   // called once the instance is fully initialized.
   void FindOwnersAndInvoke(
@@ -133,7 +111,7 @@ class FirstPartySetsAccessDelegate
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // First-Party Sets configuration for this network context.
-  FirstPartySetsContextConfig context_config_
+  net::FirstPartySetsContextConfig context_config_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The queue of queries that are waiting for the instance to be initialized.

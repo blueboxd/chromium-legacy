@@ -143,7 +143,9 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void OnUserPermissionsSettingsChanged(
       const PermissionsManager::UserPermissionsSettings& settings) override;
   void OnExtensionPermissionsUpdated(
-      const UpdatedExtensionPermissionsInfo& info) override;
+      const Extension& extension,
+      const PermissionSet& permissions,
+      PermissionsManager::UpdateReason reason) override;
 
   // Handles a profile preference change.
   void OnProfilePrefChanged();
@@ -931,6 +933,24 @@ class DeveloperPrivateGetUserAndExtensionSitesByEtldFunction
 
  private:
   ~DeveloperPrivateGetUserAndExtensionSitesByEtldFunction() override;
+
+  ResponseAction Run() override;
+};
+
+class DeveloperPrivateGetMatchingExtensionsForSiteFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.getMatchingExtensionsForSite",
+                             DEVELOPERPRIVATE_GETMATCHINGEXTENSIONSFORSITE)
+  DeveloperPrivateGetMatchingExtensionsForSiteFunction();
+
+  DeveloperPrivateGetMatchingExtensionsForSiteFunction(
+      const DeveloperPrivateGetMatchingExtensionsForSiteFunction&) = delete;
+  DeveloperPrivateGetMatchingExtensionsForSiteFunction& operator=(
+      const DeveloperPrivateGetMatchingExtensionsForSiteFunction&) = delete;
+
+ private:
+  ~DeveloperPrivateGetMatchingExtensionsForSiteFunction() override;
 
   ResponseAction Run() override;
 };

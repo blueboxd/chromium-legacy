@@ -27,7 +27,7 @@
 #include "chrome/browser/password_manager/android/password_store_operation_target.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
@@ -52,6 +52,10 @@ namespace {
 constexpr base::TimeDelta kAsyncTaskTimeout = base::Seconds(30);
 constexpr char kUPMActiveHistogram[] =
     "PasswordManager.UnifiedPasswordManager.ActiveStatus";
+constexpr char kAliveAfterApiNotConnectedHistogram[] =
+    "PasswordManager.AliveAfterApiNotConnectedError";
+constexpr base::TimeDelta kReportAliveAfterApiNotConnectedDelay =
+    base::Seconds(10);
 
 using base::UTF8ToUTF16;
 using password_manager::GetExpressionForFederatedMatching;
@@ -61,6 +65,18 @@ using sync_util::GetSyncingAccount;
 
 using JobId = PasswordStoreAndroidBackendBridge::JobId;
 using SuccessStatus = PasswordStoreBackendMetricsRecorder::SuccessStatus;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AliveAfterApiNotConnectedStatus {
+  // Alive on receiving the error, this code is the basis for the analysis.
+  kAliveOnError = 0,
+  // Alive after a delay, Chrome didn't shutdown/restart since receiving the
+  // error.
+  kAliveAfterDelay = 1,
+
+  kMaxValue = kAliveAfterDelay
+};
 
 std::vector<std::unique_ptr<PasswordForm>> WrapPasswordsIntoPointers(
     std::vector<PasswordForm> passwords) {
@@ -720,6 +736,21 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
                          0);
       prefs_->SetDouble(prefs::kTimeOfLastMigrationAttempt, 0.0);
       prefs_->SetBoolean(prefs::kSettingsMigratedToUPM, false);
+    }
+
+    if (static_cast<AndroidBackendAPIErrorCode>(api_error) ==
+        AndroidBackendAPIErrorCode::kApiNotConnected) {
+      base::UmaHistogramEnumeration(
+          kAliveAfterApiNotConnectedHistogram,
+          AliveAfterApiNotConnectedStatus::kAliveOnError);
+      main_task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(static_cast<void (*)(const char*,
+                                              AliveAfterApiNotConnectedStatus)>(
+                             &base::UmaHistogramEnumeration),
+                         kAliveAfterApiNotConnectedHistogram,
+                         AliveAfterApiNotConnectedStatus::kAliveAfterDelay),
+          kReportAliveAfterApiNotConnectedDelay);
     }
   }
   PasswordStoreBackendError reported_error =

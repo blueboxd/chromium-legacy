@@ -4,11 +4,11 @@
 
 #include "chromeos/ash/services/assistant/platform/audio_input_host_impl.h"
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/libassistant/public/mojom/audio_input_controller.mojom.h"
@@ -16,8 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-namespace assistant {
+namespace ash::assistant {
 
 namespace {
 
@@ -48,9 +47,7 @@ class AudioInputControllerMock : public MojomAudioInputController {
   MOCK_METHOD(void,
               SetHotwordDeviceId,
               (const absl::optional<std::string>& device_id));
-  MOCK_METHOD(void,
-              SetLidState,
-              (chromeos::libassistant::mojom::LidState new_state));
+  MOCK_METHOD(void, SetLidState, (MojomLidState new_state));
   MOCK_METHOD(void, OnConversationTurnStarted, ());
 
  private:
@@ -239,5 +236,4 @@ TEST_F(AssistantAudioInputHostTest,
   OnConversationTurnStarted();
 }
 
-}  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash::assistant

@@ -33,7 +33,8 @@ StarterHeuristic::~StarterHeuristic() = default;
 
 void StarterHeuristic::InitFromHeuristicConfigs(
     const std::vector<std::unique_ptr<StarterHeuristicConfig>>& configs,
-    StarterPlatformDelegate* platform_delegate) {
+    StarterPlatformDelegate* platform_delegate,
+    content::BrowserContext* browser_context) {
   url_matcher_ = std::make_unique<url_matcher::URLMatcher>();
   matcher_id_to_config_map_.clear();
 
@@ -41,8 +42,8 @@ void StarterHeuristic::InitFromHeuristicConfigs(
   base::flat_map<base::MatcherStringPattern::ID, HeuristicConfigEntry> mapping;
   base::MatcherStringPattern::ID next_condition_set_id = 0;
   for (const auto& config : configs) {
-    for (const auto& condition_set :
-         config->GetConditionSetsForClientState(platform_delegate)) {
+    for (const auto& condition_set : config->GetConditionSetsForClientState(
+             platform_delegate, browser_context)) {
       if (!condition_set.is_dict()) {
         LOG(ERROR) << "Invalid heuristic config: expected a dictionary for "
                       "each condition set, but got "
@@ -62,7 +63,7 @@ void StarterHeuristic::InitFromHeuristicConfigs(
               url_matcher_->condition_factory(), url_conditions->GetDict(),
               next_condition_set_id, &error));
       if (!error.empty()) {
-        VLOG(1) << "Error pasing url conditions: " << error;
+        VLOG(1) << "Error parsing url conditions: " << error;
         return;
       }
       mapping.insert(

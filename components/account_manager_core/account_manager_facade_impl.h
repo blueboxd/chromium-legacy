@@ -69,6 +69,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const AccountKey& account,
       OAuth2AccessTokenConsumer* consumer) override;
+  void ReportAuthError(const account_manager::AccountKey& account,
+                       const GoogleServiceAuthError& error) override;
   void UpsertAccountForTesting(const Account& account,
                                const std::string& token_value) override;
   void RemoveAccountForTesting(const AccountKey& account) override;
@@ -76,6 +78,9 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   // crosapi::mojom::AccountManagerObserver overrides:
   void OnTokenUpserted(crosapi::mojom::AccountPtr account) override;
   void OnAccountRemoved(crosapi::mojom::AccountPtr account) override;
+  void OnAuthErrorChanged(
+      crosapi::mojom::AccountKeyPtr account,
+      crosapi::mojom::GoogleServiceAuthErrorPtr error) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,

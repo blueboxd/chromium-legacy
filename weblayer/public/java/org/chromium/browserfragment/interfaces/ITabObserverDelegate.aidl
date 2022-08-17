@@ -4,11 +4,11 @@
 
 package org.chromium.browserfragment.interfaces;
 
-import org.chromium.browserfragment.interfaces.ITabProxy;
+import org.chromium.browserfragment.interfaces.ITabParams;
 
 oneway interface ITabObserverDelegate {
-    void notifyActiveTabChanged(in ITabProxy activeTab) = 1;
-    void notifyTabAdded(in ITabProxy tab) = 2;
-    void notifyTabRemoved(in ITabProxy tab) = 3;
+    void notifyActiveTabChanged(in ITabParams tabParams) = 1;
+    void notifyTabAdded(in ITabParams tabParams) = 2;
+    void notifyTabRemoved(in ITabParams tabParams) = 3;
     void notifyWillDestroyBrowserAndAllTabs() = 4;
 }

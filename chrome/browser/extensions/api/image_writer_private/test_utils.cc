@@ -222,10 +222,6 @@ void ImageWriterTestUtils::RunOnUtilityClientCreation(
 #endif
 
 void ImageWriterTestUtils::SetUp() {
-  SetUp(false);
-}
-
-void ImageWriterTestUtils::SetUp(bool is_browser_test) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_image_path_));
@@ -236,26 +232,21 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
   ASSERT_TRUE(FillFile(test_device_path_, kDevicePattern, kTestFileSize));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!chromeos::DBusThreadManager::IsInitialized()) {
-    if (!is_browser_test) {
-      // For browser tests, chromeos::InitializeDBus() automatically does the
-      // same.
-      chromeos::DBusThreadManager::Initialize();
-      ash::ConciergeClient::InitializeFake(
-          /*fake_cicerone_client=*/nullptr);
-    }
-    image_burner_client_ = std::make_unique<ImageWriterFakeImageBurnerClient>();
-    ash::ImageBurnerClient::SetInstanceForTest(image_burner_client_.get());
+  // Browser tests might have already initialized ConciergeClient.
+  if (!ash::ConciergeClient::Get()) {
+    ash::ConciergeClient::InitializeFake(
+        /*fake_cicerone_client=*/nullptr);
+    concierge_client_initialized_ = true;
   }
+  image_burner_client_ = std::make_unique<ImageWriterFakeImageBurnerClient>();
+  ash::ImageBurnerClient::SetInstanceForTest(image_burner_client_.get());
 
   FakeDiskMountManager* disk_manager = new FakeDiskMountManager();
   ash::disks::DiskMountManager::InitializeForTesting(disk_manager);
 
   // Adds a disk entry for test_device_path_ with the same device and file path.
   disk_manager->CreateDiskEntryForMountDevice(
-      ash::disks::DiskMountManager::MountPointInfo(
-          test_device_path_.value(), "/dummy/mount", ash::MountType::kDevice,
-          ash::disks::MOUNT_CONDITION_NONE),
+      {test_device_path_.value(), "/dummy/mount", ash::MountType::kDevice},
       "device_id", "device_label", "Vendor", "Product", ash::DeviceType::kUSB,
       kTestFileSize, true, true, true, false, kTestFileSystemType);
   disk_manager->SetupDefaultReplies();
@@ -269,11 +260,9 @@ void ImageWriterTestUtils::TearDown() {
   ash::ImageBurnerClient::SetInstanceForTest(nullptr);
   image_burner_client_.reset();
 
-  if (chromeos::DBusThreadManager::IsInitialized()) {
-    // When in browser_tests, this path is not taken. These clients have already
-    // been shut down by chromeos::ShutdownDBus().
+  if (concierge_client_initialized_) {
     ash::ConciergeClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    concierge_client_initialized_ = false;
   }
   ash::disks::DiskMountManager::Shutdown();
 #else

@@ -232,7 +232,7 @@ void DMFetch::PostRequest(const std::string& request_type,
     if (storage_->GetEnrollmentToken().empty()) {
       result = DMClient::RequestResult::kNotManaged;
     } else if (!storage_->GetDmToken().empty()) {
-      result = DMClient::RequestResult::kAleadyRegistered;
+      result = DMClient::RequestResult::kAlreadyRegistered;
     }
   } else if (storage_->GetDmToken().empty()) {
     result = DMClient::RequestResult::kNoDMToken;
@@ -373,6 +373,14 @@ void DMClient::RegisterDevice(std::unique_ptr<Configurator> config,
 void DMClient::FetchPolicy(std::unique_ptr<Configurator> config,
                            scoped_refptr<DMStorage> storage,
                            PolicyFetchCallback callback) {
+  if (!storage->CanPersistPolicies()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  DMClient::RequestResult::kSerializationError,
+                                  std::vector<PolicyValidationResult>()));
+    return;
+  }
+
   auto dm_fetch = base::MakeRefCounted<DMFetch>(std::move(config), storage);
   std::unique_ptr<CachedPolicyInfo> cached_info =
       dm_fetch->storage()->GetCachedPolicyInfo();

@@ -135,7 +135,7 @@ BrowserCaptureMediaStreamTrack::BrowserCaptureMediaStreamTrack(
     bool is_clone)
     : BrowserCaptureMediaStreamTrack(execution_context,
                                      component,
-                                     component->Source()->GetReadyState(),
+                                     component->GetReadyState(),
                                      std::move(callback),
                                      descriptor_id,
                                      is_clone) {}
@@ -242,11 +242,11 @@ ScriptPromise BrowserCaptureMediaStreamTrack::cropTo(
 }
 
 BrowserCaptureMediaStreamTrack* BrowserCaptureMediaStreamTrack::clone(
-    ScriptState* script_state) {
+    ExecutionContext* execution_context) {
   // Instantiate the clone.
   BrowserCaptureMediaStreamTrack* cloned_track =
       MakeGarbageCollected<BrowserCaptureMediaStreamTrack>(
-          ExecutionContext::From(script_state), Component()->Clone(),
+          execution_context, Component()->Clone(ClonePlatformTrack()),
           GetReadyState(), base::DoNothing(), descriptor_id(),
           /*is_clone=*/true);
 

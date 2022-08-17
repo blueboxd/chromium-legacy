@@ -30,6 +30,7 @@
 namespace ipcz {
 
 class Message;
+class Parcel;
 class RemoteRouterLink;
 class Router;
 
@@ -144,6 +145,18 @@ class NodeLink : public msg::NodeMessageListener {
   // node identified by `name`.
   void RejectIntroduction(const NodeName& name);
 
+  // May be called on a link from a non-broker to a broker in order to refer a
+  // new node to the remote broker. `transport` is a transport whose peer
+  // endpoint belongs to the referred node, and `num_initial_portals` is the
+  // number of initial portals expected on the resulting link from this side.
+  // Upon success, `callback` is invoked with a new NodeLink to the referred
+  // node and the number of initial portals expected by that side. On failure,
+  // `callback` is invoked with a null link.
+  using ReferralCallback = std::function<void(Ref<NodeLink>, uint32_t)>;
+  void ReferNonBroker(Ref<DriverTransport> transport,
+                      uint32_t num_initial_portals,
+                      ReferralCallback callback);
+
   // Sends a request to the remote node to establish a new RouterLink over this
   // this NodeLink, to replace an existing RouterLink between the remote node
   // and `current_peer_node`. `current_peer_sublink` identifies the specific
@@ -165,6 +178,17 @@ class NodeLink : public msg::NodeMessageListener {
   // invoke with an invalid DriverMemory object.
   using RequestMemoryCallback = std::function<void(DriverMemory)>;
   void RequestMemory(size_t size, RequestMemoryCallback callback);
+
+  // Asks the remote node (which must be a broker) to relay `message` over to
+  // `to_node`. This is used to transmit driver objects between non-broker nodes
+  // whenever direct transmission is unsupported by the driver.
+  void RelayMessage(const NodeName& to_node, Message& message);
+
+  // Simulates receipt of a new message from the remote node on this link. This
+  // is called by the local Node with a message that was relayed to it by its
+  // broker. All relayed messages land on their destination node through this
+  // method.
+  bool DispatchRelayedMessage(msg::AcceptRelayedMessage& relay);
 
   // Permanently deactivates this NodeLink. Once this call returns the NodeLink
   // will no longer receive transport messages. It may still be used to transmit
@@ -203,13 +227,21 @@ class NodeLink : public msg::NodeMessageListener {
   SequenceNumber GenerateOutgoingSequenceNumber();
 
   // NodeMessageListener overrides:
+  bool OnReferNonBroker(msg::ReferNonBroker& refer) override;
+  bool OnNonBrokerReferralAccepted(
+      msg::NonBrokerReferralAccepted& accepted) override;
+  bool OnNonBrokerReferralRejected(
+      msg::NonBrokerReferralRejected& rejected) override;
   bool OnRequestIntroduction(msg::RequestIntroduction& request) override;
   bool OnAcceptIntroduction(msg::AcceptIntroduction& accept) override;
   bool OnRejectIntroduction(msg::RejectIntroduction& reject) override;
   bool OnAddBlockBuffer(msg::AddBlockBuffer& add) override;
   bool OnAcceptParcel(msg::AcceptParcel& accept) override;
+  bool OnAcceptParcelDriverObjects(
+      msg::AcceptParcelDriverObjects& accept) override;
   bool OnRouteClosed(msg::RouteClosed& route_closed) override;
   bool OnRouteDisconnected(msg::RouteDisconnected& route_disconnected) override;
+  bool OnNotifyDataConsumed(msg::NotifyDataConsumed& notify) override;
   bool OnBypassPeer(msg::BypassPeer& bypass) override;
   bool OnAcceptBypassLink(msg::AcceptBypassLink& accept) override;
   bool OnStopProxying(msg::StopProxying& stop) override;
@@ -219,7 +251,24 @@ class NodeLink : public msg::NodeMessageListener {
   bool OnFlushRouter(msg::FlushRouter& flush) override;
   bool OnRequestMemory(msg::RequestMemory& request) override;
   bool OnProvideMemory(msg::ProvideMemory& provide) override;
+  bool OnRelayMessage(msg::RelayMessage& relay) override;
+  bool OnAcceptRelayedMessage(msg::AcceptRelayedMessage& accept) override;
   void OnTransportError() override;
+
+  // Invoked when we receive a Parcel whose data fragment resides in a buffer
+  // not yet known to the local node. This schedules the parcel for acceptance
+  // as soon as that buffer is available.
+  void WaitForParcelFragmentToResolve(SublinkId for_sublink,
+                                      Parcel& parcel,
+                                      const FragmentDescriptor& descriptor,
+                                      bool is_split_parcel);
+
+  bool AcceptParcelWithoutDriverObjects(SublinkId for_sublink, Parcel& parcel);
+  bool AcceptParcelDriverObjects(SublinkId for_sublink, Parcel& parcel);
+  bool AcceptSplitParcel(SublinkId for_sublink,
+                         Parcel& parcel_without_driver_objects,
+                         Parcel& parcel_with_driver_objects);
+  bool AcceptCompleteParcel(SublinkId for_sublink, Parcel& parcel);
 
   const Ref<Node> node_;
   const LinkSide link_side_;
@@ -249,6 +298,17 @@ class NodeLink : public msg::NodeMessageListener {
   using MemoryRequestMap =
       absl::flat_hash_map<uint32_t, std::list<RequestMemoryCallback>>;
   MemoryRequestMap pending_memory_requests_ ABSL_GUARDED_BY(mutex_);
+
+  // Tracks partially received contents of split parcels so they can be
+  // reconstructed for dispatch.
+  using PartialParcelKey = std::tuple<SublinkId, SequenceNumber>;
+  using PartialParcelMap = absl::flat_hash_map<PartialParcelKey, Parcel>;
+  PartialParcelMap partial_parcels_ ABSL_GUARDED_BY(mutex_);
+
+  // Tracks pending referrals sent to the broker.
+  uint64_t next_referral_id_ = 0;
+  absl::flat_hash_map<uint64_t, ReferralCallback> pending_referrals_
+      ABSL_GUARDED_BY(mutex_);
 };
 
 }  // namespace ipcz

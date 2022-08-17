@@ -14,6 +14,7 @@
 #include "base/containers/span.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/secure_enclave_helper.h"
@@ -28,11 +29,24 @@ namespace enterprise_connectors {
 
 namespace {
 
+// Returns the key label based on the key `type` if the key type is not
+// supported an empty string is returned.
+base::StringPiece GetLabelFromKeyType(SecureEnclaveClient::KeyType type) {
+  if (type == SecureEnclaveClient::KeyType::kTemporary)
+    return constants::kTemporaryDeviceTrustSigningKeyLabel;
+  if (type == SecureEnclaveClient::KeyType::kPermanent)
+    return constants::kDeviceTrustSigningKeyLabel;
+  return base::StringPiece();
+}
+
 // Much of the Keychain API was marked deprecated as of the macOS 13 SDK.
 // Removal of its use is tracked in https://crbug.com/1348251 but deprecation
 // warnings are disabled in the meanwhile.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+// TODO(http://b/241261382): Look for alternatives in ACL creation and validate
+// the new key is stored in the data protection keychain.
 
 // Issues the SecAccessCreate API to create the ACL for the secure key.
 // This ACL allows all Chrome applications access to modify this key
@@ -55,7 +69,8 @@ base::ScopedCFTypeRef<SecAccessRef> CreateACL() {
 #pragma clang diagnostic pop
 
 // Creates and returns the secure enclave private key attributes used
-// for key creation.
+// for key creation. These key attributes represent the key created in
+// the permanent key location.
 base::ScopedCFTypeRef<CFMutableDictionaryRef> CreateAttributesForKey() {
   auto access_ref = CreateACL();
   if (!access_ref)
@@ -70,9 +85,9 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> CreateAttributesForKey() {
   CFDictionarySetValue(attributes, kSecAttrKeyType,
                        kSecAttrKeyTypeECSECPrimeRandom);
   CFDictionarySetValue(attributes, kSecAttrKeySizeInBits, @256);
-  CFDictionarySetValue(attributes, kSecAttrLabel,
-                       base::SysUTF8ToCFStringRef(
-                           constants::kTemporaryDeviceTrustSigningKeyLabel));
+  CFDictionarySetValue(
+      attributes, kSecAttrLabel,
+      base::SysUTF8ToCFStringRef(constants::kDeviceTrustSigningKeyLabel));
 
   base::ScopedCFTypeRef<CFMutableDictionaryRef> private_key_params(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
@@ -88,13 +103,14 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> CreateAttributesForKey() {
 // Creates the query used for querying the keychain for the secure key
 // reference.
 base::ScopedCFTypeRef<CFMutableDictionaryRef> CreateQueryForKey(
-    const std::string& label) {
+    SecureEnclaveClient::KeyType type) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> query(CFDictionaryCreateMutable(
       kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
       &kCFTypeDictionaryValueCallBacks));
   CFDictionarySetValue(query, kSecClass, kSecClassKey);
   CFDictionarySetValue(query, kSecAttrKeyType, kSecAttrKeyTypeECSECPrimeRandom);
-  CFDictionarySetValue(query, kSecAttrLabel, base::SysUTF8ToCFStringRef(label));
+  CFDictionarySetValue(query, kSecAttrLabel,
+                       base::SysUTF8ToCFStringRef(GetLabelFromKeyType(type)));
   CFDictionarySetValue(query, kSecReturnRef, @YES);
   return query;
 }
@@ -108,49 +124,52 @@ SecureEnclaveClientImpl::SecureEnclaveClientImpl()
 
 SecureEnclaveClientImpl::~SecureEnclaveClientImpl() = default;
 
-base::ScopedCFTypeRef<SecKeyRef> SecureEnclaveClientImpl::CreateTemporaryKey() {
+base::ScopedCFTypeRef<SecKeyRef> SecureEnclaveClientImpl::CreatePermanentKey() {
   auto attributes = CreateAttributesForKey();
   if (!attributes)
     return base::ScopedCFTypeRef<SecKeyRef>();
 
-  // Deletes a temporary Secure Enclave key if it exists from a previous
+  // Deletes a permanent Secure Enclave key if it exists from a previous
   // key rotation.
-  DeleteKey(KeyType::kTemporary);
+  DeleteKey(KeyType::kPermanent);
   return helper_->CreateSecureKey(attributes);
 }
 
-bool SecureEnclaveClientImpl::MoveTemporaryKeyToPermanent() {
-  // Deletes an old Secure Enclave key if it exists.
-  DeleteKey(SecureEnclaveClient::KeyType::kPermanent);
+base::ScopedCFTypeRef<SecKeyRef> SecureEnclaveClientImpl::CopyStoredKey(
+    KeyType type) {
+  return helper_->CopyKey(CreateQueryForKey(type));
+}
+
+bool SecureEnclaveClientImpl::UpdateStoredKeyLabel(KeyType current_key_type,
+                                                   KeyType new_key_type) {
+  // Deletes the `new_key_type` label if it exists in the keychain.
+  DeleteKey(new_key_type);
 
   base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_to_update(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                 &kCFTypeDictionaryKeyCallBacks,
                                 &kCFTypeDictionaryValueCallBacks));
-  CFDictionarySetValue(
-      attributes_to_update, kSecAttrLabel,
-      base::SysUTF8ToCFStringRef(constants::kDeviceTrustSigningKeyLabel));
+  auto label = GetLabelFromKeyType(new_key_type);
+  if (label.empty())
+    return false;
 
-  return helper_->Update(
-      CreateQueryForKey(constants::kTemporaryDeviceTrustSigningKeyLabel),
-      attributes_to_update);
+  CFDictionarySetValue(attributes_to_update, kSecAttrLabel,
+                       base::SysUTF8ToCFStringRef(label));
+
+  return helper_->Update(CreateQueryForKey(current_key_type),
+                         attributes_to_update);
 }
 
 bool SecureEnclaveClientImpl::DeleteKey(KeyType type) {
-  auto* label = (type == KeyType::kTemporary)
-                    ? constants::kTemporaryDeviceTrustSigningKeyLabel
-                    : constants::kDeviceTrustSigningKeyLabel;
-  return helper_->Delete(CreateQueryForKey(label));
+  return helper_->Delete(CreateQueryForKey(type));
 }
 
 bool SecureEnclaveClientImpl::GetStoredKeyLabel(KeyType type,
                                                 std::vector<uint8_t>& output) {
-  std::string label = (type == KeyType::kTemporary)
-                          ? constants::kTemporaryDeviceTrustSigningKeyLabel
-                          : constants::kDeviceTrustSigningKeyLabel;
-  if (!helper_->CheckExists(CreateQueryForKey(label)))
+  if (!helper_->CopyKey(CreateQueryForKey(type)))
     return false;
 
+  auto label = GetLabelFromKeyType(type);
   output.assign(label.begin(), label.end());
   return true;
 }
@@ -190,7 +209,7 @@ bool SecureEnclaveClientImpl::ExportPublicKey(SecKeyRef key,
     return false;
   }
 
-  output.assign(*der, *der + der_len);
+  output.assign(der, der + der_len);
   bssl::UniquePtr<uint8_t> delete_signed_cert_bytes(der);
   return true;
 }

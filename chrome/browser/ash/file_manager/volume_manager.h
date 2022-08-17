@@ -106,7 +106,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   static std::unique_ptr<Volume> CreateForDownloads(
       const base::FilePath& downloads_path);
   static std::unique_ptr<Volume> CreateForRemovable(
-      const ash::disks::DiskMountManager::MountPointInfo& mount_point,
+      const ash::disks::DiskMountManager::MountPoint& mount_point,
       const ash::disks::Disk* disk);
   static std::unique_ptr<Volume> CreateForProvidedFileSystem(
       const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
@@ -400,6 +400,7 @@ class VolumeManager : public KeyedService,
   // mount was removed successfully or wasn't mounted to begin with. Runs
   // `callback` with false in all other cases.
   void RemoveSftpGuestOsVolume(const base::FilePath& sftp_mount_path,
+                               const guest_os::VmType vm_type,
                                RemoveSftpGuestOsVolumeCallback callback);
 
   // Removes Downloads volume used for testing.
@@ -460,17 +461,17 @@ class VolumeManager : public KeyedService,
   void OnMountEvent(
       ash::disks::DiskMountManager::MountEvent event,
       ash::MountError error_code,
-      const ash::disks::DiskMountManager::MountPointInfo& mount_info) override;
+      const ash::disks::DiskMountManager::MountPoint& mount_info) override;
   void OnFormatEvent(ash::disks::DiskMountManager::FormatEvent event,
-                     chromeos::FormatError error_code,
+                     ash::FormatError error_code,
                      const std::string& device_path,
                      const std::string& device_label) override;
   void OnPartitionEvent(ash::disks::DiskMountManager::PartitionEvent event,
-                        chromeos::PartitionError error_code,
+                        ash::PartitionError error_code,
                         const std::string& device_path,
                         const std::string& device_label) override;
   void OnRenameEvent(ash::disks::DiskMountManager::RenameEvent event,
-                     chromeos::RenameError error_code,
+                     ash::RenameError error_code,
                      const std::string& device_path,
                      const std::string& device_label) override;
 
@@ -558,6 +559,7 @@ class VolumeManager : public KeyedService,
       ash::MountError error_code);
 
   void OnSftpGuestOsUnmountCallback(const base::FilePath& sftp_mount_path,
+                                    const guest_os::VmType vm_type,
                                     RemoveSftpGuestOsVolumeCallback callback,
                                     ash::MountError error_code);
 

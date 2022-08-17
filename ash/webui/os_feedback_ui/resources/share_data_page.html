@@ -9,6 +9,20 @@
     text-justify: inter-word;
   }
 
+  #attachFilesLabelContainer {
+    align-items: center;
+    display: inline-flex;
+  }
+
+  #attachFilesIcon {
+    --iron-icon-fill-color: var(--cros-icon-color-secondary);
+    display: inline-block;
+    height: 20px;
+    margin-bottom: 8px;
+    margin-inline-start: 6px;
+    width: 20px;
+  }
+
   #attachFiles {
     display: flex;
     flex-direction: column;
@@ -34,11 +48,6 @@
     height: 48px;
     margin-inline-end: 12px;
     width: 50%;
-  }
-
-  #screenshotCheckLabel {
-    flex: 1;
-    margin-inline-end: 12px;
   }
 
   #screenshotContainer > button {
@@ -81,7 +90,12 @@
   }
 
   #shareDiagnosticData {
-    height: 96px;
+    margin-bottom: 16px;
+  }
+
+  .checkbox-field-container {
+    display: flex;
+    margin-bottom: 8px;
   }
 
   #pageUrl {
@@ -105,7 +119,10 @@
   }
 
   #screenshotCheckLabel {
+    flex: 1;
     font-weight: 400;
+    line-height: 20px;
+    margin-inline-end: 12px;
   }
 
   #imageButton {
@@ -116,7 +133,6 @@
     width: 68px;
   }
 
-  #sysInfoContainer,
   #userConsent {
     display: flex;
     margin-bottom: 24px;
@@ -138,7 +154,15 @@
   <div id="content">
     <!-- Attach files -->
     <div id="attachFiles">
-      <h2 id="attachFilesLabel">[[i18n('attachFilesLabel')]]</h2>
+      <div id="attachFilesLabelContainer">
+        <h2 id="attachFilesLabel">[[i18n('attachFilesLabel')]]</h2>
+        <iron-icon icon="os-feedback:info" id="attachFilesIcon"></iron-icon>
+        <paper-tooltip for="attachFilesIcon" position="top" offset="0" fit-to-visible-bounds>
+          <div id="attachFilesTooltipContent">
+            [[i18n('attachFileLabelTooltip')]]
+          </div>
+        </paper-tooltip>
+      </div>
       <div id="attachFilesContainer">
         <!-- Attach a screenshot -->
         <div id="screenshotContainer" class="card-frame">
@@ -163,10 +187,12 @@
       <select id="userEmailDropDown" class="md-select"
           aria-label="[[i18n('userEmailAriaLabel')]]">
         <option value$="[[feedbackContext.email]]"
+            aria-label="user email"
             class="email-dropdown">
           [[feedbackContext.email]]
         </option>
-        <option value="" id="anonymousUser" class="email-dropdown">
+        <option value="" aria-label="anonymous user"
+          id="anonymousUser" class="email-dropdown">
           [[i18n('anonymousUser')]]
         </option>
       </select>
@@ -195,6 +221,12 @@
         <cr-checkbox id="sysInfoCheckbox" aria-labelledby="sysInfoCheckboxLabel" checked>
         </cr-checkbox>
         <label id="sysInfoCheckboxLabel" inner-h-t-m-l="[[sysInfoCheckboxLabel_]]"></label>
+      </div>
+      <!-- Bluetooth Logs (Googler Internal Only) -->
+      <div id="bluetoothCheckboxContainer" class="checkbox-field-container">
+        <cr-checkbox id="bluetoothLogsCheckbox" aria-labelledby="sysInfoCheckboxLabel" checked>
+        </cr-checkbox>
+        <label id="bluetoothInfoLabel" inner-h-t-m-l="[[bluetoothLogsCheckboxLabel_]]"></label>
       </div>
     </div>
     <!-- Privacy note -->

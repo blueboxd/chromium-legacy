@@ -11,7 +11,9 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 #include "url/origin.h"
@@ -89,44 +91,6 @@ namespace blink {
 // |PermissionsPolicyFeatureDefault| in permissions_policy_features.h for
 // details)
 
-// This struct holds permissions policy allowlist data that needs to be
-// replicated between a RenderFrame and any of its associated
-// RenderFrameProxies. A list of these form a ParsedPermissionsPolicy. NOTE:
-// These types are used for replication frame state between processes.
-struct BLINK_COMMON_EXPORT ParsedPermissionsPolicyDeclaration {
-  ParsedPermissionsPolicyDeclaration();
-  explicit ParsedPermissionsPolicyDeclaration(
-      mojom::PermissionsPolicyFeature feature);
-  ParsedPermissionsPolicyDeclaration(mojom::PermissionsPolicyFeature feature,
-                                     const std::vector<url::Origin>& values,
-                                     bool matches_all_origins,
-                                     bool matches_opaque_src);
-  ParsedPermissionsPolicyDeclaration(
-      const ParsedPermissionsPolicyDeclaration& rhs);
-  ParsedPermissionsPolicyDeclaration& operator=(
-      const ParsedPermissionsPolicyDeclaration& rhs);
-  ~ParsedPermissionsPolicyDeclaration();
-
-  mojom::PermissionsPolicyFeature feature;
-
-  // An alphabetically sorted list of all the origins allowed.
-  std::vector<url::Origin> allowed_origins;
-  // Fallback value is used when feature is enabled for all or disabled for all.
-  bool matches_all_origins{false};
-  // This flag is set true for a declared policy on an <iframe sandbox>
-  // container, for a feature which is supposed to be allowed in the sandboxed
-  // document. Usually, the 'src' keyword in a declaration will cause the origin
-  // of the iframe to be present in |origins|, but for sandboxed iframes, this
-  // flag is set instead.
-  bool matches_opaque_src{false};
-};
-
-using ParsedPermissionsPolicy = std::vector<ParsedPermissionsPolicyDeclaration>;
-
-bool BLINK_COMMON_EXPORT
-operator==(const ParsedPermissionsPolicyDeclaration& lhs,
-           const ParsedPermissionsPolicyDeclaration& rhs);
-
 class BLINK_COMMON_EXPORT PermissionsPolicy {
  public:
   // Represents a collection of origins which make up an allowlist in a
@@ -194,9 +158,12 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
       const PermissionsPolicy*);
 
   // Creates a PermissionsPolicy for a fenced frame. All permissions are
-  // disabled in fenced frames.
+  // disabled in fenced frames except for attribution reporting (which are only
+  // enabled for opaque-ads fenced frames). Permissions do not inherit from the
+  // parent to prevent cross-channel communication.
   static std::unique_ptr<PermissionsPolicy> CreateForFencedFrame(
-      const url::Origin& origin);
+      const url::Origin& origin,
+      blink::mojom::FencedFrameMode mode);
 
   static std::unique_ptr<PermissionsPolicy> CreateFromParsedPolicy(
       const ParsedPermissionsPolicy& parsed_policy,
@@ -273,7 +240,8 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
 
   static std::unique_ptr<PermissionsPolicy> CreateForFencedFrame(
       const url::Origin& origin,
-      const PermissionsPolicyFeatureList& features);
+      const PermissionsPolicyFeatureList& features,
+      blink::mojom::FencedFrameMode mode);
 
   bool InheritedValueForFeature(
       const PermissionsPolicy* parent_policy,

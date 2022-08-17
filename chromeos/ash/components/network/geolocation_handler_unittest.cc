@@ -11,12 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 class GeolocationHandlerTest : public testing::Test {
  public:
@@ -200,4 +200,4 @@ TEST_F(GeolocationHandlerTest, MultipleGeolocations) {
   EXPECT_EQ("101", cell_towers_[0].mnc);
 }
 
-}  // namespace chromeos
+}  // namespace ash

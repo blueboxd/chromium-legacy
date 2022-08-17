@@ -191,6 +191,7 @@
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1432187715652018471">यह पेज, सेवा हैंडलर इंस्टॉल करना चाहता है.</translation>
 <translation id="1432581352905426595">सर्च इंजन प्रबंधित करें</translation>
+<translation id="1435940442311036198">Use a passkey on a different device</translation>
 <translation id="1436185428532214179">साइट, आपके डिवाइस पर फ़ाइलों या फ़ोल्डर में बदलाव करने की अनुमति मांग सकती है</translation>
 <translation id="1442386063175183758">दायां गेट फ़ोल्ड</translation>
 <translation id="1442987760062738829">पंच</translation>
@@ -487,6 +488,7 @@
 <translation id="2219658597883514593">ट्यूटोरियल को रीस्टार्ट करें</translation>
 <translation id="2219735899272417925">डिवाइस को रीसेट करना ज़रूरी है</translation>
 <translation id="2224337661447660594">इंटरनेट कनेक्शन नहीं है</translation>
+<translation id="2225927550500503913">वर्चुअल कार्ड चालू कर दिया गया है</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />गड़बड़ी की पहचान करने वाले ऐप्लिकेशन<ph name="END_LINK" /> का उपयोग करके अपने कनेक्शन को ठीक करें</translation>
 <translation id="2239100178324503013">अभी भेजें</translation>
 <translation id="2241693394036365668">फ़ाइल डाउनलोड की गई</translation>
@@ -521,7 +523,6 @@
 <translation id="2318594867107319532">पिछली बार नीति को रीफ़्रेश करने का टाइमस्टैंप:</translation>
 <translation id="2324604504973636700">घरेलू उपकरण</translation>
 <translation id="2328651992442742497">अनुमति है (डिफ़ॉल्ट रूप से)</translation>
-<translation id="2329182534073751090">विंडो प्लेसमेंट</translation>
 <translation id="2329473609445770916">इस साइट से तय होता है कि दूसरी साइटें आपकी पसंद के किन विषयों से जुड़े विज्ञापन आपको दिखा सकती हैं</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> को खत्म होने वाला है</translation>
 <translation id="2337852623177822836">वह सेटिंग जिसे आपका व्यवस्थापक नियंत्रित करता है</translation>
@@ -633,7 +634,6 @@
           <ph name="LIST_ITEM" />फ़ॉर्म में डाली गई जानकारी
         <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">सी10 (एन्वेलप)</translation>
-<translation id="2623663032199728144">साइट, आपकी स्क्रीन की जानकारी इस्तेमाल करने की अनुमति मांग सकती है</translation>
 <translation id="2625385379895617796">आपकी घड़ी आगे है</translation>
 <translation id="262745152991669301">साइट, यूएसबी डिवाइसों से कनेक्ट करने की अनुमति मांग सकती है</translation>
 <translation id="2629325967560697240">Chrome की सबसे बेहतर सुरक्षा पाने के लिए, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />बेहतर सुरक्षा की सुविधा चालू करें<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -712,7 +712,6 @@
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome की सेटिंग में सुरक्षित ब्राउज़िंग वगैरह को मैनेज करने के लिए, पहले Tab और फिर Enter दबाएं</translation>
 <translation id="2878197950673342043">पोस्टर फ़ोल्ड</translation>
 <translation id="2878424575911748999">ए1</translation>
-<translation id="2880660355386638022">विंडो प्लेसमेंट</translation>
 <translation id="2881276955470682203">कार्ड सेव करें?</translation>
 <translation id="2882949212241984732">डबल-गेट फ़ोल्ड</translation>
 <translation id="2893773853358652045">चौथा रोल</translation>
@@ -1242,6 +1241,7 @@
 <translation id="4329871760342656885">नीति को पार्स करने के दौरान कोई गड़बड़ी हुई: <ph name="ERROR" /></translation>
 <translation id="4331519897422864041">स्टैकर 5</translation>
 <translation id="4331708818696583467">सुरक्षित नहीं है</translation>
+<translation id="4333561522337981382">आपके सभी डिसप्ले पर विंडो मैनेज करना</translation>
 <translation id="4340575312453649552">यह विज्ञापन आपके डिवाइस के बहुत से संसाधन इस्तेमाल करता था, इसलिए Chrome ने इसे हटा दिया है.</translation>
 <translation id="4340982228985273705">इस कंप्यूटर की पहचान एंटरप्राइज़ की ओर से प्रबंधित होने के रूप में नहीं की गई है, इसलिए नीति सिर्फ़ Chrome वेबस्टोर पर होस्ट किए जाने वाले एक्सटेंशन ही अपने आप इंस्टॉल कर सकती है. Chrome वेबस्टोर अपडेट यूआरएल "<ph name="CWS_UPDATE_URL" />" है.</translation>
 <translation id="4346197816712207223">स्वीकार किए जाने वाले क्रेडिट कार्ड</translation>
@@ -1408,7 +1408,9 @@
 <translation id="4798078619018708837">अपने कार्ड का ब्यौरा अपडेट करने के लिए <ph name="CREDIT_CARD" /> की खत्म होने की तारीख और कार्ड वेरीफ़िकेशन कोड (सीवीसी) डालें. आपके पुष्टि करने के बाद, आपके Google खाते के कार्ड का ब्यौरा इस साइट के साथ शेयर किया जाएगा.</translation>
 <translation id="4800132727771399293">अपने क्रेडिट कार्ड की समय सीमा खत्म होने की तारीख और कार्ड वेरीफ़िकेशन कोड (सीवीसी) जांचें और फिर से कोशिश करें</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="4806051791961048632">Use Touch ID</translation>
 <translation id="4809079943450490359">आपके डिवाइस के एडमिन से मिले निर्देश:</translation>
+<translation id="4811450222531576619">इस पेज के स्रोत और विषय के बारे में जानें</translation>
 <translation id="4812751092864334025">पहने जाने वाले डिवाइस</translation>
 <translation id="4813512666221746211">नेटवर्क गड़बड़ी</translation>
 <translation id="4816492930507672669">पेज में फ़िट करें</translation>
@@ -1455,6 +1457,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, खोजने के लिए Tab के बाद Enter दबाएं</translation>
 <translation id="4930153903256238152">ज़्यादा क्षमता</translation>
+<translation id="4934780484581617878">विंडो मैनेजमेंट</translation>
 <translation id="4936134414789135531">डाला गया <ph name="VALUE_NAME" /> नहीं मिला.</translation>
 <translation id="4936675324097895694">फ़ाइनेंस</translation>
 <translation id="4940163644868678279">Chrome में गुप्त मोड</translation>
@@ -1467,6 +1470,7 @@
 <translation id="4958444002117714549">पूरी सूची दिखाएं</translation>
 <translation id="4964505745997821360">स्वास्थ्य बीमा</translation>
 <translation id="4968522289500246572">यह ऐप्लिकेशन, मोबाइल के लिए डिज़ाइन किया गया है और हो सकता है कि इसका डिसप्ले, डिवाइस के विंडो साइज़ के हिसाब से न बदले. इस ऐप्लिकेशन को इस्तेमाल करते समय आपको समस्याओं का सामना करना पड़ सकता है या इसे रीस्टार्ट करना पड़ सकता है.</translation>
+<translation id="4968665849807487749">साइट, आपके सभी डिसप्ले पर विंडो मैनेज करने की अनुमति मांग सकती है</translation>
 <translation id="4969341057194253438">रिकॉर्डिंग मिटाएं</translation>
 <translation id="4973922308112707173">सबसे ऊपर ड्युएल पंच</translation>
 <translation id="4976702386844183910">पिछली बार <ph name="DATE" /> को देखा गया</translation>
@@ -1679,6 +1683,7 @@
 <translation id="5509780412636533143">प्रबंधित बुकमार्क</translation>
 <translation id="5510481203689988000">इस सेटिंग को कुकी की सेटिंग में कंट्रोल किया जाता है.</translation>
 <translation id="5510766032865166053">हो सकता है कि उसे ले जाया गया हो या हटा दिया गया हो.</translation>
+<translation id="5513528801833998679">Use device sign-in</translation>
 <translation id="5518670652865028077">कला और मनोरंजन</translation>
 <translation id="5519516356611866228">किए गए बदलावों के साथ दस्तावेज़ डाउनलोड करें</translation>
 <translation id="5523118979700054094">नीति का नाम</translation>
@@ -1706,6 +1711,7 @@
 <translation id="5571083550517324815">इस पते से पिक अप नहीं किया जा सकता. कोई दूसरा पता चुनें.</translation>
 <translation id="557886905979275351">रेज़र और शेवर</translation>
 <translation id="5580958916614886209">अपने क्रेडिट कार्ड की समय सीमा खत्म होने का महीना जांचें और फिर से कोशिश करें</translation>
+<translation id="558420943003240152">Manage passwords and passkeys…</translation>
 <translation id="5586446728396275693">कोई सहेजा गया पता नहीं है</translation>
 <translation id="5587987780934666589">प्लैटफ़ॉर्म का उपयोगकर्ता</translation>
 <translation id="5593349413089863479">कनेक्शन पूरी तरह सुरक्षित नहीं है</translation>
@@ -1770,6 +1776,7 @@
 <translation id="5765072501007116331">वितरण के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
 <translation id="57689295674415555">वर्चुअल कार्ड नंबर नहीं भरा गया?</translation>
 <translation id="5776313857861697733">प्राथमिकता</translation>
+<translation id="5778389256418062749">Use A Passkey On A Different Device</translation>
 <translation id="5781136890105823427">परफ़ॉर्मेंस जांचना चालू है</translation>
 <translation id="578305955206182703">ऐंबर</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
@@ -1831,6 +1838,7 @@
 <translation id="5963413905009737549">अनुभाग</translation>
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
+<translation id="5968022600320704045">खोज का कोई नतीजा नहीं मिला</translation>
 <translation id="5968793460449681917">वेबसाइट पर किसी के भी आने पर</translation>
 <translation id="5974052231147553524">छठा रोल</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
@@ -1948,6 +1956,7 @@
 <translation id="6300452962057769623">{0,plural, =0{आपका डिवाइस अभी रीस्टार्ट होगा}=1{आपका डिवाइस 1 सेकंड में रीस्टार्ट होगा}one{आपका डिवाइस # सेकंड में रीस्टार्ट होगा}other{आपका डिवाइस # सेकंड में रीस्टार्ट होगा}}</translation>
 <translation id="6302269476990306341">'Chrome में Google Assistant' को रोका जा रहा है</translation>
 <translation id="6305205051461490394"><ph name="URL" /> तक नहीं पहुंचा जा सकता.</translation>
+<translation id="6311165245110979290">वर्चुअल कार्ड उपलब्ध है</translation>
 <translation id="6312113039770857350">वेबपेज उपलब्ध नहीं है</translation>
 <translation id="6316226860534107313">स्कूटर और मोपेड</translation>
 <translation id="63172326633386613">सुलभता सेटिंग मैनेज करें</translation>
@@ -1969,6 +1978,7 @@
 <translation id="6361757823711327522">बी7</translation>
 <translation id="6364095313648930329"><ph name="BEGIN_LINK" />प्रॉक्सी, फ़ायरवॉल, और सुरक्षित डीएनएस कॉन्फ़िगरेशन की जांच करें<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">बाईं ओर ड्युएल स्टेपल</translation>
+<translation id="6374865374745447009">विंडो मैनेजमेंट</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' के लिए एक नतीजा मिला है</translation>
 <translation id="6380497234672085559">ए0</translation>
 <translation id="6383221683286411806">आगे शुल्क लग सकते हैं.</translation>
@@ -2292,6 +2302,7 @@
 <translation id="7305756307268530424">धीरे-धीरे शुरू करें</translation>
 <translation id="7308436126008021607">बैकग्राउंड सिंक</translation>
 <translation id="7310392214323165548">डिवाइस जल्द ही रीस्टार्ट होगा</translation>
+<translation id="7311244614769792472">कोई नतीजा नहीं मिला</translation>
 <translation id="7319430975418800333">ए3</translation>
 <translation id="7320336641823683070">कनेक्शन से जुड़ी सहायता</translation>
 <translation id="7323804146520582233">"<ph name="SECTION" />" सेक्शन को छिपाएं</translation>
@@ -2525,6 +2536,7 @@
 <translation id="7880146494886811634">पता सेव करें</translation>
 <translation id="7882421473871500483">भूरा</translation>
 <translation id="7882995332186050355">कार्गो ट्रक और ट्रेलर</translation>
+<translation id="788679692472636252">Manage Passwords And Passkeys…</translation>
 <translation id="7887683347370398519">अपना कार्ड वेरीफ़िकेशन कोड (सीवीसी) जांचे और फिर से कोशिश करें</translation>
 <translation id="7887885240995164102">पिक्चर में पिक्चर चालू करें</translation>
 <translation id="7888575728750733395">प्रिंट रेंडरिंग इंटेंट</translation>
@@ -2780,7 +2792,6 @@
 <translation id="865032292777205197">मोशन सेंसर</translation>
 <translation id="8663226718884576429">ऑर्डर की खास बातें, <ph name="TOTAL_LABEL" />, ज़्यादा जानकारी</translation>
 <translation id="8666678546361132282">अंग्रेज़ी</translation>
-<translation id="8669306706049782872">विंडो खोलने और उन्हें प्लेस करने के लिए, यह साइट आपकी स्क्रीन की जानकारी का इस्तेमाल करेगी</translation>
 <translation id="867224526087042813">हस्ताक्षर</translation>
 <translation id="8672264262457010862">कारोबार और उद्योग</translation>
 <translation id="8676424191133491403">बिना देरी के</translation>

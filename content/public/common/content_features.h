@@ -92,6 +92,7 @@ CONTENT_EXPORT extern const char kFedCmAutoSigninFieldTrialParamName[];
 CONTENT_EXPORT extern const char kFedCmIdpSignoutFieldTrialParamName[];
 CONTENT_EXPORT extern const char kFedCmIframeSupportFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kFedCmManifestValidation;
+CONTENT_EXPORT extern const base::Feature kFedCmMultipleIdentityProviders;
 CONTENT_EXPORT extern const base::Feature kFirstPartySets;
 CONTENT_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
 CONTENT_EXPORT extern const base::Feature kFontManagerEarlyInit;
@@ -141,6 +142,7 @@ CONTENT_EXPORT extern const base::Feature kLazyImageVisibleLoadTimeMetrics;
 CONTENT_EXPORT extern const base::Feature kLazyInitializeMediaControls;
 CONTENT_EXPORT extern const base::Feature kLegacyWindowsDWriteFontFallback;
 CONTENT_EXPORT extern const base::Feature kLogJsConsoleMessages;
+CONTENT_EXPORT extern const base::Feature kLowerMemoryLimitForNonMainRenderers;
 CONTENT_EXPORT extern const base::Feature kMBIMode;
 enum class MBIMode {
   // In this mode, the AgentSchedulingGroup will use the process-wide legacy IPC
@@ -179,7 +181,7 @@ CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kNotificationTriggers;
 CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
-CONTENT_EXPORT extern const base::Feature kPaymentRequestBasicCard;
+CONTENT_EXPORT extern const base::Feature kWebPaymentAPICSP;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyHeader;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
@@ -233,6 +235,9 @@ CONTENT_EXPORT extern const base::Feature kSiteIsolationForGuests;
 CONTENT_EXPORT extern const base::Feature kDisableProcessReuse;
 CONTENT_EXPORT extern const base::Feature
     kSkipEarlyCommitPendingForCrashedFrame;
+CONTENT_EXPORT extern const base::Feature
+    kServiceWorkerSkipIgnorableFetchHandler;
+CONTENT_EXPORT extern const base::FeatureParam<bool> kSkipEmptyFetchHandler;
 CONTENT_EXPORT extern const base::Feature kUserMediaCaptureOnFocus;
 CONTENT_EXPORT extern const base::Feature kWebLockScreenApi;
 CONTENT_EXPORT extern const base::Feature kWebOTP;
@@ -310,6 +315,9 @@ CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoom;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
+CONTENT_EXPORT extern const base::Feature
+    kBindingManagerUseNotPerceptibleBinding;
+CONTENT_EXPORT extern const base::Feature kReduceGpuPriorityOnBackground;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteAdditions;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteExceptions;

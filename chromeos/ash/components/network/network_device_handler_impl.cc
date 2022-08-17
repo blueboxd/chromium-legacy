@@ -22,17 +22,17 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -414,7 +414,7 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
 void NetworkDeviceHandlerImpl::ApplyWakeOnWifiAllowedToShill() {
   // Get the setting from feature flags.
   wake_on_wifi_allowed_ =
-      base::FeatureList::IsEnabled(chromeos::features::kWakeOnWifiAllowed);
+      base::FeatureList::IsEnabled(features::kWakeOnWifiAllowed);
   ApplyWifiFeatureToShillIfSupported(
       shill::kWakeOnWiFiAllowedProperty, wake_on_wifi_allowed_,
       shill::kWakeOnWiFiSupportedProperty, &wake_on_wifi_supported_);
@@ -576,4 +576,4 @@ const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState() {
       NetworkTypePattern::WiFi());
 }
 
-}  // namespace chromeos
+}  // namespace ash

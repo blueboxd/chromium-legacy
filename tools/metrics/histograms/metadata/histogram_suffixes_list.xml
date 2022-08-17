@@ -886,11 +886,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
-  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
-  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -921,11 +919,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
-  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
-  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -956,11 +952,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
-  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
-  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -3602,13 +3596,13 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="LiveTabCountMetrics" separator=".">
-  <suffix name=""
+  <suffix name="ByLiveTabCount.0Tab"
       label="Recorded with 0 live tabs open in the browser.">
     <obsolete>
-      These suffixes is used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes is used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3616,16 +3610,15 @@ chromium-metrics-reviews@google.com.
   </suffix>
   <suffix name="ByLiveTabCount.1Tab"
       label="Recorded with 1 live tab open in the browser.">
-    <obsolete>
-    </obsolete>
+    <obsolete/>
   </suffix>
   <suffix name="ByLiveTabCount.2Tabs"
       label="Recorded with 2 live tabs open in the browser.">
     <obsolete>
-      These suffixes are used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3634,10 +3627,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="ByLiveTabCount.3To4Tabs"
       label="Recorded with between 3 and 4 live tabs open in the browser.">
     <obsolete>
-      These suffixes are used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3646,10 +3639,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="ByLiveTabCount.5To7Tabs"
       label="Recorded with between 5 and 7 live tabs open in the browser.">
     <obsolete>
-      These suffixes are used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3658,10 +3651,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="ByLiveTabCount.8To19Tabs"
       label="Recorded with between 8 and 19 live tabs open in the browser.">
     <obsolete>
-      These suffixes are used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3670,10 +3663,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="ByLiveTabCount.20To39Tabs"
       label="Recorded with between 20 and 39 live tabs open in the browser.">
     <obsolete>
-      These suffixes are used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3682,10 +3675,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="ByLiveTabCount.40OrMoreTabs"
       label="Recorded with 40 or more live tabs open in the browser.">
     <obsolete>
-      These suffixes are used to record metrics with live tab count
-      information. As part of crbug.com/1317494, these suffixes are replaced
-      by ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.*
-      include samples from prerendered pages and 2.
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
       PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
       record duration from activation start to first contentful paint for
       prerendered pages.
@@ -3702,43 +3695,43 @@ chromium-metrics-reviews@google.com.
   <suffix name="ByLiveTabCount2.0Tabs"
       label="Recorded with 0 live tabs open in the browser, including
              prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.1Tab"
       label="Recorded with 1 live tab open in the browser, including
              prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.2Tabs"
       label="Recorded with 2 live tabs open in the browser, including
              prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.3To4Tabs"
       label="Recorded with between 3 and 4 live tabs open in the browser,
              including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.5To7Tabs"
       label="Recorded with between 5 and 7 live tabs open in the browser,
              including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.8To19Tabs"
       label="Recorded with between 8 and 19 live tabs open in the browser,
              including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.20To39Tabs"
       label="Recorded with between 20 and 39 live tabs open in the browser,
              including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <suffix name="ByLiveTabCount2.40OrMoreTabs"
-      label="Recorded with 40 or more live tabs open in the browser, including
-             prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version: duration
-             from activation start to first contentful paint"/>
+      label="Recorded with 40 or more live tabs open in the browser,
+             including prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
@@ -6509,8 +6502,28 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="PageLoadMetricsClientsLoadingPredictor" separator="."
     ordering="prefix">
+  <obsolete>
+    These suffixes are used to record metrics if LoadingPredictor enabled. As
+    part of crbug.com/1317494, this suffix is replaced by
+    Clients.LoadingPredictor2. The difference are 1.
+    *.Clients.LoadingPredictor2.* include samples from prerendered pages and 2.
+    the value of the UMAs are modified as activation origined for prerendered
+    pages.
+  </obsolete>
   <suffix base="true" name="Clients.LoadingPredictor"
       label="PageLoadMetrics with enabled LoadingPredictor"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsLoadingPredictor2"
+    separator="." ordering="prefix">
+  <suffix base="true" name="Clients.LoadingPredictor2"
+      label="PageLoadMetrics with enabled LoadingPredictor. If the page is
+             prerendered, the recorded value is modified as activation
+             origined."/>
   <affected-histogram
       name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
   <affected-histogram
@@ -6526,6 +6539,10 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.LoadingPredictor.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.LoadingPredictor.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.LoadingPredictor2.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.LoadingPredictor2.PaintTiming.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsMedia" separator="."
@@ -6699,9 +6716,31 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="PageLoadMetricsEarlyHints" separator="."
     ordering="prefix">
+  <obsolete>
+    Removed in favor of Clients.EarlyHints2.Preload.
+  </obsolete>
   <suffix name="Clients.EarlyHints.Preload"
       label="PageLoadMetrics from a page that received preload Link headers
              via Early Hints responses. Recorded only for main frames."/>
+  <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsEarlyHints2" separator="."
+    ordering="prefix">
+  <suffix name="Clients.EarlyHints2.Preload"
+      label="PageLoadMetrics from a page that received preload Link headers
+             via Early Hints responses. Recorded only for main frames.
+             Includes samples from prerendered pages. record duration from
+             activation start to first contentful paint for prerendered
+             pages.
+             PageLoad.Clients.EarlyHints.Preload.PaintTiming.NavigationToFirstContentfulPaint
+             and
+             PageLoad.Clients.EarlyHints.Preload.PaintTiming.NavigationToLargestContentfulPaint2
+             record activation start origined values for prerendered pages."/>
   <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
@@ -7057,6 +7096,7 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PasswordProtection.InterstitialAction"/>
   <affected-histogram name="PasswordProtection.ModalWarningDialogAction"/>
   <affected-histogram name="PasswordProtection.PageInfoAction"/>
+  <affected-histogram name="PasswordProtection.PasswordAlertModeOutcome"/>
   <affected-histogram name="PasswordProtection.RequestOutcome"/>
   <affected-histogram name="PasswordProtection.Verdict"/>
 </histogram_suffixes>
@@ -7182,31 +7222,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PasswordManager.FillingAssistance"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PaymentRequestCompletedInstrument" separator=".">
-  <suffix name="BasicCard"
-      label="Request is completed using basic card method."/>
-  <suffix name="Google"
-      label="Request is completed using Google payment instrument."/>
-  <suffix name="Other"
-      label="Request is completed using other payment instruments."/>
-  <suffix name="PlayBilling"
-      label="Request is completed using Google Play Billing instrument."/>
-  <suffix name="SecurePaymentConfirmation"
-      label="Request is completed using secure payment confirmation
-             instrument."/>
-  <affected-histogram name="PaymentRequest.TimeToCheckout.Completed.Shown"/>
-  <affected-histogram
-      name="PaymentRequest.TimeToCheckout.Completed.SkippedShow"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="PaymentRequestPaymentSheetShowStatus" separator=".">
-  <suffix name="BeforeShow"
-      label="Request is terminated before request.show()."/>
-  <suffix name="Shown" label="Payment sheet is shown."/>
-  <suffix name="SkippedShow" label="Payment sheet is skipped."/>
-  <affected-histogram name="PaymentRequest.TimeToCheckout.UserAborted"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PerformanceHintsSource" separator=".">
   <suffix name="FastHostHint" label="From the fast host bloom filter."/>
   <suffix name="LinkHint" label="From the link hints of the current page."/>
@@ -7249,7 +7264,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="StorageAccess" label="Storage Access API permission"/>
   <suffix name="VideoCapture" label="Camera permission"/>
   <suffix name="VR" label="VR permission"/>
-  <suffix name="WindowPlacement" label="Window Placement permission"/>
+  <suffix name="WindowPlacement" label="Window Management permission"/>
   <affected-histogram name="Permissions.Engagement.Accepted"/>
   <affected-histogram name="Permissions.Engagement.AcceptedOnce"/>
   <affected-histogram name="Permissions.Engagement.Denied"/>
@@ -7275,7 +7290,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="StorageAccess" label="Storage Access API permission actions"/>
   <suffix name="VideoCapture" label="Camera permission actions"/>
   <suffix name="VR" label="VR permission actions"/>
-  <suffix name="WindowPlacement" label="Window Placement permission actions"/>
+  <suffix name="WindowPlacement" label="Window Management permission actions"/>
   <affected-histogram name="ContentSettings.PermissionActions"/>
   <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
   <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>

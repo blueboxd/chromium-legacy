@@ -2,7 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CSS_CLASS_NAME_SELECT, Match, PartialMatch, Replacement, Section, Timer} from '//ios/web/find_in_page/resources/find_in_page.js';
+import {
+  Match,
+  PartialMatch,
+  Replacement,
+  Section,
+  Timer
+} from '//ios/web/find_in_page/resources/find_in_page.js';
+
+import {
+  CSS_CLASS_NAME,
+  CSS_CLASS_NAME_SELECT,
+  CSS_STYLE_ID,
+  IGNORE_NODE_NAMES,
+  MAX_VISIBLE_ELEMENTS,
+  TIMEOUT
+} from '//ios/web/find_in_page/resources/find_in_page_constants.js';
+
+import {
+  createRegex,
+  escapeHTML
+} from '//ios/web/find_in_page/resources/find_in_page_utils.js';
 
 /**
  * Based on code from the Google iOS app.
@@ -23,6 +43,8 @@ __gCrWeb.findInPage = {};
 // minification.
 __gCrWeb['findInPage'] = __gCrWeb.findInPage;
 
+// Mark: Private properties
+
 /**
  * A string made by concatenating textContent.toLowerCase() of all TEXT nodes
  * within current web page.
@@ -40,33 +62,6 @@ let sections_ = [];
  * The index of the Section where the last PartialMatch is found.
  */
 let sectionsIndex_ = 0;
-
-/**
- * Do binary search in |sections_|[sectionsIndex_, ...) to find the first
- * Section S which has S.end > |index|.
- * @param {number} index The search target. This should be a valid index of
- *     |allText_|.
- * @return {number} The index of the result in |sections_|.
- */
-function findFirstSectionEndsAfter_(index) {
-  let left = sectionsIndex_;
-  let right = sections_.length;
-  while (left < right) {
-    let mid = Math.floor((left + right) / 2);
-    if (sections_[mid].end <= index) {
-      left = mid + 1;
-    } else {
-      right = mid;
-    }
-  }
-  return left;
-}
-
-/**
- * The list of all the matches in current page.
- * @type {Array<Match>}
- */
-__gCrWeb.findInPage.matches = [];
 
 /**
  * Index of the currently selected match relative to all visible matches
@@ -121,6 +116,55 @@ let visibleMatchCount_ = 0;
  */
 let visibleMatchesCountIndexIterator_ = 0;
 
+/**
+ * The style DOM element that we add.
+ * @type {Element}
+ */
+let styleElement_ = null;
+
+/**
+ * A search is in progress.
+ * @type {boolean}
+ */
+let searchInProgress_ = false;
+
+/**
+
+ * Whether or not search state variables are in a clean empty state.
+ * @type {boolean}
+ */
+let searchStateIsClean_ = true;
+
+// Mark: Public properties accessed from native code.
+
+/**
+ * The list of all the matches in current page.
+ * @type {Array<Match>}
+ */
+__gCrWeb.findInPage.matches = [];
+
+// Mark: Private helper functions
+
+/**
+ * Do binary search in |sections_|[sectionsIndex_, ...) to find the first
+ * Section S which has S.end > |index|.
+ * @param {number} index The search target. This should be a valid index of
+ *     |allText_|.
+ * @return {number} The index of the result in |sections_|.
+ */
+function findFirstSectionEndsAfter_(index) {
+  let left = sectionsIndex_;
+  let right = sections_.length;
+  while (left < right) {
+    let mid = Math.floor((left + right) / 2);
+    if (sections_[mid].end <= index) {
+      left = mid + 1;
+    } else {
+      right = mid;
+    }
+  }
+  return left;
+}
 
 /**
  * Process all PartialMatches inside current Section. For current Section's
@@ -152,7 +196,7 @@ function processPartialMatchesInCurrentSection() {
     // Create the <chrome_find> Node for matching text.
     let newNode = oldNode.ownerDocument.createElement('chrome_find');
     newNode.setAttribute('class', CSS_CLASS_NAME);
-    newNode.innerHTML = escapeHTML_(oldNode.textContent.substring(
+    newNode.innerHTML = escapeHTML(oldNode.textContent.substring(
         partialMatch.begin - section.begin, partialMatch.end - section.begin));
     newNodes.push(newNode);
     previousEnd = partialMatch.end;
@@ -174,64 +218,6 @@ function processPartialMatchesInCurrentSection() {
 }
 
 /**
- * The style DOM element that we add.
- * @type {Element}
- */
-let styleElement_ = null;
-
-/**
- * Maximum number of visible elements to count
- * @type {number}
- */
-const MAX_VISIBLE_ELEMENTS = 100;
-
-/**
- * A search is in progress.
- * @type {boolean}
- */
-let searchInProgress_ = false;
-
-/**
-
- * Whether or not search state variables are in a clean empty state.
- * @type {boolean}
- */
-let searchStateIsClean_ = true;
-
-/**
- * Node names that are not going to be processed.
- * @type {Object}
- */
-const IGNORE_NODE_NAMES = new Set([
-  'SCRIPT', 'STYLE', 'EMBED', 'OBJECT', 'SELECT', 'TEXTAREA', 'IFRAME',
-  'NOSCRIPT'
-]);
-
-/**
- * Class name of CSS element that highlights matches with yellow.
- * @type {string}
- */
-const CSS_CLASS_NAME = 'find_in_page';
-
-/**
- * ID of CSS style.
- * @type {string}
- */
-const CSS_STYLE_ID = '__gCrWeb.findInPageStyle';
-
-/**
- * Result passed back to app to indicate pumpSearch has reached timeout.
- * @type {number}
- */
-const TIMEOUT = -1;
-
-/**
- * Regex to escape regex special characters in a string.
- * @type {RegExp}
- */
-const REGEX_ESCAPER = /([.?*+^$[\]\\(){}|-])/g;
-
-/**
  * @return {Match} The currently selected Match. Returns null if no
  * currently selected match.
  */
@@ -243,14 +229,122 @@ function getCurrentSelectedMatch_() {
 };
 
 /**
- * Creates the regex needed to find the text.
- * @param {string} findText Phrase to look for.
- * @return {RegExp} regex needed to find the text.
+ * Counts the total number of visible matches.
+ * @param {Timer} used to pause the counting if overall search
+ * has taken too long.
+ * @return {Number} of visible matches.
  */
-function getRegex_(findText) {
-  let regexString = '(' + escapeRegex_(findText) + ')';
-  return new RegExp(regexString, 'ig');
+function countVisibleMatches_(timer) {
+  let max = __gCrWeb.findInPage.matches.length;
+  let maxVisible = MAX_VISIBLE_ELEMENTS;
+  var currentlyVisibleMatchCount = 0;
+  for (let index = visibleMatchesCountIndexIterator_; index < max; index++) {
+    let match = __gCrWeb.findInPage.matches[index];
+    if (timer && timer.overtime()) {
+      visibleMatchesCountIndexIterator_ = index;
+      return TIMEOUT;
+    }
+
+    // Stop after |maxVisible| elements.
+    if (currentlyVisibleMatchCount > maxVisible) {
+      continue;
+    }
+
+    if (match.visible()) {
+      currentlyVisibleMatchCount++;
+    }
+  }
+  visibleMatchCount_ = currentlyVisibleMatchCount;
+  visibleMatchesCountIndexIterator_ = 0;
+  return currentlyVisibleMatchCount;
 };
+
+/**
+ * Removes highlights of previous search and reset all global vars.
+ * @return {undefined}
+ */
+function cleanUp_() {
+  for (let i = 0; i < replacements_.length; ++i) {
+    replacements_[i].undoSwap();
+  }
+
+  allText_ = '';
+  sections_ = [];
+  sectionsIndex_ = 0;
+
+  __gCrWeb.findInPage.matches = [];
+  selectedMatchIndex_ = -1;
+  selectedVisibleMatchIndex_ = -1;
+  matchId_ = 0;
+  partialMatches_ = [];
+
+  replacements_ = [];
+  replacementsIndex_ = 0;
+
+  searchStateIsClean_ = true;
+};
+
+/**
+ * Scrolls to the position of the currently selected match.
+ */
+function scrollToCurrentlySelectedMatch_() {
+  let match = getCurrentSelectedMatch_();
+  if (!match) {
+    return;
+  }
+
+  match.nodes[0].scrollIntoView({block: 'center', inline: 'center'});
+};
+
+/**
+ * Enable the __gCrWeb.findInPage module.
+ * Mainly just adds the style for the classes.
+ */
+function enable_() {
+  if (styleElement_) {
+    // Already enabled.
+    return;
+  }
+  addDocumentStyle_(document);
+};
+
+/**
+ * Adds the appropriate style element to the page.
+ */
+function addDocumentStyle_(thisDocument) {
+  let styleContent = [];
+  function addCSSRule(name, style) {
+    styleContent.push(name, '{', style, '}');
+  };
+  addCSSRule(
+      '.' + CSS_CLASS_NAME,
+      'background-color:#ffff00 !important;' +
+          'padding:0px;margin:0px;' +
+          'overflow:visible !important;');
+  addCSSRule(
+      '.' + CSS_CLASS_NAME_SELECT,
+      'background-color:#ff9632 !important;' +
+          'padding:0px;margin:0px;' +
+          'overflow:visible !important;');
+  styleElement_ = thisDocument.createElement('style');
+  styleElement_.id = CSS_STYLE_ID;
+  styleElement_.setAttribute('type', 'text/css');
+  styleElement_.appendChild(thisDocument.createTextNode(styleContent.join('')));
+  thisDocument.body.appendChild(styleElement_);
+};
+
+/**
+ * Removes the style element from the page.
+ */
+function removeStyle_() {
+  if (styleElement_) {
+    let style = document.getElementById(CSS_STYLE_ID);
+    document.body.removeChild(style);
+    styleElement_ = null;
+  }
+};
+
+// Mark: Public APIs called from native code.
 
 /**
  * Looks for a phrase in the DOM.
@@ -283,7 +377,7 @@ __gCrWeb.findInPage.findString = function(string, timeout) {
   // Index tracking variables so search can be broken up into multiple calls.
   visibleMatchesCountIndexIterator_ = 0;
 
-  __gCrWeb.findInPage.regex = getRegex_(string);
+  __gCrWeb.findInPage.regex = createRegex(string);
 
   searchInProgress_ = true;
 
@@ -410,62 +504,6 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
 };
 
 /**
- * Counts the total number of visible matches.
- * @param {Timer} used to pause the counting if overall search
- * has taken too long.
- * @return {Number} of visible matches.
- */
-function countVisibleMatches_(timer) {
-  let max = __gCrWeb.findInPage.matches.length;
-  let maxVisible = MAX_VISIBLE_ELEMENTS;
-  var currentlyVisibleMatchCount = 0;
-  for (let index = visibleMatchesCountIndexIterator_; index < max; index++) {
-    let match = __gCrWeb.findInPage.matches[index];
-    if (timer && timer.overtime()) {
-      visibleMatchesCountIndexIterator_ = index;
-      return TIMEOUT;
-    }
-
-    // Stop after |maxVisible| elements.
-    if (currentlyVisibleMatchCount > maxVisible) {
-      continue;
-    }
-
-    if (match.visible()) {
-      currentlyVisibleMatchCount++;
-    }
-  }
-  visibleMatchCount_ = currentlyVisibleMatchCount;
-  visibleMatchesCountIndexIterator_ = 0;
-  return currentlyVisibleMatchCount;
-};
-
-/**
- * Removes highlights of previous search and reset all global vars.
- * @return {undefined}
- */
-function cleanUp_() {
-  for (let i = 0; i < replacements_.length; ++i) {
-    replacements_[i].undoSwap();
-  }
-
-  allText_ = '';
-  sections_ = [];
-  sectionsIndex_ = 0;
-
-  __gCrWeb.findInPage.matches = [];
-  selectedMatchIndex_ = -1;
-  selectedVisibleMatchIndex_ = -1;
-  matchId_ = 0;
-  partialMatches_ = [];
-
-  replacements_ = [];
-  replacementsIndex_ = 0;
-
-  searchStateIsClean_ = true;
-};
-
-/**
  * Selects the |index|-th visible matchand scrolls to that match. The total
  * visible matches count is also recalculated.
  * If there is no longer an |index|-th visible match, then the last visible
@@ -560,66 +598,6 @@ __gCrWeb.findInPage.selectAndScrollToVisibleMatch = function(index) {
 };
 
 /**
- * Scrolls to the position of the currently selected match.
- */
-function scrollToCurrentlySelectedMatch_() {
-  let match = getCurrentSelectedMatch_();
-  if (!match) {
-    return;
-  }
-
-  match.nodes[0].scrollIntoView({block: 'center', inline: 'center'});
-};
-
-/**
- * Enable the __gCrWeb.findInPage module.
- * Mainly just adds the style for the classes.
- */
-function enable_() {
-  if (styleElement_) {
-    // Already enabled.
-    return;
-  }
-  addDocumentStyle_(document);
-};
-
-/**
- * Adds the appropriate style element to the page.
- */
-function addDocumentStyle_(thisDocument) {
-  let styleContent = [];
-  function addCSSRule(name, style) {
-    styleContent.push(name, '{', style, '}');
-  };
-  addCSSRule(
-      '.' + CSS_CLASS_NAME,
-      'background-color:#ffff00 !important;' +
-          'padding:0px;margin:0px;' +
-          'overflow:visible !important;');
-  addCSSRule(
-      '.' + CSS_CLASS_NAME_SELECT,
-      'background-color:#ff9632 !important;' +
-          'padding:0px;margin:0px;' +
-          'overflow:visible !important;');
-  styleElement_ = thisDocument.createElement('style');
-  styleElement_.id = CSS_STYLE_ID;
-  styleElement_.setAttribute('type', 'text/css');
-  styleElement_.appendChild(thisDocument.createTextNode(styleContent.join('')));
-  thisDocument.body.appendChild(styleElement_);
-};
-
-/**
- * Removes the style element from the page.
- */
-function removeStyle_() {
-  if (styleElement_) {
-    let style = document.getElementById(CSS_STYLE_ID);
-    document.body.removeChild(style);
-    styleElement_ = null;
-  }
-};
-
-/**
  * Disables the __gCrWeb.findInPage module.
  * Removes any matches and the style and class names.
  */
@@ -629,36 +607,4 @@ __gCrWeb.findInPage.stop = function() {
     cleanUp_();
   }
   __gCrWeb.findInPage.hasInitialized = false;
-};
-
-/**
- * Helper function to find the absolute position of an element on the page.
- * @param {Element} elem Element to check.
- * @return {Array<number>} [x, y] positions.
- */
-function findAbsolutePosition_(elem) {
-  let boundingRect = elem.getBoundingClientRect();
-  return [
-    boundingRect.left + window.pageXOffset,
-    boundingRect.top + window.pageYOffset
-  ];
-};
-
-/**
- * @param {string} text Text to escape.
- * @return {string} escaped text.
- */
-function escapeHTML_(text) {
-  let unusedDiv = document.createElement('div');
-  unusedDiv.innerText = text;
-  return unusedDiv.innerHTML;
-};
-
-/**
- * Escapes regexp special characters.
- * @param {string} text Text to escape.
- * @return {string} escaped text.
- */
-function escapeRegex_(text) {
-  return text.replace(REGEX_ESCAPER, '\\$1');
 };

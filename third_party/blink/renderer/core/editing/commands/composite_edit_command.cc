@@ -831,6 +831,14 @@ void CompositeEditCommand::RebalanceWhitespace() {
     RebalanceWhitespaceAt(selection.End());
 }
 
+static bool IsInsignificantText(const LayoutText& layout_text) {
+  if (layout_text.HasInlineFragments())
+    return false;
+  // Spaces causing line break don't have `NGFragmentItem` but it has
+  // non-zero length. See http://crbug.com/1322746
+  return !layout_text.ResolvedTextLength();
+}
+
 void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
                                                    unsigned start,
                                                    unsigned end) {
@@ -843,7 +851,7 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
   if (!text_layout_object)
     return;
 
-  if (!text_layout_object->HasInlineFragments()) {
+  if (IsInsignificantText(*text_layout_object)) {
     // whole text node is empty
     // Removing a Text node won't dispatch synchronous events.
     RemoveNode(text_node, ASSERT_NO_EDITING_ABORT);
@@ -1067,6 +1075,10 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   // not been invalidated by an earlier call to this function.  The caller,
   // applyBlockStyle, should do this.
   VisiblePosition visible_pos = CreateVisiblePosition(pos);
+  if (visible_pos.IsNull()) {
+    editing_state->Abort();
+    return nullptr;
+  }
   VisiblePosition visible_paragraph_start = StartOfParagraph(visible_pos);
   VisiblePosition visible_paragraph_end = EndOfParagraph(visible_pos);
   VisiblePosition next = NextPositionOf(visible_paragraph_end);
@@ -1138,6 +1150,10 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   }
 
   visible_pos = CreateVisiblePosition(pos);
+  if (visible_pos.IsNull()) {
+    editing_state->Abort();
+    return nullptr;
+  }
   visible_paragraph_start = StartOfParagraph(visible_pos);
   visible_paragraph_end = EndOfParagraph(visible_pos);
   DCHECK_LE(visible_paragraph_start.DeepEquivalent(),

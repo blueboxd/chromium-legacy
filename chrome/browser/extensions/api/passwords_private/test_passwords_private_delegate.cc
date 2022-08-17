@@ -151,6 +151,20 @@ void TestPasswordsPrivateDelegate::RequestPlaintextPassword(
   std::move(callback).Run(plaintext_password_);
 }
 
+void TestPasswordsPrivateDelegate::RequestCredentialDetails(
+    int id,
+    RequestCredentialDetailsCallback callback,
+    content::WebContents* web_contents) {
+  api::passwords_private::PasswordUiEntry entry = CreateEntry(42);
+  if (plaintext_password_.has_value()) {
+    entry.password = std::make_unique<std::string>(
+        base::UTF16ToUTF8(plaintext_password_.value()));
+    std::move(callback).Run(std::move(entry));
+  } else {
+    std::move(callback).Run(std::move(absl::nullopt));
+  }
+}
+
 void TestPasswordsPrivateDelegate::MovePasswordsToAccount(
     const std::vector<int>& ids,
     content::WebContents* web_contents) {
@@ -158,10 +172,16 @@ void TestPasswordsPrivateDelegate::MovePasswordsToAccount(
 }
 
 void TestPasswordsPrivateDelegate::ImportPasswords(
+    api::passwords_private::PasswordStoreSet to_store,
+    ImportResultsCallback results_callback,
     content::WebContents* web_contents) {
-  // The testing of password importing itself should be handled via
-  // |PasswordManagerPorter|.
   import_passwords_triggered_ = true;
+
+  import_results_.status = api::passwords_private::ImportResultsStatus::
+      IMPORT_RESULTS_STATUS_SUCCESS;
+  import_results_.file_name = "test.csv";
+  import_results_.number_imported = 42;
+  std::move(results_callback).Run(import_results_);
 }
 
 void TestPasswordsPrivateDelegate::ExportPasswords(

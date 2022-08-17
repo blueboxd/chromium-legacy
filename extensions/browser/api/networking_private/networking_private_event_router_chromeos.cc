@@ -22,9 +22,9 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ::ash::DeviceState;
+using ::ash::NetworkHandler;
 using ::ash::NetworkState;
-using chromeos::NetworkHandler;
-using chromeos::NetworkStateHandler;
+using ::ash::NetworkStateHandler;
 
 namespace extensions {
 
@@ -55,7 +55,7 @@ api::networking_private::CaptivePortalStatus GetCaptivePortalStatus(
 class NetworkingPrivateEventRouterImpl
     : public NetworkingPrivateEventRouter,
       public ash::NetworkStateHandlerObserver,
-      public chromeos::NetworkCertificateHandler::Observer {
+      public ash::NetworkCertificateHandler::Observer {
  public:
   explicit NetworkingPrivateEventRouterImpl(content::BrowserContext* context);
 

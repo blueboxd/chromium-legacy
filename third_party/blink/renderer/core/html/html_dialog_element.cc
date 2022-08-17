@@ -153,8 +153,7 @@ void HTMLDialogElement::close(const String& return_value) {
 
   // We should call focus() last since it will fire a focus event which could
   // modify this element.
-  if (RuntimeEnabledFeatures::DialogFocusNewSpecBehaviorEnabled() &&
-      previously_focused_element_) {
+  if (previously_focused_element_) {
     FocusOptions* focus_options = FocusOptions::Create();
     focus_options->setPreventScroll(true);
     Element* previously_focused_element = previously_focused_element_;
@@ -186,7 +185,8 @@ void HTMLDialogElement::show() {
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
   // Showing a <dialog> should hide all open popups, immediately.
-  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
+          GetDocument().GetExecutionContext())) {
     Element::HideAllPopupsUntil(nullptr, GetDocument(),
                                 HidePopupFocusBehavior::kNone,
                                 HidePopupForcingLevel::kHideImmediately,
@@ -247,7 +247,8 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   }
 
   // Showing a <dialog> should hide all open popups, immediately.
-  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
+          document.GetExecutionContext())) {
     Element::HideAllPopupsUntil(nullptr, document,
                                 HidePopupFocusBehavior::kNone,
                                 HidePopupForcingLevel::kHideImmediately,
@@ -258,12 +259,12 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
   SetIsModal(true);
-  document.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   // Throw away the AX cache first, so the subsequent steps don't have a chance
   // of queuing up AX events on objects that would be invalidated when the cache
   // is thrown away.
   InertSubtreesChanged(document, old_modal_dialog);
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   if (RuntimeEnabledFeatures::CloseWatcherEnabled()) {
     if (LocalDOMWindow* window = GetDocument().domWindow()) {

@@ -3186,6 +3186,9 @@
   <message name="IDS_NETWORK_UI_TAB_NETWORK_SELECT" desc="Network Select tab name">
     Network Select
   </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_METRICS" desc="Network metrics tab name">
+    Network Metrics
+  </message>
   <message name="IDS_NETWORK_UI_TAB_NETWORK_HOTSPOT" desc="Hotspot tab name">
     Hotspot
   </message>
@@ -3311,6 +3314,24 @@
   </message>
   <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_UNKNOWN" desc="Text displayed when the Shill debugging mode is unknown.">
     Unknown
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_METRICS_LABEL" desc="Title for the section for displaying WiFi performance metrics.">
+    WiFi Performance Metrics
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_METRICS_RENDER_BUTTON" desc="Text displayed on the button for rendering graph.">
+    Render
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_METRICS_START_BUTTON" desc="Text displayed on the button for starting plots.">
+    Start
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_METRICS_STOP_BUTTON" desc="Text displayed on the button for stopping plots.">
+    Stop
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_METRICS_INCREASE_RATE_BUTTON" desc="Text displayed on the button for increasing the sample rate of plots.">
+    Increase rate
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_METRICS_DECREASE_RATE_BUTTON" desc="Text displayed on the button for decreasing the sample rate of plots.">
+    Decrease rate
   </message>
   <message name="IDS_NETWORK_UI_TETHERING_CAPABILITIES_LABEL" desc="Title for the section for displaying and refreshing tethering capabilities.">
     Tethering Capabilities:
@@ -3677,6 +3698,18 @@
   </message>
   <message name="IDS_ARC_LOW_DISK_SPACE_ERROR" desc="Android sign-in failed due to low disk space">
     Disk space is critically low. Please free up disk space.
+  </message>
+  <message name="IDS_ARC_LOW_DISK_SPACE_PRE_STOP_NOTIFICATION_TITLE" desc="Title of the notification warning Android users that they are critically low on disk space">
+    Device disk space critically low
+  </message>
+  <message name="IDS_ARC_LOW_DISK_SPACE_PRE_STOP_NOTIFICATION_MESSAGE" desc="Message in the notification warning Android users that they are critically low on disk space">
+    Free up space to avoid losing access to Android.
+  </message>
+  <message name="IDS_ARC_LOW_DISK_SPACE_POST_STOP_NOTIFICATION_TITLE" desc="Title of the notification shown when Android is stopped due to low disk space">
+    Android apps were stopped
+  </message>
+  <message name="IDS_ARC_LOW_DISK_SPACE_POST_STOP_NOTIFICATION_MESSAGE" desc="Message in the notification shown when Android is stopped due to low disk space">
+    Free up disk space to launch Android apps.
   </message>
   <message name="IDS_ARC_SIGN_IN_UNKNOWN_ERROR" desc="Android sign-in error because of unknown error">
     Something went wrong. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.

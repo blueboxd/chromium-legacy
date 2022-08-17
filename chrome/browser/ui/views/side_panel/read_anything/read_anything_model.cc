@@ -8,15 +8,26 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_constants.h"
+#include "chrome/grit/component_extension_resources.h"
+#include "components/vector_icons/vector_icons.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/image_model.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
+
+using read_anything::mojom::ReadAnythingTheme;
 
 ReadAnythingModel::ReadAnythingModel()
     : font_name_(kReadAnythingDefaultFontName),
       font_scale_(kReadAnythingDefaultFontScale),
-      font_model_(std::make_unique<ReadAnythingFontModel>()) {}
+      font_model_(std::make_unique<ReadAnythingFontModel>()),
+      colors_model_(std::make_unique<ReadAnythingColorsModel>()) {}
 
 ReadAnythingModel::~ReadAnythingModel() = default;
 
@@ -29,13 +40,14 @@ void ReadAnythingModel::Init(std::string& font_name, double font_scale) {
   }
 
   font_scale_ = font_scale;
+  foreground_color_ = SkColors::kBlack.toSkColor();
+  background_color_ = SkColors::kWhite.toSkColor();
 }
 
 void ReadAnythingModel::AddObserver(Observer* obs) {
   observers_.AddObserver(obs);
-  NotifyFontNameUpdated();
   NotifyAXTreeDistilled();
-  NotifyFontSizeChanged();
+  NotifyThemeChanged();
 }
 
 void ReadAnythingModel::RemoveObserver(Observer* obs) {
@@ -48,7 +60,18 @@ void ReadAnythingModel::SetSelectedFontByIndex(size_t new_index) {
 
   // Update state and notify listeners
   font_name_ = font_model_->GetFontNameAt(new_index);
-  NotifyFontNameUpdated();
+  NotifyThemeChanged();
+}
+
+void ReadAnythingModel::SetSelectedColorsByIndex(size_t new_index) {
+  // Check that the index is valid.
+  DCHECK(colors_model_->IsValidColorsIndex(new_index));
+
+  auto& new_colors = colors_model_->GetColorsAt(new_index);
+  foreground_color_ = new_colors.foreground;
+  background_color_ = new_colors.background;
+
+  NotifyThemeChanged();
 }
 
 void ReadAnythingModel::SetDistilledAXTree(
@@ -66,7 +89,7 @@ void ReadAnythingModel::DecreaseTextSize() {
   if (font_scale_ < kReadAnythingMinimumFontScale)
     font_scale_ = kReadAnythingMinimumFontScale;
 
-  NotifyFontSizeChanged();
+  NotifyThemeChanged();
 }
 
 void ReadAnythingModel::IncreaseTextSize() {
@@ -74,13 +97,7 @@ void ReadAnythingModel::IncreaseTextSize() {
   if (font_scale_ > kReadAnythingMaximumFontScale)
     font_scale_ = kReadAnythingMaximumFontScale;
 
-  NotifyFontSizeChanged();
-}
-
-void ReadAnythingModel::NotifyFontNameUpdated() {
-  for (Observer& obs : observers_) {
-    obs.OnFontNameUpdated(font_name_);
-  }
+  NotifyThemeChanged();
 }
 
 void ReadAnythingModel::NotifyAXTreeDistilled() {
@@ -89,13 +106,20 @@ void ReadAnythingModel::NotifyAXTreeDistilled() {
   }
 }
 
-void ReadAnythingModel::NotifyFontSizeChanged() {
+void ReadAnythingModel::NotifyThemeChanged() {
   for (Observer& obs : observers_) {
-    obs.OnFontSizeChanged(kReadAnythingDefaultFontSize * font_scale_);
+    obs.OnReadAnythingThemeChanged(ReadAnythingTheme::New(
+        font_name_, kReadAnythingDefaultFontSize * font_scale_,
+        foreground_color_, background_color_));
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ReadAnythingFontModel
+///////////////////////////////////////////////////////////////////////////////
+
 ReadAnythingFontModel::ReadAnythingFontModel() {
+  // TODO(1266555): i18n.
   font_choices_.emplace_back(u"Standard font");
   font_choices_.emplace_back(u"Sans-serif");
   font_choices_.emplace_back(u"Serif");
@@ -131,8 +155,7 @@ size_t ReadAnythingFontModel::GetItemCount() const {
 }
 
 std::u16string ReadAnythingFontModel::GetItemAt(size_t index) const {
-  // TODO(1266555): Placeholder text, replace when finalized.
-  return u"Default font";
+  return GetDropDownTextAt(index);
 }
 
 std::u16string ReadAnythingFontModel::GetDropDownTextAt(size_t index) const {
@@ -159,3 +182,77 @@ std::string ReadAnythingFontModel::GetLabelFontListAt(size_t index) {
 }
 
 ReadAnythingFontModel::~ReadAnythingFontModel() = default;
+
+///////////////////////////////////////////////////////////////////////////////
+// ReadAnythingColorsModel
+///////////////////////////////////////////////////////////////////////////////
+
+ReadAnythingColorsModel::ReadAnythingColorsModel() {
+  // Define the possible sets of colors available to the user.
+  // TODO (crbug.com/1266555): Define default colors from system theme.
+  ColorInfo kDefaultColors = {u"Default", IDS_READ_ANYTHING_DEFAULT_PNG,
+                              SkColors::kBlack.toSkColor(),
+                              SkColors::kWhite.toSkColor()};
+
+  ColorInfo kLightColors = {u"Light", IDS_READ_ANYTHING_LIGHT_PNG,
+                            gfx::kGoogleGrey900, gfx::kGoogleGrey050};
+
+  ColorInfo kDarkColors = {u"Dark", IDS_READ_ANYTHING_DARK_PNG,
+                           gfx::kGoogleGrey200, kReadAnythingDarkBackground};
+
+  ColorInfo kYellowColors = {u"Yellow", IDS_READ_ANYTHING_YELLOW_PNG,
+                             kReadAnythingYellowForeground,
+                             gfx::kGoogleYellow200};
+
+  colors_choices_.emplace_back(kDefaultColors);
+  colors_choices_.emplace_back(kLightColors);
+  colors_choices_.emplace_back(kDarkColors);
+  colors_choices_.emplace_back(kYellowColors);
+  colors_choices_.shrink_to_fit();
+}
+bool ReadAnythingColorsModel::IsValidColorsIndex(size_t index) {
+  return index < GetItemCount();
+}
+
+ReadAnythingColorsModel::ColorInfo& ReadAnythingColorsModel::GetColorsAt(
+    size_t index) {
+  return colors_choices_[index];
+}
+
+absl::optional<size_t> ReadAnythingColorsModel::GetDefaultIndex() const {
+  return default_index_;
+}
+
+size_t ReadAnythingColorsModel::GetItemCount() const {
+  return colors_choices_.size();
+}
+
+ui::ImageModel ReadAnythingColorsModel::GetIconAt(size_t index) const {
+  // The dropdown should always show the color palette icon.
+  return ui::ImageModel::FromImageSkia(
+      gfx::CreateVectorIcon(vector_icons::kPaletteIcon, kColorsIconSize,
+                            colors_choices_[index].foreground));
+}
+
+ui::ImageModel ReadAnythingColorsModel::GetDropDownIconAt(size_t index) const {
+  const gfx::ImageSkia* icon_skia_asset =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          colors_choices_[index].icon_asset);
+  DCHECK(icon_skia_asset);
+
+  return ui::ImageModel::FromImageSkia(
+      gfx::ImageSkiaOperations::CreateResizedImage(
+          *icon_skia_asset, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+          gfx::Size(kColorsIconSize, kColorsIconSize)));
+}
+
+std::u16string ReadAnythingColorsModel::GetItemAt(size_t index) const {
+  // Only display the icon choice in the toolbar, so return empty string here.
+  return std::u16string();
+}
+
+std::u16string ReadAnythingColorsModel::GetDropDownTextAt(size_t index) const {
+  return colors_choices_[index].name;
+}
+
+ReadAnythingColorsModel::~ReadAnythingColorsModel() = default;

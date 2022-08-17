@@ -23,6 +23,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +33,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.test.runner.lifecycle.Stage;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -66,11 +66,9 @@ import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.metrics.HistogramTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
-import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
@@ -83,6 +81,7 @@ import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.firstrun.PolicyLoadListener;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
@@ -171,6 +170,8 @@ public class SigninFirstRunFragmentTest {
     private IdentityServicesProvider mIdentityServicesProviderMock;
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mCallbackCaptor;
+    @Mock
+    private PrivacyPreferencesManagerImpl mPrivacyPreferencesManagerMock;
 
     private Promise<Void> mNativeInitializationPromise;
     private FakeEnterpriseInfo mFakeEnterpriseInfo = new FakeEnterpriseInfo();
@@ -891,10 +892,10 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1348325")
     public void testNativePolicyAndChildStatusLoadMetricRecordedOnlyOnce() {
         launchActivityWithFragment();
-        verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
+        verify(mFirstRunPageDelegateMock, timeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL))
+                .recordNativePolicyAndChildStatusLoadedHistogram();
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
         Assert.assertEquals("Native initialization should be the slowest", 1,
                 mHistogramTestRule.getHistogramValueCount(
@@ -940,6 +941,21 @@ public class SigninFirstRunFragmentTest {
         callbackHelper.waitForFirst();
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(false);
         verify(mFirstRunPageDelegateMock).exitFirstRun();
+    }
+
+    @Test
+    @MediumTest
+    public void testFragmentWithMetricsReportingDisabled() throws Exception {
+        when(mPolicyLoadListenerMock.get()).thenReturn(true);
+        when(mPrivacyPreferencesManagerMock.isUsageAndCrashReportingPermittedByPolicy())
+                .thenReturn(false);
+        PrivacyPreferencesManagerImpl.setInstanceForTesting(mPrivacyPreferencesManagerMock);
+        launchActivityWithFragment();
+
+        onView(withText(R.string.signin_fre_dismiss_button)).perform(click());
+
+        verify(mFirstRunPageDelegateMock).acceptTermsOfService(false);
+        verify(mFirstRunPageDelegateMock).advanceToNextPage();
     }
 
     @Test
@@ -1130,8 +1146,9 @@ public class SigninFirstRunFragmentTest {
                     .add(android.R.id.content, mFragment)
                     .commit();
         });
-        ApplicationTestUtils.waitForActivityState(
-                mChromeActivityTestRule.getActivity(), Stage.RESUMED);
+        // Wait for fragment to be added to the activity.
+        CriteriaHelper.pollUiThread(() -> mFragment.isResumed());
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Replace all the progress bars with dummies. Currently the progress bar cannot be
             // stopped otherwise due to some espresso issues (crbug/1115067).

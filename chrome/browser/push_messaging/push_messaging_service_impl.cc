@@ -55,6 +55,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_background_services_context.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_result.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -78,7 +79,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
 #include "chrome/android/chrome_jni_headers/PushMessagingServiceObserver_jni.h"
-#include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/installable/installed_webapp_bridge.h"
 #include "components/permissions/android/android_permission_util.h"
 #include "components/prefs/pref_service.h"
 #endif
@@ -441,27 +442,22 @@ bool PushMessagingServiceImpl::CheckAndRevokeNotificationPermissionIfNeeded(
     return false;
   }
 
-  bool has_app_level_notification_permission =
-      enabled_app_level_notification_permission_for_testing_.has_value()
-          ? enabled_app_level_notification_permission_for_testing_.value()
-          : permissions::AreAppLevelNotificationsEnabled();
+  bool webapp_can_display_notifications =
+      InstalledWebappBridge::GetPermission(ContentSettingsType::NOTIFICATIONS,
+                                           app_identifier.origin()) ==
+      ContentSetting::CONTENT_SETTING_ALLOW;
 
-  bool contains_webapk = ShortcutHelper::DoesOriginContainAnyInstalledWebApk(
-      app_identifier.origin());
-  bool contains_twa =
-      ShortcutHelper::DoesOriginContainAnyInstalledTrustedWebActivity(
-          app_identifier.origin());
-  bool contains_installed_webapp = contains_twa || contains_webapk;
-
-  // If Notifications permission delegation is enabled, for the
-  // `app_identifier.origin()`, we should not revoke permissions because
-  // Notifications permissions are automatically synced with an installed app.
-  if (contains_installed_webapp)
+  // An incoming push message will be displayed by an installed webapp.
+  if (webapp_can_display_notifications)
     return false;
 
   PrefService* prefs = prefs_for_testing_.has_value()
                            ? prefs_for_testing_.value()
                            : g_browser_process->local_state();
+
+  bool has_app_level_notification_permission =
+      enabled_app_level_notification_permission_for_testing_.value_or(
+          permissions::AreAppLevelNotificationsEnabled());
 
   if (has_app_level_notification_permission) {
     // Chrome has app-level Notifications permission. Reset the grace period
@@ -966,8 +962,9 @@ blink::mojom::PermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
         url::Origin::Create(origin));
   } else {
     return profile_->GetPermissionController()
-        ->GetPermissionStatusForOriginWithoutContext(
-            blink::PermissionType::NOTIFICATIONS, url::Origin::Create(origin));
+        ->GetPermissionResultForOriginWithoutContext(
+            blink::PermissionType::NOTIFICATIONS, url::Origin::Create(origin))
+        .status;
   }
 }
 

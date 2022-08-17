@@ -35,12 +35,17 @@ class TestBase {
   // Some trivial shorthand methods to access the ipcz API more conveniently.
   void Close(IpczHandle handle);
   void CloseAll(absl::Span<const IpczHandle> handles);
+  IpczResult Merge(IpczHandle a, IpczHandle b);
   IpczHandle CreateNode(const IpczDriver& driver,
                         IpczCreateNodeFlags flags = IPCZ_NO_FLAGS);
   std::pair<IpczHandle, IpczHandle> OpenPortals(IpczHandle node);
   IpczResult Put(IpczHandle portal,
                  std::string_view message,
                  absl::Span<IpczHandle> handles = {});
+  IpczResult PutWithLimits(IpczHandle portal,
+                           const IpczPutLimits& limits,
+                           std::string_view message,
+                           absl::Span<IpczHandle> handles = {});
 
   // Shorthand for ipcz Get() to retrieve the next available parcel from
   // `portal`.If no parcel is available, or any other condition prevents Get()

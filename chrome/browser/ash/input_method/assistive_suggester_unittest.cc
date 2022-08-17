@@ -13,7 +13,7 @@
 #include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/fake_suggestion_handler.h"
-#include "chrome/browser/ash/input_method/get_browser_url.h"
+#include "chrome/browser/ash/input_method/get_current_window_properties.h"
 #include "chrome/browser/ash/input_method/personal_info_suggester.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
@@ -96,6 +96,7 @@ void SetInputMethodOptions(Profile& profile,
 
 class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
  public:
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   explicit FakeSuggesterSwitch(EnabledSuggestions enabled_suggestions)
       : enabled_suggestions_(enabled_suggestions) {}
   ~FakeSuggesterSwitch() override = default;
@@ -116,10 +117,12 @@ class AssistiveSuggesterTest : public testing::Test {
 
   void SetUp() override {
     suggestion_handler_ = std::make_unique<FakeSuggestionHandler>();
+    // TODO(b/242472734): Allow enabled suggestions passed without replace.
     assistive_suggester_ = std::make_unique<AssistiveSuggester>(
         suggestion_handler_.get(), profile_.get(),
         std::make_unique<AssistiveSuggesterClientFilter>(
-            base::BindRepeating(&GetFocusedTabUrl)));
+            base::BindRepeating(&GetFocusedTabUrl),
+            base::BindRepeating(&GetFocusedWindowProperties)));
 
     histogram_tester_.ExpectUniqueSample(
         "InputMethod.Assistive.UserPref.PersonalInfo", true, 1);
@@ -321,11 +324,40 @@ TEST_F(AssistiveSuggesterTest,
   EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }
 
+TEST_F(AssistiveSuggesterTest, RecordPKDiacriticsPrefEnabledOnActivate) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kDiacriticsOnPhysicalKeyboardLongpress);
+
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.UserPref.PhysicalKeyboardDiacriticsOnLongpress",
+      true, 1);
+}
+
+TEST_F(AssistiveSuggesterTest, RecordPKDiacriticsPrefDisabledOnActivate) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kDiacriticsOnPhysicalKeyboardLongpress);
+
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/false);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.UserPref.PhysicalKeyboardDiacriticsOnLongpress",
+      false, 1);
+}
+
 TEST_F(AssistiveSuggesterTest, RecordPredictiveWritingPrefOnActivate) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kAssistMultiWord},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{}));
@@ -343,6 +375,7 @@ TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsNotAllowed) {
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kAssistMultiWord},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{}));
@@ -365,6 +398,7 @@ TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsDisabledByUser) {
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kAssistMultiWord},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(
@@ -389,6 +423,7 @@ TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsEnabledByLacros) {
       /*enabled_features=*/{features::kAssistMultiWord,
                             features::kLacrosSupport},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(
@@ -413,6 +448,7 @@ TEST_F(AssistiveSuggesterTest,
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kAssistMultiWord},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(
@@ -436,6 +472,7 @@ TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsEnabled) {
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kAssistMultiWord},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(
@@ -460,6 +497,11 @@ TEST_F(AssistiveSuggesterTest,
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/true);
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
@@ -469,7 +511,31 @@ TEST_F(AssistiveSuggesterTest,
   task_environment_.FastForwardBy(base::Seconds(1));
 
   EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
-  EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"à;á;â;ã;ã;ä;å;ā");
+  EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"à;á;â;ä;æ;ã;å;ā");
+}
+
+TEST_F(AssistiveSuggesterTest, DiacriticsSuggestionOnKeyDownRecordsSuccess) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  task_environment_.FastForwardBy(base::Seconds(1));
+  EXPECT_TRUE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::DIGIT1)));
+
+  histogram_tester_.ExpectTotalCount("InputMethod.Assistive.Success", 1);
+  histogram_tester_.ExpectUniqueSample("InputMethod.Assistive.Success",
+                                       AssistiveType::kLongpressDiacritics, 1);
 }
 
 TEST_F(AssistiveSuggesterTest,
@@ -478,6 +544,11 @@ TEST_F(AssistiveSuggesterTest,
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/false);
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
@@ -495,6 +566,11 @@ TEST_F(AssistiveSuggesterTest,
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/true);
   assistive_suggester_->OnActivate(kSpainSpanishEngineId);
@@ -512,6 +588,11 @@ TEST_F(AssistiveSuggesterTest,
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/true);
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
@@ -522,7 +603,7 @@ TEST_F(AssistiveSuggesterTest,
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(ReleaseKey(ui::DomCode::US_O)));
   task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
-  EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"à;á;â;ã;ã;ä;å;ā");
+  EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"à;á;â;ä;æ;ã;å;ā");
 }
 
 TEST_F(AssistiveSuggesterTest,
@@ -531,6 +612,11 @@ TEST_F(AssistiveSuggesterTest,
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
 
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
@@ -544,6 +630,11 @@ TEST_F(AssistiveSuggesterTest, DiacriticsSuggestionInterruptedDoesNotSuggest) {
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
   assistive_suggester_->OnFocus(5);
 
@@ -631,6 +722,7 @@ class AssistiveSuggesterPersonalInfoTest
     chrome_keyboard_controller_client_ =
         ChromeKeyboardControllerClient::CreateForTest();
     chrome_keyboard_controller_client_->set_keyboard_visible_for_test(false);
+    // TODO(b/242472734): Allow enabled suggestions passed without replace.
     assistive_suggester_ = std::make_unique<AssistiveSuggester>(
         suggestion_handler_.get(), profile_.get(),
         std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -807,6 +899,7 @@ TEST_P(AssistiveSuggesterPersonalInfoTest,
 }
 
 TEST_P(AssistiveSuggesterPersonalInfoTest, ShouldNotSuggestWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -825,6 +918,7 @@ TEST_P(AssistiveSuggesterPersonalInfoTest, ShouldNotSuggestWhenSwitchDisabled) {
 
 TEST_P(AssistiveSuggesterPersonalInfoTest,
        ShouldRecordNotAllowedWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -845,6 +939,7 @@ TEST_P(AssistiveSuggesterPersonalInfoTest,
 
 TEST_P(AssistiveSuggesterPersonalInfoTest,
        ShouldRecordDisabledReasonWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -886,6 +981,7 @@ class AssistiveSuggesterMultiWordTest : public testing::Test {
 
   void SetUp() override {
     suggestion_handler_ = std::make_unique<FakeSuggestionHandler>();
+    // TODO(b/242472734): Allow enabled suggestions passed without replace.
     assistive_suggester_ = std::make_unique<AssistiveSuggester>(
         suggestion_handler_.get(), profile_.get(),
         std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -949,6 +1045,7 @@ TEST_F(AssistiveSuggesterMultiWordTest, OnDisabledFlagShouldNotShowSuggestion) {
 }
 
 TEST_F(AssistiveSuggesterMultiWordTest, ShouldNotSuggestWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -1006,6 +1103,7 @@ TEST_F(AssistiveSuggesterMultiWordTest,
 
 TEST_F(AssistiveSuggesterMultiWordTest,
        DisableMetricNotRecordedWhenNoSuggestionAndMultiWordBlocked) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{}), nullptr);
@@ -1021,6 +1119,7 @@ TEST_F(AssistiveSuggesterMultiWordTest,
 
 TEST_F(AssistiveSuggesterMultiWordTest,
        DisableMetricRecordedWhenGivenSuggestionAndMultiWordBlocked) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{}), nullptr);
@@ -1185,6 +1284,7 @@ class AssistiveSuggesterEmojiTest : public testing::Test {
 
   void SetUp() override {
     suggestion_handler_ = std::make_unique<FakeSuggestionHandler>();
+    // TODO(b/242472734): Allow enabled suggestions passed without replace.
     assistive_suggester_ = std::make_unique<AssistiveSuggester>(
         suggestion_handler_.get(), profile_.get(),
         std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -1243,6 +1343,7 @@ TEST_F(AssistiveSuggesterEmojiTest, ShouldRecordDisabledWhenEmojiDisabled) {
 }
 
 TEST_F(AssistiveSuggesterEmojiTest, ShouldNotSuggestWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -1260,6 +1361,7 @@ TEST_F(AssistiveSuggesterEmojiTest, ShouldNotSuggestWhenSwitchDisabled) {
 }
 
 TEST_F(AssistiveSuggesterEmojiTest, ShouldRecordNotAllowedWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
@@ -1280,6 +1382,7 @@ TEST_F(AssistiveSuggesterEmojiTest, ShouldRecordNotAllowedWhenSwitchDisabled) {
 
 TEST_F(AssistiveSuggesterEmojiTest,
        ShouldRecordDisabledReasonWhenSwitchDisabled) {
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
   assistive_suggester_ = std::make_unique<AssistiveSuggester>(
       suggestion_handler_.get(), profile_.get(),
       std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{

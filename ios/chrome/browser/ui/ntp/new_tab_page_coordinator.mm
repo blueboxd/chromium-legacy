@@ -4,12 +4,12 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 
-#include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/time/time.h"
-#include "components/feed/core/v2/public/ios/pref_names.h"
+#import "base/metrics/field_trial_params.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/time/time.h"
+#import "components/feed/core/v2/public/ios/pref_names.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
@@ -18,17 +18,19 @@
 #import "components/search_engines/template_url.h"
 #import "components/search_engines/template_url_service.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#include "ios/chrome/app/tests_hook.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/app/tests_hook.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_observer_bridge.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/discover_feed/feed_model_configuration.h"
+#import "ios/chrome/browser/follow/follow_browser_agent.h"
+#import "ios/chrome/browser/follow/followed_web_site.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -36,7 +38,7 @@
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -72,13 +74,12 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -290,36 +291,35 @@ namespace {
   self.feedMetricsRecorder.feedControlDelegate = self;
   self.feedMetricsRecorder.followDelegate = self;
 
-    self.headerController =
-        [[ContentSuggestionsHeaderViewController alloc] init];
-    // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-    // clean up.
-    self.headerController.dispatcher =
-        static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
-                       FakeboxFocuser>>(self.browser->GetCommandDispatcher());
-    self.headerController.commandHandler = self;
-    self.headerController.delegate = self.ntpMediator;
+  self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.headerController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
+                     FakeboxFocuser>>(self.browser->GetCommandDispatcher());
+  self.headerController.commandHandler = self;
+  self.headerController.delegate = self.ntpMediator;
 
-    self.headerController.readingListModel =
-        ReadingListModelFactory::GetForBrowserState(
-            self.browser->GetBrowserState());
-    self.headerController.toolbarDelegate = self.toolbarDelegate;
-    self.ntpMediator.consumer = self.headerController;
-    self.headerController.baseViewController = self.baseViewController;
+  self.headerController.readingListModel =
+      ReadingListModelFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  self.headerController.toolbarDelegate = self.toolbarDelegate;
+  self.ntpMediator.consumer = self.headerController;
+  self.headerController.baseViewController = self.baseViewController;
 
-    // Only handle app state for the new First Run UI.
-    if (base::FeatureList::IsEnabled(kEnableFREUIModuleIOS)) {
-      SceneState* sceneState =
-          SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-      AppState* appState = sceneState.appState;
-      [appState addObserver:self];
+  // Only handle app state for the new First Run UI.
+  if (base::FeatureList::IsEnabled(kEnableFREUIModuleIOS)) {
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+    AppState* appState = sceneState.appState;
+    [appState addObserver:self];
 
-      // Do not focus on omnibox for voice over if there are other screens to
-      // show.
-      if (appState.initStage < InitStageFinal) {
-        self.headerController.focusOmniboxWhenViewAppears = NO;
-      }
+    // Do not focus on omnibox for voice over if there are other screens to
+    // show.
+    if (appState.initStage < InitStageFinal) {
+      self.headerController.focusOmniboxWhenViewAppears = NO;
     }
+  }
 
   if (IsDiscoverFeedTopSyncPromoEnabled()) {
     self.feedTopSectionCoordinator = [self createFeedTopSectionCoordinator];
@@ -352,6 +352,12 @@ namespace {
 - (void)stop {
   if (!self.started)
     return;
+
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
+    self.incognitoViewController = nil;
+    self.started = NO;
+    return;
+  }
   self.viewPresented = NO;
   [self updateVisible];
 
@@ -365,7 +371,6 @@ namespace {
   self.contentSuggestionsCoordinator = nil;
   self.headerSynchronizer = nil;
   self.headerController = nil;
-  self.incognitoViewController = nil;
   // Remove before nil to ensure View Hierarchy doesn't hold last strong
   // reference.
   [self.containedViewController willMoveToParentViewController:nil];
@@ -374,6 +379,7 @@ namespace {
   self.containedViewController = nil;
   self.ntpViewController.feedHeaderViewController = nil;
   self.ntpViewController = nil;
+  self.feedHeaderViewController.ntpDelegate = nil;
   self.feedHeaderViewController = nil;
   self.alertCoordinator = nil;
   self.authService = nil;
@@ -588,6 +594,14 @@ namespace {
   }
 }
 
+- (void)selectFeedType:(FeedType)feedType {
+  if (!self.started) {
+    self.selectedFeed = feedType;
+    return;
+  }
+  [self handleFeedSelected:feedType];
+}
+
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
@@ -597,8 +611,11 @@ namespace {
         self.shouldScrollIntoFeed = NO;
         // Reassign the sort type in case it changed in another tab.
         self.feedHeaderViewController.followingFeedSortType =
-            (FollowingFeedSortType)self.prefService->GetInteger(
-                prefs::kNTPFollowingFeedSortType);
+            self.followingFeedSortType;
+        // Update the header so that it's synced with the currently selected
+        // feed, which could have been changed when a new web state was
+        // inserted.
+        [self.feedHeaderViewController updateForSelectedFeed];
         self.feedMetricsRecorder.feedControlDelegate = self;
         self.feedMetricsRecorder.followDelegate = self;
       }
@@ -619,13 +636,19 @@ namespace {
 
 #pragma mark - FeedControlDelegate
 
+- (FollowingFeedSortType)followingFeedSortType {
+  // TODO(crbug.com/1352935): Add a DCHECK to make sure the coordinator isn't
+  // stopped when we check this. That would require us to use the NTPHelper to
+  // get this information.
+  return (FollowingFeedSortType)self.prefService->GetInteger(
+      prefs::kNTPFollowingFeedSortType);
+}
+
 - (void)handleFeedSelected:(FeedType)feedType {
   DCHECK([self isFollowingFeedAvailable]);
 
   // Saves scroll position before changing feed.
   CGFloat scrollPosition = [self.ntpViewController scrollPosition];
-
-  [self.feedMetricsRecorder recordFeedSelected:feedType];
 
   if (feedType == FeedTypeFollowing) {
     // Clears dot and notifies service that the Following feed content has
@@ -648,6 +671,13 @@ namespace {
 
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType {
   DCHECK([self isFollowingFeedAvailable]);
+
+  if (self.feedHeaderViewController.followingFeedSortType == sortType) {
+    return;
+  }
+
+  [self.feedMetricsRecorder recordFollowingFeedSortTypeSelected:sortType];
+  [self.ntpViewController setContentOffsetToTop];
   self.prefService->SetInteger(prefs::kNTPFollowingFeedSortType, sortType);
   self.discoverFeedService->SetFollowingFeedSortType(sortType);
   self.feedHeaderViewController.followingFeedSortType = sortType;
@@ -670,15 +700,28 @@ namespace {
 #pragma mark - NewTabPageFollowDelegate
 
 - (NSUInteger)followedPublisherCount {
-  return [ios::GetChromeBrowserProvider()
-              .GetFollowProvider()
-              ->GetFollowedWebChannels() count];
+  return self.followedWebSites.count;
 }
 
 - (BOOL)doesFollowingFeedHaveContent {
-  return ios::GetChromeBrowserProvider()
-      .GetFollowProvider()
-      ->DoesFollowingFeedHaveContent();
+  for (FollowedWebSite* web_site in self.followedWebSites) {
+    if (web_site.available)
+      return YES;
+  }
+
+  return NO;
+}
+
+- (NSArray<FollowedWebSite*>*)followedWebSites {
+  FollowBrowserAgent* followBrowserAgent =
+      FollowBrowserAgent::FromBrowser(self.browser);
+
+  // Return an empty list if the BrowserAgent is null (which can happen
+  // if e.g. the Browser is off-the-record).
+  if (!followBrowserAgent)
+    return @[];
+
+  return followBrowserAgent->GetFollowedWebSites();
 }
 
 #pragma mark - FeedMenuCommands
@@ -883,18 +926,18 @@ namespace {
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
                    didTriggerAction:(OverscrollAction)action {
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-  // clean up.
-  id<ApplicationCommands, BrowserCommands, OmniboxCommands, SnackbarCommands>
-      handler = static_cast<id<ApplicationCommands, BrowserCommands,
-                               OmniboxCommands, SnackbarCommands>>(
-          self.browser->GetCommandDispatcher());
+  id<ApplicationCommands> applicationCommandsHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                         BrowserCoordinatorCommands);
+
   switch (action) {
     case OverscrollAction::NEW_TAB: {
-      [handler openURLInNewTab:[OpenNewTabCommand command]];
+      [applicationCommandsHandler openURLInNewTab:[OpenNewTabCommand command]];
     } break;
     case OverscrollAction::CLOSE_TAB: {
-      [handler closeCurrentTab];
+      [browserCoordinatorCommandsHandler closeCurrentTab];
       base::RecordAction(base::UserMetricsAction("OverscrollActionCloseTab"));
     } break;
     case OverscrollAction::REFRESH:
@@ -955,7 +998,7 @@ namespace {
 }
 
 - (BOOL)isContentHeaderSticky {
-  return [self isFollowingFeedAvailable];
+  return [self isFollowingFeedAvailable] && [self isFeedHeaderVisible];
 }
 
 #pragma mark - PrefObserverDelegate
@@ -1043,18 +1086,7 @@ namespace {
 
   // Requests feeds here if the correct flags and prefs are enabled.
   if ([self shouldFeedBeVisible]) {
-    FeedModelConfiguration* discoverFeedConfiguration =
-        [FeedModelConfiguration discoverFeedModelConfiguration];
-    self.discoverFeedService->CreateFeedModel(discoverFeedConfiguration);
-
     if ([self isFollowingFeedAvailable]) {
-      FeedModelConfiguration* followingFeedConfiguration =
-          [FeedModelConfiguration
-              followingModelConfigurationWithSortType:
-                  (FollowingFeedSortType)self.prefService->GetInteger(
-                      prefs::kNTPFollowingFeedSortType)];
-      self.discoverFeedService->CreateFeedModel(followingFeedConfiguration);
-
       switch (self.selectedFeed) {
         case FeedTypeDiscover:
           self.feedViewController = [self discoverFeed];
@@ -1088,6 +1120,10 @@ namespace {
     return nil;
   }
 
+  FeedModelConfiguration* discoverFeedConfiguration =
+      [FeedModelConfiguration discoverFeedModelConfiguration];
+  self.discoverFeedService->CreateFeedModel(discoverFeedConfiguration);
+
   UIViewController* discoverFeed =
       self.discoverFeedService->NewDiscoverFeedViewControllerWithConfiguration(
           [self feedViewControllerConfiguration]);
@@ -1099,6 +1135,10 @@ namespace {
   if (tests_hook::DisableDiscoverFeed()) {
     return nil;
   }
+
+  FeedModelConfiguration* followingFeedConfiguration = [FeedModelConfiguration
+      followingModelConfigurationWithSortType:self.followingFeedSortType];
+  self.discoverFeedService->CreateFeedModel(followingFeedConfiguration);
 
   UIViewController* followingFeed =
       self.discoverFeedService->NewFollowingFeedViewControllerWithConfiguration(
@@ -1177,6 +1217,7 @@ namespace {
       [[FeedTopSectionCoordinator alloc]
           initWithBaseViewController:self.ntpViewController
                              browser:self.browser];
+  feedTopSectionCoordinator.ntpDelegate = self;
   [feedTopSectionCoordinator start];
   return feedTopSectionCoordinator;
 }
@@ -1212,9 +1253,7 @@ namespace {
         self.discoverFeedService->GetFollowingFeedHasUnseenContent() &&
         self.selectedFeed != FeedTypeFollowing;
     _feedHeaderViewController = [[FeedHeaderViewController alloc]
-        initWithFollowingFeedSortType:(FollowingFeedSortType)
-                                          self.prefService->GetInteger(
-                                              prefs::kNTPFollowingFeedSortType)
+        initWithFollowingFeedSortType:self.followingFeedSortType
            followingSegmentDotVisible:followingSegmentDotVisible];
     _feedHeaderViewController.feedControlDelegate = self;
     _feedHeaderViewController.ntpDelegate = self;

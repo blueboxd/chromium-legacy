@@ -556,7 +556,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
       network_name = *esim_name;
   }
   if (network_name.empty() && shill_properties) {
-    network_name = shill_property_util::GetNameFromProperties(
+    network_name = ash::shill_property_util::GetNameFromProperties(
         service_path, shill_properties.value());
   }
 
@@ -642,7 +642,7 @@ void NetworkStateNotifier::ShowSimUnlockSettings() {
 
 void NetworkStateNotifier::ShowCarrierAccountDetail(
     const std::string& network_id) {
-  NetworkConnect::Get()->ShowCarrierAccountDetail(network_id);
+  ash::NetworkConnect::Get()->ShowCarrierAccountDetail(network_id);
 }
 
 }  // namespace chromeos

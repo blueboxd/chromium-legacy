@@ -56,7 +56,7 @@ std::string MakeDeviceUniqueId(const Disk& disk) {
 
 // Returns whether the requested device is valid. On success |info| will contain
 // device information.
-bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
+bool GetDeviceInfo(const DiskMountManager::MountPoint& mount_info,
                    bool has_dcim,
                    StorageInfo* info) {
   DCHECK(info);
@@ -131,9 +131,9 @@ void StorageMonitorCros::Init() {
 void StorageMonitorCros::CheckExistingMountPoints() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (const auto& it : DiskMountManager::GetInstance()->disks()) {
-    if (it.second->IsStatefulPartition()) {
-      AddFixedStorageDisk(*it.second);
+  for (const auto& disk : DiskMountManager::GetInstance()->disks()) {
+    if (disk->IsStatefulPartition()) {
+      AddFixedStorageDisk(*disk);
       break;
     }
   }
@@ -142,13 +142,14 @@ void StorageMonitorCros::CheckExistingMountPoints() {
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
-  for (const auto& it : DiskMountManager::GetInstance()->mount_points()) {
+  for (const auto& mount_point :
+       DiskMountManager::GetInstance()->mount_points()) {
     base::PostTaskAndReplyWithResult(
         blocking_task_runner.get(), FROM_HERE,
         base::BindOnce(&MediaStorageUtil::HasDcim,
-                       base::FilePath(it.second.mount_path)),
+                       base::FilePath(mount_point.mount_path)),
         base::BindOnce(&StorageMonitorCros::AddMountedPath,
-                       weak_ptr_factory_.GetWeakPtr(), it.second));
+                       weak_ptr_factory_.GetWeakPtr(), mount_point));
   }
 
   // Note: Relies on scheduled tasks on the |blocking_task_runner| being
@@ -195,7 +196,7 @@ void StorageMonitorCros::OnBootDeviceDiskEvent(
 void StorageMonitorCros::OnMountEvent(
     DiskMountManager::MountEvent event,
     ash::MountError error_code,
-    const DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPoint& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Ignore mount points that are not devices.
@@ -317,7 +318,7 @@ StorageMonitorCros::media_transfer_protocol_manager() {
 }
 
 void StorageMonitorCros::AddMountedPath(
-    const DiskMountManager::MountPointInfo& mount_info,
+    const DiskMountManager::MountPoint& mount_info,
     bool has_dcim) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

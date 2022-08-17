@@ -12,6 +12,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
@@ -35,10 +36,8 @@ class TipMarqueeView : public views::View, public views::WidgetObserver {
   using LearnMoreLinkClickedCallback =
       base::RepeatingCallback<void(TipMarqueeView*)>;
 
-  // Constructs a tip marquee view which will display text with the given
-  // display parameters (see views::Label::Label() for usage).
-  explicit TipMarqueeView(int text_context = views::style::CONTEXT_LABEL,
-                          int text_style = views::style::STYLE_PRIMARY);
+  // Constructs a tip marquee view which will display text
+  TipMarqueeView();
   ~TipMarqueeView() override;
 
   // Sets the tip and shows the view if there is adequate space. |tip_text| will
@@ -48,12 +47,13 @@ class TipMarqueeView : public views::View, public views::WidgetObserver {
   //
   // Returns true if there is sufficient space in the parent view's layout to
   // display the fully expanded tip text and (if applicable) Learn More link.
-  bool SetTip(const std::u16string& tip_text,
-              LearnMoreLinkClickedCallback learn_more_link_clicked_callback =
-                  LearnMoreLinkClickedCallback());
+  bool SetAndShowTip(
+      const std::u16string& tip_text,
+      LearnMoreLinkClickedCallback learn_more_link_clicked_callback =
+          LearnMoreLinkClickedCallback());
 
   // Clears the tip and hides the view.
-  void ClearTip();
+  void ClearAndHideTip();
 
   // views::View:
   gfx::Size GetMinimumSize() const override;
@@ -89,5 +89,10 @@ class TipMarqueeView : public views::View, public views::WidgetObserver {
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       widget_observer_{this};
 };
+
+BEGIN_VIEW_BUILDER(/*no export */, TipMarqueeView, views::View)
+END_VIEW_BUILDER
+
+DEFINE_VIEW_BUILDER(/*no export */, TipMarqueeView)
 
 #endif  // CHROME_BROWSER_UI_VIEWS_USER_EDUCATION_TIP_MARQUEE_VIEW_H_

@@ -282,15 +282,20 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<DisplayCompositorMemoryAndTaskController> gpu_dependency_;
   std::unique_ptr<OutputSurface> output_surface_;
   const raw_ptr<SkiaOutputSurface> skia_output_surface_;
-  std::unique_ptr<DisplayDamageTracker> damage_tracker_;
-  std::unique_ptr<DisplaySchedulerBase> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  // `aggregator_` depends on `resource_provider_` so it must be declared last
+  // and destroyed first.
   std::unique_ptr<SurfaceAggregator> aggregator_;
+  // `damage_tracker_` depends on `aggregator_` so it must be declared last and
+  // destroyed first.
+  std::unique_ptr<DisplayDamageTracker> damage_tracker_;
+  // `scheduler_` depends on `damage_tracker_` so it must be declared last and
+  // destroyed first.
+  std::unique_ptr<DisplaySchedulerBase> scheduler_;
   bool last_wide_color_enabled_ = false;
   std::unique_ptr<FrameRateDecider> frame_rate_decider_;
   // This may be null if the Display is on a thread without a MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
-  std::unique_ptr<DirectRenderer> renderer_;
   raw_ptr<SoftwareRenderer> software_renderer_ = nullptr;
   // Currently, this OverlayProcessor takes raw pointer to memory tracker, which
   // is owned by the OutputSurface. This OverlayProcessor also takes resource
@@ -298,6 +303,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // both the OutputSurface and the DisplayResourceProvider outlive the
   // Overlay Processor.
   std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
+  // `renderer_` depends on `overlay_processor_` and `resource_provider_`. It
+  // must be declared last and destroyed first.
+  std::unique_ptr<DirectRenderer> renderer_;
   std::vector<ui::LatencyInfo> stored_latency_info_;
   std::vector<gfx::Rect> cached_visible_region_;
 

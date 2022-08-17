@@ -1045,11 +1045,11 @@ util.getRootTypeLabel = locationInfo => {
       return str('DRIVE_MY_DRIVE_LABEL');
     case VolumeManagerCommon.RootType.SHARED_DRIVE:
     // |locationInfo| points to either the root directory of an individual Team
-    // Drive or subdirectory under it, but not the Shared Drives grand
-    // directory. Every Shared Drive and its subdirectories always have
+    // Drive or sub-directory under it, but not the Shared Drives grand
+    // directory. Every Shared Drive and its sub-directories always have
     // individual names (locationInfo.hasFixedLabel is false). So
-    // getRootTypeLabel() is only used by BreadcrumbController.show() to display
-    // the ancestor name in the breadcrumb like this:
+    // getRootTypeLabel() is used by PathComponent.computeComponentsFromEntry()
+    // to display the ancestor name in the breadcrumb like this:
     //   Shared Drives > ABC Shared Drive > Folder1
     //   ^^^^^^^^^^^
     // By this reason, we return the label of the Shared Drives grand root here.
@@ -1586,6 +1586,12 @@ util.isArcUsbStorageUIEnabled = () => {
 };
 
 /** @return {boolean} */
+util.isArcVirtioBlkForDataEnabled = () => {
+  return loadTimeData.valueExists('ARC_ENABLE_VIRTIO_BLK_FOR_DATA') &&
+      loadTimeData.getBoolean('ARC_ENABLE_VIRTIO_BLK_FOR_DATA');
+};
+
+/** @return {boolean} */
 util.isPluginVmEnabled = () => {
   return loadTimeData.valueExists('PLUGIN_VM_ENABLED') &&
       loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
@@ -1749,6 +1755,19 @@ util.getLocaleBasedWeekStart = () => {
   return loadTimeData.valueExists('WEEK_START_FROM') ?
       loadTimeData.getInteger('WEEK_START_FROM') :
       0;
+};
+
+/**
+ * Returns a boolean indicating whether the volume is a GuestOs volume. And
+ * ANDROID_FILES type volume can also be a GuestOs volume if we are using
+ * virtio-blk.
+ * @param {VolumeManagerCommon.VolumeType} type
+ * @return {boolean}
+ */
+util.isGuestOs = type => {
+  return type === VolumeManagerCommon.VolumeType.GUEST_OS ||
+      (type === VolumeManagerCommon.VolumeType.ANDROID_FILES &&
+       util.isArcVirtioBlkForDataEnabled());
 };
 
 /**

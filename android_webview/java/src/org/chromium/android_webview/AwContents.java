@@ -17,6 +17,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Picture;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.net.http.SslCertificate;
@@ -54,6 +55,7 @@ import org.chromium.android_webview.gfx.AwFunctor;
 import org.chromium.android_webview.gfx.AwGLFunctor;
 import org.chromium.android_webview.gfx.AwPicture;
 import org.chromium.android_webview.gfx.RectUtils;
+import org.chromium.android_webview.metrics.AwOriginVisitLogger;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
@@ -73,6 +75,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
@@ -806,7 +809,7 @@ public class AwContents implements SmartClipProvider {
         }
 
         @Override
-        public void onScrollUpdateGestureConsumed() {
+        public void onScrollUpdateGestureConsumed(Point rootScrollOffset) {
             mScrollAccessibilityHelper.postViewScrolledAccessibilityEventCallback();
             mZoomControls.invokeZoomPicker();
         }
@@ -3641,6 +3644,13 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     private void onPermissionRequestCanceled(AwPermissionRequest awPermissionRequest) {
         mContentsClient.onPermissionRequestCanceled(awPermissionRequest);
+    }
+
+    @CalledByNative
+    private void logOriginVisit(long originHash) {
+        if (isDestroyed(NO_WARN)) return;
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                () -> AwOriginVisitLogger.logOriginVisit(originHash));
     }
 
     @CalledByNative

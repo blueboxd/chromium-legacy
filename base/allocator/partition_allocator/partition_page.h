@@ -25,6 +25,7 @@
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/partition_tag_bitmap.h"
+#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/state_bitmap.h"
 #include "base/allocator/partition_allocator/tagging.h"
@@ -221,6 +222,10 @@ struct SlotSpanMetadata {
   PA_ALWAYS_INLINE void SetRawSize(size_t raw_size);
   PA_ALWAYS_INLINE size_t GetRawSize() const;
 
+  // Only meaningful when `this` refers to a slot span in a direct map
+  // bucket.
+  PA_ALWAYS_INLINE PartitionTag* DirectMapMTETag();
+
   PA_ALWAYS_INLINE PartitionFreelistEntry* get_freelist_head() const {
     return freelist_head;
   }
@@ -334,6 +339,13 @@ struct SubsequentPageMetadata {
   //   the first one is used to store slot information, but the second one is
   //   available for extra information)
   size_t raw_size;
+
+  // Specific to when `this` is used in a direct map bucket. Since direct
+  // maps don't have as many tags as the typical normal bucket slot span,
+  // we can get away with just hiding the sole tag in here.
+  //
+  // See `//base/memory/mtecheckedptr.md` for details.
+  PartitionTag direct_map_tag;
 };
 
 // Each partition page has metadata associated with it. The metadata of the
@@ -405,6 +417,16 @@ PA_ALWAYS_INLINE PartitionPage<thread_safe>* PartitionSuperPageToMetadataArea(
   // super page.
   return reinterpret_cast<PartitionPage<thread_safe>*>(super_page +
                                                        SystemPageSize());
+}
+
+PA_ALWAYS_INLINE const SubsequentPageMetadata* GetSubsequentPageMetadata(
+    const PartitionPage<ThreadSafe>* page) {
+  return &(page + 1)->subsequent_page_metadata;
+}
+
+PA_ALWAYS_INLINE SubsequentPageMetadata* GetSubsequentPageMetadata(
+    PartitionPage<ThreadSafe>* page) {
+  return &(page + 1)->subsequent_page_metadata;
 }
 
 template <bool thread_safe>
@@ -666,16 +688,26 @@ template <bool thread_safe>
 PA_ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::SetRawSize(
     size_t raw_size) {
   PA_DCHECK(CanStoreRawSize());
-  auto* the_next_page = reinterpret_cast<PartitionPage<thread_safe>*>(this) + 1;
-  the_next_page->subsequent_page_metadata.raw_size = raw_size;
+  auto* subsequent_page_metadata = GetSubsequentPageMetadata(
+      reinterpret_cast<PartitionPage<thread_safe>*>(this));
+  subsequent_page_metadata->raw_size = raw_size;
 }
 
 template <bool thread_safe>
 PA_ALWAYS_INLINE size_t SlotSpanMetadata<thread_safe>::GetRawSize() const {
   PA_DCHECK(CanStoreRawSize());
-  auto* the_next_page =
-      reinterpret_cast<const PartitionPage<thread_safe>*>(this) + 1;
-  return the_next_page->subsequent_page_metadata.raw_size;
+  const auto* subsequent_page_metadata = GetSubsequentPageMetadata(
+      reinterpret_cast<const PartitionPage<thread_safe>*>(this));
+  return subsequent_page_metadata->raw_size;
+}
+
+template <bool thread_safe>
+PA_ALWAYS_INLINE PartitionTag*
+SlotSpanMetadata<thread_safe>::DirectMapMTETag() {
+  PA_DCHECK(bucket->is_direct_mapped());
+  auto* subsequent_page_metadata = GetSubsequentPageMetadata(
+      reinterpret_cast<PartitionPage<thread_safe>*>(this));
+  return &subsequent_page_metadata->direct_map_tag;
 }
 
 template <bool thread_safe>

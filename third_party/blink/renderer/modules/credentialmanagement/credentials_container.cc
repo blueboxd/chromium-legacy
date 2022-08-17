@@ -914,20 +914,18 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
     return false;
   }
 
-  if (!RuntimeEnabledFeatures::
-          SecurePaymentConfirmationRelaxResidentKeyEnabled()) {
-    if ((!authenticator->hasResidentKey() &&
-         !authenticator->hasRequireResidentKey()) ||
-        (authenticator->hasResidentKey() &&
-         authenticator->residentKey() != "required") ||
-        (!authenticator->hasResidentKey() &&
-         authenticator->hasRequireResidentKey() &&
-         !authenticator->requireResidentKey())) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "A resident key is required for 'payment' extension."));
-      return false;
-    }
+  if ((!authenticator->hasResidentKey() &&
+       !authenticator->hasRequireResidentKey()) ||
+      (authenticator->hasResidentKey() &&
+       authenticator->residentKey() == "discouraged") ||
+      (!authenticator->hasResidentKey() &&
+       authenticator->hasRequireResidentKey() &&
+       !authenticator->requireResidentKey())) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError,
+        "A resident key must be 'preferred' or 'required' for 'payment' "
+        "extension."));
+    return false;
   }
 
   if (!authenticator->hasAuthenticatorAttachment() ||
@@ -1212,7 +1210,6 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     // Some of this has not been spec'd yet.
     KURL provider_url(provider->configURL());
     String client_id = provider->clientId();
-    String nonce = provider->getNonceOr("");
 
     if (!provider_url.IsValid() || client_id == "") {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -1237,12 +1234,14 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       options->signal()->AddAlgorithm(WTF::Bind(&AbortIdentityCredentialRequest,
                                                 WrapPersistent(script_state)));
     }
+    mojom::blink::IdentityProviderPtr identity_provider =
+        blink::mojom::blink::IdentityProvider::From(*provider);
     bool prefer_auto_sign_in = options->identity()->preferAutoSignIn();
     auto* auth_request =
         CredentialManagerProxy::From(script_state)->FederatedAuthRequest();
 
     auth_request->RequestToken(
-        provider_url, client_id, nonce, prefer_auto_sign_in,
+        std::move(identity_provider), prefer_auto_sign_in,
         WTF::Bind(&OnRequestToken, WrapPersistent(resolver), provider_url,
                   client_id, WrapPersistent(options)));
 

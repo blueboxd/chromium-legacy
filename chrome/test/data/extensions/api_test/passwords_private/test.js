@@ -197,6 +197,27 @@ var availableTests = [
         });
   },
 
+  function requestCredentialDetails() {
+    chrome.passwordsPrivate.requestCredentialDetails(0, passwordUiEntry => {
+      // Ensure that the callback is invoked without an error state and the
+      // expected plaintext password.
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq('plaintext', passwordUiEntry.password);
+      chrome.test.succeed();
+    });
+  },
+
+  function requestCredentialDetailsFails() {
+    chrome.passwordsPrivate.requestCredentialDetails(123, passwordUiEntry => {
+      // Ensure that the callback is invoked with an error state and the
+      // message contains the right id.
+      chrome.test.assertLastError(
+          'Could not obtain password entry. Either the user is not ' +
+          'authenticated or no credential with id = 123 could be found.');
+      chrome.test.succeed();
+    });
+  },
+
   function getSavedPasswordList() {
     var callback = function(list) {
       chrome.test.assertTrue(!!list);
@@ -248,6 +269,11 @@ var availableTests = [
     let callback = function(importResults) {
       chrome.test.assertNoLastError();
       chrome.test.assertTrue(!!importResults);
+      chrome.test.assertEq(
+          chrome.passwordsPrivate.ImportResultsStatus.SUCCESS,
+          importResults.status);
+      chrome.test.assertEq(42, importResults.numberImported);
+      chrome.test.assertEq('test.csv', importResults.fileName);
       chrome.test.succeed();
     };
     chrome.passwordsPrivate.importPasswords(

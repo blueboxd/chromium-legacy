@@ -1321,32 +1321,128 @@ IN_PROC_BROWSER_TEST_F(
   CheckHeuristicsUkmRecord({kNavigatedUrl, {true, false, false}}, 1);
 }
 
-// Test that a Safety Tips is not shown and metrics are recorded when
+// Test that a Safety Tip is shown and metrics are recorded when
 // a combo squatting url is flagged with a hard-coded brand name.
+// This test case trigger `keyword` heuristic as well because of `google`
+// in the URL.
+// TODO(crbug.com/1343630): keyword (embedded keyword) heuristic should
+// be removed from the code including CheckHeuristicsUkmRecord.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       DoesntTriggerOnComboSquatting) {
+                       TriggerOnComboSquatting) {
+  // Set a launch config with 100% rollout for Combo Squatting.
+  reputation::AddSafetyTipHeuristicLaunchConfigForTesting(
+      reputation::HeuristicLaunchConfig::HEURISTIC_COMBO_SQUATTING_TOP_DOMAINS,
+      100);
   base::HistogramTester histograms;
   const GURL kNavigatedUrl = GetURL("google-login.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_FALSE(IsUIShowing());
 
   histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
   histograms.ExpectBucketCount(lookalikes::kHistogramName,
                                NavigationSuggestionEvent::kComboSquatting, 1);
 
-  // TODO(crbug.com/1343630): keyword (embedded keyword) heuristic should
-  // be removed from the code. The second `false` value in
-  // the input of CheckHeuristicsUkmRecord is correlated to this heuristic.
+  // Make sure that the UI is now showing, and that no UKM data has been
+  // recorded yet.
+  ASSERT_TRUE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(0);
+
+  // Once we close the warning, ensure that the UI is no longer showing, and
+  // that UKM data has now been recorded.
+  CloseWarningLeaveSite(browser());
+  ASSERT_FALSE(IsUIShowing());
+
   CheckRecordedHeuristicsUkmCount(1);
-  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, false, true}}, 0);
+  // Boolean values are /*blocklist*/ /*lookalike*/ /*keywords*/
+  // This test case expects triggering with lookalike heuristic and
+  // keywords heuristic.
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 0);
+
+  // Navigate to the same site again, but close the warning with an ignore
+  // instead of an accept. This should still record UKM data.
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  ASSERT_TRUE(IsUIShowing());
+
+  // Make sure the already collected UKM data still exists.
+  CheckRecordedHeuristicsUkmCount(1);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 0);
+
+  CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
+  ASSERT_FALSE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(2);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 0);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 1);
 }
 
-// Test that a Safety Tips is not shown and metrics are recorded when
-// a combo squatting url is flagged with a brand name from engaged sites.
+// Test that a Safety Tip is shown and metrics are recorded when
+// a combo squatting url is flagged with a hard-coded brand name.
+// In contrast with `TriggerOnComboSquatting`, this test case only
+// triggers `lookalike` heuristic.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       DoesntTriggerOnComboSquattingSiteEngagement) {
+                       TriggerOnlyOnComboSquatting) {
+  // Set a launch config with 100% rollout for Combo Squatting.
+  reputation::AddSafetyTipHeuristicLaunchConfigForTesting(
+      reputation::HeuristicLaunchConfig::HEURISTIC_COMBO_SQUATTING_TOP_DOMAINS,
+      100);
+  base::HistogramTester histograms;
+  const GURL kNavigatedUrl = GetURL("costco-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+                               NavigationSuggestionEvent::kComboSquatting, 1);
+
+  // Make sure that the UI is now showing, and that no UKM data has been
+  // recorded yet.
+  ASSERT_TRUE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(0);
+
+  // Once we close the warning, ensure that the UI is no longer showing, and
+  // that UKM data has now been recorded.
+  CloseWarningLeaveSite(browser());
+  ASSERT_FALSE(IsUIShowing());
+
+  CheckRecordedHeuristicsUkmCount(1);
+  // Boolean values are /*blocklist*/ /*lookalike*/ /*keywords*/
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 0);
+
+  // Navigate to the same site again, but close the warning with an ignore
+  // instead of an accept. This should still record UKM data.
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  ASSERT_TRUE(IsUIShowing());
+
+  // Make sure the already collected UKM data still exists.
+  CheckRecordedHeuristicsUkmCount(1);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 0);
+
+  CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
+  ASSERT_FALSE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(2);
+  // Boolean values are /*blocklist*/ /*lookalike*/ /*keywords*/
+  // The last `false` is different from the previous test because
+  // `keywords heuristic` is not triggered by this test case.
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 0);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 1);
+  // TODO(crbug.com/1343630): keyword (embedded keyword) heuristic should
+  // be removed from the code including CheckHeuristicsUkmRecord.
+}
+
+// Test that a Safety Tip is shown and metrics are recorded when
+// a combo squatting url is flagged with a brand name from engaged sites.
+// In this test case, engaged site is not one of the keywords in `keyword`
+// heuristic.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggerOnComboSquattingSiteEngagement) {
+  // Set a launch config with 100% rollout for Combo Squatting.
+  reputation::AddSafetyTipHeuristicLaunchConfigForTesting(
+      reputation::HeuristicLaunchConfig::
+          HEURISTIC_COMBO_SQUATTING_ENGAGED_SITES,
+      100);
   base::HistogramTester histograms;
   const GURL kEngagedUrl = GetURL("example.com");
   const GURL kNavigatedUrl = GetURL("example-login.com");
@@ -1354,17 +1450,84 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_FALSE(IsUIShowing());
 
   histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
   histograms.ExpectBucketCount(
       lookalikes::kHistogramName,
       NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
 
-  // Heuristics with no UI don't record Safety Tips UKM.
+  // Make sure that the UI is now showing, and that no UKM data has been
+  // recorded yet.
+  ASSERT_TRUE(IsUIShowing());
   CheckRecordedHeuristicsUkmCount(0);
-  // TODO(crbug.com/1337475): Add CheckHeuristicsUkmRecord after showing the
-  // safety tip for this heuristic.
+
+  // Once we close the warning, ensure that the UI is no longer showing, and
+  // that UKM data has now been recorded.
+  CloseWarningLeaveSite(browser());
+  ASSERT_FALSE(IsUIShowing());
+
+  CheckRecordedHeuristicsUkmCount(1);
+  // Boolean values are /*blocklist*/ /*lookalike*/ /*keywords*/
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 0);
+
+  // Navigate to the same site again, but close the warning with an ignore
+  // instead of an accept. This should still record UKM data.
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  ASSERT_TRUE(IsUIShowing());
+
+  // Make sure the already collected UKM data still exists.
+  CheckRecordedHeuristicsUkmCount(1);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 0);
+
+  CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
+  ASSERT_FALSE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(2);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 0);
+  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, false}}, 1);
+}
+
+// This test checks that Safety Tip is not showing when the Combo Squatting
+// is not enabled for hard coded list by gradual roll out.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NotTriggerOnComboSquattingButNotLaunched) {
+  base::HistogramTester histograms;
+  const GURL kNavigatedUrl = GetURL("costco-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+                               NavigationSuggestionEvent::kComboSquatting, 1);
+
+  // Make sure that the UI is not showing, and that no UKM data has been
+  // recorded.
+  ASSERT_FALSE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(0);
+}
+
+// This test checks that Safety Tip is not showing when the Combo Squatting
+// is not enabled for engaged sites by gradual roll out.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NotTriggerOnComboSquattingSiteEngagementNotLaunched) {
+  base::HistogramTester histograms;
+  const GURL kEngagedUrl = GetURL("example.com");
+  const GURL kNavigatedUrl = GetURL("example-login.com");
+  SetEngagementScore(browser(), kEngagedUrl, kHighEngagement);
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(
+      lookalikes::kHistogramName,
+      NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
+
+  // Make sure that the UI is not showing, and that no UKM data has been
+  // recorded.
+  ASSERT_FALSE(IsUIShowing());
+  CheckRecordedHeuristicsUkmCount(0);
 }
 
 // Tests for Digital Asset Links for lookalike checks.

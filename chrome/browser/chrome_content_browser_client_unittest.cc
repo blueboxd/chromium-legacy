@@ -90,7 +90,6 @@
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/storage_partition_config.h"
@@ -946,6 +945,23 @@ TEST_F(ChromeContentBrowserClientSwitchTest,
   base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
   EXPECT_TRUE(
       result.HasSwitch(blink::switches::kWebSQLNonSecureContextEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest, PersistentQuotaEnabledDefault) {
+  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
+  EXPECT_FALSE(result.HasSwitch(blink::switches::kPersistentQuotaEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest, PersistentQuotaEnabledDisabled) {
+  profile()->GetPrefs()->SetBoolean(storage::kPersistentQuotaEnabled, false);
+  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
+  EXPECT_FALSE(result.HasSwitch(blink::switches::kPersistentQuotaEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest, PersistentQuotaEnabledEnabled) {
+  profile()->GetPrefs()->SetBoolean(storage::kPersistentQuotaEnabled, true);
+  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
+  EXPECT_TRUE(result.HasSwitch(blink::switches::kPersistentQuotaEnabled));
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

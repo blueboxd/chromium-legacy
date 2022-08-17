@@ -24,6 +24,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener;
@@ -49,11 +51,13 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.widget.DateDividedAdapter.DateViewHolder;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
@@ -110,6 +114,8 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
     private final ObservableSupplierImpl<Boolean> mShouldShowClearBrowsingDataSupplier =
             new ObservableSupplierImpl<>();
     private final PrefService mPrefService;
+    private @Nullable TabLayout mHistoryTabToggle;
+    private @Nullable TabLayout mJourneysTabToggle;
 
     private boolean mIsSearching;
 
@@ -255,11 +261,16 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                 public void onOptOut() {
                     onHistoryClustersOptOutChanged(false);
                 }
+
+                @Override
+                public boolean areTabGroupsEnabled() {
+                    return TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mActivity);
+                }
             };
 
             mHistoryClustersCoordinator = new HistoryClustersCoordinator(
                     Profile.getLastUsedRegularProfile(), activity, TemplateUrlServiceFactory.get(),
-                    historyClustersDelegate, ChromeAccessibilityUtil.get());
+                    historyClustersDelegate, ChromeAccessibilityUtil.get(), mSnackbarManager);
         }
 
         // 1. Create selectable components.
@@ -350,21 +361,24 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
         TabLayout tabLayout = viewGroup.findViewById(R.id.history_toggle_tab_layout);
         TabLayout.Tab selectedTab = tabLayout.getTabAt(selectedIndex);
         tabLayout.selectTab(selectedTab);
+
+        if (selectedIndex == HISTORY_TAB_INDEX) {
+            mHistoryTabToggle = tabLayout;
+        } else {
+            assert selectedIndex == JOURNEYS_TAB_INDEX;
+            mJourneysTabToggle = tabLayout;
+        }
+
         tabLayout.addOnTabSelectedListener(new OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab != selectedTab) {
                     swapContentView();
-                    // One TabLayout exists for each of the two surfaces. In order for the correct
-                    // tab to be selected when returning to the current surface, we need to reset
-                    // it.
-                    tabLayout.selectTab(selectedTab);
                 }
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {}
-
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
@@ -434,7 +448,7 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
             mContentManager.removeHeader();
-            mToolbar.showSearchView();
+            mToolbar.showSearchView(true);
             String searchEmptyString = getSearchEmptyString();
             mSelectableListLayout.onStartSearch(searchEmptyString);
             recordUserAction("Search");
@@ -501,24 +515,58 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
     }
 
     private void swapContentView() {
+        boolean toHistoryClusters;
         if (shouldShowIncognitoPlaceholder()) {
             return;
         } else if (isHistoryClustersUIShowing()) {
+            toHistoryClusters = false;
             mHistoryClustersCoordinator.onToggled(false);
             mContentView = mSelectableListLayout;
             mContentManager.startLoadingItems();
+            // Each page of content has a distinct TabLayout with independent selection state, but
+            // should only ever display the selected tab corresponding to the owning page. i.e. Page
+            // X's TabLayout should always show Tab X as selected. This means the selection state
+            // becomes incorrect when toggling away. If this toggle field is not null, that means
+            // we're coming back to an existing TabLayout that needs to have its selected tab reset.
+            // Note that this cannot easily be done at selection time because there's a race
+            // somewhere. Resetting at the last second seems to be more consistent.
+            if (mHistoryTabToggle != null) {
+                mHistoryTabToggle.selectTab(mHistoryTabToggle.getTabAt(HISTORY_TAB_INDEX));
+            }
         } else {
             assert mHistoryClustersCoordinator
                     != null : "swapContentView() shouldn't be called if HistoryClusters is off";
+            toHistoryClusters = true;
             mContentView = mHistoryClustersCoordinator.getActivityContentView();
             mHistoryClustersCoordinator.onToggled(true);
+            if (mJourneysTabToggle != null) {
+                mJourneysTabToggle.selectTab(mJourneysTabToggle.getTabAt(JOURNEYS_TAB_INDEX));
+            }
         }
 
-        Transition transition = new AutoTransition();
-        transition.addTarget(SelectableItemView.class);
+        Transition transition = makeContentSwapTransition(toHistoryClusters);
         Scene scene = new Scene(mRootView, mContentView);
         TransitionManager.go(scene, transition);
         mContentView.requestFocus();
+    }
+
+    private Transition makeContentSwapTransition(boolean toHistoryClusters) {
+        Transition transition = new AutoTransition();
+        transition.addTarget(SelectableItemView.class);
+        if (!toHistoryClusters) {
+            HistoryAdapter adapter = mContentManager.getAdapter();
+            RecyclerView recyclerView = mContentManager.getRecyclerView();
+            int lastVisiblePosition = ((LinearLayoutManager) recyclerView.getLayoutManager())
+                                              .findLastVisibleItemPosition();
+            for (int i = 0; i < adapter.getItemCount() && i <= lastVisiblePosition; i++) {
+                ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(i);
+                if (vh instanceof DateViewHolder) {
+                    transition.addTarget(vh.itemView);
+                }
+            }
+        }
+
+        return transition;
     }
 
     private boolean isHistoryClustersUIShowing() {

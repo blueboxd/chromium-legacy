@@ -19,6 +19,10 @@ class DIPSBounceDetector;
 class PermissionUmaUtil;
 class WebApkUkmRecorder;
 
+namespace apps {
+class WebsiteMetrics;
+}  // namespace apps
+
 namespace metrics {
 class UkmRecorderInterface;
 }  // namespace metrics
@@ -90,6 +94,11 @@ class METRICS_EXPORT UkmRecorder {
   static SourceId GetSourceIdForDesktopWebAppStartUrl(
       base::PassKey<web_app::DesktopWebAppUkmRecorder>,
       const GURL& start_url);
+
+  // Gets new SourceId for a website Url. This method should only be called by
+  // WebsiteMetrics.
+  static SourceId GetSourceIdForWebsiteUrl(base::PassKey<apps::WebsiteMetrics>,
+                                           const GURL& start_url);
 
   // Gets new source Id for PAYMENT_APP_ID type and updates the source url to
   // the scope of the app. This method should only be called by

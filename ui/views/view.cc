@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -243,6 +244,12 @@ View::~View() {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_) {
       child->parent_ = nullptr;
+
+      // Remove any references to |child| to avoid holding a dangling ptr.
+      if (child->previous_focusable_view_)
+        child->previous_focusable_view_->next_focusable_view_ = nullptr;
+      if (child->next_focusable_view_)
+        child->next_focusable_view_->previous_focusable_view_ = nullptr;
 
       // Since all children are removed here, it is safe to set
       // |child|'s focus list pointers to null and expect any references
@@ -600,6 +607,9 @@ void View::SetVisible(bool visible) {
 
     // Notify all other subscriptions of the change.
     OnPropertyChanged(&visible_, kPropertyEffectsPaint);
+
+    if (was_visible)
+      UpdateTooltip();
   }
 
   if (parent_) {
@@ -2389,7 +2399,8 @@ void View::HandlePropertyChangeEffects(PropertyEffects effects) {
 void View::AfterPropertyChange(const void* key, int64_t old_value) {
   if (key == kElementIdentifierKey) {
     const ui::ElementIdentifier old_element_id =
-        ui::ElementIdentifier::FromRawValue(old_value);
+        ui::ElementIdentifier::FromRawValue(
+            base::checked_cast<intptr_t>(old_value));
     if (old_element_id) {
       views::ElementTrackerViews::GetInstance()->UnregisterView(old_element_id,
                                                                 this);

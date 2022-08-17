@@ -80,14 +80,17 @@ namespace devtools_instrumentation {
 
 // If this function caused the User-Agent header to be overridden,
 // `devtools_user_agent_overridden` will be set to true; otherwise, it will be
-// set to false.
+// set to false. If this function caused the Accept-Language header to be
+// overridden, `devtools_accept_language_overridden` will be set to true;
+// otherwise, it will be set to false.
 void ApplyNetworkRequestOverrides(
     FrameTreeNode* frame_tree_node,
     blink::mojom::BeginNavigationParams* begin_params,
     bool* report_raw_headers,
     absl::optional<std::vector<net::SourceStream::SourceType>>*
         devtools_accepted_stream_types,
-    bool* devtools_user_agent_overridden);
+    bool* devtools_user_agent_overridden,
+    bool* devtools_accept_language_overridden);
 
 // Returns true if devtools want |*override_out| to be used.
 // (A true return and |*override_out| being nullopt means no user agent client
@@ -154,6 +157,10 @@ void OnPrefetchRequestComplete(
     FrameTreeNode* frame_tree_node,
     const std::string& request_id,
     const network::URLLoaderCompletionStatus& status);
+void OnPrefetchBodyDataReceived(FrameTreeNode* frame_tree_node,
+                                const std::string& request_id,
+                                const std::string& body,
+                                bool is_base64_encoded);
 
 void OnResetNavigationRequest(NavigationRequest* navigation_request);
 void OnNavigationRequestWillBeSent(const NavigationRequest& navigation_request);

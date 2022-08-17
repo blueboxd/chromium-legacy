@@ -50,8 +50,8 @@ static int AdjustSizeToRemainingSize(int current,
   return base::checked_cast<int>(temp_product.ValueOrDie());
 }
 
-LayoutFrameSet::LayoutFrameSet(HTMLFrameSetElement* frame_set)
-    : LayoutBox(frame_set) {
+LayoutFrameSet::LayoutFrameSet(Element* element) : LayoutBox(element) {
+  DCHECK(IsA<HTMLFrameSetElement>(element));
   SetInline(false);
 }
 
@@ -86,13 +86,13 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
   available_len = max(available_len, 0);
 
   DCHECK_EQ(axis.sizes_.size(), deltas.size());
-  int* grid_layout = axis.sizes_.data();
 
   if (grid.IsEmpty()) {
-    grid_layout[0] = available_len;
+    axis.sizes_[0] = LayoutUnit(available_len);
     return;
   }
 
+  Vector<int> grid_layout(axis.sizes_.size());
   int grid_len = axis.sizes_.size();
   DCHECK(grid_len);
 
@@ -182,8 +182,10 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
     for (int i = 0; i < grid_len; ++i) {
       if (grid[i].IsRelative()) {
         grid_layout[i] =
-            (max(grid[i].Value(), 1.) * remaining_relative) / total_relative;
+            (ClampTo<int>(max(grid[i].Value(), 1.)) * remaining_relative) /
+            total_relative;
         remaining_len -= grid_layout[i];
+        DCHECK_GE(remaining_len, 0);
         last_relative = i;
       }
     }
@@ -283,6 +285,9 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
     for (int i = 0; i < grid_len; ++i)
       grid_layout[i] -= deltas[i];
   }
+
+  for (int i = 0; i < grid_len; ++i)
+    axis.sizes_[i] = LayoutUnit(grid_layout[i]);
 }
 
 void LayoutFrameSet::NotifyFrameEdgeInfoChanged() {

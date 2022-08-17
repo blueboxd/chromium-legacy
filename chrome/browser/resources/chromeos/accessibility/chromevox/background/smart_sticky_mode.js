@@ -7,7 +7,9 @@
  * when the current range is over an editable; restores sticky mode when not on
  * an editable.
  */
+import {AutomationUtil} from '../../common/automation_util.js';
 import {CursorRange} from '../../common/cursors/range.js';
+import {Earcon} from '../common/abstract_earcons.js';
 
 import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState, ChromeVoxStateObserver} from './chromevox_state.js';

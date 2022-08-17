@@ -67,8 +67,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -112,15 +112,24 @@ bool PrecompileInlineScriptsEnabled() {
   return kEnabled;
 }
 
-Thread* GetPreloadScannerThread() {
+bool PretokenizeCSSEnabled() {
+  // Cache the feature value since checking for each parser regresses some micro
+  // benchmarks.
+  static const bool kEnabled =
+      base::FeatureList::IsEnabled(features::kPretokenizeCSS) &&
+      features::kPretokenizeInlineSheets.Get();
+  return kEnabled;
+}
+
+NonMainThread* GetPreloadScannerThread() {
   DCHECK(ThreadedPreloadScannerEnabled());
 
   // The preload scanner relies on parsing CSS, which requires creating garbage
   // collected objects. This means the thread the scanning runs on must be GC
   // enabled.
   DEFINE_STATIC_LOCAL(
-      std::unique_ptr<Thread>, preload_scanner_thread,
-      (Thread::CreateThread(
+      std::unique_ptr<NonMainThread>, preload_scanner_thread,
+      (NonMainThread::CreateThread(
           ThreadCreationParams(ThreadType::kPreloadScannerThread)
               .SetSupportsGC(true))));
   return preload_scanner_thread.get();
@@ -156,7 +165,10 @@ PreloadProcessingMode GetPreloadProcessingMode() {
           &features::kThreadedPreloadScanner, "preload-processing-mode",
           PreloadProcessingMode::kImmediate, &kPreloadProcessingModeOptions};
 
-  return kPreloadProcessingModeParam.Get();
+  // Cache the value to avoid parsing the param string more than once.
+  static const PreloadProcessingMode kPreloadProcessingModeValue =
+      kPreloadProcessingModeParam.Get();
+  return kPreloadProcessingModeValue;
 }
 
 bool IsPreloadScanningEnabled(Document* document) {
@@ -528,12 +540,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
         document.UkmSourceID(), document.UkmRecorder());
   }
 
-  if (GetDocument()->IsInOutermostMainFrame() &&
-      !task_runner_state_->IsSynchronous()) {
-    tokenizer_metrics_reporter_ =
-        std::make_unique<HTMLTokenizerMetricsReporter>(tokenizer_.get());
-  }
-
   // Don't create preloader for parsing clipboard content.
   if (content_policy == kDisallowScriptingAndPluginContent)
     return;
@@ -583,8 +589,6 @@ void HTMLDocumentParser::Detach() {
   insertion_preload_scanner_.reset();
   background_script_scanner_.Reset();
   background_scanner_.Reset();
-  // `tokenizer_metrics_reporter_` has a reference to `tokenizer_`.
-  tokenizer_metrics_reporter_.reset();
   // Oilpan: It is important to clear token_ to deallocate backing memory of
   // HTMLToken::data_ and let the allocator reuse the memory for
   // HTMLToken::data_ of a next HTMLDocumentParser. We need to clear
@@ -810,6 +814,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
   base::ElapsedTimer chunk_parsing_timer;
   unsigned tokens_parsed = 0;
   base::TimeDelta time_executing_script;
+  base::TimeDelta time_in_next_token;
   while (!should_yield) {
     if (task_runner_state_->ShouldProcessPreloads())
       FlushPendingPreloads();
@@ -833,10 +838,14 @@ bool HTMLDocumentParser::PumpTokenizer() {
       RUNTIME_CALL_TIMER_SCOPE(
           V8PerIsolateData::MainThreadIsolate(),
           RuntimeCallStats::CounterId::kHTMLTokenizerNextToken);
-      if (tokenizer_metrics_reporter_)
-        tokenizer_metrics_reporter_->WillProcessNextToken(input_.Current());
-
-      if (!tokenizer_->NextToken(input_.Current(), Token()))
+      absl::optional<base::ElapsedTimer> next_token_timer;
+      if (metrics_reporter_)
+        next_token_timer.emplace();
+      const bool has_next_token =
+          tokenizer_->NextToken(input_.Current(), Token());
+      if (next_token_timer)
+        time_in_next_token += next_token_timer->Elapsed();
+      if (!has_next_token)
         break;
       budget--;
       tokens_parsed++;
@@ -880,7 +889,8 @@ bool HTMLDocumentParser::PumpTokenizer() {
 
   if (tokens_parsed && metrics_reporter_) {
     metrics_reporter_->AddChunk(
-        chunk_parsing_timer.Elapsed() - time_executing_script, tokens_parsed);
+        chunk_parsing_timer.Elapsed() - time_executing_script, tokens_parsed,
+        time_in_next_token);
   }
 
   if (is_stopped_or_parsing_fragment)
@@ -960,11 +970,6 @@ void HTMLDocumentParser::ConstructTreeFromHTMLToken() {
   // parser.
   Token().Clear();
 
-  if (tokenizer_metrics_reporter_) {
-    tokenizer_metrics_reporter_->WillConstructTreeFromToken(atomic_token,
-                                                            input_.Current());
-  }
-
   tree_builder_->ConstructTree(&atomic_token);
   CheckIfBlockingStylesheetAdded();
 }
@@ -985,9 +990,6 @@ void HTMLDocumentParser::insert(const String& source) {
 
   TRACE_EVENT2("blink", "HTMLDocumentParser::insert", "source_length",
                source.length(), "parser", (void*)this);
-
-  if (tokenizer_metrics_reporter_ && !source.IsEmpty())
-    tokenizer_metrics_reporter_->OnDocumentWrite(input_.Current());
 
   SegmentedString excluded_line_number_source(source);
   excluded_line_number_source.SetExcludeLineNumbers();
@@ -1063,8 +1065,6 @@ void HTMLDocumentParser::Append(const String& input_source) {
     }
   }
 
-  if (tokenizer_metrics_reporter_)
-    tokenizer_metrics_reporter_->WillAppend(input_source);
   input_.AppendToEnd(source);
   task_runner_state_->MarkSeenFirstByte();
 
@@ -1528,7 +1528,7 @@ void HTMLDocumentParser::ScanInBackground(const String& source) {
     return;
   }
 
-  if (!PrecompileInlineScriptsEnabled())
+  if (!PrecompileInlineScriptsEnabled() && !PretokenizeCSSEnabled())
     return;
 
   DCHECK(!background_scanner_);

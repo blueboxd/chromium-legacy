@@ -49,10 +49,12 @@
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1210557957257435379">屏幕录制</translation>
 <translation id="121097972571826261">前进一个字词</translation>
+<translation id="1217633719248931900">前往应用</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />，Play 商店应用</translation>
 <translation id="1225748608451425081">由于发生了一个已知问题，您的 Chromebook 已被锁定。您可以在 <ph name="TIME_LEFT" />后重新登录。</translation>
 <translation id="1229194443904279055">停止选择</translation>
 <translation id="1239161794459865856">已连接“<ph name="FEATURE_NAME" />”。</translation>
+<translation id="1240638468526743569">某个应用</translation>
 <translation id="1246890715821376239">不支持的应用</translation>
 <translation id="1247372569136754018">麦克风（内部）</translation>
 <translation id="1247519845643687288">最近用过的应用</translation>
@@ -100,6 +102,7 @@
 <translation id="1455242230282523554">显示语言设置</translation>
 <translation id="1460620680449458626">当前处于静音状态。</translation>
 <translation id="1467432559032391204">向左</translation>
+<translation id="146902737843070955">您的管理员要求进行此项更改</translation>
 <translation id="147310119694673958">手机电量：<ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">悬浮无障碍功能菜单</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />，按 Enter 键即可打开日历视图</translation>
@@ -327,6 +330,7 @@
 <translation id="2894949423239620203">数据线可能会影响性能</translation>
 <translation id="2903844815300039659">已连接到网络“<ph name="NAME" />”，<ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">屏幕截图</translation>
+<translation id="2925246975070834767">欢迎试用“自动缩放”功能，使自己位于屏幕中央。您可在“快捷设置”中开启此功能。</translation>
 <translation id="2941112035454246133">低</translation>
 <translation id="2942350706960889382">停靠的放大镜</translation>
 <translation id="2942516765047364088">任务栏位置</translation>
@@ -444,6 +448,7 @@
 <translation id="3593039967545720377">您只需按“<ph name="SHORTCUT_KEY_NAME" /> + V”打开剪贴板，便可访问剪贴板历史记录。首先，请复制一项内容。</translation>
 <translation id="3593646411856133110">向上滑动并按住屏幕可查看已打开的应用</translation>
 <translation id="3595596368722241419">电池已充满</translation>
+<translation id="3596012367874587041">应用设置</translation>
 <translation id="3600061223661453002">关闭</translation>
 <translation id="3604801046548457007">已创建桌面“<ph name="DESK_TITILE" />”</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
@@ -469,6 +474,7 @@
 <translation id="3708186454126126312">曾经连接过</translation>
 <translation id="371370241367527062">前置麦克风</translation>
 <translation id="3713734891607377840">下载完成后打开</translation>
+<translation id="3724279623330129812">“自动缩放”功能已将拍摄对象置于摄像头画面中央</translation>
 <translation id="3726171378575546917">无法在此设备上使用<ph name="UNAVAILABLE_APPS_ONE" />、<ph name="UNAVAILABLE_APPS_TWO" />以及另外 <ph name="UNAVAILABLE_APPS_COUNT" /> 个应用。</translation>
 <translation id="3735740477244556633">排序依据</translation>
 <translation id="3742055079367172538">已完成屏幕截图</translation>
@@ -633,6 +639,7 @@
 <translation id="4628757576491864469">设备</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />，星级评分为 <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{请在 1 天内将设备回滚到上一个版本}other{请在 # 天内将设备回滚到上一个版本}}</translation>
+<translation id="4633636853437260449">按 Ctrl+W 即可删除</translation>
 <translation id="4642092649622328492">截取局部屏幕截图</translation>
 <translation id="4644727592819780893">区域太小，无法显示相机预览画面</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />，推荐的应用</translation>
@@ -681,6 +688,7 @@
 <translation id="490788395437447240">电池电量：<ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">强</translation>
 <translation id="4918086044614829423">接受</translation>
+<translation id="4919841137949306064"><ph name="APP_NAME" />正在使用您的摄像头</translation>
 <translation id="4925542575807923399">此帐号的管理员规定：在多帐号登录会话中，此帐号必须是最先登录的帐号。</translation>
 <translation id="4938176435186993759">隐藏所有建议</translation>
 <translation id="4945196315133970626">关闭通知</translation>
@@ -834,6 +842,7 @@
 <translation id="5779721926447984944">已固定的文件</translation>
 <translation id="5788127256798019331">Play 文件</translation>
 <translation id="5790085346892983794">成功</translation>
+<translation id="5804651031882187592">关闭“锁定 SIM 卡”设置</translation>
 <translation id="5805809050170488595">点击即可激活“<ph name="NETWORK_NAME" />”</translation>
 <translation id="5825969630400862129">设置已连接的设备</translation>
 <translation id="5837036133683224804">停止将“<ph name="ROUTE_TITLE" />”投放至“<ph name="RECEIVER_NAME" />”</translation>
@@ -909,6 +918,7 @@
 <translation id="6220928844947387476">现在，您可以同时录制您本人和屏幕内容</translation>
 <translation id="622484624075952240">向下箭头键</translation>
 <translation id="6231419273573514727">外围设备的性能可能会受到限制</translation>
+<translation id="6232891689835436217"><ph name="APP_NAME" />正在使用您的摄像头和麦克风</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">已锁定为横向</translation>
 <translation id="6259254695169772643">请使用您的触控笔进行选择</translation>
@@ -1124,6 +1134,7 @@
 <translation id="7544300628205093162">键盘背光已开启</translation>
 <translation id="7548434653388805669">该睡觉了</translation>
 <translation id="7551643184018910560">固定到任务栏</translation>
+<translation id="7557816257942363084"><ph name="APP_NAME" />正在使用您的麦克风</translation>
 <translation id="7561982940498449837">关闭菜单</translation>
 <translation id="7564874036684306347">将窗口移至另一桌面可能会导致出现意外行为 - 后续的通知、窗口和对话框可能会被拆分到不同的桌面中。</translation>
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>

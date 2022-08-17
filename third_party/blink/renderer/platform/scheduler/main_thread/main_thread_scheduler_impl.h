@@ -73,6 +73,8 @@ FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm);
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, Tracing);
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest,
                      LogIpcsPostedToDocumentsInBackForwardCache);
+FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest,
+                     CanExceedIdleDeadlineIfRequired);
 }  // namespace main_thread_scheduler_impl_unittest
 class AgentGroupSchedulerImpl;
 class FrameSchedulerImpl;
@@ -83,6 +85,7 @@ class CPUTimeBudgetPool;
 class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public ThreadSchedulerBase,
       public MainThreadScheduler,
+      public WebThreadScheduler,
       public IdleHelper::Delegate,
       public RenderWidgetSignals::Observer,
       public base::trace_event::TraceLog::AsyncEnabledStateObserver {
@@ -128,7 +131,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // Use resource fetch priority for resource loading tasks
     // (crbug.com/860545).
     bool use_resource_fetch_priority;
-    bool use_resource_priorities_only_during_loading;
 
     // Prioritize compositing and loading tasks until first contentful paint.
     // (crbug.com/971191)
@@ -183,7 +185,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void ResumeTimersForAndroidWebView() override;
 #endif
   bool ShouldYieldForHighPriorityWork() override;
-  bool CanExceedIdleDeadlineIfRequired() const override;
   void AddTaskObserver(base::TaskObserver* task_observer) override;
   void RemoveTaskObserver(base::TaskObserver* task_observer) override;
   void Shutdown() override;
@@ -209,9 +210,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   std::unique_ptr<WebAgentGroupScheduler> CreateAgentGroupScheduler() override;
   WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
-  NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
-    return nullptr;
-  }
   void SetV8Isolate(v8::Isolate* isolate) override;
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
 
@@ -263,11 +261,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       bool has_visible_render_widget_with_touch_handler) override;
 
   // ThreadSchedulerImpl implementation:
-  scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
   const base::TickClock* GetTickClock() const override;
   MainThreadSchedulerHelper& GetHelper() override { return helper_; }
 
+  scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner();
   base::TimeTicks NowTicks() const;
 
   TaskAttributionTracker* GetTaskAttributionTracker() override {
@@ -435,6 +433,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   FRIEND_TEST_ALL_PREFIXES(
       main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
       LogIpcsPostedToDocumentsInBackForwardCache);
+  FRIEND_TEST_ALL_PREFIXES(
+      main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
+      CanExceedIdleDeadlineIfRequired);
 
   enum class TimeDomainType {
     kReal,
@@ -442,7 +443,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   };
 
   // WebThreadScheduler private implementation:
-  WebThreadScheduler* GetWebMainThreadScheduler() override;
+  WebThreadScheduler* ToWebMainThreadScheduler() override;
 
   // ThreadSchedulerBase overrides
   base::SequencedTaskRunner* GetVirtualTimeTaskRunner() override;

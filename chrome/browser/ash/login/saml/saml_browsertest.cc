@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/login/auth/public/key.h"
 #include "ash/components/login/auth/public/saml_password_attributes.h"
@@ -32,7 +31,9 @@
 #include "chrome/browser/ash/attestation/mock_machine_certificate_uploader.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/saml/fake_saml_idp_mixin.h"
+#include "chrome/browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
@@ -69,17 +70,18 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/attestation/mock_attestation_flow.h"
 #include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/key.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/cryptohome/key.pb.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -906,8 +908,9 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, UseAutenticatedUserEmailAddress) {
 
 // Verifies that if the authenticated user's e-mail address cannot be retrieved,
 // an error message is shown.
+// TODO(crbug.com/1348198): Flaky.
 IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures,
-                       FailToRetrieveAutenticatedUserEmailAddress) {
+                       DISABLED_FailToRetrieveAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
@@ -1676,16 +1679,49 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLInterstitialNext) {
 // pages is controlled by the kLoginVideoCaptureAllowedUrls pref rather than the
 // underlying user content setting.
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, TestLoginMediaPermission) {
-  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
+  SetLoginBehaviorPolicyToSAMLInterstitial();
+  WaitForSigninScreen();
 
+  if (GetParam()) {
+    ShowSAMLLoginForm();
+    MaybeWaitForSAMLToLoad();
+  } else {
+    ShowSAMLInterstitial();
+    ClickNextOnSAMLInterstitialPage();
+  }
+
+  const GURL url0(fake_saml_idp()->GetSamlPageUrl());
   const GURL url1("https://google.com");
   const GURL url2("https://corp.example.com");
   const GURL url3("https://not-allowed.com");
-  SetLoginVideoCaptureAllowedUrls({url1, url2});
-  WaitForSigninScreen();
+  SetLoginVideoCaptureAllowedUrls({url0, url1, url2});
 
-  // Make sure WebUI is loaded.
-  LoginDisplayHost::default_host()->GetWizardController();
+  // Trigger the permission check from the js side.
+  {
+    bool get_user_media_success = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        SigninFrameJS().web_contents(),
+        "navigator.getUserMedia("
+        "    {video: true},"
+        "    function() { window.domAutomationController.send(true); },"
+        "    function() { window.domAutomationController.send(false); });",
+        &get_user_media_success));
+    ASSERT_TRUE(get_user_media_success);
+  }
+  {
+    bool get_user_media_success = true;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        SigninFrameJS().web_contents(),
+        "navigator.getUserMedia("
+        "    {audio: true},"
+        "    function() { window.domAutomationController.send(true); },"
+        "    function() { window.domAutomationController.send(false); });",
+        &get_user_media_success));
+    ASSERT_FALSE(get_user_media_success);
+  }
+
+  // Check permissions directly by calling the `CheckMediaAccessPermission`.
   content::WebContents* web_contents = GetLoginUI()->GetWebContents();
   content::WebContentsDelegate* web_contents_delegate =
       web_contents->GetDelegate();
@@ -1716,6 +1752,72 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, TestLoginMediaPermission) {
       ->SetContentSettingDefaultScope(url3, url3,
                                       ContentSettingsType::MEDIASTREAM_CAMERA,
                                       CONTENT_SETTING_ALLOW);
+
+  EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetPrimaryMainFrame(), url3,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+}
+
+// Tests that requesting webcam access from the lock screen works correctly.
+IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, TestLockMediaPermission) {
+  SetSAMLOfflineSigninTimeLimitPolicy(0);
+  const GURL url0(fake_saml_idp()->GetSamlPageUrl());
+  const GURL url1("https://google.com");
+  const GURL url2("https://corp.example.com");
+  const GURL url3("https://not-allowed.com");
+  SetLoginVideoCaptureAllowedUrls({url0, url1, url2});
+  ShowGAIALoginForm();
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  ScreenLockerTester().Lock();
+
+  absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
+      LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
+  ASSERT_TRUE(reauth_dialog_helper);
+
+  {
+    bool get_user_media_success = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        reauth_dialog_helper->SigninFrameJS().web_contents(),
+        "navigator.getUserMedia("
+        "    {video: true},"
+        "    function() { window.domAutomationController.send(true); },"
+        "    function() { window.domAutomationController.send(false); });",
+        &get_user_media_success));
+    ASSERT_TRUE(get_user_media_success);
+  }
+  {
+    bool get_user_media_success = true;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        reauth_dialog_helper->SigninFrameJS().web_contents(),
+        "navigator.getUserMedia("
+        "    {audio: true},"
+        "    function() { window.domAutomationController.send(true); },"
+        "    function() { window.domAutomationController.send(false); });",
+        &get_user_media_success));
+    ASSERT_FALSE(get_user_media_success);
+  }
+
+  // Check permissions directly by calling the `CheckMediaAccessPermission`.
+  // Video devices should be allowed from the lock screen for specified urls.
+  content::WebContents* web_contents =
+      reauth_dialog_helper->DialogWebContents();
+  content::WebContentsDelegate* web_contents_delegate =
+      web_contents->GetDelegate();
+
+  // Mic should always be blocked.
+  EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetPrimaryMainFrame(), url1,
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+
+  // Camera should be allowed if allowed by the allowlist, otherwise blocked.
+  EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetPrimaryMainFrame(), url1,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+
+  EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetPrimaryMainFrame(), url2,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
       web_contents->GetPrimaryMainFrame(), url3,

@@ -57,6 +57,14 @@ class SkottieSerializationHistory;
 class TransferCacheDeserializeHelper;
 class TransferCacheSerializeHelper;
 
+class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
+ public:
+  explicit ThreadsafePath(const SkPath& path) : SkPath(path) {
+    updateBoundsCache();
+  }
+  ThreadsafePath() { updateBoundsCache(); }
+};
+
 class CC_PAINT_EXPORT SharedImageProvider {
  public:
   enum class Error {
@@ -408,25 +416,28 @@ class CC_PAINT_EXPORT ClipPathOp final : public PaintOp {
   ClipPathOp(SkPath path,
              SkClipOp op,
              bool antialias,
-             UsePaintCache use_paint_cache = UsePaintCache::kEnabled);
-  ClipPathOp(ClipPathOp&&);
-  ~ClipPathOp();
+             UsePaintCache use_paint_cache = UsePaintCache::kEnabled)
+      : PaintOp(kType),
+        path(path),
+        op(op),
+        antialias(antialias),
+        use_cache(use_paint_cache) {}
   static void Raster(const ClipPathOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return IsValidSkClipOp(op) && IsValidPath(*path); }
+  bool IsValid() const { return IsValidSkClipOp(op) && IsValidPath(path); }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   int CountSlowPaths() const;
   bool HasNonAAPaint() const { return !antialias; }
   HAS_SERIALIZATION_FUNCTIONS();
 
-  std::unique_ptr<SkPath> path;
+  ThreadsafePath path;
   SkClipOp op;
   bool antialias;
   UsePaintCache use_cache;
 
  private:
-  ClipPathOp();
+  ClipPathOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ClipRectOp final : public PaintOp {
@@ -708,19 +719,21 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
   static constexpr bool kIsDrawOp = true;
   DrawPathOp(const SkPath& path,
              const PaintFlags& flags,
-             UsePaintCache use_paint_cache = UsePaintCache::kEnabled);
-  DrawPathOp(DrawPathOp&&);
-  ~DrawPathOp();
+             UsePaintCache use_paint_cache = UsePaintCache::kEnabled)
+      : PaintOpWithFlags(kType, flags),
+        path(path),
+        sk_path_fill_type(static_cast<uint8_t>(path.getFillType())),
+        use_cache(use_paint_cache) {}
   static void RasterWithFlags(const DrawPathOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid() && IsValidPath(*path); }
+  bool IsValid() const { return flags.IsValid() && IsValidPath(path); }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   int CountSlowPaths() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
-  std::unique_ptr<SkPath> path;
+  ThreadsafePath path;
 
   // Changing the fill type on an SkPath does not change the
   // generation id. This can lead to caching issues so we explicitly
@@ -730,7 +743,7 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
   UsePaintCache use_cache;
 
  private:
-  DrawPathOp();
+  DrawPathOp() : PaintOpWithFlags(kType) {}
 };
 
 class CC_PAINT_EXPORT DrawRecordOp final : public PaintOp {
@@ -963,7 +976,8 @@ class CC_PAINT_EXPORT SaveLayerOp final : public PaintOpWithFlags {
 class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::SaveLayerAlpha;
-  SaveLayerAlphaOp(const SkRect* bounds, uint8_t alpha)
+  template <class F, class = std::enable_if_t<std::is_same_v<F, float>>>
+  SaveLayerAlphaOp(const SkRect* bounds, F alpha)
       : PaintOp(kType), bounds(bounds ? *bounds : kUnsetRect), alpha(alpha) {}
   static void Raster(const SaveLayerAlphaOp* op,
                      SkCanvas* canvas,
@@ -975,7 +989,7 @@ class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect bounds;
-  uint8_t alpha;
+  float alpha;
 
  private:
   SaveLayerAlphaOp() : PaintOp(kType) {}
@@ -1403,7 +1417,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     operator bool() const { return !!current_op_; }
 
     // Guaranteed to be 255 for all ops without flags.
-    uint8_t alpha() const { return current_alpha_; }
+    uint8_t alpha() const {
+      return static_cast<uint8_t>(current_alpha_ * 255.0f);
+    }
 
    private:
     void FindNextOp();
@@ -1419,7 +1435,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     // analysis of sampling profiler data and tab_search:top100:2020).
     RAW_PTR_EXCLUSION const PaintOp* current_op_ = nullptr;
 
-    uint8_t current_alpha_ = 255;
+    float current_alpha_ = 1.0f;
   };
 
  private:

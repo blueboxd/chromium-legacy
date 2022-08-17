@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {keyDownOn, keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-
 import {assertEquals, assertFalse, assertNotEquals, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise, flushTasks} from 'chrome://webui-test/test_util.js';
 
@@ -339,11 +338,13 @@ suite('cr-dialog', function() {
 
     const dialog = document.body.querySelector('cr-dialog')!;
     assertFalse(dialog.open);
-    const bodyContainer = dialog.$$('.body-container');
+    const bodyContainer = dialog.shadowRoot!.querySelector('.body-container');
     assertTrue(!!bodyContainer);
-    const topShadow = dialog.$$('#cr-container-shadow-top');
+    const topShadow =
+        dialog.shadowRoot!.querySelector('#cr-container-shadow-top');
     assertTrue(!!topShadow);
-    const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
+    const bottomShadow =
+        dialog.shadowRoot!.querySelector('#cr-container-shadow-bottom');
     assertTrue(!!bottomShadow);
 
     return flushTasks().then(() => {
@@ -365,9 +366,11 @@ suite('cr-dialog', function() {
     const bodyContainer =
         dialog.shadowRoot!.querySelector<HTMLElement>('.body-container');
     assertTrue(!!bodyContainer);
-    const topShadow = dialog.$$('#cr-container-shadow-top');
+    const topShadow =
+        dialog.shadowRoot!.querySelector('#cr-container-shadow-top');
     assertTrue(!!topShadow);
-    const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
+    const bottomShadow =
+        dialog.shadowRoot!.querySelector('#cr-container-shadow-bottom');
     assertTrue(!!bottomShadow);
 
     dialog.showModal();  // Attach the dialog for the first time here.

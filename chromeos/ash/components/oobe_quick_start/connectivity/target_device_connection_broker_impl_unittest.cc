@@ -7,21 +7,20 @@
 #include "base/bind.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/oobe_quick_start/connectivity/fast_pair_advertiser.h"
+#include "chromeos/ash/components/oobe_quick_start/connectivity/random_session_id.h"
 #include "chromeos/ash/components/oobe_quick_start/connectivity/target_device_connection_broker_factory.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace ash::quick_start {
+
 namespace {
 
-using testing::NiceMock;
+constexpr size_t kMaxEndpointInfoDisplayNameLength = 18;
 
-using TargetDeviceConnectionBroker =
-    ash::quick_start::TargetDeviceConnectionBroker;
-using TargetDeviceConnectionBrokerImpl =
-    ash::quick_start::TargetDeviceConnectionBrokerImpl;
-using FastPairAdvertiser = ash::quick_start::FastPairAdvertiser;
+using testing::NiceMock;
 
 // Allows us to delay returning a Bluetooth adapter until after ReturnAdapter()
 // is called. Used for testing how the connection broker behaves before the
@@ -63,10 +62,9 @@ class FakeFastPairAdvertiser : public FastPairAdvertiser {
     std::move(on_destroy_callback_).Run();
   }
 
-  void StartAdvertising(
-      base::OnceCallback<void()> callback,
-      base::OnceCallback<void()> error_callback,
-      const base::UnguessableToken& random_session_id) override {
+  void StartAdvertising(base::OnceCallback<void()> callback,
+                        base::OnceCallback<void()> error_callback,
+                        const RandomSessionId& random_session_id) override {
     ++start_advertising_call_count_;
     if (should_succeed_on_start_)
       std::move(callback).Run();
@@ -200,6 +198,18 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
   }
 
   void StopAdvertisingCallback() { stop_advertising_callback_called_ = true; }
+
+  std::vector<uint8_t> GenerateEndpointInfo() {
+    return static_cast<TargetDeviceConnectionBrokerImpl*>(
+               connection_broker_.get())
+        ->GenerateEndpointInfo();
+  }
+
+  const RandomSessionId& GetRandomSessionId() {
+    return static_cast<TargetDeviceConnectionBrokerImpl*>(
+               connection_broker_.get())
+        ->random_session_id_;
+  }
 
  protected:
   bool is_bluetooth_powered_ = true;
@@ -368,3 +378,68 @@ TEST_F(TargetDeviceConnectionBrokerImplTest, StopFastPairAdvertising) {
   EXPECT_TRUE(fast_pair_advertiser_factory_->AdvertiserDestroyed());
   EXPECT_TRUE(stop_advertising_callback_called_);
 }
+
+TEST_F(TargetDeviceConnectionBrokerImplTest, GenerateEndpointInfo) {
+  std::vector<uint8_t> endpoint_info = GenerateEndpointInfo();
+
+  // Points to the field being parsed.
+  size_t i = 0;
+
+  ASSERT_GT(endpoint_info.size(), i);
+  uint8_t version = endpoint_info[i];
+  EXPECT_EQ(1u, version);
+  i++;
+
+  // Parse the display name. The field is variable-length, so we have to look
+  // out for either a null byte or for the display name to reach the maximum
+  // length.
+  ASSERT_GT(endpoint_info.size(), i);
+  size_t j = 0;
+  std::vector<uint8_t> display_name_bytes;
+  while (i + j < endpoint_info.size() && endpoint_info[i + j] != 0u &&
+         j < kMaxEndpointInfoDisplayNameLength) {
+    display_name_bytes.push_back(endpoint_info[i + j]);
+    j++;
+  }
+  // Assert that we didn't break out of the while loop because we ran out of
+  // bytes.
+  ASSERT_LT(i + j, endpoint_info.size());
+  if (j < kMaxEndpointInfoDisplayNameLength) {
+    // Move past the null-terminator if the display name length is less than the
+    // max.
+    ASSERT_EQ(0u, endpoint_info[i + j]);
+    j++;
+  }
+  std::string display_name =
+      std::string(display_name_bytes.begin(), display_name_bytes.end());
+  EXPECT_EQ("Chromebook", display_name);
+  i += j;
+
+  ASSERT_GT(endpoint_info.size(), i);
+  uint8_t verification_style = endpoint_info[i];
+  EXPECT_EQ(0u, verification_style);
+  i++;
+
+  ASSERT_GT(endpoint_info.size(), i);
+  uint8_t device_type = endpoint_info[i];
+  EXPECT_EQ(0u, device_type);
+  i++;
+
+  // Parse the fixed-length RandomSessionId.
+  ASSERT_GE(endpoint_info.size(), i + RandomSessionId::kLength);
+  base::span<const uint8_t, RandomSessionId::kLength> session_id_bytes =
+      GetRandomSessionId().AsBytes();
+  for (size_t k = i; k < i + RandomSessionId::kLength; k++) {
+    EXPECT_EQ(session_id_bytes[k - i], endpoint_info[k]);
+  }
+  i += RandomSessionId::kLength;
+
+  ASSERT_GT(endpoint_info.size(), i);
+  uint8_t is_quick_start = endpoint_info[i];
+  EXPECT_EQ(1u, is_quick_start);
+
+  // There should be no more endpoint info after the isQuickStart field.
+  EXPECT_EQ(endpoint_info.size(), i + 1);
+}
+
+}  // namespace ash::quick_start

@@ -22,10 +22,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -125,7 +125,7 @@ void UpdateRequiredNotificationTest::SetUp() {
   fake_update_engine_client_ = UpdateEngineClient::InitializeFakeForTest();
   network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
 
-  chromeos::ShillServiceClient::TestInterface* service_test =
+  ShillServiceClient::TestInterface* service_test =
       network_handler_test_helper_->service_test();
   service_test->ClearServices();
   service_test->AddService("/service/eth", "eth" /* guid */, "eth",
@@ -194,7 +194,7 @@ TEST_F(UpdateRequiredNotificationTest, NoNetworkNotifications) {
   EXPECT_TRUE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
 
   // Disconnect all networks
-  chromeos::ShillServiceClient::TestInterface* service_test =
+  ShillServiceClient::TestInterface* service_test =
       network_handler_test_helper()->service_test();
   service_test->ClearServices();
 
@@ -233,7 +233,7 @@ TEST_F(UpdateRequiredNotificationTest, NoNetworkNotifications) {
 
 TEST_F(UpdateRequiredNotificationTest, MeteredNetworkNotifications) {
   // Connect to metered network
-  chromeos::ShillServiceClient::TestInterface* service_test =
+  ShillServiceClient::TestInterface* service_test =
       network_handler_test_helper()->service_test();
   service_test->ClearServices();
   service_test->AddService(kCellularServicePath,

@@ -53,6 +53,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1225748608451425081">Votre Chromebook est verrouillé en raison d'un problème connu. Vous pourrez vous connecter dans <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Arrêter la sélection</translation>
 <translation id="1239161794459865856">La fonctionnalité <ph name="FEATURE_NAME" /> est connectée.</translation>
+<translation id="1240638468526743569">Une application</translation>
 <translation id="1246890715821376239">Applications non prises en charge</translation>
 <translation id="1247372569136754018">Microphone (interne)</translation>
 <translation id="1247519845643687288">Applications récentes</translation>
@@ -100,6 +101,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1455242230282523554">Afficher les paramètres de langue</translation>
 <translation id="1460620680449458626">Le volume est désactivé.</translation>
 <translation id="1467432559032391204">À gauche</translation>
+<translation id="146902737843070955">Votre administrateur a demandé cette modification</translation>
 <translation id="147310119694673958">Pile du téléphone : <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="1479909375538722835">Menu d'accessibilité flottant</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Appuyez sur Entrée pour ouvrir la vue d'Agenda</translation>
@@ -327,6 +329,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2894949423239620203">Le câble peut avoir une incidence sur la performance</translation>
 <translation id="2903844815300039659">Connecté à <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Captures d'écran</translation>
+<translation id="2925246975070834767">Essayez le zoom automatique de manière à ce que vous soyez au centre de l'écran. Activez-le dans les paramètres rapides.</translation>
 <translation id="2941112035454246133">Faible</translation>
 <translation id="2942350706960889382">Loupe en mode ancré</translation>
 <translation id="2942516765047364088">Position de l'étagère</translation>
@@ -444,6 +447,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3593039967545720377">Accédez à l'historique du presse-papiers en appuyant sur<ph name="SHORTCUT_KEY_NAME" />+V. Cette action affichera le presse-papiers. Copiez un élément pour commencer.</translation>
 <translation id="3593646411856133110">Balayez l'écran vers le haut et maintenez le doigt sur l'écran pour afficher les applications ouvertes</translation>
 <translation id="3595596368722241419">Batterie entièrement chargée</translation>
+<translation id="3596012367874587041">Paramètres de l'application</translation>
 <translation id="3600061223661453002">Désactivé</translation>
 <translation id="3604801046548457007">Bureau <ph name="DESK_TITILE" /> créé</translation>
 <translation id="3606978283550408104">L'afficheur braille est connecté.</translation>
@@ -469,6 +473,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="3708186454126126312">Connectés précédemment</translation>
 <translation id="371370241367527062">Microphone avant</translation>
 <translation id="3713734891607377840">Ouvrir une fois terminé</translation>
+<translation id="3724279623330129812">La zoom automatique a centré l'appareil photo</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> et <ph name="UNAVAILABLE_APPS_COUNT" /> autres applications ne sont pas sur cet appareil.</translation>
 <translation id="3735740477244556633">Trier par</translation>
 <translation id="3742055079367172538">Saisie d'écran enregistrée</translation>
@@ -633,6 +638,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, note <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{Restaurez la version antérieure de l'appareil dans un délai d'un jour}one{Restaurez la version antérieure de l'appareil dans un délai de # jour}other{Restaurez la version antérieure de l'appareil dans un délai de # jours}}</translation>
+<translation id="4633636853437260449">Appuyez sur Ctrl+W pour supprimer</translation>
 <translation id="4642092649622328492">Effectuer une capture d'écran partielle</translation>
 <translation id="4644727592819780893">La surface de capture est trop petite pour remplir l'aperçu de la caméra</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, recommandation d'application</translation>
@@ -681,6 +687,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="490788395437447240">Pile chargée à <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Fort</translation>
 <translation id="4918086044614829423">Accepter</translation>
+<translation id="4919841137949306064"><ph name="APP_NAME" /> utilise actuellement votre appareil photo</translation>
 <translation id="4925542575807923399">L'administrateur pour ce compte l'a configuré de sorte qu'il doit être le premier compte à connecter lors de sessions de connexion multicompte.</translation>
 <translation id="4938176435186993759">Masquer toutes les suggestions</translation>
 <translation id="4945196315133970626">Désactiver les notifications</translation>
@@ -834,6 +841,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5779721926447984944">Fichiers épinglés</translation>
 <translation id="5788127256798019331">Fichiers Google Play</translation>
 <translation id="5790085346892983794">Opération réussie</translation>
+<translation id="5804651031882187592">Désactiver le paramètre « Verrouiller la carte SIM »</translation>
 <translation id="5805809050170488595">Cliquez pour activer <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Paramètres des appareils connectés</translation>
 <translation id="5837036133683224804">Arrêter <ph name="ROUTE_TITLE" /> sur <ph name="RECEIVER_NAME" /></translation>
@@ -909,6 +917,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6220928844947387476">Vous pouvez maintenant vous enregistrer en même temps que votre écran</translation>
 <translation id="622484624075952240">Bas</translation>
 <translation id="6231419273573514727">Les performances du périphérique peuvent être limitées</translation>
+<translation id="6232891689835436217"><ph name="APP_NAME" /> utilise actuellement votre appareil photo et votre microphone</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Verrouillée à l'horizontale</translation>
 <translation id="6259254695169772643">Utilisez votre stylet pour effectuer une sélection</translation>
@@ -1127,6 +1136,7 @@ Nouvelle installation</translation>
 <translation id="7544300628205093162">Le rétroéclairage du clavier est activé</translation>
 <translation id="7548434653388805669">C'est l'heure du dodo</translation>
 <translation id="7551643184018910560">Épingler sur l'étagère</translation>
+<translation id="7557816257942363084"><ph name="APP_NAME" /> utilise actuellement votre microphone</translation>
 <translation id="7561982940498449837">Fermer le menu</translation>
 <translation id="7564874036684306347">Si vous déplacez des fenêtres sur un autre bureau, elles peuvent présenter des comportements inattendus. À la suite d'une telle opération, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>

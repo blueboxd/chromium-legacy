@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PENDING_BEACON_HOST_H_
 
 #include "base/memory/raw_ptr.h"
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/document_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -23,7 +22,7 @@ namespace content {
 class Beacon;
 class PendingBeaconService;
 
-// PendingBeaconHost holds and manages a single blink::Document's pending
+// `PendingBeaconHost` holds and manages a single blink::Document's pending
 // beacons in the browser process.
 //
 // PendingBeaconHost is created once per document and bound to a RenderFrameHost
@@ -33,13 +32,22 @@ class PendingBeaconService;
 // PendingBeaconHost creates a new Beacon when `CreateBeacon` is called remotely
 // by a document.
 //
+// PendingBeaconHost receives `SendBeacon` requests initiated from renderer and
+// forwards it to PendingBeaconService. The requests can be initiated in one of
+// the following scenarios:
+// -  When JavaScript executes `PendingBeacon.sendNow()`, which connects to
+//    receiver `Beacon`.
+// -  When the associated document enters `hidden` state, and the renderer's
+//    `PendingBeaconDispatcher` schedules the request according to individual
+//    PendingBeacon's backgroundTimeout property.
+// -  When the individual PendingBeacon's timeout property expires.
+//
 // PendingBeaconHost is also responsible for triggering the sending of beacons:
-// -  When `SendBeacon` is called, the corresponding queued beacon is sent out
-//    and removed from the host.
-// -  When the associated document is discarded or deleted, the host sends out
-//    all queued beacons in its destructor.
-// -  TODO(crbug.com/1293679): When the associated document is hidden, the host
-//    should send out beacons according to their timeout field.
+// -  When the associated document is discarded or deleted, PendingBeaconHost
+//    sends out all queued beacons from its destructor.
+// -  TODO(crbug.com/1293679): When the associated document's renderer process
+//    crashes, PendingBeaconHost sends out all queued beacon after being
+//    notified by RenderProcessHostDestroyed.
 class CONTENT_EXPORT PendingBeaconHost
     : public blink::mojom::PendingBeaconHost,
       public DocumentUserData<PendingBeaconHost> {
@@ -51,8 +59,7 @@ class CONTENT_EXPORT PendingBeaconHost
   // Creates a new browser-side `Beacon` instance and stores it in this host.
   void CreateBeacon(mojo::PendingReceiver<blink::mojom::PendingBeacon> receiver,
                     const GURL& url,
-                    blink::mojom::BeaconMethod method,
-                    base::TimeDelta timeout) override;
+                    blink::mojom::BeaconMethod method) override;
 
   // Deletes the `beacon` if exists.
   void DeleteBeacon(Beacon* beacon);
@@ -99,7 +106,6 @@ class Beacon : public blink::mojom::PendingBeacon {
   // https://github.com/WICG/unload-beacon/blob/main/README.md
   Beacon(const GURL& url,
          blink::mojom::BeaconMethod method,
-         base::TimeDelta timeout,
          PendingBeaconHost* beacon_host,
          mojo::PendingReceiver<blink::mojom::PendingBeacon> receiver);
   ~Beacon() override;
@@ -123,7 +129,7 @@ class Beacon : public blink::mojom::PendingBeacon {
   // Creates a request based on the beacon's url and data.
   // * If `method_` is GET, the request url is constructed from `url_`.
   // * If `method_` is POST, the request url is from `url_`, and the request
-  //   content is from `request_body_` and `content_type_`.
+  //   content is from `request_body_`, `content_type_`, and `request_element_`.
   const std::unique_ptr<network::ResourceRequest> GenerateResourceRequest()
       const;
 
@@ -131,11 +137,6 @@ class Beacon : public blink::mojom::PendingBeacon {
     DCHECK(method_ != blink::mojom::BeaconMethod::kGet ||
            content_type_.empty());
     return content_type_;
-  }
-  const std::vector<network::DataElement>& request_elements() const {
-    DCHECK(method_ != blink::mojom::BeaconMethod::kGet ||
-           request_elements_.empty());
-    return request_elements_;
   }
 
  private:
@@ -146,14 +147,13 @@ class Beacon : public blink::mojom::PendingBeacon {
   raw_ptr<PendingBeaconHost> beacon_host_;
   GURL url_;
   [[maybe_unused]] const blink::mojom::BeaconMethod method_;
-  [[maybe_unused]] const base::TimeDelta timeout_;
 
   // The request content type for POST beacon. If `method_` is GET, this field
   // should not be used.
   std::string content_type_;
-  // The beacon data represented as data elements. If `method_` is GET, this
+  // The beacon data represented as a data element. If `method_` is GET, this
   // field should not be used.
-  std::vector<network::DataElement> request_elements_;
+  absl::optional<network::DataElement> request_element_;
 };
 
 }  // namespace content

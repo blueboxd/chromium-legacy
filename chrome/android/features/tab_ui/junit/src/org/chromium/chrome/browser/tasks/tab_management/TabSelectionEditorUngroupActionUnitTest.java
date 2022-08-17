@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ActionDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ActionObserver;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ButtonType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.IconPosition;
@@ -52,6 +53,8 @@ public class TabSelectionEditorUngroupActionUnitTest {
     private TabModelFilterProvider mTabModelFilterProvider;
     @Mock
     private TabGroupModelFilter mGroupFilter;
+    @Mock
+    private ActionDelegate mDelegate;
     private MockTabModel mTabModel;
     private TabSelectionEditorAction mAction;
 
@@ -64,7 +67,7 @@ public class TabSelectionEditorUngroupActionUnitTest {
         when(mTabModelFilterProvider.getCurrentTabModelFilter()).thenReturn(mGroupFilter);
         when(mTabModelSelector.getTabModelFilterProvider()).thenReturn(mTabModelFilterProvider);
         when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
-        mAction.configure(mTabModelSelector, mSelectionDelegate);
+        mAction.configure(mTabModelSelector, mSelectionDelegate, mDelegate);
     }
 
     @Test
@@ -86,7 +89,7 @@ public class TabSelectionEditorUngroupActionUnitTest {
     @SmallTest
     public void testUngroupActionDisabled() {
         List<Integer> tabIds = new ArrayList<>();
-        mAction.onSelectionStateChanged(tabIds);
+        mAction.onSelectionStateChange(tabIds);
         Assert.assertEquals(
                 false, mAction.getPropertyModel().get(TabSelectionEditorActionProperties.ENABLED));
         Assert.assertEquals(
@@ -106,7 +109,7 @@ public class TabSelectionEditorUngroupActionUnitTest {
         Set<Integer> tabIdsSet = new LinkedHashSet<>(tabIds);
         when(mSelectionDelegate.getSelectedItems()).thenReturn(tabIdsSet);
 
-        mAction.onSelectionStateChanged(tabIds);
+        mAction.onSelectionStateChange(tabIds);
         Assert.assertEquals(
                 true, mAction.getPropertyModel().get(TabSelectionEditorActionProperties.ENABLED));
         Assert.assertEquals(
@@ -121,18 +124,20 @@ public class TabSelectionEditorUngroupActionUnitTest {
         };
         mAction.addActionObserver(observer);
 
-        Assert.assertTrue(mAction.performAction());
+        Assert.assertTrue(mAction.perform());
         for (int id : tabIds) {
             verify(mGroupFilter).moveTabOutOfGroup(id);
         }
+        verify(mDelegate).hide();
 
         helper.waitForFirst();
         mAction.removeActionObserver(observer);
 
-        Assert.assertTrue(mAction.performAction());
+        Assert.assertTrue(mAction.perform());
         for (int id : tabIds) {
             verify(mGroupFilter, times(2)).moveTabOutOfGroup(id);
         }
+        verify(mDelegate, times(2)).hide();
         Assert.assertEquals(1, helper.getCallCount());
     }
 }

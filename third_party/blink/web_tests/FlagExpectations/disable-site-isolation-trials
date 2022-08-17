@@ -3,6 +3,9 @@
 # No need to run Virtual test suite plz-dedicated-worker here
 virtual/plz-dedicated-worker/* [ Skip ]
 
+# Isolated-sandboxed-iframe require site isolation to be effective.
+virtual/isolate-sandboxed-iframes/* [ Skip ]
+
 # The following tests fail with UserActivationSameOriginVisibility plus UAv2.
 crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure ]
 crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure ]
@@ -46,6 +49,8 @@ crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-same-origin-domain.sub.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/browsers/windows/clear-window-name.https.html [ Timeout ]
+crbug.com/626703 external/wpt/custom-elements/form-associated/ElementInternals-target-element-is-held-strongly.html [ Timeout ]
 crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-construct-xml-parser.xhtml [ Crash ]
 crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-reactions-xml-parser.xhtml [ Crash ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-040.html [ Crash ]

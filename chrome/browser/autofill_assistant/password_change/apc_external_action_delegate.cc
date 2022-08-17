@@ -16,25 +16,32 @@
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_display_delegate.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill_assistant/browser/public/external_action.pb.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
 #include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/public/rectf.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using autofill_assistant::password_change::GenericPasswordChangeSpecification;
 
 ApcExternalActionDelegate::ApcExternalActionDelegate(
+    content::WebContents* web_contents,
     AssistantDisplayDelegate* display_delegate,
     ApcScrimManager* apc_scrim_manager,
     autofill_assistant::WebsiteLoginManager* website_login_manager)
-    : display_delegate_(display_delegate),
+    : web_contents_(web_contents),
+      display_delegate_(display_delegate),
       apc_scrim_manager_(apc_scrim_manager),
       website_login_manager_(website_login_manager) {
+  DCHECK(web_contents);
   DCHECK(display_delegate_);
   DCHECK(apc_scrim_manager_);
   DCHECK(website_login_manager_);
@@ -149,10 +156,6 @@ void ApcExternalActionDelegate::SetProgressBarStep(
 void ApcExternalActionDelegate::ShowBasePrompt(
     const autofill_assistant::password_change::BasePromptSpecification&
         base_prompt) {
-  // Showing the prompt will override the description, so set the model value
-  // to empty to ensure that it reflects the state of the view.
-  model_.description = std::u16string();
-
   std::vector<PasswordChangeRunDisplay::PromptChoice> choices;
   choices.reserve(base_prompt.choices_size());
   base_prompt_return_values_.clear();
@@ -166,7 +169,13 @@ void ApcExternalActionDelegate::ShowBasePrompt(
   }
 
   SetTitle(base::UTF8ToUTF16(base_prompt.title()));
-  password_change_run_display_->ShowBasePrompt(choices);
+  if (base_prompt.has_description()) {
+    model_.description = base::UTF8ToUTF16(base_prompt.description());
+    password_change_run_display_->ShowBasePrompt(
+        base::UTF8ToUTF16(base_prompt.description()), choices);
+  } else {
+    password_change_run_display_->ShowBasePrompt(choices);
+  }
 }
 
 void ApcExternalActionDelegate::OnBasePromptChoiceSelected(
@@ -233,6 +242,11 @@ void ApcExternalActionDelegate::OnGeneratedPasswordSelected(
   EndAction(true, std::move(action_result));
 }
 
+bool ApcExternalActionDelegate::PasswordWasSuccessfullyChanged() {
+  return password_change_run_display_->GetProgressStep() ==
+         autofill_assistant::password_change::ProgressStep::PROGRESS_STEP_END;
+}
+
 void ApcExternalActionDelegate::ShowStartingScreen(const GURL& url) {
   password_change_run_display_->ShowStartingScreen(url);
 }
@@ -241,6 +255,17 @@ void ApcExternalActionDelegate::ShowCompletionScreen(
     base::RepeatingClosure onShowCompletionScreenDoneButtonClicked) {
   password_change_run_display_->ShowCompletionScreen(
       std::move(onShowCompletionScreenDoneButtonClicked));
+}
+
+void ApcExternalActionDelegate::OpenPasswordManager() {
+  NavigateToManagePasswordsPage(
+      chrome::FindBrowserWithWebContents(web_contents_),
+      password_manager::ManagePasswordsReferrer::
+          kAutomatedPasswordChangeSuccessLink);
+}
+
+void ApcExternalActionDelegate::ShowErrorScreen() {
+  password_change_run_display_->ShowErrorScreen();
 }
 
 void ApcExternalActionDelegate::Show(

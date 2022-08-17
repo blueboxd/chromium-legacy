@@ -105,7 +105,6 @@
 <translation id="1474893630593443211">आपको दिखाए जाने वाले विज्ञापनों पर आपका ज़्यादा कंट्रोल</translation>
 <translation id="1477626028522505441">सर्वर संबधी समस्‍याओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="148482509007564431">बुकमार्क सेव फ़्लो</translation>
-<translation id="1488775391433859242">इस फ़ोन का इस्तेमाल उस कंप्यूटर पर साइन इन करने के लिए किया जा सकता है जिस पर यह क्यूआर कोड दिख रहा है.</translation>
 <translation id="1492417797159476138">आपने इस साइट के लिए, यह उपयोगकर्ता नाम पहले ही सेव कर दिया है</translation>
 <translation id="1493287004536771723">आप <ph name="SITE_NAME" /> को फ़ॉलो कर रहे हैं</translation>
 <translation id="1502010315804028179">अपने पासवर्ड मैनेज करने के लिए, Google Play services को अपडेट करें</translation>
@@ -200,6 +199,7 @@
 <translation id="2046634576464120978">रजिस्ट्रेशन नहीं हो सका</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2052422354554967744">Search the internet</translation>
+<translation id="2053105195397337973">हम ऐसे तरीके खोज रहे हैं जिनसे ट्रैकिंग को कम किया जा सके. साथ ही, जिनसे स्पैम वाले विज्ञापन और धोखाधड़ी पर रोक लगाने में, साइटों की मदद की जा सके.</translation>
 <translation id="2056878612599315956">साइट रोकी गई</translation>
 <translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 डाउनलोड नहीं हो सका}one{# डाउनलोड नहीं हो सके}other{# डाउनलोड नहीं हो सके}}</translation>
 <translation id="2067805253194386918">टेक्स्ट</translation>
@@ -234,6 +234,7 @@
 <translation id="2239812875700136898">डिस्कवर बटन के विकल्पों से सामग्री को नियंत्रित करें</translation>
 <translation id="2248941474044011069">Google पासवर्ड मैनेजर में सेव होने से पहले, आपके डिवाइस पर पासवर्ड एन्क्रिप्ट (सुरक्षित) किए जाते हैं</translation>
 <translation id="2259659629660284697">पासवर्ड निर्यात करें…</translation>
+<translation id="2276231040576210443"><ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में जाकर, कभी भी यह चुना जा सकता है कि कौनसा डेटा सिंक करना है. Google आपके इतिहास के आधार पर, Search और अन्य सेवाओं को आपकी पसंद के मुताबिक बना सकता है.</translation>
 <translation id="2276696007612801991">अपने पासवर्ड की जांच करने के लिए, Google खाते में साइन इन करें</translation>
 <translation id="2278052315791335171">यह पासवर्ड मिटाने से, आपका <ph name="SITE" /> वाला खाता नहीं मिटेगा</translation>
 <translation id="2279146068164892489">क्या <ph name="APPNAME" /> ऐप्लिकेशन खोलना है?</translation>
@@ -271,7 +272,6 @@
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास</translation>
 <translation id="2497852260688568942">सिंक को आपके व्यवस्थापक ने अक्षम कर दिया है</translation>
 <translation id="250020030759455918">आपको Chrome में अपनी <ph name="SITE_NAME" /> की साइन इन स्थिति, ब्राउज़िंग डेटा, और साइट डेटा दिखेगा</translation>
-<translation id="2507178219579379057">Chrome ऐसे तरीके खोज रहा है जिनसे स्पैम वाले विज्ञापन, धोखाधड़ी, और साइटों के बीच शेयर किए जाने वाले डेटा को सीमित किया जा सके. Chrome आपकी <ph name="BEGIN_LINK" />पसंद के विषयों का अनुमान<ph name="END_LINK" /> भी लगाता है. इस जानकारी का इस्तेमाल, साइटें आपको विज्ञापन दिखाने के लिए कर सकती हैं. सेटिंग में जाकर, अपनी पसंद के विषयों को मैनेज किया जा सकता है.</translation>
 <translation id="2513403576141822879">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK" />सिंक और Google सेवाएं<ph name="END_LINK" /> देखें</translation>
 <translation id="2517472476991765520">स्कैन करें</translation>
 <translation id="2523184218357549926">आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
@@ -282,7 +282,6 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> आइटम मिटाए गए</translation>
 <translation id="2536728043171574184">इस पृष्‍ठ की ऑफ़लाइन कॉपी देख रहे हैं</translation>
 <translation id="2546283357679194313">कुकी और साइट डेटा</translation>
-<translation id="2549516196460093976">इस टैबलेट का इस्तेमाल उस कंप्यूटर पर साइन इन करने के लिए किया जा सकता है जिस पर यह क्यूआर कोड दिख रहा है.</translation>
 <translation id="2558569818338050235">आपके ब्राउज़िंग इतिहास का इस बात पर असर पड़ता है कि आपको कौनसे विज्ञापन दिखेंगे</translation>
 <translation id="2561519700418191927">वीडियो की झलक की सेटिंग</translation>
 <translation id="2567385386134582609">इमेज</translation>
@@ -308,6 +307,7 @@
 <translation id="2702516483241149200">नया: इस टेक्स्ट तक स्क्रोल करने वाला लिंक शेयर करें</translation>
 <translation id="2704606927547763573">कॉपी किया गया</translation>
 <translation id="2707726405694321444">पेज रीफ्रेश करें</translation>
+<translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="271033894570825754">नया</translation>
 <translation id="2711073837061989559">ट्रायल</translation>
 <translation id="2718352093833049315">केवल वाई-फ़ाई पर</translation>
@@ -396,12 +396,12 @@
 <translation id="3114507951000454849">आज की खबरें <ph name="NEWS_ICON" /> पढ़ें</translation>
 <translation id="311958134571892113">इससे जोड़ा गया</translation>
 <translation id="3123734510202723619">एलान</translation>
+<translation id="3130863904455712965">इतिहास वगैरह</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome का होम पेज</translation>
 <translation id="3166827708714933426">टैब और विंडो शॉर्टकट</translation>
 <translation id="316694332262407393">Chrome पहले से चल रहा है.</translation>
 <translation id="3169472444629675720">तलाश करें</translation>
-<translation id="3169523567916669830">ट्रायल के दौरान, आपके पास पसंद के उन विषयों को देखने और हटाने का विकल्प होता है जिनका इस्तेमाल करके साइटें आपको विज्ञापन दिखाती हैं. Chrome उन विषयों का अनुमान लगाता है जो आपको दिलचस्प लग सकते हैं. यह अनुमान आपके हाल के ब्राउज़िंग इतिहास के आधार पर लगाया जाता है.</translation>
 <translation id="3187472288455401631">विज्ञापनों की परफ़ॉर्मेंस का पता लगाना</translation>
 <translation id="3207960819495026254">बुकमार्क किया गया</translation>
 <translation id="3208584281581115441">अभी देखें</translation>
@@ -544,6 +544,7 @@
 <translation id="3981902534690264083">विज्ञापन देने वाले जान पाते हैं कि उनके विज्ञापनों की परफ़ॉर्मेंस कैसी है</translation>
 <translation id="3985215325736559418">क्या आप <ph name="FILE_NAME" /> को फिर से डाउनलोड करना चाहते हैं?</translation>
 <translation id="3987993985790029246">लिंक की प्रति बनाएं</translation>
+<translation id="3999683152997576765">आपके पास अपनी पसंद के उन विषयों को देखने और हटाने का विकल्प होता है जिनका इस्तेमाल करके, साइटें आपको विज्ञापन दिखाती हैं. Chrome आपके हाल के ब्राउज़िंग इतिहास के आधार पर, आपकी पसंद के विषयों का अनुमान लगाता है.</translation>
 <translation id="4000212216660919741">ऑफ़लाइन होम</translation>
 <translation id="4016425174436051808">फ़ॉलो नहीं कर सकते. कोई गड़बड़ी हुई.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# घंटा}one{# घंटे}other{# घंटे}}</translation>
@@ -780,6 +781,7 @@
 <translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5319359161174645648">Google, Chrome का सुझाव देता है</translation>
+<translation id="5321849971085220133">Chrome, ब्राउज़ करने के दौरान ट्रैकिंग को कम करके, आपको ज़्यादा सुरक्षित रखने के नए तरीके ढूंढ रहा है. साथ ही Chrome, <ph name="BEGIN_LINK" />आपके पसंद के विषयों का अनुमान लगाता है<ph name="END_LINK" /> और उन्हें मैनेज करने की सुविधा देता है. इसके बाद, आपकी देखी गई साइटें Chrome से आपकी पसंद जानने की अनुमति मांग सकती हैं. साइटें यह अनुमति इसलिए मांगती हैं, ताकि वह आपको आपकी पसंद के हिसाब से विज्ञापन दिखा सकें.</translation>
 <translation id="5324858694974489420">अभिभावकीय सेटिंग</translation>
 <translation id="5326921373682845375">अगर पहले से लोड किए गए पेजों को एन्क्रिप्ट (सुरक्षित) किया गया है और इन्हें लिंक करने वाली साइट एक Google साइट है, तो निजी तौर पर पहले से लोड करते समय, Google के सर्वर को इनसे जुड़ी कोई नई जानकारी नहीं मिलती.</translation>
 <translation id="5329858041417644019">आपका ब्राउज़र प्रबंधित नहीं है</translation>
@@ -1139,6 +1141,7 @@
 <translation id="7196215469483532480">निजता गाइड के बारे में जानकारी देने वाली शीट, पूरी स्क्रीन पर खुली है</translation>
 <translation id="7207760545532569765"><ph name="TAB_COUNT" /> टैब को, नए बैकग्राउंड वाले टैब की तरह पहले जैसा करें.</translation>
 <translation id="7208109991155904980">प्रतिक्रिया दूसरी जगह ले जाई गई</translation>
+<translation id="7217781228893594884">Chrome बंद करने पर, गुप्त टैब लॉक हो जाएंगे</translation>
 <translation id="7222235798733126207">साइटों के बीच जानकारी शेयर करने की एक तय सीमा</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 डाउनलोड बाकी है}one{# डाउनलोड बाकी हैं}other{# डाउनलोड बाकी हैं}}</translation>
 <translation id="7242755609445462077">बेहतर बनाई गई हाइलाइट <ph name="CURRENT_DATE" /></translation>
@@ -1299,6 +1302,7 @@
 <translation id="8037801708772278989">अभी-अभी जांच की गई</translation>
 <translation id="804335162455518893">SD कार्ड नहीं मिला</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> गुप्त टैब}one{<ph name="TAB_COUNT_NORMAL" /> गुप्त टैब}other{<ph name="TAB_COUNT_NORMAL" /> गुप्त टैब}}</translation>
+<translation id="8048728378294435881">अपने डेटा का बैक अप लें और इसे किसी भी डिवाइस पर इस्तेमाल करें</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> एमबी उपलब्ध</translation>
 <translation id="8058655154417507695">समाप्ति वर्ष</translation>
 <translation id="8058746566562539958">नए Chrome टैब में खोलें</translation>
@@ -1432,7 +1436,6 @@
 <translation id="8664215986015753476">Chrome को अपने हिसाब से इस्तेमाल करें</translation>
 <translation id="8664979001105139458">इस नाम की फ़ाइल पहले से मौजूद है</translation>
 <translation id="8666759526542103597">ब्राउज़र के हिसाब से दिलचस्पी के मुताबिक विज्ञापन के बारे में जानकारी</translation>
-<translation id="8667760277771450375">हम ऐसे उपाय खोज रहे हैं जिनसे क्रॉस साइट ट्रैकिंग को कम किया जा सके. साथ ही, जिनसे स्पैम वाले विज्ञापन और धोखाधड़ी पर रोक लगाने में, साइटों की मदद की जा सके.</translation>
 <translation id="8676789164135894283">अन्य कंप्यूटर पर साइन इन करें</translation>
 <translation id="867767487203716855">अगला अपडेट</translation>
 <translation id="8683039184091909753">इमेज</translation>

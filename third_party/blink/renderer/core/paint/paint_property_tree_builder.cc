@@ -1223,6 +1223,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
       // this in the caller.)
       context_.should_flatten_inherited_transform = false;
     }
+    if (transform->IsIdentityOr2DTranslation()) {
+      context_.translation_2d_to_layout_shift_root_delta +=
+          transform->Translation2D();
+    }
   }
 }
 
@@ -1327,10 +1331,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
     } else {
       context_.rendering_context_id = 0;
       context_.should_flatten_inherited_transform = true;
-    }
-    if (transform->IsIdentityOr2DTranslation()) {
-      context_.translation_2d_to_layout_shift_root_delta +=
-          transform->Translation2D();
     }
   } else if (object_.IsForElement()) {
     // 3D rendering contexts follow the DOM ancestor chain, so
@@ -1790,7 +1790,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
         OnUpdateClip(properties_->UpdatePixelMovingFilterClipExpander(
             *context_.current.clip,
             ClipPaintPropertyNode::State(context_.current.transform,
-                                         *properties_->Filter())));
+                                         properties_->Filter())));
       } else {
         OnClearClip(properties_->ClearPixelMovingFilterClipExpander());
       }
@@ -1975,7 +1975,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   const ClipPaintPropertyNodeOrAlias* new_clip = nullptr;
   const EffectPaintPropertyNodeOrAlias* new_effect = nullptr;
 
-  if (object_.HasLayer() || properties_ || IsLinkHighlighted(object_)) {
+  if (object_.HasLayer() || properties_ || IsLinkHighlighted(object_) ||
+      object_.CanContainFixedPositionObjects() ||
+      object_.CanContainAbsolutePositionObjects()) {
     new_transform = context_.current.transform;
     new_clip = context_.current.clip;
     new_effect = context_.current_effect;
@@ -2812,10 +2814,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
             box_model_object.OffsetForInFlowPosition();
         break;
       case EPosition::kAbsolute: {
-#if DCHECK_IS_ON()
         DCHECK_EQ(full_context_.container_for_absolute_position,
                   box_model_object.Container());
-#endif
         SwitchToOOFContext(context_.absolute_position);
 
         // Absolutely positioned content in an inline should be positioned
@@ -2990,8 +2990,9 @@ static bool IsLayoutShiftRoot(const LayoutObject& object,
     return false;
   if (IsA<LayoutView>(object))
     return true;
-  if (auto* transform = properties->Transform()) {
-    if (!transform->IsIdentityOr2DTranslation())
+  for (const TransformPaintPropertyNode* transform :
+       properties->AllCSSTransformPropertiesOutsideToInside()) {
+    if (transform && !transform->IsIdentityOr2DTranslation())
       return true;
   }
   if (properties->ReplacedContentTransform())
@@ -3175,12 +3176,19 @@ void PaintPropertyTreeBuilder::InitFragmentPaintProperties(
       context.pending_additional_offset_to_layout_shift_root_delta =
           -PhysicalOffset::FromVector2dFRound(translation->Translation2D());
     }
-    if (const auto* transform = properties->Transform()) {
-      if (transform->IsIdentityOr2DTranslation()) {
-        context.translation_2d_to_layout_shift_root_delta -=
-            transform->Translation2D();
+    gfx::Vector2dF translation2d;
+    for (const TransformPaintPropertyNode* transform :
+         properties->AllCSSTransformPropertiesOutsideToInside()) {
+      if (transform) {
+        if (transform->IsIdentityOr2DTranslation()) {
+          translation2d += transform->Translation2D();
+        } else {
+          translation2d = gfx::Vector2dF();
+          break;
+        }
       }
     }
+    context.translation_2d_to_layout_shift_root_delta -= translation2d;
   }
 
   if (needs_paint_properties) {
@@ -4228,9 +4236,7 @@ void PaintPropertyTreeBuilder::IssueInvalidationsAfterUpdate() {
     }
   }
 
-  CullRectUpdater::PaintPropertiesChanged(object_, *context_.painting_layer,
-                                          properties_changed_,
-                                          context_.old_scroll_offset);
+  CullRectUpdater::PaintPropertiesChanged(object_, properties_changed_);
 }
 
 }  // namespace blink

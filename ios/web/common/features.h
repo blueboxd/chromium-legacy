@@ -43,9 +43,6 @@ extern const base::Feature kRecordSnapshotSize;
 // WKWebView is set as NSURLRequestAttributionUser on iOS 15.
 extern const base::Feature kSetRequestAttribution;
 
-// When enabled, the default context menu from WKWebView is used.
-extern const base::Feature kDefaultWebViewContextMenu;
-
 // Disables the screenshots of non-HTML pages on iOS15.
 extern const base::Feature kDisableNonHTMLScreenshotOnIOS15;
 
@@ -55,6 +52,12 @@ extern const base::Feature kIOSSharedHighlightingColorChange;
 // Feature flag that enables native session restoration with a synthesized
 // interaction state.
 extern const base::Feature kSynthesizedRestoreSession;
+
+// Enables user control for camera and/or microphone access for a specific site
+// through site settings during its lifespan. When enabled, each web state will
+// keep track of whether camera and/or microphone access is granted by the user
+// for its current site.
+extern const base::Feature kMediaPermissionsControl;
 
 // Enables the Fullscreen API in WebKit (supported on iOS 16.0+). This API
 // allows web sites to enter fullscreen mode, with all browser UI hidden.
@@ -66,11 +69,15 @@ extern const base::Feature kEnableFullscreenAPI;
 // should be used instead of directly checking this feature.
 extern const base::Feature kUseLoadSimulatedRequestForOfflinePage;
 
-// When true, the native context menu for the web content are used.
-bool UseWebViewNativeContextMenuWeb();
+// Feature flag that enable web page detected intents annotations.
+extern const base::Feature kEnableWebPageAnnotations;
 
 // When true, screenshots of non-HTML (e.g. PDF) pages should be taken.
 bool ShouldTakeScreenshotOnNonHTMLContent();
+
+// When true, user control for camera and/or microphone access should be
+// enabled.
+bool IsMediaPermissionsControlEnabled();
 
 // When true, the new loadSimulatedRequest API should be used when displaying
 // error pages.

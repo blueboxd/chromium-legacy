@@ -15,8 +15,8 @@
 #include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/address_field.h"
@@ -25,12 +25,15 @@
 #include "components/autofill/core/browser/form_parsing/birthdate_field.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field.h"
 #include "components/autofill/core/browser/form_parsing/email_field.h"
+#include "components/autofill/core/browser/form_parsing/iban_field.h"
 #include "components/autofill/core/browser/form_parsing/merchant_promo_code_field.h"
 #include "components/autofill/core/browser/form_parsing/name_field.h"
 #include "components/autofill/core/browser/form_parsing/phone_field.h"
 #include "components/autofill/core/browser/form_parsing/price_field.h"
 #include "components/autofill/core/browser/form_parsing/search_field.h"
+#include "components/autofill/core/browser/form_parsing/standalone_cvc_field.h"
 #include "components/autofill/core/browser/form_parsing/travel_field.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -38,6 +41,7 @@
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
@@ -62,69 +66,72 @@ bool FormField::MatchesRegexWithCache(base::StringPiece16 input,
 }
 
 // static
-FieldCandidatesMap FormField::ParseFormFields(
+void FormField::ParseFormFields(
     const std::vector<std::unique_ptr<AutofillField>>& fields,
     const LanguageCode& page_language,
     bool is_form_tag,
     PatternSource pattern_source,
+    FieldCandidatesMap& field_candidates,
     LogManager* log_manager) {
   std::vector<AutofillField*> processed_fields = RemoveCheckableFields(fields);
-  FieldCandidatesMap field_candidates;
 
   // Email pass.
-  ParseFormFieldsPass(EmailField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(EmailField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
   const size_t email_count = field_candidates.size();
 
   // Single fields pass.
   ParseSingleFieldForms(fields, page_language, is_form_tag, pattern_source,
-                        &field_candidates, log_manager);
+                        field_candidates, log_manager);
   const size_t fillable_single_fields = field_candidates.size() - email_count;
 
   // Phone pass.
-  ParseFormFieldsPass(PhoneField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(PhoneField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
 
   // Travel pass.
-  ParseFormFieldsPass(TravelField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(TravelField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
 
   // Address pass.
-  ParseFormFieldsPass(AddressField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(AddressField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
 
   // Birthdate pass.
   if (base::FeatureList::IsEnabled(features::kAutofillEnableBirthdateParsing)) {
     ParseFormFieldsPass(BirthdateField::Parse, processed_fields,
-                        &field_candidates, page_language, pattern_source,
+                        field_candidates, page_language, pattern_source,
                         log_manager);
   }
 
   // Credit card pass.
   ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
-                      &field_candidates, page_language, pattern_source,
+                      field_candidates, page_language, pattern_source,
                       log_manager);
 
   // Price pass.
-  ParseFormFieldsPass(PriceField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(PriceField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
 
   // Name pass.
-  ParseFormFieldsPass(NameField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(NameField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
 
   // Search pass.
-  ParseFormFieldsPass(SearchField::Parse, processed_fields, &field_candidates,
+  ParseFormFieldsPass(SearchField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
 
+  // Deduce `field_candidates` for the `processed_fields` by parsing their
+  // `parsable_name()` as an autocomplete attribute.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillParseNameAsAutocompleteType)) {
+    ParseUsingAutocompleteAttributes(processed_fields, field_candidates);
+  }
+
   size_t fillable_fields = 0;
-  if (base::FeatureList::IsEnabled(features::kAutofillFixFillableFieldTypes)) {
-    for (const auto& [field_id, candidates] : field_candidates) {
-      if (IsFillableFieldType(candidates.BestHeuristicType()))
-        ++fillable_fields;
-    }
-  } else {
-    fillable_fields = field_candidates.size();
+  for (const auto& [field_id, candidates] : field_candidates) {
+    if (IsFillableFieldType(candidates.BestHeuristicType()))
+      ++fillable_fields;
   }
 
   // Do not autofill a form if there aren't enough fields. Otherwise, it is
@@ -164,8 +171,6 @@ FieldCandidatesMap FormField::ParseFormFields(
       field_candidates.clear();
     }
   }
-
-  return field_candidates;
 }
 
 void FormField::ParseSingleFieldForms(
@@ -173,7 +178,7 @@ void FormField::ParseSingleFieldForms(
     const LanguageCode& page_language,
     bool is_form_tag,
     PatternSource pattern_source,
-    FieldCandidatesMap* field_candidates,
+    FieldCandidatesMap& field_candidates,
     LogManager* log_manager) {
   std::vector<AutofillField*> processed_fields = RemoveCheckableFields(fields);
 
@@ -183,6 +188,12 @@ void FormField::ParseSingleFieldForms(
     ParseFormFieldsPass(MerchantPromoCodeField::Parse, processed_fields,
                         field_candidates, page_language, pattern_source,
                         log_manager);
+  }
+
+  // IBAN pass.
+  if (base::FeatureList::IsEnabled(features::kAutofillParseIBANFields)) {
+    ParseFormFieldsPass(IBANField::Parse, processed_fields, field_candidates,
+                        page_language, pattern_source, log_manager);
   }
 }
 
@@ -331,12 +342,12 @@ bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
 void FormField::AddClassification(const AutofillField* field,
                                   ServerFieldType type,
                                   float score,
-                                  FieldCandidatesMap* field_candidates) {
+                                  FieldCandidatesMap& field_candidates) {
   // Several fields are optional.
   if (field == nullptr)
     return;
 
-  FieldCandidates& candidates = (*field_candidates)[field->global_id()];
+  FieldCandidates& candidates = field_candidates[field->global_id()];
   candidates.AddFieldCandidate(type, score);
 }
 
@@ -444,7 +455,7 @@ bool FormField::Match(const AutofillField* field,
 // static
 void FormField::ParseFormFieldsPass(ParseFunction parse,
                                     const std::vector<AutofillField*>& fields,
-                                    FieldCandidatesMap* field_candidates,
+                                    FieldCandidatesMap& field_candidates,
                                     const LanguageCode& page_language,
                                     PatternSource pattern_source,
                                     LogManager* log_manager) {
@@ -494,7 +505,25 @@ bool FormField::MatchesFormControlType(base::StringPiece type,
 
 // static
 bool FormField::IsSingleFieldParseableType(ServerFieldType field_type) {
-  return field_type == MERCHANT_PROMO_CODE;
+  return field_type == MERCHANT_PROMO_CODE || field_type == IBAN_VALUE ||
+         field_type == CREDIT_CARD_STANDALONE_VERIFICATION_CODE;
+}
+
+// static
+void FormField::ParseUsingAutocompleteAttributes(
+    const std::vector<AutofillField*>& fields,
+    FieldCandidatesMap& field_candidates) {
+  for (const AutofillField* field : fields) {
+    HtmlFieldType html_type = FieldTypeFromAutocompleteAttributeValue(
+        base::UTF16ToUTF8(field->parseable_name()), *field);
+    // The HTML_MODE is irrelevant when converting to a ServerFieldType.
+    ServerFieldType type =
+        AutofillType(html_type, HTML_MODE_NONE).GetStorableType();
+    if (type != UNKNOWN_TYPE) {
+      AddClassification(field, type, kBaseAutocompleteParserScore,
+                        field_candidates);
+    }
+  }
 }
 
 }  // namespace autofill

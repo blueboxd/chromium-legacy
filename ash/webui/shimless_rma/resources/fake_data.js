@@ -134,6 +134,18 @@ export const fakeStates = [
     canGoBack: false,
     error: RmadErrorCode.kOk,
   },
+  {
+    state: State.kHardwareError,
+    canExit: false,
+    canGoBack: false,
+    error: RmadErrorCode.kOk,
+  },
+  {
+    state: State.kReboot,
+    canExit: false,
+    canGoBack: false,
+    error: RmadErrorCode.kOk,
+  },
 ];
 
 /** @type {!Array<string>} */
@@ -236,19 +248,29 @@ export const fakeCalibrationComponentsWithFails = [
     progress: 1.0,
   },
   {
-    component: ComponentType.kBaseAccelerometer,
-    status: CalibrationStatus.kCalibrationInProgress,
+    component: ComponentType.kLidAccelerometer,
+    status: CalibrationStatus.kCalibrationFailed,
     progress: 1.0,
   },
   {
-    component: ComponentType.kLidAccelerometer,
-    status: CalibrationStatus.kCalibrationFailed,
+    component: ComponentType.kBaseAccelerometer,
+    status: CalibrationStatus.kCalibrationInProgress,
     progress: 1.0,
   },
   {
     component: ComponentType.kTouchpad,
     status: CalibrationStatus.kCalibrationSkip,
     progress: 0.0,
+  },
+  {
+    component: ComponentType.kScreen,
+    status: CalibrationStatus.kCalibrationFailed,
+    progress: 1.0,
+  },
+  {
+    component: ComponentType.kScreen,
+    status: CalibrationStatus.kCalibrationFailed,
+    progress: 1.0,
   },
 ];
 

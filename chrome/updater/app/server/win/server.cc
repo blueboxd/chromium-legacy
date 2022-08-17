@@ -31,9 +31,7 @@
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/app/server/win/com_classes.h"
 #include "chrome/updater/app/server/win/com_classes_legacy.h"
-#include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_internal.h"
@@ -44,7 +42,6 @@
 #include "chrome/updater/win/setup/uninstall.h"
 #include "chrome/updater/win/win_constants.h"
 #include "chrome/updater/win/win_util.h"
-#include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -284,9 +281,6 @@ bool ComServerApp::SwapInNewVersion() {
   const base::FilePath updater_path =
       versioned_directory->Append(GetExecutableRelativePath());
 
-  HKEY root = (updater_scope() == UpdaterScope::kSystem) ? HKEY_LOCAL_MACHINE
-                                                         : HKEY_CURRENT_USER;
-
   installer::SelfCleaningTempDir temp_dir;
   if (!CreateSecureTempDir(updater_scope(), temp_dir)) {
     return false;
@@ -296,21 +290,15 @@ bool ComServerApp::SwapInNewVersion() {
     return false;
   }
 
-  if (!SwapGoogleUpdate(updater_scope(), updater_path, temp_dir.path(), root,
-                        list.get())) {
+  if (!SwapGoogleUpdate(updater_scope(), updater_path, temp_dir.path(),
+                        UpdaterScopeToHKeyRoot(updater_scope()), list.get())) {
     return false;
   }
 
   if (updater_scope() == UpdaterScope::kSystem) {
     AddComServiceWorkItems(updater_path, false, list.get());
   } else {
-    for (const CLSID& clsid : GetActiveServers(updater_scope())) {
-      AddInstallServerWorkItems(root, clsid, updater_path, false, list.get());
-    }
-
-    for (const GUID& iid : GetActiveInterfaces()) {
-      AddInstallComInterfaceWorkItems(root, updater_path, iid, list.get());
-    }
+    AddComServerWorkItems(updater_path, false, list.get());
   }
 
   return list->Do();
@@ -319,8 +307,7 @@ bool ComServerApp::SwapInNewVersion() {
 bool ComServerApp::MigrateLegacyUpdaters(
     base::RepeatingCallback<void(const RegistrationRequest&)>
         register_callback) {
-  HKEY root = (updater_scope() == UpdaterScope::kSystem) ? HKEY_LOCAL_MACHINE
-                                                         : HKEY_CURRENT_USER;
+  const HKEY root = UpdaterScopeToHKeyRoot(updater_scope());
   for (base::win::RegistryKeyIterator it(root, CLIENTS_KEY, KEY_WOW64_32KEY);
        it.Valid(); ++it) {
     const std::wstring app_id = it.Name();

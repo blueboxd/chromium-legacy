@@ -6,9 +6,12 @@
 #define COMPONENTS_SEGMENTATION_PLATFORM_PUBLIC_CONFIG_H_
 
 #include <string>
-#include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/time/time.h"
+#include "components/segmentation_platform/public/input_delegate.h"
+#include "components/segmentation_platform/public/model_provider.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "components/segmentation_platform/public/trigger.h"
 
@@ -54,8 +57,9 @@ struct Config {
   Config();
   ~Config();
 
-  Config(const Config& other);
-  Config& operator=(const Config& other);
+  // Disallow copy/assign.
+  Config(const Config& other) = delete;
+  Config& operator=(const Config& other) = delete;
 
   // The key is used to distinguish between different types of segmentation
   // usages. Currently it is mainly used by the segment selector to find the
@@ -82,17 +86,37 @@ struct Config {
 
   // List of segments needed to make a selection.
   struct SegmentMetadata {
+    explicit SegmentMetadata(const std::string& uma_name);
+    SegmentMetadata(const std::string& uma_name,
+                    std::unique_ptr<ModelProvider> default_provider);
+    SegmentMetadata(SegmentMetadata&&);
+
+    ~SegmentMetadata();
+
+    bool operator==(const SegmentMetadata& other) const;
+
     // The name used for this segment in UMA filters.
     std::string uma_name;
 
-    bool operator==(const SegmentMetadata& other) const;
+    // The default model or score used when server provided model is
+    // unavailable.
+    std::unique_ptr<ModelProvider> default_provider;
   };
-  std::unordered_map<proto::SegmentId, SegmentMetadata> segments;
+  base::flat_map<proto::SegmentId, std::unique_ptr<SegmentMetadata>> segments;
 
   // The selection only supports returning results from on-demand model
   // executions instead of returning result from previous sessions. The
   // selection TTLs are ignored in this config.
   bool on_demand_execution = false;
+
+  // List of custom  inputs provided for running the segments. The delegate will
+  // be invoked for input based on the model metadata's input processing config.
+  // Note: 2 configs cannot provide input delegates for the same FillPolicy. To
+  // share the delegate implementation, the delegates need to be provided by
+  // `SegmentationPlatformServiceFactory`.
+  base::flat_map<proto::CustomInput::FillPolicy,
+                 std::unique_ptr<processing::InputDelegate>>
+      input_delegates;
 
   // Returns the filter name that will be shown in the metrics for this
   // segmentation config.

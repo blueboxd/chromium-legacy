@@ -83,7 +83,7 @@
 #include "components/sync/engine/sync_scheduler_impl.h"
 #include "components/sync/invalidations/fcm_handler.h"
 #include "components/sync/invalidations/sync_invalidations_service_impl.h"
-#include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/sync/test/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -99,7 +99,6 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -107,6 +106,7 @@
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
+#include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -564,7 +564,8 @@ std::vector<SyncServiceImplHarness*> SyncTest::GetSyncClients() {
 }
 
 SyncServiceImpl* SyncTest::GetSyncService(int index) const {
-  return SyncServiceFactory::GetAsSyncServiceImplForProfile(GetProfile(index));
+  return SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+      GetProfile(index));
 }
 
 syncer::UserSelectableTypeSet SyncTest::GetRegisteredSelectableTypes(
@@ -704,7 +705,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   // SyncServiceImplHarness - some tests expect the SyncServiceImpl to
   // already exist.
   SyncServiceImpl* sync_service_impl =
-      SyncServiceFactory::GetAsSyncServiceImplForProfile(GetProfile(index));
+      SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+          GetProfile(index));
 
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     sync_service_impl->OverrideNetworkForTest(
@@ -1218,9 +1220,6 @@ void SyncTest::ReadPasswordFile() {
 }
 
 void SyncTest::SetupMockGaiaResponses() {
-  test_url_loader_factory_.AddResponse(
-      GaiaUrls::GetInstance()->get_user_info_url().spec(),
-      "email=user@gmail.com\ndisplayEmail=user@gmail.com");
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth2_token_url().spec(),
       R"({

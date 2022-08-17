@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -27,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/resources/js/browser_command/browser_command.mojom.h"
 #include "url/gurl.h"
 
 using testing::Eq;
@@ -62,6 +64,9 @@ class PromoServiceTest : public testing::Test {
 
   PromoService* service() { return service_.get(); }
   PrefService* prefs() { return profile_.GetPrefs(); }
+  network::TestURLLoaderFactory& test_url_loader_factory() {
+    return test_url_loader_factory_;
+  }
 
  private:
   // Required to run tests from UI and threads.
@@ -117,8 +122,9 @@ TEST_F(PromoServiceTest, PromoResponseMissingData) {
 
 TEST_F(PromoServiceTest, GoodPromoResponse) {
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -127,7 +133,7 @@ TEST_F(PromoServiceTest, GoodPromoResponse) {
   base::RunLoop().RunUntilIdle();
 
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
   promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
   promo.promo_id = "42";
 
@@ -140,8 +146,9 @@ TEST_F(PromoServiceTest, GoodPromoResponseCanDismiss) {
   feature_list.InitAndEnableFeature(ntp_features::kNtpMiddleSlotPromoDismissal);
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -150,7 +157,7 @@ TEST_F(PromoServiceTest, GoodPromoResponseCanDismiss) {
   base::RunLoop().RunUntilIdle();
 
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
   promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
   promo.promo_id = "42";
 
@@ -163,8 +170,9 @@ TEST_F(PromoServiceTest, GoodPromoResponseNoIdField) {
   feature_list.InitAndEnableFeature(ntp_features::kNtpMiddleSlotPromoDismissal);
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -173,7 +181,7 @@ TEST_F(PromoServiceTest, GoodPromoResponseNoIdField) {
   base::RunLoop().RunUntilIdle();
 
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
   promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
   promo.promo_id = "42";
 
@@ -186,8 +194,8 @@ TEST_F(PromoServiceTest, GoodPromoResponseNoIdFieldNorLogUrl) {
   feature_list.InitAndEnableFeature(ntp_features::kNtpMiddleSlotPromoDismissal);
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -196,7 +204,7 @@ TEST_F(PromoServiceTest, GoodPromoResponseNoIdFieldNorLogUrl) {
   base::RunLoop().RunUntilIdle();
 
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
 
   EXPECT_EQ(service()->promo_data(), promo);
   EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
@@ -213,8 +221,9 @@ TEST_F(PromoServiceTest, GoodPromoWithBlockedID) {
   }
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -231,8 +240,9 @@ TEST_F(PromoServiceTest, BlocklistPromo) {
   feature_list.InitAndEnableFeature(ntp_features::kNtpMiddleSlotPromoDismissal);
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -241,7 +251,7 @@ TEST_F(PromoServiceTest, BlocklistPromo) {
   base::RunLoop().RunUntilIdle();
 
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
   promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
   promo.promo_id = "42";
 
@@ -274,8 +284,9 @@ TEST_F(PromoServiceTest, BlocklistExpiration) {
   ASSERT_EQ(1u, prefs()->GetValueDict(prefs::kNtpPromoBlocklist).size());
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   service()->Refresh();
@@ -286,7 +297,7 @@ TEST_F(PromoServiceTest, BlocklistExpiration) {
 
   // The promo should've still been shown, as expiration should take precedence.
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
   promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
   promo.promo_id = "42";
 
@@ -308,8 +319,9 @@ TEST_F(PromoServiceTest, BlocklistWrongExpiryType) {
   ASSERT_GT(prefs()->GetValueDict(prefs::kNtpPromoBlocklist).size(), 0u);
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   service()->Refresh();
@@ -324,8 +336,9 @@ TEST_F(PromoServiceTest, UndoBlocklistPromo) {
   feature_list.InitAndEnableFeature(ntp_features::kNtpMiddleSlotPromoDismissal);
 
   std::string response_string =
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+      "{\"update\":{\"promos\":{\"middle_announce_payload\":"
+      "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]},"
+      "\"log_url\":\"/log_url?id=42\",\"id\":\"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), absl::nullopt);
@@ -334,7 +347,7 @@ TEST_F(PromoServiceTest, UndoBlocklistPromo) {
   base::RunLoop().RunUntilIdle();
 
   PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.middle_slot_json = "{\"part\":[{\"text\":{\"text\":\"Foo\"}}]}";
   promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
   promo.promo_id = "42";
 
@@ -349,4 +362,20 @@ TEST_F(PromoServiceTest, UndoBlocklistPromo) {
   service()->UndoBlocklistPromo("42");
 
   ASSERT_EQ(0u, prefs()->GetDictionary(prefs::kNtpPromoBlocklist)->DictSize());
+}
+
+TEST_F(PromoServiceTest, ReturnFakeData) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      ntp_features::kNtpMiddleSlotPromoDismissal,
+      {{ntp_features::kNtpMiddleSlotPromoDismissalParam, "fake"}});
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, test_url_loader_factory().NumPending());
+  ASSERT_TRUE(service()->promo_data().has_value());
+  EXPECT_EQ("test" + base::NumberToString(static_cast<int>(
+                         browser_command::mojom::Command::kNoOpCommand)),
+            service()->promo_data()->promo_id);
 }

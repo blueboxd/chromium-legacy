@@ -14,6 +14,7 @@
 #include "base/enterprise_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/rand_util.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/activity.h"
@@ -46,12 +47,6 @@
 
 namespace updater {
 
-namespace {
-
-const int kDelayOneMinute = 60;
-
-}  // namespace
-
 Configurator::Configurator(scoped_refptr<UpdaterPrefs> prefs,
                            scoped_refptr<ExternalConstants> external_constants)
     : prefs_(prefs),
@@ -77,7 +72,7 @@ int Configurator::ServerKeepAliveSeconds() const {
 int Configurator::NextCheckDelay() const {
   int minutes = 0;
   CHECK(policy_service_->GetLastCheckPeriodMinutes(nullptr, &minutes));
-  return minutes * kDelayOneMinute;
+  return base::Minutes(minutes).InSeconds();
 }
 
 int Configurator::OnDemandDelay() const {
@@ -211,6 +206,10 @@ absl::optional<bool> Configurator::IsMachineExternallyManaged() const {
 
 scoped_refptr<PolicyService> Configurator::GetPolicyService() const {
   return policy_service_;
+}
+
+void Configurator::ResetPolicyService() {
+  policy_service_ = PolicyService::Create(external_constants_);
 }
 
 crx_file::VerifierFormat Configurator::GetCrxVerifierFormat() const {

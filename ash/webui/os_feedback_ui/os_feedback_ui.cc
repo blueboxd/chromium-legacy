@@ -67,6 +67,7 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"addFileLabel", IDS_FEEDBACK_TOOL_ADD_FILE_LABEL},
       {"replaceFileLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL},
       {"replaceFileArialLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_ARIA_LABEL},
+      {"attachFileLabelTooltip", IDS_FEEDBACK_TOOL_ATTACH_FILE_LABEL_TOOLTIP},
       {"attachFileCheckboxArialLabel",
        IDS_FEEDBACK_TOOL_ATTACH_FILE_CHECKBOX_ARIA_LABEL},
       {"userEmailLabel", IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL},
@@ -96,6 +97,7 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"buttonNewReport", IDS_FEEDBACK_TOOL_SEND_NEW_REPORT_BUTTON_LABEL},
       {"buttonDone", IDS_FEEDBACK_TOOL_DONE_BUTTON_LABEL},
       {"fileTooBigErrorMessage", IDS_FEEDBACK_TOOL_FILE_TOO_BIG_ERROR_MESSAGE},
+      {"bluetoothLogsInfo", IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_CHECKBOX},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

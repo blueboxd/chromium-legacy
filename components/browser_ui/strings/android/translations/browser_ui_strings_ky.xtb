@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Жүктөп алуу тындырылды</translation>
 <translation id="1409426117486808224">Ачык өтмөктөр үчүн жөнөкөйлөштүрүлгөн көрүнүш</translation>
 <translation id="1415402041810619267">URL кесилди</translation>
+<translation id="1426410128494586442">Ооба</translation>
 <translation id="1446450296470737166">MIDI түзмктрд толук көзмлд уркст</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1644574205037202324">Таржымал</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">Ата-энеңиз башкарат</translation>
 <translation id="4670064810192446073">Виртуалдык дүйнө</translation>
 <translation id="4751476147751820511">Кыймыл же жарык сенсорлору</translation>
+<translation id="4811450222531576619">Булагы жана темасы тууралуу кеңири маалымат</translation>
 <translation id="4836046166855586901">Сайт түзмөктү активдүү колдонуп жаткан учур тууралуу билгиси келгенде уруксат суралсын</translation>
 <translation id="4883854917563148705">Башкарылган жөндөөлөрдү баштапкы абалга келтирүүгө болбойт</translation>
 <translation id="4887024562049524730">Сайттар виртуалдык чындык түзмөктөрүңүздү жана маалыматыңызды колдонгону жатканда уруксат суралсын (сунушталат)</translation>
@@ -243,6 +245,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Сайттарга виртуалдык чындык түзмөктөрүңүздү жана маалыматты колдонууга тыюу салуу</translation>
 <translation id="6447842834002726250">Кукилер</translation>
+<translation id="6467852467360539617">Маалыматты тазалоо жана уруксаттарды баштапкы абалга келтирүү</translation>
 <translation id="6527303717912515753">Бөлүшүү</translation>
 <translation id="6545864417968258051">Bluetooth түзмөктөрүн издөө</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> жана дагы <ph name="NUM_MORE" /> бөгөттөлдү}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> жана дагы <ph name="NUM_MORE" /> бөгөттөлдү}}</translation>
@@ -282,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> нерсе тандалды</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> жана <ph name="PERMISSION_2" /> дайындарын колдонууга уруксат берилди</translation>
 <translation id="7302486331832100261">Адатта билдирмелерди өчүрөсүз. Уруксат берүү үчүн "Чоо-жайын" таптап коюңуз.</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> параметрлери</translation>
 <translation id="7423098979219808738">Адегенде сура</translation>
 <translation id="7423538860840206698">Алмашуу буферин окуу бөгөттөлгөн</translation>
 <translation id="7425915948813553151">Сайттар үчүн караңгы тема</translation>

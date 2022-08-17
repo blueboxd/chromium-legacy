@@ -248,15 +248,25 @@ export class VolumeManagerImpl extends EventTarget {
           case 'success':
           case VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM:
           case VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM: {
+            console.debug(`Mounted '${sourcePath}' as '${volumeId}'`);
             if (volumeMetadata.hidden) {
               console.debug(`Mount discarded for hidden volume: '${volumeId}'`);
               this.finishRequest_(requestKey, status);
               return;
             }
 
-            console.debug(`Mounted '${sourcePath}' as '${volumeId}'`);
-            const volumeInfo =
-                await volumeManagerUtil.createVolumeInfo(volumeMetadata);
+            let volumeInfo;
+            try {
+              volumeInfo =
+                  await volumeManagerUtil.createVolumeInfo(volumeMetadata);
+            } catch (error) {
+              console.warn(
+                  'Unable to create volumeInfo for ' +
+                  `${volumeId} mounted on ${sourcePath}.` +
+                  `Mount status: ${status}. Error: ${error.stack || error}.`);
+              this.finishRequest_(requestKey, status);
+              throw (error);
+            }
             await this.addVolumeInfo_(volumeInfo);
             this.finishRequest_(requestKey, status, volumeInfo);
             return;
@@ -408,10 +418,15 @@ export class VolumeManagerImpl extends EventTarget {
     const volumeInfo = this.getVolumeInfo(entry);
 
     if (util.isFakeEntry(entry)) {
-      const isReadOnly =
-          entry.rootType === VolumeManagerCommon.RootType.RECENT ?
-          !util.isRecentsFilterV2Enabled() :
-          true;
+      // Aggregated views like RECENTS and TRASH exist as fake entries but may
+      // actually defer their logic to some underlying implementation or
+      // delegate to the location filesystem.
+      let isReadOnly = true;
+      if ((entry.rootType === VolumeManagerCommon.RootType.RECENT &&
+           util.isRecentsFilterV2Enabled()) ||
+          entry.rootType === VolumeManagerCommon.RootType.TRASH) {
+        isReadOnly = false;
+      }
       return new EntryLocationImpl(
           volumeInfo, assert(entry.rootType),
           true /* The entry points a root directory. */, isReadOnly);

@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">ダウンロードを一時停止しました</translation>
 <translation id="1409426117486808224">開いているタブの簡易表示</translation>
 <translation id="1415402041810619267">URL の短縮バージョンです</translation>
+<translation id="1426410128494586442">はい</translation>
 <translation id="1446450296470737166">MIDI機器のフルコントロールを許可</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1644574205037202324">履歴</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4670064810192446073">バーチャル リアリティ（VR）</translation>
 <translation id="4751476147751820511">モーション センサーまたは光センサー</translation>
+<translation id="4811450222531576619">ソースとトピックの詳細</translation>
 <translation id="4836046166855586901">サイトからこのデバイスのアクティブ状態の検出を求められたときに確認する</translation>
 <translation id="4883854917563148705">管理者による設定はリセットできません</translation>
 <translation id="4887024562049524730">サイトにバーチャル リアリティ デバイスとデータの使用を許可する前に確認する（推奨）</translation>
@@ -240,6 +242,7 @@
 <translation id="6367753977865761591">特定のサイトのサードパーティのログインをブロックします。</translation>
 <translation id="6388207532828177975">データを削除してリセット</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">サイトによるバーチャル リアリティ デバイスとデータの使用をブロックする</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6467852467360539617">データを消去して権限をリセット</translation>

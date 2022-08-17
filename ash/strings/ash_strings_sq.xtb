@@ -100,6 +100,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1455242230282523554">Shfaq cilësimet e gjuhës</translation>
 <translation id="1460620680449458626">Volumi është i çaktivizuar.</translation>
 <translation id="1467432559032391204">Majtas</translation>
+<translation id="146902737843070955">Ky ndryshim është kërkuar nga administratori yt</translation>
 <translation id="147310119694673958">Bateria e telefonit <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">Menyja pluskuese e qasshmërisë</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />. Shtyp tastin Enter për të hapur pamjen e "Kalendarit"</translation>
@@ -327,6 +328,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2894949423239620203">Kablloja mund të ndikojë te cilësia e funksionimit</translation>
 <translation id="2903844815300039659">Lidhur me <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Regjistrimet e ekranit</translation>
+<translation id="2925246975070834767">Provo zmadhimin automatik që të vendosesh në qendër të ekranit. Aktivizoje te "Cilësimet e shpejta".</translation>
 <translation id="2941112035454246133">E ulët</translation>
 <translation id="2942350706960889382">Zmadhuesi i stacionuar</translation>
 <translation id="2942516765047364088">Pozicioni i raftit</translation>
@@ -444,6 +446,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3593039967545720377">Qasu në historikun e kujtesës së fragmenteve duke shtypur <ph name="SHORTCUT_KEY_NAME" /> + V për të parë kujtesën tënde të fragmenteve. Kopjo një artikull për të filluar.</translation>
 <translation id="3593646411856133110">Rrëshqit shpejt larg dhe mbaj shtypur për të parë aplikacionet e hapura</translation>
 <translation id="3595596368722241419">Bateria është plot</translation>
+<translation id="3596012367874587041">Cilësimet e aplikacionit</translation>
 <translation id="3600061223661453002">Joaktiv</translation>
 <translation id="3604801046548457007">U krijua tavolina e punës <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Ekrani "Braille" është i lidhur.</translation>
@@ -469,6 +472,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="3708186454126126312">Të lidhura më parë</translation>
 <translation id="371370241367527062">Mikrofoni i përparmë</translation>
 <translation id="3713734891607377840">Hape kur të përfundojë</translation>
+<translation id="3724279623330129812">Zmadhimi automatik e ka vendosur fokusin në qendër të kamerës</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> dhe <ph name="UNAVAILABLE_APPS_COUNT" /> të tjera nuk gjenden në këtë pajisje.</translation>
 <translation id="3735740477244556633">Rendit sipas</translation>
 <translation id="3742055079367172538">Pamja e ekranit u mor</translation>
@@ -633,6 +637,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="4628757576491864469">Pajisjet</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, vlerësimi me yje <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{Kalo pajisjen në versionin e mëparshëm brenda një dite}other{Kalo pajisjen në versionin e mëparshëm brenda # ditësh}}</translation>
+<translation id="4633636853437260449">Shtyp Ctrl+W për të fshirë</translation>
 <translation id="4642092649622328492">Nxirr një pamje të pjesshme të ekranit</translation>
 <translation id="4644727592819780893">Rajoni është shumë i vogël për të shfaqur pamjen paraprake të kamerës</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, rekomandim për aplikacione</translation>
@@ -758,6 +763,16 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="5393156353051693207">Prek dhe mbaj të shtypur kudo për të rirenditur aplikacionet</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> mbi <ph name="IN_PLACE_APP" />, lëshoje për të krijuar dosje.</translation>
 <translation id="5397578532367286026">Përdorimi dhe historiku i këtij përdoruesi mund të rishikohen nga menaxheri (<ph name="MANAGER_EMAIL" />) në chrome.com.</translation>
+<translation id="5399673806694250334">Tabakaja e statusit, ora <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="MIC" />,
+        <ph name="CAMERA" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Cilësimet e shpejta, shtyp "kërko" + tastin "majtas" për të pasur qasje te qendra e njoftimeve.</translation>
 <translation id="5426063383988017631">Menyja e "Cilësimeve" është e mbyllur</translation>
 <translation id="5428899915242071344">Fillo përzgjedhjen</translation>
@@ -824,6 +839,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="5779721926447984944">Skedarët e gozhduar</translation>
 <translation id="5788127256798019331">Skedarët e Play</translation>
 <translation id="5790085346892983794">Me sukses</translation>
+<translation id="5804651031882187592">Çaktivizo cilësimin "Kyç kartën SIM"</translation>
 <translation id="5805809050170488595">Kliko për të aktivizuar <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Cilësimet e pajisjeve të lidhura</translation>
 <translation id="5837036133683224804">Ndalo <ph name="ROUTE_TITLE" /> në <ph name="RECEIVER_NAME" /></translation>

@@ -46,8 +46,11 @@ class CORE_EXPORT StyleColor {
   StyleColor() = default;
   explicit StyleColor(Color color)
       : color_(color), color_keyword_(CSSValueID::kInvalid) {}
+  // TODO(https://crbug.com/1351544): Remove the constructor that takes an
+  // RGBA32.
   explicit StyleColor(RGBA32 color)
-      : color_(color), color_keyword_(CSSValueID::kInvalid) {}
+      : color_(Color::FromRGBA32(color)),
+        color_keyword_(CSSValueID::kInvalid) {}
   explicit StyleColor(CSSValueID keyword) : color_keyword_(keyword) {}
   // We need to store the color and keyword for system colors to be able to
   // distinguish system colors from a normal color. System colors won't be
@@ -77,6 +80,7 @@ class CORE_EXPORT StyleColor {
 
   Color Resolve(Color current_color,
                 mojom::blink::ColorScheme color_scheme,
+                bool* is_current_color = nullptr,
                 bool is_forced_color = false) const;
 
   // Resolve and override the resolved color's alpha channel as specified by
@@ -84,6 +88,7 @@ class CORE_EXPORT StyleColor {
   Color ResolveWithAlpha(Color current_color,
                          mojom::blink::ColorScheme color_scheme,
                          int alpha,
+                         bool* is_current_color = nullptr,
                          bool is_forced_color = false) const;
 
   bool IsNumeric() const {

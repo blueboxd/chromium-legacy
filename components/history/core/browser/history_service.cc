@@ -99,13 +99,11 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                                   history_service_, page_urls, icon_url));
   }
 
-  void NotifyURLVisited(ui::PageTransition transition,
-                        const URLRow& row,
-                        base::Time visit_time) override {
+  void NotifyURLVisited(const URLRow& url_row,
+                        const VisitRow& visit_row) override {
     service_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HistoryService::NotifyURLVisited, history_service_,
-                       transition, row, visit_time));
+        FROM_HERE, base::BindOnce(&HistoryService::NotifyURLVisited,
+                                  history_service_, url_row, visit_row));
   }
 
   void NotifyURLsModified(const URLRows& changed_urls) override {
@@ -317,7 +315,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetMostRecentClusters(
   return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetMostRecentClusters, history_backend_,
-                     inclusive_min_time, exclusive_max_time, max_clusters),
+                     inclusive_min_time, exclusive_max_time, max_clusters,
+                     /*include_keywords=*/true),
       std::move(callback));
 }
 
@@ -1368,12 +1367,11 @@ void HistoryService::OnDBLoaded() {
   NotifyHistoryServiceLoaded();
 }
 
-void HistoryService::NotifyURLVisited(ui::PageTransition transition,
-                                      const URLRow& row,
-                                      base::Time visit_time) {
+void HistoryService::NotifyURLVisited(const URLRow& url_row,
+                                      const VisitRow& new_visit) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (HistoryServiceObserver& observer : observers_)
-    observer.OnURLVisited(this, transition, row, visit_time);
+    observer.OnURLVisited(this, url_row, new_visit);
 }
 
 void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {

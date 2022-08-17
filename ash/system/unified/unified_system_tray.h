@@ -39,6 +39,7 @@ class ManagedDeviceTrayItemView;
 class NetworkTrayView;
 class NotificationGroupingController;
 class NotificationIconsController;
+class PrivacyIndicatorsTrayItemView;
 class PrivacyScreenToastController;
 class SnoopingProtectionView;
 class TimeTrayItemView;
@@ -87,6 +88,10 @@ class ASH_EXPORT UnifiedSystemTray
   // Adds a padding on top of the vertical clock if there are other visible
   // icons in the tray, removes it if the clock is the only visible icon.
   void MaybeUpdateVerticalClockPadding();
+
+  // Update `privacy_indicators_view_` according to camera/microphone access.
+  void UpdatePrivacyIndicatorsTrayItem(bool camera_is_used,
+                                       bool microphone_is_used);
 
   // views::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,
@@ -215,6 +220,9 @@ class ASH_EXPORT UnifiedSystemTray
   // Whether the bubble is currently showing the calendar view.
   bool IsShowingCalendarView() const;
 
+  // Returns whether the channel indicator should be shown.
+  bool ShouldChannelIndicatorBeShown() const;
+
   std::u16string GetAccessibleNameForQuickSettingsBubble();
 
   AshMessagePopupCollection* GetMessagePopupCollection();
@@ -294,6 +302,7 @@ class ASH_EXPORT UnifiedSystemTray
   CameraMicTrayItemView* const camera_view_;
   CameraMicTrayItemView* const mic_view_;
   TimeTrayItemView* const time_view_;
+  PrivacyIndicatorsTrayItemView* const privacy_indicators_view_;
 
   NetworkTrayView* network_tray_view_ = nullptr;
   ChannelIndicatorView* channel_indicator_view_ = nullptr;

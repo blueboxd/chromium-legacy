@@ -8,16 +8,15 @@
 #include <memory>
 
 #include "base/component_export.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/components/network/network_state.h"
 #include "components/onc/onc_constants.h"
 
 class PrefService;
 class ProxyConfigDictionary;
 
-namespace chromeos {
+namespace ash {
 
 class NetworkProfileHandler;
+class NetworkState;
 
 namespace proxy_config {
 
@@ -38,14 +37,6 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
                               const NetworkState& network);
 
 }  // namespace proxy_config
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-namespace proxy_config {
-using ::chromeos::proxy_config::SetProxyConfigForNetwork;
-}
 }  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_PROXY_PROXY_CONFIG_HANDLER_H_

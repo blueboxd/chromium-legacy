@@ -24,7 +24,9 @@
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ash/accessibility/dictation_bubble_test_helper.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
+#include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/input_method/textinput_test_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/speech_recognition_constants.h"
 #include "chrome/browser/speech/speech_recognition_test_helper.h"
@@ -607,7 +609,9 @@ IN_PROC_BROWSER_TEST_P(DictationTest, RecognitionEndsWhenInputFieldLosesFocus) {
   EXPECT_EQ("Vega is a star", GetTextAreaValue());
 }
 
-IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictationWhenChromeVoxEnabled) {
+// TODO(crbug.com/1352312): Flaky.
+IN_PROC_BROWSER_TEST_P(DictationTest,
+                       DISABLED_UserEndsDictationWhenChromeVoxEnabled) {
   EnableChromeVox();
   EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
   InstallMockInputContextHandler();
@@ -619,6 +623,26 @@ IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictationWhenChromeVoxEnabled) {
   WaitForRecognitionStopped();
 
   WaitForCommitText(kFinalSpeechResult16);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationTest, ChromeVoxSilencedWhenToggledOn) {
+  // Set up ChromeVox.
+  test::SpeechMonitor sm;
+  EXPECT_FALSE(GetManager()->IsSpokenFeedbackEnabled());
+  extensions::ExtensionHostTestHelper host_helper(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId);
+  EnableChromeVox();
+  host_helper.WaitForHostCompletedFirstLoad();
+  EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
+
+  // Not yet forced to stop.
+  EXPECT_EQ(0, sm.stop_count());
+
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+
+  // Assert ChromeVox was asked to stop speaking at the toggle.
+  EXPECT_EQ(1, sm.stop_count());
 }
 
 IN_PROC_BROWSER_TEST_P(DictationTest, EntersInterimSpeechWhenToggledOff) {
@@ -736,35 +760,58 @@ IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalizationWithComma) {
   WaitForRecognitionStopped();
 }
 
-// Tests the behavior of Dictation in other languages.
-class DictationI18NTest : public DictationTestBase {
+// Tests the behavior of Dictation in Japanese.
+class DictationJaTest : public DictationTestBase {
  public:
-  DictationI18NTest() = default;
-  ~DictationI18NTest() override = default;
-  DictationI18NTest(const DictationI18NTest&) = delete;
-  DictationI18NTest& operator=(const DictationI18NTest&) = delete;
+  DictationJaTest() = default;
+  ~DictationJaTest() override = default;
+  DictationJaTest(const DictationJaTest&) = delete;
+  DictationJaTest& operator=(const DictationJaTest&) = delete;
 
  protected:
   void SetUpOnMainThread() override {
-    GetActiveUserPrefs()->SetString(prefs::kAccessibilityDictationLocale,
-                                    "ja-JP");
+    locale_util::SwitchLanguage("ja", /*enable_locale_keyboard_layouts=*/true,
+                                /*login_layouts_only*/ false, base::DoNothing(),
+                                browser()->profile());
+    g_browser_process->SetApplicationLocale("ja");
+    GetActiveUserPrefs()->SetString(prefs::kAccessibilityDictationLocale, "ja");
+
     DictationTestBase::SetUpOnMainThread();
   }
 };
 
 // On-device speech recognition is currently limited to en-US, so
-// DictationI18NTest should use network speech recognition only.
+// DictationJaTest should use network speech recognition only.
 INSTANTIATE_TEST_SUITE_P(
     Network,
-    DictationI18NTest,
+    DictationJaTest,
     ::testing::Values(speech::SpeechRecognitionType::kNetwork));
 
-IN_PROC_BROWSER_TEST_P(DictationI18NTest, NoSmartSpacingOrCapitalization) {
+IN_PROC_BROWSER_TEST_P(DictationJaTest, NoSmartSpacingOrCapitalization) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
   SendFinalResultAndWaitForTextAreaValue("this", "this");
   SendFinalResultAndWaitForTextAreaValue(" Is", "this Is");
   SendFinalResultAndWaitForTextAreaValue("a test.", "this Isa test.");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, CanDictate) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("テニス", "テニス");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, DeleteCharacter) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate something.
+  SendFinalResultAndWaitForTextAreaValue("テニス", "テニス");
+  // Perform the 'delete' command.
+  SendFinalResultAndWaitForTextAreaValue("削除", "テニ");
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
 }
@@ -916,7 +963,13 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, MacroSucceededMetric) {
                                        /*expected_bucket_count=*/1);
 }
 
-IN_PROC_BROWSER_TEST_P(DictationCommandsTest, Help) {
+// Flaky on Linux (crbug.com/1348608).
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_Help DISABLED_Help
+#else
+#define MAYBE_Help Help
+#endif
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, MAYBE_Help) {
   SendFinalResultAndWait("help");
 
   // Wait for the help URL to load.

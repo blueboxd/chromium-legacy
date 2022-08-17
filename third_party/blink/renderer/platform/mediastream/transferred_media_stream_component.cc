@@ -10,6 +10,15 @@
 
 namespace blink {
 
+TransferredMediaStreamComponent::TransferredMediaStreamComponent(
+    const TransferredValues& data)
+    : data_(data) {}
+
+void TransferredMediaStreamComponent::SetImplementation(
+    MediaStreamComponent* component) {
+  component_ = component;
+}
+
 MediaStreamComponent* TransferredMediaStreamComponent::Clone(
     std::unique_ptr<MediaStreamTrackPlatform> cloned_platform_track) const {
   if (component_) {
@@ -33,8 +42,7 @@ String TransferredMediaStreamComponent::Id() const {
   if (component_) {
     return component_->Id();
   }
-  // TODO(https://crbug.com/1288839): Return the transferred value.
-  return "";
+  return data_.id;
 }
 
 int TransferredMediaStreamComponent::UniqueId() const {
@@ -43,6 +51,40 @@ int TransferredMediaStreamComponent::UniqueId() const {
   }
   // TODO(crbug.com/1288839): Return the transferred value
   return 0;
+}
+
+MediaStreamSource::StreamType TransferredMediaStreamComponent::GetSourceType()
+    const {
+  if (component_) {
+    return component_->GetSourceType();
+  }
+  // TODO(crbug.com/1288839): Return the transferred value
+  return MediaStreamSource::StreamType::kTypeVideo;
+}
+const String& TransferredMediaStreamComponent::GetSourceName() const {
+  if (component_) {
+    return component_->GetSourceName();
+  }
+  // TODO(crbug.com/1288839): Return the transferred value
+  static String name;
+  return name;
+}
+
+MediaStreamSource::ReadyState TransferredMediaStreamComponent::GetReadyState()
+    const {
+  if (component_) {
+    return component_->GetReadyState();
+  }
+  // TODO(crbug.com/1288839): Return the transferred value
+  return MediaStreamSource::ReadyState::kReadyStateEnded;
+}
+
+bool TransferredMediaStreamComponent::Remote() const {
+  if (component_) {
+    return component_->Remote();
+  }
+  // TODO(crbug.com/1288839): Return the transferred value
+  return false;
 }
 
 bool TransferredMediaStreamComponent::Enabled() const {
@@ -62,23 +104,6 @@ void TransferredMediaStreamComponent::SetEnabled(bool enabled) {
   // initialized.
 }
 
-bool TransferredMediaStreamComponent::Muted() const {
-  if (component_) {
-    return component_->Muted();
-  }
-  // TODO(https://crbug.com/1288839): Return the transferred value.
-  return false;
-}
-
-void TransferredMediaStreamComponent::SetMuted(bool muted) {
-  if (component_) {
-    component_->SetMuted(muted);
-    return;
-  }
-  // TODO(https://crbug.com/1288839): Save and forward to component_ once it's
-  // initialized.
-}
-
 WebMediaStreamTrack::ContentHintType
 TransferredMediaStreamComponent::ContentHint() {
   if (component_) {
@@ -92,46 +117,6 @@ void TransferredMediaStreamComponent::SetContentHint(
     WebMediaStreamTrack::ContentHintType hint) {
   if (component_) {
     component_->SetContentHint(hint);
-    return;
-  }
-  // TODO(https://crbug.com/1288839): Save and forward to component_ once it's
-  // initialized.
-}
-
-const MediaConstraints& TransferredMediaStreamComponent::Constraints() const {
-  if (component_) {
-    return component_->Constraints();
-  }
-  // TODO(crbug.com/1288839): Return the transferred value
-  static MediaConstraints media_constraints;
-  return media_constraints;
-}
-
-void TransferredMediaStreamComponent::SetConstraints(
-    const MediaConstraints& constraints) {
-  if (component_) {
-    component_->SetConstraints(constraints);
-    return;
-  }
-  // TODO(https://crbug.com/1288839): Save and forward to component_ once it's
-  // initialized.
-}
-
-AudioSourceProvider* TransferredMediaStreamComponent::GetAudioSourceProvider() {
-  if (component_) {
-    return component_->GetAudioSourceProvider();
-  }
-  // TODO(crbug.com/1288839): Remove
-  // MediaStreamComponent::GetAudioSourceProvider() and this implementation +
-  // fix call sites if feasible, otherwise return a proxy for
-  // the AudioSourceProvider here
-  return nullptr;
-}
-
-void TransferredMediaStreamComponent::SetSourceProvider(
-    WebAudioSourceProvider* provider) {
-  if (component_) {
-    component_->SetSourceProvider(provider);
     return;
   }
   // TODO(https://crbug.com/1288839): Save and forward to component_ once it's

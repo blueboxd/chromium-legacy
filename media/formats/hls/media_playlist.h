@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/formats/hls/parse_status.h"
@@ -41,11 +42,16 @@ class MEDIA_EXPORT MediaPlaylist final : public Playlist {
   MediaPlaylist(MediaPlaylist&&);
   MediaPlaylist& operator=(const MediaPlaylist&) = delete;
   MediaPlaylist& operator=(MediaPlaylist&&);
-  ~MediaPlaylist();
+  ~MediaPlaylist() override;
+
+  // `Playlist` implementation
+  Kind GetKind() const override;
 
   // Returns all segments in this playlist, in chronological order. This vector
   // may be copied independently of this Playlist.
-  const std::vector<MediaSegment>& GetSegments() const { return segments_; }
+  const std::vector<scoped_refptr<MediaSegment>>& GetSegments() const {
+    return segments_;
+  }
 
   // Returns the target duration (maximum length of any segment, rounded to the
   // nearest integer) for this playlist.
@@ -124,14 +130,19 @@ class MEDIA_EXPORT MediaPlaylist final : public Playlist {
   bool CanBlockReload() const { return can_block_reload_; }
 
   // Attempts to parse the media playlist represented by `source`. `uri` must be
-  // a valid, non-empty GURL referring to the URI of this playlist. If this
-  // playlist was found through a multivariant playlist, `parent_playlist` must
-  // point to that playlist in order to support persistent properties and
-  // imported variables. Otherwise, it should be `nullptr`. If `source` is
-  // invalid, this returns an error. Otherwise, the parsed playlist is returned.
+  // a valid, non-empty GURL referring to the URI of this playlist.
+  // `version` is the HLS version expected to be given by a
+  // `EXT-X-VERSION` tag in this playlist (or `Playlist::kDefaultVersion` if
+  // none), which may be determined via `Playlist::IdentifyPlaylist`, or from a
+  // previous version of this playlist. If this playlist was found through a
+  // multivariant playlist, `parent_playlist` must point to that playlist in
+  // order to support persistent properties and imported variables. Otherwise,
+  // it should be `nullptr`. If `source` is invalid, this returns an error.
+  // Otherwise, the parsed playlist is returned.
   static ParseStatus::Or<MediaPlaylist> Parse(
       base::StringPiece source,
       GURL uri,
+      types::DecimalInteger version,
       const MultivariantPlaylist* parent_playlist);
 
  private:
@@ -140,7 +151,7 @@ class MEDIA_EXPORT MediaPlaylist final : public Playlist {
 
   base::TimeDelta target_duration_;
   absl::optional<PartialSegmentInfo> partial_segment_info_;
-  std::vector<MediaSegment> segments_;
+  std::vector<scoped_refptr<MediaSegment>> segments_;
   base::TimeDelta computed_duration_;
   absl::optional<PlaylistType> playlist_type_;
   bool end_list_;

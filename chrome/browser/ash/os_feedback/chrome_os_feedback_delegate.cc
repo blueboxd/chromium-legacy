@@ -167,6 +167,7 @@ void ChromeOsFeedbackDelegate::SendReport(
   feedback_params.form_submit_time = base::TimeTicks::Now();
   feedback_params.load_system_info = report->include_system_logs_and_histograms;
   feedback_params.send_histograms = report->include_system_logs_and_histograms;
+  feedback_params.send_bluetooth_logs = report->send_bluetooth_logs;
 
   base::WeakPtr<feedback::FeedbackUploader> uploader =
       base::AsWeakPtr(GetFeedbackUploaderForContext(profile_));
@@ -187,6 +188,9 @@ void ChromeOsFeedbackDelegate::SendReport(
       !feedback_context->extra_diagnostics.value().empty()) {
     feedback_data->AddLog(kExtraDiagnosticsKey,
                           feedback_context->extra_diagnostics.value());
+  }
+  if (feedback_context->category_tag.has_value()) {
+    feedback_data->set_category_tag(feedback_context->category_tag.value());
   }
 
   scoped_refptr<base::RefCountedMemory> png_data = GetScreenshotData();
@@ -248,6 +252,10 @@ void ChromeOsFeedbackDelegate::SendReport(
   // report is submitted.
   ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedSystemInfo(
       report->include_system_logs_and_histograms);
+  // Records the length of description in the textbox when the feedback
+  // report is submitted.
+  ash::os_feedback_ui::metrics::EmitFeedbackAppDescriptionLength(
+      report->description.length());
 
   feedback_service_->SendFeedback(
       feedback_params, feedback_data,
@@ -281,6 +289,14 @@ void ChromeOsFeedbackDelegate::OpenSystemInfoDialog() {
   GURL systemInfoUrl =
       GURL(base::StrCat({chrome::kChromeUIFeedbackURL, "html/sys_info.html"}));
   OpenWebDialog(systemInfoUrl);
+}
+
+void ChromeOsFeedbackDelegate::OpenBluetoothLogsInfoDialog() {
+  // TODO(http://b/233079042): Make the bluetooth_logs_info.html page a separate
+  // WebUI. For now, use the old Feedback tool's bluetooth_logs_info.html.
+  GURL system_info_url = GURL(base::StrCat(
+      {chrome::kChromeUIFeedbackURL, "html/bluetooth_logs_info.html"}));
+  OpenWebDialog(system_info_url);
 }
 
 void ChromeOsFeedbackDelegate::OpenWebDialog(GURL url) {

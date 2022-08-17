@@ -9,9 +9,7 @@ import android.content.Context;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.payments.ui.PaymentUiService;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -45,11 +43,8 @@ import org.chromium.payments.mojom.PaymentValidationErrors;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This is the Clank specific parts of {@link PaymentRequest}, with the parts shared with WebLayer
@@ -74,7 +69,6 @@ public class ChromePaymentRequestService
     private boolean mHasClosed;
 
     private PaymentRequestSpec mSpec;
-    private boolean mHideServerAutofillCards;
     private PaymentHandlerHost mPaymentHandlerHost;
 
     /**
@@ -371,9 +365,7 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public void onInstrumentDetailsLoading() {
-        assert mPaymentUiService.getSelectedPaymentApp() == null
-                || mPaymentUiService.getSelectedPaymentApp().getPaymentAppType()
-                        == PaymentAppType.AUTOFILL;
+        assert mPaymentUiService.getSelectedPaymentApp() == null;
         mPaymentUiService.showProcessingMessage();
     }
 
@@ -388,7 +380,7 @@ public class ChromePaymentRequestService
                         mPaymentUiService.getSelectedContact(), selectedPaymentApp,
                         mSpec.getPaymentOptions());
         mPaymentRequestService.invokePaymentApp(selectedPaymentApp, paymentResponseHelper);
-        return selectedPaymentApp.getPaymentAppType() != PaymentAppType.AUTOFILL;
+        return true;
     }
 
     private PaymentHandlerHost getPaymentHandlerHost() {
@@ -464,7 +456,6 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public boolean onPaymentAppCreated(PaymentApp paymentApp) {
-        mHideServerAutofillCards |= paymentApp.isServerAutofillInstrumentReplacement();
         paymentApp.setHaveRequestedAutofillData(mPaymentUiService.haveRequestedAutofillData());
         return true;
     }
@@ -472,50 +463,7 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public void notifyPaymentUiOfPendingApps(List<PaymentApp> pendingApps) {
-        if (mHideServerAutofillCards) {
-            List<PaymentApp> nonServerAutofillCards = new ArrayList<>();
-            int numberOfPendingApps = pendingApps.size();
-            for (int i = 0; i < numberOfPendingApps; i++) {
-                if (!pendingApps.get(i).isServerAutofillInstrument()) {
-                    nonServerAutofillCards.add(pendingApps.get(i));
-                }
-            }
-            pendingApps = nonServerAutofillCards;
-        }
-
-        // Load the validation rules for each unique region code in the credit card billing
-        // addresses and check for validity.
-        Set<String> uniqueCountryCodes = new HashSet<>();
-        for (int i = 0; i < pendingApps.size(); ++i) {
-            @Nullable
-            String countryCode = pendingApps.get(i).getCountryCode();
-            if (countryCode != null && !uniqueCountryCodes.contains(countryCode)) {
-                uniqueCountryCodes.add(countryCode);
-                PersonalDataManager.getInstance().loadRulesForAddressNormalization(countryCode);
-            }
-        }
-
         mPaymentUiService.setPaymentApps(pendingApps);
-
-        int missingFields = 0;
-        if (mPaymentUiService.getPaymentApps().isEmpty()) {
-            if (mPaymentUiService.merchantSupportsAutofillCards()) {
-                // Record all fields if basic-card is supported but no card exists.
-                missingFields = AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_EXPIRED
-                        | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_CARDHOLDER
-                        | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_NUMBER
-                        | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_BILLING_ADDRESS;
-            }
-        } else {
-            PaymentApp firstApp = mPaymentUiService.getPaymentApps().get(0);
-            if (firstApp.getPaymentAppType() == PaymentAppType.AUTOFILL) {
-                missingFields = ((AutofillPaymentInstrument) (firstApp)).getMissingFields();
-            }
-        }
-        if (missingFields != 0) {
-            RecordHistogram.recordSparseHistogram(
-                    "PaymentRequest.MissingPaymentFields", missingFields);
-        }
     }
 
     // Implements BrowserPaymentRequest:
@@ -527,21 +475,13 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public boolean isPaymentSheetBasedPaymentAppSupported() {
-        return mPaymentUiService.canUserAddCreditCard();
+        // TODO(crbug.com/1209835): Remove this method entirely.
+        return false;
     }
 
     // Implements BrowserPaymentRequest:
     @Override
     public void onInstrumentDetailsReady() {
-        // If the payment app was an Autofill credit card with an identifier, record its use.
-        PaymentApp selectedPaymentApp = mPaymentUiService.getSelectedPaymentApp();
-        if (selectedPaymentApp != null
-                && selectedPaymentApp.getPaymentAppType() == PaymentAppType.AUTOFILL
-                && !selectedPaymentApp.getIdentifier().isEmpty()) {
-            PersonalDataManager.getInstance().recordAndLogCreditCardUse(
-                    selectedPaymentApp.getIdentifier());
-        }
-
         // Showing the app selector UI if we were previously skipping it so the loading
         // spinner shows up until the merchant notifies that payment was completed.
         if (mHasSkippedAppSelector) {

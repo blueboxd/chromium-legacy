@@ -114,8 +114,10 @@ void WaylandFrameManager::MaybeProcessPendingFrame() {
       submitted_frames_.back()->wl_frame_callback) {
     return;
   }
-  // Window is not configured, need to wait.
-  if (!window_->can_submit_frames())
+
+  // Window is still neither configured nor has pending configure bounds, need
+  // to wait. Probably happens only in early stages of window initialization.
+  if (!window_->received_configure_event())
     return;
 
   // Ensure wl_buffer existence. This is called for the first time in the
@@ -136,8 +138,25 @@ void WaylandFrameManager::MaybeProcessPendingFrame() {
     return;
   }
 
-  std::unique_ptr<WaylandFrame> playback = std::move(pending_frames_.front());
-  PlayBackFrame(std::move(playback));
+  // If processing a valid frame, update window's visual size, which may result
+  // in surface configuration being done, i.e: xdg_surface set_window_geometry +
+  // ack_configure requests being issued.
+  const wl::WaylandOverlayConfig& config = frame->root_config;
+  if (!frame->buffer_lost && !!config.buffer_id) {
+    window_->UpdateVisualSize(gfx::ToRoundedSize(config.bounds_rect.size()));
+  }
+
+  // Skip this frame if:
+  // 1. It can't be submitted due to lost buffers.
+  // 2. Even after updating visual size above, |window_| is still not fully
+  //    configured, which might mean that the current frame sent by the gpu
+  //    is still out-of-sync with the pending configure sequences received from
+  //    the Wayland compositor. This avoids protocol errors as observed in
+  //    https://crbug.com/1313023.
+  if (frame->buffer_lost || !window_->IsSurfaceConfigured())
+    DiscardFrame(std::move(pending_frames_.front()));
+  else
+    PlayBackFrame(std::move(pending_frames_.front()));
 
   pending_frames_.pop_front();
 
@@ -151,24 +170,12 @@ void WaylandFrameManager::MaybeProcessPendingFrame() {
 }
 
 void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
-  // Skip this frame if we can't playback this frame due to lost buffers.
-  if (frame->buffer_lost) {
-    frame->feedback = gfx::PresentationFeedback::Failure();
-    submitted_frames_.push_back(std::move(frame));
-    VerifyNumberOfSubmittedFrames();
-    MaybeProcessSubmittedFrames();
-    return;
-  }
+  DCHECK(!frame->buffer_lost);
+  DCHECK(window_->IsSurfaceConfigured());
 
   auto* root_surface = frame->root_surface.get();
   auto& root_config = frame->root_config;
   bool empty_frame = !root_config.buffer_id;
-
-  if (!empty_frame) {
-    window_->UpdateVisualSize(
-        gfx::ToRoundedSize(root_config.bounds_rect.size()),
-        root_config.surface_scale_factor);
-  }
 
   // Configure subsurfaces. Traverse the deque backwards s.t. we can set
   // frame_callback and presentation_feedback on the top-most possible surface.
@@ -225,6 +232,13 @@ void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
 
   VerifyNumberOfSubmittedFrames();
 
+  MaybeProcessSubmittedFrames();
+}
+
+void WaylandFrameManager::DiscardFrame(std::unique_ptr<WaylandFrame> frame) {
+  frame->feedback = gfx::PresentationFeedback::Failure();
+  submitted_frames_.push_back(std::move(frame));
+  VerifyNumberOfSubmittedFrames();
   MaybeProcessSubmittedFrames();
 }
 

@@ -5,10 +5,11 @@
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_coordinator.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_container_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_controller.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_toolbar_view.h"
@@ -25,13 +26,14 @@ ReadAnythingCoordinator::ReadAnythingCoordinator(Browser* browser)
     : BrowserUserData<ReadAnythingCoordinator>(*browser) {
   // Create the model and initialize it with user prefs (if present).
   model_ = std::make_unique<ReadAnythingModel>();
-  InitModelWithUserPrefs(browser);
+  InitModelWithUserPrefs();
 
   // Create the controller.
   controller_ = std::make_unique<ReadAnythingController>(model_.get(), browser);
 }
 
-void ReadAnythingCoordinator::InitModelWithUserPrefs(Browser* browser) {
+void ReadAnythingCoordinator::InitModelWithUserPrefs() {
+  Browser* browser = &GetBrowser();
   if (!browser->profile() || !browser->profile()->GetPrefs())
     return;
 
@@ -42,6 +44,8 @@ void ReadAnythingCoordinator::InitModelWithUserPrefs(Browser* browser) {
   double prefs_font_scale;
   prefs_font_scale = browser->profile()->GetPrefs()->GetDouble(
       prefs::kAccessibilityReadAnythingFontScale);
+
+  // TODO(crbug.com/1266555): Add initial color values fetched from Prefs.
 
   model_->Init(
       /* font name = */ prefs_font_name,
@@ -82,6 +86,16 @@ void ReadAnythingCoordinator::AddObserver(
 void ReadAnythingCoordinator::RemoveObserver(
     ReadAnythingCoordinator::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+void ReadAnythingCoordinator::AddModelObserver(
+    ReadAnythingModel::Observer* observer) {
+  DCHECK(model_);
+  model_->AddObserver(observer);
+}
+void ReadAnythingCoordinator::RemoveModelObserver(
+    ReadAnythingModel::Observer* observer) {
+  DCHECK(model_);
+  model_->RemoveObserver(observer);
 }
 
 void ReadAnythingCoordinator::OnEntryShown(SidePanelEntry* entry) {

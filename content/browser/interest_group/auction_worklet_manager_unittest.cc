@@ -127,6 +127,7 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
   void GenerateBid(
       auction_worklet::mojom::BidderWorkletNonSharedParamsPtr
           bidder_worklet_non_shared_params,
+      const url::Origin& interest_group_join_origin,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
@@ -276,7 +277,8 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
                uint32_t browser_signal_bidding_duration_msecs,
                const absl::optional<base::TimeDelta> seller_timeout,
                uint64_t trace_id,
-               ScoreAdCallback score_ad_callback) override {
+               mojo::PendingRemote<auction_worklet::mojom::ScoreAdClient>
+                   score_ad_client) override {
     NOTREACHED();
   }
 

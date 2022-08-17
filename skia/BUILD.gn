@@ -12,7 +12,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/libgifcodec/libgifcodec.gni")
 import("//third_party/skia/gn/shared_sources.gni")
-import("//third_party/skia/third_party/skcms/skcms.gni")
+import("//third_party/skia/modules/skcms/skcms.gni")
 import("//tools/grit/grit_rule.gni")
 import("features.gni")
 
@@ -213,10 +213,10 @@ source_set("skcms") {
     cflags += [ "-mfp16-format=ieee" ]
   }
 
-  public = [ "//third_party/skia/include/third_party/skcms/skcms.h" ]
-  include_dirs = [ "//third_party/skia/include/third_party/skcms" ]
+  public = [ "//third_party/skia/modules/skcms/skcms.h" ]
+  include_dirs = [ "//third_party/skia/modules/skcms" ]
   sources =
-      rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
+      rebase_path(skcms_sources, ".", "//third_party/skia/modules/skcms")
 }
 
 component("skia") {
@@ -329,7 +329,7 @@ component("skia") {
   sources += skia_effects_imagefilter_public
 
   # The imported Skia gni source paths are made absolute by gn.
-  defines = skia_core_defines
+  defines = []
   sources += skia_sksl_sources
   sources += skia_utils_sources
   sources += skia_xps_sources
@@ -665,7 +665,7 @@ template("skia_source_set") {
 
 # Split out for targeted removal of the afdo_optimize_size config on Android.
 skia_source_set("skia_core_and_effects") {
-  defines = skia_core_defines
+  defines = []
   sources = skia_core_sources
   sources += skia_effects_sources
   sources += skia_effects_imagefilter_sources

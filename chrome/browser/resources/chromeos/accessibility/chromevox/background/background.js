@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {AutomationUtil} from '../../common/automation_util.js';
+import {constants} from '../../common/constants.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {InstanceChecker} from '../../common/instance_checker.js';
+import {AbstractEarcons} from '../common/abstract_earcons.js';
 import {ExtensionBridge} from '../common/extension_bridge.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
 import {BrailleCommandHandler} from './braille/braille_command_handler.js';
@@ -413,10 +418,9 @@ export class Background extends ChromeVoxState {
           AutomationUtil.getUniqueAncestors(prevRange.start.node, start);
 
       entered
-          .filter(f => {
-            return f.role === RoleType.PLUGIN_OBJECT ||
-                f.role === RoleType.IFRAME;
-          })
+          .filter(
+              ancestor => ancestor.role === RoleType.PLUGIN_OBJECT ||
+                  ancestor.role === RoleType.IFRAME)
           .forEach(container => {
             if (!container.state[StateType.FOCUSED]) {
               container.focus();

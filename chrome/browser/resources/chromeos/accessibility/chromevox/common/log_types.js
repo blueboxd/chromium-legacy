@@ -6,6 +6,9 @@
  * @fileoverview Class definitions of log that are stored in LogStore
  */
 
+import {TreeDumper} from './tree_dumper.js';
+import {QueueMode} from './tts_interface.js';
+
 /**
  * List of all types of logs supported.
  * Note that filter type checkboxes are shown in this order at the log page.
@@ -22,6 +25,15 @@ export const LogType = {
   TREE: 'tree',
 };
 
+/**
+ * @typedef {{
+ *   logType: !LogType,
+ *   date: !Date,
+ *   value: string
+ * }}
+ */
+export let SerializableLog;
+
 export class BaseLog {
   constructor(logType) {
     /**
@@ -33,6 +45,12 @@ export class BaseLog {
      * @type {!Date}
      */
     this.date = new Date();
+  }
+
+  /** @return {!SerializableLog} */
+  serialize() {
+    return /** @type {!SerializableLog} */ (
+        {logType: this.logType, date: this.date, value: this.toString()});
   }
 
   /** @return {string} */

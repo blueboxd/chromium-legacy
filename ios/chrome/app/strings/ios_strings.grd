@@ -576,9 +576,6 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_CLEAR_SYNC_AND_SAVED_SITE_DATA" desc="Footer message in the settings to clear browsing data that informs the user the synced data will be cleared on all devices and that saved site settings will not be deleted.">
         This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SIGN_OUT_EVERY_WEBSITE" desc="[iOS only] Footer message in the settings to clear browsing data that allows user to sign out of Chrome to sign out their Google account from all websites.">
-        To sign out of your Google Account on all websites, <ph name="BEGIN_LINK">BEGIN_LINK</ph>sign out of chrome<ph name="END_LINK">END_LINK</ph>.
-      </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA" desc="Footer message in the settings to clear browsing data that informs the user that saved site settings will not be deleted.">
         Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
@@ -1154,6 +1151,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_TITLE" desc="Title of interstitial which lets the user choose, when they open a link from an external app, whether to open it in Incognito mode or in a regular tab. [iOS only]">
         Open in Incognito?
+      </message>
+      <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_URL_READ_MORE_BUTTON" desc="Button to unfold a URL which is being truncated, so as to let the user read more of the URL. [iOS only]">
+        more
       </message>
       <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_OPEN_IN_CHROME_INCOGNITO" desc="Button to open a link from an external app in Incognito mode rather than a regular tab. [iOS only]">
         Open in Chrome Incognito
@@ -2295,6 +2295,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_MANAGER_HEADER_NOT_SYNCING" desc="Header text for the view in Settings for managing saved passwords. This string only appears when the user is not syncing their passwords. [Length: unlimited] [iOS only]">
         Passwords are saved to Google Password Manager on this device only.
       </message>
+      <message name="IDS_IOS_ADD_PASSWORD" desc="Text on a button which allows the user to save a password for a website in their Password Manager.">
+        Add Password...
+      </message>
       <message name="IDS_IOS_CHECK_PASSWORDS" desc="Title for the item in Settings for Password Check feature" meaning="Label tells the user about status of Password Check [CHAR_LIMIT=25] [iOS only]">
         Check Passwords
       </message>
@@ -2560,6 +2563,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SETTINGS_TOOLBAR_ADD" desc="Label of the button displayed on the bottom toolbar of the settings' collections. Pressing this button opens the Add view. For example: Clicking this button in the Password settings would open the add password view.">
         Add
+      </message>
+      <message name="IDS_IOS_SETTINGS_TOOLBAR_SETTINGS_SUBMENU" desc="Button text in a toolbar that will take the user to a submenu with settings related to the currently-displayed content.">
+        Settings
       </message>
         <message name="IDS_IOS_SETTINGS_SWIPE_DOWN_MESSAGE" desc="Message displayed whenever a user tries to dismiss a Settings screen which is being edited, or information is being added to it.">
         Are you sure you want to discard your changes?
@@ -3513,6 +3519,9 @@ New Search
       </message>
       <message name="IDS_IOS_PASSWORD_SUGGESTIONS_TIP_TITLE" desc="The title of the tip explaining to the user they can tap on Autofill password suggestions. Used as a title in an info bubble." meaning="Used as a title in an info bubble.">
         Autofill Passwords
+      </message>
+      <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_PASTE_SEARCH" desc="Accessibility label for a button that starts a Paste and Search [iOS only]">
+        Paste and Search
       </message>
     </messages>
   </release>

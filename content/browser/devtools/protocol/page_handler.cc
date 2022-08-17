@@ -1410,6 +1410,8 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
       return Page::PrerenderFinalStatusEnum::CrossOriginNavigation;
     case PrerenderHost::FinalStatus::kCrossOriginRedirect:
       return Page::PrerenderFinalStatusEnum::CrossOriginRedirect;
+    case PrerenderHost::FinalStatus::kDataSaverEnabled:
+      return Page::PrerenderFinalStatusEnum::DataSaverEnabled;
     case PrerenderHost::FinalStatus::kDestroyed:
       return Page::PrerenderFinalStatusEnum::Destroyed;
     case PrerenderHost::FinalStatus::kDidFailLoad:
@@ -1419,8 +1421,6 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
     case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
       return Page::PrerenderFinalStatusEnum::
           EmbedderTriggeredAndCrossOriginRedirected;
-    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndDestroyed:
-      return Page::PrerenderFinalStatusEnum::EmbedderTriggeredAndDestroyed;
     case PrerenderHost::FinalStatus::kEmbedderTriggeredAndSameOriginRedirected:
       return Page::PrerenderFinalStatusEnum::
           EmbedderTriggeredAndSameOriginRedirected;

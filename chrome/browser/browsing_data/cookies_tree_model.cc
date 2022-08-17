@@ -39,6 +39,7 @@
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/browsing_data/content/service_worker_helper.h"
 #include "components/browsing_data/content/shared_worker_helper.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/permissions/permissions_client.h"
 #include "components/vector_icons/vector_icons.h"
@@ -47,11 +48,11 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
@@ -178,19 +179,6 @@ LocalDataContainer* GetLocalDataContainerForNode(CookieTreeNode* node) {
   CHECK_EQ(host->GetDetailedInfo().node_type,
            CookieTreeNode::DetailedInfo::TYPE_HOST);
   return node->GetModel()->data_container();
-}
-
-bool IsHttps(net::CookieSourceScheme cookie_source_scheme) {
-  switch (cookie_source_scheme) {
-    case net::CookieSourceScheme::kSecure:
-      return true;
-    case net::CookieSourceScheme::kNonSecure:
-      return false;
-    case net::CookieSourceScheme::kUnset:
-      // Older cookies don't have a source scheme. Associate them with https
-      // since the majority of pageloads are https.
-      return true;
-  }
 }
 
 }  // namespace
@@ -1451,10 +1439,12 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
   notifier->StartBatchUpdate();
   for (auto it = container->cookie_list_.begin();
        it != container->cookie_list_.end(); ++it) {
-    GURL source = (it->Domain() == ".")
-                      ? GURL("http://./")
-                      : net::cookie_util::CookieOriginToURL(
-                            it->Domain(), IsHttps(it->SourceScheme()));
+    GURL source =
+        (it->Domain() == ".")
+            ? GURL("http://./")
+            : net::cookie_util::CookieOriginToURL(
+                  it->Domain(),
+                  browsing_data::IsHttpsCookieSourceScheme(it->SourceScheme()));
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(source).find(
                                filter) != std::u16string::npos)) {
@@ -1767,7 +1757,7 @@ std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfileDeprecated(
   // types of quota managed storage. If not, the quota node type is excluded as
   // it is represented by other types.
   bool use_quota_only = base::FeatureList::IsEnabled(
-      blink::features::kThirdPartyStoragePartitioning);
+      net::features::kThirdPartyStoragePartitioning);
 
   // Types managed by Quota:
   auto database_helper =

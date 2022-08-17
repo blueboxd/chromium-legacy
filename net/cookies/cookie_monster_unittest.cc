@@ -3469,6 +3469,57 @@ TEST_F(CookieMonsterTest, NumKeysHistogram) {
   }
 }
 
+TEST_F(CookieMonsterTest, MaxSameSiteNoneCookiesPerKey) {
+  const char kHistogramName[] = "Cookie.MaxSameSiteNoneCookiesPerKey";
+
+  auto store = base::MakeRefCounted<MockPersistentCookieStore>();
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
+  ASSERT_EQ(0u, GetAllCookies(cm.get()).size());
+
+  {  // Only SameSite cookies should not log a sample.
+    base::HistogramTester histogram_tester;
+
+    ASSERT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain1.test"),
+                                   "A=1;SameSite=Lax",
+                                   CookieOptions::MakeAllInclusive()));
+    ASSERT_EQ(1u, GetAllCookies(cm.get()).size());
+    ASSERT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 0 /* sample */,
+                                        1 /* count */);
+  }
+
+  {  // SameSite=None cookie should log a sample.
+    base::HistogramTester histogram_tester;
+
+    ASSERT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain1.test"),
+                                   "B=2;SameSite=None;Secure",
+                                   CookieOptions::MakeAllInclusive()));
+    ASSERT_EQ(2u, GetAllCookies(cm.get()).size());
+    ASSERT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 1 /* sample */,
+                                        1 /* count */);
+  }
+
+  {  // Should log the maximum number of SameSite=None cookies.
+    base::HistogramTester histogram_tester;
+
+    ASSERT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain2.test"),
+                                   "A=1;SameSite=None;Secure",
+                                   CookieOptions::MakeAllInclusive()));
+    ASSERT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain2.test"),
+                                   "B=2;SameSite=None;Secure",
+                                   CookieOptions::MakeAllInclusive()));
+    ASSERT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain3.test"),
+                                   "A=1;SameSite=None;Secure",
+                                   CookieOptions::MakeAllInclusive()));
+    ASSERT_EQ(5u, GetAllCookies(cm.get()).size());
+    ASSERT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 2 /* sample */,
+                                        1 /* count */);
+  }
+}
+
 // Test that localhost URLs can set and get secure cookies, even if
 // non-cryptographic.
 TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
@@ -5308,12 +5359,14 @@ TEST_F(FirstPartySetEnabledCookieMonsterTest, RecordsPeriodicFPSSizes) {
   net::SchemefulSite member4(GURL("https://member4.test"));
 
   access_delegate_->SetFirstPartySets({
-      {owner1, net::FirstPartySetEntry(owner1)},
-      {member1, net::FirstPartySetEntry(owner1)},
-      {member2, net::FirstPartySetEntry(owner1)},
-      {owner2, net::FirstPartySetEntry(owner2)},
-      {member3, net::FirstPartySetEntry(owner2)},
-      {member4, net::FirstPartySetEntry(owner2)},
+      {owner1,
+       net::FirstPartySetEntry(owner1, net::SiteType::kPrimary, absl::nullopt)},
+      {member1, net::FirstPartySetEntry(owner1, net::SiteType::kAssociated, 0)},
+      {member2, net::FirstPartySetEntry(owner1, net::SiteType::kAssociated, 1)},
+      {owner2,
+       net::FirstPartySetEntry(owner2, net::SiteType::kPrimary, absl::nullopt)},
+      {member3, net::FirstPartySetEntry(owner2, net::SiteType::kAssociated, 0)},
+      {member4, net::FirstPartySetEntry(owner2, net::SiteType::kAssociated, 1)},
   });
 
   ASSERT_TRUE(SetCookie(cm(), GURL("https://owner1.test"), kValidCookieLine));

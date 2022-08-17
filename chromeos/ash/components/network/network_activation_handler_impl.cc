@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/network_handler.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "dbus/object_proxy.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -43,4 +43,4 @@ void NetworkActivationHandlerImpl::HandleShillSuccess(
     std::move(success_callback).Run();
 }
 
-}  // namespace chromeos
+}  // namespace ash

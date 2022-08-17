@@ -9,13 +9,8 @@
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/common/input/web_input_event_attribution.h"
-#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace v8 {
 class Isolate;
@@ -26,17 +21,12 @@ class TaskObserver;
 }
 
 namespace blink {
-namespace scheduler {
-class NonMainThreadSchedulerImpl;
-}
 
+class CompositorThreadScheduler;
 class MainThreadScheduler;
-class RAILModeObserver;
 
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
-// TODO(dtapuska): Move methods that are intended only for the main thread
-// scheduler into MainThreadScheduler.
 class PLATFORM_EXPORT ThreadScheduler {
  public:
   // Return the current thread's ThreadScheduler.
@@ -44,7 +34,7 @@ class PLATFORM_EXPORT ThreadScheduler {
 
   // Returns compositor thread scheduler for the compositor thread
   // of the current process.
-  static ThreadScheduler* CompositorThreadScheduler();
+  static blink::CompositorThreadScheduler* CompositorThreadScheduler();
 
   virtual ~ThreadScheduler() = default;
 
@@ -56,16 +46,6 @@ class PLATFORM_EXPORT ThreadScheduler {
   // WebThread and the caller should yield to let the scheduler service that
   // work.  Must be called on the associated WebThread.
   virtual bool ShouldYieldForHighPriorityWork() = 0;
-
-  // Returns true if a currently running idle task could exceed its deadline
-  // without impacting user experience too much. This should only be used if
-  // there is a task which cannot be pre-empted and is likely to take longer
-  // than the largest expected idle task deadline. It should NOT be polled to
-  // check whether more work can be performed on the current idle task after
-  // its deadline has expired - post a new idle task for the continuation of
-  // the work in this case.
-  // Must be called from the associated WebThread.
-  virtual bool CanExceedIdleDeadlineIfRequired() const = 0;
 
   // Schedule an idle task to run the associated WebThread. For non-critical
   // tasks which may be reordered relative to other task types and may be
@@ -87,25 +67,8 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual void PostNonNestableIdleTask(const base::Location&,
                                        Thread::IdleTask) = 0;
 
-  virtual void AddRAILModeObserver(RAILModeObserver* observer) = 0;
-
-  virtual void RemoveRAILModeObserver(RAILModeObserver const* observer) = 0;
-
   // Returns a task runner for kV8 tasks. Can be called from any thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() = 0;
-
-  // Returns a task runner for compositor tasks. This is intended only to be
-  // used by specific animation and rendering related tasks (e.g. animated GIFS)
-  // and should not generally be used.
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  CompositorTaskRunner() = 0;
-
-  // Returns a task runner for input-blocking tasks on the compositor thread.
-  // (For input tasks on the main thread, use WebWidgetScheduler instead.)
-  virtual scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() {
-    NOTREACHED();
-    return nullptr;
-  }
 
   // Returns a default task runner. This is basically same as the default task
   // runner, but is explicitly allowed to run JavaScript. We plan to forbid V8
@@ -116,18 +79,6 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   DeprecatedDefaultTaskRunner() = 0;
 
-  // Creates a AgentGroupScheduler implementation. Must be called from the
-  // main thread.
-  virtual std::unique_ptr<scheduler::WebAgentGroupScheduler>
-  CreateAgentGroupScheduler() = 0;
-
-  // The current active AgentGroupScheduler is set when the task gets
-  // started (i.e., OnTaskStarted) and unset when the task gets
-  // finished (i.e., OnTaskCompleted). GetCurrentAgentGroupScheduler()
-  // returns nullptr in task observers.
-  virtual scheduler::WebAgentGroupScheduler*
-  GetCurrentAgentGroupScheduler() = 0;
-
   // Returns the current time recognized by the scheduler, which may perhaps
   // be based on a real or virtual time domain. Used by Timer.
   virtual base::TimeTicks MonotonicallyIncreasingVirtualTime() = 0;
@@ -137,14 +88,6 @@ class PLATFORM_EXPORT ThreadScheduler {
   // called on the thread this scheduler was created on.
   virtual void AddTaskObserver(base::TaskObserver* task_observer) = 0;
   virtual void RemoveTaskObserver(base::TaskObserver* task_observer) = 0;
-
-  // Returns a list of all unique attributions that are marked for event
-  // dispatch. If |include_continuous| is true, include event types from
-  // "continuous" sources (see PendingUserInput::IsContinuousEventTypes).
-  virtual Vector<WebInputEventAttribution> GetPendingUserInputInfo(
-      bool include_continuous) const {
-    return {};
-  }
 
   // Associates |isolate| to the scheduler.
   virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
@@ -160,21 +103,8 @@ class PLATFORM_EXPORT ThreadScheduler {
 
   // Test helpers.
 
-  virtual scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() = 0;
-
   virtual void InitializeTaskAttributionTracker(
       std::unique_ptr<scheduler::TaskAttributionTracker>) {}
-
- private:
-  // For GetWebMainThreadScheduler().
-  friend class scheduler::WebThreadScheduler;
-
-  // Return a reference to an underlying main thread WebThreadScheduler object.
-  // Can be null if there is no underlying main thread WebThreadScheduler
-  // (e.g. worker threads).
-  virtual scheduler::WebThreadScheduler* GetWebMainThreadScheduler() {
-    return nullptr;
-  }
 };
 
 }  // namespace blink

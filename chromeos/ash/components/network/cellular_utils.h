@@ -8,8 +8,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/components/network/cellular_esim_profile.h"
 #include "chromeos/ash/components/network/device_state.h"
 
 namespace dbus {
@@ -17,6 +15,8 @@ class ObjectPath;
 }  // namespace dbus
 
 namespace ash {
+
+class CellularESimProfile;
 
 // Generates a list of CellularESimProfile objects for all Hermes esim profile
 // objects available through its dbus clients. Note that this function returns
@@ -54,12 +54,9 @@ absl::optional<dbus::ObjectPath> GetCurrentEuiccPath();
 
 // TODO(https://crbug.com/1164001): remove when the migration is finished.
 namespace chromeos {
-using ::ash::GenerateProfilesFromHermes;
-using ::ash::GenerateStubCellularServicePath;
 using ::ash::GetCurrentEuiccPath;
 using ::ash::GetSimSlotInfosWithUpdatedEid;
 using ::ash::IsSimPrimary;
-using ::ash::IsStubCellularServicePath;
 }  // namespace chromeos
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_CELLULAR_UTILS_H_

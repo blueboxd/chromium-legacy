@@ -340,7 +340,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // that their mapped event has occurred. The |sound_key| enums can be found in
-  // ash/components/audio/sounds.h.
+  // chromeos/ash/components/audio/sounds.h.
   void PlayEarcon(Sound sound_key);
 
   // Initiates play of shutdown sound. Returns the TimeDelta duration.
@@ -353,9 +353,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // Toggle dictation.
   void ToggleDictation();
-
-  // Cancels all current and queued speech immediately.
-  void SilenceSpokenFeedback();
 
   // Called when we first detect two fingers are held down, which can be used to
   // toggle spoken feedback on some touch-only devices.
@@ -462,6 +459,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       const absl::optional<std::u16string>& text,
       const absl::optional<std::vector<DictationBubbleHintType>>& hints)
       override;
+  void SilenceSpokenFeedback() override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

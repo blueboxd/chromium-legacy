@@ -158,6 +158,8 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL);
   SET_STRING("DRIVE_INDIVIDUAL_QUOTA_LOW",
              IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_LOW);
+  SET_STRING("DRIVE_WARNING_QUOTA_OVER",
+             IDS_FILE_BROWSER_DRIVE_WARNING_QUOTA_OVER);
   SET_STRING("DRIVE_INDIVIDUAL_QUOTA_OVER",
              IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_OVER);
   SET_STRING("DRIVE_ORGANIZATION_QUOTA_OVER",
@@ -600,6 +602,8 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_METADATA_BOX_EXIF_GEOGRAPHY);
   SET_STRING("METADATA_BOX_FILE_LOCATION",
              IDS_FILE_BROWSER_METADATA_BOX_FILE_LOCATION);
+  SET_STRING("METADATA_BOX_ORIGINAL_LOCATION",
+             IDS_FILE_BROWSER_METADATA_BOX_ORIGINAL_LOCATION);
   SET_STRING("METADATA_BOX_FILE_PATH", IDS_FILE_BROWSER_METADATA_BOX_FILE_PATH);
   SET_STRING("METADATA_BOX_FILE_SIZE", IDS_FILE_BROWSER_METADATA_BOX_FILE_SIZE);
   SET_STRING("METADATA_BOX_FRAME_RATE",
@@ -1007,6 +1011,8 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("HIDE_SPACE_INFO", ash::DemoSession::IsDeviceInDemoMode());
   dict->Set("ARC_USB_STORAGE_UI_ENABLED",
             base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
+  dict->Set("ARC_ENABLE_VIRTIO_BLK_FOR_DATA",
+            base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData));
   dict->Set("CROSTINI_ENABLED",
             crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   dict->Set("PLUGIN_VM_ENABLED",

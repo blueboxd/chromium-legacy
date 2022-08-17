@@ -2072,13 +2072,6 @@ void NetworkHandler::PrefetchRequestWillBeSent(
       std::move(redirect_response),
       std::string(Network::ResourceTypeEnum::Prefetch), std::move(frame_token),
       request.has_user_gesture);
-
-  // TODO: cookies, security status and full list of headers should be
-  // implemented. https://crbug.com/1315706.
-  frontend_->RequestWillBeSentExtraInfo(
-      request_id, BuildProtocolAssociatedCookies({}),
-      BuildRequestHeaders(request.headers, request.referrer),
-      GetConnectTiming(timestamp), MaybeBuildClientSecurityState({}));
 }
 
 void NetworkHandler::NavigationRequestWillBeSent(
@@ -2599,6 +2592,23 @@ void NetworkHandler::GetResponseBodyForInterception(
 
   url_loader_interceptor_->GetResponseBody(interception_id,
                                            std::move(callback));
+}
+
+void NetworkHandler::BodyDataReceived(const String& request_id,
+                                      const String& body,
+                                      bool is_base64_encoded) {
+  received_body_data_[request_id] = {body, is_base64_encoded};
+}
+
+void NetworkHandler::GetResponseBody(
+    const String& request_id,
+    std::unique_ptr<GetResponseBodyCallback> callback) {
+  auto it = received_body_data_.find(request_id);
+  if (it != received_body_data_.end()) {
+    callback->sendSuccess(it->second.first, it->second.second);
+  } else {
+    callback->fallThrough();
+  }
 }
 
 void NetworkHandler::TakeResponseBodyForInterceptionAsStream(

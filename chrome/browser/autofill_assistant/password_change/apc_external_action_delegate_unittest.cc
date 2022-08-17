@@ -16,10 +16,12 @@
 #include "chrome/browser/ui/autofill_assistant/password_change/mock_password_change_run_display.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill_assistant/browser/public/external_action.pb.h"
 #include "components/autofill_assistant/browser/public/password_change/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "components/autofill_assistant/browser/public/rectf.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,6 +29,7 @@
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using DomUpdateCallback =
@@ -146,14 +149,15 @@ autofill_assistant::external::Action CreateAction(
 
 }  // namespace
 
-class ApcExternalActionDelegateTest : public ::testing::Test {
+class ApcExternalActionDelegateTest : public ChromeRenderViewHostTestHarness {
  public:
-  ApcExternalActionDelegateTest() {
-    action_delegate_ = std::make_unique<ApcExternalActionDelegate>(
-        display_delegate(), apc_scrim_manager(), website_login_manager());
-  }
-
   void SetUp() override {
+    content::RenderViewHostTestHarness::SetUp();
+
+    action_delegate_ = std::make_unique<ApcExternalActionDelegate>(
+        web_contents(), display_delegate(), apc_scrim_manager(),
+        website_login_manager());
+
     EXPECT_CALL(*display(), Show);
     action_delegate()->Show(display()->GetWeakPtr());
   }
@@ -242,6 +246,38 @@ TEST_F(ApcExternalActionDelegateTest, ShowStartingScreen) {
   action_delegate()->ShowStartingScreen(url);
 }
 
+TEST_F(ApcExternalActionDelegateTest, ShowCompletionScreen) {
+  base::RepeatingClosure show_completion_screen_callback;
+  EXPECT_CALL(*display(),
+              ShowCompletionScreen(show_completion_screen_callback));
+
+  action_delegate()->ShowCompletionScreen(show_completion_screen_callback);
+}
+
+TEST_F(ApcExternalActionDelegateTest, ShowErrorScreen) {
+  const GURL url(kUrl);
+
+  EXPECT_CALL(*display(), ShowErrorScreen());
+
+  action_delegate()->ShowErrorScreen();
+}
+
+TEST_F(ApcExternalActionDelegateTest, PasswordWasSuccessfullyChanged) {
+  base::RepeatingClosure show_completion_screen_callback;
+
+  // Returns true if the progress step is at the end.
+  ON_CALL(*display(), GetProgressStep())
+      .WillByDefault(Return(autofill_assistant::password_change::ProgressStep::
+                                PROGRESS_STEP_END));
+  EXPECT_TRUE(action_delegate()->PasswordWasSuccessfullyChanged());
+
+  // Returns false otherwise.
+  ON_CALL(*display(), GetProgressStep())
+      .WillByDefault(Return(autofill_assistant::password_change::ProgressStep::
+                                PROGRESS_STEP_SAVE_PASSWORD));
+  EXPECT_FALSE(action_delegate()->PasswordWasSuccessfullyChanged());
+}
+
 TEST_F(ApcExternalActionDelegateTest, ReceiveInvalidAction) {
   autofill_assistant::external::Action empty_action;
 
@@ -272,7 +308,7 @@ TEST_F(ApcExternalActionDelegateTest, ReceiveBasePromptAction_FromViewClick) {
 
   // Save prompt arguments for inspection.
   std::vector<PasswordChangeRunDisplay::PromptChoice> choices;
-  EXPECT_CALL(*display(), ShowBasePrompt).WillOnce(SaveArg<0>(&choices));
+  EXPECT_CALL(*display(), ShowBasePrompt(_)).WillOnce(SaveArg<0>(&choices));
 
   // Similarly, save the prompt result.
   autofill_assistant::external::Result result;
@@ -329,7 +365,7 @@ TEST_F(ApcExternalActionDelegateTest,
   base::MockOnceCallback<void(DomUpdateCallback)> start_dom_checks_callback;
 
   std::vector<PasswordChangeRunDisplay::PromptChoice> choices;
-  EXPECT_CALL(*display(), ShowBasePrompt);
+  EXPECT_CALL(*display(), ShowBasePrompt(_));
 
   // Save the prompt result.
   autofill_assistant::external::Result result;
@@ -383,7 +419,7 @@ TEST_F(ApcExternalActionDelegateTest,
   base::MockOnceCallback<void(DomUpdateCallback)> start_dom_checks_callback;
 
   std::vector<PasswordChangeRunDisplay::PromptChoice> choices;
-  EXPECT_CALL(*display(), ShowBasePrompt);
+  EXPECT_CALL(*display(), ShowBasePrompt(_));
 
   // Save the prompt result.
   autofill_assistant::external::Result result;
@@ -420,7 +456,7 @@ TEST_F(ApcExternalActionDelegateTest,
 
   // Save prompt arguments for inspection.
   std::vector<PasswordChangeRunDisplay::PromptChoice> choices;
-  EXPECT_CALL(*display(), ShowBasePrompt).WillOnce(SaveArg<0>(&choices));
+  EXPECT_CALL(*display(), ShowBasePrompt(_)).WillOnce(SaveArg<0>(&choices));
 
   // Similarly, save the prompt result.
   autofill_assistant::external::Result result;

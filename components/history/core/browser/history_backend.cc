@@ -1771,9 +1771,15 @@ std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
 }
 
 base::Time HistoryBackend::FindMostRecentClusteredTime() {
-  // TODO(manukh): Implement. Since we don't have persisted clustered visits
-  //  yet, there are no visits to take the timestamp of.
-  return base::Time::Now() - base::Days(kExpireDaysThreshold);
+  TRACE_EVENT0("browser", "HistoryBackend::FindMostRecentClusteredTime");
+  if (!db_)
+    return base::Time::Min();
+  const auto clusters =
+      GetMostRecentClusters(base::Time::Min(), base::Time::Max(), 1, false);
+  return clusters.empty() ? base::Time::Min()
+                          : clusters[0]
+                                .GetMostRecentVisit()
+                                .annotated_visit.visit_row.visit_time;
 }
 
 void HistoryBackend::ReplaceClusters(
@@ -1790,27 +1796,30 @@ void HistoryBackend::ReplaceClusters(
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(
     base::Time inclusive_min_time,
     base::Time exclusive_max_time,
-    int max_clusters) {
+    int max_clusters,
+    bool include_keywords) {
   TRACE_EVENT0("browser", "HistoryBackend::GetMostRecentClusters");
   if (!db_)
     return {};
   const auto cluster_ids = db_->GetMostRecentClusterIds(
       inclusive_min_time, exclusive_max_time, max_clusters);
   std::vector<Cluster> clusters;
-  base::ranges::transform(
-      cluster_ids, std::back_inserter(clusters),
-      [&](const auto& cluster_id) { return GetCluster(cluster_id); });
+  base::ranges::transform(cluster_ids, std::back_inserter(clusters),
+                          [&](const auto& cluster_id) {
+                            return GetCluster(cluster_id, include_keywords);
+                          });
   return clusters;
 }
 
-Cluster HistoryBackend::GetCluster(int64_t cluster_id) {
+Cluster HistoryBackend::GetCluster(int64_t cluster_id, bool include_keywords) {
   TRACE_EVENT0("browser", "HistoryBackend::GetCluster");
   if (!db_)
     return {};
 
   Cluster cluster = db_->GetCluster(cluster_id);
-  cluster.cluster_id = cluster_id;
   cluster.visits = ToClusterVisits(db_->GetVisitIdsInCluster(cluster_id));
+  if (include_keywords)
+    cluster.keyword_to_data_map = db_->GetClusterKeywords(cluster_id);
   return cluster;
 }
 
@@ -2747,8 +2756,7 @@ void HistoryBackend::NotifyURLVisited(const URLRow& url_row,
   for (HistoryBackendObserver& observer : observers_)
     observer.OnURLVisited(this, url_row, visit_row);
 
-  delegate_->NotifyURLVisited(visit_row.transition, url_row,
-                              visit_row.visit_time);
+  delegate_->NotifyURLVisited(url_row, visit_row);
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,

@@ -187,12 +187,18 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
 
 void ApcClientImpl::OnRunComplete(
     autofill_assistant::HeadlessScriptController::ScriptResult result) {
-  if (result.success) {
+  Stop(result.success);
+
+  if (!result.success) {
+    apc_external_action_delegate_->ShowErrorScreen();
+    return;
+  }
+
+  if (apc_external_action_delegate_->PasswordWasSuccessfullyChanged()) {
     apc_external_action_delegate_->ShowCompletionScreen(base::BindRepeating(
-        &ApcClientImpl::Stop, base::Unretained(this), result.success));
+        &ApcClientImpl::CloseSidePanel, base::Unretained(this)));
   } else {
-    // TODO(crbug.com/1324089): Handle failed result.
-    Stop(result.success);
+    CloseSidePanel();
   }
 }
 
@@ -202,6 +208,10 @@ void ApcClientImpl::OnHidden() {
   // The two resets below are not included in `Stop()`, since we may wish to
   // render content in the side panel even for a stopped flow.
   apc_external_action_delegate_.reset();
+  side_panel_coordinator_.reset();
+}
+
+void ApcClientImpl::CloseSidePanel() {
   side_panel_coordinator_.reset();
 }
 
@@ -245,7 +255,7 @@ ApcClientImpl::CreateApcExternalActionDelegate() {
   DCHECK(website_login_manager_);
 
   return std::make_unique<ApcExternalActionDelegate>(
-      side_panel_coordinator_.get(), scrim_manager_.get(),
+      &GetWebContents(), side_panel_coordinator_.get(), scrim_manager_.get(),
       website_login_manager_.get());
 }
 

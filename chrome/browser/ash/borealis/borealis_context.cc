@@ -25,7 +25,6 @@
 #include "chrome/browser/ash/borealis/borealis_shutdown_monitor.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
-#include "chrome/browser/ash/game_mode/game_mode_controller.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/grit/generated_resources.h"
@@ -136,7 +135,8 @@ class BorealisLifetimeObserver
                 [](GURL gurl, Profile* profile) {
                   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
                       gurl,
-                      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+                      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+                      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
 
                   NotificationDisplayService::GetForProfile(profile)->Close(
                       NotificationHandler::Type::TRANSIENT,
@@ -200,7 +200,6 @@ BorealisContext::BorealisContext(Profile* profile)
       guest_os_stability_monitor_(
           std::make_unique<guest_os::GuestOsStabilityMonitor>(
               kBorealisStabilityHistogram)),
-      game_mode_controller_(std::make_unique<game_mode::GameModeController>()),
       engagement_metrics_(std::make_unique<BorealisEngagementMetrics>(profile)),
       disk_manager_(std::make_unique<BorealisDiskManagerImpl>(this)),
       power_controller_(std::make_unique<BorealisPowerController>()) {}

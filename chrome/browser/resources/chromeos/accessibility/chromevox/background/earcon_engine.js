@@ -8,6 +8,8 @@
  * rest of the code.
  */
 
+import {Earcon} from '../common/abstract_earcons.js';
+
 /**
  * EarconEngine generates ChromeVox's earcons using the web audio API.
  */
@@ -132,11 +134,10 @@ export class EarconEngine {
     // Initialization: load the base sound data files asynchronously.
     const allSoundFilesToLoad =
         EarconEngine.SOUNDS.concat(EarconEngine.REVERBS);
-    allSoundFilesToLoad.forEach((function(sound) {
-                                  const url =
-                                      EarconEngine.BASE_URL + sound + '.wav';
-                                  this.loadSound(sound, url);
-                                }).bind(this));
+    allSoundFilesToLoad.forEach(sound => {
+      const url = `${EarconEngine.BASE_URL}${sound}.wav`;
+      this.loadSound(sound, url);
+    });
   }
 
   /**

@@ -53,6 +53,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -62,7 +63,6 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
@@ -104,6 +104,11 @@ const char kOmniboxFocusResultedInNavigation[] =
 // enum XML file.
 const char kEnteredKeywordModeHistogram[] = "Omnibox.EnteredKeywordMode2";
 
+// Histogram name which counts the number of times the user completes a search
+// in keyword mode, enumerated by the type of search engine.
+const char kEnteredKeywordModeByEngineTypeHistogram[] =
+    "Omnibox.EnteredKeywordModeByEngineType";
+
 // Histogram name which counts the number of milliseconds a user takes
 // between focusing and editing the omnibox.
 const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
@@ -117,11 +122,19 @@ const char kFocusToOpenTimeHistogram[] =
 // in keyword mode, enumerated by how they enter keyword mode.
 const char kAcceptedKeywordSuggestion[] = "Omnibox.AcceptedKeywordSuggestion";
 
-void EmitKeywordHistogram(
-    OmniboxEventProto::KeywordModeEntryMethod entry_method) {
+void EmitEnteredKeywordModeHistogram(
+    OmniboxEventProto::KeywordModeEntryMethod entry_method,
+    const TemplateURL* turl) {
   UMA_HISTOGRAM_ENUMERATION(
       kEnteredKeywordModeHistogram, static_cast<int>(entry_method),
       static_cast<int>(OmniboxEventProto::KeywordModeEntryMethod_MAX + 1));
+
+  if (turl != nullptr) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kEnteredKeywordModeByEngineTypeHistogram,
+        static_cast<int>(turl->GetBuiltinEngineType()),
+        static_cast<int>(BuiltinEngineType::KEYWORD_MODE_ENGINE_TYPE_MAX));
+  }
 }
 
 // `executed_position` should be set to the position of the executed
@@ -756,8 +769,9 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
 
   autocomplete_controller()->Stop(false);
 
-  keyword_ =
-      client_->GetTemplateURLService()->GetDefaultSearchProvider()->keyword();
+  const TemplateURL* default_search_provider =
+      client_->GetTemplateURLService()->GetDefaultSearchProvider();
+  keyword_ = default_search_provider->keyword();
   is_keyword_hint_ = false;
   keyword_mode_entry_method_ = entry_method;
 
@@ -774,7 +788,7 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
   if (entry_method == OmniboxEventProto::KEYBOARD_SHORTCUT)
     view_->SelectAll(false);
 
-  EmitKeywordHistogram(entry_method);
+  EmitEnteredKeywordModeHistogram(entry_method, default_search_provider);
 }
 
 void OmniboxEditModel::ExecuteAction(const AutocompleteMatch& match,
@@ -804,24 +818,21 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  const std::u16string& pasted_text,
                                  size_t index,
                                  base::TimeTicks match_selection_timestamp) {
-  TemplateURLService* service = client_->GetTemplateURLService();
-  bool is_tab_search_mode =
+  // NULL_RESULT_MESSAGE matches are informational only and cannot be acted
+  // upon. Immediately return when attempting to open one.
+  if (match.type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
+    return;
+  }
+
+  // Switch the window disposition to SWITCH_TO_TAB for open tab matches that
+  // originated while in keyword mode.  This is to support the keyword mode
+  // starter pack's tab search (@tabs) feature, which should open all
+  // suggestions in the existing open tab.
+  bool is_open_tab_match =
       OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
       match.from_keyword &&
-      service->IsKeywordFromStarterPackTabSearch(keyword_);
-  if (is_tab_search_mode) {
-    // The starter pack's tab search feature uses the omnibox's OpenTabProvider
-    // to search through a user's open tabs and does not have a proper landing
-    // page for substituting URL searches. To support this, only allow the user
-    // to open matches from the OpenTabProvider, effectively disabling the 
-    // search-other-engine suggestion that is usually the default suggestion in
-    // keyword mode.
-    if (match.provider->type() != AutocompleteProvider::TYPE_OPEN_TAB) {
-      return;
-    }
-
-    // All suggestions in tab search mode that ARE from the open tab provider
-    // should open in the existing open tab (switch to open tab).
+      match.provider->type() == AutocompleteProvider::TYPE_OPEN_TAB;
+  if (is_open_tab_match) {
     disposition = WindowOpenDisposition::SWITCH_TO_TAB;
   }
 
@@ -930,6 +941,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                now - last_omnibox_focus_);
   }
 
+  TemplateURLService* service = client_->GetTemplateURLService();
   TemplateURL* template_url = match.GetTemplateURL(service, false);
   if (template_url) {
     if (ui::PageTransitionTypeIncludingQualifiersIs(
@@ -1080,7 +1092,9 @@ bool OmniboxEditModel::AcceptKeyword(
   }
 
   base::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
-  EmitKeywordHistogram(entry_method);
+  const TemplateURL* turl =
+      client_->GetTemplateURLService()->GetTemplateURLForKeyword(keyword_);
+  EmitEnteredKeywordModeHistogram(entry_method, turl);
 
   return true;
 }
@@ -1618,7 +1632,9 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   view_->UpdatePopup();
   if (allow_exact_keyword_match_) {
     keyword_mode_entry_method_ = OmniboxEventProto::SPACE_IN_MIDDLE;
-    EmitKeywordHistogram(OmniboxEventProto::SPACE_IN_MIDDLE);
+    const TemplateURL* turl =
+        client_->GetTemplateURLService()->GetTemplateURLForKeyword(keyword_);
+    EmitEnteredKeywordModeHistogram(OmniboxEventProto::SPACE_IN_MIDDLE, turl);
     allow_exact_keyword_match_ = false;
   }
 

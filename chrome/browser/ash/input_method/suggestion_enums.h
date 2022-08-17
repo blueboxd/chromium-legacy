@@ -25,7 +25,8 @@ enum class AssistiveType {
   kAutocorrectReverted = 12,
   kMultiWordPrediction = 13,
   kMultiWordCompletion = 14,
-  kMaxValue = kMultiWordCompletion,
+  kLongpressDiacritics = 15,
+  kMaxValue = kLongpressDiacritics,
 };
 
 enum class SuggestionStatus {
@@ -55,6 +56,17 @@ enum class AssistiveTextInputState {
   kUnsupportedLanguage = 4,
   kFeatureEnabled = 5,
   kMaxValue = kFeatureEnabled,
+};
+
+// Must match with IMEAssistiveMultiWordSuggestionType in enums.xml
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MultiWordSuggestionType {
+  kUnknown = 0,
+  kPrediction = 1,
+  kCompletion = 2,
+  kMaxValue = kCompletion,
 };
 
 }  // namespace input_method

@@ -30,6 +30,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
@@ -211,6 +212,9 @@ class AppServiceProxyBase : public KeyedService,
                            LaunchCallback callback = base::DoNothing());
 
   // Sets |permission| for the app identified by |app_id|.
+  void SetPermission(const std::string& app_id, PermissionPtr permission);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
 
@@ -218,11 +222,20 @@ class AppServiceProxyBase : public KeyedService,
   // the uninstall dialog will be created as a modal dialog anchored at
   // |parent_window|. Otherwise, the browser window will be used as the anchor.
   virtual void Uninstall(const std::string& app_id,
+                         UninstallSource uninstall_source,
+                         gfx::NativeWindow parent_window) = 0;
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
+  virtual void Uninstall(const std::string& app_id,
                          apps::mojom::UninstallSource uninstall_source,
                          gfx::NativeWindow parent_window) = 0;
 
   // Uninstalls an app for the given |app_id| without prompting the user to
   // confirm.
+  void UninstallSilently(const std::string& app_id,
+                         UninstallSource uninstall_source);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void UninstallSilently(const std::string& app_id,
                          apps::mojom::UninstallSource uninstall_source);
 
@@ -421,10 +434,9 @@ class AppServiceProxyBase : public KeyedService,
                                         apps::LaunchSource launch_source,
                                         apps::LaunchContainer container);
 
-  virtual void PerformPostUninstallTasks(
-      apps::AppType app_type,
-      const std::string& app_id,
-      apps::mojom::UninstallSource uninstall_source);
+  virtual void PerformPostUninstallTasks(apps::AppType app_type,
+                                         const std::string& app_id,
+                                         UninstallSource uninstall_source);
 
   virtual void OnLaunched(LaunchCallback callback,
                           LaunchResult&& launch_result);

@@ -62,6 +62,22 @@ const base::FeatureParam<int> kSkipFrameCountForLazyEmbeds(
 const base::Feature kAutomaticLazyFrameLoadingToEmbedUrls{
     "AutomaticLazyFrameLoadingToEmbedUrls", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Define the strategy for LazyEmbeds to decide which frames we apply
+// lazy-loading or not. If the loading strategy is kAllowList, the detection
+// logic is based on the allowlist that kAutomaticLazyFrameLoadingToEmbedUrls
+// passes to the client. If the strategy is kNonAds, the detection logic is
+// based on the Ad Tagging in chromium.
+const base::FeatureParam<AutomaticLazyFrameLoadingToEmbedLoadingStrategy>::
+    Option kAutomaticLazyFrameLoadingToEmbedLoadingStrategies[] = {
+        {AutomaticLazyFrameLoadingToEmbedLoadingStrategy::kAllowList,
+         "allow_list"},
+        {AutomaticLazyFrameLoadingToEmbedLoadingStrategy::kNonAds, "non_ads"}};
+const base::FeatureParam<AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
+    kAutomaticLazyFrameLoadingToEmbedLoadingStrategyParam{
+        &kAutomaticLazyFrameLoadingToEmbedUrls, "strategy",
+        AutomaticLazyFrameLoadingToEmbedLoadingStrategy::kAllowList,
+        &kAutomaticLazyFrameLoadingToEmbedLoadingStrategies};
+
 // Allows pages with DedicatedWorker to stay eligible for the back/forward
 // cache.
 const base::Feature kBackForwardCacheDedicatedWorker{
@@ -637,20 +653,6 @@ const base::FeatureParam<int> kForceDarkForegroundLightnessThresholdParam{
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
 
-const base::FeatureParam<ForceDarkIncreaseTextContrast>::Option
-    forcedark_increase_text_contrast_options[] = {
-        {ForceDarkIncreaseTextContrast::kUseBlinkSettings,
-         "use_blink_settings_for_method"},
-        {ForceDarkIncreaseTextContrast::kFalse, "false"},
-        {ForceDarkIncreaseTextContrast::kTrue, "true"}};
-
-// Should text contrast be increased.
-const base::FeatureParam<ForceDarkIncreaseTextContrast>
-    kForceDarkIncreaseTextContrastParam{
-        &kForceWebContentsDarkMode, "increase_text_contrast",
-        ForceDarkIncreaseTextContrast::kUseBlinkSettings,
-        &forcedark_increase_text_contrast_options};
-
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 const base::Feature kWebRtcUseMinMaxVEADimensions {
   "WebRtcUseMinMaxVEADimensions",
@@ -755,13 +757,6 @@ const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
 // landed and no compat issues are reported.
 const base::Feature kOffsetParentNewSpecBehavior{
     "OffsetParentNewSpecBehavior", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Makes form elements cancel previous form submissions made by the same form
-// when the default event handler schedules a form submission.
-// TODO(crbug.com/1234409): Remove this flag when this feature has been in
-// stable for a release with no issues
-const base::Feature kCancelFormSubmissionInDefaultHandler{
-    "CancelFormSubmissionInDefaultHandler", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the JPEG XL Image File Format (JXL).
 const base::Feature kJXL{"JXL", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1126,13 +1121,6 @@ const base::Feature kBrowsingTopicsBypassIPIsPubliclyRoutableCheck{
     "BrowsingTopicsBypassIPIsPubliclyRoutableCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When <dialog>s are closed, this focuses the "previously focused" element
-// which had focus when the <dialog> was first opened.
-// TODO(crbug.com/649162): Remove DialogFocusNewSpecBehavior after
-// the feature is in stable with no issues.
-const base::Feature kDialogFocusNewSpecBehavior{
-    "DialogFocusNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Makes autofill look across shadow boundaries when collecting form controls to
 // fill.
 const base::Feature kAutofillShadowDOM{"AutofillShadowDOM",
@@ -1152,11 +1140,6 @@ const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
 const base::Feature kAllowDropAlphaForMediaStream{
     "AllowDropAlphaForMediaStream", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables partitioning of third party storage (IndexedDB, CacheStorage, etc.)
-// by the top level site to reduce fingerprinting.
-const base::Feature kThirdPartyStoragePartitioning{
-    "ThirdPartyStoragePartitioning", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // API that allows installed PWAs to add additional shortcuts by means of
 // installing sub app components.
 const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
@@ -1168,7 +1151,14 @@ const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPersistentQuotaIsTemporaryQuota{
-    "PersistentQuotaIsTemporaryQuota", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PersistentQuotaIsTemporaryQuota", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsPersistentQuotaIsTemporaryQuota() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kPersistentQuotaEnabled) &&
+         base::FeatureList::IsEnabled(
+             features::kPersistentQuotaIsTemporaryQuota);
+}
 
 const base::Feature kDelayLowPriorityRequestsAccordingToNetworkState{
     "DelayLowPriorityRequestsAccordingToNetworkState",
@@ -1186,6 +1176,9 @@ const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
 
 const base::Feature kHTMLParamElementUrlSupport{
     "HTMLParamElementUrlSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kHTMLPopupAttribute{"HTMLPopupAttribute",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<base::TimeDelta> kHttpRttThreshold{
     &kDelayLowPriorityRequestsAccordingToNetworkState, "HttpRttThreshold",
@@ -1399,9 +1392,6 @@ const base::Feature kPrefetchAndroidFonts{"PrefetchAndroidFonts",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-const base::Feature kCompositedCaret{"CompositedCaret",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kBackForwardCacheAppBanner{
     "BackForwardCacheAppBanner", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1529,6 +1519,16 @@ const base::FeatureParam<DelayAsyncScriptDelayType>
         DelayAsyncScriptDelayType::kFinishedParsing,
         &delay_async_script_execution_delay_types};
 
+const base::FeatureParam<bool> kDelayAsyncScriptExecutionCrossSiteOnlyParam{
+    &kDelayAsyncScriptExecution, "cross_site_only", false};
+
+const base::Feature kLowPriorityAsyncScriptExecution{
+    "LowPriorityAsyncScriptExecution", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<base::TimeDelta>
+    kTimeoutForLowPriorityAsyncScriptExecution{
+        &kLowPriorityAsyncScriptExecution, "timeout", base::Milliseconds(0)};
+
 const base::Feature kForceDeferScriptIntervention{
     "ForceDeferScriptIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1556,6 +1556,11 @@ const base::Feature kPrefetchFontLookupTables{
 
 const base::Feature kPrecompileInlineScripts{"PrecompileInlineScripts",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPretokenizeCSS{"PretokenizeCSS",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool> kPretokenizeInlineSheets = {
+    &kPretokenizeCSS, "pretokenize_inline_sheets", true};
 
 const base::Feature kSimulateClickOnAXFocus {
   "SimulateClickOnAXFocus",
@@ -1598,6 +1603,12 @@ const base::Feature kScrollUpdateOptimizations{
 
 const base::Feature kClipboardUnsanitizedContent{
     "ClipboardUnsanitizedContent", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebRtcThreadsUseResourceEfficientType{
+    "WebRtcThreadsUseResourceEfficientType", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kThrottleIntersectionObserverUMA{
+    "ThrottleIntersectionObserverUMA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

@@ -18,7 +18,6 @@
 
 namespace updater {
 
-class Configurator;
 struct RegistrationRequest;
 
 // The COM objects involved in this server are free threaded. Incoming COM calls
@@ -42,6 +41,9 @@ class ComServerApp : public AppServer {
  public:
   ComServerApp();
 
+  using AppServer::config;
+  using AppServer::prefs;
+
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
     return main_task_runner_;
   }
@@ -53,8 +55,6 @@ class ComServerApp : public AppServer {
     CHECK(update_service_internal_);
     return update_service_internal_;
   }
-
-  scoped_refptr<const UpdaterPrefs> prefs() const { return AppServer::prefs(); }
 
   // Handles COM factory unregistration then triggers program shutdown. This
   // function runs on a COM RPC thread when the WRL module is destroyed.

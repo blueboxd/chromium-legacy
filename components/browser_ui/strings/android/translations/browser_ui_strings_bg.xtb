@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Изтеглянето е на пауза</translation>
 <translation id="1409426117486808224">Опростен изглед на отворените раздели</translation>
 <translation id="1415402041810619267">URL адресът е съкратен</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1644574205037202324">История</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4670064810192446073">Виртуална реалност</translation>
 <translation id="4751476147751820511">Сензори за движение или светлина</translation>
+<translation id="4811450222531576619">Научете за съответния източник и тема</translation>
 <translation id="4836046166855586901">Извеждане на запитване, когато сайт иска да знае кога това устройство се използва активно</translation>
 <translation id="4883854917563148705">Управляваните настройки не могат да се зададат отново</translation>
 <translation id="4887024562049524730">Извеждане на запитване, преди да се разреши на сайтовете да използват устройството и данните ви за виртуална реалност (препоръчително)</translation>
@@ -243,6 +245,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Блокиране на сайтовете, така че да не използват устройствата и данните ви за виртуална реалност</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
+<translation id="6467852467360539617">Изчистване на данните и нулиране на разрешенията</translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Достъпът до <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и още <ph name="NUM_MORE" /> е блокиран}other{Достъпът до <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и още <ph name="NUM_MORE" /> е блокиран}}</translation>
@@ -282,6 +285,7 @@
 <translation id="7250468141469952378">Избрани: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Достъпът до <ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /> е разрешен</translation>
 <translation id="7302486331832100261">Обикновено блокирате известията. За да разрешите, докоснете „Подробности“.</translation>
+<translation id="7383715096023715447">Настройки за <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
 <translation id="7423538860840206698">Достъпът за четене до буферната памет е блокиран</translation>
 <translation id="7425915948813553151">Тъмна тема за сайтовете</translation>

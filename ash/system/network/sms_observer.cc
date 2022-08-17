@@ -18,8 +18,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 
-using chromeos::NetworkHandler;
-
 namespace ash {
 
 const char SmsObserver::kNotificationPrefix[] = "chrome://network/sms";
@@ -74,7 +72,7 @@ SmsObserver::~SmsObserver() {
 
 void SmsObserver::MessageReceived(const base::Value& message) {
   const std::string* message_text =
-      message.FindStringKey(chromeos::NetworkSmsHandler::kTextKey);
+      message.FindStringKey(NetworkSmsHandler::kTextKey);
   if (!message_text) {
     NET_LOG(ERROR) << "SMS message contains no content.";
     return;
@@ -87,7 +85,7 @@ void SmsObserver::MessageReceived(const base::Value& message) {
     return;
   }
   const std::string* message_number =
-      message.FindStringKey(chromeos::NetworkSmsHandler::kNumberKey);
+      message.FindStringKey(NetworkSmsHandler::kNumberKey);
   if (!message_number) {
     NET_LOG(DEBUG) << "SMS contains no number. Ignoring.";
     return;

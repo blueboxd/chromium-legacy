@@ -67,6 +67,8 @@ enum State {
   kWaitForManualWPEnable,
   kFinalize,
   kRepairComplete,
+  kHardwareError,
+  kReboot,
 };
 
 // Defined error codes.
@@ -757,6 +759,12 @@ interface ShimlessRmaService {
   // Returns an error indicating success or a failure.
   EndRma(ShutdownMethod shutdown_method)
       => (StateResult state_result);
+
+  ///////////////////////////////////////
+  // Methods for kHardwareError state.
+  //
+  // Shut down after encountering an unrecoverable hardware error.
+  ShutDownAfterHardwareError();
 
   ///////////////////////////////////////
   // Critical error handling

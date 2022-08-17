@@ -212,7 +212,7 @@ void HTMLAnchorElement::DefaultEventHandler(Event& event) {
 }
 
 bool HTMLAnchorElement::HasActivationBehavior() const {
-  return true;
+  return IsLink();
 }
 
 void HTMLAnchorElement::SetActive(bool active) {
@@ -537,8 +537,9 @@ void HTMLAnchorElement::HandleClick(Event& event) {
     // If the impression could not be set, or if the value was null, mark that
     // the frame request is eligible for attribution by adding an impression.
     if (!frame_request.Impression() &&
-        CanRegisterAttributionInContext(frame, this,
-                                        /*request_id=*/absl::nullopt)) {
+        frame->GetAttributionSrcLoader()->CanRegister(
+            completed_url, this,
+            /*request_id=*/absl::nullopt)) {
       frame_request.SetImpression(blink::Impression());
     }
   }

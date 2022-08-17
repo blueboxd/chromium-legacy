@@ -44,6 +44,7 @@
 #endif
 #include "build/chromeos_buildflags.h"
 #include "components/page_info/core/features.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
@@ -1076,8 +1077,10 @@ void PageInfo::PresentSitePermissions() {
           CONTENT_SETTING_DEFAULT,
           permissions::PermissionStatusSource::UNSPECIFIED);
       if (permissions::PermissionUtil::IsPermission(permission_info.type)) {
-        permission_result =
-            delegate_->GetPermissionStatus(permission_info.type, site_url_);
+        permission_result = delegate_->GetPermissionResult(
+            permissions::PermissionUtil::ContentSettingTypeToPermissionType(
+                permission_info.type),
+            url::Origin::Create(site_url_));
       } else if (permission_info.type ==
                  ContentSettingsType::FEDERATED_IDENTITY_API) {
         absl::optional<permissions::PermissionResult> embargo_result =
@@ -1139,9 +1142,15 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
   if (is_cookies_subpage_enabled) {
     // Add allowed sites count.
     PageInfoUI::CookiesNewInfo cookies_info;
-    cookies_info.allowed_sites_count = GetSitesWithAllowedCookiesCount();
+    cookies_info.allowed_sites_count = GetSitesWithAllowedCookiesAccessCount();
+    cookies_info.blocked_sites_count =
+        GetThirdPartySitesWithBlockedCookiesAccessCount(site_url_);
 
-    // TODO(crbug.com/1346305): Add data flow for FPS.
+    // TODO(crbug.com/1346305): Add dummy function for FPS information.
+    if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get() &&
+        site_url_.host() == "example.com") {
+      cookies_info.fps_info.owner_name = u"example.com";
+    }
 
     ui_->SetCookieInfo(cookies_info);
   } else {
@@ -1346,11 +1355,21 @@ int PageInfo::GetFirstPartyAllowedCookiesCount(const GURL& site_url) {
       site_url);
 }
 
-int PageInfo::GetSitesWithAllowedCookiesCount() {
+int PageInfo::GetSitesWithAllowedCookiesAccessCount() {
   auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return 0;
-  return settings->allowed_local_shared_objects().GetDomainCount();
+  return settings->allowed_local_shared_objects().GetHostCount();
+}
+
+int PageInfo::GetThirdPartySitesWithBlockedCookiesAccessCount(
+    const GURL& site_url) {
+  auto* settings = GetPageSpecificContentSettings();
+  if (!settings)
+    return 0;
+  return settings->blocked_local_shared_objects().GetHostCount() -
+         settings->blocked_local_shared_objects().GetHostCountForDomain(
+             site_url);
 }
 
 int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {

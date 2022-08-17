@@ -221,13 +221,6 @@ void PaymentRequest::Init(
                             url != google_play_billing_url;
                    });
   std::vector<JourneyLogger::PaymentMethodCategory> method_categories;
-  // Note that only a test can add autofill payment apps when basic-card
-  // feature is disabled.
-  if (base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard) &&
-      !spec_->supported_card_networks().empty()) {
-    method_categories.push_back(
-        JourneyLogger::PaymentMethodCategory::kBasicCard);
-  }
   if (base::Contains(spec_->url_payment_method_identifiers(), google_pay_url) ||
       base::Contains(spec_->url_payment_method_identifiers(),
                      android_pay_url)) {
@@ -711,9 +704,7 @@ bool PaymentRequest::OnlySingleAppCanProvideAllRequiredInformation() const {
 
   if (!spec()->request_shipping() && !spec()->request_payer_name() &&
       !spec()->request_payer_phone() && !spec()->request_payer_email()) {
-    return state()->available_apps().size() == 1 &&
-           state()->available_apps().at(0)->type() !=
-               PaymentApp::Type::AUTOFILL;
+    return state()->available_apps().size() == 1;
   }
 
   bool an_app_can_provide_all_info = false;
@@ -923,8 +914,6 @@ JourneyLogger::PaymentMethodCategory PaymentRequest::GetSelectedMethodCategory()
   const PaymentApp* selected_app = state_->selected_app();
   DCHECK(selected_app);
   switch (state_->selected_app()->type()) {
-    case PaymentApp::Type::AUTOFILL:
-      return JourneyLogger::PaymentMethodCategory::kBasicCard;
     case PaymentApp::Type::SERVICE_WORKER_APP:
       // Intentionally fall through.
     case PaymentApp::Type::NATIVE_MOBILE_APP: {

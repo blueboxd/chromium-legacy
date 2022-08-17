@@ -57,12 +57,6 @@ source_set("blink_web_tests_filter") {
   ]
 }
 
-source_set("breakpad_unittests_filters") {
-  testonly = true
-
-  data = [ "//testing/buildbot/filters/android.asan.breakpad_unittests.filter" ]
-}
-
 source_set("browser_tests_filters") {
   testonly = true
 
@@ -134,6 +128,7 @@ source_set("content_browsertests_filters") {
   data = [
     "//testing/buildbot/filters/android.asan.content_browsertests.filter",
     "//testing/buildbot/filters/android.emulator_12.content_browsertests.filter",
+    "//testing/buildbot/filters/android.emulator_12.oop_network_service_content_browsertests.filter",
     "//testing/buildbot/filters/android.emulator_m.content_browsertests.filter",
     "//testing/buildbot/filters/android.emulator_n.content_browsertests.filter",
     "//testing/buildbot/filters/android.emulator_p.content_browsertests.filter",

@@ -31,7 +31,6 @@
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/url_formatter/url_fixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -721,7 +720,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupPositionChanging) {
 
 TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   ACMatches matches;
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
                             AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     match.keyword = u"match";
@@ -744,12 +743,16 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   // Make match index 4 have a suggestion_group_id to test header behavior.
   const auto kNewGroupId = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
   matches[4].suggestion_group_id = kNewGroupId;
+  // Make match index 5 have a suggestion_group_id but no header text.
+  matches[5].suggestion_group_id = SuggestionGroupId::kHistoryCluster;
 
   auto* result = &model()->autocomplete_controller()->result_;
   result->AppendMatches(matches);
 
   SuggestionGroupsMap suggestion_groups_map;
   suggestion_groups_map[kNewGroupId].header = u"header";
+  suggestion_groups_map[SuggestionGroupId::kHistoryCluster].header = u"";
+
   // Do not set the original_group_id on purpose to test that default visibility
   // can be safely queried via AutocompleteResult::IsSuggestionGroupHidden().
   result->MergeSuggestionGroupsMap(suggestion_groups_map);
@@ -761,12 +764,12 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   EXPECT_EQ(0u, model()->GetPopupSelection().line);
 
   // Step by lines forward.
-  for (size_t n : {1, 2, 3, 4, 0}) {
+  for (size_t n : {1, 2, 3, 4, 5, 0}) {
     model()->StepPopupSelection(Selection::kForward, Selection::kWholeLine);
     EXPECT_EQ(n, model()->GetPopupSelection().line);
   }
   // Step by lines backward.
-  for (size_t n : {4, 3, 2, 1, 0}) {
+  for (size_t n : {5, 4, 3, 2, 1, 0}) {
     model()->StepPopupSelection(Selection::kBackward, Selection::kWholeLine);
     EXPECT_EQ(n, model()->GetPopupSelection().line);
   }
@@ -783,6 +786,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
            Selection(3, Selection::FOCUSED_BUTTON_REMOVE_SUGGESTION),
            Selection(4, Selection::FOCUSED_BUTTON_HEADER),
            Selection(4, Selection::NORMAL),
+           Selection(5, Selection::NORMAL),
            Selection(0, Selection::NORMAL),
        }) {
     model()->StepPopupSelection(Selection::kForward, Selection::kStateOrLine);
@@ -791,6 +795,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   // Step by states backward. Unlike prior to suggestion button row, there is
   // no difference in behavior for KEYWORD mode moving forward or backward.
   for (auto selection : {
+           Selection(5, Selection::NORMAL),
            Selection(4, Selection::NORMAL),
            Selection(4, Selection::FOCUSED_BUTTON_HEADER),
            Selection(3, Selection::FOCUSED_BUTTON_REMOVE_SUGGESTION),
@@ -802,6 +807,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
            Selection(1, Selection::FOCUSED_BUTTON_REMOVE_SUGGESTION),
            Selection(1, Selection::NORMAL),
            Selection(0, Selection::NORMAL),
+           Selection(5, Selection::NORMAL),
            Selection(4, Selection::NORMAL),
            Selection(4, Selection::FOCUSED_BUTTON_HEADER),
            Selection(3, Selection::FOCUSED_BUTTON_REMOVE_SUGGESTION),
@@ -814,7 +820,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   model()->StepPopupSelection(Selection::kBackward, Selection::kAllLines);
   EXPECT_EQ(Selection(0, Selection::NORMAL), model()->GetPopupSelection());
   model()->StepPopupSelection(Selection::kForward, Selection::kAllLines);
-  EXPECT_EQ(Selection(4, Selection::NORMAL), model()->GetPopupSelection());
+  EXPECT_EQ(Selection(5, Selection::NORMAL), model()->GetPopupSelection());
 }
 
 TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithHiddenGroupIds) {
@@ -1205,27 +1211,16 @@ TEST_F(OmniboxEditModelTest, OpenTabMatch) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kSiteSearchStarterPack);
 
-  // Populate template URL with starter pack entries
-  std::vector<std::unique_ptr<TemplateURLData>> turls =
-      TemplateURLStarterPackData::GetStarterPackEngines();
-  for (auto& turl : turls) {
-    model()->client()->GetTemplateURLService()->Add(
-        std::make_unique<TemplateURL>(std::move(*turl)));
-  }
-
-  // When the match comes from the Open Tab Provider while in tabs search
-  // keyword mode, the disposition should be set to SWITCH_TO_TAB.
+  // When the match comes from the Open Tab Provider while in keyword mode,
+  // the disposition should be set to SWITCH_TO_TAB.
   AutocompleteMatch match(
       model()->autocomplete_controller()->open_tab_provider(), 0, false,
       AutocompleteMatchType::OPEN_TAB);
   match.destination_url = GURL("https://foo/");
   match.from_keyword = true;
 
-  // Set the keyword to "@tabs" to put us in tab search mode.
-  model()->OnPopupDataChanged(std::u16string(), false, std::u16string(),
-                              std::u16string(), /* keyword = */ u"@tabs", false,
-                              std::u16string());
-
+  model()->OnSetFocus(false);  // Avoids DCHECK in OpenMatch().
+  model()->SetUserText(u"http://abcd");
   model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
                      std::u16string(), 0);
   EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::SWITCH_TO_TAB);
@@ -1239,16 +1234,6 @@ TEST_F(OmniboxEditModelTest, OpenTabMatch) {
 
   match.provider = model()->autocomplete_controller()->search_provider();
   match.from_keyword = true;
-  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
-                     std::u16string(), 0);
-  EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::CURRENT_TAB);
-
-  // Suggestions in keyword mode but NOT in tab search should NOT change the
-  // disposition.
-  model()->OnPopupDataChanged(std::u16string(), false, std::u16string(),
-                              std::u16string(), /* keyword = */ u"@history",
-                              false, std::u16string());
-  match.provider = model()->autocomplete_controller()->open_tab_provider();
   model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, GURL(),
                      std::u16string(), 0);
   EXPECT_EQ(controller_->disposition(), WindowOpenDisposition::CURRENT_TAB);

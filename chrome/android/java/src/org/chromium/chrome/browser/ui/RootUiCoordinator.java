@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -106,8 +107,10 @@ import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
+import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
@@ -159,6 +162,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -253,6 +257,7 @@ public class RootUiCoordinator
     private final Supplier<ContextualSearchManager> mContextualSearchManagerSupplier;
     protected final CallbackController mCallbackController;
     protected final BrowserControlsManager mBrowserControlsManager;
+    private BrowserControlsStateProvider.Observer mBrowserControlsObserver;
     protected ObservableSupplier<TabModelSelector> mTabModelSelectorSupplier;
     protected final OneshotSupplier<StartSurface> mStartSurfaceSupplier;
     protected final OneshotSupplier<TabSwitcher> mTabSwitcherSupplier;
@@ -632,6 +637,10 @@ public class RootUiCoordinator
             mPageZoomCoordinator = null;
         }
 
+        if (mBrowserControlsObserver != null) {
+            mBrowserControlsManager.removeObserver(mBrowserControlsObserver);
+        }
+
         mActivity = null;
     }
 
@@ -670,6 +679,7 @@ public class RootUiCoordinator
         initDirectActionInitializer();
         initBottomSheetObserver();
         initSnackbarObserver();
+        initBrowserControlsObserver();
         if (mAppMenuCoordinator != null && mModalDialogManagerSupplier.hasValue()) {
             mModalDialogManagerObserver = new ModalDialogManagerObserver() {
                 @Override
@@ -782,6 +792,15 @@ public class RootUiCoordinator
         }
 
         new OneShotCallback<>(mProfileSupplier, this::initHistoryClustersCoordinator);
+
+        if (RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
+                    getPrimaryDisplaySizeInInches(), Profile.getLastUsedRegularProfile())) {
+            // TODO(crbug.com/1350274): Remove this explicit load when this bug is addressed.
+            if (mActivityTabProvider != null && mActivityTabProvider.get() != null) {
+                mActivityTabProvider.get().loadIfNeeded(
+                        LoadIfNeededCaller.ON_FINISH_NATIVE_INITIALIZATION);
+            }
+        }
     }
 
     private void initIncognitoReauthController() {
@@ -794,6 +813,16 @@ public class RootUiCoordinator
                         mActivityLifecycleDispatcher, mLayoutStateProviderOneShotSupplier,
                         mProfileSupplier, incognitoReauthCoordinatorFactory);
         mIncognitoReauthControllerOneshotSupplier.set(incognitoReauthController);
+    }
+
+    /**
+     * @return The primary display size of the device, in inches.
+     */
+    protected double getPrimaryDisplaySizeInInches() {
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mActivity);
+        double xInches = display.getDisplayWidth() / display.getXdpi();
+        double yInches = display.getDisplayHeight() / display.getYdpi();
+        return Math.sqrt(Math.pow(xInches, 2) + Math.pow(yInches, 2));
     }
 
     /**
@@ -844,7 +873,7 @@ public class RootUiCoordinator
 
             mHistoryClustersCoordinator = new HistoryClustersCoordinator(profile, mActivity,
                     TemplateUrlServiceFactory.get(), historyClustersDelegate,
-                    ChromeAccessibilityUtil.get());
+                    ChromeAccessibilityUtil.get(), mSnackbarManagerSupplier.get());
             mHistoryClustersCoordinatorSupplier.set(mHistoryClustersCoordinator);
         }
     }
@@ -1489,7 +1518,7 @@ public class RootUiCoordinator
     }
 
     /**
-     * Initialize logic for hiding page zoom slider when snackbar is showiung
+     * Initialize logic for hiding page zoom slider when snackbar is showing
      */
     private void initSnackbarObserver() {
         mSnackbarManagerSupplier.get().isShowingSupplier().addObserver((Boolean isShowing) -> {
@@ -1498,6 +1527,21 @@ public class RootUiCoordinator
                 mPageZoomCoordinator.hide();
             }
         });
+    }
+
+    /**
+     * Initialize logic for changing page zoom slider margins when browser bottom controls are
+     * showing
+     */
+    private void initBrowserControlsObserver() {
+        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
+            @Override
+            public void onBottomControlsHeightChanged(
+                    int bottomControlsHeight, int bottomControlsMinHeight) {
+                mPageZoomCoordinator.onBottomControlsHeightChanged(bottomControlsHeight);
+            }
+        };
+        mBrowserControlsManager.addObserver(mBrowserControlsObserver);
     }
 
     public OneshotSupplier<IncognitoReauthController> getIncognitoReauthControllerSupplier() {

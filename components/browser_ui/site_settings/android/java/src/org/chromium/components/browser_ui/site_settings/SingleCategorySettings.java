@@ -14,6 +14,7 @@ import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_V
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -39,6 +40,7 @@ import androidx.preference.PreferenceScreen;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -97,6 +99,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
      */
     public static final String EXTRA_SELECTED_DOMAINS = "selected_domains";
 
+    /**
+     * {@link SharedPreferences} key that indicates whether the desktop site global setting was
+     * enabled by the user.
+     */
+    public static final String USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY =
+            "Chrome.RequestDesktopSiteGlobalSetting.UserEnabled";
+
     // The list that contains preferences.
     private RecyclerView mListView;
     // The item for searching the list of items.
@@ -136,7 +145,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     // Note: these values must match the SiteLayout enum in enums.xml.
     @IntDef({SiteLayout.MOBILE, SiteLayout.DESKTOP})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface SiteLayout {
+    public @interface SiteLayout {
         int MOBILE = 0;
         int DESKTOP = 1;
         int NUM_ENTRIES = 2;
@@ -1195,13 +1204,21 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     }
 
     /**
-     * Records the changes of request desktop site content settings.
-     * @param enabled Whether request desktop site is enabled after the change.
+     * Performs a set of tasks when the user updates the desktop site content setting.
+     * 1. Records the desktop site content setting change.
+     * 2. Updates the Shared Preference USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY.
+     * @param enabled Whether the desktop site is enabled after the change.
      */
-    private void recordSiteLayoutChanged(boolean enabled) {
+    public static void recordSiteLayoutChanged(boolean enabled) {
         @SiteLayout
         int layout = enabled ? SiteLayout.DESKTOP : SiteLayout.MOBILE;
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.RequestDesktopSite.Changed", layout, SiteLayout.NUM_ENTRIES);
+
+        // TODO(crbug.com/1069897): Use SharedPreferencesManager if it is componentized.
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY, enabled)
+                .apply();
     }
 }

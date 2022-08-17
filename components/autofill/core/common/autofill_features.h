@@ -74,8 +74,6 @@ extern const base::Feature kAutofillEnableAugmentedPhoneCountryCode;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableBirthdateParsing;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillEnableCompatibilitySupportForBirthdates;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableDependentLocalityParsing;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableExtendedAddressFormats;
@@ -126,14 +124,14 @@ extern const base::Feature kAutofillRefillModifiedCreditCardExpirationDates;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillTypeSpecificPopupWidth;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillFixFillableFieldTypes;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillIgnoreEarlyClicksOnPopup;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<base::TimeDelta>
     kAutofillIgnoreEarlyClicksOnPopupDuration;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillIgnoreUnmappableAutocompleteValues;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillImprovedLabelForInference;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillHighlightOnlyChangedValuesInPreviewMode;
 COMPONENT_EXPORT(AUTOFILL)
@@ -154,6 +152,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillPageLanguageDetection;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillParseAsync;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillParseNameAsAutocompleteType;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillParsingPatternProvider;
 COMPONENT_EXPORT(AUTOFILL)

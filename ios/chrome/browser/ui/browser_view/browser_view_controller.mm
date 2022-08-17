@@ -111,7 +111,6 @@
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
-#import "ios/chrome/browser/ui/util/page_animation_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
@@ -3153,31 +3152,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_voiceSearchController prepareToAppear];
 }
 
-// TODO(crbug.com/1272498): Refactor this command away, and add a mediator to
-// observe the active web state closing and push updates into the BVC for UI
-// work.
-- (void)closeCurrentTab {
-  WebStateList* webStateList = self.browser->GetWebStateList();
-  if (!webStateList)
-    return;
-
-  int active_index = webStateList->active_index();
-  if (active_index == WebStateList::kInvalidIndex)
-    return;
-
-  UIView* snapshotView = [self.contentArea snapshotViewAfterScreenUpdates:NO];
-  snapshotView.frame = self.contentArea.frame;
-
-  webStateList->CloseWebStateAt(active_index, WebStateList::CLOSE_USER_ACTION);
-
-  if (![self canShowTabStrip]) {
-    [self.contentArea addSubview:snapshotView];
-    page_animation_util::AnimateOutWithCompletion(snapshotView, ^{
-      [snapshotView removeFromSuperview];
-    });
-  }
-}
-
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {
   DCHECK(self.browserState);
   DCHECK(self.visible || self.dismissingModal);
@@ -3236,6 +3210,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(newWebState);
   if (NTPHelper && NTPHelper->IsActive()) {
+    // If a new web state is inserted, the user has opened a new NTP. Since we
+    // share the NTP coordinator across web states, the feed type could be
+    // different from default, so we reset it.
+    // TODO(crbug.com/1352935): Use NTPHelper in NTPCoordinator.
+    FeedType defaultFeedType = NTPHelper->DefaultFeedType();
+    if (reason == ActiveWebStateChangeReason::Inserted &&
+        self.ntpCoordinator.selectedFeed != defaultFeedType) {
+      [self.ntpCoordinator selectFeedType:defaultFeedType];
+    }
     [self.ntpCoordinator ntpDidChangeVisibility:YES];
   }
 
@@ -3446,6 +3429,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   };
   [self.contentArea addSubview:animatedView];
   [animatedView animateFrom:origin withCompletion:completionBlock];
+  // Manually set the NTP frame here in case `-didLayoutSubviews` is not called
+  // to set the incognito NTP frame.
+  if (self.isNTPActiveForCurrentWebState && self.webUsageEnabled) {
+    newPage.frame = [self ntpFrameForWebState:self.currentWebState];
+  }
 }
 
 #pragma mark - IncognitoReauthConsumer

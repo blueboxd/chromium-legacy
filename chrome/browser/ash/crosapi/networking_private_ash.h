@@ -17,10 +17,9 @@
 namespace crosapi {
 
 // The ash-chrome implementation of the NetworkingPrivate crosapi interface.
-class NetworkingPrivateAsh
-    : public mojom::NetworkingPrivate,
-      public ash::NetworkStateHandlerObserver,
-      public chromeos::NetworkCertificateHandler::Observer {
+class NetworkingPrivateAsh : public mojom::NetworkingPrivate,
+                             public ash::NetworkStateHandlerObserver,
+                             public ash::NetworkCertificateHandler::Observer {
  public:
   NetworkingPrivateAsh();
   NetworkingPrivateAsh(const NetworkingPrivateAsh&) = delete;
@@ -109,11 +108,11 @@ class NetworkingPrivateAsh
   // Lacros observers to be notified of relevant events.
   mojo::RemoteSet<mojom::NetworkingPrivateDelegateObserver> observers_;
   // We observe network state to forward its events to our Lacros observers.
-  base::ScopedObservation<chromeos::NetworkStateHandler,
+  base::ScopedObservation<ash::NetworkStateHandler,
                           ash::NetworkStateHandlerObserver>
       network_state_observation_{this};
-  base::ScopedObservation<chromeos::NetworkCertificateHandler,
-                          chromeos::NetworkCertificateHandler::Observer>
+  base::ScopedObservation<ash::NetworkCertificateHandler,
+                          ash::NetworkCertificateHandler::Observer>
       network_certificate_observation_{this};
   // This class supports any number of connections.
   mojo::ReceiverSet<mojom::NetworkingPrivate> receivers_;

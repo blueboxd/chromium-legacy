@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/camera/autozoom_toast_controller.h"
 #include "ash/system/channel_indicator/channel_indicator.h"
+#include "ash/system/channel_indicator/channel_indicator_utils.h"
 #include "ash/system/human_presence/snooping_protection_view.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
@@ -24,6 +25,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
+#include "ash/system/privacy/privacy_indicators_tray_item_view.h"
 #include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/time/calendar_metrics.h"
@@ -49,6 +51,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -190,7 +193,10 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
                                     CameraMicTrayItemView::Type::kCamera)),
       mic_view_(
           new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)),
-      time_view_(new TimeTrayItemView(shelf, TimeView::Type::kTime)) {
+      time_view_(new TimeTrayItemView(shelf, TimeView::Type::kTime)),
+      privacy_indicators_view_(features::IsPrivacyIndicatorsEnabled()
+                                   ? new PrivacyIndicatorsTrayItemView(shelf)
+                                   : nullptr) {
   if (media::ShouldEnableAutoFraming()) {
     autozoom_toast_controller_ = std::make_unique<AutozoomToastController>(
         this, std::make_unique<AutozoomToastController::Delegate>());
@@ -240,7 +246,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   AddTrayItemToContainer(network_tray_view_);
   AddTrayItemToContainer(new PowerTrayView(shelf));
 
-  if (features::IsReleaseTrackUiEnabled()) {
+  if (ShouldChannelIndicatorBeShown()) {
+    base::RecordAction(base::UserMetricsAction("Tray_ShowChannelInfo"));
     channel_indicator_view_ = new ChannelIndicatorView(
         shelf, Shell::Get()->shell_delegate()->GetChannel());
     AddTrayItemToContainer(channel_indicator_view_);
@@ -255,6 +262,9 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   if (!features::IsCalendarViewEnabled()) {
     AddTrayItemToContainer(time_view_);
   }
+
+  if (features::IsPrivacyIndicatorsEnabled())
+    AddTrayItemToContainer(privacy_indicators_view_);
 
   set_separator_visibility(false);
   set_use_bounce_in_animation(false);
@@ -309,6 +319,14 @@ void UnifiedSystemTray::MaybeUpdateVerticalClockPadding() {
   const bool should_show_padding = MoreThanOneVisibleTrayItem();
   if (padding_is_visible != should_show_padding)
     vertical_clock_padding_->SetVisible(should_show_padding);
+}
+
+void UnifiedSystemTray::UpdatePrivacyIndicatorsTrayItem(
+    bool camera_is_used,
+    bool microphone_is_used) {
+  if (!features::IsPrivacyIndicatorsEnabled())
+    return;
+  privacy_indicators_view_->Update(camera_is_used, microphone_is_used);
 }
 
 void UnifiedSystemTray::OnViewVisibilityChanged(views::View* observed_view,
@@ -512,6 +530,12 @@ bool UnifiedSystemTray::IsShowingCalendarView() const {
   return bubble_->ShowingCalendarView();
 }
 
+bool UnifiedSystemTray::ShouldChannelIndicatorBeShown() const {
+  return features::IsReleaseTrackUiEnabled() &&
+         channel_indicator_utils::IsDisplayableChannel(
+             Shell::Get()->shell_delegate()->GetChannel());
+}
+
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
   // We should close bubble at this point. If it remains opened and interactive,
   // it can be dangerous (http://crbug.com/497080).
@@ -585,7 +609,7 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
   std::u16string battery = PowerStatus::Get()->GetAccessibleNameString(false);
   std::vector<std::u16string> status = {time, battery};
 
-  status.push_back(features::IsReleaseTrackUiEnabled() &&
+  status.push_back(channel_indicator_view_ &&
                            channel_indicator_view_->GetVisible()
                        ? channel_indicator_view_->GetAccessibleNameString()
                        : base::EmptyString16());

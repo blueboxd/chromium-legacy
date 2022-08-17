@@ -394,11 +394,29 @@ CSSSelectorParser::ConsumePartialComplexSelector(
   return selector;
 }
 
+// static
 CSSSelector::PseudoType CSSSelectorParser::ParsePseudoType(
     const AtomicString& name,
-    bool has_arguments) {
+    bool has_arguments,
+    const Document* document) {
   CSSSelector::PseudoType pseudo_type =
-      CSSSelector::NameToPseudoType(name, has_arguments);
+      CSSSelector::NameToPseudoType(name, has_arguments, document);
+
+  if (!RuntimeEnabledFeatures::WebKitScrollbarStylingEnabled()) {
+    // Don't convert ::-webkit-scrollbar into webkit custom element pseudos -
+    // they should just be treated as unknown pseudos and not have the ability
+    // to style shadow/custom elements.
+    if (pseudo_type == CSSSelector::kPseudoResizer ||
+        pseudo_type == CSSSelector::kPseudoScrollbar ||
+        pseudo_type == CSSSelector::kPseudoScrollbarCorner ||
+        pseudo_type == CSSSelector::kPseudoScrollbarButton ||
+        pseudo_type == CSSSelector::kPseudoScrollbarThumb ||
+        pseudo_type == CSSSelector::kPseudoScrollbarTrack ||
+        pseudo_type == CSSSelector::kPseudoScrollbarTrackPiece) {
+      return CSSSelector::kPseudoUnknown;
+    }
+  }
+
   if (pseudo_type != CSSSelector::PseudoType::kPseudoUnknown)
     return pseudo_type;
 
@@ -412,6 +430,7 @@ CSSSelector::PseudoType CSSSelectorParser::ParsePseudoType(
   return CSSSelector::PseudoType::kPseudoUnknown;
 }
 
+// static
 PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
                                                const Node* parent) {
   CSSTokenizer tokenizer(selector_string);
@@ -432,7 +451,8 @@ PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
     CSSParserToken selector_name_token = range.Consume();
     PseudoId pseudo_id = CSSSelector::GetPseudoId(
         ParsePseudoType(selector_name_token.Value().ToAtomicString(),
-                        selector_name_token.GetType() == kFunctionToken));
+                        selector_name_token.GetType() == kFunctionToken,
+                        parent ? &parent->GetDocument() : nullptr));
 
     if (PseudoElement::IsWebExposed(pseudo_id, parent) &&
         ((PseudoElementHasArguments(pseudo_id) &&
@@ -447,6 +467,7 @@ PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
   return kPseudoIdNone;
 }
 
+// static
 AtomicString CSSSelectorParser::ParsePseudoElementArgument(
     const String& selector_string) {
   CSSTokenizer tokenizer(selector_string);

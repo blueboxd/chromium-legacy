@@ -50,12 +50,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -112,7 +112,7 @@ const test::UIPath kArcTosDemoAppsNotice = {kArcTosId, "arcTosMetricsDemoApps"};
 const test::UIPath kArcTosBackButton = {kArcTosId, "arcTosBackButton"};
 const test::UIPath kArcTosNextButton = {kArcTosId, "arcTosNextButton"};
 
-const test::UIPath kCCLoadedDialog = {kConsolidatedConsentId, "loadedDialog"};
+const test::UIPath kCCAcceptButton = {kConsolidatedConsentId, "acceptButton"};
 const test::UIPath kCCArcTosLink = {kConsolidatedConsentId, "arcTosLink"};
 const test::UIPath kCCBackButton = {kConsolidatedConsentId, "backButton"};
 
@@ -316,11 +316,12 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
   }
 
   void WaitForConsolidatedConsentScreen() {
-    OobeScreenWaiter(ConsolidatedConsentScreenView::kScreenId).Wait();
-    test::OobeJS().CreateVisibilityWaiter(true, kCCLoadedDialog)->Wait();
+    test::WaitForConsolidatedConsentScreen();
 
     // Make sure that ARC ToS link is visible.
     test::OobeJS().ExpectVisiblePath(kCCArcTosLink);
+    test::OobeJS().CreateVisibilityWaiter(true, kCCAcceptButton)->Wait();
+    test::OobeJS().ExpectVisiblePath(kCCAcceptButton);
   }
 
   void AcceptArcTos() {
@@ -488,9 +489,14 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   IsConfirmationDialogHidden();
 }
 
-// TODO(crbug.com/1341234): flaky.
+// TODO(crbug.com/1150349): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OnlineSetupFlowSuccess DISABLED_OnlineSetupFlowSuccess
+#else
+#define MAYBE_OnlineSetupFlowSuccess OnlineSetupFlowSuccess
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       DISABLED_OnlineSetupFlowSuccess) {
+                       MAYBE_OnlineSetupFlowSuccess) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -942,16 +948,9 @@ class DemoSetupVariantCountryCodeRegionTest : public DemoSetupArcSupportedTest {
   }
 };
 
-// Flake on ASAN: crbug.com/1340982
-#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
-#define MAYBE_VariantCountryCodeRegionDefaultCountryIsSet \
-  DISABLED_VariantCountryCodeRegionDefaultCountryIsSet
-#else
-#define MAYBE_VariantCountryCodeRegionDefaultCountryIsSet \
-  VariantCountryCodeRegionDefaultCountryIsSet
-#endif
+// Flaky test: crbug.com/1340982, crbug.com/1147265
 IN_PROC_BROWSER_TEST_F(DemoSetupVariantCountryCodeRegionTest,
-                       MAYBE_VariantCountryCodeRegionDefaultCountryIsSet) {
+                       DISABLED_VariantCountryCodeRegionDefaultCountryIsSet) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -992,7 +991,8 @@ class DemoSetupVirtualSetRegionCodeTest : public DemoSetupArcSupportedTest {
 };
 
 // Flake on ASAN: crbug.com/1340618
-#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+// Flake on Linux Chrome OS: crbug.com/1351186
+#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet \
   DISABLED_VirtualSetCountryCodeRegionPlaceholderIsSet
 #else
@@ -1029,16 +1029,9 @@ class DemoSetupRegionCodeNotExistTest : public DemoSetupArcSupportedTest {
   }
 };
 
-// TODO(crbug.com/1320444): Re-enable the test in debug.
-#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
-#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
-  DISABLED_RegionCodeNotExistPlaceholderIsSet
-#else
-#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
-  RegionCodeNotExistPlaceholderIsSet
-#endif
+// TODO(crbug.com/1320444): Flaky test.
 IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
-                       MAYBE_RegionCodeNotExistPlaceholderIsSet) {
+                       DISABLED_RegionCodeNotExistPlaceholderIsSet) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);

@@ -19,7 +19,6 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
-#include "ash/style/style_util.h"
 #include "ash/system/message_center/ash_notification_expand_button.h"
 #include "ash/system/message_center/ash_notification_input_container.h"
 #include "ash/system/message_center/message_center_constants.h"
@@ -27,7 +26,6 @@
 #include "ash/system/message_center/message_center_utils.h"
 #include "ash/system/message_center/metrics_utils.h"
 #include "ash/system/message_center/notification_grouping_controller.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/check.h"
@@ -36,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -49,7 +48,6 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_view_controller.h"
@@ -65,8 +63,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -250,6 +246,10 @@ using Orientation = views::BoxLayout::Orientation;
 
 BEGIN_METADATA(AshNotificationView, NotificationTitleRow, views::View)
 END_METADATA
+
+void AshNotificationView::AddedToWidget() {
+  widget_observation_.Observe(GetWidget());
+}
 
 void AshNotificationView::Layout() {
   if (is_animating_)
@@ -1309,6 +1309,28 @@ void AshNotificationView::OnNotificationRemoved(
   RemoveGroupNotification(notification_id);
 }
 
+void AshNotificationView::OnWidgetClosing(views::Widget* widget) {
+  AbortAllAnimations();
+  widget_observation_.Reset();
+}
+
+void AshNotificationView::OnWidgetDestroying(views::Widget* widget) {
+  OnWidgetClosing(widget);
+}
+
+void AshNotificationView::AbortAllAnimations() {
+  std::vector<scoped_refptr<ui::LayerAnimator>> animators;
+  animators.push_back(layer()->GetAnimator());
+  for (auto* child_notification :
+       grouped_notifications_container_->children()) {
+    animators.push_back(child_notification->layer()->GetAnimator());
+  }
+
+  for (auto animator : animators) {
+    animator->AbortAllAnimations();
+  }
+}
+
 void AshNotificationView::CreateOrUpdateSnoozeButton(
     const message_center::Notification& notification) {
   if (!notification.should_show_snooze_button()) {
@@ -1464,10 +1486,21 @@ SkColor AshNotificationView::CalculateIconAndButtonsColor(
   if (!notification)
     return default_color;
 
+  auto color_id = notification->accent_color_id();
   absl::optional<SkColor> accent_color = notification->accent_color();
-  if (!accent_color.has_value())
+
+  if ((!color_id || !GetWidget()) && !accent_color.has_value())
     return default_color;
 
+  SkColor fg_color;
+  // ColorProvider needs widget to be created.
+  if (color_id && GetWidget()) {
+    fg_color = GetColorProvider()->GetColor(color_id.value());
+  } else {
+    fg_color = accent_color.value();
+  }
+
+  // TODO(crbug/1351205): move color calculation logic to color mixer.
   // TODO(crbug/1294459): re-evaluate contrast, maybe increase or use fixed HSL
   float minContrastRatio =
       DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
@@ -1478,7 +1511,7 @@ SkColor AshNotificationView::CalculateIconAndButtonsColor(
   SkColor bg_color = AshColorProvider::Get()->GetBaseLayerColor(
       AshColorProvider::BaseLayerType::kOpaque);
   return color_utils::BlendForMinContrast(
-             *accent_color, bg_color,
+             fg_color, bg_color,
              /*high_contrast_foreground=*/absl::nullopt, minContrastRatio)
       .color;
 }
@@ -1524,7 +1557,7 @@ void AshNotificationView::AnimateResizeAfterRemoval(
       grouped_notifications_container_->height();
   size_t removed_index =
       grouped_notifications_container_->GetIndexOf(to_be_removed).value();
-  LOG(ERROR) << "Removed after animation";
+
   grouped_notifications_container_->RemoveChildViewT(to_be_removed).reset();
 
   auto* notification_view_controller = message_center_utils::

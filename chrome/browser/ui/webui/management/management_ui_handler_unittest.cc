@@ -62,6 +62,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_metadata_store.h"
@@ -69,7 +70,6 @@
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
@@ -207,7 +207,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
     update_required_eol_ = enable;
   }
 
-  base::Value GetContextualManagedDataForTesting(Profile* profile) {
+  base::Value::Dict GetContextualManagedDataForTesting(Profile* profile) {
     return GetContextualManagedData(profile);
   }
 
@@ -221,7 +221,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
     return ManagementUIHandler::GetManagedWebsitesInfo(profile);
   }
 
-  base::Value GetThreatProtectionInfo(Profile* profile) {
+  base::Value::Dict GetThreatProtectionInfo(Profile* profile) {
     return ManagementUIHandler::GetThreatProtectionInfo(profile);
   }
 
@@ -303,15 +303,15 @@ class ManagementUIHandlerTests : public TestingBaseClass {
                  std::move(policy_value.value()), nullptr);
   }
 
-  std::u16string ExtractPathFromDict(const base::Value& data,
+  std::u16string ExtractPathFromDict(const base::Value::Dict& data,
                                      const std::string path) {
-    const std::string* buf = data.FindStringPath(path);
+    const std::string* buf = data.FindStringByDottedPath(path);
     if (!buf)
       return std::u16string();
     return base::UTF8ToUTF16(*buf);
   }
 
-  void ExtractContextualSourceUpdate(const base::Value& data) {
+  void ExtractContextualSourceUpdate(const base::Value::Dict& data) {
     extracted_.extension_reporting_title =
         ExtractPathFromDict(data, "extensionReportingTitle");
     extracted_.managed_websites_title =
@@ -321,14 +321,14 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     extracted_.management_overview = ExtractPathFromDict(data, "overview");
     extracted_.update_required_eol = ExtractPathFromDict(data, "eolMessage");
     absl::optional<bool> showProxyDisclosure =
-        data.FindBoolPath("showProxyServerPrivacyDisclosure");
+        data.FindBool("showProxyServerPrivacyDisclosure");
     extracted_.show_proxy_server_privacy_disclosure =
         showProxyDisclosure.has_value() && showProxyDisclosure.value();
 #else
     extracted_.browser_management_notice =
         ExtractPathFromDict(data, "browserManagementNotice");
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    absl::optional<bool> managed = data.FindBoolPath("managed");
+    absl::optional<bool> managed = data.FindBool("managed");
     extracted_.managed = managed.has_value() && managed.value();
   }
 
@@ -387,7 +387,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     SetUpConnectManager();
     network_handler_test_helper_ =
         std::make_unique<ash::NetworkHandlerTestHelper>();
-    chromeos::NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
+    ash::NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
     // The |DeviceSettingsTestBase| setup above instantiates
     // |FakeShillManagerClient| with a default environment which will post
     // tasks on the current thread to setup a initial network configuration with
@@ -413,7 +413,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     manager_.get()->Initialize(&local_state_);
   }
 
-  base::Value SetUpForReportingInfo() {
+  base::Value::List SetUpForReportingInfo() {
     GetTestConfig().override_policy_connector_is_managed = true;
     GetTestConfig().managed_device = true;
     SetUpProfileAndHandler();
@@ -456,7 +456,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
       ManagementUIHandler::AddDlpDeviceReportingElementForTesting(
           &result, kManagementReportDlpEvents);
     }
-    return base::Value(std::move(result));
+    return result;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -472,7 +472,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     handler_.SetDeviceDomain(GetTestConfig().device_domain);
 #endif
-    base::Value data =
+    base::Value::Dict data =
         handler_.GetContextualManagedDataForTesting(profile_.get());
     ExtractContextualSourceUpdate(data);
   }
@@ -632,7 +632,7 @@ AssertionResult MessagesToBeEQ(const char* infolist_expr,
 AssertionResult ReportingElementsToBeEQ(
     const char* elements_expr,
     const char* expected_elements_expr,
-    base::Value::ConstListView elements,
+    const base::Value::List& elements,
     const std::map<std::string, std::string> expected_elements) {
   std::map<std::string, std::string> tmp_expected(expected_elements);
   for (const base::Value& element : elements) {
@@ -655,8 +655,7 @@ AssertionResult ReportingElementsToBeEQ(
       tmp_expected.erase(tmp_reporting_type);
     } else {
       return AssertionFailure()
-             << " couldn't find key messageId or reportingType in "
-             << elements.data();
+             << " couldn't find key messageId or reportingType in " << elements;
     }
   }
   if (!tmp_expected.empty()) {
@@ -1003,7 +1002,7 @@ TEST_F(ManagementUIHandlerTests, NoDeviceReportingInfo) {
 TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
   ResetTestConfig(true);
   GetTestConfig().report_users = false;
-  const base::Value info = SetUpForReportingInfo();
+  const base::Value::List info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportActivityTimes, "device activity"},
       {kManagementReportNetworkData, "device"},
@@ -1018,8 +1017,7 @@ TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
       {kManagementReportAndroidApplications, "android application"},
       {kManagementReportDlpEvents, "dlp events"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
-                      expected_elements);
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info, expected_elements);
 }
 
 TEST_F(ManagementUIHandlerTests,
@@ -1027,7 +1025,7 @@ TEST_F(ManagementUIHandlerTests,
   ResetTestConfig(true);
   GetTestConfig().report_dlp_events = false;
   GetTestConfig().crostini_ansible_playbook_filepath = base::FilePath("/tmp/");
-  const base::Value info = SetUpForReportingInfo();
+  const base::Value::List info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportActivityTimes, "device activity"},
       {kManagementReportNetworkData, "device"},
@@ -1041,60 +1039,55 @@ TEST_F(ManagementUIHandlerTests,
       {kManagementReportExtensions, "extension"},
       {kManagementReportAndroidApplications, "android application"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
-                      expected_elements);
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info, expected_elements);
 }
 
 TEST_F(ManagementUIHandlerTests, OnlyReportDlpEvents) {
   ResetTestConfig(false);
   GetTestConfig().report_dlp_events = true;
-  base::Value info = SetUpForReportingInfo();
+  base::Value::List info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportDlpEvents, "dlp events"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
-                      expected_elements);
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info, expected_elements);
 }
 
 TEST_F(ManagementUIHandlerTests, OnlyReportUsersDeviceReportingInfo) {
   ResetTestConfig(false);
   GetTestConfig().report_users = true;
-  base::Value info = SetUpForReportingInfo();
+  base::Value::List info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportUsers, "supervised user"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
-                      expected_elements);
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info, expected_elements);
 }
 
 TEST_F(ManagementUIHandlerTests, AllDisabledDeviceReportingInfo) {
   ResetTestConfig(false);
-  const base::Value info = SetUpForReportingInfo();
+  const base::Value::List info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
-                      expected_elements);
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info, expected_elements);
 }
 
 TEST_F(ManagementUIHandlerTests,
        DeviceReportingInfoWhenInsightsExtensionEnabled) {
   ResetTestConfig(false);
   GetTestConfig().insights_extension_enabled = true;
-  const base::Value info = SetUpForReportingInfo();
+  const base::Value::List info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportActivityTimes, "device activity"},
       {kManagementReportNetworkData, "device"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
-                      expected_elements);
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info, expected_elements);
 }
 
 TEST_F(ManagementUIHandlerTests, ShowProxyServerDisclosure) {
   ResetTestConfig();
   // Set pref to use a proxy.
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
-  chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
-                                                          &local_state_);
+  ash::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                     &local_state_);
   base::Value policy_prefs_config = ProxyConfigDictionary::CreateAutoDetect();
   user_prefs_.SetUserPref(
       proxy_config::prefs::kProxy,
@@ -1111,18 +1104,17 @@ TEST_F(ManagementUIHandlerTests, ProxyServerDisclosureDeviceOffline) {
   ResetTestConfig();
   // Simulate network disconnected state.
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
-  chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
-                                                          &local_state_);
-  chromeos::NetworkStateHandler::NetworkStateList networks;
-  chromeos::NetworkHandler::Get()
-      ->network_state_handler()
-      ->GetNetworkListByType(ash::NetworkTypePattern::Default(),
-                             true,   // configured_only
-                             false,  // visible_only,
-                             0,      // no limit to number of results
-                             &networks);
-  chromeos::ShillServiceClient::TestInterface* service =
-      chromeos::ShillServiceClient::Get()->GetTestInterface();
+  ash::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                     &local_state_);
+  ash::NetworkStateHandler::NetworkStateList networks;
+  ash::NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      ash::NetworkTypePattern::Default(),
+      true,   // configured_only
+      false,  // visible_only,
+      0,      // no limit to number of results
+      &networks);
+  ash::ShillServiceClient::TestInterface* service =
+      ash::ShillServiceClient::Get()->GetTestInterface();
   for (const auto* const network : networks) {
     service->SetServiceProperty(network->path(), shill::kStateProperty,
                                 base::Value(shill::kStateOffline));
@@ -1134,15 +1126,15 @@ TEST_F(ManagementUIHandlerTests, ProxyServerDisclosureDeviceOffline) {
 
   EXPECT_FALSE(GetShowProxyServerPrivacyDisclosure());
 
-  chromeos::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
+  ash::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
 }
 
 TEST_F(ManagementUIHandlerTests, HideProxyServerDisclosureForDirectProxy) {
   ResetTestConfig();
   // Set pref not to use proxy.
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
-  chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
-                                                          &local_state_);
+  ash::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                     &local_state_);
   base::Value policy_prefs_config = ProxyConfigDictionary::CreateDirect();
   user_prefs_.SetUserPref(
       proxy_config::prefs::kProxy,
@@ -1154,7 +1146,7 @@ TEST_F(ManagementUIHandlerTests, HideProxyServerDisclosureForDirectProxy) {
 
   EXPECT_FALSE(GetShowProxyServerPrivacyDisclosure());
 
-  chromeos::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
+  ash::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
 }
 
 #endif
@@ -1274,12 +1266,10 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
 
   // When no policies are set, nothing to report.
   auto info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
-  ASSERT_TRUE(info.is_dict());
-  const base::Value::Dict* threat_protection_info = info.GetIfDict();
-  EXPECT_TRUE(threat_protection_info->FindList("info")->empty());
+  EXPECT_TRUE(info.FindList("info")->empty());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
-      base::UTF8ToUTF16(*threat_protection_info->FindString("description")));
+      base::UTF8ToUTF16(*info.FindString("description")));
 
   // When policies are set to uninteresting values, nothing to report.
   SetConnectorPolicyValue(policy::key::kOnFileAttachedEnterpriseConnector, "[]",
@@ -1300,12 +1290,10 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
       prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode, 0);
 
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
-  ASSERT_TRUE(info.is_dict());
-  threat_protection_info = info.GetIfDict();
-  EXPECT_TRUE(threat_protection_info->FindList("info")->empty());
+  EXPECT_TRUE(info.FindList("info")->empty());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
-      base::UTF8ToUTF16(*threat_protection_info->FindString("description")));
+      base::UTF8ToUTF16(*info.FindString("description")));
 
   // When policies are set to values that enable the feature without a usable DM
   // token, nothing to report.
@@ -1336,12 +1324,10 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
       policy::POLICY_SCOPE_MACHINE);
 
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
-  ASSERT_TRUE(info.is_dict());
-  threat_protection_info = info.GetIfDict();
-  EXPECT_TRUE(threat_protection_info->FindList("info")->empty());
+  EXPECT_TRUE(info.FindList("info")->empty());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
-      base::UTF8ToUTF16(*threat_protection_info->FindString("description")));
+      base::UTF8ToUTF16(*info.FindString("description")));
 
   // When policies are set to values that enable the feature with a usable DM
   // token, report them.
@@ -1349,17 +1335,15 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
       policy::DMToken::CreateValidTokenForTesting("fake-token"));
 
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
-  ASSERT_TRUE(info.is_dict());
-  threat_protection_info = info.GetIfDict();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const size_t expected_size = 7u;
 #else
   const size_t expected_size = 6u;
 #endif
-  EXPECT_EQ(expected_size, threat_protection_info->FindList("info")->size());
+  EXPECT_EQ(expected_size, info.FindList("info")->size());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
-      base::UTF8ToUTF16(*threat_protection_info->FindString("description")));
+      base::UTF8ToUTF16(*info.FindString("description")));
 
   base::Value::List expected_info;
   {
@@ -1407,5 +1391,5 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
     expected_info.Append(std::move(value));
   }
 
-  EXPECT_EQ(expected_info, *threat_protection_info->FindList("info"));
+  EXPECT_EQ(expected_info, *info.FindList("info"));
 }

@@ -25,6 +25,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -201,8 +202,8 @@ class SessionLogHandlerTest : public NoSessionAshTestBase {
     session_log_handler_->SetTaskRunnerForTesting(task_runner_);
 
     // Call handler to enable Javascript.
-    base::ListValue args;
-    web_ui_.HandleReceivedMessage("initialize", &args);
+    base::Value::List args;
+    web_ui_.HandleReceivedMessage("initialize", args);
   }
 
   void TearDown() override {
@@ -263,10 +264,10 @@ TEST_F(SessionLogHandlerTest, DISABLED_SaveSessionLog) {
   // Select file
   base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kHandlerFunctionName);
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
-  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
   run_loop.RunUntilIdle();
   const std::string expected_system_log_header = "=== System ===";
   const std::string expected_system_info_section_name = "--- System Info ---";
@@ -318,10 +319,10 @@ TEST_F(SessionLogHandlerTest, SaveHeaderOnlySessionLog) {
   // Simulate select file
   base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kHandlerFunctionName);
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
-  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
   RunTasks();
 
   const std::vector<std::string> log_lines = GetCombinedLogContents(log_path);
@@ -355,11 +356,11 @@ TEST_F(SessionLogHandlerTest, SelectDirectory) {
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
 
   const size_t call_data_count_before_call = web_ui_.call_data().size();
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kHandlerFunctionName);
   base::RunLoop run_loop;
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
-  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
   RunTasks();
   run_loop.RunUntilIdle();
 
@@ -378,9 +379,9 @@ TEST_F(SessionLogHandlerTest, CancelDialog) {
       new TestSelectFileDialogFactory(base::FilePath()));
 
   const size_t call_data_count_before_call = web_ui_.call_data().size();
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kHandlerFunctionName);
-  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
   RunTasks();
 
   EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());
@@ -396,13 +397,13 @@ TEST_F(SessionLogHandlerTest, CancelDialog) {
 TEST_F(SessionLogHandlerTest, AddToHoldingSpace) {
   base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kHandlerFunctionName);
 
   EXPECT_CALL(holding_space_client(), AddDiagnosticsLog(testing::Eq(log_path)));
   base::RunLoop run_loop;
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
-  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
   RunTasks();
   run_loop.RunUntilIdle();
 }
@@ -412,15 +413,38 @@ TEST_F(SessionLogHandlerTest, AddToHoldingSpace) {
 TEST_F(SessionLogHandlerTest, CleanUpDialogOnDeconstruct) {
   base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kHandlerFunctionName);
   base::RunLoop run_loop;
 
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
-  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
   EXPECT_NO_FATAL_FAILURE(session_log_handler_.reset());
   EXPECT_NO_FATAL_FAILURE(task_runner_.reset());
   EXPECT_NO_FATAL_FAILURE(run_loop.RunUntilIdle());
+}
+
+// Validates CreateSessionLog task does not trigger a Use-After-Free error
+// when SessionLogHandler is destroyed before task is run. See crbug/1328708.
+TEST_F(SessionLogHandlerTest, NoUseAfterFree) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(
+      ash::features::kEnableLogControllerForDiagnosticsApp);
+  base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
+  ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
+  base::Value::List args;
+  args.Append(kHandlerFunctionName);
+  base::RunLoop run_loop;
+
+  session_log_handler_->SetLogCreatedClosureForTest(
+      base::BindLambdaForTesting([]() { NOTREACHED(); }));
+  EXPECT_EQ(0u, task_runner_->NumPendingTasks());
+  web_ui_.HandleReceivedMessage("saveSessionLog", args);
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
+  EXPECT_NO_FATAL_FAILURE(session_log_handler_.reset());
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(0u, task_runner_->NumPendingTasks());
+  EXPECT_NO_FATAL_FAILURE(task_runner_->RunUntilIdle());
 }
 
 }  // namespace diagnostics

@@ -22,15 +22,20 @@
 #include "ash/wm/desks/templates/saved_desk_metrics_util.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/desks/zero_state_button.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/bind.h"
+#include "base/containers/cxx20_erase_vector.h"
 #include "base/i18n/number_formatting.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "components/desks_storage/core/desk_template_util.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -55,6 +60,210 @@ desks_storage::DeskModel* GetDeskModel() {
   DCHECK(desk_model);
   return desk_model;
 }
+
+// The WindowCloseObserver helper is used in the Save & Recall save flow. When
+// the user saves a desk, we will try to close all windows on that desk, and
+// then finally remove the desk. This is an asynchronous task that may trigger
+// confirmation dialogs to pop up.
+//
+// The flow is as follows:
+//  1. The user initiates Save & Recall by clicking the save button.
+//  2. Windows are enumerated and saved to a saved desk definition.
+//  3. We start a `WindowCloseObserver` and call `Close()` on all windows.
+// The observer then deals with three different cases:
+//  a. All windows close automatically.
+//  b. A confirmation dialog appears and the user decides to close the window.
+//  c. A confirmation dialog appears and the user decides to keep the window.
+//
+// For cases a & b, we remove the desk and transition the user into the saved
+// desk library. For case c, we leave the desk alone. Also note that for cases b
+// & c, the confirmation dialog will take the user out of overview mode.
+
+class WindowCloseObserver;
+
+// This is a global raw pointer since the lifetime of the watcher cannot be tied
+// to the presenter. The presenter's lifetime is indirectly tied to the overview
+// session, and the watcher must survive going out of overview mode.
+WindowCloseObserver* g_window_close_observer = nullptr;
+
+class WindowCloseObserver : public aura::WindowObserver {
+ public:
+  WindowCloseObserver(aura::Window* root_window,
+                      const base::GUID& saved_desk_guid,
+                      const std::u16string& saved_desk_name,
+                      const std::vector<aura::Window*>& windows)
+      : root_window_(root_window),
+        saved_desk_guid_(saved_desk_guid),
+        saved_desk_name_(saved_desk_name) {
+    DCHECK(g_window_close_observer == nullptr);
+
+    auto* desks_controller = DesksController::Get();
+    desk_to_remove_ = desks_controller->active_desk();
+
+    // Observe the windows that we are going to close.
+    for (aura::Window* window : windows)
+      window_observer_.AddObservation(window);
+
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    if (OverviewSession* overview_session =
+            overview_controller->overview_session()) {
+      overview_session->set_allow_empty_desk_without_exiting(true);
+    }
+
+    system_modal_container_ = Shell::Get()->GetContainer(
+        root_window, kShellWindowId_SystemModalContainer);
+    window_observer_.AddObservation(system_modal_container_);
+  }
+
+  ~WindowCloseObserver() override {
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    if (OverviewSession* overview_session =
+            overview_controller->overview_session()) {
+      overview_session->set_allow_empty_desk_without_exiting(false);
+    }
+    g_window_close_observer = nullptr;
+  }
+
+  void SetModalDialogCallbackForTesting(base::OnceClosure closure) {
+    modal_dialog_closure_for_testing_ = std::move(closure);
+  }
+
+  void FireWindowWatcherTimerForTesting() {
+    DCHECK(auto_transition_timer_.IsRunning());
+    auto_transition_timer_.FireNow();
+  }
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowAdded(aura::Window* new_window) override {
+    if (new_window->parent() != system_modal_container_)
+      return;
+
+    if (modal_dialog_closure_for_testing_)
+      std::move(modal_dialog_closure_for_testing_).Run();
+
+    modal_dialog_showed_ = true;
+  }
+
+  void OnWindowRemoved(aura::Window* removed_window) override {
+    if (!modal_dialog_showed_ || !system_modal_container_->children().empty())
+      return;
+
+    // The last modal dialog has been dismissed. At this point we don't know if
+    // the user has dismissed the windows or decided to keep them. We will now
+    // allow a short time for windows to close. If, after this time, windows
+    // have not been closed, we'll proceed to the library but leave the desk.
+    //
+    // If all windows *do* close before the timer hits, then this will be picked
+    // up by `OnWindowDestroyed` and we will show the saved desk library.
+    if (!auto_transition_timer_.IsRunning()) {
+      auto_transition_timer_.Start(
+          FROM_HERE, base::Seconds(1), this,
+          &WindowCloseObserver::ShowLibraryWithoutRemovingDesk);
+    }
+  }
+
+  void OnWindowDestroyed(aura::Window* window) override {
+    window_observer_.RemoveObservation(window);
+
+    // In the unexpected case that the system modal container is destroyed, we
+    // will bail.
+    if (window == system_modal_container_) {
+      Terminate();
+      return;
+    }
+
+    // The observer is used for the windows on the desk that we are closing, as
+    // well as the system modal container. When there's only one window left
+    // (the system modal container) in the observing set, we're done.
+    if (window_observer_.GetSourcesCount() == 1) {
+      // We're ready to transition into the saved desk library and highlight the
+      // item. After this has been done, we'll remove ourselves.
+      ShowLibrary(/*remove_desk=*/true);
+      Terminate();
+    }
+  }
+
+  void ShowLibraryWithoutRemovingDesk() {
+    ShowLibrary(/*remove_desk=*/false);
+    Terminate();
+  }
+
+  void ShowLibrary(bool remove_desk) {
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    OverviewSession* overview_session = overview_controller->overview_session();
+    if (!overview_session) {
+      if (!overview_controller->StartOverview(
+              OverviewStartAction::kOverviewButton,
+              OverviewEnterExitType::kImmediateEnterWithoutFocus)) {
+        // If for whatever reason we didn't enter overview mode, bail.
+        return;
+      }
+
+      overview_session = overview_controller->overview_session();
+      DCHECK(overview_session);
+    }
+
+    // Show the library, this should highlight the newly saved item.
+    OverviewGrid* overview_grid =
+        overview_session->GetGridWithRootWindow(root_window_);
+    overview_session->ShowDesksTemplatesGrids(
+        overview_grid->desks_bar_view()->IsZeroState(), saved_desk_guid_,
+        saved_desk_name_, root_window_);
+
+    // Remove the current desk, this will be done without animation.
+    if (remove_desk) {
+      auto* desks_controller = DesksController::Get();
+      if (DeskExists(desks_controller, desk_to_remove_)) {
+        if (!desks_controller->CanRemoveDesks())
+          desks_controller->NewDesk(DesksCreationRemovalSource::kSaveAndRecall);
+
+        desks_controller->RemoveDesk(desk_to_remove_,
+                                     DesksCreationRemovalSource::kSaveAndRecall,
+                                     DeskCloseType::kCloseAllWindows);
+      }
+    }
+  }
+
+  bool DeskExists(DesksController* desks_controller, const Desk* desk) {
+    return base::Contains(
+        desks_controller->desks(), desk,
+        [](const std::unique_ptr<Desk>& desk) { return desk.get(); });
+  }
+
+  void Terminate() { delete this; }
+
+  aura::Window* root_window_;
+
+  aura::Window* system_modal_container_ = nullptr;
+
+  // Tracks whether a modal "confirm close" dialog has been showed.
+  bool modal_dialog_showed_ = false;
+
+  // Used to automatically transition the user to the library after a modal
+  // dialog has been dismissed.
+  base::OneShotTimer auto_transition_timer_{
+      base::DefaultTickClock::GetInstance()};
+
+  // The desk that the user has saved and that we will remove once windows have
+  // been removed.
+  const Desk* desk_to_remove_ = nullptr;
+
+  // GUID and name of the saved desk.
+  const base::GUID saved_desk_guid_;
+  const std::u16string saved_desk_name_;
+
+  // Used by unit tests to wait for modal dialogs.
+  base::OnceClosure modal_dialog_closure_for_testing_;
+
+  // Used to watch windows on the desk to remove, as well as the system modal
+  // container.
+  base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
+      window_observer_{this};
+};
 
 }  // namespace
 
@@ -136,15 +345,6 @@ void SavedDeskPresenter::UpdateDesksTemplatesUI() {
   }
 }
 
-void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
-                                       const std::u16string& saved_desk_name,
-                                       aura::Window* const root_window) {
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  GetDeskModel()->GetAllEntries(base::BindOnce(
-      &SavedDeskPresenter::OnGetAllEntries, weak_ptr_factory_.GetWeakPtr(),
-      item_to_focus, saved_desk_name, root_window));
-}
-
 void SavedDeskPresenter::DeleteEntry(
     const std::string& uuid,
     absl::optional<DeskTemplateType> record_for_type) {
@@ -155,12 +355,15 @@ void SavedDeskPresenter::DeleteEntry(
                      weak_ptr_factory_.GetWeakPtr(), uuid, record_for_type));
 }
 
-void SavedDeskPresenter::LaunchDeskTemplate(const std::string& template_uuid,
-                                            base::TimeDelta delay,
-                                            aura::Window* root_window) {
+void SavedDeskPresenter::LaunchSavedDesk(
+    std::unique_ptr<DeskTemplate> saved_desk,
+    base::TimeDelta delay,
+    aura::Window* root_window) {
+  DesksController* desks_controller = DesksController::Get();
+
   // If we are at the max desk limit (currently is 8), a new desk
   // cannot be created, and a toast will be displayed to the user.
-  if (!DesksController::Get()->CanCreateDesks()) {
+  if (!desks_controller->CanCreateDesks()) {
     ToastData toast_data = {
         /*id=*/kMaximumDeskLaunchTemplateToastName,
         ToastCatalogName::kMaximumDeskLaunchTemplate,
@@ -172,13 +375,20 @@ void SavedDeskPresenter::LaunchDeskTemplate(const std::string& template_uuid,
     return;
   }
 
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  // Copy fields we need from `desk_template` since we're about to move it.
+  const auto saved_desk_type = saved_desk->type();
+  const bool activate_desk = saved_desk_type == DeskTemplateType::kTemplate;
 
-  GetDeskModel()->GetEntryByUUID(
-      template_uuid,
-      base::BindOnce(&SavedDeskPresenter::OnGetTemplateForDeskLaunch,
-                     weak_ptr_factory_.GetWeakPtr(), base::Time::Now(), delay,
-                     root_window));
+  const Desk* new_desk = desks_controller->CreateNewDeskForTemplate(
+      activate_desk, saved_desk->template_name());
+  LaunchSavedDeskIntoNewDesk(std::move(saved_desk), delay, root_window,
+                             new_desk);
+
+  // Note: `LaunchSavedDeskIntoNewDesk` *may* cause overview mode to exit. This
+  // means that the saved desk presenter may have been destroyed at this point.
+  // Do not add any code below this point that depend on `this`.
+
+  RecordLaunchSavedDeskHistogram(saved_desk_type);
 }
 
 void SavedDeskPresenter::MaybeSaveActiveDeskAsTemplate(
@@ -243,13 +453,12 @@ void SavedDeskPresenter::EntriesRemovedRemotely(
   RemoveUIEntries(uuids);
 }
 
-void SavedDeskPresenter::OnGetAllEntries(
-    const base::GUID& item_to_focus,
-    const std::u16string& saved_desk_name,
-    aura::Window* const root_window,
-    desks_storage::DeskModel::GetAllEntriesStatus status,
-    const std::vector<const DeskTemplate*>& entries) {
-  if (status != desks_storage::DeskModel::GetAllEntriesStatus::kOk)
+void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
+                                       const std::u16string& saved_desk_name,
+                                       aura::Window* const root_window) {
+  auto result = GetDeskModel()->GetAllEntries();
+
+  if (result.status != desks_storage::DeskModel::GetAllEntriesStatus::kOk)
     return;
 
   // This updates `should_show_templates_ui_`.
@@ -259,7 +468,7 @@ void SavedDeskPresenter::OnGetAllEntries(
     // Populate `SavedDeskLibraryView` with the desk template entries.
     if (SavedDeskLibraryView* library_view =
             overview_grid->GetSavedDeskLibraryView()) {
-      library_view->PopulateGridUI(entries,
+      library_view->PopulateGridUI(result.entries,
                                    overview_grid->GetGridEffectiveBounds(),
                                    /*last_saved_desk_uuid=*/item_to_focus);
       SavedDeskItemView* item_view =
@@ -296,61 +505,46 @@ void SavedDeskPresenter::OnDeleteEntry(
   RemoveUIEntries({uuid});
 }
 
-void SavedDeskPresenter::OnGetTemplateForDeskLaunch(
-    base::Time time_launch_started,
-    base::TimeDelta delay,
-    aura::Window* root_window,
-    desks_storage::DeskModel::GetEntryByUuidStatus status,
-    std::unique_ptr<DeskTemplate> entry) {
-  if (status != desks_storage::DeskModel::GetEntryByUuidStatus::kOk)
-    return;
-
-  // `CreateAndActivateNewDeskForTemplate` may destroy `this`. Copy the member
-  // variables to a local to prevent UAF. See https://crbug.com/1284138.
-  base::OnceClosure on_update_ui_closure_for_testing =
-      std::move(on_update_ui_closure_for_testing_);
-
-  const auto saved_desk_name = entry->template_name();
-  const auto saved_desk_type = entry->type();
-  const bool activate_desk = saved_desk_type == DeskTemplateType::kTemplate;
-  DesksController::Get()->CreateNewDeskForTemplate(
-      activate_desk,
-      base::BindOnce(&SavedDeskPresenter::OnNewDeskCreatedForTemplate,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(entry),
-                     time_launch_started, delay, root_window),
-      saved_desk_name);
-
-  if (on_update_ui_closure_for_testing)
-    std::move(on_update_ui_closure_for_testing).Run();
-
-  RecordLaunchSavedDeskHistogram(saved_desk_type);
-}
-
-void SavedDeskPresenter::OnNewDeskCreatedForTemplate(
-    std::unique_ptr<DeskTemplate> desk_template,
-    base::Time time_launch_started,
+void SavedDeskPresenter::LaunchSavedDeskIntoNewDesk(
+    std::unique_ptr<DeskTemplate> saved_desk,
     base::TimeDelta delay,
     aura::Window* root_window,
     const Desk* new_desk) {
-  // Desk creation failed.
-  if (!new_desk)
-    return;
+  DCHECK(new_desk);
+
+  base::Time time_launch_started = base::Time::Now();
 
   // For Save & Recall, the underlying desk definition is deleted on launch. We
   // store the template ID here since we're about to move the desk template.
-  const auto saved_desk_type = desk_template->type();
-  const auto saved_desk_creation_time = desk_template->created_time();
-  const std::string uuid = desk_template->uuid().AsLowercaseString();
+  const auto saved_desk_type = saved_desk->type();
+  const auto saved_desk_creation_time = saved_desk->created_time();
+  const std::string uuid = saved_desk->uuid().AsLowercaseString();
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (saved_desk_type == DeskTemplateType::kSaveAndRecall) {
+    if (overview_controller->InOverviewSession()) {
+      auto* overview_session = overview_controller->overview_session();
+      OverviewGrid* overview_grid =
+          overview_session->GetGridWithRootWindow(root_window);
+
+      const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+      DCHECK(desks_bar_view);
+      DeskMiniView* mini_view = desks_bar_view->FindMiniViewForDesk(new_desk);
+      DCHECK(mini_view);
+
+      SavedDeskLibraryView* library = overview_grid->GetSavedDeskLibraryView();
+      library->AnimateDeskLaunch(saved_desk->uuid(), mini_view);
+    }
+  }
 
   // Copy the index of the newly created desk to the template. This ensures that
   // apps appear on the right desk even if the user switches to another.
   const int desk_index = DesksController::Get()->GetDeskIndex(new_desk);
-  desk_template->SetDeskIndex(desk_index);
+  saved_desk->SetDeskIndex(desk_index);
 
   Shell::Get()->desks_templates_delegate()->LaunchAppsFromTemplate(
-      std::move(desk_template), time_launch_started, delay);
+      std::move(saved_desk), time_launch_started, delay);
 
-  auto* overview_controller = Shell::Get()->overview_controller();
   if (!overview_controller->InOverviewSession()) {
     // Note: it is the intention that we don't leave overview mode when
     // launching a saved desk. However, if something goes wrong when launching a
@@ -413,6 +607,7 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
   OverviewGrid* overview_grid =
       overview_session_->GetGridWithRootWindow(root_window);
   DCHECK(overview_grid);
+  DCHECK(overview_grid->desks_bar_view());
   const bool is_zero_state = overview_grid->desks_bar_view()->IsZeroState();
 
   if (auto* library_view = overview_grid->GetSavedDeskLibraryView()) {
@@ -435,7 +630,7 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
 
     if (on_update_ui_closure_for_testing_)
       std::move(on_update_ui_closure_for_testing_).Run();
-  } else {
+  } else if (desk_template->type() != DeskTemplateType::kSaveAndRecall) {
     // This will update the templates button and save as desks button too. This
     // will call `GetAllEntries`.
     overview_session_->ShowDesksTemplatesGrids(
@@ -444,27 +639,37 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
 
   if (!was_update) {
     const auto saved_desk_type = desk_template->type();
-    if (saved_desk_type == DeskTemplateType::kSaveAndRecall) {
-      // We have successfully created a *new* desk template for Save & Recall,
-      // so we are now going to close all the windows on the active desk and
-      // also remove the desk.
-      auto* desks_controller = DesksController::Get();
-      auto* active_desk = desks_controller->active_desk();
-
-      // If this is the only desk, we have to create a new desk before we can
-      // remove the current one.
-      if (!desks_controller->CanRemoveDesks())
-        desks_controller->NewDesk(DesksCreationRemovalSource::kSaveAndRecall);
-
-      desks_controller->RemoveDesk(active_desk,
-                                   DesksCreationRemovalSource::kSaveAndRecall,
-                                   DeskCloseType::kCloseAllWindows);
-    }
-
     RecordNewSavedDeskHistogram(saved_desk_type);
     RecordUserSavedDeskCountHistogram(saved_desk_type,
                                       GetEntryCount(saved_desk_type),
                                       GetMaxEntryCount(saved_desk_type));
+
+    if (saved_desk_type == DeskTemplateType::kSaveAndRecall) {
+      std::vector<aura::Window*> windows =
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+
+      // Get rid of transient windows.
+      base::EraseIf(windows, [](aura::Window* window) {
+        return wm::GetTransientParent(window) != nullptr;
+      });
+
+      // Start observing current windows.
+      if (g_window_close_observer)
+        delete g_window_close_observer;
+      g_window_close_observer = new WindowCloseObserver(
+          root_window, desk_template->uuid(), saved_desk_name, windows);
+
+      // Go through windows and attempt to close them.
+      for (aura::Window* window : windows) {
+        if (views::Widget* widget =
+                views::Widget::GetWidgetForNativeView(window)) {
+          widget->Close();
+        }
+      }
+
+      if (on_update_ui_closure_for_testing_)
+        std::move(on_update_ui_closure_for_testing_).Run();
+    }
   }
 
   // Note we do not run `on_update_ui_closure_for_testing` here as we want to
@@ -502,7 +707,7 @@ void SavedDeskPresenter::RemoveUIEntries(
   for (auto& overview_grid : overview_session_->grid_list()) {
     // Remove the entries from `SavedDeskLibraryView`.
     if (auto* library_view = overview_grid->GetSavedDeskLibraryView())
-      library_view->DeleteTemplates(uuids);
+      library_view->DeleteTemplates(uuids, /*delete_animation=*/true);
   }
 
   if (on_update_ui_closure_for_testing_)
@@ -524,6 +729,20 @@ std::u16string SavedDeskPresenter::AppendDuplicateNumberToDuplicateName(
   }
 
   return base::UTF8ToUTF16(duplicate_name);
+}
+
+// static
+void SavedDeskPresenter::SetModalDialogCallbackForTesting(
+    base::OnceClosure closure) {
+  DCHECK(g_window_close_observer);
+  g_window_close_observer->SetModalDialogCallbackForTesting(  // IN-TEST
+      std::move(closure));
+}
+
+// static
+void SavedDeskPresenter::FireWindowWatcherTimerForTesting() {
+  DCHECK(g_window_close_observer);
+  g_window_close_observer->FireWindowWatcherTimerForTesting();  // IN-TEST
 }
 
 }  // namespace ash

@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_settings_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -159,6 +160,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
@@ -1509,6 +1511,9 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetHideScrollbars(prefs.hide_scrollbars);
 
+  RuntimeEnabledFeatures::SetWebKitScrollbarStylingEnabled(
+      prefs.enable_webkit_scrollbar_styling);
+
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   RuntimeEnabledFeatures::SetAccelerated2dCanvasEnabled(
       prefs.accelerated_2d_canvas_enabled);
@@ -2475,26 +2480,28 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   if (showing_page) {
     SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
   }
-  if (dispatching_pageshow) {
-    DCHECK(restoring_from_bfcache);
-    DispatchPageshow(page_restore_params->navigation_start);
-  }
   if (restoring_from_bfcache) {
     DCHECK(dispatching_pageshow);
     DCHECK(page_restore_params);
-    Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
-    if (MainFrame()->IsWebLocalFrame()) {
-      LocalFrame* local_frame = To<LocalFrame>(page->MainFrame());
-      probe::DidRestoreFromBackForwardCache(local_frame);
-    }
     // Increment the navigation counter on the main frame and all nested frames
     // in its frame tree.
+    // Navigation Id increment should happen before a
+    // BackForwardCacheRestoration instance is created which happens inside the
+    // DispatchPageshow method.
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
       auto* local_frame = DynamicTo<LocalFrame>(frame);
       if (local_frame && local_frame->View()) {
         local_frame->IncrementNavigationId();
       }
+    }
+
+    DispatchPageshow(page_restore_params->navigation_start);
+
+    Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
+    if (MainFrame()->IsWebLocalFrame()) {
+      LocalFrame* local_frame = To<LocalFrame>(page->MainFrame());
+      probe::DidRestoreFromBackForwardCache(local_frame);
     }
   }
 
@@ -2583,13 +2590,26 @@ void WebViewImpl::DispatchPageshow(base::TimeTicks navigation_start) {
       }
       DocumentLoader* loader = local_frame->Loader().GetDocumentLoader();
       if (loader) {
-        loader->GetTiming().MarkBackForwardCacheRestoreNavigationStart(
+        loader->GetTiming().SetBackForwardCacheRestoreNavigationStart(
             navigation_start);
       }
     }
     if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+      auto pageshow_start_time = base::TimeTicks::Now();
+
       frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
           navigation_start);
+
+      if (RuntimeEnabledFeatures::NavigationIdEnabled()) {
+        auto pageshow_end_time = base::TimeTicks::Now();
+
+        WindowPerformance* performance = DOMWindowPerformance::performance(
+            *frame->DomWindow()->ToLocalDOMWindow());
+        DCHECK(performance);
+
+        performance->AddBackForwardCacheRestoration(
+            navigation_start, pageshow_start_time, pageshow_end_time);
+      }
       if (frame->IsOutermostMainFrame()) {
         UMA_HISTOGRAM_BOOLEAN(
             "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
@@ -3140,12 +3160,16 @@ SkColor WebViewImpl::BackgroundColor() const {
 
 Color WebViewImpl::BaseBackgroundColor() const {
   if (override_base_background_color_to_transparent_)
-    return SK_ColorTRANSPARENT;
-  if (base_background_color_override_for_inspector_)
-    return base_background_color_override_for_inspector_.value();
+    return Color::kTransparent;
+  // TODO(https://crbug.com/1351544): The base background color override should
+  // be an SkColor4f or a Color.
+  if (base_background_color_override_for_inspector_) {
+    return Color::FromSkColor(
+        base_background_color_override_for_inspector_.value());
+  }
   // Use the page background color if this is the WebView of the main frame.
   if (MainFrameImpl())
-    return page_base_background_color_;
+    return Color::FromSkColor(page_base_background_color_);
   return Color::kWhite;
 }
 

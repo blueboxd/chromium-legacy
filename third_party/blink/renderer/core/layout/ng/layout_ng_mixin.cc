@@ -32,6 +32,26 @@
 
 namespace blink {
 
+namespace {
+
+bool CanUseConstraintSpaceForCaching(const NGLayoutResult* previous_result,
+                                     const LayoutBox& box) {
+  if (!previous_result)
+    return false;
+  const auto& space = previous_result->GetConstraintSpaceForCaching();
+  if (space.IsFixedInlineSize() && box.HasOverrideLogicalWidth()) {
+    if (space.AvailableSize().inline_size != box.OverrideLogicalWidth())
+      return false;
+  }
+  if (space.IsFixedBlockSize() && box.HasOverrideLogicalHeight()) {
+    if (space.AvailableSize().block_size != box.OverrideLogicalHeight())
+      return false;
+  }
+  return space.GetWritingMode() == box.StyleRef().GetWritingMode();
+}
+
+}  // namespace
+
 template <typename Base>
 LayoutNGMixin<Base>::LayoutNGMixin(ContainerNode* node) : Base(node) {
   Base::CheckIsNotDestroyed();
@@ -57,7 +77,10 @@ void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
              LayoutNGBlockFlow::kForbidBreaks ||
          !Base::CanTraversePhysicalFragments() ||
          !Base::Parent()->CanTraversePhysicalFragments());
-  DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
+  // We may get here in multiple-fragment cases if the object is repeated
+  // (inside table headers and footers, for instance).
+  DCHECK(Base::PhysicalFragmentCount() <= 1u ||
+         Base::GetPhysicalFragment(0)->BreakToken()->IsRepeated());
 
   // Avoid painting dirty objects because descendants maybe already destroyed.
   if (UNLIKELY(Base::NeedsLayout() &&
@@ -89,7 +112,10 @@ bool LayoutNGMixin<Base>::NodeAtPoint(HitTestResult& result,
              LayoutNGBlockFlow::kForbidBreaks ||
          !Base::CanTraversePhysicalFragments() ||
          !Base::Parent()->CanTraversePhysicalFragments());
-  DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
+  // We may get here in multiple-fragment cases if the object is repeated
+  // (inside table headers and footers, for instance).
+  DCHECK(Base::PhysicalFragmentCount() <= 1u ||
+         Base::GetPhysicalFragment(0)->BreakToken()->IsRepeated());
 
   if (Base::PhysicalFragmentCount()) {
     const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
@@ -407,9 +433,7 @@ const NGLayoutResult* LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
   // If we are a layout root, use the previous space if available. This will
   // include any stretched sizes if applicable.
   NGConstraintSpace constraint_space =
-      is_layout_root && previous_result &&
-              previous_result->GetConstraintSpaceForCaching()
-                      .GetWritingMode() == Base::StyleRef().GetWritingMode()
+      is_layout_root && CanUseConstraintSpaceForCaching(previous_result, *this)
           ? previous_result->GetConstraintSpaceForCaching()
           : NGConstraintSpace::CreateFromLayoutObject(*this);
 

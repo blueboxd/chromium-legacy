@@ -19,7 +19,6 @@
 #include "ash/components/arc/mojom/enterprise_reporting.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/timezone_settings.h"
@@ -67,7 +66,9 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
@@ -76,7 +77,6 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -683,10 +683,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     for (const auto& info : external_mount_points)
       mount_points.push_back(info.path.value());
 
-    for (const auto& mount_info :
+    for (const auto& mount_point :
          ash::disks::DiskMountManager::GetInstance()->mount_points()) {
       // Extract a list of mount points to populate.
-      mount_points.push_back(mount_info.first);
+      mount_points.push_back(mount_point.mount_path);
     }
 
     // Call out to the blocking pool to sample disk volume info.
@@ -901,6 +901,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
                   kOther:
                 disk_info_out->set_other_vendor(vendor_id->get_other());
                 break;
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::
+                  kUnknown:
+                LOG(ERROR) << "cros_healthd: Unknown storage vendor tag";
+                break;
             }
 
             // product_id
@@ -918,6 +922,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
               case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
                   kOther:
                 disk_info_out->set_other_product(product_id->get_other());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  kUnknown:
+                LOG(ERROR) << "cros_healthd: Unknown storage product tag";
                 break;
             }
 
@@ -937,6 +945,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
                   kOther:
                 disk_info_out->set_other_hardware_rev(revision->get_other());
                 break;
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  kUnknown:
+                LOG(ERROR) << "cros_healthd: Unknown storage revision tag";
+                break;
             }
 
             // firmware version
@@ -955,6 +967,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
               case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
                   kOther:
                 disk_info_out->set_other_firmware_rev(fw_version->get_other());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  kUnknown:
+                LOG(ERROR) << "cros_healthd: Unknown storage firmware tag";
                 break;
             }
 
@@ -2300,13 +2316,13 @@ bool DeviceStatusCollector::GetNetworkConfiguration(
       },
   };
 
-  chromeos::NetworkStateHandler::DeviceStateList device_list;
-  chromeos::NetworkStateHandler* network_state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
+  ash::NetworkStateHandler::DeviceStateList device_list;
+  ash::NetworkStateHandler* network_state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
   network_state_handler->GetDeviceList(&device_list);
 
   bool anything_reported = false;
-  chromeos::NetworkStateHandler::DeviceStateList::const_iterator device;
+  ash::NetworkStateHandler::DeviceStateList::const_iterator device;
   for (device = device_list.begin(); device != device_list.end(); ++device) {
     // Determine the type enum constant for |device|.
     size_t type_idx = 0;
@@ -2375,8 +2391,8 @@ bool DeviceStatusCollector::GetNetworkStatus(
   };
 
   bool anything_reported = false;
-  chromeos::NetworkStateHandler* network_state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
+  ash::NetworkStateHandler* network_state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::User* const primary_user = user_manager->GetPrimaryUser();
@@ -2387,7 +2403,7 @@ bool DeviceStatusCollector::GetNetworkStatus(
   }
 
   // Walk the various networks and store their state in the status report.
-  chromeos::NetworkStateHandler::NetworkStateList state_list;
+  ash::NetworkStateHandler::NetworkStateList state_list;
   network_state_handler->GetNetworkListByType(
       ash::NetworkTypePattern::Default(),
       true,   // configured_only

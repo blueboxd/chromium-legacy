@@ -35,8 +35,8 @@ import zlib
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-16-init-572-gdde41c6c'
-CLANG_SUB_REVISION = 4
+CLANG_REVISION = 'llvmorg-16-init-907-g8b740747'
+CLANG_SUB_REVISION = 1
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
 RELEASE_VERSION = '16.0.0'
@@ -140,6 +140,8 @@ def DownloadUrl(url, output_file):
           e, urllib.error.HTTPError) and e.code == 404:
         raise e
       num_retries -= 1
+      output_file.seek(0)
+      output_file.truncate()
       print('Retrying in %d s ...' % retry_wait_s)
       sys.stdout.flush()
       time.sleep(retry_wait_s)

@@ -16,12 +16,12 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/system_logs/shill_log_pii_identifiers.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -142,7 +142,7 @@ void ShillDataCollector::CollectDataAndDetectPII(
   data_collector_done_callback_ = std::move(on_data_collected_callback);
   task_runner_for_redaction_tool_ = std::move(task_runner_for_redaction_tool);
   redaction_tool_container_ = std::move(redaction_tool_container);
-  chromeos::ShillManagerClient::Get()->GetProperties(
+  ash::ShillManagerClient::Get()->GetProperties(
       base::BindOnce(&ShillDataCollector::OnGetManagerProperties,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -170,7 +170,7 @@ void ShillDataCollector::OnGetManagerProperties(
       if (path.empty())
         continue;
       ++num_entries_left_;
-      chromeos::ShillDeviceClient::Get()->GetProperties(
+      ash::ShillDeviceClient::Get()->GetProperties(
           dbus::ObjectPath(path),
           base::BindOnce(&ShillDataCollector::OnGetDevice,
                          weak_ptr_factory_.GetWeakPtr(), path));
@@ -185,7 +185,7 @@ void ShillDataCollector::OnGetManagerProperties(
       if (path.empty())
         continue;
       ++num_entries_left_;
-      chromeos::ShillServiceClient::Get()->GetProperties(
+      ash::ShillServiceClient::Get()->GetProperties(
           dbus::ObjectPath(path),
           base::BindOnce(&ShillDataCollector::OnGetService,
                          weak_ptr_factory_.GetWeakPtr(), path));
@@ -225,7 +225,7 @@ void ShillDataCollector::AddDeviceAndRequestIPConfigs(
     if (ip_config_path.empty())
       continue;
     ++num_entries_left_;
-    chromeos::ShillIPConfigClient::Get()->GetProperties(
+    ash::ShillIPConfigClient::Get()->GetProperties(
         dbus::ObjectPath(ip_config_path),
         base::BindOnce(&ShillDataCollector::OnGetIPConfig,
                        weak_ptr_factory_.GetWeakPtr(), device_path,

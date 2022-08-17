@@ -171,6 +171,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableVirtioBlkForData() {
+    options.enable_virtio_blk_for_data = true;
+    return *this;
+  }
+
   TestCase& EnableMirrorSync() {
     options.enable_mirrorsync = true;
     return *this;
@@ -879,6 +884,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewUsb").FilesSwa(),
         TestCase("openQuickViewRemovablePartitions"),
         TestCase("openQuickViewRemovablePartitions").FilesSwa(),
+        TestCase("openQuickViewTrash").FilesSwa().EnableTrash(),
         TestCase("openQuickViewMtp"),
         TestCase("openQuickViewMtp").FilesSwa(),
         TestCase("openQuickViewTabIndexImage").MediaSwa(),
@@ -1132,6 +1138,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveClickFirstSearchResult").FilesSwa(),
         TestCase("drivePressEnterToSearch"),
         TestCase("drivePressEnterToSearch").FilesSwa(),
+        TestCase("driveSearchAlwaysDisplaysMyDrive"),
+        TestCase("driveSearchAlwaysDisplaysMyDrive").FilesSwa(),
+        TestCase("driveSearchAlwaysDisplaysMyDrive")
+            .FilesSwa()
+            .FilesExperimental(),
         TestCase("drivePressClearSearch"),
         TestCase("drivePressClearSearch").FilesSwa(),
         TestCase("drivePressCtrlAFromSearch"),
@@ -1252,6 +1263,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragFileListItemSelects").FilesSwa(),
         TestCase("transferDragAndDrop"),
         TestCase("transferDragAndDrop").FilesSwa(),
+        TestCase("transferDragAndDropFolder"),
+        TestCase("transferDragAndDropFolder").FilesSwa(),
         TestCase("transferDragAndHover"),
         TestCase("transferDragAndHover").FilesSwa(),
         TestCase("transferDropBrowserFile"),
@@ -1740,6 +1753,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("showMyFiles").EnableTrash().FilesSwa(),
         TestCase("myFilesDisplaysAndOpensEntries"),
         TestCase("myFilesDisplaysAndOpensEntries").FilesSwa(),
+        TestCase("myFilesDisplaysAndOpensEntries")
+            .FilesSwa()
+            .FilesExperimental(),
         TestCase("myFilesFolderRename"),
         TestCase("myFilesFolderRename").FilesSwa(),
         TestCase("myFilesUpdatesWhenAndroidVolumeMounts").DontMountVolumes(),
@@ -1752,6 +1768,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("myFilesAutoExpandOnce").FilesSwa(),
         TestCase("myFilesToolbarDelete"),
         TestCase("myFilesToolbarDelete").FilesSwa()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Navigation, /* navigation.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("navigateToParent")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
@@ -2045,9 +2066,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("breadcrumbsNavigate"),
-        TestCase("breadcrumbsNavigate").FilesExperimental(),
         TestCase("breadcrumbsNavigate").FilesSwa(),
-        TestCase("breadcrumbsNavigate").FilesSwa().FilesExperimental(),
         TestCase("breadcrumbsDownloadsTranslation"),
         TestCase("breadcrumbsDownloadsTranslation").FilesSwa(),
         TestCase("breadcrumbsRenderShortPath"),
@@ -2056,7 +2075,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("breadcrumbsEliderButtonHidden").FilesSwa(),
         TestCase("breadcrumbsRenderLongPath"),
         TestCase("breadcrumbsRenderLongPath").FilesSwa(),
-        TestCase("breadcrumbsRenderLongPath").FilesSwa().FilesExperimental(),
         TestCase("breadcrumbsMainButtonClick"),
         TestCase("breadcrumbsMainButtonClick").FilesSwa(),
         TestCase("breadcrumbsMainButtonEnterKey"),
@@ -2140,6 +2158,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("trashDoubleClickOnFileInTrashRootShowsDialog").EnableTrash(),
         TestCase("trashDoubleClickOnFileInTrashRootShowsDialog")
             .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashDragDropRootAcceptsEntries").EnableTrash().FilesSwa(),
+        TestCase("trashDragDropFromDisallowedRootsFails")
+            .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashDragDropNonModifiableEntriesCantBeTrashed")
+            .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashDragDropRootPerformsTrashAction")
+            .EnableTrash()
             .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -2206,6 +2234,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fakesListed").EnableGuestOsFiles(),
         TestCase("listUpdatedWhenGuestsChanged").EnableGuestOsFiles(),
         TestCase("mountGuestSuccess").EnableGuestOsFiles(),
-        TestCase("notListedWithoutFlag")));
+        TestCase("notListedWithoutFlag"),
+        TestCase("mountAndroidVolumeSuccess")
+            .EnableGuestOsFiles()
+            .EnableVirtioBlkForData()));
 
 }  // namespace file_manager

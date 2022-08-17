@@ -23,6 +23,7 @@
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gl/gl_image_egl.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
@@ -214,12 +215,12 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
                             int z_order) {
     gl_surface->ScheduleOverlayPlane(
         image, nullptr,
-        gfx::OverlayPlaneData(
-            z_order, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-            gfx::RectF(window_->GetBoundsInPixels()), {}, false,
-            gfx::Rect(window_->GetBoundsInPixels().size()), 1.0f,
-            gfx::OverlayPriorityHint::kNone, gfx::RRectF(),
-            gfx::ColorSpace::CreateSRGB(), absl::nullopt));
+        gfx::OverlayPlaneData(z_order,
+                              gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              gfx::RectF(window_->GetBoundsInPixels()), {},
+                              false, gfx::Rect(window_->size_px()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone, gfx::RRectF(),
+                              gfx::ColorSpace::CreateSRGB(), absl::nullopt));
   }
 };
 
@@ -237,7 +238,8 @@ TEST_P(WaylandSurfaceFactoryTest,
 
   auto* gl_ozone = surface_factory_->GetGLOzone(
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
-  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(
+      gl::GetDefaultDisplay(), widget_);
   EXPECT_TRUE(gl_surface);
   gl_surface->SetRelyOnImplicitSync();
   static_cast<ui::GbmSurfacelessWayland*>(gl_surface.get())
@@ -250,10 +252,10 @@ TEST_P(WaylandSurfaceFactoryTest,
   std::vector<scoped_refptr<FakeGLImageNativePixmap>> fake_gl_image;
   for (int i = 0; i < 4; ++i) {
     auto native_pixmap = surface_factory_->CreateNativePixmap(
-        widget_, nullptr, window_->GetBoundsInPixels().size(),
-        gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT);
+        widget_, nullptr, window_->size_px(), gfx::BufferFormat::BGRA_8888,
+        gfx::BufferUsage::SCANOUT);
     fake_gl_image.push_back(base::MakeRefCounted<FakeGLImageNativePixmap>(
-        native_pixmap, window_->GetBoundsInPixels().size()));
+        native_pixmap, window_->size_px()));
   }
 
   auto* root_surface = server_.GetObject<wl::MockSurface>(
@@ -529,7 +531,8 @@ TEST_P(WaylandSurfaceFactoryTest,
 
   auto* gl_ozone = surface_factory_->GetGLOzone(
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
-  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(
+      gl::GetDefaultDisplay(), widget_);
   EXPECT_TRUE(gl_surface);
   gl_surface->SetRelyOnImplicitSync();
   static_cast<ui::GbmSurfacelessWayland*>(gl_surface.get())
@@ -539,10 +542,10 @@ TEST_P(WaylandSurfaceFactoryTest,
   std::vector<scoped_refptr<FakeGLImageNativePixmap>> fake_gl_image;
   for (int i = 0; i < 5; ++i) {
     auto native_pixmap = surface_factory_->CreateNativePixmap(
-        widget_, nullptr, window_->GetBoundsInPixels().size(),
-        gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT);
+        widget_, nullptr, window_->size_px(), gfx::BufferFormat::BGRA_8888,
+        gfx::BufferUsage::SCANOUT);
     fake_gl_image.push_back(base::MakeRefCounted<FakeGLImageNativePixmap>(
-        native_pixmap, window_->GetBoundsInPixels().size()));
+        native_pixmap, window_->size_px()));
   }
 
   auto* root_surface = server_.GetObject<wl::MockSurface>(
@@ -785,7 +788,7 @@ TEST_P(WaylandSurfaceFactoryTest, Canvas) {
     auto canvas = CreateCanvas(widget_);
     ASSERT_TRUE(canvas);
 
-    auto bounds_px = window_->GetBoundsInPixels();
+    auto bounds_px = window_->GetBoundsInDIP();
     bounds_px = gfx::ScaleToRoundedRect(bounds_px, scale_factor);
 
     canvas->ResizeCanvas(bounds_px.size(), scale_factor);
@@ -827,7 +830,7 @@ TEST_P(WaylandSurfaceFactoryTest, CanvasResize) {
   auto canvas = CreateCanvas(widget_);
   ASSERT_TRUE(canvas);
 
-  canvas->ResizeCanvas(window_->GetBoundsInPixels().size(), 1);
+  canvas->ResizeCanvas(window_->GetBoundsInDIP().size(), 1);
   auto* sk_canvas = canvas->GetCanvas();
   DCHECK(sk_canvas);
   canvas->ResizeCanvas(gfx::Size(100, 50), 1);
@@ -864,7 +867,8 @@ TEST_P(WaylandSurfaceFactoryTest, CreateSurfaceCheckGbm) {
   auto* gl_ozone = surface_factory_->GetGLOzone(
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
   EXPECT_TRUE(gl_ozone);
-  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(
+      gl::GetDefaultDisplay(), widget_);
   EXPECT_FALSE(gl_surface);
 
   // Now, set gbm.
@@ -872,20 +876,23 @@ TEST_P(WaylandSurfaceFactoryTest, CreateSurfaceCheckGbm) {
 
   // It's still impossible to create the device if supports_dmabuf is false.
   EXPECT_FALSE(buffer_manager_gpu_->GetGbmDevice());
-  gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(gl::GetDefaultDisplay(),
+                                                        widget_);
   EXPECT_FALSE(gl_surface);
 
   // Now set supports_dmabuf.
   buffer_manager_gpu_->supports_dmabuf_ = true;
   EXPECT_TRUE(buffer_manager_gpu_->GetGbmDevice());
-  gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(gl::GetDefaultDisplay(),
+                                                        widget_);
   EXPECT_TRUE(gl_surface);
 
   // Reset gbm now. WaylandConnectionProxy can reset it when zwp is not
   // available. And factory must behave the same way as previously.
   buffer_manager_gpu_->gbm_device_ = nullptr;
   EXPECT_FALSE(buffer_manager_gpu_->GetGbmDevice());
-  gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(gl::GetDefaultDisplay(),
+                                                        widget_);
   EXPECT_FALSE(gl_surface);
 }
 
@@ -904,7 +911,8 @@ TEST_P(WaylandSurfaceFactoryCompositorV3, SurfaceDamageTest) {
 
   auto* gl_ozone = surface_factory_->GetGLOzone(
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
-  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
+  auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(
+      gl::GetDefaultDisplay(), widget_);
   EXPECT_TRUE(gl_surface);
   gl_surface->SetRelyOnImplicitSync();
   static_cast<ui::GbmSurfacelessWayland*>(gl_surface.get())
@@ -920,8 +928,8 @@ TEST_P(WaylandSurfaceFactoryCompositorV3, SurfaceDamageTest) {
   gfx::RectF crop_uv = {0.1f, 0.2f, 0.5, 0.5f};
   gfx::RectF expected_combined_uv = {0.2, 0.2, 0.8, 0.64};
   gfx::Rect expected_surface_dmg = gfx::ToEnclosingRect(
-      gfx::ScaleRect(expected_combined_uv, window_->GetBoundsInPixels().width(),
-                     window_->GetBoundsInPixels().height()));
+      gfx::ScaleRect(expected_combined_uv, window_->size_px().width(),
+                     window_->size_px().height()));
 
   // Create buffers and FakeGlImageNativePixmap.
   std::vector<scoped_refptr<FakeGLImageNativePixmap>> fake_gl_image;

@@ -36,10 +36,6 @@
 
 class PrefService;
 
-namespace content {
-class RenderFrameHost;
-}
-
 namespace signin {
 class IdentityManager;
 }
@@ -70,7 +66,9 @@ enum class AutofillProgressDialogType;
 struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 class CreditCard;
+class CreditCardCVCAuthenticator;
 enum class CreditCardFetchResult;
+class CreditCardOtpAuthenticator;
 class FormDataImporter;
 class FormStructure;
 class LogManager;
@@ -327,6 +325,10 @@ class AutofillClient : public RiskDataLoader {
   // client (can be null for unsupported platforms).
   virtual MerchantPromoCodeManager* GetMerchantPromoCodeManager();
 
+  // Can be null on unsupported platforms.
+  virtual CreditCardCVCAuthenticator* GetCVCAuthenticator();
+  virtual CreditCardOtpAuthenticator* GetOtpAuthenticator();
+
   // Creates and returns a SingleFieldFormFillRouter using the
   // AutocompleteHistoryManager instance associated with the client.
   std::unique_ptr<SingleFieldFormFillRouter> GetSingleFieldFormFillRouter();
@@ -390,7 +392,7 @@ class AutofillClient : public RiskDataLoader {
   // null for platforms that don't support this, in which case standard CVC
   // authentication will be used instead.
   virtual std::unique_ptr<webauthn::InternalAuthenticator>
-  CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh);
+  CreateCreditCardInternalAuthenticator(AutofillDriver* driver);
 #endif
 
   // Causes the Autofill settings UI to be shown. If |show_credit_card_settings|

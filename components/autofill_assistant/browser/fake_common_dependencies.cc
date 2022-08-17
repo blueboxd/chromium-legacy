@@ -43,6 +43,11 @@ bool FakeCommonDependencies::IsSupervisedUser(
   return is_supervised_user_;
 }
 
+bool FakeCommonDependencies::IsAllowedForMachineLearning(
+    content::BrowserContext* browser_context) const {
+  return is_allowed_for_machine_learning_;
+}
+
 AnnotateDomModelService*
 FakeCommonDependencies::GetOrCreateAnnotateDomModelService(
     content::BrowserContext* browser_context) const {
@@ -60,6 +65,16 @@ signin::IdentityManager* FakeCommonDependencies::GetIdentityManager(
 
 version_info::Channel FakeCommonDependencies::GetChannel() const {
   return channel_;
+}
+
+bool FakeCommonDependencies::GetMakeSearchesAndBrowsingBetterEnabled(
+    content::BrowserContext* browser_context) const {
+  return msbb_enabled_;
+}
+
+bool FakeCommonDependencies::GetMetricsReportingEnabled(
+    content::BrowserContext* browser_context) const {
+  return uma_enabled_;
 }
 
 }  // namespace autofill_assistant

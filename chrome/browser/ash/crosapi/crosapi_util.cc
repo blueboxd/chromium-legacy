@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -36,6 +37,7 @@
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
@@ -57,6 +59,7 @@
 #include "chromeos/crosapi/mojom/device_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/device_oauth2_token_service.mojom.h"
 #include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "chromeos/crosapi/mojom/digital_goods.mojom.h"
 #include "chromeos/crosapi/mojom/dlp.mojom.h"
 #include "chromeos/crosapi/mojom/document_scan.mojom.h"
@@ -69,6 +72,7 @@
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
+#include "chromeos/crosapi/mojom/fullscreen_controller.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
@@ -91,6 +95,7 @@
 #include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "chromeos/crosapi/mojom/printing_metrics.mojom.h"
+#include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/sharesheet.mojom.h"
@@ -238,7 +243,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 92,
+static_assert(crosapi::mojom::Crosapi::Version_ == 95,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -270,6 +275,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceAttributes>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceOAuth2TokenService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceSettingsService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::DiagnosticsService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DigitalGoodsFactory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Dlp>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DocumentScan>(),
@@ -283,6 +289,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileSystemProviderService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ForceInstalledTracker>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::FullscreenController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::GeolocationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdentityManager>(),
@@ -309,6 +316,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetrics>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::TelemetryProbeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ResourceManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenManager>(),
@@ -572,6 +580,8 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
       tts_crosapi_util::ShouldEnableLacrosTtsSupport();
   params->enable_float_window =
       base::FeatureList::IsEnabled(chromeos::wm::features::kFloatWindow);
+  params->is_cloud_gaming_device =
+      chromeos::features::IsCloudGamingDeviceEnabled();
 
   return params;
 }
@@ -668,6 +678,30 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
             device_restricted_managed_guest_session_enabled
                 ? MojoOptionalBool::kTrue
                 : MojoOptionalBool::kFalse;
+      }
+
+      bool report_device_network_status = true;
+      if (cros_settings->GetBoolean(ash::kReportDeviceNetworkStatus,
+                                    &report_device_network_status)) {
+        result->report_device_network_status = report_device_network_status
+                                                   ? MojoOptionalBool::kTrue
+                                                   : MojoOptionalBool::kFalse;
+      }
+
+      int report_upload_frequency;
+      if (cros_settings->GetInteger(ash::kReportUploadFrequency,
+                                    &report_upload_frequency)) {
+        result->report_upload_frequency =
+            crosapi::mojom::NullableInt64::New(report_upload_frequency);
+      }
+
+      int report_device_network_telemetry_collection_rate_ms;
+      if (cros_settings->GetInteger(
+              ash::kReportDeviceNetworkTelemetryCollectionRateMs,
+              &report_device_network_telemetry_collection_rate_ms)) {
+        result->report_device_network_telemetry_collection_rate_ms =
+            crosapi::mojom::NullableInt64::New(
+                report_device_network_telemetry_collection_rate_ms);
       }
     } else {
       LOG(WARNING) << "Unexpected crossettings trusted values status: "

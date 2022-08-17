@@ -76,7 +76,6 @@ import {SpinnerController} from './spinner_controller.js';
 import {TaskController} from './task_controller.js';
 import {ToolbarController} from './toolbar_controller.js';
 import {A11yAnnounce} from './ui/a11y_announce.js';
-import {BreadcrumbController} from './ui/breadcrumb_controller.js';
 import {CommandButton} from './ui/commandbutton.js';
 import {DirectoryTree} from './ui/directory_tree.js';
 import {FileGrid} from './ui/file_grid.js';
@@ -944,10 +943,8 @@ export class FileManager extends EventTarget {
     await this.initSettingsPromise_;
     const fileSystemUIPromise = this.initFileSystemUI_();
     // Initialize the Store for the whole app.
-    if (util.isFilesAppExperimental()) {
-      const store = getStore();
-      store.init({});
-    }
+    const store = getStore();
+    store.init({});
     this.initUIFocus_();
     metrics.recordInterval('Load.InitUI');
     return fileSystemUIPromise;
@@ -1280,8 +1277,6 @@ export class FileManager extends EventTarget {
     // Create search controller.
     this.searchController_ = new SearchController(
         this.ui_.searchBox,
-        /** @type {!BreadcrumbController} */
-        (assert(this.ui_.breadcrumbController)),
         this.directoryModel_,
         this.volumeManager_,
         assert(this.taskController_),

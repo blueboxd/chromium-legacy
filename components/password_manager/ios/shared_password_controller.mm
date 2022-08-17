@@ -107,7 +107,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 @implementation SharedPasswordController {
   PasswordManagerInterface* _passwordManager;
-  std::unique_ptr<PasswordGenerationFrameHelper> _passwordGenerationHelper;
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
@@ -127,9 +126,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   // The value that was last typed by the user.
   NSString* _lastTypedValue;
-
-  // The max length for the focused field.
-  int _maxLength;
 
   // Identifier of the last focused form.
   FormRendererId _lastFocusedFormIdentifier;
@@ -513,11 +509,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (PasswordGenerationFrameHelper*)passwordGenerationHelper {
-  if (![self isIncognito]) {
-    _passwordGenerationHelper.reset(new PasswordGenerationFrameHelper(
-        _delegate.passwordManagerClient, _delegate.passwordManagerDriver));
-  }
-  return _passwordGenerationHelper.get();
+  return _delegate.passwordManagerDriver->GetPasswordGenerationHelper();
 }
 
 - (void)formEligibleForGenerationFound:(const PasswordFormGenerationData&)form {
@@ -582,7 +574,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // added elements to the form.
   if (!triggeredByFormChange) {
     _passwordManager->OnPasswordFormsRendered(_delegate.passwordManagerDriver,
-                                              forms, true);
+                                              forms);
   }
 }
 
@@ -602,8 +594,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 - (BOOL)canGeneratePasswordForForm:(FormRendererId)formIdentifier
                    fieldIdentifier:(FieldRendererId)fieldIdentifier
                          fieldType:(NSString*)fieldType {
-  if ([self isIncognito] || !self.passwordGenerationHelper->IsGenerationEnabled(
-                                /*log_debug_data*/ true)) {
+  if (!self.passwordGenerationHelper->IsGenerationEnabled(
+          /*log_debug_data*/ true)) {
     return NO;
   }
   if (![fieldType isEqual:kPasswordFieldType]) {
@@ -654,36 +646,58 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     [self formEligibleForGenerationFound:generationData];
   }
 
-  std::u16string generatedPassword =
-      self.passwordGenerationHelper->GeneratePassword(
-          [self lastCommittedURL], autofill::FormSignature(0),
-          autofill::FieldSignature(0), _maxLength);
-
-  self.generatedPotentialPassword = SysUTF16ToNSString(generatedPassword);
-
   __weak SharedPasswordController* weakSelf = self;
-  auto completionHandler = ^{
-    weakSelf.generatedPotentialPassword = nil;
+  auto formDataCompletion = ^(BOOL found, const autofill::FormData& form) {
+    autofill::FormSignature formSignature =
+        found ? CalculateFormSignature(form) : autofill::FormSignature(0);
+    autofill::FieldSignature fieldSignature = autofill::FieldSignature(0);
+    int maxLength = 0;
+
+    if (found) {
+      for (const autofill::FormFieldData& field : form.fields) {
+        if (field.unique_renderer_id == fieldIdentifier) {
+          fieldSignature = CalculateFieldSignatureForField(field);
+          maxLength = field.max_length;
+          break;
+        }
+      }
+    }
+
+    std::u16string generatedPassword =
+        weakSelf.passwordGenerationHelper->GeneratePassword(
+            [weakSelf lastCommittedURL], formSignature, fieldSignature,
+            maxLength);
+
+    weakSelf.generatedPotentialPassword = SysUTF16ToNSString(generatedPassword);
+
+    auto clearPotentialPassword = ^{
+      weakSelf.generatedPotentialPassword = nil;
+    };
+
+    [weakSelf.delegate
+              sharedPasswordController:weakSelf
+        showGeneratedPotentialPassword:weakSelf.generatedPotentialPassword
+                       decisionHandler:^(BOOL accept) {
+                         if (accept) {
+                           LogPasswordGenerationEvent(
+                               autofill::password_generation::
+                                   PASSWORD_ACCEPTED);
+                           [weakSelf
+                               injectGeneratedPasswordForFormId:formIdentifier
+                                                        inFrame:frame
+                                              generatedPassword:
+                                                  weakSelf
+                                                      .generatedPotentialPassword
+                                              completionHandler:
+                                                  clearPotentialPassword];
+                         } else {
+                           clearPotentialPassword();
+                         }
+                       }];
   };
 
-  [_delegate sharedPasswordController:self
-       showGeneratedPotentialPassword:self.generatedPotentialPassword
-                      decisionHandler:^(BOOL accept) {
-                        if (accept) {
-                          LogPasswordGenerationEvent(
-                              autofill::password_generation::PASSWORD_ACCEPTED);
-                          [weakSelf
-                              injectGeneratedPasswordForFormId:formIdentifier
-                                                       inFrame:frame
-                                             generatedPassword:
-                                                 weakSelf
-                                                     .generatedPotentialPassword
-                                             completionHandler:
-                                                 completionHandler];
-                        } else {
-                          completionHandler();
-                        }
-                      }];
+  [self.formHelper extractPasswordFormData:formIdentifier
+                         completionHandler:formDataCompletion];
 
   _passwordManager->SetGenerationElementAndTypeForForm(
       _delegate.passwordManagerDriver, formIdentifier, fieldIdentifier,
@@ -790,7 +804,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _lastFocusedFormIdentifier = params.unique_form_id;
     _lastFocusedFieldIdentifier = params.unique_field_id;
     _lastFocusedFrame = frame;
-    _maxLength = params.max_length;
   }
 
   // If there's a change in password forms on a page, they should be parsed

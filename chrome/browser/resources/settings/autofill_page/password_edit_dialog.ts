@@ -8,9 +8,9 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../icons.html.js';
@@ -19,8 +19,8 @@ import '../settings_vars.css.js';
 import './passwords_shared.css.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -31,7 +31,8 @@ import {getTemplate} from './password_edit_dialog.html.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {PasswordRequestorMixin} from './password_requestor_mixin.js';
 
-export type SavedPasswordEditedEvent = CustomEvent<number>;
+export type SavedPasswordEditedEvent =
+    CustomEvent<chrome.passwordsPrivate.PasswordUiEntry>;
 
 const SAVED_PASSWORD_EDITED_EVENT_NAME = 'saved-password-edited';
 
@@ -295,11 +296,21 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     this.initDialog_();
   }
 
+  // <if expr="is_chromeos">
+  override onPasswordPromptClose(event: CloseEvent) {
+    super.onPasswordPromptClose(event);
+    // In chromeOS closing the password prompt dialog while the edit dialog is
+    // open also closes the edit dialog. This happens when add dialog wants to
+    // switch to edit dialog.
+    event.stopPropagation();
+  }
+  // </if>
+
   private initDialog_() {
     if (this.existingEntry) {
       this.websiteUrls_ = this.existingEntry.urls;
       this.username_ = this.existingEntry.username;
-      this.note_ = this.existingEntry.note;
+      this.note_ = this.existingEntry.note || '';
     }
     this.password_ = this.getPassword_();
     if (!this.isInFederatedViewMode_) {
@@ -521,7 +532,14 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         .changeSavedPassword(this.existingEntry!.id, params)
         .then(newId => {
           if (this.isPasswordViewPageEnabled_) {
-            this.dispatchChangePasswordEvent_(newId);
+            const newEntry = {
+              ...this.existingEntry!,
+              username: this.username_,
+              password: this.password_,
+              note: this.note_,
+              id: newId,
+            };
+            this.dispatchChangePasswordEvent_(newEntry);
           }
         })
         .finally(() => {
@@ -529,11 +547,12 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         });
   }
 
-  private dispatchChangePasswordEvent_(newId: number) {
+  private dispatchChangePasswordEvent_(
+      newEntry: chrome.passwordsPrivate.PasswordUiEntry) {
     this.dispatchEvent(new CustomEvent(SAVED_PASSWORD_EDITED_EVENT_NAME, {
       bubbles: true,
       composed: true,
-      detail: newId,
+      detail: newEntry,
     }));
   }
 

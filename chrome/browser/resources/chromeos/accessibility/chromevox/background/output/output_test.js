@@ -14,9 +14,8 @@ function checkBrailleOutput(expectedText, expectedSpans, output) {
   // Remove string annotations.  These are tested in the speech output and
   // there's no need to clutter the tests with the corresponding braille
   // annotations.
-  const actualSpans = actualOutput.spans_.filter(function(span) {
-    return (typeof span.value !== 'string');
-  });
+  const actualSpans =
+      actualOutput.spans_.filter(span => (typeof span.value !== 'string'));
   checkOutput_(
       expectedText, expectedSpans, actualOutput.toString(), actualSpans);
 }
@@ -109,6 +108,10 @@ ChromeVoxOutputE2ETest = class extends ChromeVoxNextE2ETest {
         ['OutputEarconAction', 'OutputNodeSpan', 'OutputSelectionSpan'],
         '/chromevox/background/output/output_types.js');
     await importModule('Msgs', '/chromevox/common/msgs.js');
+    await importModule('AutomationUtil', '/common/automation_util.js');
+    await importModule('TtsCategory', '/chromevox/common/tts_interface.js');
+    await importModule(
+        'AutomationPredicate', '/common/automation_predicate.js');
 
     window.Dir = AutomationUtil.Dir;
     this.forceContextualLastOutput();
@@ -357,7 +360,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
   assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
   let el = root.firstChild.firstChild;
-  expectedSpeechValues.forEach(function(expectedValue) {
+  expectedSpeechValues.forEach(expectedValue => {
     const range = CursorRange.fromNode(el);
     const o = new Output().withoutHints().withSpeechAndBraille(
         range, null, 'navigate');
@@ -375,7 +378,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
   });
 
   el = root.firstChild.firstChild;
-  expectedBrailleValues.forEach(function(expectedValue) {
+  expectedBrailleValues.forEach(expectedValue => {
     const range = CursorRange.fromNode(el);
     const o = new Output().withoutHints().withBraille(range, null, 'navigate');
     if (typeof expectedValue === 'string') {
@@ -1025,15 +1028,11 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
     RoleType.STATIC_TEXT,
     RoleType.WINDOW,
   ];
-  missingState = missingState.filter(function(state) {
-    return notStated.indexOf(state) === -1;
-  });
-  missingRestriction = missingRestriction.filter(function(restriction) {
-    return notRestricted.indexOf(restriction) === -1;
-  });
-  missingDescription = missingDescription.filter(function(desc) {
-    return notDescribed.indexOf(desc) === -1;
-  });
+  missingState = missingState.filter(state => notStated.indexOf(state) === -1);
+  missingRestriction = missingRestriction.filter(
+      restriction => notRestricted.indexOf(restriction) === -1);
+  missingDescription =
+      missingDescription.filter(desc => notDescribed.indexOf(desc) === -1);
 
   assertEquals(
       0, missingState.length,
@@ -1446,4 +1445,45 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ContextOrder', async function() {
   o = new Output().withSpeech(
       CursorRange.fromNode(menu.firstChild), CursorRange.fromNode(p));
   assertEquals('first', o.contextOrder_);
+});
+
+AX_TEST_F('ChromeVoxOutputE2ETest', 'TreeGridLevel', async function() {
+  const site = `
+    <table id="treegrid" role="treegrid" aria-label="Inbox">
+      <tbody>
+        <tr role="row" aria-level="1" aria-posinset="1" aria-setsize="1"
+            aria-expanded="true">
+          <td role="gridcell">Treegrids are awesome</td>
+          <td role="gridcell">Want to learn how to use them?</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  const root = await this.runWithLoadedTree(site);
+  const row = root.find({role: RoleType.ROW});
+  let range = CursorRange.fromNode(row);
+  let o =
+      new Output().withoutHints().withSpeechAndBraille(range, null, 'navigate');
+
+  checkSpeechOutput(
+      ' level 1 |Expanded|Row',
+      [
+        {value: 'state', start: 10, end: 18},
+        {value: 'role', start: 19, end: 22},
+      ],
+      o);
+
+  range = CursorRange.fromNode(row.firstChild);
+  o = new Output().withoutHints().withSpeechAndBraille(range, null, 'navigate');
+
+  checkSpeechOutput(
+      'Treegrids are awesome| level 1 |row 1 column 1',
+      [{value: 'name', start: 0, end: 21}], o);
+
+  range = CursorRange.fromNode(row.lastChild);
+  o = new Output().withoutHints().withSpeechAndBraille(range, null, 'navigate');
+
+  checkSpeechOutput(
+      'Want to learn how to use them?|row 1 column 2',
+      [{value: 'name', start: 0, end: 30}], o);
 });

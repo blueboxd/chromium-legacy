@@ -60,9 +60,7 @@ try_.builder(
             ],
         },
     },
-    tryjob = try_.job(
-        experiment_percentage = 50,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.builder(

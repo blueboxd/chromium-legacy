@@ -37,9 +37,6 @@ class SimpleMainThreadScheduler : public MainThreadScheduler {
   // Always return false.
   bool ShouldYieldForHighPriorityWork() override;
 
-  // Always return false.
-  bool CanExceedIdleDeadlineIfRequired() const override;
-
   // Those tasks are simply ignored (we assume there's no idle period).
   void PostIdleTask(const base::Location&, Thread::IdleTask) override;
   void PostDelayedIdleTask(const base::Location&,
@@ -56,7 +53,6 @@ class SimpleMainThreadScheduler : public MainThreadScheduler {
 
   // Return the thread task runner (there's no separate task runner for them).
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override;
@@ -76,7 +72,6 @@ class SimpleMainThreadScheduler : public MainThreadScheduler {
   void RemoveTaskObserver(base::TaskObserver*) override;
 
   // Return nullptr.
-  NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override;
   MainThreadScheduler* ToMainThreadScheduler() override;
 
   void SetV8Isolate(v8::Isolate* isolate) override {}

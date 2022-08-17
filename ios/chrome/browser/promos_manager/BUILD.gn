@@ -4,11 +4,35 @@
 
 source_set("promos_manager") {
   sources = [
+    "impression_limit.h",
+    "impression_limit.mm",
+    "promo.h",
+    "promo.mm",
     "promos_manager.h",
     "promos_manager.mm",
   ]
+  frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  deps = [ ":features" ]
+  deps = [
+    ":features",
+    "//base",
+    "//components/prefs",
+    "//ios/chrome/browser:pref_names",
+  ]
+}
+
+source_set("promos_manager_scene_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "promos_manager_scene_agent.h",
+    "promos_manager_scene_agent.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/browser/ui/main:observing_scene_agent",
+    "//ios/chrome/browser/ui/main:scene_state_header",
+  ]
 }
 
 source_set("features") {
@@ -18,4 +42,22 @@ source_set("features") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "promos_manager_unittest.h",
+    "promos_manager_unittest.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":promos_manager",
+    "//base",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser:pref_names",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }

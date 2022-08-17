@@ -24,13 +24,13 @@
 namespace blink {
 
 namespace {
-// TODO(crbug.com/1223353): Remove usage of Thread::Current()->GetTaskRunner()
-// when canvas capture no longer requires a task runner when trying to capture
-// a detached canvas.
+// TODO(crbug.com/1223353): Remove usage of
+// Thread::Current()->GetDeprecatedTaskRunner() when canvas capture no longer
+// requires a task runner when trying to capture a detached canvas.
 scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerFromFrame(
     LocalFrame* frame) {
   return frame ? frame->GetTaskRunner(TaskType::kInternalMediaRealTime)
-               : Thread::Current()->GetTaskRunner();
+               : Thread::Current()->GetDeprecatedTaskRunner();
 }
 }  // namespace
 
@@ -67,6 +67,19 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+void MediaStreamVideoCapturerSource::KeepDeviceAliveForTransfer(
+    base::UnguessableToken session_id,
+    base::UnguessableToken transfer_id,
+    KeepDeviceAliveForTransferCallback keep_alive_cb) {
+  if (!frame_) {
+    std::move(keep_alive_cb).Run(/*device_found=*/false);
+    return;
+  }
+
+  GetMediaStreamDispatcherHost()->KeepDeviceAliveForTransfer(
+      session_id, transfer_id, std::move(keep_alive_cb));
 }
 
 void MediaStreamVideoCapturerSource::SetDeviceCapturerFactoryCallbackForTesting(

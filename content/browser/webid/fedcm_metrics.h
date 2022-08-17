@@ -24,7 +24,7 @@ enum class FedCmRequestIdTokenStatus {
   kTooManyRequests,
   kAborted,
   kUnhandledRequest,
-  kNoNetworkManager,
+  kIdpNotPotentiallyTrustworthy,
   kNotSelectAccount,
   kManifestHttpNotFound,
   kManifestNoResponse,
@@ -38,7 +38,7 @@ enum class FedCmRequestIdTokenStatus {
   kIdTokenHttpNotFound,
   kIdTokenNoResponse,
   kIdTokenInvalidResponse,
-  kIdTokenInvalidRequest,
+  kIdTokenInvalidRequest,                  // obsolete
   kClientMetadataMissingPrivacyPolicyUrl,  // obsolete
   kThirdPartyCookiesBlocked,
   kDisabledInSettings,
@@ -50,8 +50,9 @@ enum class FedCmRequestIdTokenStatus {
   kManifestListTooBig,
   kDisabledEmbargo,
   kUserInterfaceTimedOut,  // obsolete
+  kRpPageNotVisible,
 
-  kMaxValue = kUserInterfaceTimedOut
+  kMaxValue = kRpPageNotVisible
 };
 
 // This enum describes whether user sign-in states between IDP and browser

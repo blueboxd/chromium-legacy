@@ -405,10 +405,6 @@
         'args': [
           '--release',
           '--android',
-          # TODO(crbug.com/912120): Breakpad was entirely disabled on
-          # Android. Remove this when it no longer affects Android crash
-          # log handling.
-          '--disable-breakpad',
           # TODO(crbug.com/875172): run on the real GPU since the
           # software fallback, SwiftShader, isn't yet for 32-bit ARM.
           '--additional-driver-flag=--use-gpu-in-tests',
@@ -500,13 +496,16 @@
           'hard_timeout': 1800,
         },
       },
-      'win10.20h2-blink-rel': {
+      'win10-rel-no-external-ip': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
         'swarming': {
-          'shards': 6,
-          'hard_timeout': 1200,
+          "shards": 12
         },
       },
-      'win10.20h2-blink-rel-dummy': {
+      'win10.20h2-blink-rel': {
         'swarming': {
           'shards': 6,
           'hard_timeout': 1200,
@@ -701,10 +700,6 @@
         'args': [
           '--release',
           '--android',
-          # TODO(crbug.com/912120): Breakpad was entirely disabled on
-          # Android. Remove this when it no longer affects Android crash
-          # log handling.
-          '--disable-breakpad',
           # TODO(crbug.com/875172): run on the real GPU since the
           # software fallback, SwiftShader, isn't yet for 32-bit ARM.
           '--additional-driver-flag=--use-gpu-in-tests',
@@ -782,13 +777,16 @@
           'hard_timeout': 1800,
         },
       },
-      'win10.20h2-blink-rel': {
+      'win10-rel-no-external-ip': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
         'swarming': {
-          'shards': 9,
-          'hard_timeout': 1200,
+          "shards": 18
         },
       },
-      'win10.20h2-blink-rel-dummy': {
+      'win10.20h2-blink-rel': {
         'swarming': {
           'shards': 9,
           'hard_timeout': 1200,
@@ -803,15 +801,6 @@
           'Release_x64',
         ],
       }
-    },
-  },
-  'breakpad_unittests': {
-    'modifications': {
-      'android-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.breakpad_unittests.filter',
-        ],
-      },
     },
   },
   'browser_tests': {
@@ -1058,20 +1047,7 @@
           'shards': 50,
         },
       },
-      'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
-        ],
-      },
-      'linux-lacros-dbg-tests-fyi': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
-        ],
-      },
       'linux-lacros-tester-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
-        ],
         'swarming': {
           'quickrun_shards': 20,
         },
@@ -1117,6 +1093,15 @@
        'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/win_backuprefptr_fyi.browser_tests.filter',
         ],
+      },
+      'win10-rel-no-external-ip': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+        'swarming': {
+          'shards': 15,
+        }
       },
     },
   },
@@ -1544,24 +1529,6 @@
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
       },
-      # https://crbug.com/1111979,
-      'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-dbg-tests-fyi': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-tester-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
-        ],
-      },
     },
   },
   'compositor_unittests': {
@@ -1764,27 +1731,9 @@
           'shards': 12,
         },
       },
-      # https://crbug.com/1111979,
-      'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.content_browsertests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-dbg-tests-fyi': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.content_browsertests.filter',
-        ],
-      },
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-tester-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.content_browsertests.filter',
-        ],
       },
       'mac-code-coverage': {
         'args': [
@@ -1801,6 +1750,12 @@
             }
           ],
         },
+      },
+      'win10-rel-no-external-ip': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
       },
     },
   },
@@ -2442,24 +2397,6 @@
           'shards': 10,
         },
       },
-      # https://crbug.com/1111979
-      'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
-        ],
-      },
-      # https://crbug.com/1111979
-      'linux-lacros-dbg-tests-fyi': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
-        ],
-      },
-      # https://crbug.com/1111979
-      'linux-lacros-tester-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
-        ],
-      },
       'mac-code-coverage': {
         'args': [
           '--coverage-continuous-mode=1',
@@ -2518,6 +2455,13 @@
     'remove_from': [
       'lacros-amd64-generic-rel',
     ]
+  },
+  'lacros_all_tast_tests jacuzzi': {
+    'modifications': {
+      'lacros-arm-generic-rel': {
+        'experiment_percentage': 5,
+      },
+    },
   },
   'maps_pixel_passthrough_test': {
     'modifications': {
@@ -2897,6 +2841,15 @@
       'ToTWin64(dll)',
     ],
   },
+  'oop_network_service_content_browsertests': {
+    'modifications': {
+       'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.oop_network_service_content_browsertests.filter',
+        ],
+      },
+    },
+  },
   'overlay_prioritization_viz_unittests': {
     'remove_from': [
       # Reduce CQ load
@@ -3272,22 +3225,6 @@
           'shards': 4,
         },
       },
-      # https://crbug.com/1199909,
-      'linux-lacros-code-coverage': {
-        'args': [
-           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
-        ]
-      },
-      'linux-lacros-dbg-tests-fyi': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
-        ],
-      },
-      'linux-lacros-tester-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
-        ],
-      },
       'mac-code-coverage': {
         'args': [
           '--coverage-continuous-mode=1',
@@ -3388,6 +3325,12 @@
         # TODO(b/188822176): Restore to 100% when we have additional capacity.
         'experiment_percentage': 0,
       },
+      'linux-rel-no-external-ip': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
+      },
     },
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084352
@@ -3406,6 +3349,7 @@
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
       'Win11 Tests x64',
+      'win10-rel-no-external-ip',
     ],
   },
   'telemetry_unittests': {
@@ -3430,6 +3374,7 @@
 
       'Win10 Tests x64',
       'Win11 Tests x64',
+      'win10-rel-no-external-ip',
 
       # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
       'mac11-arm64-rel-tests',
@@ -3532,24 +3477,6 @@
         'swarming': {
           'shards': 2,
         },
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-dbg-tests-fyi': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-tester-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter',
-        ],
       },
     },
   },
@@ -3862,6 +3789,60 @@
         'args': {
           '--platform': 'mac-mac11',
         },
+      },
+    },
+    # Remove from bots where capacity is constrained.
+    'remove_from': [
+      'Dawn Mac x64 DEPS Release (AMD)',
+      'Dawn Mac x64 Release (AMD)',
+      'Dawn Win10 x64 DEPS Release (Intel HD 630)',
+      'Dawn Win10 x64 Release (Intel HD 630)',
+    ],
+  },
+  'webgpu_cts_tests': {
+    'remove_from': [
+      # GPU hang kills the bot. https://crbug.com/dawn/1511
+      'Dawn Mac x64 Release (AMD)',
+      'Dawn Mac x64 DEPS Release (AMD)',
+    ],
+  },
+  'webgpu_cts_with_validation_tests': {
+    # Remove from bots where capacity is constrained.
+    'remove_from': [
+      'Dawn Mac x64 DEPS Release (AMD)',
+      'Dawn Mac x64 Release (AMD)',
+      'Dawn Win10 x64 DEPS Release (Intel HD 630)',
+      'Dawn Win10 x64 Release (Intel HD 630)',
+      'Dawn Win10 x86 DEPS Release (Intel HD 630)',
+      'Dawn Win10 x86 Release (Intel HD 630)',
+    ],
+    'modifications': {
+      # ci_only for bots where capacity is constrained.
+      'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
+        'ci_only': True,
+      },
+      'Dawn Linux x64 Release (Intel UHD 630)': {
+        'ci_only': True,
+      },
+    },
+  },
+  'webgpu_swiftshader_web_platform_cts_with_validation_tests': {
+    # Remove from bots where capacity is constrained.
+    'remove_from': [
+      'Dawn Mac x64 DEPS Release (AMD)',
+      'Dawn Mac x64 Release (AMD)',
+      'Dawn Win10 x64 DEPS Release (Intel HD 630)',
+      'Dawn Win10 x64 Release (Intel HD 630)',
+      'Dawn Win10 x86 DEPS Release (Intel HD 630)',
+      'Dawn Win10 x86 Release (Intel HD 630)',
+    ],
+    'modifications': {
+      # ci_only for bots where capacity is constrained.
+      'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
+        'ci_only': True,
+      },
+      'Dawn Linux x64 Release (Intel UHD 630)': {
+        'ci_only': True,
       },
     },
   },

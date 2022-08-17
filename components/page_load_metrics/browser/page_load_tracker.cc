@@ -320,8 +320,10 @@ void PageLoadTracker::PageHidden() {
     // foregrounded.
     base::TimeTicks background_time;
 
-    if (!first_background_time_.has_value())
+    if (!first_background_time_.has_value() &&
+        (prerendering_state_ == PrerenderingState::kNoPrerendering)) {
       DCHECK_EQ(started_in_foreground_, !first_foreground_time_.has_value());
+    }
 
     background_time = base::TimeTicks::Now();
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time);
@@ -406,11 +408,18 @@ void PageLoadTracker::WillProcessNavigationResponse(
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
+  // We don't deliver OnCommit() for activation. Prerendered pages will see
+  // DidActivatePrerenderedPage() instead.
+  // Event records below are also not needed as we did them for the initial
+  // navigation on starting prerendering.
+  DCHECK(!navigation_handle->IsPrerenderedPageActivation());
+
   if (parent_tracker_) {
     // Notify the parent of the inner main frame navigation as a sub-frame
     // navigation.
     parent_tracker_->DidFinishSubFrameNavigation(navigation_handle);
   } else if (navigation_handle->IsPrerenderedPageActivation()) {
+    NOTREACHED();
     // We don't deliver OnCommit() for activation. Prerendered pages will see
     // DidActivatePrerenderedPage() instead.
     // Event records below are also not needed as we did them for the initial
@@ -458,7 +467,6 @@ void PageLoadTracker::DidActivatePrerenderedPage(
 
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
     visibility_at_activation_ = PageVisibility::kForeground;
-    PageShown();
   } else {
     visibility_at_activation_ = PageVisibility::kBackground;
   }

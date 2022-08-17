@@ -39,6 +39,7 @@
 #include "base/win/win_util.h"
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/device_management_task.h"
 #include "chrome/updater/external_constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/policy/manager.h"
@@ -700,7 +701,8 @@ HRESULT LegacyAppCommandWebImpl::InitializeTypeInfo() {
 }
 
 PolicyStatusImpl::PolicyStatusImpl()
-    : policy_service_(PolicyService::Create(CreateExternalConstants())) {}
+    : policy_service_(
+          AppServerSingletonInstance()->config()->GetPolicyService()) {}
 PolicyStatusImpl::~PolicyStatusImpl() = default;
 
 HRESULT PolicyStatusImpl::RuntimeClassInitialize() {
@@ -916,9 +918,16 @@ STDMETHODIMP PolicyStatusImpl::get_lastCheckedTime(DATE* last_checked) {
   return S_OK;
 }
 
-// TODO(crbug.com/1293203): Implement this method.
 STDMETHODIMP PolicyStatusImpl::refreshPolicies() {
-  return E_NOTIMPL;
+  AppServerSingletonInstance()->main_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DeviceManagementTask::RunFetchPolicy,
+                     base::MakeRefCounted<DeviceManagementTask>(
+                         AppServerSingletonInstance()->config(),
+                         AppServerSingletonInstance()->main_task_runner()),
+                     base::DoNothing()));
+
+  return S_OK;
 }
 
 STDMETHODIMP PolicyStatusImpl::get_lastCheckPeriodMinutes(

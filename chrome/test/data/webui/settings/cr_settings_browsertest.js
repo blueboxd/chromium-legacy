@@ -134,6 +134,10 @@ var CrSettingsTranslatePageTest = class extends CrSettingsBrowserTest {
   }
 };
 
+TEST_F('CrSettingsTranslatePageTest', 'TargetLanguageSelect', function() {
+  mocha.grep(translate_page_tests.TestNames.TargetLanguageSelect).run();
+});
+
 TEST_F('CrSettingsTranslatePageTest', 'AlwaysTranslateDialog', function() {
   mocha.grep(translate_page_tests.TestNames.AlwaysTranslateDialog).run();
 });
@@ -341,6 +345,26 @@ TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
   mocha.run();
 });
 
+var CrSettingsSafetyCheckPermissionsTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/safety_check_permissions_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'features::kSafetyCheckPermissions',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsSafetyCheckPermissionsTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 var CrSettingsSafetyCheckChromeCleanerTest =
     class extends CrSettingsBrowserTest {
@@ -442,13 +466,13 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
   }
 };
 
-// TODO(crbug.com/1263420): Flaky on Linux Tests(dbg).
+// TODO(crbug.com/1351019): Flaky on Linux Tests(dbg).
 GEN('#if BUILDFLAG(IS_LINUX)');
 GEN('#define MAYBE_PrivacyPageTests DISABLED_PrivacyPageTests');
 GEN('#else');
 GEN('#define MAYBE_PrivacyPageTests PrivacyPageTests');
 GEN('#endif');
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
+TEST_F('CrSettingsPrivacyPageTest', 'MAYBE_PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 

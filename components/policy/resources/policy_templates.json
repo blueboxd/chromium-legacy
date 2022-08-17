@@ -1447,6 +1447,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win7:11-', 'chrome.mac:11-', 'chrome.linux:11-'],
+      'future_on': ['fuchsia'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -4386,6 +4387,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:57-', 'chrome.mac:88-', 'chrome.linux:88-'],
+      'future_on': ['fuchsia'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -5385,7 +5387,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': 'foobar.example.com',
+      'example_value': '*.example.com,foobar.example.com',
       'id': 746,
       'caption': '''Kerberos delegation server allowlist''',
       'tags': [],
@@ -9627,7 +9629,8 @@
       'owners': ['robsc@chromium.org', 'bartfab@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
+      'supported_on': ['chrome_os:75-99'],
+      'deprecated': True,
       'features': {
         'per_profile': True,
         'dynamic_refresh': True
@@ -9646,7 +9649,9 @@
       'id': 563,
       'caption': '''Enable App Recommendations in Zero State of Search Box''',
       'tags': [],
-      'desc': '''Setting this policy to Enabled will cause recommendations for apps previously installed by the user on other devices. These recommendations will appear in the launcher after the local app recomendations, if no search text has been entered.
+      'desc': '''This feature has been removed in Chrome 100.
+
+      Setting this policy to Enabled will cause recommendations for apps previously installed by the user on other devices. These recommendations will appear in the launcher after the local app recomendations, if no search text has been entered.
 
       Setting this policy as Disabled or leaving it unset means these recommendations do not appear.
 
@@ -10562,7 +10567,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:92-', 'android:97-'],
-      'future_on': ['fuchsia'],
+      'future_on': ['fuchsia', 'ios'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -12472,6 +12477,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Android reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Android reporting',
+        },
+      ],
       'example_value': True,
       'id': 349,
       'caption': '''Report information about status of Android''',
@@ -12491,6 +12506,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Linux apps usage reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Linux apps usage reporting',
+        },
+      ],
       'example_value': False,
       'id': 484,
       'caption': '''Report information about usage of Linux apps''',
@@ -12510,6 +12535,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device health monitoring',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device health monitoring',
+        },
+      ],
       'example_value': False,
       'id': 293,
       'caption': '''Send network packets to the management server to monitor online status''',
@@ -12550,6 +12585,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device system log upload',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device system log upload',
+        },
+      ],
       'example_value': False,
       'id': 306,
       'caption': '''Send system logs to the management server''',
@@ -12621,6 +12666,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow any user to sign in',
+        },
+        {
+          'value': False,
+          'caption': 'Restrict sign-in to a list of users',
+        },
+      ],
       'example_value': True,
       'id': 123,
       'caption': '''Allow creation of new user accounts''',
@@ -12642,6 +12697,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable guest mode',
+        },
+        {
+          'value': False,
+          'caption': 'Disable guest mode',
+        },
+      ],
       'example_value': True,
       'id': 124,
       'caption': '''Enable guest mode''',
@@ -12660,6 +12725,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Always show user names and photos',
+        },
+        {
+          'value': False,
+          'caption': 'Never show user names and photos',
+        },
+      ],
       'example_value': True,
       'id': 125,
       'caption': '''Show usernames on login screen''',
@@ -12680,6 +12755,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow mobile data roaming',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow mobile data roaming',
+        },
+      ],
       'example_value': True,
       'id': 126,
       'caption': '''Enable data roaming''',
@@ -17126,6 +17211,7 @@
       'deprecated': True,
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:64-', 'chrome.mac:66-', 'android:65-'],
+      'future_on': ['chrome.linux'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -22206,6 +22292,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:66-', 'chrome.linux:66-', 'chrome.mac:66-', 'chrome_os:66-'],
+      'future_on': ['fuchsia'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -24874,7 +24961,7 @@
     },
     {
       'name': 'ContextAwareAccessSignalsAllowlist',
-      'owners': ['rodmartin@google.com', 'rogerta@chromium.org', 'mad@chromium.org', 'seblalancette@chromium.org'],
+      'owners': ['rodmartin@google.com', 'rogerta@chromium.org', 'mad@chromium.org', 'seblalancette@chromium.org', 'cbe-device-trust-eng@google.com'],
       'supported_on': ['chrome.*:95-', 'chrome_os:95-'],
       'future_on': ['fuchsia'],
       'type': 'list',
@@ -24903,7 +24990,39 @@
 
       For ChromeOS, this policy is related to remote attestation where a certificate is automatically generated and uploaded to the Device Management Server.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https: //cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'DeviceLoginScreenContextAwareAccessSignalsAllowlist',
+      'owners': ['lmasopust@google.com', 'rodmartin@google.com', 'cbe-device-trust-eng@google.com'],
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value': ['https://example1.com', 'https://[*.]example2.com', 'https://foo.example3.com/path'],
+      'features': {
+        'dynamic_refresh': True,
+        'cloud_only': True,
+      },
+      'id': 1003,
+      'caption': '''Enable attestation flow for a list of URLs on the login and lock screen''',
+      'tags': [],
+      'desc': '''Enable <ph name="CHROME_ENTERPRISE_PLATFORM_IDENTITY_CONNECTOR">Chrome Enterprise Platform Identity Connector</ph> for a list of URLs on the login and lock screen.
+
+      Setting this policy specifies which URLs should be allowed to be part of the attestation flow to get the set of signals from the machine.
+
+      Leaving this policy unset or empty means that no endpoint will be able to start the attestation flow nor get signals from the machine.
+
+      URLs must have HTTPS scheme, e.g. "https://example.com".
+
+      Note: Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed.
+
+      This policy will only impact the attestation flow on the login and lock screen. To change the in-session attestation flow, please use the <ph name="CONTEXT_AWARE_ACCESS_SIGNALS_ALLOWLIST_POLICY_NAME">ContextAwareAccessSignalsAllowlist</ph> policy.
+
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https: //cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DeviceQuickFixBuildToken',
@@ -30460,17 +30579,59 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'caption': '''Add restrictions on managed accounts''',
       'tags': [],
       'desc': '''
-      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph>, after a signin into an a managed account subjected to this policy, the user be asked to create a new profile for the account.
-      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA">'primary_account_keep_existing_data'</ph>, after a signin into an a managed account subjected to this policy, the user be asked to create a new profile for the account with an option to keep any existing browsing data. This option is supported on Chrome 102 and higher version.
+Default behavior (Policy unset)
+When an account is added in the content area a small dialog may appear asking the user to create a new profile.  This dialog is dismissable.
 
-      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT">'primary_account_strict'</ph>, after a signin into an a managed account subjected to this policy, the user be asked to create a new profile for the account. This profile will not allow any secondary accounts.
-      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT_KEEP_EXISTING_DATA">'primary_account_strict_keep_existing_data'</ph> after a signin into an a managed account subjected to this policy, the user be asked to create a new profile for the account with an option to keep any existing browsing data. This profile will not allow any secondary accounts. This option is supported on Chrome 102 and higher version.
+<ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph>
+If a user signs into a Google service for the first time in a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser, a dialog will appear asking the user to create a new profile for their enterprise account. The user may click Cancel and get signed out, or Continue to create a new profile. Any existing browsing data will not be added to the new profile.   The newly created profile is allowed to have secondary accounts, for example the user can sign into another account in the content area.
 
-      If this policy is set to <ph name="POLICY_VALUE_NONE">'none'</ph> or not set, managed accounts have no restrictions. This may result in a managed account being a secondary account, which disables its ability to receive policies set on the account by the admin.
+<ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT">'primary_account_strict'</ph>
+This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> except the newly created profile is not allowed to have secondary accounts.
 
-      If this policy is set at the device level, all accounts in the browser are subjected to the policy.
-      If this policy is set at an account level, only that account is affected in the browser.
-    ''',
+<ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA">'primary_account_keep_existing_data'</ph>
+This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> except a checkbox will be added to the dialog to allow the user to keep local browsing data.
+If the user checks the box, then the existing profile data becomes associated with the Managed account.
+-  All existing browsing data will be present in the new profile.
+-  This data includes bookmarks, history, password, autofill data, open tabs, cookies, cache, web storage, extensions, etc.
+If the user does not check the box:
+-  The old profile will continue to exist, no data will be lost.
+-  A new profile will be created.
+
+<ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT_KEEP_EXISTING_DATA">'primary_account_strict_keep_existing_data'</ph>
+This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA">'primary_account_keep_existing_data'</ph> except the newly created profile is not allowed to have secondary accounts.''',
+    },
+    {
+      'name': 'UnmanagedDeviceSignalsConsentFlowEnabled',
+      'owners': ['xzonghan@chromium.org', 'cbe-device-trust-eng@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': [
+        'chrome.*'
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device signal consenting for managed users on unmanaged devices',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device signal consenting for managed users on unmanaged devices',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 1001,
+      'caption': '''Ask for consent from managed users to share device signals on unmanaged devices to gain access''',
+      'tags': [],
+      'desc': '''
+      Setting the policy to Enabled (True) lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> asks for managed users' consent prior to sharing device signals on unmanaged devices in order to gain access.
+
+      Setting the policy to Disabled (False) or leaving it unset disallows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from collecting device signals
+      Examples of device signals include (but are not limited to) OS information, registry, file presesnce.''',
     },
     {
       'name': 'LockIconInAddressBarEnabled',
@@ -30662,6 +30823,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       ],
       'default': True,
       'supported_on': ['chrome.win:93-', 'chrome.linux:93-', 'chrome.mac:93-'],
+      'future_on': ['fuchsia'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -32518,7 +32680,38 @@ Regardless of the value, the user will be able to decide whether or not to keep 
 
 This policy has no effect if the option to keep existing browsing data is not available; this happens if enterprise profile separation is strictly enforced, or if the data would be from an already managed profile.
 ''',
-    }
+    },
+    {
+      'name': 'PersistentQuotaEnabled',
+      'owners': ['ayui@chromium.org', 'chrome-owp-storage@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:106-107', 'chrome_os:106-107', 'android:106-107'],
+      'future_on': ['fuchsia'],
+      'features': {
+        'dynamic_refresh' : False,
+        'per_profile' : True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable persistent quota.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable persistent quota.',
+        }
+      ],
+      'example_value': False,
+      'default': False,
+      'id': 1002,
+      'caption': '''Force persistent quota to be enabled''',
+      'tags': [],
+      'desc': '''Starting M106 persistent quota will no longer be supported. This policy will re-enable persistent quota functionality until M107.
+      If this policy is set to enabled, webkitRequestFileSystem with persistent type will operate with persistent quota.
+      If this policy is unset or disabled, webkitRequestFileSystem with persistent type will operate with temporary quota.
+      ''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -32992,7 +33185,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceKeylockerForStorageEncryptionEnabled': 'keylocker_for_storage_encryption_enabled.enabled',
     'DeviceRunAutomaticCleanupOnLogin': 'device_run_automatic_cleanup_on_login.value',
     'DeviceEncryptedReportingPipelineEnabled': 'device_reporting.encrypted_reporting_pipeline_enabled',
-    'DeviceAutofillSAMLUsername': 'saml_settings.url_parameter_to_autofill_saml_username'
+    'DeviceAutofillSAMLUsername': 'saml_username.url_parameter_to_autofill_saml_username',
+    'DeviceLoginScreenContextAwareAccessSignalsAllowlist': 'device_login_screen_context_aware_access_signals_allowlist.value'
   },
   'policy_atomic_group_definitions': [
     {
@@ -33524,6 +33718,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1000,
+  'highest_id_currently_used': 1003,
   'highest_atomic_group_id_currently_used': 43
 }

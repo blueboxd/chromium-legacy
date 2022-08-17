@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -40,12 +41,101 @@ class Color;
 
 typedef unsigned RGBA32;  // RGBA quadruplet
 
-PLATFORM_EXPORT RGBA32 MakeRGB(int r, int g, int b);
-PLATFORM_EXPORT RGBA32 MakeRGBA(int r, int g, int b, int a);
+// TODO(crbug.com/1351544): Remove these functions.
+constexpr RGBA32 MakeRGB(int r, int g, int b) {
+  return 0xFF000000 | ClampTo(r, 0, 255) << 16 | ClampTo(g, 0, 255) << 8 |
+         ClampTo(b, 0, 255);
+}
+
+constexpr RGBA32 MakeRGBA(int r, int g, int b, int a) {
+  return ClampTo(a, 0, 255) << 24 | ClampTo(r, 0, 255) << 16 |
+         ClampTo(g, 0, 255) << 8 | ClampTo(b, 0, 255);
+}
 
 PLATFORM_EXPORT RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a);
-PLATFORM_EXPORT RGBA32 MakeRGBAFromHSLA(double h, double s, double l, double a);
-PLATFORM_EXPORT RGBA32 MakeRGBAFromHWBA(double h, double w, double b, double a);
+
+constexpr double CalcHue(double temp1, double temp2, double hue_val) {
+  if (hue_val < 0.0)
+    hue_val += 6.0;
+  else if (hue_val >= 6.0)
+    hue_val -= 6.0;
+  if (hue_val < 1.0)
+    return temp1 + (temp2 - temp1) * hue_val;
+  if (hue_val < 3.0)
+    return temp2;
+  if (hue_val < 4.0)
+    return temp1 + (temp2 - temp1) * (4.0 - hue_val);
+  return temp1;
+}
+
+// Explanation of this algorithm can be found in the CSS Color 4 Module
+// specification at https://drafts.csswg.org/css-color-4/#hsl-to-rgb with
+// further explanation available at http://en.wikipedia.org/wiki/HSL_color_space
+
+// Hue is in the range of 0.0 to 6.0, the remainder are in the range 0.0 to 1.0.
+// Out parameters r, g, and b are also returned in range 0.0 to 1.0.
+constexpr void HSLToRGB(double hue,
+                        double saturation,
+                        double lightness,
+                        double& r,
+                        double& g,
+                        double& b) {
+  if (!saturation) {
+    r = g = b = lightness;
+  } else {
+    double temp2 = lightness <= 0.5
+                       ? lightness * (1.0 + saturation)
+                       : lightness + saturation - lightness * saturation;
+    double temp1 = 2.0 * lightness - temp2;
+
+    r = CalcHue(temp1, temp2, hue + 2.0);
+    g = CalcHue(temp1, temp2, hue);
+    b = CalcHue(temp1, temp2, hue - 2.0);
+  }
+}
+
+// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
+constexpr RGBA32 MakeRGBAFromHSLA(double hue,
+                                  double saturation,
+                                  double lightness,
+                                  double alpha) {
+  const double scale_factor = 255.0;
+  double r = 0, g = 0, b = 0;
+  HSLToRGB(hue, saturation, lightness, r, g, b);
+
+  return MakeRGBA(static_cast<int>(round(r * scale_factor)),
+                  static_cast<int>(round(g * scale_factor)),
+                  static_cast<int>(round(b * scale_factor)),
+                  static_cast<int>(round(alpha * scale_factor)));
+}
+
+// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
+constexpr RGBA32 MakeRGBAFromHWBA(double hue,
+                                  double white,
+                                  double black,
+                                  double alpha) {
+  const double scale_factor = 255.0;
+
+  if (white + black >= 1.0) {
+    int gray = static_cast<int>(round(white / (white + black) * scale_factor));
+    return MakeRGBA(gray, gray, gray,
+                    static_cast<int>(round(alpha * scale_factor)));
+  }
+
+  // Leverage HSL to RGB conversion to find HWB to RGB, see
+  // https://drafts.csswg.org/css-color-4/#hwb-to-rgb
+  double r = 0, g = 0, b = 0;
+  HSLToRGB(hue, 1.0, 0.5, r, g, b);
+  r += white - (white + black) * r;
+  g += white - (white + black) * g;
+  b += white - (white + black) * b;
+
+  return MakeRGBA(static_cast<int>(round(r * scale_factor)),
+                  static_cast<int>(round(g * scale_factor)),
+                  static_cast<int>(round(b * scale_factor)),
+                  static_cast<int>(round(alpha * scale_factor)));
+}
+
 PLATFORM_EXPORT RGBA32
 MakeRGBAFromCMYKA(float c, float m, float y, float k, float a);
 
@@ -76,8 +166,12 @@ class PLATFORM_EXPORT Color {
   DISALLOW_NEW();
 
  public:
-  constexpr Color() : color_(Color::kTransparent) {}
-  constexpr Color(RGBA32 color) : color_(color) {}
+  // The default constructor creates a transparent color.
+  constexpr Color() : color_(0) {}
+
+  // TODO(crbug.com/1351544): Replace these constructors with explicit From
+  // functions below. Replace the CreateUnchecked functions with FromRGB and
+  // FromRGBA.
   Color(int r, int g, int b) : color_(MakeRGB(r, g, b)) {}
   Color(int r, int g, int b, int a) : color_(MakeRGBA(r, g, b, a)) {}
   // Color is currently limited to 32bit RGBA. Perhaps some day we'll support
@@ -87,7 +181,6 @@ class PLATFORM_EXPORT Color {
   // Creates a new color from the specific CMYK and alpha values.
   Color(float c, float m, float y, float k, float a)
       : color_(MakeRGBAFromCMYKA(c, m, y, k, a)) {}
-
   static constexpr Color CreateUnchecked(int r, int g, int b) {
     RGBA32 color = 0xFF000000 | r << 16 | g << 8 | b;
     return Color(color);
@@ -96,12 +189,40 @@ class PLATFORM_EXPORT Color {
     RGBA32 color = a << 24 | r << 16 | g << 8 | b;
     return Color(color);
   }
-  // TODO(crbug.com/1308932): These two functions are just helpers for while
-  // we're converting platform/graphics to float color
-  static Color FromSkColor4f(SkColor4f fc) {
-    return MakeRGBA32FromFloats(fc.fR, fc.fG, fc.fB, fc.fA);
+
+  // Create a color using rgb() syntax.
+  static constexpr Color FromRGB(int r, int g, int b) {
+    return Color(0xFF000000 | ClampInt(r) << 16 | ClampInt(g) << 8 |
+                 ClampInt(b));
   }
-  SkColor4f toSkColor4f();
+
+  // Create a color using rgba() syntax.
+  static constexpr Color FromRGBA(int r, int g, int b, int a) {
+    return Color(ClampInt(a) << 24 | ClampInt(r) << 16 | ClampInt(g) << 8 |
+                 ClampInt(b));
+  }
+
+  // Create a color using the hsl() syntax.
+  static constexpr Color FromHSLA(double h, double s, double l, double a) {
+    return Color(MakeRGBAFromHSLA(h, s, l, a));
+  }
+
+  // Create a color using the hwb() syntax.
+  static constexpr Color FromHWBA(double h, double w, double b, double a) {
+    return Color(MakeRGBAFromHWBA(h, w, b, a));
+  }
+
+  // TODO(crbug.com/1308932): These three functions are just helpers for while
+  // we're converting platform/graphics to float color.
+  static Color FromSkColor4f(SkColor4f fc) {
+    return Color(MakeRGBA32FromFloats(fc.fR, fc.fG, fc.fB, fc.fA));
+  }
+  static constexpr Color FromSkColor(SkColor color) { return Color(color); }
+  static constexpr Color FromRGBA32(RGBA32 color) { return Color(color); }
+
+  // Convert a Color to SkColor4f, for use in painting and compositing. Once a
+  // Color has been converted to SkColor4f it should not be converted back.
+  SkColor4f toSkColor4f() const;
 
   // Returns the color serialized according to HTML5:
   // http://www.whatwg.org/specs/web-apps/current-work/#serialization-of-a-color
@@ -131,6 +252,8 @@ class PLATFORM_EXPORT Color {
   void GetHSL(double& h, double& s, double& l) const;
   void GetHWB(double& h, double& w, double& b) const;
 
+  // TODO(crbug.com/1308932): Remove this function, and replace its use with
+  // toSkColor4f.
   explicit operator SkColor() const;
 
   Color Light() const;
@@ -142,18 +265,22 @@ class PLATFORM_EXPORT Color {
   Color Blend(const Color&) const;
   Color BlendWithWhite() const;
 
-  static bool ParseHexColor(const StringView&, RGBA32&);
-  static bool ParseHexColor(const LChar*, unsigned, RGBA32&);
-  static bool ParseHexColor(const UChar*, unsigned, RGBA32&);
+  static bool ParseHexColor(const StringView&, Color&);
+  static bool ParseHexColor(const LChar*, unsigned, Color&);
+  static bool ParseHexColor(const UChar*, unsigned, Color&);
 
-  static const RGBA32 kBlack = 0xFF000000;
-  static const RGBA32 kWhite = 0xFFFFFFFF;
-  static const RGBA32 kDarkGray = 0xFF808080;
-  static const RGBA32 kGray = 0xFFA0A0A0;
-  static const RGBA32 kLightGray = 0xFFC0C0C0;
-  static const RGBA32 kTransparent = 0x00000000;
+  static const Color kBlack;
+  static const Color kWhite;
+  static const Color kDarkGray;
+  static const Color kGray;
+  static const Color kLightGray;
+  static const Color kTransparent;
 
  private:
+  constexpr explicit Color(RGBA32 color) : color_(color) {}
+  static constexpr int ClampInt(int x) {
+    return x < 0 ? 0 : (x > 255 ? 255 : x);
+  }
   void GetHueMaxMin(double&, double&, double&) const;
 
   RGBA32 color_;

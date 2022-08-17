@@ -931,7 +931,7 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
       // Layout object is irrelevant, but node object can still be relevant.
       if (!node_id) {
         DCHECK(layout_id);  // One of of node_id, layout_id is non-zero.
-        Invalidate(layout_object->GetDocument(), layout_id);
+        Invalidate(node->GetDocument(), layout_id);
       } else {
         layout_object = nullptr;
         layout_id = 0;
@@ -943,7 +943,7 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
     // Change from AXLayoutObject -> AXNodeObject.
     // The node is in a display locked subtree, but we've previously put it in
     // the cache with its layout object.
-    Invalidate(layout_object->GetDocument(), layout_id);
+    Invalidate(node->GetDocument(), layout_id);
   } else if (layout_object && node_id && !layout_id && !IsDisplayLocked(node)) {
     // Change from AXNodeObject -> AXLayoutObject.
     // Has a layout object but no layout_id, meaning that when the AXObject was
@@ -1168,7 +1168,10 @@ bool AXObjectCacheImpl::IsRelevantSlotElement(const HTMLSlotElement& slot) {
   // content-visibility:auto may be removed from the AX tree depending on
   // whether it was recently rendered.
   //
-  // TODO(accessibility): There should be a better way to accomplish this.
+  // TODO(accessibility) This fails for the web test
+  // detach-locked-slot-children-crash.html with --force-renderer-accessibility.
+  // See web_tests/FlagExpectations/force-renderer-accessibility.
+  // There should be a better way to accomplish this.
   // Could a new function be added to the slot element?
   const Node* parent = LayoutTreeBuilderTraversal::Parent(slot);
   if (const HTMLSlotElement* parent_slot =
@@ -1677,7 +1680,7 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   if (!objects_.Take(ax_id))
     return;
 
-  DCHECK_GE(objects_.size(), ids_in_use_.size());
+  DCHECK_EQ(objects_.size(), ids_in_use_.size());
 }
 
 // This is safe to call even if there isn't a current mapping.
@@ -1857,6 +1860,8 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
     UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram();
 
     tree_updates_paused_ = true;
+    LOG(INFO) << "Accessibility tree update queue is too big, updates have "
+                 "been paused";
     queue.clear();
     return;
   }
@@ -1907,6 +1912,8 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
     UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram();
 
     tree_updates_paused_ = true;
+    LOG(INFO) << "Accessibility tree update queue is too big, updates have "
+                 "been paused";
     queue.clear();
     return;
   }
@@ -2234,6 +2241,13 @@ void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
 void AXObjectCacheImpl::ChildrenChangedOnAncestorOf(AXObject* obj) {
   DCHECK(obj);
   DCHECK(!obj->IsDetached());
+  DCHECK(!IsFrozen())
+      << "Attempting to change children on an ancestor is dangerous during "
+         "serialization, because the ancestor may have already been "
+         "visited. Reaching this line indicates that AXObjectCacheImpl did "
+         "not handle a signal and call ChilldrenChanged() earlier."
+      << "\nChild: " << obj->ToString(true)
+      << "\nParent: " << obj->CachedParentObject()->ToString(true);
 
   // If |obj| is not included, and it has no included descendants, then there is
   // nothing in any ancestor's cached children that needs clearing. This rule
@@ -2422,7 +2436,10 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
     return;
   }
 
-  if (!IsDirty())
+  // When tree updates are paused, IsDirty() will return false. In this
+  // situation we should not return early because we would never trigger the
+  // code that resumes the tree updates, inside ProcessCleanLayoutCallbacks.
+  if (!IsDirty() && !tree_updates_paused_)
     return;
 
   DCHECK(GetDocument().IsAccessibilityEnabled())
@@ -2666,6 +2683,8 @@ void AXObjectCacheImpl::ProcessCleanLayoutCallbacks(Document& document) {
   if (tree_updates_paused_) {
     ChildrenChangedWithCleanLayout(nullptr, GetOrCreate(&document));
     tree_updates_paused_ = false;
+    LOG(INFO) << "Accessibility tree updates resumed after rebuilding the tree "
+                 "from root";
     return;
   }
 

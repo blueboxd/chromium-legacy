@@ -12,15 +12,15 @@
 #include "chrome/browser/sync/test/integration/sync_engine_stopped_checker.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chromeos/components/sync_wifi/network_identifier.h"
-#include "chromeos/components/sync_wifi/test_data_generator.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/sync_wifi/network_identifier.h"
+#include "chromeos/ash/components/sync_wifi/test_data_generator.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_observer.h"
 #include "components/sync/engine/loopback_server/persistent_unique_client_entity.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
-#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,7 +28,7 @@
 namespace {
 
 std::string GetClientTag(const sync_pb::WifiConfigurationSpecifics& specifics) {
-  return chromeos::sync_wifi::NetworkIdentifier::FromProto(specifics)
+  return ash::sync_wifi::NetworkIdentifier::FromProto(specifics)
       .SerializeToString();
 }
 
@@ -144,7 +144,7 @@ class SingleClientWifiConfigurationSyncTest : public SyncTest {
   void SetupShill() {
     // TODO(crbug.com/1077152): figure out where |userhash| is hardcoded and use
     // some shared constant here.
-    chromeos::ShillProfileClient::Get()->GetTestInterface()->AddProfile(
+    ash::ShillProfileClient::Get()->GetTestInterface()->AddProfile(
         GetProfile(0)->GetPath().value(), /*userhash=*/"test-user");
   }
 
@@ -163,8 +163,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWifiConfigurationSyncTest,
   const std::string kTestSsid = "test_wifi";
   InjectKeystoreEncryptedServerWifiConfiguration(
       GetFakeServer(),
-      /*unencrypted_specifics=*/chromeos::sync_wifi::GenerateTestWifiSpecifics(
-          chromeos::sync_wifi::GeneratePskNetworkId(kTestSsid)));
+      /*unencrypted_specifics=*/ash::sync_wifi::GenerateTestWifiSpecifics(
+          ash::sync_wifi::GeneratePskNetworkId(kTestSsid)));
 
   ASSERT_TRUE(SetupSync());
   SetupShill();
@@ -182,8 +182,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWifiConfigurationSyncTest,
   const std::string kTestSsid1 = "test_wifi";
   InjectKeystoreEncryptedServerWifiConfiguration(
       GetFakeServer(),
-      /*unencrypted_specifics=*/chromeos::sync_wifi::GenerateTestWifiSpecifics(
-          chromeos::sync_wifi::GeneratePskNetworkId(kTestSsid1)));
+      /*unencrypted_specifics=*/ash::sync_wifi::GenerateTestWifiSpecifics(
+          ash::sync_wifi::GeneratePskNetworkId(kTestSsid1)));
 
   ASSERT_TRUE(SetupSync());
   SetupShill();
@@ -197,8 +197,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWifiConfigurationSyncTest,
   const std::string kTestSsid2 = "test_wifi2";
   InjectKeystoreEncryptedServerWifiConfiguration(
       GetFakeServer(),
-      /*unencrypted_specifics=*/chromeos::sync_wifi::GenerateTestWifiSpecifics(
-          chromeos::sync_wifi::GeneratePskNetworkId(kTestSsid2)));
+      /*unencrypted_specifics=*/ash::sync_wifi::GenerateTestWifiSpecifics(
+          ash::sync_wifi::GeneratePskNetworkId(kTestSsid2)));
   ASSERT_TRUE(syncer::SyncEngineStoppedChecker(GetSyncService(0)).Wait());
 
   // Make server return SUCCESS so that sync can initialize.

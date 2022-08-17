@@ -36,6 +36,7 @@
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -528,6 +529,9 @@ TEST_F(AssistantOnboardingViewTest, DarkAndLightModeFlagOff) {
       /*enabled_features=*/{}, /*disabled_features=*/{
           chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
           features::kProductivityLauncher});
+
+  // Reset ColorProvider's cache to reflect the flag value changes above.
+  ui::ColorProviderManager::Get().ResetColorProviderCache();
 
   ShowAssistantUi();
 

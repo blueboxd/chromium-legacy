@@ -27,7 +27,7 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'clang',
                  'scripts'))
 
-RUST_REVISION = 'db8086eb'
+RUST_REVISION = '55f46419'
 RUST_SUB_REVISION = 1
 
 # Trunk on 2022-07-14.

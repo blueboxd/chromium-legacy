@@ -14,9 +14,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/web_applications/locks/lock.h"
 #include "chrome/browser/web_applications/test/fake_install_finalizer.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/mock_data_retriever.h"
@@ -25,8 +27,10 @@
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -40,23 +44,32 @@
 namespace web_app {
 namespace {
 
+using ::base::BucketsAre;
 using ::base::test::IsNotNullCallback;
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Field;
+using ::testing::IsEmpty;
 using ::testing::IsFalse;
+using ::testing::IsNull;
+using ::testing::IsTrue;
 using ::testing::NiceMock;
 using ::testing::Not;
+using ::testing::Optional;
 using ::testing::Pair;
+using ::testing::Pointee;
+using ::testing::Property;
 using ::testing::UnorderedElementsAre;
 
 blink::mojom::ManifestPtr CreateDefaultManifest() {
   auto manifest = blink::mojom::Manifest::New();
-  manifest->start_url = GURL{"http://test.com/"},
-  manifest->scope = GURL{"http://test.com/scope"},
+  manifest->id = u"/";
+  manifest->start_url = GURL{"http://default-test.com/"},
+  manifest->scope = GURL{"/scope"},
   manifest->display = DisplayMode::kStandalone;
-  manifest->short_name = u"Manifest Name";
+  manifest->short_name = u"test short manifest name";
   return manifest;
 }
 
@@ -64,28 +77,11 @@ GURL CreateDefaultManifestURL() {
   return GURL{"http://defaul-non-empty-url.com/manifest.json"};
 }
 
-std::unique_ptr<WebAppInstallInfo> CreateWebAppInstallInfo(
-    GURL start_url,
-    base::StringPiece manifest_id) {
-  WebAppInstallInfo install_info;
-  install_info.start_url = start_url;
-  install_info.manifest_id = std::string{manifest_id};
-
-  return std::make_unique<WebAppInstallInfo>(std::move(install_info));
-}
-
-std::unique_ptr<WebAppInstallInfo> CreateDefaultWebAppInstallInfo() {
-  return CreateWebAppInstallInfo(
-      /*start_url=*/GURL{"http://test-start-url.com"},
-      /*manifest_id=*/"test manifest id");
-}
-
 std::unique_ptr<MockDataRetriever> CreateDefaultDataRetriever() {
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       std::make_unique<NiceMock<MockDataRetriever>>();
 
-  ON_CALL(*fake_data_retriever, GetWebAppInstallInfo(_, IsNotNullCallback()))
-      .WillByDefault(RunOnceCallback<1>(CreateDefaultWebAppInstallInfo()));
+  EXPECT_CALL(*fake_data_retriever, GetWebAppInstallInfo).Times(0);
 
   ON_CALL(*fake_data_retriever,
           CheckInstallabilityAndRetrieveManifest(_, _, IsNotNullCallback()))
@@ -162,6 +158,26 @@ class InstallIsolatedAppCommandTest : public ::testing::Test {
     return test_future.Get();
   }
 
+  InstallIsolatedAppCommandResult ExecuteCommandWithManifest(
+      const blink::mojom::ManifestPtr& manifest) {
+    SetPrepareForLoadResultLoaded();
+
+    ExpectLoadedForURL("http://manifest-test-url.com");
+
+    std::unique_ptr<MockDataRetriever> fake_data_retriever =
+        std::make_unique<NiceMock<MockDataRetriever>>();
+
+    ON_CALL(*fake_data_retriever,
+            CheckInstallabilityAndRetrieveManifest(_, _, IsNotNullCallback()))
+        .WillByDefault(RunOnceCallback<2>(
+            /*manifest=*/manifest.Clone(),
+            /*manifest_url=*/CreateDefaultManifestURL(),
+            /*valid_manifest_for_web_app=*/true,
+            /*is_installable=*/true));
+    return ExecuteCommand("http://manifest-test-url.com",
+                          std::move(fake_data_retriever));
+  }
+
   TestingProfile* profile() const { return profile_.get(); }
 
   FakeInstallFinalizer& install_finalizer() {
@@ -222,7 +238,10 @@ TEST_F(InstallIsolatedAppCommandTest,
               IsInstallationOk());
 }
 
-TEST_F(InstallIsolatedAppCommandTest, ReportsErrorWhenURLIsInvalid) {
+// It is impossible to pass invalid url to |GenerateAppId| since it DCHECKs.
+// TODO(kuragin): Replace constructor with factory function to make the
+// validation testable.
+TEST_F(InstallIsolatedAppCommandTest, DISABLED_ReportsErrorWhenURLIsInvalid) {
   SetPrepareForLoadResultLoaded();
 
   EXPECT_THAT(ExecuteCommand("some definetely invalid url"),
@@ -241,29 +260,8 @@ TEST_F(InstallIsolatedAppCommandTest, URLLoaderIgnoresQueryParameters) {
               Eq(WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef));
 }
 
-TEST_F(InstallIsolatedAppCommandTest, SuccessWhenAppIsInstallable) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
-
-  std::unique_ptr<MockDataRetriever> fake_data_retriever =
-      CreateDefaultDataRetriever();
-
-  ON_CALL(*fake_data_retriever, GetWebAppInstallInfo(_, IsNotNullCallback()))
-      .WillByDefault(RunOnceCallback<1>(CreateWebAppInstallInfo(
-          /*start_url=*/GURL{"http://test-start-url.com"},
-          /*manifest_id=*/"test manifest id")));
-
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
-              IsInstallationOk());
-
-  WebAppInstallInfo install_info = *install_finalizer().web_app_info();
-  EXPECT_THAT(install_info.manifest_id, Eq("test manifest id"));
-}
-
 TEST_F(InstallIsolatedAppCommandTest,
-       PassesWebAppInstallInfoFromDataRetrieverToInstallFinalizer) {
+       InstallationFinalizedWithManagementApiInstallSource) {
   SetPrepareForLoadResultLoaded();
 
   ExpectLoadedForURL("http://test-url-example.com");
@@ -271,44 +269,14 @@ TEST_F(InstallIsolatedAppCommandTest,
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever();
 
-  ON_CALL(*fake_data_retriever, GetWebAppInstallInfo(_, IsNotNullCallback()))
-      .WillByDefault(RunOnceCallback<1>(CreateWebAppInstallInfo(
-          /*start_url=*/GURL{"http://test-start-url.com"},
-          /*manifest_id=*/"different test manifest id")));
-
   EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
                              std::move(fake_data_retriever)),
               IsInstallationOk());
-
-  EXPECT_THAT(install_finalizer().web_app_info(),
-              Pointee(Field(&WebAppInstallInfo::manifest_id,
-                            Eq("different test manifest id"))));
 
   EXPECT_THAT(install_finalizer().finalize_options_list(),
               ElementsAre(Field(
                   &WebAppInstallFinalizer::FinalizeOptions::install_surface,
                   Eq(webapps::WebappInstallSource::MANAGEMENT_API))));
-}
-
-TEST_F(InstallIsolatedAppCommandTest, FailsWhenGetWebAppInstallInfoFails) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
-
-  std::unique_ptr<MockDataRetriever> fake_data_retriever =
-      CreateDefaultDataRetriever();
-
-  // |nullptr| indicates an error during |GetWebAppInstallInfo|.
-  //
-  // See |web_app::WebAppDataRetriever::GetWebAppInstallInfoCallback|
-  // documentation.
-  ON_CALL(*fake_data_retriever, GetWebAppInstallInfo(_, IsNotNullCallback()))
-      .WillByDefault(
-          RunOnceCallback<1>(std::unique_ptr<WebAppInstallInfo>(nullptr)));
-
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
-              Not(IsInstallationOk()));
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
@@ -334,6 +302,17 @@ TEST_F(InstallIsolatedAppCommandTest,
               Not(IsInstallationOk()));
 }
 
+TEST_F(InstallIsolatedAppCommandTest, CommandLocksOnAppIdAndWebContents) {
+  base::test::TestFuture<InstallIsolatedAppCommandResult> test_future;
+  auto command =
+      CreateCommand("http://test-app-id.com/", test_future.GetCallback());
+  EXPECT_THAT(command->lock(),
+              AllOf(Property(&Lock::type, Eq(Lock::Type::kAppAndWebContents)),
+                    Property(&Lock::app_ids,
+                             UnorderedElementsAre(GenerateAppIdFromUnhashed(
+                                 "http://test-app-id.com//")))));
+}
+
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationFailsWhenAppIsInstallableButManifestIsNull) {
   SetPrepareForLoadResultLoaded();
@@ -349,11 +328,103 @@ TEST_F(InstallIsolatedAppCommandTest,
           /*manifest=*/nullptr,
           /*manifest_url=*/CreateDefaultManifestURL(),
           /*valid_manifest_for_web_app=*/true,
-          /*is_installable=*/false));
+          /*is_installable=*/true));
 
   EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
                              std::move(fake_data_retriever)),
               Not(IsInstallationOk()));
+}
+
+using InstallIsolatedAppCommandManifestTest = InstallIsolatedAppCommandTest;
+
+TEST_F(InstallIsolatedAppCommandManifestTest,
+       InstallationFailsWhenManifestHasNoId) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->id = absl::nullopt;
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()),
+              Not(IsInstallationOk()));
+
+  EXPECT_THAT(install_finalizer().web_app_info(), IsNull());
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest,
+       FailsWhenManifestIdHasInvalidUTF8Character) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  char16_t invalid_utf8_chars = {0xD801};
+  manifest->id = std::u16string{invalid_utf8_chars};
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()),
+              Not(IsInstallationOk()));
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest,
+       PassesManifestIdToFinalizerWhenManifestIdIsSlash) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->id = u"/";
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()), IsInstallationOk());
+
+  EXPECT_THAT(install_finalizer().web_app_info(),
+              Pointee(Field(&WebAppInstallInfo::manifest_id,
+                            Optional(std::string{"/"}))));
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest, FailsWhenManifestIdIsNotSlash) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->id = u"test-manifest-id";
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()),
+              Not(IsInstallationOk()));
+  EXPECT_THAT(install_finalizer().web_app_info(), IsNull());
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest, PassesManifestNameAsTitle) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->name = u"test application name";
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()), IsInstallationOk());
+
+  EXPECT_THAT(
+      install_finalizer().web_app_info(),
+      Pointee(Field(&WebAppInstallInfo::title, u"test application name")));
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest,
+       UseShortNameAsTitleWhenNameIsNotPresent) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->name = absl::nullopt;
+  manifest->short_name = u"test short name";
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()), IsInstallationOk());
+
+  EXPECT_THAT(install_finalizer().web_app_info(),
+              Pointee(Field(&WebAppInstallInfo::title, u"test short name")));
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest,
+       UseShortNameAsTitleWhenNameIsEmpty) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->name = u"";
+  manifest->short_name = u"other test short name";
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()), IsInstallationOk());
+
+  EXPECT_THAT(
+      install_finalizer().web_app_info(),
+      Pointee(Field(&WebAppInstallInfo::title, u"other test short name")));
+}
+
+TEST_F(InstallIsolatedAppCommandManifestTest,
+       TitleIsmptyWhenNameAndShortNameAreNotPresent) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->name = absl::nullopt;
+  manifest->short_name = absl::nullopt;
+
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()), IsInstallationOk());
+
+  EXPECT_THAT(install_finalizer().web_app_info(),
+              Pointee(Field(&WebAppInstallInfo::title, IsEmpty())));
 }
 
 using InstallIsolatedAppCommandMetricsTest = InstallIsolatedAppCommandTest;
@@ -370,10 +441,14 @@ TEST_F(InstallIsolatedAppCommandMetricsTest,
               IsInstallationOk());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
-              base::BucketsAre(base::Bucket(true, 1)));
+              BucketsAre(base::Bucket(true, 1)));
 }
 
-TEST_F(InstallIsolatedAppCommandMetricsTest, ReportFailureWhenURLIsInvalid) {
+// It is impossible to pass invalid url to |GenerateAppId| since it DCHECKs.
+// TODO(kuragin): Replace constructor with factory function to make the
+// validation testable.
+TEST_F(InstallIsolatedAppCommandMetricsTest,
+       DISABLED_ReportFailureWhenURLIsInvalid) {
   SetPrepareForLoadResultLoaded();
 
   base::HistogramTester histogram_tester;
@@ -382,7 +457,7 @@ TEST_F(InstallIsolatedAppCommandMetricsTest, ReportFailureWhenURLIsInvalid) {
               Not(IsInstallationOk()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
-              base::BucketsAre(base::Bucket(false, 1)));
+              BucketsAre(base::Bucket(false, 1)));
 }
 
 TEST_F(InstallIsolatedAppCommandMetricsTest, ReportErrorWhenUrlLoaderFails) {
@@ -396,7 +471,7 @@ TEST_F(InstallIsolatedAppCommandMetricsTest, ReportErrorWhenUrlLoaderFails) {
               Not(IsInstallationOk()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
-              base::BucketsAre(base::Bucket(false, 1)));
+              BucketsAre(base::Bucket(false, 1)));
 }
 
 TEST_F(InstallIsolatedAppCommandMetricsTest,
@@ -424,7 +499,7 @@ TEST_F(InstallIsolatedAppCommandMetricsTest,
               Not(IsInstallationOk()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
-              base::BucketsAre(base::Bucket(false, 1)));
+              BucketsAre(base::Bucket(false, 1)));
 }
 
 TEST_F(InstallIsolatedAppCommandMetricsTest, ReportFailureWhenManifestIsNull) {
@@ -450,34 +525,20 @@ TEST_F(InstallIsolatedAppCommandMetricsTest, ReportFailureWhenManifestIsNull) {
               Not(IsInstallationOk()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
-              base::BucketsAre(base::Bucket(false, 1)));
+              BucketsAre(base::Bucket(false, 1)));
 }
 
 TEST_F(InstallIsolatedAppCommandMetricsTest,
-       ReportsAnErrorWhenGetWebAppInstallInfoFails) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
-
-  std::unique_ptr<MockDataRetriever> fake_data_retriever =
-      CreateDefaultDataRetriever();
-
-  // |nullptr| indicates an error during |GetWebAppInstallInfo|.
-  //
-  // See |web_app::WebAppDataRetriever::GetWebAppInstallInfoCallback|
-  // documentation.
-  ON_CALL(*fake_data_retriever, GetWebAppInstallInfo(_, IsNotNullCallback()))
-      .WillByDefault(
-          RunOnceCallback<1>(std::unique_ptr<WebAppInstallInfo>(nullptr)));
+       ReportFailureWhenManifestIdIsNotSlash) {
+  blink::mojom::ManifestPtr manifest = CreateDefaultManifest();
+  manifest->id = u"test manifest id";
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommandWithManifest(manifest.Clone()),
               Not(IsInstallationOk()));
-
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
-              base::BucketsAre(base::Bucket(false, 1)));
+              BucketsAre(base::Bucket(false, 1)));
 }
 
 }  // namespace

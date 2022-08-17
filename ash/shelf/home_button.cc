@@ -36,6 +36,7 @@
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -196,8 +197,8 @@ void HomeButton::OnAssistantAvailabilityChanged() {
 }
 
 bool HomeButton::IsShowingAppList() const {
-  return Shell::Get()->app_list_controller()->GetTargetVisibility(
-      GetDisplayId());
+  auto* controller = Shell::Get()->app_list_controller();
+  return controller && controller->GetTargetVisibility(GetDisplayId());
 }
 
 void HomeButton::HandleLocaleChange() {
@@ -409,7 +410,7 @@ void HomeButton::CreateNudgeLabel() {
   nudge_label_->SetPaintToLayer();
   nudge_label_->layer()->SetFillsBoundsOpaquely(false);
   nudge_label_->SetTextContext(CONTEXT_LAUNCHER_NUDGE_LABEL);
-  nudge_label_->SetTextStyle(STYLE_EMPHASIZED);
+  nudge_label_->SetTextStyle(views::style::STYLE_EMPHASIZED);
   nudge_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary));
 

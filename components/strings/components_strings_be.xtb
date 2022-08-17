@@ -486,6 +486,7 @@
 <translation id="2219658597883514593">Перазапусціць дапаможнік</translation>
 <translation id="2219735899272417925">Патрабуецца скід прылады</translation>
 <translation id="2224337661447660594">Няма падключэння да інтэрнэту</translation>
+<translation id="2225927550500503913">Віртуальная картка ўключана</translation>
 <translation id="2230458221926704099">Выпраўце падключэнне з дапамогай <ph name="BEGIN_LINK" />праграмы дыягностыкі<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Адправіць</translation>
 <translation id="2241693394036365668">Спампоўваецца файл</translation>
@@ -520,7 +521,6 @@
 <translation id="2318594867107319532">Апошняя метка часу палітыкі:</translation>
 <translation id="2324604504973636700">Бытавая тэхніка</translation>
 <translation id="2328651992442742497">Дазволена (стандартна)</translation>
-<translation id="2329182534073751090">размяшчэнне вокнаў</translation>
 <translation id="2329473609445770916">Гэты сайт вызначае інтарэсы, якія могуць выкарыстоўвацца іншымі сайтамі для паказу рэкламы</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, дзейнічае да <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Наладай кіруе ваш адміністратар</translation>
@@ -632,7 +632,6 @@
           <ph name="LIST_ITEM" />звесткі, якія ўводзіліся ў формах.
         <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (канверт)</translation>
-<translation id="2623663032199728144">Можа запытваць дазвол на выкарыстанне звестак пра вашы экраны</translation>
 <translation id="2625385379895617796">Ваш гадзіннік спяшаецца</translation>
 <translation id="262745152991669301">Сайт можа запытваць дазвол на падключэнне да прылад USB</translation>
 <translation id="2629325967560697240">Каб у браўзеры Chrome падтрымліваўся найвышэйшы ўзровень бяспекі, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />уключыце палепшаную абарону<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -711,7 +710,6 @@
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Каб кіраваць параметрамі Бяспечнага прагляду і выконваць іншыя дзеянні праз налады Chrome, націсніце Tab, затым Enter</translation>
 <translation id="2878197950673342043">Плакатны згіб</translation>
 <translation id="2878424575911748999">A1</translation>
-<translation id="2880660355386638022">Размяшчэнне вокнаў</translation>
 <translation id="2881276955470682203">Захаваць картку?</translation>
 <translation id="2882949212241984732">Згіб "двайныя вароты"</translation>
 <translation id="2893773853358652045">Чацвёрты рулон</translation>
@@ -1241,6 +1239,7 @@
 <translation id="4329871760342656885">Памылка пры аналізе палітыкі: <ph name="ERROR" /></translation>
 <translation id="4331519897422864041">Укладчык 5</translation>
 <translation id="4331708818696583467">Небяспечнае змесціва</translation>
+<translation id="4333561522337981382">Кіраваць вокнамі на ўсіх дысплэях</translation>
 <translation id="4340575312453649552">Гэта рэклама выкарыстоўвала занадта многа рэсурсаў прылады, таму Chrome выдаліў яе.</translation>
 <translation id="4340982228985273705">Не ўстаноўлена, што гэты камп'ютар знаходзіцца пад карпаратыўным кіраваннем, таму палітыка дазваляе аўтаматычна ўсталёўваць толькі пашырэнні з Chrome Webstore. URL-адрас абнаўлення ў Chrome Webstore: <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Якія крэдытныя карткі прымаюцца</translation>
@@ -1454,6 +1453,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, для пошуку націсніце Tab, затым Enter</translation>
 <translation id="4930153903256238152">Вялікая ёмістасць</translation>
+<translation id="4934780484581617878">Кіраванне вокнамі</translation>
 <translation id="4936134414789135531">Устаўленае значэнне "<ph name="VALUE_NAME" />" не знойдзена.</translation>
 <translation id="4936675324097895694">Фінансы</translation>
 <translation id="4940163644868678279">Рэжым інкогніта ў браўзеры Chrome</translation>
@@ -1466,6 +1466,7 @@
 <translation id="4958444002117714549">Разгарнуць спіс</translation>
 <translation id="4964505745997821360">Медыцынскае страхаванне</translation>
 <translation id="4968522289500246572">Гэта праграма створана для мабільных прылад, таму змяненне яе памеру можа выклікаць памылкі. Праграма можа працаваць няправільна або перазапусціцца.</translation>
+<translation id="4968665849807487749">Сайт можа запытваць дазвол кіраваць вокнамі на ўсіх дысплэях</translation>
 <translation id="4969341057194253438">Выдаліць запіс</translation>
 <translation id="4973922308112707173">Дзве дзіркі зверху</translation>
 <translation id="4976702386844183910">Апошняе наведванне: <ph name="DATE" /></translation>
@@ -1830,6 +1831,7 @@
 <translation id="5963413905009737549">Раздзел</translation>
 <translation id="5967592137238574583">Рэдагаваць кантактныя звесткі</translation>
 <translation id="5967867314010545767">Выдаліць з гісторыі</translation>
+<translation id="5968022600320704045">Няма вынікаў пошуку</translation>
 <translation id="5968793460449681917">Пры кожным наведванні</translation>
 <translation id="5974052231147553524">Шосты рулон</translation>
 <translation id="5975083100439434680">Паменшыць</translation>
@@ -1947,6 +1949,7 @@
 <translation id="6300452962057769623">{0,plural, =0{Прылада будзе перазапушчана зараз}=1{Прылада будзе перазапушчана праз 1 секунду}one{Прылада будзе перазапушчана праз # секунду}few{Прылада будзе перазапушчана праз # секунды}many{Прылада будзе перазапушчана праз # секунд}other{Прылада будзе перазапушчана праз # секунды}}</translation>
 <translation id="6302269476990306341">Памочнік Google у Chrome спыняецца</translation>
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недаступны.</translation>
+<translation id="6311165245110979290">Віртуальная картка даступная</translation>
 <translation id="6312113039770857350">Вэб-старонка недаступная</translation>
 <translation id="6316226860534107313">Скутары і мапеды</translation>
 <translation id="63172326633386613">Кіраваць наладамі спецыяльных магчымасцей</translation>
@@ -1968,6 +1971,7 @@
 <translation id="6361757823711327522">B7</translation>
 <translation id="6364095313648930329"><ph name="BEGIN_LINK" />Праверыць канфігурацыю абароненай DNS, проксі-сервера і брандмаўэра.<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Дзве скабы злева</translation>
+<translation id="6374865374745447009">кіраванне вокнамі</translation>
 <translation id="6377268785556383139">1 вынік па запыце "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">На сайце, на які вы збіраецеся перайсці, магчыма спагнанне сродкаў.</translation>
@@ -2291,6 +2295,7 @@
 <translation id="7305756307268530424">Запусціць павальней</translation>
 <translation id="7308436126008021607">фонавая сінхранізацыя</translation>
 <translation id="7310392214323165548">Скора прылада перазапусціцца</translation>
+<translation id="7311244614769792472">Вынікі не знойдзены</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Даведка па падключэнні</translation>
 <translation id="7323804146520582233">Схаваць раздзел "<ph name="SECTION" />"</translation>
@@ -2779,7 +2784,6 @@
 <translation id="865032292777205197">датчыкі руху</translation>
 <translation id="8663226718884576429">Зводка па заказе, <ph name="TOTAL_LABEL" />, дадатковая інфармацыя</translation>
 <translation id="8666678546361132282">Англійская</translation>
-<translation id="8669306706049782872">Выкарыстоўваць звесткі пра экраны, каб адкрываць і размяшчаць вокны.</translation>
 <translation id="867224526087042813">Подпіс</translation>
 <translation id="8672264262457010862">Бізнес і прамысловасць</translation>
 <translation id="8676424191133491403">Без затрымкі</translation>

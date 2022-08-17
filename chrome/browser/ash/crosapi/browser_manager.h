@@ -50,6 +50,9 @@ class StandaloneBrowserExtensionApps;
 
 namespace ash {
 class ApkWebAppService;
+namespace login {
+class SecurityTokenSessionController;
+}
 }
 
 namespace extensions {
@@ -178,7 +181,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Opens the specified URL in lacros-chrome. If it is not running,
   // it launches lacros-chrome with the given URL.
   // See crosapi::mojom::BrowserService::OpenUrl for more details.
-  void OpenUrl(const GURL& url, crosapi::mojom::OpenUrlFrom from);
+  void OpenUrl(
+      const GURL& url,
+      crosapi::mojom::OpenUrlFrom from,
+      crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition);
 
   // If there's already a tab opening the URL in lacros-chrome, in some window
   // of the primary profile, activate the tab. Otherwise, opens a tab for
@@ -358,6 +364,11 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   friend class ash::ApkWebAppService;
   // Only for exposing state_ to Tast tests.
   friend class extensions::AutotestPrivateGetLacrosInfoFunction;
+  // In LacrosOnly mode, certificate provider and smart card connector
+  // extensions will be running in Lacros, but policy implementation stays in
+  // Ash. Thus, session controller needs to keep Lacros alive to keep track of
+  // smart card status.
+  friend class ash::login::SecurityTokenSessionController;
 
   // Holds the data for restoring a window from the desk template.
   // The request to restore a window may come when the browser service is not
@@ -397,6 +408,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     kApkWebAppService,
     kChromeApps,
     kExtensions,
+    kSmartCardSessionController,
   };
 
   // Any instance of this class will ensure that the Lacros browser will stay

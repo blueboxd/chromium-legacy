@@ -14,6 +14,7 @@ import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//build/toolchain/toolchain.gni")
+import("//chrome/browser/chrome_for_testing/buildflags.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")
@@ -302,7 +303,7 @@ if (!is_android && !is_mac) {
       # On Chrome OS builds (for both ash-chrome and lacros-chrome), put
       # a metadata.json file in root directory containing Chrome version.
       if (is_chromeos) {
-        deps += [ "//build:version_metadata" ]
+        data_deps += [ "//build:version_metadata" ]
       }
 
       # Chrome OS debug builds for arm need to pass --long-plt to the linker.

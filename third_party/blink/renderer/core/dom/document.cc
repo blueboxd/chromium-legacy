@@ -3767,9 +3767,10 @@ bool Document::CheckCompletedInternal() {
     }
     Loader()->SetSentDidFinishLoad();
     GetFrame()->Client()->DispatchDidFinishLoad();
-    GetFrame()->GetLocalFrameHostRemote().DidFinishLoad(Loader()->Url());
+    // RenderFrameObservers may execute script, which could detach this frame.
     if (!GetFrame())
       return false;
+    GetFrame()->GetLocalFrameHostRemote().DidFinishLoad(Loader()->Url());
 
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kDocumentLoaded,
@@ -6799,10 +6800,11 @@ void Document::FinishedParsing() {
       MilestoneForDelayedAsyncScript::kFinishedParsing);
 
   // FIXME: DOMContentLoaded is dispatched synchronously, but this should be
-  // dispatched in a queued task, see https://crbug.com/425790
+  // dispatched in a queued task, see https://crbug.com/961428
   if (document_timing_.DomContentLoadedEventStart().is_null())
     document_timing_.MarkDomContentLoadedEventStart();
-  DispatchEvent(*Event::CreateBubble(event_type_names::kDOMContentLoaded));
+  if (!ScriptForbiddenScope::IsScriptForbidden())
+    DispatchEvent(*Event::CreateBubble(event_type_names::kDOMContentLoaded));
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);
@@ -6810,7 +6812,8 @@ void Document::FinishedParsing() {
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
   // a queued task, which will do a checkpoint anyway. https://crbug.com/425790
-  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  if (!ScriptForbiddenScope::IsScriptForbidden())
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
 
   ScriptableDocumentParser* parser = GetScriptableDocumentParser();
   well_formed_ = parser && parser->WellFormed();
@@ -7314,6 +7317,13 @@ Element* Document::TopmostPopupAutoOrHint() const {
   if (PopupStack().IsEmpty())
     return nullptr;
   return PopupStack().back();
+}
+
+void Document::SetPopUpMousedownTarget(const Element* pop_up) {
+  DCHECK(
+      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(GetExecutionContext()));
+  DCHECK(!pop_up || pop_up->HasValidPopupAttribute());
+  pop_up_mousedown_target_ = pop_up;
 }
 
 void Document::exitPointerLock() {
@@ -8017,7 +8027,7 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
     return GetExecutionContext()->GetTaskRunner(type);
   // GetExecutionContext() can be nullptr in unit tests and after Shutdown().
   // Fallback to the default task runner for this thread if all else fails.
-  return Thread::Current()->GetTaskRunner();
+  return Thread::Current()->GetDeprecatedTaskRunner();
 }
 
 DOMFeaturePolicy* Document::featurePolicy() {
@@ -8069,6 +8079,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(top_layer_elements_);
   visitor->Trace(popup_hint_showing_);
   visitor->Trace(popup_stack_);
+  visitor->Trace(pop_up_mousedown_target_);
   visitor->Trace(popups_waiting_to_hide_);
   visitor->Trace(all_open_pop_ups_);
   visitor->Trace(load_event_delay_timer_);
@@ -8277,12 +8288,6 @@ void Document::ColorSchemeChanged() {
   UpdateForcedColors();
   GetStyleEngine().ColorSchemeChanged();
   MediaQueryAffectingValueChanged(MediaValueChange::kOther);
-  MediaValues* media_values =
-      MediaValues::CreateDynamicIfFrameExists(GetFrame());
-  if (GetFrame()) {
-    GetFrame()->GetLocalFrameHostRemote().DidUpdatePreferredColorScheme(
-        media_values->GetPreferredColorScheme());
-  }
 }
 
 void Document::VisionDeficiencyChanged() {

@@ -7,9 +7,12 @@
  * panel, etc.) to communicate with the background.
  */
 
+import {constants} from '../../common/constants.js';
+
 import {BridgeConstants} from './bridge_constants.js';
 import {BridgeHelper} from './bridge_helper.js';
-import {BaseLog} from './log_types.js';
+import {BaseLog, SerializableLog} from './log_types.js';
+import {PanelTabMenuItemData} from './panel_menu_data.js';
 
 export const BackgroundBridge = {};
 
@@ -188,7 +191,7 @@ BackgroundBridge.LogStore = {
   /**
    * Create logs in order.
    * This function is not currently optimized for speed.
-   * @return {!Promise<!Array<BaseLog>>}
+   * @return {!Promise<!Array<!SerializableLog>>}
    */
   async getLogs() {
     return BridgeHelper.sendMessage(
@@ -275,17 +278,6 @@ BackgroundBridge.PanelBackground = {
         BridgeConstants.PanelBackground.TARGET,
         BridgeConstants.PanelBackground.Action.INCREMENTAL_SEARCH, searchStr,
         dir, opt_nextObject);
-  },
-
-  /**
-   * @param {number} callbackNodeIndex
-   * @return {!Promise}
-   */
-  async nodeMenuCallback(callbackNodeIndex) {
-    return BridgeHelper.sendMessage(
-        BridgeConstants.PanelBackground.TARGET,
-        BridgeConstants.PanelBackground.Action.NODE_MENU_CALLBACK,
-        callbackNodeIndex);
   },
 
   /**

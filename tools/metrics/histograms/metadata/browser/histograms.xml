@@ -26,6 +26,7 @@ chromium-metrics-reviews@google.com.
   <variant name="AboutThisSite"/>
   <variant name="Assistant"/>
   <variant name="Bookmarks"/>
+  <variant name="CustomizeChrome"/>
   <variant name="Feed"/>
   <variant name="HistoryClusters"/>
   <variant name="Lens"/>
@@ -92,18 +93,22 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the overall satisfaction score for HaTS, to be analyzed against
     other OS metrics like performance or number of crashes. There is one score
-    per survey type.
+    per survey type. Emitted when a user answers the first question on a HaTS
+    survey.
   </summary>
   <token key="Survey">
     <variant name=".ArcGames"/>
     <variant name=".Audio"/>
+    <variant name=".CameraApp"/>
     <variant name=".Ent"/>
     <variant name=".General"/>
+    <variant name=".MediaAppPdf"/>
     <variant name=".OnboardingExperience"/>
     <variant name=".Performance"/>
     <variant name=".PersonalizationAvatar"/>
     <variant name=".PersonalizationScreensaver"/>
     <variant name=".PersonalizationWallpaper"/>
+    <variant name=".PhotosExperience"/>
     <variant name=".SmartLock"/>
     <variant name=".Stability"/>
     <variant name=".Unlock"/>
@@ -111,7 +116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ChromeOS.HatsStatus" enum="HatsStatus"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>aalsum@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
   <summary>
@@ -193,7 +198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.CompressedOnDiskSize" units="KB"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -204,7 +209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.NumberOfFramesCaptured"
-    units="units" expires_after="2022-12-11">
+    units="units" expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -214,7 +219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.Success" enum="BooleanSuccess"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -224,7 +229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.TotalCaptureDuration" units="ms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -245,7 +250,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartupTime"
-    units="ms" expires_after="2022-12-11">
+    units="ms" expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -263,7 +268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.TimeToFirstBitmap" units="ms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -286,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.ExitCause"
-    enum="TabbedPaintPreviewExitCause" expires_after="2022-12-11">
+    enum="TabbedPaintPreviewExitCause" expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -331,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap"
-    units="ms" expires_after="2022-12-11">
+    units="ms" expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -557,7 +562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TabSwitchHasRWHV" enum="BooleanExists"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>joenotcharles@google.com</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -804,7 +809,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="BrowserRenderProcessHost.RoutingIDSpaceUsed"
     units="% of routing ID space used for browser-allocated routing IDs"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>alexmos@chromium.org</owner>
   <owner>dcheng@chromium.org</owner>
   <summary>
@@ -931,7 +936,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.AlternativeBrowser" enum="BrowserType"
-    expires_after="2022-12-05">
+    expires_after="2023-02-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -976,7 +981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.Decision" enum="BooleanBrowserSwitch"
-    expires_after="2022-12-05">
+    expires_after="2023-02-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -988,7 +993,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.DecisionTime" units="ms"
-    expires_after="2022-12-05">
+    expires_after="2023-02-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -999,7 +1004,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.ExternalGreylistSize" units="rules"
-    expires_after="2022-12-05">
+    expires_after="2023-02-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1009,7 +1014,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.ExternalSitelistSize" units="rules"
-    expires_after="2022-12-05">
+    expires_after="2023-02-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1040,7 +1045,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.IeemSitelistSize" units="rules"
-    expires_after="2022-12-05">
+    expires_after="2023-02-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1060,7 +1065,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.LaunchTime" units="ms"
-    expires_after="2022-12-05">
+    expires_after="2023-02-05">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1162,6 +1167,48 @@ chromium-metrics-reviews@google.com.
     Logs the UI location from which the side panel is triggered to be opened.
     Recorded when the side panel is shown and a trigger is provided.
   </summary>
+</histogram>
+
+<histogram name="SidePanel.ResizedWidth" units="px" expires_after="2023-06-04">
+  <owner>emshack@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records the width of the side panel contents after the side panel was
+    resized.
+  </summary>
+</histogram>
+
+<histogram name="SidePanel.ResizedWidthPercentage" units="% of window width"
+    expires_after="2023-06-04">
+  <owner>emshack@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records the width of the side panel contents as a percentage of the browser
+    window width after the side panel was resized.
+  </summary>
+</histogram>
+
+<histogram name="SidePanel.{SidePanelEntry}.ResizedWidth" units="px"
+    expires_after="2023-06-04">
+  <owner>emshack@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records the width of the side panel contents after the side panel was
+    resized, while the {SidePanelEntry} side panel entry was displayed.
+  </summary>
+  <token key="SidePanelEntry" variants="SidePanelEntry"/>
+</histogram>
+
+<histogram name="SidePanel.{SidePanelEntry}.ResizedWidthPercentage"
+    units="% of window width" expires_after="2023-06-04">
+  <owner>emshack@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records the width of the side panel contents as a percentage of the browser
+    window width after the side panel was resized, while the {SidePanelEntry}
+    side panel entry was displayed.
+  </summary>
+  <token key="SidePanelEntry" variants="SidePanelEntry"/>
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ShownDuration" units="ms"

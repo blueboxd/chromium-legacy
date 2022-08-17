@@ -70,7 +70,6 @@ class PixelIntegrationTest(
 
   @classmethod
   def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
-    cls.SetParsedCommandLineOptions(options)
     namespace = pixel_test_pages.PixelTestPages
     pages = namespace.DefaultPages(cls.test_base_name)
     pages += namespace.GpuRasterizationPages(cls.test_base_name)
@@ -226,6 +225,17 @@ class PixelIntegrationTest(
     # process was chosen.
     del page  # Unused in this particular action.
     tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+
+  def _CrashGpuProcessTwiceWaitForContextRestored(
+      self, tab: ct.Tab, page: pixel_test_pages.PixelTestPage) -> None:
+    # Crash the GPU process twice.
+    del page  # Unused in this particular action.
+    tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+    # This is defined in the specific test's page.
+    tab.action_runner.WaitForJavaScriptCondition('window.contextRestored',
+                                                 timeout=30)
+    tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+
   # pylint: enable=no-self-use
 
   def _SwitchTabs(self, tab: ct.Tab,

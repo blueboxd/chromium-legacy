@@ -29,24 +29,35 @@ constexpr ui::DomCode kDismissDomCode = ui::DomCode::ESCAPE;
 
 // TODO(b/217560706): Replace diacritics with final set after research is
 // done (on a per input method engine basis).
+// Current diacritics ordering is based on the Gboard ordering so it keeps
+// distance from target key consistent.
 constexpr auto kDefaultDiacriticsMap =
     base::MakeFixedFlatMap<char, base::StringPiece16>(
-        {{'a', u"à;á;â;ã;ã;ä;å;ā"},
-         {'A', u"À;Á;Â;Ã;Ä;Å;Æ;Ā"},
+        {{'a', u"à;á;â;ä;æ;ã;å;ā"},
+         {'A', u"À;Á;Â;Ä;Æ;Ã;Å;Ā"},
          {'c', u"ç"},
          {'C', u"Ç"},
-         {'e', u"è;é;ê;ë;ē"},
-         {'E', u"È;É;Ê;Ë;Ē"},
-         {'i', u"ì;í;î;ï;ī"},
-         {'I', u"Ì;Í;Î;Ï;Ī"},
+         {'e', u"é;è;ê;ë;ē"},
+         {'E', u"É;È;Ê;Ë;Ē"},
+         {'i', u"í;î;ï;ī;ì"},
+         {'I', u"Í;Î;Ï;Ī;Ì"},
          {'n', u"ñ"},
          {'N', u"Ñ"},
-         {'o', u"ò;ó;ô;õ;ö;ø;ō;œ"},
-         {'O', u"Ò;Ò;Ó;Ô;Ö;Ø;Ō;Œ"},
+         {'o', u"ó;ô;ö;ò;œ;ø;ō;õ"},
+         {'O', u"Ó;Ô;Ö;Ò;Œ;Ø;Ō;Õ"},
          {'s', u"ß"},
          {'S', u"ẞ"},
-         {'u', u"ù;ú;û;ü;ū"},
-         {'U', u"Ù;Ú;Û;Ü;Ū"}});
+         {'u', u"ú;û;ü;ù;ū"},
+         {'U', u"Ú;Û;Ü;Ù;Ū"}});
+
+// Must match IMEPKLongpressDiacriticAction in
+// tools/metrics/histograms/enums.xml
+enum class IMEPKLongpressDiacriticAction {
+  kShowWindow = 0,
+  kAccept = 1,
+  kDismiss = 2,
+  kMaxValue = kDismiss,
+};
 
 class LongpressDiacriticsSuggester : public Suggester {
  public:

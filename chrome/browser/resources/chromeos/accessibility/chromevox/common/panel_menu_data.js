@@ -7,16 +7,12 @@
  * the background context to the panel context.
  */
 
-goog.provide('PanelNodeMenuData');
-goog.provide('PanelNodeMenuId');
-goog.provide('PanelNodeMenuItemData');
-goog.provide('PanelTabMenuItemData');
-goog.provide('ALL_NODE_MENU_DATA');
+import {AutomationPredicate} from '../../common/automation_predicate.js';
 
-goog.require('AutomationPredicate');
+import {BridgeCallbackId} from './bridge_callback_manager.js';
 
 /** @enum {number} */
-PanelNodeMenuId = {
+export const PanelNodeMenuId = {
   HEADING: 1,
   LANDMARK: 2,
   LINK: 3,
@@ -31,22 +27,22 @@ PanelNodeMenuId = {
  *     predicate: !AutomationPredicate.Unary
  * }}
  */
-let PanelNodeMenuData;
+export let PanelNodeMenuData;
 
 /**
  * @typedef {{
  *     title: string,
- *     callbackNodeIndex: number,
+ *     callbackId: ?BridgeCallbackId,
  *     isActive: boolean,
  *     menuId: !PanelNodeMenuId
  * }}
  */
-let PanelNodeMenuItemData;
+export let PanelNodeMenuItemData;
 
 /** @typedef {{title: string, windowId: number, tabId: number}} */
-PanelTabMenuItemData;
+export let PanelTabMenuItemData;
 
-ALL_NODE_MENU_DATA = [
+export const ALL_PANEL_MENU_NODE_DATA = [
   {
     menuId: PanelNodeMenuId.HEADING,
     titleId: 'role_heading',

@@ -15,8 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
@@ -24,6 +22,8 @@
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -472,9 +472,9 @@ CreditCardField::CreditCardField(LogManager* log_manager)
 CreditCardField::~CreditCardField() {}
 
 void CreditCardField::AddClassifications(
-    FieldCandidatesMap* field_candidates) const {
-  for (size_t index = 0; index < numbers_.size(); ++index) {
-    AddClassification(numbers_[index], CREDIT_CARD_NUMBER,
+    FieldCandidatesMap& field_candidates) const {
+  for (auto* number : numbers_) {
+    AddClassification(number, CREDIT_CARD_NUMBER,
                       kBaseCreditCardParserScore, field_candidates);
   }
 

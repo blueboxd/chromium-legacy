@@ -539,6 +539,19 @@ void AppServiceProxyBase::LaunchAppWithParams(AppLaunchParams&& params,
 }
 
 void AppServiceProxyBase::SetPermission(const std::string& app_id,
+                                        PermissionPtr permission) {
+  app_registry_cache_.ForOneApp(
+      app_id, [this, &permission](const apps::AppUpdate& update) {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          return;
+        }
+
+        publisher->SetPermission(update.AppId(), std::move(permission));
+      });
+}
+
+void AppServiceProxyBase::SetPermission(const std::string& app_id,
                                         apps::mojom::PermissionPtr permission) {
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
@@ -550,6 +563,18 @@ void AppServiceProxyBase::SetPermission(const std::string& app_id,
   }
 }
 
+void AppServiceProxyBase::UninstallSilently(const std::string& app_id,
+                                            UninstallSource uninstall_source) {
+  auto app_type = app_registry_cache_.GetAppType(app_id);
+  auto* publisher = GetPublisher(app_type);
+  if (!publisher) {
+    return;
+  }
+  publisher->Uninstall(app_id, uninstall_source,
+                       /*clear_site_data=*/false, /*report_abuse=*/false);
+  PerformPostUninstallTasks(app_type, app_id, uninstall_source);
+}
+
 void AppServiceProxyBase::UninstallSilently(
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {
@@ -558,11 +583,21 @@ void AppServiceProxyBase::UninstallSilently(
     app_service_->Uninstall(ConvertAppTypeToMojomAppType(app_type), app_id,
                             uninstall_source,
                             /*clear_site_data=*/false, /*report_abuse=*/false);
-    PerformPostUninstallTasks(app_type, app_id, uninstall_source);
+    PerformPostUninstallTasks(
+        app_type, app_id,
+        ConvertMojomUninstallSourceToUninstallSource(uninstall_source));
   }
 }
 
 void AppServiceProxyBase::StopApp(const std::string& app_id) {
+  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+    if (publisher) {
+      publisher->StopApp(app_id);
+    }
+    return;
+  }
+
   if (!app_service_.is_connected()) {
     return;
   }
@@ -589,6 +624,15 @@ void AppServiceProxyBase::ExecuteContextMenuCommand(
     int command_id,
     const std::string& shortcut_id,
     int64_t display_id) {
+  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+    if (publisher) {
+      publisher->ExecuteContextMenuCommand(app_id, command_id, shortcut_id,
+                                           display_id);
+    }
+    return;
+  }
+
   if (!app_service_.is_connected()) {
     return;
   }
@@ -600,6 +644,14 @@ void AppServiceProxyBase::ExecuteContextMenuCommand(
 }
 
 void AppServiceProxyBase::OpenNativeSettings(const std::string& app_id) {
+  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+    if (publisher) {
+      publisher->OpenNativeSettings(app_id);
+    }
+    return;
+  }
+
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this](const apps::AppUpdate& update) {
@@ -992,7 +1044,7 @@ void AppServiceProxyBase::RecordAppPlatformMetrics(
 void AppServiceProxyBase::PerformPostUninstallTasks(
     apps::AppType app_type,
     const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source) {}
+    UninstallSource uninstall_source) {}
 
 void AppServiceProxyBase::OnLaunched(LaunchCallback callback,
                                      LaunchResult&& launch_result) {

@@ -86,16 +86,9 @@ if (is_chromeos_ash) {
       "cr_actionable_row_style.html",
       "cr_button/cr_button.html",
       "cr_button/cr_button.js",
-      "cr_checkbox/cr_checkbox.html",
-      "cr_checkbox/cr_checkbox.js",
       "cr_container_shadow_behavior.html",
       "cr_container_shadow_behavior.js",
-      "cr_dialog/cr_dialog.html",
-      "cr_dialog/cr_dialog.js",
       "cr_icons_css.html",
-      "cr_input/cr_input.html",
-      "cr_input/cr_input.js",
-      "cr_input/cr_input_style_css.html",
       "cr_lottie/cr_lottie.html",
       "cr_lottie/cr_lottie.js",
       "cr_radio_button/cr_card_radio_button.html",
@@ -105,12 +98,8 @@ if (is_chromeos_ash) {
       "cr_radio_button/cr_radio_button.html",
       "cr_radio_button/cr_radio_button.js",
       "cr_radio_button/cr_radio_button_style_css.html",
-      "cr_radio_group/cr_radio_group.html",
-      "cr_radio_group/cr_radio_group.js",
       "cr_scrollable_behavior.html",
       "cr_scrollable_behavior.js",
-      "cr_toggle/cr_toggle.html",
-      "cr_toggle/cr_toggle.js",
       "find_shortcut_behavior.js",
       "hidden_style_css.html",
       "icons.html",
@@ -139,21 +128,18 @@ if (include_polymer) {
       "action_link_css.m.js",
       "cr_actionable_row_style.m.js",
       "cr_button/cr_button.m.js",
-      "cr_checkbox/cr_checkbox.m.js",
-      "cr_container_shadow_behavior.m.js",
-      "cr_dialog/cr_dialog.m.js",
+      "cr_checkbox/cr_checkbox.js",
+      "cr_dialog/cr_dialog.js",
       "cr_icon_button/cr_icon_button.js",
       "cr_icons_css.m.js",
-      "cr_input/cr_input.m.js",
-      "cr_input/cr_input_style_css.m.js",
+      "cr_input/cr_input.js",
       "cr_lottie/cr_lottie.m.js",
       "cr_radio_button/cr_card_radio_button.m.js",
       "cr_radio_button/cr_radio_button_behavior.m.js",
       "cr_radio_button/cr_radio_button.m.js",
       "cr_radio_button/cr_radio_button_style_css.m.js",
-      "cr_radio_group/cr_radio_group.m.js",
       "cr_scrollable_behavior.m.js",
-      "cr_toggle/cr_toggle.m.js",
+      "cr_toggle/cr_toggle.js",
       "hidden_style_css.m.js",
       "icons.m.js",
       "md_select_css.m.js",
@@ -166,7 +152,10 @@ if (include_polymer) {
     ]
 
     if (is_chromeos_ash) {
-      in_files += [ "chromeos/cros_color_overrides.m.js" ]
+      in_files += [
+        "chromeos/cros_color_overrides.m.js",
+        "cr_container_shadow_behavior.m.js",
+      ]
     }
   }
 }
@@ -175,12 +164,8 @@ if (include_polymer) {
   group("closure_compile") {
     deps = [
       ":cr_elements_resources",
-      "cr_checkbox:closure_compile",
-      "cr_dialog:closure_compile",
-      "cr_input:closure_compile",
       "cr_lottie:closure_compile",
       "cr_radio_button:closure_compile",
-      "cr_toggle:closure_compile",
       "policy:closure_compile",
 
       # Targets for auto-generated Polymer 3 JS Modules
@@ -192,16 +177,12 @@ if (include_polymer) {
       "cr_input:closure_compile_module",
       "cr_lottie:closure_compile_module",
       "cr_radio_button:closure_compile_module",
-      "cr_radio_group:closure_compile_module",
       "cr_toggle:closure_compile_module",
       "policy:closure_compile_module",
     ]
 
     if (is_chromeos_ash) {
-      deps += [
-        "cr_button:closure_compile",
-        "cr_radio_group:closure_compile",
-      ]
+      deps += [ "cr_button:closure_compile" ]
     }
   }
 
@@ -273,10 +254,11 @@ if (include_polymer) {
   }
 
   js_modulizer("modulize") {
-    input_files = [
-      "cr_container_shadow_behavior.js",
-      "cr_scrollable_behavior.js",
-    ]
+    input_files = [ "cr_scrollable_behavior.js" ]
+
+    if (is_chromeos_ash) {
+      input_files += [ "cr_container_shadow_behavior.js" ]
+    }
   }
 }
 
@@ -293,14 +275,13 @@ if (include_polymer) {
       ":shared_style_css_module",
       ":shared_vars_css_module",
       "cr_button:cr_button_module",
-      "cr_checkbox:cr_checkbox_module",
-      "cr_dialog:cr_dialog_module",
+      "cr_checkbox:web_components",
+      "cr_dialog:web_components",
       "cr_icon_button:web_components",
-      "cr_input:polymer3_elements",
+      "cr_input:web_components",
       "cr_lottie:cr_lottie_module",
       "cr_radio_button:polymer3_elements",
-      "cr_radio_group:cr_radio_group_module",
-      "cr_toggle:cr_toggle_module",
+      "cr_toggle:web_components",
       "policy:polymer3_elements",
     ]
 
@@ -313,20 +294,22 @@ if (include_polymer) {
 if (include_polymer) {
   js_type_check("cr_elements_module_resources") {
     is_polymer3 = true
-    deps = [
-      ":cr_container_shadow_behavior.m",
-      ":cr_scrollable_behavior.m",
-    ]
+    deps = [ ":cr_scrollable_behavior.m" ]
 
     if (is_chromeos_ash) {
-      deps += [ ":find_shortcut_behavior" ]
+      deps += [
+        ":cr_container_shadow_behavior.m",
+        ":find_shortcut_behavior",
+      ]
     }
   }
 
-  js_library("cr_container_shadow_behavior.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_container_shadow_behavior.m.js" ]
-    deps = [ "//ui/webui/resources/js:assert.m" ]
-    extra_deps = [ ":modulize" ]
+  if (is_chromeos_ash) {
+    js_library("cr_container_shadow_behavior.m") {
+      sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_container_shadow_behavior.m.js" ]
+      deps = [ "//ui/webui/resources/js:assert.m" ]
+      extra_deps = [ ":modulize" ]
+    }
   }
 
   js_library("cr_scrollable_behavior.m") {

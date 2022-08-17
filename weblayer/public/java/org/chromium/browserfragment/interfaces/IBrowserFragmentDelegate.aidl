@@ -6,10 +6,12 @@ package org.chromium.browserfragment.interfaces;
 
 import android.os.Bundle;
 import org.chromium.browserfragment.interfaces.IBrowserFragmentDelegateClient;
+import org.chromium.browserfragment.interfaces.IBooleanCallback;
 import org.chromium.browserfragment.interfaces.ITabObserverDelegate;
 import org.chromium.browserfragment.interfaces.ITabProxy;
+import org.chromium.browserfragment.interfaces.ITabCallback;
 
-interface IBrowserFragmentDelegate {
+oneway interface IBrowserFragmentDelegate {
     void setClient(in IBrowserFragmentDelegateClient client) = 1;
 
     void attachViewHierarchy(in IBinder hostToken) = 2;
@@ -25,10 +27,9 @@ interface IBrowserFragmentDelegate {
     void onResume() = 10;
     void onPause() = 11;
 
-    // ViewModel events.
-    void onCleared() = 16;
-
     // Tab operations.
-    ITabProxy getActiveTab() = 14;
+    void getActiveTab(ITabCallback callback) = 14;
     void setTabObserverDelegate(ITabObserverDelegate tabObserverDelegate) = 15;
+    void tryNavigateBack(IBooleanCallback callback) = 17;
+    void createTab(ITabCallback callback) = 18;
 }

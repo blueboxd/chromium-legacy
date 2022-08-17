@@ -92,6 +92,7 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -100,6 +101,7 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -604,7 +606,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             CustomTabToolbar customTabToolbar = ((CustomTabToolbar) toolbarLayout);
             mLocationBar = customTabToolbar.createLocationBar(mLocationBarModel,
                     mActionModeController.getActionModeCallback(), modalDialogManagerSupplier,
-                    mEphemeralTabCoordinatorSupplier);
+                    mEphemeralTabCoordinatorSupplier, mControlsVisibilityDelegate);
         } else {
             OverrideUrlLoadingDelegate overrideUrlLoadingDelegate =
                     (url, transition, postDataType, postData, incognito)
@@ -632,7 +634,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     VoiceToolbarButtonController::isToolbarMicEnabled, jankTracker,
                     merchantTrustSignalsCoordinatorSupplier,
                     omniboxPedalDelegate, mControlsVisibilityDelegate,
-                    ChromePureJavaExceptionReporter::postReportJavaException);
+                    ChromePureJavaExceptionReporter::postReportJavaException, backPressManager);
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
@@ -790,8 +792,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
-            public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
+            public void onDidStartNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigation) {
                 // Update URL as soon as it becomes available when it's a new tab.
                 // But we want to update only when it's a new tab. So we check whether the current
                 // navigation entry is initial, meaning whether it has the same target URL as the
@@ -801,6 +803,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                         && tab.getWebContents().getNavigationController().isInitialNavigation()) {
                     mLocationBarModel.notifyUrlChanged();
                 }
+            }
+
+            @Override
+            public void onDidStartNavigationNoop(Tab tab, NavigationHandle navigation) {
+                if (!navigation.isInPrimaryMainFrame()) return;
             }
 
             @Override
@@ -1914,12 +1921,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         checkIfNtpLoaded();
     }
 
-    private void maybeShowPriceDropIPH() {
-        // TODO(crbug.com/1335197): Check if price drop occurred before showing IPH
-        if (!PriceTrackingFeatures.isPriceDropIphEnabled()) {
-            return;
-        }
-
+    @VisibleForTesting
+    public void showPriceDropIPH() {
         ToggleTabStackButton toggleTabStackButton =
                 mControlContainer.findViewById(R.id.tab_switcher_button);
         UserEducationHelper userEducationHelper = new UserEducationHelper(mActivity, mHandler);
@@ -1936,6 +1939,29 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                         .setHighlightParams(params)
                         .setDismissOnTouch(true)
                         .build());
+    }
+
+    /**
+     * Checks to to see if there are any unseen price drops, and if so attempts to show the price
+     * drop IPH. An unseen price drop occurs when there is a tab with a price drop that has not been
+     * viewed in the tab switcher grid.
+     */
+    private void maybeShowPriceDropIPH() {
+        if (!PriceTrackingUtilities.isTrackPricesOnTabsEnabled()
+                || !PriceTrackingFeatures.isPriceDropIphEnabled() || mTabModelSelector == null
+                || mTabModelSelector.isIncognitoSelected()) {
+            return;
+        }
+        TabModel tabModel = mTabModelSelector.getCurrentModel();
+        for (int i = 0; i < tabModel.getCount(); i++) {
+            ShoppingPersistedTabData.from(tabModel.getTabAt(i), (shoppingPersistedTabData) -> {
+                if (shoppingPersistedTabData != null
+                        && shoppingPersistedTabData.getPriceDrop() != null
+                        && !shoppingPersistedTabData.getIsCurrentPriceDropSeen()) {
+                    showPriceDropIPH();
+                }
+            });
+        }
     }
 
     private void checkIfNtpLoaded() {

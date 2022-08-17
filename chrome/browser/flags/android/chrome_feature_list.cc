@@ -97,6 +97,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
     &autofill::features::kAutofillEnableSupportForMoreStructureInNames,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
+    &autofill::features::kAutofillEnableVirtualCardMetadata,
     &blink::features::kPrerender2,
     &blink::features::kForceWebContentsDarkMode,
     &commerce::kCommerceMerchantViewer,
@@ -249,7 +250,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
-    &kLocationBarModelOptimizations,
     &kMostRecentTabOnBackgroundCloseTab,
     &kNewInstanceFromDraggedLink,
     &kNewTabPageTilesTitleWrapAround,
@@ -259,6 +259,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kBackGestureRefactorAndroid,
+    &kOmahaMinSdkVersionAndroid,
     &kOmniboxModernizeVisualUpdate,
     &kOptimizeGeolocationHeaderGeneration,
     &kOptimizeLayoutsForPullRefresh,
@@ -296,6 +297,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabGroupsForTablets,
     &kTabGridLayoutAndroid,
     &kTabReparenting,
+    &kTabSelectionEditorV2,
     &kTabStripImprovements,
     &kTabSwitcherOnReturn,
     &kTabToGTSAnimation,
@@ -353,8 +355,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kMostVisitedTilesDynamicSpacing,
     &omnibox::kMostVisitedTilesTitleWrapAround,
     &omnibox::kOmniboxAssistantVoiceSearch,
+    &omnibox::kOmniboxHeaderPaddingUpdate,
     &omnibox::kOmniboxRemoveSuggestionHeaderCapitalization,
     &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
+    &omnibox::kOmniboxMostVisitedTilesFadingOnTablet,
     &omnibox::kOmniboxMostVisitedTilesOnSrp,
     &omnibox::kSuggestionAnswersColorReverse,
     &omnibox::kUpdatedConnectionSecurityIndicators,
@@ -378,6 +382,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &privacy_sandbox::kPrivacySandboxSettings3,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
+    &query_tiles::features::kQueryTilesOnStart,
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
     &safe_browsing::kCreateSafebrowsingOnStartup,
@@ -385,6 +390,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &segmentation_platform::features::kContextualPageActionPriceTracking,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
+    &share::kCormorant,
     &share::kPersistShareHubOnAppSwitch,
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
@@ -546,7 +552,7 @@ const base::Feature kCCTResizable90MaximumHeight{
     "CCTResizable90MaximumHeight", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTResizableAllowResizeByUserGesture{
-    "CCTResizableAllowResizeByUserGesture", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CCTResizableAllowResizeByUserGesture", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTResizableForFirstParties{
     "CCTResizableForFirstParties", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -699,9 +705,6 @@ const base::Feature kIsVoiceSearchEnabledCache{
 const base::Feature kKitKatSupported{"KitKatSupported",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kLocationBarModelOptimizations{
-    "LocationBarModelOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSearchEnginePromoExistingDevice{
     "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -743,6 +746,9 @@ const base::Feature kBookmarksRefresh{"BookmarksRefresh",
 
 const base::Feature kBackGestureRefactorAndroid{
     "BackGestureRefactorAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOmahaMinSdkVersionAndroid{
+    "OmahaMinSdkVersionAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxModernizeVisualUpdate{
     "OmniboxModernizeVisualUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -837,6 +843,9 @@ const base::Feature kTabGridLayoutAndroid{"TabGridLayoutAndroid",
 
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTabSelectionEditorV2{"TabSelectionEditorV2",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabStripImprovements{"TabStripImprovements",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

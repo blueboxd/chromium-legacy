@@ -13,7 +13,6 @@ component("dbus") {
     "//chromeos/dbus/common",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/init",
-    "//chromeos/dbus/shill",
     "//dbus",
   ]
   deps = [ "//base" ]
@@ -23,36 +22,16 @@ component("dbus") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-  configs += [ "//build/config/linux/dbus" ]
-  public_deps = [
-    ":dbus",
-    "//chromeos/dbus/constants",
-    "//dbus",
-    "//dbus:test_support",
-  ]
-  deps = [
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/linux/dbus" ]
   testonly = true
   deps = [
     ":dbus",
-    ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos/dbus/cryptohome",
-    "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice:unit_tests",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/power:test_support",
-    "//chromeos/dbus/shill:test_support",
     "//chromeos/dbus/tpm_manager",
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
     "//chromeos/dbus/u2f",

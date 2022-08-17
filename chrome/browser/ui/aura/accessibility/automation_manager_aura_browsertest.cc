@@ -262,8 +262,8 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   widget->GetRootView()->AddChildView(view2);
   views::AXAuraObjWrapper* wrapper2 = cache_ptr->GetOrCreate(view2);
   views::View* view3 = new views::View();
-  view3->GetViewAccessibility().OverrideName("view3");
   view3->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
+  view3->GetViewAccessibility().OverrideName("view3");
   view3->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view3);
   views::AXAuraObjWrapper* wrapper3 = cache_ptr->GetOrCreate(view3);
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
 
   cache_ptr->set_focused_widget_for_testing(nullptr);
 
-  AddFailureOnWidgetAccessibilityError(widget);
+  RunAccessibilityChecks(widget);
 }
 
 // TODO(crbug.com/1202250): Crashes on Ozone.
@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
 
   cache_ptr->set_focused_widget_for_testing(nullptr);
 
-  AddFailureOnWidgetAccessibilityError(widget);
+  RunAccessibilityChecks(widget);
 }
 
 // Verify that re-enabling AutomationManagerAura after disable will not cause
@@ -637,5 +637,5 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, GetFocusOnChildTree) {
 
   cache.set_focused_widget_for_testing(nullptr);
 
-  AddFailureOnWidgetAccessibilityError(widget);
+  RunAccessibilityChecks(widget);
 }

@@ -17,7 +17,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
@@ -187,6 +186,7 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -2113,6 +2113,12 @@ void WizardController::UpdateOobeConfiguration() {
             << requisition_value->GetString();
     policy::EnrollmentRequisitionManager::SetDeviceRequisition(
         requisition_value->GetString());
+  } else if (policy::EnrollmentRequisitionManager::IsMeetDevice()) {
+    VLOG(1)
+        << "Using default Device Requisition value for CFM build configuration"
+        << policy::EnrollmentRequisitionManager::kRemoraRequisition;
+    policy::EnrollmentRequisitionManager::SetDeviceRequisition(
+        policy::EnrollmentRequisitionManager::kRemoraRequisition);
   }
 
   auto* network_config_value = wizard_context_->configuration.FindKeyOfType(

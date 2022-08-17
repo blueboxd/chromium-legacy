@@ -6,6 +6,7 @@
 #define CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_STATE_H_
 
 #include <stdint.h>
+#include <sstream>
 
 #include <memory>
 #include <string>
@@ -22,14 +23,10 @@ namespace base {
 class Value;
 }  // namespace base
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace chromeos {
-class NetworkStateHandler;
-}
-
 namespace ash {
 
 class DeviceState;
+class NetworkStateHandler;
 
 // Simple class to provide network state information about a network service.
 // This class should always be passed as a const* and should never be held
@@ -73,6 +70,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
     kNoInternet,
     kMaxValue = kNoInternet  // For UMA_HISTOGRAM_ENUMERATION
   };
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const PortalState& portal_state);
 
   // ManagedState overrides
   // If you change this method, update GetProperties too.
@@ -290,13 +289,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
  private:
   friend class MobileActivatorTest;
-  friend class ::chromeos::NetworkStateHandler;
+  friend class NetworkStateHandler;
 
   // Updates |name_| from the 'WiFi.HexSSID' entry in |properties|, which must
   // be of type DICTIONARY, if the key exists, and validates |name_|. Returns
   // true if |name_| changes.
   bool UpdateName(const base::Value& properties);
 
+  // Uses the Shill connection state and PortalDetectionFailedStatus to generate
+  // |shill_portal_state_|.
   void UpdateCaptivePortalState(const base::Value& properties);
 
   void SetVpnProvider(const std::string& id, const std::string& type);
@@ -386,6 +387,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // if the request is aborted.
   bool connect_requested_ = false;
 };
+
+std::ostream& COMPONENT_EXPORT(CHROMEOS_NETWORK) operator<<(
+    std::ostream& stream,
+    const NetworkState::PortalState& portal_state);
 
 }  // namespace ash
 

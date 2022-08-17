@@ -118,10 +118,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     DrawingFrame();
     ~DrawingFrame();
 
-    raw_ptr<const AggregatedRenderPassList, DanglingUntriaged>
-        render_passes_in_draw_order = nullptr;
-    raw_ptr<const AggregatedRenderPass, DanglingUntriaged> root_render_pass =
+    raw_ptr<const AggregatedRenderPassList> render_passes_in_draw_order =
         nullptr;
+    raw_ptr<const AggregatedRenderPass> root_render_pass = nullptr;
     const AggregatedRenderPass* current_render_pass = nullptr;
 
     gfx::Rect root_damage_rect;
@@ -164,17 +163,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   // Puts the draw time wall in trace file relative to the |ready_timestamp|.
   virtual void AddCompositeTimeTraces(base::TimeTicks ready_timestamp);
-
-  // Returns the current frame buffer damage.
-  virtual gfx::Rect GetCurrentFramebufferDamage() const;
-
-  // Reshapes the output surface.
-  virtual void Reshape(const OutputSurface::ReshapeParams& reshape_params);
-
-  // Set the number of frame buffers to use when
-  // `supports_dynamic_frame_buffer_allocation` is true. `n` must satisfy
-  // 0 < n <= capabilities_.number_of_buffers.
-  virtual void EnsureMinNumberOfBuffers(int n) {}
 
   // Return the bounding rect of previously drawn delegated ink trail.
   gfx::Rect GetDelegatedInkTrailDamageRect();
@@ -314,11 +302,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // Points to the viz-global singleton.
   const raw_ptr<const DebugRendererSettings> debug_settings_;
   const raw_ptr<OutputSurface> output_surface_;
-  const raw_ptr<DisplayResourceProvider, DanglingUntriaged> resource_provider_;
+  const raw_ptr<DisplayResourceProvider> resource_provider_;
   // This can be replaced by test implementations.
   // TODO(weiliangc): For SoftwareRenderer and tests where overlay is not used,
   // use OverlayProcessorStub so this pointer is never null.
-  raw_ptr<OverlayProcessorInterface, DanglingUntriaged> overlay_processor_;
+  raw_ptr<OverlayProcessorInterface> overlay_processor_;
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.

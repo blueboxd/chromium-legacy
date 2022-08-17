@@ -34,7 +34,7 @@ public class TabSelectionEditorMenuItem {
     private Button mActionView;
 
     private Runnable mOnClickRunnable;
-    private Callback<List<Integer>> mOnSelectionStateChanged;
+    private Callback<List<Integer>> mOnSelectionStateChange;
 
     /**
      * @param context for loading resources.
@@ -67,6 +67,7 @@ public class TabSelectionEditorMenuItem {
         // TODO(ckitagawa): Work with UX on padding/margins/style.
         mActionView = (Button) LayoutInflater.from(mContext).inflate(
                 R.layout.tab_selection_editor_action_view, null);
+        mActionView.setId(mMenuItem.getItemId());
         // Default visibility is GONE.
         mMenuItem.setActionView(mActionView);
     }
@@ -87,7 +88,7 @@ public class TabSelectionEditorMenuItem {
     public void setContentDescription(
             @Nullable Integer contentDescriptionResourceId, int itemCount) {
         String contentDescription = null;
-        if (contentDescriptionResourceId != null) {
+        if (contentDescriptionResourceId != null && itemCount > 0) {
             contentDescription = mContext.getResources().getQuantityString(
                     contentDescriptionResourceId, itemCount, itemCount);
         }
@@ -128,7 +129,12 @@ public class TabSelectionEditorMenuItem {
         }
     }
 
-    public void setIconTint(ColorStateList colorStateList) {
+    public void setIconTint(@Nullable ColorStateList colorStateList) {
+        // A null colorStateList is used with TabSelectionEditorActionProperties.SKIP_ICON_TINT
+        // = true to signal that a custom tint is used. Ignore null so that this custom tint is
+        // not overridden.
+        if (colorStateList == null) return;
+
         MenuItemCompat.setIconTintList(mMenuItem, colorStateList);
         if (mActionView != null) {
             TextViewCompat.setCompoundDrawableTintList(mActionView, colorStateList);
@@ -142,8 +148,8 @@ public class TabSelectionEditorMenuItem {
         }
     }
 
-    public void setOnSelectionStateChanged(Callback<List<Integer>> callback) {
-        mOnSelectionStateChanged = callback;
+    public void setOnSelectionStateChange(Callback<List<Integer>> callback) {
+        mOnSelectionStateChange = callback;
     }
 
     /**
@@ -156,8 +162,8 @@ public class TabSelectionEditorMenuItem {
     /**
      * Updates the {@link TabSelectionEditorAction} with the currently selected tabs.
      */
-    public void onSelectionStateChanged(List<Integer> tabIds) {
-        mOnSelectionStateChanged.onResult(tabIds);
+    public void onSelectionStateChange(List<Integer> tabIds) {
+        mOnSelectionStateChange.onResult(tabIds);
     }
 
     private static int getShowAsAction(@ShowMode int showMode) {

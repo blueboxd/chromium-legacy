@@ -60,16 +60,16 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/audio/audio_devices_pref_handler_impl.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/disks/disk_mount_manager.h"
+#include "chromeos/ash/components/audio/audio_devices_pref_handler_impl.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/shill/shill_clients.h"
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
@@ -125,23 +125,23 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (bus) {
-    chromeos::shill_clients::Initialize(bus);
+    ash::shill_clients::Initialize(bus);
     ash::hermes_clients::Initialize(bus);
     ash::CrasAudioClient::Initialize(bus);
-    chromeos::CrosDisksClient::Initialize(bus);
+    ash::CrosDisksClient::Initialize(bus);
     chromeos::PowerManagerClient::Initialize(bus);
   } else {
-    chromeos::shill_clients::InitializeFakes();
+    ash::shill_clients::InitializeFakes();
     ash::hermes_clients::InitializeFakes();
     ash::CrasAudioClient::InitializeFake();
-    chromeos::CrosDisksClient::InitializeFake();
+    ash::CrosDisksClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
   }
 
   // Depends on CrosDisksClient.
   ash::disks::DiskMountManager::Initialize();
 
-  chromeos::NetworkHandler::Initialize();
+  ash::NetworkHandler::Initialize();
   network_controller_ = std::make_unique<ShellNetworkController>(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kAppShellPreferredNetwork));
@@ -306,12 +306,12 @@ void ShellBrowserMainParts::PostDestroyThreads() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   network_controller_.reset();
-  chromeos::NetworkHandler::Shutdown();
+  ash::NetworkHandler::Shutdown();
   ash::disks::DiskMountManager::Shutdown();
   chromeos::PowerManagerClient::Shutdown();
-  chromeos::CrosDisksClient::Shutdown();
+  ash::CrosDisksClient::Shutdown();
   ash::CrasAudioClient::Shutdown();
-  chromeos::shill_clients::Shutdown();
+  ash::shill_clients::Shutdown();
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

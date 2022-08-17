@@ -54,6 +54,7 @@ namespace ash {
   E_CPONLY(kColorAshButtonLabelColor) \
   /* Inverted `kColorAshButtonLabelColor` on current color mode. */ \
   E_CPONLY(kColorAshInvertedButtonLabelColor) \
+  E_CPONLY(kColorAshTextColorSuggestion) \
   E_CPONLY(kColorAshButtonLabelColorPrimary) \
   /* Color for blue button labels, e.g, 'Retry' button of the system toast. */ \
   E_CPONLY(kColorAshButtonLabelColorBlue) \
@@ -91,7 +92,9 @@ namespace ash {
   /* Color of the capture region in the capture session. */ \
   E_CPONLY(kColorAshCaptureRegionColor) \
   E_CPONLY(kColorAshInkDrop) \
-  E_CPONLY(kColorAshInkDropOpaqueColor)
+  E_CPONLY(kColorAshInkDropOpaqueColor) \
+  /* Colors for Google Assistant */ \
+  E_CPONLY(kColorAshAssistantGreetingEnabled)
 
 #include "ui/color/color_id_macros.inc"
 

@@ -30,6 +30,13 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSkipFrameCountForLazyEmbeds;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAutomaticLazyFrameLoadingToEmbedUrls;
+enum class AutomaticLazyFrameLoadingToEmbedLoadingStrategy {
+  kAllowList,
+  kNonAds,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
+    kAutomaticLazyFrameLoadingToEmbedLoadingStrategyParam;
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kBatchFetchRequests;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -242,9 +249,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkForegroundLightnessThresholdParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkBackgroundLightnessThresholdParam;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<
-    ForceDarkIncreaseTextContrast>
-    kForceDarkIncreaseTextContrastParam;
 
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
@@ -288,9 +292,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the feature
 // is in stable with no issues.
 BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
-
-BLINK_COMMON_EXPORT extern const base::Feature
-    kCancelFormSubmissionInDefaultHandler;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kAlignFontDisplayAutoTimeoutWithLCPGoal;
@@ -507,12 +508,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::Feature
     kBrowsingTopicsBypassIPIsPubliclyRoutableCheck;
 
-// When <dialog>s are closed, this focuses the "previously focused" element
-// which had focus when the <dialog> was first opened.
-// TODO(crbug.com/649162): Remove DialogFocusNewSpecBehavior after
-// the feature is in stable with no issues.
-BLINK_COMMON_EXPORT extern const base::Feature kDialogFocusNewSpecBehavior;
-
 // Makes autofill look across shadow boundaries when collecting form controls to
 // fill.
 BLINK_COMMON_EXPORT extern const base::Feature kAutofillShadowDOM;
@@ -529,8 +524,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kUsePageViewportInLCP;
 // other sinks connected do not use alpha.
 BLINK_COMMON_EXPORT extern const base::Feature kAllowDropAlphaForMediaStream;
 
-BLINK_COMMON_EXPORT extern const base::Feature kThirdPartyStoragePartitioning;
-
 BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
 
 // Suppresses console errors for CORS problems which report an associated
@@ -540,6 +533,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kCORSErrorsIssueOnly;
 // Makes Persistent quota the same as Temporary quota.
 BLINK_COMMON_EXPORT
 extern const base::Feature kPersistentQuotaIsTemporaryQuota;
+BLINK_COMMON_EXPORT bool IsPersistentQuotaIsTemporaryQuota();
 
 // If enabled, the ResourceLoadScheculer will take the current network state
 // into consideration, when it plans to delay a low-priority throttleable
@@ -567,6 +561,9 @@ extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
 // <param> urls within <object> elements. This feature is controlled by
 // blink::features::kHTMLParamElementUrlSupport.
 BLINK_COMMON_EXPORT extern const base::Feature kHTMLParamElementUrlSupport;
+
+// TODO(crbug.com/1307772): Enables the Pop-up API.
+BLINK_COMMON_EXPORT extern const base::Feature kHTMLPopupAttribute;
 
 // The HTTP RTT threshold: decide whether the
 // `kDelayLowPriorityRequestsAccordingToNetworkState` feature can take effect
@@ -653,8 +650,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClientHintThirdPartyDelegation;
 #if BUILDFLAG(IS_ANDROID)
 BLINK_COMMON_EXPORT extern const base::Feature kPrefetchAndroidFonts;
 #endif
-
-BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
 
 // Allows pages that support App Install Banners to stay eligible for the
 // back/forward cache.
@@ -757,6 +752,16 @@ enum class DelayAsyncScriptDelayType {
 };
 BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionCrossSiteOnlyParam;
+
+// If enabled, async scripts will be run on a lower priority task queue.
+// See https://crbug.com/1348467.
+BLINK_COMMON_EXPORT extern const base::Feature kLowPriorityAsyncScriptExecution;
+// The timeout value for kLowPriorityAsyncScriptExecution. Async scripts run on
+// lower priority queue until this timeout elapsed.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kTimeoutForLowPriorityAsyncScriptExecution;
 
 // If enabled, parser-blocking scripts are force-deferred.
 // https://crbug.com/1339112
@@ -794,6 +799,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrefetchFontLookupTables;
 // If enabled, inline scripts will be stream compiled using a background HTML
 // scanner.
 BLINK_COMMON_EXPORT extern const base::Feature kPrecompileInlineScripts;
+
+// If enabled, CSS will be tokenized in a background thread when possible.
+BLINK_COMMON_EXPORT extern const base::Feature kPretokenizeCSS;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPretokenizeInlineSheets;
 
 // TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
 // can adjust to us not simulating click events on a focus action. It should be
@@ -840,6 +850,15 @@ BLINK_COMMON_EXPORT extern const base::Feature kScrollUpdateOptimizations;
 // Allows reading/writing unsanitized content from/to the clipboard. Currently,
 // it is only applicable to HTML format. See crbug.com/1268679.
 BLINK_COMMON_EXPORT extern const base::Feature kClipboardUnsanitizedContent;
+
+// If enabled, the WebRTC_* threads in peerconnection module will use
+// kResourceEfficient thread type.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kWebRtcThreadsUseResourceEfficientType;
+
+// If enabled, fine-grained UMA metrics for IntersectionObserver will only be
+// collected on 10% of animation frames.
+BLINK_COMMON_EXPORT extern const base::Feature kThrottleIntersectionObserverUMA;
 
 }  // namespace features
 }  // namespace blink

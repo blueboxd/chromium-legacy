@@ -259,29 +259,36 @@ std::string GetHTMLStringForReferrerPolicy(const std::string& meta_policy,
 
 // A helper function to execute the given `scripts` in the main world of the
 // specified `frame`.
-void ExecuteScriptsInMainWorld(WebLocalFrame* frame,
-                               base::span<const String> scripts,
-                               WebScriptExecutionCallback* callback,
-                               bool wait_for_promise = true,
-                               bool user_gesture = false) {
+void ExecuteScriptsInMainWorld(
+    WebLocalFrame* frame,
+    base::span<const String> scripts,
+    WebScriptExecutionCallback callback,
+    mojom::blink::PromiseResultOption wait_for_promise =
+        mojom::blink::PromiseResultOption::kAwait,
+    mojom::blink::UserActivationOption user_gesture =
+        mojom::blink::UserActivationOption::kDoNotActivate) {
   Vector<WebScriptSource> sources;
   for (auto script : scripts)
     sources.push_back(WebScriptSource(script));
   frame->RequestExecuteScript(
       DOMWrapperWorld::kMainWorldId, sources, user_gesture,
-      WebLocalFrame::kSynchronous, callback, BackForwardCacheAware::kAllow,
-      wait_for_promise ? WebLocalFrame::PromiseBehavior::kAwait
-                       : WebLocalFrame::PromiseBehavior::kDontWait);
+      mojom::blink::EvaluationTiming::kSynchronous,
+      mojom::blink::LoadEventBlockingOption::kDoNotBlock, std::move(callback),
+      BackForwardCacheAware::kAllow, wait_for_promise);
 }
 
 // Same as above, but for a single script.
-void ExecuteScriptInMainWorld(WebLocalFrame* frame,
-                              String script_string,
-                              WebScriptExecutionCallback* callback,
-                              bool wait_for_promise = true,
-                              bool user_gesture = false) {
-  ExecuteScriptsInMainWorld(frame, base::make_span(&script_string, 1), callback,
-                            wait_for_promise, user_gesture);
+void ExecuteScriptInMainWorld(
+    WebLocalFrame* frame,
+    String script_string,
+    WebScriptExecutionCallback callback,
+    mojom::blink::PromiseResultOption wait_for_promise =
+        mojom::blink::PromiseResultOption::kAwait,
+    mojom::blink::UserActivationOption user_gesture =
+        mojom::blink::UserActivationOption::kDoNotActivate) {
+  ExecuteScriptsInMainWorld(frame, base::make_span(&script_string, 1),
+                            std::move(callback), wait_for_promise,
+                            user_gesture);
 }
 
 }  // namespace
@@ -529,14 +536,15 @@ TEST_F(WebFrameTest, FrameForEnteredContext) {
                                                ->MainWorldScriptContext()));
 }
 
-class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
+class ScriptExecutionCallbackHelper final {
  public:
-  explicit ScriptExecutionCallbackHelper(v8::Local<v8::Context> context)
-      : context_(context) {}
-  ~ScriptExecutionCallbackHelper() override = default;
-
   // Returns true if the callback helper was ever invoked.
   bool DidComplete() const { return did_complete_; }
+
+  WebScriptExecutionCallback Callback() {
+    return base::BindOnce(&ScriptExecutionCallbackHelper::Completed,
+                          base::Unretained(this));
+  }
 
   // Returns true if any results (even if they were empty) were passed to the
   // callback helper. This is generally false if the execution context was
@@ -563,8 +571,8 @@ class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
   }
 
  private:
-  // WebScriptExecutionCallback:
-  void Completed(const WebVector<v8::Local<v8::Value>>& values) override {
+  void Completed(const WebVector<v8::Local<v8::Value>>& values,
+                 base::TimeTicks start_time) {
     did_complete_ = true;
     string_values_.Grow(static_cast<wtf_size_t>(values.size()));
     for (wtf_size_t i = 0u; i < values.size(); ++i) {
@@ -587,10 +595,9 @@ TEST_F(WebFrameTest, RequestExecuteScript) {
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           "'hello';", &callback_helper);
+                           "'hello';", callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.SingleStringValue());
@@ -603,13 +610,12 @@ TEST_F(WebFrameTest, SuspendedRequestExecuteScript) {
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
 
   // Suspend scheduled tasks so the script doesn't run.
   web_view_helper.GetWebView()->GetPage()->SetPaused(true);
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           "'hello';", &callback_helper);
+                           "'hello';", callback_helper.Callback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
@@ -626,13 +632,11 @@ TEST_F(WebFrameTest, ExecuteScriptWithError) {
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope scope(isolate);
-  v8::Local<v8::Context> context =
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext();
-  ScriptExecutionCallbackHelper callback_helper(context);
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           "foo = bar; 'hello';", &callback_helper);
+                           "foo = bar; 'hello';", callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   // Even though an error is thrown here, it's swallowed by one of the
@@ -651,11 +655,10 @@ TEST_F(WebFrameTest, ExecuteScriptWithPromiseWithoutWait) {
   constexpr char kScript[] = R"(Promise.resolve('hello');)";
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           kScript, &callback_helper,
-                           /*wait_for_promise=*/false);
+                           kScript, callback_helper.Callback(),
+                           mojom::blink::PromiseResultOption::kDoNotWait);
   RunPendingTasks();
   // Since the caller specified the script shouldn't wait for the promise to
   // be resolved, the callback should have completed normally and the result
@@ -673,10 +676,9 @@ TEST_F(WebFrameTest, ExecuteScriptWithPromiseFulfilled) {
   constexpr char kScript[] = R"(Promise.resolve('hello');)";
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           kScript, &callback_helper);
+                           kScript, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.SingleStringValue());
@@ -691,10 +693,9 @@ TEST_F(WebFrameTest, ExecuteScriptWithPromiseRejected) {
   constexpr char kScript[] = R"(Promise.reject('hello');)";
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           kScript, &callback_helper);
+                           kScript, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   // Promise rejection, similar to errors, are represented by empty V8Values
@@ -715,9 +716,8 @@ TEST_F(WebFrameTest, ExecuteScriptWithFrameRemovalBeforePromiseResolves) {
 
   WebLocalFrame* iframe =
       web_view_helper.LocalMainFrame()->FirstChild()->ToWebLocalFrame();
-  ScriptExecutionCallbackHelper callback_helper(
-      iframe->MainWorldScriptContext());
-  ExecuteScriptInMainWorld(iframe, kScript, &callback_helper);
+  ScriptExecutionCallbackHelper callback_helper;
+  ExecuteScriptInMainWorld(iframe, kScript, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
@@ -744,10 +744,9 @@ TEST_F(WebFrameTest, ExecuteScriptWithMultiplePromises) {
   };
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptsInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                            scripts, &callback_helper, true);
+                            scripts, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.StringValueAt(0));
@@ -766,19 +765,17 @@ TEST_F(WebFrameTest, ExecuteScriptWithMultiplePromisesWithDelayedSettlement) {
   };
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptsInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                            scripts, &callback_helper, true);
+                            scripts, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
   {
-    ScriptExecutionCallbackHelper second_callback_helper(
-        web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+    ScriptExecutionCallbackHelper second_callback_helper;
     ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
                              String("window.resolveSecond('world');"),
-                             &second_callback_helper);
+                             second_callback_helper.Callback());
     RunPendingTasks();
     EXPECT_TRUE(second_callback_helper.DidComplete());
     EXPECT_EQ("undefined", second_callback_helper.SingleStringValue());
@@ -801,10 +798,9 @@ TEST_F(WebFrameTest, ExecuteScriptWithMultipleSourcesWhereSomeArePromises) {
   };
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptsInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                            scripts, &callback_helper, true);
+                            scripts, callback_helper.Callback());
   RunPendingTasks();
 
   EXPECT_TRUE(callback_helper.DidComplete());
@@ -824,10 +820,9 @@ TEST_F(WebFrameTest, ExecuteScriptWithPromisesWhereOnlySomeAreFulfilled) {
   };
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptsInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                            scripts, &callback_helper, true);
+                            scripts, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.StringValueAt(0));
@@ -850,7 +845,7 @@ TEST_F(WebFrameTest, RequestExecuteV8Function) {
   v8::HandleScope scope(isolate);
   v8::Local<v8::Context> context =
       web_view_helper.LocalMainFrame()->MainWorldScriptContext();
-  ScriptExecutionCallbackHelper callback_helper(context);
+  ScriptExecutionCallbackHelper callback_helper;
   v8::Local<v8::Function> function =
       v8::Function::New(context, callback).ToLocalChecked();
   v8::Local<v8::Value> args[] = {v8::Undefined(isolate),
@@ -859,7 +854,8 @@ TEST_F(WebFrameTest, RequestExecuteV8Function) {
       ->MainFrame()
       ->ToWebLocalFrame()
       ->RequestExecuteV8Function(context, function, v8::Undefined(isolate),
-                                 std::size(args), args, &callback_helper);
+                                 std::size(args), args,
+                                 callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.SingleStringValue());
@@ -884,12 +880,12 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   web_view_helper.GetWebView()->GetPage()->SetPaused(true);
 
-  ScriptExecutionCallbackHelper callback_helper(context);
+  ScriptExecutionCallbackHelper callback_helper;
   v8::Local<v8::Function> function =
       v8::Function::New(context, callback).ToLocalChecked();
   main_frame->RequestExecuteV8Function(context, function,
                                        v8::Undefined(context->GetIsolate()), 0,
-                                       nullptr, &callback_helper);
+                                       nullptr, callback_helper.Callback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
@@ -913,11 +909,10 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
   LocalFrame::NotifyUserActivation(
       web_view_helper.LocalMainFrame()->GetFrame(),
       mojom::UserActivationNotificationType::kTest);
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
                            "navigator.userActivation.isActive;",
-                           &callback_helper);
+                           callback_helper.Callback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
@@ -935,8 +930,7 @@ TEST_F(WebFrameTest, IframeScriptRemovesSelf) {
   web_view_helper.InitializeAndLoad(base_url_ + "single_iframe.html");
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  ScriptExecutionCallbackHelper callback_helper;
   ExecuteScriptInMainWorld(
       web_view_helper.GetWebView()
           ->MainFrame()
@@ -944,7 +938,7 @@ TEST_F(WebFrameTest, IframeScriptRemovesSelf) {
           ->ToWebLocalFrame(),
       "var iframe = window.top.document.getElementsByTagName('iframe')[0]; "
       "window.top.document.body.removeChild(iframe); 'hello';",
-      &callback_helper);
+      callback_helper.Callback());
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_FALSE(callback_helper.HasAnyResults());
@@ -995,8 +989,6 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
       event_type_names::kMessage, message_event_listener);
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
 
   {
     String post_message_wo_request(
@@ -1007,37 +999,55 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
 
     // The delegation info is not passed through a postMessage that is sent
     // without either user activation or the delegation option.
-    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                             post_message_wo_request, &callback_helper);
-    RunPendingTasks();
-    EXPECT_TRUE(callback_helper.DidComplete());
-    EXPECT_FALSE(message_event_listener->DelegateCapability());
+    {
+      ScriptExecutionCallbackHelper callback_helper;
+      ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                               post_message_wo_request,
+                               callback_helper.Callback());
+      RunPendingTasks();
+      EXPECT_TRUE(callback_helper.DidComplete());
+      EXPECT_FALSE(message_event_listener->DelegateCapability());
+    }
 
     // The delegation info is not passed through a postMessage that is sent
     // without user activation but with the delegation option.
-    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                             post_message_w_payment_request, &callback_helper);
-    RunPendingTasks();
-    EXPECT_TRUE(callback_helper.DidComplete());
-    EXPECT_FALSE(message_event_listener->DelegateCapability());
+    {
+      ScriptExecutionCallbackHelper callback_helper;
+      ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                               post_message_w_payment_request,
+                               callback_helper.Callback());
+      RunPendingTasks();
+      EXPECT_TRUE(callback_helper.DidComplete());
+      EXPECT_FALSE(message_event_listener->DelegateCapability());
+    }
 
     // The delegation info is not passed through a postMessage that is sent with
     // user activation but without the delegation option.
-    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                             post_message_wo_request, &callback_helper,
-                             /*wait_for_promise=*/true, /*user_gesture=*/true);
-    RunPendingTasks();
-    EXPECT_TRUE(callback_helper.DidComplete());
-    EXPECT_FALSE(message_event_listener->DelegateCapability());
+    {
+      ScriptExecutionCallbackHelper callback_helper;
+      ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                               post_message_wo_request,
+                               callback_helper.Callback(),
+                               blink::mojom::PromiseResultOption::kAwait,
+                               blink::mojom::UserActivationOption::kActivate);
+      RunPendingTasks();
+      EXPECT_TRUE(callback_helper.DidComplete());
+      EXPECT_FALSE(message_event_listener->DelegateCapability());
+    }
 
     // The delegation info is passed through a postMessage that is sent with
     // both user activation and the delegation option.
-    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                             post_message_w_payment_request, &callback_helper,
-                             /*wait_for_promise=*/true, /*user_gesture=*/true);
-    RunPendingTasks();
-    EXPECT_TRUE(callback_helper.DidComplete());
-    EXPECT_TRUE(message_event_listener->DelegateCapability());
+    {
+      ScriptExecutionCallbackHelper callback_helper;
+      ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                               post_message_w_payment_request,
+                               callback_helper.Callback(),
+                               blink::mojom::PromiseResultOption::kAwait,
+                               blink::mojom::UserActivationOption::kActivate);
+      RunPendingTasks();
+      EXPECT_TRUE(callback_helper.DidComplete());
+      EXPECT_TRUE(message_event_listener->DelegateCapability());
+    }
   }
 
   {
@@ -1048,10 +1058,12 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
     // The delegation info is passed through a postMessage that is sent with
     // both user activation and the delegation option for another known
     // capability.
+    ScriptExecutionCallbackHelper callback_helper;
     ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
                              post_message_w_fullscreen_request,
-                             &callback_helper,
-                             /*wait_for_promise=*/true, /*user_gesture=*/true);
+                             callback_helper.Callback(),
+                             blink::mojom::PromiseResultOption::kAwait,
+                             blink::mojom::UserActivationOption::kActivate);
     RunPendingTasks();
     EXPECT_TRUE(callback_helper.DidComplete());
     EXPECT_TRUE(message_event_listener->DelegateCapability());
@@ -1064,9 +1076,12 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
 
     // The delegation info is not passed through a postMessage that is sent with
     // user activation and the delegation option for an unknown capability.
+    ScriptExecutionCallbackHelper callback_helper;
     ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                             post_message_w_unknown_request, &callback_helper,
-                             /*wait_for_promise=*/true, /*user_gesture=*/true);
+                             post_message_w_unknown_request,
+                             callback_helper.Callback(),
+                             blink::mojom::PromiseResultOption::kAwait,
+                             blink::mojom::UserActivationOption::kActivate);
     RunPendingTasks();
     EXPECT_TRUE(callback_helper.DidComplete());
     EXPECT_FALSE(message_event_listener->DelegateCapability());
@@ -4150,6 +4165,7 @@ TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction) {
 }
 
 TEST_F(WebFrameTest, DivScrollIntoEditableTest) {
+  RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad("get_scale_for_zoom_into_editable_test.html");
 
   const bool kAutoZoomToLegibleScale = true;
@@ -9048,7 +9064,7 @@ TEST_F(WebFrameTest, ThemeColor) {
                                     &client);
   EXPECT_TRUE(host.DidNotify());
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
-  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
+  EXPECT_EQ(SK_ColorBLUE, frame->GetDocument().ThemeColor());
   // Change color by rgb.
   host.Reset();
   frame->ExecuteScript(
@@ -9056,7 +9072,7 @@ TEST_F(WebFrameTest, ThemeColor) {
                       "'rgb(0, 0, 0)');"));
   RunPendingTasks();
   EXPECT_TRUE(host.DidNotify());
-  EXPECT_EQ(Color::kBlack, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(SK_ColorBLACK, frame->GetDocument().ThemeColor());
   // Change color by hsl.
   host.Reset();
   frame->ExecuteScript(
@@ -9064,7 +9080,7 @@ TEST_F(WebFrameTest, ThemeColor) {
                       "'hsl(240,100%, 50%)');"));
   RunPendingTasks();
   EXPECT_TRUE(host.DidNotify());
-  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
+  EXPECT_EQ(SK_ColorBLUE, frame->GetDocument().ThemeColor());
   // Change of second theme-color meta tag will not change frame's theme
   // color.
   host.Reset();
@@ -9072,14 +9088,14 @@ TEST_F(WebFrameTest, ThemeColor) {
       "document.getElementById('tc2').setAttribute('content', '#00FF00');"));
   RunPendingTasks();
   EXPECT_TRUE(host.DidNotify());
-  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
+  EXPECT_EQ(SK_ColorBLUE, frame->GetDocument().ThemeColor());
   // Remove the first theme-color meta tag to apply the second.
   host.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').remove();"));
   RunPendingTasks();
   EXPECT_TRUE(host.DidNotify());
-  EXPECT_EQ(Color(0, 255, 0), frame->GetDocument().ThemeColor());
+  EXPECT_EQ(SK_ColorGREEN, frame->GetDocument().ThemeColor());
   // Remove the name attribute of the remaining meta.
   host.Reset();
   frame->ExecuteScript(WebScriptSource(
@@ -10187,10 +10203,9 @@ class DeviceEmulationTest : public WebFrameTest {
   String DumpSize(const String& id) {
     String code = "dumpSize('" + id + "')";
     v8::HandleScope scope(v8::Isolate::GetCurrent());
-    ScriptExecutionCallbackHelper callback_helper(
-        web_view_helper_.LocalMainFrame()->MainWorldScriptContext());
+    ScriptExecutionCallbackHelper callback_helper;
     ExecuteScriptInMainWorld(web_view_helper_.GetWebView()->MainFrameImpl(),
-                             code, &callback_helper);
+                             code, callback_helper.Callback());
     RunPendingTasks();
     EXPECT_TRUE(callback_helper.DidComplete());
     return callback_helper.SingleStringValue();

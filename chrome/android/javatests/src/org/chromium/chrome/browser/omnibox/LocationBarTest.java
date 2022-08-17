@@ -16,7 +16,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
 import android.content.Intent;
@@ -39,12 +38,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mockito.stubbing.Answer;
 
-import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.Promise;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -62,6 +61,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -81,6 +82,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
+@DoNotBatch(reason = "Test start up behaviors.")
 public class LocationBarTest {
     private static final String TEST_QUERY = "testing query";
     private static final List<String> TEST_PARAMS = Arrays.asList("foo=bar");
@@ -122,6 +124,9 @@ public class LocationBarTest {
             TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
             LocaleManager.getInstance().setDelegateForTest(mLocaleManagerDelegate);
             SearchEngineLogoUtils.setInstanceForTesting(mSearchEngineLogoUtils);
+            doReturn(new Promise<>())
+                    .when(mSearchEngineLogoUtils)
+                    .getSearchEngineLogo(any(), anyInt(), any(), any());
         });
     }
 
@@ -198,16 +203,12 @@ public class LocationBarTest {
                     .when(mTemplateUrlService)
                     .getDefaultSearchEngineTemplateUrl();
 
-            Answer logoAnswer = (invocation) -> {
-                ((Callback<StatusIconResource>) invocation.getArgument(4))
-                        .onResult(new StatusIconResource(
-                                isGoogle ? R.drawable.ic_logo_googleg_20dp : R.drawable.ic_search,
-                                0));
-                return null;
-            };
-            doAnswer(logoAnswer)
+            Promise<StatusIconResource> logoPromise = Promise.fulfilled(new StatusIconResource(
+                    isGoogle ? R.drawable.ic_logo_googleg_20dp : R.drawable.ic_search, 0));
+
+            doReturn(logoPromise)
                     .when(mSearchEngineLogoUtils)
-                    .getSearchEngineLogo(any(), anyInt(), any(), any(), any());
+                    .getSearchEngineLogo(any(), anyInt(), any(), any());
         });
     }
 
@@ -615,6 +616,41 @@ public class LocationBarTest {
         mOmnibox.requestFocus();
         mOmnibox.checkFocus(true);
         mOmnibox.clearFocus();
+        mOmnibox.checkFocus(false);
+    }
+
+    /**
+     * Test that back press should make the omnibox unfocused.
+     */
+    @Test
+    @MediumTest
+    @DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testFocusLogic_backPress() {
+        startActivityNormally();
+
+        mOmnibox.requestFocus();
+        mOmnibox.checkFocus(true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mLocationBarMediator.backKeyPressed());
+        mOmnibox.checkFocus(false);
+    }
+
+    /**
+     * Same with {@link #testFocusLogic_backPress()}, but with predictive back gesture enabled.
+     */
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testFocusLogic_backPress_Refactored() {
+        startActivityNormally();
+
+        mOmnibox.requestFocus();
+        mOmnibox.checkFocus(true);
+        Assert.assertTrue(mLocationBarMediator.getHandleBackPressChangedSupplier().get());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivity.getOnBackPressedDispatcher().onBackPressed());
+        Assert.assertFalse(mLocationBarMediator.getHandleBackPressChangedSupplier().get());
         mOmnibox.checkFocus(false);
     }
 

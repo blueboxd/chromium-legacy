@@ -199,7 +199,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return true;
   } else if (key == shill::kUIDataProperty) {
     std::unique_ptr<NetworkUIData> ui_data =
-        chromeos::shill_property_util::GetUIDataFromValue(value);
+        shill_property_util::GetUIDataFromValue(value);
     if (!ui_data)
       return false;
     onc_source_ = ui_data->onc_source();
@@ -652,11 +652,15 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
   if (connection_state_ == shill::kStateNoConnectivity) {
     shill_portal_state_ = PortalState::kNoInternet;
   } else if (connection_state_ == shill::kStateRedirectFound) {
-    shill_portal_state_ = status_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED
-                              ? PortalState::kProxyAuthRequired
-                              : PortalState::kPortal;
+    shill_portal_state_ = PortalState::kPortal;
   } else if (connection_state_ == shill::kStatePortalSuspected) {
-    shill_portal_state_ = PortalState::kPortalSuspected;
+    if (status_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+      // If Shill's portal detection HTTP probe returns a 407 response, Shill
+      // will treat that as a portal-suspected state.
+      shill_portal_state_ = PortalState::kProxyAuthRequired;
+    } else {
+      shill_portal_state_ = PortalState::kPortalSuspected;
+    }
   } else if (connection_state_ == shill::kStateOnline) {
     shill_portal_state_ = PortalState::kOnline;
   } else {
@@ -667,7 +671,7 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
                             shill_portal_state_);
   if (shill_portal_state_ != PortalState::kOnline) {
     NET_LOG(EVENT) << "Shill captive portal state for: " << NetworkId(this)
-                   << " = " << static_cast<int>(shill_portal_state_)
+                   << " = " << shill_portal_state_
                    << " ,status_code=" << status_code;
     base::UmaHistogramSparse("CaptivePortal.NetworkStateStatusCode",
                              std::abs(status_code));
@@ -685,6 +689,31 @@ void NetworkState::SetVpnProvider(const std::string& id,
     vpn_provider_ = std::make_unique<VpnProviderInfo>();
   vpn_provider_->id = id;
   vpn_provider_->type = type;
+}
+
+std::ostream& operator<<(std::ostream& stream,
+                         const NetworkState::PortalState& portal_state) {
+  switch (portal_state) {
+    case NetworkState::PortalState::kUnknown:
+      stream << "Unknown";
+      break;
+    case NetworkState::PortalState::kOnline:
+      stream << "Online";
+      break;
+    case NetworkState::PortalState::kPortalSuspected:
+      stream << "PortalSuspected";
+      break;
+    case NetworkState::PortalState::kPortal:
+      stream << "Portal";
+      break;
+    case NetworkState::PortalState::kProxyAuthRequired:
+      stream << "ProxyAuthRequired";
+      break;
+    case NetworkState::PortalState::kNoInternet:
+      stream << "NoInternet";
+      break;
+  }
+  return stream;
 }
 
 }  // namespace ash

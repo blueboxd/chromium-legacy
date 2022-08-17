@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
@@ -21,6 +20,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
 
 namespace {
 
@@ -42,7 +42,12 @@ void RequestFileSystemDialogView::ShowDialog(
       web_contents);
 }
 
-RequestFileSystemDialogView::~RequestFileSystemDialogView() {}
+RequestFileSystemDialogView::~RequestFileSystemDialogView() {
+  // Ensure that `callback_` is invoked when dialog is destroyed by means beyond
+  // its UI elements, e.g., by App closing.
+  if (callback_)
+    std::move(callback_).Run(ui::DIALOG_BUTTON_CANCEL);
+}
 
 gfx::Size RequestFileSystemDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDialogMaxWidth,
@@ -77,7 +82,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
                                   ui::DIALOG_BUTTON_CANCEL));
   SetModalType(ui::MODAL_TYPE_CHILD);
 
-  DCHECK(!callback_.is_null());
+  DCHECK(callback_);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::DialogContentType::kText, views::DialogContentType::kText));
 
@@ -96,7 +101,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
       AddChildView(std::make_unique<views::StyledLabel>());
   label->SetText(message);
   views::StyledLabel::RangeStyleInfo bold_style;
-  bold_style.text_style = STYLE_EMPHASIZED;
+  bold_style.text_style = views::style::STYLE_EMPHASIZED;
 
   DCHECK_EQ(2u, placeholder_offsets.size());
   label->AddStyleRange(gfx::Range(placeholder_offsets[0],

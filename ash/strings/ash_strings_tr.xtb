@@ -100,6 +100,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1455242230282523554">Dil ayarlarını gösterin</translation>
 <translation id="1460620680449458626">Ses kapalı.</translation>
 <translation id="1467432559032391204">Sola</translation>
+<translation id="146902737843070955">Yöneticiniz bu değişikliği istedi</translation>
 <translation id="147310119694673958">Telefon pili %<ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="1479909375538722835">Kayan erişilebilirlik menüsü</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Takvim görünümünü açmak için Enter tuşuna basın</translation>
@@ -327,6 +328,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2894949423239620203">Kullanılan kablo, performansı etkileyebilir</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> ağına bağlı, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Yakalanan ekranlar</translation>
+<translation id="2925246975070834767">Kendinizi ekranın ortasına yerleştirmek için otomatik yakınlaştırmayı deneyin. Bu özelliği Hızlı Ayarlar'dan açın.</translation>
 <translation id="2941112035454246133">Düşük</translation>
 <translation id="2942350706960889382">Yerleştirilmiş Büyüteç</translation>
 <translation id="2942516765047364088">Raf konumu</translation>
@@ -444,6 +446,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3593039967545720377">Panonuzu görüntülemek üzere <ph name="SHORTCUT_KEY_NAME" /> + V tuşlarına basarak pano geçmişinize erişin. Başlamak için bir öğe kopyalayın.</translation>
 <translation id="3593646411856133110">Açık uygulamaları görmek için yukarı kaydırıp basılı tutun</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
+<translation id="3596012367874587041">Uygulama ayarları</translation>
 <translation id="3600061223661453002">Kapalı</translation>
 <translation id="3604801046548457007">Masa <ph name="DESK_TITILE" /> oluşturuldu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
@@ -469,6 +472,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="3708186454126126312">Daha önce bağlanılmış cihazlar</translation>
 <translation id="371370241367527062">Ön mikrofon</translation>
 <translation id="3713734891607377840">Tamamlandığında aç</translation>
+<translation id="3724279623330129812">Otomatik yakınlaştırma, kamerayı ortaladı</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> ve <ph name="UNAVAILABLE_APPS_COUNT" /> uygulama daha bu cihazda yok.</translation>
 <translation id="3735740477244556633">Sıralama ölçütü</translation>
 <translation id="3742055079367172538">Ekran görüntüsü alındı</translation>
@@ -633,6 +637,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="4628757576491864469">Cihazlar</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> Yıldız puanı</translation>
 <translation id="4633185660152240791">{0,plural, =1{Cihazı bir gün içinde önceki sürüme geçirin}other{Cihazı # gün içinde önceki sürüme geçirin}}</translation>
+<translation id="4633636853437260449">Silmek için Ctrl+W tuşlarına basın</translation>
 <translation id="4642092649622328492">Kısmi ekran görüntüsü alır</translation>
 <translation id="4644727592819780893">Bölge, kamera önizlemesi için çok küçük</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Uygulama önerisi</translation>
@@ -772,7 +777,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="5426063383988017631">Ayarlar menüsü kapatıldı</translation>
 <translation id="5428899915242071344">Seçmeye başla</translation>
 <translation id="5429993543155113935">Gizli pencereler şu anda desteklenmiyor</translation>
-<translation id="5430931332414098647">Anında Tethering</translation>
+<translation id="5430931332414098647">Hızlı Tethering</translation>
 <translation id="5431318178759467895">Renk</translation>
 <translation id="5433020815079095860">Ses girişi</translation>
 <translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
@@ -834,6 +839,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="5779721926447984944">Sabitlenmiş dosyalar</translation>
 <translation id="5788127256798019331">Play dosyaları</translation>
 <translation id="5790085346892983794">Başarılı</translation>
+<translation id="5804651031882187592">"SIM kilidi" ayarını devre dışı bırakın</translation>
 <translation id="5805809050170488595"><ph name="NETWORK_NAME" /> ağını etkinleştirmek için tıklayın</translation>
 <translation id="5825969630400862129">Bağlı cihaz ayarları</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> adlı alıcıya <ph name="ROUTE_TITLE" /> yayınını durdur</translation>

@@ -100,6 +100,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1455242230282523554">Onyesha mipangilio ya lugha</translation>
 <translation id="1460620680449458626">Umezima sauti.</translation>
 <translation id="1467432559032391204">Kushoto</translation>
+<translation id="146902737843070955">Msimamizi wako ameomba badiliko hili</translation>
 <translation id="147310119694673958">Betri ya simu: asilimia <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="1479909375538722835">Menyu ya ufikivu inayoelea</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Bofya kitufe cha enter ili ufungue mwonekano wa Kalenda</translation>
@@ -327,6 +328,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="2894949423239620203">Kebo inaweza kuathiri utendaji wa kifaa</translation>
 <translation id="2903844815300039659">Imeunganishwa kwenye <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Picha za skrini</translation>
+<translation id="2925246975070834767">Jaribu kukuza kiotomatiki ili uangalie maudhui katikati ya skrini. Washa kipengele cha kukuza kiotomatiki kwenye Mipangilio ya Haraka.</translation>
 <translation id="2941112035454246133">Chini</translation>
 <translation id="2942350706960889382">Kikuzaji Kilichoambatishwa</translation>
 <translation id="2942516765047364088">Nafasi ya rafu</translation>
@@ -444,6 +446,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3593039967545720377">Fikia historia ya ubao wako wa kunakili kwa kubonyeza kitufe cha <ph name="SHORTCUT_KEY_NAME" /> pamoja na herufi V ili uangalie ubao wako wa kunakili. Nakili kipengee ili uanze.</translation>
 <translation id="3593646411856133110">Telezesha kidole juu na ushikilie ili uone programu zilizofunguliwa</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
+<translation id="3596012367874587041">Mipangilio ya programu</translation>
 <translation id="3600061223661453002">Zima</translation>
 <translation id="3604801046548457007">Kiolesura cha <ph name="DESK_TITILE" /> kimeanzishwa</translation>
 <translation id="3606978283550408104">Onyesho la breli limeunganishwa.</translation>
@@ -469,6 +472,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="3708186454126126312">Vilivyounganishwa awali</translation>
 <translation id="371370241367527062">Maikrofoni ya mbele</translation>
 <translation id="3713734891607377840">Ifungue ikimaliza kupakuliwa</translation>
+<translation id="3724279623330129812">Kipengele cha kukuza kiotomatiki kimeweka kamera katikati</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> na zingine <ph name="UNAVAILABLE_APPS_COUNT" /> hazipo kwenye kifaa hiki.</translation>
 <translation id="3735740477244556633">Panga kwa</translation>
 <translation id="3742055079367172538">Picha ya skrini imepigwa</translation>
@@ -633,6 +637,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="4628757576491864469">Vifaa</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Ukadiriaji wa nyota <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{Badilisha utumie toleo la awali kwenye kifaa ndani ya siku moja}other{Badilisha utumie toleo la awali kwenye kifaa ndani ya siku #}}</translation>
+<translation id="4633636853437260449">Bonyeza Ctrl+W ili ufute</translation>
 <translation id="4642092649622328492">Piga picha ya sehemu ya skrini</translation>
 <translation id="4644727592819780893">Eneo ni dogo sana kuweka onyesho la kamera</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Pendekezo la programu</translation>
@@ -834,6 +839,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="5779721926447984944">Faili zilizobandikwa</translation>
 <translation id="5788127256798019331">Faili za Google Play</translation>
 <translation id="5790085346892983794">Mafanikio</translation>
+<translation id="5804651031882187592">Zima mipangilio ya "Kufunga SIM"</translation>
 <translation id="5805809050170488595">Bofya ili uwashe <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Mipangilio ya vifaa vilivyounganishwa</translation>
 <translation id="5837036133683224804">Komesha <ph name="ROUTE_TITLE" /> kwenye <ph name="RECEIVER_NAME" /></translation>

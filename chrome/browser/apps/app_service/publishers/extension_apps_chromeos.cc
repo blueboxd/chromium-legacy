@@ -687,7 +687,15 @@ bool ExtensionAppsChromeOs::IsBlocklisted(const std::string& app_id) {
   // In the App Service world, there should be a unique app publisher for any
   // given app. In this case, the ArcApps publisher publishes the Play Store
   // app, and the ExtensionApps publisher does not.
-  return app_id == arc::kPlayStoreAppId;
+  if (app_id == arc::kPlayStoreAppId)
+    return true;
+
+  // If an extension runs in both ash and lacros, then don't publish it as that
+  // would conflict with lacros publishing it. This path is used for both
+  // extensions and extension apps.
+  return crosapi::browser_util::IsLacrosChromeAppsEnabled() &&
+         (extensions::ExtensionRunsInBothOSAndStandaloneBrowser(app_id) ||
+          extensions::ExtensionAppRunsInBothOSAndStandaloneBrowser(app_id));
 }
 
 void ExtensionAppsChromeOs::UpdateShowInFields(const std::string& app_id) {
@@ -718,11 +726,9 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
     return;
   }
 
-  const base::Value* disabled_system_features_pref =
-      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
-  if (!disabled_system_features_pref) {
-    return;
-  }
+  const base::Value::List& disabled_system_features_pref =
+      local_state->GetValueList(
+          policy::policy_prefs::kSystemFeaturesDisableList);
 
   const bool is_pref_disabled_mode_hidden =
       local_state->GetString(
@@ -1026,12 +1032,12 @@ content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
 }
 
 void ExtensionAppsChromeOs::UpdateAppDisabledState(
-    const base::Value* disabled_system_features_pref,
+    const base::Value::List& disabled_system_features_pref,
     int feature,
     const std::string& app_id,
     bool is_disabled_mode_changed) {
-  const bool is_disabled = base::Contains(
-      disabled_system_features_pref->GetListDeprecated(), base::Value(feature));
+  const bool is_disabled =
+      base::Contains(disabled_system_features_pref, base::Value(feature));
   // Sometimes the policy is updated before the app is installed, so this way
   // the disabled_apps_ is updated regardless the Publish should happen or not
   // and the app will be published with the correct readiness upon its

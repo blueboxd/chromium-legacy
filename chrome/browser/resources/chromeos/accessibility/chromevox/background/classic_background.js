@@ -5,6 +5,8 @@
 /**
  * @fileoverview Script that runs on the background page.
  */
+import {constants} from '../../common/constants.js';
+import {AbstractEarcons} from '../common/abstract_earcons.js';
 import {AbstractTts} from '../common/abstract_tts.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
@@ -12,6 +14,7 @@ import {BridgeHelper} from '../common/bridge_helper.js';
 import {CompositeTts} from '../common/composite_tts.js';
 import {ExtensionBridge} from '../common/extension_bridge.js';
 import {Msgs} from '../common/msgs.js';
+import {QueueMode, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
 
 import {BrailleBackground} from './braille/braille_background.js';
 import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';

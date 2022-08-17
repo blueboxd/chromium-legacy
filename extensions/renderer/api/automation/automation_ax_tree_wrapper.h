@@ -6,7 +6,6 @@
 #define EXTENSIONS_RENDERER_API_AUTOMATION_AUTOMATION_AX_TREE_WRAPPER_H_
 
 #include "extensions/common/api/automation.h"
-#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_manager.h"
@@ -19,8 +18,7 @@ class AutomationInternalCustomBindings;
 
 // A class that wraps one AXTree and all of the additional state
 // and helper methods needed to use it for the automation API.
-class AutomationAXTreeWrapper : public ui::AXTreeObserver,
-                                public ui::AXTreeManager {
+class AutomationAXTreeWrapper : public ui::AXTreeManager {
  public:
   AutomationAXTreeWrapper(ui::AXTreeID tree_id,
                           AutomationInternalCustomBindings* owner);
@@ -48,7 +46,6 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
       const std::string& app_id,
       const AutomationInternalCustomBindings* owner);
 
-  ui::AXTree* tree() { return &tree_; }
   AutomationInternalCustomBindings* owner() { return owner_; }
 
   // Called by AutomationInternalCustomBindings::OnAccessibilityEvents on
@@ -113,11 +110,8 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
   ui::AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
                               const ui::AXNodeID node_id) const override;
   ui::AXNode* GetNodeFromTree(const ui::AXNodeID node_id) const override;
-  ui::AXTreeID GetTreeID() const override;
   ui::AXTreeID GetParentTreeID() const override;
-  ui::AXNode* GetRootAsAXNode() const override;
   ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
-  std::string ToString() const override;
 
  private:
   // AXTreeObserver overrides.
@@ -138,12 +132,9 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
                         ui::AXNode* node,
                         bool is_ignored_new_value) override;
 
-  ui::AXTreeID tree_id_;
-  ui::AXTree tree_;
   AutomationInternalCustomBindings* owner_;
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
-  ui::AXEventGenerator event_generator_;
 
   int32_t accessibility_focused_id_ = ui::kInvalidAXNodeID;
 

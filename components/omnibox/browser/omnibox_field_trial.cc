@@ -601,6 +601,12 @@ const base::FeatureParam<bool>
         "FuzzyUrlSuggestionsCounterfactual",
         false);
 
+const base::FeatureParam<bool>
+    OmniboxFieldTrial::kFuzzyUrlSuggestionsLowEndBypass(
+        &omnibox::kOmniboxFuzzyUrlSuggestions,
+        "FuzzyUrlSuggestionsLowEndBypass",
+        false);
+
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }
@@ -780,7 +786,8 @@ bool UseSharedInstanceForZeroSuggestPrefetching() {
 
 bool IsZeroSuggestPrefetchingEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) ||
-         base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP);
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP) ||
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnWeb);
 }
 
 const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(

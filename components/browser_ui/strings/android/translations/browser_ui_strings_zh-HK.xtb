@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">已暫停下載</translation>
 <translation id="1409426117486808224">使用簡化檢視模式查看開啟的分頁</translation>
 <translation id="1415402041810619267">縮短咗網址</translation>
+<translation id="1426410128494586442">是</translation>
 <translation id="1446450296470737166">允許全權控制 MIDI 裝置。</translation>
 <translation id="1620510694547887537">相機</translation>
 <translation id="1644574205037202324">記錄</translation>
@@ -161,6 +162,7 @@
 <translation id="4645575059429386691">由您的家長管理</translation>
 <translation id="4670064810192446073">虛擬實境</translation>
 <translation id="4751476147751820511">動態或光線感應器</translation>
+<translation id="4811450222531576619">瞭解頁面的來源和主題</translation>
 <translation id="4836046166855586901">在網站要求知道您是否正在使用此裝置時詢問您</translation>
 <translation id="4883854917563148705">無法重設受管理的設定</translation>
 <translation id="4887024562049524730">在允許網站使用您的虛擬實境裝置和資料前先詢問您 (建議)</translation>
@@ -243,6 +245,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">禁止網站使用您的虛擬實境裝置和資料</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="6467852467360539617">清除資料並重設權限</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6545864417968258051">藍牙掃瞄</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{已封鎖「<ph name="PERMISSION_1" />」、「<ph name="PERMISSION_2" />」和另外 <ph name="NUM_MORE" /> 項權限}other{已封鎖「<ph name="PERMISSION_1" />」、「<ph name="PERMISSION_2" />」和另外 <ph name="NUM_MORE" /> 項權限}}</translation>
@@ -282,6 +285,7 @@
 <translation id="7250468141469952378">揀咗 <ph name="ITEM_COUNT" /> 個</translation>
 <translation id="7260727271532453612">已允許「<ph name="PERMISSION_1" />」和「<ph name="PERMISSION_2" />」</translation>
 <translation id="7302486331832100261">您通常會封鎖通知。如要允許，請輕按 [詳情]。</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> 的設定</translation>
 <translation id="7423098979219808738">事先詢問</translation>
 <translation id="7423538860840206698">禁止讀取剪貼簿</translation>
 <translation id="7425915948813553151">網站深色主題背景</translation>

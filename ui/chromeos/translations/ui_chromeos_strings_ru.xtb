@@ -5,6 +5,7 @@
 <translation id="1047956942837015229">Удаление элементов (<ph name="COUNT" />)…</translation>
 <translation id="1049926623896334335">Документ Word</translation>
 <translation id="1056775291175587022">Нет сетей</translation>
+<translation id="1056898198331236512">Внимание</translation>
 <translation id="1060368002126861100">Чтобы открыть файлы с помощью приложения "<ph name="APP_NAME" />", переместите их в папку "Файлы Windows".</translation>
 <translation id="1062407476771304334">Заменить</translation>
 <translation id="1119447706177454957">Внутренняя ошибка</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">Сертификат аутентификации отклонен сетью</translation>
 <translation id="255937426064304553">США (международная)</translation>
 <translation id="2563185590376525700">Лягушка</translation>
-<translation id="2570012981255377263">Здесь будут появляться ваши недавние файлы.</translation>
 <translation id="2578394532502990878">Тамильский, фонетический</translation>
 <translation id="2579959351793446050">Ория</translation>
 <translation id="2602810353103180630">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" /> %, заблокирована администратором, дополнительные сведения</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">Недействительный PIN-код. Осталось попыток: <ph name="RETRIES" />.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> (<ph name="ISSUED_TO" />). Поддерживается аппаратным обеспечением.</translation>
 <translation id="3188257591659621405">Мои файлы</translation>
+<translation id="3194553149358267393">Нет недавних аудиофайлов.</translation>
 <translation id="3197563288998582412">Британская (раскладка Дворака)</translation>
 <translation id="3202131003361292969">Путь</translation>
 <translation id="3205852408225871810">Португальский (Бразилия)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3486821258960016770">Монгольский</translation>
 <translation id="3495304270784461826">Ошибок: <ph name="COUNT" />.</translation>
+<translation id="3495810061346586977">Это конфиденциальный файл, и администратор ограничил его использование. <ph name="BEGIN_LINK_HELP" />Подробнее…<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", статус защиты – "<ph name="SECURITY_STATUS" />", статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" /> %, подробная информация</translation>
 <translation id="3522708245912499433">Португальский</translation>
 <translation id="3524311639100184459">Внимание! Эти файлы – временные. Они могут быть автоматически удалены, чтобы освободить место на диске.  <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3548125359243647069">PIN-код был введен неверно слишком много раз.</translation>
 <translation id="3549797760399244642">Перейти на drive.google.com…</translation>
 <translation id="3553048479571901246">Чтобы открыть файлы с помощью приложения "<ph name="APP_NAME" />", скопируйте их в папку "Файлы Windows".</translation>
 <translation id="3556731189587832921">Английский (США), международная раскладка (ПК)</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">Турецкая раскладка</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3619115746895587757">Капучино</translation>
+<translation id="3619593063686672873">Нет недавних видео.</translation>
 <translation id="3620292326130836921">Данные сохранены!</translation>
 <translation id="3634507049637220048">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", статус подключения – "<ph name="CONNECTION_STATUS" />", под управлением администратора, подробная информация</translation>
 <translation id="3645233063072417428">Перемещено объектов: <ph name="NUMBER_OF_ITEMS" />.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-файл</translation>
 <translation id="457386861538956877">Ещё...</translation>
 <translation id="4579744207439506346">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
+<translation id="4583436353463424810">Нет недавних документов.</translation>
 <translation id="4594543368593301662">Результаты поиска по запросу "<ph name="SEARCH_TERM" />".</translation>
 <translation id="4599600860674643278">Фильтр сброшен.</translation>
 <translation id="4603392156942865207">Копирование файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
@@ -485,7 +490,9 @@
 <translation id="5159560892333415631">Очистить корзину</translation>
 <translation id="5163869187418756376">Не удалось предоставить доступ. Проверьте подключение к сети и повторите попытку.</translation>
 <translation id="516592729076796170">Клавиатура Дворака для программистов (США)</translation>
+<translation id="5172749059808361023">Сведения об ограничениях</translation>
 <translation id="5177526793333269655">Уменьшенные изображения</translation>
+<translation id="5181896909298187506">Нет недавних файлов.</translation>
 <translation id="5194713942430106590">Нажмите, чтобы отсортировать значения в столбце по возрастанию.</translation>
 <translation id="5211614973734216083">Фарерский</translation>
 <translation id="5218183485292899140">Швейцарская (французская)</translation>
@@ -541,7 +548,6 @@
 <translation id="5625294776298156701">Тамильский, раскладка Tamil99</translation>
 <translation id="5633226425545095130">Если вы переместите этот объект, то его увидят все пользователи, у которых есть доступ к общей папке "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Прослушать</translation>
-<translation id="5665074015635552640">Здесь будут появляться ваши недавние видео.</translation>
 <translation id="5669691691057771421">Введите новый PIN-код</translation>
 <translation id="5678784840044122290">Приложение Linux будет доступно в терминале. Кроме того, на панель запуска мог быть добавлен значок.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Не удалось отключиться от архива или электронного диска<ph name="END_BOLD" />
@@ -614,6 +620,7 @@
 <translation id="6267547857941397424">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, телефон – <ph name="PHONE_NAME" />, уровень сигнала – <ph name="SIGNAL_STRENGTH" /> %, заряд батареи – <ph name="BATTERY_STATUS" /> %, подключение</translation>
 <translation id="6269630227984243955">Малайский</translation>
 <translation id="6287852322318138013">Выберите программу, в которой необходимо открыть этот файл</translation>
+<translation id="6295542640242147836">Блокировка SIM-карты</translation>
 <translation id="6296410173147755564">Недействительный PUK-код.</translation>
 <translation id="6312403991423642364">Неизвестная ошибка сети</translation>
 <translation id="6317608858038767920">Пользовательский DNS-сервер <ph name="INPUT_INDEX" /></translation>
@@ -686,7 +693,6 @@
     Обнаружены файлы (<ph name="FILE_COUNT" />).</translation>
 <translation id="6935521024859866267">Вверх ногами</translation>
 <translation id="6943836128787782965">Произошла ошибка запроса HTTP GET</translation>
-<translation id="6945604978460872381">Здесь будут появляться ваши недавние документы.</translation>
 <translation id="6949408524333579394">Сербский, транслитерация</translation>
 <translation id="6954309393500027528">Администратор заблокировал вставку этого файла.</translation>
 <translation id="6960565108681981554">Сеть не активирована. Свяжитесь с оператором.</translation>
@@ -723,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> ГБ</translation>
 <translation id="7191454237977785534">Сохранить файл как</translation>
 <translation id="7229570126336867161">Необходимо наличие EV-DO</translation>
+<translation id="7230898482850090046">Администратор отправил вам запрос на отключение блокировки SIM-карты.</translation>
 <translation id="7238097264433196391">Название диска</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, подробная информация</translation>
 <translation id="7246947237293279874">FTP-прокси</translation>
@@ -734,7 +741,6 @@
 <translation id="7295662345261934369">Предоставить доступ</translation>
 <translation id="7297443947353982503">Либо вы ввели неверное имя пользователя или пароль, либо не удалось выполнить аутентификацию по протоколу EAP</translation>
 <translation id="7309413087278791451">Немецкий (Бельгия)</translation>
-<translation id="7313374447885864533">Здесь будут появляться ваши недавние аудиофайлы.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7343393116438664539">Вьетнамский, раскладка Telex</translation>
 <translation id="7357762654218998920">Этот тип файла не поддерживается. Подробнее <ph name="BEGIN_LINK_HELP" />об открытии файлов в Chrome OS<ph name="END_LINK_HELP" />…</translation>
@@ -744,6 +750,7 @@
 <translation id="7408870451288633753">Чешский</translation>
 <translation id="7417453074306512035">Эфиопская раскладка</translation>
 <translation id="7417705661718309329">Карта Google</translation>
+<translation id="7458955835361612701">Нет недавних изображений.</translation>
 <translation id="7460898608667578234">Украинский</translation>
 <translation id="7469894403370665791">Автоматически подключаться к этой сети</translation>
 <translation id="7486315294984620427">Чтобы загрузить файлы в Parallels Desktop, скопируйте их в папку "Файлы Windows".</translation>
@@ -755,6 +762,7 @@
 <translation id="7505167922889582512">Показывать скрытые файлы</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="751507702149411736">Белорусский</translation>
+<translation id="7521790570754130607">Для использования мобильного интернета нужен PIN-код</translation>
 <translation id="7532029025027028521">Персидский, транслитерация</translation>
 <translation id="7544830582642184299">Приложения Linux смогут получать доступ к файлам Google Диска. Изменения вступят в силу на всех ваших устройствах.</translation>
 <translation id="7547009467130558110">Сникер</translation>
@@ -779,6 +787,7 @@
 <translation id="76959938259365003">Не удалось очистить корзину.</translation>
 <translation id="770015031906360009">Греческий</translation>
 <translation id="7705251383879779343">Скопировано: <ph name="FILE_NAME" />.</translation>
+<translation id="7708271999969613024">Чтобы использовать эту сеть, введите 8-значный PUK-код, предоставленный оператором связи.</translation>
 <translation id="7711920809702896782">Информация об изображении</translation>
 <translation id="7724603315864178912">Вырезать</translation>
 <translation id="7730494089396812859">Показать данные о резервных копиях в облаке</translation>
@@ -864,7 +873,6 @@
 <translation id="8342318071240498787">Такой файл или каталог уже существуют.</translation>
 <translation id="8372369524088641025">Недопустимый ключ WEP</translation>
 <translation id="8372852072747894550">Греческий</translation>
-<translation id="8384716930968677505">Здесь будут появляться ваши недавние изображения.</translation>
 <translation id="8386903983509584791">Поиск завершен</translation>
 <translation id="8387733224523483503">Файл "<ph name="FILE_NAME" />" извлечен.</translation>
 <translation id="8395901698320285466">Размеры</translation>
@@ -874,6 +882,7 @@
 <translation id="8437209419043462667">США</translation>
 <translation id="8452135315243592079">SIM-карта не обнаружена</translation>
 <translation id="8456681095658380701">Недопустимое название</translation>
+<translation id="8457767749626250697">SIM-карта заблокирована</translation>
 <translation id="8459404855768962328">Если вы скопируете этот объект, то его увидят все пользователи, у которых есть доступ к общей папке "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Нажмите на файл правой кнопкой мыши и выберите "Закрепить на панели запуска".</translation>
 <translation id="8461914792118322307">Настройки прокси-сервера</translation>

@@ -4,9 +4,9 @@
 
 #include "components/autofill/core/browser/form_parsing/email_field.h"
 
-#include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
 
 namespace autofill {
 
@@ -30,7 +30,7 @@ std::unique_ptr<FormField> EmailField::Parse(AutofillScanner* scanner,
 EmailField::EmailField(const AutofillField* field) : field_(field) {}
 
 void EmailField::AddClassifications(
-    FieldCandidatesMap* field_candidates) const {
+    FieldCandidatesMap& field_candidates) const {
   AddClassification(field_, EMAIL_ADDRESS, kBaseEmailParserScore,
                     field_candidates);
 }

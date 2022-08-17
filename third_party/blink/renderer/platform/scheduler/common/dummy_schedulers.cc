@@ -139,6 +139,9 @@ class DummyFrameScheduler : public FrameScheduler {
     return weak_ptr_factory_.GetWeakPtr();
   }
   void ReportActiveSchedulerTrackedFeatures() override {}
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
+    return base::ThreadTaskRunnerHandle::Get();
+  }
 
  private:
   std::unique_ptr<PageScheduler> page_scheduler_;
@@ -230,7 +233,8 @@ class SimpleThread : public Thread {
   SimpleThread(const SimpleThread&) = delete;
   SimpleThread& operator=(const SimpleThread&) = delete;
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetDeprecatedTaskRunner()
+      const override {
     return base::ThreadTaskRunnerHandle::Get();
   }
 
@@ -253,7 +257,6 @@ class DummyWebMainThreadScheduler : public WebThreadScheduler,
 
   // ThreadScheduler implementation:
   bool ShouldYieldForHighPriorityWork() override { return false; }
-  bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&, Thread::IdleTask) override {}
   void PostDelayedIdleTask(const base::Location&,
                            base::TimeDelta delay,
@@ -267,9 +270,6 @@ class DummyWebMainThreadScheduler : public WebThreadScheduler,
   }
   void AddTaskObserver(base::TaskObserver*) override {}
   void RemoveTaskObserver(base::TaskObserver*) override {}
-  NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
-    return nullptr;
-  }
   blink::MainThreadScheduler* ToMainThreadScheduler() override { return this; }
   void SetV8Isolate(v8::Isolate* isolate) override {}
 

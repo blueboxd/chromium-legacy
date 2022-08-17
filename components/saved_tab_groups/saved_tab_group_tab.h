@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
+#include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,15 +24,15 @@ class SavedTabGroup;
 class SavedTabGroupTab {
  public:
   SavedTabGroupTab(const GURL& url,
-                   const std::u16string& title,
-                   const gfx::Image& favicon,
                    const base::GUID& group_guid,
                    SavedTabGroup* group = nullptr,
                    absl::optional<base::GUID> guid = absl::nullopt,
                    absl::optional<base::Time>
                        creation_time_windows_epoch_micros = absl::nullopt,
                    absl::optional<base::Time> update_time_windows_epoch_micros =
-                       absl::nullopt);
+                       absl::nullopt,
+                   absl::optional<std::u16string> title = absl::nullopt,
+                   absl::optional<gfx::Image> favicon = absl::nullopt);
   SavedTabGroupTab(const SavedTabGroupTab& other);
   ~SavedTabGroupTab();
 
@@ -40,8 +41,8 @@ class SavedTabGroupTab {
   const base::GUID& group_guid() const { return group_guid_; }
   SavedTabGroup* saved_tab_group() const { return saved_tab_group_; }
   const GURL& url() const { return url_; }
-  const std::u16string& title() const { return title_; }
-  const gfx::Image& favicon() const { return favicon_; }
+  const absl::optional<std::u16string>& title() const { return title_; }
+  const absl::optional<gfx::Image>& favicon() const { return favicon_; }
   const base::Time& creation_time_windows_epoch_micros() const {
     return creation_time_windows_epoch_micros_;
   }
@@ -62,10 +63,18 @@ class SavedTabGroupTab {
     title_ = title;
     return *this;
   }
-  SavedTabGroupTab& SetFavicon(gfx::Image favicon) {
+  SavedTabGroupTab& SetFavicon(absl::optional<gfx::Image> favicon) {
     favicon_ = favicon;
     return *this;
   }
+
+  // Converts a `SavedTabGroupSpecifics` retrieved from sync into a
+  // `SavedTabGroupTab`.
+  static SavedTabGroupTab FromSpecifics(
+      const sync_pb::SavedTabGroupSpecifics& specific);
+
+  // Converts this `SavedTabGroupTab` into a `SavedTabGroupSpecifics` for sync.
+  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> ToSpecifics();
 
  private:
   // The ID used to represent the tab in sync.
@@ -82,15 +91,16 @@ class SavedTabGroupTab {
   GURL url_;
 
   // The title of the website this urls is associated with.
-  std::u16string title_;
+  absl::optional<std::u16string> title_;
 
   // The favicon of the website this SavedTabGroupTab represents.
-  gfx::Image favicon_;
+  absl::optional<gfx::Image> favicon_;
 
-  // Timestamp for when the tab was created.
+  // Timestamp for when the tab was created using windows epoch microseconds.
   base::Time creation_time_windows_epoch_micros_;
 
-  // Timestamp for when the tab was last updated.
+  // Timestamp for when the tab was last updated using windows epoch
+  // microseconds.
   base::Time update_time_windows_epoch_micros_;
 };
 

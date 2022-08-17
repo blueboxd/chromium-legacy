@@ -31,9 +31,6 @@ extern const base::Feature kEnableFREUIModuleIOS;
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
 extern const base::Feature kModernTabStrip;
 
-// Enables the usage of dark mode color while in Incognito mode.
-extern const base::Feature kIncognitoBrandConsistencyForIOS;
-
 // Feature flag to enable revamped Incognito NTP page.
 extern const base::Feature kIncognitoNtpRevamp;
 
@@ -66,6 +63,12 @@ extern const char kIOSOmniboxUpdatedPopupUIVariation1[];
 // Variation 2 for the parameter controlling which UI variation to use for
 // the SwiftUI omnibox popup.
 extern const char kIOSOmniboxUpdatedPopupUIVariation2[];
+// Variation 3 for the parameter controlling the UI variation of the
+// SwiftUI/UIKit pedals popup.
+extern const char kIOSOmniboxUpdatedPopupUIVariation1UIKit[];
+// Variation 4 for the parameter controlling the UI variation of the
+// SwiftUI/UIKit pedals popup.
+extern const char kIOSOmniboxUpdatedPopupUIVariation2UIKit[];
 
 // Feature flag to enable removing any entry points to the history UI from
 // Incognito mode.
@@ -93,9 +96,6 @@ extern const base::Feature kCalendarExperienceKit;
 
 // Feature flag to enable Apple Calendar event in experience kit.
 extern const base::Feature kEnableExpKitAppleCalendar;
-
-// Feature flag to enable sign-out from Chrome Browsing Data.
-extern const base::Feature kEnableCBDSignOut;
 
 // Feature flag to enable Phone Numbers detection.
 extern const base::Feature kEnablePhoneNumbers;

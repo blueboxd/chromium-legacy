@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
@@ -34,6 +33,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -403,7 +403,7 @@ double CreditCard::GetRankingScore(base::Time current_time) const {
   return AutofillDataModel::GetRankingScore(current_time) + virtual_card_boost;
 }
 
-bool CreditCard::SetMetadata(const AutofillMetadata metadata) {
+bool CreditCard::SetMetadata(const AutofillMetadata& metadata) {
   // Make sure the ids matches.
   if (metadata.id != (record_type_ == LOCAL_CARD ? guid() : server_id_))
     return false;
@@ -866,9 +866,7 @@ void CreditCard::SetExpirationDateFromString(const std::u16string& text) {
   SetExpirationYear(num);
 }
 
-const std::pair<std::u16string, std::u16string> CreditCard::LabelPieces()
-    const {
-  std::u16string label;
+std::pair<std::u16string, std::u16string> CreditCard::LabelPieces() const {
   if (number().empty()) {
     // No CC number, if valid nickname is present, return nickname only.
     // Otherwise, return cardholder name only.
@@ -878,22 +876,16 @@ const std::pair<std::u16string, std::u16string> CreditCard::LabelPieces()
     return std::make_pair(name_on_card_, std::u16string());
   }
 
-  std::u16string obfuscated_cc_number =
-      CardIdentifierStringForAutofillDisplay();
-  // No expiration date set.
-  if (!expiration_month_ || !expiration_year_)
-    return std::make_pair(obfuscated_cc_number, std::u16string());
-
-  std::u16string formatted_date = ExpirationDateForDisplay();
-
-  std::u16string separator =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR);
-  return std::make_pair(obfuscated_cc_number, separator + formatted_date);
+  return std::make_pair(CardIdentifierStringForAutofillDisplay(),
+                        name_on_card_);
 }
 
-const std::u16string CreditCard::Label() const {
+std::u16string CreditCard::Label() const {
   std::pair<std::u16string, std::u16string> pieces = LabelPieces();
-  return pieces.first + pieces.second;
+  if (pieces.first.empty() || pieces.second.empty())
+    return pieces.first + pieces.second;
+
+  return pieces.first + u", " + pieces.second;
 }
 
 std::u16string CreditCard::LastFourDigits() const {
@@ -952,6 +944,12 @@ std::u16string CreditCard::CardIdentifierStringForAutofillDisplay(
     int obfuscation_length) const {
   if (HasNonEmptyValidNickname() || !customized_nickname.empty()) {
     return NicknameAndLastFourDigits(customized_nickname, obfuscation_length);
+  } else if (base::FeatureList::IsEnabled(
+                 features::kAutofillEnableCardProductName) &&
+             !product_description_.empty()) {
+    // If product description is available, format card label as 'Product
+    // description  ****2345'.
+    return ProductDescriptionAndLastFourdigits(obfuscation_length);
   }
   return NetworkAndLastFourDigits(obfuscation_length);
 }
@@ -1113,6 +1111,18 @@ std::u16string CreditCard::NicknameAndLastFourDigits(
 
   return (customized_nickname.empty() ? nickname_ : customized_nickname) +
          u"  " +
+         internal::GetObfuscatedStringForCardDigits(digits, obfuscation_length);
+}
+
+std::u16string CreditCard::ProductDescriptionAndLastFourdigits(
+    int obfuscation_length) const {
+  DCHECK(!product_description_.empty());
+  const std::u16string digits = LastFourDigits();
+  // If digits are empty, return product description.
+  if (digits.empty())
+    return product_description_;
+
+  return product_description_ + u"  " +
          internal::GetObfuscatedStringForCardDigits(digits, obfuscation_length);
 }
 

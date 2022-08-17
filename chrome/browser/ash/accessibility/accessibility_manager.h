@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +21,8 @@
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/common/extensions/api/accessibility_private.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -86,6 +87,9 @@ using AccessibilityStatusCallbackList =
     base::RepeatingCallbackList<void(const AccessibilityStatusEventDetails&)>;
 using AccessibilityStatusCallback =
     AccessibilityStatusCallbackList::CallbackType;
+using GetDlcContentsCallback =
+    base::OnceCallback<void(const std::vector<uint8_t>&,
+                            absl::optional<std::string>)>;
 
 class AccessibilityPanelWidgetObserver;
 
@@ -282,7 +286,7 @@ class AccessibilityManager
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // the their mapped event has occurred. The |sound_key| enums can be found in
-  // ash/components/audio/sounds.h.
+  // chromeos/ash/components/audio/sounds.h.
   bool PlayEarcon(Sound sound_key, PlaySoundOption option);
 
   // Forward an accessibility gesture from the touch exploration controller
@@ -365,7 +369,8 @@ class AccessibilityManager
 
   // SodaInstaller::Observer:
   void OnSodaInstalled(speech::LanguageCode language_code) override;
-  void OnSodaError(speech::LanguageCode language_code) override;
+  void OnSodaInstallError(speech::LanguageCode language_code,
+                          speech::SodaInstaller::ErrorCode error_code) override;
   void OnSodaProgress(speech::LanguageCode language_code,
                       int progress) override;
 
@@ -393,6 +398,11 @@ class AccessibilityManager
   // true if the install was successful. Otherwise, runs `callback` with a
   // value of false.
   void InstallPumpkinForDictation(base::OnceCallback<void(bool)> callback);
+
+  // Reads the contents of a DLC file and runs `callback` with the results.
+  void GetDlcContents(::extensions::api::accessibility_private::DlcType dlc,
+                      GetDlcContentsCallback callback);
+  void SetDlcPathForTest(base::FilePath path);
 
  protected:
   AccessibilityManager();
@@ -512,6 +522,10 @@ class AccessibilityManager
 
   void OnAppTerminating();
 
+  // Returns a full file path given a DLC.
+  base::FilePath DlcTypeToPath(
+      ::extensions::api::accessibility_private::DlcType dlc);
+
   // Profile which has the current a11y context.
   Profile* profile_ = nullptr;
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
@@ -600,6 +614,8 @@ class AccessibilityManager
 
   base::OnceCallback<void(bool)> install_pumpkin_callback_;
   bool is_pumpkin_installed_for_testing_ = false;
+
+  base::FilePath dlc_path_for_test_;
 
   base::CallbackListSubscription focus_changed_subscription_;
 

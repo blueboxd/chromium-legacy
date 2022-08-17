@@ -7,7 +7,7 @@ import 'chrome://resources/cr_components/chromeos/network_health/network_diagnos
 import 'chrome://resources/cr_components/chromeos/network_health/network_health_summary.js';
 import 'chrome://resources/cr_components/chromeos/traffic_counters/traffic_counters.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
@@ -17,6 +17,7 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './strings.m.js';
 import './network_state_ui.js';
 import './network_logs_ui.js';
+import './network_metrics_ui.js';
 
 import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -55,6 +56,7 @@ Polymer({
           this.i18n('networkSelectTab'),
           this.i18n('TrafficCountersTrafficCounters'),
           this.i18n('networkHotspotTab'),
+          this.i18n('networkMetricsTab'),
         ];
       },
     },

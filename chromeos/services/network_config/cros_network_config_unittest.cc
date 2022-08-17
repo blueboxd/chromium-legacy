@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/ash/components/network/cellular_inhibitor.h"
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/fake_stub_cellular_networks_provider.h"
@@ -34,7 +35,6 @@
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
@@ -867,6 +867,46 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
 
   // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
+}
+
+TEST_F(CrosNetworkConfigTest, PortalState) {
+  mojom::NetworkStatePropertiesPtr network = GetNetworkState("eth_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kOnline, network->connection_state);
+  EXPECT_EQ(mojom::PortalState::kOnline, network->portal_state);
+
+  helper()->ConfigureService(
+      R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "portal-suspected",
+          "Strength": 90, "AutoConnect": true})");
+  network = GetNetworkState("wifi1_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kPortal, network->connection_state);
+  EXPECT_EQ(mojom::PortalState::kPortalSuspected, network->portal_state);
+
+  helper()->ConfigureService(
+      R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "redirect-found",
+          "Strength": 90, "AutoConnect": true})");
+  network = GetNetworkState("wifi1_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kPortal, network->connection_state);
+  EXPECT_EQ(mojom::PortalState::kPortal, network->portal_state);
+
+  helper()->ConfigureService(
+      R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "no-connectivity",
+          "Strength": 90, "AutoConnect": true})");
+  network = GetNetworkState("wifi1_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kPortal, network->connection_state);
+  EXPECT_EQ(mojom::PortalState::kNoInternet, network->portal_state);
+
+  helper()->ConfigureService(
+      R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "portal-suspected",
+          "Strength": 90, "AutoConnect": true,
+          "PortalDetectionFailedStatusCode": 407})");
+  network = GetNetworkState("wifi1_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kPortal, network->connection_state);
+  EXPECT_EQ(mojom::PortalState::kProxyAuthRequired, network->portal_state);
 }
 
 TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/alias.h"
 #include "extensions/browser/api/extension_types_utils.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -134,10 +133,13 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
     sources.push_back(mojom::JSSource::New(code_string, script_url_));
     // tabs.executeScript does not support waiting for promises (only
     // scripting.executeScript does).
-    constexpr bool kWaitForPromises = false;
     injection = mojom::CodeInjection::NewJs(mojom::JSInjection::New(
-        std::move(sources), mojom::ExecutionWorld::kIsolated, wants_result,
-        user_gesture(), kWaitForPromises));
+        std::move(sources), mojom::ExecutionWorld::kIsolated,
+        wants_result ? blink::mojom::WantResultOption::kWantResult
+                     : blink::mojom::WantResultOption::kNoResult,
+        user_gesture() ? blink::mojom::UserActivationOption::kActivate
+                       : blink::mojom::UserActivationOption::kDoNotActivate,
+        blink::mojom::PromiseResultOption::kDoNotWait));
   }
 
   executor->ExecuteScript(
@@ -231,14 +233,10 @@ void ExecuteCodeFunction::OnExecuteCodeFinished(
     // exist), we provide a different error message for backwards
     // compatibility.
     if (!root_frame_result->frame_responded) {
-      DEBUG_ALIAS_FOR_CSTR(root_frame_error, root_frame_result->error.c_str(),
-                           64);
-      int found_root_frame_id = root_frame_result->frame_id;
-      base::debug::Alias(&found_root_frame_id);
-      Respond(Error(root_frame_id_ == ExtensionApiFrameIdMap::kTopFrameId
-                        ? "The tab was closed."
-                        : "The frame was removed."));
-      return;
+      root_frame_result->error =
+          root_frame_id_ == ExtensionApiFrameIdMap::kTopFrameId
+              ? "The tab was closed."
+              : "The frame was removed.";
     }
 
     Respond(Error(std::move(root_frame_result->error)));

@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> файлыг устгаж байна...</translation>
 <translation id="1049926623896334335">Word баримт</translation>
 <translation id="1056775291175587022">Сүлжээ алга</translation>
+<translation id="1056898198331236512">Анхааруулга</translation>
 <translation id="1060368002126861100">Файлуудыг <ph name="APP_NAME" />-р нээхийн тулд эхлээд тэдгээрийг Windows-н файлын фолдерт зөөнө үү.</translation>
 <translation id="1062407476771304334">Солих</translation>
 <translation id="1119447706177454957">Дотоод алдаа</translation>
@@ -183,7 +184,6 @@
 <translation id="2544853746127077729">Таниулах гэрчилгээг сүлжээнээс цуцалсан байна</translation>
 <translation id="255937426064304553">АНУ олон улсын</translation>
 <translation id="2563185590376525700">Frog</translation>
-<translation id="2570012981255377263">Таны саяхны файлууд энд харагдана</translation>
 <translation id="2578394532502990878">Тамил авиа зүй</translation>
 <translation id="2579959351793446050">Одиа</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />-р сүлжээ, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Дохионы хүч <ph name="SIGNAL_STRENGTH" />%, Танай администратор блоклосон, Дэлгэрэнгүй</translation>
@@ -245,6 +245,7 @@
 <translation id="3138624403379688522">ПИН буруу байна. Танд <ph name="RETRIES" /> оролдлого үлдлээ.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (техник хангамжаар дэмжигдсэн)</translation>
 <translation id="3188257591659621405">Миний файл</translation>
+<translation id="3194553149358267393">Саяхны аудио файл байхгүй байна</translation>
 <translation id="3197563288998582412">UK Dvorak</translation>
 <translation id="3202131003361292969">Зам</translation>
 <translation id="3205852408225871810">Португал (Бразил)</translation>
@@ -285,10 +286,12 @@
 <translation id="3479552764303398839">Одоо биш</translation>
 <translation id="3486821258960016770">Монгол</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> алдаа.</translation>
+<translation id="3495810061346586977">Энэхүү файл нь нууц ба администраторын бодлогын дагуу хязгаарлалттай. <ph name="BEGIN_LINK_HELP" />Нэмэлт мэдээлэл авах<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Сүлжээ: <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, дохионы хүч <ph name="SIGNAL_STRENGTH" />%, дэлгэрэнгүй мэдээлэл</translation>
 <translation id="3522708245912499433">Португал</translation>
 <translation id="3524311639100184459">Анхааруулга: Эдгээр файл нь түр зуурын файлууд бөгөөд дискийн зайг чөлөөлөхийн тулд автоматаар устгаж болно.  <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Хавтас</translation>
+<translation id="3548125359243647069">ПИН-г хэт олон удаа буруу оруулсан байна.</translation>
 <translation id="3549797760399244642">drive.google.com руу очно уу...</translation>
 <translation id="3553048479571901246">Файлуудыг <ph name="APP_NAME" />-р нээхийн тулд эхлээд тэдгээрийг Windows-н файлын фолдерт хуулна уу.</translation>
 <translation id="3556731189587832921">Олон улсын компьютерын гартай англи (АНУ)</translation>
@@ -301,6 +304,7 @@
 <translation id="3606220979431771195">Турк хэлний-F</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3619115746895587757">Капучино</translation>
+<translation id="3619593063686672873">Саяхны видео байхгүй байна</translation>
 <translation id="3620292326130836921">Бүгдийг хадгалсан болно!</translation>
 <translation id="3634507049637220048">Сүлжээ: <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, таны администратор удирддаг, дэлгэрэнгүй мэдээлэл</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> зүйлийг зөөсөн.</translation>
@@ -399,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> файл</translation>
 <translation id="457386861538956877">Илүү ихийг ...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" />-г сонголтод нэмсэн.</translation>
+<translation id="4583436353463424810">Саяхны документ байхгүй байна</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" />-н илэрцийг харуулж байна.</translation>
 <translation id="4599600860674643278">Шүүлтүүрийг шинэчилсэн.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" />-г <ph name="FOLDER_NAME" /> руу хуулж байна</translation>
@@ -485,6 +490,7 @@
 <translation id="516592729076796170">US Programmer Dvorak</translation>
 <translation id="5172749059808361023">Хязгаарлалтын дэлгэрэнгүй</translation>
 <translation id="5177526793333269655">Хажуугийн талбарт жижгээр харах</translation>
+<translation id="5181896909298187506">Саяхны файл байхгүй байна</translation>
 <translation id="5194713942430106590">Баганыг өсөх дарааллаар эрэмбэлэхийн тулд товшино уу.</translation>
 <translation id="5211614973734216083">Фарер</translation>
 <translation id="5218183485292899140">Swiss French</translation>
@@ -539,7 +545,6 @@
 <translation id="5625294776298156701">Tamil99 гартай тамил</translation>
 <translation id="5633226425545095130">Энэ зүйлийг зөөснөөр үүнийг '<ph name="DESTINATION_NAME" />' хуваалцсан фолдерыг харах боломжтой бүх хүнтэй хуваалцана.</translation>
 <translation id="5649768706273821470">Сонсох</translation>
-<translation id="5665074015635552640">Таны саяхны видеонууд энд харагдана</translation>
 <translation id="5669691691057771421">Шинэ ПИН оруулна уу</translation>
 <translation id="5678784840044122290">Linux апп таны Терминалд боломжтой болохоос гадна таны Эхлүүлэгчид дүрс тэмдэг харуулж болзошгүй.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Архив эсвэл виртуал дискнээс салгах боломжгүй байна<ph name="END_BOLD" />
@@ -612,6 +617,7 @@
 <translation id="6267547857941397424">Сүлжээ: <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="PHONE_NAME" />, дохионы хүч <ph name="SIGNAL_STRENGTH" />%, утасны батарей <ph name="BATTERY_STATUS" />%, холбогдох</translation>
 <translation id="6269630227984243955">Малай</translation>
 <translation id="6287852322318138013">Аппликейшнээ сонгоод файлаа нээ</translation>
+<translation id="6295542640242147836">SIM-г түгжих</translation>
 <translation id="6296410173147755564">PUK буруу байна</translation>
 <translation id="6312403991423642364">Сүлжээний алдаа мэдэгдэхгүй байна</translation>
 <translation id="6317608858038767920">Захиалгат нэрийн сервер <ph name="INPUT_INDEX" /></translation>
@@ -684,7 +690,6 @@
     <ph name="FILE_COUNT" /> олдсон</translation>
 <translation id="6935521024859866267">180 хэм эргэсэн</translation>
 <translation id="6943836128787782965">HTTP амжилтгүй болсон</translation>
-<translation id="6945604978460872381">Таны саяхны документууд энд харагдана</translation>
 <translation id="6949408524333579394">Серби галиг</translation>
 <translation id="6954309393500027528">Энэ файлыг буулгахыг танай администратор блоклосон</translation>
 <translation id="6960565108681981554">Идэвхжүүлээгүй байна. Оператор компанитайгаа холбогдоно уу.</translation>
@@ -721,6 +726,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> ГБ</translation>
 <translation id="7191454237977785534">Файлыг ...хэлбэрээр хадгалах</translation>
 <translation id="7229570126336867161">EVDO хэрэгтэй байна</translation>
+<translation id="7230898482850090046">Таны администратор танаас "SIM-г түгжих" тохиргоог унтраахыг хүссэн</translation>
 <translation id="7238097264433196391">Драйвын нэр</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, дэлгэрэнгүй мэдээлэл</translation>
 <translation id="7246947237293279874">FTP прокси</translation>
@@ -732,7 +738,6 @@
 <translation id="7295662345261934369">Бусадтай хуваалцах</translation>
 <translation id="7297443947353982503">Хэрэглэгчийн нэр/нууц үг буруу эсвэл EAP-Auth амжилтгүй болсон байна</translation>
 <translation id="7309413087278791451">Герман (Бельги)</translation>
-<translation id="7313374447885864533">Таны саяхны аудио файлууд энд харагдана</translation>
 <translation id="7339898014177206373">Шинэ цонх</translation>
 <translation id="7343393116438664539">Вьетнам телекс</translation>
 <translation id="7357762654218998920">Энэ файлын төрлийг дэмждэггүй. ChromeOS дээр файл нээх талаар <ph name="BEGIN_LINK_HELP" />нэмэлт мэдээлэл авна уу<ph name="END_LINK_HELP" />.</translation>
@@ -742,6 +747,7 @@
 <translation id="7408870451288633753">Чех</translation>
 <translation id="7417453074306512035">Этиоп хэлний гар</translation>
 <translation id="7417705661718309329">Google-ийн газрын зураг</translation>
+<translation id="7458955835361612701">Саяхны зураг байхгүй байна</translation>
 <translation id="7460898608667578234">Украйн</translation>
 <translation id="7469894403370665791">Автоматаар энэ сүлжээ рүү холбогдох</translation>
 <translation id="7486315294984620427">Parallels Desktop-д файлууд буулгахын тулд файлыг Windows-н файлуудад хуулсан байх ёстой.</translation>
@@ -753,6 +759,7 @@
 <translation id="7505167922889582512">Далд файлуудыг харуулах</translation>
 <translation id="7514365320538308">Татаж авах</translation>
 <translation id="751507702149411736">Беларус</translation>
+<translation id="7521790570754130607">Мобайл дата ашиглахын тулд ПИН шаардлагатай</translation>
 <translation id="7532029025027028521">Перс галиг</translation>
 <translation id="7544830582642184299">Linux-н аппуудад Google Драйвынхаа файлуудад хандах зөвшөөрөл өгнө үү. Өөрчлөлтүүдийг таны бусад төхөөрөмжид синк хийнэ.</translation>
 <translation id="7547009467130558110">Пүүз</translation>
@@ -777,6 +784,7 @@
 <translation id="76959938259365003">Хогийн савыг хоосолж чадсангүй.</translation>
 <translation id="770015031906360009">Грек</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" />-г хуулсан.</translation>
+<translation id="7708271999969613024">Энэ сүлжээг ашиглахын тулд та оператор компаниас олгосон 8 оронтой Блокоос гаргах хувийн түлхүүр (PUK)-г оруулах шаардлагатай.</translation>
 <translation id="7711920809702896782">Зургийн мэдээлэл</translation>
 <translation id="7724603315864178912">Хайчлах</translation>
 <translation id="7730494089396812859">Cloud-н дэлгэрэнгүй мэдээллийг харуулах</translation>
@@ -862,7 +870,6 @@
 <translation id="8342318071240498787">Ийм нэртэй файл болон файлын хадгалалтын сан байна.</translation>
 <translation id="8372369524088641025">WEP сул түлхүүр байна</translation>
 <translation id="8372852072747894550">Грек</translation>
-<translation id="8384716930968677505">Таны саяхны зургууд энд харагдана</translation>
 <translation id="8386903983509584791">Шалгаж дууслаа</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" />-г задалсан.</translation>
 <translation id="8395901698320285466">Хэмжээ</translation>
@@ -872,6 +879,7 @@
 <translation id="8437209419043462667">АНУ</translation>
 <translation id="8452135315243592079">SIM карт олдсонгүй</translation>
 <translation id="8456681095658380701">Хүчин төгөлдөр бус нэр</translation>
+<translation id="8457767749626250697">Таны SIM-г түгжсэн</translation>
 <translation id="8459404855768962328">Энэ зүйлийг хуулснаар үүнийг '<ph name="DESTINATION_NAME" />' хуваалцсан фолдерыг харах боломжтой бүх хүнтэй хуваалцана.</translation>
 <translation id="8461467696380332069">Тавиур дахь файлууддаа шуурхай хандахын тулд файл дээр хулганын баруун талыг товшиж, "Тавиурт бэхлэх"-ийг сонгоно уу.</translation>
 <translation id="8461914792118322307">Прокси</translation>

@@ -96,14 +96,14 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
     case CREDIT_CARD_TYPE:
     case CREDIT_CARD_VERIFICATION_CODE:
+    case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
       return true;
 
     case UPI_VPA:
       return base::FeatureList::IsEnabled(features::kAutofillSaveAndFillVPA);
 
-    // TODO(crbug/1335549) to return true when the flag is enabled.
     case IBAN_VALUE:
-      return false;
+      return base::FeatureList::IsEnabled(features::kAutofillParseIBANFields);
 
     case COMPANY_NAME:
       return true;
@@ -317,6 +317,8 @@ base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
       return "AMBIGUOUS_TYPE";
     case IBAN_VALUE:
       return "IBAN_VALUE";
+    case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
+      return "CREDIT_CARD_STANDALONE_VERIFICATION_CODE";
     case MAX_VALID_FIELD_TYPE:
       return "";
   }
@@ -425,6 +427,8 @@ base::StringPiece FieldTypeToStringPiece(HtmlFieldType type) {
       return "HTML_TYPE_ONE_TIME_CODE";
     case HTML_TYPE_MERCHANT_PROMO_CODE:
       return "HTML_TYPE_MERCHANT_PROMO_CODE";
+    case HTML_TYPE_IBAN:
+      return "HTML_TYPE_IBAN";
     case HTML_TYPE_UNRECOGNIZED:
       return "HTML_TYPE_UNRECOGNIZED";
   }

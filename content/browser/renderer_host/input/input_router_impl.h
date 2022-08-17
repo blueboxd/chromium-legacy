@@ -95,6 +95,7 @@ class CONTENT_EXPORT InputRouterImpl
 
   // InputHandlerHost impl
   void SetTouchActionFromMain(cc::TouchAction touch_action) override;
+  void SetPanAction(blink::mojom::PanAction pan_action) override;
   void DidOverscroll(blink::mojom::DidOverscrollParamsPtr params) override;
   void ImeCancelComposition() override;
   void DidStartScrollingViewport() override;
@@ -151,7 +152,8 @@ class CONTENT_EXPORT InputRouterImpl
   void OnGestureEventAck(
       const GestureEventWithLatencyInfo& event,
       blink::mojom::InputEventResultSource ack_source,
-      blink::mojom::InputEventResultState ack_result) override;
+      blink::mojom::InputEventResultState ack_result,
+      blink::mojom::ScrollResultDataPtr scroll_result_data) override;
 
   // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
@@ -192,32 +194,38 @@ class CONTENT_EXPORT InputRouterImpl
       const ui::LatencyInfo& latency_info,
       blink::mojom::WidgetInputHandler::DispatchEventCallback callback);
 
-  void KeyboardEventHandled(const NativeWebKeyboardEventWithLatencyInfo& event,
-                            KeyboardEventCallback event_result_callback,
-                            blink::mojom::InputEventResultSource source,
-                            const ui::LatencyInfo& latency,
-                            blink::mojom::InputEventResultState state,
-                            blink::mojom::DidOverscrollParamsPtr overscroll,
-                            blink::mojom::TouchActionOptionalPtr touch_action);
+  void KeyboardEventHandled(
+      const NativeWebKeyboardEventWithLatencyInfo& event,
+      KeyboardEventCallback event_result_callback,
+      blink::mojom::InputEventResultSource source,
+      const ui::LatencyInfo& latency,
+      blink::mojom::InputEventResultState state,
+      blink::mojom::DidOverscrollParamsPtr overscroll,
+      blink::mojom::TouchActionOptionalPtr touch_action,
+      blink::mojom::ScrollResultDataPtr scroll_result_data);
   void MouseEventHandled(const MouseEventWithLatencyInfo& event,
                          MouseEventCallback event_result_callback,
                          blink::mojom::InputEventResultSource source,
                          const ui::LatencyInfo& latency,
                          blink::mojom::InputEventResultState state,
                          blink::mojom::DidOverscrollParamsPtr overscroll,
-                         blink::mojom::TouchActionOptionalPtr touch_action);
+                         blink::mojom::TouchActionOptionalPtr touch_action,
+                         blink::mojom::ScrollResultDataPtr scroll_result_data);
   void TouchEventHandled(const TouchEventWithLatencyInfo& touch_event,
                          blink::mojom::InputEventResultSource source,
                          const ui::LatencyInfo& latency,
                          blink::mojom::InputEventResultState state,
                          blink::mojom::DidOverscrollParamsPtr overscroll,
-                         blink::mojom::TouchActionOptionalPtr touch_action);
-  void GestureEventHandled(const GestureEventWithLatencyInfo& gesture_event,
-                           blink::mojom::InputEventResultSource source,
-                           const ui::LatencyInfo& latency,
-                           blink::mojom::InputEventResultState state,
-                           blink::mojom::DidOverscrollParamsPtr overscroll,
-                           blink::mojom::TouchActionOptionalPtr touch_action);
+                         blink::mojom::TouchActionOptionalPtr touch_action,
+                         blink::mojom::ScrollResultDataPtr scroll_result_data);
+  void GestureEventHandled(
+      const GestureEventWithLatencyInfo& gesture_event,
+      blink::mojom::InputEventResultSource source,
+      const ui::LatencyInfo& latency,
+      blink::mojom::InputEventResultState state,
+      blink::mojom::DidOverscrollParamsPtr overscroll,
+      blink::mojom::TouchActionOptionalPtr touch_action,
+      blink::mojom::ScrollResultDataPtr scroll_result_data);
   void MouseWheelEventHandled(
       const MouseWheelEventWithLatencyInfo& event,
       MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback,
@@ -225,7 +233,8 @@ class CONTENT_EXPORT InputRouterImpl
       const ui::LatencyInfo& latency,
       blink::mojom::InputEventResultState state,
       blink::mojom::DidOverscrollParamsPtr overscroll,
-      blink::mojom::TouchActionOptionalPtr touch_action);
+      blink::mojom::TouchActionOptionalPtr touch_action,
+      blink::mojom::ScrollResultDataPtr scroll_result_data);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input
@@ -249,6 +258,11 @@ class CONTENT_EXPORT InputRouterImpl
 
   // Whether stylus writing has started.
   bool stylus_writing_started_ = false;
+
+  // Stores the pan action that can take place like stylus writing, moving
+  // cursor or scrolling. This is sent when the pointer is hovering and set from
+  // the main thread.
+  blink::mojom::PanAction pan_action_ = blink::mojom::PanAction::kNone;
 
   MouseWheelEventQueue wheel_event_queue_;
   PassthroughTouchEventQueue touch_event_queue_;

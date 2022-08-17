@@ -286,8 +286,8 @@ const base::Feature kPartitionedCookies{"PartitionedCookies",
 const base::Feature kPartitionedCookiesBypassOriginTrial{
     "PartitionedCookiesBypassOriginTrial", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNoncedPartitionedCookies{
-    "NoncedPartitionedCookies", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNoncedPartitionedCookies{"NoncedPartitionedCookies",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kExtraCookieValidityChecks{
     "ExtraCookieValidityChecks", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -301,11 +301,7 @@ const base::Feature kClampCookieExpiryTo400Days(
 
 const base::Feature kStaticKeyPinningEnforcement(
     "StaticKeyPinningEnforcement",
-#if BUILDFLAG(IS_ANDROID)
-    base::FEATURE_DISABLED_BY_DEFAULT);
-#else
     base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 const base::Feature kCookieDomainRejectNonASCII{
     "CookieDomainRejectNonASCII", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -336,4 +332,13 @@ constexpr int kStorageAccessAPIDefaultImplicitGrantLimit = 5;
 const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
     &kStorageAccessAPI, "storage-access-api-implicit-grant-limit",
     kStorageAccessAPIDefaultImplicitGrantLimit};
+const base::FeatureParam<bool> kStorageAccessAPIGrantsUnpartitionedStorage(
+    &kStorageAccessAPI,
+    "storage-access-api-grants-unpartitioned-storage",
+    false);
+
+// Enables partitioning of third party storage (IndexedDB, CacheStorage, etc.)
+// by the top level site to reduce fingerprinting.
+const base::Feature kThirdPartyStoragePartitioning{
+    "ThirdPartyStoragePartitioning", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace net::features

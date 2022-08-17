@@ -77,6 +77,25 @@ class AutocorrectManager {
 
   void OnTextFieldContextualInfoChanged(const TextFieldContextualInfo& info);
 
+  // Forces to accept or clear a pending autocorrect suggestion if any. If the
+  // autocorrect range is empty, it means the user interacted with the
+  // pending autocorrect suggestion and made it invalid, so it considers
+  // the autocorrect suggestion as "cleared". Otherwise, it considers the
+  // autocorrect suggestion as "accepted". For the both cases, relevant
+  // metrics are recorded, state variables are reset and autocorrect range is
+  // set to empty.
+  void AcceptOrClearPendingAutocorrect();
+
+  // Hides undo window if there is any visible.
+  void HideUndoWindow();
+
+  // Shows undo window and record the relevant metric if undo window is
+  // not already visible.
+  void ShowUndoWindow(gfx::Range range, const std::u16string& text);
+
+  // Highlights undo button of undo window if it is visible.
+  void HighlightUndoButton();
+
   SuggestionHandlerInterface* suggestion_handler_;
   int context_id_ = 0;
   int key_presses_until_underline_hide_ = 0;
@@ -84,6 +103,11 @@ class AutocorrectManager {
   bool window_visible_ = false;
   bool button_highlighted_ = false;
   base::TimeTicks autocorrect_time_;
+
+  // Stores the state where there is a pending/unprocessed autocorrect
+  // suggestion. The state is kept to avoid issue where InputContext returns
+  // stale autocorrect range.
+  bool autocorrect_pending_ = false;
 
   DiacriticsInsensitiveStringComparator
       diacritics_insensitive_string_comparator_;

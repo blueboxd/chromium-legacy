@@ -132,6 +132,11 @@ const base::Feature kFocusTriggersSRPZeroSuggest{
 extern const base::Feature kLocalHistorySuggestRevamp{
     "LocalHistorySuggestRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables local history zero-prefix suggestions in every context in which the
+// remote zero-prefix suggestions are enabled.
+const base::Feature kLocalHistoryZeroSuggestBeyondNTP{
+    "LocalHistoryZeroSuggestBeyondNTP", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
 // default value of 60 days for Desktop and 7 days for Android and iOS is used.
@@ -152,6 +157,11 @@ const base::Feature kZeroSuggestPrefetching{"ZeroSuggestPrefetching",
 // Enables prefetching of the zero prefix suggestions for eligible users on SRP.
 const base::Feature kZeroSuggestPrefetchingOnSRP{
     "ZeroSuggestPrefetchingOnSRP", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables prefetching of the zero prefix suggestions for eligible users on the
+// Web (i.e. non-NTP and non-SRP URLs).
+const base::Feature kZeroSuggestPrefetchingOnWeb{
+    "ZeroSuggestPrefetchingOnWeb", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Features to provide non personalized head search suggestion from a compact
 // on device model. More specifically, feature name with suffix Incognito /
@@ -295,6 +305,11 @@ const base::Feature kNtpRealboxTailSuggest{"NtpRealboxTailSuggest",
 const base::Feature kOmniboxFuzzyUrlSuggestions{
     "OmniboxFuzzyUrlSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to update the left and bottom padding of the omnibox suggestion
+// header.
+const base::Feature kOmniboxHeaderPaddingUpdate{
+    "OmniboxHeaderPaddingUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to remove the capitalization of the suggestion header text.
 const base::Feature kOmniboxRemoveSuggestionHeaderCapitalization{
     "OmniboxRemoveSuggestionHeaderCapitalization",
@@ -304,6 +319,10 @@ const base::Feature kOmniboxRemoveSuggestionHeaderCapitalization{
 // header under omnibox.
 const base::Feature kOmniboxRemoveSuggestionHeaderChevron{
     "OmniboxRemoveSuggestionHeaderChevron", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to add fading effect to most visited tiles on tablet.
+const base::Feature kOmniboxMostVisitedTilesFadingOnTablet{
+    "OmniboxMostVisitedTilesFadingOnTablet", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to add most visited tiles to the suggestions when the user is on
 // a search result page that does not do search term replacement.

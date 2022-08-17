@@ -42,26 +42,31 @@ class SubscriptionsServerProxy {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   SubscriptionsServerProxy(const SubscriptionsServerProxy&) = delete;
   SubscriptionsServerProxy& operator=(const SubscriptionsServerProxy&) = delete;
-  ~SubscriptionsServerProxy();
+  virtual ~SubscriptionsServerProxy();
 
   // Make an HTTPS call to backend to create the new |subscriptions|.
-  void Create(std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
-              ManageSubscriptionsFetcherCallback callback);
+  virtual void Create(
+      std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
+      ManageSubscriptionsFetcherCallback callback);
 
   // Make an HTTPS call to backend to delete the existing |subscriptions|.
-  void Delete(std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
-              ManageSubscriptionsFetcherCallback callback);
+  virtual void Delete(
+      std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
+      ManageSubscriptionsFetcherCallback callback);
 
   // Make an HTTP call to backend to get all subscriptions for specified type.
-  void Get(SubscriptionType type, GetSubscriptionsFetcherCallback callback);
+  virtual void Get(SubscriptionType type,
+                   GetSubscriptionsFetcherCallback callback);
 
- private:
-  std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
+ protected:
+  // This method could be overridden in tests.
+  virtual std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
       const GURL& url,
       const std::string& http_method,
       const std::string& post_data,
       const net::NetworkTrafficAnnotationTag& annotation_tag);
 
+ private:
   // Handle Create or Delete response.
   void HandleManageSubscriptionsResponses(
       ManageSubscriptionsFetcherCallback callback,

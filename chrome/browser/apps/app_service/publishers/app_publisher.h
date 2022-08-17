@@ -18,6 +18,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 
 namespace apps {
@@ -114,6 +115,23 @@ class AppPublisher {
   virtual void LaunchShortcut(const std::string& app_id,
                               const std::string& shortcut_id,
                               int64_t display_id) {}
+
+  virtual void SetPermission(const std::string& app_id,
+                             PermissionPtr permission);
+
+  virtual void Uninstall(const std::string& app_id,
+                         UninstallSource uninstall_source,
+                         bool clear_site_data,
+                         bool report_abuse);
+
+  virtual void StopApp(const std::string& app_id);
+
+  virtual void ExecuteContextMenuCommand(const std::string& app_id,
+                                         int command_id,
+                                         const std::string& shortcut_id,
+                                         int64_t display_id);
+
+  virtual void OpenNativeSettings(const std::string& app_id);
 
   // Indicates that the app identified by |app_id| has been set as a preferred
   // app for |intent_filter|, and the |replaced_app_preferences| is the apps

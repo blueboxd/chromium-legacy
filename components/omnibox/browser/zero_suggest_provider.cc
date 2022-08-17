@@ -195,6 +195,7 @@ bool StoreRemoteResponse(const std::string& response_json,
                          bool is_prefetch,
                          SearchSuggestionParser::Results* results) {
   DCHECK(results);
+  DCHECK_NE(ZeroSuggestProvider::ResultType::kNone, result_type);
 
   if (response_json.empty()) {
     return false;
@@ -213,11 +214,18 @@ bool StoreRemoteResponse(const std::string& response_json,
     return false;
   }
 
-  // Store the valid response only if running the kRemoteNoURL variant.
+  // Update the relevant prefs in the cache, based on |result_type|.
   if (result_type == ZeroSuggestProvider::ResultType::kRemoteNoURL) {
     client->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
                                   response_json);
     LogEvent(Event::kRemoteResponseCached, result_type, is_prefetch);
+  } else if (result_type == ZeroSuggestProvider::ResultType::kRemoteSendURL) {
+    if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP) ||
+        base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnWeb)) {
+      omnibox::SetUserPreferenceForZeroSuggestCachedResponse(
+          client->GetPrefs(), input.current_url().spec(), response_json);
+      LogEvent(Event::kRemoteResponseCached, result_type, is_prefetch);
+    }
   }
 
   return true;
@@ -233,14 +241,21 @@ bool ReadStoredResponse(const AutocompleteProviderClient* client,
                         ZeroSuggestProvider::ResultType result_type,
                         SearchSuggestionParser::Results* results) {
   DCHECK(results);
+  DCHECK_NE(ZeroSuggestProvider::ResultType::kNone, result_type);
 
-  // Use the stored response only if running the kRemoteNoURL variant.
-  if (result_type != ZeroSuggestProvider::ResultType::kRemoteNoURL) {
-    return false;
+  std::string response_json;
+
+  if (result_type == ZeroSuggestProvider::ResultType::kRemoteNoURL) {
+    response_json =
+        client->GetPrefs()->GetString(omnibox::kZeroSuggestCachedResults);
+  } else if (result_type == ZeroSuggestProvider::ResultType::kRemoteSendURL) {
+    if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP) ||
+        base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnWeb)) {
+      response_json = omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+          client->GetPrefs(), input.current_url().spec());
+    }
   }
 
-  const std::string response_json =
-      client->GetPrefs()->GetString(omnibox::kZeroSuggestCachedResults);
   if (response_json.empty()) {
     return false;
   }
@@ -293,7 +308,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::ResultTypeToRun(
   }
 
   // Open Web - does NOT include Search Results Page.
-  if (page_class == OEP::OTHER) {
+  if (BaseSearchProvider::IsOtherWebPage(page_class)) {
     if (focus_type_input_type == std::make_pair(OFT::ON_FOCUS, OIT::URL) &&
         base::FeatureList::IsEnabled(
             omnibox::kFocusTriggersContextualWebZeroSuggest)) {
@@ -364,17 +379,16 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 void ZeroSuggestProvider::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(omnibox::kZeroSuggestCachedResults,
                                std::string());
+  registry->RegisterDictionaryPref(omnibox::kZeroSuggestCachedResultsWithURL,
+                                   base::Value::Dict());
 }
 
 void ZeroSuggestProvider::StartPrefetch(const AutocompleteInput& input) {
+  AutocompleteProvider::StartPrefetch(input);
+
   TRACE_EVENT0("omnibox", "ZeroSuggestProvider::StartPrefetch");
 
   if (!AllowZeroPrefixSuggestions(client(), input)) {
-    return;
-  }
-
-  // Do not start a request if async requests are disallowed.
-  if (input.omit_asynchronous_matches()) {
     return;
   }
 
@@ -472,11 +486,13 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
   // Remove the deleted match from the cache, so it is not shown to the user
   // again. Since we cannot remove just one result, blow away the cache.
-  // Although the cache is currently only used for kRemoteNoURL, we have no
-  // easy way of checking the request type after-the-fact. It's safe though, to
-  // always clear the cache even if we are on a different request type.
+  // Even though we currently have no easy way of checking the request type
+  // after-the-fact, it's safe to always clear the cache even if we are on a
+  // different request type.
   client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
                                   std::string());
+  client()->GetPrefs()->SetDict(omnibox::kZeroSuggestCachedResultsWithURL,
+                                base::Value::Dict());
   BaseSearchProvider::DeleteMatch(match);
 }
 
@@ -522,6 +538,8 @@ void ZeroSuggestProvider::OnURLLoadComplete(
     ResultType result_type,
     const network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
+  TRACE_EVENT0("omnibox", "ZeroSuggestProvider::OnURLLoadComplete");
+
   DCHECK(!done_);
   DCHECK_EQ(loader_.get(), source);
 
@@ -574,6 +592,8 @@ void ZeroSuggestProvider::OnPrefetchURLLoadComplete(
     ResultType result_type,
     const network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
+  TRACE_EVENT0("omnibox", "ZeroSuggestProvider::OnPrefetchURLLoadComplete");
+
   DCHECK_EQ(prefetch_loader_.get(), source);
 
   const bool response_received =

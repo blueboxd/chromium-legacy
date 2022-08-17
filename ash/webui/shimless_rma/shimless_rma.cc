@@ -184,16 +184,6 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"finalizePageTitleText", IDS_SHIMLESS_RMA_FINALIZE_PAGE_TITLE},
       {"finalizePageProgressText", IDS_SHIMLESS_RMA_FINALIZE_PROGRESS},
       {"finalizePageCompleteText", IDS_SHIMLESS_RMA_FINALIZE_COMPLETE},
-      {"finalizePageFailedBlockingText",
-       IDS_SHIMLESS_RMA_FINALIZE_FAILED_BLOCKING},
-      {"finalizePageFailedNonBlockingText",
-       IDS_SHIMLESS_RMA_FINALIZE_FAILED_NON_BLOCKING},
-      {"finalizePageFailedRetryButtonLabel",
-       IDS_SHIMLESS_RMA_FINALIZE_FAILED_RETRY_BUTTON_LABEL},
-      {"finalizePageWpDisabledDialogTitle",
-       IDS_SHIMLESS_RMA_FINALIZE_WP_DISABLED_DIALOG_TITLE},
-      {"finalizePageWpDisabledDialogBody",
-       IDS_SHIMLESS_RMA_FINALIZE_WP_DISABLED_DIALOG_BODY},
       // Run calibration page
       {"runCalibrationTitleText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE},
       {"runCalibrationCompleteTitleText",
@@ -322,6 +312,16 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       // Critical error
       {"criticalErrorMessageText", IDS_SHIMLESS_RMA_CRITICAL_ERROR_MESSAGE},
       {"criticalErrorRebootText", IDS_SHIMLESS_RMA_CRITICAL_REBOOT_BUTTON},
+      // Hardware error
+      {"hardwareErrorTitle", IDS_SHIMLESS_RMA_HARDWARE_ERROR_TITLE},
+      {"hardwareErrorMessage", IDS_SHIMLESS_RMA_HARDWARE_ERROR_MESSAGE},
+      {"hardwareErrorShutDownButton",
+       IDS_SHIMLESS_RMA_HARDWARE_SHUTDOWN_BUTTON},
+      // Reboot page
+      {"rebootPageTitle", IDS_SHIMLESS_RMA_REBOOT_PAGE_TITLE},
+      {"rebootPageMessage", IDS_SHIMLESS_RMA_REBOOT_PAGE_MESSAGE},
+      {"shutdownPageTitle", IDS_SHIMLESS_RMA_REBOOT_PAGE_SHUTDOWN_TITLE},
+      {"shutdownPageMessage", IDS_SHIMLESS_RMA_REBOOT_PAGE_SHUTDOWN_MESSAGE},
       // Wipe device page
       {"wipeDeviceTitleText", IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE},
       {"wipeDeviceRemoveDataLabel",

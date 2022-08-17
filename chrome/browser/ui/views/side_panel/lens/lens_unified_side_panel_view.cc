@@ -53,7 +53,7 @@ std::unique_ptr<views::WebView> CreateWebView(
 
 namespace lens {
 constexpr int kDefaultSidePanelHeaderHeight = 40;
-constexpr gfx::Insets kLensLabelButtonMargins = gfx::Insets::VH(12, 16);
+constexpr gfx::Insets kLensLabelButtonMargins = gfx::Insets::VH(12, 0);
 constexpr char kStaticLoadingScreenURL[] =
     "https://www.gstatic.com/lens/chrome/lens_side_panel_loading.html";
 
@@ -108,7 +108,7 @@ void LensUnifiedSidePanelView::LoadResultsInNewTab() {
 void LensUnifiedSidePanelView::LoadProgressChanged(double progress) {
   bool is_content_visible = progress == 1.0;
   SetContentVisible(is_content_visible);
-  if (is_content_visible) {
+  if (launch_button_ != nullptr && is_content_visible) {
     auto last_committed_url =
         web_view_->GetWebContents()->GetLastCommittedURL();
     launch_button_->SetEnabled(lens::IsValidLensResultUrl(last_committed_url));
@@ -116,7 +116,7 @@ void LensUnifiedSidePanelView::LoadProgressChanged(double progress) {
 }
 
 bool LensUnifiedSidePanelView::IsLaunchButtonEnabledForTesting() {
-  return launch_button_->GetEnabled();
+  return launch_button_ != nullptr && launch_button_->GetEnabled();
 }
 
 bool LensUnifiedSidePanelView::HandleContextMenu(
@@ -165,7 +165,8 @@ void LensUnifiedSidePanelView::CreateAndInstallFooter() {
           views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL),
       0,
       chrome_layout_provider->GetDistanceMetric(
-          ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_RIGHT_MARGIN)));
+          ChromeDistanceMetric::
+              DISTANCE_SIDE_PANEL_HEADER_INTERIOR_MARGIN_HORIZONTAL)));
 
   // Set alignments for horizontal (main) and vertical (cross) axes.
   footer->SetMainAxisAlignment(views::LayoutAlignment::kStart);

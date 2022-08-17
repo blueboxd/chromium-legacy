@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/apc_utils.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
@@ -186,11 +187,39 @@ void PasswordChangeRunView::SetProgressBarStep(
   password_change_run_progress_->SetProgressBarStep(progress_step);
 }
 
+autofill_assistant::password_change::ProgressStep
+PasswordChangeRunView::GetProgressStep() {
+  return password_change_run_progress_->GetCurrentProgressBarStep();
+}
+
+void PasswordChangeRunView::ShowBasePrompt(
+    const std::u16string& description,
+    const std::vector<PromptChoice>& choices) {
+  DCHECK(body_);
+
+  SetDescription(description);
+  CreateBasePromptOptions(choices);
+}
+
 void PasswordChangeRunView::ShowBasePrompt(
     const std::vector<PromptChoice>& choices) {
   DCHECK(body_);
+
   body_->RemoveAllChildViews();
+  // Do not create the separator if all choices have empty text.
+  if (base::ranges::all_of(choices, [](const PromptChoice& choice) {
+        return choice.text.empty();
+      })) {
+    return;
+  }
+
   body_->AddChildView(std::make_unique<views::Separator>());
+
+  CreateBasePromptOptions(choices);
+}
+
+void PasswordChangeRunView::CreateBasePromptOptions(
+    const std::vector<PromptChoice>& choices) {
   views::View* button_container = body_->AddChildView(CreateButtonContainer());
   for (size_t index = 0; index < choices.size(); ++index) {
     if (!choices[index].text.empty()) {
@@ -251,6 +280,16 @@ void PasswordChangeRunView::ShowStartingScreen(const GURL& url) {
   SetDescription(std::u16string());
 }
 
+void PasswordChangeRunView::ShowErrorScreen() {
+  password_change_run_progress_->StopAnimation();
+  SetTopIcon(
+      autofill_assistant::password_change::TopIcon::TOP_ICON_ERROR_OCCURRED);
+  SetTitle(l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ERROR_SCREEN_TITLE));
+  SetDescription(l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ERROR_SCREEN_DESCRIPTION));
+}
+
 void PasswordChangeRunView::ShowCompletionScreen(
     base::RepeatingClosure done_button_callback) {
   show_completion_screen_done_button_callback_ =
@@ -284,13 +323,10 @@ void PasswordChangeRunView::OnShowCompletionScreen() {
           .SetTextContext(views::style::CONTEXT_LABEL)
           .SetID(static_cast<int>(ChildrenViewsIds::kDescription))
           .Build());
-
-  // TODO(crbug.com/1329179): Navidate user to password manager
-  // components/password_manager/core/browser/manage_passwords_referrer.h
   description_view->AddStyleRange(
       gfx::Range(offset, offset + password_manager_link.length()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink(
-          static_cast<base::RepeatingClosure>(base::DoNothing())));
+      views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
+          &PasswordChangeRunController::OpenPasswordManager, controller_)));
 
   views::View* button_container = body_->AddChildView(CreateButtonContainer());
   button_container->AddChildView(CreateButton(

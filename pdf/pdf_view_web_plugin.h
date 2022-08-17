@@ -36,6 +36,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
+#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,9 +46,11 @@
 
 namespace blink {
 class WebAssociatedURLLoader;
+class WebInputEvent;
 class WebURL;
 class WebURLRequest;
 struct WebAssociatedURLLoaderOptions;
+struct WebPrintPresetOptions;
 }  // namespace blink
 
 namespace gfx {
@@ -68,6 +71,7 @@ namespace chrome_pdf {
 class MetricsHandler;
 class PDFiumEngine;
 class PdfAccessibilityDataHandler;
+class Thumbnail;
 
 class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public blink::WebPlugin,
@@ -275,11 +279,15 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
+  void GetDocumentPassword(
+      base::OnceCallback<void(const std::string&)> callback) override;
+  void Beep() override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
   std::string GetURL() override;
+  void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
@@ -359,7 +367,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void SetContentRestrictions(int content_restrictions) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-  void InvokePrintDialog() override;
   void NotifySelectionChanged(const gfx::PointF& left,
                               int left_height,
                               const gfx::PointF& right,
@@ -411,19 +418,27 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Handles `Open()` result for `form_loader_`.
   void DidFormOpen(int32_t result);
 
-  // Handles message for saving the PDF.
+  // Message handlers.
+  void HandleDisplayAnnotationsMessage(const base::Value::Dict& message);
+  void HandleGetNamedDestinationMessage(const base::Value::Dict& message);
+  void HandleGetPasswordCompleteMessage(const base::Value::Dict& message);
+  void HandleGetSelectedTextMessage(const base::Value::Dict& message);
+  void HandleGetThumbnailMessage(const base::Value::Dict& message);
+  void HandlePrintMessage(const base::Value::Dict& /*message*/);
+  void HandleRotateClockwiseMessage(const base::Value::Dict& /*message*/);
+  void HandleRotateCounterclockwiseMessage(
+      const base::Value::Dict& /*message*/);
+  void HandleSaveAttachmentMessage(const base::Value::Dict& message);
   void HandleSaveMessage(const base::Value::Dict& message);
+  void HandleSelectAllMessage(const base::Value::Dict& /*message*/);
+  void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
+  void HandleSetPresentationModeMessage(const base::Value::Dict& message);
+  void HandleSetTwoUpViewMessage(const base::Value::Dict& message);
+  void HandleStopScrollingMessage(const base::Value::Dict& message);
+  void HandleViewportMessage(const base::Value::Dict& message);
+
   void SaveToBuffer(const std::string& token);
   void SaveToFile(const std::string& token);
-
-  // Handles message for setting the background color.
-  void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
-
-  // Handles message to disable scrolling.
-  void HandleStopScrollingMessage(const base::Value::Dict& message);
-
-  // Handles message for viewport changes.
-  void HandleViewportMessage(const base::Value::Dict& message);
 
   // Recalculates values that depend on scale factors.
   void UpdateScaledValues();
@@ -437,6 +452,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Paste(const blink::WebString& value);
   bool Undo();
   bool Redo();
+
+  bool HandleWebInputEvent(const blink::WebInputEvent& event);
 
   // Helper method for converting IME text to input events.
   // TODO(crbug.com/1253665): Consider handling composition events.
@@ -478,6 +495,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Continues loading the next preview page.
   void LoadNextPreviewPage();
 
+  // Sends a notification that the print preview has loaded.
+  void SendPrintPreviewLoadedNotification();
+
+  // Sends the thumbnail image data.
+  void SendThumbnail(base::Value::Dict reply, Thumbnail thumbnail);
+
   blink::WebString selected_text_;
 
   std::unique_ptr<Client> const client_;
@@ -491,6 +514,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // The URL of the PDF document.
   std::string url_;
+
+  // The callback for receiving the password from the page.
+  base::OnceCallback<void(const std::string&)> password_callback_;
 
   // The current cursor type.
   ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
@@ -619,6 +645,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // The indices of pages to print.
   std::vector<int> pages_to_print_;
+
+  // Assigned a value only between `PrintBegin()` and `PrintEnd()` calls.
+  absl::optional<blink::WebPrintParams> print_params_;
+
+  // For identifying actual print operations to avoid double logging of UMA.
+  bool print_pages_called_;
 
   // Whether the plugin is loaded in Print Preview.
   bool is_print_preview_ = false;

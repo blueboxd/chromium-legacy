@@ -19,7 +19,6 @@
 #include "content/public/browser/resource_context.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_request_context_manager.h"
-#include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -85,6 +84,8 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
+  content::ReduceAcceptLanguageControllerDelegate*
+  GetReduceAcceptLanguageControllerDelegate() override;
 
   HeadlessWebContents* CreateWebContents(HeadlessWebContents::Builder* builder);
   // Register web contents which were created not through Headless API

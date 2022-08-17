@@ -17,15 +17,11 @@ namespace base {
 class Value;
 }  // namespace base
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace chromeos {
-class NetworkStateHandler;
-}
-
 namespace ash {
 
 class DeviceState;
 class NetworkState;
+class NetworkStateHandler;
 class NetworkTypePattern;
 
 namespace tether {
@@ -130,7 +126,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedState {
   void set_type(const std::string& type) { type_ = type; }
 
  private:
-  friend class ::chromeos::NetworkStateHandler;
+  friend class NetworkStateHandler;
   friend class NetworkStateTestHelper;
   friend class tether::NetworkListSorterTest;
 
@@ -151,10 +147,5 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedState {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::ManagedState;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_MANAGED_STATE_H_

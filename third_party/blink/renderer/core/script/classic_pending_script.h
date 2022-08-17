@@ -17,8 +17,6 @@
 
 namespace blink {
 
-class ScriptCacheConsumer;
-
 // PendingScript for a classic script
 // https://html.spec.whatwg.org/C/#classic-script.
 //
@@ -60,7 +58,8 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                        const String& source_text_for_inline_script,
                        ScriptSourceLocationType,
                        const ScriptFetchOptions&,
-                       bool is_external);
+                       bool is_external,
+                       bool is_eligible_for_delay);
   ~ClassicPendingScript() override;
 
   void Trace(Visitor*) const override;
@@ -78,13 +77,9 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   // ScriptCacheConsumerClient:
   void NotifyCacheConsumeFinished() override;
-  const ParkableString& GetSourceText() override;
-  v8::ScriptOrigin GetScriptOrigin() override;
 
-  void SetNotStreamingReasonForTest(ScriptStreamer::NotStreamingReason reason) {
-    not_streamed_reason_ = reason;
-  }
-
+  // Check if this script is eligible for DelayAsyncScriptExecution
+  // (see crbug/1340837).
   bool IsEligibleForDelay() const override;
 
  private:
@@ -137,14 +132,14 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   const bool is_external_;
   ReadyState ready_state_;
   bool integrity_failure_;
+  // Describes if this script is eligible for DelayAsyncScriptExecution
+  // (see crbug/1340837).
+  const bool is_eligible_for_delay_;
 
   // The request is intervened by document.write() intervention.
   bool intervened_ = false;
 
-  // Specifies the reason that script was never streamed.
-  ScriptStreamer::NotStreamingReason not_streamed_reason_;
-
-  Member<ScriptCacheConsumer> cache_consumer_;
+  Member<ClassicScript> classic_script_;
 };
 
 }  // namespace blink

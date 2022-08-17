@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -42,7 +43,8 @@ class BookmarkContextMenu : public ui::SimpleMenuModel,
   explicit BookmarkContextMenu(
       Browser* browser,
       base::WeakPtr<ui::MojoBubbleWebUIController::Embedder> embedder,
-      const bookmarks::BookmarkNode* bookmark)
+      const bookmarks::BookmarkNode* bookmark,
+      const side_panel::mojom::ContextMenuSource& source)
       : ui::SimpleMenuModel(this),
         embedder_(embedder),
         controller_(base::WrapUnique(new BookmarkContextMenuController(
@@ -50,12 +52,18 @@ class BookmarkContextMenu : public ui::SimpleMenuModel,
             this,
             browser,
             browser->profile(),
-            base::BindRepeating(
-                [](content::PageNavigator* navigator) { return navigator; },
-                browser),
-            BOOKMARK_LAUNCH_LOCATION_SIDE_PANEL_CONTEXT_MENU,
+            BookmarkLaunchLocation::kSidePanelContextMenu,
             bookmark->parent(),
             {bookmark}))) {
+    if (source == side_panel::mojom::ContextMenuSource::kPriceTracking) {
+      AddItem(IDC_BOOKMARK_BAR_OPEN_ALL);
+      AddItem(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
+      AddItem(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO);
+      AddSeparator(ui::NORMAL_SEPARATOR);
+      AddItem(IDC_BOOKMARK_MANAGER);
+      return;
+    }
+
     AddItem(IDC_BOOKMARK_BAR_OPEN_ALL);
     AddItem(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
     AddItem(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO);
@@ -141,19 +149,18 @@ void BookmarksPageHandler::OpenBookmark(
       click_modifiers->middle_button, click_modifiers->alt_key,
       click_modifiers->ctrl_key, click_modifiers->meta_key,
       click_modifiers->shift_key);
-  content::OpenURLParams params(bookmark_node->url(), content::Referrer(),
-                                open_location,
-                                ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-  browser->OpenURL(params);
+  chrome::OpenAllIfAllowed(browser, {bookmark_node}, open_location, false);
   base::RecordAction(base::UserMetricsAction("SidePanel.Bookmarks.Navigation"));
   RecordBookmarkLaunch(
-      parent_folder_depth > 0 ? BOOKMARK_LAUNCH_LOCATION_SIDE_PANEL_SUBFOLDER
-                              : BOOKMARK_LAUNCH_LOCATION_SIDE_PANEL_FOLDER,
+      parent_folder_depth > 0 ? BookmarkLaunchLocation::kSidePanelSubfolder
+                              : BookmarkLaunchLocation::kSidePanelFolder,
       profile_metrics::GetBrowserProfileType(browser->profile()));
 }
 
-void BookmarksPageHandler::ShowContextMenu(const std::string& id_string,
-                                           const gfx::Point& point) {
+void BookmarksPageHandler::ShowContextMenu(
+    const std::string& id_string,
+    const gfx::Point& point,
+    side_panel::mojom::ContextMenuSource source) {
   int64_t id;
   if (!base::StringToInt64(id_string, &id))
     return;
@@ -173,7 +180,7 @@ void BookmarksPageHandler::ShowContextMenu(const std::string& id_string,
       bookmarks_ui_ ? bookmarks_ui_->embedder() : reading_list_ui_->embedder();
   if (embedder) {
     embedder->ShowContextMenu(point, std::make_unique<BookmarkContextMenu>(
-                                         browser, embedder, bookmark));
+                                         browser, embedder, bookmark, source));
   }
 }
 

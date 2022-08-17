@@ -204,6 +204,7 @@
 #include "components/live_caption/caption_util.h"
 #include "components/media_router/browser/presentation/presentation_service_delegate_impl.h"
 #include "components/media_router/browser/presentation/receiver_presentation_service_delegate_impl.h"
+#include "components/media_router/browser/presentation/web_contents_presentation_manager.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
@@ -379,7 +380,6 @@
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "components/user_manager/user.h"
@@ -436,6 +436,7 @@
 #include "chrome/browser/chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
+#include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
@@ -549,6 +550,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
+#include "extensions/browser/content_script_tracker.h"
 #include "extensions/browser/extension_navigation_throttle.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
@@ -2413,6 +2415,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             blink::switches::kWebSQLNonSecureContextEnabled);
       }
 
+      // Enable persistent quota if enabled by enterprise policy.
+      if (prefs->GetBoolean(storage::kPersistentQuotaEnabled)) {
+        command_line->AppendSwitch(blink::switches::kPersistentQuotaEnabled);
+      }
+
 #if !BUILDFLAG(IS_ANDROID)
       InstantService* instant_service =
           InstantServiceFactory::GetForProfile(profile);
@@ -2543,8 +2550,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kShowAutofillSignatures,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       switches::kShortMergeSessionTimeoutForTest,  // For tests only.
-      chromeos::switches::
-          kTelemetryExtensionPwaOriginOverrideForTesting,  // For tests only.
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extensions::switches::kAllowHTTPBackgroundPage,
@@ -2567,6 +2572,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kEnableNetBenchmarking,
 #if BUILDFLAG(IS_CHROMEOS)
+      chromeos::switches::
+          kTelemetryExtensionPwaOriginOverrideForTesting,  // For tests only.
       switches::kForceAppMode,
 #endif
 #if BUILDFLAG(ENABLE_NACL)
@@ -2715,6 +2722,7 @@ ChromeContentBrowserClient::AllowServiceWorker(
     const absl::optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     content::BrowserContext* context) {
+  DCHECK(context);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL first_party_url = top_frame_origin ? top_frame_origin->GetURL() : GURL();
 
@@ -4357,6 +4365,24 @@ ChromeContentBrowserClient::GetReceiverPresentationServiceDelegate(
   return nullptr;
 }
 
+void ChromeContentBrowserClient::AddPresentationObserver(
+    content::PresentationObserver* observer,
+    content::WebContents* web_contents) {
+  if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
+    media_router::WebContentsPresentationManager::Get(web_contents)
+        ->AddObserver(observer);
+  }
+}
+
+void ChromeContentBrowserClient::RemovePresentationObserver(
+    content::PresentationObserver* observer,
+    content::WebContents* web_contents) {
+  if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
+    media_router::WebContentsPresentationManager::Get(web_contents)
+        ->RemoveObserver(observer);
+  }
+}
+
 std::vector<std::unique_ptr<content::NavigationThrottle>>
 ChromeContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
@@ -4693,12 +4719,11 @@ ChromeContentBrowserClient::GetDevToolsBackgroundServiceExpirations(
   auto* pref_service = profile->GetPrefs();
   DCHECK(pref_service);
 
-  auto* expiration_dict = pref_service->GetDictionary(
+  const auto& expiration_dict = pref_service->GetValueDict(
       prefs::kDevToolsBackgroundServicesExpirationDict);
-  DCHECK(expiration_dict);
 
   base::flat_map<int, base::Time> expiration_times;
-  for (auto it : expiration_dict->DictItems()) {
+  for (auto it : expiration_dict) {
     // key.
     int service = 0;
     bool did_convert = base::StringToInt(it.first, &service);
@@ -6280,46 +6305,51 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
 
+  // Paste requires either (1) user activation, ...
+  if (render_frame_host->HasTransientUserActivation())
+    return true;
+
+  // (2) granted web permission, ...
   content::BrowserContext* browser_context =
       render_frame_host->GetBrowserContext();
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
-
   content::PermissionController* permission_controller =
       browser_context->GetPermissionController();
   blink::mojom::PermissionStatus status =
       permission_controller->GetPermissionStatusForCurrentDocument(
           blink::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host);
+  if (status == blink::mojom::PermissionStatus::GRANTED)
+    return true;
 
-  // True if this paste is executed from an extension URL with read permission.
-  bool is_extension_paste_allowed = false;
-  // True if any active extension can use content scripts to read on this page.
-  bool is_content_script_paste_allowed = false;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // TODO(https://crbug.com/982361): Provide proper browser-side content script
-  // tracking below, possibly based on hooks like those in
-  // URLLoaderFactoryManager's WillExecuteCode() and ReadyToCommitNavigation().
-  // Until this is implemented, platforms supporting extensions (all  platforms
-  // except Android) will essentially no-op here and return true.
-  is_content_script_paste_allowed = true;
+  // (3) origination directly from a Chrome extension, ...
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
   const GURL& url =
       render_frame_host->GetMainFrame()->GetLastCommittedOrigin().GetURL();
+  auto* registry = extensions::ExtensionRegistry::Get(profile);
   if (url.SchemeIs(extensions::kExtensionScheme)) {
-    auto* process_map = extensions::ProcessMap::Get(profile);
-    auto* registry = extensions::ExtensionRegistry::Get(profile);
-    is_extension_paste_allowed = URLHasExtensionPermission(
-        process_map, registry, url, render_frame_host->GetProcess()->GetID(),
-        APIPermissionID::kClipboardRead);
+    return URLHasExtensionPermission(extensions::ProcessMap::Get(profile),
+                                     registry, url,
+                                     render_frame_host->GetProcess()->GetID(),
+                                     APIPermissionID::kClipboardRead);
+  }
+
+  // or (4) origination from a process that at least might be running a
+  // content script from an extension with the clipboardRead permission.
+  extensions::ExtensionIdSet extension_ids =
+      extensions::ContentScriptTracker::GetExtensionsThatRanScriptsInProcess(
+          *render_frame_host->GetProcess());
+  for (const auto& extension_id : extension_ids) {
+    const Extension* extension =
+        registry->enabled_extensions().GetByID(extension_id);
+    if (extension && extension->permissions_data()->HasAPIPermission(
+                         APIPermissionID::kClipboardRead)) {
+      return true;
+    }
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!is_extension_paste_allowed && !is_content_script_paste_allowed &&
-      !render_frame_host->HasTransientUserActivation() &&
-      status != blink::mojom::PermissionStatus::GRANTED) {
-    // Paste requires either (1) origination from a chrome extension, (2) user
-    // activation, or (3) granted web permission.
-    return false;
-  }
-  return true;
+
+  return false;
 }
 
 void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
@@ -6499,13 +6529,17 @@ bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
     return true;
   } else if (sandbox_type == sandbox::mojom::Sandbox::kScreenAI) {
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-    base::FilePath screen_ai_component_path =
-        screen_ai::GetLatestLibraryFilePath();
-    if (screen_ai_component_path.empty())
+    // ScreenAI service needs read access to ScreenAI component path, so that it
+    // would be able to find the latest downloaded version, and load its binary
+    // and all enclosed model files.
+    base::FilePath screen_ai_component_dir = screen_ai::GetComponentDir();
+    if (screen_ai_component_dir.empty()) {
+      VLOG(1) << "Screen AI component not found.";
       return false;
+    }
 
     CHECK(client->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
-                               screen_ai_component_path.value()));
+                               screen_ai_component_dir.value()));
     return true;
 #endif
   }
@@ -6692,7 +6726,8 @@ bool ChromeContentBrowserClient::OpenExternally(
       !url.SchemeIs(extensions::kExtensionScheme);
   if (should_open_in_lacros) {
     ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-        url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+        url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+        ash::NewWindowDelegate::Disposition::kNewForegroundTab);
     return true;
   }
 #endif

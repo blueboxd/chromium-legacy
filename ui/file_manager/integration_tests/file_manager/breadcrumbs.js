@@ -11,10 +11,7 @@ import {testcase} from '../testcase.js';
 import {expandTreeItem, navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
 
 async function getBreadcrumbTagName() {
-  const isFilesAppExperimental =
-      await sendTestMessage({name: 'isFilesAppExperimental'}) === 'true';
-
-  return isFilesAppExperimental ? 'xf-breadcrumb' : 'bread-crumb';
+  return 'xf-breadcrumb';
 }
 
 testcase.breadcrumbsNavigate = async () => {
@@ -282,7 +279,7 @@ testcase.breadcrumbsMainButtonClick = async () => {
 
   // Check: the breadcrumb path should be updated due to navigation.
   await remoteCall.waitForElement(
-      appId, ['bread-crumb[path="My files/Downloads"']);
+      appId, [`${breadcrumbsTag}[path="My files/Downloads"]`]);
 };
 
 /**
@@ -317,7 +314,7 @@ testcase.breadcrumbsMainButtonEnterKey = async () => {
 
   // Check: the breadcrumb path should be updated due to navigation.
   await remoteCall.waitForElement(
-      appId, ['bread-crumb[path="My files/Downloads"']);
+      appId, [`${breadcrumbsTag}[path="My files/Downloads"]`]);
 };
 
 /**
@@ -512,7 +509,7 @@ testcase.breadcrumbsEliderMenuItemClick = async () => {
 
   // Check: the breadcrumb path should be updated due to navigation.
   await remoteCall.waitForElement(
-      appId, ['bread-crumb[path="My files/Downloads"']);
+      appId, [`${breadcrumbsTag}[path="My files/Downloads"]`]);
 };
 
 /**

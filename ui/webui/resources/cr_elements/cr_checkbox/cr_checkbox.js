@@ -8,65 +8,107 @@
  * interaction. By default it assumes there will be child(ren) passed in to be
  * used as labels. If no label will be provided, a .no-label class should be
  * added to hide the spacing between the checkbox and the label container.
+ *
+ * List of customizable styles:
+ *  --cr-checkbox-border-size
+ *  --cr-checkbox-checked-box-background-color
+ *  --cr-checkbox-checked-box-color
+ *  --cr-checkbox-label-color
+ *  --cr-checkbox-label-padding-start
+ *  --cr-checkbox-mark-color
+ *  --cr-checkbox-ripple-checked-color
+ *  --cr-checkbox-ripple-size
+ *  --cr-checkbox-ripple-unchecked-color
+ *  --cr-checkbox-size
+ *  --cr-checkbox-unchecked-box-color
  */
-Polymer({
-  is: 'cr-checkbox',
+import '//resources/polymer/v3_0/paper-styles/color.js';
+import '../shared_vars_css.m.js';
 
-  behaviors: [
-    Polymer.PaperRippleBehavior,
-  ],
+import {PaperRippleBehavior} from '//resources/polymer/v3_0/paper-behaviors/paper-ripple-behavior.js';
+import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  properties: {
-    checked: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      observer: 'checkedChanged_',
-      notify: true,
-    },
+class PaperRippleBehaviorInterface {
+  /** @return {!PaperRippleElement} */
+  getRipple() {}
+}
 
-    disabled: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      observer: 'disabledChanged_',
-    },
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {PaperRippleBehaviorInterface}
+ */
+const CrCheckboxElementBase =
+    mixinBehaviors([PaperRippleBehavior], PolymerElement);
 
-    ariaDescription: String,
+/** @polymer */
+export class CrCheckboxElement extends CrCheckboxElementBase {
+  static get is() {
+    return 'cr-checkbox';
+  }
 
-    tabIndex: {
-      type: Number,
-      value: 0,
-      observer: 'onTabIndexChanged_',
-    },
-  },
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  listeners: {
-    blur: 'hideRipple_',
-    click: 'onClick_',
-    focus: 'showRipple_',
-    up: 'hideRipple_',
-  },
+  static get properties() {
+    return {
+      checked: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: 'checkedChanged_',
+        notify: true,
+      },
+
+      disabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: 'disabledChanged_',
+      },
+
+      ariaDescription: String,
+
+      tabIndex: {
+        type: Number,
+        value: 0,
+        observer: 'onTabIndexChanged_',
+      },
+    };
+  }
+
+  constructor() {
+    super();
+
+    /** @type {!Element} */
+    this._rippleContainer;
+  }
 
   /** @override */
   ready() {
+    super.ready();
     this.removeAttribute('unresolved');
-  },
+    this.addEventListener('blur', this.hideRipple_.bind(this));
+    this.addEventListener('click', this.onClick_.bind(this));
+    this.addEventListener('focus', this.showRipple_.bind(this));
+    this.addEventListener('up', this.hideRipple_.bind(this));
+  }
 
   focus() {
     this.$.checkbox.focus();
-  },
+  }
 
   /** @return {!Element} */
   getFocusableElement() {
     return this.$.checkbox;
-  },
+  }
 
   /** @private */
   checkedChanged_() {
     this.$.checkbox.setAttribute(
         'aria-checked', this.checked ? 'true' : 'false');
-  },
+  }
 
   /**
    * @param {boolean} current
@@ -81,17 +123,17 @@ Polymer({
     this.tabIndex = this.disabled ? -1 : 0;
     this.$.checkbox.setAttribute(
         'aria-disabled', this.disabled ? 'true' : 'false');
-  },
+  }
 
   /** @private */
   showRipple_() {
     this.getRipple().showAndHoldDown();
-  },
+  }
 
   /** @private */
   hideRipple_() {
     this.getRipple().clear();
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -108,8 +150,9 @@ Polymer({
     e.preventDefault();
 
     this.checked = !this.checked;
-    this.fire('change', this.checked);
-  },
+    this.dispatchEvent(new CustomEvent(
+        'change', {bubbles: true, composed: true, detail: this.checked}));
+  }
 
   /**
    * @param {!KeyboardEvent} e
@@ -129,7 +172,7 @@ Polymer({
     if (e.key === 'Enter') {
       this.click();
     }
-  },
+  }
 
   /**
    * @param {!KeyboardEvent} e
@@ -144,22 +187,23 @@ Polymer({
     if (e.key === ' ') {
       this.click();
     }
-  },
+  }
 
   /** @private */
   onTabIndexChanged_() {
     // :host shouldn't have a tabindex because it's set on #checkbox.
     this.removeAttribute('tabindex');
-  },
+  }
 
   // customize the element's ripple
   _createRipple() {
     this._rippleContainer = this.$.checkbox;
-    const ripple = Polymer.PaperRippleBehavior._createRipple();
+    const ripple = PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle', 'toggle-ink');
     return ripple;
-  },
-});
-/* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');
+  }
+}
+
+customElements.define(CrCheckboxElement.is, CrCheckboxElement);

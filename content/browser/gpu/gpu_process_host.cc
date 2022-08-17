@@ -437,11 +437,11 @@ class GpuSandboxedProcessLauncherDelegate
     else
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
 
-    // Block this DLL even if it is not loaded by the browser process.
-    policy->AddDllToUnload(L"cmsetac.dll");
-
     if (policy->GetConfig()->IsConfigured())
       return true;
+
+    // Block this DLL even if it is not loaded by the browser process.
+    policy->GetConfig()->AddDllToUnload(L"cmsetac.dll");
 
     if (cmd_line_.HasSwitch(switches::kEnableLogging)) {
       std::wstring log_file_path = logging::GetLogFileFullPath();
@@ -636,6 +636,7 @@ void GpuProcessHost::GetHasGpuProcess(base::OnceCallback<void(bool)> callback) {
 
 // static
 void GpuProcessHost::CallOnIO(
+    const base::Location& location,
     GpuProcessKind kind,
     bool force_create,
     base::OnceCallback<void(GpuProcessHost*)> callback) {
@@ -643,8 +644,8 @@ void GpuProcessHost::CallOnIO(
   DCHECK_NE(kind, GPU_PROCESS_KIND_INFO_COLLECTION);
 #endif
   GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&RunCallbackOnIO, kind, force_create,
-                                std::move(callback)));
+      location, base::BindOnce(&RunCallbackOnIO, kind, force_create,
+                               std::move(callback)));
 }
 
 void GpuProcessHost::BindInterface(
@@ -1056,9 +1057,9 @@ void GpuProcessHost::DidUpdateDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info) {
 }
 #endif
 
-void GpuProcessHost::BlockDomainFrom3DAPIs(const GURL& url,
-                                           gpu::DomainGuilt guilt) {
-  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(url, guilt);
+void GpuProcessHost::BlockDomainsFrom3DAPIs(const std::set<GURL>& urls,
+                                            gpu::DomainGuilt guilt) {
+  GpuDataManagerImpl::GetInstance()->BlockDomainsFrom3DAPIs(urls, guilt);
 }
 
 bool GpuProcessHost::GpuAccessAllowed() const {

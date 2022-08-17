@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -124,6 +125,17 @@ int PrerenderHostRegistry::CreateAndStartHost(
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
+    // Don't prerender when the Data Saver setting is enabled.
+    if (GetContentClient()->browser()->IsDataSaverEnabled(
+            web_contents.GetBrowserContext())) {
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kDataSaverEnabled, attributes,
+          ukm::kInvalidSourceId);
+      if (attempt)
+        attempt->SetEligibility(PreloadingEligibility::kDataSaverEnabled);
+      return RenderFrameHost::kNoFrameTreeNodeId;
+    }
+
     // TODO(crbug.com/1176054): Support cross-origin prerendering.
     // The initiator origin is nullopt when prerendering is initiated by the
     // browser (not by a renderer using Speculation Rules API). In that case,
@@ -181,9 +193,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
-    auto* attempt_impl = static_cast<PreloadingAttemptImpl*>(attempt);
-    auto prerender_host =
-        std::make_unique<PrerenderHost>(attributes, web_contents, attempt_impl);
+    auto prerender_host = std::make_unique<PrerenderHost>(
+        attributes, web_contents, attempt ? attempt->GetWeakPtr() : nullptr);
     frame_tree_node_id = prerender_host->frame_tree_node_id();
 
     CHECK(!base::Contains(prerender_host_by_frame_tree_node_id_,

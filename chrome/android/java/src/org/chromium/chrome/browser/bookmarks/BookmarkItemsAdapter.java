@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView;
-import org.chromium.chrome.browser.ui.signin.SigninPromoController.SyncPromoState;
+import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
@@ -326,11 +326,7 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
 
     private void bindSectionHeaderViewHolder(View view, BookmarkListEntry listItem) {
         TextView title = view.findViewById(R.id.title);
-        TextView description = view.findViewById(R.id.description);
         title.setText(listItem.getHeaderTitle());
-        description.setText(listItem.getHeaderDescription());
-        description.setVisibility(
-                TextUtils.isEmpty(listItem.getHeaderDescription()) ? View.GONE : View.VISIBLE);
         if (listItem.getSectionHeaderData().topPadding > 0) {
             title.setPaddingRelative(title.getPaddingStart(),
                     listItem.getSectionHeaderData().topPadding, title.getPaddingEnd(),

@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
-#include "chromeos/dbus/shill/shill_clients.h"
 #endif
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
@@ -51,8 +51,8 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
  protected:
   void SetUp() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::shill_clients::InitializeFakes();
-    chromeos::NetworkHandler::Initialize();
+    ash::shill_clients::InitializeFakes();
+    ash::NetworkHandler::Initialize();
 #endif
     network_change_notifier_ = net::NetworkChangeNotifier::CreateMockIfNeeded();
     // We need to initialize the above *before* the base fixture instantiates
@@ -73,8 +73,8 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     DeviceServiceTestBase::TearDown();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::NetworkHandler::Shutdown();
-    chromeos::shill_clients::Shutdown();
+    ash::NetworkHandler::Shutdown();
+    ash::shill_clients::Shutdown();
 #endif
 
     // Let the GeolocationImpl destruct earlier than GeolocationProviderImpl to

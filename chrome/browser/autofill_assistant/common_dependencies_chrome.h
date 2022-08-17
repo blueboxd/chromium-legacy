@@ -41,6 +41,9 @@ class CommonDependenciesChrome : public CommonDependencies {
   bool IsSupervisedUser(
       content::BrowserContext* browser_context) const override;
 
+  bool IsAllowedForMachineLearning(
+      content::BrowserContext* browser_context) const override;
+
   // The AnnotateDomModelService is a KeyedService. There is only one per
   // BrowserContext.
   AnnotateDomModelService* GetOrCreateAnnotateDomModelService(
@@ -52,6 +55,12 @@ class CommonDependenciesChrome : public CommonDependencies {
       content::BrowserContext* browser_context) const override;
 
   version_info::Channel GetChannel() const override;
+
+  bool GetMakeSearchesAndBrowsingBetterEnabled(
+      content::BrowserContext* browser_context) const override;
+
+  bool GetMetricsReportingEnabled(
+      content::BrowserContext* browser_context) const override;
 };
 
 }  // namespace autofill_assistant

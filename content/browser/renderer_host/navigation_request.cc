@@ -54,6 +54,7 @@
 #include "content/browser/origin_agent_cluster_isolation_state.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/process_lock.h"
+#include "content/browser/reduce_accept_language/reduce_accept_language_utils.h"
 #include "content/browser/renderer_host/cookie_utils.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -96,6 +97,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/reduce_accept_language_controller_delegate.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
@@ -144,6 +146,7 @@
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
+#include "third_party/blink/public/common/frame/fenced_frame_permissions_policies.h"
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
@@ -152,6 +155,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_result.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
+#include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -202,6 +206,7 @@ const char kIsolatedAppCSP[] =
     "object-src 'none';"
     "frame-src 'self' https:;"
     "connect-src 'self' https:;"
+    "script-src 'self' 'wasm-unsafe-eval';"
     "require-trusted-types-for 'script';";
 
 // Corresponds to the "NavigationURLScheme" histogram enumeration type in
@@ -1232,7 +1237,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
           false /* should_load_data_url */,
           /*ancestor_or_self_has_cspee=*/
-          frame_tree_node->AncestorOrSelfHasCSPEE());
+          frame_tree_node->AncestorOrSelfHasCSPEE(),
+          std::string() /* reduced_accept_language */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1360,7 +1366,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
           false /* should_load_data_url */,
           /*ancestor_or_self_has_cspee=*/
-          frame_tree_node->AncestorOrSelfHasCSPEE());
+          frame_tree_node->AncestorOrSelfHasCSPEE(),
+          std::string() /* reduced_accept_language */);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1562,10 +1569,7 @@ NavigationRequest::NavigationRequest(
   common_params_->referrer = Referrer::SanitizeForRequest(
       common_params_->url, *common_params_->referrer);
 
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
-  if (frame_tree_node_->IsOutermostMainFrame()) {
+  if (IsInPrimaryMainFrame()) {
     loading_mem_tracker_ =
         PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::PAGE_LOAD);
   }
@@ -1709,6 +1713,24 @@ NavigationRequest::NavigationRequest(
       headers.MergeFrom(client_hints_headers);
     }
 
+    // Add reduced accept language header.
+    if (auto reduce_accept_lang_utils =
+            ReduceAcceptLanguageUtils::Create(browser_context);
+        reduce_accept_lang_utils && !devtools_accept_language_override_) {
+      // Add the Accept-Language header with the reduce accept language value.
+      // Chromium network stack won't overwrite the value if Accept-Language
+      // header was already added in the request header.
+      net::HttpRequestHeaders accept_language_headers;
+      absl::optional<std::string> reduced_accept_language =
+          reduce_accept_lang_utils.value()
+              .AddNavigationRequestAcceptLanguageHeaders(
+                  url::Origin::Create(common_params_->url), frame_tree_node_,
+                  &accept_language_headers);
+      commit_params_->reduced_accept_language =
+          reduced_accept_language.value_or("");
+      headers.MergeFrom(accept_language_headers);
+    }
+
     headers.AddHeadersFromString(begin_params_->headers);
     AddAdditionalRequestHeaders(
         &headers, common_params_->url, common_params_->navigation_type,
@@ -1740,11 +1762,8 @@ NavigationRequest::NavigationRequest(
 #if BUILDFLAG(IS_ANDROID)
   RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
       frame_tree_node_->current_frame_host()->GetRenderWidgetHost());
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
   if (base::FeatureList::IsEnabled(features::kOptimizeEarlyNavigation) &&
-      NeedsUrlLoader() && frame_tree_node_->IsOutermostMainFrame() && host &&
+      NeedsUrlLoader() && IsInPrimaryMainFrame() && host &&
       !host->is_hidden() && host->GetView() &&
       host->GetView()->GetNativeView() &&
       host->GetView()->GetNativeView()->GetWindowAndroid()) {
@@ -2047,14 +2066,11 @@ bool NavigationRequest::NeedFencedFrameURLMapping() {
 }
 
 void NavigationRequest::OnFencedFrameURLMappingComplete(
-    absl::optional<GURL> mapped_url,
-    absl::optional<AdAuctionData> ad_auction_data,
-    absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-        pending_ad_components_map,
-    ReportingMetadata& reporting_metadata) {
+    const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
+        properties) {
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
-  if (mapped_url) {
+  if (properties) {
     // The URN mapping can happen on regular iframes if the feature
     // `AllowURNsInIframes` is enabled. We will ignore the leakage via iframe,
     // and will only track the shared storage budget for fenced frame.
@@ -2064,15 +2080,16 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
               common_params_->url);
     }
 
-    common_params_->url = mapped_url.value();
-    commit_params_->original_url = mapped_url.value();
-    ad_auction_data_ = std::move(ad_auction_data);
+    fenced_frame_properties_ = properties;
+    common_params_->url = properties->mapped_url;
+    commit_params_->original_url = properties->mapped_url;
+    ad_auction_data_ = properties->ad_auction_data;
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
     // directly.
-    pending_ad_components_map_ = std::move(pending_ad_components_map);
-    if (!reporting_metadata.metadata.empty()) {
+    pending_ad_components_map_ = properties->pending_ad_components_map;
+    if (!properties->reporting_metadata.metadata.empty()) {
       commit_params_->fenced_frame_reporting_metadata =
-          reporting_metadata.Clone();
+          properties->reporting_metadata.Clone();
     }
   } else {
     if (frame_tree_node_->IsFencedFrameRoot() &&
@@ -2377,8 +2394,8 @@ void NavigationRequest::StartNavigation() {
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
 
-  throttle_runner_ =
-      base::WrapUnique(new NavigationThrottleRunner(this, navigation_id_));
+  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(
+      this, navigation_id_, IsInPrimaryMainFrame()));
 
   // For prerendered page activation, CommitDeferringConditions have already run
   // at the beginning of the navigation, so we won't run them again.
@@ -3853,6 +3870,17 @@ void NavigationRequest::OnResponseStarted(
     return;
   }
 
+  if (render_frame_host_ &&
+      !CheckPermissionsPoliciesForFencedFrames(GetOriginToCommit())) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED),
+        false /*skip_throttles*/, absl::nullopt /*error_page_content*/,
+        false /*collapse_frame*/);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
+  }
+
   // Check if the navigation should be allowed to proceed.
   WillProcessResponse();
 }
@@ -4207,7 +4235,8 @@ void NavigationRequest::OnStartChecksComplete(
       devtools_accepted_stream_types;
   devtools_instrumentation::ApplyNetworkRequestOverrides(
       frame_tree_node_, begin_params_.get(), &report_raw_headers,
-      &devtools_accepted_stream_types, &devtools_user_agent_override_);
+      &devtools_accepted_stream_types, &devtools_user_agent_override_,
+      &devtools_accept_language_override_);
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   // Merge headers with embedder's headers.
@@ -4464,6 +4493,23 @@ void NavigationRequest::OnRedirectChecksComplete(
           ComputeUserAgentValue(modified_headers, GetUserAgentOverride(),
                                 browser_context));
     }
+  }
+
+  // Add reduced accept language header to the current request.
+  // If devtools has overridden the Accept-Language header, skip reduce
+  // Accept-Language header.
+  if (auto reduce_accept_lang_utils =
+          ReduceAcceptLanguageUtils::Create(browser_context);
+      reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    net::HttpRequestHeaders accept_language_headers;
+    absl::optional<std::string> reduced_accept_language =
+        reduce_accept_lang_utils.value()
+            .AddNavigationRequestAcceptLanguageHeaders(
+                url::Origin::Create(common_params_->url), frame_tree_node_,
+                &accept_language_headers);
+    commit_params_->reduced_accept_language =
+        reduced_accept_language.value_or("");
+    modified_headers.MergeFrom(accept_language_headers);
   }
 
   net::HttpRequestHeaders cors_exempt_headers;
@@ -6058,6 +6104,12 @@ void NavigationRequest::DidCommitNavigation(
   previous_main_frame_url_ = previous_main_frame_url;
   navigation_type_ = navigation_type;
 
+  // When the embedder navigates a fenced frame root, the navigation
+  // installs a new set of inner fenced frame properties.
+  if (is_embedder_initiated_fenced_frame_navigation_) {
+    frame_tree_node()->set_fenced_frame_properties(fenced_frame_properties_);
+  }
+
   // Same-document navigations won't affect budget metadata.
   if (!DidEncounterError() && !IsSameDocument()) {
     FencedFrameURLMapping::SharedStorageBudgetMetadata*
@@ -7409,6 +7461,38 @@ bool NavigationRequest::CoopCoepSanityCheck() {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
     return false;
+  }
+  return true;
+}
+
+bool NavigationRequest::CheckPermissionsPoliciesForFencedFrames(
+    const url::Origin& origin) {
+  // These checks only apply to fenced frames.
+  if (!frame_tree_node_->IsFencedFrameRoot())
+    return true;
+
+  for (const blink::mojom::PermissionsPolicyFeature feature :
+       blink::kFencedFrameOpaqueAdsDefaultAllowedFeatures) {
+    // Only check if the feature is enabled for this origin if
+    // a policy was explicitly specified.
+    if (GetParentFrameOrOuterDocument()
+            ->permissions_policy()
+            ->GetAllowlistForFeatureIfExists(feature) &&
+        !GetParentFrameOrOuterDocument()
+             ->permissions_policy()
+             ->IsFeatureEnabledForOrigin(feature, origin)) {
+      const blink::PermissionsPolicyFeatureToNameMap& feature_to_name_map =
+          blink::GetPermissionsPolicyFeatureToNameMap();
+      const std::string feature_string(
+          (feature_to_name_map.find(feature))->second);
+      AddDeferredConsoleMessage(
+          blink::mojom::ConsoleMessageLevel::kError,
+          base::StringPrintf(
+              "Refused to frame '%s' as a fenced frame because permissions "
+              "policy '%s' is not allowed for the frame's origin.",
+              origin.Serialize().c_str(), feature_string.c_str()));
+      return false;
+    }
   }
   return true;
 }

@@ -9,18 +9,22 @@
 
 namespace screen_ai {
 
-// Get the absolute path of the ScreenAI library.
-base::FilePath GetLatestLibraryFilePath();
+// Get the absolute path of the ScreenAI component.
+base::FilePath GetLatestComponentBinaryPath();
 
 // Returns the install directory relative to components folder.
 base::FilePath GetRelativeInstallDir();
 
-// Stores the path to the preloaded library. This value is set when the library
-// is loaded prior to sandboxing in every session.
-void SetPreloadedLibraryFilePath(const base::FilePath& path);
+// Returns the folder in which ScreenAI component is installed.
+base::FilePath GetComponentDir();
 
-// Returns the preloaded path for the library.
-base::FilePath GetPreloadedLibraryFilePath();
+// Stores the path to the component binary. This value is kept in memory and is
+// not kept between sessions or shared between processes.
+void StoreComponentBinaryPath(const base::FilePath& path);
+
+// Returns the component binary path if it is already stored by
+// |StoreComponentBinaryPath|.
+base::FilePath GetStoredComponentBinaryPath();
 
 }  // namespace screen_ai
 #endif  // COMPONENTS_SERVICES_SCREEN_AI_PUBLIC_CPP_UTILITIES_H_

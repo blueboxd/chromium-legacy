@@ -179,7 +179,9 @@
     self.shouldFocusFakebox = NO;
   }
 
-  if (!self.isFeedVisible) {
+  if (self.isFeedVisible) {
+    [self updateFeedInsetsForMinimumHeight];
+  } else {
     [self setMinimumHeight];
   }
 
@@ -395,6 +397,9 @@
 - (void)setContentOffsetToTop {
   [self setContentOffset:-[self heightAboveFeed]];
   [self setInitialFakeOmniboxConstraints];
+  if ([self.ntpContentDelegate isContentHeaderSticky]) {
+    [self setInitialFeedHeaderConstraints];
+  }
 }
 
 - (BOOL)isNTPScrolledToTop {
@@ -843,6 +848,9 @@
   // make sure the header is properly positioned. (crbug.com/1261458)
   if ([self isNTPScrolledToTop]) {
     [self setInitialFakeOmniboxConstraints];
+    if ([self.ntpContentDelegate isContentHeaderSticky]) {
+      [self setInitialFeedHeaderConstraints];
+    }
   }
 }
 

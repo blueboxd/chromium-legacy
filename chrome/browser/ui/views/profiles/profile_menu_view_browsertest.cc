@@ -68,7 +68,7 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/sync/test/fake_server_network_resources.h"
 #include "components/user_education/common/feature_promo_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test.h"
@@ -845,7 +845,8 @@ class ProfileMenuClickTest : public SyncTest,
   }
 
   syncer::SyncServiceImpl* sync_service() {
-    return SyncServiceFactory::GetAsSyncServiceImplForProfile(GetProfile());
+    return SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+        GetProfile());
   }
 
   signin::IdentityManager* identity_manager() {
@@ -1187,6 +1188,40 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_UnconsentedPrimaryAccountError,
           account_info.account_id));
 
   RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+// The two additional profiles created in the PRE_ test should be disabled and
+// thus, not appear in  this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SecondaryProfilesDisabled[] = {
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+
+PROFILE_MENU_CLICK_TEST(kActionableItems_SecondaryProfilesDisabled,
+                        ProfileMenuClickTest_SecondaryProfilesDisabled) {
+  // Check that the setup was successful.
+  ASSERT_FALSE(g_browser_process->local_state()->GetBoolean(
+      prefs::kLacrosSecondaryProfilesAllowed));
+
+  RunTest();
+}
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SecondaryProfilesDisabled,
+                       PRE_ProfileMenuClickTest_SecondaryProfilesDisabled) {
+  // Add two additional profiles, which later shouldn't be clickable.
+  CreateAdditionalProfile();
+  CreateAdditionalProfile();
+
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kLacrosSecondaryProfilesAllowed, false);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

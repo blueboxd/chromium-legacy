@@ -27,7 +27,6 @@
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
-#include "extensions/renderer/script_injection_callback.h"
 #include "extensions/renderer/scripts_run_info.h"
 #include "extensions/renderer/trace_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "url/gurl.h"
 
@@ -92,38 +92,6 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host) {
 
   return id;
 }
-
-// This class manages its own lifetime.
-class TimedScriptInjectionCallback : public ScriptInjectionCallback {
- public:
-  TimedScriptInjectionCallback(base::WeakPtr<ScriptInjection> injection)
-      : ScriptInjectionCallback(
-            base::BindOnce(&TimedScriptInjectionCallback::OnCompleted,
-                           base::Unretained(this))),
-        injection_(injection) {}
-  ~TimedScriptInjectionCallback() override {}
-
-  void OnCompleted(const std::vector<v8::Local<v8::Value>>& result) {
-    if (injection_) {
-      base::TimeTicks timestamp(base::TimeTicks::Now());
-      absl::optional<base::TimeDelta> elapsed;
-      // If the script will never execute (such as if the context is destroyed),
-      // willExecute() will not be called, but OnCompleted() will. Only log a
-      // time for execution if the script, in fact, executed.
-      if (!start_time_.is_null())
-        elapsed = timestamp - start_time_;
-      injection_->OnJsInjectionCompleted(result, elapsed);
-    }
-  }
-
-  void WillExecute() override {
-    start_time_ = base::TimeTicks::Now();
-  }
-
- private:
-  base::WeakPtr<ScriptInjection> injection_;
-  base::TimeTicks start_time_;
-};
 
 }  // namespace
 
@@ -327,10 +295,6 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
   std::vector<blink::WebScriptSource> sources = injector_->GetJsSources(
       run_location_, executing_scripts, num_injected_js_scripts);
   DCHECK(!sources.empty());
-  bool is_user_gesture = injector_->IsUserGesture();
-
-  std::unique_ptr<blink::WebScriptExecutionCallback> callback(
-      new TimedScriptInjectionCallback(weak_ptr_factory_.GetWeakPtr()));
 
   base::ElapsedTimer exec_timer;
 
@@ -345,35 +309,45 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
       injector_->script_type() == mojom::InjectionType::kContentScript &&
       (run_location_ == mojom::RunLocation::kDocumentEnd ||
        run_location_ == mojom::RunLocation::kDocumentIdle);
-  blink::WebLocalFrame::ScriptExecutionType execution_option =
+  blink::mojom::EvaluationTiming execution_option =
       should_execute_asynchronously
-          ? blink::WebLocalFrame::kAsynchronousBlockingOnload
-          : blink::WebLocalFrame::kSynchronous;
+          ? blink::mojom::EvaluationTiming::kAsynchronous
+          : blink::mojom::EvaluationTiming::kSynchronous;
 
-  mojom::ExecutionWorld execution_world = injector_->GetExecutionWorld();
   int32_t world_id = blink::kMainDOMWorldId;
-  if (execution_world == mojom::ExecutionWorld::kIsolated) {
-    world_id = GetIsolatedWorldIdForInstance(injection_host_.get());
-    if (injection_host_->id().type == mojom::HostID::HostType::kExtensions &&
-        log_activity_) {
-      DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id);
-    }
-  } else {
-    DCHECK_EQ(mojom::ExecutionWorld::kMain, execution_world);
+  switch (injector_->GetExecutionWorld()) {
+    case mojom::ExecutionWorld::kIsolated:
+      world_id = GetIsolatedWorldIdForInstance(injection_host_.get());
+      if (injection_host_->id().type == mojom::HostID::HostType::kExtensions &&
+          log_activity_) {
+        DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id);
+      }
+      break;
+    case mojom::ExecutionWorld::kMain:
+      world_id = blink::kMainDOMWorldId;
+      break;
   }
-  auto promise_behavior =
-      injector_->ShouldWaitForPromise()
-          ? blink::WebLocalFrame::PromiseBehavior::kAwait
-          : blink::WebLocalFrame::PromiseBehavior::kDontWait;
   render_frame_->GetWebFrame()->RequestExecuteScript(
-      world_id, sources, is_user_gesture, execution_option, callback.release(),
-      blink::BackForwardCacheAware::kPossiblyDisallow, promise_behavior);
+      world_id, sources, injector_->IsUserGesture(), execution_option,
+      blink::mojom::LoadEventBlockingOption::kBlock,
+      base::BindOnce(&ScriptInjection::OnJsInjectionCompleted,
+                     weak_ptr_factory_.GetWeakPtr()),
+      blink::BackForwardCacheAware::kPossiblyDisallow,
+      injector_->ShouldWaitForPromise());
 }
 
 void ScriptInjection::OnJsInjectionCompleted(
-    const std::vector<v8::Local<v8::Value>>& results,
-    absl::optional<base::TimeDelta> elapsed) {
+    const blink::WebVector<v8::Local<v8::Value>>& results,
+    base::TimeTicks start_time) {
   DCHECK(!did_inject_js_);
+
+  base::TimeTicks timestamp(base::TimeTicks::Now());
+  absl::optional<base::TimeDelta> elapsed;
+  // If the script will never execute (such as if the context is destroyed),
+  // `start_time` is null. Only log a time for execution if the script, in fact,
+  // executed.
+  if (!start_time.is_null())
+    elapsed = timestamp - start_time;
 
   if (injection_host_->id().type == mojom::HostID::HostType::kExtensions &&
       elapsed) {
@@ -396,8 +370,8 @@ void ScriptInjection::OnJsInjectionCompleted(
     }
   }
 
-  bool expects_results = injector_->ExpectsResults();
-  if (expects_results) {
+  if (injector_->ExpectsResults() ==
+      blink::mojom::WantResultOption::kWantResult) {
     if (!results.empty() && !results.back().IsEmpty()) {
       // Right now, we only support returning single results (per frame).
       // It's safe to always use the main world context when converting

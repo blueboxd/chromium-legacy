@@ -49,6 +49,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Fingerprint-setup"/>
   <variant name="Gaia-signin"/>
   <variant name="Gesture-navigation"/>
+  <variant name="Guest-tos"/>
   <variant name="Hid-detection"/>
   <variant name="Image"/>
   <variant name="Kiosk-enable"/>
@@ -134,6 +135,9 @@ chromium-metrics-reviews@google.com.
   <variant name="Gaia-signin.SAMLVideoTimeout"/>
   <variant name="Gaia-signin.StartConsumerKiosk"/>
   <variant name="Gesture-navigation.Next"/>
+  <variant name="Guest-Tos.Accept"/>
+  <variant name="Guest-Tos.Back"/>
+  <variant name="Guest-Tos.Cancel"/>
   <variant name="Hid-detection.Next"/>
   <variant name="Hid-detection.StartDemo"/>
   <variant name="Kiosk-enable.Next"/>
@@ -180,7 +184,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="OOBE.ArcTermsOfServiceScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2022-12-04">
+    enum="BooleanChecked" expires_after="2023-02-12">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -190,7 +194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.ArcTermsOfServiceScreen.UserActions"
-    enum="ArcTosScreenUserActions" expires_after="2022-12-13">
+    enum="ArcTosScreenUserActions" expires_after="2023-02-12">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -253,7 +257,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.EulaScreen.UserActions" enum="EulaScreenUserAction"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -284,7 +288,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OOBE.GaiaLoginTime" units="ms" expires_after="2022-12-01">
+<histogram name="OOBE.GaiaLoginTime" units="ms" expires_after="2023-02-12">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -295,7 +299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.GaiaPasswordChangedScreen.UserActions"
-    enum="GaiaPasswordChangedScreenUserAction" expires_after="2022-12-04">
+    enum="GaiaPasswordChangedScreenUserAction" expires_after="2023-02-12">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -478,8 +482,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OOBE.QuickStart.FastPairAdvertising" enum="BooleanSuccess"
+<histogram name="OOBE.QuickStart.FastPair.AdvertisingStart.ErrorCode"
+    enum="QuickStartFastPairAdvertisingStartErrorCode"
     expires_after="2023-07-07">
+  <owner>bhartmire@google.com</owner>
+  <owner>hansenmichael@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Reason a Fast Pair BLE advertisment failed to register. Recorded whenever a
+    Bluetooth Advertisement error occurs after attempting to register the
+    advertisement.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.QuickStart.FastPair.AdvertisingStart.Result"
+    enum="BooleanSuccess" expires_after="2023-07-07">
   <owner>bhartmire@google.com</owner>
   <owner>hansenmichael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -663,7 +680,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Check" units="ms"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -756,7 +773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.AcceptChromeVoxHint" enum="BooleanEnabled"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>

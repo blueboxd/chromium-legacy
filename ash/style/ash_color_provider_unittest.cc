@@ -201,7 +201,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetRGB(0xD9, 0x30, 0x25)},
          {ColorMode::kLight,
           ColorProvider::ControlsLayerType::kControlBackgroundColorWarning,
-          SkColorSetRGB(0xF9, 0xAB, 0x0)},
+          SkColorSetRGB(0xE3, 0x74, 0x0)},
          {ColorMode::kLight,
           ColorProvider::ControlsLayerType::kControlBackgroundColorPositive,
           SkColorSetRGB(0x1E, 0x8E, 0x3E)},
@@ -336,7 +336,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetARGB(0x4C, 0x1A, 0x73, 0xE8)},
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kSwitchTrackColorInactive,
-          SkColorSetARGB(0x4D, 0x5F, 0x63, 0x68)},
+          SkColorSetARGB(0x4C, 0x5F, 0x63, 0x68)},
 
          {ColorMode::kLight, ColorProvider::ContentLayerType::kCurrentDeskColor,
           SkColorSetRGB(0x0, 0x0, 0x0)},
@@ -469,7 +469,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetARGB(0x4C, 0x8A, 0xB4, 0xF8)},
          {ColorMode::kDark,
           ColorProvider::ContentLayerType::kSwitchTrackColorInactive,
-          SkColorSetARGB(0x4D, 0xE8, 0xEA, 0xED)},
+          SkColorSetARGB(0x4C, 0xE8, 0xEA, 0xED)},
 
          {ColorMode::kDark, ColorProvider::ContentLayerType::kCurrentDeskColor,
           SkColorSetRGB(0xFF, 0xFF, 0xFF)},

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,12 +82,13 @@ content::WebContents* SystemWebAppIntegrationTest::LaunchAppWithFile(
   return LaunchApp(std::move(params));
 }
 
-void SystemWebAppIntegrationTest::LaunchAppWithFileWithoutWaiting(
+content::WebContents*
+SystemWebAppIntegrationTest::LaunchAppWithFileWithoutWaiting(
     ash::SystemWebAppType type,
     const base::FilePath& file_path) {
   apps::AppLaunchParams params = LaunchParamsForApp(type);
   params.launch_files.push_back(file_path);
-  LaunchAppWithoutWaiting(std::move(params));
+  return LaunchAppWithoutWaiting(std::move(params));
 }
 
 }  // namespace ash

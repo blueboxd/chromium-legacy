@@ -509,7 +509,7 @@ void TruncateAndAddStringAttribute(
     uint32_t max_len = kMaxStringAttributeLength) {
   if (value.IsEmpty())
     return;
-  std::string value_utf8 = value.Utf8();
+  std::string value_utf8 = value.Utf8(kStrictUTF8Conversion);
   if (value_utf8.size() > max_len) {
     std::string truncated;
     base::TruncateUTF8ToByteSize(value_utf8, max_len, &truncated);
@@ -614,7 +614,7 @@ int32_t ToAXHighlightType(const AtomicString& highlight_type) {
 }
 
 const AXObject* FindAncestorWithAriaHidden(const AXObject* start) {
-  for (const AXObject* object = start; object;
+  for (const AXObject* object = start; object && !object->IsWebArea();
        object = object->ParentObject()) {
     if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       return object;
@@ -1231,9 +1231,6 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
   bool is_visible = IsVisible();
   if (!is_visible)
     node_data->AddState(ax::mojom::blink::State::kInvisible);
-  SANITIZER_CHECK_EQ(cached_is_aria_hidden_, !!FindAncestorWithAriaHidden(this))
-      << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
-      << ToString(true);
 
   if (is_visible || is_focusable) {
     // If the author applied the ARIA "textbox" role on something that is not
@@ -2634,6 +2631,14 @@ bool AXObject::IsVisited() const {
 
 bool AXObject::AccessibilityIsIgnored() const {
   UpdateCachedAttributeValuesIfNeeded();
+#if defined(AX_FAIL_FAST_BUILD)
+  if (!cached_is_ignored_ && IsDetached()) {
+    NOTREACHED()
+        << "A detached node cannot be ignored: " << ToString(true)
+        << "\nThe Detach() method sets cached_is_ignored_ to true, but "
+           "something has recomputed it.";
+  }
+#endif
   return cached_is_ignored_;
 }
 
@@ -2748,14 +2753,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
 
   if (included_in_tree_changed) {
     if (AXObject* parent = CachedParentObject()) {
-      // TODO(aleventhal) Reenable DCHECK. It fails on PDF tests.
-      // DCHECK(!ax_object_cache_->IsFrozen())
-      // << "Attempting to change children on an ancestor is dangerous during "
-      //    "serialization, because the ancestor may have already been "
-      //    "visited. Reaching this line indicates that AXObjectCacheImpl did "
-      //    "not handle a signal and call ChilldrenChanged() earlier."
-      //     << "\nChild: " << ToString(true)
-      //     << "\nParent: " << parent->ToString(true);
       // Defers a ChildrenChanged() on the first included ancestor.
       // Must defer it, otherwise it can cause reentry into
       // UpdateCachedAttributeValuesIfNeeded() on |this|.
@@ -2870,8 +2867,9 @@ bool AXObject::IsAriaHidden() const {
 }
 
 bool AXObject::ComputeIsAriaHidden(IgnoredReasons* ignored_reasons) const {
-  if (IsA<Document>(GetNode()))
-    return false;  // The root node cannot be aria-hidden.
+  // The root node of a document or popup document cannot be aria-hidden.
+  if (IsWebArea())
+    return false;
 
   // aria-hidden:true works a bit like display:none.
   // * aria-hidden=true affects entire subtree.
@@ -2952,6 +2950,9 @@ const AXObject* AXObject::InertRoot() const {
 
   while (object && !object->IsAXNodeObject())
     object = object->ParentObject();
+
+  DCHECK(object);
+
   Node* node = object->GetNode();
   auto* element = DynamicTo<Element>(node);
   if (!element)
@@ -6654,6 +6655,18 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   return common_ancestor;
 }
 
+void AXObject::PreSerializationConsistencyCheck() {
+#if defined(AX_FAIL_FAST_BUILD)
+  if (!AXObjectCache().IsFrozen())
+    return;  // Only perform checks if tree is frozen.
+  SANITIZER_CHECK(!IsDetached());
+  // Extra checks that only occur during serialization.
+  SANITIZER_CHECK_EQ(cached_is_aria_hidden_, !!FindAncestorWithAriaHidden(this))
+      << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
+      << ToString(true);
+#endif
+}
+
 String AXObject::ToString(bool verbose, bool cached_values_only) const {
   // Build a friendly name for debugging the object.
   // If verbose, build a longer name name in the form of:
@@ -6697,8 +6710,8 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
       string_builder = string_builder + " focused";
     if (!IsDetached() && AXObjectCache().IsAriaOwned(this))
       string_builder = string_builder + " isAriaOwned";
-    if (!IsDetached() && (cached_values_only ? LastKnownIsIgnoredValue()
-                                             : AccessibilityIsIgnored())) {
+    if (cached_values_only ? LastKnownIsIgnoredValue()
+                           : AccessibilityIsIgnored()) {
       string_builder = string_builder + " isIgnored";
 #if defined(AX_FAIL_FAST_BUILD)
       // TODO(accessibility) Move this out of AX_FAIL_FAST_BUILD by having a new
@@ -6737,12 +6750,17 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
         string_builder = string_builder + " ariaHidden";
     } else if (IsAriaHidden()) {
       const AXObject* aria_hidden_root = AriaHiddenRoot();
-      DCHECK(aria_hidden_root);
-      string_builder = string_builder + " ariaHiddenRoot";
-      if (aria_hidden_root != this) {
-        string_builder =
-            string_builder + GetNodeString(aria_hidden_root->GetNode());
+      if (aria_hidden_root) {
+        string_builder = string_builder + " ariaHiddenRoot";
+        if (aria_hidden_root != this) {
+          string_builder =
+              string_builder + GetNodeString(aria_hidden_root->GetNode());
+        }
+      } else {
+        string_builder = string_builder + " ariaHiddenRootMissing";
       }
+    } else if (AriaHiddenRoot()) {
+      string_builder = string_builder + " ariaHiddenRootExtra";
     }
     if (cached_values_only ? cached_is_hidden_via_style : IsHiddenViaStyle())
       string_builder = string_builder + " isHiddenViaCSS";

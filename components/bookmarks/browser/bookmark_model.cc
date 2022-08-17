@@ -330,8 +330,52 @@ void BookmarkModel::Move(const BookmarkNode* node,
 }
 
 void BookmarkModel::UpdateLastUsedTime(const BookmarkNode* node,
-                                       base::Time time) {
-  // TODO(crbug.com/1320950): Use this hook to update the relevant field.
+                                       const base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(loaded_);
+  DCHECK(node);
+
+  UpdateLastUsedTimeImpl(node, time);
+  metrics::RecordBookmarkOpened();
+}
+
+void BookmarkModel::UpdateLastUsedTimeImpl(const BookmarkNode* node,
+                                           const base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(loaded_);
+  DCHECK(node);
+
+  BookmarkNode* mutable_node = AsMutable(node);
+  mutable_node->set_date_last_used(time);
+
+  if (store_)
+    store_->ScheduleSave();
+}
+
+void BookmarkModel::ClearLastUsedTimeInRange(const base::Time delete_begin,
+                                             const base::Time delete_end) {
+  ClearLastUsedTimeInRangeRecursive(root_, delete_begin, delete_end);
+
+  if (store_)
+    store_->ScheduleSave();
+}
+
+void BookmarkModel::ClearLastUsedTimeInRangeRecursive(
+    BookmarkNode* node,
+    const base::Time delete_begin,
+    const base::Time delete_end) {
+  bool within_range = node->date_last_used() >= delete_begin &&
+                      node->date_last_used() < delete_end;
+  bool for_all_time =
+      delete_begin.is_null() && (delete_end.is_null() || delete_end.is_max());
+  if (node->is_url() && (within_range || for_all_time)) {
+    UpdateLastUsedTimeImpl(node, Time());
+  }
+
+  for (size_t i = 0; i < node->children().size(); ++i) {
+    ClearLastUsedTimeInRangeRecursive(node->children()[i].get(), delete_begin,
+                                      delete_end);
+  }
 }
 
 void BookmarkModel::Copy(const BookmarkNode* node,
@@ -625,8 +669,7 @@ const BookmarkNode* BookmarkModel::AddNewURL(
     const std::u16string& title,
     const GURL& url,
     const BookmarkNode::MetaInfoMap* meta_info) {
-  // TODO(crbug.com/1313299): Record metrics for new bookmarks.
-  // TODO(crbug.com/1332341): Add bookmark_client hook for power bookmarks.
+  metrics::RecordBookmarkAdded();
   return AddURL(parent, index, title, url, meta_info, absl::nullopt,
                 absl::nullopt);
 }

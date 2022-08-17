@@ -32,7 +32,8 @@ int BucketedDailySeconds(base::TimeDelta delta) {
 
 }  // namespace
 
-// This class exists just to be friended by |UkmRecorder|.
+// This class exists just to be friended by |UkmRecorder| to control the
+// emission of Web app UKMs in UkmRecorder.
 class DesktopWebAppUkmRecorder {
  public:
   static void Emit(const DailyInteraction& record) {

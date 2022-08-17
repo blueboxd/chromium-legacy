@@ -36,7 +36,7 @@ class SecureEnclaveClientTest : public testing::Test {
     CreateAndSetTestKey();
   }
 
-  // Creates a temporary key.
+  // Creates a test key.
   void CreateAndSetTestKey() {
     base::ScopedCFTypeRef<CFMutableDictionaryRef> test_attributes(
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
@@ -71,27 +71,25 @@ class SecureEnclaveClientTest : public testing::Test {
   base::ScopedCFTypeRef<SecKeyRef> test_key_;
 };
 
-// Tests that the CreateTemporaryKey method invokes both the SE helper's
+// Tests that the CreatePermanentKey method invokes both the SE helper's
 // Delete and CreateSecureKey method and that the key attributes are set
 // correctly.
 TEST_F(SecureEnclaveClientTest, CreateKey) {
   EXPECT_CALL(*mock_secure_enclave_helper_, Delete(_))
       .Times(1)
       .WillOnce([this](CFDictionaryRef query) {
-        VerifyQuery(query,
-                    base::SysUTF8ToCFStringRef(
-                        constants::kTemporaryDeviceTrustSigningKeyLabel));
+        VerifyQuery(query, base::SysUTF8ToCFStringRef(
+                               constants::kDeviceTrustSigningKeyLabel));
         return true;
       });
 
   EXPECT_CALL(*mock_secure_enclave_helper_, CreateSecureKey(_))
       .Times(1)
       .WillOnce([this](CFDictionaryRef attributes) {
-        EXPECT_TRUE(
-            CFEqual(base::SysUTF8ToCFStringRef(
-                        constants::kTemporaryDeviceTrustSigningKeyLabel),
-                    base::mac::GetValueFromDictionary<CFStringRef>(
-                        attributes, kSecAttrLabel)));
+        EXPECT_TRUE(CFEqual(
+            base::SysUTF8ToCFStringRef(constants::kDeviceTrustSigningKeyLabel),
+            base::mac::GetValueFromDictionary<CFStringRef>(attributes,
+                                                           kSecAttrLabel)));
         EXPECT_TRUE(CFEqual(kSecAttrKeyTypeECSECPrimeRandom,
                             base::mac::GetValueFromDictionary<CFStringRef>(
                                 attributes, kSecAttrKeyType)));
@@ -109,12 +107,63 @@ TEST_F(SecureEnclaveClientTest, CreateKey) {
                                 private_key_attributes, kSecAttrTokenID)));
         return test_key_;
       });
-  EXPECT_EQ(secure_enclave_client_->CreateTemporaryKey(), test_key_);
+  EXPECT_EQ(secure_enclave_client_->CreatePermanentKey(), test_key_);
 }
 
-// Tests that the MoveTemporaryKeyToPermanent method invokes the SE helper's
-// Update method and that the key attributes and query are set correctly.
-TEST_F(SecureEnclaveClientTest, MoveTemporaryKeyToPermanent) {
+// Tests when the CopyStoredKey method invokes the SE helper's CopyKey method
+// and a key is found using both a permanent and a temporary key type.
+TEST_F(SecureEnclaveClientTest, CopyStoredKey_KeyFound) {
+  EXPECT_CALL(*mock_secure_enclave_helper_, CopyKey(_))
+      .Times(2)
+      .WillRepeatedly([this](CFDictionaryRef query) { return test_key_; });
+  EXPECT_EQ(secure_enclave_client_->CopyStoredKey(
+                SecureEnclaveClient::KeyType::kPermanent),
+            test_key_);
+  EXPECT_EQ(secure_enclave_client_->CopyStoredKey(
+                SecureEnclaveClient::KeyType::kTemporary),
+            test_key_);
+}
+
+// Tests when the CopyStoredKey method invokes the SE helper's CopyKey method
+// and a key is not found using both a permanent and a temporary key type.
+TEST_F(SecureEnclaveClientTest, CopyStoredKey_KeyNotFound) {
+  EXPECT_CALL(*mock_secure_enclave_helper_, CopyKey(_))
+      .Times(2)
+      .WillRepeatedly([](CFDictionaryRef query) {
+        return base::ScopedCFTypeRef<SecKeyRef>();
+      });
+  EXPECT_FALSE(secure_enclave_client_->CopyStoredKey(
+      SecureEnclaveClient::KeyType::kPermanent));
+  EXPECT_FALSE(secure_enclave_client_->CopyStoredKey(
+      SecureEnclaveClient::KeyType::kTemporary));
+}
+
+// Tests that the UpdateStoredKeyLabel method invokes the SE helper's
+// Update method and that the key attributes and query are set correctly for
+// the permanent key label being updated to the temporary key label.
+TEST_F(SecureEnclaveClientTest, UpdateStoredKeyLabel_PermanentToTemporary) {
+  EXPECT_CALL(*mock_secure_enclave_helper_, Update(_, _))
+      .Times(1)
+      .WillOnce(
+          [this](CFDictionaryRef query, CFDictionaryRef attribute_to_update) {
+            EXPECT_TRUE(
+                CFEqual(base::SysUTF8ToCFStringRef(
+                            constants::kTemporaryDeviceTrustSigningKeyLabel),
+                        base::mac::GetValueFromDictionary<CFStringRef>(
+                            attribute_to_update, kSecAttrLabel)));
+            VerifyQuery(query, base::SysUTF8ToCFStringRef(
+                                   constants::kDeviceTrustSigningKeyLabel));
+            return true;
+          });
+  EXPECT_TRUE(secure_enclave_client_->UpdateStoredKeyLabel(
+      SecureEnclaveClient::KeyType::kPermanent,
+      SecureEnclaveClient::KeyType::kTemporary));
+}
+
+// Tests that the UpdateStoredKeyLabel method invokes the SE helper's
+// Update method and that the key attributes and query are set correctly for
+// the temporary key label being updated to the permanent key label.
+TEST_F(SecureEnclaveClientTest, UpdateStoredKeyLabel_TemporaryToPermanent) {
   EXPECT_CALL(*mock_secure_enclave_helper_, Update(_, _))
       .Times(1)
       .WillOnce([this](CFDictionaryRef query,
@@ -128,7 +177,9 @@ TEST_F(SecureEnclaveClientTest, MoveTemporaryKeyToPermanent) {
                         constants::kTemporaryDeviceTrustSigningKeyLabel));
         return true;
       });
-  EXPECT_TRUE(secure_enclave_client_->MoveTemporaryKeyToPermanent());
+  EXPECT_TRUE(secure_enclave_client_->UpdateStoredKeyLabel(
+      SecureEnclaveClient::KeyType::kTemporary,
+      SecureEnclaveClient::KeyType::kPermanent));
 }
 
 // Tests that the DeleteKey method invokes the SE helper's Delete method
@@ -160,16 +211,16 @@ TEST_F(SecureEnclaveClientTest, DeleteKey_PermanentKeyLabel) {
       SecureEnclaveClient::KeyType::kPermanent));
 }
 
-// Tests that the GetStoredKeyLabel method invokes the SE helper's CheckExists
+// Tests that the GetStoredKeyLabel method invokes the SE helper's CopyKey
 // method and that the query and output is correct for a temporary key.
-TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_TempKeyLabel) {
+TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_TempKeyLabelFound) {
   std::vector<uint8_t> output;
   std::string temp_label = constants::kTemporaryDeviceTrustSigningKeyLabel;
-  EXPECT_CALL(*mock_secure_enclave_helper_, CheckExists(_))
+  EXPECT_CALL(*mock_secure_enclave_helper_, CopyKey(_))
       .Times(1)
       .WillOnce([this, &temp_label](CFDictionaryRef query) {
         VerifyQuery(query, base::SysUTF8ToCFStringRef(temp_label));
-        return true;
+        return test_key_;
       });
 
   EXPECT_TRUE(secure_enclave_client_->GetStoredKeyLabel(
@@ -179,16 +230,16 @@ TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_TempKeyLabel) {
   EXPECT_EQ(expected_output, output);
 }
 
-// Tests that the GetStoredKeyLabel method invokes the SE helper's CheckExists
+// Tests that the GetStoredKeyLabel method invokes the SE helper's CopyKey
 // method and that the query and output is correct for a permanent key.
-TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_PermanentKeyLabel) {
+TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_PermanentKeyLabelFound) {
   std::vector<uint8_t> output;
   std::string permanent_label = constants::kDeviceTrustSigningKeyLabel;
-  EXPECT_CALL(*mock_secure_enclave_helper_, CheckExists(_))
+  EXPECT_CALL(*mock_secure_enclave_helper_, CopyKey(_))
       .Times(1)
       .WillOnce([this, &permanent_label](CFDictionaryRef query) {
         VerifyQuery(query, base::SysUTF8ToCFStringRef(permanent_label));
-        return true;
+        return test_key_;
       });
   EXPECT_TRUE(secure_enclave_client_->GetStoredKeyLabel(
       SecureEnclaveClient::KeyType::kPermanent, output));
@@ -197,13 +248,15 @@ TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_PermanentKeyLabel) {
   EXPECT_EQ(expected_output, output);
 }
 
-// Tests that the GetStoredKeyLabel method invokes the SE helper's CheckExists
+// Tests that the GetStoredKeyLabel method invokes the SE helper's CopyKey
 // method and that the query search returns false.
 TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_KeyNotFound) {
   std::vector<uint8_t> output;
-  EXPECT_CALL(*mock_secure_enclave_helper_, CheckExists(_))
+  EXPECT_CALL(*mock_secure_enclave_helper_, CopyKey(_))
       .Times(1)
-      .WillOnce([](CFDictionaryRef query) { return false; });
+      .WillOnce([](CFDictionaryRef query) {
+        return base::ScopedCFTypeRef<SecKeyRef>();
+      });
   EXPECT_FALSE(secure_enclave_client_->GetStoredKeyLabel(
       SecureEnclaveClient::KeyType::kPermanent, output));
   std::vector<uint8_t> expected_output;

@@ -479,6 +479,13 @@ bool HTMLCanvasElement::IsWebGLBlocked() const {
   return blocked;
 }
 
+void HTMLCanvasElement::SetContextCreationWasBlocked() {
+  context_creation_was_blocked_ = true;
+  // This canvas's cc::Layer (or whether it has one at all) has likely
+  // changed, so schedule a compositing update.
+  SetNeedsCompositingUpdate();
+}
+
 void HTMLCanvasElement::DidDraw(const SkIRect& rect) {
   if (rect.isEmpty())
     return;
@@ -522,7 +529,7 @@ void HTMLCanvasElement::PostFinalizeFrame() {
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
       GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
     const base::TimeTicks start_time = base::TimeTicks::Now();
-    const scoped_refptr<CanvasResource> canvas_resource =
+    scoped_refptr<CanvasResource> canvas_resource =
         ResourceProvider()->ProduceCanvasResource();
     const gfx::RectF src_rect((gfx::SizeF(Size())));
     dirty_rect_.Intersect(src_rect);
@@ -761,7 +768,7 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
       SourceImageStatus status;
       source_image = GetSourceImageForCanvasInternal(&status);
       if (status != kNormalSourceImageStatus)
-        return;
+        continue;
     }
 
     // Here we need to use the SharedGpuContext as some of the images may
@@ -811,8 +818,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
                               bool flatten_composited_layers) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
+    float dpr = GetDocument().DevicePixelRatio();
     std::pair<Image*, float> broken_canvas_and_image_scale_factor =
-        BrokenCanvas(GetDocument().DevicePixelRatio());
+        BrokenCanvas(dpr);
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(
@@ -827,6 +835,8 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     gfx::PointF upper_left =
         gfx::PointF(r.PixelSnappedOffset()) +
         gfx::Vector2dF(icon_size.width(), icon_size.height());
+    // Make the icon more visually prominent on high-DPI displays.
+    icon_size.Scale(dpr);
     context.DrawImage(broken_canvas, Image::kSyncDecode,
                       ImageAutoDarkMode::Disabled(),
                       gfx::RectF(upper_left, icon_size));
@@ -1150,11 +1160,14 @@ void HTMLCanvasElement::CollectStyleForPresentationAttribute(
 }
 
 void HTMLCanvasElement::AddListener(CanvasDrawListener* listener) {
+  // The presence of a listener forces OffscrenCanvas animations to be active
   listeners_.insert(listener);
+  UpdateSuspendOffscreenCanvasAnimation();
 }
 
 void HTMLCanvasElement::RemoveListener(CanvasDrawListener* listener) {
   listeners_.erase(listener);
+  UpdateSuspendOffscreenCanvasAnimation();
 }
 
 bool HTMLCanvasElement::OriginClean() const {
@@ -1178,7 +1191,7 @@ CanvasResourceDispatcher* HTMLCanvasElement::GetOrCreateResourceDispatcher() {
   return frame_dispatcher_.get();
 }
 
-bool HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
+bool HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource>&& image,
                                   const SkIRect& damage_rect) {
   NOTIMPLEMENTED();
   return false;
@@ -1320,17 +1333,21 @@ void HTMLCanvasElement::DiscardResourceProvider() {
   dirty_rect_ = gfx::RectF();
 }
 
-void HTMLCanvasElement::PageVisibilityChanged() {
-  bool hidden = !GetPage()->IsPageVisible();
-  // If we are still painting, then continue to allow animations, even if the
-  // page is otherwise hidden.
+void HTMLCanvasElement::UpdateSuspendOffscreenCanvasAnimation() {
   SetSuspendOffscreenCanvasAnimation(
       GetPage()->GetVisibilityState() ==
-      mojom::blink::PageVisibilityState::kHidden);
+          mojom::blink::PageVisibilityState::kHidden &&
+      !HasCanvasCapture());
+}
 
+void HTMLCanvasElement::PageVisibilityChanged() {
+  // If we are still painting, then continue to allow animations, even if the
+  // page is otherwise hidden.
+  UpdateSuspendOffscreenCanvasAnimation();
   if (!context_)
     return;
 
+  bool hidden = !GetPage()->IsPageVisible();
   context_->SetIsInHiddenPage(hidden);
   if (hidden && (IsWebGL() || IsWebGPU()))
     DiscardResourceProvider();
@@ -1498,7 +1515,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 }
 
 void HTMLCanvasElement::SetOffscreenCanvasResource(
-    scoped_refptr<CanvasResource> image,
+    scoped_refptr<CanvasResource>&& image,
     viz::ResourceId resource_id) {
   OffscreenCanvasPlaceholder::SetOffscreenCanvasResource(std::move(image),
                                                          resource_id);

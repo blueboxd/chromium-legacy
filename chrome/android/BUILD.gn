@@ -120,6 +120,16 @@ jinja_template("chrome_public_android_manifest") {
   ]
 }
 
+jinja_template("chrome_public_android_feature_vr_manifest") {
+  input = "features/vr/java/AndroidManifest.xml"
+  output = feature_module_vr_android_manifest_path
+  variables = chrome_public_jinja_variables
+  variables += [
+    "min_sdk_version=$default_min_sdk_version",
+    "target_sdk_version=$android_sdk_version",
+  ]
+}
+
 jinja_template("trichrome_library_android_manifest") {
   input = "java/AndroidManifest_trichrome_library.xml"
   output = trichrome_library_android_manifest
@@ -1055,6 +1065,7 @@ robolectric_binary("chrome_junit_tests") {
     "//chrome/browser/policy/android:junit",
     "//chrome/browser/preferences:java",
     "//chrome/browser/preferences:preferences_junit_tests",
+    "//chrome/browser/privacy_guide/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/safety_check/android:java",
     "//chrome/browser/safety_check/android:junit",
@@ -1080,6 +1091,7 @@ robolectric_binary("chrome_junit_tests") {
     "//chrome/browser/ui/android/autofill/internal:junit",
     "//chrome/browser/ui/android/default_browser_promo:java",
     "//chrome/browser/ui/android/default_browser_promo:junit",
+    "//chrome/browser/ui/android/fast_checkout:junit",
     "//chrome/browser/ui/android/favicon:java",
     "//chrome/browser/ui/android/layouts:java",
     "//chrome/browser/ui/android/layouts:junit",
@@ -1591,6 +1603,8 @@ android_library("chrome_test_java") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/prefetch/android:java",
     "//chrome/browser/prefetch/android:javatests",
+    "//chrome/browser/privacy_guide/android:java",
+    "//chrome/browser/privacy_guide/android:javatests",
     "//chrome/browser/privacy_sandbox/android:java",
     "//chrome/browser/privacy_sandbox/android:javatests",
     "//chrome/browser/profiles/android:java",
@@ -1770,6 +1784,7 @@ android_library("chrome_test_java") {
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
     "//services/device/public/mojom:mojom_java",
+    "//services/media_session/public/mojom:mojom_java",
     "//services/network/public/mojom:mojom_java",
     "//services/network/public/mojom:mojom_proxy_config_java",
     "//services/network/public/mojom:url_loader_base_java",
@@ -1785,6 +1800,7 @@ android_library("chrome_test_java") {
     "//third_party/android_sdk:android_test_runner_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_collection_collection_java",
     "//third_party/androidx:androidx_preference_preference_java",
@@ -1855,7 +1871,6 @@ android_library("chrome_test_java") {
     "//content/test/data/android/media_permissions.html",
     "//content/test/data/android/midi_permissions.html",
     "//content/test/data/android/permission_navigation.html",
-    "//content/test/data/android/quota_permissions.html",
     "//content/test/data/android/webshare.html",
     "//content/test/data/android/webshare-apk.html",
     "//content/test/data/android/webshare-bmp.html",
@@ -2611,8 +2626,7 @@ static_library("browser_test_support") {
     "//components/offline_pages/core/background:test_support",
     "//components/query_tiles",
     "//components/query_tiles/test:test_support",
-    "//components/sync:test_support_nigori",
-    "//components/sync/test/fake_server",
+    "//components/sync:test_support",
     "//content/test:test_support",
     "//net:test_support",
     "//url:gurl_android",

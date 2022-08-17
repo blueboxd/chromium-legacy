@@ -1070,10 +1070,11 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
   def get_test_type_remapper(self):
     return {
-      # These are a specialization of isolated_scripts with a bunch of
-      # boilerplate command line arguments added to each one.
-      'android_webview_gpu_telemetry_tests': 'isolated_scripts',
-      'gpu_telemetry_tests': 'isolated_scripts',
+        # These are a specialization of isolated_scripts with a bunch of
+        # boilerplate command line arguments added to each one.
+        'android_webview_gpu_telemetry_tests': 'isolated_scripts',
+        'cast_streaming_tests': 'isolated_scripts',
+        'gpu_telemetry_tests': 'isolated_scripts',
     }
 
   def check_composition_type_test_suites(self, test_type,
@@ -1617,7 +1618,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'mac10.15-blink-rel-dummy',
         'mac11.0-blink-rel-dummy',
         'mac11.0.arm64-blink-rel-dummy',
-        'win10.20h2-blink-rel-dummy',
     ]
 
   def get_internal_waterfalls(self):

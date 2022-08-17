@@ -378,6 +378,52 @@ MockAggregationService::MockAggregationService() = default;
 
 MockAggregationService::~MockAggregationService() = default;
 
+void MockAggregationService::AddObserver(AggregationServiceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MockAggregationService::RemoveObserver(
+    AggregationServiceObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void MockAggregationService::NotifyRequestStorageModified() {
+  for (auto& observer : observers_) {
+    observer.OnRequestStorageModified();
+  }
+}
+
+void MockAggregationService::NotifyReportHandled(
+    AggregationServiceStorage::RequestAndId request,
+    absl::optional<AggregatableReport> report,
+    base::Time report_handled_time,
+    AggregationServiceObserver::ReportStatus status) {
+  for (auto& observer : observers_)
+    observer.OnReportHandled(request, report, report_handled_time, status);
+}
+
+AggregatableReportRequestsAndIdsBuilder::
+    AggregatableReportRequestsAndIdsBuilder() = default;
+
+AggregatableReportRequestsAndIdsBuilder::
+    ~AggregatableReportRequestsAndIdsBuilder() = default;
+
+AggregatableReportRequestsAndIdsBuilder&&
+AggregatableReportRequestsAndIdsBuilder::AddRequestWithID(
+    AggregatableReportRequest request,
+    AggregationServiceStorage::RequestId id) && {
+  requests_.push_back(AggregationServiceStorage::RequestAndId({
+      .request = std::move(request),
+      .id = id,
+  }));
+  return std::move(*this);
+}
+
+std::vector<AggregationServiceStorage::RequestAndId>
+AggregatableReportRequestsAndIdsBuilder::Build() && {
+  return std::move(requests_);
+}
+
 std::ostream& operator<<(
     std::ostream& out,
     AggregationServicePayloadContents::Operation operation) {

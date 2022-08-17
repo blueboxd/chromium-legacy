@@ -1207,6 +1207,7 @@ _GENERIC_PYDEPS_FILES = [
     'testing/merge_scripts/code_coverage/merge_steps.pydeps',
     'third_party/android_platform/development/scripts/stack.pydeps',
     'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
+    'third_party/blink/renderer/bindings/scripts/check_generated_file_list.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
     'third_party/blink/renderer/bindings/scripts/validate_web_idl.pydeps',
@@ -1214,6 +1215,7 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/tools/merge_web_test_results.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
+    'tools/perf/process_perf_results.pydeps',
 ]
 
 
@@ -2216,8 +2218,12 @@ def CheckNoProductIconsAddedToPublicRepo(input_api, output_api):
 
     results = []
     if errors:
+        # Give warnings instead of errors on presubmit --all and presubmit
+        # --files.
+        message_type = (output_api.PresubmitNotifyResult if input_api.no_diffs
+                        else output_api.PresubmitError)
         results.append(
-            output_api.PresubmitError(
+            message_type(
                 'Trademarked images should not be added to the public repo. '
                 'See crbug.com/944754', errors))
     return results
@@ -2305,12 +2311,19 @@ def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     # might not use Gerrit.
     if not input_api.gerrit or input_api.no_diffs:
         return []
-    if (input_api.change.issue and input_api.gerrit.IsOwnersOverrideApproved(
-            input_api.change.issue)):
-        # Skip OWNERS check when Owners-Override label is approved. This is intended
-        # for global owners, trusted bots, and on-call sheriffs. Review is still
-        # required for these changes.
+    if 'PRESUBMIT_SKIP_NETWORK' in input_api.environ:
         return []
+    try:
+        if (input_api.change.issue and
+                input_api.gerrit.IsOwnersOverrideApproved(
+                input_api.change.issue)):
+            # Skip OWNERS check when Owners-Override label is approved. This is
+            # intended for global owners, trusted bots, and on-call sheriffs.
+            # Review is still required for these changes.
+            return []
+    except Exception as e:
+      return [output_api.PresubmitPromptWarning(
+              'Failed to retrieve owner override status - %s' % str(e))]
 
     virtual_depended_on_files = set()
 
@@ -3771,7 +3784,7 @@ class PydepsChecker:
         return self._file_cache[path]
 
     def _ComputeNormalizedPydepsEntries(self, pydeps_path):
-        """Returns an interable of paths within the .pydep, relativized to //."""
+        """Returns an iterable of paths within the .pydep, relativized to //."""
         pydeps_data = self._LoadFile(pydeps_path)
         uses_gn_paths = '--gn-paths' in pydeps_data
         entries = (l for l in pydeps_data.splitlines()
@@ -3898,7 +3911,7 @@ def CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
         results.append(
             output_api.PresubmitPromptOrNotify(
                 'You have changed python files that may affect pydeps for android\n'
-                'specific scripts. However, the relevant presumbit check cannot be\n'
+                'specific scripts. However, the relevant presubmit check cannot be\n'
                 'run because you are not using an Android checkout. To validate that\n'
                 'the .pydeps are correct, re-run presubmit in an Android checkout, or\n'
                 'use the android-internal-presubmit optional trybot.\n'
@@ -4245,7 +4258,7 @@ def CheckGnGlobForward(input_api, output_api):
                 'forward_variables_from("*") without exclusions',
                 items=sorted(problems),
                 long_text=(
-                    'The variables "visibilty" and "test_only" should be '
+                    'The variables "visibility" and "test_only" should be '
                     'explicitly listed in forward_variables_from(). For more '
                     'details, see:\n'
                     'https://chromium.googlesource.com/chromium/src/+/HEAD/'
@@ -4772,7 +4785,12 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
                                       input_api.re.MULTILINE)
     extension_re = input_api.re.compile(r'\.[a-z]+$')
     errors = []
+    config_h_file = input_api.os_path.join('build', 'build_config.h')
     for f in input_api.AffectedFiles(include_deletes=False):
+        # The build-config macros are allowed to be used in build_config.h
+        # without including itself.
+        if f.LocalPath() == config_h_file:
+            continue
         if not f.LocalPath().endswith(
             ('.h', '.c', '.cc', '.cpp', '.m', '.mm')):
             continue
@@ -4875,8 +4893,11 @@ def _CheckForDeprecatedOSMacrosInFile(input_api, f):
 def CheckForDeprecatedOSMacros(input_api, output_api):
     """Check all affected files for invalid OS macros."""
     bad_macros = []
+    # The OS_ macros are allowed to be used in build/build_config.h.
+    config_h_file = input_api.os_path.join('build', 'build_config.h')
     for f in input_api.AffectedSourceFiles(None):
-        if not f.LocalPath().endswith(('.py', '.js', '.html', '.css', '.md')):
+        if not f.LocalPath().endswith(('.py', '.js', '.html', '.css', '.md')) \
+                and f.LocalPath() != config_h_file:
             bad_macros.extend(_CheckForDeprecatedOSMacrosInFile(input_api, f))
 
     if not bad_macros:
@@ -5217,7 +5238,7 @@ def CheckForUseOfChromeAppsDeprecations(input_api, output_api):
         detection_list=['config=nacl', 'enable-nacl', 'cpu=pnacl', 'nacl_io'],
         files_to_skip=files_to_skip + [r"^native_client_sdk[\\/]"])
 
-    # PPAPI: any C/C++ file that in its diff includes a ppappi library
+    # PPAPI: any C/C++ file that in its diff includes a ppapi library
     problems += _CheckForDeprecatedTech(
         input_api,
         output_api,
@@ -5675,7 +5696,7 @@ def CheckTranslationExpectations(input_api, output_api,
         grd_files = git_helper.list_grds_in_repository(repo_root)
 
     # Ignore bogus grd files used only for testing
-    # ui/webui/resoucres/tools/generate_grd.py.
+    # ui/webui/resources/tools/generate_grd.py.
     ignore_path = input_api.os_path.join('ui', 'webui', 'resources', 'tools',
                                          'tests')
     grd_files = [p for p in grd_files if ignore_path not in p]

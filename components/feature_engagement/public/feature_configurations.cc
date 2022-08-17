@@ -231,6 +231,24 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                     Comparator(LESS_THAN, 3), 90, 360));
     return config;
   }
+  if (kIPHContextualPageActionsPriceTrackingActionChipFeature.name ==
+      feature->name) {
+    // A config that allows the Price Tracking Action Chip to be shown:
+    // * 3 times per session.
+    // * 5 times per day.
+    // * 10 times per week.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(LESS_THAN, 3);
+    config->trigger = EventConfig(
+        "contextual_page_actions_price_tracking_action_chip_iph_trigger",
+        Comparator(LESS_THAN, 5), 1, 360);
+    config->event_configs.insert(EventConfig(
+        "contextual_page_actions_price_tracking_action_chip_iph_trigger",
+        Comparator(LESS_THAN, 10), 7, 360));
+    return config;
+  }
   if (kIPHAddToHomescreenMessageFeature.name == feature->name) {
     // A config that allows the Add to homescreen message IPH to be shown:
     // * Once per 15 days
@@ -497,6 +515,25 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("feed_swipe_refresh_shown", Comparator(EQUAL, 0), 90, 90);
     config->event_configs.insert(EventConfig("feed_swipe_refresh_iph_trigger",
                                              Comparator(EQUAL, 0), 15, 90));
+    return config;
+  }
+  if (kIPHShoppingListMenuItemFeature.name == feature->name) {
+    // Allows a shopping list menu item IPH to be displayed at most:
+    // * Once per week.
+    // * Up to 3 times per year.
+    // * And only as long as the user has never initiated price tracking from
+    // the menu.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 1);
+    config->trigger = EventConfig("shopping_list_menu_item_iph_triggered",
+                                  Comparator(EQUAL, 0), 7, 7);
+    config->event_configs.insert(
+        EventConfig("shopping_list_menu_item_iph_triggered",
+                    Comparator(LESS_THAN, 3), 360, 360));
+    config->used = EventConfig("shopping_list_track_price_from_menu",
+                               Comparator(EQUAL, 0), 360, 360);
     return config;
   }
   if (kIPHTabSwitcherButtonFeature.name == feature->name) {

@@ -152,9 +152,10 @@ void ArcVolumeMounterBridge::SendAllMountEvents() {
 
   SendMountEventForMyFiles();
 
-  for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
+  for (const auto& mount_point :
+       DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
-                 keyValue.second);
+                 mount_point);
   }
 }
 
@@ -193,22 +194,22 @@ bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
 
 void ArcVolumeMounterBridge::OnVisibleStoragesChanged() {
   // Remount all external mount points when the list of visible storage changes.
-  for (const auto& key_value :
+  for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
-                 ash::MountError::kNone, key_value.second);
+                 ash::MountError::kNone, mount_point);
   }
-  for (const auto& key_value :
+  for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
-                 key_value.second);
+                 mount_point);
   }
 }
 
 void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
     ash::MountError error_code,
-    const DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPoint& mount_info) {
   DCHECK(delegate_);
 
   // Skip mount events for volumes that are not shared with ARC (e.g., those

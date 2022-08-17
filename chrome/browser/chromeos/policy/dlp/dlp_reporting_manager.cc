@@ -62,6 +62,7 @@ DlpPolicyEvent_Restriction DlpRulesManagerRestriction2DlpEventRestriction(
     case DlpRulesManager::Restriction::kClipboard:
       return DlpPolicyEvent_Restriction_CLIPBOARD;
     case DlpRulesManager::Restriction::kFiles:
+      return DlpPolicyEvent_Restriction_FILES;
     case DlpRulesManager::Restriction::kUnknownRestriction:
       return DlpPolicyEvent_Restriction_UNDEFINED_RESTRICTION;
   }
@@ -81,6 +82,8 @@ DlpRulesManager::Restriction DlpEventRestriction2DlpRulesManagerRestriction(
       return DlpRulesManager::Restriction::kPrivacyScreen;
     case DlpPolicyEvent_Restriction_CLIPBOARD:
       return DlpRulesManager::Restriction::kClipboard;
+    case DlpPolicyEvent_Restriction_FILES:
+      return DlpRulesManager::Restriction::kFiles;
     case DlpPolicyEvent_Restriction_UNDEFINED_RESTRICTION:
       return DlpRulesManager::Restriction::kUnknownRestriction;
   }
@@ -116,7 +119,6 @@ DlpPolicyEvent_UserType GetCurrentUserType() {
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   switch (chromeos::BrowserParamsProxy::Get()->SessionType()) {
     case crosapi::mojom::SessionType::kRegularSession:
-    case crosapi::mojom::SessionType::kChildSession:
       return DlpPolicyEvent_UserType_REGULAR;
     case crosapi::mojom::SessionType::kPublicSession:
       return DlpPolicyEvent_UserType_MANAGED_GUEST;
@@ -125,6 +127,7 @@ DlpPolicyEvent_UserType GetCurrentUserType() {
       return DlpPolicyEvent_UserType_KIOSK;
     case crosapi::mojom::SessionType::kUnknown:
     case crosapi::mojom::SessionType::kGuestSession:
+    case crosapi::mojom::SessionType::kChildSession:
       return DlpPolicyEvent_UserType_UNDEFINED_USER_TYPE;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

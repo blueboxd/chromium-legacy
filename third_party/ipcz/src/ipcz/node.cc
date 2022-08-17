@@ -81,9 +81,17 @@ Ref<NodeLink> Node::GetBrokerLink() {
 }
 
 void Node::SetBrokerLink(Ref<NodeLink> link) {
-  absl::MutexLock lock(&mutex_);
-  ABSL_ASSERT(!broker_link_);
-  broker_link_ = std::move(link);
+  std::vector<BrokerLinkCallback> callbacks;
+  {
+    absl::MutexLock lock(&mutex_);
+    ABSL_ASSERT(!broker_link_);
+    broker_link_ = link;
+    broker_link_callbacks_.swap(callbacks);
+  }
+
+  for (auto& callback : callbacks) {
+    callback(link);
+  }
 }
 
 void Node::SetAssignedName(const NodeName& name) {
@@ -291,6 +299,31 @@ bool Node::CancelIntroduction(const NodeName& name) {
   return true;
 }
 
+bool Node::RelayMessage(const NodeName& from_node, msg::RelayMessage& relay) {
+  ABSL_ASSERT(type_ == Type::kBroker);
+  auto link = GetLink(relay.params().destination);
+  if (!link) {
+    return true;
+  }
+
+  absl::Span<uint8_t> data = relay.GetArrayView<uint8_t>(relay.params().data);
+  msg::AcceptRelayedMessage accept;
+  accept.params().source = from_node;
+  accept.params().data = accept.AllocateArray<uint8_t>(data.size());
+  memcpy(accept.GetArrayData(accept.params().data), data.data(), data.size());
+  accept.params().driver_objects =
+      accept.AppendDriverObjects(relay.driver_objects());
+  link->Transmit(accept);
+  return true;
+}
+
+bool Node::AcceptRelayedMessage(msg::AcceptRelayedMessage& accept) {
+  if (auto link = GetLink(accept.params().source)) {
+    link->DispatchRelayedMessage(accept);
+  }
+  return true;
+}
+
 void Node::DropLink(const NodeName& name) {
   Ref<NodeLink> link;
   bool lost_broker = false;
@@ -324,6 +357,21 @@ void Node::DropLink(const NodeName& name) {
   if (lost_broker) {
     CancelAllIntroductions();
   }
+}
+
+void Node::WaitForBrokerLinkAsync(BrokerLinkCallback callback) {
+  Ref<NodeLink> broker_link;
+  {
+    absl::MutexLock lock(&mutex_);
+    if (!broker_link_) {
+      broker_link_callbacks_.push_back(std::move(callback));
+      return;
+    }
+
+    broker_link = broker_link_;
+  }
+
+  callback(std::move(broker_link));
 }
 
 void Node::ShutDown() {

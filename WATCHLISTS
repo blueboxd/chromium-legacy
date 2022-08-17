@@ -193,7 +193,7 @@
       'filepath': 'services/audio/'
     },
     'audio_settings': {
-      'filepath': 'ash/components/audio/'
+      'filepath': 'chromeos/ash/components/audio/'
     },
     'aura': {
       'filepath': 'ui/aura/',
@@ -734,9 +734,9 @@
       'filepath': 'chromeos/',
     },
     'chromeos_attestation': {
-      'filepath': 'ash/components/attestation/|'\
-                  'chrome/browser/ash/attestation/|'\
-                  'chrome/browser/extensions/api/enterprise_platform_keys_private/',
+      'filepath': 'chrome/browser/ash/attestation/|'\
+                  'chrome/browser/extensions/api/enterprise_platform_keys_private/|'\
+                  'chromeos/ash/components/attestation/',
     },
     'chromeos_bluetooth': {
       'filepath': 'ash/system/bluetooth/'\
@@ -771,8 +771,8 @@
     },
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\
+                  'chromeos/ash/components/dbus/shill/|'\
                   'chromeos/ash/components/network/|'\
-                  'chromeos/dbus/shill/|'\
                   'chromeos/services/network_config/|'\
                   'chrome/browser/ash/net/|'\
                   'chrome/browser/extensions/api/networking_private/|'\
@@ -795,7 +795,7 @@
                   'chrome/browser/resources/chromeos/',
     },
     'chromeos_wifi_sync': {
-      'filepath': 'chromeos/components/sync_wifi/',
+      'filepath': 'chromeos/ash/components/sync_wifi/',
     },
     'chrometto_proto_extensions': {
       'filepath': 'base/tracing/protos/',
@@ -2571,8 +2571,7 @@
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
     'enterprise_connectors': ['dpr-eng@google.com'],
-    'enterprise_reporting_private': ['domfc+watch@chromium.org',
-                                     'anthonyvd+watch@chormium.org'],
+    'enterprise_reporting_private': ['anthonyvd+watch@chormium.org'],
     'exo': ['crostini-ui+exo@chromium.org',
             'yhanada+watchexo@chromium.org'],
     'explore_sites': ['chili+watch@chromium.org',
@@ -2711,7 +2710,9 @@
                     'hansberry+watch-multidevice@chromium.org',
                     'jonmann+watch-multidevice@chromium.org'],
     'multipaste': ['andrewxu+watch-multipaste@google.com',
+                   'ckincaid+watch-multipaste@google.com',
                    'dmblack+watch-multipaste@google.com',
+                   'multipaste-eng+reviews@google.com',
                    'newcomer+watch-multipaste@google.com'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
@@ -2967,6 +2968,7 @@
                   'raphael.kubo.da.costa@intel.com'],
     'wallpapers': ['croissant-eng+reviews@chromium.org'],
     'web_applications': ['alancutter+chrome-cls@chromium.org',
+                         'dibyapal+watch-webapps@chromium.org',
                          'dmurph+watching-webapps@chromium.org',
                          'dominickn+watch-web_applications@chromium.org',
                          'ericwilligers+watch-bmo@chromium.org',

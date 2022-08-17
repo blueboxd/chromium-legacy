@@ -18,9 +18,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -419,17 +419,8 @@ TEST_F(ArcAppInstallEventLogCollectorTest, InstallPackages) {
 
   collector->OnPendingPackagesChanged({kPackageName, kPackageName2});
 
-  // Now kPackageName2 is in the pending set.
-  base::Time time = base::Time::Now();
-  collector->OnReportDirectInstall(time, {kPackageName2});
-  EXPECT_EQ(3, delegate()->add_count());
-  EXPECT_EQ(em::AppInstallReportLogEvent::DIRECT_INSTALL,
-            delegate()->last_event().event_type());
-  EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
-  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
-
   app_host->OnInstallationStarted(kPackageName2);
-  EXPECT_EQ(4, delegate()->add_count());
+  EXPECT_EQ(3, delegate()->add_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_STARTED,
             delegate()->last_event().event_type());
   EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
@@ -439,15 +430,15 @@ TEST_F(ArcAppInstallEventLogCollectorTest, InstallPackages) {
   result.success = false;
   app_host->OnInstallationFinished(
       arc::mojom::InstallationResultPtr(result.Clone()));
-  EXPECT_EQ(5, delegate()->add_count());
+  EXPECT_EQ(4, delegate()->add_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_FAILED,
             delegate()->last_event().event_type());
   EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
   EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
 
-  time += base::Seconds(1);
+  base::Time time = base::Time::Now();
   collector->OnReportForceInstallMainLoopFailed(time, {kPackageName2});
-  EXPECT_EQ(6, delegate()->add_count());
+  EXPECT_EQ(5, delegate()->add_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::CLOUDDPC_MAIN_LOOP_FAILED,
             delegate()->last_event().event_type());
   EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);

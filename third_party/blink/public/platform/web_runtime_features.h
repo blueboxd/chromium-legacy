@@ -112,6 +112,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableFedCm(bool);
   BLINK_PLATFORM_EXPORT static void EnableFedCmIdpSignout(bool);
   BLINK_PLATFORM_EXPORT static void EnableFedCmIframeSupport(bool);
+  BLINK_PLATFORM_EXPORT static void EnableFedCmMultipleIdentityProviders(bool);
   BLINK_PLATFORM_EXPORT static void EnableFencedFrames(bool);
   BLINK_PLATFORM_EXPORT static bool IsFencedFramesEnabled();
   BLINK_PLATFORM_EXPORT static void EnableFileSystem(bool);
@@ -129,8 +130,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableNotifications(bool);
   BLINK_PLATFORM_EXPORT static void EnableOverlayScrollbars(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebPaymentAPICSP(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePaymentRequestBasicCard(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequestRequiresUserActivation(
       bool);
   BLINK_PLATFORM_EXPORT static void EnablePercentBasedScrolling(bool);
@@ -162,6 +163,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
   BLINK_PLATFORM_EXPORT static void EnableTextFragmentAnchor(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSSelectorFragmentAnchor(bool);
+  BLINK_PLATFORM_EXPORT static void EnableTopicsAPI(bool);
+  BLINK_PLATFORM_EXPORT static bool IsTopicsAPIEnabled();
   BLINK_PLATFORM_EXPORT static void EnableTouchDragAndContextMenu(bool enable);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableSpeculationRulesPrefetchProxy(bool);

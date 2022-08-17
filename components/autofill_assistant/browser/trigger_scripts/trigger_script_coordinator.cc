@@ -10,6 +10,7 @@
 #include "components/autofill_assistant/browser/client_context.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/url_utils.h"
 #include "components/version_info/version_info.h"
@@ -24,7 +25,6 @@ bool IsDialogOnboardingEnabled() {
   return base::FeatureList::IsEnabled(
       autofill_assistant::features::kAutofillAssistantDialogOnboarding);
 }
-
 }  // namespace
 
 namespace autofill_assistant {
@@ -118,6 +118,8 @@ void TriggerScriptCoordinator::OnGetTriggerScripts(
     (*script_parameters)->MergeWith(trigger_context_->GetScriptParameters());
     trigger_context_->SetScriptParameters(std::move(*script_parameters));
   }
+  RegisterExperimentSyntheticFieldTrial(
+      trigger_context_->GetScriptParameters());
   trigger_condition_check_interval_ = base::Milliseconds(check_interval_ms);
   if (trigger_condition_timeout_ms.has_value()) {
     // Note: add 1 for the initial, not-delayed check.
@@ -137,6 +139,18 @@ void TriggerScriptCoordinator::OnGetTriggerScripts(
       Metrics::TriggerScriptShownToUser::RUNNING);
   ui_delegate_->Attach(this);
   StartCheckingTriggerConditions();
+}
+
+void TriggerScriptCoordinator::RegisterExperimentSyntheticFieldTrial(
+    const ScriptParameters& parameters) const {
+  std::unique_ptr<AssistantFieldTrialUtil> field_trial_util =
+      starter_delegate_->CreateFieldTrialUtil();
+  if (!field_trial_util) {
+    // Failsafe, should never happen.
+    NOTREACHED();
+    return;
+  }
+  field_trial_util->RegisterSyntheticFieldTrialsForParameters(parameters);
 }
 
 void TriggerScriptCoordinator::PerformTriggerScriptAction(

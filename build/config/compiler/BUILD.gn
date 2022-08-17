@@ -1527,19 +1527,18 @@ config("default_warnings") {
         "-Wno-ignored-pragma-optimize",
       ]
 
-      if (!is_nacl) {
+      if (llvm_force_head_revision && !is_nacl) {
         cflags += [
-          # TODO(https://crbug.com/1300731) Clean up and enable.
-          "-Wno-unqualified-std-cast-call",
-
-          # TODO(crbug.com/1343975) Evaluate and possibly enable.
-          "-Wno-deprecated-builtins",
+          # TODO(crbug.com/1352183) Evaluate and possibly enable.
+          "-Wno-bitfield-constant-conversion",
         ]
       }
 
-      if (is_fuchsia) {
-        # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
-        cflags += [ "-Wno-deprecated-copy" ]
+      if (!is_nacl) {
+        cflags += [
+          # TODO(crbug.com/1343975) Evaluate and possibly enable.
+          "-Wno-deprecated-builtins",
+        ]
       }
     }
   }

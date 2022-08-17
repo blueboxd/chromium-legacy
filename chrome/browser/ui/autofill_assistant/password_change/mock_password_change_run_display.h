@@ -32,6 +32,15 @@ class MockPasswordChangeRunDisplay : public PasswordChangeRunDisplay {
               SetProgressBarStep,
               (autofill_assistant::password_change::ProgressStep),
               (override));
+  MOCK_METHOD(autofill_assistant::password_change::ProgressStep,
+              GetProgressStep,
+              (),
+              (override));
+  MOCK_METHOD(void,
+              ShowBasePrompt,
+              (const std::u16string& description,
+               const std::vector<PromptChoice>&),
+              (override));
   MOCK_METHOD(void,
               ShowBasePrompt,
               (const std::vector<PromptChoice>&),
@@ -50,6 +59,7 @@ class MockPasswordChangeRunDisplay : public PasswordChangeRunDisplay {
               ShowCompletionScreen,
               (base::RepeatingClosure done_button_callback),
               (override));
+  MOCK_METHOD(void, ShowErrorScreen, (), (override));
   MOCK_METHOD(void, OnControllerGone, (), (override));
 
   base::WeakPtr<MockPasswordChangeRunDisplay> GetWeakPtr() {

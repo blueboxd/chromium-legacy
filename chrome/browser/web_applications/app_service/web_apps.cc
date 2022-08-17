@@ -176,6 +176,26 @@ void WebApps::LaunchShortcut(const std::string& app_id,
   publisher_helper().ExecuteContextMenuCommand(app_id, shortcut_id, display_id);
 }
 
+void WebApps::SetPermission(const std::string& app_id,
+                            apps::PermissionPtr permission) {
+  publisher_helper().SetPermission(app_id, std::move(permission));
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void WebApps::Uninstall(const std::string& app_id,
+                        apps::UninstallSource uninstall_source,
+                        bool clear_site_data,
+                        bool report_abuse) {
+  const WebApp* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    return;
+  }
+
+  publisher_helper().UninstallWebApp(web_app, uninstall_source, clear_site_data,
+                                     report_abuse);
+}
+#endif
+
 void WebApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
@@ -221,7 +241,8 @@ void WebApps::LaunchAppWithIntent(const std::string& app_id,
 
 void WebApps::SetPermission(const std::string& app_id,
                             apps::mojom::PermissionPtr permission) {
-  publisher_helper().SetPermission(app_id, std::move(permission));
+  publisher_helper().SetPermission(
+      app_id, apps::ConvertMojomPermissionToPermission(permission));
 }
 
 void WebApps::OpenNativeSettings(const std::string& app_id) {
@@ -369,13 +390,10 @@ void WebApps::Uninstall(const std::string& app_id,
                         apps::mojom::UninstallSource uninstall_source,
                         bool clear_site_data,
                         bool report_abuse) {
-  const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    return;
-  }
-
-  publisher_helper().UninstallWebApp(web_app, uninstall_source, clear_site_data,
-                                     report_abuse);
+  Uninstall(
+      app_id,
+      apps::ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
+      clear_site_data, report_abuse);
 }
 
 void WebApps::PauseApp(const std::string& app_id) {

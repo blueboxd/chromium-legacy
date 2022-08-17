@@ -75,7 +75,7 @@ void TouchIdAuthenticator::GetCredentialInformationForRequest(
                               /*has_credentials=*/!credentials->empty());
       return;
     }
-
+  }
   // Resident credentials request.
   absl::optional<std::list<Credential>> resident_credentials =
       credential_store_.FindResidentCredentials(request.rp_id);

@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/mac_util.h"
 #include "base/trace_event/trace_event.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
@@ -524,20 +523,17 @@ NSPoint clickedLocation;
   if (![self _isConsideredOpenForPersistentState])
     return;
 
-  // On macOS 12+, create restorable state archives with secure encoding. See
-  // the article at
-  // https://sector7.computest.nl/post/2022-08-process-injection-breaking-all-macos-security-layers-with-a-single-vulnerability/
-  // for more details.
+  base::scoped_nsobject<NSMutableData> restorableStateData(
+      [[NSMutableData alloc] init]);
   base::scoped_nsobject<NSKeyedArchiver> encoder([[NSKeyedArchiver alloc]
-      initRequiringSecureCoding:base::mac::IsAtLeastOS12()]);
+      initForWritingWithMutableData:restorableStateData]);
   encoder.get().delegate = self;
   [self encodeRestorableStateWithCoder:encoder];
   [encoder finishEncoding];
-  NSData* restorableStateData = encoder.get().encodedData;
 
-  auto* bytes = static_cast<uint8_t const*>(restorableStateData.bytes);
+  auto* bytes = static_cast<uint8_t const*>(restorableStateData.get().bytes);
   _bridge->host()->OnWindowStateRestorationDataChanged(
-      std::vector<uint8_t>(bytes, bytes + restorableStateData.length));
+      std::vector<uint8_t>(bytes, bytes + restorableStateData.get().length));
   _willUpdateRestorableState = NO;
 }
 

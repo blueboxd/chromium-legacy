@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/types/strong_alias.h"
-#include "components/autofill/core/browser/ui/suggestion.h"
 
 namespace base {
 class Time;
@@ -27,8 +26,8 @@ class AutofillType;
 class CreditCard;
 struct FormFieldData;
 class FormStructure;
-class IBAN;
 class PersonalDataManager;
+struct Suggestion;
 
 using InternalId = base::StrongAlias<class InternalIdTag, int>;
 
@@ -58,10 +57,6 @@ class AutofillSuggestionGenerator {
       const std::string& app_locale,
       bool* should_display_gpay_logo);
 
-  // Generates suggestions for all available IBANs.
-  static std::vector<Suggestion> GetSuggestionsForIBANs(
-      const std::vector<IBAN*>& ibans);
-
   // Converts the vector of promo code offers that is passed in to a vector of
   // suggestions that can be displayed to the user for a promo code field.
   static std::vector<Suggestion> GetPromoCodeSuggestionsFromPromoCodeOffers(
@@ -83,11 +78,11 @@ class AutofillSuggestionGenerator {
 
   // Methods for packing and unpacking credit card and profile IDs for sending
   // and receiving to and from the renderer process.
-  int MakeFrontendId(const Suggestion::BackendId& cc_backend_id,
-                     const Suggestion::BackendId& profile_backend_id) const;
+  int MakeFrontendId(const std::string& cc_backend_id,
+                     const std::string& profile_backend_id) const;
   void SplitFrontendId(int frontend_id,
-                       Suggestion::BackendId* cc_backend_id,
-                       Suggestion::BackendId* profile_backend_id) const;
+                       std::string* cc_backend_id,
+                       std::string* profile_backend_id) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillSuggestionGeneratorTest,
@@ -136,8 +131,7 @@ class AutofillSuggestionGenerator {
   // Maps suggestion backend ID to and from an integer identifying it. Two of
   // these intermediate integers are packed by MakeFrontendID to make the IDs
   // that this class generates for the UI and for IPC.
-  InternalId BackendIdToInternalId(
-      const Suggestion::BackendId& backend_id) const;
+  InternalId BackendIdToInternalId(const std::string& backend_id) const;
   std::string InternalIdToBackendId(InternalId int_id) const;
 
   // autofill_client_ and the generator are both one per tab, and have the same

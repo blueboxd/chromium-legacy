@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '43711c5ba35258c55c0ddbde6b3a8020901aa67b',
+  'v8_revision': '0601466cd5b36dab790af674b5d54f4d8031da21',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -440,7 +440,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': '4d2ff863f98dce4ba3be083eae91601399eacc31',
+  'nearby_revision': 'd92f1d47573427e6417e29a3e82ea7d4c34fe0b5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -777,7 +777,7 @@ deps = {
   },
 
   'src/ios/third_party/earl_grey2/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'f96a5e77ca137344a1643e81287d878a1b9fffa0',
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'd8ddfdbb1e4d12fb0f92ef1fceb21c6a8538cbfb',
       'condition': 'checkout_ios',
   },
 
@@ -1857,7 +1857,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'OEv_F3H4roKFxcVxV1LrSjOnVqoIszU3d8YiZSpLXG0C',
+        'version': 'xbs9VsAB3uK9gNyQtNWmfxYtOUrdR28ynajJYzrV6tAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

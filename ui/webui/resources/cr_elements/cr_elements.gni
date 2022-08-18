@@ -30,6 +30,7 @@ if (include_polymer) {
   web_component_files_polymer_ts = [
     "cr_a11y_announcer/cr_a11y_announcer.ts",
     "cr_action_menu/cr_action_menu.ts",
+    "cr_checkbox/cr_checkbox.ts",
     "cr_drawer/cr_drawer.ts",
     "cr_expand_button/cr_expand_button.ts",
     "cr_fingerprint/cr_fingerprint_progress_arc.ts",
@@ -94,6 +95,7 @@ if (include_polymer) {
   css_files = [
     "cr_nav_menu_item_style.css",
     "cr_page_host_style.css",
+    "cr_radio_button/cr_radio_button_style.css",
     "mwb_element_shared_style.css",
     "mwb_shared_style.css",
     "mwb_shared_vars.css",

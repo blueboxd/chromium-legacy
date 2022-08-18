@@ -14,12 +14,12 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -76,7 +76,7 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
   if (autofill_field.Type().group() == FieldTypeGroup::kPhoneHome) {
     for (auto& suggestion : suggestions) {
       const AutofillProfile* profile = personal_data_->GetProfileByGUID(
-          suggestion.GetPayload<Suggestion::BackendId>().value());
+          suggestion.GetPayload<std::string>());
       if (profile) {
         const std::u16string phone_home_city_and_number =
             profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale);
@@ -91,8 +91,7 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
 
   for (auto& suggestion : suggestions) {
     suggestion.frontend_id =
-        MakeFrontendId(Suggestion::BackendId(),
-                       suggestion.GetPayload<Suggestion::BackendId>());
+        MakeFrontendId(std::string(), suggestion.GetPayload<std::string>());
   }
 
   return suggestions;
@@ -173,26 +172,10 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
   for (Suggestion& suggestion : suggestions) {
     if (suggestion.frontend_id == 0) {
       suggestion.frontend_id =
-          MakeFrontendId(suggestion.GetPayload<Suggestion::BackendId>(),
-                         Suggestion::BackendId());
+          MakeFrontendId(suggestion.GetPayload<std::string>(), std::string());
     }
   }
 
-  return suggestions;
-}
-
-// static
-std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForIBANs(
-    const std::vector<IBAN*>& ibans) {
-  std::vector<Suggestion> suggestions;
-  for (const IBAN* iban : ibans) {
-    Suggestion& suggestion = suggestions.emplace_back(iban->value());
-    suggestion.frontend_id = POPUP_ITEM_ID_IBAN_ENTRY;
-    suggestion.payload = iban->guid();
-    suggestion.main_text.value = iban->GetIdentifierStringForAutofillDisplay();
-    if (!iban->nickname().empty())
-      suggestion.label = iban->nickname();
-  }
   return suggestions;
 }
 
@@ -209,8 +192,7 @@ AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
     Suggestion& suggestion = suggestions.back();
     suggestion.label = base::ASCIIToUTF16(
         promo_code_offer->GetDisplayStrings().value_prop_text);
-    suggestion.payload = Suggestion::BackendId(
-        base::NumberToString(promo_code_offer->GetOfferId()));
+    suggestion.payload = base::NumberToString(promo_code_offer->GetOfferId());
     suggestion.frontend_id = POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY;
 
     // Every offer for a given merchant leads to the same GURL, so we grab the
@@ -296,8 +278,8 @@ std::u16string AutofillSuggestionGenerator::GetDisplayNicknameForCreditCard(
 // profile IDs into a single integer.  Credit card IDs are sent in the high
 // word and profile IDs are sent in the low word.
 int AutofillSuggestionGenerator::MakeFrontendId(
-    const Suggestion::BackendId& cc_backend_id,
-    const Suggestion::BackendId& profile_backend_id) const {
+    const std::string& cc_backend_id,
+    const std::string& profile_backend_id) const {
   InternalId cc_int_id = BackendIdToInternalId(cc_backend_id);
   InternalId profile_int_id = BackendIdToInternalId(profile_backend_id);
 
@@ -317,17 +299,16 @@ int AutofillSuggestionGenerator::MakeFrontendId(
 // the high word and profile IDs are stored in the low word.
 void AutofillSuggestionGenerator::SplitFrontendId(
     int frontend_id,
-    Suggestion::BackendId* cc_backend_id,
-    Suggestion::BackendId* profile_backend_id) const {
+    std::string* cc_backend_id,
+    std::string* profile_backend_id) const {
   InternalId cc_int_id =
       InternalId((frontend_id >> std::numeric_limits<uint16_t>::digits) &
                  std::numeric_limits<uint16_t>::max());
   InternalId profile_int_id =
       InternalId(frontend_id & std::numeric_limits<uint16_t>::max());
 
-  *cc_backend_id = Suggestion::BackendId(InternalIdToBackendId(cc_int_id));
-  *profile_backend_id =
-      Suggestion::BackendId(InternalIdToBackendId(profile_int_id));
+  *cc_backend_id = InternalIdToBackendId(cc_int_id);
+  *profile_backend_id = InternalIdToBackendId(profile_int_id);
 }
 
 Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
@@ -341,7 +322,7 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
   suggestion.main_text = Suggestion::Text(credit_card.GetInfo(type, app_locale),
                                           Suggestion::Text::IsPrimary(true));
   suggestion.icon = credit_card.CardIconStringForAutofillSuggestion();
-  suggestion.payload = Suggestion::BackendId(credit_card.guid());
+  suggestion.payload = credit_card.guid();
   suggestion.match = prefix_matched_suggestion ? Suggestion::PREFIX_MATCH
                                                : Suggestion::SUBSTRING_MATCH;
 
@@ -413,7 +394,7 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
       DCHECK(server_duplicate_card);
       card_art_url_for_virtual_card_option =
           server_duplicate_card->card_art_url();
-      suggestion.payload = Suggestion::BackendId(server_duplicate_card->guid());
+      suggestion.payload = server_duplicate_card->guid();
     }
 
     suggestion.frontend_id = POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
@@ -496,16 +477,16 @@ const CreditCard* AutofillSuggestionGenerator::GetServerCardForLocalCard(
 }
 
 InternalId AutofillSuggestionGenerator::BackendIdToInternalId(
-    const Suggestion::BackendId& backend_id) const {
-  if (!base::IsValidGUID(backend_id.value()))
+    const std::string& backend_id) const {
+  if (!base::IsValidGUID(backend_id))
     return InternalId(0);
 
-  const auto found = backend_to_int_map_.find(backend_id.value());
+  const auto found = backend_to_int_map_.find(backend_id);
   if (found == backend_to_int_map_.end()) {
     // Unknown one, make a new entry.
     InternalId int_id = InternalId(backend_to_int_map_.size() + 1);
-    backend_to_int_map_[backend_id.value()] = int_id;
-    int_to_backend_map_[int_id] = backend_id.value();
+    backend_to_int_map_[backend_id] = int_id;
+    int_to_backend_map_[int_id] = backend_id;
     return int_id;
   }
   return InternalId(found->second);

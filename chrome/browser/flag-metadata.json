@@ -1384,8 +1384,8 @@
   },
   {
     "name": "disable-virtual-keyboard",
-    "owners": [ "myy", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "dvallet", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 111
   },
   {
     "name": "disable-webrtc-hw-decoding",
@@ -1656,7 +1656,7 @@
   {
     "name": "enable-autofill-credit-card-authentication",
     "owners": [ "jsaul@google.com", "siyua" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 112
   },
   {
     "name": "enable-autofill-credit-card-upload",
@@ -4125,11 +4125,6 @@
     "name": "launcher-item-suggest",
     "owners": ["wrong", "amandadeacon", "tby"],
     "expiry_milestone": 110
-  },
-  {
-    "name": "launcher-lacros-integration",
-    "owners": ["wrong", "thanhdng", "tby"],
-    "expiry_milestone": 115
   },
   {
     "name": "launcher-play-store-search",

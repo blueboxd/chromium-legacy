@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -291,8 +290,8 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_ServerCard) {
 
   EXPECT_EQ(virtual_card_suggestion.frontend_id,
             POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY);
-  EXPECT_EQ(virtual_card_suggestion.GetPayload<Suggestion::BackendId>(),
-            Suggestion::BackendId("00000000-0000-0000-0000-000000000001"));
+  EXPECT_EQ(absl::get<std::string>(virtual_card_suggestion.payload),
+            "00000000-0000-0000-0000-000000000001");
 
   Suggestion real_card_suggestion =
       suggestion_generator()->CreateCreditCardSuggestion(
@@ -301,8 +300,8 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_ServerCard) {
           "");
 
   EXPECT_EQ(real_card_suggestion.frontend_id, 0);
-  EXPECT_EQ(real_card_suggestion.GetPayload<Suggestion::BackendId>(),
-            Suggestion::BackendId("00000000-0000-0000-0000-000000000001"));
+  EXPECT_EQ(absl::get<std::string>(real_card_suggestion.payload),
+            "00000000-0000-0000-0000-000000000001");
 }
 
 TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_LocalCard) {
@@ -330,8 +329,8 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_LocalCard) {
 
   EXPECT_EQ(virtual_card_suggestion.frontend_id,
             POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY);
-  EXPECT_EQ(virtual_card_suggestion.GetPayload<Suggestion::BackendId>(),
-            Suggestion::BackendId("00000000-0000-0000-0000-000000000001"));
+  EXPECT_EQ(absl::get<std::string>(virtual_card_suggestion.payload),
+            "00000000-0000-0000-0000-000000000001");
 
   Suggestion real_card_suggestion =
       suggestion_generator()->CreateCreditCardSuggestion(
@@ -340,8 +339,8 @@ TEST_F(AutofillSuggestionGeneratorTest, CreateCreditCardSuggestion_LocalCard) {
           "");
 
   EXPECT_EQ(real_card_suggestion.frontend_id, 0);
-  EXPECT_EQ(real_card_suggestion.GetPayload<Suggestion::BackendId>(),
-            Suggestion::BackendId("00000000-0000-0000-0000-000000000002"));
+  EXPECT_EQ(absl::get<std::string>(real_card_suggestion.payload),
+            "00000000-0000-0000-0000-000000000002");
   EXPECT_TRUE(real_card_suggestion.custom_icon.IsEmpty());
 }
 
@@ -571,53 +570,6 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldShowVirtualCardOption) {
       &local_card, form_structure));
 }
 
-TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
-  std::vector<IBAN*> ibans;
-
-  IBAN iban0(base::GenerateGUID());
-  iban0.set_value(u"CH56 0483 5012 3456 7800 9");
-  iban0.set_nickname(u"My doctor's IBAN");
-  ibans.push_back(&iban0);
-
-  IBAN iban1(base::GenerateGUID());
-  iban1.set_value(u"DE91 1000 0000 0123 4567 89");
-  iban1.set_nickname(u"My brother's IBAN");
-  ibans.push_back(&iban1);
-
-  IBAN iban2(base::GenerateGUID());
-  iban2.set_value(u"GR96 0810 0010 0000 0123 4567 890");
-  iban2.set_nickname(u"My teacher's IBAN");
-  ibans.push_back(&iban2);
-
-  IBAN iban3(base::GenerateGUID());
-  iban3.set_value(u"PK70 BANK 0000 1234 5678 9000");
-  ibans.push_back(&iban3);
-
-  std::vector<Suggestion> iban_suggestions =
-      AutofillSuggestionGenerator::GetSuggestionsForIBANs(ibans);
-  EXPECT_TRUE(iban_suggestions.size() == 4);
-
-  EXPECT_EQ(iban_suggestions[0].main_text.value,
-            u"CH" + iban0.RepeatEllipsisForTesting(4) + u"9");
-  EXPECT_EQ(iban_suggestions[0].label, u"My doctor's IBAN");
-  EXPECT_EQ(iban_suggestions[0].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
-
-  EXPECT_EQ(iban_suggestions[1].main_text.value,
-            u"DE" + iban1.RepeatEllipsisForTesting(4) + u"89");
-  EXPECT_EQ(iban_suggestions[1].label, u"My brother's IBAN");
-  EXPECT_EQ(iban_suggestions[1].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
-
-  EXPECT_EQ(iban_suggestions[2].main_text.value,
-            u"GR" + iban2.RepeatEllipsisForTesting(5) + u"890");
-  EXPECT_EQ(iban_suggestions[2].label, u"My teacher's IBAN");
-  EXPECT_EQ(iban_suggestions[2].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
-
-  EXPECT_EQ(iban_suggestions[3].main_text.value,
-            u"PK" + iban3.RepeatEllipsisForTesting(4) + u"9000");
-  EXPECT_EQ(iban_suggestions[3].label, u"");
-  EXPECT_EQ(iban_suggestions[3].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
-}
-
 TEST_F(AutofillSuggestionGeneratorTest,
        GetPromoCodeSuggestionsFromPromoCodeOffers_ValidPromoCodes) {
   std::vector<const AutofillOfferData*> promo_code_offers;
@@ -651,15 +603,13 @@ TEST_F(AutofillSuggestionGeneratorTest,
 
   EXPECT_EQ(promo_code_suggestions[0].main_text.value, u"test_promo_code_1");
   EXPECT_EQ(promo_code_suggestions[0].label, u"test_value_prop_text_1");
-  EXPECT_EQ(promo_code_suggestions[0].GetPayload<Suggestion::BackendId>(),
-            Suggestion::BackendId("1"));
+  EXPECT_EQ(promo_code_suggestions[0].GetPayload<std::string>(), "1");
   EXPECT_EQ(promo_code_suggestions[0].frontend_id,
             POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
 
   EXPECT_EQ(promo_code_suggestions[1].main_text.value, u"test_promo_code_2");
   EXPECT_EQ(promo_code_suggestions[1].label, u"test_value_prop_text_2");
-  EXPECT_EQ(promo_code_suggestions[1].GetPayload<Suggestion::BackendId>(),
-            Suggestion::BackendId("2"));
+  EXPECT_EQ(promo_code_suggestions[1].GetPayload<std::string>(), "2");
   EXPECT_EQ(promo_code_suggestions[1].frontend_id,
             POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
 

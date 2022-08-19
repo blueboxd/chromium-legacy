@@ -4,21 +4,31 @@
 
 source_set("promos_manager") {
   sources = [
-    "impression_limit.h",
-    "impression_limit.mm",
-    "promo.h",
-    "promo.mm",
     "promos_manager.h",
     "promos_manager.mm",
   ]
   frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
+    ":constants",
     ":features",
+    ":types",
     "//base",
     "//components/prefs",
     "//ios/chrome/browser:pref_names",
   ]
+}
+
+source_set("types") {
+  sources = [
+    "impression_limit.h",
+    "impression_limit.mm",
+    "promo.h",
+    "promo.mm",
+  ]
+  frameworks = [ "Foundation.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [ ":constants" ]
 }
 
 source_set("promos_manager_scene_agent") {
@@ -33,6 +43,15 @@ source_set("promos_manager_scene_agent") {
     "//ios/chrome/browser/ui/main:observing_scene_agent",
     "//ios/chrome/browser/ui/main:scene_state_header",
   ]
+}
+
+source_set("constants") {
+  sources = [
+    "constants.cc",
+    "constants.h",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [ "//base" ]
 }
 
 source_set("features") {
@@ -50,10 +69,15 @@ source_set("unit_tests") {
     "promos_manager_unittest.h",
     "promos_manager_unittest.mm",
   ]
+  frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
+    ":constants",
+    ":features",
     ":promos_manager",
+    ":types",
     "//base",
+    "//base/test:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
     "//ios/chrome/browser:pref_names",

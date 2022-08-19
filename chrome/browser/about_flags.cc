@@ -226,6 +226,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "components/browser_ui/photo_picker/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/reactions/core/reactions_features.h"
@@ -3453,6 +3454,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCSSContainerQueriesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCSSContainerQueries)},
 #if BUILDFLAG(IS_ANDROID)
+    {"osk-resizes-visual-viewport",
+     flag_descriptions::kEnableOskResizesVisualViewportName,
+     flag_descriptions::kEnableOskResizesVisualViewportDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOSKResizesVisualViewport)},
     {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
      flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kContextualSearchDebug)},
@@ -5416,6 +5421,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kRequestDesktopSiteForTablets,
                                     kRequestDesktopSiteForTabletsVariations,
                                     "RequestDesktopSiteForTablets")},
+    {"revoke-notifications-permission-if-disabled-on-app-level",
+     flag_descriptions::kRevokeNotificationsPermissionIfDisabledOnAppLevelName,
+     flag_descriptions::
+         kRevokeNotificationsPermissionIfDisabledOnAppLevelDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         features::kRevokeNotificationsPermissionIfDisabledOnAppLevel)},
     {"app-menu-mobile-site-option",
      flag_descriptions::kAppMenuMobileSiteOptionName,
      flag_descriptions::kAppMenuMobileSiteOptionDescription, kOsAndroid,
@@ -7043,10 +7055,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScreenTimeDescription, kOsMac,
      FEATURE_VALUE_TYPE(screentime::kScreenTime)},
 #endif
-
-    {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
-     flag_descriptions::kEnableDeJellyDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableDeJelly)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-cros-action-recorder",

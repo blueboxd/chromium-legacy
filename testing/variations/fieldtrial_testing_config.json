@@ -418,7 +418,7 @@
             ],
             "experiments": [
                 {
-                    "name": "RationaleShownAtFirstRequest",
+                    "name": "RationaleShownAtFirstRequest_20220406",
                     "params": {
                         "always_show_rationale_before_requesting_permission": "true",
                         "notification_permission_dialog_text_variant_2": "false",
@@ -429,7 +429,7 @@
                     ]
                 },
                 {
-                    "name": "TextVariant2",
+                    "name": "TextVariant2_20220406",
                     "params": {
                         "always_show_rationale_before_requesting_permission": "true",
                         "notification_permission_dialog_text_variant_2": "true",
@@ -4692,6 +4692,28 @@
             ]
         }
     ],
+    "GoogleLensTabletIntegration": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_081722",
+                    "params": {
+                        "enableCameraAssistedSearchOnTablet": "true",
+                        "enableCameraAssistedSearchOnTabletWidget": "true",
+                        "enableContextMenuSearchOnTablet": "true"
+                    },
+                    "enable_features": [
+                        "ContextMenuSearchWithGoogleLens",
+                        "LensCameraAssistedSearch",
+                        "LensOnQuickActionSearchWidget"
+                    ]
+                }
+            ]
+        }
+    ],
     "GoogleOnContent": [
         {
             "platforms": [
@@ -5467,6 +5489,21 @@
                         "OptimizationGuideModelDownloading",
                         "OptimizationTargetPrediction",
                         "TFLiteLanguageDetectionEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSThirdPartyIntentsInIncognito": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOS3pIntentsInIncognito"
                     ]
                 }
             ]
@@ -6619,6 +6656,21 @@
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxMaxZeroSuggestMatches",
                         "ZeroSuggestPrefetching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxImplementationChangeIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "kIOSNewOmniboxImplementation"
                     ]
                 }
             ]
@@ -7945,6 +7997,10 @@
             "experiments": [
                 {
                     "name": "DrDc",
+                    "params": {
+                        "BlockListByDevice": "amber|chopin|secret|a03|SO-51B",
+                        "BlockListByModel": "21081111RG|21061110AG|M2101K7BG|SM-A035F|SO-51B"
+                    },
                     "enable_features": [
                         "EnableDrDc",
                         "EnableDrDcVulkan"
@@ -8967,21 +9023,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SmallerFontCache"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmartLockBluetoothScanningBackoff": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SmartLockBluetoothScanningBackoff"
                     ]
                 }
             ]

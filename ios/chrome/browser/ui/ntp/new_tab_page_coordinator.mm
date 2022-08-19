@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/follow/followed_web_site.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -455,8 +456,10 @@ namespace {
         initWithDelegate:self
       feedViewController:self.feedViewController];
 
-  self.ntpViewController.feedTopSectionViewController =
-      self.feedTopSectionCoordinator.viewController;
+  if ([self isFeedTopSectionVisible]) {
+    self.ntpViewController.feedTopSectionViewController =
+        self.feedTopSectionCoordinator.viewController;
+  }
 
   self.headerSynchronizer = [[ContentSuggestionsHeaderSynchronizer alloc]
       initWithCollectionController:self.ntpViewController
@@ -833,6 +836,11 @@ namespace {
   return isGoogleDefaultSearchProvider;
 }
 
+- (BOOL)isStartSurface {
+  return NewTabPageTabHelper::FromWebState(self.webState)
+      ->ShouldShowStartSurface();
+}
+
 #pragma mark - AppStateObserver
 
 - (void)appState:(AppState*)appState
@@ -1053,6 +1061,7 @@ namespace {
   }
 
   self.ntpViewController.feedWrapperViewController = nil;
+  self.ntpViewController.feedTopSectionViewController = nil;
   self.feedWrapperViewController = nil;
   self.feedViewController = nil;
 
@@ -1063,6 +1072,11 @@ namespace {
   } else {
     self.ntpViewController.feedHeaderViewController = nil;
     self.feedHeaderViewController = nil;
+  }
+
+  if ([self isFeedTopSectionVisible]) {
+    self.ntpViewController.feedTopSectionViewController =
+        self.feedTopSectionCoordinator.viewController;
   }
 
   self.ntpViewController.feedVisible = [self isFeedVisible];
@@ -1112,6 +1126,15 @@ namespace {
 // Returns `YES` if the feed is currently visible on the NTP.
 - (BOOL)isFeedVisible {
   return [self shouldFeedBeVisible] && self.feedViewController;
+}
+
+// Whether the feed top section, which contains all content between the feed
+// header and the feed, is currently visible.
+// TODO(crbug.com/1331010): The feed top section should still work with the
+// sticky header, but for now we only show the content without it.
+- (BOOL)isFeedTopSectionVisible {
+  return IsDiscoverFeedTopSyncPromoEnabled() && [self shouldFeedBeVisible] &&
+         ![self isContentHeaderSticky];
 }
 
 // Creates, configures and returns a Discover feed view controller.

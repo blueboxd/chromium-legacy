@@ -36,8 +36,12 @@ const int32_t kMaxFileSizeBytes = 150 * 1024;
 base::expected<std::string, PasswordImporter::Status> ReadFileToString(
     const base::FilePath& path) {
   int64_t file_size;
-  if (GetFileSize(path, &file_size) && file_size > kMaxFileSizeBytes)
-    return base::unexpected(PasswordImporter::Status::LARGE_FILE);
+
+  if (GetFileSize(path, &file_size)) {
+    base::UmaHistogramCounts1M("PasswordManager.ImportFileSize", file_size);
+    if (file_size > kMaxFileSizeBytes)
+      return base::unexpected(PasswordImporter::Status::LARGE_FILE);
+  }
 
   std::string contents;
   if (!base::ReadFileToString(path, &contents))
@@ -119,6 +123,13 @@ void PasswordImporter::ConsumePasswords(
     // TODO(crbug/1325290): Compute correct status.
     results.status = password_manager::ImportResults::Status::IO_ERROR;
     std::move(results_callback_).Run(results);
+    return;
+  }
+  if (seq->csv_passwords.size() > MAX_PASSWORDS_PER_IMPORT) {
+    results.status =
+        password_manager::ImportResults::Status::NUM_PASSWORDS_EXCEEDED;
+    std::move(results_callback_).Run(results);
+    // TODO(crbug/1325290): log to a histogram.
     return;
   }
 

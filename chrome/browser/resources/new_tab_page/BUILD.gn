@@ -4,14 +4,13 @@
 
 import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//chrome/common/features.gni")
-import("//tools/code_coverage/create_js_source_maps/create_js_source_maps.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/polymer/html_to_wrapper.gni")
-import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
 import("./new_tab_page.gni")
 import("./preprocess_if_expr_sourcemaps.gni")
+import("./ts_library_sourcemaps.gni")
 
 assert(!is_android)
 
@@ -50,7 +49,7 @@ copy("copy_mojom") {
     "//chrome/browser/new_tab_page/modules/drive:mojo_bindings_js__generator",
     "//chrome/browser/new_tab_page/modules/feed:mojo_bindings_js__generator",
     "//chrome/browser/new_tab_page/modules/photos:mojo_bindings_js__generator",
-    "//chrome/browser/new_tab_page/modules/task_module:mojo_bindings_js__generator",
+    "//chrome/browser/new_tab_page/modules/recipes:mojo_bindings_js__generator",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js__generator",
     "//chrome/browser/ui/webui/realbox:mojo_bindings_js__generator",
   ]
@@ -59,7 +58,7 @@ copy("copy_mojom") {
     "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/drive/drive.mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/feed/feed.mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/photos/photos.mojom-webui.js",
-    "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/task_module/task_module.mojom-webui.js",
+    "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/recipes/recipes.mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/realbox/realbox.mojom-webui.js",
   ]
@@ -98,7 +97,7 @@ grit("resources") {
     "//chrome/browser/new_tab_page/modules/drive:mojo_bindings_js",
     "//chrome/browser/new_tab_page/modules/feed:mojo_bindings_js",
     "//chrome/browser/new_tab_page/modules/photos:mojo_bindings_js",
-    "//chrome/browser/new_tab_page/modules/task_module:mojo_bindings_js",
+    "//chrome/browser/new_tab_page/modules/recipes:mojo_bindings_js",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
     "//chrome/browser/ui/webui/realbox:mojo_bindings_js",
     "//chrome/common/search:mojo_bindings_js",
@@ -146,7 +145,7 @@ if (optimize_webui) {
   }
 }
 
-ts_library("build_ts") {
+ts_library_sourcemaps("build_ts") {
   root_dir = "$target_gen_dir/$preprocess_folder"
   out_dir = "$target_gen_dir/tsc"
   composite = true

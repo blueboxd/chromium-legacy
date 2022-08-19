@@ -65,9 +65,6 @@ class GpuDiskCache : public base::RefCounted<GpuDiskCache> {
   // been written to the cache.
   int SetCacheCompleteCallback(net::CompletionOnceCallback callback);
 
-  // Returns the size which should be used for the gpu disk cache.
-  static size_t CacheSizeBytes();
-
  private:
   friend class base::RefCounted<GpuDiskCache>;
   friend class GpuDiskCacheEntry;
@@ -76,7 +73,8 @@ class GpuDiskCache : public base::RefCounted<GpuDiskCache> {
 
   GpuDiskCache(GpuDiskCacheFactory* factory,
                const base::FilePath& cache_path,
-               const BlobLoadedCallback& blob_loaded_cb);
+               const BlobLoadedCallback& blob_loaded_cb,
+               base::OnceClosure cache_destroyed_cb);
   ~GpuDiskCache();
 
   void Init();
@@ -94,6 +92,7 @@ class GpuDiskCache : public base::RefCounted<GpuDiskCache> {
   net::CompletionOnceCallback available_callback_;
   net::CompletionOnceCallback cache_complete_callback_;
   BlobLoadedCallback blob_loaded_cb_;
+  base::OnceClosure cache_destroyed_cb_;
 
   std::unique_ptr<disk_cache::Backend> backend_;
 
@@ -109,6 +108,8 @@ class GpuDiskCacheFactory {
   using HandleToPathMap = base::flat_map<GpuDiskCacheHandle, base::FilePath>;
   using BlobLoadedForCacheCallback = base::RepeatingCallback<
       void(const GpuDiskCacheHandle&, const std::string&, const std::string&)>;
+  using CacheDestroyedCallback =
+      base::OnceCallback<void(const GpuDiskCacheHandle&)>;
 
   // Constructor allows passing in reserved handles and their corresponding
   // paths.
@@ -158,7 +159,8 @@ class GpuDiskCacheFactory {
   // path.
   scoped_refptr<GpuDiskCache> Create(
       const GpuDiskCacheHandle& handle,
-      const BlobLoadedForCacheCallback& blob_loaded_cb = base::DoNothing());
+      const BlobLoadedForCacheCallback& blob_loaded_cb = base::DoNothing(),
+      CacheDestroyedCallback cache_destroyed_cb = base::DoNothing());
 
   // Set the provided |cache| into the cache map for the given |path|.
   void AddToCache(const base::FilePath& path, GpuDiskCache* cache);
@@ -172,7 +174,8 @@ class GpuDiskCacheFactory {
   scoped_refptr<GpuDiskCache> GetOrCreateByPath(
       const base::FilePath& path,
       const GpuDiskCache::BlobLoadedCallback& blob_loaded_cb =
-          base::DoNothing());
+          base::DoNothing(),
+      base::OnceClosure cache_destroyed_cb = base::DoNothing());
 
   void CacheCleared(GpuDiskCache* cache);
 

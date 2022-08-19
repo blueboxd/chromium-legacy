@@ -2085,13 +2085,6 @@ const char kOptimizationGuidePushNotificationName[] =
 const char kOptimizationGuidePushNotificationDescription[] =
     "Enables the optimization guide to receive push notifications.";
 
-const char kEnableDeJellyName[] = "Experimental de-jelly effect";
-const char kEnableDeJellyDescription[] =
-    "Enables an experimental effect which attempts to mitigate "
-    "\"jelly-scrolling\". This is an experimental implementation with known "
-    "bugs, visual artifacts, and performance cost. This implementation may be "
-    "removed at any time.";
-
 const char kOrganicRepeatableQueriesName[] =
     "Organic repeatable queries in Most Visited tiles";
 const char kOrganicRepeatableQueriesDescription[] =
@@ -3450,6 +3443,13 @@ const char kEnableFamilyInfoFeedbackName[] =
 const char kEnableFamilyInfoFeedbackDescription[] =
     "Enable FamilyLink feedback source in Chrome Settings feedback";
 
+const char kEnableOskResizesVisualViewportName[] =
+    "Enable OSK resizes visual viewport";
+const char kEnableOskResizesVisualViewportDescription[] =
+    "With this flag on, the Android On-Screen-Keyboard (OSK) will avoid "
+    "changing the page height,"
+    "resizing only the visual viewport.";
+
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
@@ -3805,6 +3805,12 @@ const char kRequestDesktopSiteForTabletsDescription[] =
     "Requests a desktop site, if the screen size is large enough on Android."
     " On tablets with small screens a mobile site will be requested by "
     "default.";
+
+const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[] =
+    "Revoke site-level notification permission on Android";
+const char kRevokeNotificationsPermissionIfDisabledOnAppLevelDescription[] =
+    "Allow revoking site-level notification permission if Chrome has no "
+    "app-level notification permission on Android.";
 
 const char kSafeModeForCachedFlagsName[] = "Safe Mode for Cached Flags";
 const char kSafeModeForCachedFlagsDescription[] =

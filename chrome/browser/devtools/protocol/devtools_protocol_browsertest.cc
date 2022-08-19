@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   Attach();
-  SendCommand("Security.enable", base::Value::Dict(), false);
+  SendCommandAsync("Security.enable");
   base::Value::Dict params =
       WaitForNotification("Security.visibleSecurityStateChanged", true);
 
@@ -91,13 +91,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CreateDeleteContext) {
         SendCommandSync("Target.createBrowserContext");
     std::string context_id = *result->FindString("browserContextId");
 
-    base::DictionaryValue params;
-    params.SetStringPath("url", "about:blank");
-    params.SetStringPath("browserContextId", context_id);
+    base::Value::Dict params;
+    params.Set("url", "about:blank");
+    params.Set("browserContextId", context_id);
     SendCommandSync("Target.createTarget", std::move(params));
 
-    params = base::DictionaryValue();
-    params.SetStringPath("browserContextId", context_id);
+    params = base::Value::Dict();
+    params.Set("browserContextId", context_id);
     SendCommandSync("Target.disposeBrowserContext", std::move(params));
   }
 }
@@ -109,9 +109,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
       SendCommandSync("Target.createBrowserContext");
   std::string context_id = *result->FindString("browserContextId");
 
-  base::DictionaryValue params;
-  params.SetStringPath("url", chrome::kChromeUINewTabURL);
-  params.SetStringPath("browserContextId", context_id);
+  base::Value::Dict params;
+  params.Set("url", chrome::kChromeUINewTabURL);
+  params.Set("browserContextId", context_id);
   content::WebContentsAddedObserver observer;
   SendCommandSync("Target.createTarget", std::move(params));
   content::WebContents* wc = observer.GetWebContents();
@@ -144,39 +144,39 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
       content::EvalJs(target_web_contents, setup_logging).error.empty());
   EXPECT_TRUE(content::EvalJs(other_web_contents, setup_logging).error.empty());
 
-  base::DictionaryValue params;
-  params.SetStringKey("button", "left");
-  params.SetIntKey("clickCount", 1);
-  params.SetIntKey("x", 100);
-  params.SetIntKey("y", 250);
-  params.SetIntKey("clickCount", 1);
+  base::Value::Dict params;
+  params.Set("button", "left");
+  params.Set("clickCount", 1);
+  params.Set("x", 100);
+  params.Set("y", 250);
+  params.Set("clickCount", 1);
 
-  params.SetStringKey("type", "mousePressed");
+  params.Set("type", "mousePressed");
   SendCommandSync("Input.dispatchMouseEvent", params.Clone());
 
-  params.SetStringKey("type", "mouseMoved");
-  params.SetIntKey("y", 270);
+  params.Set("type", "mouseMoved");
+  params.Set("y", 270);
   SendCommandSync("Input.dispatchMouseEvent", params.Clone());
 
-  params.SetStringKey("type", "mouseReleased");
+  params.Set("type", "mouseReleased");
   SendCommandSync("Input.dispatchMouseEvent", std::move(params));
 
-  params = base::DictionaryValue();
-  params.SetIntKey("x", 100);
-  params.SetIntKey("y", 250);
-  params.SetStringPath("type", "dragEnter");
-  params.SetIntPath("data.dragOperationsMask", 1);
-  params.SetPath("data.items", base::ListValue());
+  params = base::Value::Dict();
+  params.Set("x", 100);
+  params.Set("y", 250);
+  params.Set("type", "dragEnter");
+  params.SetByDottedPath("data.dragOperationsMask", 1);
+  params.SetByDottedPath("data.items", base::Value::List());
   SendCommandSync("Input.dispatchDragEvent", std::move(params));
 
-  params = base::DictionaryValue();
-  params.SetIntKey("x", 100);
-  params.SetIntKey("y", 250);
+  params = base::Value::Dict();
+  params.Set("x", 100);
+  params.Set("y", 250);
   SendCommandSync("Input.synthesizeTapGesture", std::move(params));
 
-  params = base::DictionaryValue();
-  params.SetStringKey("type", "keyDown");
-  params.SetStringKey("key", "a");
+  params = base::Value::Dict();
+  params.Set("type", "keyDown");
+  params.Set("key", "a");
   SendCommandSync("Input.dispatchKeyEvent", std::move(params));
 
   content::EvalJsResult main_target_events =
@@ -202,11 +202,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   SetIsTrusted(false);
   Attach();
 
-  base::DictionaryValue params;
-  params.SetStringKey("type", "rawKeyDown");
-  params.SetStringKey("key", "F12");
-  params.SetIntKey("windowsVirtualKeyCode", 123);
-  params.SetIntKey("nativeVirtualKeyCode", 123);
+  base::Value::Dict params;
+  params.Set("type", "rawKeyDown");
+  params.Set("key", "F12");
+  params.Set("windowsVirtualKeyCode", 123);
+  params.Set("nativeVirtualKeyCode", 123);
   SendCommandSync("Input.dispatchKeyEvent", std::move(params));
 
   EXPECT_EQ(nullptr, DevToolsWindow::FindDevToolsWindow(agent_host_.get()));
@@ -263,9 +263,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   // Attach DevTools and start a navigation but don't wait for it to finish.
   Attach();
   SendCommandSync("Page.enable");
-  base::DictionaryValue params;
-  params.SetStringKey("url", url.spec());
-  SendCommand("Page.navigate", std::move(params.GetDict()), false);
+  base::Value::Dict params;
+  params.Set("url", url.spec());
+  SendCommandAsync("Page.navigate", std::move(params));
   content::NavigationController& navigation_controller =
       web_contents()->GetController();
   content::NavigationEntry* pending_entry =
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
   bool page_obsolete_ssl_signature = status & net::OBSOLETE_SSL_MASK_SIGNATURE;
 
   Attach();
-  SendCommand("Security.enable", base::Value::Dict(), false);
+  SendCommandAsync("Security.enable");
   auto has_certificate = [](const base::Value::Dict& params) {
     return params.FindListByDottedPath(
                "visibleSecurityState.certificateSecurityState.certificate") !=
@@ -539,14 +539,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   auto* manager = infobars::ContentInfoBarManager::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   {
-    base::Value params(base::Value::Type::DICTIONARY);
-    params.SetBoolKey("enabled", true);
+    base::Value::Dict params;
+    params.Set("enabled", true);
     SendCommandSync("Emulation.setAutomationOverride", std::move(params));
   }
   EXPECT_EQ(static_cast<int>(manager->infobar_count()), 1);
   {
-    base::Value params(base::Value::Type::DICTIONARY);
-    params.SetBoolKey("enabled", false);
+    base::Value::Dict params;
+    params.Set("enabled", false);
     SendCommandSync("Emulation.setAutomationOverride", std::move(params));
   }
   EXPECT_EQ(static_cast<int>(manager->infobar_count()), 0);
@@ -558,31 +558,28 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   auto* manager = infobars::ContentInfoBarManager::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   {
-    base::Value params(base::Value::Type::DICTIONARY);
-    params.SetBoolKey("enabled", true);
+    base::Value::Dict params;
+    params.Set("enabled", true);
     SendCommandSync("Emulation.setAutomationOverride", std::move(params));
   }
   EXPECT_EQ(static_cast<int>(manager->infobar_count()), 1);
   {
-    base::Value params(base::Value::Type::DICTIONARY);
-    params.SetBoolKey("enabled", true);
+    base::Value::Dict params;
+    params.Set("enabled", true);
     SendCommandSync("Emulation.setAutomationOverride", std::move(params));
   }
   EXPECT_EQ(static_cast<int>(manager->infobar_count()), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, UntrustedClient) {
-  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  std::unique_ptr<base::Value::Dict> params(new base::Value::Dict());
   SetIsTrusted(false);
   Attach();
-  EXPECT_FALSE(
-      SendCommand("HeapProfiler.enable", nullptr, true));  // Implemented in V8
-  EXPECT_FALSE(
-      SendCommand("LayerTree.enable", nullptr, true));  // Implemented in blink
-  EXPECT_FALSE(SendCommand("Memory.prepareForLeakDetection", nullptr,
-                           true));  // Implemented in content
-  EXPECT_FALSE(
-      SendCommand("Cast.enable", nullptr, true));  // Implemented in content
+  EXPECT_FALSE(SendCommandSync("HeapProfiler.enable"));  // Implemented in V8
+  EXPECT_FALSE(SendCommandSync("LayerTree.enable"));     // Implemented in blink
+  EXPECT_FALSE(SendCommandSync(
+      "Memory.prepareForLeakDetection"));        // Implemented in content
+  EXPECT_FALSE(SendCommandSync("Cast.enable"));  // Implemented in content
 }
 
 class ExtensionProtocolTest : public DevToolsProtocolTest {
@@ -652,10 +649,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionProtocolTest, ReloadTracedExtension) {
   ASSERT_TRUE(extension);
   Attach();
   ReloadExtension(extension->id());
-  base::DictionaryValue params;
-  params.SetStringPath("categories", "-*");
+  base::Value::Dict params;
+  params.Set("categories", "-*");
   SendCommandSync("Tracing.start", std::move(params));
-  SendCommand("Tracing.end", base::Value::Dict(), false);
+  SendCommandAsync("Tracing.end");
   WaitForNotification("Tracing.tracingComplete", true);
 }
 
@@ -685,9 +682,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionProtocolTest,
     }
   }
   {
-    base::Value params(base::Value::Type::DICTIONARY);
-    params.SetStringKey("targetId", *ext_target.FindStringKey("targetId"));
-    params.SetBoolKey("waitForDebuggerOnStart", false);
+    base::Value::Dict params;
+    params.Set("targetId", *ext_target.FindStringKey("targetId"));
+    params.Set("waitForDebuggerOnStart", false);
     SendCommandSync("Target.autoAttachRelated", std::move(params));
   }
   ReloadExtension(extension_id);
@@ -703,9 +700,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionProtocolTest,
               testing::Optional(false));
 
   {
-    base::Value params(base::Value::Type::DICTIONARY);
-    params.SetStringKey("targetId", *targetInfo->FindStringKey("targetId"));
-    params.SetBoolKey("waitForDebuggerOnStart", false);
+    base::Value::Dict params;
+    params.Set("targetId", *targetInfo->FindStringKey("targetId"));
+    params.Set("waitForDebuggerOnStart", false);
     SendCommandSync("Target.autoAttachRelated", std::move(params));
   }
   auto detached = WaitForNotification("Target.detachedFromTarget", true);

@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -622,10 +622,11 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
     const std::string& policy_mode) const {
   std::vector<SmbUrl> preconfigured_urls;
 
-  const base::Value* preconfigured_shares = profile_->GetPrefs()->GetList(
-      prefs::kNetworkFileSharesPreconfiguredShares);
+  const base::Value::List& preconfigured_shares =
+      profile_->GetPrefs()->GetValueList(
+          prefs::kNetworkFileSharesPreconfiguredShares);
 
-  for (const base::Value& info : preconfigured_shares->GetListDeprecated()) {
+  for (const base::Value& info : preconfigured_shares) {
     // |info| is a dictionary with entries for |share_url| and |mode|.
     const base::Value* share_url = info.FindKey(kShareUrlKey);
     const base::Value* mode = info.FindKey(kModeKey);

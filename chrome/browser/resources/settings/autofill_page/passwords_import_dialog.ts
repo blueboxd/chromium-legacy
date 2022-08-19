@@ -7,7 +7,7 @@
  * passwords.
  */
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -167,6 +167,10 @@ export class PasswordsImportDialogElement extends
         break;
       case chrome.passwordsPrivate.ImportResultsStatus.IO_ERROR:
         this.descriptionText_ = this.i18n('importPasswordsUnknownError');
+        this.dialogState = ImportDialogState.ERROR;
+        break;
+      case chrome.passwordsPrivate.ImportResultsStatus.NUM_PASSWORDS_EXCEEDED:
+        this.descriptionText_ = this.i18n('importPasswordsLimitExceeded', 3000);
         this.dialogState = ImportDialogState.ERROR;
         break;
       case chrome.passwordsPrivate.ImportResultsStatus.BAD_FORMAT:

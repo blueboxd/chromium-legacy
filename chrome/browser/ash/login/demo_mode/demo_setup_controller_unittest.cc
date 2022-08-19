@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/cryptohome/system_salt_getter.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
@@ -23,10 +22,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/cryptohome/system_salt_getter.h"
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"

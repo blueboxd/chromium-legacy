@@ -84,6 +84,7 @@ class VersionButton : public views::LabelButton {
             }),
             channel_indicator_utils::GetFullReleaseTrackString(channel)),
         channel_(channel) {
+    SetFlipCanvasOnPaintForRTLUI(true);
     std::copy(corners, corners + kNumVersionButtonCornerRadii, corners_);
     SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(
         kVersionButtonMarginVertical, kVersionButtonMarginHorizontal)));
@@ -174,8 +175,12 @@ ChannelIndicatorQuickSettingsView::ChannelIndicatorQuickSettingsView(
     version_info::Channel channel,
     bool allow_user_feedback) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, kUnifiedSystemInfoViewPadding,
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kUnifiedSystemInfoSpacing));
+  // kCenter align the layout for this view because it is a container for the
+  // buttons.
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
+
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->set_between_child_spacing(kButtonSpacing);

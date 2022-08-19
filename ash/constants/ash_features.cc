@@ -1480,10 +1480,6 @@ const base::Feature kSimLockPolicy{"SimLockPolicy",
 const base::Feature kSmartDimExperimentalComponent{
     "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Backs off connection attempt before retrying after a timeout occurs.
-const base::Feature kSmartLockBluetoothScanningBackoff{
-    "SmartLockBluetoothScanningBackoff", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Disconnects bluetooth connection when screen turns off.
 const base::Feature kSmartLockBluetoothScreenOffFix{
     "SmartLockBluetoothScreenOffFix", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1631,7 +1627,7 @@ const base::Feature kVirtualKeyboardBorderedKey{
 
 // Enable or disable multitouch for virtual keyboard on ChromeOS.
 const base::Feature kVirtualKeyboardMultitouch{
-    "VirtualKeyboardMultitouch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "VirtualKeyboardMultitouch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable round corners for virtual keyboard on ChromeOS.
 const base::Feature kVirtualKeyboardRoundCorners{

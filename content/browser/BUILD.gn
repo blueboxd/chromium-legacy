@@ -2061,6 +2061,8 @@ source_set("browser") {
     "url_loader_factory_getter.h",
     "url_loader_factory_params_helper.cc",
     "url_loader_factory_params_helper.h",
+    "usb/web_usb_service_impl.cc",
+    "usb/web_usb_service_impl.h",
     "utility_process_host.cc",
     "utility_process_host.h",
     "utility_process_host_receiver_bindings.cc",
@@ -2503,8 +2505,8 @@ source_set("browser") {
       "tracing/cros_tracing_agent.h",
     ]
     deps += [
+      "//chromeos/ash/components/dbus",
       "//chromeos/ash/components/dbus/debug_daemon",
-      "//chromeos/dbus",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//services/data_decoder/public/cpp",
       "//services/data_decoder/public/mojom",

@@ -22,6 +22,10 @@ class HistoryClustersViewBinder {
             itemView.setOnClickListener(clickListener);
         } else if (key == HistoryClustersItemProperties.CLUSTER_VISIT) {
             itemView.setItem(model.get(HistoryClustersItemProperties.CLUSTER_VISIT));
+        } else if (key == HistoryClustersItemProperties.DIVIDER_HEIGHT_RES) {
+            itemView.setDividerHeight(model.get(HistoryClustersItemProperties.DIVIDER_HEIGHT_RES));
+        } else if (key == HistoryClustersItemProperties.DIVIDER_VISIBLE) {
+            itemView.setDividerVisibility(model.get(HistoryClustersItemProperties.DIVIDER_VISIBLE));
         } else if (key == HistoryClustersItemProperties.END_BUTTON_CLICK_HANDLER) {
             itemView.setEndButtonClickHandler(
                     model.get(HistoryClustersItemProperties.END_BUTTON_CLICK_HANDLER));
@@ -70,6 +74,9 @@ class HistoryClustersViewBinder {
             OnClickListener clickListener = model.get(HistoryClustersItemProperties.CLICK_HANDLER);
             clusterView.setOnClickListener(clickListener);
             clusterView.setEndButtonClickListener(clickListener);
+        } else if (key == HistoryClustersItemProperties.DIVIDER_HEIGHT_RES) {
+            clusterView.setDividerHeight(
+                    model.get(HistoryClustersItemProperties.DIVIDER_HEIGHT_RES));
         } else if (key == HistoryClustersItemProperties.DIVIDER_VISIBLE) {
             clusterView.setDividerVisibility(
                     model.get(HistoryClustersItemProperties.DIVIDER_VISIBLE));
@@ -80,6 +87,9 @@ class HistoryClustersViewBinder {
             clusterView.setIconDrawable(model.get(HistoryClustersItemProperties.ICON_DRAWABLE));
         } else if (key == HistoryClustersItemProperties.LABEL) {
             clusterView.setLabel(model.get(HistoryClustersItemProperties.LABEL));
+        } else if (key == HistoryClustersItemProperties.START_ICON_VISIBILITY) {
+            clusterView.setIconDrawableVisibility(
+                    model.get(HistoryClustersItemProperties.START_ICON_VISIBILITY));
         } else if (key == HistoryClustersItemProperties.TITLE) {
             clusterView.setTitle(model.get(HistoryClustersItemProperties.TITLE));
         }
@@ -91,6 +101,12 @@ class HistoryClustersViewBinder {
         if (key == HistoryClustersItemProperties.CHIP_CLICK_HANDLER) {
             relatedSearchesChipLayout.setOnChipClickHandler(
                     model.get(HistoryClustersItemProperties.CHIP_CLICK_HANDLER));
+        } else if (key == HistoryClustersItemProperties.DIVIDER_HEIGHT_RES) {
+            relatedSearchesChipLayout.setDividerHeight(
+                    model.get(HistoryClustersItemProperties.DIVIDER_HEIGHT_RES));
+        } else if (key == HistoryClustersItemProperties.DIVIDER_VISIBLE) {
+            relatedSearchesChipLayout.setDividerVisibility(
+                    model.get(HistoryClustersItemProperties.DIVIDER_VISIBLE));
         } else if (key == HistoryClustersItemProperties.RELATED_SEARCHES) {
             List<String> relatedSearches =
                     model.get(HistoryClustersItemProperties.RELATED_SEARCHES);

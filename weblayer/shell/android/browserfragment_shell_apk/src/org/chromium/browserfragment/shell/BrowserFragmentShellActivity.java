@@ -23,10 +23,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.chromium.base.Log;
 import org.chromium.browserfragment.Browser;
 import org.chromium.browserfragment.BrowserFragment;
+import org.chromium.browserfragment.FragmentParams;
 import org.chromium.browserfragment.Tab;
 import org.chromium.browserfragment.TabManager;
 import org.chromium.browserfragment.TabObserver;
+import org.chromium.browserfragment.WebMessageCallback;
+import org.chromium.browserfragment.WebMessageReplyProxy;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -124,6 +128,22 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
                 if (savedInstanceState == null) {
                     // TODO(rayankans): Expose Tab URL to avoid relying on |savedInstanceState|.
                     activeTab.getNavigationController().navigate("https://google.com");
+
+                    activeTab.registerWebMessageCallback(new WebMessageCallback() {
+                        @Override
+                        public void onWebMessageReceived(
+                                WebMessageReplyProxy replyProxy, String message) {
+                            Log.i(TAG, "received WebMessage: " + message);
+                            replyProxy.postMessage("Bouncing answer from browser: " + message);
+                        }
+
+                        @Override
+                        public void onWebMessageReplyProxyClosed(WebMessageReplyProxy replyProxy) {}
+
+                        @Override
+                        public void onWebMessageReplyProxyActiveStateChanged(
+                                WebMessageReplyProxy proxy) {}
+                    }, "x", Arrays.asList("*"));
                 }
             }
             @Override
@@ -143,7 +163,9 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
             }
         }
 
-        BrowserFragment fragment = browser.createFragment();
+        FragmentParams params =
+                (new FragmentParams.Builder()).setProfileName("DefaultProfile").build();
+        BrowserFragment fragment = browser.createFragment(params);
 
         fragmentManager.beginTransaction()
                 .setReorderingAllowed(true)

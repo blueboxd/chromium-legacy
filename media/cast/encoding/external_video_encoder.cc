@@ -26,6 +26,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitrate.h"
@@ -84,6 +85,14 @@ bool IsHardwareVP8EncodingSupported(
   if (RE2::FullMatch(re2::StringPiece(receiver_model_name.data(),
                                       receiver_model_name.size()),
                      RE2(kVizioRegex))) {
+    return false;
+  }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS) && ARCH_CPU_64_BITS
+  // The encoder also doesn't work well with some first party Chromecast
+  // devices. See https://crbug.com/1342276 for more information.
+  if (base::StartsWith(receiver_model_name, "Chromecast")) {
     return false;
   }
 #endif
@@ -249,6 +258,7 @@ class ExternalVideoEncoder::VEAClientImpl final
       base::TimeTicks reference_time,
       bool key_frame_requested,
       VideoEncoder::FrameEncodedCallback frame_encoded_callback) {
+    TRACE_EVENT0("media", "ExternalVideoEncoder::EncodeVideoFrame");
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     in_progress_frame_encodes_.push_back(InProgressExternalVideoFrameEncode(

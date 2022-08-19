@@ -39,14 +39,6 @@ constexpr float kDisabledColorOpacity = 0.38f;
 // Color of second tone is always 30% opacity of the color of first tone.
 constexpr float kSecondToneOpacity = 0.3f;
 
-// Different alpha values that can be used by Shield and Base layers.
-constexpr int kAlpha20 = 51;   // 20%
-constexpr int kAlpha40 = 102;  // 40%
-constexpr int kAlpha60 = 153;  // 60%
-constexpr int kAlpha80 = 204;  // 80%
-constexpr int kAlpha90 = 230;  // 90%
-constexpr int kAlpha95 = 242;  // 95%
-
 // Alpha value that is used to calculate themed color. Please see function
 // GetBackgroundThemedColor() about how the themed color is calculated.
 constexpr int kDarkBackgroundBlendAlpha = 127;   // 50%
@@ -92,33 +84,48 @@ SkColor AshColorProvider::GetSecondToneColor(SkColor color_of_first_tone) {
 }
 
 SkColor AshColorProvider::GetShieldLayerColor(ShieldLayerType type) const {
-  constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60,
-                             kAlpha80, kAlpha90, kAlpha95};
-  DCHECK_LT(static_cast<size_t>(type), std::size(kAlphas));
-  return SkColorSetA(GetBackgroundColor(), kAlphas[static_cast<int>(type)]);
+  // TODO(crbug.com/1348365): Delete this function after all clients migrate.
+  auto* color_provider = GetColorProvider();
+  DCHECK(color_provider);
+
+  switch (type) {
+    case ShieldLayerType::kShield20:
+      return color_provider->GetColor(kColorAshShieldAndBase20);
+    case ShieldLayerType::kShield40:
+      return color_provider->GetColor(kColorAshShieldAndBase40);
+    case ShieldLayerType::kShield60:
+      return color_provider->GetColor(kColorAshShieldAndBase60);
+    case ShieldLayerType::kShield80:
+      return color_provider->GetColor(kColorAshShieldAndBase80);
+    case ShieldLayerType::kShield90:
+      return color_provider->GetColor(kColorAshShieldAndBase90);
+    case ShieldLayerType::kShield95:
+      return color_provider->GetColor(kColorAshShieldAndBase95);
+  }
 }
 
 SkColor AshColorProvider::GetBaseLayerColor(BaseLayerType type) const {
-  // TODO(minch): Get all the colors from `GetColorProvider` as
-  // `kInvertedTransparent80`.
-  const auto color = GetBackgroundColor();
+  // TODO(crbug.com/1350510): Delete this function after all clients migrate.
+  auto* color_provider = GetColorProvider();
+  DCHECK(color_provider);
+
   switch (type) {
     case BaseLayerType::kTransparent20:
-      return SkColorSetA(color, kAlpha20);
+      return color_provider->GetColor(kColorAshShieldAndBase20);
     case BaseLayerType::kTransparent40:
-      return SkColorSetA(color, kAlpha40);
+      return color_provider->GetColor(kColorAshShieldAndBase40);
     case BaseLayerType::kTransparent60:
-      return SkColorSetA(color, kAlpha60);
+      return color_provider->GetColor(kColorAshShieldAndBase60);
     case BaseLayerType::kTransparent80:
-      return SkColorSetA(color, kAlpha80);
+      return color_provider->GetColor(kColorAshShieldAndBase80);
     case BaseLayerType::kInvertedTransparent80:
-      return GetColorProvider()->GetColor(kColorAshInvertedShieldAndBase80);
+      return color_provider->GetColor(kColorAshInvertedShieldAndBase80);
     case BaseLayerType::kTransparent90:
-      return SkColorSetA(color, kAlpha90);
+      return color_provider->GetColor(kColorAshShieldAndBase90);
     case BaseLayerType::kTransparent95:
-      return SkColorSetA(color, kAlpha95);
+      return color_provider->GetColor(kColorAshShieldAndBase95);
     case BaseLayerType::kOpaque:
-      return SkColorSetA(color, SK_AlphaOPAQUE);
+      return color_provider->GetColor(kColorAshShieldAndBaseOpaque);
   }
 }
 
@@ -283,12 +290,9 @@ std::pair<SkColor, float> AshColorProvider::GetInkDropBaseColorAndOpacity(
 }
 
 SkColor AshColorProvider::GetBackgroundColor() const {
-  return GetBackgroundThemedColorImpl(GetBackgroundDefaultColor(),
-                                      IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetBackgroundDefaultColor() const {
-  return IsDarkModeEnabled() ? gfx::kGoogleGrey900 : SK_ColorWHITE;
+  return GetBackgroundThemedColorImpl(
+      GetColorProvider()->GetColor(kColorAshShieldAndBaseOpaque),
+      IsDarkModeEnabled());
 }
 
 SkColor AshColorProvider::GetBackgroundThemedColorImpl(

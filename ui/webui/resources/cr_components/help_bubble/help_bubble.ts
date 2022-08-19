@@ -8,12 +8,12 @@
  * implementation detail and subject to change (you should not add them to your
  * components directly).
  */
-import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 
-import {CrButtonElement} from '//resources/cr_elements/cr_button/cr_button.m.js';
+import {CrButtonElement} from '//resources/cr_elements/cr_button/cr_button.js';
 import {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {assert, assertNotReached} from '//resources/js/assert_ts.js';
 import {isWindows} from '//resources/js/cr.m.js';
@@ -79,6 +79,8 @@ export class HelpBubbleElement extends PolymerElement {
   position: HelpBubblePosition;
   buttons: HelpBubbleButtonParams[] = [];
   progress: Progress|null = null;
+  infoIcon: string|null = null;
+  forceCloseButton: boolean;
 
   /**
    * HTMLElement corresponding to |this.anchorId|.
@@ -176,11 +178,6 @@ export class HelpBubbleElement extends PolymerElement {
     return !!titleText && !progress;
   }
 
-  private shouldShowTitleInMain_(progress: Progress|null, titleText: string):
-      boolean {
-    return !!titleText && !!progress;
-  }
-
   private shouldShowBodyInTopContainer_(
       progress: Progress|null, titleText: string): boolean {
     return !progress && !titleText;
@@ -189,6 +186,17 @@ export class HelpBubbleElement extends PolymerElement {
   private shouldShowBodyInMain_(progress: Progress|null, titleText: string):
       boolean {
     return !!progress || !!titleText;
+  }
+
+  private shouldShowCloseButton_(
+      buttons: HelpBubbleButtonParams[], forceCloseButton: boolean): boolean {
+    return buttons.length === 0 || forceCloseButton;
+  }
+
+  private shouldShowInfoIcon_(progress: Progress|null, infoIcon: string):
+      boolean {
+    // TODO(mickeyburks): Info icon needs to be added to HelpBubbleParams
+    return !progress && infoIcon !== null && infoIcon !== '';
   }
 
   private onButtonClick_(e: DomRepeatEvent<HelpBubbleButtonParams>) {

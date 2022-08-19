@@ -1181,9 +1181,6 @@ extern const char kOsSettingsAppNotificationsPageDescription[];
 extern const char kOverviewButtonName[];
 extern const char kOverviewButtonDescription[];
 
-extern const char kEnableDeJellyName[];
-extern const char kEnableDeJellyDescription[];
-
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];
 
@@ -1942,6 +1939,9 @@ extern const char kEnableCommandLineOnNoRootedDescription[];
 extern const char kEnableFamilyInfoFeedbackName[];
 extern const char kEnableFamilyInfoFeedbackDescription[];
 
+extern const char kEnableOskResizesVisualViewportName[];
+extern const char kEnableOskResizesVisualViewportDescription[];
+
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
@@ -2163,6 +2163,10 @@ extern const char kRequestDesktopSiteExceptionsDescription[];
 
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
+
+extern const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[];
+extern const char
+    kRevokeNotificationsPermissionIfDisabledOnAppLevelDescription[];
 
 extern const char kSafeModeForCachedFlagsName[];
 extern const char kSafeModeForCachedFlagsDescription[];

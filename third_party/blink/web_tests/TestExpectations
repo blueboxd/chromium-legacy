@@ -114,8 +114,6 @@ crbug.com/1254944 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-offse
 crbug.com/1254944 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ Failure Pass ]
 
 # Fails flakily or times out
-crbug.com/1255285 virtual/threaded/transitions/transition-currentcolor.html [ Failure Pass ]
-crbug.com/1255285 virtual/threaded/transitions/transition-ends-before-animation-frame.html [ Timeout ]
 crbug.com/1269536 [ Mac11 ] svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass Timeout ]
 crbug.com/1269536 [ Mac12 ] svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass Timeout ]
 
@@ -4621,9 +4619,6 @@ crbug.com/934818 http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 # Sheriff 2019-02-28
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
 
-# Paint Timing failures
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Failure ]
-
 # Contentful First Paint failures
 crbug.com/1322629 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.html [ Failure ]
 crbug.com/1322629 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Failure ]
@@ -5174,10 +5169,6 @@ crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-default-descriptors.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-frame-size-changed.html [ Failure ]
 crbug.com/1279648 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-inline-orientation.html [ Failure ]
-
-crbug.com/1343365 fast/animation/scroll-animations/scroll-animation-lifetime.html [ Failure ]
-crbug.com/1343365 fast/animation/scroll-animations/scroll-timeline-snapshotting.html [ Failure ]
-crbug.com/1343365 fast/animation/scroll-animations/scrolltimeline-root-scroller-quirks-mode.html [ Failure ]
 
 crbug.com/971031 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
@@ -6065,13 +6056,9 @@ crbug.com/1249176 [ Mac12-arm64 ] virtual/exotic-color-space/images/yuv-decode-e
 crbug.com/1249176 [ Mac12 ] external/wpt/html/browsers/browsing-the-web/back-forward-cache/service-worker-controlled-after-restore.https.html [ Failure Pass ]
 crbug.com/1249176 [ Mac12 ] fast/dom/Element/scrollTop-scrollLeft-body.html [ Failure Pass ]
 crbug.com/1249176 [ Mac12-arm64 ] external/wpt/html/rendering/replaced-elements/embedded-content/cross-domain-iframe-in-multicol.sub.html [ Failure Pass ]
-crbug.com/1249176 [ Mac12-arm64 ] fast/js/instanceof-test.html [ Failure Pass ]
 
 # Sheriff 2022-07-04
 crbug.com/1341689 [ Linux ] media/controls/overflow-menu-focus.html [ Failure Pass ]
-
-# crbug.com/1344983
-crbug.com/1344983 [ Mac11 ] fast/js/instanceof-test.html [ Failure Pass ]
 
 # Following tests timeout on mac11-arm64
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Failure Timeout ]
@@ -6874,8 +6861,6 @@ crbug.com/1339538 [ Linux ] fast/frames/002.html [ Failure Pass ]
 crbug.com/1339538 [ Win10.20h2 ] fast/frames/002.html [ Failure Pass ]
 crbug.com/1097040 media/controls/overflow-menu-always-visible.html [ Failure Pass ]
 crbug.com/1342526 external/wpt/dom/events/non-cancelable-when-passive/non-passive-wheel-event-listener-on-body.html [ Failure Pass ]
-crbug.com/1342518 [ Mac ] external/wpt/webmessaging/event.data.sub.htm [ Failure Pass ]
-crbug.com/1342518 [ Win ] external/wpt/webmessaging/event.data.sub.htm [ Failure Pass ]
 
 # Sheriff 2022-07-08
 crbug.com/1180274 virtual/plz-dedicated-worker/http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Skip ]
@@ -6886,8 +6871,6 @@ crbug.com/1180274 virtual/partitioned-cookies/http/tests/inspector-protocol/netw
 # Sheriff 2022-07-12
 crbug.com/1343674 [ Linux ] editing/deleting/460938.html [ Failure Pass ]
 crbug.com/1343664 external/wpt/dom/events/non-cancelable-when-passive/non-passive-mousewheel-event-listener-on-document.html [ Failure Pass ]
-crbug.com/1343698 [ Mac Release ] external/wpt/webmessaging/postMessage_asterisk_xorigin.sub.htm [ Failure Pass ]
-crbug.com/1343698 [ Release Win10.20h2 ] external/wpt/webmessaging/postMessage_asterisk_xorigin.sub.htm [ Failure Pass ]
 
 # Disable test to land a MSE change. Spec change (MSE PR#306) is still pending,
 # and once landed, this line can be removed.
@@ -6986,3 +6969,7 @@ crbug.com/1352607 external/wpt/css/css-transitions/transition-base-response-002.
 
 # Sheriff 2022-08-17
 crbug.com/1342623 [ Win ] virtual/scroll-unification/fast/events/mouseenter-mouseleave-on-drag.html [ Failure Pass ]
+crbug.com/1340167 fast/loader/iframe-navigation-stealing-focus.html [ Pass Timeout ]
+
+# Sheriff 2022-08-18
+crbug.com/1354013 virtual/threaded-no-composited-antialiasing/animations/sample-on-last-keyframe.html [ Skip ]

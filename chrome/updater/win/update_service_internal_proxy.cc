@@ -11,9 +11,8 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/check_op.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/path_service.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
@@ -21,14 +20,11 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/win/registry.h"
-#include "base/win/win_util.h"
+#include "base/time/time.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/win_constants.h"
-#include "chrome/updater/win/win_util.h"
 #include "chrome/updater/win/wrl_module_initializer.h"
 
 namespace updater {
@@ -193,52 +189,6 @@ void UpdateServiceInternalProxy::InitializeUpdateService(
           base::BindPostTask(main_task_runner_, std::move(callback))));
 }
 
-namespace {
-
-// TODO(crbug.com/1341471) - revert the CL that introduced the check after the
-// bug is resolved. Loads the typelib and typeinfo for `iid` from updater.exe.
-// Logs on failure. If the typelib loads successfully, logs the registry entries
-// for the typelib for `iid`.
-void LogComInterfaceTypeLib(UpdaterScope scope, REFIID iid) {
-  base::FilePath typelib_path;
-  CHECK(base::PathService::Get(base::DIR_EXE, &typelib_path));
-  typelib_path = typelib_path.Append(GetExecutableRelativePath())
-                     .Append(GetComTypeLibResourceIndex(iid));
-
-  Microsoft::WRL::ComPtr<ITypeLib> type_lib;
-  if (HRESULT hr = ::LoadTypeLib(typelib_path.value().c_str(), &type_lib);
-      FAILED(hr)) {
-    LOG(ERROR) << __func__ << " ::LoadTypeLib failed: " << typelib_path << ": "
-               << std::hex << hr;
-    return;
-  }
-
-  Microsoft::WRL::ComPtr<ITypeInfo> type_info;
-  if (HRESULT hr = type_lib->GetTypeInfoOfGuid(iid, &type_info); FAILED(hr)) {
-    LOG(ERROR) << __func__ << " ::GetTypeInfoOfGuid failed"
-               << ": " << std::hex << hr
-               << ": IID: " << base::win::WStringFromGUID(iid);
-    return;
-  }
-
-  const HKEY root = UpdaterScopeToHKeyRoot(scope);
-  const std::wstring typelib_reg_path = GetComTypeLibRegistryPath(iid);
-
-  std::wstring val;
-  const std::wstring typelib_reg_path_win32 =
-      typelib_reg_path + L"\\1.0\\0\\win32";
-  const std::wstring typelib_reg_path_win64 =
-      typelib_reg_path + L"\\1.0\\0\\win64";
-
-  for (const auto& path : {typelib_reg_path_win32, typelib_reg_path_win64}) {
-    CHECK(base::win::RegKey(root, path.c_str(), KEY_READ).ReadValue(L"", &val));
-    VLOG(1) << __func__ << ": " << path << ": " << val << ": "
-            << base::win::WStringFromGUID(iid);
-  }
-}
-
-}  // namespace
-
 void UpdateServiceInternalProxy::InitializeUpdateServiceOnSTA(
     base::OnceClosure callback) {
   DCHECK(com_task_runner_->BelongsToCurrentThread());
@@ -259,7 +209,19 @@ void UpdateServiceInternalProxy::InitializeUpdateServiceOnSTA(
   if (FAILED(hr)) {
     VLOG(2) << "Failed to query the updater_internal interface. " << std::hex
             << hr;
-    LogComInterfaceTypeLib(scope_, __uuidof(IUpdaterInternal));
+
+    // TODO(crbug.com/1341471) - revert the CL that introduced this check after
+    // the bug is resolved.
+    for (int i = 0; i < 10; ++i) {
+      base::WaitableEvent().TimedWait(base::Seconds(1));
+      CHECK(FAILED(server.As(&updater_internal)))
+          << "Unexpectedly succeeded in querying the updater_internal "
+             "interface after retrying: "
+          << i;
+    }
+
+    CheckComInterfaceTypeLib(scope_, true);
+    CheckComInterfaceTypeLib(scope_, false);
     std::move(callback).Run();
     return;
   }
